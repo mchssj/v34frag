@@ -172,11 +172,50 @@ No uses el script y System2 a la vez sobre la misma cola.
 1. **Calentamiento.** Al cargar el mapa se ejecuta `cfg/csstv/warmup.cfg`. Cada 30 segundos el chat recuerda quién falta.
 2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede forzarlo con `!live`.
 3. **LO3.** Se ejecuta `cfg/csstv/live.cfg` y tres reinicios. Al empezar, **Equipo A = CT** y **Equipo B = T**.
-4. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos, reinicia la ronda y mantiene el marcador.
+4. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos (cada uno con el modelo equivalente del otro lado), reinicia la ronda y mantiene el marcador en el scoreboard.
 5. **Fin.** Gana el primero en llegar a 16. Con 15-15 se juega prórroga MR12 (configurable), con dinero `csstv_ot_startmoney`, hasta que haya ganador.
 6. **Envío.** El resultado se guarda en la cola y se envía. En el chat aparece "Resultado enviado a CSSTV". A los 15 segundos vuelve al calentamiento.
 
 Si se cambia de mapa a mitad de partida, la partida se descarta y no se envía.
+
+### Durante la partida
+
+Al empezar cada ronda, en el freezetime, el chat muestra (cada parte se apaga con su cvar):
+
+```
+[CSSTV] Ronda 13/30 · Equipo A (CT) 7 - 5 Equipo B (T)        ← todos (csstv_round_header)
+[CSSTV] Daño ronda 12:                                        ← solo vos (csstv_damage_report)
+[CSSTV] » s1mple: diste 100 (3) · recibiste 27 (1)
+[CSSTV] Plata del equipo: $21.350                              ← solo tu equipo (csstv_team_money)
+[CSSTV] s1mple $7.200 · fallen $5.900 · fer $4.100 · taco $3.350 · cold $800
+```
+
+- El encabezado avisa la **última ronda antes del cambio de lado** y el **match point**.
+- El daño cuenta solo a los rivales, con el daño real (sin pasar la vida que le quedaba) y la cantidad de golpes entre paréntesis.
+- Al morir, el chat te dice quién te mató, con qué arma y cuánta vida y chaleco le quedan (`csstv_hp_on_death`). `!hp` lo repite.
+
+### Pausa táctica
+
+`!pause` pide una pausa para tu equipo. Si se pide en plena ronda, empieza en el freezetime de la siguiente. Mientras dura, la ronda no arranca, el reloj de la ronda no corre, el chat funciona y se puede comprar.
+
+| `csstv_pause_mode` | Cómo termina |
+|---|---|
+| `0` | Pausas desactivadas |
+| `1` | Sola, a los `csstv_pause_time` segundos |
+| `2` | Cuando los dos equipos escriben `!unpause` |
+| `3` | Lo que pase primero: el tiempo o `!unpause` de los dos equipos |
+
+Cada equipo tiene `csstv_pause_max` pausas por partida. El equipo que pidió una pausa puede cancelarla con `!unpause` antes de que empiece. Un admin puede usar `!forcepause` (no cuenta para el límite y dura hasta `!forceunpause` o `!unpause` de los dos equipos) y `!forceunpause`. Al terminar una pausa, la ronda arranca a los 3 segundos.
+
+Técnicamente, la pausa alarga el freezetime de la ronda (`m_fRoundStartTime`). No usa la pausa del motor (`pause`): en v34 no se puede activar desde el servidor y, pedida a través de un bot, tumba el servidor.
+
+### Demos
+
+Con `csstv_demo 1`, la SourceTV graba cada mix desde el "¡EN VIVO!" hasta el final en `cstrike/csstv_demos/<match_uid>.dem`. El motor guarda el nombre en minúsculas (`srv1-20261011t125908-2fff.dem`). Se conservan los últimos `csstv_demo_keep` y se borran los más viejos.
+
+La SourceTV tiene que estar activa **desde que carga el mapa**. Agregá `+tv_enable 1` a la línea de arranque del servidor, antes de `+map`. Ponerlo en `server.cfg` no alcanza para el primer mapa. Si no está activa, el plugin lo anota en el log y sigue sin grabar.
+
+Tamaño medido en el servidor de prueba: unos 4 KB por segundo con 6 bots (2,6 MB por un mix corto de 7 rondas). Con 10 jugadores y 30 rondas será bastante más; conviene medirlo con el primer mix real.
 
 ### Comandos
 
@@ -184,6 +223,9 @@ Si se cambia de mapa a mitad de partida, la partida se descarta y no se envía.
 |---|---|---|
 | `!ready` / `!unready` | Jugadores | Marcarse listo o no listo |
 | `!score` | Todos | Marcador y ronda actual |
+| `!hp` | Jugadores | Quién te mató en esta ronda y cuánta vida le queda |
+| `!pause` / `!unpause` | Jugadores | Pedir una pausa táctica / seguir (o cancelar la que pediste) |
+| `!forcepause` / `!forceunpause` | Admin | Pausa de admin / terminar cualquier pausa ya |
 | `!live` | Admin | Empieza si hay jugadores suficientes |
 | `!live force` | Admin | Empieza aunque falten jugadores |
 | `!cancelmatch` | Admin | Cancela la partida sin enviar nada |
@@ -191,7 +233,7 @@ Si se cambia de mapa a mitad de partida, la partida se descarta y no se envía.
 | `sm_csstv_flush` | Consola / rcon | Reintenta ahora los envíos pendientes |
 | `sm_csstv_retryfailed` | Consola / rcon | Devuelve a la cola los envíos rechazados |
 
-Para usar `!live` y `!cancelmatch`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
+Para usar `!live`, `!cancelmatch`, `!forcepause` y `!forceunpause`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
 
 ```
 "STEAM_0:1:12345678"  "b"
@@ -219,6 +261,8 @@ addons/sourcemod/data/csstv/
 ├── queue/    pendientes de envío
 ├── sent/     enviados (respaldo; se pueden borrar)
 └── failed/   rechazados por la web (token inválido o datos inválidos)
+
+csstv_demos/   demos de SourceTV (en cstrike/, no en addons/)
 ```
 
 Los errores se registran en `addons/sourcemod/logs/errors_*.log` y los eventos normales en `addons/sourcemod/logs/L*.log`.
@@ -234,7 +278,25 @@ Los errores se registran en `addons/sourcemod/logs/errors_*.log` y los eventos n
 | El mapa termina solo a las 30 rondas | Alguna config pone `mp_maxrounds` o `mp_timelimit` | Sacalos de `server.cfg`, `live.cfg` y la config de mix. |
 | La partida no empieza con `!ready` | Faltan jugadores o alguien no está listo | `!score` muestra cuántos están listos; un admin puede usar `!live`. |
 | Un jugador aparece siempre "(sin perfil)" | SteamID no vinculado o SteamID inválido | Vinculalo en Admin → Jugadores. Si su SteamID figura como `NOSTEAM:…`, el servidor no le asigna un SteamID válido y no se puede vincular. |
+| Después del medio tiempo nadie reaparece y la ronda no termina | Plugin 1.0.0: el cambio de lado dejaba a los jugadores sin modelo (los bots no eligen) | Actualizá a la 1.1.0, que les asigna el modelo equivalente. |
+| No se graban demos | La SourceTV no estaba activa al cargar el mapa | Agregá `+tv_enable 1` a la línea de arranque. `status` debe mostrar una línea `sourcetv:`. |
 | Stats del mismo jugador en registros distintos | El emulador del servidor le cambia el SteamID | Revisá la configuración del emulador no-Steam (RevEmu/ClientMod) para que el SteamID sea estable. |
+
+## Servidores de prueba locales
+
+Para probar cambios del plugin antes de subirlos al servidor real.
+
+| Persona | Ruta | Estado |
+|---|---|---|
+| Daniel | `E:\CSS DEDICATED SERVER\server` (en su PC) | Listo: CS:S v34 con MetaMod, SourceMod y `spcomp.exe`. Ya tiene `csstv_reporter.smx` instalado. |
+| Agus | — | Pendiente de configurar. Por ahora las pruebas se hacen en el servidor de Daniel. |
+
+En el servidor de Daniel:
+
+- **Arrancar:** `start_server.bat`. Abre `de_dust2` en el puerto 27015, con 20 jugadores, tickrate 66 y `-insecure`.
+- **Plugin:** `cstrike\addons\sourcemod\plugins\csstv_reporter.smx`.
+- **Compilador:** `cstrike\addons\sourcemod\scripting\spcomp.exe`.
+- **Partida rápida:** seguí [Partida de prueba con bots](#partida-de-prueba-con-bots).
 
 ## Recompilar el plugin
 

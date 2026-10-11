@@ -3,6 +3,8 @@
  *
  * Controla un mix en CS:S v34 (ready / live / medio tiempo / prórroga / fin),
  * junta las estadísticas de cada jugador y envía el resultado a Supabase.
+ * También agrega mejoras de calidad de vida (csstv/qol.inc): marcador estable,
+ * encabezado de ronda, daño y plata en el chat, !hp, pausa táctica y demo.
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -20,7 +22,7 @@
 #include <system2>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.1.0"
 #define PREFIX "\x04[CSSTV]\x01"
 
 #define TEAM_SPEC 1
@@ -89,6 +91,7 @@ Handle g_hReadyTimer;
 #include "csstv/json.inc"
 #include "csstv/queue.inc"
 #include "csstv/http.inc"
+#include "csstv/qol.inc"
 
 public void OnPluginStart()
 {
@@ -133,6 +136,7 @@ public void OnPluginStart()
 
 	Stats_Init();
 	Queue_Init();
+	Qol_Init();
 }
 
 public void OnMapStart()
@@ -154,8 +158,11 @@ public void OnMapEnd()
 	{
 		LogMessage("Partida %s abortada por cambio de mapa (%d-%d). No se envía.", g_sMatchUid, g_iTotA, g_iTotB);
 	}
+	Demo_Stop();
 	RestoreStartMoney();
 	g_hReadyTimer = null;
+	g_hPauseTimer = null;   // los timers TIMER_FLAG_NO_MAPCHANGE mueren con el mapa
+	Pause_Clear();
 }
 
 public void OnClientPutInServer(int client)
@@ -390,10 +397,12 @@ void ResetMatch()
 	for (int i = 1; i <= MaxClients; i++)
 		g_bReady[i] = false;
 	Stats_Reset();
+	Qol_Reset();
 }
 
 void BackToWarmup()
 {
+	Demo_Stop();
 	RestoreStartMoney();
 	ResetMatch();
 	ExecIfExists("csstv/warmup.cfg");
@@ -447,6 +456,7 @@ void OnRestartsDone()
 		GetCurrentMap(map, sizeof(map));
 		LogMessage("Partida %s en vivo en %s.", g_sMatchUid, map);
 		PrintToChatAll("%s ¡EN VIVO! ¡EN VIVO! ¡EN VIVO! Suerte a todos.", PREFIX);
+		Demo_Start();
 	}
 	else
 	{
@@ -474,6 +484,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	if (aWon) { g_iSegA++; g_iTotA++; }
 	else      { g_iSegB++; g_iTotB++; }
 	g_iSegRound++;
+	Stats_SnapshotRound(g_iTotA + g_iTotB);
 
 	int half = g_iSegLen / 2;
 	PrintToChatAll("%s Equipo A %d - %d Equipo B", PREFIX, g_iTotA, g_iTotB);
@@ -552,8 +563,24 @@ void SwapTeams()
 		if (!IsClientInGame(i))
 			continue;
 		int team = GetClientTeam(i);
-		if (team == TEAM_T || team == TEAM_CT)
-			ChangeClientTeam(i, OtherSide(team));
+		if (team != TEAM_T && team != TEAM_CT)
+			continue;
+		// ChangeClientTeam deja al jugador sin clase y esperando elegir modelo: los bots
+		// no reaparecen nunca. Se le asigna el modelo equivalente del otro lado
+		// (T 1-4 <-> CT 5-8) y se lo marca activo para que reaparezca con el reinicio.
+		// En v34 no sirven CS_SwitchTeam (firma de otra versión) ni FakeClientCommand
+		// "joinclass" (tumba el servidor con bots).
+		int cls = GetEntProp(i, Prop_Send, "m_iClass");
+		int to = OtherSide(team);
+		ChangeClientTeam(i, to);
+		if (cls >= 1 && cls <= 4)
+			cls += 4;
+		else if (cls >= 5 && cls <= 8)
+			cls -= 4;
+		else
+			cls = to == TEAM_T ? GetRandomInt(1, 4) : GetRandomInt(5, 8);
+		SetEntProp(i, Prop_Send, "m_iClass", cls);
+		SetEntProp(i, Prop_Send, "m_iPlayerState", 0);   // STATE_ACTIVE
 	}
 	g_iSideA = OtherSide(g_iSideA);
 }
@@ -561,6 +588,8 @@ void SwapTeams()
 void FinishMatch()
 {
 	g_State = State_Finished;
+	Pause_Clear();
+	Demo_Stop();
 	int endedAt = GetTime();
 	char winner[8];
 	if (g_iTotA > g_iTotB)
@@ -608,21 +637,26 @@ public Action Timer_AfterFinish(Handle timer)
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Stats_RoundStart();
-	if (!g_bRestarting)
-		return;
-	g_iRestartsLeft--;
-	if (g_iRestartsLeft > 0)
+	Qol_ScheduleScoreSync();
+	if (g_bRestarting)
 	{
-		PrintToChatAll("%s Reinicio %d…", PREFIX, 3 - g_iRestartsLeft);
-		CreateTimer(1.5, Timer_NextRestart, _, TIMER_FLAG_NO_MAPCHANGE);
-		return;
+		g_iRestartsLeft--;
+		if (g_iRestartsLeft > 0)
+		{
+			PrintToChatAll("%s Reinicio %d…", PREFIX, 3 - g_iRestartsLeft);
+			CreateTimer(1.5, Timer_NextRestart, _, TIMER_FLAG_NO_MAPCHANGE);
+			return;
+		}
+		g_bRestarting = false;
+		OnRestartsDone();
 	}
-	g_bRestarting = false;
-	OnRestartsDone();
+	if (g_State == State_Live)
+		Qol_OnLiveRoundStart();
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
+	Qol_ScheduleScoreSync();
 	if (g_State != State_Live || g_bRestarting)
 		return;
 	int winner = event.GetInt("winner");
@@ -656,6 +690,9 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		return;
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	Stats_OnDeath(victim, attacker, event.GetBool("headshot"));
+	char weapon[32];
+	event.GetString("weapon", weapon, sizeof(weapon));
+	Qol_OnDeath(victim, attacker, weapon);
 }
 
 public void Event_BombPlanted(Event event, const char[] name, bool dontBroadcast)
