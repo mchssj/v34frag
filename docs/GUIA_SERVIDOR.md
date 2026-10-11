@@ -1,0 +1,253 @@
+# Guía de configuración: CSSTV Match Reporter
+
+El plugin `csstv_reporter` maneja los mixes del servidor CS:S v34 (ready, LO3, medio tiempo, prórroga y fin) y, al terminar cada partida, envía el marcador y las estadísticas de cada jugador a la web. La web crea la partida en **Mixes** y actualiza los perfiles de los jugadores vinculados por SteamID.
+
+```
+Servidor CS:S v34                          Supabase                         Web
+csstv_reporter.smx ──► cola local ──► ingest_server_chunk() ──► matches / stats / players ──► Mixes y perfiles
+                         │
+                         └──► csstv_uploader.py (alternativa si System2 no funciona)
+```
+
+## Contenido del repositorio
+
+| Ruta | Qué es |
+|---|---|
+| `server/addons/sourcemod/plugins/csstv_reporter.smx` | Plugin compilado con SourceMod 1.8 |
+| `server/addons/sourcemod/scripting/` | Código fuente (`csstv_reporter.sp` y `csstv/*.inc`) |
+| `server/cfg/sourcemod/csstv_reporter.cfg` | Configuración del plugin |
+| `server/cfg/csstv/warmup.cfg`, `live.cfg`, `end.cfg` | Configs que el plugin ejecuta en cada etapa |
+| `server/uploader/` | Script alternativo de subida (Python 3) |
+| `supabase/migrations/20261011120000_csstv_match_reporter.sql` | Cambios en la base de datos |
+
+## Requisitos
+
+- Servidor CS:S v34 con **MetaMod:Source** y **SourceMod 1.8** funcionando (`sm version` responde).
+- Acceso por FTP o SSH a la carpeta `cstrike/` del servidor.
+- Una cuenta **admin** en la web.
+- Para el envío directo: extensión **System2 v3.3.2**. Si no carga en v34, se usa el script de Python (paso 7).
+
+---
+
+## Paso 1. Aplicar la migración en Supabase
+
+1. Entrá a https://supabase.com/dashboard/project/wmzfwsizashpszxlvpeb/sql/new
+2. Pegá el contenido completo de `supabase/migrations/20261011120000_csstv_match_reporter.sql`.
+3. Tocá **Run**. Tiene que terminar sin errores; los avisos `NOTICE` son normales.
+
+La migración se puede volver a ejecutar sin problema. Crea la tabla `game_servers`, agrega `players.steam_id`, amplía `match_player_stats` y crea las funciones `ingest_server_chunk`, `ingest_server_match`, `link_steam_id`, `create_server_token` y `rotate_server_token`.
+
+## Paso 2. Publicar la web actualizada
+
+Subí el `index.html` nuevo al hosting. Agrega la sección **Mixes**, el scoreboard en el detalle de cada mix, las stats automáticas en el perfil y, para admins, **Admin → Servidores** y la lista **SteamID sin vincular** en Admin → Jugadores.
+
+## Paso 3. Crear el servidor en la web y obtener el token
+
+1. Entrá a la web con tu cuenta admin.
+2. Abrí **Admin → Servidores**, escribí un nombre (por ejemplo "Servidor Mix #1") y tocá **Crear y generar token**.
+3. Se muestran tres líneas listas para pegar:
+
+   ```
+   csstv_api_url "https://wmzfwsizashpszxlvpeb.supabase.co/rest/v1/rpc/ingest_server_chunk"
+   csstv_api_key "eyJ..."
+   csstv_server_token "csstv_..."
+   ```
+
+4. **Copialas ahora.** El token no se vuelve a mostrar. Si lo perdés, usá **Nuevo token** (el anterior deja de funcionar).
+
+## Paso 4. Instalar System2
+
+1. Descargá `system2.zip` de https://github.com/dordnung/System2/releases/tag/v3.3.2
+2. Copiá su contenido sobre `cstrike/addons/sourcemod/`:
+   - `extensions/system2.ext.so` (Linux) o `extensions/system2.ext.dll` (Windows)
+   - `data/system2/ca-bundle.crt` (necesario para HTTPS)
+3. Reiniciá el servidor y comprobá en la consola:
+
+   ```
+   sm exts list
+   ```
+
+   Tiene que aparecer **System2** sin error. Si no aparece o da error, seguí igual: el plugin funciona y deja los resultados en cola para el script del paso 7.
+
+## Paso 5. Instalar el plugin
+
+Copiá al servidor, respetando las carpetas:
+
+| Desde el repositorio | Al servidor |
+|---|---|
+| `server/addons/sourcemod/plugins/csstv_reporter.smx` | `cstrike/addons/sourcemod/plugins/` |
+| `server/cfg/sourcemod/csstv_reporter.cfg` | `cstrike/cfg/sourcemod/` |
+| `server/cfg/csstv/` (carpeta completa) | `cstrike/cfg/csstv/` |
+
+Editá `cstrike/cfg/sourcemod/csstv_reporter.cfg` y pegá las tres líneas del paso 3 en lugar de `PEGAR_ANON_KEY` y `PEGAR_TOKEN`.
+
+Ajustá `cfg/csstv/live.cfg` con tu config de mix habitual. **No cambies `mp_maxrounds`, `mp_winlimit` ni `mp_timelimit`**: el plugin los deja en 0 porque es el que decide cuándo termina la partida.
+
+## Paso 6. Verificar
+
+Reiniciá el servidor (o cambiá de mapa) y ejecutá en la consola:
+
+```
+sm plugins list            // debe figurar "CSSTV Match Reporter"
+sm_csstv_status            // estado, modo de envío y archivos en cola
+```
+
+`sm_csstv_status` debe mostrar `Envío: System2`. Si muestra otra cosa:
+
+| Mensaje | Qué hacer |
+|---|---|
+| `falta configurar csstv_api_url, csstv_api_key o csstv_server_token` | Revisá `csstv_reporter.cfg` y cambiá de mapa. |
+| `System2 no disponible` | La extensión no cargó: usá el paso 7. |
+| `desactivado (csstv_send 0…)` | Está configurado para usar el script de Python. |
+
+### Partida de prueba con bots
+
+Sirve para probar todo el circuito en pocos minutos. Escribí en la consola del servidor:
+
+```
+csstv_include_bots 1
+csstv_min_players 2
+csstv_maxrounds 4
+csstv_overtime 0
+bot_quota 4
+sm_live force
+```
+
+Dejá correr 3 o 4 rondas (o matá a los bots). Al terminar, en el chat aparece "Resultado enviado a CSSTV" y el mix figura en la web, en **Mixes**. Los bots no tienen SteamID, así que aparecen como "(sin perfil)". Después volvé a los valores normales:
+
+```
+csstv_include_bots 0
+csstv_min_players 8
+csstv_maxrounds 30
+csstv_overtime 1
+bot_quota 0
+```
+
+## Paso 7 (alternativa). Script de subida sin System2
+
+Si System2 no carga en v34, el plugin igual guarda cada resultado en `addons/sourcemod/data/csstv/queue/`. El script `csstv_uploader.py` los sube desde la misma máquina con Python 3.6 o superior.
+
+1. En `csstv_reporter.cfg` poné `csstv_send "0"`.
+2. Copiá `server/uploader/` a la máquina del servidor (por ejemplo `/home/srcds/csstv_uploader/`).
+3. Copiá `csstv_uploader.ini.example` como `csstv_uploader.ini` y completá:
+   - `api_base`: `https://wmzfwsizashpszxlvpeb.supabase.co` (sin `/rest/v1`)
+   - `api_key`: la misma anon key
+   - `server_token`: el token del paso 3
+   - `data_dir`: ruta completa a `cstrike/addons/sourcemod/data/csstv`
+4. Probalo una vez: `python3 csstv_uploader.py --config csstv_uploader.ini --once`
+
+Para dejarlo siempre activo en **Linux** (systemd), creá `/etc/systemd/system/csstv-uploader.service`:
+
+```ini
+[Unit]
+Description=CSSTV uploader
+After=network-online.target
+
+[Service]
+User=srcds
+WorkingDirectory=/home/srcds/csstv_uploader
+ExecStart=/usr/bin/python3 csstv_uploader.py --config csstv_uploader.ini
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+sudo systemctl enable --now csstv-uploader
+journalctl -u csstv-uploader -f
+```
+
+En **Windows**, creá una tarea en el Programador de tareas que ejecute cada minuto:
+`python csstv_uploader.py --config csstv_uploader.ini --once`
+
+No uses el script y System2 a la vez sobre la misma cola.
+
+---
+
+## Uso diario
+
+### Flujo de una partida
+
+1. **Calentamiento.** Al cargar el mapa se ejecuta `cfg/csstv/warmup.cfg`. Cada 30 segundos el chat recuerda quién falta.
+2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede forzarlo con `!live`.
+3. **LO3.** Se ejecuta `cfg/csstv/live.cfg` y tres reinicios. Al empezar, **Equipo A = CT** y **Equipo B = T**.
+4. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos, reinicia la ronda y mantiene el marcador.
+5. **Fin.** Gana el primero en llegar a 16. Con 15-15 se juega prórroga MR12 (configurable), con dinero `csstv_ot_startmoney`, hasta que haya ganador.
+6. **Envío.** El resultado se guarda en la cola y se envía. En el chat aparece "Resultado enviado a CSSTV". A los 15 segundos vuelve al calentamiento.
+
+Si se cambia de mapa a mitad de partida, la partida se descarta y no se envía.
+
+### Comandos
+
+| Comando | Quién | Qué hace |
+|---|---|---|
+| `!ready` / `!unready` | Jugadores | Marcarse listo o no listo |
+| `!score` | Todos | Marcador y ronda actual |
+| `!live` | Admin | Empieza si hay jugadores suficientes |
+| `!live force` | Admin | Empieza aunque falten jugadores |
+| `!cancelmatch` | Admin | Cancela la partida sin enviar nada |
+| `sm_csstv_status` | Consola / rcon | Estado, modo de envío, cola y último error |
+| `sm_csstv_flush` | Consola / rcon | Reintenta ahora los envíos pendientes |
+| `sm_csstv_retryfailed` | Consola / rcon | Devuelve a la cola los envíos rechazados |
+
+Para usar `!live` y `!cancelmatch`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
+
+```
+"STEAM_0:1:12345678"  "b"
+```
+
+### Vincular jugadores con su perfil
+
+Cada jugador se identifica por su **SteamID**. La primera vez que alguien juega, sus stats quedan guardadas sin perfil. Para asociarlas:
+
+- **Admin → Jugadores → SteamID sin vincular**: elegí el jugador y tocá **Vincular**, o **Crear jugador** si todavía no existe. Si el nick coincide con un jugador existente, ya viene seleccionado.
+- O en la ficha del jugador, completá el campo **SteamID** (acepta `STEAM_0:X:Y`, SteamID64 o el link del perfil).
+
+Al vincular, todos los mixes anteriores de ese SteamID pasan al perfil y las stats se recalculan.
+
+**Stats automáticas.** Rating, K/D, HS %, ADR, mapas, victorias y derrotas se calculan con los mixes del servidor. Si para algún jugador querés conservar valores cargados a mano, desmarcá **Stats automáticas** en su ficha. El rating es **HLTV Rating 1.0**.
+
+Para borrar un mix de prueba, abrilo en la web con la cuenta admin y usá **Borrar este mix**.
+
+---
+
+## Dónde quedan los archivos en el servidor
+
+```
+addons/sourcemod/data/csstv/
+├── queue/    pendientes de envío
+├── sent/     enviados (respaldo; se pueden borrar)
+└── failed/   rechazados por la web (token inválido o datos inválidos)
+```
+
+Los errores se registran en `addons/sourcemod/logs/errors_*.log` y los eventos normales en `addons/sourcemod/logs/L*.log`.
+
+## Solución de problemas
+
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| El chat dice "Enviando…" pero nunca "enviado" | Sin conexión o Supabase no responde | `sm_csstv_status` muestra el error. Se reintenta solo (hasta cada 15 min) o con `sm_csstv_flush`. |
+| Archivos en `failed/` con HTTP 401 | Token mal copiado o revocado | Generá un token nuevo en la web, actualizá `csstv_reporter.cfg`, cambiá de mapa y ejecutá `sm_csstv_retryfailed`. |
+| HTTP 404 en el envío | La migración no está aplicada o la URL está mal | Aplicá el paso 1. La URL debe terminar en `/rest/v1/rpc/ingest_server_chunk`. |
+| Error de SSL / certificado | Falta `data/system2/ca-bundle.crt` | Copialo desde el zip de System2. |
+| El mapa termina solo a las 30 rondas | Alguna config pone `mp_maxrounds` o `mp_timelimit` | Sacalos de `server.cfg`, `live.cfg` y la config de mix. |
+| La partida no empieza con `!ready` | Faltan jugadores o alguien no está listo | `!score` muestra cuántos están listos; un admin puede usar `!live`. |
+| Un jugador aparece siempre "(sin perfil)" | SteamID no vinculado o SteamID inválido | Vinculalo en Admin → Jugadores. Si su SteamID figura como `NOSTEAM:…`, el servidor no le asigna un SteamID válido y no se puede vincular. |
+| Stats del mismo jugador en registros distintos | El emulador del servidor le cambia el SteamID | Revisá la configuración del emulador no-Steam (RevEmu/ClientMod) para que el SteamID sea estable. |
+
+## Recompilar el plugin
+
+Solo hace falta si se modifica el código. Se necesita el compilador de SourceMod 1.8 (`addons/sourcemod/scripting/spcomp`) y el include de System2 (`scripting/include/system2.inc` y la carpeta `system2/` del mismo zip).
+
+```
+spcomp csstv_reporter.sp -i<sourcemod>/scripting/include -i<system2>/scripting/include -o../plugins/csstv_reporter.smx
+```
+
+## Detalles técnicos
+
+- **Envío en partes.** System2 limita el cuerpo de cada petición a 2048 bytes. El plugin codifica el resultado en base64 y lo manda en partes de 1400 caracteres a `ingest_server_chunk`. La base reconstruye el JSON cuando llega la última parte. El script de Python manda el JSON completo a `ingest_server_match`.
+- **Duplicados.** Cada partida tiene un `match_uid` único; si se envía dos veces, la web devuelve la misma partida.
+- **Seguridad.** El token se guarda en la base solo como hash SHA-256. Se puede revocar o cambiar desde Admin → Servidores sin tocar nada más.
+- **Daño y asistencias.** El daño de cada golpe se limita a la vida que le quedaba a la víctima (para el ADR). Una asistencia es para el compañero que más daño le hizo a la víctima, si supera `csstv_assist_damage`.
+- **Mixes en la web.** Cada mix crea dos equipos temporales (`kind = 'mix'`) que no aparecen en Equipos ni en el Ranking. En los mixes, el marcador guarda rondas (16-12), no mapas.

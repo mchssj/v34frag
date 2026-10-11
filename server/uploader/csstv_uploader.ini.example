@@ -1,0 +1,14 @@
+; Copiá este archivo como csstv_uploader.ini y completá los valores.
+[csstv]
+; URL base del proyecto Supabase (sin /rest/v1)
+api_base = https://wmzfwsizashpszxlvpeb.supabase.co
+; Anon key pública (la misma de config.js de la web)
+api_key = PEGAR_ANON_KEY
+; Token del servidor creado en la web: Admin > Servidores
+server_token = PEGAR_TOKEN
+; Carpeta data/csstv del servidor (contiene queue/, sent/ y failed/)
+data_dir = /home/srcds/css/cstrike/addons/sourcemod/data/csstv
+; Segundos entre revisiones de la cola
+interval_seconds = 30
+; Archivo de log (opcional)
+log_file = /home/srcds/csstv_uploader.log
