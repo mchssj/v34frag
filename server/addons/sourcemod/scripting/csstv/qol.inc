@@ -1,7 +1,8 @@
 /**
  * Mejoras de calidad de vida durante el mix:
- * marcador estable, encabezado de ronda, reporte de daño, plata del equipo,
- * !hp, pausa táctica y demo automática.
+ * marcador estable (rondas de cada equipo y kills/muertes de cada jugador),
+ * encabezado de ronda, reporte de daño, plata del equipo, !hp, pausa táctica
+ * y demo automática.
  */
 
 #if defined _csstv_qol_included
@@ -44,6 +45,12 @@ Handle g_hPauseTimer;
 
 // Demo
 bool g_bRecording;
+
+// Kills y muertes del scoreboard (por registro de jugador, es decir por SteamID)
+int g_iBoardFrags[MAX_REC];
+int g_iBoardDeaths[MAX_REC];
+bool g_bBoardSaved[MAX_REC];
+bool g_bBoardPending[MAXPLAYERS + 1];   // se reconectó: restaurar al reaparecer
 
 void Qol_Init()
 {
@@ -135,6 +142,7 @@ void Qol_Reset()
 	g_iPausesUsed[1] = 0;
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
+	Board_Reset();
 }
 
 // ---------------------------------------------------------------------------
@@ -159,6 +167,88 @@ public Action Timer_ScoreSync(Handle timer)
 	LogMessage("[marcador] CT %d - %d T (A %d - %d B, A juega de %s)", GetTeamScore(TEAM_CT), GetTeamScore(TEAM_T),
 		g_iTotA, g_iTotB, g_iSideA == TEAM_CT ? "CT" : "T");
 #endif
+	return Plugin_Stop;
+}
+
+/*
+ * Kills y muertes de cada jugador en el scoreboard. mp_restartgame (medio tiempo y
+ * prórroga) las pone en 0, y quien se reconecta también empieza en 0. Se guardan
+ * los valores del scoreboard (no los del plugin, que no restan teamkills) al
+ * terminar cada ronda, antes de cada reinicio y al desconectarse, y se devuelven
+ * después del reinicio o cuando el que se reconectó reaparece.
+ */
+
+bool MatchRunning()
+{
+	return g_State == State_Live || g_State == State_Halftime;
+}
+
+void Board_Reset()
+{
+	for (int r = 0; r < MAX_REC; r++)
+		g_bBoardSaved[r] = false;
+	for (int i = 0; i <= MaxClients; i++)
+		g_bBoardPending[i] = false;
+}
+
+void Board_SaveClient(int client)
+{
+	// Quien se reconectó y todavía no reapareció tiene 0: no pisar lo guardado.
+	if (!MatchRunning() || g_bBoardPending[client] || !IsClientInGame(client) || !IsTeamSide(GetClientTeam(client)))
+		return;
+	int rec = Stats_GetRec(client);
+	if (rec < 0)
+		return;
+	g_iBoardFrags[rec] = GetClientFrags(client);
+	g_iBoardDeaths[rec] = GetClientDeaths(client);
+	g_bBoardSaved[rec] = true;
+}
+
+void Board_SaveAll()
+{
+	for (int i = 1; i <= MaxClients; i++)
+		Board_SaveClient(i);
+}
+
+void Board_Restore(int client)
+{
+	g_bBoardPending[client] = false;
+	int rec = Stats_GetRec(client);
+	if (rec < 0 || !g_bBoardSaved[rec])
+		return;
+	SetEntProp(client, Prop_Data, "m_iFrags", g_iBoardFrags[rec]);
+	SetEntProp(client, Prop_Data, "m_iDeaths", g_iBoardDeaths[rec]);
+#if defined CSSTV_DEBUG
+	LogMessage("[scoreboard] %N: %d kills / %d muertes restaurados", client, g_iBoardFrags[rec], g_iBoardDeaths[rec]);
+#endif
+}
+
+/** Al entrar al servidor con la partida en curso. */
+void Board_OnClientPut(int client)
+{
+	g_bBoardPending[client] = MatchRunning();
+}
+
+/** Al reaparecer: si se había reconectado, recupera sus kills y muertes. */
+void Board_OnSpawn(int client)
+{
+	if (g_bBoardPending[client] && MatchRunning())
+		Board_Restore(client);
+}
+
+/** Después del reinicio del medio tiempo o de la prórroga. */
+void Board_ScheduleRestoreAll()
+{
+	CreateTimer(0.3, Timer_BoardRestoreAll, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_BoardRestoreAll(Handle timer)
+{
+	if (!MatchRunning())
+		return Plugin_Stop;
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && IsTeamSide(GetClientTeam(i)))
+			Board_Restore(i);
 	return Plugin_Stop;
 }
 

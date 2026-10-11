@@ -35,6 +35,16 @@ El daño usa el mismo "daño real" que se envía a la web: el daño que pasa de 
 
 CS:S guarda su propio contador de victorias por lado. `mp_restartgame` lo pone en 0 y el juego lo vuelve a escribir en el scoreboard al terminar cada ronda. El plugin reaplica su marcador (`ApplyTeamScores`) 0.2 s después de cada `round_start` y `round_end`, siempre que no esté en calentamiento. El número de cada equipo va en el lado donde juega en ese momento.
 
+### Kills y muertes de cada jugador
+
+`mp_restartgame` (medio tiempo y prórroga) también pone en 0 las kills y muertes de cada jugador en el TAB, y quien se reconecta empieza en 0. El plugin guarda los valores **del scoreboard** (`GetClientFrags` / `GetClientDeaths`), asociados al registro del jugador (su SteamID):
+
+- al terminar cada ronda;
+- justo antes del cambio de lado y del reinicio de la prórroga, para incluir las kills de después del fin de la ronda y antes de la muerte que el juego anota al cambiar de equipo;
+- al desconectarse.
+
+Los devuelve (`m_iFrags` / `m_iDeaths`) 0.3 s después del reinicio, y al que se reconectó cuando reaparece. Mientras no reaparece no se pisa lo guardado. Se guardan los valores del scoreboard y no los del plugin porque el juego los calcula distinto (un teamkill resta una kill). Con `STEAM_ID_LAN`, la reconexión no se puede reconocer, porque el jugador vuelve con otro registro.
+
 ## Cambio de lado
 
 `ChangeClientTeam` deja al jugador sin clase y esperando elegir modelo. Los bots nunca eligen, así que no reaparecían y la ronda siguiente no terminaba nunca. Este error ya estaba en la 1.0.0. Ahora, después de `ChangeClientTeam`, el plugin:

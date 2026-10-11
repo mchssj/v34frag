@@ -169,11 +169,13 @@ public void OnClientPutInServer(int client)
 {
 	g_bReady[client] = false;
 	Stats_ClientReset(client);
+	Board_OnClientPut(client);
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_bReady[client] = false;
+	Board_SaveClient(client);
 	Stats_ClientLeave(client);
 }
 
@@ -461,6 +463,7 @@ void OnRestartsDone()
 	else
 	{
 		PrintToChatAll("%s ¡EN VIVO! Equipo A %d - %d Equipo B.", PREFIX, g_iTotA, g_iTotB);
+		Board_ScheduleRestoreAll();
 	}
 }
 
@@ -485,6 +488,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	else      { g_iSegB++; g_iTotB++; }
 	g_iSegRound++;
 	Stats_SnapshotRound(g_iTotA + g_iTotB);
+	Board_SaveAll();
 
 	int half = g_iSegLen / 2;
 	PrintToChatAll("%s Equipo A %d - %d Equipo B", PREFIX, g_iTotA, g_iTotB);
@@ -512,6 +516,7 @@ public Action Timer_Halftime(Handle timer)
 {
 	if (g_State != State_Halftime)
 		return Plugin_Stop;
+	Board_SaveAll();   // incluye las kills después del fin de la ronda; antes del cambio, que suma una muerte
 	SwapTeams();
 	BeginRestarts(1, PURPOSE_RESUME);
 	return Plugin_Stop;
@@ -542,6 +547,7 @@ public Action Timer_OvertimeStart(Handle timer)
 			g_iSavedStartMoney = money.IntValue;
 		money.IntValue = g_cvOtStartMoney.IntValue;
 	}
+	Board_SaveAll();
 	BeginRestarts(1, PURPOSE_RESUME);
 	return Plugin_Stop;
 }
@@ -669,7 +675,10 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0)
+	{
 		Stats_OnSpawn(client);
+		Board_OnSpawn(client);
+	}
 }
 
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)

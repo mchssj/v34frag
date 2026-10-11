@@ -76,6 +76,8 @@ El servidor se levantó en el puerto **27035**, porque ClientMod ocupa el 27015 
 | 14 | `csstv_demo_keep 2` | Borró los 6 demos más viejos |
 | 15 | Mix completo con medio tiempo y prórroga | Terminó 2-4 y guardó el resultado |
 | 16 | `CS_SwitchTeam` | **El servidor se cae**: no se usa |
+| 17 | Kills y muertes en el medio tiempo (agregado después, a pedido de Daniel) | Iguales antes y después del cambio para los 6 jugadores (por ejemplo Don 7/2, Keith 0/3) |
+| 18 | Reconexión a mitad del mix (bot sacado y vuelto a agregar con el mismo nombre) | Salió con 1/1 y recuperó 1/1 al reaparecer |
 
 ### Error encontrado y corregido
 
@@ -89,7 +91,7 @@ Servidor de prueba con `sv_lan 1`: con `sv_lan 0` la validación de Steam lo exp
 |---|---|
 | Daño, plata, encabezado y `!hp` | Llegan al jugador |
 | Mix con bots con SteamIDs falsos, enviado a la web | Llegó con ELO, después de crear un token nuevo para el servidor de prueba (el anterior daba HTTP 401) |
-| Marcador después del medio tiempo | Daniel vio que se reiniciaba. Del lado del servidor, `m_iScore` de cada equipo (lo que se envía al TAB) tiene el valor correcto. Falta ver qué muestra el TAB y si ClientMod tiene un marcador propio |
+| Marcador después del medio tiempo | Daniel vio que se reiniciaba: se refería también a las kills y muertes de cada jugador, que el plugin no restauraba. Se agregó (pruebas 17 y 18). Del lado del servidor, `m_iScore` de cada equipo (lo que se envía al TAB) tiene el valor correcto. Falta ver qué muestra el TAB y si ClientMod tiene un marcador propio |
 | Se le cortó el juego una vez | El servidor siguió normal según el log; fue el cliente (servidor y juego en la misma PC) |
 
 ## Pendiente: prueba con jugadores reales

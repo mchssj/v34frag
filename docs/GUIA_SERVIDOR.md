@@ -190,6 +190,7 @@ Al empezar cada ronda, en el freezetime, el chat muestra (cada parte se apaga co
 [CSSTV] s1mple $7.200 · fallen $5.900 · fer $4.100 · taco $3.350 · cold $800
 ```
 
+- El TAB mantiene el marcador de rondas y las **kills y muertes de cada jugador** después del medio tiempo, en la prórroga y cuando alguien se reconecta (con SteamID válido).
 - El encabezado avisa la **última ronda antes del cambio de lado** y el **match point**.
 - El daño cuenta solo a los rivales, con el daño real (sin pasar la vida que le quedaba) y la cantidad de golpes entre paréntesis.
 - Al morir, el chat te dice quién te mató, con qué arma y cuánta vida y chaleco le quedan (`csstv_hp_on_death`). `!hp` lo repite.
