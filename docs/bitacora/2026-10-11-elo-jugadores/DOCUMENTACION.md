@@ -13,7 +13,8 @@ Cada mix reportado por el servidor cambia el ELO de los jugadores que lo jugaron
 | Mínimos | El ganador suma al menos +1 y el perdedor resta al menos −1 |
 | Piso | El ELO nunca baja de 100 |
 | Empate | Resultado 0.5: solo cambia por la diferencia de probabilidad y el bonus |
-| Quién cuenta | SteamID64 válido y al menos 1 ronda jugada. Bots y "desconocido" no |
+| Quién recibe ELO | SteamID64 válido y al menos 1 ronda jugada |
+| Quién cuenta en la fuerza del equipo | Todos los que jugaron al menos 1 ronda. Los que no tienen SteamID64 (`STEAM_ID_LAN`, `NOSTEAM:…`, bots) cuentan como un jugador nuevo (μ 25, σ 8.33) y no reciben ELO (desde `20261011200000`) |
 
 `resultado` vale 1 si ganó, 0.5 si empató y 0 si perdió. El rating es el HLTV 1.0 que ya calcula `csstv_rating` para cada jugador en cada mix.
 
@@ -33,6 +34,8 @@ flowchart LR
 ```
 c = √( Σ (β² + σ² + τ²) de todos los jugadores )      β = 25/6, τ = 25/300
 ```
+
+La fuerza es una **suma**, así que un equipo con un jugador más es favorito: en un 4 contra 3 entre jugadores nuevos, el de 4 tiene un 84,5 % de probabilidad: si gana suma +9 y si pierde resta −51 (sin bonus).
 
 Después del mix, TrueSkill mueve `μ` hacia el resultado (más cuanto mayor es `σ`) y reduce `σ`. En un empate `μ` no cambia. Por eso los jugadores nuevos dejan de ser "parejos" rápido: después de un 16‑10 entre jugadores nuevos, el ganador pasa a tener ~74 % de probabilidad en la revancha y, si vuelve a ganar, recibe +12 a +15.
 
