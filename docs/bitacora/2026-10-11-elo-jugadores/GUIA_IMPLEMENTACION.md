@@ -5,6 +5,7 @@
 | Paso | Estado |
 |---|---|
 | Migración SQL | Hecha y probada en local |
+| Migración `20261011200000` (jugadores sin SteamID) | Aplicada en Supabase el 2026-10-11; **falta correr `select elo_recompute_all();`** |
 | Web (`index.html`) | Hecha. Sintaxis verificada; sin prueba en navegador |
 | Despliegue en Supabase | **Pendiente** |
 | `docs/MODELO_DATOS.md` y `docs/FUNCIONALIDADES.md` | Actualizados |
@@ -14,6 +15,7 @@
 
 | Archivo | Cambio |
 |---|---|
+| `supabase/migrations/20261011200000_elo_jugadores_sin_steamid.sql` | Nuevo (posterior). Redefine `elo_apply_match` para contar a los jugadores sin SteamID64 en la fuerza de su equipo. |
 | `supabase/migrations/20261011180000_player_elo.sql` | Nuevo. Tabla `player_elo`, columnas de ELO en `match_player_stats`, funciones y permisos. Redefine `ingest_server_chunk` e `ingest_server_match`. |
 | `index.html` | CSS de la insignia (`.lvl`, `.nb`, `.eu`, `.ed`), helpers de ELO, carga de `player_elo`, vistas de jugadores, perfil y mix, botón de admin. |
 | `docs/MODELO_DATOS.md`, `docs/FUNCIONALIDADES.md` | Sección de ELO, `player_elo` en el diagrama, sección Mixes, columnas de Jugadores y panel Servidores. |
@@ -83,6 +85,8 @@ Resultado de la última ejecución (2026-10-11): las 10 pruebas pasan.
 | T8 | Usuario que no es admin | Rechazado (42501) |
 | T9 | No favorito extremo gana; piso | +60, sin NaN; piso de 100 |
 | T10 | Permisos | `anon` solo lee `player_elo` |
+| T11 | 3v3 con un jugador sin SteamID | 50 %, ±30; el sin SteamID no recibe ELO |
+| T12 | 4v3 (el mix de bots del 2026-10-11) | Favorito 84,5 % (antes 98,6 %); −51 / +51 (antes −64 / +54) |
 
 Web: `node --check` sobre los scripts de `index.html` y prueba de los límites de `lvlOf` (500 → 1, 501 → 2, 1000 → 4, 2000 → 9, 2001 → 10).
 
@@ -112,6 +116,16 @@ Después, volver a ejecutar `20261011120000_csstv_match_reporter.sql` (es re-eje
 | Borrar un mix no revierte el ELO | Borrarlo desde la web llama a `elo_recompute_all` | Evita que el admin olvide recalcular. Si se borra por SQL, hay que recalcular a mano. |
 | `mu` y `sigma` como numeric | double precision | Los cálculos de TrueSkill usan `exp` y `sqrt` en double precision. |
 | Insignia en el scoreboard | Usa `elo_before` (nivel al jugar ese mix) | Igual que en FACEIT: el scoreboard muestra el nivel con que se jugó. |
+
+## Cambio posterior: jugadores sin SteamID (2026-10-11)
+
+**Problema.** En la prueba con bots en el servidor de Daniel, un jugador con `STEAM_ID_LAN` no contó en la fuerza de su equipo. Un 4 contra 3 se calculó como 4 contra 2: el equipo de 4 quedó con un 98,6 % de probabilidad, perdió −64 y el otro ganó +54.
+
+**Arreglo.** La migración `20261011200000_elo_jugadores_sin_steamid.sql` cuenta a esos jugadores como un jugador nuevo (μ 25, σ 8.33) para la probabilidad, sin darles ni guardarles ELO.
+
+**Para aplicarla:**
+1. Supabase → SQL Editor → pegar `supabase/migrations/20261011200000_elo_jugadores_sin_steamid.sql` → Run.
+2. `select elo_recompute_all();`, para recalcular los mixes que ya tienen ELO con la regla nueva.
 
 ## Observaciones
 

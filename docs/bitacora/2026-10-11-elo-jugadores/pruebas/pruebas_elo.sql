@@ -125,3 +125,39 @@ do $$ begin
   then raise exception 'T10 falla'; end if;
   raise notice 'T10 OK: permisos';
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Migración 20261011200000: jugadores sin SteamID64 cuentan en la fuerza del equipo
+-- ---------------------------------------------------------------------------
+create function t_mix(uid text, a text[], b text[], win int) returns uuid language plpgsql as $$
+declare t1 uuid; t2 uuid; mid uuid; x text; begin
+  insert into teams(name,kind) values ('A','mix') returning id into t1;
+  insert into teams(name,kind) values ('B','mix') returning id into t2;
+  insert into matches(kind,status,team1,team2,winner,external_id,played_at)
+  values ('mix','finished',t1,t2,case win when 1 then t1 when 2 then t2 end,uid,now()) returning id into mid;
+  foreach x in array a loop insert into match_player_stats(match_id,steam_id,team,rounds,rating) values (mid,x,1,24,1.0); end loop;
+  foreach x in array b loop insert into match_player_stats(match_id,steam_id,team,rounds,rating) values (mid,x,2,24,1.0); end loop;
+  perform elo_apply_match(mid); return mid; end $$;
+
+-- T11: 3 contra 3, uno de ellos sin SteamID -> parejo (50 %), ±30; el NOSTEAM no recibe ELO
+do $$ declare mid uuid := t_mix('man-0011',
+   array['76561198600000001','76561198600000002','76561198600000003'],
+   array['76561198600000004','76561198600000005','NOSTEAM:10'], 2);
+  bad int; begin
+  select count(*) into bad from match_player_stats where match_id=mid and steam_id like '7656%'
+     and (win_prob <> 0.5 or abs(elo_delta) <> 30);
+  if bad > 0 or exists (select 1 from match_player_stats where match_id=mid and steam_id='NOSTEAM:10' and elo_after is not null)
+     or exists (select 1 from player_elo where steam_id='NOSTEAM:10') then raise exception 'T11 falla'; end if;
+  raise notice 'T11 OK: 3v3 con un jugador sin SteamID da ±30 y él no recibe ELO';
+end $$;
+
+-- T12: el mix real de la prueba con bots (4 contra 2 + 1 sin SteamID, gana el de 3)
+do $$ declare mid uuid := t_mix('man-0012',
+   array['76561198700000001','76561198700000002','76561198700000003','76561198700000004'],
+   array['76561198700000005','76561198700000006','NOSTEAM:10'], 2);
+  p numeric; d1 int; d2 int; begin
+  select win_prob, elo_delta into p, d1 from match_player_stats where match_id=mid and team=1 limit 1;
+  select elo_delta into d2 from match_player_stats where match_id=mid and team=2 and steam_id like '7656%' limit 1;
+  if p not between 0.80 and 0.90 then raise exception 'T12 falla: p=%', p; end if;
+  raise notice 'T12 OK: 4v3 -> favorito %  (antes 0.9858); cambios % / +%', p, d1, d2;
+end $$;
