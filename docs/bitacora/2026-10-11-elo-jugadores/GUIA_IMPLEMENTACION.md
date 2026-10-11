@@ -5,9 +5,9 @@
 | Paso | Estado |
 |---|---|
 | Migración SQL | Hecha y probada en local |
-| Migración `20261011200000` (jugadores sin SteamID) | Aplicada en Supabase el 2026-10-11; **falta correr `select elo_recompute_all();`** |
+| Migración `20261011200000` (jugadores sin SteamID) | Aplicada en Supabase y `elo_recompute_all()` corrido el 2026-10-11 |
 | Web (`index.html`) | Hecha. Sintaxis verificada; sin prueba en navegador |
-| Despliegue en Supabase | **Pendiente** |
+| Despliegue en Supabase | Hecho (2026-10-11) |
 | `docs/MODELO_DATOS.md` y `docs/FUNCIONALIDADES.md` | Actualizados |
 | Commit | Hecho (rama `csstv-reporter`) |
 
