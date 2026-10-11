@@ -1,2 +1,2 @@
-// Completá estos dos datos UNA sola vez. Las páginas los leen de acá.
+// supabase
 var CFG={url: 'https://wmzfwsizashpszxlvpeb.supabase.co' ,key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtemZ3c2l6YXNocHN6eGx2cGViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNjU2NzQsImV4cCI6MjEwNjc0MTY3NH0.QO9osfgwKAXTi9wzOHb68JjGYYHFbHRejtu9b3ZUEP4'};
