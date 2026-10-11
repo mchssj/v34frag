@@ -45,8 +45,14 @@ int g_iClientRec[MAXPLAYERS + 1];
 // Datos de la ronda en curso
 int g_iRoundKills[MAXPLAYERS + 1];
 int g_iRoundDmg[MAXPLAYERS + 1][MAXPLAYERS + 1];   // [atacante][víctima]
+int g_iRoundHits[MAXPLAYERS + 1][MAXPLAYERS + 1];  // [atacante][víctima]
 int g_iLastHealth[MAXPLAYERS + 1];
 bool g_bFirstKillDone;
+
+// Daño de la ronda anterior (para el reporte al empezar la ronda)
+int g_iPrevDmg[MAXPLAYERS + 1][MAXPLAYERS + 1];
+int g_iPrevHits[MAXPLAYERS + 1][MAXPLAYERS + 1];
+int g_iPrevRound;          // número de la ronda guardada; 0 = no hay
 
 // Registro de rondas
 int g_iRoundLogCount;
@@ -65,6 +71,7 @@ void Stats_Reset()
 	g_hRecIndex.Clear();
 	g_iRecCount = 0;
 	g_iRoundLogCount = 0;
+	g_iPrevRound = 0;
 	for (int r = 0; r < MAX_REC; r++)
 	{
 		for (int s = 0; s < ST_COUNT; s++)
@@ -86,6 +93,12 @@ void Stats_ClientReset(int client)
 	{
 		g_iRoundDmg[client][i] = 0;
 		g_iRoundDmg[i][client] = 0;
+		g_iRoundHits[client][i] = 0;
+		g_iRoundHits[i][client] = 0;
+		g_iPrevDmg[client][i] = 0;
+		g_iPrevDmg[i][client] = 0;
+		g_iPrevHits[client][i] = 0;
+		g_iPrevHits[i][client] = 0;
 	}
 }
 
@@ -113,7 +126,18 @@ int Stats_GetRec(int client)
 	{
 		if (!g_cvIncludeBots.BoolValue)
 			return -1;
+#if defined CSSTV_DEBUG
+		// Solo en la compilación de pruebas: SteamID falso y estable por nombre de bot,
+		// para que la web les aplique ELO. Rango STEAM_0:x:9990xxxxx, fácil de reconocer.
+		char botName[MAX_NAME_LENGTH];
+		GetClientName(client, botName, sizeof(botName));
+		int h = 5381;
+		for (int i = 0; botName[i] != '\0'; i++)
+			h = ((h << 5) + h + botName[i]) & 0x7FFFFFFF;
+		Format(key, sizeof(key), "STEAM_0:%d:%d", h & 1, 999000000 + (h >> 1) % 100000);
+#else
 		Format(key, sizeof(key), "BOT:%d", GetClientUserId(client));
+#endif
 	}
 	else if (!GetClientAuthId(client, AuthId_Steam2, key, sizeof(key), g_cvValidateId.BoolValue)
 		|| StrContains(key, "STEAM_ID", false) == 0 || StrContains(key, "STEAM_", false) != 0)
@@ -151,8 +175,27 @@ void Stats_RoundStart()
 		g_iRoundKills[i] = 0;
 		g_iLastHealth[i] = 100;
 		for (int j = 0; j <= MaxClients; j++)
+		{
 			g_iRoundDmg[i][j] = 0;
+			g_iRoundHits[i][j] = 0;
+		}
 	}
+}
+
+/**
+ * Guarda el daño de la ronda que terminó para mostrarlo al empezar la siguiente.
+ */
+void Stats_SnapshotRound(int roundNumber)
+{
+	for (int i = 0; i <= MaxClients; i++)
+	{
+		for (int j = 0; j <= MaxClients; j++)
+		{
+			g_iPrevDmg[i][j] = g_iRoundDmg[i][j];
+			g_iPrevHits[i][j] = g_iRoundHits[i][j];
+		}
+	}
+	g_iPrevRound = roundNumber;
 }
 
 void Stats_OnSpawn(int client)
@@ -177,6 +220,8 @@ void Stats_OnHurt(int victim, int attacker, int dmgHealth, int healthLeft, bool 
 	if (GetClientTeam(attacker) == GetClientTeam(victim))
 		return;
 	g_iRoundDmg[attacker][victim] += real;
+	if (real > 0)
+		g_iRoundHits[attacker][victim]++;
 	Stats_Add(attacker, ST_DAMAGE, real);
 }
 
