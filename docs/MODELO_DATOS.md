@@ -24,6 +24,8 @@ erDiagram
   players ||--o{ player_medals : player_id
   players ||--o{ player_map_stats : player_id
   players ||--o{ profile_requests : player_id
+  players |o--o| player_elo : steam_id
+  player_elo ||--o{ match_player_stats : steam_id
 ```
 
 ## Tablas confirmadas
@@ -215,6 +217,19 @@ Cambios para recibir los mixes del servidor. Detalle de instalación en [GUIA_SE
 | `link_steam_id(steam, player)` | Admin: vincula o desvincula (`player = null`) y traslada los mixes anteriores. |
 | `create_server_token(name)`, `rotate_server_token(server)` | Admin: alta de servidor y cambio de token. |
 | `recompute_player_stats(player)` | Recalcula rating (HLTV 1.0), K/D, HS %, ADR, mapas, victorias y derrotas. |
+
+## ELO de jugadores (migración `20261011180000_player_elo.sql`)
+
+Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadores/DOCUMENTACION.md).
+
+| Objeto | Cambio |
+|---|---|
+| `player_elo` | Nueva. `steam_id` (PK, SteamID64) · `elo` int (`1000`, ≥ 100) · `peak_elo` int (`1000`) · `mu` (`25`) y `sigma` (`8.333`) double precision (TrueSkill) · `matches` int (`0`) · `updated_at`. RLS: lectura pública, sin escritura directa. Se une a `players` por `steam_id`. |
+| `match_player_stats` | `elo_before`, `elo_after`, `elo_delta` int y `win_prob` numeric (probabilidad de victoria de su equipo). `null` si el jugador no contó. |
+| `elo_apply_match(match)` | Interna. Aplica un mix terminado: TrueSkill para la probabilidad, ±30 base, bonus ±5 por rating, piso 100. Idempotente. Bloquea el mix y las filas de `player_elo`. |
+| `elo_recompute_all()` | Admin (o SQL Editor). Reinicia `player_elo` y aplica todos los mixes por `played_at`. Devuelve la cantidad. |
+| `ingest_server_chunk`, `ingest_server_match` | Redefinidas: después de `csstv_ingest` llaman a `elo_apply_match`. |
+| `csstv_ncdf(x)`, `csstv_npdf(x)` | Normal acumulada y densidad. |
 
 ## Pendiente de confirmar
 

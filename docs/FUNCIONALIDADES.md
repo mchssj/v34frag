@@ -19,13 +19,15 @@
 | **Torneos** | Listado; al entrar: información, posiciones (si hay fase de grupos), bracket, equipos y partidas. El dueño de un equipo puede inscribirse o cancelar mientras el torneo esté en *Inscripciones*, sin fixture generado y con cupo. |
 | **PCW** | Búsqueda de prácticas entre equipos (ver más abajo). |
 | **Palmarés** | Torneos finalizados con premio y campeón. |
+| **Mixes** | Mixes reportados por el servidor CS:S, con scoreboard por jugador (K, D, A, HS %, ADR, rating y cambio de ELO). Ver [GUIA_SERVIDOR.md](GUIA_SERVIDOR.md). |
 | **Ranking** | Equipos ordenados por puntos (3 por victoria) usando partidas oficiales terminadas sin empate. |
 | **Equipos** | Grilla de equipos, plantel con stats; formulario para solicitar un equipo y panel "Mi capitanía". |
-| **Jugadores** | Lista paginada y buscable ordenada por rating. Cada jugador tiene perfil con pestañas Info, Equipos, Partidas, Logros y Mapas. |
+| **Jugadores** | Lista paginada y buscable ordenada por **ELO** (luego por cantidad de mixes), con el nivel 1–10. Cada jugador tiene perfil con pestañas Info, Equipos, Partidas, Logros y Mapas. |
 
 ### Perfil de jugador
 
 - Datos cargados por el admin: rating, K/D, HS %, ADR, mapas, victorias/derrotas, historial de equipos, logros, biografía, medallas y stats por mapa.
+- **ELO**: nivel, ELO actual y máximo en la cabecera; barra de progreso al siguiente nivel; cambio de ELO de cada mix en Partidas.
 - Si el jugador está vinculado a una cuenta, se suman los datos que el usuario edita (país con bandera, nombre real, rol, Steam, FACEIT, Discord, avatar).
 - **Privacidad** (`public`, `members`, `private`): oculta el cuerpo del perfil a visitantes o a todos salvo el dueño y los admins. *Ojo:* el filtro se aplica en el navegador (ver [SEGURIDAD.md](SEGURIDAD.md)).
 
@@ -111,6 +113,24 @@ stateDiagram-v2
 
 Las PCW no cuentan para el ranking ni aparecen en Partidas/Resultados; tienen su propia lista de "Prácticas recientes".
 
+## ELO de jugadores
+
+Cada mix terminado cambia el ELO de quienes lo jugaron. Todos empiezan en **1000** y los niveles son los de FACEIT (1–10).
+
+```mermaid
+flowchart LR
+  A[Mix reportado] --> B["Probabilidad de ganar<br/>TrueSkill"]
+  B --> C["± hasta 60 según resultado<br/>(±30 con equipos parejos)"]
+  C --> D["Bonus ±5 por rating HLTV"]
+  D --> E["ELO nuevo (mínimo 100)"]
+```
+
+- Solo cuentan los mixes; las partidas oficiales y las PCW no.
+- El ELO se guarda por SteamID: los jugadores sin perfil también acumulan y, al vincular su SteamID, el perfil lo hereda.
+- El admin puede **Recalcular ELO** desde *Admin → Servidores*. Borrar un mix desde la web recalcula el ELO de todos.
+
+Detalle de reglas, fórmulas y niveles: [bitácora del ELO](bitacora/2026-10-11-elo-jugadores/DOCUMENTACION.md).
+
 ## Chat de partida
 
 En el detalle de cada partida, cualquier usuario logueado puede escribir (máx. 200 caracteres). Se muestran los últimos 50 mensajes y se actualiza por *polling* cada 5 s.
@@ -123,3 +143,4 @@ En el detalle de cada partida, cualquier usuario logueado puede escribir (máx. 
 | **Jugadores** (`#padm`) | CRUD de jugadores con foto (bucket `photos`), stats, privacidad y cuenta vinculada; otorgar/quitar medallas; stats por mapa. |
 | **Equipos** (`#tadm`) | Aprobar/rechazar solicitudes; CRUD de equipos, capitán y plantel (un jugador no puede estar en dos equipos desde este selector). |
 | **Verificaciones** (`#vadm`) | Buscar y filtrar solicitudes de reclamo de perfil; aprobar, rechazar, revocar o borrar. |
+| **Servidores** (`#sadm`) | Alta de servidores de juego y sus tokens, revocar/reactivar, y **Recalcular ELO**. |
