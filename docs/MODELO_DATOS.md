@@ -198,6 +198,24 @@ Todas las que modifican datos son `SECURITY DEFINER` con `search_path = public`.
 | `photos` | `p<base36 ts>` | Pública | Admin | Admin |
 | `proofs` | `<match_id>/<user_id>-<ts>-<i>.jpg` | Pública | Capitán de la partida, si no terminó | Admin |
 
+## Match Reporter (migración `20261011120000_csstv_match_reporter.sql`)
+
+Cambios para recibir los mixes del servidor. Detalle de instalación en [GUIA_SERVIDOR.md](GUIA_SERVIDOR.md).
+
+| Objeto | Cambio |
+|---|---|
+| `matches.kind`, `teams.kind` | Nuevo valor `mix`. Cada mix crea dos equipos `mix` temporales; `score1/score2` guardan **rondas**. |
+| `matches` | `external_id` (UNIQUE, `match_uid` del plugin) y `server_id`. |
+| `players` | `steam_id` (SteamID64, UNIQUE) y `stats_auto` (recalcular stats desde los mixes). |
+| `match_player_stats` | `player_id`, `nick`, `rounds`, `k1`–`k5`, `first_kills`, `first_deaths`, `plants`, `defuses`, `teamkills`, `suicides`, `rating`; UNIQUE (`match_id`, `steam_id`); FK a `matches` con borrado en cascada; RLS (lectura pública, escritura admin). |
+| `game_servers` | Servidores autorizados: `name`, `token_hash` (SHA-256), `active`, `last_seen_at`. Solo admin. |
+| `ingest_chunks` | Partes en tránsito del envío; sin acceso directo. |
+| `ingest_server_chunk(token, uid, part, total, data)` | Recibe el resultado en partes base64 (plugin). Devuelve el id de la partida al completar. |
+| `ingest_server_match(token, payload)` | Recibe el resultado completo (script de Python). |
+| `link_steam_id(steam, player)` | Admin: vincula o desvincula (`player = null`) y traslada los mixes anteriores. |
+| `create_server_token(name)`, `rotate_server_token(server)` | Admin: alta de servidor y cambio de token. |
+| `recompute_player_stats(player)` | Recalcula rating (HLTV 1.0), K/D, HS %, ADR, mapas, victorias y derrotas. |
+
 ## Pendiente de confirmar
 
 - En qué tablas está **habilitado** RLS (las políticas no se aplican si RLS está deshabilitado).

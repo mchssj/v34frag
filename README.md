@@ -12,6 +12,8 @@ Es una **SPA estática** (HTML + CSS + JavaScript vanilla en un solo archivo) qu
 | `config.js` | URL del proyecto Supabase y su *anon key* pública (`window.CFG`). |
 | `.htaccess` | Reescritura Apache: cualquier ruta inexistente sirve `index.html`. |
 | `docs/` | Documentación técnica (ver abajo). |
+| `server/` | Plugin de SourceMod para el servidor CS:S v34 (código, `.smx` compilado, cfgs) y script alternativo de subida. |
+| `supabase/migrations/` | Cambios de base de datos que hay que aplicar en Supabase. |
 
 ## Puesta en marcha local
 
@@ -48,3 +50,4 @@ Cualquier hosting estático sirve (Apache, Nginx, Netlify, GitHub Pages, etc.). 
 - [Funcionalidades](docs/FUNCIONALIDADES.md): qué hace cada sección y los flujos clave (torneos, veto, reportes, PCW, verificación de perfiles).
 - [Modelo de datos](docs/MODELO_DATOS.md): tablas, funciones RPC y buckets de Supabase que usa el front.
 - [Seguridad y observaciones técnicas](docs/SEGURIDAD.md): roles, RLS esperado y deuda técnica detectada.
+- [Guía del servidor (Match Reporter)](docs/GUIA_SERVIDOR.md): instalación y uso del plugin que envía los mixes del servidor a la web.
