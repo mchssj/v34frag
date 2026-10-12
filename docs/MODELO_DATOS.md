@@ -62,7 +62,7 @@ erDiagram
 | `next_win`, `next_lose` | uuid | sí | | Partida destino de ganador / perdedor |
 | `next_win_slot`, `next_lose_slot` | int | sí | | 1 o 2 |
 | `best_of` | int | no | `1` | |
-| `status` | text | no | `'upcoming'` | `upcoming` \| `live` \| `finished` |
+| `status` | text | no | `'upcoming'` | `upcoming` \| `live` \| `finished` \| `cancelled` (mixes cancelados; check `matches_status_check`) |
 | `score1`, `score2` | int | sí | | Mapas ganados de la serie |
 | `maps` | jsonb | sí | | `[{map, r1, r2}]` |
 | `winner` | uuid | sí | | |
@@ -212,6 +212,10 @@ Cambios para recibir los mixes del servidor. Detalle de instalación en [GUIA_SE
 | `match_player_stats` | `player_id`, `nick`, `rounds`, `k1`–`k5`, `first_kills`, `first_deaths`, `plants`, `defuses`, `teamkills`, `suicides`, `rating`; UNIQUE (`match_id`, `steam_id`); FK a `matches` con borrado en cascada; RLS (lectura pública, escritura admin). |
 | `game_servers` | Servidores autorizados: `name`, `token_hash` (SHA-256), `active`, `last_seen_at`. Solo admin. |
 | `ingest_chunks` | Partes en tránsito del envío; sin acceso directo. |
+| `matches` (demos y canceladas) | `cancel_reason` (`admin`, `map_change`, `abandoned`), `cancelled_by`, `demo_status` (`none`, `pending`, `uploaded`, `missing`, `expired`), `demo_key` (ruta en R2), `demo_size`, `demo_attempts`, `demo_uploaded_at`. Migraciones `20261012120000` y `20261012140000`. |
+| `game_servers.panel_server_id` | Id del servidor en el panel Pterodactyl; el Worker de demos baja de ahí. |
+| `demo_workers` | Tokens del Worker de demos (solo hash). Solo admin. |
+| `demo_pending(token, limit)`, `demo_mark(token, uid, result, key, size)`, `demo_expire(token, days)` | Las usa el Worker de Cloudflare: partidas con demo por subir, resultado de cada intento (`uploaded` o `retry`; a los 6 reintentos `missing`) y vencimiento. |
 | `ingest_server_chunk(token, uid, part, total, data)` | Recibe el resultado en partes base64 (plugin). Devuelve el id de la partida al completar. |
 | `ingest_server_match(token, payload)` | Recibe el resultado completo (script de Python). |
 | `link_steam_id(steam, player)` | Admin: vincula o desvincula (`player = null`) y traslada los mixes anteriores. |
