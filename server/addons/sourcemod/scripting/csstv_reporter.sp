@@ -22,8 +22,11 @@
 #include <system2>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.1.0"
-#define PREFIX "\x04[CSSTV]\x01"
+#define PLUGIN_VERSION "1.2.0"
+// Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
+char g_sTag[32] = "v34frag";
+char g_sPrefix[48] = "\x04[v34frag]\x01";
+#define PREFIX g_sPrefix
 
 #define TEAM_SPEC 1
 #define TEAM_T 2
@@ -92,6 +95,13 @@ Handle g_hReadyTimer;
 #include "csstv/queue.inc"
 #include "csstv/http.inc"
 #include "csstv/qol.inc"
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	// API de ClientMod (clientmod.smx): opcional, para saber quién acepta colores RGB.
+	MarkNativeAsOptional("CM_GetClientModAuth");
+	return APLRes_Success;
+}
 
 public void OnPluginStart()
 {
@@ -187,12 +197,12 @@ public Action Cmd_Live(int client, int args)
 {
 	if (!g_cvEnabled.BoolValue)
 	{
-		ReplyToCommand(client, "[CSSTV] El plugin está desactivado (csstv_enabled 0).");
+		ReplyToCommand(client, "[%s] El plugin está desactivado (csstv_enabled 0).", g_sTag);
 		return Plugin_Handled;
 	}
 	if (g_State != State_Warmup)
 	{
-		ReplyToCommand(client, "[CSSTV] Ya hay una partida en curso.");
+		ReplyToCommand(client, "[%s] Ya hay una partida en curso.", g_sTag);
 		return Plugin_Handled;
 	}
 	char arg[16];
@@ -201,7 +211,7 @@ public Action Cmd_Live(int client, int args)
 	int players = CountTeamPlayers();
 	if (!force && players < g_cvMinPlayers.IntValue)
 	{
-		ReplyToCommand(client, "[CSSTV] Hay %d jugadores en equipos y el mínimo es %d. Usá sm_live force para empezar igual.", players, g_cvMinPlayers.IntValue);
+		ReplyToCommand(client, "[%s] Hay %d jugadores en equipos y el mínimo es %d. Usá sm_live force para empezar igual.", g_sTag, players, g_cvMinPlayers.IntValue);
 		return Plugin_Handled;
 	}
 	StartMatch();
@@ -212,12 +222,12 @@ public Action Cmd_Cancel(int client, int args)
 {
 	if (g_State == State_Warmup)
 	{
-		ReplyToCommand(client, "[CSSTV] No hay ninguna partida en curso.");
+		ReplyToCommand(client, "[%s] No hay ninguna partida en curso.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (g_State == State_Finished)
 	{
-		ReplyToCommand(client, "[CSSTV] La partida ya terminó y su resultado está en la cola.");
+		ReplyToCommand(client, "[%s] La partida ya terminó y su resultado está en la cola.", g_sTag);
 		return Plugin_Handled;
 	}
 	LogMessage("Partida %s cancelada por %N (%d-%d).", g_sMatchUid, client, g_iTotA, g_iTotB);
@@ -232,13 +242,13 @@ public Action Cmd_Ready(int client, int args)
 		return Plugin_Handled;
 	if (!g_cvReadySystem.BoolValue || g_State != State_Warmup)
 	{
-		ReplyToCommand(client, "[CSSTV] Ahora no se puede marcar listo.");
+		ReplyToCommand(client, "[%s] Ahora no se puede marcar listo.", g_sTag);
 		return Plugin_Handled;
 	}
 	int team = GetClientTeam(client);
 	if (team != TEAM_T && team != TEAM_CT)
 	{
-		ReplyToCommand(client, "[CSSTV] Uníte a CT o T para marcarte listo.");
+		ReplyToCommand(client, "[%s] Uníte a CT o T para marcarte listo.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (!g_bReady[client])
@@ -266,11 +276,11 @@ public Action Cmd_Score(int client, int args)
 {
 	if (g_State == State_Warmup)
 	{
-		ReplyToCommand(client, "[CSSTV] Calentamiento. Listos: %d/%d.", CountReady(), CountTeamPlayers());
+		ReplyToCommand(client, "[%s] Calentamiento. Listos: %d/%d.", g_sTag, CountReady(), CountTeamPlayers());
 	}
 	else
 	{
-		ReplyToCommand(client, "[CSSTV] Equipo A (%s) %d - %d Equipo B (%s) · %s, ronda %d de %d.",
+		ReplyToCommand(client, "[%s] Equipo A (%s) %d - %d Equipo B (%s) · %s, ronda %d de %d.", g_sTag,
 			g_iSideA == TEAM_CT ? "CT" : "T", g_iTotA, g_iTotB, g_iSideA == TEAM_CT ? "T" : "CT",
 			g_iSegment == 0 ? "reglamentario" : "prórroga", g_iSegRound + 1, g_iSegLen);
 	}
@@ -280,13 +290,13 @@ public Action Cmd_Score(int client, int args)
 public Action Cmd_Status(int client, int args)
 {
 	static const char stateNames[][] = { "calentamiento", "iniciando (LO3)", "en vivo", "medio tiempo", "terminada" };
-	ReplyToCommand(client, "[CSSTV] v%s · estado: %s · partida: %s · %d-%d", PLUGIN_VERSION, stateNames[view_as<int>(g_State)],
+	ReplyToCommand(client, "[%s] v%s · estado: %s · partida: %s · %d-%d", g_sTag, PLUGIN_VERSION, stateNames[view_as<int>(g_State)],
 		g_sMatchUid[0] ? g_sMatchUid : "-", g_iTotA, g_iTotB);
 	char mode[96];
 	Http_ModeText(mode, sizeof(mode));
-	ReplyToCommand(client, "[CSSTV] Envío: %s · en cola: %d · rechazados: %d", mode, Queue_Count(false), Queue_Count(true));
+	ReplyToCommand(client, "[%s] Envío: %s · en cola: %d · rechazados: %d", g_sTag, mode, Queue_Count(false), Queue_Count(true));
 	if (g_sLastError[0])
-		ReplyToCommand(client, "[CSSTV] Último error: %s", g_sLastError);
+		ReplyToCommand(client, "[%s] Último error: %s", g_sTag, g_sLastError);
 	return Plugin_Handled;
 }
 
@@ -294,7 +304,7 @@ public Action Cmd_Flush(int client, int args)
 {
 	Http_ResetBackoff();
 	Http_ScheduleProcess(0.1);
-	ReplyToCommand(client, "[CSSTV] Procesando la cola (%d archivos).", Queue_Count(false));
+	ReplyToCommand(client, "[%s] Procesando la cola (%d archivos).", g_sTag, Queue_Count(false));
 	return Plugin_Handled;
 }
 
@@ -303,7 +313,7 @@ public Action Cmd_RetryFailed(int client, int args)
 	int n = Queue_RequeueFailed();
 	Http_ResetBackoff();
 	Http_ScheduleProcess(0.1);
-	ReplyToCommand(client, "[CSSTV] %d archivo(s) devueltos a la cola.", n);
+	ReplyToCommand(client, "[%s] %d archivo(s) devueltos a la cola.", g_sTag, n);
 	return Plugin_Handled;
 }
 

@@ -25,11 +25,36 @@ sequenceDiagram
 |---|---|---|
 | Encabezado: "Ronda 13/30 · Equipo A (CT) 7 - 5 Equipo B (T)"; en prórroga "Prórroga 1 · ronda 1/6 · …" | Todos | `csstv_round_header` |
 | "Última ronda antes del cambio de lado." / "Match point para el Equipo X." | Todos | `csstv_round_header` |
-| Daño de la ronda anterior: una línea por rival con daño en algún sentido; "sin daño" si no hubo | Cada jugador | `csstv_damage_report` |
+| Daño de la ronda anterior, con el formato de la consola: `Damage Given to "X" - 54 in 2 hits` (verde) y después `Damage Taken from "X" - 27 in 1 hit` (rojo); solo rivales con daño (desde 1.2.0) | Cada jugador | `csstv_damage_report` |
 | Plata del equipo: total y cada jugador de mayor a menor (líneas de hasta ~150 caracteres, nicks cortados a 14) | Cada equipo | `csstv_team_money` |
 | Al morir: asesino, arma, vida y chaleco que le quedan (o "también está muerto"); `!hp` lo repite | La víctima | `csstv_hp_on_death` |
 
 El daño usa el mismo "daño real" que se envía a la web: el daño que pasa de la vida que le quedaba a la víctima no cuenta, y tampoco el daño a compañeros. Los golpes cuentan solo si hicieron daño.
+
+## Colores y prefijo (1.2.0)
+
+Los mensajes llevan etiquetas (`{#verde}`, `{#rojo}`, `{#amarillo}`, `{#ct}`, `{#t}`, `{#normal}`) que se convierten al enviar a cada jugador:
+
+| Cliente | Cómo se envía | Colores |
+|---|---|---|
+| ClientMod (`CM_GetClientModAuth` ≥ 2) | `SayText2` con `RRGGBB` | verde `3EFF3E`, rojo `FF4040`, amarillo `FFD700`, CT `99CCFF`, T `EAB93D` |
+| Original de v34 (o sin `clientmod.smx`) | `PrintToChat` | `{#verde}` → verde básico (``); el resto, color normal |
+
+| Cvar | Default | Uso |
+|---|---|---|
+| `csstv_chat_colors` | 1 | 0 solo básicos · 1 RGB para ClientMod · 2 RGB para todos |
+| `csstv_chat_tag` | `v34frag` | Prefijo `[v34frag]` de todos los mensajes y respuestas del plugin |
+
+La API de ClientMod se declara opcional (`MarkNativeAsOptional`): el plugin carga igual sin `clientmod.smx`.
+
+| Mensaje | Colores |
+|---|---|
+| Encabezado | Ronda y marcador en amarillo; CT celeste, T dorado |
+| Match point / última ronda | Amarillo |
+| Daño | "Damage Given" y el daño en verde; "Damage Taken" y el daño en rojo |
+| Plata | Montos en verde |
+| Al morir | Asesino en rojo, vida que le queda en amarillo |
+| Pausas | Avisos en amarillo; "Se sigue en 3 segundos" en verde |
 
 ## Marcador
 

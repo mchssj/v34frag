@@ -106,6 +106,20 @@ Servidor de prueba con `sv_lan 1`: con `sv_lan 0` la validación de Steam lo exp
   csstv_pause_mode            // 3
   ```
 
+## Colores, prefijo y formato del daño (1.2.0, 2026-10-11)
+
+Probado con bots en el servidor de prueba (compilación de depuración, `csstv_chat_colors 1`):
+
+| Prueba | Resultado |
+|---|---|
+| Prefijo | `[v34frag]` en todos los mensajes; `csstv_reporter_version` = 1.2.0 |
+| Daño | `Damage Given to "Steve" - 100 in 5 hits` / `Damage Taken from "Steve" - 16 in 1 hit`; singular "hit" con 1; simétrico entre jugadores |
+| Plata, encabezado, `!hp` | Mismo texto que antes, con las etiquetas de color |
+
+**Falta ver los colores en el juego.** El log los guarda sin color y los bots no reciben mensajes. El servidor de prueba no tiene `clientmod.smx`, así que para verlos ahí con ClientMod hay que poner `csstv_chat_colors 2`; en el servidor real (que sí tiene la API) alcanza con el valor por defecto.
+
+**Servidor real (2026-10-11):** subida la 1.2.0 por SFTP (respaldo de la 1.1.0 en `plugins/disabled/csstv_reporter_1.1.0.smx`), agregadas `csstv_chat_tag` y `csstv_chat_colors` a `csstv_reporter.cfg` (respaldo `csstv_reporter.cfg.bak-1.1.0`) y `se_scoreboard 2` al final de `server.cfg` (respaldo `server.cfg.bak`). **Falta reiniciar** y verificar con `sm plugins list` / `clientmod_version` (ver "API de ClientMod" en `GUIA_SERVIDOR.md`).
+
 ## Pendiente: prueba con jugadores reales
 
 Con bots no se puede verificar lo que ve el cliente. Hace falta un mix corto con al menos 2 personas (una por equipo), con `csstv_maxrounds 4`, `csstv_min_players 2` y `csstv_send 0`:
