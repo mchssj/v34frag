@@ -34,15 +34,12 @@ ConVar g_cvPollSeconds;
 ConVar g_cvKickUnknown;
 ConVar g_cvChangeMap;
 
-Handle g_hPollTimer = null;
 char g_sRoster[MM_MAX_STEAMIDS][32];
 int g_iRosterCount;
 char g_sMatchId[40];
 char g_sMatchPassword[32];
 char g_sMatchMap[64];
-char g_sLastPayload[1024];
 bool g_bMatchActive;
-bool g_bChangingMap;
 
 public void OnPluginStart()
 {
@@ -59,7 +56,7 @@ public void OnPluginStart()
     RegAdminCmd("sm_csstv_mm_reset", Cmd_MMReset, ADMFLAG_ROOT, "Restablecer roster local y volver a contraseña idle.");
 
     ApplyIdlePassword();
-    g_hPollTimer = CreateTimer(g_cvPollSeconds.FloatValue, Timer_Poll, _, TIMER_REPEAT);
+    CreateTimer(g_cvPollSeconds.FloatValue, Timer_Poll, _, TIMER_REPEAT);
 }
 
 public void OnConfigsExecuted()
@@ -220,7 +217,6 @@ public void Http_OnPoll(bool success, const char[] error, System2HTTPRequest req
         GetCurrentMap(current, sizeof(current));
         if (!StrEqual(current, g_sMatchMap, false))
         {
-            g_bChangingMap = true;
             ServerCommand("changelevel \"%s\"", g_sMatchMap);
         }
     }
