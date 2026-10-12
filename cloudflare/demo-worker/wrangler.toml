@@ -1,0 +1,30 @@
+name = "v34frag-demos"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+# Cuenta de Cloudflare donde está el bucket csstv-demos (la sesión de wrangler ve más de una).
+account_id = "fedc1b8398e60e62e1b42b4711104404"
+
+[[r2_buckets]]
+binding = "DEMOS"
+bucket_name = "csstv-demos"
+# `wrangler dev --remote` exige un bucket de "preview"; se usa el mismo.
+preview_bucket_name = "csstv-demos"
+
+[triggers]
+# Cada 10 minutos sube las demos pendientes; una vez por día marca las vencidas.
+crons = ["*/10 * * * *", "17 6 * * *"]
+
+[vars]
+EXPIRE_CRON = "17 6 * * *"
+RETENTION_DAYS = "90"
+# Borrar la demo del servidor después de subirla y verificarla. Se activa después de probar.
+DELETE_AFTER_UPLOAD = "false"
+PTERO_PANEL_URL = "https://panel.extremehost.com.ar"
+DEMO_DIR = "/cstrike/csstv_demos"
+SUPABASE_URL = "https://wmzfwsizashpszxlvpeb.supabase.co"
+# Clave pública (la misma que usa la web en config.js).
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtemZ3c2l6YXNocHN6eGx2cGViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNjU2NzQsImV4cCI6MjEwNjc0MTY3NH0.QO9osfgwKAXTi9wzOHb68JjGYYHFbHRejtu9b3ZUEP4"
+
+# Secretos (no van en este archivo):
+#   en desarrollo: .dev.vars (lo genera scripts/dev-vars.py desde el .env de la raíz)
+#   en producción: npx wrangler secret put PTERO_PANEL_API_KEY / DEMO_WORKER_TOKEN / ADMIN_KEY
