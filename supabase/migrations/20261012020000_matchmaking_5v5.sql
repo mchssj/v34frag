@@ -67,4 +67,6 @@ revoke all on function public.matchmaking_status() from public,anon;
 grant execute on function public.matchmaking_join() to authenticated;
 grant execute on function public.matchmaking_cancel() to authenticated;
 grant execute on function public.matchmaking_status() to authenticated;
+create index if not exists matches_server_status_idx on public.matches(server_id, status);
+create index if not exists matchmaking_queue_match_id_idx on public.matchmaking_queue(match_id);
 commit;
