@@ -2,7 +2,7 @@
 
 ## Cambios
 - `js/matchmaking.js`: al iniciar sesión, la tarjeta intenta cargar `players.nick` del jugador asociado por `players.user_id` y `profiles.tag`. Prioridad: nickname del jugador, tag del perfil, metadata de registro y, por último, parte local del email.
-- `supabase/migrations/20261012180000_matchmaking_steamid64_nickname.sql`: reemplaza `matchmaking_join()` para aceptar tanto `7656119` + 10 dígitos como `765612` + 11 dígitos, en línea con los formatos admitidos por las funciones de SteamID64 y ELO.
+- La validación de ambos formatos de SteamID64 se incluyó en `supabase/migrations/20261012220000_matchmaking_modos_configurables.sql`, que ya fue aplicada al proyecto Supabase. La migración previa `20261012180000_matchmaking_steamid64_nickname.sql` queda como antecedente y no hace falta aplicarla por separado.
 - El mensaje de error distingue que el perfil debe estar asociado a la cuenta, además de tener un SteamID64 válido.
 
 ## Importante
