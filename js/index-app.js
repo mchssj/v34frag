@@ -567,10 +567,9 @@ function dtd(x){return x?new Date(x).toLocaleDateString('es-AR'):'-'}
 function avBox(box,url,name){box.textContent='';if(url){var im=el('img','csstv-av');im.src=url;im.alt=name||'';box.appendChild(im)}else box.appendChild(el('div','csstv-av',(name||'?')[0].toUpperCase()))}
 // SteamID64 de una cuenta: 7656119 + 10 dígitos, o 765612 + 11 en las cuentas más nuevas.
 var STEAM64=/^(7656119\d{10}|765612\d{11})$/;
-function cleanSteam(v){v=v.trim();if(!v)return'';if(/^https?:\/\/steamcommunity\.com\/(id|profiles)\/[A-Za-z0-9_\-]+\/?$/i.test(v))return v.replace(/^http:/i,'https:');if(STEAM64.test(v)||/^STEAM_[0-5]:[01]:\d+$/i.test(v)||/^[A-Za-z0-9_\-]{2,32}$/.test(v))return v;return null}
-function cleanFaceit(v){v=v.trim();if(!v)return'';if(/^https?:\/\/(www\.)?faceit\.com\/[^\s]*$/i.test(v))return v.replace(/^http:/i,'https:');if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return v;return null}
-function steamLink(v){if(/^https:\/\/steamcommunity\.com\//i.test(v))return v;if(STEAM64.test(v))return'https://steamcommunity.com/profiles/'+v;if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return'https://steamcommunity.com/id/'+v;return null}
-function faceitLink(v){if(/^https:\/\/(www\.)?faceit\.com\//i.test(v))return v;if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return'https://www.faceit.com/es/players/'+v;return null}
+var ProfileLinks=window.CSSTVProfileLinks;
+var STEAM64=ProfileLinks.STEAM64;
+var cleanSteam=ProfileLinks.cleanSteam,cleanFaceit=ProfileLinks.cleanFaceit,steamLink=ProfileLinks.steamLink,faceitLink=ProfileLinks.faceitLink;
 function linkRow(box,k,v,f){if(!v)return;var d=el('div');d.appendChild(el('b',0,k+': '));var u=f(v);if(u){var a=el('a',0,v);a.href=u;a.target='_blank';a.rel='noopener noreferrer';d.appendChild(a)}else d.appendChild(document.createTextNode(v));box.appendChild(d)}
 function prepAvatar(file){return new Promise(function(res,rej){
  if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type)){rej(new Error('La imagen tiene que ser JPG, PNG, WebP o GIF.'));return}
