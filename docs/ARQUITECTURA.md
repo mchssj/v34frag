@@ -126,3 +126,12 @@ Tabla de posiciones (`standings`): 3 pts victoria, 1 empate; desempate por difer
 ### Límites conocidos / siguiente paso
 
 La página principal aún conserva una carga global que consulta varias tablas y sus renderizadores comparten estado dentro de `js/index-app.js`. Convertir cada sección a carga selectiva/paginada requiere separar su estado y sus renderizadores de forma incremental; no se considera resuelto por el mero hecho de externalizar el script. No se habilitó Realtime: el matchmaking usa polling acotado y pausado en pestañas ocultas, evitando añadir suscripciones que deban gestionarse.
+
+
+### Módulos incorporados en la revisión de Fase 11
+
+- `js/tournament-engine.js`: motor independiente para generar llaves de eliminación simple/doble, grupos, series, avances, posiciones y campeón. Se conserva la interfaz de funciones que usa el index.
+- `js/profile-links.js`: validación y generación de enlaces de Steam/FACEIT compartida por los componentes de perfil.
+- `js/index-data.js`: concentra la consulta inicial de datos de la página principal en una única función `loadSnapshot`; mantiene el orden de los resultados que consume la interfaz y conserva el fallback de `public_profiles` a `profiles`.
+- La carga global ya existente agrupa las lecturas en `Promise.all`, evita consultas administrativas para usuarios normales y tiene paginación visual en varias listas. Todavía no es paginación SQL general: torneos y estadísticas necesitan relaciones completas para calcular llaves, posiciones y perfiles. No se añadieron límites arbitrarios que oculten datos.
+- Se validó sintácticamente cada archivo JavaScript y se ejecutaron pruebas aisladas de generación de llaves, todos contra todos y validación/enlaces de Steam. No se ejecutó un flujo de navegador contra una instancia real de Supabase.
