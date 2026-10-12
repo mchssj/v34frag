@@ -8,6 +8,8 @@
   }
 
   global.CSSTVMatchmakingData = Object.freeze({
+    queueState: async function (client) { return unwrap(await client.rpc('matchmaking_queue_state')); },
+    setQueueOpen: async function (client, open) { return unwrap(await client.rpc('matchmaking_set_queue_open', { p_open: !!open })); },
     status: async function (client) {
       return unwrap(await client.rpc('matchmaking_status'));
     },
