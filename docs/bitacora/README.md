@@ -21,6 +21,7 @@ Cada requerimiento tiene su propia carpeta `AAAA-MM-DD-nombre-corto/`, con la fe
 | 2026-10-12 | [Integración de main en matchmaking 5v5](2026-10-12-integracion-main-matchmaking/) | Integrado mediante PR #7; pruebas de despliegue pendientes |
 | 2026-10-12 | [Corrección de identidad en matchmaking](2026-10-12-correccion-identidad-matchmaking/) | Validación SQL incluida en la migración de formatos y aplicada; publicación web y pruebas pendientes |
 | 2026-10-12 | [Formatos de matchmaking configurables](2026-10-12-formatos-matchmaking/) | Migración aplicada en Supabase; publicación web y pruebas pendientes |
+| 2026-10-12 | [Contraseña dinámica para todos los formatos de matchmaking](2026-10-12-password-matchmaking/) | Fuente corregida; compilación, instalación y prueba del dispatcher pendientes |
 ## Convención de mantenimiento
 
 Cada vez que se agreguen comandos, funciones, migraciones, configuraciones o cambios de comportamiento al proyecto, registrar el cambio en `docs/bitacora/` siguiendo la estructura de una carpeta por requerimiento (`PLAN.md`, `DOCUMENTACION.md`, `GUIA_IMPLEMENTACION.md` y `pruebas/` cuando corresponda). Actualizar también la tabla de requerimientos de este README. Distinguir siempre entre cambios integrados, cambios desplegados y pruebas realmente ejecutadas; no marcar como verificado algo que no se haya probado.
