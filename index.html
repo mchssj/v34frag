@@ -949,9 +949,10 @@ function rMatchDetail(){
  var connContainer=$('md-connect-container');connContainer.textContent='';
  if(m.server_ip){var connBtn=Object.assign(el('a','pri','Conectar a Servidor (Steam)'),{href:'steam://connect/'+m.server_ip});
   connBtn.style.padding='5px 10px';connBtn.style.borderRadius='4px';connBtn.style.fontSize='12px';connContainer.appendChild(connBtn)}
+ var dEl=demoEl(m);if(dEl)connContainer.appendChild(dEl);
  var hero=$('md-hero');hero.textContent='';
  hero.appendChild(el('h2','',tn(m.team1)+'  '+sc(m)+'  '+tn(m.team2)));
- hero.appendChild(el('p','msg','Mapa: '+(m.map||'Sin definir')+' | Estado: '+m.status));
+ hero.appendChild(el('p','msg','Mapa: '+(m.map||'Sin definir')+' | Estado: '+(m.status==='cancelled'?'Cancelada ('+mixCancelTxt(m)+(m.cancelled_by?', '+m.cancelled_by:'')+')':m.kind==='mix'&&m.status==='finished'?'Terminada':m.status)));
  if(m.kind==='pcw'){[m.team1,m.team2].forEach(function(id){hero.appendChild(el('p','msg',tn(id)+': '+(rosterText(tget(id))||'sin datos')))})}
  var isMix=m.kind==='mix';$('md-vr').hidden=isMix;rStats(m);
  if(!isMix){rVeto(m);rResult(m)}rChat()}
@@ -996,7 +997,7 @@ function mrow(m){
 
 function mtbl(l,e){return l.length?tbl(['Fecha','Eq 1','Resultado','Eq 2','Mapa','Acción'],l.map(mrow)):none(e)}
 function mdate(m){return m.played_at||m.starts_at}
-function mixList(){return matches.filter(function(m){return m.kind==='mix'&&m.status==='finished'}).sort(function(a,b){return new Date(mdate(b)||0)-new Date(mdate(a)||0)})}
+function mixList(all){return matches.filter(function(m){return m.kind==='mix'&&(m.status==='finished'||all&&m.status==='cancelled')}).sort(function(a,b){return new Date(mdate(b)||0)-new Date(mdate(a)||0)})}
 function statsOf(mid){return mstats.filter(function(s){return s.match_id===mid})}
 function statNick(s){var p=s.player_id?byId(players,s.player_id):null;return p?p.nick:(s.nick||'?')}
 // Niveles de FACEIT: [nivel, ELO mínimo, color]. El ELO sale de player_elo (por SteamID); sin mixes, 1000.
@@ -1008,8 +1009,19 @@ function lvlBadge(elo,big){var l=lvlOf(elo),b=el('span','lvl'+(big?' lg':''),Str
 function eloDelta(d){return d==null?'-':el('span',d>0?'eu':d<0?'ed':null,(d>0?'+':'')+d)}
 function mvpOf(mid){var b=null;statsOf(mid).forEach(function(s){if(s.rating!=null&&(!b||+s.rating>+b.rating))b=s});return b}
 var MIXH=['Fecha','Mapa','Equipo 1','Resultado','Equipo 2','MVP',''];
+var DEMO_URL='https://v34frag-demos.agusb06-ab.workers.dev/demo/';
+var CANCEL_TXT={admin:'cancelada por un admin',map_change:'cancelada por cambio de mapa',abandoned:'cancelada por abandono'};
+function mixCancelTxt(m){return CANCEL_TXT[m.cancel_reason]||'cancelada'}
+function mixCancelTag(m,txt){var s=el('span',0,txt+' ');var t=el('span','tag','Cancelada');t.title=mixCancelTxt(m);s.appendChild(t);return s}
+function demoSize(b){return b?(b/1048576).toFixed(1).replace('.',',')+' MB':''}
+/** Botón o aviso de la demo de un mix (la sube el Worker de Cloudflare a R2). */
+function demoEl(m){if(m.kind!=='mix'||!m.external_id)return null;var st=m.demo_status||'none';
+ if(st==='uploaded'){var a=el('a','pri','Descargar demo'+(m.demo_size?' ('+demoSize(m.demo_size)+')':''));a.href=DEMO_URL+encodeURIComponent(m.external_id);a.rel='noopener';
+  a.style.padding='5px 10px';a.style.borderRadius='4px';a.style.fontSize='12px';a.style.textDecoration='none';return a}
+ var t={pending:'La demo se está subiendo (puede tardar hasta 10 minutos).',expired:'La demo venció (se guardan 90 días).',missing:'No se encontró la demo en el servidor.'}[st];
+ return t?el('span','msg',t):null}
 function mixRow(m){var mv=mvpOf(m.id),w1=m.winner&&m.winner===m.team1,w2=m.winner&&m.winner===m.team2;
- return[dt(mdate(m)),m.map||'-',el('span',w1?'w':null,tn(m.team1)),sc(m),el('span',w2?'w':null,tn(m.team2)),mv?statNick(mv)+' ('+fm(mv.rating,2)+')':'-',btn('Ver',function(){openMatchDetail(m.id)})]}
+ return[dt(mdate(m)),m.map||'-',el('span',w1?'w':null,tn(m.team1)),m.status==='cancelled'?mixCancelTag(m,sc(m)):sc(m),el('span',w2?'w':null,tn(m.team2)),mv?statNick(mv)+' ('+fm(mv.rating,2)+')':'-',btn('Ver',function(){openMatchDetail(m.id)})]}
 function mixTbl(l,e){return l.length?tbl(MIXH,l.map(mixRow)):none(e)}
 function rStats(m){var l=statsOf(m.id),w=$('md-stats-w'),box=$('md-stats');w.hidden=!l.length;box.textContent='';if(!l.length)return;
  [1,2].forEach(function(k){var tid=k===1?m.team1:m.team2,rows=l.filter(function(s){return s.team===k}).sort(function(a,b){return(+b.rating||0)-(+a.rating||0)});if(!rows.length)return;
@@ -1058,7 +1070,7 @@ function rViews(){
  if(shown('matches'))put('vm1',mtbl(ms('live'),'Sin partidas en vivo.'));
  if(shown('matches'))put('vm2',mtbl(ms('upcoming').sort(byDate),'Sin próximas partidas.'));
  if(shown('results'))put('vr',mtbl(ms('finished').sort(byDate).reverse(),'Sin resultados.'));
- if(shown('mixes'))pager($('vmix'),'pub-mixes',mixList(),mixRow,{head:MIXH,text:function(m){return(m.map||'')+' '+tn(m.team1)+' '+tn(m.team2)+' '+statsOf(m.id).map(statNick).join(' ')},per:15,ph:'Buscar mapa o jugador...',empty:'Todavía no hay mixes del servidor.'});
+ if(shown('mixes'))pager($('vmix'),'pub-mixes',mixList(true),mixRow,{head:MIXH,text:function(m){return(m.map||'')+' '+tn(m.team1)+' '+tn(m.team2)+' '+statsOf(m.id).map(statNick).join(' ')},per:15,ph:'Buscar mapa o jugador...',empty:'Todavía no hay mixes del servidor.'});
  var rk=shown('ranking')?rank():[];if(shown('ranking'))put('vk',rk.length?tbl(['#','Equipo','PJ','G','P','Pts'],rk.map(function(x,i){return [i+1,x.t.name,x.pj,x.g,x.p,x.pts]})):none('Sin equipos.'));
 
  if(shown('events'))rEvents();
