@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Matchmaking 5v5 · CSSTV</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="config.js"></script><link rel="stylesheet" href="csstv-theme.css">
 <style>
 /* Esta página usa una cabecera horizontal, no la sidebar global del resto de CSSTV. */
 *,*::before,*::after{box-sizing:border-box}
@@ -65,11 +65,57 @@ body>header.top #auth-button{flex:0 0 auto}
   body>header.top nav a{padding:4px 0!important}
   body>header.top #user-label{margin-left:auto}
 }
+/* Matchmaking comparte la sidebar de index.html. */
+body>header.top{position:fixed;inset:0 auto 0 0;width:244px;height:100vh;overflow-y:auto;display:block;padding:0;background:rgba(15,15,21,.98);border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:8px 0 30px #0001;backdrop-filter:blur(16px);z-index:50}
+body>header.top .bar{height:100%;max-width:none;margin:0;padding:25px 14px 16px;display:flex;flex-direction:column;align-items:stretch;gap:18px;flex-wrap:nowrap}
+body>header.top .logo{order:0;padding:3px 10px 18px;font-size:21px;letter-spacing:1.3px}
+body>header.top .burger{display:none}
+body>header.top nav#mainnav{display:flex;order:1;flex:1 1 auto;min-width:0;width:100%;overflow:visible;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:4px;padding:0;border:0}
+body>header.top nav#mainnav>a{width:100%;display:flex;align-items:center;text-align:left;padding:11px 12px;border:1px solid transparent;border-radius:9px;color:var(--mute);font-size:13px;font-weight:600;box-shadow:none;background:transparent;white-space:nowrap}
+body>header.top nav#mainnav>a:hover,body>header.top nav#mainnav>a.on{color:var(--accent);background:rgba(240,68,155,.11);border-color:rgba(240,68,155,.18);box-shadow:none}
+body>header.top .hr{order:2;width:100%;margin:0;padding-top:15px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:stretch;flex-wrap:wrap;gap:8px}
+body>header.top #user-label{order:0;max-width:100%;width:100%;padding:0 4px 5px;font-size:11px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body>header.top #auth-button{flex:1}
+body>.wrap{max-width:1100px;margin:0 0 0 244px;padding:22px 16px 56px}
+@media(max-width:1180px){
+ body>header.top{position:sticky;inset:auto;width:100%;height:auto;overflow:visible;background:rgba(15,15,21,.96);border:0;border-bottom:1px solid var(--line);box-shadow:0 6px 24px #0001}
+ body>header.top .bar{height:auto;max-width:none;margin:0;padding:10px 18px;display:flex;flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap}
+ body>header.top .logo{order:0;padding:8px 0;font-size:20px}
+ body>header.top .hr{order:1;width:auto;flex:1;justify-content:flex-end;margin-left:auto;padding:0;border:0;flex-wrap:nowrap}
+ body>header.top #user-label{width:auto;max-width:150px;padding:0}
+ body>header.top .burger{display:inline-block;order:2}
+ body>header.top nav#mainnav{order:3;flex:1 0 100%;display:none;flex-direction:column;flex-wrap:nowrap;border-top:1px solid var(--line);padding-top:8px;gap:3px}
+ body>header.top nav#mainnav.open{display:flex}
+ body>header.top nav#mainnav>a{padding:11px 12px}
+ body>header.top .hr button{flex:0 0 auto}
+ body>.wrap{margin:0 auto;max-width:1100px;width:100%;padding:22px 16px 56px}
+}
+@media(max-width:600px){body>header.top .bar{padding:8px 12px;gap:8px}body>header.top #user-label{display:none}body>.wrap{padding:14px 10px 40px}}
+
 
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="index.html">CSS<b>TV</b></a><nav><a href="index.html">Inicio</a><a href="index.html#mixes">Mixes</a><a class="active" href="matchmaking.html">Matchmaking</a></nav><span id="user-label" class="muted small">Sin iniciar sesión</span><button id="auth-button">Ingresar</button></header>
+<header class="top">
+<div class="bar">
+<a class="logo" href="index.html" aria-label="Ir al inicio">CSS<b>TV</b></a>
+<button id="menu-btn" class="burger" type="button" aria-label="Menú" aria-expanded="false" aria-controls="mainnav">☰</button>
+<nav id="mainnav" aria-label="Principal">
+<a href="index.html">Inicio</a>
+<a href="index.html#matches">Partidas</a>
+<a href="index.html#results">Resultados</a>
+<a href="index.html#mixes">Mixes</a>
+<a class="on" href="matchmaking.html">Matchmaking</a>
+<a href="index.html#events">Torneos</a>
+<a href="index.html#pcw">PCW</a>
+<a href="index.html#palmares">Palmarés</a>
+<a href="index.html#ranking">Ranking</a>
+<a href="index.html#teams">Equipos</a>
+<a href="index.html#players">Jugadores</a>
+</nav>
+<div class="hr"><span id="user-label" style="color:var(--mute);font-size:11px">Sin iniciar sesión</span><button id="auth-button">Ingresar</button></div>
+</div>
+</header>
 <div class="wrap">
 <div class="hero">
 <section class="panel pad"><div class="eyebrow">Counter-Strike: Source v34</div><h1>Encontrá tu próximo <span class="pink">5v5.</span></h1><p>Entrá a la cola individual, encontrá nueve jugadores y armá equipos equilibrados por ELO. Cuando haya diez jugadores y un servidor libre, CSSTV asigna la partida automáticamente.</p><div class="stats"><div class="stat"><b>5 × 5</b><span>Competitivo</span></div><div class="stat"><b>ELO</b><span>Balance automático</span></div><div class="stat"><b>10</b><span>Jugadores por mix</span></div></div></section>
@@ -84,6 +130,9 @@ body>header.top #auth-button{flex:0 0 auto}
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)},sb,me=null,isAdmin=false,isRegister=false,pollHandle=null,currentStatus=null,servers=[];
+var menu=$('menu-btn'),nav=$('mainnav');
+if(menu&&nav){menu.addEventListener('click',function(){var open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(open))});nav.querySelectorAll('a').forEach(function(link){link.addEventListener('click',function(){nav.classList.remove('open');menu.setAttribute('aria-expanded','false')})})}
+
 function note(t,err){$('notice').textContent=t;$('notice').classList.toggle('error',!!err)}
 function adminNote(t,err){$('server-admin-msg').textContent=t;$('server-admin-msg').classList.toggle('error',!!err)}
 function setState(s){currentStatus=s||{status:'idle',queue_size:0};var st=currentStatus.status||'idle',count=Number(currentStatus.queue_size||0);$('queue-count').textContent=Math.min(count,10)+' / 10 jugadores';$('queue-progress').style.width=Math.min(count,10)*10+'%';$('queue-position').textContent=st==='waiting'&&currentStatus.position?'Posición #'+currentStatus.position:'';$('state-dot').className='dot '+(st==='matched'?'green':st==='waiting'?'pink':'');$('state-title').textContent=st==='matched'?'Partida encontrada':st==='waiting'?'Buscando partida':'Listo para jugar';$('state-description').textContent=st==='matched'?'Ya se armó tu partida. Copiá el comando o abrí Steam para conectarte.':st==='waiting'?'Estás en cola. La lista se actualiza automáticamente.':'Cuando haya diez jugadores y un servidor disponible, se balancean los equipos por ELO.';$('join-button').disabled=!me||st==='waiting'||st==='matched';$('join-button').textContent=st==='waiting'?'Buscando...':st==='matched'?'Partida asignada':'Buscar partida';$('cancel-button').classList.toggle('hidden',st!=='waiting');$('match-panel').classList.toggle('hidden',st!=='matched'||!currentStatus.match);if(st==='waiting')note('Esperando jugadores y servidor libre.');else if(st==='matched')note('¡Partida creada! Revisá el servidor y tu equipo.');else if(me)note('Listo. Entrá a la cola cuando quieras jugar.');if(st==='matched'&&currentStatus.match)renderMatch(currentStatus.match)}
