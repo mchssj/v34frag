@@ -154,11 +154,6 @@ public void Http_OnPoll(bool success, const char[] error, System2HTTPRequest req
     if (len >= 2 && payload[0] == '"' && payload[len - 1] == '"')
     {
         payload[len - 1] = '\0';
-        for (int i = 0; i < len - 1; i++)
-        {
-            if (payload[i] == '\\' && payload[i + 1] == '"')
-                strcopy(payload[i], len - i, payload[i + 1]);
-        }
         strcopy(payload, sizeof(payload), payload[1]);
     }
 
