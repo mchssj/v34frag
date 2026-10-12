@@ -102,25 +102,57 @@ sm_csstv_status            // estado, modo de envío y archivos en cola
 
 ### Partida de prueba con bots
 
-Sirve para probar todo el circuito en pocos minutos. Escribí en la consola del servidor:
+Sirve para probar todo el circuito en pocos minutos. **Formato estándar de las pruebas:** mapa `$2000$` (es chico y las rondas se definen rápido) y equipos desparejos, con 3 bots de un lado y 1 del otro, para que un equipo gane casi siempre y no haya empates ni prórrogas largas.
+
+Escribí en la consola del servidor (con el mapa `$2000$` ya cargado):
 
 ```
+csstv_send 0
 csstv_include_bots 1
 csstv_min_players 2
+csstv_abandon_players 0
 csstv_maxrounds 4
 csstv_overtime 0
-bot_quota 4
+csstv_lo3 0
+csstv_end_delay 2
+csstv_halftime_delay 1
+csstv_abandon_seconds 5
+csstv_pause_time 10
+mp_freezetime 1
+bot_kick
+bot_join_after_player 0
+mp_autoteambalance 0
+mp_limitteams 0
+bot_add_t
+bot_add_t
+bot_add_t
+bot_add_ct
 sm_live force
 ```
 
-Dejá correr 3 o 4 rondas (o matá a los bots). Al terminar, en el chat aparece "Resultado enviado a CSSTV" y el mix figura en la web, en **Mixes**. Los bots no tienen SteamID, así que aparecen como "(sin perfil)". Después volvé a los valores normales:
+- **`csstv_send 0`:** el resultado queda en `data/csstv/queue/` y no se envía. Sacalo solo si querés probar el envío; el servidor local está conectado a la misma Supabase que la web.
+- **Cambio de mapa:** vuelve a cargar `csstv_reporter.cfg` (con `csstv_send 1`) y manda lo que haya en la cola. Antes de cambiar de mapa, vaciá `data/csstv/queue/`. Mejor todavía, arrancá el servidor directamente en `$2000$` (ver abajo) y volvé a escribir las cvars.
+- **Tiempos cortos:** en las pruebas ninguna espera pasa de 10 segundos (fin de partida, medio tiempo, abandono, pausas).
+- **`csstv_abandon_players 0`:** con solo 4 bots, la cancelación automática por abandono (mínimo 4 jugadores) cortaría la prueba. Para probar justamente el abandono, ponela en 4.
+- **Primera vez en un mapa con bots:** si el mapa no tiene `.nav`, el juego lo genera al agregar bots y recarga el mapa (con `$2000$` terminó en otro mapa). `$2000$.nav` ya está generado en el servidor de Daniel.
+- **Partida corta sin tocar cvars:** `sm_live force mr2` (gana el primero en llegar a 3).
+
+Después volvé a los valores normales:
 
 ```
 csstv_include_bots 0
 csstv_min_players 8
+csstv_abandon_players 4
 csstv_maxrounds 30
 csstv_overtime 1
-bot_quota 0
+csstv_lo3 1
+csstv_end_delay 15
+csstv_halftime_delay 3
+csstv_abandon_seconds 180
+csstv_pause_time 60
+bot_kick
+mp_autoteambalance 1
+mp_limitteams 2
 ```
 
 ## Paso 7 (alternativa). Script de subida sin System2
@@ -170,13 +202,13 @@ No uses el script y System2 a la vez sobre la misma cola.
 ### Flujo de una partida
 
 1. **Calentamiento.** Al cargar el mapa se ejecuta `cfg/csstv/warmup.cfg`. Cada 30 segundos el chat recuerda quién falta.
-2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede forzarlo con `!live`.
+2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede forzarlo con `!live`; con `!live mr3` (de `mr1` a `mr30`) la partida es más corta.
 3. **LO3.** Se ejecuta `cfg/csstv/live.cfg` y tres reinicios. Al empezar, **Equipo A = CT** y **Equipo B = T**.
 4. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos (cada uno con el modelo equivalente del otro lado), reinicia la ronda y mantiene el marcador en el scoreboard.
-5. **Fin.** Gana el primero en llegar a 16. Con 15-15 se juega prórroga MR12 (configurable), con dinero `csstv_ot_startmoney`, hasta que haya ganador.
-6. **Envío.** El resultado se guarda en la cola y se envía. En el chat aparece "Resultado enviado a CSSTV". A los 15 segundos vuelve al calentamiento.
+5. **Fin.** Gana el primero en llegar a 16 (o a N+1 con `!live mrN`). Con empate se juega prórroga MR12 (configurable, y nunca más larga que el reglamentario), con dinero `csstv_ot_startmoney`, hasta que haya ganador.
+6. **Envío.** El resultado se guarda en la cola y se envía. En el chat aparece "Resultado enviado a CSSTV". A los `csstv_end_delay` segundos (15) vuelve al calentamiento.
 
-Si se cambia de mapa a mitad de partida, la partida se descarta y no se envía.
+**Partidas canceladas** (desde la 1.3.0). Una partida se cancela con `!cancelmatch`, al cambiar de mapa a mitad de partida, o sola por **abandono**: si en CT+T quedan menos de `csstv_abandon_players` jugadores (4) durante `csstv_abandon_seconds` seguidos (180), avisando antes en el chat. Si se jugó al menos una ronda, se envía como **cancelada** (motivo `admin`, `map_change` o `abandoned`), con su marcador parcial y su demo; no cuenta para el ELO ni para las stats del perfil. Sin rondas jugadas se descarta y la demo se borra.
 
 ### Durante la partida
 
@@ -214,7 +246,7 @@ Técnicamente, la pausa alarga el freezetime de la ronda (`m_fRoundStartTime`). 
 
 ### Demos
 
-Con `csstv_demo 1`, la SourceTV graba cada mix desde el "¡EN VIVO!" hasta el final en `cstrike/csstv_demos/<match_uid>.dem`. El motor guarda el nombre en minúsculas (`srv1-20261011t125908-2fff.dem`). Se conservan los últimos `csstv_demo_keep` y se borran los más viejos.
+Con `csstv_demo 1`, la SourceTV graba cada mix desde el "¡EN VIVO!" hasta el final en `cstrike/csstv_demos/<match_uid>.dem`. En Windows el motor guarda el nombre en minúsculas (`srv1-20261011t125908-2fff.dem`); en el servidor real (Linux) lo respeta. Un Worker de Cloudflare sube cada demo a R2 (ver [`docs/bitacora/2026-10-12-demos-r2-worker`](bitacora/2026-10-12-demos-r2-worker/)). Se conservan los últimos `csstv_demo_keep` y se borran los más viejos.
 
 La SourceTV tiene que estar activa **desde que carga el mapa**. Agregá `+tv_enable 1` a la línea de arranque del servidor, antes de `+map`. Ponerlo en `server.cfg` no alcanza para el primer mapa. Si no está activa, el plugin lo anota en el log y sigue sin grabar.
 
@@ -231,7 +263,8 @@ Tamaño medido en el servidor de prueba: unos 4 KB por segundo con 6 bots (2,6 M
 | `!forcepause` / `!forceunpause` | Admin | Pausa de admin / terminar cualquier pausa ya |
 | `!live` | Admin | Empieza si hay jugadores suficientes |
 | `!live force` | Admin | Empieza aunque falten jugadores |
-| `!cancelmatch` | Admin | Cancela la partida sin enviar nada |
+| `!live mrN` | Admin | Partida corta: gana el primero en llegar a N+1 (se combina con `force`) |
+| `!cancelmatch` | Admin | Cancela la partida; con al menos una ronda jugada la guarda como cancelada, con su demo |
 | `sm_csstv_status` | Consola / rcon | Estado, modo de envío, cola y último error |
 | `sm_csstv_flush` | Consola / rcon | Reintenta ahora los envíos pendientes |
 | `sm_csstv_retryfailed` | Consola / rcon | Devuelve a la cola los envíos rechazados |
@@ -347,7 +380,8 @@ Para probar cambios del plugin antes de subirlos al servidor real.
 
 En el servidor de Daniel:
 
-- **Arrancar:** `start_server.bat`. Abre `de_dust2` en el puerto 27015, con 20 jugadores, tickrate 66 y `-insecure`.
+- **Arrancar:** `start_server.bat`. Abre `de_dust2` en el puerto 27016, con 20 jugadores, tickrate 66 y `-insecure`. El servidor escucha en la IP de Radmin VPN (`26.228.23.45:27016`), también para RCON.
+- **Arrancar para pruebas:** `srcds.exe -console -game cstrike -port 27016 +maxplayers 20 +tv_enable 1 +map $2000$ -tickrate 66 -insecure`, y después las cvars de [Partida de prueba con bots](#partida-de-prueba-con-bots).
 - **Plugin:** `cstrike\addons\sourcemod\plugins\csstv_reporter.smx`.
 - **Compilador:** `cstrike\addons\sourcemod\scripting\spcomp.exe`.
 - **Partida rápida:** seguí [Partida de prueba con bots](#partida-de-prueba-con-bots).

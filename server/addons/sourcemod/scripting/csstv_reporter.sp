@@ -22,7 +22,7 @@
 #include <system2>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.2.0"
+#define PLUGIN_VERSION "1.3.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -72,11 +72,17 @@ ConVar g_cvAssistDamage;
 ConVar g_cvIncludeBots;
 ConVar g_cvValidateId;
 ConVar g_cvHalftimeDelay;
+ConVar g_cvAbandonPlayers;
+ConVar g_cvAbandonSeconds;
+ConVar g_cvEndDelay;
 
 // Estado de la partida
 MatchState g_State = State_Warmup;
 char g_sMatchUid[64];
 int g_iStartedAt;
+int g_iMatchMaxRounds;         // rondas del reglamentario de esta partida (csstv_maxrounds o !live mrN)
+int g_iAbandonSince;           // GetTime() desde que hay menos jugadores que csstv_abandon_players (0 = no)
+bool g_bAbandonWarned;
 int g_iSideA = TEAM_CT;        // lado donde juega el equipo A
 int g_iSegment;                // 0 = tiempo reglamentario, 1..n = prórroga n
 int g_iSegLen;                 // rondas del segmento actual
@@ -88,6 +94,7 @@ int g_iRestartsLeft;
 int g_iRestartPurpose;
 int g_iSavedStartMoney = -1;
 bool g_bReady[MAXPLAYERS + 1];
+bool g_bDemoRecorded;          // la partida actual tiene demo (va en el resultado; lo maneja qol.inc)
 Handle g_hReadyTimer;
 
 #include "csstv/stats.inc"
@@ -123,11 +130,14 @@ public void OnPluginStart()
 	g_cvIncludeBots   = CreateConVar("csstv_include_bots", "0", "Contar bots (solo para pruebas).", _, true, 0.0, true, 1.0);
 	g_cvValidateId    = CreateConVar("csstv_validate_steamid", "0", "Exigir SteamID validado por Steam (dejar en 0 en servidores no-Steam).", _, true, 0.0, true, 1.0);
 	g_cvHalftimeDelay = CreateConVar("csstv_halftime_delay", "3.0", "Segundos tras la última ronda antes de cambiar de lados.", _, true, 1.0, true, 10.0);
+	g_cvAbandonPlayers = CreateConVar("csstv_abandon_players", "4", "Con menos jugadores que esto en CT+T, la partida se cancela sola (0 = nunca).", _, true, 0.0, true, 32.0);
+	g_cvAbandonSeconds = CreateConVar("csstv_abandon_seconds", "180", "Segundos seguidos con pocos jugadores antes de cancelar por abandono.", _, true, 5.0, true, 1800.0);
+	g_cvEndDelay     = CreateConVar("csstv_end_delay", "15", "Segundos entre el fin de la partida y la vuelta al calentamiento.", _, true, 1.0, true, 60.0);
 	CreateConVar("csstv_reporter_version", PLUGIN_VERSION, "Versión de CSSTV Match Reporter.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
 	AutoExecConfig(true, "csstv_reporter");
 
-	RegAdminCmd("sm_live", Cmd_Live, ADMFLAG_GENERIC, "Empieza la partida. Uso: sm_live [force]");
-	RegAdminCmd("sm_cancelmatch", Cmd_Cancel, ADMFLAG_GENERIC, "Cancela la partida sin enviar el resultado.");
+	RegAdminCmd("sm_live", Cmd_Live, ADMFLAG_GENERIC, "Empieza la partida. Uso: sm_live [force] [mrN] (mr3 = gana el primero en llegar a 4)");
+	RegAdminCmd("sm_cancelmatch", Cmd_Cancel, ADMFLAG_GENERIC, "Cancela la partida. Si se jugó al menos una ronda, se guarda como cancelada (con su demo).");
 	RegAdminCmd("sm_csstv_status", Cmd_Status, ADMFLAG_RCON, "Estado del plugin y de la cola.");
 	RegAdminCmd("sm_csstv_flush", Cmd_Flush, ADMFLAG_RCON, "Reintenta ahora los envíos pendientes.");
 	RegAdminCmd("sm_csstv_retryfailed", Cmd_RetryFailed, ADMFLAG_RCON, "Devuelve a la cola los envíos rechazados.");
@@ -135,6 +145,8 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_unready", Cmd_Unready, "Quitar el listo.");
 	RegConsoleCmd("sm_notready", Cmd_Unready, "Quitar el listo.");
 	RegConsoleCmd("sm_score", Cmd_Score, "Muestra el marcador.");
+
+	CreateTimer(1.0, Timer_AbandonCheck, _, TIMER_REPEAT);
 
 	HookEventEx("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEventEx("round_end", Event_RoundEnd);
@@ -165,9 +177,7 @@ public void OnConfigsExecuted()
 public void OnMapEnd()
 {
 	if (g_State == State_Starting || g_State == State_Live || g_State == State_Halftime)
-	{
-		LogMessage("Partida %s abortada por cambio de mapa (%d-%d). No se envía.", g_sMatchUid, g_iTotA, g_iTotB);
-	}
+		CancelMatch("map_change", "");
 	Demo_Stop();
 	RestoreStartMoney();
 	g_hReadyTimer = null;
@@ -205,16 +215,37 @@ public Action Cmd_Live(int client, int args)
 		ReplyToCommand(client, "[%s] Ya hay una partida en curso.", g_sTag);
 		return Plugin_Handled;
 	}
+	// Argumentos en cualquier orden: "force" y "mrN" (N rondas por lado: gana quien llega a N+1).
+	bool force;
+	int mr;
 	char arg[16];
-	GetCmdArg(1, arg, sizeof(arg));
-	bool force = StrEqual(arg, "force", false);
+	for (int i = 1; i <= args; i++)
+	{
+		GetCmdArg(i, arg, sizeof(arg));
+		if (StrEqual(arg, "force", false))
+			force = true;
+		else if ((arg[0] == 'm' || arg[0] == 'M') && (arg[1] == 'r' || arg[1] == 'R') && IsDigits(arg[2]))
+		{
+			mr = StringToInt(arg[2]);
+			if (mr < 1 || mr > 30)
+			{
+				ReplyToCommand(client, "[%s] El formato va de mr1 a mr30 (mr15 = partida completa).", g_sTag);
+				return Plugin_Handled;
+			}
+		}
+		else
+		{
+			ReplyToCommand(client, "[%s] Uso: sm_live [force] [mrN]. Ejemplo: !live mr3", g_sTag);
+			return Plugin_Handled;
+		}
+	}
 	int players = CountTeamPlayers();
 	if (!force && players < g_cvMinPlayers.IntValue)
 	{
 		ReplyToCommand(client, "[%s] Hay %d jugadores en equipos y el mínimo es %d. Usá sm_live force para empezar igual.", g_sTag, players, g_cvMinPlayers.IntValue);
 		return Plugin_Handled;
 	}
-	StartMatch();
+	StartMatch(mr * 2);
 	return Plugin_Handled;
 }
 
@@ -230,8 +261,12 @@ public Action Cmd_Cancel(int client, int args)
 		ReplyToCommand(client, "[%s] La partida ya terminó y su resultado está en la cola.", g_sTag);
 		return Plugin_Handled;
 	}
-	LogMessage("Partida %s cancelada por %N (%d-%d).", g_sMatchUid, client, g_iTotA, g_iTotB);
-	PrintToChatAll("%s Partida cancelada. No se envía ningún resultado.", PREFIX);
+	char by[MAX_NAME_LENGTH];
+	if (client > 0)
+		GetClientName(client, by, sizeof(by));
+	else
+		strcopy(by, sizeof(by), "Consola");
+	CancelMatch("admin", by);
 	BackToWarmup();
 	return Plugin_Handled;
 }
@@ -396,6 +431,9 @@ void ResetMatch()
 	g_State = State_Warmup;
 	g_sMatchUid[0] = '\0';
 	g_iStartedAt = 0;
+	g_iMatchMaxRounds = 0;
+	g_iAbandonSince = 0;
+	g_bAbandonWarned = false;
 	g_iSideA = TEAM_CT;
 	g_iSegment = 0;
 	g_iSegLen = 0;
@@ -420,13 +458,15 @@ void BackToWarmup()
 	ExecIfExists("csstv/warmup.cfg");
 }
 
-void StartMatch()
+/** maxRounds: rondas del reglamentario (0 = csstv_maxrounds). */
+void StartMatch(int maxRounds = 0)
 {
 	ResetMatch();
 	g_State = State_Starting;
-	g_iSegLen = g_cvMaxRounds.IntValue;
+	g_iSegLen = maxRounds > 0 ? maxRounds : g_cvMaxRounds.IntValue;
 	if (g_iSegLen % 2)
 		g_iSegLen++;
+	g_iMatchMaxRounds = g_iSegLen;
 
 	char tag[24];
 	g_cvServerTag.GetString(tag, sizeof(tag));
@@ -438,7 +478,7 @@ void StartMatch()
 	ServerCommand("mp_maxrounds 0; mp_winlimit 0; mp_timelimit 0");
 	ExecIfExists("csstv/live.cfg");
 
-	PrintToChatAll("%s La partida empieza. Equipo A = CT, Equipo B = T. MR%d.", PREFIX, g_iSegLen / 2);
+	PrintToChatAll("%s La partida empieza. Equipo A = CT, Equipo B = T. MR%d: gana el primero en llegar a %d.", PREFIX, g_iSegLen / 2, g_iSegLen / 2 + 1);
 	BeginRestarts(g_cvLo3.BoolValue ? 3 : 1, PURPOSE_LIVE);
 }
 
@@ -536,7 +576,8 @@ void StartOvertime()
 {
 	g_State = State_Halftime;
 	g_iSegment++;
-	g_iSegLen = g_cvOtMaxRounds.IntValue;
+	// La prórroga nunca es más larga que el reglamentario (en un mr3 se juega MR3, no MR12).
+	g_iSegLen = g_cvOtMaxRounds.IntValue < g_iMatchMaxRounds ? g_cvOtMaxRounds.IntValue : g_iMatchMaxRounds;
 	if (g_iSegLen % 2)
 		g_iSegLen++;
 	g_iSegRound = 0;
@@ -621,22 +662,120 @@ void FinishMatch()
 		PrintToChatAll("%s Fin de la partida: empate %d-%d.", PREFIX, g_iTotA, g_iTotB);
 
 	Json_BuildPayload(endedAt);
-	if (Queue_Save(g_sMatchUid))
-	{
-		LogMessage("Partida %s terminada %d-%d. Resultado guardado en la cola.", g_sMatchUid, g_iTotA, g_iTotB);
+	if (QueueResult("terminada"))
 		PrintToChatAll("%s Enviando el resultado a CSSTV…", PREFIX);
-		Http_ResetBackoff();
-		Http_ScheduleProcess(1.0);
-	}
-	else
-	{
-		LogError("No se pudo guardar el resultado de %s en la cola.", g_sMatchUid);
-		PrintToChatAll("%s No se pudo guardar el resultado. Avisá a un admin.", PREFIX);
-	}
 
 	RestoreStartMoney();
 	ExecIfExists("csstv/end.cfg");
-	CreateTimer(15.0, Timer_AfterFinish, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(g_cvEndDelay.FloatValue, Timer_AfterFinish, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/**
+ * Corta la partida en curso (reason: "admin" o "map_change"). Si se jugó al menos una ronda
+ * se guarda como cancelada, con su marcador parcial y su demo; si no, se descarta y el demo se borra.
+ * No vuelve al calentamiento: eso lo hace quien la llama.
+ */
+void CancelMatch(const char[] reason, const char[] by)
+{
+	Pause_Clear();
+	Demo_Stop();
+	if (g_iTotA + g_iTotB < 1 || CountReportedPlayers() < 2)
+	{
+		LogMessage("Partida %s cancelada (%s %s) sin rondas jugadas. No se guarda.", g_sMatchUid, reason, by);
+		PrintToChatAll("%s Partida cancelada. No se jugó ninguna ronda, así que no se guarda.", PREFIX);
+		if (g_bDemoRecorded)
+			Demo_Discard(g_sMatchUid);
+		return;
+	}
+	PrintToChatAll("%s Partida cancelada (Equipo A %d - %d Equipo B). Queda guardada como cancelada.", PREFIX, g_iTotA, g_iTotB);
+	Json_BuildPayload(GetTime(), true, reason, by);
+	if (StrEqual(reason, "map_change"))
+		QueueResult("cancelada por cambio de mapa");
+	else if (StrEqual(reason, "abandoned"))
+		QueueResult("cancelada por abandono");
+	else
+		QueueResult("cancelada por un admin");
+}
+
+/**
+ * Cada segundo: si una partida en curso se queda con menos de csstv_abandon_players jugadores en CT+T
+ * durante csstv_abandon_seconds seguidos, se cancela sola (motivo "abandoned"). Así nunca queda una
+ * partida "en vivo" para siempre con SourceTV grabando un servidor vacío.
+ */
+public Action Timer_AbandonCheck(Handle timer)
+{
+	int min = g_cvAbandonPlayers.IntValue;
+	if (min <= 0 || !(g_State == State_Starting || g_State == State_Live || g_State == State_Halftime))
+	{
+		g_iAbandonSince = 0;
+		g_bAbandonWarned = false;
+		return Plugin_Continue;
+	}
+	int players = CountTeamPlayers();
+	int limit = g_cvAbandonSeconds.IntValue;
+	if (players >= min)
+	{
+		if (g_iAbandonSince)
+			PrintToChatAll("%s Volvieron los jugadores: la partida sigue.", PREFIX);
+		g_iAbandonSince = 0;
+		g_bAbandonWarned = false;
+		return Plugin_Continue;
+	}
+	int now = GetTime();
+	if (!g_iAbandonSince)
+	{
+		g_iAbandonSince = now;
+		PrintToChatAll("%s Quedan %d jugadores en los equipos (mínimo %d). Si no vuelven, la partida se cancela en %d s.", PREFIX, players, min, limit);
+		LogMessage("Partida %s con %d jugadores: se cancela en %d s si no vuelven.", g_sMatchUid, players, limit);
+		return Plugin_Continue;
+	}
+	int left = limit - (now - g_iAbandonSince);
+	if (left <= 0)
+	{
+		CancelMatch("abandoned", "");
+		BackToWarmup();
+	}
+	else if (left <= 60 && !g_bAbandonWarned)
+	{
+		g_bAbandonWarned = true;
+		PrintToChatAll("%s Siguen faltando jugadores: la partida se cancela en %d s.", PREFIX, left);
+	}
+	return Plugin_Continue;
+}
+
+bool IsDigits(const char[] s)
+{
+	if (!s[0])
+		return false;
+	for (int i = 0; s[i]; i++)
+		if (!IsCharNumeric(s[i]))
+			return false;
+	return true;
+}
+
+/** Pone g_sJson en la cola y programa el envío. */
+bool QueueResult(const char[] what)
+{
+	if (!Queue_Save(g_sMatchUid))
+	{
+		LogError("No se pudo guardar el resultado de %s en la cola.", g_sMatchUid);
+		PrintToChatAll("%s No se pudo guardar el resultado. Avisá a un admin.", PREFIX);
+		return false;
+	}
+	LogMessage("Partida %s %s %d-%d. Resultado guardado en la cola.", g_sMatchUid, what, g_iTotA, g_iTotB);
+	Http_ResetBackoff();
+	Http_ScheduleProcess(1.0);
+	return true;
+}
+
+/** Jugadores que entrarían en el resultado (los que completaron al menos una ronda). */
+int CountReportedPlayers()
+{
+	int n;
+	for (int p = 0; p < g_iRecCount; p++)
+		if (g_Stats[p][ST_ROUNDS] > 0)
+			n++;
+	return n;
 }
 
 public Action Timer_AfterFinish(Handle timer)

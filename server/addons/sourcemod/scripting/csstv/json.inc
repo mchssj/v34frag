@@ -113,7 +113,11 @@ void J_KeyStr(const char[] key, const char[] value, bool comma = true)
 	J_Str(value);
 }
 
-void Json_BuildPayload(int endedAt)
+/**
+ * Arma el resultado en g_sJson. Con cancelled = true la partida se guarda como cancelada
+ * (reason: "admin" o "map_change"; by: nick de quien la canceló).
+ */
+void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason = "", const char[] by = "")
 {
 	char map[64], tag[24];
 	GetCurrentMap(map, sizeof(map));
@@ -129,8 +133,18 @@ void Json_BuildPayload(int endedAt)
 	J_KeyStr("map", map);
 	J_KeyInt("started_at", g_iStartedAt);
 	J_KeyInt("ended_at", endedAt);
-	J_KeyInt("max_rounds", g_cvMaxRounds.IntValue);
+	J_KeyInt("max_rounds", g_iMatchMaxRounds);
 	J_KeyInt("overtimes", g_iSegment);
+	if (cancelled)
+	{
+		J_KeyStr("status", "cancelled");
+		J_KeyStr("cancel_reason", reason);
+		J_KeyStr("cancelled_by", by);
+	}
+	else
+		J_KeyStr("status", "finished");
+	J_Raw(",\"demo\":");
+	J_Raw(g_bDemoRecorded ? "true" : "false");
 
 	J_Raw(",\"score\":{");
 	J_KeyInt("a", g_iTotA, false);
@@ -138,7 +152,8 @@ void Json_BuildPayload(int endedAt)
 	J_Char('}');
 
 	J_Raw(",\"winner\":");
-	if (g_iTotA > g_iTotB) J_Str("a");
+	if (cancelled) J_Raw("null");
+	else if (g_iTotA > g_iTotB) J_Str("a");
 	else if (g_iTotB > g_iTotA) J_Str("b");
 	else J_Raw("null");
 
