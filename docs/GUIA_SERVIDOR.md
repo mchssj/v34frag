@@ -183,15 +183,17 @@ Si se cambia de mapa a mitad de partida, la partida se descarta y no se envía.
 Al empezar cada ronda, en el freezetime, el chat muestra (cada parte se apaga con su cvar):
 
 ```
-[CSSTV] Ronda 13/30 · Equipo A (CT) 7 - 5 Equipo B (T)        ← todos (csstv_round_header)
-[CSSTV] Daño ronda 12:                                        ← solo vos (csstv_damage_report)
-[CSSTV] » s1mple: diste 100 (3) · recibiste 27 (1)
-[CSSTV] Plata del equipo: $21.350                              ← solo tu equipo (csstv_team_money)
-[CSSTV] s1mple $7.200 · fallen $5.900 · fer $4.100 · taco $3.350 · cold $800
+[v34frag] Ronda 13/30 · Equipo A (CT) 7 - 5 Equipo B (T)               ← todos (csstv_round_header)
+[v34frag] Damage Given to "s1mple" - 100 in 3 hits                     ← solo vos, en verde (csstv_damage_report)
+[v34frag] Damage Taken from "s1mple" - 27 in 1 hit                     ← solo vos, en rojo
+[v34frag] Plata del equipo: $21.350                                     ← solo tu equipo, en verde (csstv_team_money)
+[v34frag] s1mple $7.200 · fallen $5.900 · fer $4.100 · taco $3.350 · cold $800
 ```
 
 - El TAB mantiene el marcador de rondas y las **kills y muertes de cada jugador** después del medio tiempo, en la prórroga y cuando alguien se reconecta (con SteamID válido).
 - El encabezado avisa la **última ronda antes del cambio de lado** y el **match point**.
+- **Colores** (`csstv_chat_colors`): quien usa ClientMod ve colores RGB (dinero y daño dado en verde, daño recibido en rojo, ronda y marcador en amarillo, CT celeste y T dorado). Con `1` (por defecto) se detecta con la API de ClientMod (`clientmod.smx`); quien no usa ClientMod ve solo el verde básico, para no recibir caracteres raros. `2` fuerza RGB para todos (útil en un servidor sin `clientmod.smx`, como el de prueba).
+- **Prefijo** (`csstv_chat_tag`): `[v34frag]` por defecto. `cfg/csstv/warmup.cfg` tiene su propio `say "[CSSTV] …"`, que se cambia a mano.
 - El daño cuenta solo a los rivales, con el daño real (sin pasar la vida que le quedaba) y la cantidad de golpes entre paréntesis.
 - Al morir, el chat te dice quién te mató, con qué arma y cuánta vida y chaleco le quedan (`csstv_hp_on_death`). `!hp` lo repite.
 
@@ -282,6 +284,57 @@ Los errores se registran en `addons/sourcemod/logs/errors_*.log` y los eventos n
 | Después del medio tiempo nadie reaparece y la ronda no termina | Plugin 1.0.0: el cambio de lado dejaba a los jugadores sin modelo (los bots no eligen) | Actualizá a la 1.1.0, que les asigna el modelo equivalente. |
 | No se graban demos | La SourceTV no estaba activa al cargar el mapa | Agregá `+tv_enable 1` a la línea de arranque. `status` debe mostrar una línea `sourcetv:`. |
 | Stats del mismo jugador en registros distintos | El emulador del servidor le cambia el SteamID | Revisá la configuración del emulador no-Steam (RevEmu/ClientMod) para que el SteamID sea estable. |
+
+## API de ClientMod
+
+El plugin usa la API de ClientMod (`clientmod.smx`, de [clientmod.ru](https://clientmod.ru)) para saber qué jugadores usan ClientMod y mandarles colores RGB en el chat. Es **opcional**: sin ella, `csstv_reporter` funciona igual y todos ven los colores básicos.
+
+### Qué tiene que haber en el servidor
+
+| Archivo | Para qué | Servidor real |
+|---|---|---|
+| `addons/sourcemod/plugins/clientmod.smx` | La API (versión 1.7.1) | ✔ (instalado el 2026-10-11) |
+| `addons/sourcemod/gamedata/clientmod.txt` | Direcciones del motor que usa la API | ✔ |
+| Extensiones `game.cstrike`, `sdktools`, `sdkhooks` | Dependencias de la API | ✔ (vienen con SourceMod) |
+| `addons/sourcemod/plugins/clientmod_deathnotice.smx` | Opcional: avisos de muerte de ClientMod | ✔ |
+
+La API no usa archivo de configuración propio: sus cvars se ponen en `cfg/server.cfg` (o en un `.cfg` que se ejecute al cargar el mapa).
+
+### Cómo detecta a los jugadores
+
+Al conectarse, cada cliente ClientMod manda su versión en dos datos de usuario (`_client_version` y `~clientmod`). La API los lee y clasifica al jugador:
+
+| Tipo | `CM_GetClientModAuth` | Colores en el chat de `csstv_reporter` |
+|---|---|---|
+| Cliente original de v34 | 1 | Básicos |
+| ClientMod actualizado | 2 | RGB |
+| ClientMod desactualizado (menor que `clientmod_client_version_min`) | 3 | RGB |
+
+### Verificar que está funcionando
+
+Después de reiniciar el servidor, en la consola del panel:
+
+```
+sm plugins list           // debe aparecer "ClientMod API" (1.7.1) y "CSSTV Match Reporter" (1.2.0)
+clientmod_version         // 1.7.1
+csstv_chat_colors         // 1 (automático)
+```
+
+Al entrar un jugador, con `clientmod_logging 1` (por defecto) el log de SourceMod registra `"<jugador>" auth with ClientMod …` u `Original client`.
+
+Prueba en el juego: con ClientMod, el "Damage Taken" debe verse **rojo**. Si se ve en color normal, la API no está cargada (revisar `sm plugins list` y `sm plugins info clientmod`).
+
+### Cvars útiles de la API
+
+| Cvar | Default | Uso |
+|---|---|---|
+| `clientmod_private` | 0 | 0 entra cualquiera · 1 solo ClientMod actualizado · 2 ClientMod actualizado o desactualizado · -1 todos menos ClientMod desactualizado |
+| `clientmod_client_version_min` | `3.0.1.1837` | Versión mínima para considerar "actualizado" |
+| `clientmod_team_t` / `clientmod_team_ct` | vacío | Nombre de los equipos en el TAB y en los logs (por ejemplo `Equipo A` / `Equipo B`) |
+| `se_scoreboard` | 0 | `2`: la plata de cada jugador se ve en el TAB, solo para sus compañeros (complementa el mensaje de plata) |
+| `clientmod_logging` | 1 | Registrar el tipo de cliente de cada jugador |
+
+`clientmod_private 1` haría que todos vean los colores RGB, pero deja afuera a quien no usa ClientMod: es una decisión del servidor, no del plugin.
 
 ## Servidores de prueba locales
 

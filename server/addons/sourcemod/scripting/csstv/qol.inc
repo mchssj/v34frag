@@ -27,6 +27,8 @@ ConVar g_cvPauseMax;
 ConVar g_cvPauseTime;
 ConVar g_cvDemo;
 ConVar g_cvDemoKeep;
+ConVar g_cvChatColors;
+ConVar g_cvChatTag;
 
 // !hp
 int g_iKillerUserId[MAXPLAYERS + 1];
@@ -63,6 +65,9 @@ void Qol_Init()
 	g_cvPauseTime    = CreateConVar("csstv_pause_time", "60", "Segundos de cada pausa (modos 1 y 3).", _, true, 10.0, true, 600.0);
 	g_cvDemo         = CreateConVar("csstv_demo", "1", "Grabar un demo de SourceTV por partida (requiere tv_enable 1 al cargar el mapa).", _, true, 0.0, true, 1.0);
 	g_cvDemoKeep     = CreateConVar("csstv_demo_keep", "50", "Demos que se conservan en csstv_demos/ (0 = todos).", _, true, 0.0, true, 10000.0);
+	g_cvChatColors   = CreateConVar("csstv_chat_colors", "1", "Colores del chat: 0 solo básicos, 1 RGB para quien usa ClientMod (detectado con su API), 2 siempre RGB.", _, true, 0.0, true, 2.0);
+	g_cvChatTag      = CreateConVar("csstv_chat_tag", "v34frag", "Texto del prefijo de los mensajes: [v34frag].");
+	g_cvChatTag.AddChangeHook(OnChatTagChanged);
 
 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
@@ -87,15 +92,86 @@ bool QolTarget(int client)
 #endif
 }
 
+public void OnChatTagChanged(ConVar cv, const char[] oldValue, const char[] newValue)
+{
+	strcopy(g_sTag, sizeof(g_sTag), newValue[0] ? newValue : "v34frag");
+	Format(g_sPrefix, sizeof(g_sPrefix), "\x04[%s]\x01", g_sTag);
+}
+
+/*
+ * Colores del chat. Los mensajes llevan etiquetas ({#verde}, {#rojo}…) que se
+ * convierten al enviar:
+ *  - ClientMod acepta colores RGB (\x07RRGGBB) en mensajes SayText2;
+ *  - el cliente original de v34 no: ahí {#verde} pasa a ser el verde básico
+ *    (\x04) y las demás etiquetas, el color normal.
+ * Quién usa ClientMod lo dice la API de ClientMod (clientmod.smx), si está cargada.
+ */
+native int CM_GetClientModAuth(int client);   // clientmod.inc: 2 = ClientMod, 3 = ClientMod desactualizado
+
+static const char g_sColorTag[][] = { "{#normal}", "{#verde}", "{#rojo}", "{#amarillo}", "{#ct}", "{#t}" };
+static const char g_sColorRgb[][] = { "\x01", "\x073EFF3E", "\x07FF4040", "\x07FFD700", "\x0799CCFF", "\x07EAB93D" };
+static const char g_sColorBasic[][] = { "\x01", "\x04", "\x01", "\x01", "\x01", "\x01" };
+
+bool ChatUsesRgb(int client)
+{
+	int mode = g_cvChatColors.IntValue;
+	if (mode == 0)
+		return false;
+	if (mode == 2)
+		return true;
+	if (GetFeatureStatus(FeatureType_Native, "CM_GetClientModAuth") != FeatureStatus_Available)
+		return false;
+	return CM_GetClientModAuth(client) >= 2;
+}
+
+/** Reemplaza las etiquetas de color (rgb = colores de ClientMod; si no, básicos; strip = sin color). */
+void ApplyColorTags(char[] text, int len, bool rgb, bool strip = false)
+{
+	for (int i = 0; i < sizeof(g_sColorTag); i++)
+		ReplaceString(text, len, g_sColorTag[i], strip ? "" : (rgb ? g_sColorRgb[i] : g_sColorBasic[i]), false);
+}
+
+/** Envía un mensaje con etiquetas de color a un jugador, según su cliente. */
+void ColorSend(int client, const char[] text)
+{
+	char buf[256];
+	strcopy(buf, sizeof(buf), text);
+#if defined CSSTV_DEBUG
+	char plain[256];
+	strcopy(plain, sizeof(plain), text);
+	ApplyColorTags(plain, sizeof(plain), false, true);
+	LogMessage("[chat %N%s] %s", client, ChatUsesRgb(client) ? ", RGB" : "", plain);
+#endif
+	if (IsFakeClient(client))
+		return;
+	if (!ChatUsesRgb(client))
+	{
+		ApplyColorTags(buf, sizeof(buf), false);
+		PrintToChat(client, "%s", buf);
+		return;
+	}
+	ApplyColorTags(buf, sizeof(buf), true);
+	char msg[256];
+	Format(msg, sizeof(msg), "\x01%s", buf);   // SayText2 necesita empezar con \x01 para mostrar colores
+	Handle um = StartMessageOne("SayText2", client, USERMSG_RELIABLE | USERMSG_BLOCKHOOKS);
+	if (um == null)
+	{
+		ApplyColorTags(buf, sizeof(buf), false);
+		PrintToChat(client, "%s", buf);
+		return;
+	}
+	BfWriteByte(um, client);   // autor
+	BfWriteByte(um, true);     // mensaje de chat
+	BfWriteString(um, msg);
+	EndMessage();
+}
+
 void QolChat(int client, const char[] fmt, any ...)
 {
 	char buf[256];
 	SetGlobalTransTarget(client);
 	VFormat(buf, sizeof(buf), fmt, 3);
-	PrintToChat(client, "%s", buf);
-#if defined CSSTV_DEBUG
-	LogMessage("[chat %N] %s", client, buf);
-#endif
+	ColorSend(client, buf);
 }
 
 void QolReply(int client, const char[] fmt, any ...)
@@ -103,6 +179,7 @@ void QolReply(int client, const char[] fmt, any ...)
 	char buf[256];
 	SetGlobalTransTarget(client);
 	VFormat(buf, sizeof(buf), fmt, 3);
+	ApplyColorTags(buf, sizeof(buf), false, true);
 	ReplyToCommand(client, "%s", buf);
 #if defined CSSTV_DEBUG
 	LogMessage("[respuesta a %N] %s", client, buf);
@@ -114,10 +191,17 @@ void QolChatAll(const char[] fmt, any ...)
 	char buf[256];
 	SetGlobalTransTarget(LANG_SERVER);
 	VFormat(buf, sizeof(buf), fmt, 2);
-	PrintToChatAll("%s", buf);
 #if defined CSSTV_DEBUG
-	LogMessage("[chat todos] %s", buf);
+	char plain[256];
+	strcopy(plain, sizeof(plain), buf);
+	ApplyColorTags(plain, sizeof(plain), false, true);
+	LogMessage("[chat todos] %s", plain);
 #endif
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && !IsFakeClient(i))
+			ColorSend(i, buf);
+	ApplyColorTags(buf, sizeof(buf), false, true);
+	PrintToServer("%s", buf);
 }
 
 #if defined CSSTV_DEBUG
@@ -293,53 +377,50 @@ bool IsTeamSide(int team)
 
 void Qol_RoundHeader()
 {
-	char sideA[4], sideB[4];
-	strcopy(sideA, sizeof(sideA), g_iSideA == TEAM_CT ? "CT" : "T");
-	strcopy(sideB, sizeof(sideB), g_iSideA == TEAM_CT ? "T" : "CT");
+	// Lado de cada equipo, con el color del lado: CT celeste, T dorado.
+	char sideA[24], sideB[24];
+	strcopy(sideA, sizeof(sideA), g_iSideA == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}");
+	strcopy(sideB, sizeof(sideB), g_iSideA == TEAM_CT ? "{#t}T{#normal}" : "{#ct}CT{#normal}");
 	if (g_iSegment == 0)
-		QolChatAll("%s Ronda %d/%d · Equipo A (%s) %d - %d Equipo B (%s)", PREFIX,
+		QolChatAll("%s Ronda {#amarillo}%d/%d{#normal} · Equipo A (%s) {#amarillo}%d - %d{#normal} Equipo B (%s)", PREFIX,
 			g_iSegRound + 1, g_iSegLen, sideA, g_iTotA, g_iTotB, sideB);
 	else
-		QolChatAll("%s Prórroga %d · ronda %d/%d · Equipo A (%s) %d - %d Equipo B (%s)", PREFIX,
+		QolChatAll("%s Prórroga %d · ronda {#amarillo}%d/%d{#normal} · Equipo A (%s) {#amarillo}%d - %d{#normal} Equipo B (%s)", PREFIX,
 			g_iSegment, g_iSegRound + 1, g_iSegLen, sideA, g_iTotA, g_iTotB, sideB);
 
 	int half = g_iSegLen / 2;
 	if (g_iSegA == half)
-		QolChatAll("%s \x04Match point para el Equipo A.", PREFIX);
+		QolChatAll("%s {#amarillo}Match point para el Equipo A.", PREFIX);
 	else if (g_iSegB == half)
-		QolChatAll("%s \x04Match point para el Equipo B.", PREFIX);
+		QolChatAll("%s {#amarillo}Match point para el Equipo B.", PREFIX);
 	if (g_iSegRound + 1 == half)
-		QolChatAll("%s Última ronda antes del cambio de lado.", PREFIX);
+		QolChatAll("%s {#amarillo}Última ronda antes del cambio de lado.", PREFIX);
 }
 
+/**
+ * Daño de la ronda anterior, con el formato de la consola del juego:
+ *   [v34frag] Damage Given to "Rival" - 54 in 2 hits      (verde)
+ *   [v34frag] Damage Taken from "Rival" - 27 in 1 hit     (rojo)
+ * Primero todo el daño dado y después el recibido; solo rivales con daño.
+ */
 void Qol_DamageReport(int client)
 {
-	int lines;
 	for (int j = 1; j <= MaxClients; j++)
 	{
-		if (j == client || !IsClientInGame(j))
+		if (j == client || !IsClientInGame(j) || g_iPrevDmg[client][j] <= 0)
 			continue;
-		int given = g_iPrevDmg[client][j], taken = g_iPrevDmg[j][client];
-		if (given <= 0 && taken <= 0)
-			continue;
-		if (!lines)
-			QolChat(client, "%s Daño ronda %d:", PREFIX, g_iPrevRound);
-		char g[24], t[24];
-		DmgText(given, g_iPrevHits[client][j], g, sizeof(g));
-		DmgText(taken, g_iPrevHits[j][client], t, sizeof(t));
-		QolChat(client, "%s » %N: diste %s · recibiste %s", PREFIX, j, g, t);
-		lines++;
+		int hits = g_iPrevHits[client][j];
+		QolChat(client, "%s {#verde}Damage Given{#normal} to \"%N\" - {#verde}%d{#normal} in %d %s", PREFIX,
+			j, g_iPrevDmg[client][j], hits, hits == 1 ? "hit" : "hits");
 	}
-	if (!lines)
-		QolChat(client, "%s Daño ronda %d: sin daño.", PREFIX, g_iPrevRound);
-}
-
-void DmgText(int dmg, int hits, char[] out, int len)
-{
-	if (dmg <= 0)
-		strcopy(out, len, "0");
-	else
-		Format(out, len, "%d (%d)", dmg, hits);
+	for (int j = 1; j <= MaxClients; j++)
+	{
+		if (j == client || !IsClientInGame(j) || g_iPrevDmg[j][client] <= 0)
+			continue;
+		int hits = g_iPrevHits[j][client];
+		QolChat(client, "%s {#rojo}Damage Taken{#normal} from \"%N\" - {#rojo}%d{#normal} in %d %s", PREFIX,
+			j, g_iPrevDmg[j][client], hits, hits == 1 ? "hit" : "hits");
+	}
 }
 
 void Qol_TeamMoney(int team)
@@ -370,9 +451,9 @@ void Qol_TeamMoney(int team)
 		money[b + 1] = m;
 	}
 
-	char line[192], part[64], name[MAX_NAME_LENGTH], amount[16];
+	char line[256], part[96], name[MAX_NAME_LENGTH], amount[16];
 	FormatMoney(total, amount, sizeof(amount));
-	Format(line, sizeof(line), "%s Plata del equipo: %s", PREFIX, amount);
+	Format(line, sizeof(line), "%s Plata del equipo: {#verde}%s", PREFIX, amount);
 	PrintToTeam(team, line);
 	line[0] = '\0';
 	for (int k = 0; k < n; k++)
@@ -380,11 +461,12 @@ void Qol_TeamMoney(int team)
 		GetClientName(clients[k], name, sizeof(name));
 		TruncateUtf8(name, 14);
 		FormatMoney(money[k], amount, sizeof(amount));
-		Format(part, sizeof(part), "%s%s %s", line[0] ? " · " : "", name, amount);
-		if (strlen(line) + strlen(part) > 150)
+		Format(part, sizeof(part), "%s%s {#verde}%s{#normal}", line[0] ? " · " : "", name, amount);
+		// Con las etiquetas contadas: al convertirlas a color el texto queda más corto.
+		if (strlen(line) + strlen(part) > 190)
 		{
 			PrintTeamLine(team, line);
-			Format(part, sizeof(part), "%s %s", name, amount);
+			Format(part, sizeof(part), "%s {#verde}%s{#normal}", name, amount);
 			line[0] = '\0';
 		}
 		StrCat(line, sizeof(line), part);
@@ -395,7 +477,7 @@ void Qol_TeamMoney(int team)
 
 void PrintTeamLine(int team, const char[] text)
 {
-	char line[192];
+	char line[256];
 	Format(line, sizeof(line), "%s %s", PREFIX, text);
 	PrintToTeam(team, line);
 }
@@ -452,10 +534,10 @@ void Qol_PrintKiller(int victim)
 	}
 	if (!IsPlayerAlive(killer))
 	{
-		QolChat(victim, "%s Te mató %N (%s) · también está muerto.", PREFIX, killer, g_sKillerWeapon[victim]);
+		QolChat(victim, "%s Te mató {#rojo}%N{#normal} (%s) · también está muerto.", PREFIX, killer, g_sKillerWeapon[victim]);
 		return;
 	}
-	QolChat(victim, "%s Te mató %N (%s) · le quedan %d HP y %d de chaleco.", PREFIX,
+	QolChat(victim, "%s Te mató {#rojo}%N{#normal} (%s) · le quedan {#amarillo}%d HP{#normal} y %d de chaleco.", PREFIX,
 		killer, g_sKillerWeapon[victim], GetClientHealth(killer), GetClientArmor(killer));
 }
 
@@ -464,9 +546,9 @@ public Action Cmd_Hp(int client, int args)
 	if (client <= 0 || !IsClientInGame(client))
 		return Plugin_Handled;
 	if (!g_cvHpOnDeath.BoolValue || g_State != State_Live)
-		QolReply(client, "[CSSTV] !hp solo funciona durante la partida.");
+		QolReply(client, "[%s] !hp solo funciona durante la partida.", g_sTag);
 	else if (!g_iKillerUserId[client])
-		QolReply(client, "[CSSTV] En esta ronda no te mató ningún rival.");
+		QolReply(client, "[%s] En esta ronda no te mató ningún rival.", g_sTag);
 	else
 		Qol_PrintKiller(client);
 	return Plugin_Handled;
@@ -490,12 +572,12 @@ bool CanPauseNow(int client)
 {
 	if (g_State != State_Live || g_bRestarting)
 	{
-		QolReply(client, "[CSSTV] Solo se puede pausar durante la partida.");
+		QolReply(client, "[%s] Solo se puede pausar durante la partida.", g_sTag);
 		return false;
 	}
 	if (g_bPaused || g_bPauseRequested)
 	{
-		QolReply(client, "[CSSTV] Ya hay una pausa %s.", g_bPaused ? "en curso" : "pedida para la próxima ronda");
+		QolReply(client, "[%s] Ya hay una pausa %s.", g_sTag, g_bPaused ? "en curso" : "pedida para la próxima ronda");
 		return false;
 	}
 	return true;
@@ -507,12 +589,12 @@ public Action Cmd_Pause(int client, int args)
 		return Plugin_Handled;
 	if (g_cvPauseMode.IntValue == PAUSE_OFF)
 	{
-		QolReply(client, "[CSSTV] Las pausas están desactivadas en este servidor.");
+		QolReply(client, "[%s] Las pausas están desactivadas en este servidor.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (!IsTeamSide(GetClientTeam(client)))
 	{
-		QolReply(client, "[CSSTV] Solo los jugadores de un equipo pueden pausar.");
+		QolReply(client, "[%s] Solo los jugadores de un equipo pueden pausar.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (!CanPauseNow(client))
@@ -520,7 +602,7 @@ public Action Cmd_Pause(int client, int args)
 	int t = TeamIndexOf(client), max = g_cvPauseMax.IntValue;
 	if (g_iPausesUsed[t] >= max)
 	{
-		QolReply(client, "[CSSTV] Tu equipo ya usó %s.", max == 1 ? "su pausa" : "todas sus pausas");
+		QolReply(client, "[%s] Tu equipo ya usó %s.", g_sTag, max == 1 ? "su pausa" : "todas sus pausas");
 		return Plugin_Handled;
 	}
 	g_iPauseBy = t;
@@ -531,7 +613,7 @@ public Action Cmd_Pause(int client, int args)
 	else
 	{
 		g_bPauseRequested = true;
-		QolChatAll("%s %N pidió una pausa para el Equipo %s. Empieza al inicio de la próxima ronda (!unpause para cancelarla).",
+		QolChatAll("%s {#amarillo}%N pidió una pausa para el Equipo %s.{#normal} Empieza al inicio de la próxima ronda (!unpause para cancelarla).",
 			PREFIX, client, t == 0 ? "A" : "B");
 	}
 	return Plugin_Handled;
@@ -547,7 +629,7 @@ public Action Cmd_ForcePause(int client, int args)
 	else
 	{
 		g_bPauseRequested = true;
-		QolChatAll("%s Un admin pidió una pausa. Empieza al inicio de la próxima ronda.", PREFIX);
+		QolChatAll("%s {#amarillo}Un admin pidió una pausa.{#normal} Empieza al inicio de la próxima ronda.", PREFIX);
 	}
 	return Plugin_Handled;
 }
@@ -575,14 +657,14 @@ void Pause_Start()
 
 	if (admin)
 	{
-		QolChatAll("%s Pausa del admin. Sigue con !forceunpause o cuando los dos equipos escriban !unpause.", PREFIX);
+		QolChatAll("%s {#amarillo}Pausa del admin.{#normal} Sigue con !forceunpause o cuando los dos equipos escriban !unpause.", PREFIX);
 	}
 	else
 	{
 		g_iPausesUsed[g_iPauseBy]++;
 		char who[16];
 		Format(who, sizeof(who), "Equipo %s", g_iPauseBy == 0 ? "A" : "B");
-		QolChatAll("%s Pausa táctica del %s (%d de %d).", PREFIX, who, g_iPausesUsed[g_iPauseBy], g_cvPauseMax.IntValue);
+		QolChatAll("%s {#amarillo}Pausa táctica del %s (%d de %d).", PREFIX, who, g_iPausesUsed[g_iPauseBy], g_cvPauseMax.IntValue);
 		if (mode == PAUSE_TIMED)
 			QolChatAll("%s Dura %d segundos.", PREFIX, RoundToFloor(secs));
 		else if (mode == PAUSE_UNTIL)
@@ -611,7 +693,7 @@ public Action Timer_PauseTick(Handle timer)
 			return Plugin_Stop;
 		}
 		if (left == 30 || left == 10 || left <= 5)
-			QolChatAll("%s La pausa termina en %d s.", PREFIX, left);
+			QolChatAll("%s La pausa termina en {#amarillo}%d s{#normal}.", PREFIX, left);
 	}
 	else
 	{
@@ -642,7 +724,7 @@ public Action Cmd_Unpause(int client, int args)
 	{
 		if (g_iPauseBy != t)
 		{
-			QolReply(client, "[CSSTV] Solo el equipo que pidió la pausa puede cancelarla.");
+			QolReply(client, "[%s] Solo el equipo que pidió la pausa puede cancelarla.", g_sTag);
 			return Plugin_Handled;
 		}
 		g_bPauseRequested = false;
@@ -651,12 +733,12 @@ public Action Cmd_Unpause(int client, int args)
 	}
 	if (!g_bPaused)
 	{
-		QolReply(client, "[CSSTV] No hay ninguna pausa.");
+		QolReply(client, "[%s] No hay ninguna pausa.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (g_bPauseTimed && g_cvPauseMode.IntValue == PAUSE_TIMED)
 	{
-		QolReply(client, "[CSSTV] Esta pausa termina sola en %d s.", RoundToCeil(g_fPauseEnds - GetGameTime()));
+		QolReply(client, "[%s] Esta pausa termina sola en %d s.", g_sTag, RoundToCeil(g_fPauseEnds - GetGameTime()));
 		return Plugin_Handled;
 	}
 	if (!g_bUnpauseReady[t])
@@ -681,7 +763,7 @@ public Action Cmd_ForceUnpause(int client, int args)
 	else if (g_bPaused)
 		Pause_End("Un admin terminó la pausa.");
 	else
-		QolReply(client, "[CSSTV] No hay ninguna pausa.");
+		QolReply(client, "[%s] No hay ninguna pausa.", g_sTag);
 	return Plugin_Handled;
 }
 
@@ -691,7 +773,7 @@ void Pause_End(const char[] reason)
 	delete g_hPauseTimer;
 	if (g_State == State_Live && InFreezeTime())
 		GameRules_SetPropFloat("m_fRoundStartTime", GetGameTime() + 3.0);
-	QolChatAll("%s %s Se sigue en 3 segundos.", PREFIX, reason);
+	QolChatAll("%s {#verde}%s Se sigue en 3 segundos.", PREFIX, reason);
 }
 
 /** Sin mensajes: al cancelar, terminar la partida o cambiar de mapa. */
