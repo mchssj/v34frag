@@ -151,7 +151,9 @@ public void Http_OnPoll(bool success, const char[] error, System2HTTPRequest req
     if (len >= 2 && payload[0] == '"' && payload[len - 1] == '"')
     {
         payload[len - 1] = '\0';
-        strcopy(payload, sizeof(payload), payload[1]);
+        for (int i = 0; i < len - 1; i++)
+            payload[i] = payload[i + 1];
+        payload[len - 2] = '\0';
     }
 
     if (StrEqual(payload, "IDLE", false))
