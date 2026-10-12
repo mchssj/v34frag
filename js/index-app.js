@@ -901,26 +901,7 @@ var loadP=null,loadAgain=false;
 function load(){if(loadP){loadAgain=true;return loadP}
  loadP=(async function(){try{await loadImpl();while(loadAgain){loadAgain=false;await loadImpl()}}finally{loadP=null}})();return loadP}
 async function loadImpl(){try{
- var R=await Promise.all([
-  ok(sb.from('teams').select('*')),
-  ok(sb.from('players').select('*').order('nick')),
-  soft(sb.from('matches').select('*'),'matches'),
-  soft(sb.from('events').select('*').order('starts_on',{ascending:false}),'events'),
-  soft(sb.from('tournament_registrations').select('*'),'tournament_registrations'),
-  soft(sb.from('player_medals').select('*'),'player_medals'),
-  soft(sb.from('player_map_stats').select('*'),'player_map_stats'),
-  soft(sb.from('profile_requests').select('*'),'profile_requests'),
-  soft(sb.from('match_vetos').select('*'),'match_vetos'),
-  soft(sb.from('pcw_posts').select('*').order('created_at',{ascending:false}),'pcw_posts'),
-  soft(sb.from('result_reports').select('*'),'result_reports'),
-  (async function(){var r=await sb.from('public_profiles').select('*');if(r.error)r=await sb.from('profiles').select('id, tag');return r})(),
-  admin?ok(sb.from('team_requests').select('*')):Promise.resolve([]),
-  me?ok(sb.from('team_requests').select('*').eq('user_id',me).maybeSingle()):Promise.resolve(null),
-  soft(sb.from('match_player_stats').select('*'),'match_player_stats'),
-  admin?soft(sb.from('game_servers').select('id,name,active,created_at,last_seen_at').order('created_at'),'game_servers'):Promise.resolve([]),
-  soft(sb.from('player_elo').select('steam_id,elo,peak_elo,matches'),'player_elo'),
-  soft(sb.from('elo_config').select('*').eq('id',1),'elo_config')
- ]);
+ var R=await CSSTVIndexData.loadSnapshot(sb,admin,me,function(label,error){if(!seenErr[label]){seenErr[label]=1;console.error(label,error);showToast('Error cargando '+label+': '+error.message+(error.code?' [código '+error.code+']':'')+(error.hint?' · '+error.hint:''),'error')}});
  eloBySteam={};(R[16]||[]).forEach(function(e){eloBySteam[e.steam_id]=e});
  if(R[17]&&R[17][0])eloCfg=R[17][0];
  var allT=R[0]||[];teams=allT.filter(function(t){return t.kind!=='pcw'&&t.kind!=='mix'});pcwTeams=allT.filter(function(t){return t.kind==='pcw'||t.kind==='mix'});
