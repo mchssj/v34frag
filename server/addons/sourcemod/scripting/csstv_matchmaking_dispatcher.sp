@@ -21,7 +21,7 @@ public Plugin myinfo =
 {
     name = "CSSTV Matchmaking Dispatcher",
     author = "CSSTV",
-    description = "Despacho seguro de matchmaking 5v5 independiente del reporter",
+    description = "Despacho seguro de matchmaking 1v1/2v2/3v3/5v5 independiente del reporter",
     version = MM_VERSION,
     url = ""
 };
@@ -198,9 +198,12 @@ public void Http_OnPoll(bool success, const char[] error, System2HTTPRequest req
         int eq = FindCharInString(ids[i], 61);
         if (eq > 0) ids[i][eq] = 0;
     }
-    if (count != MM_MAX_STEAMIDS)
+    // La cola admite 1v1, 2v2, 3v3 y 5v5: 2, 4, 6 o 10 SteamID.
+    // Validar antes de aplicar la contraseña evita dejar el servidor en estado
+    // parcialmente asignado si Supabase devuelve un roster incompleto.
+    if (count != 2 && count != 4 && count != 6 && count != MM_MAX_STEAMIDS)
     {
-        LogError("[CSSTV MM] El roster debe tener 10 SteamID; recibidos: %d.", count);
+        LogError("[CSSTV MM] Roster inválido: se esperaban 2, 4, 6 o 10 SteamID; recibidos: %d.", count);
         return;
     }
 
