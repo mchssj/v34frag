@@ -105,3 +105,24 @@ Tabla de posiciones (`standings`): 3 pts victoria, 1 empate; desempate por difer
 | `cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4` | Cliente Supabase |
 | `flagcdn.com` | Banderas de país en perfiles |
 | `steam://connect/<ip>` | Botón para conectarse al servidor de juego |
+
+
+## Fase 11 — arquitectura y rendimiento (12/10/2026)
+
+### JavaScript separado del HTML
+
+- `js/theme.js`: comportamiento del selector de tema de la página principal.
+- `js/index-app.js`: lógica existente de la página principal, cargada desde `index.html` en el mismo punto en el que antes estaba el script inline. La extracción reduce el HTML y permite validar el JS por separado; **la lógica interna de este archivo todavía necesita una división gradual por dominios** para no arriesgar los flujos actuales de torneos, mixes, perfiles y administración.
+- `js/matchmaking.js`: eventos, presentación y flujo de sesión/cola del matchmaking.
+- `js/matchmaking-data.js`: acceso a datos del matchmaking (estado RPC, rol admin, listado y actualización de servidores). Centraliza las consultas de esta página y normaliza los errores de Supabase.
+
+### Ajustes de rendimiento
+
+- El matchmaking consulta el estado cada 8 segundos en lugar de cada 4 y detiene el intervalo cuando la pestaña queda oculta; al volver a primer plano hace una consulta inmediata.
+- La inicialización de sesión evita volver a ejecutar toda la carga si Supabase notifica dos veces la misma identidad.
+- Guardar la configuración de un servidor actualiza el elemento en memoria, en lugar de volver a consultar la lista completa.
+- La migración `20261012030000_performance_indexes.sql` añade índices para filtros, relaciones y listados frecuentes de chat, vetos, inscripciones, solicitudes, PCW, estadísticas y servidores. Aplicarla en el proyecto Supabase antes de esperar beneficios en producción.
+
+### Límites conocidos / siguiente paso
+
+La página principal aún conserva una carga global que consulta varias tablas y sus renderizadores comparten estado dentro de `js/index-app.js`. Convertir cada sección a carga selectiva/paginada requiere separar su estado y sus renderizadores de forma incremental; no se considera resuelto por el mero hecho de externalizar el script. No se habilitó Realtime: el matchmaking usa polling acotado y pausado en pestañas ocultas, evitando añadir suscripciones que deban gestionarse.
