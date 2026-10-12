@@ -6,9 +6,6 @@ create index if not exists match_chat_match_created_idx
 create index if not exists match_vetos_match_seq_idx
   on public.match_vetos (match_id, seq);
 
-create index if not exists result_reports_match_idx
-  on public.result_reports (match_id);
-
 create index if not exists tournament_registrations_event_team_idx
   on public.tournament_registrations (event_id, team_id);
 
