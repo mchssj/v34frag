@@ -37,6 +37,35 @@ header.top{position:relative;inset:auto;width:100%;max-width:none;height:auto;mi
  .body{padding:12px}.pad{padding:14px}
  .actions{gap:6px}.actions button,.actions a{flex:1 1 100%;text-align:center}
 }
+
+/* Mantener el mismo navbar horizontal de index.html aunque csstv-theme.css defina un sidebar global. */
+body>header.top{
+  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;flex-wrap:wrap!important;
+  width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;
+  margin:0!important;padding:15px max(16px,calc((100% - 1100px)/2))!important;
+  overflow:visible!important;border:0!important;border-bottom:1px solid var(--line,#302630)!important;
+  border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+body>header.top nav{
+  position:static!important;inset:auto!important;width:auto!important;height:auto!important;max-width:none!important;
+  display:flex!important;flex:1 1 auto!important;flex-direction:row!important;align-items:center!important;
+  flex-wrap:wrap!important;gap:16px!important;overflow:visible!important;border:0!important;padding:0!important;
+}
+body>header.top nav a{
+  display:inline-flex!important;width:auto!important;flex:none!important;padding:6px 0!important;
+  white-space:nowrap!important;border:0!important;border-radius:0!important;background:transparent!important;
+}
+body>header.top nav a.active{color:var(--pink)!important;box-shadow:none!important}
+body>header.top #user-label{margin-left:auto}
+body>header.top #auth-button{flex:0 0 auto}
+@media(max-width:760px){
+  body>header.top{padding:12px!important;gap:10px!important}
+  body>header.top nav{order:3;flex:1 0 100%!important;width:100%!important;gap:14px!important;padding-top:8px!important;border-top:1px solid var(--line,#302630)!important}
+  body>header.top nav a{padding:4px 0!important}
+  body>header.top #user-label{margin-left:auto}
+}
+
 </style>
 </head>
 <body>
