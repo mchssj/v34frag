@@ -4,6 +4,8 @@ Cada mix reportado por el servidor cambia el ELO de los jugadores que lo jugaron
 
 ## Reglas
 
+> Desde `20261011230000`, base, bonus, mínimo e inicial se configuran en la tabla `elo_config` (Admin → Servidores → ELO). Los valores de esta tabla son los por defecto. Ver [ELO configurable](../2026-10-11-elo-configurable/DOCUMENTACION.md).
+
 | Regla | Valor |
 |---|---|
 | ELO inicial | 1000 (nivel 4) |
@@ -13,7 +15,7 @@ Cada mix reportado por el servidor cambia el ELO de los jugadores que lo jugaron
 | Mínimos | El ganador suma al menos +1 y el perdedor resta al menos −1 |
 | Piso | El ELO nunca baja de 100 |
 | Empate | Resultado 0.5: solo cambia por la diferencia de probabilidad y el bonus |
-| Quién recibe ELO | SteamID64 válido y al menos 1 ronda jugada |
+| Quién recibe ELO | SteamID64 válido (`7656119` + 10 dígitos, o `765612` + 11 en las cuentas nuevas, desde `20261011220000`) y al menos 1 ronda jugada |
 | Quién cuenta en la fuerza del equipo | Todos los que jugaron al menos 1 ronda. Los que no tienen SteamID64 (`STEAM_ID_LAN`, `NOSTEAM:…`, bots) cuentan como un jugador nuevo (μ 25, σ 8.33) y no reciben ELO (desde `20261011200000`) |
 
 `resultado` vale 1 si ganó, 0.5 si empató y 0 si perdió. El rating es el HLTV 1.0 que ya calcula `csstv_rating` para cada jugador en cada mix.

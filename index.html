@@ -479,7 +479,15 @@ main>div,main>aside{min-width:0}
 <button id="srv-add" class="pri" type="button">Crear y generar token</button><span id="srv-msg" class="msg" style="padding:0"></span>
 </div></section>
 <section><h2>ELO</h2><div class="fm">
-<p class="msg" style="padding:0">Reinicia el ELO de todos y vuelve a aplicar los mixes en el orden en que se jugaron.</p>
+<div class="g2"><div><label for="elo-base">Base (± con equipos parejos)</label><input id="elo-base" type="number" min="5" max="100" step="1" /></div>
+<div><label for="elo-start">ELO inicial</label><input id="elo-start" type="number" min="100" max="5000" step="1" /></div></div>
+<div class="g2"><div><label for="elo-bmax">Bonus máximo por rating (±)</label><input id="elo-bmax" type="number" min="0" max="20" step="1" /></div>
+<div><label for="elo-bfac">Puntos por 1.00 de rating</label><input id="elo-bfac" type="number" min="0" max="50" step="0.5" /></div></div>
+<div><label for="elo-floor">ELO mínimo</label><input id="elo-floor" type="number" min="0" max="1000" step="1" /></div>
+<p id="elo-prev" class="msg" style="padding:0"></p>
+<label class="chk"><input id="elo-rec" type="checkbox" checked /><span>Recalcular todos los mixes con estos valores</span></label>
+<button id="elo-save" class="pri" type="button">Guardar</button>
+<p class="msg" style="padding:0">Recalcular reinicia el ELO de todos y vuelve a aplicar los mixes en el orden en que se jugaron.</p>
 <button id="elo-recalc" type="button">Recalcular ELO</button><span id="elo-msg" class="msg" style="padding:0"></span>
 </div></section>
 </aside>
@@ -664,7 +672,7 @@ function handleRoute(){
 
 window.addEventListener('DOMContentLoaded', function() { load(); });
 
-var mstats=[],eloBySteam={},servers=[],pcwTeams=[],pcwPosts=[],reports=[],meCreated=null,profDet=null,profAvatarBlob=null,matchVetos=[],eeid=null,emid=null,selE=null,curM=null,sb=null,me=null,meEmail='',matches=[],events=[],registrations=[],medals=[],mapStats=[],chatMsgs=[],selEv=null,selPlayerId=null,selMatchId=null,admin=false,teams=[],players=[],reqs=[],profileReqs=[],mine=null,sel=null,ep=null,et=null,chk={}, userProfiles={};
+var mstats=[],eloBySteam={},eloCfg={base:30,bonus_max:5,bonus_factor:10,elo_floor:100,start_elo:1000},servers=[],pcwTeams=[],pcwPosts=[],reports=[],meCreated=null,profDet=null,profAvatarBlob=null,matchVetos=[],eeid=null,emid=null,selE=null,curM=null,sb=null,me=null,meEmail='',matches=[],events=[],registrations=[],medals=[],mapStats=[],chatMsgs=[],selEv=null,selPlayerId=null,selMatchId=null,admin=false,teams=[],players=[],reqs=[],profileReqs=[],mine=null,sel=null,ep=null,et=null,chk={}, userProfiles={};
 function num(v){var n=parseFloat(v);return isNaN(n)?null:n}
 function fm(v,d){return v==null?'-':Number(v).toFixed(d)}
 function av(p){if(p.photo_url){var a=el('img','av');a.loading='lazy';a.src=p.photo_url;a.alt=p.nick;return a}return el('div','av',(p.nick||'?')[0].toUpperCase())}
@@ -802,7 +810,7 @@ function rPA(){
 }
 
 function rUnlinked(){var ul=$('unl-list');if(!ul)return;var g={};
- mstats.forEach(function(s){if(s.player_id||!/^7656119\d{10}$/.test(s.steam_id))return;var m=byId(matches,s.match_id),d=m?mdate(m):null,x=g[s.steam_id]||(g[s.steam_id]={steam:s.steam_id,nick:s.nick,n:0,last:null});
+ mstats.forEach(function(s){if(s.player_id||!STEAM64.test(s.steam_id))return;var m=byId(matches,s.match_id),d=m?mdate(m):null,x=g[s.steam_id]||(g[s.steam_id]={steam:s.steam_id,nick:s.nick,n:0,last:null});
   x.n++;if(d&&(!x.last||d>x.last)){x.last=d;x.nick=s.nick}});
  var free=players.filter(function(p){return!p.steam_id}).sort(function(a,b){return String(a.nick).localeCompare(String(b.nick),'es',{sensitivity:'base'})});
  pager(ul,'adm-unlinked',Object.keys(g).map(function(k){return g[k]}).sort(function(a,b){return b.n-a.n}),function(x){var r=el('div','pl'),L=el('div');L.style.minWidth='0';
@@ -816,7 +824,21 @@ function rUnlinked(){var ul=$('unl-list');if(!ul)return;var g={};
    await ok(sb.rpc('link_steam_id',{p_steam:x.steam,p_player:res[0].id}));showToast('Jugador creado y vinculado.');load()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}}));
   return r},{text:function(x){return(x.nick||'')+' '+x.steam},ph:'Buscar nick o SteamID...',empty:'No hay SteamID sin vincular.'})}
 
-function rSrv(){var l=$('srv-list');if(!l)return;l.textContent='';
+// Formulario de configuración del ELO (Admin → Servidores). No pisa lo que se está editando.
+var ELOF=[['elo-base','base'],['elo-start','start_elo'],['elo-bmax','bonus_max'],['elo-bfac','bonus_factor'],['elo-floor','elo_floor']];
+function eloFormFill(){ELOF.forEach(function(f){var i=$(f[0]);if(i&&document.activeElement!==i&&!i.dataset.dirty)i.value=eloCfg[f[1]]});eloPreview()}
+function eloFormVals(){var v={};ELOF.forEach(function(f){v[f[1]]=Number($(f[0]).value)});return v}
+function eloPreview(){var v=eloFormVals(),b=Math.min(v.bonus_max,Math.round(0.4*v.bonus_factor)),w=Math.max(1,v.base+b);
+ say('elo-prev','Ejemplo con equipos parejos: gana +'+v.base+' / pierde −'+v.base+'. Ganando con rating 1.40: +'+w+'. Un jugador nuevo empieza con '+v.start_elo+' (nivel '+lvlOf(v.start_elo)[0]+').')}
+ELOF.forEach(function(f){var i=$(f[0]);i.oninput=function(){i.dataset.dirty='1';eloPreview()}});
+$('elo-save').onclick=async function(){var v=eloFormVals(),rec=$('elo-rec').checked,b=$('elo-save');
+ if(rec&&!confirm('Se guardan los valores y se recalcula el ELO de todos con todos los mixes. ¿Seguir?'))return;
+ b.disabled=true;say('elo-msg',rec?'Guardando y recalculando...':'Guardando...');
+ try{var n=await ok(sb.rpc('elo_set_config',{p_base:v.base,p_bonus_max:v.bonus_max,p_bonus_factor:v.bonus_factor,p_floor:v.elo_floor,p_start_elo:v.start_elo,p_recompute:rec}));
+  ELOF.forEach(function(f){delete $(f[0]).dataset.dirty});
+  say('elo-msg',rec?'Guardado. '+n+(n===1?' mix recalculado.':' mixes recalculados.'):'Guardado. Se aplica a los mixes nuevos.');load()}
+ catch(e){say('elo-msg','Error: '+(e&&e.message||e))}finally{b.disabled=false}};
+function rSrv(){eloFormFill();var l=$('srv-list');if(!l)return;l.textContent='';
  if(!servers.length){l.appendChild(none('Todavía no hay servidores. Creá uno para obtener su token.'));return}
  servers.forEach(function(s){var r=el('div','pl'),L=el('div');L.appendChild(el('b',0,s.name));
   var st=el('div','msg',(s.active?'Activo':'Revocado')+' · última conexión: '+(s.last_seen_at?dt(s.last_seen_at):'nunca'));st.style.padding='0';L.appendChild(st);r.appendChild(L);
@@ -979,7 +1001,7 @@ function statNick(s){var p=s.player_id?byId(players,s.player_id):null;return p?p
 // Niveles de FACEIT: [nivel, ELO mínimo, color]. El ELO sale de player_elo (por SteamID); sin mixes, 1000.
 var LV=[[1,0,'#9aa0a6'],[2,501,'#1ca82a'],[3,751,'#1ca82a'],[4,901,'#e0a800'],[5,1051,'#e0a800'],[6,1201,'#e0a800'],[7,1351,'#e0a800'],[8,1531,'#ff6309'],[9,1751,'#ff6309'],[10,2001,'#e5361f']];
 function eloRow(p){return p&&p.steam_id?eloBySteam[p.steam_id]||null:null}
-function eloOf(p){var e=eloRow(p);return e?e.elo:1000}
+function eloOf(p){var e=eloRow(p);return e?e.elo:eloCfg.start_elo}
 function lvlOf(elo){for(var i=LV.length-1;i>0;i--)if(elo>=LV[i][1])return LV[i];return LV[0]}
 function lvlBadge(elo,big){var l=lvlOf(elo),b=el('span','lvl'+(big?' lg':''),String(l[0]));b.style.setProperty('--c',l[2]);b.title='Nivel '+l[0]+' · '+elo+' ELO';return b}
 function eloDelta(d){return d==null?'-':el('span',d>0?'eu':d<0?'ed':null,(d>0?'+':'')+d)}
@@ -1148,9 +1170,11 @@ var PRIV={public:'Público',members:'Solo usuarios registrados',private:'Privado
 function fillSel(id,list,blank){var s=$(id);if(s.children.length)return;var o=el('option',0,blank);o.value='';s.appendChild(o);list.forEach(function(x){var q=el('option',0,x);q.value=x;s.appendChild(q)})}
 function dtd(x){return x?new Date(x).toLocaleDateString('es-AR'):'-'}
 function avBox(box,url,name){box.textContent='';if(url){var im=el('img','csstv-av');im.src=url;im.alt=name||'';box.appendChild(im)}else box.appendChild(el('div','csstv-av',(name||'?')[0].toUpperCase()))}
-function cleanSteam(v){v=v.trim();if(!v)return'';if(/^https?:\/\/steamcommunity\.com\/(id|profiles)\/[A-Za-z0-9_\-]+\/?$/i.test(v))return v.replace(/^http:/i,'https:');if(/^7656119\d{10}$/.test(v)||/^STEAM_[0-5]:[01]:\d+$/i.test(v)||/^[A-Za-z0-9_\-]{2,32}$/.test(v))return v;return null}
+// SteamID64 de una cuenta: 7656119 + 10 dígitos, o 765612 + 11 en las cuentas más nuevas.
+var STEAM64=/^(7656119\d{10}|765612\d{11})$/;
+function cleanSteam(v){v=v.trim();if(!v)return'';if(/^https?:\/\/steamcommunity\.com\/(id|profiles)\/[A-Za-z0-9_\-]+\/?$/i.test(v))return v.replace(/^http:/i,'https:');if(STEAM64.test(v)||/^STEAM_[0-5]:[01]:\d+$/i.test(v)||/^[A-Za-z0-9_\-]{2,32}$/.test(v))return v;return null}
 function cleanFaceit(v){v=v.trim();if(!v)return'';if(/^https?:\/\/(www\.)?faceit\.com\/[^\s]*$/i.test(v))return v.replace(/^http:/i,'https:');if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return v;return null}
-function steamLink(v){if(/^https:\/\/steamcommunity\.com\//i.test(v))return v;if(/^7656119\d{10}$/.test(v))return'https://steamcommunity.com/profiles/'+v;if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return'https://steamcommunity.com/id/'+v;return null}
+function steamLink(v){if(/^https:\/\/steamcommunity\.com\//i.test(v))return v;if(STEAM64.test(v))return'https://steamcommunity.com/profiles/'+v;if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return'https://steamcommunity.com/id/'+v;return null}
 function faceitLink(v){if(/^https:\/\/(www\.)?faceit\.com\//i.test(v))return v;if(/^[A-Za-z0-9_\-]{2,32}$/.test(v))return'https://www.faceit.com/es/players/'+v;return null}
 function linkRow(box,k,v,f){if(!v)return;var d=el('div');d.appendChild(el('b',0,k+': '));var u=f(v);if(u){var a=el('a',0,v);a.href=u;a.target='_blank';a.rel='noopener noreferrer';d.appendChild(a)}else d.appendChild(document.createTextNode(v));box.appendChild(d)}
 function prepAvatar(file){return new Promise(function(res,rej){
@@ -1500,9 +1524,11 @@ async function loadImpl(){try{
   me?ok(sb.from('team_requests').select('*').eq('user_id',me).maybeSingle()):Promise.resolve(null),
   soft(sb.from('match_player_stats').select('*'),'match_player_stats'),
   admin?soft(sb.from('game_servers').select('id,name,active,created_at,last_seen_at').order('created_at'),'game_servers'):Promise.resolve([]),
-  soft(sb.from('player_elo').select('steam_id,elo,peak_elo,matches'),'player_elo')
+  soft(sb.from('player_elo').select('steam_id,elo,peak_elo,matches'),'player_elo'),
+  soft(sb.from('elo_config').select('*').eq('id',1),'elo_config')
  ]);
  eloBySteam={};(R[16]||[]).forEach(function(e){eloBySteam[e.steam_id]=e});
+ if(R[17]&&R[17][0])eloCfg=R[17][0];
  var allT=R[0]||[];teams=allT.filter(function(t){return t.kind!=='pcw'&&t.kind!=='mix'});pcwTeams=allT.filter(function(t){return t.kind==='pcw'||t.kind==='mix'});
  mstats=R[14]||[];servers=R[15]||[];players=R[1]||[];matches=R[2];events=R[3];registrations=R[4];medals=R[5];mapStats=R[6];profileReqs=R[7];matchVetos=R[8];pcwPosts=R[9];reports=R[10];
  userProfiles={};if(R[11].data)R[11].data.forEach(function(pr){userProfiles[pr.id]=pr.tag});

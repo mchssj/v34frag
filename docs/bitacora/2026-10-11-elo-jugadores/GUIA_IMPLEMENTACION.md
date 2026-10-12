@@ -8,6 +8,7 @@
 | Migración `20261011200000` (jugadores sin SteamID) | Aplicada en Supabase y `elo_recompute_all()` corrido el 2026-10-11 |
 | Web (`index.html`) | Hecha. Sintaxis verificada; sin prueba en navegador |
 | Despliegue en Supabase | Hecho (2026-10-11) |
+| Migración `20261011220000` (SteamID64 de cuentas nuevas) | Aplicada en Supabase el 2026-10-11; `index.html` publicado. Verificado: kyan (`765612…`) recibe ELO |
 | `docs/MODELO_DATOS.md` y `docs/FUNCIONALIDADES.md` | Actualizados |
 | Commit | Hecho (rama `csstv-reporter`) |
 
@@ -86,6 +87,7 @@ Resultado de la última ejecución (2026-10-11): las 10 pruebas pasan.
 | T9 | No favorito extremo gana; piso | +60, sin NaN; piso de 100 |
 | T10 | Permisos | `anon` solo lee `player_elo` |
 | T11 | 3v3 con un jugador sin SteamID | 50 %, ±30; el sin SteamID no recibe ELO |
+| T13 | SteamID64 `765612…` (cuenta nueva, caso kyan) | Aceptado por `csstv_steam64` (64 bits, `STEAM_0`, link) y recibe ELO (+30 / −30) |
 | T12 | 4v3 (el mix de bots del 2026-10-11) | Favorito 84,5 % (antes 98,6 %); −51 / +51 (antes −64 / +54) |
 
 Web: `node --check` sobre los scripts de `index.html` y prueba de los límites de `lvlOf` (500 → 1, 501 → 2, 1000 → 4, 2000 → 9, 2001 → 10).
@@ -126,6 +128,19 @@ Después, volver a ejecutar `20261011120000_csstv_match_reporter.sql` (es re-eje
 **Para aplicarla:**
 1. Supabase → SQL Editor → pegar `supabase/migrations/20261011200000_elo_jugadores_sin_steamid.sql` → Run.
 2. `select elo_recompute_all();`, para recalcular los mixes que ya tienen ELO con la regla nueva.
+
+## Cambio posterior: SteamID64 de cuentas nuevas (2026-10-11)
+
+**Problema.** En el primer mix real con ELO, kyan (`76561200644339126`) no recibió ELO. Las cuentas de Steam con número de cuenta mayor a ~1.020 millones tienen un SteamID64 que empieza con `765612`, y todos los controles exigían `7656119`. Afectaba a:
+- `elo_apply_match`, que lo trataba como "sin SteamID";
+- `csstv_steam64`, que rechazaba su SteamID64 y el link de su perfil (el formato `STEAM_0:X:Y` sí funcionaba);
+- `index.html`: no aparecía en **SteamID sin vincular** y el campo Steam del perfil no armaba el link.
+
+**Arreglo.** Se acepta `7656119` + 10 dígitos o `765612` + 11 dígitos:
+- migración `20261011220000_steamid64_cuentas_nuevas.sql` (redefine `csstv_steam64` y `elo_apply_match`);
+- en `index.html`, una sola constante `STEAM64`.
+
+**Para aplicarla:** SQL Editor → pegar la migración → Run, y después `select elo_recompute_all();`.
 
 ## Observaciones
 
