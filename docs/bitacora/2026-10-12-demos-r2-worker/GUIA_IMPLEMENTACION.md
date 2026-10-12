@@ -8,8 +8,9 @@
 | `game_servers.panel_server_id` y token del Worker | Hechos (2026-10-12) |
 | Plugin 1.3.0 | Subido al servidor real (2026-10-12); se activa en el próximo cambio de mapa |
 | Worker | Publicado con sus secretos y la regla de 90 días en R2 (2026-10-12) |
-| Borrado de demos en el servidor (`DELETE_AFTER_UPLOAD`) | Apagado hasta ver un mix real |
-| Web (etiqueta "Cancelada", botón "Descargar demo") | Pendiente |
+| Primer mix real (`srv1-20261012T171603-7dd9`) | Demo subida a R2 (530 252 bytes) y descargable (2026-10-12) |
+| Borrado de demos en el servidor (`DELETE_AFTER_UPLOAD`) | Activado (2026-10-12) |
+| Web (etiqueta "Cancelada", botón "Descargar demo") | Publicada por FTP (2026-10-12); sin prueba en navegador |
 
 ## Archivos
 
@@ -24,6 +25,7 @@
 | `cloudflare/demo-worker/` | Worker, `wrangler.toml`, `scripts/dev-vars.py`. |
 | `docs/GUIA_SERVIDOR.md` | Canceladas, `!live mrN`, formato estándar de pruebas con bots. |
 | `docs/MODELO_DATOS.md` | Columnas, tabla y funciones nuevas. |
+| `index.html` | Botón "Descargar demo" (o aviso de pendiente, vencida o no encontrada) en el detalle del mix; la lista de Mixes muestra las canceladas con la etiqueta "Cancelada"; estado legible en el detalle. El inicio sigue mostrando solo las terminadas. |
 
 ## Despliegue (hecho el 2026-10-12)
 
@@ -83,6 +85,7 @@ Scripts: `pruebas/escenario_canceladas.sh` y `pruebas/escenario_abandono.sh`.
 
 - **Envíos por error a la Supabase real:** el servidor local usa la misma Supabase que la web, y cada cambio de mapa recarga `csstv_send 1`. Se enviaron 8 partidas de bots; se borraron con SQL. Los scripts ahora repiten `csstv_send 0` y la guía lo advierte.
 - **`$2000$` sin `.nav`:** al agregar bots el juego generó el `.nav` y recargó en `de_dust`. Ya está generado en el servidor local.
+- **`panel_server_id` en el servidor equivocado:** el primer mix real quedó `pending` y el Worker no lo veía (`"pending": 0`), porque el `update` se hizo sobre el servidor de pruebas. Se corrigió con el id del servidor real (`d54dddf1-…`).
 - **Demo subida a medias:** la partida de prueba se creó a mano mientras el servidor seguía grabando. En el flujo normal no pasa, porque el plugin marca `pending` después de `tv_stoprecord`.
 
 ## Cómo revertir

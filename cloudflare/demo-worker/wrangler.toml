@@ -17,8 +17,8 @@ crons = ["*/10 * * * *", "17 6 * * *"]
 [vars]
 EXPIRE_CRON = "17 6 * * *"
 RETENTION_DAYS = "90"
-# Borrar la demo del servidor después de subirla y verificarla. Se activa después de probar.
-DELETE_AFTER_UPLOAD = "false"
+# Borrar la demo del servidor después de subirla y verificarla (activado tras el primer mix real, 2026-10-12).
+DELETE_AFTER_UPLOAD = "true"
 PTERO_PANEL_URL = "https://panel.extremehost.com.ar"
 DEMO_DIR = "/cstrike/csstv_demos"
 SUPABASE_URL = "https://wmzfwsizashpszxlvpeb.supabase.co"
