@@ -14,7 +14,7 @@
 #include <system2>
 #define REQUIRE_EXTENSIONS
 
-#define MM_VERSION "1.0.0"
+#define MM_VERSION "1.1.0"
 #define MM_MAX_STEAMIDS 10
 
 public Plugin myinfo =
