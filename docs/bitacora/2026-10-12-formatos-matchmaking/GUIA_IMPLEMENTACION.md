@@ -3,7 +3,7 @@
 ## Archivos modificados
 - `matchmaking.html`: selector de formato para jugadores y controles de administración.
 - `js/matchmaking.js`: estado y capacidad dinámica de la cola, selector y llamadas RPC.
-- `supabase/migrations/20261012200000_matchmaking_modos_configurables.sql`: configuración de modos y funciones de matchmaking.
+- `supabase/migrations/20261012220000_matchmaking_modos_configurables.sql`: configuración de modos y funciones de matchmaking.
 - `docs/bitacora/2026-10-12-formatos-matchmaking/`: documentación del requerimiento.
 
 ## Aplicación
