@@ -139,7 +139,11 @@ public void Http_OnPoll(bool success, const char[] error, System2HTTPRequest req
 {
     if (!success || response == null || response.StatusCode < 200 || response.StatusCode >= 300)
     {
-        LogError("[CSSTV MM] Error consultando despacho: HTTP %d / %s", response == null ? 0 : response.StatusCode, error);
+        char errorBody[768];
+        errorBody[0] = '\0';
+        if (response != null)
+            response.GetContent(errorBody, sizeof(errorBody));
+        LogError("[CSSTV MM] Error consultando despacho: HTTP %d / %s | body: %s", response == null ? 0 : response.StatusCode, error, errorBody);
         return;
     }
 
