@@ -2,11 +2,12 @@
 
 ## Archivos modificados
 - `js/matchmaking.js`
-- `supabase/migrations/20261012180000_matchmaking_steamid64_nickname.sql`
+- `supabase/migrations/20261012220000_matchmaking_modos_configurables.sql` (incluye la validación SteamID64 aplicada)
 
 ## Despliegue
 1. Publicar la versión actualizada de `js/matchmaking.js` junto con el resto de archivos de la rama `feat/matchmaking-5v5`.
 2. La validación SQL de SteamID64 ya está incluida en `20261012220000_matchmaking_modos_configurables.sql`, aplicada al proyecto `wmzfwsizashpszxlvpeb`; no ejecutar la migración anterior de identidad por separado.
+3. Publicar los archivos web de la rama `feat/matchmaking-5v5`.
 4. Cerrar sesión y volver a iniciar sesión en la web, o recargar sin caché.
 5. Probar el botón de matchmaking con la cuenta afectada.
 
