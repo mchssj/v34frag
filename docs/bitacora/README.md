@@ -13,5 +13,7 @@ Cada requerimiento tiene su propia carpeta `AAAA-MM-DD-nombre-corto/`, con la fe
 
 | Fecha | Requerimiento | Estado |
 |---|---|---|
-| 2026-10-11 | [ELO de jugadores (TrueSkill + niveles FACEIT)](2026-10-11-elo-jugadores/) | Desplegado (incluida la migración `20261011200000`) |
-| 2026-10-11 | [Mejoras de calidad de vida en el servidor](2026-10-11-qol-servidor/) | Implementado y probado con bots; falta probar con jugadores reales |
+| 2026-10-11 | [ELO de jugadores (TrueSkill + niveles FACEIT)](2026-10-11-elo-jugadores/) | Desplegado (incluidas las migraciones `20261011200000` y `20261011220000`) |
+| 2026-10-11 | [Mejoras de calidad de vida en el servidor](2026-10-11-qol-servidor/) | Subido al servidor real (falta reiniciar); probado con bots; falta probar con jugadores reales |
+| 2026-10-11 | [ELO configurable desde la web](2026-10-11-elo-configurable/) | Desplegado (2026-10-11) |
+| 2026-10-11 | [Perfiles automáticos y reclamo desde el servidor (`!claim`)](2026-10-11-reclamo-perfil-servidor/) | Planeado, pendiente de aprobación |

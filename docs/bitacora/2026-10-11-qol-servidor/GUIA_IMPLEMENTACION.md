@@ -9,7 +9,7 @@
 | Pruebas con bots en el servidor de Daniel | Hechas, ver abajo |
 | Instalado en el servidor de prueba de Daniel | Sí (la 1.0.0 quedó en `plugins/disabled/csstv_reporter_1.0.0.smx`) |
 | Prueba con jugadores reales | **Pendiente** |
-| Servidor real | **Pendiente** |
+| Servidor real | Subido por SFTP el 2026-10-11 (plugin 1.1.0, cvars nuevas al final de `csstv_reporter.cfg`, `start.sh` con `+tv_enable 1`; respaldos en `plugins/disabled/csstv_reporter_1.0.0.smx`, `csstv_reporter.cfg.bak` y `start.sh.bak`). **Falta reiniciar** y verificar en la consola del panel |
 
 ## Archivos
 
@@ -93,6 +93,18 @@ Servidor de prueba con `sv_lan 1`: con `sv_lan 0` la validación de Steam lo exp
 | Mix con bots con SteamIDs falsos, enviado a la web | Llegó con ELO, después de crear un token nuevo para el servidor de prueba (el anterior daba HTTP 401) |
 | Marcador después del medio tiempo | Daniel vio que se reiniciaba: se refería también a las kills y muertes de cada jugador, que el plugin no restauraba. Se agregó (pruebas 17 y 18). Del lado del servidor, `m_iScore` de cada equipo (lo que se envía al TAB) tiene el valor correcto. Falta ver qué muestra el TAB y si ClientMod tiene un marcador propio |
 | Se le cortó el juego una vez | El servidor siguió normal según el log; fue el cliente (servidor y juego en la misma PC) |
+
+## Servidor real (ExtremeHost, Linux)
+
+- El `.smx` sirve igual en Linux: no hace falta recompilar.
+- `start.sh` tenía `-tv_enable 1`: con guion el motor lo ignora (las cvars van con `+`). Se corrigió a `+tv_enable 1`. **Si el panel de ExtremeHost regenera `start.sh` al reiniciar**, el cambio se pierde y hay que poner `+tv_enable 1` en la configuración de arranque del panel.
+- `start.sh` también dice `-tikrate 66` (debería ser `-tickrate`); no se tocó, y en v34 el valor por defecto ya es 66.
+- No hay carpeta de logs de SourceMod accesible por SFTP ni acceso RCON: la verificación después de reiniciar se hace desde la consola del panel:
+  ```
+  csstv_reporter_version      // 1.1.0
+  status                      // debe aparecer la línea "sourcetv:"
+  csstv_pause_mode            // 3
+  ```
 
 ## Pendiente: prueba con jugadores reales
 
