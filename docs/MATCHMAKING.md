@@ -1,6 +1,6 @@
-# Matchmaking CS:S v34 (5v5)
+# Matchmaking CS:S v34 (formatos configurables)
 
-Esta rama agrega una cola individual para 10 jugadores, balance por ELO y selección automática de un servidor libre.
+Esta rama agrega colas individuales configurables de 1v1, 2v2, 3v3 y 5v5, balance por ELO y selección automática de un servidor libre. 5v5 está habilitado por defecto; los demás formatos se activan desde el panel de administración.
 
 ## Requisitos
 - Supabase existente con las migraciones de CSSTV y `elo_config` aplicadas.
@@ -9,10 +9,10 @@ Esta rama agrega una cola individual para 10 jugadores, balance por ELO y selecc
 - SourceMod y la extensión System2 en el servidor CS:S v34.
 
 ## Activación web y Supabase
-1. Las migraciones de matchmaking están en `supabase/migrations/`: `20261012020000_matchmaking_5v5.sql`, `20261012060000_matchmaking_queue_admin_control.sql`, `20261012061000_matchmaking_queue_state_access_hardening.sql`, `20261012062000_matchmaking_server_dispatch.sql` y `20261012063000_matchmaking_dispatch_recovery_and_password.sql`. La estructura y las RPC del dispatcher ya se aplicaron directamente al proyecto Supabase conectado.
+1. Las migraciones de matchmaking están en `supabase/migrations/`: `20261012020000_matchmaking_5v5.sql`, `20261012060000_matchmaking_queue_admin_control.sql`, `20261012061000_matchmaking_queue_state_access_hardening.sql`, `20261012062000_matchmaking_server_dispatch.sql` y `20261012063000_matchmaking_dispatch_recovery_and_password.sql` y `20261012220000_matchmaking_modos_configurables.sql`. Las migraciones base y la de formatos configurables ya se aplicaron directamente al proyecto Supabase conectado.
 2. Publicá `matchmaking.html`, `js/matchmaking.js` y `js/matchmaking-data.js` junto a los archivos existentes de la web.
 3. En Matchmaking → Administración de servidores, configurá la dirección pública `IP:PUERTO` y habilitá el servidor.
-4. Un admin puede abrir/cerrar la queue desde **Control de queue**. Cerrarla impide nuevas entradas y asignaciones, sin cancelar partidas ya asignadas.
+4. Un admin puede abrir/cerrar la queue y habilitar/deshabilitar cada formato desde **Control de queue**. Cerrarla impide nuevas entradas y asignaciones, sin cancelar partidas ya asignadas.
 
 ## Dispatcher de servidor (independiente del Reporter)
 El nuevo código está en `server/addons/sourcemod/scripting/csstv_matchmaking_dispatcher.sp`. No reemplaza ni modifica `csstv_reporter.sp`.
