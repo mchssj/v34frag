@@ -324,7 +324,7 @@ grant execute on function public.matchmaking_status() to authenticated;
 -- Mantener la compatibilidad con ambos formatos de SteamID64 también al
 -- construir el roster que el plugin SourceMod recibe del dispatcher.
 create or replace function public.matchmaking_server_poll(p_token text)
-returns text language plpgsql security definer set search_path = public as $
+returns text language plpgsql security definer set search_path = public as $function$
 declare sid uuid; mid uuid; pwd text; map_name text; steam_ids text; state text;
 begin
  sid:=public.csstv_auth(p_token);
@@ -355,13 +355,12 @@ begin
  join public.players p on p.id=q.player_id
  join public.matches m on m.id=q.match_id
  where q.match_id=mid and q.status='matched'
-   and p.steam_id ~ '^(7656119[0-9]{10}|765612[0-9]{11})
-;
+   and p.steam_id ~ '^(7656119[0-9]{10}|765612[0-9]{11})$';
  if coalesce(steam_ids,'')='' then return 'ERROR|ROSTER_EMPTY'; end if;
  update public.matchmaking_dispatch set updated_at=now() where match_id=mid;
  return mid::text||'|'||pwd||'|'||coalesce(map_name,'de_dust2')||'|'||steam_ids;
 end;
-$;
+$function$;
 revoke all on function public.matchmaking_server_poll(text) from public, authenticated;
 grant execute on function public.matchmaking_server_poll(text) to anon;
 
