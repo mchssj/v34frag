@@ -62,7 +62,7 @@ void Qol_Init()
 	g_cvHpOnDeath    = CreateConVar("csstv_hp_on_death", "1", "Al morir, mostrar quién te mató y cuánta vida le quedó (y el comando !hp).", _, true, 0.0, true, 1.0);
 	g_cvPauseMode    = CreateConVar("csstv_pause_mode", "3", "Pausas: 0 desactivadas, 1 con tiempo, 2 hasta !unpause de los dos equipos, 3 con tiempo o !unpause.", _, true, 0.0, true, 3.0);
 	g_cvPauseMax     = CreateConVar("csstv_pause_max", "2", "Pausas por equipo y por partida.", _, true, 0.0, true, 20.0);
-	g_cvPauseTime    = CreateConVar("csstv_pause_time", "60", "Segundos de cada pausa (modos 1 y 3).", _, true, 10.0, true, 600.0);
+	g_cvPauseTime    = CreateConVar("csstv_pause_time", "60", "Segundos de cada pausa (modos 1 y 3).", _, true, 5.0, true, 600.0);
 	g_cvDemo         = CreateConVar("csstv_demo", "1", "Grabar un demo de SourceTV por partida (requiere tv_enable 1 al cargar el mapa).", _, true, 0.0, true, 1.0);
 	g_cvDemoKeep     = CreateConVar("csstv_demo_keep", "50", "Demos que se conservan en csstv_demos/ (0 = todos).", _, true, 0.0, true, 10000.0);
 	g_cvChatColors   = CreateConVar("csstv_chat_colors", "1", "Colores del chat: 0 solo básicos, 1 RGB para quien usa ClientMod (detectado con su API), 2 siempre RGB.", _, true, 0.0, true, 2.0);
@@ -227,6 +227,7 @@ void Qol_Reset()
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
 	Board_Reset();
+	g_bDemoRecorded = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -802,6 +803,7 @@ void Demo_Start()
 		CreateDirectory(DEMO_DIR, 511);
 	ServerCommand("tv_record \"%s/%s\"", DEMO_DIR, g_sMatchUid);
 	g_bRecording = true;
+	g_bDemoRecorded = true;
 	LogMessage("Grabando demo %s/%s.dem", DEMO_DIR, g_sMatchUid);
 }
 
@@ -817,6 +819,25 @@ void Demo_Stop()
 public Action Timer_DemoCleanup(Handle timer)
 {
 	Demo_Cleanup();
+	return Plugin_Stop;
+}
+
+/** Borra el demo de una partida descartada (cuando el motor ya lo cerró). */
+void Demo_Discard(const char[] uid)
+{
+	DataPack pack = new DataPack();
+	pack.WriteString(uid);
+	CreateTimer(3.0, Timer_DemoDiscard, pack, TIMER_DATA_HNDL_CLOSE);
+}
+
+public Action Timer_DemoDiscard(Handle timer, DataPack pack)
+{
+	char uid[64], path[PLATFORM_MAX_PATH];
+	pack.Reset();
+	pack.ReadString(uid, sizeof(uid));
+	Format(path, sizeof(path), "%s/%s.dem", DEMO_DIR, uid);
+	if (FileExists(path) && DeleteFile(path))
+		LogMessage("Demo descartado: %s", path);
 	return Plugin_Stop;
 }
 
