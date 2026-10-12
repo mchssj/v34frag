@@ -239,8 +239,9 @@ void ApplyIdlePassword()
     g_cvIdlePassword.GetString(pwd, sizeof(pwd));
     if (!pwd[0])
     {
-        LogError("[CSSTV MM] Configurá csstv_mm_idle_password: el servidor debe seguir protegido cuando no hay mix.");
-        return;
+        Format(pwd, sizeof(pwd), "frag%04d", GetRandomInt(0, 9999));
+        g_cvIdlePassword.SetString(pwd);
+        LogMessage("[CSSTV MM] Se generó una contraseña idle aleatoria. Configurá csstv_mm_idle_password si querés una fija.");
     }
     ServerCommand("sv_password \"%s\"", pwd);
     ServerExecute();
