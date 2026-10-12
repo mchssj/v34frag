@@ -24,6 +24,7 @@
 
 ## Estado real
 - Código y migración: guardados en GitHub, rama `feat/matchmaking-5v5`.
-- Migración aplicada en Supabase: pendiente de confirmar.
+- Migración aplicada en Supabase: sí, en el proyecto `wmzfwsizashpszxlvpeb` (2026-10-12).
+- Migración aplicada en Supabase: sí, en el proyecto `wmzfwsizashpszxlvpeb` (2026-10-12).
 - Publicación de la web: pendiente de confirmar.
 - Pruebas end-to-end con varias cuentas y servidor real: pendientes. No se debe considerar funcional en producción hasta completar esas verificaciones.
