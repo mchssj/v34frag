@@ -1,6 +1,6 @@
 # Plan: perfiles automáticos y reclamo desde el servidor (`!claim`)
 
-> Planeación original. Estado: **propuesta**, pendiente de aprobación.
+> Planeación original. Estado: **propuesta**, pendiente de aprobación. Revisada el 2026-10-11 después de las verificaciones (ver la última sección).
 
 ## Decisiones tomadas
 
@@ -44,17 +44,17 @@ flowchart TD
   B -->|No: NOSTEAM, bot| X[No se crea perfil]
   B -->|Sí| C{¿Ya tiene perfil con ese SteamID?}
   C -->|Sí| D[Se usa ese perfil, como hoy]
-  C -->|No| E["Crear perfil: nick del juego,<br/>steam_id, stats automáticas, público"]
-  E --> F{¿El nick ya existe?}
-  F -->|Sí| G["Agregar sufijo: test_nickname 2, 3…"]
-  F -->|No| H[Nick tal cual]
-  G --> I[Vincular el mix al perfil]
-  H --> I
+  E["Crear perfil: nick del juego,<br/>steam_id, stats automáticas, público"]
+  C -->|No| F{¿Hay un perfil con ese nick?}
+  F -->|Sí| G["No crear: queda en 'SteamID sin vincular'<br/>(lo resuelve !claim o un admin)"]
+  F -->|No| E
+  E --> I[Vincular el mix al perfil]
 ```
 
 | Regla | Detalle |
 |---|---|
-| Nick | El del juego al momento del mix, recortado a 2–24 caracteres. Sin distinguir mayúsculas, si ya existe se agrega " 2", " 3", etc. |
+| Nick | El del juego al momento del mix, recortado a 2–24 caracteres. |
+| **Nick que ya existe** | Si ya hay un perfil con ese nick (sin distinguir mayúsculas), **no se crea otro**: el SteamID queda en "SteamID sin vincular" (con ese perfil sugerido) hasta que el jugador use `!claim` o un admin lo vincule. Así no se duplican los perfiles cargados a mano. |
 | Cambios de nick | El perfil conserva el primer nick (la URL `#jugador/<nick>` no cambia sola). El admin lo puede renombrar. |
 | Marca | Columna nueva `players.auto_created` (true), para distinguirlos en el admin. |
 | Mixes anteriores | **Carga inicial:** se crean perfiles para los SteamID64 que ya jugaron mixes y no están vinculados (la lista "SteamID sin vincular" de hoy). Se ejecuta una vez con la migración. |
@@ -137,9 +137,11 @@ erDiagram
 | SteamID inválido | "Tu SteamID no es válido" |
 | Más de 5 intentos fallidos de ese SteamID en 10 min | "Demasiados intentos, esperá unos minutos" |
 | Código inexistente, vencido o ya usado | "Código inválido o vencido" |
-| La cuenta ya tiene otro perfil vinculado | "Tu cuenta ya está vinculada a X" (lo resuelve un admin) |
 | El perfil de ese SteamID es de otra cuenta | "Ese perfil ya pertenece a otra cuenta" |
-| No hay perfil con ese SteamID | Se crea (nick del juego) y se vinculan sus mixes |
+| La cuenta ya tiene un perfil **con otro SteamID** | "Tu perfil ya tiene otro SteamID" (lo resuelve un admin) |
+| La cuenta ya tiene un perfil **sin SteamID** (el caso más común hoy) | Se le asigna el SteamID a **ese** perfil y se le pasan sus mixes. Si existía un perfil automático para ese SteamID, se fusiona: sus mixes pasan al perfil de la cuenta y el automático se borra (solo si no tiene medallas, equipos ni datos cargados a mano) |
+| La cuenta no tiene perfil y hay uno (automático) con ese SteamID | Se vincula ese perfil a la cuenta |
+| La cuenta no tiene perfil y no hay ninguno con ese SteamID | Se crea (nick del juego; si el nick existe, con sufijo " 2", " 3"…) y se vinculan sus mixes |
 | Todo bien | `players.user_id` = la cuenta; el código queda usado; se cierran las solicitudes de reclamo pendientes de ese perfil |
 
 ## 6. Riesgo conocido
@@ -155,7 +157,7 @@ En un servidor no-Steam (v34 + ClientMod, `csstv_validate_steamid 0`) **el Steam
 |---|---|
 | `supabase/migrations/2026101xxxxxxx_reclamo_perfil.sql` | Tablas, columnas, funciones, `csstv_ingest` redefinida y carga inicial. |
 | `server/addons/sourcemod/scripting/csstv/claim.inc` | Nuevo: comando `!claim` y su pedido HTTP. |
-| `server/addons/sourcemod/scripting/csstv_reporter.sp` | Incluir `claim.inc`. Versión 1.2.0. |
+| `server/addons/sourcemod/scripting/csstv_reporter.sp` | Incluir `claim.inc`. Versión 1.3.0 (la 1.2.0 fue la de colores del chat). |
 | `index.html` | Tarjeta "Vincular con el servidor" en Mi perfil; marca de perfil automático en Admin → Jugadores. |
 | `docs/GUIA_SERVIDOR.md`, `docs/FUNCIONALIDADES.md`, `docs/MODELO_DATOS.md` | Flujo nuevo. |
 
@@ -173,3 +175,22 @@ flowchart LR
 **Servidor de prueba:** `!claim` con código válido, inválido y vencido; jugador con `STEAM_ID_LAN`; respuesta en el chat.
 
 **Prueba real:** una cuenta nueva juega un mix en el servidor real, se registra y reclama con `!claim`.
+
+## Verificaciones (2026-10-11)
+
+Hechas antes de aprobar, sobre el servidor real (SFTP, solo lectura), Supabase (clave pública) y el código.
+
+| Qué | Resultado | Consecuencia |
+|---|---|---|
+| SteamID que manda el servidor real | `STEAM_0:0:…` válidos para las personas (daniloev, kyan, saiko, elapacheness) y `BOT:n` para los bots | El plugin ya tiene lo necesario para `!claim` |
+| Cómo se generan esos SteamID | El servidor real usa el emulador **eSTEAMATiON (Setti)** (`bin/libeST_*.so`, `cfg/esteamation.conf`). Rechaza los clientes que recibirían un ID por IP (`AcceptUnknown*Clients = False`) y no fuerza IDs por IP: cada PC recibe un ID único y estable | Sirve como identidad, con la limitación de la sección 6 |
+| El mismo jugador en otro servidor | daniloev tiene `STEAM_0:0:875046575` en el real y `STEAM_0:0:947967072` en el de prueba: la configuración del emulador es distinta (`SteamEmuCompatIDModeEnable18EmuOver17AuthMechanismUpdates` True en el real) | Los IDs **dependen de la configuración del servidor**. Si cambia el hosting o el emulador, cambian todos los IDs. Las pruebas de `!claim` con IDs reales hay que hacerlas en el servidor real, o en el de prueba con la compilación de depuración |
+| System2 | `System2HTTPRequest` tiene la propiedad `Any`: se puede asociar cada respuesta al jugador que escribió `!claim` | Sin cambios |
+| Link del perfil en la web | `#jugador/<nick en minúsculas>` con `encodeURIComponent`: nicks con espacios o símbolos (hay uno: `ex!t`) funcionan | Los nicks repetidos hay que compararlos **sin mayúsculas** (ya estaba así) |
+| Perfiles actuales | 61 perfiles: **solo 4 con SteamID**, 16 con cuenta, ninguna cuenta con más de un perfil, ningún nick repetido | **Cambio al plan**: la mayoría de los registrados ya tiene un perfil cargado a mano **sin SteamID**. Con el plan original, al jugar se les habría creado un segundo perfil ("nick 2") y `!claim` habría fallado con "tu cuenta ya tiene otro perfil" |
+
+**Cambios al plan por estas verificaciones:**
+
+1. **Perfil automático:** si el nick ya existe, no se crea otro; el SteamID espera a `!claim` o al admin.
+2. **`!claim` con una cuenta que ya tiene perfil sin SteamID:** se le asigna el SteamID a ese perfil (y se fusiona el automático si existía), en vez de rechazarlo.
+3. **Pruebas locales:** en el servidor de prueba (con `sv_lan 1`) los humanos tienen `STEAM_ID_LAN`. La compilación de depuración les dará un SteamID falso por nombre, como a los bots, para poder probar `!claim` de punta a punta.
