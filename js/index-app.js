@@ -896,7 +896,6 @@ function render(){
  var md=byId(matches,selMatchId);if(md&&shown('match-detail')){rStats(md);if(md.kind!=='mix'){rVeto(md);rResult(md)}}}
 
 var seenErr={};
-async function soft(p,label){var r=await p;if(r.error){console.error(label,r.error);if(!seenErr[label]){seenErr[label]=1;showToast('Error cargando '+label+': '+r.error.message+(r.error.code?' [código '+r.error.code+']':'')+(r.error.hint?' · '+r.error.hint:''),'error')}return[]}return r.data||[]}
 var loadP=null,loadAgain=false;
 function load(){if(loadP){loadAgain=true;return loadP}
  loadP=(async function(){try{await loadImpl();while(loadAgain){loadAgain=false;await loadImpl()}}finally{loadP=null}})();return loadP}
