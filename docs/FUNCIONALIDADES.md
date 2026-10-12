@@ -127,6 +127,7 @@ flowchart LR
 
 - Solo cuentan los mixes; las partidas oficiales y las PCW no.
 - El ELO se guarda por SteamID: los jugadores sin perfil también acumulan y, al vincular su SteamID, el perfil lo hereda.
+- Los parámetros (base, bonus por rating, ELO mínimo e inicial) se configuran en *Admin → Servidores → ELO* (tabla `elo_config`), con la opción de recalcular todos los mixes.
 - El admin puede **Recalcular ELO** desde *Admin → Servidores*. Borrar un mix desde la web recalcula el ELO de todos.
 
 Detalle de reglas, fórmulas y niveles: [bitácora del ELO](bitacora/2026-10-11-elo-jugadores/DOCUMENTACION.md).

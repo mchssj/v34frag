@@ -230,6 +230,8 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | `elo_recompute_all()` | Admin (o SQL Editor). Reinicia `player_elo` y aplica todos los mixes por `played_at`. Devuelve la cantidad. |
 | `ingest_server_chunk`, `ingest_server_match` | Redefinidas: después de `csstv_ingest` llaman a `elo_apply_match`. |
 | `csstv_ncdf(x)`, `csstv_npdf(x)` | Normal acumulada y densidad. |
+| Migración `20261011230000` | Tabla `elo_config` (una fila: `base`, `bonus_max`, `bonus_factor`, `elo_floor`, `start_elo`; lectura pública) y `elo_set_config(...)` (admin, valida y puede recalcular). `elo_apply_match` lee de ahí sus parámetros; el check de `player_elo.elo` pasa a `>= 0`. |
+| Migración `20261011220000` | `csstv_steam64` y `elo_apply_match` aceptan SteamID64 de cuentas nuevas (`765612` + 11 dígitos), además de `7656119` + 10. |
 | Migración `20261011200000` | `elo_apply_match` cuenta a los jugadores sin SteamID64 como μ 25 / σ 8.33 en la fuerza de su equipo, sin darles ELO. |
 
 ## Pendiente de confirmar

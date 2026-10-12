@@ -161,3 +161,80 @@ do $$ declare mid uuid := t_mix('man-0012',
   if p not between 0.80 and 0.90 then raise exception 'T12 falla: p=%', p; end if;
   raise notice 'T12 OK: 4v3 -> favorito %  (antes 0.9858); cambios % / +%', p, d1, d2;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Migración 20261011220000: SteamID64 de cuentas nuevas (765612...)
+-- ---------------------------------------------------------------------------
+-- T13: el SteamID de kyan (cuenta nueva) se acepta y recibe ELO
+do $$ declare mid uuid; got record; begin
+  if csstv_steam64('76561200644339126') is distinct from '76561200644339126'
+     or csstv_steam64('STEAM_0:0:1342036699') is distinct from '76561200644339126'
+     or csstv_steam64('https://steamcommunity.com/profiles/76561200644339126') is distinct from '76561200644339126'
+     or csstv_steam64('76561199710358878') is distinct from '76561199710358878'
+     or csstv_steam64('7656120064433912') is not null then
+    raise exception 'T13 falla: csstv_steam64';
+  end if;
+  mid := t_mix('man-0013', array['76561199710358878'], array['76561200644339126'], 1);
+  select min(elo_delta) filter (where team=2) l, max(elo_delta) filter (where team=1) w into got from match_player_stats where match_id=mid;
+  if got.l is null or got.l >= 0 or got.w <= 0 then raise exception 'T13 falla: %', got; end if;
+  raise notice 'T13 OK: cuenta 765612... aceptada; ganador +%, perdedor %', got.w, got.l;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Migración 20261011230000: elo_config
+-- ---------------------------------------------------------------------------
+-- T14: la configuración por defecto existe y es la de siempre
+do $$ declare c record; begin
+  select * into c from elo_config where id = 1;
+  if c.base <> 30 or c.bonus_max <> 5 or c.bonus_factor <> 10 or c.elo_floor <> 100 or c.start_elo <> 1000 then
+    raise exception 'T14 falla: %', c; end if;
+  raise notice 'T14 OK: configuración por defecto 30 / 5 / 10 / 100 / 1000';
+end $$;
+
+-- T15: base 20 e inicio 1200 -> 3v3 parejo da ±20 y los nuevos empiezan en 1200
+do $$ declare mid uuid; bad int; begin
+  perform elo_set_config(20, 5, 10, 100, 1200, false);
+  mid := t_mix('man-0015',
+    array['76561198800000001','76561198800000002','76561198800000003'],
+    array['76561198800000004','76561198800000005','76561198800000006'], 1);
+  select count(*) into bad from match_player_stats where match_id=mid
+     and (elo_before <> 1200 or abs(elo_delta) <> 20);
+  if bad > 0 then raise exception 'T15 falla (%)', bad; end if;
+  raise notice 'T15 OK: base 20 -> ±20; ELO inicial 1200';
+end $$;
+
+-- T16: bonus 0 -> el rating no suma ni resta
+do $$ declare mid uuid; got int[]; begin
+  perform elo_set_config(30, 0, 10, 100, 1000, false);
+  mid := t_manual('man-0016','76561198900000001','76561198900000002','76561198900000003','76561198900000004',1.80,0.20,1.80,0.20,1, now());
+  select array_agg(elo_delta order by steam_id) into got from match_player_stats where match_id=mid;
+  if got <> array[30,30,-30,-30] then raise exception 'T16 falla: %', got; end if;
+  raise notice 'T16 OK: bonus 0 -> +30 +30 -30 -30 sin importar el rating';
+end $$;
+
+-- T17: valores fuera de rango y usuario que no es admin -> rechazados
+do $$ begin
+  begin perform elo_set_config(200, 5, 10, 100, 1000, false); raise exception 'T17 falla: base 200';
+  exception when invalid_parameter_value then null; end;
+  begin perform elo_set_config(30, 5, 10, 500, 400, false); raise exception 'T17 falla: inicial < mínimo';
+  exception when invalid_parameter_value then null; end;
+  perform set_config('test.uid', gen_random_uuid()::text, true);
+  begin perform elo_set_config(30, 5, 10, 100, 1000, false); raise exception 'T17 falla: no admin';
+  exception when insufficient_privilege then null; end;
+  perform set_config('test.uid', '', true);
+  if has_table_privilege('anon','elo_config','update') or not has_table_privilege('anon','elo_config','select') then
+    raise exception 'T17 falla: permisos de la tabla'; end if;
+  raise notice 'T17 OK: rangos, no admin y permisos';
+end $$;
+
+-- T18: recalcular con la base nueva cambia los mixes anteriores; volver a la default deja todo como antes
+do $$ declare n int; d int; d0 int; begin
+  select elo_delta into d0 from match_player_stats s join matches m on m.id=s.match_id where m.external_id='man-0011' and s.steam_id='76561198600000004';
+  n := elo_set_config(20, 5, 10, 100, 1000, true);
+  select elo_delta into d from match_player_stats s join matches m on m.id=s.match_id where m.external_id='man-0011' and s.steam_id='76561198600000004';
+  if n = 0 or abs(d) <> 20 then raise exception 'T18 falla: n=% d=%', n, d; end if;
+  perform elo_set_config(30, 5, 10, 100, 1000, true);
+  select elo_delta into d from match_player_stats s join matches m on m.id=s.match_id where m.external_id='man-0011' and s.steam_id='76561198600000004';
+  if d <> d0 then raise exception 'T18 falla al volver: % vs %', d, d0; end if;
+  raise notice 'T18 OK: % mixes recalculados con base 20 (±20) y de vuelta a 30 (%)', n, d0;
+end $$;
