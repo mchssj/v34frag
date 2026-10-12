@@ -5,206 +5,100 @@
 <title>Matchmaking 5v5 · CSSTV</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="config.js"></script>
 <style>
-/* Esta página usa una cabecera horizontal, no la sidebar global del resto de CSSTV. */
-*,*::before,*::after{box-sizing:border-box}
-html{width:100%;overflow-x:hidden}
-body{width:100%;min-width:0;overflow-x:hidden}
-header.top{position:relative;inset:auto;width:100%;max-width:none;height:auto;min-height:0;overflow:visible;z-index:5;box-sizing:border-box;border:0;border-bottom:1px solid var(--line,#302630);border-radius:0;box-shadow:none;backdrop-filter:none}
-.top nav{display:flex;flex:1 1 auto;flex-direction:row;align-items:center;min-width:0;width:auto;overflow:visible;flex-wrap:wrap;gap:16px;border:0;padding:0}
-.top nav a{display:inline-flex;width:auto;white-space:nowrap;padding:6px 0;border:0;background:transparent;box-shadow:none}
-.top nav a:hover,.top nav a.active{background:transparent;box-shadow:none}
-:root{--pink:#ff4fa3}body{margin:0;min-height:100vh;background:var(--bg,#0d0b10);color:var(--text,#f7f2f7);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}a{color:inherit;text-decoration:none}.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:15px max(16px,calc((100% - 1100px)/2));background:var(--panel,#17131a);border-bottom:1px solid var(--line,#302630)}.brand{font-size:19px;font-weight:900}.brand b,.pink{color:var(--pink)}nav{display:flex;gap:16px;flex:1;flex-wrap:wrap}nav a{color:var(--mute,#aaa)}nav a.active,nav a:hover{color:var(--pink)}button,input,select{font:inherit}button{border:1px solid var(--line,#3a303b);background:var(--panel2,#211a25);color:var(--text,#fff);padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:750}button:hover{border-color:var(--pink)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--pink);border-color:var(--pink);color:#180c13}.danger{border-color:#79304f;color:#ff9bc7}.muted{color:var(--mute,#aaa)}.small{font-size:12px}.wrap{max-width:1100px;margin:auto;padding:22px 16px 56px}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin:10px 0 18px}.panel{background:var(--panel,#17131a);border:1px solid var(--line,#302630);border-radius:14px;overflow:hidden}.pad{padding:22px}.eyebrow{color:var(--pink);font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase}.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.04;letter-spacing:-1.5px;margin:10px 0}.hero p{color:var(--mute,#aaa);max-width:600px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}.stat{padding:12px;border:1px solid var(--line,#302630);border-radius:9px;background:var(--panel2,#211a25)}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:var(--mute,#aaa)}.panel h2{font-size:12px;letter-spacing:.8px;text-transform:uppercase;margin:0;padding:14px 18px;background:var(--panel2,#211a25);border-bottom:1px solid var(--line,#302630)}.body{padding:18px}.state{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line,#302630);border-radius:99px;font-size:12px;font-weight:800}.dot{width:7px;height:7px;border-radius:50%;background:#999}.dot.pink{background:var(--pink);box-shadow:0 0 12px #ff4fa366}.dot.green{background:#4ee4a6}.queue-bar{height:8px;background:var(--panel2,#211a25);border-radius:99px;overflow:hidden;margin:14px 0}.queue-bar i{display:block;width:0;height:100%;background:var(--pink);transition:width .25s}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.notice{padding:12px;border-radius:8px;background:var(--panel2,#211a25);color:var(--mute,#aaa);margin-top:12px}.notice.error{border:1px solid #79304f;color:#ff9bc7}.matchhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.roster{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.team{border:1px solid var(--line,#302630);border-radius:10px;overflow:hidden}.team h3{margin:0;padding:10px 12px;background:var(--panel2,#211a25);font-size:12px}.player{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border-top:1px solid var(--line,#302630)}.player span:last-child{font-weight:800;color:var(--pink)}.server{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px;background:#ff4fa30d;border:1px solid #ff4fa344;border-radius:10px;margin-top:14px}.server code{word-break:break-all}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field label{font-size:11px;color:var(--mute,#aaa)}input,select{box-sizing:border-box;width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line,#3a303b);background:var(--bg,#0d0b10);color:var(--text,#fff)}.check{display:flex;align-items:center;gap:8px;margin-top:12px}.check input{width:auto}.hidden{display:none!important}.foot{text-align:center;color:var(--mute,#aaa);font-size:11px;margin-top:20px}dialog{background:var(--panel,#17131a);color:var(--text,#fff);border:1px solid var(--line,#3a303b);border-radius:12px;width:min(420px,92vw);padding:0}dialog::backdrop{background:#000b}.dlg{padding:18px;display:grid;gap:12px}.dlg h2{margin:0;background:none;border:0;padding:0}.dlg .actions{margin-top:0}
-@media(max-width:760px){
- header.top{position:relative;inset:auto;width:100%;height:auto;min-height:0;overflow:visible;padding:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
- .top nav{order:3;flex:1 0 100%;width:100%;gap:14px;padding-top:8px;border-top:1px solid var(--line,#302630)}
- .top nav a{padding:4px 0}
- .top #user-label{margin-left:auto}
- .top #auth-button{flex:0 0 auto}
- .hero{grid-template-columns:minmax(0,1fr)}
- .roster,.fields{grid-template-columns:minmax(0,1fr)}
- .wrap{width:100%;max-width:100%;padding:14px 10px 40px}
- .pad{padding:18px}
- .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
- .stat{min-width:0;padding:10px 8px}.stat b{font-size:18px}
- .actions button,.actions a{max-width:100%;white-space:normal}
- .server>div{min-width:0;max-width:100%}
- .server code{overflow-wrap:anywhere}
- .matchhead>*{min-width:0}
-}
-@media(max-width:380px){
- .top{gap:8px}.brand{font-size:17px}.top nav{gap:10px}
- .stats{gap:5px}.stat span{font-size:10px}.stat b{font-size:16px}
- .body{padding:12px}.pad{padding:14px}
- .actions{gap:6px}.actions button,.actions a{flex:1 1 100%;text-align:center}
-}
-
-/* Mantener el mismo navbar horizontal de index.html aunque csstv-theme.css defina un sidebar global. */
-body>header.top{
-  position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
-  display:flex!important;flex-direction:row!important;align-items:center!important;flex-wrap:wrap!important;
-  width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;
-  margin:0!important;padding:15px max(16px,calc((100% - 1100px)/2))!important;
-  overflow:visible!important;border:0!important;border-bottom:1px solid var(--line,#302630)!important;
-  border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;
-}
-body>header.top nav{
-  position:static!important;inset:auto!important;width:auto!important;height:auto!important;max-width:none!important;
-  display:flex!important;flex:1 1 auto!important;flex-direction:row!important;align-items:center!important;
-  flex-wrap:wrap!important;gap:16px!important;overflow:visible!important;border:0!important;padding:0!important;
-}
-body>header.top nav a{
-  display:inline-flex!important;width:auto!important;flex:none!important;padding:6px 0!important;
-  white-space:nowrap!important;border:0!important;border-radius:0!important;background:transparent!important;
-}
-body>header.top nav a.active{color:var(--pink)!important;box-shadow:none!important}
-body>header.top #user-label{margin-left:auto}
-body>header.top #auth-button{flex:0 0 auto}
-@media(max-width:760px){
-  body>header.top{padding:12px!important;gap:10px!important}
-  body>header.top nav{order:3;flex:1 0 100%!important;width:100%!important;gap:14px!important;padding-top:8px!important;border-top:1px solid var(--line,#302630)!important}
-  body>header.top nav a{padding:4px 0!important}
-  body>header.top #user-label{margin-left:auto}
-}
-
-
+:root{color-scheme:dark;--bg:#0e0f12;--surface:#15161a;--surface2:#1b1c21;--surface3:#23252b;--line:#2b2d34;--text:#f3f4f6;--muted:#8d909a;--accent:#ff642d;--green:#58c98d}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}body{min-width:320px}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--surface3);color:var(--text);padding:10px 14px;border-radius:5px;font-weight:700;transition:background .15s,border-color .15s}button:hover{border-color:#555862}button:disabled{opacity:.45;cursor:not-allowed}.hidden{display:none!important}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:218px minmax(0,1fr)}
+.side-rail{position:sticky;top:0;height:100vh;background:#121317;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:21px 13px 14px;z-index:5}
+.rail-brand{display:flex;align-items:center;gap:10px;padding:0 9px 25px;font-size:18px;font-weight:900;letter-spacing:-.8px}.brand-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:5px;background:var(--accent);color:#15110f;font-size:11px;font-weight:1000;letter-spacing:-.5px}.rail-brand b{color:var(--accent)}
+.rail-caption{padding:0 11px 8px;color:#666a74;font-size:9px;letter-spacing:1.3px;font-weight:800;text-transform:uppercase}
+.rail-nav{display:grid;gap:4px}.rail-nav a{display:flex;align-items:center;gap:12px;padding:10px 11px;border-radius:5px;color:#a5a7b0;font-weight:600;font-size:12px}.rail-nav a .nav-ico{width:18px;text-align:center;font-size:15px;color:#777b86}.rail-nav a:hover{background:#1c1d22;color:#f5f5f6}.rail-nav a.active{background:#2a1d18;color:#fff}.rail-nav a.active .nav-ico{color:var(--accent)}
+.rail-spacer{flex:1}.rail-game{margin:18px 3px 14px;padding:12px;border:1px solid var(--line);border-radius:6px;background:#17181c}.rail-game .game-overline{font-size:9px;color:#777a84;letter-spacing:1px;font-weight:800}.rail-game strong{display:block;margin-top:5px;font-size:12px}.rail-game small{display:block;margin-top:3px;color:var(--muted);font-size:10px}.rail-user{display:flex;align-items:center;gap:9px;padding:12px 8px 0;border-top:1px solid var(--line);min-width:0}.avatar{width:30px;height:30px;display:grid;place-items:center;background:#292b32;border-radius:4px;color:#c5c7ce;font-size:11px;font-weight:900}.user-meta{min-width:0;flex:1}.user-meta span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.user-meta small{display:block;color:var(--muted);font-size:10px}.rail-user button{padding:6px 8px;font-size:10px}
+.main-area{min-width:0}.topline{height:62px;display:flex;align-items:center;gap:16px;padding:0 30px;border-bottom:1px solid var(--line);background:#111216}.crumb{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:11px}.crumb strong{color:#e8e9ec;font-weight:700}.topline-right{display:flex;align-items:center;gap:16px;margin-left:auto}.online-indicator{display:flex;align-items:center;gap:7px;color:#9da19f;font-size:10px}.online-indicator i{width:6px;height:6px;border-radius:50%;background:var(--green)}#th{font-size:10px;padding:7px 9px}#user-label{display:none!important}#auth-button{font-size:10px;padding:8px 12px}
+.page-content{max-width:1460px;margin:0 auto;padding:28px 30px 54px}.page-title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}.page-kicker{font-size:9px;letter-spacing:1.5px;color:var(--accent);font-weight:850;text-transform:uppercase}.page-title-row h1{margin:5px 0 0;font-size:26px;line-height:1.15;letter-spacing:-.8px;font-weight:800}.page-title-row p{margin:7px 0 0;color:var(--muted);font-size:12px}.region-select{padding:8px 11px;border:1px solid var(--line);border-radius:5px;color:#c7c9d0;font-size:10px;white-space:nowrap;background:#17181c}
+.mode-switcher{display:flex;gap:8px;margin-bottom:18px}.mode-tab{display:flex;align-items:center;gap:10px;min-width:142px;padding:11px 14px;border:1px solid var(--line);border-radius:5px;color:#a4a6af;background:#15161a;font-size:11px;font-weight:750}.mode-tab .tab-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:4px;background:#24262c;color:#aeb0b9;font-size:10px}.mode-tab.active{border-color:#7d3b26;background:#211916;color:#fff}.mode-tab.active .tab-icon{background:var(--accent);color:#17110e}.mode-tab small{display:block;margin-top:2px;color:#7f828c;font-size:9px;font-weight:500}
+.lobby-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start}
+.lobby-main{min-width:0;display:grid;gap:15px}.queue-banner{position:relative;min-height:265px;overflow:hidden;border:1px solid #3a2b25;border-radius:7px;background:linear-gradient(115deg,#211b19 0%,#1b1b20 52%,#17181d 100%);display:flex;flex-direction:column;justify-content:space-between}.queue-banner:after{content:"5v5";position:absolute;right:10px;top:2px;font-size:clamp(130px,19vw,245px);font-weight:1000;letter-spacing:-.12em;line-height:1;color:#ffffff06;pointer-events:none}.banner-top{position:relative;z-index:1;display:flex;align-items:center;gap:9px;padding:18px 21px;border-bottom:1px solid #ffffff0c}.game-chip{padding:5px 7px;border:1px solid #49403d;border-radius:3px;color:#e8c8ba;font-size:9px;font-weight:850}.banner-top .mode-type{font-size:9px;letter-spacing:1.2px;color:#b6a49d;font-weight:850}.ranked-live{display:flex;align-items:center;gap:6px;margin-left:auto;color:#81cda0;font-size:9px;font-weight:700}.ranked-live i{width:6px;height:6px;background:var(--green);border-radius:50%}.banner-center{position:relative;z-index:1;padding:24px 25px 29px}.banner-center h2{margin:0;font-size:35px;line-height:1.08;letter-spacing:-1.2px;font-weight:850}.banner-center p{margin:10px 0 0;color:#a4a4ad;font-size:12px}.banner-bottom{position:relative;z-index:1;display:flex;gap:28px;padding:14px 25px;border-top:1px solid #ffffff10;background:#0b0c0f24}.banner-stat label{display:block;color:#777983;font-size:9px;text-transform:uppercase;letter-spacing:.9px}.banner-stat strong{display:block;margin-top:4px;color:#dedfe3;font-size:11px}
+.queue-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.info-tile{display:flex;align-items:center;gap:12px;padding:15px 16px;background:var(--surface);border:1px solid var(--line);border-radius:5px}.tile-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;background:#22242a;border-radius:4px;color:#c3c5cc;font-size:16px}.info-tile b{display:block;font-size:11px}.info-tile small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+.panel{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);font-size:11px;font-weight:800}.panel-heading span:last-child{color:var(--muted);font-size:9px;font-weight:600}.panel-body{padding:16px}
+.party-panel{position:sticky;top:16px}.party-header{display:flex;align-items:center;gap:10px}.party-header h2{margin:0;font-size:13px}.party-header p{margin:3px 0 0;color:var(--muted);font-size:10px}.party-avatars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:17px 0}.party-slot{aspect-ratio:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:1px dashed #3b3d45;border-radius:4px;background:#1b1c21;color:#686b75;font-size:8px}.party-slot .slot-avatar{display:grid;place-items:center;width:25px;height:25px;border-radius:4px;background:#272930;color:#747782;font-size:13px}.party-slot.filled{border-style:solid;border-color:#7b3b25;background:#281d19;color:#ff9b73}.party-slot.filled .slot-avatar{background:var(--accent);color:#17110e}.party-divider{height:1px;background:var(--line);margin:15px 0}.queue-state-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}.state{display:inline-flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid #393b43;border-radius:4px;background:#202127;color:#d8d9df;font-size:9px;font-weight:750}.dot{width:6px;height:6px;border-radius:50%;background:#6e717b}.dot.pink{background:var(--accent);box-shadow:0 0 9px #ff642d66}.dot.green{background:var(--green)}#state-description{margin:0 0 16px;color:#999ca5;font-size:10px;line-height:1.6}.queue-bar{height:4px;background:#2b2d34;border-radius:3px;overflow:hidden;margin:0 0 9px}.queue-bar i{display:block;width:0;height:100%;background:var(--accent);transition:width .25s}.queue-numbers{display:flex;align-items:center;justify-content:space-between;font-size:10px}.queue-numbers b{font-size:11px}#queue-position{color:var(--muted);font-size:9px}.primary{width:100%;margin-top:17px;background:var(--accent);border-color:var(--accent);color:#17110e;font-weight:900;letter-spacing:.35px;font-size:10px;min-height:40px}.primary:hover{background:#ff794c;border-color:#ff794c}.danger{width:100%;margin-top:8px;background:#281a19;border-color:#63322b;color:#ffb0a0;font-size:10px}.notice{margin-top:11px;padding:10px;background:#1d1e23;border:1px solid #2a2c32;border-radius:4px;color:#999ca5;font-size:9px;line-height:1.55}.notice.error{border-color:#793d36;color:#ffb2a0}.queue-help{margin-top:13px;color:#737680;font-size:9px;line-height:1.55}
+#match-panel,#server-admin{margin-top:18px}.match-panel-heading{padding:14px 16px;border-bottom:1px solid var(--line);font-size:11px;font-weight:800}.body{padding:16px}.matchhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.eyebrow{color:var(--accent);font-size:9px;font-weight:850;letter-spacing:1px;text-transform:uppercase}#match-title{font-size:20px;margin:5px 0}.server{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px;background:#1d1e23;border:1px solid var(--line);border-radius:5px;margin-top:14px}.server code{word-break:break-all}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.actions button,.actions a{font-size:10px}.roster{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.team{border:1px solid var(--line);border-radius:5px;overflow:hidden}.team h3{margin:0;padding:10px 12px;background:#202127;font-size:11px}.player{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}.player span:last-child{font-weight:800;color:var(--accent)}.muted{color:var(--muted)}.small{font-size:10px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field label{font-size:10px;color:var(--muted)}input,select{width:100%;padding:10px;border:1px solid #393b43;border-radius:4px;background:#101115;color:var(--text)}.check{display:flex;align-items:center;gap:8px;margin-top:12px}.check input{width:auto}.foot{margin-top:28px;color:#5e6069;font-size:9px;text-align:left}dialog{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:7px;width:min(420px,92vw);padding:0}dialog::backdrop{background:#000b}.dlg{padding:20px;display:grid;gap:12px}.dlg h2{margin:0;font-size:18px}.dlg .actions{margin-top:0}.dlg .actions button{flex:1}
+@media(max-width:1050px){.app-shell{grid-template-columns:68px minmax(0,1fr)}.side-rail{padding:18px 8px 12px;align-items:center}.rail-brand{padding:0 0 24px}.rail-brand .brand-name,.rail-caption,.rail-nav a .nav-label,.rail-game,.user-meta,.rail-user button{display:none}.rail-nav{width:100%}.rail-nav a{justify-content:center;padding:11px 0}.rail-nav a .nav-ico{width:auto;font-size:17px}.rail-user{width:100%;justify-content:center;padding:12px 0 0}.page-content{padding:24px 22px 45px}.lobby-layout{grid-template-columns:minmax(0,1fr) 285px}.topline{padding:0 22px}}
+@media(max-width:760px){.app-shell{display:block}.side-rail{position:relative;width:100%;height:auto;padding:10px 13px;display:flex;flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line)}.rail-brand{padding:0;margin-right:15px}.rail-brand .brand-name{display:inline}.rail-nav{display:flex;flex:1;gap:3px;overflow-x:auto}.rail-nav a{flex:0 0 auto;gap:7px;padding:9px}.rail-nav a .nav-label{display:inline;font-size:10px}.rail-nav a .nav-ico{font-size:13px}.rail-caption,.rail-spacer,.rail-game,.rail-user{display:none}.topline{height:48px;padding:0 14px}.page-content{padding:20px 14px 36px}.page-title-row h1{font-size:23px}.lobby-layout{grid-template-columns:minmax(0,1fr)}.party-panel{position:static;grid-row:1}.lobby-main{grid-row:2}.party-avatars{grid-template-columns:repeat(10,minmax(0,1fr));margin:12px 0}.party-slot{font-size:7px}.party-slot .slot-avatar{width:21px;height:21px}.party-panel .panel-body{padding:13px}.party-divider{margin:10px 0}.queue-controls{grid-template-columns:1fr 1fr}.banner-center h2{font-size:31px}.mode-switcher{overflow-x:auto}.mode-tab{min-width:125px}.region-select{font-size:9px}.topline-right .online-indicator{display:none}}
+@media(max-width:480px){.rail-brand{margin-right:6px}.rail-brand .brand-name{display:none}.rail-nav a{padding:8px 9px}.rail-nav a .nav-label{font-size:9px}.page-title-row{align-items:flex-start;flex-direction:column}.region-select{align-self:flex-start}.mode-switcher{gap:6px}.mode-tab{min-width:115px;padding:9px}.mode-tab small{font-size:8px}.queue-controls{grid-template-columns:1fr}.banner-top{padding:14px}.banner-center{padding:23px 17px}.banner-center h2{font-size:29px}.banner-bottom{gap:16px;padding:12px 17px}.party-avatars{gap:4px}.party-slot{border-radius:3px}.party-slot .slot-avatar{width:18px;height:18px;font-size:10px}.party-slot span:last-child{font-size:7px}.roster,.fields{grid-template-columns:1fr}.topline-right{gap:7px}.crumb{font-size:10px}}
 </style>
-<link rel="stylesheet" href="csstv-theme.css">
 
-<style id="matchmaking-lobby">
-:root{--lobby-bg:#101114;--lobby-card:#191a1f;--lobby-card2:#202127;--lobby-line:#303139;--lobby-text:#f1f1f3;--lobby-muted:#92939d;--lobby-accent:#ff5a1f}
-html,body{background:var(--lobby-bg);color:var(--lobby-text)}
-body>.wrap{max-width:1280px;width:auto;margin:0 auto;padding:0 32px 56px}
-.play-header{display:flex;align-items:center;gap:13px;padding:26px 0 20px}
-.game-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:5px;background:#24252b;border:1px solid #3a3b43;font-size:15px;font-weight:900;letter-spacing:-1px}
-.game-mark span{color:var(--lobby-accent)}
-.play-heading .eyebrow{color:var(--lobby-muted);font-size:9px;letter-spacing:1.7px}
-.play-heading h1{margin:1px 0 0;font-size:24px;line-height:1.2;font-weight:750;letter-spacing:-.6px}
-.region-pill{margin-left:auto;display:flex;align-items:center;gap:8px;color:#b5b6bd;font-size:11px}
-.region-pill i{width:6px;height:6px;border-radius:50%;background:#55c78a}
-.play-tabs{display:flex;gap:25px;border-bottom:1px solid var(--lobby-line);margin:0 0 24px;overflow-x:auto}
-.play-tabs a{padding:13px 1px 12px;white-space:nowrap;color:var(--lobby-muted);font-size:12px;font-weight:650;border-bottom:2px solid transparent}
-.play-tabs a.selected{color:#fff;border-color:var(--lobby-accent)}
-.play-tabs a:hover{color:#fff}
-.hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.8fr);gap:16px;margin:0 0 18px;align-items:stretch}
-.panel{background:var(--lobby-card);border:1px solid var(--lobby-line);border-radius:7px;box-shadow:none}
-.panel h2{background:var(--lobby-card2);border-bottom:1px solid var(--lobby-line);padding:13px 16px;font-size:10px;letter-spacing:1px;color:#c8c8ce}
-.queue-intro{position:relative;isolation:isolate;overflow:hidden;min-height:360px;padding:0;background:#191a1f}
-.queue-intro:before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(105deg,#1b1c22 0%,#1b1c22 50%,#26201e 100%)}
-.queue-intro:after{content:"CS:S";position:absolute;z-index:-1;right:-16px;top:25px;font-size:clamp(110px,17vw,230px);line-height:1;font-weight:1000;letter-spacing:-.12em;color:#ffffff05;transform:skewX(-8deg);pointer-events:none}
-.lobby-topline{display:flex;align-items:center;gap:9px;padding:18px 22px;border-bottom:1px solid #ffffff0c;color:#a8a9b1;font-size:10px;font-weight:750;letter-spacing:1px}
-.lobby-topline .mode-icon{padding:5px 7px;border:1px solid #41424a;border-radius:3px;color:#fff;font-size:10px;letter-spacing:0}
-.lobby-topline .live-label{margin-left:auto;display:flex;align-items:center;gap:7px;color:#81cba0;font-size:9px;letter-spacing:.4px}
-.live-label i{width:6px;height:6px;border-radius:50%;background:#55c78a}
-.lobby-content{padding:30px 26px 24px}
-.queue-intro h2{margin:0;padding:0;border:0;background:none;text-transform:none;font-size:clamp(27px,3.2vw,39px);font-weight:850;line-height:1.08;letter-spacing:-1.2px}
-.queue-intro h2 span{display:block;margin-top:10px;font-size:13px;line-height:1.5;letter-spacing:0;color:#a5a6ae;font-weight:450}
-.queue-intro>p{display:none}
-.lobby-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:24px}
-.lobby-tags span{padding:6px 9px;background:#ffffff08;border:1px solid #ffffff13;border-radius:4px;color:#c0c1c7;font-size:10px}
-.lobby-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:32px;padding-top:17px;border-top:1px solid #ffffff13}
-.lobby-bottom .micro-label{font-size:9px;color:#858690;letter-spacing:1px;text-transform:uppercase}
-.lobby-bottom strong{display:block;font-size:12px;margin-top:4px}
-.lobby-bottom .elo-mark{font-size:11px;color:#c6c7ce;text-align:right}
-.hero>.panel:not(.queue-intro) h2{font-size:10px;letter-spacing:1px}
-.hero>.panel:not(.queue-intro) .body{padding:19px}
-.queue-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-.state{border-radius:4px;border-color:#393a42;background:#222329;color:#e2e2e6;font-size:10px;padding:6px 9px}
-.dot.pink{background:var(--lobby-accent);box-shadow:0 0 10px #ff5a1f55}
-.dot.green{background:#55c78a}
-#state-description{font-size:11px;line-height:1.6;color:var(--lobby-muted);margin:0 0 19px}
-.queue-bar{height:5px;background:#303139;border-radius:2px;margin:0 0 11px}
-.queue-bar i{background:var(--lobby-accent);transition:width .3s}
-.queue-meter{display:flex;justify-content:space-between;align-items:center;font-size:11px}
-#queue-count{font-size:12px;font-weight:750}
-#queue-position{font-size:10px}
-.player-slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;margin:17px 0 20px}
-.player-slot{height:24px;display:grid;place-items:center;border:1px solid #36373f;background:#222329;border-radius:3px;color:#6f7079;font-size:9px;font-weight:700}
-.player-slot.filled{background:#3a241d;border-color:#8b4024;color:#ff9a70}
-#join-button,#cancel-button{width:100%;min-height:43px;font-size:11px;font-weight:850;letter-spacing:.7px;text-transform:uppercase;border-radius:4px}
-button.primary,.primary{background:var(--lobby-accent);border-color:var(--lobby-accent);color:white}
-button.primary:hover,.primary:hover{background:#ff7040;border-color:#ff7040;color:white}
-button{border-radius:4px}
-.actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:15px}
-.notice{margin-top:12px;padding:10px 11px;border:1px solid #ffffff0b;border-radius:4px;background:#202127;color:#9b9ca5;font-size:10px;line-height:1.5}
-.notice.error{border-color:#793d36;color:#ffb2a0}
-.lobby-footnote{display:flex;align-items:center;gap:8px;color:#797a83;font-size:10px;margin-top:15px}
-.lobby-footnote:before{content:"";width:5px;height:5px;border-radius:50%;background:#686973}
-#match-panel,#server-admin{margin-top:18px}
-#match-panel .body,#server-admin .body{padding:18px}
-#match-title{margin:5px 0;font-size:20px}
-.server{background:#202127;border:1px solid var(--lobby-line);border-radius:5px}
-.team{border-radius:5px;border-color:var(--lobby-line)}
-.team h3{background:#202127}
-.player{border-color:var(--lobby-line)}
-.player span:last-child{color:#ff946d}
-.foot{margin-top:28px;padding-top:15px;border-top:1px solid var(--lobby-line);text-align:left;color:#686973;font-size:10px}
-dialog{background:var(--lobby-card);color:var(--lobby-text);border-color:var(--lobby-line);border-radius:7px}
-.dialog h2,.dlg h2{background:none;border:0}
-input,select{background:#111216;border-color:#393a42;border-radius:4px}
-@media(max-width:900px){body>.wrap{padding:0 22px 42px}.hero{grid-template-columns:minmax(0,1fr)}.queue-intro{min-height:0}.queue-intro:after{font-size:200px}}
-@media(max-width:600px){body>.wrap{padding:0 12px 30px}.play-header{padding:20px 0 17px}.play-heading h1{font-size:21px}.play-tabs{gap:20px;margin-bottom:16px}.lobby-content{padding:23px 18px 19px}.lobby-topline{padding:14px 16px}.queue-intro h2{font-size:29px}.lobby-bottom{margin-top:24px}.hero>.panel:not(.queue-intro) .body{padding:15px}.player-slots{gap:3px}.player-slot{height:22px;font-size:8px}}
-</style>
+
+
 
 
 </head>
 <body>
-<header>
-<div class="bar">
-<a id="logo" class="logo" href="index.html" aria-label="Ir al inicio">CSS<b>TV</b></a>
-<button id="menu-btn" class="burger" type="button" aria-label="Menú" aria-expanded="false" aria-controls="mainnav">☰</button>
-<nav id="mainnav" aria-label="Principal">
-<a href="index.html">Inicio</a>
-<a href="index.html#matches">Partidas</a>
-<a href="index.html#results">Resultados</a>
-<a href="index.html#mixes">Mixes</a>
-<a class="on" href="matchmaking.html">Matchmaking</a>
-<a href="index.html#events">Torneos</a>
-<a href="index.html#pcw">PCW</a>
-<a href="index.html#palmares">Palmarés</a>
-<a href="index.html#ranking">Ranking</a>
-<a href="index.html#teams">Equipos</a>
-<a href="index.html#players">Jugadores</a>
-</nav>
-<div class="hr"><span id="user-label" style="color:var(--mute);font-size:11px">Sin iniciar sesión</span><button id="th" type="button">Tema</button><button id="auth-button" type="button">Ingresar</button></div>
-</div>
-</header>
-<div class="wrap">
-<div class="play-header">
-  <div class="game-mark">CS<span>S</span></div>
-  <div class="play-heading"><div class="eyebrow">COUNTER-STRIKE: SOURCE</div><h1>Matchmaking</h1></div>
-  <div class="region-pill"><i></i> LATAM · v34</div>
-</div>
-<nav class="play-tabs" aria-label="Modos de juego">
-  <a class="selected" href="matchmaking.html">Competitivo</a>
-  <a href="index.html#mixes">Mixes</a>
-  <a href="index.html#events">Torneos</a>
-  <a href="index.html#pcw">PCW</a>
-</nav>
-<div class="hero">
-<section class="panel queue-intro">
-  <div class="lobby-topline"><span class="mode-icon">5v5</span><span>RANKED QUEUE</span><span class="live-label"><i></i> EN LÍNEA</span></div>
-  <div class="lobby-content">
-    <h2>Competitive<br>5 contra 5<span>Partida individual · Equipos por ELO</span></h2>
-    <div class="lobby-tags"><span>CS:S v34</span><span>Servidor dedicado</span><span>Matchmaking automático</span></div>
-    <div class="lobby-bottom"><div><div class="micro-label">Región seleccionada</div><strong>South America</strong></div><div class="elo-mark">RANKED<br><strong>5 × 5</strong></div></div>
+<div class="app-shell">
+<aside class="side-rail">
+  <a class="rail-brand" href="index.html" aria-label="CSSTV inicio"><span class="brand-icon">CSS</span><span class="brand-name">CSS<b>TV</b></span></a>
+  <div class="rail-caption">Competir</div>
+  <nav class="rail-nav" aria-label="Navegación">
+    <a class="active" href="matchmaking.html"><span class="nav-ico">◈</span><span class="nav-label">Jugar</span></a>
+    <a href="index.html#mixes"><span class="nav-ico">⌁</span><span class="nav-label">Mixes</span></a>
+    <a href="index.html#events"><span class="nav-ico">♜</span><span class="nav-label">Torneos</span></a>
+    <a href="index.html#pcw"><span class="nav-ico">⚔</span><span class="nav-label">PCW</span></a>
+    <a href="index.html#ranking"><span class="nav-ico">↗</span><span class="nav-label">Ranking</span></a>
+  </nav>
+  <div class="rail-spacer"></div>
+  <div class="rail-game"><div class="game-overline">JUEGO ACTIVO</div><strong>Counter-Strike: Source</strong><small>v34 · South America</small></div>
+  <div class="rail-user"><div class="avatar">CS</div><div class="user-meta"><span id="user-label">Sin iniciar sesión</span><small>Cuenta CSSTV</small></div><button id="auth-button" type="button">Ingresar</button></div>
+</aside>
+<main class="main-area">
+  <div class="topline">
+    <div class="crumb"><span>CSSTV</span><span>/</span><strong>Matchmaking</strong></div>
+    <div class="topline-right"><div class="online-indicator"><i></i> SERVICIOS OPERATIVOS</div><button id="th" type="button">Tema</button></div>
   </div>
-</section>
-<section class="panel"><h2>Lobby</h2><div class="body">
-  <div class="queue-summary"><div class="state"><i id="state-dot" class="dot"></i><span id="state-title">Desconectado</span></div></div>
-  <p id="state-description" class="muted">Iniciá sesión para buscar partida.</p>
-  <div class="queue-bar"><i id="queue-progress"></i></div>
-  <div class="queue-meter"><b id="queue-count">0 / 10 jugadores</b><span id="queue-position" class="muted small"></span></div>
-  <div id="player-slots" class="player-slots" aria-label="Progreso de jugadores en cola">
-    <span class="player-slot">01</span><span class="player-slot">02</span><span class="player-slot">03</span><span class="player-slot">04</span><span class="player-slot">05</span><span class="player-slot">06</span><span class="player-slot">07</span><span class="player-slot">08</span><span class="player-slot">09</span><span class="player-slot">10</span>
+  <div class="page-content">
+    <div class="page-title-row">
+      <div><div class="page-kicker">COUNTER-STRIKE: SOURCE v34</div><h1>Buscar partida</h1><p>Competitivo · 5 contra 5</p></div>
+      <div class="region-select">⌖ &nbsp; South America <span style="color:#737680">· Auto</span></div>
+    </div>
+    <div class="mode-switcher" aria-label="Modos de juego">
+      <a class="mode-tab active" href="matchmaking.html"><span class="tab-icon">5v5</span><span>Ranked<small>Cola individual</small></span></a>
+      <a class="mode-tab" href="index.html#mixes"><span class="tab-icon">MIX</span><span>Mixes<small>Partidas organizadas</small></span></a>
+      <a class="mode-tab" href="index.html#events"><span class="tab-icon">杯</span><span>Torneos<small>Competición</small></span></a>
+    </div>
+    <div class="lobby-layout">
+      <div class="lobby-main">
+        <section class="queue-banner">
+          <div class="banner-top"><span class="game-chip">5v5</span><span class="mode-type">RANKED MATCHMAKING</span><span class="ranked-live"><i></i> DISPONIBLE</span></div>
+          <div class="banner-center"><h2>Competitive<br>Queue</h2><p>Entrá solo. El matchmaking arma los equipos por ELO.</p></div>
+          <div class="banner-bottom"><div class="banner-stat"><label>Formato</label><strong>5 contra 5</strong></div><div class="banner-stat"><label>Equipo</label><strong>Asignación automática</strong></div><div class="banner-stat"><label>Servidor</label><strong>Auto · LATAM</strong></div></div>
+        </section>
+        <div class="queue-controls">
+          <div class="info-tile"><span class="tile-icon">↗</span><div><b>Balance por ELO</b><small>Dos equipos equilibrados</small></div></div>
+          <div class="info-tile"><span class="tile-icon">⌖</span><div><b>Servidor automático</b><small>Se asigna al encontrar partida</small></div></div>
+        </div>
+        <section id="match-panel" class="panel hidden"><div class="match-panel-heading">Partida encontrada <span style="float:right;color:var(--green)">● ASIGNADA</span></div><div class="body"><div class="matchhead"><div><div class="eyebrow">MATCH ROOM</div><h3 id="match-title">CSSTV Matchmaking</h3></div><span id="match-status" class="state">Próxima</span></div><div class="server"><div><div class="muted small">Servidor asignado</div><code id="server-address">Pendiente</code></div><div class="actions" style="margin:0"><button id="copy-connect">Copiar connect</button><a id="steam-connect" class="primary" style="display:inline-block;width:auto;padding:10px 14px;border-radius:4px;font-weight:800;color:#17110e" href="#">Conectar</a></div></div><div id="roster" class="roster"></div><p class="muted small">Conectate al servidor asignado para empezar.</p></div></section>
+        <section id="server-admin" class="panel hidden"><div class="panel-heading">Administración de servidores <span>ADMIN</span></div><div class="panel-body"><p class="muted small">Configurá la dirección pública del servidor en formato IP:PUERTO y habilitalo para matchmaking.</p><div class="fields"><div class="field"><label for="server-select">Servidor</label><select id="server-select"><option value="">Cargando...</option></select></div><div class="field"><label for="server-address-input">Dirección pública</label><input id="server-address-input" placeholder="123.123.123.123:27015" maxlength="255"></div></div><label class="check"><input id="server-enabled" type="checkbox"> Habilitar para matchmaking</label><div class="actions"><button id="server-save" class="primary" style="width:auto">Guardar servidor</button><button id="server-refresh">Actualizar lista</button></div><div id="server-admin-msg" class="notice">Se asignan servidores activos que no tengan una partida en curso.</div></div></section>
+        <p class="foot">CSSTV MATCHMAKING · SOURCE v34</p>
+      </div>
+      <aside class="panel party-panel">
+        <div class="panel-heading"><span>Tu lobby</span><span>SOLO QUEUE</span></div>
+        <div class="panel-body">
+          <div class="party-header"><div class="avatar">5v5</div><div><h2>Lobby competitivo</h2><p>Tu grupo · 1 jugador</p></div></div>
+          <div class="party-avatars" id="player-slots" aria-label="Progreso de jugadores en cola">
+            <div class="party-slot"><span class="slot-avatar">+</span><span>01</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>02</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>03</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>04</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>05</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>06</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>07</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>08</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>09</span></div><div class="party-slot"><span class="slot-avatar">+</span><span>10</span></div>
+          </div>
+          <div class="party-divider"></div>
+          <div class="queue-state-row"><span class="state"><i id="state-dot" class="dot"></i><span id="state-title">Desconectado</span></span><span id="queue-position" class="small">—</span></div>
+          <p id="state-description">Iniciá sesión para buscar partida.</p>
+          <div class="queue-bar"><i id="queue-progress"></i></div>
+          <div class="queue-numbers"><b id="queue-count">0 / 10 jugadores</b><span style="color:var(--muted)">Jugadores</span></div>
+          <button id="join-button" class="primary" disabled>Jugar 5v5</button>
+          <button id="cancel-button" class="danger hidden">Cancelar búsqueda</button>
+          <div id="notice" class="notice">Iniciá sesión para entrar a la cola.</div>
+          <div class="queue-help">Al completar diez jugadores, se equilibran los equipos y se asigna un servidor disponible.</div>
+        </div>
+      </aside>
+    </div>
   </div>
-  <div class="actions"><button id="join-button" class="primary" disabled>Buscar partida</button><button id="cancel-button" class="danger hidden">Cancelar búsqueda</button></div>
-  <div id="notice" class="notice">Iniciá sesión para entrar a la cola.</div>
-  <div class="lobby-footnote">La partida se crea al completar la cola y encontrar servidor.</div>
-</div></section>
-</div>
-<section id="match-panel" class="panel hidden"><h2>Partida encontrada</h2><div class="body"><div class="matchhead"><div><div class="eyebrow">Match asignado</div><h3 id="match-title">CSSTV Matchmaking</h3></div><span id="match-status" class="state">Próxima</span></div><div class="server"><div><div class="muted small">Servidor asignado</div><code id="server-address">Pendiente</code></div><div class="actions" style="margin:0"><button id="copy-connect">Copiar connect</button><a id="steam-connect" class="primary" style="display:inline-block;padding:10px 14px;border-radius:8px;font-weight:800;color:#180c13" href="#">Conectar</a></div></div><div id="roster" class="roster"></div><p class="muted small">La asignación reserva el servidor y muestra cómo conectarse. No inicia RCON ni cambia el mapa automáticamente.</p></div></section>
-<section id="server-admin" class="panel hidden" style="margin-top:18px"><h2>Administración · Servidores</h2><div class="body"><p class="muted small">Elegí un servidor de Admin → Servidores, configurá su dirección pública en formato <code>IP:PUERTO</code> y habilitalo para matchmaking.</p><div class="fields"><div class="field"><label for="server-select">Servidor</label><select id="server-select"><option value="">Cargando...</option></select></div><div class="field"><label for="server-address-input">Dirección pública</label><input id="server-address-input" placeholder="123.123.123.123:27015" maxlength="255"></div></div><label class="check"><input id="server-enabled" type="checkbox"> Habilitar para matchmaking</label><div class="actions"><button id="server-save" class="primary">Guardar servidor</button><button id="server-refresh">Actualizar lista</button></div><div id="server-admin-msg" class="notice">Se asignan servidores activos que no tengan una partida en curso.</div></div></section>
-<p class="foot">CSSTV · Matchmaking 5v5</p>
+</main>
 </div>
 <dialog id="auth-dialog"><form class="dlg" id="auth-form"><h2 id="auth-title">Ingresar a CSSTV</h2><div class="field"><label for="auth-email">Email</label><input id="auth-email" type="email" autocomplete="email" required></div><div class="field"><label for="auth-password">Contraseña</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required></div><div id="register-field" class="field hidden"><label for="auth-tag">Tag de jugador</label><input id="auth-tag" maxlength="24" minlength="2" placeholder="Tu nick"></div><div id="auth-error" class="notice hidden"></div><div class="actions"><button id="auth-submit" class="primary" type="submit">Ingresar</button><button id="toggle-register" type="button">Crear cuenta</button><button id="auth-close" type="button">Cerrar</button></div></form></dialog>
 <script>
@@ -218,7 +112,7 @@ if(menu&&nav){menu.addEventListener('click',function(){var open=nav.classList.to
 
 function note(t,err){$('notice').textContent=t;$('notice').classList.toggle('error',!!err)}
 function adminNote(t,err){$('server-admin-msg').textContent=t;$('server-admin-msg').classList.toggle('error',!!err)}
-function setState(s){currentStatus=s||{status:'idle',queue_size:0};var st=currentStatus.status||'idle',count=Number(currentStatus.queue_size||0);$('queue-count').textContent=Math.min(count,10)+' / 10 jugadores';$('queue-progress').style.width=Math.min(count,10)*10+'%';$('queue-position').textContent=st==='waiting'&&currentStatus.position?'Posición #'+currentStatus.position:'';$('state-dot').className='dot '+(st==='matched'?'green':st==='waiting'?'pink':'');$('state-title').textContent=st==='matched'?'Partida encontrada':st==='waiting'?'En cola':'Esperando jugador';$('state-description').textContent=st==='matched'?'Partida lista. Conectate al servidor asignado.':st==='waiting'?'Buscando jugadores para completar el lobby.':'Iniciá sesión para entrar a la cola.';Array.prototype.forEach.call($('player-slots').children,function(slot,i){slot.classList.toggle('filled',i<count)});$('join-button').disabled=!me||st==='waiting'||st==='matched';$('join-button').textContent=st==='waiting'?'Buscando partida':st==='matched'?'Partida asignada':'Jugar 5v5';$('cancel-button').classList.toggle('hidden',st!=='waiting');$('match-panel').classList.toggle('hidden',st!=='matched'||!currentStatus.match);if(st==='waiting')note('Estás en cola. Podés cancelar la búsqueda cuando quieras.');else if(st==='matched')note('Partida creada. Revisá los equipos y el servidor.');else if(me)note('Listo para buscar partida.');if(st==='matched'&&currentStatus.match)renderMatch(currentStatus.match)}
+function setState(s){currentStatus=s||{status:'idle',queue_size:0};var st=currentStatus.status||'idle',count=Number(currentStatus.queue_size||0);$('queue-count').textContent=Math.min(count,10)+' / 10 jugadores';$('queue-progress').style.width=Math.min(count,10)*10+'%';$('queue-position').textContent=st==='waiting'&&currentStatus.position?'Posición #'+currentStatus.position:'';$('state-dot').className='dot '+(st==='matched'?'green':st==='waiting'?'pink':'');$('state-title').textContent=st==='matched'?'Partida encontrada':st==='waiting'?'En cola':'Esperando jugador';$('state-description').textContent=st==='matched'?'Partida lista. Conectate al servidor asignado.':st==='waiting'?'Buscando jugadores para completar el lobby.':'Iniciá sesión para entrar a la cola.';Array.prototype.forEach.call($('player-slots').children,function(slot,i){slot.classList.toggle('filled',i<count);var av=slot.querySelector('.slot-avatar');if(av)av.textContent=i<count?'✓':'+';});$('join-button').disabled=!me||st==='waiting'||st==='matched';$('join-button').textContent=st==='waiting'?'Buscando partida':st==='matched'?'Partida asignada':'Jugar 5v5';$('cancel-button').classList.toggle('hidden',st!=='waiting');$('match-panel').classList.toggle('hidden',st!=='matched'||!currentStatus.match);if(st==='waiting')note('Estás en cola. Podés cancelar la búsqueda cuando quieras.');else if(st==='matched')note('Partida creada. Revisá los equipos y el servidor.');else if(me)note('Listo para buscar partida.');if(st==='matched'&&currentStatus.match)renderMatch(currentStatus.match)}
 function renderMatch(m){$('match-title').textContent=(m.team1||'Equipo A')+' vs '+(m.team2||'Equipo B');$('match-status').textContent=m.status==='live'?'En vivo':'Próxima';var a=m.connect_address||'Servidor sin dirección configurada';$('server-address').textContent=a;$('steam-connect').href=m.connect_address?'steam://connect/'+m.connect_address:'#';$('copy-connect').disabled=!m.connect_address;var root=$('roster');root.textContent='';[1,2].forEach(function(t){var box=document.createElement('div');box.className='team';var h=document.createElement('h3');h.textContent=(t===1?(m.team1||'Equipo A'):(m.team2||'Equipo B'))+' · Equipo '+t;box.appendChild(h);(m.roster||[]).filter(function(p){return Number(p.team)===t}).forEach(function(p){var row=document.createElement('div');row.className='player';var n=document.createElement('span');n.textContent=p.nick||'Jugador';var e=document.createElement('span');e.textContent=Number(p.elo||0)+' ELO';row.appendChild(n);row.appendChild(e);box.appendChild(row)});root.appendChild(box)})}
 async function refreshStatus(){if(!me)return;try{var r=await sb.rpc('matchmaking_status');if(r.error)throw r.error;setState(r.data)}catch(e){note(e.message||'No se pudo consultar la cola.',true)}}
 async function loadServers(){if(!isAdmin)return;try{var r=await sb.from('game_servers').select('id,name,active,matchmaking_enabled,connect_address,last_assigned_at').order('created_at');if(r.error)throw r.error;servers=r.data||[];var sel=$('server-select'),old=sel.value;sel.textContent='';if(!servers.length){var o=document.createElement('option');o.value='';o.textContent='No hay servidores creados';sel.appendChild(o);return}servers.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name+(s.active?'':' (inactivo)');sel.appendChild(o)});if(servers.some(function(s){return s.id===old}))sel.value=old;fillServerForm()}catch(e){adminNote('No se pudieron cargar servidores: '+(e.message||e),true)}}
