@@ -6,8 +6,7 @@
 
 ## Despliegue
 1. Publicar la versión actualizada de `js/matchmaking.js` junto con el resto de archivos de la rama `feat/matchmaking-5v5`.
-2. Abrir Supabase SQL Editor del proyecto correcto.
-3. Ejecutar el contenido completo de `supabase/migrations/20261012180000_matchmaking_steamid64_nickname.sql`.
+2. La validación SQL de SteamID64 ya está incluida en `20261012220000_matchmaking_modos_configurables.sql`, aplicada al proyecto `wmzfwsizashpszxlvpeb`; no ejecutar la migración anterior de identidad por separado.
 4. Cerrar sesión y volver a iniciar sesión en la web, o recargar sin caché.
 5. Probar el botón de matchmaking con la cuenta afectada.
 
@@ -22,6 +21,6 @@ Si no devuelve la fila correcta, el perfil del jugador no está asociado a esa c
 
 ## Estado de verificación
 - Código actualizado en GitHub: sí.
-- Migración aplicada en Supabase: pendiente.
+- Validación SQL equivalente aplicada como parte de la migración de formatos: sí.
 - Publicación del JavaScript: pendiente de confirmar.
 - Prueba con la cuenta afectada: pendiente.
