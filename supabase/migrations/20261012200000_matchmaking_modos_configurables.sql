@@ -104,10 +104,12 @@ begin
   if not found then return false; end if;
 
   for i in 1..total_slots loop
-    if mod(i, 2) = 1 then
-      t1 := array_append(t1, pids[i]);
+    if mod(floor((i - 1)::numeric / 2)::integer, 2) = 0 then
+      if mod(i, 2) = 1 then t1 := array_append(t1, pids[i]);
+      else t2 := array_append(t2, pids[i]); end if;
     else
-      t2 := array_append(t2, pids[i]);
+      if mod(i, 2) = 1 then t2 := array_append(t2, pids[i]);
+      else t1 := array_append(t1, pids[i]); end if;
     end if;
   end loop;
 
@@ -225,7 +227,7 @@ begin
   where q.user_id=uid and q.status='waiting'
   order by q.joined_at desc limit 1;
   if existing_mode is not null and existing_mode <> p_mode then
-    raise exception 'Ya estás en la cola %s. Cancelá la búsqueda antes de cambiar de formato.', existing_mode using errcode='23505';
+    raise exception 'Ya estás en la cola %. Cancelá la búsqueda antes de cambiar de formato.', existing_mode using errcode='23505';
   end if;
 
   select * into p
