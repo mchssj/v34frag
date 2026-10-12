@@ -19,7 +19,7 @@ Cada requerimiento tiene su propia carpeta `AAAA-MM-DD-nombre-corto/`, con la fe
 | 2026-10-11 | [Perfiles automáticos y reclamo desde el servidor (`!claim`)](2026-10-11-reclamo-perfil-servidor/) | Planeado, pendiente de aprobación |
 | 2026-10-12 | [Demos en Cloudflare R2 (Worker) y partidas canceladas](2026-10-12-demos-r2-worker/) | Desplegado (2026-10-12): primer mix real con demo en R2, botón en la web y borrado en el servidor activado |
 | 2026-10-12 | [Integración de main en matchmaking 5v5](2026-10-12-integracion-main-matchmaking/) | Integrado mediante PR #7; pruebas de despliegue pendientes |
-| 2026-10-12 | [Corrección de identidad en matchmaking](2026-10-12-correccion-identidad-matchmaking/) | Código integrado en rama; migración, publicación y pruebas pendientes |
+| 2026-10-12 | [Corrección de identidad en matchmaking](2026-10-12-correccion-identidad-matchmaking/) | Validación SQL incluida en la migración de formatos y aplicada; publicación web y pruebas pendientes |
 | 2026-10-12 | [Formatos de matchmaking configurables](2026-10-12-formatos-matchmaking/) | Migración aplicada en Supabase; publicación web y pruebas pendientes |
 ## Convención de mantenimiento
 
