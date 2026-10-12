@@ -189,6 +189,12 @@ public void Http_OnPoll(bool success, const char[] error, System2HTTPRequest req
 
     char ids[MM_MAX_STEAMIDS][32];
     int count = ExplodeString(parts[3], ",", ids, sizeof(ids), sizeof(ids[]));
+    // Compatible con respuestas que agregan =equipo al SteamID.
+    for (int i = 0; i < count; i++)
+    {
+        int eq = FindCharInString(ids[i], 61);
+        if (eq > 0) ids[i][eq] = 0;
+    }
     if (count != MM_MAX_STEAMIDS)
     {
         LogError("[CSSTV MM] El roster debe tener 10 SteamID; recibidos: %d.", count);
