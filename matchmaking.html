@@ -69,6 +69,58 @@ body>header.top #auth-button{flex:0 0 auto}
 
 </style>
 <link rel="stylesheet" href="csstv-theme.css">
+
+<style id="matchmaking-esports-ui">
+/* Matchmaking dashboard: competitivo, compacto y consistente con plataformas de mixes. */
+:root{--pink:var(--accent,#f0449b)}
+body{background:radial-gradient(ellipse at 75% 0%,rgba(240,68,155,.07),transparent 38%),var(--bg);font-size:13px}
+body>.wrap{width:auto;max-width:none;margin:0 0 0 244px;padding:28px clamp(20px,3vw,44px) 42px}
+.hero{grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:14px;margin:0 0 16px}
+.panel{border-radius:10px;border-color:var(--line);box-shadow:0 8px 24px #00000012}
+.panel h2{display:flex;align-items:center;min-height:43px;padding:13px 16px;background:var(--panel2);font-size:11px;letter-spacing:.9px;font-weight:850}
+.pad{padding:clamp(20px,2.4vw,30px)}
+.eyebrow{font-size:10px;letter-spacing:1.7px}
+.hero h1{max-width:700px;font-size:clamp(32px,3.4vw,48px);letter-spacing:-1.8px;font-weight:850}
+.hero p{font-size:13px;line-height:1.75;max-width:620px}
+.stats{gap:8px;margin-top:22px}
+.stat{border-radius:8px;border-color:var(--line);background:var(--panel2);padding:13px}
+.stat b{font-size:21px;letter-spacing:-.4px}
+.stat span{display:block;margin-top:3px;text-transform:uppercase;letter-spacing:.65px;font-size:9px;font-weight:750}
+.body{padding:16px}
+.state{border-radius:6px;padding:7px 9px;background:var(--panel2);border-color:var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.25px}
+.queue-bar{height:6px;margin:16px 0 12px}
+.matchhead{font-size:12px}
+.actions button,.actions a{border-radius:6px;font-size:12px}
+.actions .primary,.primary{font-weight:850;letter-spacing:.15px}
+#join-button{min-height:42px;padding:11px 18px}
+.notice{border-radius:6px;font-size:11px;line-height:1.6}
+.roster{gap:10px}
+.team{border-radius:7px;border-color:var(--line)}
+.team h3{font-size:10px;letter-spacing:.8px;text-transform:uppercase;background:var(--panel2)}
+.player{font-size:12px}
+.server{border-radius:7px}
+.foot{padding:8px 0;text-align:left;border-top:1px solid var(--line);margin-top:24px}
+#server-admin{margin-top:14px!important}
+dialog{border-radius:10px}
+@media(max-width:1180px){
+ body>.wrap{margin:0 auto;padding:24px clamp(14px,3vw,30px) 32px}
+ .hero{grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr)}
+}
+@media(max-width:860px){.hero{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){
+ body>.wrap{padding:16px 10px 24px}
+ .hero{gap:12px;margin-bottom:12px}
+ .pad{padding:18px}
+ .hero h1{font-size:34px}
+ .stats{gap:6px;margin-top:16px}
+ .stat{padding:10px 7px}
+ .stat b{font-size:18px}
+ .stat span{font-size:8px;letter-spacing:.35px}
+ .body{padding:12px}
+ .panel h2{padding:12px 13px}
+ .roster{grid-template-columns:minmax(0,1fr)}
+}
+</style>
 </head>
 <body>
 <header>
@@ -88,7 +140,7 @@ body>header.top #auth-button{flex:0 0 auto}
 <a href="index.html#teams">Equipos</a>
 <a href="index.html#players">Jugadores</a>
 </nav>
-<div class="hr"><span id="ses" style="color:var(--mute);font-size:11px">Sin iniciar sesión</span><button id="th" type="button">Tema</button><button id="auth-button" type="button">Ingresar</button></div>
+<div class="hr"><span id="user-label" style="color:var(--mute);font-size:11px">Sin iniciar sesión</span><button id="th" type="button">Tema</button><button id="auth-button" type="button">Ingresar</button></div>
 </div>
 </header>
 <div class="wrap">
