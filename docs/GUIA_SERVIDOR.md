@@ -228,6 +228,10 @@ Al empezar cada ronda, en el freezetime, el chat muestra (cada parte se apaga co
 - **Prefijo** (`csstv_chat_tag`): `[v34frag]` por defecto. `cfg/csstv/warmup.cfg` tiene su propio `say "[CSSTV] …"`, que se cambia a mano.
 - El daño cuenta solo a los rivales, con el daño real (sin pasar la vida que le quedaba) y la cantidad de golpes entre paréntesis.
 - Al morir, el chat te dice quién te mató, con qué arma y cuánta vida y chaleco le quedan (`csstv_hp_on_death`). `!hp` lo repite.
+- **Contador de vivos** (desde la 1.4.0, `csstv_alive_hud`): `CT 5 vs 4 T` fijo arriba al centro durante toda la partida, actualizado al instante en cada muerte. Con `2` se muestra en el centro de la pantalla, por si algún cliente no ve el de arriba.
+- **Equipos bloqueados** (desde la 1.4.0, `csstv_lock_teams`): durante la partida, quien está en CT o T no puede cambiar de equipo (`M`); un admin lo mueve con `!team`. Elegir modelo estando vivo (por ejemplo, el menú que aparece en el medio tiempo) ya no deja muerto al jugador: el modelo se usa la próxima vez que aparezca.
+- **Puntos de la bomba** (desde la 1.4.0, `csstv_bomb_frags`): el juego suma 3 puntos en el TAB a quien desactiva la bomba y a quien la plantó si explota; el plugin los descuenta para que el TAB muestre solo kills.
+- **Créditos:** cada `csstv_credits_interval` segundos (720 = 12 minutos) el chat muestra `Plugin made by kyan & daniloev`.
 
 ### Pausa táctica
 
@@ -265,11 +269,13 @@ Tamaño medido en el servidor de prueba: unos 4 KB por segundo con 6 bots (2,6 M
 | `!live force` | Admin | Empieza aunque falten jugadores |
 | `!live mrN` | Admin | Partida corta: gana el primero en llegar a N+1 (se combina con `force`) |
 | `!cancelmatch` | Admin | Cancela la partida; con al menos una ronda jugada la guarda como cancelada, con su demo |
+| `!rr` | Admin | Repite la ronda actual: marcador, estadísticas, kills/muertes del TAB, plata y equipamiento vuelven a como estaban al empezarla. Usado después del fin de una ronda, repite esa ronda. No funciona en el LO3, el medio tiempo ni el cambio a prórroga |
+| `!team <jugador> <ct\|t\|spec>` | Admin | Cambia de equipo a un jugador. Si está vivo muere y aparece en la próxima ronda; la muerte del cambio no queda en el TAB |
 | `sm_csstv_status` | Consola / rcon | Estado, modo de envío, cola y último error |
 | `sm_csstv_flush` | Consola / rcon | Reintenta ahora los envíos pendientes |
 | `sm_csstv_retryfailed` | Consola / rcon | Devuelve a la cola los envíos rechazados |
 
-Para usar `!live`, `!cancelmatch`, `!forcepause` y `!forceunpause`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
+Para usar `!live`, `!cancelmatch`, `!rr`, `!team`, `!forcepause` y `!forceunpause`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
 
 ```
 "STEAM_0:1:12345678"  "b"

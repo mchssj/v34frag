@@ -1,8 +1,9 @@
 /**
  * Mejoras de calidad de vida durante el mix:
  * marcador estable (rondas de cada equipo y kills/muertes de cada jugador),
- * encabezado de ronda, reporte de daño, plata del equipo, !hp, pausa táctica
- * y demo automática.
+ * encabezado de ronda, reporte de daño, plata del equipo, !hp, pausa táctica,
+ * demo automática, equipos bloqueados durante la partida, contador de vivos,
+ * TAB sin los puntos de la bomba y mensaje de créditos.
  */
 
 #if defined _csstv_qol_included
@@ -29,6 +30,10 @@ ConVar g_cvDemo;
 ConVar g_cvDemoKeep;
 ConVar g_cvChatColors;
 ConVar g_cvChatTag;
+ConVar g_cvLockTeams;
+ConVar g_cvAliveHud;
+ConVar g_cvBombFrags;
+ConVar g_cvCreditsInterval;
 
 // !hp
 int g_iKillerUserId[MAXPLAYERS + 1];
@@ -47,6 +52,10 @@ Handle g_hPauseTimer;
 
 // Demo
 bool g_bRecording;
+
+// Contador de vivos y créditos
+Handle g_hAliveSync;
+Handle g_hCreditsTimer;
 
 // Kills y muertes del scoreboard (por registro de jugador, es decir por SteamID)
 int g_iBoardFrags[MAX_REC];
@@ -68,6 +77,20 @@ void Qol_Init()
 	g_cvChatColors   = CreateConVar("csstv_chat_colors", "1", "Colores del chat: 0 solo básicos, 1 RGB para quien usa ClientMod (detectado con su API), 2 siempre RGB.", _, true, 0.0, true, 2.0);
 	g_cvChatTag      = CreateConVar("csstv_chat_tag", "v34frag", "Texto del prefijo de los mensajes: [v34frag].");
 	g_cvChatTag.AddChangeHook(OnChatTagChanged);
+	g_cvLockTeams    = CreateConVar("csstv_lock_teams", "1", "Durante la partida: no se puede cambiar de equipo, y elegir modelo estando vivo no mata al jugador.", _, true, 0.0, true, 1.0);
+	g_cvAliveHud     = CreateConVar("csstv_alive_hud", "1", "Contador de vivos (CT 5 vs 4 T) fijo durante la partida: 0 no, 1 arriba al centro (HudMsg), 2 en el centro de la pantalla.", _, true, 0.0, true, 2.0);
+	g_cvBombFrags    = CreateConVar("csstv_bomb_frags", "3", "Puntos que el juego suma en el TAB al desactivar o hacer explotar la bomba y que el plugin descuenta (0 = no tocar).", _, true, 0.0, true, 10.0);
+	g_cvCreditsInterval = CreateConVar("csstv_credits_interval", "720", "Segundos entre los mensajes de créditos del plugin (0 = nunca).", _, true, 0.0, true, 7200.0);
+	g_cvCreditsInterval.AddChangeHook(OnCreditsIntervalChanged);
+	g_hAliveSync = CreateHudSynchronizer();
+	CreateTimer(1.0, Timer_AliveShow, _, TIMER_REPEAT);
+	Credits_Schedule();
+
+	AddCommandListener(Cmd_JoinTeam, "jointeam");
+	AddCommandListener(Cmd_JoinTeam, "chooseteam");
+	AddCommandListener(Cmd_JoinClass, "joinclass");
+	RegAdminCmd("sm_team", Cmd_Team, ADMFLAG_GENERIC, "Cambia de equipo a un jugador: sm_team <jugador> <ct|t|spec>. Si está vivo muere y aparece en la próxima ronda.");
+	LoadTranslations("common.phrases");   // FindTarget
 
 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
@@ -368,6 +391,7 @@ public Action Timer_RoundInfo(Handle timer)
 		Qol_TeamMoney(TEAM_T);
 		Qol_TeamMoney(TEAM_CT);
 	}
+	Rr_Snapshot();
 	return Plugin_Stop;
 }
 
@@ -516,6 +540,8 @@ void TruncateUtf8(char[] s, int max)
 
 void Qol_OnDeath(int victim, int attacker, const char[] weapon)
 {
+	// En player_death la víctima todavía puede figurar viva: se cuenta un instante después.
+	CreateTimer(0.1, Timer_AliveShowOnce, _, TIMER_FLAG_NO_MAPCHANGE);
 	if (!g_cvHpOnDeath.BoolValue || !QolTarget(victim))
 		return;
 	if (attacker <= 0 || attacker == victim || !IsClientInGame(attacker) || GetClientTeam(attacker) == GetClientTeam(victim))
@@ -878,4 +904,199 @@ void Demo_Cleanup()
 	}
 	delete names;
 	delete times;
+}
+
+// ---------------------------------------------------------------------------
+// Equipos bloqueados durante la partida
+// ---------------------------------------------------------------------------
+
+/*
+ * En el medio tiempo el juego les abre a los jugadores el menú de modelos aunque el plugin
+ * ya les asignó uno y los hizo reaparecer. Si alguien elige tarde, el joinclass le llega
+ * al motor con el jugador ya vivo y lo deja muerto. Durante la partida:
+ *  - quien está en CT o T no puede cambiar de equipo (los admins sí pueden moverlo);
+ *  - joinclass de un jugador vivo solo guarda el modelo para la próxima vez que aparezca.
+ */
+
+bool TeamsLocked()
+{
+	return g_cvLockTeams.BoolValue && (g_State == State_Starting || g_State == State_Live || g_State == State_Halftime);
+}
+
+public Action Cmd_JoinTeam(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !IsClientInGame(client) || !TeamsLocked() || !IsTeamSide(GetClientTeam(client)))
+		return Plugin_Continue;
+	QolChat(client, "%s Durante la partida no se puede cambiar de equipo. Un admin puede moverte con !team.", PREFIX);
+	return Plugin_Handled;
+}
+
+public Action Cmd_JoinClass(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !IsClientInGame(client) || !TeamsLocked())
+		return Plugin_Continue;
+	char arg[8];
+	GetCmdArg(1, arg, sizeof(arg));
+	int cls = StringToInt(arg), team = GetClientTeam(client);
+	bool alive = IsPlayerAlive(client);
+#if defined CSSTV_DEBUG
+	LogMessage("[joinclass] %N clase %d · equipo %d · vivo %d · estado %d · freezetime %d", client, cls, team, alive,
+		GetEntProp(client, Prop_Send, "m_iPlayerState"), InFreezeTime());
+#endif
+	if (!alive)
+		return Plugin_Continue;
+	// T 1-4, CT 5-8; 0 = al azar (se queda con el que tiene).
+	if ((team == TEAM_T && cls >= 1 && cls <= 4) || (team == TEAM_CT && cls >= 5 && cls <= 8))
+		SetEntProp(client, Prop_Send, "m_iClass", cls);
+	return Plugin_Handled;
+}
+
+public Action Cmd_Team(int client, int args)
+{
+	if (args < 2)
+	{
+		QolReply(client, "[%s] Uso: sm_team <jugador> <ct|t|spec>. Ejemplo: !team daniloev ct", g_sTag);
+		return Plugin_Handled;
+	}
+	char name[MAX_NAME_LENGTH], side[8];
+	GetCmdArg(1, name, sizeof(name));
+	GetCmdArg(2, side, sizeof(side));
+	int to;
+	if (StrEqual(side, "ct", false))
+		to = TEAM_CT;
+	else if (StrEqual(side, "t", false))
+		to = TEAM_T;
+	else if (StrEqual(side, "spec", false))
+		to = TEAM_SPEC;
+	else
+	{
+		QolReply(client, "[%s] El equipo tiene que ser ct, t o spec.", g_sTag);
+		return Plugin_Handled;
+	}
+	int target = FindTarget(client, name, false, false);
+	if (target <= 0)
+		return Plugin_Handled;
+	if (GetClientTeam(target) == to)
+	{
+		QolReply(client, "[%s] %N ya está en ese equipo.", g_sTag, target);
+		return Plugin_Handled;
+	}
+	// El cambio de equipo anota una muerte en el TAB: se guarda antes y se devuelve al reaparecer.
+	Board_SaveClient(target);
+	g_bBoardPending[target] = MatchRunning();
+	if (to == TEAM_SPEC)
+		ChangeClientTeam(target, TEAM_SPEC);
+	else
+		MoveToTeam(target, to);
+	QolChatAll("%s Un admin pasó a {#amarillo}%N{#normal} a %s.", PREFIX, target, to == TEAM_CT ? "CT" : (to == TEAM_T ? "T" : "espectador"));
+	return Plugin_Handled;
+}
+
+// ---------------------------------------------------------------------------
+// Contador de vivos (CT 5 vs 4 T)
+// ---------------------------------------------------------------------------
+
+/** Cada segundo durante la partida (texto fijo) y al instante en cada muerte. */
+public Action Timer_AliveShow(Handle timer)
+{
+	Alive_Show();
+	return Plugin_Continue;
+}
+
+public Action Timer_AliveShowOnce(Handle timer)
+{
+	Alive_Show();
+	return Plugin_Stop;
+}
+
+void Alive_Show()
+{
+	int mode = g_cvAliveHud.IntValue;
+	if (mode == 0 || !MatchRunning() || g_bRestarting)
+		return;
+	int ct, t;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || !IsPlayerAlive(i))
+			continue;
+		int team = GetClientTeam(i);
+		if (team == TEAM_CT)
+			ct++;
+		else if (team == TEAM_T)
+			t++;
+	}
+	char text[32];
+	Format(text, sizeof(text), "CT %d vs %d T", ct, t);
+	// Se reenvía cada segundo y dura 1.5 s, sin fundidos: queda fijo y sin parpadeo.
+	if (mode == 1)
+		SetHudTextParams(-1.0, 0.02, 1.5, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i))
+			continue;
+		if (mode == 1)
+			ShowSyncHudText(i, g_hAliveSync, "%s", text);
+		else
+			PrintCenterText(i, "%s", text);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Puntos de la bomba en el TAB
+// ---------------------------------------------------------------------------
+
+/*
+ * El juego suma puntos (frags) en el TAB a quien desactiva la bomba y a quien la plantó si
+ * explota. El TAB tiene que mostrar solo kills: se descuentan un instante después del evento,
+ * cuando el juego ya los sumó. Las estadísticas del plugin no cuentan esos puntos.
+ */
+void Qol_OnBombScore(int client)
+{
+	if (g_cvBombFrags.IntValue <= 0 || client <= 0 || !IsClientInGame(client))
+		return;
+	DataPack pack = new DataPack();
+	pack.WriteCell(GetClientUserId(client));
+	pack.WriteCell(GetClientFrags(client));
+	CreateTimer(0.1, Timer_BombFrags, pack, TIMER_FLAG_NO_MAPCHANGE | TIMER_DATA_HNDL_CLOSE);
+}
+
+public Action Timer_BombFrags(Handle timer, DataPack pack)
+{
+	pack.Reset();
+	int client = GetClientOfUserId(pack.ReadCell());
+#if defined CSSTV_DEBUG
+	int before = pack.ReadCell();
+#endif
+	if (client <= 0 || !IsClientInGame(client))
+		return Plugin_Stop;
+	int frags = GetClientFrags(client);
+	SetEntProp(client, Prop_Data, "m_iFrags", frags - g_cvBombFrags.IntValue);
+	Board_SaveClient(client);   // el fin de ronda ya pudo guardar el TAB con los puntos
+#if defined CSSTV_DEBUG
+	LogMessage("[bomba] %N: TAB %d en el evento, %d después; queda en %d", client, before, frags, frags - g_cvBombFrags.IntValue);
+#endif
+	return Plugin_Stop;
+}
+
+// ---------------------------------------------------------------------------
+// Créditos
+// ---------------------------------------------------------------------------
+
+public void OnCreditsIntervalChanged(ConVar cv, const char[] oldValue, const char[] newValue)
+{
+	Credits_Schedule();
+}
+
+void Credits_Schedule()
+{
+	delete g_hCreditsTimer;
+	float secs = g_cvCreditsInterval.FloatValue;
+	if (secs > 0.0)
+		g_hCreditsTimer = CreateTimer(secs, Timer_Credits, _, TIMER_REPEAT);
+}
+
+public Action Timer_Credits(Handle timer)
+{
+	QolChatAll("%s Plugin made by {#amarillo}kyan & daniloev", PREFIX);
+	return Plugin_Continue;
 }

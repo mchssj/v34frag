@@ -18,3 +18,4 @@ Cada requerimiento tiene su propia carpeta `AAAA-MM-DD-nombre-corto/`, con la fe
 | 2026-10-11 | [ELO configurable desde la web](2026-10-11-elo-configurable/) | Desplegado (2026-10-11) |
 | 2026-10-11 | [Perfiles automáticos y reclamo desde el servidor (`!claim`)](2026-10-11-reclamo-perfil-servidor/) | Planeado, pendiente de aprobación |
 | 2026-10-12 | [Demos en Cloudflare R2 (Worker) y partidas canceladas](2026-10-12-demos-r2-worker/) | Desplegado (2026-10-12): primer mix real con demo en R2, botón en la web y borrado en el servidor activado |
+| 2026-10-12 | [QoL del servidor, segunda tanda (cambio de lado, créditos, `!rr`, contador de vivos)](2026-10-12-qol-servidor-2/) | Probado con bots y con un cliente real (2026-10-12); falta subir la 1.4.0 al servidor real |

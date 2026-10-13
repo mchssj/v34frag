@@ -4,7 +4,8 @@
  * Controla un mix en CS:S v34 (ready / live / medio tiempo / prórroga / fin),
  * junta las estadísticas de cada jugador y envía el resultado a Supabase.
  * También agrega mejoras de calidad de vida (csstv/qol.inc): marcador estable,
- * encabezado de ronda, daño y plata en el chat, !hp, pausa táctica y demo.
+ * encabezado de ronda, daño y plata en el chat, !hp, pausa táctica, demo,
+ * equipos bloqueados, contador de vivos y créditos. csstv/rr.inc agrega !rr.
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -22,7 +23,7 @@
 #include <system2>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.3.0"
+#define PLUGIN_VERSION "1.4.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -52,6 +53,7 @@ enum MatchState
 
 #define PURPOSE_LIVE   1
 #define PURPOSE_RESUME 2
+#define PURPOSE_REROUND 3   // !rr
 
 // Cvars
 ConVar g_cvEnabled;
@@ -102,6 +104,7 @@ Handle g_hReadyTimer;
 #include "csstv/queue.inc"
 #include "csstv/http.inc"
 #include "csstv/qol.inc"
+#include "csstv/rr.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -155,10 +158,12 @@ public void OnPluginStart()
 	HookEventEx("player_death", Event_PlayerDeath);
 	HookEventEx("bomb_planted", Event_BombPlanted);
 	HookEventEx("bomb_defused", Event_BombDefused);
+	HookEventEx("bomb_exploded", Event_BombExploded);
 
 	Stats_Init();
 	Queue_Init();
 	Qol_Init();
+	Rr_Init();
 }
 
 public void OnMapStart()
@@ -448,6 +453,7 @@ void ResetMatch()
 		g_bReady[i] = false;
 	Stats_Reset();
 	Qol_Reset();
+	Rr_Reset();
 }
 
 void BackToWarmup()
@@ -514,6 +520,8 @@ void OnRestartsDone()
 	{
 		PrintToChatAll("%s ¡EN VIVO! Equipo A %d - %d Equipo B.", PREFIX, g_iTotA, g_iTotB);
 		Board_ScheduleRestoreAll();
+		if (g_iRestartPurpose == PURPOSE_REROUND)
+			Rr_ScheduleRestore();
 	}
 }
 
@@ -620,26 +628,32 @@ void SwapTeams()
 		if (!IsClientInGame(i))
 			continue;
 		int team = GetClientTeam(i);
-		if (team != TEAM_T && team != TEAM_CT)
-			continue;
-		// ChangeClientTeam deja al jugador sin clase y esperando elegir modelo: los bots
-		// no reaparecen nunca. Se le asigna el modelo equivalente del otro lado
-		// (T 1-4 <-> CT 5-8) y se lo marca activo para que reaparezca con el reinicio.
-		// En v34 no sirven CS_SwitchTeam (firma de otra versión) ni FakeClientCommand
-		// "joinclass" (tumba el servidor con bots).
-		int cls = GetEntProp(i, Prop_Send, "m_iClass");
-		int to = OtherSide(team);
-		ChangeClientTeam(i, to);
-		if (cls >= 1 && cls <= 4)
-			cls += 4;
-		else if (cls >= 5 && cls <= 8)
-			cls -= 4;
-		else
-			cls = to == TEAM_T ? GetRandomInt(1, 4) : GetRandomInt(5, 8);
-		SetEntProp(i, Prop_Send, "m_iClass", cls);
-		SetEntProp(i, Prop_Send, "m_iPlayerState", 0);   // STATE_ACTIVE
+		if (team == TEAM_T || team == TEAM_CT)
+			MoveToTeam(i, OtherSide(team));
 	}
 	g_iSideA = OtherSide(g_iSideA);
+}
+
+/**
+ * Pasa a un jugador a CT o T sin dejarlo esperando en el menú de modelos.
+ * ChangeClientTeam deja al jugador sin clase y esperando elegir modelo: los bots
+ * no reaparecen nunca. Se le asigna el modelo equivalente del otro lado
+ * (T 1-4 <-> CT 5-8) y se lo marca activo para que reaparezca con el próximo
+ * reinicio o la próxima ronda. En v34 no sirven CS_SwitchTeam (firma de otra
+ * versión) ni FakeClientCommand "joinclass" (tumba el servidor con bots).
+ */
+void MoveToTeam(int client, int to)
+{
+	int cls = GetEntProp(client, Prop_Send, "m_iClass");
+	ChangeClientTeam(client, to);
+	if (to == TEAM_T && cls >= 5 && cls <= 8)
+		cls -= 4;
+	else if (to == TEAM_CT && cls >= 1 && cls <= 4)
+		cls += 4;
+	else if (!((to == TEAM_T && cls >= 1 && cls <= 4) || (to == TEAM_CT && cls >= 5 && cls <= 8)))
+		cls = to == TEAM_T ? GetRandomInt(1, 4) : GetRandomInt(5, 8);
+	SetEntProp(client, Prop_Send, "m_iClass", cls);
+	SetEntProp(client, Prop_Send, "m_iPlayerState", 0);   // STATE_ACTIVE
 }
 
 void FinishMatch()
@@ -792,6 +806,7 @@ public Action Timer_AfterFinish(Handle timer)
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Stats_RoundStart();
+	Rr_OnRoundStart();
 	Qol_ScheduleScoreSync();
 	if (g_bRestarting)
 	{
@@ -868,7 +883,17 @@ public void Event_BombDefused(Event event, const char[] name, bool dontBroadcast
 		return;
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0)
+	{
 		Stats_Add(client, ST_DEFUSES, 1);
+		Qol_OnBombScore(client);
+	}
+}
+
+public void Event_BombExploded(Event event, const char[] name, bool dontBroadcast)
+{
+	if (g_State != State_Live || g_bRestarting)
+		return;
+	Qol_OnBombScore(GetClientOfUserId(event.GetInt("userid")));   // quien la plantó
 }
 
 // ---------------------------------------------------------------------------
