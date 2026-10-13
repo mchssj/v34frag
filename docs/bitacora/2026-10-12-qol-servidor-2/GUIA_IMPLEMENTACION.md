@@ -2,7 +2,7 @@
 
 ## Estado
 
-Plugin 1.4.0 probado el 2026-10-12 en el servidor local, con bots y con Daniel conectado con un cliente v34 real (ClientMod). **Todavía no está en el servidor real.**
+Plugin 1.4.0 probado el 2026-10-12 en el servidor local, con bots y con Daniel conectado con un cliente v34 real (ClientMod). **Subido al servidor real por SFTP el 2026-10-12**; se carga en el próximo cambio de mapa. Falta verificar con `sm_csstv_status` en la consola del panel.
 
 ## Archivos
 
@@ -16,9 +16,11 @@ Plugin 1.4.0 probado el 2026-10-12 en el servidor local, con bots y con Daniel c
 | `docs/GUIA_SERVIDOR.md` | "Durante la partida" y "Comandos" con lo nuevo |
 | `docs/bitacora/2026-10-12-qol-servidor-2/pruebas/` | Plugin de prueba de armas y HUD, y escenarios de `!rr` con bots |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-10-12)
 
-1. Respaldar el plugin actual en el servidor real: `plugins/csstv_reporter.smx` → `plugins/disabled/csstv_reporter_1.3.0.smx`.
+Por SFTP, con las credenciales `SFTP_CSS_*` del `.env` y un script con `paramiko` (en un entorno virtual aparte). El plugin no se recargó, para no cancelar una partida en curso.
+
+1. Respaldar el plugin actual en el servidor real: `plugins/csstv_reporter.smx` → `plugins/disabled/csstv_reporter_1.3.0.smx` (47256 bytes, igual al de la 1.3.0 del repo).
 2. Subir `server/addons/sourcemod/plugins/csstv_reporter.smx` (1.4.0).
 3. Agregar al `cfg/sourcemod/csstv_reporter.cfg` del servidor:
    ```
@@ -27,7 +29,7 @@ Plugin 1.4.0 probado el 2026-10-12 en el servidor local, con bots y con Daniel c
    csstv_bomb_frags "3"
    csstv_credits_interval "720"
    ```
-   Son los valores por defecto; agregarlos solo deja a la vista que se pueden cambiar.
+   Son los valores por defecto; agregarlos solo deja a la vista que se pueden cambiar. Se agregaron al final, bajo `// --- 1.4.0 ---`, con respaldo en `cfg/sourcemod/csstv_reporter.cfg.bak-1.3.0`.
 4. Se carga en el próximo cambio de mapa (o con `sm plugins reload csstv_reporter`, que cancela la partida en curso). Verificar con `sm_csstv_status` que diga `v1.4.0`.
 
 No hace falta migrar Supabase ni desplegar la web ni el Worker.
@@ -83,7 +85,7 @@ Ron (T, sin kills) plantó y la bomba explotó. Log: `TAB 3 en el evento, 3 desp
 
 ## Cómo revertir
 
-1. En el servidor, volver a poner `plugins/disabled/csstv_reporter_1.3.0.smx` como `plugins/csstv_reporter.smx` y cambiar de mapa. Los cvars nuevos del cfg se pueden dejar: sin el plugin 1.4.0 no existen y el servidor los ignora.
+1. En el servidor, volver a poner `plugins/disabled/csstv_reporter_1.3.0.smx` como `plugins/csstv_reporter.smx` (y, si se quiere, `csstv_reporter.cfg.bak-1.3.0` como `csstv_reporter.cfg`) y cambiar de mapa. Los cvars nuevos del cfg se pueden dejar: sin el plugin 1.4.0 no existen y el servidor los ignora.
 2. En el repo: `git revert` del commit de esta tanda.
 
 Para apagar una sola mejora sin revertir: `csstv_lock_teams 0`, `csstv_alive_hud 0`, `csstv_bomb_frags 0` o `csstv_credits_interval 0`.
