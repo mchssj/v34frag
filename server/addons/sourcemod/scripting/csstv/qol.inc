@@ -953,6 +953,11 @@ public Action Cmd_JoinClass(int client, const char[] command, int argc)
 
 public Action Cmd_Team(int client, int args)
 {
+	if (!License_Allows())
+	{
+		License_Reply(client);
+		return Plugin_Handled;
+	}
 	if (args < 2)
 	{
 		QolReply(client, "[%s] Uso: sm_team <jugador> <ct|t|spec>. Ejemplo: !team daniloev ct", g_sTag);

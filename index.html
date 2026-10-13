@@ -842,10 +842,19 @@ $('elo-save').onclick=async function(){var v=eloFormVals(),rec=$('elo-rec').chec
 function rSrv(){eloFormFill();var l=$('srv-list');if(!l)return;l.textContent='';
  if(!servers.length){l.appendChild(none('Todavía no hay servidores. Creá uno para obtener su token.'));return}
  servers.forEach(function(s){var r=el('div','pl'),L=el('div');L.appendChild(el('b',0,s.name));
-  var st=el('div','msg',(s.active?'Activo':'Revocado')+' · última conexión: '+(s.last_seen_at?dt(s.last_seen_at):'nunca'));st.style.padding='0';L.appendChild(st);r.appendChild(L);
+  var st=el('div','msg',(s.active?'Activo':'Revocado')+' · última conexión: '+(s.last_seen_at?dt(s.last_seen_at):'nunca'));st.style.padding='0';L.appendChild(st);
+  var exp=s.license_expires_at?new Date(s.license_expires_at):null,lic=el('div','msg','Licencia: '+(!exp?'no vence':(exp<=new Date()?'VENCIDA el ':'vence el ')+exp.toLocaleDateString('es-AR'))+
+   ' · IP: '+(s.allowed_ip?'solo '+s.allowed_ip:'cualquiera')+(s.last_ip?' (última: '+s.last_ip+')':'')+(s.plugin_version?' · plugin '+s.plugin_version:''));
+  lic.style.padding='0';L.appendChild(lic);r.appendChild(L);
   var rot=btn('Nuevo token',async function(){if(!confirm('Se genera un token nuevo y el actual deja de funcionar. ¿Seguir?'))return;
    try{showToken(await ok(sb.rpc('rotate_server_token',{p_server:s.id})));load()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}});
   rot.style.marginLeft='auto';r.appendChild(rot);
+  r.appendChild(btn('Vencimiento',async function(){var v=prompt('Fecha de vencimiento de la licencia (AAAA-MM-DD). Vacío = no vence.',s.license_expires_at?s.license_expires_at.slice(0,10):'');
+   if(v===null)return;v=v.trim();if(v&&!/^\d{4}-\d{2}-\d{2}$/.test(v)){showToast('Formato: AAAA-MM-DD','error');return}
+   try{await ok(sb.from('game_servers').update({license_expires_at:v?new Date(v+'T23:59:59').toISOString():null}).eq('id',s.id));load()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}}));
+  r.appendChild(btn('IP',async function(){var v=prompt('Única IP desde la que se acepta el token (vacío = cualquiera).'+(s.last_ip?' La última conexión vino de '+s.last_ip+'.':''),s.allowed_ip||s.last_ip||'');
+   if(v===null)return;v=v.trim();if(v&&!/^[0-9a-fA-F.:]+$/.test(v)){showToast('Esa IP no es válida.','error');return}
+   try{await ok(sb.from('game_servers').update({allowed_ip:v||null}).eq('id',s.id));load()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}}));
   r.appendChild(btn(s.active?'Revocar':'Reactivar',async function(){if(s.active&&!confirm('El servidor no va a poder enviar resultados hasta que lo reactives. ¿Seguir?'))return;
    try{await ok(sb.from('game_servers').update({active:!s.active}).eq('id',s.id));load()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}}));
   l.appendChild(r)})}
@@ -1536,7 +1545,7 @@ async function loadImpl(){try{
   admin?ok(sb.from('team_requests').select('*')):Promise.resolve([]),
   me?ok(sb.from('team_requests').select('*').eq('user_id',me).maybeSingle()):Promise.resolve(null),
   soft(sb.from('match_player_stats').select('*'),'match_player_stats'),
-  admin?soft(sb.from('game_servers').select('id,name,active,created_at,last_seen_at').order('created_at'),'game_servers'):Promise.resolve([]),
+  admin?soft(sb.from('game_servers').select('id,name,active,created_at,last_seen_at,license_expires_at,allowed_ip,last_ip,plugin_version').order('created_at'),'game_servers'):Promise.resolve([]),
   soft(sb.from('player_elo').select('steam_id,elo,peak_elo,matches'),'player_elo'),
   soft(sb.from('elo_config').select('*').eq('id',1),'elo_config')
  ]);

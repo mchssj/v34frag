@@ -6,6 +6,7 @@
  * También agrega mejoras de calidad de vida (csstv/qol.inc): marcador estable,
  * encabezado de ronda, daño y plata en el chat, !hp, pausa táctica, demo,
  * equipos bloqueados, contador de vivos y créditos. csstv/rr.inc agrega !rr.
+ * csstv/license.inc valida la licencia del servidor: sin ella no se juegan mixes.
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -23,7 +24,7 @@
 #include <system2>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.4.0"
+#define PLUGIN_VERSION "1.5.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -103,6 +104,8 @@ Handle g_hReadyTimer;
 #include "csstv/json.inc"
 #include "csstv/queue.inc"
 #include "csstv/http.inc"
+#include "csstv/license_id.inc"
+#include "csstv/license.inc"
 #include "csstv/qol.inc"
 #include "csstv/rr.inc"
 
@@ -164,6 +167,7 @@ public void OnPluginStart()
 	Queue_Init();
 	Qol_Init();
 	Rr_Init();
+	License_Init();
 }
 
 public void OnMapStart()
@@ -176,6 +180,7 @@ public void OnConfigsExecuted()
 {
 	ExecIfExists("csstv/warmup.cfg");
 	StartReadyTimer();
+	License_Check();
 	Http_ScheduleProcess(5.0);
 }
 
@@ -213,6 +218,11 @@ public Action Cmd_Live(int client, int args)
 	if (!g_cvEnabled.BoolValue)
 	{
 		ReplyToCommand(client, "[%s] El plugin está desactivado (csstv_enabled 0).", g_sTag);
+		return Plugin_Handled;
+	}
+	if (!License_Allows())
+	{
+		License_Reply(client);
 		return Plugin_Handled;
 	}
 	if (g_State != State_Warmup)
@@ -280,6 +290,11 @@ public Action Cmd_Ready(int client, int args)
 {
 	if (client <= 0 || !IsClientInGame(client))
 		return Plugin_Handled;
+	if (!License_Allows())
+	{
+		License_Reply(client);
+		return Plugin_Handled;
+	}
 	if (!g_cvReadySystem.BoolValue || g_State != State_Warmup)
 	{
 		ReplyToCommand(client, "[%s] Ahora no se puede marcar listo.", g_sTag);
@@ -335,6 +350,9 @@ public Action Cmd_Status(int client, int args)
 	char mode[96];
 	Http_ModeText(mode, sizeof(mode));
 	ReplyToCommand(client, "[%s] Envío: %s · en cola: %d · rechazados: %d", g_sTag, mode, Queue_Count(false), Queue_Count(true));
+	char lic[160];
+	License_StatusText(lic, sizeof(lic));
+	ReplyToCommand(client, "[%s] Licencia: %s", g_sTag, lic);
 	if (g_sLastError[0])
 		ReplyToCommand(client, "[%s] Último error: %s", g_sTag, g_sLastError);
 	return Plugin_Handled;
@@ -374,6 +392,13 @@ public Action Timer_ReadyReminder(Handle timer)
 	int total = CountTeamPlayers();
 	if (total == 0)
 		return Plugin_Continue;
+	if (!License_Allows())
+	{
+		char why[96];
+		License_ReasonText(why, sizeof(why));
+		PrintToChatAll("%s Este servidor no tiene una licencia válida de CSSTV (%s). Los mixes están desactivados.", PREFIX, why);
+		return Plugin_Continue;
+	}
 	char names[256];
 	int missing;
 	for (int i = 1; i <= MaxClients; i++)
@@ -395,7 +420,7 @@ public Action Timer_ReadyReminder(Handle timer)
 void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
-	if (total >= g_cvMinPlayers.IntValue && CountReady() == total)
+	if (License_Allows() && total >= g_cvMinPlayers.IntValue && CountReady() == total)
 		StartMatch();
 }
 

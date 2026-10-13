@@ -82,7 +82,7 @@ void Http_ScheduleRetry()
 
 void Http_ProcessQueue()
 {
-	if (g_bSending || !g_cvEnabled.BoolValue || !g_cvSend.BoolValue || !Http_Available() || !Http_Configured())
+	if (g_bSending || !g_cvEnabled.BoolValue || !g_cvSend.BoolValue || !Http_Available() || !Http_Configured() || !License_Allows())
 		return;
 	char uid[64];
 	if (!Queue_Next(uid, sizeof(uid)))
