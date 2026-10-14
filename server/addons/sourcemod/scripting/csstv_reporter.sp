@@ -8,7 +8,8 @@
  * equipos bloqueados, contador de vivos y créditos. csstv/rr.inc agrega !rr.
  * csstv/license.inc valida la licencia del servidor: sin ella no se juegan mixes.
  * csstv/knife.inc (ronda de cuchillo), csstv/gg.inc (rendición), csstv/summary.inc
- * (resumen final) y csstv/menu.inc (categoría v34frag del menú de admin).
+ * (resumen final), csstv/menu.inc (categoría v34frag del menú de admin) y csstv/maps.inc
+ * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas).
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -29,7 +30,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.6.0"
+#define PLUGIN_VERSION "1.7.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -124,6 +125,7 @@ int g_iSurrenderTeam;          // 0 = A, 1 = B
 #include "csstv/gg.inc"
 #include "csstv/summary.inc"
 #include "csstv/menu.inc"
+#include "csstv/maps.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -188,12 +190,14 @@ public void OnPluginStart()
 	Gg_Init();
 	License_Init();
 	Menu_Init();
+	Maps_Init();
 }
 
 public void OnMapStart()
 {
 	ResetMatch();
 	Queue_EnsureDirs();
+	Maps_OnMapStart();
 }
 
 public void OnConfigsExecuted()
@@ -236,6 +240,7 @@ public void OnClientDisconnect(int client)
 	Recon_Remember(client);
 	Board_SaveClient(client);
 	Stats_ClientLeave(client);
+	Maps_OnClientDisconnect(client);
 }
 
 // ---------------------------------------------------------------------------
@@ -291,6 +296,11 @@ void Live_Request(int client, int mr, bool knife)
 	if (g_State != State_Warmup)
 	{
 		ReplyToCommand(client, "[%s] Ya hay una partida en curso.", g_sTag);
+		return;
+	}
+	if (Maps_ChangePending())
+	{
+		ReplyToCommand(client, "[%s] El mapa está por cambiar: la partida se empieza en el mapa nuevo.", g_sTag);
 		return;
 	}
 	if (CountTeamPlayers() < 2)
@@ -471,7 +481,7 @@ public Action Timer_ReadyReminder(Handle timer)
 void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
-	if (License_Allows() && total >= g_cvMinPlayers.IntValue && CountReady() == total)
+	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total)
 		StartMatch();
 }
 
@@ -552,6 +562,7 @@ void BackToWarmup()
 void StartMatch(int maxRounds = 0, bool knife = false)
 {
 	ResetMatch();
+	Maps_OnMatchStart();
 	g_State = State_Starting;
 	g_iSegLen = maxRounds > 0 ? maxRounds : g_cvMaxRounds.IntValue;
 	if (g_iSegLen % 2)

@@ -278,6 +278,9 @@ Tamaño medido en el servidor de prueba: unos 4 KB por segundo con 6 bots (2,6 M
 | `!pause` / `!unpause` | Jugadores | Pedir una pausa táctica / seguir (o cancelar la que pediste) |
 | `!gg` | Jugadores | Votar la rendición de tu equipo (si pierde por `csstv_gg_min_diff` rondas o más) |
 | `!stay` / `!switch` | Jugadores | Después de ganar la ronda de cuchillo: quedarse o cambiar de lado |
+| `!rtv` (o `rtv`) / `!unrtv` | Jugadores | En el calentamiento: pedir cambiar de mapa / quitar el pedido y el voto |
+| `!vote <mapa>` / `!nominate <mapa>` | Jugadores | En el calentamiento: votar un mapa (acepta parte del nombre; sin mapa abre el menú) |
+| `!mapas` / `!maps` | Jugadores | Menú con los mapas que se pueden votar y sus votos |
 | `!forcepause` / `!forceunpause` | Admin | Pausa de admin / terminar cualquier pausa ya |
 | `!live` | Admin | Empieza con los jugadores como están (sin mínimo de jugadores; `force` se acepta pero ya no hace falta) |
 | `!live mrN` | Admin | Partida corta: gana el primero en llegar a N+1 |
@@ -297,6 +300,27 @@ Para usar `!live`, `!cancelmatch`, `!rr`, `!team`, `!swap`, `!forcepause` y `!fo
 ```
 "STEAM_0:1:12345678"  "b"
 ```
+
+### Votación de mapa (desde la 1.7.0)
+
+Solo en el calentamiento. Cuentan todos los jugadores humanos conectados, también los espectadores, y hace falta `csstv_rtv_ratio` de ellos (0.6: 6 de 10, 3 de 5).
+
+- `!vote <mapa>`: si un mapa junta los votos necesarios, se cambia directo a los 5 segundos. Votar un mapa también cuenta como `!rtv`.
+- `!rtv`: cuando `!rtv` + `!vote` juntan los votos necesarios, se abre un menú de 20 segundos para todos con los mapas más votados, mapas al azar hasta `csstv_rtv_options` (5) y "No cambiar de mapa". Gana la opción con más votos; en un empate, la que está más arriba.
+- Si gana "No cambiar" (o nadie vota), los votos se borran y no se puede volver a votar por `csstv_rtv_cooldown` segundos (120). Tampoco se puede en los primeros `csstv_rtv_wait` segundos del mapa (30).
+- Al empezar una partida se borran los votos y se corta la votación en curso. Mientras el mapa está por cambiar no se puede empezar una partida.
+- `!vote` es también el comando de votación de admin de `basevotes.smx` (`sm_vote <pregunta>`): un admin con ese permiso lo sigue usando así cuando el argumento no es un mapa de la lista. `!votemap` de admin no cambia.
+
+**Lista de mapas.** El plugin usa la sección `csstv` de `addons/sourcemod/configs/maplists.cfg` y, si no existe, el `mapcycle.txt` del servidor (sin el mapa actual ni los que no están en `maps/`). Para usar una lista distinta de la rotación:
+
+```
+"csstv"
+{
+	"file"		"addons/sourcemod/configs/csstv_maps.txt"
+}
+```
+
+En el servidor real (2026-10-13) el `mapcycle.txt` tiene `$2000$`, `de_cache`, `de_cbble`, `de_dust2_ob`, `de_inferno`, `de_inferno_classic`, `de_mirage_rc1`, `de_nuke_old_blue_ep`, `de_season` y `de_tuscan`. `de_dust2` está en `maps/` pero no en la lista, así que no se puede votar (`!vote dust2` vota `de_dust2_ob`).
 
 ### Vincular jugadores con su perfil
 
