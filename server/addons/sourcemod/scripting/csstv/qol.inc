@@ -2,8 +2,8 @@
  * Mejoras de calidad de vida durante el mix:
  * marcador estable (rondas de cada equipo y kills/muertes de cada jugador),
  * encabezado de ronda, reporte de daño, plata del equipo, !hp, pausa táctica,
- * demo automática, equipos bloqueados durante la partida, contador de vivos,
- * TAB sin los puntos de la bomba y mensaje de créditos.
+ * demo automática, equipos bloqueados durante la partida, reconexión al mismo
+ * equipo, contador de vivos, TAB sin los puntos de la bomba y mensaje de créditos.
  */
 
 #if defined _csstv_qol_included
@@ -63,6 +63,9 @@ int g_iBoardDeaths[MAX_REC];
 bool g_bBoardSaved[MAX_REC];
 bool g_bBoardPending[MAXPLAYERS + 1];   // se reconectó: restaurar al reaparecer
 
+// Equipo de cada jugador en la partida (por registro, es decir por SteamID): 0 = ninguno, 1 = A, 2 = B
+int g_iRecTeam[MAX_REC];
+
 void Qol_Init()
 {
 	g_cvRoundHeader  = CreateConVar("csstv_round_header", "1", "Encabezado al empezar cada ronda y avisos de último round y match point.", _, true, 0.0, true, 1.0);
@@ -89,8 +92,8 @@ void Qol_Init()
 	AddCommandListener(Cmd_JoinTeam, "jointeam");
 	AddCommandListener(Cmd_JoinTeam, "chooseteam");
 	AddCommandListener(Cmd_JoinClass, "joinclass");
-	RegAdminCmd("sm_team", Cmd_Team, ADMFLAG_GENERIC, "Cambia de equipo a un jugador: sm_team <jugador> <ct|t|spec>. Si está vivo muere y aparece en la próxima ronda.");
-	LoadTranslations("common.phrases");   // FindTarget
+	RegAdminCmd("sm_team", Cmd_Team, ADMFLAG_GENERIC, "Cambia de equipo: sm_team <jugador|@all|@ct|@t|@spec> <ct|t|spec>. Si está vivo muere y aparece en la próxima ronda.");
+	LoadTranslations("common.phrases");   // ProcessTargetString
 
 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
@@ -250,6 +253,8 @@ void Qol_Reset()
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
 	Board_Reset();
+	for (int r = 0; r < MAX_REC; r++)
+		g_iRecTeam[r] = 0;
 	g_bDemoRecorded = false;
 }
 
@@ -407,17 +412,17 @@ void Qol_RoundHeader()
 	strcopy(sideA, sizeof(sideA), g_iSideA == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}");
 	strcopy(sideB, sizeof(sideB), g_iSideA == TEAM_CT ? "{#t}T{#normal}" : "{#ct}CT{#normal}");
 	if (g_iSegment == 0)
-		QolChatAll("%s Ronda {#amarillo}%d/%d{#normal} · Equipo A (%s) {#amarillo}%d - %d{#normal} Equipo B (%s)", PREFIX,
-			g_iSegRound + 1, g_iSegLen, sideA, g_iTotA, g_iTotB, sideB);
+		QolChatAll("%s Ronda {#amarillo}%d/%d{#normal} · %s (%s) {#amarillo}%d - %d{#normal} %s (%s)", PREFIX,
+			g_iSegRound + 1, g_iSegLen, g_sTeam[0], sideA, g_iTotA, g_iTotB, g_sTeam[1], sideB);
 	else
-		QolChatAll("%s Prórroga %d · ronda {#amarillo}%d/%d{#normal} · Equipo A (%s) {#amarillo}%d - %d{#normal} Equipo B (%s)", PREFIX,
-			g_iSegment, g_iSegRound + 1, g_iSegLen, sideA, g_iTotA, g_iTotB, sideB);
+		QolChatAll("%s Prórroga %d · ronda {#amarillo}%d/%d{#normal} · %s (%s) {#amarillo}%d - %d{#normal} %s (%s)", PREFIX,
+			g_iSegment, g_iSegRound + 1, g_iSegLen, g_sTeam[0], sideA, g_iTotA, g_iTotB, g_sTeam[1], sideB);
 
 	int half = g_iSegLen / 2;
 	if (g_iSegA == half)
-		QolChatAll("%s {#amarillo}Match point para el Equipo A.", PREFIX);
+		QolChatAll("%s {#amarillo}Match point para el %s.", PREFIX, g_sTeam[0]);
 	else if (g_iSegB == half)
-		QolChatAll("%s {#amarillo}Match point para el Equipo B.", PREFIX);
+		QolChatAll("%s {#amarillo}Match point para el %s.", PREFIX, g_sTeam[1]);
 	if (g_iSegRound + 1 == half)
 		QolChatAll("%s {#amarillo}Última ronda antes del cambio de lado.", PREFIX);
 }
@@ -640,8 +645,8 @@ public Action Cmd_Pause(int client, int args)
 	else
 	{
 		g_bPauseRequested = true;
-		QolChatAll("%s {#amarillo}%N pidió una pausa para el Equipo %s.{#normal} Empieza al inicio de la próxima ronda (!unpause para cancelarla).",
-			PREFIX, client, t == 0 ? "A" : "B");
+		QolChatAll("%s {#amarillo}%N pidió una pausa para el %s.{#normal} Empieza al inicio de la próxima ronda (!unpause para cancelarla).",
+			PREFIX, client, g_sTeam[t]);
 	}
 	return Plugin_Handled;
 }
@@ -689,9 +694,7 @@ void Pause_Start()
 	else
 	{
 		g_iPausesUsed[g_iPauseBy]++;
-		char who[16];
-		Format(who, sizeof(who), "Equipo %s", g_iPauseBy == 0 ? "A" : "B");
-		QolChatAll("%s {#amarillo}Pausa táctica del %s (%d de %d).", PREFIX, who, g_iPausesUsed[g_iPauseBy], g_cvPauseMax.IntValue);
+		QolChatAll("%s {#amarillo}Pausa táctica del %s (%d de %d).", PREFIX, g_sTeam[g_iPauseBy], g_iPausesUsed[g_iPauseBy], g_cvPauseMax.IntValue);
 		if (mode == PAUSE_TIMED)
 			QolChatAll("%s Dura %d segundos.", PREFIX, RoundToFloor(secs));
 		else if (mode == PAUSE_UNTIL)
@@ -738,8 +741,8 @@ public Action Timer_PauseTick(Handle timer)
 
 void PrintUnpauseStatus()
 {
-	QolChatAll("%s En pausa. Para seguir: !unpause (Equipo A %s · Equipo B %s).", PREFIX,
-		g_bUnpauseReady[0] ? "listo" : "falta", g_bUnpauseReady[1] ? "listo" : "falta");
+	QolChatAll("%s En pausa. Para seguir: !unpause (%s %s · %s %s).", PREFIX,
+		g_sTeam[0], g_bUnpauseReady[0] ? "listo" : "falta", g_sTeam[1], g_bUnpauseReady[1] ? "listo" : "falta");
 }
 
 public Action Cmd_Unpause(int client, int args)
@@ -771,7 +774,7 @@ public Action Cmd_Unpause(int client, int args)
 	if (!g_bUnpauseReady[t])
 	{
 		g_bUnpauseReady[t] = true;
-		QolChatAll("%s %N: el Equipo %s está listo para seguir.", PREFIX, client, t == 0 ? "A" : "B");
+		QolChatAll("%s %N: el %s está listo para seguir.", PREFIX, client, g_sTeam[t]);
 	}
 	if (g_bUnpauseReady[0] && g_bUnpauseReady[1])
 		Pause_End("Los dos equipos están listos.");
@@ -920,13 +923,15 @@ void Demo_Cleanup()
 
 bool TeamsLocked()
 {
-	return g_cvLockTeams.BoolValue && (g_State == State_Starting || g_State == State_Live || g_State == State_Halftime);
+	return g_cvLockTeams.BoolValue && MatchInProgress();
 }
 
 public Action Cmd_JoinTeam(int client, const char[] command, int argc)
 {
-	if (client <= 0 || !IsClientInGame(client) || !TeamsLocked() || !IsTeamSide(GetClientTeam(client)))
+	if (client <= 0 || !IsClientInGame(client) || !TeamsLocked())
 		return Plugin_Continue;
+	if (!IsTeamSide(GetClientTeam(client)))
+		return Recon_Place(client) ? Plugin_Handled : Plugin_Continue;   // si se reconectó, va a su equipo
 	QolChat(client, "%s Durante la partida no se puede cambiar de equipo. Un admin puede moverte con !team.", PREFIX);
 	return Plugin_Handled;
 }
@@ -953,18 +958,13 @@ public Action Cmd_JoinClass(int client, const char[] command, int argc)
 
 public Action Cmd_Team(int client, int args)
 {
-	if (!License_Allows())
-	{
-		License_Reply(client);
-		return Plugin_Handled;
-	}
 	if (args < 2)
 	{
-		QolReply(client, "[%s] Uso: sm_team <jugador> <ct|t|spec>. Ejemplo: !team daniloev ct", g_sTag);
+		QolReply(client, "[%s] Uso: sm_team <jugador|@all|@ct|@t|@spec> <ct|t|spec>. Ejemplos: !team daniloev ct · !team @all spec", g_sTag);
 		return Plugin_Handled;
 	}
-	char name[MAX_NAME_LENGTH], side[8];
-	GetCmdArg(1, name, sizeof(name));
+	char pattern[MAX_NAME_LENGTH], side[8];
+	GetCmdArg(1, pattern, sizeof(pattern));
 	GetCmdArg(2, side, sizeof(side));
 	int to;
 	if (StrEqual(side, "ct", false))
@@ -978,23 +978,135 @@ public Action Cmd_Team(int client, int args)
 		QolReply(client, "[%s] El equipo tiene que ser ct, t o spec.", g_sTag);
 		return Plugin_Handled;
 	}
-	int target = FindTarget(client, name, false, false);
-	if (target <= 0)
-		return Plugin_Handled;
-	if (GetClientTeam(target) == to)
-	{
-		QolReply(client, "[%s] %N ya está en ese equipo.", g_sTag, target);
-		return Plugin_Handled;
-	}
-	// El cambio de equipo anota una muerte en el TAB: se guarda antes y se devuelve al reaparecer.
-	Board_SaveClient(target);
-	g_bBoardPending[target] = MatchRunning();
-	if (to == TEAM_SPEC)
-		ChangeClientTeam(target, TEAM_SPEC);
-	else
-		MoveToTeam(target, to);
-	QolChatAll("%s Un admin pasó a {#amarillo}%N{#normal} a %s.", PREFIX, target, to == TEAM_CT ? "CT" : (to == TEAM_T ? "T" : "espectador"));
+	Team_Apply(client, pattern, to);
 	return Plugin_Handled;
+}
+
+/**
+ * !team y el menú de admin. pattern: nick (o parte), #userid o un grupo de SourceMod
+ * (@all, @ct, @t, @spec, @alive, @dead, @humans, @bots). Un nick que coincide con varios
+ * jugadores no mueve a nadie.
+ */
+void Team_Apply(int client, const char[] pattern, int to)
+{
+	if (!License_Allows())
+	{
+		License_Reply(client);
+		return;
+	}
+	int targets[MAXPLAYERS];
+	char targetName[MAX_TARGET_LENGTH];
+	bool ml;
+	int n = ProcessTargetString(pattern, client, targets, sizeof(targets), COMMAND_FILTER_NO_IMMUNITY, targetName, sizeof(targetName), ml);
+	if (n <= 0)
+	{
+		ReplyToTargetError(client, n);
+		return;
+	}
+	int moved, last;
+	for (int k = 0; k < n; k++)
+	{
+		int target = targets[k];
+		if (IsClientSourceTV(target) || GetClientTeam(target) == to)
+			continue;   // el bot de SourceTV queda siempre de espectador
+		// El cambio de equipo anota una muerte en el TAB: se guarda antes y se devuelve al reaparecer.
+		Board_SaveClient(target);
+		g_bBoardPending[target] = MatchRunning();
+		if (to == TEAM_SPEC)
+		{
+			ChangeClientTeam(target, TEAM_SPEC);
+			Recon_Forget(target);   // si se reconecta, no vuelve a un equipo
+		}
+		else
+		{
+			MoveToTeam(target, to);
+			Recon_Remember(target);
+		}
+		moved++;
+		last = target;
+	}
+	char where[16];
+	strcopy(where, sizeof(where), to == TEAM_CT ? "CT" : (to == TEAM_T ? "T" : "espectador"));
+	if (!moved)
+		QolReply(client, "[%s] %s ya %s en %s.", g_sTag, n == 1 ? "Ese jugador" : "Todos", n == 1 ? "está" : "están", where);
+	else if (moved == 1)
+		QolChatAll("%s Un admin pasó a {#amarillo}%N{#normal} a %s.", PREFIX, last, where);
+	else
+		QolChatAll("%s Un admin pasó a {#amarillo}%d jugadores{#normal} a %s.", PREFIX, moved, where);
+}
+
+// ---------------------------------------------------------------------------
+// Reconexión: quien se cae durante la partida vuelve a su equipo
+// ---------------------------------------------------------------------------
+
+/** Desde el LO3 (o la ronda de cuchillo) hasta el fin de la partida. */
+bool MatchInProgress()
+{
+	return g_State == State_Starting || g_State == State_Live || g_State == State_Halftime || g_State == State_Knife;
+}
+
+/** Anota en qué equipo (A o B, no CT o T) juega el jugador. */
+void Recon_Remember(int client)
+{
+	if (!MatchInProgress() || !IsClientInGame(client) || !IsTeamSide(GetClientTeam(client)))
+		return;
+	int rec = Stats_GetRec(client);
+	if (rec >= 0)
+		g_iRecTeam[rec] = GetClientTeam(client) == g_iSideA ? 1 : 2;
+}
+
+void Recon_RememberAll()
+{
+	for (int i = 1; i <= MaxClients; i++)
+		Recon_Remember(i);
+}
+
+void Recon_Forget(int client)
+{
+	int rec = Stats_GetRec(client);
+	if (rec >= 0)
+		g_iRecTeam[rec] = 0;
+}
+
+/** Al entrar (ya con SteamID): si jugaba esta partida, se lo pone en su equipo. */
+void Recon_OnJoin(int client)
+{
+#if !defined CSSTV_DEBUG
+	if (IsFakeClient(client))
+		return;
+#endif
+	if (!MatchInProgress() || !Recon_WantedSide(client))
+		return;
+	// Un instante después, cuando el cliente ya terminó de entrar.
+	CreateTimer(1.0, Timer_ReconPlace, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_ReconPlace(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client > 0 && IsClientInGame(client) && MatchInProgress())
+		Recon_Place(client);
+	return Plugin_Stop;
+}
+
+/** Lado (CT o T) donde juega ahora el equipo del jugador; 0 si no jugaba esta partida. */
+int Recon_WantedSide(int client)
+{
+	int rec = Stats_FindRec(client);
+	if (rec < 0 || !g_iRecTeam[rec])
+		return 0;
+	return g_iRecTeam[rec] == 1 ? g_iSideA : OtherSide(g_iSideA);
+}
+
+/** Pone al jugador en el lado de su equipo. false si no jugaba esta partida o ya está ahí. */
+bool Recon_Place(int client)
+{
+	int want = Recon_WantedSide(client);
+	if (!want || GetClientTeam(client) == want)
+		return false;
+	MoveToTeam(client, want);
+	QolChatAll("%s {#amarillo}%N{#normal} volvió y sigue en el %s.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
+	return true;
 }
 
 // ---------------------------------------------------------------------------

@@ -202,11 +202,23 @@ No uses el script y System2 a la vez sobre la misma cola.
 ### Flujo de una partida
 
 1. **Calentamiento.** Al cargar el mapa se ejecuta `cfg/csstv/warmup.cfg`. Cada 30 segundos el chat recuerda quién falta.
-2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede forzarlo con `!live`; con `!live mr3` (de `mr1` a `mr30`) la partida es más corta.
-3. **LO3.** Se ejecuta `cfg/csstv/live.cfg` y tres reinicios. Al empezar, **Equipo A = CT** y **Equipo B = T**.
-4. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos (cada uno con el modelo equivalente del otro lado), reinicia la ronda y mantiene el marcador en el scoreboard.
-5. **Fin.** Gana el primero en llegar a 16 (o a N+1 con `!live mrN`). Con empate se juega prórroga MR12 (configurable, y nunca más larga que el reglamentario), con dinero `csstv_ot_startmoney`, hasta que haya ganador.
-6. **Envío.** El resultado se guarda en la cola y se envía. En el chat aparece "Resultado enviado a CSSTV". A los `csstv_end_delay` segundos (15) vuelve al calentamiento.
+2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede empezarla con `!live` (desde la 1.6.0, con los jugadores como estén, sin mínimo); con `!live mr3` (de `mr1` a `mr30`) la partida es más corta.
+3. **Ronda de cuchillo (opcional, desde la 1.6.0).** Solo con `!live knife` (se combina: `!live knife mr4`). Se juega una ronda solo con cuchillo, sin compras ni C4; el equipo que gana escribe `!stay` (se queda) o `!switch` (cambia de lado). Vale el primero que lo escribe; si nadie elige en `csstv_knife_time` segundos (60), se queda. No cuenta para estadísticas, marcador ni demo. El inicio por `!ready` y `!live` solo **nunca** tienen cuchillo.
+4. **LO3.** Se ejecuta `cfg/csstv/live.cfg` y tres reinicios. Desde la 1.6.0 cada equipo se llama **Equipo <nick>**, con el nick de un jugador al azar de ese lado (fijo toda la partida; también en la web). Internamente el equipo A es el que empezó de CT.
+5. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos (cada uno con el modelo equivalente del otro lado), reinicia la ronda y mantiene el marcador en el scoreboard.
+6. **Fin.** Gana el primero en llegar a 16 (o a N+1 con `!live mrN`). Con empate se juega prórroga MR12 (configurable, y nunca más larga que el reglamentario), con dinero `csstv_ot_startmoney`, hasta que haya ganador.
+7. **Resumen y envío.** Desde la 1.6.0 el chat muestra el resultado, el MVP (más kills; desempata el daño), el top 3 y, a cada jugador, sus números:
+   ```
+   [v34frag] Fin de la partida: Equipo daniloev 16 - 12 Equipo pepe. ¡Gana Equipo daniloev!
+   [v34frag] MVP: daniloev (27 kills, 98 ADR)
+   [v34frag] 1. daniloev  27/14/5  ADR 98  HS 52%
+   [v34frag] Tu partida: 18/16/4 · ADR 82 · HS 44% · 3 primeras kills      ← solo vos
+   ```
+   El resultado se guarda en la cola y se envía. En el chat aparece "Resultado enviado a CSSTV". A los `csstv_end_delay` segundos (15) vuelve al calentamiento.
+
+**Rendición (`!gg`, desde la 1.6.0).** El equipo que pierde por `csstv_gg_min_diff` rondas o más (8) puede rendirse: hace falta el voto de todos menos `csstv_gg_missing` jugadores del equipo (1, es decir 4 de 5) en 30 segundos. La partida termina en el momento como **terminada**: gana el que iba adelante, cuenta para el ELO y las stats como cualquier otra, y en la web lleva la etiqueta "Rendición". Con `csstv_gg_min_diff 0`, `!gg` queda desactivado.
+
+**Reconexión (desde la 1.6.0).** Si alguien se cae durante la partida y vuelve a entrar, el plugin lo pone directamente en su equipo (lo reconoce por SteamID; respeta los cambios de lado). Si un admin lo había pasado a espectador, no.
 
 **Partidas canceladas** (desde la 1.3.0). Una partida se cancela con `!cancelmatch`, al cambiar de mapa a mitad de partida, o sola por **abandono**: si en CT+T quedan menos de `csstv_abandon_players` jugadores (4) durante `csstv_abandon_seconds` seguidos (180), avisando antes en el chat. Si se jugó al menos una ronda, se envía como **cancelada** (motivo `admin`, `map_change` o `abandoned`), con su marcador parcial y su demo; no cuenta para el ELO ni para las stats del perfil. Sin rondas jugadas se descarta y la demo se borra.
 
@@ -215,7 +227,7 @@ No uses el script y System2 a la vez sobre la misma cola.
 Al empezar cada ronda, en el freezetime, el chat muestra (cada parte se apaga con su cvar):
 
 ```
-[v34frag] Ronda 13/30 · Equipo A (CT) 7 - 5 Equipo B (T)               ← todos (csstv_round_header)
+[v34frag] Ronda 13/30 · Equipo daniloev (CT) 7 - 5 Equipo pepe (T)     ← todos (csstv_round_header)
 [v34frag] Damage Given to "s1mple" - 100 in 3 hits                     ← solo vos, en verde (csstv_damage_report)
 [v34frag] Damage Taken from "s1mple" - 27 in 1 hit                     ← solo vos, en rojo
 [v34frag] Plata del equipo: $21.350                                     ← solo tu equipo, en verde (csstv_team_money)
@@ -264,18 +276,23 @@ Tamaño medido en el servidor de prueba: unos 4 KB por segundo con 6 bots (2,6 M
 | `!score` | Todos | Marcador y ronda actual |
 | `!hp` | Jugadores | Quién te mató en esta ronda y cuánta vida le queda |
 | `!pause` / `!unpause` | Jugadores | Pedir una pausa táctica / seguir (o cancelar la que pediste) |
+| `!gg` | Jugadores | Votar la rendición de tu equipo (si pierde por `csstv_gg_min_diff` rondas o más) |
+| `!stay` / `!switch` | Jugadores | Después de ganar la ronda de cuchillo: quedarse o cambiar de lado |
 | `!forcepause` / `!forceunpause` | Admin | Pausa de admin / terminar cualquier pausa ya |
-| `!live` | Admin | Empieza si hay jugadores suficientes |
-| `!live force` | Admin | Empieza aunque falten jugadores |
-| `!live mrN` | Admin | Partida corta: gana el primero en llegar a N+1 (se combina con `force`) |
+| `!live` | Admin | Empieza con los jugadores como están (sin mínimo de jugadores; `force` se acepta pero ya no hace falta) |
+| `!live mrN` | Admin | Partida corta: gana el primero en llegar a N+1 |
+| `!live knife` | Admin | Ronda de cuchillo antes del LO3; el ganador elige lado. Se combina: `!live knife mr4` |
 | `!cancelmatch` | Admin | Cancela la partida; con al menos una ronda jugada la guarda como cancelada, con su demo |
 | `!rr` | Admin | Repite la ronda actual: marcador, estadísticas, kills/muertes del TAB, plata y equipamiento vuelven a como estaban al empezarla. Usado después del fin de una ronda, repite esa ronda. No funciona en el LO3, el medio tiempo ni el cambio a prórroga |
-| `!team <jugador> <ct\|t\|spec>` | Admin | Cambia de equipo a un jugador. Si está vivo muere y aparece en la próxima ronda; la muerte del cambio no queda en el TAB |
+| `!team <jugador> <ct\|t\|spec>` | Admin | Cambia de equipo a un jugador (nick, parte del nick o `#userid`) o a un grupo: `@all`, `@ct`, `@t`, `@spec`, `@alive`, `@dead`, `@humans`, `@bots` (ej.: `!team @all spec`). Si está vivo muere y aparece en la próxima ronda; la muerte del cambio no queda en el TAB. Un nick que coincide con varios jugadores no mueve a nadie |
+| `!swap` | Admin | En el calentamiento: pasa los CT a T y los T a CT |
 | `sm_csstv_status` | Consola / rcon | Estado, modo de envío, cola y último error |
 | `sm_csstv_flush` | Consola / rcon | Reintenta ahora los envíos pendientes |
 | `sm_csstv_retryfailed` | Consola / rcon | Devuelve a la cola los envíos rechazados |
 
-Para usar `!live`, `!cancelmatch`, `!rr`, `!team`, `!forcepause` y `!forceunpause`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
+**Menú de admin (desde la 1.6.0).** `sm_admin` (por ejemplo, con `bind h sm_admin`) tiene una categoría **v34frag** con las mismas acciones: iniciar partida (con o sin cuchillo y el formato), cancelar partida y repetir ronda (con confirmación), pausa de admin y quitar pausa, cambiar de equipo (todos / CT / T / espectadores / cada jugador → CT, T o espectador), intercambiar equipos y estado del plugin. Cada opción usa el permiso de su comando y se ve deshabilitada cuando no aplica. Las respuestas aparecen en el chat de quien usó el menú.
+
+Para usar `!live`, `!cancelmatch`, `!rr`, `!team`, `!swap`, `!forcepause` y `!forceunpause`, el usuario tiene que ser admin de SourceMod con el flag `b` (generic). Se agrega en `addons/sourcemod/configs/admins_simple.ini`:
 
 ```
 "STEAM_0:1:12345678"  "b"

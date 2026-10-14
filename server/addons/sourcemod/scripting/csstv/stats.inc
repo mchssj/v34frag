@@ -111,6 +111,38 @@ void Stats_ClientLeave(int client)
 }
 
 /**
+ * Clave del registro del jugador (su SteamID). false si no se debe contar (bot sin
+ * csstv_include_bots).
+ */
+bool Stats_ClientKey(int client, char[] key, int maxlen)
+{
+	if (IsFakeClient(client))
+	{
+		if (!g_cvIncludeBots.BoolValue)
+			return false;
+#if defined CSSTV_DEBUG
+		// Solo en la compilación de pruebas: SteamID falso y estable por nombre de bot,
+		// para que la web les aplique ELO. Rango STEAM_0:x:9990xxxxx, fácil de reconocer.
+		char botName[MAX_NAME_LENGTH];
+		GetClientName(client, botName, sizeof(botName));
+		int h = 5381;
+		for (int i = 0; botName[i] != '\0'; i++)
+			h = ((h << 5) + h + botName[i]) & 0x7FFFFFFF;
+		Format(key, maxlen, "STEAM_0:%d:%d", h & 1, 999000000 + (h >> 1) % 100000);
+#else
+		Format(key, maxlen, "BOT:%d", GetClientUserId(client));
+#endif
+	}
+	else if (!GetClientAuthId(client, AuthId_Steam2, key, maxlen, g_cvValidateId.BoolValue)
+		|| StrContains(key, "STEAM_ID", false) == 0 || StrContains(key, "STEAM_", false) != 0)
+	{
+		// SteamID inválido (LAN, pendiente, etc.): se cuenta igual pero no se podrá vincular.
+		Format(key, maxlen, "NOSTEAM:%d", GetClientUserId(client));
+	}
+	return true;
+}
+
+/**
  * Devuelve el registro del jugador, creándolo si hace falta.
  * -1 si no se debe contar (bot, sin SteamID utilizable o sin lugar).
  */
@@ -122,29 +154,8 @@ int Stats_GetRec(int client)
 		return g_iClientRec[client];
 
 	char key[40];
-	if (IsFakeClient(client))
-	{
-		if (!g_cvIncludeBots.BoolValue)
-			return -1;
-#if defined CSSTV_DEBUG
-		// Solo en la compilación de pruebas: SteamID falso y estable por nombre de bot,
-		// para que la web les aplique ELO. Rango STEAM_0:x:9990xxxxx, fácil de reconocer.
-		char botName[MAX_NAME_LENGTH];
-		GetClientName(client, botName, sizeof(botName));
-		int h = 5381;
-		for (int i = 0; botName[i] != '\0'; i++)
-			h = ((h << 5) + h + botName[i]) & 0x7FFFFFFF;
-		Format(key, sizeof(key), "STEAM_0:%d:%d", h & 1, 999000000 + (h >> 1) % 100000);
-#else
-		Format(key, sizeof(key), "BOT:%d", GetClientUserId(client));
-#endif
-	}
-	else if (!GetClientAuthId(client, AuthId_Steam2, key, sizeof(key), g_cvValidateId.BoolValue)
-		|| StrContains(key, "STEAM_ID", false) == 0 || StrContains(key, "STEAM_", false) != 0)
-	{
-		// SteamID inválido (LAN, pendiente, etc.): se cuenta igual pero no se podrá vincular.
-		Format(key, sizeof(key), "NOSTEAM:%d", GetClientUserId(client));
-	}
+	if (!Stats_ClientKey(client, key, sizeof(key)))
+		return -1;
 
 	int rec;
 	if (!g_hRecIndex.GetValue(key, rec))
@@ -157,6 +168,20 @@ int Stats_GetRec(int client)
 	}
 	GetClientName(client, g_RecName[rec], sizeof(g_RecName[]));
 	g_iClientRec[client] = rec;
+	return rec;
+}
+
+/** Como Stats_GetRec, pero sin crear el registro: -1 si el jugador todavía no jugó esta partida. */
+int Stats_FindRec(int client)
+{
+	if (client <= 0 || client > MaxClients || !IsClientInGame(client))
+		return -1;
+	if (g_iClientRec[client] >= 0)
+		return g_iClientRec[client];
+	char key[40];
+	int rec;
+	if (!Stats_ClientKey(client, key, sizeof(key)) || !g_hRecIndex.GetValue(key, rec))
+		return -1;
 	return rec;
 }
 

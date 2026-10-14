@@ -142,7 +142,16 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 		J_KeyStr("cancelled_by", by);
 	}
 	else
+	{
 		J_KeyStr("status", "finished");
+		if (g_bSurrender)
+			J_KeyStr("end_reason", "surrender");
+	}
+	// Nick con el que se nombró a cada equipo ("Equipo <nick>"); vacío si no hubo.
+	J_Raw(",\"team_names\":{");
+	J_KeyStr("a", g_sTeamNick[0], false);
+	J_KeyStr("b", g_sTeamNick[1]);
+	J_Char('}');
 	J_Raw(",\"demo\":");
 	J_Raw(g_bDemoRecorded ? "true" : "false");
 
