@@ -13,6 +13,8 @@ El formato detallado de cada archivo está en [PLANTILLA.md](PLANTILLA.md), que 
 
 ## Requerimientos
 
+Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`](../PENDIENTES.md).
+
 | Fecha | Requerimiento | Estado |
 |---|---|---|
 | 2026-10-11 | [ELO de jugadores (TrueSkill + niveles FACEIT)](2026-10-11-elo-jugadores/) | Desplegado (incluidas las migraciones `20261011200000` y `20261011220000`) |
@@ -24,3 +26,7 @@ El formato detallado de cada archivo está en [PLANTILLA.md](PLANTILLA.md), que 
 | 2026-10-13 | [Licencia por servidor (el plugin solo funciona con una key válida)](2026-10-13-licencia-servidores/) | Desplegado (2026-10-13): migración, web y 1.5.0 subida al servidor real; se carga en el próximo cambio de mapa |
 | 2026-10-13 | [Plugin 1.6.0: menú de admin, cuchillo, `!gg`, resumen, nombres de equipo y reconexión](2026-10-13-plugin-1-6-0/) | Desplegado (2026-10-13): migración, web y 1.6.0 subida al servidor real; se carga en el próximo cambio de mapa |
 | 2026-10-13 | [Votación de mapa para jugadores (`!rtv`, `!vote <mapa>`, `!mapas`)](2026-10-13-votacion-de-mapa/) | Desplegado (2026-10-13): 1.7.0 subida al servidor real; se carga en el próximo cambio de mapa |
+| 2026-10-13 | [Servidor de terceros RBK (build licenciado)](2026-10-13-servidor-rbk/) | Instalado (2026-10-13); cargado y con la licencia validada (verificado por SFTP el 2026-10-14). Pasado a SourceMod 1.10, con Accelerator, ClientMod y el plugin 1.8.0 cargados (verificado el 2026-10-14) |
+| 2026-10-14 | [ELO proporcional a las rondas jugadas (mínimo 35%, completo desde 90%)](2026-10-14-elo-participacion-y-sourcetv/) | Desplegado (2026-10-14): migración en Supabase e `index.html` publicado; sin commit |
+| 2026-10-14 | [Plugin 1.8.0: el inicio por `!ready` empieza con ronda de cuchillo](2026-10-14-ready-con-cuchillo/) | Subido al servidor real y a RBK (2026-10-14); se carga en el próximo cambio de mapa; sin commit |
+| 2026-10-14 | [Crashes del servidor real: Accelerator e inventario de plugins externos](2026-10-14-crash-servidor-accelerator/) | Accelerator instalado en el servidor real y en RBK (activo desde el próximo reinicio de cada uno) y en el local; **pendiente el deploy del Worker** (`/crash`); sin commit |
