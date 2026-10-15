@@ -1,0 +1,55 @@
+name = "v34frag-api"
+main = "src/worker.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+# Misma cuenta que el Worker de demos (la sesión de wrangler ve más de una).
+account_id = "fedc1b8398e60e62e1b42b4711104404"
+
+# Corre cerca de Supabase: un request hace varias consultas seguidas a la base.
+[placement]
+mode = "smart"
+
+[observability]
+enabled = true
+
+[vars]
+APP_ENV = "production"
+SUPABASE_URL = "https://wmzfwsizashpszxlvpeb.supabase.co"
+# Clave pública (la misma de config.js y del Worker de demos).
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtemZ3c2l6YXNocHN6eGx2cGViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNjU2NzQsImV4cCI6MjEwNjc0MTY3NH0.QO9osfgwKAXTi9wzOHb68JjGYYHFbHRejtu9b3ZUEP4"
+CORS_ORIGINS = "https://csstv.pages.dev"
+FRONTEND_URL = "https://csstv.pages.dev"
+# La reemplaza el pipeline con --var GIT_SHA:<commit>.
+GIT_SHA = "manual"
+CLIENT_IP_HEADER = "cf-connecting-ip"
+
+# Límite de intentos de login y registro (src/lib/ratelimit.ts, regla "auth").
+[[ratelimits]]
+name = "RL_AUTH"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
+# Entorno de previsualización (PRs): otro Worker, misma base.
+[env.preview]
+name = "v34frag-api-preview"
+
+[env.preview.placement]
+mode = "smart"
+
+[env.preview.vars]
+APP_ENV = "preview"
+SUPABASE_URL = "https://wmzfwsizashpszxlvpeb.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtemZ3c2l6YXNocHN6eGx2cGViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNjU2NzQsImV4cCI6MjEwNjc0MTY3NH0.QO9osfgwKAXTi9wzOHb68JjGYYHFbHRejtu9b3ZUEP4"
+CORS_ORIGINS = "https://csstv.pages.dev,https://*.csstv.pages.dev,http://localhost:*,http://127.0.0.1:*"
+FRONTEND_URL = "https://csstv.pages.dev"
+GIT_SHA = "manual"
+CLIENT_IP_HEADER = "cf-connecting-ip"
+
+[[env.preview.ratelimits]]
+name = "RL_AUTH"
+namespace_id = "1002"
+simple = { limit = 10, period = 60 }
+
+# Secretos (no van en este archivo):
+#   en desarrollo: .dev.vars (ver .dev.vars.example)
+#   en producción: npx wrangler secret put SUPABASE_SERVICE_KEY  (y --env preview)

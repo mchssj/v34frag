@@ -1,0 +1,10 @@
+{
+  // Entrada de Node, pruebas y configuración de Vitest.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "vitest.config.ts"],
+  "exclude": ["src/worker.ts"]
+}
