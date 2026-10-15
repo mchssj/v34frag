@@ -4,7 +4,8 @@
  * lo escribe; si nadie elige en csstv_knife_time segundos, se queda). No cuenta para las
  * estadísticas, el marcador ni la demo, que empiezan con el LO3.
  *
- * Nunca es automática: ni !live solo ni el inicio por !ready la usan.
+ * La usan !live knife y, desde la 1.8.0, el inicio por !ready (csstv_ready_knife 1, por defecto).
+ * !live solo no la usa.
  */
 
 #if defined _csstv_knife_included

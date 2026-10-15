@@ -18,6 +18,7 @@ csstv_reporter.smx ──► cola local ──► ingest_server_chunk() ──�
 | `server/cfg/sourcemod/csstv_reporter.cfg` | Configuración del plugin |
 | `server/cfg/csstv/warmup.cfg`, `live.cfg`, `end.cfg` | Configs que el plugin ejecuta en cada etapa |
 | `server/uploader/` | Script alternativo de subida (Python 3) |
+| `server/addons/sourcemod/extensions/accelerator.*`, `gamedata/accelerator.games.txt` | Accelerator 2.5.0 (crash handler, externo): ver [bitácora](bitacora/2026-10-14-crash-servidor-accelerator/). Inventario de todo lo externo en [PLUGINS_EXTERNOS.md](PLUGINS_EXTERNOS.md) |
 | `supabase/migrations/20261011120000_csstv_match_reporter.sql` | Cambios en la base de datos |
 
 ## Requisitos
@@ -202,8 +203,8 @@ No uses el script y System2 a la vez sobre la misma cola.
 ### Flujo de una partida
 
 1. **Calentamiento.** Al cargar el mapa se ejecuta `cfg/csstv/warmup.cfg`. Cada 30 segundos el chat recuerda quién falta.
-2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo. Un admin puede empezarla con `!live` (desde la 1.6.0, con los jugadores como estén, sin mínimo); con `!live mr3` (de `mr1` a `mr30`) la partida es más corta.
-3. **Ronda de cuchillo (opcional, desde la 1.6.0).** Solo con `!live knife` (se combina: `!live knife mr4`). Se juega una ronda solo con cuchillo, sin compras ni C4; el equipo que gana escribe `!stay` (se queda) o `!switch` (cambia de lado). Vale el primero que lo escribe; si nadie elige en `csstv_knife_time` segundos (60), se queda. No cuenta para estadísticas, marcador ni demo. El inicio por `!ready` y `!live` solo **nunca** tienen cuchillo.
+2. **Inicio.** Cuando todos los jugadores de CT y T escriben `!ready` (y hay al menos `csstv_min_players`), empieza solo, con ronda de cuchillo (desde la 1.8.0; `csstv_ready_knife 0` la saca). Un admin puede empezarla con `!live` (desde la 1.6.0, con los jugadores como estén, sin mínimo); con `!live mr3` (de `mr1` a `mr30`) la partida es más corta.
+3. **Ronda de cuchillo (desde la 1.6.0).** Con `!live knife` (se combina: `!live knife mr4`) y, desde la 1.8.0, en el inicio por `!ready` (`csstv_ready_knife 1`, por defecto). Se juega una ronda solo con cuchillo, sin compras ni C4; el equipo que gana escribe `!stay` (se queda) o `!switch` (cambia de lado). Vale el primero que lo escribe; si nadie elige en `csstv_knife_time` segundos (60), se queda. No cuenta para estadísticas, marcador ni demo. `!live` solo **nunca** tiene cuchillo.
 4. **LO3.** Se ejecuta `cfg/csstv/live.cfg` y tres reinicios. Desde la 1.6.0 cada equipo se llama **Equipo <nick>**, con el nick de un jugador al azar de ese lado (fijo toda la partida; también en la web). Internamente el equipo A es el que empezó de CT.
 5. **Medio tiempo** (ronda 15). El plugin cambia de lado a todos (cada uno con el modelo equivalente del otro lado), reinicia la ronda y mantiene el marcador en el scoreboard.
 6. **Fin.** Gana el primero en llegar a 16 (o a N+1 con `!live mrN`). Con empate se juega prórroga MR12 (configurable, y nunca más larga que el reglamentario), con dinero `csstv_ot_startmoney`, hasta que haya ganador.

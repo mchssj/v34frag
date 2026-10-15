@@ -9,6 +9,9 @@
  * Rutas:
  *   GET /demo/<match_uid>      descarga pública, con un nombre legible
  *   GET /run?key=<ADMIN_KEY>   corre el cron a mano (para probar) y devuelve lo que hizo
+ *   POST /crash?key=<CRASH_KEY> recibe un volcado de Accelerator (MinidumpUrl en core.cfg del servidor)
+ *                              y lo guarda en R2 como crashes/<fecha>-<id>.dmp (+ .txt y .json)
+ *                              (ver docs/bitacora/2026-10-14-crash-servidor-accelerator)
  */
 
 const UID_RE = /^[A-Za-z0-9_-]{6,80}$/;
@@ -18,6 +21,10 @@ export default {
     const url = new URL(request.url);
     const demo = url.pathname.match(/^\/demo\/([A-Za-z0-9_-]{6,80})(?:\.dem)?$/);
     if (demo && (request.method === 'GET' || request.method === 'HEAD')) return download(env, demo[1], request.method);
+    if (url.pathname === '/crash' && request.method === 'POST') {
+      if (!env.CRASH_KEY || url.searchParams.get('key') !== env.CRASH_KEY) return text('Forbidden', 403);
+      return saveCrash(env, request);
+    }
     if (url.pathname === '/run') {
       if (!env.ADMIN_KEY || url.searchParams.get('key') !== env.ADMIN_KEY) return text('Forbidden', 403);
       return json(await uploadPending(env));
@@ -86,6 +93,31 @@ async function listDemos(env, server) {
   const map = new Map();
   for (const { attributes: f } of list.data) if (f.is_file && f.name.endsWith('.dem')) map.set(f.name, { name: f.name, size: f.size });
   return map;
+}
+
+/**
+ * Volcado de Accelerator: un formulario con upload_file_minidump (el .dmp), upload_file_metadata
+ * (mapa, línea de arranque, versiones y, si se puede, la consola) y algunos campos sueltos.
+ * Accelerator anota lo que devolvemos en logs/accelerator.log ("Uploaded crash dump: ...").
+ */
+async function saveCrash(env, request) {
+  const form = await request.formData();
+  const dump = form.get('upload_file_minidump');
+  if (!dump || typeof dump === 'string') return text('Falta upload_file_minidump', 400);
+  if (dump.size > 64 * 1024 * 1024) return text('Volcado demasiado grande', 413);
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '');
+  const id = `${stamp}-${crypto.randomUUID().slice(0, 8)}`;
+  const fields = {};
+  for (const [k, v] of form.entries()) {
+    if (typeof v === 'string') fields[k] = v.slice(0, 200);
+  }
+  await env.DEMOS.put(`crashes/${id}.dmp`, dump.stream(), { httpMetadata: { contentType: 'application/octet-stream' } });
+  const meta = form.get('upload_file_metadata');
+  if (meta && typeof meta !== 'string') {
+    await env.DEMOS.put(`crashes/${id}.txt`, meta.stream(), { httpMetadata: { contentType: 'text/plain; charset=utf-8' } });
+  }
+  await env.DEMOS.put(`crashes/${id}.json`, JSON.stringify({ received: new Date().toISOString(), size: dump.size, fields }, null, 2));
+  return text(`Crash ID: ${id}`);
 }
 
 /** Baja la demo del nodo y la sube a R2 en stream. Devuelve el tamaño subido; falla si no coincide. */

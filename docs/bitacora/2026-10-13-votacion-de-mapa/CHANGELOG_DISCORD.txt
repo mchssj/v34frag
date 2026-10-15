@@ -1,0 +1,18 @@
+v34frag 1.7.0 --  Changelog
+
+Votación de mapa
+Ahora los jugadores pueden cambiar el mapa sin un admin, solo durante el calentamiento.
+Hace falta el voto del 60% de los que están en el servidor, espectadores incluidos (6 de 10, o 3 de 5).
+!vote <mapa>
+Votas un mapa. No hace falta el nombre completo: !vote cache, !vote mirage, !vote nuke.
+Si un mapa junta los votos, se cambia directo a los 5 segundos.
+!rtv
+Pides cambiar de mapa sin elegir cuál. Votar un mapa con !vote también cuenta como !rtv.
+Cuando se juntan los votos, aparece un menú de 20 segundos para que todos elijan entre varios mapas o "No cambiar de mapa".
+!mapas
+Muestra la lista de mapas y cuántos votos tiene cada uno. Puedes votar desde ahí. Con !unrtv quitas tu voto.
+Esperas
+Al cargar un mapa hay que esperar 30 segundos para votar. Si una votación termina en "No cambiar", hay que esperar 2 minutos para la próxima.
+Con la partida en juego no se puede votar, así que un cambio de mapa nunca corta un mix.
+Mapas disponibles
+de_cache, de_cbble, de_dust2_ob, de_inferno, de_inferno_classic, de_mirage_rc1, de_nuke_old_blue_ep, de_season, de_tuscan y $2000$.

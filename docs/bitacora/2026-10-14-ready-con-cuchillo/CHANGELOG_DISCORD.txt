@@ -1,0 +1,6 @@
+v34frag 1.8.0 --  Changelog
+
+Ronda de cuchillo con !ready
+Cuando todos escriben !ready, la partida empieza con una ronda de cuchillo.
+El equipo que gana elige lado: !stay para quedarse o !switch para cambiar. Si nadie elige en 60 segundos, se queda.
+La ronda de cuchillo no cuenta para el marcador ni las estadísticas.
