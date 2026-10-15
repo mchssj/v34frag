@@ -152,6 +152,12 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 	J_KeyStr("a", g_sTeamNick[0], false);
 	J_KeyStr("b", g_sTeamNick[1]);
 	J_Char('}');
+	// !match: código de la partida de la web y qué equipo de ella es el equipo A (lo verifica la base).
+	if (g_sMatchLinkCode[0])
+	{
+		J_KeyStr("link_code", g_sMatchLinkCode);
+		J_KeyInt("link_side_a", g_iMatchLinkSideA);
+	}
 	J_Raw(",\"demo\":");
 	J_Raw(g_bDemoRecorded ? "true" : "false");
 
