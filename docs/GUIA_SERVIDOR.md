@@ -18,6 +18,7 @@ csstv_reporter.smx ──► cola local ──► ingest_server_chunk() ──�
 | `server/cfg/sourcemod/csstv_reporter.cfg` | Configuración del plugin |
 | `server/cfg/csstv/warmup.cfg`, `live.cfg`, `end.cfg` | Configs que el plugin ejecuta en cada etapa |
 | `server/uploader/` | Script alternativo de subida (Python 3) |
+| `server/addons/sourcemod/extensions/accelerator.*`, `gamedata/accelerator.games.txt` | Accelerator 2.5.0 (crash handler, externo): ver [bitácora](bitacora/2026-10-14-crash-servidor-accelerator/). Inventario de todo lo externo en [PLUGINS_EXTERNOS.md](PLUGINS_EXTERNOS.md) |
 | `supabase/migrations/20261011120000_csstv_match_reporter.sql` | Cambios en la base de datos |
 
 ## Requisitos
