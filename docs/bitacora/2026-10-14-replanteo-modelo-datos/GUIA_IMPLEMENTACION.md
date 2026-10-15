@@ -14,8 +14,8 @@
 | 5. Mixes sin equipos y `winner_side` (2.1) | Hecho: `04_mixes_bandos.sql`. Ensayo del ELO idéntico; la inversa con datos reales también deja el ELO idéntico |
 | 6. `team_members` (2.2) | Hecho: `05_team_members.sql`. Ensayo del ELO idéntico; 89 de 89 miembros migrados |
 | 7. Vistas de stats (2.3) | Hecho: `06_vistas_stats.sql`. Ensayo idéntico, incluidas las stats de los 32 jugadores con partidas |
-| 8. `!match` (2.5) | Pendiente; depende de `team_members` (paso 6) |
-| 9. Plugin con `!match` | Pendiente |
+| 8. `!match` en la base (2.5) | Hecho: `07_match_vincular.sql` (el plugin va en el paso 9) |
+| 9. Plugin con `!match` | Hecho: plugin 2.0.0 (`!match` y `!status`), probado con bots contra la Supabase local (2026-10-15). Ver [`2026-10-15-match-y-status`](../2026-10-15-match-y-status/). Se despliega en el corte |
 | 10. Ajustes del backend de la fase 1 | Parcial: tipos regenerados con el esquema nuevo; falta `team_members` y marcar `profile-requests` como deprecado |
 | 11. Inversas y documentación | Al día para los pasos hechos |
 
@@ -280,3 +280,78 @@ El formato queda igual en los dos casos y se compara todo (`\if` de psql). **Res
 - Un anónimo puede leer las dos vistas.
 
 **Backend:** tipos regenerados (sin las columnas borradas y con las vistas). Pasan las 161 pruebas.
+
+## Paso 8: `07_match_vincular.sql`, `!match` en la base (2026-10-15)
+
+```mermaid
+sequenceDiagram
+  participant A as Admin en el servidor
+  participant P as Plugin
+  participant DB as Supabase
+  A->>P: !match K7Q2M
+  P->>DB: csstv_match_lookup(token, código)
+  DB-->>P: Alfa vs Beta, BO3, 0-0
+  A->>P: !ready / !live (como siempre)
+  P->>DB: ingest_server_match(payload + link_code)
+  DB->>DB: guarda el juego como mix (stats, demo, ELO)
+  DB->>DB: csstv_link_game: ¿qué equipo jugó en cada bando?
+  DB->>DB: la partida suma el mapa; termina si alguien ganó la serie
+```
+
+**Se aparta del plan (decisión técnica, para que Daniel la revise).** El plan decía que el juego vinculado actualizaba la partida oficial "en vez de crear un mix". En cambio:
+- **El juego del servidor se sigue guardando como su propia fila** (`kind = 'mix'`, con stats, demo y ELO, como cualquier mix), **vinculada** con `parent_match_id` (la partida oficial) y `parent_side1` (qué equipo de la partida jugó en el bando 1).
+- **La partida oficial acumula el resultado mapa por mapa.**
+
+Por qué:
+- **Series:** funcionan los BO3 y BO5, con un juego del servidor por mapa.
+- **Demos:** cada mapa conserva la suya, porque el Worker de demos sube una por fila.
+- **Stats y ELO:** se calculan como siempre, sin contarlos dos veces, porque la partida oficial no tiene filas de stats propias.
+
+**Piezas:**
+
+| Pieza | Qué hace |
+|---|---|
+| `matches.link_code` | Código de 5 caracteres sin ambiguos (sin 0, O, 1 ni I), único. Lo pone el trigger `matches_link_code` al crear una partida de torneo o PCW. Un mix no puede tener código. Las partidas que ya existen reciben uno al aplicar la migración |
+| `csstv_match_lookup(token, código)` | Para el plugin, con el token del servidor. Devuelve los equipos, el BO y el marcador. Falla con "No hay ninguna partida con ese código", "Esa partida ya terminó o fue cancelada" o "La partida todavía no tiene los dos equipos". Acepta el código en minúscula |
+| `csstv_link_game(juego, código)` | Interna (no se puede llamar desde la API). La llama la ingesta cuando el payload trae `link_code` y el juego terminó |
+| `csstv_ingest` | Un solo agregado, con comentario único: si hay `link_code` y el juego terminó, llama a `csstv_link_game` |
+
+**Qué equipo jugó en cada bando.** Se cuentan las coincidencias de cada orientación:
+- **Directa:** los jugadores del bando 1 que están en el plantel activo de `team1`, más los del bando 2 que están en `team2`.
+- **Cruzada:** lo mismo, al revés.
+
+Los invitados se comparan por nick, sin distinguir mayúsculas, contra `teams.guests`. Gana la orientación con más coincidencias. **Si empatan (por ejemplo, 0 contra 0), el juego queda como mix común y la partida oficial no se toca.** La función lo avisa con un `notice`.
+
+**Cómo queda la partida oficial**, igual que hace `autoapply_pcw`:
+- **`maps`:** suma `{map, r1, r2, game_id}`, orientado a `team1` y `team2`.
+- **`score1` y `score2`:** mapas ganados.
+- **`map`:** la lista de mapas.
+- **Estado y ganador:** cuando un equipo llega a `best_of / 2 + 1` mapas, la partida queda `finished` con su `winner` (el trigger de `04` pone `winner_side`). Si no, queda `live`.
+
+**Límites que quedan para después:**
+- **Torneos:** el ganador de una partida de torneo **no avanza solo en la llave**. Hoy eso lo hace el motor de torneos del navegador cuando el admin carga el resultado, y va a pasar al backend en la entrega del motor de torneos.
+- **Web vieja:** no muestra el código. La web nueva lo tiene que mostrar en el detalle de las partidas de torneo y PCW, a admin y capitanes, como ya dice el resumen para el frontend.
+
+**Pruebas (`pruebas/07_match_vincular.sql`, dentro de un rollback):**
+- **Códigos:** automáticos y con el formato correcto; un mix no acepta código.
+- **Lookup:** funciona con un token válido (también con el código en minúscula). Falla con un token inválido, un código inexistente y una partida terminada.
+- **BO1 con los bandos cruzados:** Beta en el bando 1 gana 13-7. El juego queda vinculado con `parent_side1 = 2`, la partida queda 0-1, terminada, con ganador Beta, `winner_side = 2`, `maps` orientado (7-13) y `map = 'nuke'`.
+- **Stats:** las del juego cuentan una sola vez.
+- **Reenvío del mismo juego:** no suma el mapa otra vez.
+- **BO3:** un invitado se reconoce por su nick. Después del primer mapa queda `live` 1-0, y después del segundo, `finished` 2-0.
+- **Sin mayoría:** queda como mix y no toca la partida.
+- **Juego cancelado:** no se vincula.
+
+**Resultados:**
+- Las 7 migraciones pasan el ciclo completo de `correr.sh`.
+- Ensayo del ELO con 01 a 07: **idéntico**.
+- Backend: tipos regenerados y 161 pruebas en verde.
+
+**Revisión del 2026-10-15** (plan propio: [`2026-10-15-match-y-status`](../2026-10-15-match-y-status/)). Lo de arriba describe la primera versión. La `07` se ajustó, sin sumar otra migración porque no tenía commit:
+- **Quién vincula:** propone un inscrito de un equipo y confirma uno del otro (un admin, solo).
+- **Lookup en texto `clave=valor`:** con título, planteles en `STEAM_0:X:Y` y reglas (`csstv_steam2`).
+- **Bandos:** el plugin manda `link_side_a` y la base lo verifica contra los planteles. Ya no se usa la mayoría de nicks de invitados, salvo para deducir el lado cuando no viene `link_side_a`.
+- **Reglas:** torneo sin stand-ins; PCW con al menos 3 inscritos por bando; 5 jugadores para inscribirse a un torneo; 4 con cuenta para una PCW.
+- **Nombres:** el mix vinculado lleva el nombre de cada equipo en `side1_name` y `side2_name`.
+
+La documentación vigente es la de ese requerimiento.
