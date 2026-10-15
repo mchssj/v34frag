@@ -10,6 +10,7 @@ import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { auth } from './routes/auth';
 import { me } from './routes/me';
+import { pcw } from './routes/pcw';
 import { system } from './routes/system';
 
 // Mensajes de validación en español para el frontend.
@@ -46,6 +47,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', system);
   app.route('/', auth);
   app.route('/', me);
+  app.route('/', pcw);
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',
