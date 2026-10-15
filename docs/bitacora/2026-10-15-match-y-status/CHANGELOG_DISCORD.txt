@@ -1,0 +1,19 @@
+v34frag 2.0.0 --  Changelog
+
+Torneos y PCW en el servidor con !match
+Cada partida de torneo y PCW de la web tiene un código de 5 letras, que solo ven los integrantes de los dos equipos.
+Antes de empezar, alguien de tu equipo escribe !match <código> y alguien del equipo rival lo confirma escribiendo el mismo código.
+El servidor pone a cada jugador del plantel en el lado de su equipo. Los demás quedan de espectador.
+En una PCW, cada equipo puede sumar hasta 2 stand-ins, que no necesitan cuenta en la web. En un torneo juegan solo los 5 del plantel.
+La partida no empieza con !ready hasta que los dos equipos cumplen. El chat te dice qué falta.
+Al terminar, el mapa suma al resultado de la partida en la web y cuenta para las estadísticas y el ELO como siempre.
+En un BO3 o BO5 el vínculo sigue en el mapa siguiente, con el marcador de la serie al día.
+Para desvincular, escribe !match sin código. Si la partida ya empezó, se guarda como un mix común.
+
+Nuevo comando !status
+Muestra cómo está configurada la partida: estado, formato, inicio con faka, pausas, !gg, si está vinculada a un torneo o PCW y si se graba la demo.
+
+Equipos en la web
+Para inscribir un equipo en un torneo hacen falta 5 jugadores en el plantel.
+Para publicar o aceptar una PCW hacen falta 4 jugadores con cuenta en la web.
+El admin decide qué formatos (BO1, BO3 o BO5) se pueden elegir al publicar una PCW.

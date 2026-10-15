@@ -282,6 +282,9 @@ Tamaño medido en el servidor de prueba: unos 4 KB por segundo con 6 bots (2,6 M
 | `!rtv` (o `rtv`) / `!unrtv` | Jugadores | En el calentamiento: pedir cambiar de mapa / quitar el pedido y el voto |
 | `!vote <mapa>` / `!nominate <mapa>` | Jugadores | En el calentamiento: votar un mapa (acepta parte del nombre; sin mapa abre el menú) |
 | `!mapas` / `!maps` | Jugadores | Menú con los mapas que se pueden votar y sus votos |
+| `!status` | Todos | Cómo está configurada la partida: estado, formato, inicio, pausas, `!gg`, vínculo con la web y demo (desde la 2.0.0) |
+| `!match <código>` | Inscritos de los dos equipos, o admin | En el calentamiento: vincular el mix a una partida de torneo o PCW de la web. Uno propone y alguien del otro equipo confirma con el mismo código; un admin vincula solo (desde la 2.0.0) |
+| `!match` | Inscritos de los dos equipos, o admin | Desvincular. Si la partida ya empezó, al terminar se guarda como mix común (desde la 2.0.0) |
 | `!forcepause` / `!forceunpause` | Admin | Pausa de admin / terminar cualquier pausa ya |
 | `!live` | Admin | Empieza con los jugadores como están (sin mínimo de jugadores; `force` se acepta pero ya no hace falta) |
 | `!live mrN` | Admin | Partida corta: gana el primero en llegar a N+1 |
@@ -301,6 +304,21 @@ Para usar `!live`, `!cancelmatch`, `!rr`, `!team`, `!swap`, `!forcepause` y `!fo
 ```
 "STEAM_0:1:12345678"  "b"
 ```
+
+### Vincular a un torneo o PCW (`!match`, desde la 2.0.0)
+
+Cada partida de torneo y PCW de la web tiene un **código de 5 caracteres**, que ven solo los integrantes de los dos equipos (y los admins). Con ese código, el mix del servidor cuenta como un mapa de esa partida:
+
+1. **Proponer.** En el calentamiento, un jugador **inscrito** en uno de los dos equipos (en su plantel de la web, con el SteamID vinculado) escribe `!match <código>`. El vínculo queda pendiente.
+2. **Confirmar.** Un inscrito **del otro equipo** escribe el mismo `!match <código>`. Un admin puede vincular solo, sin confirmación.
+3. **Armado.** El plugin pone a cada inscrito en el lado de su equipo y al resto en espectador. Los inscritos no pueden pasarse al rival; cada lado tiene tope de 5. Los stand-ins (jugadores que no están en el plantel) entran solos al lado de su equipo: hasta **2 por lado en una PCW** (con al menos 3 inscritos) y **ninguno en un torneo** (5 inscritos).
+4. **Inicio.** `!ready` no arranca hasta que cada lado cumple su regla, y el chat dice qué falta. Solo cuentan los jugadores del plantel que están en ese lado: los suplentes que no juegan no importan. `!live` (admin) arranca igual, con un aviso. Un vínculo pendiente que nadie confirmó se descarta al empezar.
+5. **Resultado.** El juego se guarda como siempre (mix con stats, demo y ELO) y además suma el mapa a la partida de la web. Si el juego no cumple las reglas (por ejemplo, un stand-in en un torneo), queda como mix común y la partida de la web no cambia.
+6. **Series.** En un BO3 o BO5 el vínculo sigue en el mapa siguiente, con el marcador de la serie al día. Cuando la serie termina, el plugin desvincula solo.
+
+`!match` sin código desvincula. Lo puede hacer un inscrito de cualquiera de los dos equipos o un admin, también durante la partida (entonces se guarda como mix común). `!status` muestra el vínculo y el código.
+
+La consulta usa `csstv_match_lookup` de Supabase con el mismo token y la misma URL base que los envíos (`csstv_api_url`), por System2.
 
 ### Votación de mapa (desde la 1.7.0)
 

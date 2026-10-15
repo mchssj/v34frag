@@ -30,7 +30,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.8.0"
+#define PLUGIN_VERSION "2.0.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -113,6 +113,9 @@ char g_sTeamNick[2][24];
 char g_sTeam[2][40];
 bool g_bSurrender;             // la partida terminó por !gg
 int g_iSurrenderTeam;          // 0 = A, 1 = B
+// !match (csstv/match.inc): lo que viaja en el resultado. Se fija al empezar; desvincular durante la partida lo borra.
+char g_sMatchLinkCode[8];
+int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es el equipo A de este mix
 
 #include "csstv/stats.inc"
 #include "csstv/json.inc"
@@ -127,6 +130,8 @@ int g_iSurrenderTeam;          // 0 = A, 1 = B
 #include "csstv/summary.inc"
 #include "csstv/menu.inc"
 #include "csstv/maps.inc"
+#include "csstv/match.inc"
+#include "csstv/status.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -193,6 +198,8 @@ public void OnPluginStart()
 	License_Init();
 	Menu_Init();
 	Maps_Init();
+	Match_Init();
+	Status_Init();
 }
 
 public void OnMapStart()
@@ -208,6 +215,7 @@ public void OnConfigsExecuted()
 	StartReadyTimer();
 	License_Check();
 	Http_ScheduleProcess(5.0);
+	Match_OnMapReady();   // vínculo con la web: un pendiente se descarta, uno activo se actualiza (series)
 }
 
 public void OnMapEnd()
@@ -234,6 +242,7 @@ public void OnClientPutInServer(int client)
 public void OnClientPostAdminCheck(int client)
 {
 	Recon_OnJoin(client);
+	Match_OnClientJoin(client);
 }
 
 public void OnClientDisconnect(int client)
@@ -321,6 +330,7 @@ public Action Cmd_Swap(int client, int args)
 		return Plugin_Handled;
 	}
 	SwapTeams();
+	Match_OnSwap();
 	g_iSideA = TEAM_CT;
 	ServerCommand("mp_restartgame 1");   // para que todos aparezcan en su lado nuevo
 	PrintToChatAll("%s Un admin intercambió los equipos: los CT pasan a T y los T a CT.", PREFIX);
@@ -477,13 +487,17 @@ public Action Timer_ReadyReminder(Handle timer)
 	PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
 	if (missing)
 		PrintToChatAll("%s Faltan: %s%s", PREFIX, names, missing > 6 ? "…" : "");
+	if (g_LinkState == Link_Active)
+		QolChatAll("%s Partida vinculada: {#amarillo}%s{#normal} (BO%d, serie %d-%d). !status para ver los detalles.", PREFIX, g_sLinkTitle, g_iLinkBestOf, g_iLinkScore[0], g_iLinkScore[1]);
+	else if (g_LinkState == Link_Pending)
+		QolChatAll("%s Vínculo pendiente: {#amarillo}%s{#normal}. Falta que confirme alguien de %s con !match %s.", PREFIX, g_sLinkTitle, g_sLinkTeamName[2 - g_iLinkProposer], g_sLinkCode);
 	return Plugin_Continue;
 }
 
 void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
-	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total)
+	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total && Match_ReadyAllows())
 		StartMatch(0, g_cvReadyKnife.BoolValue);
 }
 
@@ -550,6 +564,7 @@ void ResetMatch()
 	Rr_Reset();
 	Knife_Reset();
 	Gg_Reset();
+	Match_Reset();
 }
 
 void BackToWarmup()
@@ -558,6 +573,9 @@ void BackToWarmup()
 	RestoreStartMoney();
 	ResetMatch();
 	ExecIfExists("csstv/warmup.cfg");
+	// Partida vinculada (serie BO3/BO5): se actualiza el marcador de la serie cuando la web ya recibió el resultado.
+	if (g_LinkState == Link_Active)
+		CreateTimer(8.0, Timer_LinkRefresh, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /** maxRounds: rondas del reglamentario (0 = csstv_maxrounds). knife: ronda de cuchillo antes del LO3. */
@@ -581,7 +599,9 @@ void StartMatch(int maxRounds = 0, bool knife = false)
 	ServerCommand("mp_maxrounds 0; mp_winlimit 0; mp_timelimit 0");
 	ExecIfExists("csstv/live.cfg");
 
+	Match_OnMatchStart();
 	PickTeamNames();
+	Match_ApplyTeamNames();
 	Recon_RememberAll();
 	if (knife)
 		Knife_Begin();
