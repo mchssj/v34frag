@@ -143,21 +143,21 @@ La configuración se valida al primer request. Si falta algo, la API responde `5
 ```mermaid
 flowchart LR
   R[(Supabase real)] -->|"volcar.sh (solo esquema)"| S["supabase/schema/"]
-  S -->|"npm run db:start"| L[(Supabase local en Docker)]
-  L --> I["npm run test:int<br/>usuarios reales, RLS reales"]
-  U["npm test<br/>Supabase simulado"]
+  S -->|"pnpm db:start"| L[(Supabase local en Docker)]
+  L --> I["pnpm test:int<br/>usuarios reales, RLS reales"]
+  U["pnpm test<br/>Supabase simulado"]
 ```
 
 - **El esquema real**, sin datos, está versionado en `supabase/schema/` (en la raíz del repo):
   - `public.sql`: tablas, políticas, funciones y permisos.
   - `auth_storage.sql`: el trigger de registro y los buckets con sus políticas.
   - `BASE`: la última migración que ya estaba aplicada en producción al volcar.
-- **Supabase local:** `npm run db:start` la levanta en Docker con ese esquema, más las migraciones posteriores a `BASE`. Las pruebas de integración corren ahí, nunca contra producción.
+- **Supabase local:** `pnpm db:start` la levanta en Docker con ese esquema, más las migraciones posteriores a `BASE`. Las pruebas de integración corren ahí, nunca contra producción.
 - **Tres niveles de prueba:**
-  - **Unitarias** (`npm test`): sin red, con Supabase simulado.
-  - **De integración** (`npm run test:int`): con usuarios, RLS y Storage reales de la Supabase local.
-  - **Humo** (`npm run smoke -- <url>`): contra una API levantada.
-- **Cobertura mínima: 60 %** en líneas, sentencias, funciones y ramas. `npm run test:coverage` falla por debajo. Al cerrar la fase, con 161 pruebas, estaba en 96 % de sentencias y 89 % de ramas.
+  - **Unitarias** (`pnpm test`): sin red, con Supabase simulado.
+  - **De integración** (`pnpm test:int`): con usuarios, RLS y Storage reales de la Supabase local.
+  - **Humo** (`pnpm smoke <url>`): contra una API levantada.
+- **Cobertura mínima: 60 %** en líneas, sentencias, funciones y ramas. `pnpm test:coverage` falla por debajo. Al cerrar la fase, con 161 pruebas, estaba en 96 % de sentencias y 89 % de ramas.
 
 ## Dónde está cada cosa
 
@@ -173,7 +173,7 @@ flowchart LR
 | Validación de imágenes | `web/backend/src/lib/uploads.ts` |
 | Rutas | `web/backend/src/routes/` (`system.ts`, `auth.ts`, `me.ts`) |
 | Esquemas (contrato) | `web/backend/src/schemas/` |
-| Tipos de la base | `web/backend/src/db/types.ts` (generado con `npm run db:types`) |
+| Tipos de la base | `web/backend/src/db/types.ts` (generado con `pnpm db:types`) |
 | Pruebas | `web/backend/test/unit/`, `web/backend/test/integration/` |
 | Humo | `web/backend/scripts/smoke.mjs` |
 | Supabase local | `web/backend/supabase/config.toml`, `web/backend/scripts/db-local.sh`, `web/backend/scripts/local-overrides.sql` |

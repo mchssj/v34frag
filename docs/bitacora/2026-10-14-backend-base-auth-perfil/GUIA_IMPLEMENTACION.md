@@ -314,19 +314,19 @@ cd web/backend && npx supabase stop --no-backup
 
 ```bash
 cd web/backend
-npm ci
+pnpm install --frozen-lockfile
 cp .dev.vars.example .dev.vars
-npm run db:start        # Supabase local con el esquema (Docker Desktop corriendo)
-npm run dev:node        # Node:    http://localhost:8787/api/docs
-npm run dev             # Workers: http://localhost:8787/api/docs
-npm run typecheck && npm test
+pnpm db:start        # Supabase local con el esquema (Docker Desktop corriendo)
+pnpm dev:node        # Node:    http://localhost:8787/api/docs
+pnpm dev             # Workers: http://localhost:8787/api/docs
+pnpm typecheck && pnpm test
 ```
 
 Para actualizar el esquema cuando cambie la base real:
 
 ```bash
 supabase/schema/volcar.sh <última migración aplicada en producción>
-cd web/backend && npm run db:reset
+cd web/backend && pnpm db:reset
 ```
 
 ## Paso 9: cobertura
@@ -337,8 +337,8 @@ cd web/backend && npm run db:reset
   - `src/db/types.ts`, que es generado y solo tiene tipos;
   - las dos entradas (`node.ts` y `worker.ts`), que se cubren con el humo.
 - **Scripts:**
-  - `npm run test:coverage` corre las dos suites y necesita la Supabase local.
-  - `npm run test:coverage:unit` corre solo las unitarias, sin Docker: es lo que va a poder correr el CI.
+  - `pnpm test:coverage` corre las dos suites y necesita la Supabase local.
+  - `pnpm test:coverage:unit` corre solo las unitarias, sin Docker: es lo que va a poder correr el CI.
   - El reporte HTML queda en `coverage/`, que no se versiona.
 - **Pruebas nuevas:** `test/unit/me-routes.test.ts` (13 pruebas). Cubre `/api/v1/me/*` con PostgREST simulado, para que la cobertura sin Docker no dependa de las de integración:
   - **Perfil:** cómo se arma, con equipo por membresía o por capitán, sin equipo y con un error de la base.
@@ -357,6 +357,24 @@ En la medición solo con unitarias, `routes/me.ts` pasó de 37 % a 91 % de sente
 - `source-map-js`, que llega con las herramientas de build y cobertura.
 
 Se dejaron para cuando se actualice wrangler en los dos proyectos.
+
+## Migración a pnpm (2026-10-14, después de cerrar la fase)
+
+Por pedido de Daniel, `web/backend` y `cloudflare/demo-worker` pasaron de npm a **pnpm 12.8.1** (instalado con Corepack). Era la última versión con más de dos semanas publicada.
+
+- **Lock:** `pnpm import` convirtió el `package-lock.json` en `pnpm-lock.yaml` **con las mismas versiones** (hono 4.13.11, wrangler 4.146.0, vitest 5.0.2, zod 4.6.5…). Después se borraron el `package-lock.json` y el `node_modules` de npm y se instaló con `pnpm install --frozen-lockfile`.
+- **`package.json`:** `"packageManager": "pnpm@12.8.1"` y `engines.pnpm >= 12`. Se quitó `allowScripts`, que es de npm.
+- **`pnpm-workspace.yaml`**, uno por proyecto, solo con ajustes:
+  - `minimumReleaseAge: 10080` (7 días, estricto): reemplaza al `npm install --before`. No se usaron 14 días porque wrangler 4.146.0 depende de paquetes del 1/10 y la instalación fallaría.
+  - `trustPolicy: no-downgrade`.
+  - `allowBuilds`: `esbuild` y `workerd`. Reemplaza a `npm approve-scripts`.
+- **Llamadas a npm en el código:** `npx --no-install supabase` pasó a `pnpm exec supabase`, en `scripts/db-local.sh` y en `test/integration/local.ts`. También se actualizaron los comentarios y la documentación.
+- **Verificación:**
+  - Chequeo de tipos sin errores.
+  - **161 pruebas** pasando, con la misma cobertura: 96,3 % de sentencias y 88,5 % de ramas.
+  - Humo 12 de 12 contra Node y contra Workers.
+  - `wrangler deploy --dry-run` de los dos proyectos sin errores.
+- **Diferencia con npm:** pnpm 12 no acepta `-s`. Se usa `pnpm smoke <url>`, sin `--`.
 
 ## Lo que viene después de esta fase
 

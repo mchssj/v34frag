@@ -1,5 +1,5 @@
-# Copia este archivo a .dev.vars (no se versiona). Lo leen "npm run dev" (wrangler) y "npm run dev:node".
-# Por defecto apunta a la Supabase LOCAL (npm run db:start). La clave de abajo es la clave
+# Copia este archivo a .dev.vars (no se versiona). Lo leen "pnpm dev" (wrangler) y "pnpm dev:node".
+# Por defecto apunta a la Supabase LOCAL (pnpm db:start). La clave de abajo es la clave
 # pública de demostración que trae toda Supabase local: no sirve fuera de tu máquina.
 APP_ENV=development
 SUPABASE_URL=http://127.0.0.1:54321

@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 import { createClient } from '@supabase/supabase-js';
 
-// Datos de la Supabase LOCAL (npm run db:start). Nunca apunta a producción.
+// Datos de la Supabase LOCAL (pnpm db:start). Nunca apunta a producción.
 type Status = { API_URL: string; ANON_KEY: string; SERVICE_ROLE_KEY: string };
 
 let status: Status | undefined;
@@ -9,9 +9,9 @@ export function local(): Status {
   if (!status) {
     let out: string;
     try {
-      out = execSync('npx --no-install supabase status -o json', { cwd: new URL('../..', import.meta.url), stdio: ['ignore', 'pipe', 'ignore'] }).toString();
+      out = execSync('pnpm exec supabase status -o json', { cwd: new URL('../..', import.meta.url), stdio: ['ignore', 'pipe', 'ignore'] }).toString();
     } catch {
-      throw new Error('La Supabase local no está corriendo: npm run db:start');
+      throw new Error('La Supabase local no está corriendo: pnpm db:start');
     }
     status = JSON.parse(out) as Status;
     if (!/^http:\/\/(127\.0\.0\.1|localhost)/.test(status.API_URL)) throw new Error(`No es una Supabase local: ${status.API_URL}`);

@@ -1,4 +1,4 @@
-// Entrada de Node (npm run dev:node). La misma app que en Workers, servida con @hono/node-server.
+// Entrada de Node (pnpm dev:node). La misma app que en Workers, servida con @hono/node-server.
 import { serve } from '@hono/node-server';
 import { createApp } from './app';
 

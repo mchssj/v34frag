@@ -52,4 +52,4 @@ simple = { limit = 10, period = 60 }
 
 # Secretos (no van en este archivo):
 #   en desarrollo: .dev.vars (ver .dev.vars.example)
-#   en producción: npx wrangler secret put SUPABASE_SERVICE_KEY  (y --env preview)
+#   en producción: pnpm exec wrangler secret put SUPABASE_SERVICE_KEY  (y --env preview)

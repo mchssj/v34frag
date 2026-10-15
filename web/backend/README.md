@@ -8,18 +8,24 @@ API REST de la web v34frag: **Node 24 + Hono + TypeScript**, sobre Supabase (Aut
 ## Requisitos
 
 - **Node 24** (`.nvmrc`). Con nvm: `nvm use`.
+- **pnpm 12** (`packageManager` en `package.json`). Con Corepack: `corepack enable pnpm`. No usar npm: el lock es `pnpm-lock.yaml`.
+- Los ajustes de seguridad de pnpm están en `pnpm-workspace.yaml`:
+  - **Antigüedad mínima de 7 días**, en modo estricto: una versión más nueva hace fallar la instalación.
+  - **`trustPolicy: no-downgrade`**: rechaza versiones publicadas con menos garantías que las anteriores.
+  - **Scripts de instalación:** solo `esbuild` y `workerd` pueden correrlos.
+  - Para autorizar uno nuevo, se agrega a `allowBuilds` y se explica en el commit por qué.
 - **Docker Desktop** corriendo, para la Supabase local de las pruebas.
 
 ## Arrancar en local
 
 ```bash
 cd web/backend
-npm ci
+pnpm install --frozen-lockfile
 cp .dev.vars.example .dev.vars   # apunta a la Supabase LOCAL
-npm run db:start                 # Supabase en Docker con el esquema real (la primera vez baja las imágenes)
-npm run dev:node                 # Node:    http://localhost:8787/api/docs
+pnpm db:start                 # Supabase en Docker con el esquema real (la primera vez baja las imágenes)
+pnpm dev:node                 # Node:    http://localhost:8787/api/docs
 # o
-npm run dev                      # Workers: http://localhost:8787/api/docs (wrangler / workerd)
+pnpm dev                      # Workers: http://localhost:8787/api/docs (wrangler / workerd)
 ```
 
 Studio de la base local: http://127.0.0.1:54323. Correos de Auth (confirmaciones): http://127.0.0.1:54324.
@@ -34,7 +40,7 @@ Studio de la base local: http://127.0.0.1:54323. Correos de Auth (confirmaciones
 | `test:int` | Pruebas de integración contra la Supabase local (requiere `db:start`) |
 | `test:coverage` | Las dos suites con cobertura. Falla si alguna métrica queda por debajo del **60 %**. Reporte HTML en `coverage/` |
 | `test:coverage:unit` | Cobertura solo con las unitarias (sin Docker, para el CI) |
-| `smoke` | Humo contra una API levantada: `npm run smoke -- http://localhost:8787`. Fuera de localhost pide `SMOKE_EMAIL` y `SMOKE_PASSWORD` de una cuenta de prueba |
+| `smoke` | Humo contra una API levantada: `pnpm smoke http://localhost:8787`. Fuera de localhost pide `SMOKE_EMAIL` y `SMOKE_PASSWORD` de una cuenta de prueba |
 | `db:start` / `db:stop` / `db:reset` | Supabase local: levantar, apagar, o borrar y recargar el esquema |
 | `db:types` | Regenera `src/db/types.ts` desde la base local (después de cambiar el esquema) |
 | `deploy` / `deploy:preview` | Solo para la alternativa de Workers |
@@ -123,5 +129,5 @@ En Node se leen de `.dev.vars` (si existe) o del entorno. En Workers, de `wrangl
 
 ```bash
 supabase/schema/volcar.sh <última migración aplicada en producción>   # desde la raíz, usa las PG_* del .env
-cd web/backend && npm run db:reset && npm run db:types
+cd web/backend && pnpm db:reset && pnpm db:types
 ```

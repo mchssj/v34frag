@@ -4,7 +4,8 @@
   "description": "API REST de la web v34frag (Hono + TypeScript). Corre en Cloudflare Workers y en Node 24 (ver docs/bitacora/2026-10-14-backend-base-auth-perfil).",
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=24",
+    "pnpm": ">=12"
   },
   "scripts": {
     "dev": "wrangler dev",
@@ -40,9 +41,5 @@
     "vitest": "5.0.2",
     "wrangler": "4.146.0"
   },
-  "allowScripts": {
-    "esbuild@0.28.2": true,
-    "esbuild@0.28.1": true,
-    "workerd@1.20261001.1": true
-  }
+  "packageManager": "pnpm@12.8.1"
 }

@@ -24,7 +24,7 @@ No requiere dependencias. Basta con servir la carpeta por HTTP (abrir el archivo
 
 ```bash
 # cualquiera de estas opciones
-npx serve .
+pnpm dlx serve .
 python -m http.server 8080
 ```
 

@@ -14,7 +14,7 @@ raiz="$(cd "$backend/../.." && pwd)"
 schema="$raiz/supabase/schema"
 project_id="$(sed -n 's/^project_id = "\(.*\)"/\1/p' "$backend/supabase/config.toml")"
 contenedor="supabase_db_${project_id}"
-supabase() { (cd "$backend" && npx --no-install supabase "$@"); }
+supabase() { (cd "$backend" && pnpm exec supabase "$@"); }
 
 psql_local() { docker exec -i "$contenedor" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -q "$@"; }
 
