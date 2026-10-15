@@ -44,6 +44,8 @@ sequenceDiagram
 | `PATCH /api/v1/me/profile` | Solo se cambian los campos enviados. `null` o `""` borran un campo |
 | `POST /api/v1/me/avatar` | `multipart/form-data`, campo `file`. **JPEG, PNG o WebP, máximo 1 MB** (no GIF). Recortar a 256×256 antes de subir, como hace la web actual |
 | `GET` y `POST /api/v1/me/profile-requests` | **Deprecado**: ver la sección 3 |
+| `GET /api/v1/pcw/formats` | Sin sesión. `{ formats: [1, 3, 5] }`: los formatos que se pueden elegir al publicar una PCW. El formulario ofrece solo esos |
+| `PUT /api/v1/admin/pcw/formats` | Solo admin. `{ formats: [1, 3] }`: al menos uno. Pantalla Admin → PCW con tres casillas (BO1, BO3, BO5) que no deja desmarcar la última |
 
 ### Errores
 
@@ -80,7 +82,9 @@ Se mantienen torneos (llaves, grupos, inscripciones, veto de mapas, reportes de 
 | **Stats de jugadores** | El admin las cargaba a mano, o salían de los mixes según `stats_auto`. Había stats por mapa cargadas a mano | **Solo salen de partidas jugadas en el servidor**: mixes, PCW y torneos. No hay pantalla de carga manual de stats; las stats por mapa también se calculan |
 | **Reclamar un perfil de jugador** | Botón "Reclamar este perfil" → solicitud → aprobación de un admin | Se va a hacer desde el juego con `!claim <código>`: la web genera un código de un solo uso y el jugador lo escribe en el servidor. **Mientras tanto**, `/api/v1/me/profile-requests` sigue funcionando, marcado como deprecado. **No conviene invertir mucho en esa pantalla** |
 | **Mixes** | Cada mix creaba dos equipos `mix` que aparecían mezclados con los equipos | Los bandos de un mix van **dentro de la partida**: nombre y jugadores de cada lado, y el ganador como bando 1, 2 o empate. Los listados de equipos solo tienen equipos reales (oficiales y PCW). Los equipos `mix` existentes se pasan a sus partidas y se borran; los mixes y el ELO no cambian |
-| **Vincular una partida del servidor** | — | Un admin puede escribir `!match <código>` en el servidor para que el mix se registre en una partida de torneo o PCW ya creada, en vez de crear un mix nuevo. **La web tiene que mostrar ese código** en el detalle de las partidas de torneo y PCW (solo a admin y capitanes) |
+| **Vincular una partida del servidor** | — | Cada partida de torneo y PCW tiene un **código de 5 caracteres**. En el servidor, un inscrito de un equipo escribe `!match <código>` y alguien del otro equipo lo confirma con el mismo código (un admin puede vincular solo). El mix queda como un mapa de esa partida, que suma el resultado mapa por mapa (BO1, BO3, BO5). **La web tiene que mostrar el código** en el detalle de las partidas de torneo y PCW, **solo a los integrantes de los dos equipos y a los admins**, y listar los mapas jugados (cada uno es un mix con su demo y sus stats). En el servidor, `!status` muestra el vínculo |
+| **Reglas de plantel** | Una PCW aceptaba de 1 a 7 jugadores entre cuentas e invitados; inscribirse a un torneo no pedía mínimo | **Torneo:** el equipo necesita **5 jugadores** en su plantel para inscribirse, y en el servidor juegan solo inscritos. **PCW:** para publicarla o aceptarla hacen falta **4 jugadores con cuenta**; en el servidor cada lado puede sumar hasta 2 stand-ins sin cuenta. La base rechaza lo que no cumple, con un mensaje para mostrar |
+| **Formato de una PCW** | Se elegía BO1, BO3 o BO5 libremente | El **admin decide qué formatos se pueden elegir** (al principio, los tres). La base rechaza un formato deshabilitado con su mensaje. Una PCW ya publicada o aceptada conserva su formato. El servidor usa el formato de cada partida para la serie de `!match` |
 | **Miembros de un equipo** | Arreglo de ids en el equipo | Lista de miembros con rol y fechas de alta y baja. El **historial de equipos** de un jugador puede salir de ahí automáticamente |
 | **Privacidad del perfil** | Tres opciones: público, solo miembros y privado | **Público o privado.** Privado oculta los datos personales (nombre real, redes); las stats y los mixes siguen siendo públicos |
 | **Video y link de demo de la partida** | Campos "video" y "demo" cargados a mano | **Se eliminan.** La demo se descarga desde el botón que usa R2 (estado de la demo: `none`, `pending`, `uploaded`, `missing` o `expired`) |
@@ -91,7 +95,7 @@ Se mantienen torneos (llaves, grupos, inscripciones, veto de mapas, reportes de 
 
 ## 4. Matchmaking
 
-Existe un matchmaking (cola 1v1 a 5v5 y asignación a servidores) que **desarrolla otra persona**. Está en la base, pero ni la web actual ni nuestro plugin lo usan. Antes de hacer pantallas de matchmaking hay que coordinar con quien lo desarrolla.
+El matchmaking que había en la base (cola 1v1 a 5v5 y asignación a servidores) **se elimina** en el corte: ni la web ni el plugin lo usaban y no estaba terminado. **No hay que hacer pantallas de matchmaking.** Si más adelante se rehace, será desde cero y con su propio plan.
 
 ## 5. Lo que todavía no está definido
 
