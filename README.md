@@ -14,6 +14,9 @@ Es una **SPA estática** (HTML + CSS + JavaScript vanilla en un solo archivo) qu
 | `docs/` | Documentación técnica (ver abajo). |
 | `server/` | Plugin de SourceMod para el servidor CS:S v34 (código, `.smx` compilado, cfgs) y script alternativo de subida. |
 | `supabase/migrations/` | Cambios de base de datos que hay que aplicar en Supabase. |
+| `supabase/schema/` | Esquema real de la base volcado (sin datos), para las pruebas y como referencia. |
+| `web/backend/` | API REST nueva (Node 24 + Hono + TypeScript), **en construcción**: la web publicada todavía no la usa. Ver [`web/backend/README.md`](web/backend/README.md). |
+| `cloudflare/demo-worker/` | Worker de Cloudflare que sube las demos del servidor a R2. |
 
 ## Puesta en marcha local
 
