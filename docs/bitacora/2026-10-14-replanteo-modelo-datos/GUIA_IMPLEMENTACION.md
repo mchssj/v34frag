@@ -92,7 +92,7 @@
 Daniel autorizó copiar la base de producción completa el 2026-10-15.
 
 - **Scripts en `pruebas/`:**
-  - **`copiar_datos.sh`:** `pg_dump --data-only` de todo `public` y de `auth.users` (lo necesitan las claves foráneas de `profiles` y `players`), en solo lectura. Queda en `web/backend/.prod-copy/`, **ignorada por git** porque tiene emails y hashes de contraseñas. La copia es del 2026-10-15 02:31 UTC.
+  - **`copiar_datos.sh`:** `pg_dump --data-only` de todo `public` y de `auth.users` (lo necesitan las claves foráneas de `profiles` y `players`), en solo lectura. Queda **fuera del repo**, en `~/.v34frag/prod-copy/` (o `$PROD_COPY_DIR`), porque tiene emails y hashes de contraseñas: así no puede terminar en un commit ni en un stash al cambiar de rama. Al principio estuvo en `web/backend/.prod-copy/` (ignorada por git solo en esta rama) y se movió el 2026-10-15; el `.gitignore` de la raíz igual la ignora por si acaso. La copia es del 2026-10-15 02:31 UTC.
   - **`cargar_datos.sh`:** la base local con el esquema de producción (`REPLANTEO=0`) más la copia. Carga como superusuario local con `session_replication_role = replica`, para que no se disparen triggers (como el que crea `profiles`) ni se chequeen claves foráneas durante la carga.
   - **`foto_elo.sql`:** corre `elo_recompute_all()` y saca una foto ordenada:
     - ELO por SteamID, con `mu` y `sigma` como texto completo, para compararlos bit a bit.

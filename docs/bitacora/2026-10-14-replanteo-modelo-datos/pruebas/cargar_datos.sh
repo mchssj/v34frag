@@ -9,7 +9,7 @@ set -euo pipefail
 aqui="$(cd "$(dirname "$0")" && pwd)"
 raiz="$(cd "$aqui/../../../.." && pwd)"
 backend="$raiz/web/backend"
-copia="$backend/.prod-copy"
+copia="${PROD_COPY_DIR:-$HOME/.v34frag/prod-copy}"
 contenedor="supabase_db_$(sed -n 's/^project_id = "\(.*\)"/\1/p' "$backend/supabase/config.toml")"
 [[ -f "$copia/public.sql" && -f "$copia/auth_users.sql" ]] || { echo "Falta la copia: correr copiar_datos.sh"; exit 1; }
 

@@ -13,3 +13,6 @@ web/backend/supabase/.temp/
 
 # Configuración personal del IDE
 .idea/workspace.xml
+
+# Copia local de los datos de producción (ensayo del ELO). Vive fuera del repo; esto es por si acaso.
+web/backend/.prod-copy/

@@ -14,7 +14,7 @@ aqui="$(cd "$(dirname "$0")" && pwd)"
 raiz="$(cd "$aqui/../../../.." && pwd)"
 backend="$raiz/web/backend"
 contenedor="supabase_db_$(sed -n 's/^project_id = "\(.*\)"/\1/p' "$backend/supabase/config.toml")"
-fotos="$backend/.prod-copy"   # junto a la copia: tiene SteamIDs, no se versiona
+fotos="${PROD_COPY_DIR:-$HOME/.v34frag/prod-copy}"   # junto a la copia, fuera del repo
 
 foto() { docker exec -i "$contenedor" psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -q < "$aqui/foto_elo.sql" > "$1"; }
 
@@ -39,5 +39,5 @@ if diff <(grep -v '^wl|' "$fotos/elo_antes.txt") <(grep -v '^wl|' "$fotos/elo_de
    { ! grep -q '^wl|' "$fotos/elo_despues.txt" || diff <(grep '^wl|' "$fotos/elo_antes.txt") <(grep '^wl|' "$fotos/elo_despues.txt") >> "$fotos/elo_diff.txt"; }; then
   echo "== IDÉNTICO: $(grep -c '^elo|' "$fotos/elo_despues.txt") SteamIDs, $(grep -c '^mps|' "$fotos/elo_despues.txt") filas de mixes"
 else
-  echo "== DISTINTO (detalle en web/backend/.prod-copy/elo_diff.txt):"; head -20 "$fotos/elo_diff.txt"; exit 1
+  echo "== DISTINTO (detalle en $fotos/elo_diff.txt):"; head -20 "$fotos/elo_diff.txt"; exit 1
 fi
