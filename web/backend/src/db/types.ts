@@ -52,13 +52,13 @@ isOneToOne: false
                   ]
                 },"game_servers": {
                   Row: {
-                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"id": string,"last_assigned_at": string | null,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"matchmaking_enabled": boolean,"name": string,"panel_server_id": string | null,"plugin_version": string | null,"token_hash": string
+                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"name": string,"panel_server_id": string | null,"plugin_version": string | null,"token_hash": string
                   }
                   Insert: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_assigned_at"?: string | null,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"matchmaking_enabled"?: boolean,"name": string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"token_hash": string
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"name": string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"token_hash": string
                   }
                   Update: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_assigned_at"?: string | null,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"matchmaking_enabled"?: boolean,"name"?: string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"token_hash"?: string
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"name"?: string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"token_hash"?: string
                   }
                   Relationships: [
                     
@@ -153,13 +153,13 @@ isOneToOne: false
                   ]
                 },"matches": {
                   Row: {
-                    "best_of": number,"bye": boolean,"cancel_reason": string | null,"cancelled_by": string | null,"dead1": boolean,"dead2": boolean,"demo_attempts": number,"demo_key": string | null,"demo_size": number | null,"demo_status": string,"demo_uploaded_at": string | null,"end_reason": string | null,"event_id": string | null,"external_id": string | null,"grp": number | null,"id": string,"kind": string,"lineup1": (string)[],"lineup2": (string)[],"map": string | null,"maps": Json | null,"matchmaking_mode": string | null,"next_lose": string | null,"next_lose_slot": number | null,"next_win": string | null,"next_win_slot": number | null,"played_at": string | null,"pos": number | null,"round": number | null,"score1": number | null,"score2": number | null,"server_id": string | null,"server_ip": string | null,"stage": string | null,"starts_at": string | null,"status": string,"team1": string | null,"team2": string | null,"winner": string | null
+                    "best_of": number,"bye": boolean,"cancel_reason": string | null,"cancelled_by": string | null,"dead1": boolean,"dead2": boolean,"demo_attempts": number,"demo_key": string | null,"demo_size": number | null,"demo_status": string,"demo_uploaded_at": string | null,"end_reason": string | null,"event_id": string | null,"external_id": string | null,"grp": number | null,"id": string,"kind": string,"lineup1": (string)[],"lineup2": (string)[],"map": string | null,"maps": Json | null,"next_lose": string | null,"next_lose_slot": number | null,"next_win": string | null,"next_win_slot": number | null,"played_at": string | null,"pos": number | null,"round": number | null,"score1": number | null,"score2": number | null,"server_id": string | null,"server_ip": string | null,"side1_guests": (string)[],"side1_name": string | null,"side2_guests": (string)[],"side2_name": string | null,"stage": string | null,"starts_at": string | null,"status": string,"team1": string | null,"team2": string | null,"winner": string | null,"winner_side": number | null
                   }
                   Insert: {
-                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"matchmaking_mode"?: string | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"winner"?: string | null
+                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"side1_guests"?: (string)[],"side1_name"?: string | null,"side2_guests"?: (string)[],"side2_name"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"winner"?: string | null,"winner_side"?: number | null
                   }
                   Update: {
-                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"matchmaking_mode"?: string | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"winner"?: string | null
+                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"side1_guests"?: (string)[],"side1_name"?: string | null,"side2_guests"?: (string)[],"side2_name"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"winner"?: string | null,"winner_side"?: number | null
                   }
                   Relationships: [
                     {
@@ -187,82 +187,6 @@ isOneToOne: false
       referencedRelation: "teams"
       referencedColumns: ["id"]
     }
-                  ]
-                },"matchmaking_dispatch": {
-                  Row: {
-                    "created_at": string,"dispatch_state": string,"last_error": string | null,"match_id": string,"server_id": string,"server_password": string,"updated_at": string
-                  }
-                  Insert: {
-                    "created_at"?: string,"dispatch_state"?: string,"last_error"?: string | null,"match_id": string,"server_id": string,"server_password": string,"updated_at"?: string
-                  }
-                  Update: {
-                    "created_at"?: string,"dispatch_state"?: string,"last_error"?: string | null,"match_id"?: string,"server_id"?: string,"server_password"?: string,"updated_at"?: string
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "matchmaking_dispatch_match_id_fkey"
-      columns: ["match_id"]
-isOneToOne: true
-      referencedRelation: "matches"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "matchmaking_dispatch_server_id_fkey"
-      columns: ["server_id"]
-isOneToOne: false
-      referencedRelation: "game_servers"
-      referencedColumns: ["id"]
-    }
-                  ]
-                },"matchmaking_modes": {
-                  Row: {
-                    "enabled": boolean,"mode": string,"players_per_team": number,"updated_at": string,"updated_by": string | null
-                  }
-                  Insert: {
-                    "enabled"?: boolean,"mode": string,"players_per_team": number,"updated_at"?: string,"updated_by"?: string | null
-                  }
-                  Update: {
-                    "enabled"?: boolean,"mode"?: string,"players_per_team"?: number,"updated_at"?: string,"updated_by"?: string | null
-                  }
-                  Relationships: [
-                    
-                  ]
-                },"matchmaking_queue": {
-                  Row: {
-                    "elo": number,"id": string,"joined_at": string,"match_id": string | null,"matched_at": string | null,"mode": string,"player_id": string,"status": string,"steam_id": string,"user_id": string
-                  }
-                  Insert: {
-                    "elo"?: number,"id"?: string,"joined_at"?: string,"match_id"?: string | null,"matched_at"?: string | null,"mode"?: string,"player_id": string,"status"?: string,"steam_id": string,"user_id": string
-                  }
-                  Update: {
-                    "elo"?: number,"id"?: string,"joined_at"?: string,"match_id"?: string | null,"matched_at"?: string | null,"mode"?: string,"player_id"?: string,"status"?: string,"steam_id"?: string,"user_id"?: string
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "matchmaking_queue_match_id_fkey"
-      columns: ["match_id"]
-isOneToOne: false
-      referencedRelation: "matches"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "matchmaking_queue_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: false
-      referencedRelation: "players"
-      referencedColumns: ["id"]
-    }
-                  ]
-                },"matchmaking_settings": {
-                  Row: {
-                    "id": boolean,"queue_open": boolean,"updated_at": string,"updated_by": string | null
-                  }
-                  Insert: {
-                    "id"?: boolean,"queue_open"?: boolean,"updated_at"?: string,"updated_by"?: string | null
-                  }
-                  Update: {
-                    "id"?: boolean,"queue_open"?: boolean,"updated_at"?: string,"updated_by"?: string | null
-                  }
-                  Relationships: [
-                    
                   ]
                 },"pcw_posts": {
                   Row: {
@@ -584,39 +508,6 @@ isOneToOne: false
                            },
 "link_steam_id":
 { Args: { "p_player": string,"p_steam": string }; Returns: undefined
-                           },
-"matchmaking_admin_release_server":
-{ Args: { "p_match_id": string }; Returns: boolean
-                           },
-"matchmaking_cancel":
-{ Args: Record<PropertyKey, never>; Returns: Json
-                           },
-"matchmaking_join":
-{ Args: { "p_mode"?: string }; Returns: Json
-                           },
-"matchmaking_queue_state":
-{ Args: Record<PropertyKey, never>; Returns: Json
-                           },
-"matchmaking_server_mark_live":
-{ Args: { "p_match_id": string,"p_token": string }; Returns: boolean
-                           },
-"matchmaking_server_poll":
-{ Args: { "p_token": string }; Returns: string
-                           },
-"matchmaking_set_mode":
-{ Args: { "p_enabled": boolean,"p_mode": string }; Returns: Json
-                           },
-"matchmaking_set_queue_open":
-{ Args: { "p_open": boolean }; Returns: Json
-                           },
-"matchmaking_status":
-{ Args: Record<PropertyKey, never>; Returns: Json
-                           },
-"matchmaking_try_match":
-{ Args: Record<PropertyKey, never>; Returns: boolean
-                           },
-"matchmaking_try_match_unchecked":
-{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "norm_maps":
 { Args: { "j": Json }; Returns: Json

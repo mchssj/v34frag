@@ -11,7 +11,7 @@
 | 3. Limpieza (2.6) | Hecho: `01_limpieza.sql` |
 | 4. Privacidad (2.4) | Hecho: `02_privacidad.sql` |
 | — Borrar el matchmaking viejo (fuera del plan, decisión del 2026-10-15) | Hecho: `03_matchmaking.sql` |
-| 5. Mixes sin equipos y `winner_side` (2.1) | Pendiente (desbloqueado) |
+| 5. Mixes sin equipos y `winner_side` (2.1) | Hecho: `04_mixes_bandos.sql`. Ensayo del ELO idéntico; la inversa con datos reales también deja el ELO idéntico |
 | 6. `team_members` (2.2) | Pendiente (desbloqueado) |
 | 7. Vistas de stats (2.3) | Pendiente; depende de `winner_side` (paso 5) |
 | 8. `!match` (2.5) | Pendiente; depende de `team_members` (paso 6) |
@@ -136,3 +136,60 @@ Daniel autorizó copiar la base de producción completa el 2026-10-15.
 **Ensayo del ELO con 01, 02 y 03:** **idéntico** (32 SteamIDs y 135 filas de mixes). La verificación previa de `03` pasó con los datos reales copiados.
 
 **Antes del corte:** si el dispatcher de mchssj (`csstv_matchmaking_dispatcher`) está instalado en algún servidor, hay que sacarlo antes de aplicar el replanteo.
+
+## Paso 5: `04_mixes_bandos.sql` (2026-10-15)
+
+```mermaid
+flowchart TD
+  A["Columnas nuevas en matches:<br/>side1/2_name, side1/2_guests, winner_side"] --> B["winner_side de todas las partidas<br/>(desde winner)"]
+  B --> C["Bandos de los mixes copiados<br/>de sus equipos mix"]
+  C --> D["Funciones: elo_apply_match, recompute_player_stats,<br/>csstv_ingest y link_steam_id"]
+  D --> E["Mixes sin team1, team2 ni winner"]
+  E --> F["Borrar los equipos mix<br/>(ya sin referencias)"]
+  F --> G["Reglas: un mix no tiene equipos;<br/>teams.kind solo official o pcw"]
+```
+
+**Por qué el plantel se guarda en la partida y no se saca de `match_player_stats`.** Con los datos reales, 27 de los 28 bandos coinciden exactamente con sus filas de stats. En uno ("Mix de Lukas", 13/10) el equipo tenía un jugador más (notions) sin fila de stats. Para no perder ese dato, el plantel se copia tal cual:
+- **Jugadores vinculados:** van a `lineup1` y `lineup2` (ids de `players`). Esas columnas ya existían y estaban vacías en los mixes.
+- **Invitados sin jugador vinculado:** van a `side1_guests` y `side2_guests` (nicks).
+
+**`winner_side`** (`smallint`, 1 o 2, o null para empate o sin resultado):
+- **En todas las partidas:** se llena desde `winner`.
+- **En PCW y torneos**, que tienen equipos, lo mantiene el trigger `matches_winner_side` a partir de `winner`, `team1` y `team2`. Así no hubo que tocar `autoapply_pcw` ni lo que escribe el admin.
+- **En los mixes** lo escribe la ingesta.
+
+**Funciones:** se cambian solo fragmentos puntuales de su definición actual (`pg_temp.reemplazar`). Si un fragmento no está tal cual, la migración aborta, lo que protege contra cambios en producción.
+
+| Función | Cambio |
+|---|---|
+| `elo_apply_match` | El resultado sale de `winner_side` (`1 → 1`, `2 → 0`, `null → 0,5`) en vez de comparar `winner` con `team1`. La fórmula no cambia |
+| `recompute_player_stats` | Victoria si `winner_side = s.team`; derrota si `winner_side` no es null y es distinto |
+| `csstv_ingest` | No crea equipos. Escribe los nombres de los bandos, los dos planteles y `winner_side`. Los nombres son los de siempre: "Equipo X" con `!team`, o "Mix de <jugador con más kills>" |
+| `link_steam_id` | Al vincular un SteamID, mueve al jugador de invitado al plantel de su bando en cada mix; al desvincular, al revés. Antes lo hacía sobre los equipos `mix` |
+
+**Verificación previa (si algo falla, aborta):**
+- Que no esté aplicada.
+- Que todo `winner` sea `team1` o `team2`.
+- Que todo mix tenga sus dos equipos `mix`.
+- Que ningún equipo `mix` se use fuera de su partida (PCW, inscripciones, vetos, reportes ni campeón). Si se usara, borrarlo arrastraría otras filas por la cascada.
+- Que los mixes tengan `lineup1` y `lineup2` vacíos.
+
+Al final compara los conteos de partidas y stats con los del principio.
+
+**Resultados:**
+- **Con la copia de producción:**
+  - Los 14 mixes quedaron con bandos y sin equipos, y los 13 terminados tienen `winner_side`. El que falta es el cancelado.
+  - Los 34 equipos `mix` se borraron (incluidos los 8 huérfanos) sin perder ninguna partida ni fila de stats.
+  - El ganador coincide con el marcador.
+- **Ensayo del ELO con 01 a 04:** **idéntico** (32 SteamIDs y 135 filas de mixes).
+- **Inversa con datos reales:** recrea los 28 equipos de los 14 mixes con su ganador, y el ELO queda **idéntico al original**.
+- **`correr.sh`:** las cuatro migraciones pasan el ciclo completo. La inversa deja la estructura idéntica, incluidas las 4 funciones restauradas. La inversa se **generó desde la migración**, invirtiendo sus pares de reemplazo, con `gen_reversa_04.mjs` (un script descartable, no versionado).
+- **`pruebas/04_mixes_bandos.sql`**, dentro de un rollback:
+  - Las reglas nuevas.
+  - Una ingesta de punta a punta: bandos, plantel con jugador e invitado, `winner_side`, que no cree equipos, y victorias y derrotas.
+  - El trigger en una partida oficial.
+  - Vincular y desvincular un SteamID como admin: el invitado pasa al plantel y vuelve.
+- **Backend:**
+  - Tipos regenerados.
+  - Una prueba de integración de Mi perfil insertaba un equipo `mix` (que ahora la base rechaza) para comprobar que se ignoraba; ahora usa un equipo `pcw`.
+  - Pasan las 161 pruebas, con 96,3 % de sentencias y 88,5 % de ramas.

@@ -40,10 +40,10 @@ describe('GET /api/v1/me/profile', () => {
     expect(p).toMatchObject({ player: null, team: null, matches_played: 0 });
   });
 
-  it('con jugador vinculado: equipo oficial (no el de mix) y solo partidas válidas', async () => {
+  it('con jugador vinculado: equipo oficial (no el de PCW) y solo partidas válidas', async () => {
     const u = await createUser();
     const pl = await insert('players', { nick: `Jug${uid()}`, user_id: u.id, steam_id: `7656119${Date.now().toString().slice(-10)}` });
-    await insert('teams', { name: `Mix ${uid()}`, kind: 'mix', members: [pl.id] });
+    await insert('teams', { name: `PCW ${uid()}`, kind: 'pcw', members: [pl.id] }); // desde el replanteo 04 no existen equipos mix
     const team = await insert<{ id: string; name: string }>('teams', { name: `Oficial ${uid()}`, tag: 'OFI', kind: 'official', members: [pl.id] });
     const rival = await insert('teams', { name: `Rival ${uid()}`, kind: 'official' });
     const ev = await insert('events', { name: `Torneo ${uid()}` });
