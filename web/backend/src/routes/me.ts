@@ -148,6 +148,10 @@ const listRequests = createRoute({
   path: '/api/v1/me/profile-requests',
   tags: ['Mi perfil'],
   summary: 'Mis solicitudes de reclamo de perfil',
+  description:
+    'Solicitudes de reclamo de perfil del usuario. **Deprecado:** el reclamo de perfil va a pasar al juego ' +
+    '(`!claim <código>`); sigue funcionando hasta entonces.',
+  deprecated: true,
   security: bearer,
   middleware: [requireUser] as const,
   responses: { 200: { description: 'Solicitudes, la más nueva primero', ...json(ProfileRequest.array()) }, ...errorResponses(401) },
@@ -158,7 +162,10 @@ const createRequest = createRoute({
   path: '/api/v1/me/profile-requests',
   tags: ['Mi perfil'],
   summary: 'Reclamar un perfil de jugador',
-  description: 'Pide que un admin vincule el jugador a tu cuenta. El jugador no puede tener cuenta vinculada.',
+  description:
+    'Pide que un admin vincule el jugador a tu cuenta. El jugador no puede tener cuenta vinculada. ' +
+    '**Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`); sigue funcionando hasta entonces.',
+  deprecated: true,
   security: bearer,
   middleware: [requireUser] as const,
   request: { body: { required: true, ...json(ProfileRequestBody) } },

@@ -135,10 +135,10 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 - **`.env` de la raíz:** la línea 30 se llama `PG_PASSWORD` pero tiene el usuario. Tiene que ser `PG_USER=postgres.<ref del proyecto>` (el valor está en Supabase → Connect → Session pooler) (usuario del *Session pooler*). Hasta que se corrija, `supabase/schema/volcar.sh` necesita `PGUSER` y `PGPASSWORD` a mano.
 - **Hosting decidido:** VPS KVM 1 de Hostinger con dominio propio. Cloudflare se queda solo con el Worker de demos y R2. El despliegue (build, servicio de Node, Caddy con HTTPS, DNS, pipeline y SMTP para Supabase Auth) necesita su propio plan.
 - **Después de esta fase**, en este orden (decidido por Daniel):
-  1. **Fase de "replantear" módulos:** revisar el modelo de datos y sacar lo que ya no se usa. Candidatos: `player_claims`, `profiles.player_id`, `match_chat.tag`, `player_medals.color`, políticas RLS duplicadas y las tablas `matchmaking_*`.
+  1. ~~**Fase de "replantear" módulos**~~: **terminada el 2026-10-15**, solo en local (migraciones 01 a 08 en `supabase/replanteo/`, se aplican en el corte). Ver [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
   2. **Endpoints de dominio** (jugadores, equipos, partidas, torneos, admin), cada uno con su plan.
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
-- **Pregunta abierta:** las 4 tablas `matchmaking_*` y sus 11 funciones están en producción pero no tienen migración en el repo ni uso en la web o el plugin. Hay que saber quién las creó y si se usan.
+- **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
 
 ## Contexto útil para una sesión nueva
 

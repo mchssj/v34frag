@@ -2,7 +2,7 @@
 
 ## Estado
 
-**En curso.** Plan aprobado el 2026-10-14. **Producción sin tocar:** todo se aplicó y se probó solo en la Supabase local.
+**Fase terminada (2026-10-15).** Plan aprobado el 2026-10-14. **Producción sin tocar:** todo se aplicó y se probó solo en la Supabase local. Las migraciones 01 a 08 se aplican en el corte, que tiene su propio plan (todavía sin escribir).
 
 | Paso del plan | Estado |
 |---|---|
@@ -16,8 +16,9 @@
 | 7. Vistas de stats (2.3) | Hecho: `06_vistas_stats.sql`. Ensayo idéntico, incluidas las stats de los 32 jugadores con partidas |
 | 8. `!match` en la base (2.5) | Hecho: `07_match_vincular.sql` (el plugin va en el paso 9) |
 | 9. Plugin con `!match` | Hecho: plugin 2.0.0 (`!match` y `!status`), probado con bots contra la Supabase local (2026-10-15). Ver [`2026-10-15-match-y-status`](../2026-10-15-match-y-status/). Se despliega en el corte |
-| 10. Ajustes del backend de la fase 1 | Parcial: tipos regenerados con el esquema nuevo; falta `team_members` y marcar `profile-requests` como deprecado |
-| 11. Inversas y documentación | Al día para los pasos hechos |
+| — Formatos de PCW (requerimiento aparte, 2026-10-15) | Hecho: `08_formatos_pcw.sql` y dos endpoints. Ver [`2026-10-15-formatos-pcw`](../2026-10-15-formatos-pcw/) |
+| 10. Ajustes del backend de la fase 1 | Hecho: tipos regenerados, `GET /me/profile` con `team_members` (paso 6) y `/me/profile-requests` marcado `deprecated` en la OpenAPI (2026-10-15), con una prueba que lo verifica |
+| 11. Inversas y documentación | Hecho: inversas de 01 a 08, `DOCUMENTACION.md`, sección "Después del corte" en `docs/MODELO_DATOS.md` y resumen para el frontend |
 
 ## Paso 1: carpeta y carga local
 
@@ -355,3 +356,21 @@ Los invitados se comparan por nick, sin distinguir mayúsculas, contra `teams.gu
 - **Nombres:** el mix vinculado lleva el nombre de cada equipo en `side1_name` y `side2_name`.
 
 La documentación vigente es la de ese requerimiento.
+
+## Paso 10: ajustes del backend (2026-10-15)
+
+- **`/api/v1/me/profile-requests`** (GET y POST): `deprecated: true` en la OpenAPI y una nota en la descripción. Siguen funcionando hasta que exista `!claim`.
+- **Prueba:** `test/unit/system.test.ts` verifica que las dos rutas salgan deprecadas y que `/me/profile` no.
+- **Resultado:** 143 pruebas unitarias y 31 de integración en verde, sin errores de tipos.
+
+## Resultado final de la fase
+
+- **`correr.sh`:** las 8 migraciones pasan el ciclo completo.
+- **Ensayo del ELO con 01 a 08:** idéntico (32 SteamIDs, 135 filas de mixes, stats de 32 jugadores).
+- **Backend:** 174 pruebas en verde y cobertura del 96 %.
+- **Producción:** sin tocar.
+
+## Cómo revertir
+
+- **Antes del corte:** no hay nada en producción. En local, `REPLANTEO=0 pnpm db:reset`.
+- **Después del corte:** aplicar las inversas de `reversas/` en orden inverso (08 a 01), o restaurar el respaldo del corte. Las inversas de 04 y 06 recrean los equipos `mix` y las stats de `players`; las stats cargadas a mano solo vuelven con el respaldo.
