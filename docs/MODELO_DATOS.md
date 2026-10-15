@@ -1,6 +1,6 @@
 # Modelo de datos (Supabase)
 
-> El esquema vive sólo en el proyecto Supabase (`wmzfwsizashpszxlvpeb`), no en este repositorio.
+> Desde el 2026-10-14 el esquema real está volcado en [`supabase/schema/public.sql`](../supabase/schema/public.sql) (sin datos; se actualiza con `supabase/schema/volcar.sh`). Esa es la fuente de verdad: este documento puede estar atrasado. Por ejemplo, todavía no describe las tablas `matchmaking_*`, `demo_workers` ni algunas columnas nuevas de `matches` y `game_servers`.
 > Todas las tablas (✔) salen del export de `information_schema`, las políticas de `pg_policies` y las funciones de `pg_proc`.
 
 ## Diagrama
