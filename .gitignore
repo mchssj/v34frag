@@ -1,3 +1,15 @@
 .env
 # .smx compilados para servidores de terceros (server/build_licenciado.sh)
 server/licencias/
+
+# Archivos locales del backend (web/backend vive en la rama feat/backend-api-fase-1).
+# Sin estas reglas, al cambiar a main GitHub Desktop los toma como nuevos y los guarda en un stash.
+web/backend/node_modules/
+web/backend/.wrangler/
+web/backend/.dev.vars
+web/backend/coverage/
+web/backend/supabase/.branches/
+web/backend/supabase/.temp/
+
+# Configuración personal del IDE
+.idea/workspace.xml
