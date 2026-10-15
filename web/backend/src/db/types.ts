@@ -153,13 +153,13 @@ isOneToOne: false
                   ]
                 },"matches": {
                   Row: {
-                    "best_of": number,"bye": boolean,"cancel_reason": string | null,"cancelled_by": string | null,"dead1": boolean,"dead2": boolean,"demo_attempts": number,"demo_key": string | null,"demo_size": number | null,"demo_status": string,"demo_uploaded_at": string | null,"demo_url": string | null,"end_reason": string | null,"event_id": string | null,"external_id": string | null,"grp": number | null,"id": string,"kind": string,"lineup1": (string)[],"lineup2": (string)[],"map": string | null,"maps": Json | null,"matchmaking_mode": string | null,"next_lose": string | null,"next_lose_slot": number | null,"next_win": string | null,"next_win_slot": number | null,"played_at": string | null,"pos": number | null,"round": number | null,"score1": number | null,"score2": number | null,"server_id": string | null,"server_ip": string | null,"stage": string | null,"starts_at": string | null,"status": string,"team1": string | null,"team2": string | null,"video_url": string | null,"winner": string | null
+                    "best_of": number,"bye": boolean,"cancel_reason": string | null,"cancelled_by": string | null,"dead1": boolean,"dead2": boolean,"demo_attempts": number,"demo_key": string | null,"demo_size": number | null,"demo_status": string,"demo_uploaded_at": string | null,"end_reason": string | null,"event_id": string | null,"external_id": string | null,"grp": number | null,"id": string,"kind": string,"lineup1": (string)[],"lineup2": (string)[],"map": string | null,"maps": Json | null,"matchmaking_mode": string | null,"next_lose": string | null,"next_lose_slot": number | null,"next_win": string | null,"next_win_slot": number | null,"played_at": string | null,"pos": number | null,"round": number | null,"score1": number | null,"score2": number | null,"server_id": string | null,"server_ip": string | null,"stage": string | null,"starts_at": string | null,"status": string,"team1": string | null,"team2": string | null,"winner": string | null
                   }
                   Insert: {
-                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"demo_url"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"matchmaking_mode"?: string | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"video_url"?: string | null,"winner"?: string | null
+                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"matchmaking_mode"?: string | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"winner"?: string | null
                   }
                   Update: {
-                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"demo_url"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"matchmaking_mode"?: string | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"video_url"?: string | null,"winner"?: string | null
+                    "best_of"?: number,"bye"?: boolean,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"dead1"?: boolean,"dead2"?: boolean,"demo_attempts"?: number,"demo_key"?: string | null,"demo_size"?: number | null,"demo_status"?: string,"demo_uploaded_at"?: string | null,"end_reason"?: string | null,"event_id"?: string | null,"external_id"?: string | null,"grp"?: number | null,"id"?: string,"kind"?: string,"lineup1"?: (string)[],"lineup2"?: (string)[],"map"?: string | null,"maps"?: Json | null,"matchmaking_mode"?: string | null,"next_lose"?: string | null,"next_lose_slot"?: number | null,"next_win"?: string | null,"next_win_slot"?: number | null,"played_at"?: string | null,"pos"?: number | null,"round"?: number | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null,"server_ip"?: string | null,"stage"?: string | null,"starts_at"?: string | null,"status"?: string,"team1"?: string | null,"team2"?: string | null,"winner"?: string | null
                   }
                   Relationships: [
                     {
@@ -289,37 +289,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"player_claims": {
-                  Row: {
-                    "created_at": string,"id": string,"player_id": string,"status": string | null,"user_id": string
-                  }
-                  Insert: {
-                    "created_at"?: string,"id"?: string,"player_id": string,"status"?: string | null,"user_id": string
-                  }
-                  Update: {
-                    "created_at"?: string,"id"?: string,"player_id"?: string,"status"?: string | null,"user_id"?: string
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "player_claims_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: true
-      referencedRelation: "players"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "player_claims_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profiles"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "player_claims_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "public_profiles"
-      referencedColumns: ["id"]
-    }
-                  ]
                 },"player_elo": {
                   Row: {
                     "elo": number,"matches": number,"mu": number,"peak_elo": number,"sigma": number,"steam_id": string,"updated_at": string
@@ -354,13 +323,13 @@ isOneToOne: false
                   ]
                 },"player_medals": {
                   Row: {
-                    "color": string | null,"created_at": string,"icon": string | null,"id": string,"player_id": string | null,"title": string
+                    "created_at": string,"icon": string | null,"id": string,"player_id": string | null,"title": string
                   }
                   Insert: {
-                    "color"?: string | null,"created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"title": string
+                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"title": string
                   }
                   Update: {
-                    "color"?: string | null,"created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"title"?: string
+                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -418,22 +387,16 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "id": string,"player_id": string | null,"role": string,"tag": string | null,"updated_at": string | null
+                    "id": string,"role": string,"tag": string | null,"updated_at": string | null
                   }
                   Insert: {
-                    "id": string,"player_id"?: string | null,"role"?: string,"tag"?: string | null,"updated_at"?: string | null
+                    "id": string,"role"?: string,"tag"?: string | null,"updated_at"?: string | null
                   }
                   Update: {
-                    "id"?: string,"player_id"?: string | null,"role"?: string,"tag"?: string | null,"updated_at"?: string | null
+                    "id"?: string,"role"?: string,"tag"?: string | null,"updated_at"?: string | null
                   }
                   Relationships: [
-                    {
-      foreignKeyName: "profiles_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: false
-      referencedRelation: "players"
-      referencedColumns: ["id"]
-    }
+                    
                   ]
                 },"result_reports": {
                   Row: {

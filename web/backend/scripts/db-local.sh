@@ -6,7 +6,8 @@
 #   load   solo carga el esquema (base ya levantada y vacía)
 # Carga, en orden: supabase/schema/public.sql, supabase/schema/auth_storage.sql y las
 # migraciones de supabase/migrations/ posteriores a supabase/schema/BASE (las que todavía
-# no están en producción), y al final scripts/local-overrides.sql. Nunca toca la Supabase real.
+# no están en producción), las de supabase/replanteo/ (fase de replanteo; REPLANTEO=0 para no
+# cargarlas) y al final scripts/local-overrides.sql. Nunca toca la Supabase real.
 set -euo pipefail
 
 backend="$(cd "$(dirname "$0")/.." && pwd)"
@@ -30,6 +31,15 @@ cargar() {
       psql_local < "$f" >/dev/null
     fi
   done
+  if [[ "${REPLANTEO:-1}" != "0" ]]; then
+    for f in "$raiz"/supabase/replanteo/[0-9]*.sql; do
+      [[ -e "$f" ]] || continue
+      echo "  replanteo: $(basename "$f")"
+      psql_local < "$f" >/dev/null
+    done
+  else
+    echo "  replanteo: omitido (REPLANTEO=0)"
+  fi
   # Ajustes que solo tienen sentido en local (ver el archivo).
   psql_local < "$backend/scripts/local-overrides.sql" >/dev/null
   # PostgREST guarda en caché el esquema: hay que avisarle que cambió.
