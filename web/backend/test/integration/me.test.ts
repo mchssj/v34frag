@@ -43,8 +43,11 @@ describe('GET /api/v1/me/profile', () => {
   it('con jugador vinculado: equipo oficial (no el de PCW) y solo partidas válidas', async () => {
     const u = await createUser();
     const pl = await insert('players', { nick: `Jug${uid()}`, user_id: u.id, steam_id: `7656119${Date.now().toString().slice(-10)}` });
-    await insert('teams', { name: `PCW ${uid()}`, kind: 'pcw', members: [pl.id] }); // desde el replanteo 04 no existen equipos mix
-    const team = await insert<{ id: string; name: string }>('teams', { name: `Oficial ${uid()}`, tag: 'OFI', kind: 'official', members: [pl.id] });
+    // Juega en un equipo PCW (se ignora) y en uno oficial; desde el replanteo 05 el plantel va en team_members.
+    const pcw = await insert('teams', { name: `PCW ${uid()}`, kind: 'pcw' });
+    const team = await insert<{ id: string; name: string }>('teams', { name: `Oficial ${uid()}`, tag: 'OFI', kind: 'official' });
+    await insert('team_members', { team_id: pcw.id, player_id: pl.id });
+    await insert('team_members', { team_id: team.id, player_id: pl.id });
     const rival = await insert('teams', { name: `Rival ${uid()}`, kind: 'official' });
     const ev = await insert('events', { name: `Torneo ${uid()}` });
     const m = (extra: Record<string, unknown>) => insert('matches', { team1: team.id, team2: rival.id, status: 'finished', ...extra });

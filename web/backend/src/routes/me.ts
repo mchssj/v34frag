@@ -48,9 +48,15 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     sb.from('players').select('id, nick, photo_url, steam_id').eq('user_id', user.id).limit(1).maybeSingle().then(must),
   ]);
 
-  // Equipo oficial (sin pcw ni mix): donde juega el jugador vinculado; si no, del que es capitán o dueño.
-  const official = () => sb.from('teams').select('id, name, tag').not('kind', 'in', '(pcw,mix)').limit(1);
-  let team = player ? must(await official().contains('members', [player.id]).maybeSingle()) : null;
+  // Equipo oficial (no PCW): donde juega hoy el jugador vinculado; si no, del que es capitán o dueño.
+  const official = () => sb.from('teams').select('id, name, tag').eq('kind', 'official').limit(1);
+  let team: { id: string; name: string; tag: string | null } | null = null;
+  if (player) {
+    const ids = mustHave(
+      await sb.from('team_members').select('team_id').eq('player_id', player.id).is('left_at', null),
+    ).map((r) => r.team_id);
+    if (ids.length) team = must(await official().in('id', ids).maybeSingle());
+  }
   team ??= must(await official().or(`captain_id.eq.${user.id},owner_id.eq.${user.id}`).maybeSingle());
 
   let matches_played = 0;

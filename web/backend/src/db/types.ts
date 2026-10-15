@@ -347,6 +347,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"team_members": {
+                  Row: {
+                    "created_at": string,"id": string,"joined_at": string | null,"left_at": string | null,"player_id": string,"role": string,"team_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"joined_at"?: string | null,"left_at"?: string | null,"player_id": string,"role"?: string,"team_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"joined_at"?: string | null,"left_at"?: string | null,"player_id"?: string,"role"?: string,"team_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_members_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"team_requests": {
                   Row: {
                     "name": string,"status": string,"tag": string | null,"user_id": string
@@ -362,13 +387,13 @@ isOneToOne: false
                   ]
                 },"teams": {
                   Row: {
-                    "captain_id": string | null,"guests": (string)[],"id": string,"kind": string,"members": (string)[],"name": string,"owner_id": string | null,"tag": string | null
+                    "captain_id": string | null,"guests": (string)[],"id": string,"kind": string,"name": string,"owner_id": string | null,"tag": string | null
                   }
                   Insert: {
-                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"members"?: (string)[],"name": string,"owner_id"?: string | null,"tag"?: string | null
+                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name": string,"owner_id"?: string | null,"tag"?: string | null
                   }
                   Update: {
-                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"members"?: (string)[],"name"?: string,"owner_id"?: string | null,"tag"?: string | null
+                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name"?: string,"owner_id"?: string | null,"tag"?: string | null
                   }
                   Relationships: [
                     

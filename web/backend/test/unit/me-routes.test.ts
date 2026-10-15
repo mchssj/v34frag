@@ -43,8 +43,9 @@ function profileWorld(over: { player?: unknown | null; teamByMember?: unknown | 
     if (p.endsWith('/profile_details') && method === 'GET') return one({ joined_at: '2026-01-02T00:00:00Z', avatar_url: null, discord: 'd' });
     if (p.endsWith('/profile_details') && method === 'POST') return new Response(null, { status: 201 });
     if (p.endsWith('/players')) return one(over.player === undefined ? { id: PLAYER, nick: 'Jug', photo_url: null, steam_id: null } : over.player);
+    if (p.endsWith('/team_members')) return Response.json(over.teamByMember === null ? [] : [{ team_id: TEAM }]);
     if (p.endsWith('/teams')) {
-      const byMember = url.searchParams.has('members');
+      const byMember = url.searchParams.has('id');
       const t = byMember ? over.teamByMember : over.teamByCaptain;
       return one(t === undefined ? (byMember ? { id: TEAM, name: 'Equipo', tag: 'EQ' } : null) : t);
     }
@@ -79,8 +80,11 @@ describe('GET /api/v1/me/profile', () => {
     });
     expect(p.details.discord).toBe('d');
     const teams = calls.find((c) => c.url.includes('/rest/v1/teams'))!.url;
-    expect(teams).toContain('kind=not.in.(pcw,mix)');
-    expect(teams).toContain(`members=cs.{${PLAYER}}`);
+    expect(teams).toContain('kind=eq.official');
+    expect(teams).toContain(`id=in.(${TEAM})`);
+    const members = calls.find((c) => c.url.includes('/rest/v1/team_members'))!.url;
+    expect(members).toContain(`player_id=eq.${PLAYER}`);
+    expect(members).toContain('left_at=is.null');
     const matches = calls.find((c) => c.url.includes('/rest/v1/matches'))!.url;
     expect(matches).toContain('status=eq.finished');
     expect(matches).toContain('bye=eq.false');

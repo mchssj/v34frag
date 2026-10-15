@@ -12,7 +12,7 @@
 | 4. Privacidad (2.4) | Hecho: `02_privacidad.sql` |
 | — Borrar el matchmaking viejo (fuera del plan, decisión del 2026-10-15) | Hecho: `03_matchmaking.sql` |
 | 5. Mixes sin equipos y `winner_side` (2.1) | Hecho: `04_mixes_bandos.sql`. Ensayo del ELO idéntico; la inversa con datos reales también deja el ELO idéntico |
-| 6. `team_members` (2.2) | Pendiente (desbloqueado) |
+| 6. `team_members` (2.2) | Hecho: `05_team_members.sql`. Ensayo del ELO idéntico; 89 de 89 miembros migrados |
 | 7. Vistas de stats (2.3) | Pendiente; depende de `winner_side` (paso 5) |
 | 8. `!match` (2.5) | Pendiente; depende de `team_members` (paso 6) |
 | 9. Plugin con `!match` | Pendiente |
@@ -193,3 +193,46 @@ Al final compara los conteos de partidas y stats con los del principio.
   - Tipos regenerados.
   - Una prueba de integración de Mi perfil insertaba un equipo `mix` (que ahora la base rechaza) para comprobar que se ignoraba; ahora usa un equipo `pcw`.
   - Pasan las 161 pruebas, con 96,3 % de sentencias y 88,5 % de ramas.
+
+## Paso 6: `05_team_members.sql` (2026-10-15)
+
+**Tabla `team_members`:**
+
+| Columna | Qué guarda |
+|---|---|
+| `id` | Clave |
+| `team_id`, `player_id` | Equipo y jugador. Las dos son claves foráneas con `on delete cascade`, así que no puede quedar un id colgado |
+| `role` | `player`, `sub` o `coach` |
+| `joined_at` | Alta. Es null en los miembros migrados, porque el arreglo no guardaba la fecha |
+| `left_at` | Baja. Null = sigue en el equipo |
+
+- **Un jugador figura activo una sola vez por equipo** (índice único parcial `where left_at is null`), pero puede volver después de una baja.
+- **Fechas:** la baja no puede ser anterior al alta.
+- **RLS:** todos leen y el admin gestiona. Los usuarios escriben a través de las funciones (`security definer`), como antes.
+- **El historial de equipos de un jugador sale de esta tabla.** `players.team_history` se queda como texto libre, por decisión de Daniel.
+- **`teams.guests`** (invitados sin jugador en los equipos PCW) se queda.
+
+**Funciones adaptadas** (con el mismo mecanismo de reemplazos puntuales que `04`). Al final, la migración verifica que ninguna función siga usando `members` y recién entonces borra la columna.
+
+| Función | Cambio |
+|---|---|
+| `pcw_make_side` | El roster del equipo PCW se inserta en `team_members` con `joined_at = now()` |
+| `accept_pcw` | "Hay jugadores que están en los dos rosters" se calcula con `team_members` activos |
+| `set_team_captain` | El nuevo capitán tiene que estar en el plantel **actual** |
+| `validate_report` | La alineación del reporte tiene que salir del plantel actual |
+
+**Resultados:**
+- **Con la copia de producción:** los 89 ids de `teams.members` (17 equipos) pasaron a 89 filas de `team_members`. No faltó ninguno y no había ids colgados.
+- **Ensayo del ELO con 01 a 05:** **idéntico**.
+- **`correr.sh`:** las cinco migraciones pasan el ciclo completo. La inversa de `05` vuelve a llenar `teams.members` con el plantel activo y restaura las funciones; se generó desde la migración con `invertir_reemplazos.mjs`, un script descartable que generaliza el de `04`.
+- **`pruebas/05_team_members.sql`**, dentro de un rollback, con usuarios simulados:
+  - Un jugador no puede estar activo dos veces en un equipo, pero sí volver después de una baja.
+  - Se rechazan una baja anterior al alta y un rol inválido.
+  - Publicar una PCW arma el roster en `team_members` y conserva los invitados.
+  - Aceptarla con un jugador repetido falla con el mensaje de siempre; con otro jugador crea la partida.
+  - Pasar la capitanía a alguien de otro equipo falla.
+  - Un reporte con un jugador ajeno en la alineación falla.
+- **Backend:**
+  - **`GET /api/v1/me/profile`:** busca el equipo actual en `team_members` (plantel activo) y filtra `kind = 'official'`, porque ya no existen equipos `mix`.
+  - **Pruebas:** la unitaria y la de integración se adaptaron. Pasan las 161, con 96,3 % de sentencias y 88,2 % de ramas.
+  - **Esto cubre el ajuste de la fase 1** que preveía el paso 10 del plan para `team_members`.
