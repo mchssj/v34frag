@@ -22,3 +22,4 @@ Migraciones de la **fase de replanteo del modelo de datos**
 |---|---|
 | `01_limpieza.sql` | Borra `player_claims`, `profiles.player_id`, `player_medals.color`, `matches.demo_url` y `matches.video_url`; quita las políticas duplicadas; `events.format` sin `swiss` |
 | `02_privacidad.sql` | `players.privacy` solo `public` o `private`; la política de `profile_details` sin `members` |
+| `03_matchmaking.sql` | Borra el matchmaking viejo: 4 tablas, 11 funciones, `game_servers.matchmaking_enabled` y `last_assigned_at`, y `matches.matchmaking_mode`. Aborta si hay matchmaking activo |

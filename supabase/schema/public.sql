@@ -652,10 +652,11 @@ declare
   c_sig0  constant double precision := 25.0 / 3;
   c_beta  constant double precision := 25.0 / 6;    -- σ₀ / 2
   c_tau   constant double precision := 25.0 / 300;  -- σ₀ / 100
-  cfg     record;             -- elo_config: base, bonus_max, bonus_factor, elo_floor, start_elo
+  cfg     record;             -- elo_config: base, bonus_max, bonus_factor, elo_floor, start_elo, min_pct, full_pct
   m       record;
   r       record;
   ids     text[];
+  total   integer;            -- rondas del mix
   n1      integer;
   n2      integer;
   mu1     double precision;
@@ -676,18 +677,25 @@ declare
   new_elo integer;
   new_mu  double precision;
 begin
-  select id, kind, status, team1, team2, winner into m from matches where id = p_match for update;
-  select c.base, c.bonus_max, c.bonus_factor, c.elo_floor, c.start_elo into cfg from elo_config c where c.id = 1;
+  select id, kind, status, team1, team2, winner, score1, score2 into m from matches where id = p_match for update;
+  select c.base, c.bonus_max, c.bonus_factor, c.elo_floor, c.start_elo, c.min_pct, c.full_pct into cfg from elo_config c where c.id = 1;
   if not found then
-    select 30 as base, 5 as bonus_max, 10::numeric as bonus_factor, 100 as elo_floor, 1000 as start_elo into cfg;
+    select 30 as base, 5 as bonus_max, 10::numeric as bonus_factor, 100 as elo_floor, 1000 as start_elo,
+           35 as min_pct, 90 as full_pct into cfg;
   end if;
   if not found or m.kind <> 'mix' or m.status <> 'finished' then return; end if;
   if exists (select 1 from match_player_stats where match_id = p_match and elo_after is not null) then return; end if;
 
-  -- Solo los SteamID64 reciben ELO.
+  -- Rondas del mix: si hubo una ronda empatada no suma al marcador, pero sí a las rondas de cada uno.
+  select greatest(coalesce(m.score1, 0) + coalesce(m.score2, 0), coalesce(max(rounds), 0)) into total
+    from match_player_stats where match_id = p_match and team in (1, 2);
+  if total <= 0 then return; end if;
+
+  -- Solo los SteamID64 que llegan al mínimo de rondas reciben ELO.
   select array_agg(steam_id order by steam_id) into ids
     from match_player_stats
-   where match_id = p_match and steam_id ~ '^(7656119[0-9]{10}|765612[0-9]{11})$' and rounds > 0 and team in (1, 2);
+   where match_id = p_match and steam_id ~ '^(7656119[0-9]{10}|765612[0-9]{11})$' and team in (1, 2)
+     and elo_weight(rounds, total, cfg.min_pct, cfg.full_pct) > 0;
   if ids is null then return; end if;
 
   insert into player_elo(steam_id, elo, peak_elo) select x, cfg.start_elo, cfg.start_elo from unnest(ids) x
@@ -695,19 +703,22 @@ begin
   -- Bloqueo en orden fijo para que dos mixes simultáneos no se pisen ni se bloqueen entre sí.
   perform 1 from player_elo where steam_id = any(ids) order by steam_id for update;
 
-  -- Fuerza de cada equipo: todos los que jugaron al menos una ronda. Los que no tienen
-  -- SteamID64 no tienen fila en player_elo y cuentan como un jugador nuevo.
-  -- σ² de cada jugador ya incluye τ² (la habilidad puede cambiar entre mixes).
-  select count(*) filter (where s.team = 1), count(*) filter (where s.team = 2),
-         coalesce(sum(coalesce(e.mu, c_mu0)) filter (where s.team = 1), 0),
-         coalesce(sum(coalesce(e.mu, c_mu0)) filter (where s.team = 2), 0),
-         sum(coalesce(e.sigma, c_sig0) ^ 2 + c_tau * c_tau)
+  -- Fuerza de cada equipo (TrueSkill con juego parcial): cada jugador aporta peso × μ y
+  -- peso² × (σ² + τ² + β²). Los que no llegan al mínimo tienen peso 0 y no cuentan. Los que
+  -- no tienen SteamID64 no tienen fila en player_elo y cuentan como un jugador nuevo.
+  select count(*) filter (where x.team = 1), count(*) filter (where x.team = 2),
+         coalesce(sum(x.wt * x.mu) filter (where x.team = 1), 0),
+         coalesce(sum(x.wt * x.mu) filter (where x.team = 2), 0),
+         sum(x.wt * x.wt * (x.sigma ^ 2 + c_tau * c_tau + c_beta * c_beta))
     into n1, n2, mu1, mu2, s2_tot
-    from match_player_stats s left join player_elo e on e.steam_id = s.steam_id
-   where s.match_id = p_match and s.rounds > 0 and s.team in (1, 2);
+    from (select s.team, elo_weight(s.rounds, total, cfg.min_pct, cfg.full_pct) wt,
+                 coalesce(e.mu, c_mu0) mu, coalesce(e.sigma, c_sig0) sigma
+            from match_player_stats s left join player_elo e on e.steam_id = s.steam_id
+           where s.match_id = p_match and s.team in (1, 2)) x
+   where x.wt > 0;
   if n1 = 0 or n2 = 0 then return; end if;
 
-  c    := sqrt((n1 + n2) * c_beta * c_beta + s2_tot);
+  c    := sqrt(s2_tot);
   p1   := csstv_ncdf((mu1 - mu2) / c);
   res1 := case when m.winner is null then 0.5 when m.winner = m.team1 then 1 else 0 end;
 
@@ -723,7 +734,8 @@ begin
   end if;
 
   for r in
-    select s.id, s.team, s.rating, e.steam_id, e.elo, e.peak_elo, e.mu, e.sigma
+    select s.id, s.team, s.rating, e.steam_id, e.elo, e.peak_elo, e.mu, e.sigma,
+           elo_weight(s.rounds, total, cfg.min_pct, cfg.full_pct) wt
       from match_player_stats s join player_elo e on e.steam_id = s.steam_id
      where s.match_id = p_match and s.steam_id = any(ids)
   loop
@@ -732,19 +744,19 @@ begin
 
     base  := round(2 * cfg.base * (res - p_team));   -- ±base con equipos parejos
     bonus := greatest(-cfg.bonus_max, least(cfg.bonus_max, round((coalesce(r.rating, 1) - 1) * cfg.bonus_factor)::integer));
-    delta := base + bonus;
+    delta := round((base + bonus) * r.wt);
     if res = 1 then delta := greatest(delta, 1); elsif res = 0 then delta := least(delta, -1); end if;
     new_elo := greatest(cfg.elo_floor, r.elo + delta);
 
     s2     := r.sigma * r.sigma + c_tau * c_tau;
     new_mu := r.mu;
     if res = 1 then
-      new_mu := r.mu + s2 / c * v;
+      new_mu := r.mu + r.wt * s2 / c * v;
     elsif res = 0 then
-      new_mu := r.mu - s2 / c * v;
+      new_mu := r.mu - r.wt * s2 / c * v;
     end if;
     if res <> 0.5 then
-      s2 := s2 * greatest(1 - s2 / (c * c) * w, 0.0001);
+      s2 := s2 * greatest(1 - r.wt * r.wt * s2 / (c * c) * w, 0.0001);
     end if;
 
     update player_elo
@@ -793,13 +805,16 @@ end $$;
 
 
 --
--- Name: elo_set_config(integer, integer, numeric, integer, integer, boolean); Type: FUNCTION; Schema: public; Owner: -
+-- Name: elo_set_config(integer, integer, numeric, integer, integer, boolean, integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean DEFAULT false) RETURNS integer
+CREATE FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean DEFAULT false, p_min_pct integer DEFAULT NULL::integer, p_full_pct integer DEFAULT NULL::integer) RETURNS integer
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
+declare
+  v_min  integer;
+  v_full integer;
 begin
   if auth.uid() is not null and not is_admin() then
     raise exception 'Solo un admin puede cambiar la configuración del ELO' using errcode = '42501';
@@ -815,11 +830,20 @@ begin
   if p_start_elo is null or p_start_elo not between 100 and 5000 or p_start_elo < p_floor then
     raise exception 'El ELO inicial tiene que estar entre 100 y 5000 y no ser menor que el mínimo' using errcode = '22023'; end if;
 
-  insert into elo_config(id, base, bonus_max, bonus_factor, elo_floor, start_elo, updated_at, updated_by)
-  values (1, p_base, p_bonus_max, p_bonus_factor, p_floor, p_start_elo, now(), auth.uid())
+  select coalesce(p_min_pct, c.min_pct), coalesce(p_full_pct, c.full_pct) into v_min, v_full from elo_config c where c.id = 1;
+  v_min  := coalesce(v_min, p_min_pct, 35);
+  v_full := coalesce(v_full, p_full_pct, 90);
+  if v_min not between 1 and 100 then
+    raise exception 'El mínimo de rondas jugadas tiene que estar entre 1%% y 100%%' using errcode = '22023'; end if;
+  if v_full not between v_min and 100 then
+    raise exception 'El porcentaje para contar completo tiene que estar entre el mínimo y 100%%' using errcode = '22023'; end if;
+
+  insert into elo_config(id, base, bonus_max, bonus_factor, elo_floor, start_elo, min_pct, full_pct, updated_at, updated_by)
+  values (1, p_base, p_bonus_max, p_bonus_factor, p_floor, p_start_elo, v_min, v_full, now(), auth.uid())
   on conflict (id) do update
     set base = excluded.base, bonus_max = excluded.bonus_max, bonus_factor = excluded.bonus_factor,
         elo_floor = excluded.elo_floor, start_elo = excluded.start_elo,
+        min_pct = excluded.min_pct, full_pct = excluded.full_pct,
         updated_at = excluded.updated_at, updated_by = excluded.updated_by;
 
   if p_recompute then
@@ -827,6 +851,22 @@ begin
   end if;
   return 0;
 end $$;
+
+
+--
+-- Name: elo_weight(integer, integer, integer, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.elo_weight(p_rounds integer, p_total integer, p_min_pct integer, p_full_pct integer) RETURNS double precision
+    LANGUAGE sql IMMUTABLE
+    AS $$
+  select case
+    when coalesce(p_rounds, 0) <= 0 or coalesce(p_total, 0) <= 0 then 0
+    when p_rounds * 100 < p_min_pct * p_total then 0
+    when p_rounds * 100 >= p_full_pct * p_total then 1
+    else p_rounds::double precision / p_total
+  end
+$$;
 
 
 --
@@ -1660,11 +1700,15 @@ CREATE TABLE public.elo_config (
     start_elo integer DEFAULT 1000 NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_by uuid,
+    min_pct integer DEFAULT 35 NOT NULL,
+    full_pct integer DEFAULT 90 NOT NULL,
     CONSTRAINT elo_config_base_check CHECK (((base >= 5) AND (base <= 100))),
     CONSTRAINT elo_config_bonus_factor_check CHECK (((bonus_factor >= (0)::numeric) AND (bonus_factor <= (50)::numeric))),
     CONSTRAINT elo_config_bonus_max_check CHECK (((bonus_max >= 0) AND (bonus_max <= 20))),
     CONSTRAINT elo_config_elo_floor_check CHECK (((elo_floor >= 0) AND (elo_floor <= 1000))),
+    CONSTRAINT elo_config_full_pct CHECK (((full_pct >= min_pct) AND (full_pct <= 100))),
     CONSTRAINT elo_config_id_check CHECK ((id = 1)),
+    CONSTRAINT elo_config_min_pct CHECK (((min_pct >= 1) AND (min_pct <= 100))),
     CONSTRAINT elo_config_start_elo_check CHECK (((start_elo >= 100) AND (start_elo <= 5000))),
     CONSTRAINT elo_config_start_floor CHECK ((start_elo >= elo_floor))
 );
@@ -3866,12 +3910,20 @@ GRANT ALL ON FUNCTION public.elo_recompute_all() TO service_role;
 
 
 --
--- Name: FUNCTION elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean); Type: ACL; Schema: public; Owner: -
+-- Name: FUNCTION elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean, p_min_pct integer, p_full_pct integer); Type: ACL; Schema: public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean) FROM PUBLIC;
-GRANT ALL ON FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean) TO authenticated;
-GRANT ALL ON FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean) TO service_role;
+REVOKE ALL ON FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean, p_min_pct integer, p_full_pct integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean, p_min_pct integer, p_full_pct integer) TO authenticated;
+GRANT ALL ON FUNCTION public.elo_set_config(p_base integer, p_bonus_max integer, p_bonus_factor numeric, p_floor integer, p_start_elo integer, p_recompute boolean, p_min_pct integer, p_full_pct integer) TO service_role;
+
+
+--
+-- Name: FUNCTION elo_weight(p_rounds integer, p_total integer, p_min_pct integer, p_full_pct integer); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.elo_weight(p_rounds integer, p_total integer, p_min_pct integer, p_full_pct integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.elo_weight(p_rounds integer, p_total integer, p_min_pct integer, p_full_pct integer) TO service_role;
 
 
 --
