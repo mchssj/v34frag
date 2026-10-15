@@ -226,25 +226,6 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"player_map_stats": {
-                  Row: {
-                    "id": number,"kd": number | null,"map_name": string,"maps": number | null,"player_id": string | null,"rating": number | null
-                  }
-                  Insert: {
-                    "id"?: number,"kd"?: number | null,"map_name": string,"maps"?: number | null,"player_id"?: string | null,"rating"?: number | null
-                  }
-                  Update: {
-                    "id"?: number,"kd"?: number | null,"map_name"?: string,"maps"?: number | null,"player_id"?: string | null,"rating"?: number | null
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "player_map_stats_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: false
-      referencedRelation: "players"
-      referencedColumns: ["id"]
-    }
-                  ]
                 },"player_medals": {
                   Row: {
                     "created_at": string,"icon": string | null,"id": string,"player_id": string | null,"title": string
@@ -266,13 +247,13 @@ isOneToOne: false
                   ]
                 },"players": {
                   Row: {
-                    "achievements": string | null,"adr": number | null,"bio": string | null,"hs": number | null,"id": string,"kd": number | null,"losses": number | null,"maps": number | null,"nick": string,"photo_url": string | null,"privacy": string,"rating": number | null,"stats_auto": boolean,"steam_id": string | null,"team_history": string | null,"user_id": string | null,"wins": number | null
+                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"privacy": string,"steam_id": string | null,"team_history": string | null,"user_id": string | null
                   }
                   Insert: {
-                    "achievements"?: string | null,"adr"?: number | null,"bio"?: string | null,"hs"?: number | null,"id"?: string,"kd"?: number | null,"losses"?: number | null,"maps"?: number | null,"nick": string,"photo_url"?: string | null,"privacy"?: string,"rating"?: number | null,"stats_auto"?: boolean,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"wins"?: number | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"privacy"?: string,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
                   }
                   Update: {
-                    "achievements"?: string | null,"adr"?: number | null,"bio"?: string | null,"hs"?: number | null,"id"?: string,"kd"?: number | null,"losses"?: number | null,"maps"?: number | null,"nick"?: string,"photo_url"?: string | null,"privacy"?: string,"rating"?: number | null,"stats_auto"?: boolean,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"wins"?: number | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"privacy"?: string,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -426,7 +407,33 @@ isOneToOne: false
                 }
           }
           Views: {
-            "public_profiles": {
+            "player_map_stats": {
+                  Row: {
+                    "adr": number | null,"kd": number | null,"losses": number | null,"map_name": string | null,"maps": number | null,"player_id": string | null,"rating": number | null,"wins": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"player_stats": {
+                  Row: {
+                    "adr": number | null,"assists": number | null,"damage": number | null,"deaths": number | null,"hs": number | null,"kd": number | null,"kills": number | null,"losses": number | null,"maps": number | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"wins": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"public_profiles": {
                   Row: {
                     "id": string | null,"tag": string | null
                   }
@@ -542,9 +549,6 @@ isOneToOne: false
                            },
 "pcw_make_side":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[] }; Returns: string
-                           },
-"recompute_player_stats":
-{ Args: { "p_player": string }; Returns: undefined
                            },
 "rotate_server_token":
 { Args: { "p_server": string }; Returns: string

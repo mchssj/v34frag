@@ -25,3 +25,4 @@ Migraciones de la **fase de replanteo del modelo de datos**
 | `03_matchmaking.sql` | Borra el matchmaking viejo: 4 tablas, 11 funciones, `game_servers.matchmaking_enabled` y `last_assigned_at`, y `matches.matchmaking_mode`. Aborta si hay matchmaking activo |
 | `04_mixes_bandos.sql` | Los mixes guardan sus bandos en la partida (`side1_name`, `side2_name`, `lineup1`, `lineup2`, `side1_guests`, `side2_guests`) y se borran los equipos `mix`. `winner_side` (1, 2 o null) en todas las partidas; el ELO, las victorias, la ingesta y `link_steam_id` lo usan |
 | `05_team_members.sql` | Tabla `team_members` (equipo, jugador, rol y fechas de alta y baja) en lugar de `teams.members`; adapta `pcw_make_side`, `accept_pcw`, `set_team_captain` y `validate_report` |
+| `06_vistas_stats.sql` | Stats solo desde partidas: vistas `player_stats` y `player_map_stats`; borra las columnas de stats de `players`, `stats_auto`, la tabla `player_map_stats` y `recompute_player_stats` |

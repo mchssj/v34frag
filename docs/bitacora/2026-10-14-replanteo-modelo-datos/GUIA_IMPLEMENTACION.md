@@ -13,7 +13,7 @@
 | — Borrar el matchmaking viejo (fuera del plan, decisión del 2026-10-15) | Hecho: `03_matchmaking.sql` |
 | 5. Mixes sin equipos y `winner_side` (2.1) | Hecho: `04_mixes_bandos.sql`. Ensayo del ELO idéntico; la inversa con datos reales también deja el ELO idéntico |
 | 6. `team_members` (2.2) | Hecho: `05_team_members.sql`. Ensayo del ELO idéntico; 89 de 89 miembros migrados |
-| 7. Vistas de stats (2.3) | Pendiente; depende de `winner_side` (paso 5) |
+| 7. Vistas de stats (2.3) | Hecho: `06_vistas_stats.sql`. Ensayo idéntico, incluidas las stats de los 32 jugadores con partidas |
 | 8. `!match` (2.5) | Pendiente; depende de `team_members` (paso 6) |
 | 9. Plugin con `!match` | Pendiente |
 | 10. Ajustes del backend de la fase 1 | Parcial: tipos regenerados con el esquema nuevo; falta `team_members` y marcar `profile-requests` como deprecado |
@@ -236,3 +236,47 @@ Al final compara los conteos de partidas y stats con los del principio.
   - **`GET /api/v1/me/profile`:** busca el equipo actual en `team_members` (plantel activo) y filtra `kind = 'official'`, porque ya no existen equipos `mix`.
   - **Pruebas:** la unitaria y la de integración se adaptaron. Pasan las 161, con 96,3 % de sentencias y 88,2 % de ramas.
   - **Esto cubre el ajuste de la fase 1** que preveía el paso 10 del plan para `team_members`.
+
+## Paso 7: `06_vistas_stats.sql` (2026-10-15)
+
+Las stats de los jugadores salen **solo de las partidas**: mixes, y PCW y torneos cuando se vinculen con `!match`.
+
+| Vista | Qué devuelve |
+|---|---|
+| `player_stats` | Por jugador: mapas, rondas, kills, muertes, asistencias, daño, rating, K/D, HS %, ADR, victorias y derrotas |
+| `player_map_stats` | Por jugador y mapa: mapas, rating, K/D, ADR, victorias y derrotas. Reemplaza a la tabla del mismo nombre, que era para cargar a mano y estaba vacía |
+
+- **Fórmulas:** son las mismas de `recompute_player_stats` (`csstv_rating`, K/D con dos decimales, HS % y ADR con uno). Las victorias y derrotas salen de `winner_side`.
+- **Qué partidas cuentan:** solo las terminadas. Una cancelada no cuenta.
+- **Permisos:** las vistas son `security_invoker`, así que aplican las RLS de quien consulta. Todos pueden leerlas, porque `match_player_stats` y `matches` son públicas.
+
+**Se borran:**
+- Las columnas `rating`, `kd`, `hs`, `adr`, `maps`, `wins`, `losses` y `stats_auto` de `players`.
+- La tabla `player_map_stats`. La migración aborta si tiene filas.
+- `recompute_player_stats`, y sus llamadas en `csstv_ingest` (después de cada mix) y en `link_steam_id` (al vincular). La vista siempre está al día, así que no hay nada que recalcular.
+
+**Consecuencia aceptada:** se pierden las stats cargadas a mano de jugadores sin partidas. Al 2026-10-15 eran **2 de 72** jugadores (conteo de solo lectura en producción). Quedan en el respaldo previo al corte.
+
+**El ensayo del ELO ahora compara también las stats.** `foto_elo.sql` saca, para cada jugador con partidas terminadas, sus mapas, rating, K/D, HS %, ADR, victorias y derrotas:
+- **Antes:** de `players`, después de `recompute_player_stats`.
+- **Después:** de la vista.
+
+El formato queda igual en los dos casos y se compara todo (`\if` de psql). **Resultado con 01 a 06: idéntico** (32 SteamIDs, 135 filas de mixes y stats de 32 jugadores).
+
+**Se encontraron dos problemas en la inversa, y el ciclo de `correr.sh` los detectó:**
+1. **`link_steam_id` no quedaba igual.** La migración borraba `perform recompute_player_stats(p_player);` junto con el `end` siguiente, y al invertirla se reemplazaba el **primer** `end` de la función, que era otro. Se corrigió haciendo que cada reemplazo deje un comentario único, `-- (replanteo 06) …`, así la inversa encuentra exactamente el mismo lugar. Queda como regla para los próximos reemplazos: **el texto nuevo tiene que ser único en la función**.
+2. **Faltaba el índice `idx_mapstats_jugador`.** Su sección del volcado no nombra la tabla en el título. El generador de la inversa ahora toma también las secciones que crean algo `ON public.player_map_stats`.
+
+**La inversa** (`gen_reversa_06.mjs`, un script descartable) se armó así:
+- Extrae del volcado las 14 secciones de `player_map_stats` (tabla, secuencia, índice, políticas y permisos) y de `recompute_player_stats`.
+- A la función le aplica los reemplazos de `04`, porque tiene que volver como estaba después de `04`, ya con `winner_side`.
+- Invierte los reemplazos de `06`.
+- Recalcula las stats de todos los jugadores.
+
+**Pruebas (`pruebas/06_vistas_stats.sql`, dentro de un rollback):**
+- La estructura.
+- Dos mixes ingeridos se reflejan en las vistas sin recalcular nada: mapas, victorias y derrotas, K/D 1,67, HS 50 %, ADR 100, por mapa.
+- Un jugador sin SteamID no aparece hasta vincularlo; al vincularlo como admin, su mix aparece.
+- Un anónimo puede leer las dos vistas.
+
+**Backend:** tipos regenerados (sin las columnas borradas y con las vistas). Pasan las 161 pruebas.

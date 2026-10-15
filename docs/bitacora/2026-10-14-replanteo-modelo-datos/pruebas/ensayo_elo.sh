@@ -34,10 +34,9 @@ done
 echo "== Después del replanteo"
 foto "$fotos/elo_despues.txt"
 
-# Las victorias y derrotas se comparan aparte: antes salen de players y después pueden salir de la vista.
-if diff <(grep -v '^wl|' "$fotos/elo_antes.txt") <(grep -v '^wl|' "$fotos/elo_despues.txt") > "$fotos/elo_diff.txt" &&
-   { ! grep -q '^wl|' "$fotos/elo_despues.txt" || diff <(grep '^wl|' "$fotos/elo_antes.txt") <(grep '^wl|' "$fotos/elo_despues.txt") >> "$fotos/elo_diff.txt"; }; then
-  echo "== IDÉNTICO: $(grep -c '^elo|' "$fotos/elo_despues.txt") SteamIDs, $(grep -c '^mps|' "$fotos/elo_despues.txt") filas de mixes"
+# foto_elo.sql deja el mismo formato antes y después (las stats salen de players o de la vista): se compara todo.
+if diff "$fotos/elo_antes.txt" "$fotos/elo_despues.txt" > "$fotos/elo_diff.txt"; then
+  echo "== IDÉNTICO: $(grep -c '^elo|' "$fotos/elo_despues.txt") SteamIDs, $(grep -c '^mps|' "$fotos/elo_despues.txt") filas de mixes, stats de $(grep -c '^st|' "$fotos/elo_despues.txt") jugadores"
 else
   echo "== DISTINTO (detalle en $fotos/elo_diff.txt):"; head -20 "$fotos/elo_diff.txt"; exit 1
 fi
