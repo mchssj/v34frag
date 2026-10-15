@@ -30,7 +30,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.7.0"
+#define PLUGIN_VERSION "1.8.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -77,6 +77,7 @@ ConVar g_cvOtStartMoney;
 ConVar g_cvMinPlayers;
 ConVar g_cvLo3;
 ConVar g_cvReadySystem;
+ConVar g_cvReadyKnife;
 ConVar g_cvSend;
 ConVar g_cvRetrySeconds;
 ConVar g_cvAssistDamage;
@@ -148,6 +149,7 @@ public void OnPluginStart()
 	g_cvMinPlayers    = CreateConVar("csstv_min_players", "8", "Jugadores mínimos en CT+T para el inicio automático por !ready (!live no lo pide).", _, true, 2.0, true, 32.0);
 	g_cvLo3           = CreateConVar("csstv_lo3", "1", "Hacer tres reinicios antes de empezar (LO3).", _, true, 0.0, true, 1.0);
 	g_cvReadySystem   = CreateConVar("csstv_ready_system", "1", "Empezar solo cuando todos escriben !ready.", _, true, 0.0, true, 1.0);
+	g_cvReadyKnife    = CreateConVar("csstv_ready_knife", "1", "El inicio por !ready empieza con ronda de cuchillo, como !live knife (0 = directo al LO3).", _, true, 0.0, true, 1.0);
 	g_cvSend          = CreateConVar("csstv_send", "1", "Enviar con System2. Con 0 solo se guarda en la cola (para csstv_uploader.py).", _, true, 0.0, true, 1.0);
 	g_cvRetrySeconds  = CreateConVar("csstv_retry_seconds", "60", "Primer reintento tras un error; se duplica hasta 15 minutos.", _, true, 10.0, true, 900.0);
 	g_cvAssistDamage  = CreateConVar("csstv_assist_damage", "41", "Daño mínimo para contar una asistencia.", _, true, 1.0, true, 100.0);
@@ -482,7 +484,7 @@ void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
 	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total)
-		StartMatch();
+		StartMatch(0, g_cvReadyKnife.BoolValue);
 }
 
 int CountReady()
