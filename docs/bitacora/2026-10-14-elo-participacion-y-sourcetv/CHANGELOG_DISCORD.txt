@@ -1,0 +1,9 @@
+v34frag --  Changelog
+
+ELO según las rondas que juegas
+Ahora el ELO que ganas o pierdes depende de cuánto del mix jugaste.
+Si juegas menos del 35% de las rondas, tu ELO no cambia (en un mix de 30 rondas, 10 o menos).
+Desde el 90% cuenta completo (27 de 30 rondas). En el medio es proporcional: jugando 20 de 30 rondas te llevas 2/3 de lo normal.
+Si te desconectas una o dos rondas no pierdes nada: igual cuenta completo.
+Reemplazos
+Si alguien se va a mitad del mix y entra otro, cada uno cuenta por lo que jugó. El equipo no pasa a valer como si tuviera 6 jugadores.

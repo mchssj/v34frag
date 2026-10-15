@@ -485,8 +485,10 @@ main>div,main>aside{min-width:0}
 <div class="g2"><div><label for="elo-bmax">Bonus máximo por rating (±)</label><input id="elo-bmax" type="number" min="0" max="20" step="1" /></div>
 <div><label for="elo-bfac">Puntos por 1.00 de rating</label><input id="elo-bfac" type="number" min="0" max="50" step="0.5" /></div></div>
 <div><label for="elo-floor">ELO mínimo</label><input id="elo-floor" type="number" min="0" max="1000" step="1" /></div>
+<div class="g2"><div><label for="elo-minp">Mínimo de rondas jugadas (%)</label><input id="elo-minp" type="number" min="1" max="100" step="1" /></div>
+<div><label for="elo-fullp">Cuenta completo desde (%)</label><input id="elo-fullp" type="number" min="1" max="100" step="1" /></div></div>
 <p id="elo-prev" class="msg" style="padding:0"></p>
-<label class="chk"><input id="elo-rec" type="checkbox" checked /><span>Recalcular todos los mixes con estos valores</span></label>
+<label class="chk"><input id="elo-rec" type="checkbox" /><span>Recalcular todos los mixes con estos valores</span></label>
 <button id="elo-save" class="pri" type="button">Guardar</button>
 <p class="msg" style="padding:0">Recalcular reinicia el ELO de todos y vuelve a aplicar los mixes en el orden en que se jugaron.</p>
 <button id="elo-recalc" type="button">Recalcular ELO</button><span id="elo-msg" class="msg" style="padding:0"></span>
@@ -673,7 +675,7 @@ function handleRoute(){
 
 window.addEventListener('DOMContentLoaded', function() { load(); });
 
-var mstats=[],eloBySteam={},eloCfg={base:30,bonus_max:5,bonus_factor:10,elo_floor:100,start_elo:1000},servers=[],pcwTeams=[],pcwPosts=[],reports=[],meCreated=null,profDet=null,profAvatarBlob=null,matchVetos=[],eeid=null,emid=null,selE=null,curM=null,sb=null,me=null,meEmail='',matches=[],events=[],registrations=[],medals=[],mapStats=[],chatMsgs=[],selEv=null,selPlayerId=null,selMatchId=null,admin=false,teams=[],players=[],reqs=[],profileReqs=[],mine=null,sel=null,ep=null,et=null,chk={}, userProfiles={};
+var mstats=[],eloBySteam={},eloCfg={base:30,bonus_max:5,bonus_factor:10,elo_floor:100,start_elo:1000,min_pct:35,full_pct:90},servers=[],pcwTeams=[],pcwPosts=[],reports=[],meCreated=null,profDet=null,profAvatarBlob=null,matchVetos=[],eeid=null,emid=null,selE=null,curM=null,sb=null,me=null,meEmail='',matches=[],events=[],registrations=[],medals=[],mapStats=[],chatMsgs=[],selEv=null,selPlayerId=null,selMatchId=null,admin=false,teams=[],players=[],reqs=[],profileReqs=[],mine=null,sel=null,ep=null,et=null,chk={}, userProfiles={};
 function num(v){var n=parseFloat(v);return isNaN(n)?null:n}
 function fm(v,d){return v==null?'-':Number(v).toFixed(d)}
 function av(p){if(p.photo_url){var a=el('img','av');a.loading='lazy';a.src=p.photo_url;a.alt=p.nick;return a}return el('div','av',(p.nick||'?')[0].toUpperCase())}
@@ -826,16 +828,17 @@ function rUnlinked(){var ul=$('unl-list');if(!ul)return;var g={};
   return r},{text:function(x){return(x.nick||'')+' '+x.steam},ph:'Buscar nick o SteamID...',empty:'No hay SteamID sin vincular.'})}
 
 // Formulario de configuración del ELO (Admin → Servidores). No pisa lo que se está editando.
-var ELOF=[['elo-base','base'],['elo-start','start_elo'],['elo-bmax','bonus_max'],['elo-bfac','bonus_factor'],['elo-floor','elo_floor']];
+var ELOF=[['elo-base','base'],['elo-start','start_elo'],['elo-bmax','bonus_max'],['elo-bfac','bonus_factor'],['elo-floor','elo_floor'],['elo-minp','min_pct'],['elo-fullp','full_pct']];
 function eloFormFill(){ELOF.forEach(function(f){var i=$(f[0]);if(i&&document.activeElement!==i&&!i.dataset.dirty)i.value=eloCfg[f[1]]});eloPreview()}
 function eloFormVals(){var v={};ELOF.forEach(function(f){v[f[1]]=Number($(f[0]).value)});return v}
 function eloPreview(){var v=eloFormVals(),b=Math.min(v.bonus_max,Math.round(0.4*v.bonus_factor)),w=Math.max(1,v.base+b);
- say('elo-prev','Ejemplo con equipos parejos: gana +'+v.base+' / pierde −'+v.base+'. Ganando con rating 1.40: +'+w+'. Un jugador nuevo empieza con '+v.start_elo+' (nivel '+lvlOf(v.start_elo)[0]+').')}
+ say('elo-prev','Ejemplo con equipos parejos: gana +'+v.base+' / pierde −'+v.base+'. Ganando con rating 1.40: +'+w+'. Un jugador nuevo empieza con '+v.start_elo+' (nivel '+lvlOf(v.start_elo)[0]+'). Con menos del '+v.min_pct+'% de las rondas no cambia su ELO; desde el '+v.full_pct+'% cuenta completo y en el medio, proporcional: jugando 20 de 30 rondas, ±'+eloPart(v,20,30)+'.')}
+function eloPart(v,r,t){var p=r/t;return r*100<v.min_pct*t?0:r*100>=v.full_pct*t?v.base:Math.max(1,Math.round(v.base*p))}
 ELOF.forEach(function(f){var i=$(f[0]);i.oninput=function(){i.dataset.dirty='1';eloPreview()}});
 $('elo-save').onclick=async function(){var v=eloFormVals(),rec=$('elo-rec').checked,b=$('elo-save');
  if(rec&&!confirm('Se guardan los valores y se recalcula el ELO de todos con todos los mixes. ¿Seguir?'))return;
  b.disabled=true;say('elo-msg',rec?'Guardando y recalculando...':'Guardando...');
- try{var n=await ok(sb.rpc('elo_set_config',{p_base:v.base,p_bonus_max:v.bonus_max,p_bonus_factor:v.bonus_factor,p_floor:v.elo_floor,p_start_elo:v.start_elo,p_recompute:rec}));
+ try{var n=await ok(sb.rpc('elo_set_config',{p_base:v.base,p_bonus_max:v.bonus_max,p_bonus_factor:v.bonus_factor,p_floor:v.elo_floor,p_start_elo:v.start_elo,p_recompute:rec,p_min_pct:v.min_pct,p_full_pct:v.full_pct}));
   ELOF.forEach(function(f){delete $(f[0]).dataset.dirty});
   say('elo-msg',rec?'Guardado. '+n+(n===1?' mix recalculado.':' mixes recalculados.'):'Guardado. Se aplica a los mixes nuevos.');load()}
  catch(e){say('elo-msg','Error: '+(e&&e.message||e))}finally{b.disabled=false}};

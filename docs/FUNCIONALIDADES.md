@@ -126,8 +126,9 @@ flowchart LR
 ```
 
 - Solo cuentan los mixes; las partidas oficiales y las PCW no.
+- Cuenta según las rondas jugadas: con menos del 35% del mix el ELO no cambia; desde el 90% cuenta completo, y en el medio el cambio es proporcional (20 de 30 rondas: ±20 en vez de ±30). La fuerza de cada equipo también se pondera así. Detalle en la [bitácora](bitacora/2026-10-14-elo-participacion-y-sourcetv/DOCUMENTACION.md).
 - El ELO se guarda por SteamID: los jugadores sin perfil también acumulan y, al vincular su SteamID, el perfil lo hereda.
-- Los parámetros (base, bonus por rating, ELO mínimo e inicial) se configuran en *Admin → Servidores → ELO* (tabla `elo_config`), con la opción de recalcular todos los mixes.
+- Los parámetros (base, bonus por rating, ELO mínimo e inicial, y los porcentajes de rondas jugadas) se configuran en *Admin → Servidores → ELO* (tabla `elo_config`), con la opción de recalcular todos los mixes.
 - El admin puede **Recalcular ELO** desde *Admin → Servidores*. Borrar un mix desde la web recalcula el ELO de todos.
 
 Detalle de reglas, fórmulas y niveles: [bitácora del ELO](bitacora/2026-10-11-elo-jugadores/DOCUMENTACION.md).
