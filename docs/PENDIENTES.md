@@ -95,11 +95,11 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Changelog** para Discord: `bitacora/2026-10-15-match-y-status/CHANGELOG_DISCORD.txt`.
 - **Bitácoras:** [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/) y [`2026-10-15-match-y-status`](bitacora/2026-10-15-match-y-status/) (pasos exactos en su `GUIA_IMPLEMENTACION.md`).
 
-### 1.6 Ajuste de ELO por el mix caído del 2026-10-15
+### 1.6 Ajuste de ELO por el mix caído del 2026-10-15 — hecho
 
-- **Qué falta:** que Daniel corra en el SQL Editor la migración `20261015210000_elo_ajustes.sql` y después `bitacora/2026-10-15-ajustes-elo/ajuste_2026-10-15_mix_caido.sql` (+20 a rbk, kyansuke, flow y honzzq). No correr `elo_recompute_all()`.
-- Solo base de datos: no toca el plugin ni los servidores.
-- Pendiente aparte: averiguar por qué el mix no quedó en la base (Daniel lo revisa).
+- **Aplicado en producción** (lo corrió Daniel en el SQL Editor): la migración `20261015210000_elo_ajustes.sql` y el ajuste `bitacora/2026-10-15-ajustes-elo/ajuste_2026-10-15_mix_caido.sql`. Verificado el 2026-10-16 con lecturas por la API pública: la tabla `elo_adjustments` existe y tiene los 4 ajustes de +20 (rbk, kyansuke, flow y honzzq), del 2026-10-15 a las 21:04 (hora de Colombia).
+- **Por qué el mix no quedó en la base:** esa noche el servidor se cayó por el plugin "DeadChat" que se estaba probando (logs de errores del 2026-10-15, 21:39 a 21:43), así que el mix nunca terminó ni mandó resultado. Ver [`2026-10-16-chat-vivos-muertos`](bitacora/2026-10-16-chat-vivos-muertos/DOCUMENTACION.md).
+- Es requisito de la migración `15` del replanteo (corte): ya está cumplido.
 - **Bitácora:** [`2026-10-15-ajustes-elo`](bitacora/2026-10-15-ajustes-elo/)
 
 ## 2. Investigaciones abiertas
