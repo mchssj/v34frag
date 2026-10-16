@@ -44,7 +44,8 @@ export async function createUser(opts: { tag?: string; role?: 'admin' | 'user' }
     email,
     password,
     email_confirm: true,
-    user_metadata: { tag: opts.tag ?? `T${unique().slice(0, 8)}` },
+    // Alias único: con la parte aleatoria (los primeros caracteres de unique() son la hora y chocan en paralelo).
+    user_metadata: { tag: opts.tag ?? `T${Math.random().toString(36).slice(2, 12)}` },
   });
   if (error || !data.user) throw error ?? new Error('createUser sin usuario');
   if (opts.role === 'admin') {
