@@ -71,10 +71,64 @@ Siempre con este formato:
 | `INVALID_FILE`, `FILE_TOO_LARGE` | Problema con la imagen |
 | `INTERNAL` | Error genérico. Mostrar el `requestId` para poder rastrearlo |
 
-### Listados
+### Listados (obligatorio: paginación, filtros y orden en el servidor)
 
-- Paginados en el servidor: `page` (desde 1) y `per`. La respuesta trae el total para armar el paginador.
-- La búsqueda `q` no distingue mayúsculas ni tildes.
+**Todo `GET` que devuelve una lista** pagina, filtra y ordena en el servidor. El frontend no pagina, no filtra ni ordena nada por su cuenta.
+
+```http
+GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
+```
+
+```json
+{ "items": [ ... ], "total": 134, "page": 2, "per": 20, "sort": "rating", "order": "desc" }
+```
+
+| Parámetro | Regla |
+|---|---|
+| `page` | Desde 1 (por defecto 1) |
+| `per` | De 1 a 100 (por defecto 20). En `/events/{id}/matches` y `/events/{id}/standings`, hasta 200 |
+| `sort` | Uno de los campos permitidos de cada endpoint (lista cerrada; otro valor da `400 VALIDATION_ERROR`) |
+| `order` | `asc` o `desc` |
+| `q` | Texto libre, sin distinguir mayúsculas ni tildes |
+| Booleanos | `true` o `false` |
+| Fechas (`from`, `to`) | ISO 8601 (`2026-10-15` o con hora) |
+
+- **Respuesta:** `total` es el total con los filtros aplicados, para armar el paginador. `sort` y `order` devuelven los que se usaron (incluidos los valores por defecto).
+- **Orden estable:** cada endpoint suma un desempate fijo, así que las páginas no se mezclan.
+- **Chat:** es la única excepción y pagina por cursor (sección 8).
+
+**Listados, filtros y orden** (orden por defecto en **negrita**):
+
+| Endpoint | Filtros | `sort` |
+|---|---|---|
+| `GET /api/v1/players` | `q` (alias y equipos), `team`, `has_account`, `has_steam`, `elo_min`, `elo_max` | **`elo` desc**, `alias`, `elo_matches`, `rating`, `kd`, `wins` |
+| `GET /api/v1/players/{id}/matches` | `kind`, `result` (`won`, `lost`, `draw`), `map`, `from`, `to` | **`played_at` desc**, `rating`, `kills`, `elo_delta` |
+| `GET /api/v1/players/{id}/map-stats` | `map` | **`maps` desc**, `rating`, `kd`, `adr`, `wins` |
+| `GET /api/v1/players/{id}/medals` | — | **`created_at` desc**, `title` |
+| `GET /api/v1/players/{id}/teams` | `active` | **`joined_at` desc**, `left_at`, `name` |
+| `GET /api/v1/teams` | `kind` (por defecto `official`), `q`, `has_space` | **`name` asc**, `members` |
+| `GET /api/v1/teams/{id}/members` | `active`, `role` | **`alias` asc**, `joined_at`, `left_at`, `elo` |
+| `GET /api/v1/ranking/teams` | `pcw` (`0` o `1`), `q` | **`points` desc**, `won`, `played`, `name` |
+| `GET /api/v1/matches` | `kind`, `status`, `event`, `team`, `player`, `map`, `from`, `to`, `q` | **`played_at` desc**, `starts_at` |
+| `GET /api/v1/events` | `q`, `status`, `template`, `organizer`, `from`, `to` | **`starts_on` desc**, `name`, `status` |
+| `GET /api/v1/events/{id}/registrations` | `q`, `start_stage` | **`seed` asc**, `name` |
+| `GET /api/v1/events/{id}/matches` | `stage`, `phase`, `grp`, `round`, `status`, `team`, `include_byes` | **`bracket` asc** (fase, etapa, grupo, ronda, posición), `starts_at`, `played_at` |
+| `GET /api/v1/events/{id}/standings` | `stage` (`group`, `swiss`), `grp`, `phase` | **`place` asc** |
+| `GET /api/v1/pcw/posts` | `best_of`, `q`, `from`, `to` | **`created_at` desc**, `starts_at` |
+| `GET /api/v1/maps` | `q`, `include_inactive` | **`position` asc**, `name` |
+| `GET /api/v1/me/team-invites` | `kind` (`invite`, `request`), `team` | **`created_at` desc**, `expires_at` |
+| `GET /api/v1/teams/{id}/pending` | `kind` | **`created_at` desc**, `expires_at` |
+| `GET /api/v1/me/pcw/matches` | `status` | **`starts_at` desc**, `played_at` |
+| `GET /api/v1/servers` | `q` | **`name` asc** |
+| `GET /api/v1/me/profile-requests` (deprecado) | `status` | **`created_at` desc** |
+| `GET /api/v1/admin/users` | `q`, `role`, `has_player`, `has_steam` | **`alias` asc**, `role` |
+| `GET /api/v1/admin/steam/unlinked` | `q` (nombre o SteamID) | **`last_played` desc**, `matches`, `last_nick` |
+| `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
+| `GET /api/v1/admin/blocked-words/hits` | `kind` | **`kind` asc**, `name` |
+| `GET /api/v1/admin/team-requests` | `status`, `q` | **`status` asc** (pendientes primero), `name` |
+| `GET /api/v1/admin/profile-requests` (deprecado) | `status` | **`created_at` desc** |
+
+**Los detalles no traen listas que crecen.** La ficha del jugador, el equipo y el torneo devuelven sus datos; sus listas van en los sub-endpoints de la tabla (`/players/{id}/map-stats`, `/medals`, `/teams`, `/matches`; `/teams/{id}/members`; `/events/{id}/registrations`, `/matches`, `/standings`). El detalle de una partida sí trae lo que es fijo y corto: rosters, mapas de la serie, jugadores de un mix y veto.
 
 ## 2. Cuenta y Mi perfil (disponible)
 
@@ -176,9 +230,10 @@ Un jugador con cuenta tiene **un solo nombre en la web: el alias**. Une lo que a
 
 | Endpoint | Pantalla |
 |---|---|
-| `GET /api/v1/players?q=&page=&per=&sort=elo\|alias` | **Jugadores** y **ranking de jugadores** (por defecto, ordenado por ELO): avatar, alias, nivel, ELO, partidas, equipos actuales, rating, K/D |
-| `GET /api/v1/players/{id}` | **Ficha:** datos, ELO (actual, pico, partidas), nivel, stats, stats por mapa, medallas, equipos actuales, historial de equipos y datos personales. Si el perfil es privado y el usuario no puede verlos: `details: null` y `private: true` (mostrar "Perfil privado" en esa sección, no en toda la ficha) |
-| `GET /api/v1/players/{id}/matches?page=&per=` | **Partidas del jugador:** fecha, mapa, tipo, bandos, resultado, si ganó, sus stats, su cambio de ELO y el nombre que usó en el juego |
+| `GET /api/v1/players` | **Jugadores** y **ranking de jugadores** (por defecto, ordenado por ELO): avatar, alias, nivel, ELO, partidas, equipos actuales, rating, K/D |
+| `GET /api/v1/players/{id}` | **Ficha:** datos, ELO (actual, pico, partidas), nivel, stats, equipos actuales y datos personales. Si el perfil es privado y el usuario no puede verlos: `details: null` y `private: true` (mostrar "Perfil privado" en esa sección, no en toda la ficha) |
+| `GET /api/v1/players/{id}/map-stats` · `/medals` · `/teams` | Pestañas de la ficha: stats por mapa, medallas e historial de equipos |
+| `GET /api/v1/players/{id}/matches` | **Partidas del jugador:** fecha, mapa, tipo, bandos, resultado, si ganó, sus stats, su cambio de ELO y el nombre que usó en el juego |
 
 ## 6. Equipos y plantel (disponible)
 
@@ -212,15 +267,16 @@ stateDiagram-v2
 
 | Endpoint | Quién | Pantalla |
 |---|---|---|
-| `GET /api/v1/teams?kind=official\|pcw&q=&page=&per=` | Todos | **Equipos** (por defecto oficiales): nombre, sigla, capitán, jugadores (de 10) |
-| `GET /api/v1/teams/{id}` | Todos | **Equipo:** datos, capitán, plantel activo (alias, rol, ELO, nivel), ex integrantes, récord y últimas partidas |
+| `GET /api/v1/teams` | Todos | **Equipos** (por defecto oficiales): nombre, sigla, capitán, jugadores (de 10) |
+| `GET /api/v1/teams/{id}` | Todos | **Equipo:** datos, capitán, récord y `viewer` |
+| `GET /api/v1/teams/{id}/members` | Todos | Plantel (`active=true`: alias, rol, ELO, nivel, capitán) y ex integrantes (`active=false`). Las partidas del equipo: `GET /api/v1/matches?team={id}` |
 | `GET`/`PUT /api/v1/me/team-request` | Usuario | **Solicitar equipo nuevo** (nombre y sigla), una por usuario. Al aprobarla, el usuario queda como dueño, capitán y primer miembro |
-| `GET /api/v1/me/team-invites` | Usuario | **Mis invitaciones** recibidas y pedidos enviados, abiertos |
+| `GET /api/v1/me/team-invites` | Usuario | **Mis invitaciones** recibidas (`kind=invite`) y pedidos enviados (`kind=request`), abiertos |
 | `POST /api/v1/teams/{id}/join-requests` | Usuario | Botón "Pedir entrar" en la página del equipo |
 | `POST /api/v1/team-invites/{id}/accept` / `…/reject` | Invitado | Aceptar o rechazar |
 | `DELETE /api/v1/join-requests/{id}` | Quien pidió | Cancelar su pedido |
 | `POST /api/v1/teams/{id}/leave` | Miembro | Salir |
-| `GET /api/v1/teams/{id}/pending` | Capitán o admin | **Gestión del equipo:** invitaciones enviadas y pedidos recibidos |
+| `GET /api/v1/teams/{id}/pending` | Capitán o admin | **Gestión del equipo:** invitaciones enviadas (`kind=invite`) y pedidos recibidos (`kind=request`) |
 | `POST /api/v1/teams/{id}/invites` | Capitán o admin | Invitar por `alias` o `player_id` (el jugador necesita cuenta y SteamID) |
 | `DELETE /api/v1/team-invites/{id}` | Capitán o admin | Cancelar una invitación |
 | `POST /api/v1/join-requests/{id}/accept` / `…/reject` | Capitán o admin | Aceptar o rechazar un pedido |
@@ -229,7 +285,7 @@ stateDiagram-v2
 
 ## 7. Ranking de equipos (disponible)
 
-- `GET /api/v1/ranking/teams?pcw=0|1`: posición, equipo, PJ, G, P y puntos.
+- `GET /api/v1/ranking/teams?pcw=0|1`: posición, equipo, PJ, G, P y puntos, paginado. `points_per_win` trae los puntos vigentes por victoria.
 - **Por defecto cuenta solo torneos.** Un interruptor "Contar también PCW" pasa `pcw=1`: suman las PCW jugadas como el equipo (no las de bandos sueltos).
 - **Los puntos son por partida ganada**, no por ganar el torneo entero. Al principio: **30 por partida de torneo** y **5 por PCW**. Los configura el admin y la respuesta trae los valores vigentes, para mostrarlos como leyenda.
 - Toda partida de torneo ganada vale lo mismo, sin importar la fase. Los W.O. no suman.
@@ -240,15 +296,15 @@ stateDiagram-v2
 
 | Endpoint | Pantalla |
 |---|---|
-| `GET /api/v1/matches?kind=&status=&event=&team=&page=&per=` | **Partidas, Resultados y Mixes**: `kind` `official` (torneo), `pcw` o `mix`. Cada una trae `label` con la fase ("Semifinal", "Grupo A · fecha 2", "Suizo · fase 1 · ronda 3"…), los dos bandos con equipo y marcador, y `parent_match_id` si es un mapa vinculado con `!match` |
+| `GET /api/v1/matches` | **Partidas, Resultados y Mixes** (filtros en la sección 1): `kind` `official` (torneo), `pcw` o `mix`. Cada una trae `label` con la fase ("Semifinal", "Grupo A · fecha 2", "Suizo · fase 1 · ronda 3"…), los dos bandos con equipo y marcador, y `parent_match_id` si es un mapa vinculado con `!match` |
 | `GET /api/v1/matches/{id}` | **Detalle**: serie (`maps_detail`) y mapas jugados (`games`, cada uno es un mix con su propio detalle), roster de cada lado (en torneo, los inscritos; en PCW, el roster con invitados), servidor (para el botón "Conectar"), `demo_url` (mix), stats y MVP (mix), veto, código de `!match` y `viewer` (`can_veto`, `can_chat`, `can_manage`, `is_participant`) |
-| `GET /api/v1/matches/{id}/chat?after=<id>` | Chat: los últimos 50, o los nuevos desde un id |
+| `GET /api/v1/matches/{id}/chat` | Chat **por cursor**: sin parámetros, los últimos `limit` (50 por defecto, máximo 100); con `before=<id>`, los anteriores (historial); con `after=<id>`, los nuevos. Responde `{ items, has_more, limit }`, del más viejo al más nuevo |
 | `POST /api/v1/matches/{id}/chat` · `DELETE /api/v1/chat/{id}` | Escribir (en torneos y PCW: los dos equipos, el organizador y los admins; en mixes, cualquiera con sesión) y borrar el propio |
 | `POST /api/v1/matches/{id}/veto` (`{ map, version? }`) | Veto del capitán en su turno |
-| `GET /api/v1/maps` | Pool del veto con versiones |
+| `GET /api/v1/maps` | Pool del veto con versiones (`include_inactive=true` para el admin) |
 
 - **Actualización en vivo:**
-  - El detalle de partida y de torneo responde con `ETag`. Conviene consultar cada 3 a 5 segundos mandando `If-None-Match` con el último `ETag`.
+  - El detalle de partida y de torneo, y las partidas y tablas de un torneo, responden con `ETag`. Conviene consultar cada 3 a 5 segundos mandando `If-None-Match` con el último `ETag`.
   - Si no cambió, la API responde `304` sin cuerpo.
   - Para el chat se usa `after` con el id del último mensaje.
 - **Veto:**
@@ -283,7 +339,7 @@ stateDiagram-v2
 | `GET /api/v1/pcw/posts` | Anuncios abiertos: formato, mapas, hora, nota, roster y, si juega como un equipo, cuál |
 | `POST /api/v1/pcw/posts` | Publicar: `best_of` (de `GET /api/v1/pcw/formats`), `players`, `guests`, `team_id` opcional, `starts_at`, `maps`, `note`, `name` |
 | `POST /api/v1/pcw/posts/{id}/accept` | Aceptar con el roster propio (`team_id` opcional). Devuelve el id de la partida: abrir su detalle |
-| `GET /api/v1/me/pcw` | **Mis PCW**: mi anuncio abierto y mis prácticas (pendientes primero) |
+| `GET /api/v1/me/pcw/post` · `GET /api/v1/me/pcw/matches` | **Mis PCW**: mi anuncio abierto (o `null`) y mis prácticas (`status` para ver las pendientes) |
 | `DELETE /api/v1/pcw/posts/{id}` · `POST /api/v1/pcw/matches/{id}/cancel` | Cancelar mi anuncio o una práctica sin mapas jugados |
 
 - **"Jugar como equipo":** el capitán o dueño de un equipo oficial puede elegirlo al publicar o aceptar. Todo el roster con cuenta tiene que ser de ese plantel y la PCW ganada suma al ranking del equipo (con `pcw=1`). El formulario puede cargar el plantel del equipo elegido.
@@ -365,8 +421,11 @@ stateDiagram-v2
 
 | Endpoint | Quién | Pantalla |
 |---|---|---|
-| `GET /api/v1/events?status=` | Todos | **Torneos** |
-| `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, inscritos con jugadores y siembra, tablas de grupos y del suizo, partidas (con `stage`, `phase`, `grp`, `round` y `pos` para dibujar la llave), campeón. Con `ETag` |
+| `GET /api/v1/events` | Todos | **Torneos** |
+| `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, estado, campeón, empate pendiente y `viewer`. Con `ETag` |
+| `GET /api/v1/events/{id}/registrations` | Todos | Inscritos con siembra y jugadores |
+| `GET /api/v1/events/{id}/matches` | Todos | Partidas (con `stage`, `phase`, `grp`, `round`, `pos` y `bye` para dibujar la llave; hasta 200 por página). Con `ETag` |
+| `GET /api/v1/events/{id}/standings` | Todos | Tablas de grupos y del suizo con la posición. Con `ETag` |
 | `PUT`/`DELETE /api/v1/events/{id}/registrations/{teamId}` | Capitán u organizador | Inscribir, cambiar inscritos (`{ players, start_stage? }`) o dar de baja |
 | `POST /api/v1/events`, `PATCH`/`DELETE /api/v1/events/{id}`, `POST …/cancel` | Organizador o admin | Crear, editar, borrar, cancelar |
 | `PUT /api/v1/events/{id}/seeds` | Organizador o admin | Orden de siembra (todos los inscritos) |
@@ -467,3 +526,4 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-15 | PCW vencidas | Se cancelan solas a las 48 h de su hora | Propuesta aceptada |
 | 2026-10-15 | En vivo | `ETag` y `304` en los detalles | Propuesta aceptada |
 | 2026-10-15 | Demo | La API arma `demo_url` | Propuesta aceptada |
+| 2026-10-15 | Listados | **Todo GET de lista pagina, filtra y ordena en el servidor** (`page`, `per`, `sort`, `order` y filtros); los detalles no traen listas que crecen; el chat pagina por cursor | Daniel |
