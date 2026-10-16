@@ -17,3 +17,8 @@ Equipos en la web
 Para inscribir un equipo en un torneo hacen falta 5 jugadores en el plantel.
 Para publicar o aceptar una PCW hacen falta 4 jugadores con cuenta en la web.
 El admin decide qué formatos (BO1, BO3 o BO5) se pueden elegir al publicar una PCW.
+Tu nombre en la web es uno solo, tu alias. Nadie más puede usarlo y lo puedes cambiar cada 15 días.
+Los capitanes invitan jugadores y tú puedes pedir entrar a un equipo. Un equipo tiene hasta 10 jugadores.
+Para entrar a un equipo necesitas tu SteamID vinculado.
+Puedes estar en varios equipos, pero no en dos del mismo torneo.
+El ranking de equipos da puntos por cada partida de torneo ganada. También puedes verlo sumando las PCW jugadas como el equipo, que dan menos puntos.

@@ -12,7 +12,20 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Plugin 2.0.0 (`!match` y `!status`):** hecho y probado con bots, sin commit ni despliegue.
   - Faltan las pruebas manuales con jugadores reales ([`PRUEBAS_MANUALES.md`](bitacora/2026-10-15-match-y-status/PRUEBAS_MANUALES.md)), que además conviene hacer con la web nueva avanzada.
   - Falta el despliegue en el servidor real y en RBK (punto 1.5).
+- **`sm_deadtalk 0` obligatorio siempre** (deuda técnica, punto 7.1).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
+
+## Decisiones anotadas para planes futuros
+
+- **Torneos** (cuando se planee la creación de torneos):
+  - El creador del torneo define cuántos jugadores del plantel puede inscribir cada equipo, con un máximo de 10. El plantel de un equipo admite hasta 10.
+  - El creador también decide el formato (BO1, BO3, BO5) de las partidas.
+  - **Ranking de equipos:** cada partida de torneo ganada suma puntos (30 al principio, configurable). Decidir si vale más según la fase (grupos, playoffs, semifinal, final).
+  - Hoy la regla de la `07` pide 5 jugadores en el plantel para inscribirse.
+  - **Un jugador no puede estar inscrito en un mismo torneo con dos equipos** (un jugador sí puede estar en varios equipos). La `09` lo controla comparando planteles (`tournament_registrations_unicos` y `team_members_rules`). Cuando se definan los inscritos por equipo, pasar la comparación a los inscritos.
+  - Daniel, 2026-10-15.
+- **PCW** (cuando se planee la entrega de PCW): al publicar o aceptar una PCW, el bando elige uno de sus equipos oficiales ("jugar como equipo") y todo su roster tiene que ser de ese plantel. Así la PCW ganada suma al ranking de ese equipo. La base ya lo soporta (`teams.parent_team_id`, replanteo `09`); falta el parámetro en `create_pcw_post` y `accept_pcw` y el formulario. Decidido por Daniel el 2026-10-15.
+- **[`docs/frontend/contract.md`](frontend/contract.md):** contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza su sección y la marca de estado (disponible, en implementación, pendiente).
 
 ## Estado del repositorio
 
@@ -58,11 +71,11 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
-### 1.5 Corte del replanteo: migraciones 01 a 08 y plugin 2.0.0 (`!match` y `!status`)
+### 1.5 Corte del replanteo: migraciones 01 a 09 y plugin 2.0.0 (`!match` y `!status`)
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-- **Base:** `supabase/replanteo/01` a `08`, en orden, con respaldo previo.
+- **Base:** `supabase/replanteo/01` a `09`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas (en la copia del 2026-10-14 no hay).
 - **`sm_status`:** revisar con `docs/bitacora/2026-10-15-match-y-status/pruebas/smx_grep.py` que ningún plugin que solo está en el servidor real (`IGN`, `grenadedrop`, `spectatorswitch`, `CM_PickupWeapon`, `SendFileExploitFixV3.3`) registre `sm_status`. En los del servidor local no aparece.
 - **Plugin 2.0.0**, en la misma tanda:
   - **Servidor real:** `.smx` genérico, sin `CSSTV_DEBUG`, por `SFTP_CSS_*`, con la 1.8.0 en `plugins/disabled/`.
@@ -135,10 +148,22 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 - **`.env` de la raíz:** la línea 30 se llama `PG_PASSWORD` pero tiene el usuario. Tiene que ser `PG_USER=postgres.<ref del proyecto>` (el valor está en Supabase → Connect → Session pooler) (usuario del *Session pooler*). Hasta que se corrija, `supabase/schema/volcar.sh` necesita `PGUSER` y `PGPASSWORD` a mano.
 - **Hosting decidido:** VPS KVM 1 de Hostinger con dominio propio. Cloudflare se queda solo con el Worker de demos y R2. El despliegue (build, servicio de Node, Caddy con HTTPS, DNS, pipeline y SMTP para Supabase Auth) necesita su propio plan.
 - **Después de esta fase**, en este orden (decidido por Daniel):
-  1. ~~**Fase de "replantear" módulos**~~: **terminada el 2026-10-15**, solo en local (migraciones 01 a 08 en `supabase/replanteo/`, se aplican en el corte). Ver [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
-  2. **Endpoints de dominio** (jugadores, equipos, partidas, torneos, admin), cada uno con su plan.
+  1. ~~**Fase de "replantear" módulos**~~: **terminada el 2026-10-15**, solo en local (migraciones 01 a 08 en `supabase/replanteo/`, más la `09` de jugadores y equipos; se aplican en el corte). Ver [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
+  2. **Endpoints de dominio**, cada uno con su plan:
+     - ~~Jugadores, equipos, plantel, ranking y su admin~~: **hechos el 2026-10-15**, solo en local (migración `09` y endpoints). Ver [`2026-10-15-api-jugadores-equipos`](bitacora/2026-10-15-api-jugadores-equipos/DOCUMENTACION.md).
+     - Partidas, torneos, PCW y servidores: pendientes.
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
+
+## 7. Deuda técnica
+
+### 7.1 `sm_deadtalk 0` obligatorio siempre
+
+Anotado por Daniel el 2026-10-15. El cvar `sm_deadtalk` tiene que quedar **siempre en `0`** (los muertos no hablan con los vivos), en el servidor real y en RBK. Hoy se pone a mano (`!cvar sm_deadtalk 0`) y nada impide que alguien lo cambie o que un cfg lo pise en un cambio de mapa.
+
+- **Qué falta:** que el plugin lo fuerce (ponerlo en `0` al cargar el mapa y al empezar cada partida, y volver a `0` si alguien lo cambia, con un hook de cambio del cvar). Además, dejarlo en los cfg del servidor.
+- **Cuándo:** con los plugins, al final (ver "Orden de trabajo"). Va en la misma tanda de despliegue al servidor real y a RBK.
+- Antes de implementarlo, confirmar qué plugin define `sm_deadtalk` en cada servidor (SourceMod base o alguno de [`PLUGINS_EXTERNOS.md`](PLUGINS_EXTERNOS.md)).
 
 ## Contexto útil para una sesión nueva
 

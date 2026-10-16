@@ -239,7 +239,7 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | Migración `20261011220000` | `csstv_steam64` y `elo_apply_match` aceptan SteamID64 de cuentas nuevas (`765612` + 11 dígitos), además de `7656119` + 10. |
 | Migración `20261011200000` | `elo_apply_match` cuenta a los jugadores sin SteamID64 como μ 25 / σ 8.33 en la fuerza de su equipo, sin darles ELO. |
 
-## Después del corte: replanteo (`supabase/replanteo/01` a `08`)
+## Después del corte: replanteo (`supabase/replanteo/01` a `09`)
 
 > **Todavía no está en producción.** Todo lo de arriba describe el modelo actual, el que usa la web vieja. Estas migraciones se aplican en el corte, junto con el backend y la web nueva. Detalle en la bitácora [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
 
@@ -253,6 +253,10 @@ erDiagram
   players ||--o| player_stats : "vista"
   players ||--o{ player_map_stats : "vista"
   pcw_config ||--o{ pcw_posts : "formatos permitidos"
+  teams ||--o{ team_invites : team_id
+  players ||--o{ team_invites : player_id
+  teams ||--o{ teams : "parent_team_id (PCW como equipo)"
+  ranking_config ||--o{ team_standings : "puntos"
 ```
 
 | Qué | Antes | Después |
@@ -265,6 +269,12 @@ erDiagram
 | `!match` | — | `matches.link_code` (torneo y PCW), `parent_match_id` y `parent_side1` (mix vinculado). `csstv_match_lookup`, `csstv_link_game`, `csstv_steam2` |
 | Reglas de plantel | — | 5 jugadores para inscribirse a un torneo (trigger en `tournament_registrations`); 4 con cuenta para publicar o aceptar una PCW (`pcw_make_side`) |
 | Formatos de PCW | BO1, BO3 o BO5 libre | `pcw_config.best_of` (solo admin, con `set_pcw_formats`); `create_pcw_post` rechaza un formato deshabilitado |
+| Nombre del jugador | `profiles.tag` (cuenta) y `players.nick` (lo pone el admin), distintos | Un alias: `profiles.tag`, único sin distinguir mayúsculas; el `nick` de un jugador vinculado lo copia. `set_my_tag` (cada 15 días) y `set_user_tag` (admin) |
+| Palabras bloqueadas | — | `blocked_words` (admin) y `name_blocked`; se aplica a alias, equipos y solicitudes |
+| Entrar a un equipo | El admin editaba el arreglo | `team_invites` (invitación del capitán o pedido del jugador). Tope de 10 activos, SteamID obligatorio, sin choques de torneo ni de partida pendiente (`team_members_rules`, `tournament_registrations_unicos`) |
+| Ranking de equipos | Calculado en el navegador (3 puntos por victoria de torneo) | Vista `team_standings` con puntos de `ranking_config` (30 por partida de torneo, 5 por PCW jugada como el equipo, `teams.parent_team_id`) |
+| Listados | El navegador traía tablas enteras | Vistas `player_overview`, `team_overview`, `player_matches` y `steam_unlinked`, paginadas por la API |
+| Bajas | Por cascada | Un jugador o equipo con partidas no se puede borrar |
 | Matchmaking | 4 tablas `matchmaking_*` y 11 funciones | Borrado |
 | Limpieza | `player_claims`, `profiles.player_id`, `player_medals.color`, `matches.demo_url`, `matches.video_url`, formato `swiss` | Borrados |
 
