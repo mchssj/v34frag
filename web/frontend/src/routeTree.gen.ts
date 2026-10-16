@@ -10,33 +10,132 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppAdminRouteImport } from './routes/_app/_admin'
+import { Route as AppCompletarPerfilRouteImport } from './routes/_app/completar-perfil'
+import { Route as AppPanelRouteImport } from './routes/_app/panel'
+import { Route as AuthIngresarRouteImport } from './routes/_auth/ingresar'
+import { Route as AuthRegistroRouteImport } from './routes/_auth/registro'
+import { Route as AppAdminAdminRouteImport } from './routes/_app/_admin/admin'
+import { Route as AuthRegistroConfirmarRouteImport } from './routes/_auth/registro_.confirmar'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCompletarPerfilRoute = AppCompletarPerfilRouteImport.update({
+  id: '/completar-perfil',
+  path: '/completar-perfil',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPanelRoute = AppPanelRouteImport.update({
+  id: '/panel',
+  path: '/panel',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthIngresarRoute = AuthIngresarRouteImport.update({
+  id: '/ingresar',
+  path: '/ingresar',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthRegistroRoute = AuthRegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AppAdminAdminRoute = AppAdminAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AuthRegistroConfirmarRoute = AuthRegistroConfirmarRouteImport.update({
+  id: '/registro_/confirmar',
+  path: '/registro/confirmar',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/completar-perfil': typeof AppCompletarPerfilRoute
+  '/panel': typeof AppPanelRoute
+  '/ingresar': typeof AuthIngresarRoute
+  '/registro': typeof AuthRegistroRoute
+  '/admin': typeof AppAdminAdminRoute
+  '/registro/confirmar': typeof AuthRegistroConfirmarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/completar-perfil': typeof AppCompletarPerfilRoute
+  '/panel': typeof AppPanelRoute
+  '/ingresar': typeof AuthIngresarRoute
+  '/registro': typeof AuthRegistroRoute
+  '/admin': typeof AppAdminAdminRoute
+  '/registro/confirmar': typeof AuthRegistroConfirmarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_app/_admin': typeof AppAdminRouteWithChildren
+  '/_app/completar-perfil': typeof AppCompletarPerfilRoute
+  '/_app/panel': typeof AppPanelRoute
+  '/_auth/ingresar': typeof AuthIngresarRoute
+  '/_auth/registro': typeof AuthRegistroRoute
+  '/_app/_admin/admin': typeof AppAdminAdminRoute
+  '/_auth/registro_/confirmar': typeof AuthRegistroConfirmarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/completar-perfil'
+    | '/panel'
+    | '/ingresar'
+    | '/registro'
+    | '/admin'
+    | '/registro/confirmar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/completar-perfil'
+    | '/panel'
+    | '/ingresar'
+    | '/registro'
+    | '/admin'
+    | '/registro/confirmar'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_auth'
+    | '/_app/_admin'
+    | '/_app/completar-perfil'
+    | '/_app/panel'
+    | '/_auth/ingresar'
+    | '/_auth/registro'
+    | '/_app/_admin/admin'
+    | '/_auth/registro_/confirmar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +147,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/_admin': {
+      id: '/_app/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/completar-perfil': {
+      id: '/_app/completar-perfil'
+      path: '/completar-perfil'
+      fullPath: '/completar-perfil'
+      preLoaderRoute: typeof AppCompletarPerfilRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/panel': {
+      id: '/_app/panel'
+      path: '/panel'
+      fullPath: '/panel'
+      preLoaderRoute: typeof AppPanelRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_auth/ingresar': {
+      id: '/_auth/ingresar'
+      path: '/ingresar'
+      fullPath: '/ingresar'
+      preLoaderRoute: typeof AuthIngresarRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/registro': {
+      id: '/_auth/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof AuthRegistroRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_app/_admin/admin': {
+      id: '/_app/_admin/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminAdminRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_auth/registro_/confirmar': {
+      id: '/_auth/registro_/confirmar'
+      path: '/registro/confirmar'
+      fullPath: '/registro/confirmar'
+      preLoaderRoute: typeof AuthRegistroConfirmarRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
+interface AppAdminRouteChildren {
+  AppAdminAdminRoute: typeof AppAdminAdminRoute
+}
+
+const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminAdminRoute: AppAdminAdminRoute,
+}
+
+const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
+  AppAdminRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRouteWithChildren
+  AppCompletarPerfilRoute: typeof AppCompletarPerfilRoute
+  AppPanelRoute: typeof AppPanelRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRouteWithChildren,
+  AppCompletarPerfilRoute: AppCompletarPerfilRoute,
+  AppPanelRoute: AppPanelRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AuthRouteChildren {
+  AuthIngresarRoute: typeof AuthIngresarRoute
+  AuthRegistroRoute: typeof AuthRegistroRoute
+  AuthRegistroConfirmarRoute: typeof AuthRegistroConfirmarRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthIngresarRoute: AuthIngresarRoute,
+  AuthRegistroRoute: AuthRegistroRoute,
+  AuthRegistroConfirmarRoute: AuthRegistroConfirmarRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

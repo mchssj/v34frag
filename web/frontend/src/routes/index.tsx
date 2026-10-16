@@ -1,22 +1,52 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
+import { useStore } from "zustand"
 
+import { useMe } from "@/auth/queries"
+import { tokenStore } from "@/auth/tokenStore"
 import { Button } from "@/components/ui/button"
 
 export const Route = createFileRoute("/")({
-  component: HomePage,
+  component: Landing,
 })
 
-function HomePage() {
+// Provisoria: el diseño final llega con los artifacts.
+function Landing() {
+  const hasSession = useStore(tokenStore, (s) => s.session !== null)
+  const { data: user } = useMe()
+
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <h1 className="font-heading text-2xl font-semibold">CSSTV</h1>
-        <p className="text-muted-foreground">
-          Nuevo frontend: Vite + React + TanStack Router + TanStack Query +
-          shadcn/ui.
-        </p>
-        <Button className="w-fit">Empezar</Button>
-      </div>
-    </div>
+    <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 text-center">
+      <h1 className="font-heading text-4xl font-bold tracking-tight">
+        v34frag
+      </h1>
+      <p className="max-w-md text-muted-foreground">
+        Mixes, torneos, PCW y ranking de la comunidad de Counter-Strike: Source
+        v34.
+      </p>
+      {hasSession && user ? (
+        <div className="flex flex-col items-center gap-3">
+          <p>
+            Hola,{" "}
+            <span className="font-semibold">{user.tag ?? user.email}</span>
+          </p>
+          <Button asChild>
+            <Link to="/panel">Ir al panel</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-3">
+          <Button asChild>
+            <Link to="/ingresar" search={{}}>
+              Ingresar
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/registro" search={{}}>
+              Crear cuenta
+            </Link>
+          </Button>
+        </div>
+      )}
+    </main>
   )
 }
