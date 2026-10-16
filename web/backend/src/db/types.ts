@@ -171,6 +171,12 @@ isOneToOne: false
       foreignKeyName: "ingest_chunks_server_id_fkey"
       columns: ["server_id"]
 isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ingest_chunks_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
       referencedRelation: "game_servers"
       referencedColumns: ["id"]
     },{
@@ -370,6 +376,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "player_matches"
       referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "matches_server_id_fkey"
       columns: ["server_id"]
@@ -906,7 +918,20 @@ isOneToOne: false
                 }
           }
           Views: {
-            "admin_team_requests": {
+            "admin_server_list": {
+                  Row: {
+                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"search": string | null
+                  }
+                  Insert: {
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"search"?: never
+                         }
+                        Update: {
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"search"?: never
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"admin_team_requests": {
                   Row: {
                     "alias": string | null,"has_steam": boolean | null,"name": string | null,"search": string | null,"status": string | null,"status_order": number | null,"tag": string | null,"user_id": string | null
                   }
@@ -1509,6 +1534,11 @@ isOneToOne: false
             "accept_pcw":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[],"p_post": string,"p_team"?: string }; Returns: string
                            },
+"admin_create_server":
+{ Args: { "p_allowed_ip"?: string,"p_connect_address"?: string,"p_license_expires_at"?: string,"p_name": string,"p_panel_server_id"?: string }; Returns: {
+              "id": string,"token": string
+            }[]
+                           },
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string
                            },
@@ -1696,6 +1726,9 @@ isOneToOne: false
                            },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_ip":
+{ Args: { "p": string }; Returns: boolean
                            },
 "is_match_captain":
 { Args: { "p_match": string }; Returns: boolean

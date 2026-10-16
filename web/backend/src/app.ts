@@ -10,6 +10,7 @@ import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
 import { adminPlayers } from './routes/admin-players';
+import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
 import { events } from './routes/events';
@@ -63,6 +64,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', roster);
   app.route('/', adminPlayers);
   app.route('/', adminTeams);
+  app.route('/', adminServers);
   app.route('/', matches);
   app.route('/', events);
   app.route('/', pcwPlay);
