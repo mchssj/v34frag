@@ -72,17 +72,18 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
-### 1.5 Corte del replanteo: migraciones 01 a 14 y plugin 2.0.0 (`!match` y `!status`)
+### 1.5 Corte del replanteo: migraciones 01 a 15 y plugin 2.0.0 (`!match` y `!status`) con 2.1.0 (`!claim`)
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-- **Base:** `supabase/replanteo/01` a `14`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
+- **Base:** `supabase/replanteo/01` a `15`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
+- **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
+- **Plugin 2.1.0 con `!claim`** (bitácora `2026-10-16-claim-steamid`): todavía no está hecho. Se programa con los plugins, al final, y sale en esta misma tanda.
 - **`sm_status`:** revisar con `docs/bitacora/2026-10-15-match-y-status/pruebas/smx_grep.py` que ningún plugin que solo está en el servidor real (`IGN`, `grenadedrop`, `spectatorswitch`, `CM_PickupWeapon`, `SendFileExploitFixV3.3`) registre `sm_status`. En los del servidor local no aparece.
 - **Plugin 2.0.0**, en la misma tanda:
   - **Servidor real:** `.smx` genérico, sin `CSSTV_DEBUG`, por `SFTP_CSS_*`, con la 1.8.0 en `plugins/disabled/`.
   - **RBK:** build licenciado (`server/build_licenciado.sh`) por `SERVER1_*`.
 - **Verificar:** `sm_csstv_status` muestra `v2.0.0`, y `!match ZZZZZ` responde "No hay ninguna partida con ese código".
-- **Auth (sesiones):** antes del corte, revisar en el panel de Supabase (Authentication → Sessions) la rotación del refresh token y `refresh_token_reuse_interval` (en local, 10 s). En local se midió que un refresh token viejo se sigue aceptando aun después de los 10 s (ver `docs/frontend/contract.md`, sección de sesión). Decidir si se deja así.
 - **Changelog** para Discord: `bitacora/2026-10-15-match-y-status/CHANGELOG_DISCORD.txt`.
 - **Bitácoras:** [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/) y [`2026-10-15-match-y-status`](bitacora/2026-10-15-match-y-status/) (pasos exactos en su `GUIA_IMPLEMENTACION.md`).
 
@@ -126,8 +127,8 @@ Daniel quiere que el director automático de la SourceTV siga mostrando las kill
 
 | Plan | Qué propone | Qué falta |
 |---|---|---|
-| [`2026-10-11-reclamo-perfil-servidor`](bitacora/2026-10-11-reclamo-perfil-servidor/PLAN.md) | Perfil automático al terminar el primer mix y `!claim <código>` en el juego para vincular el perfil con la cuenta web (código de un solo uso generado en la web) | Aprobación de Daniel. Nada implementado |
 | [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS de Hostinger. La parte de despliegue hay que replanearla para el VPS |
+| [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS de Hostinger: servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
 
 ## 4. Verificaciones que nunca se hicieron
 
@@ -155,7 +156,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 
 - **Bitácora:** [`2026-10-14-backend-base-auth-perfil`](bitacora/2026-10-14-backend-base-auth-perfil/). Cómo trabajar en el backend: [`web/backend/README.md`](../web/backend/README.md).
 - **`.env` de la raíz:** la línea 30 se llama `PG_PASSWORD` pero tiene el usuario. Tiene que ser `PG_USER=postgres.<ref del proyecto>` (el valor está en Supabase → Connect → Session pooler) (usuario del *Session pooler*). Hasta que se corrija, `supabase/schema/volcar.sh` necesita `PGUSER` y `PGPASSWORD` a mano.
-- **Hosting decidido:** VPS KVM 1 de Hostinger con dominio propio. Cloudflare se queda solo con el Worker de demos y R2. El despliegue (build, servicio de Node, Caddy con HTTPS, DNS, pipeline y SMTP para Supabase Auth) necesita su propio plan.
+- **Hosting decidido:** VPS KVM 1 de Hostinger con dominio propio. Cloudflare se queda solo con el Worker de demos y R2. El despliegue (build, servicio de Node, Caddy con HTTPS, DNS, pipeline y SMTP para Supabase Auth) tiene plan propio, sin aprobar: [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md).
 - **Después de esta fase**, en este orden (decidido por Daniel):
   1. ~~**Fase de "replantear" módulos**~~: **terminada el 2026-10-15**, solo en local (migraciones 01 a 08 en `supabase/replanteo/`, más la `09` de jugadores y equipos; se aplican en el corte). Ver [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
   2. ~~**Endpoints de dominio**~~: **terminados el 2026-10-16**, solo en local. Cada uno con su plan:
@@ -164,6 +165,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
      - ~~Listados con paginación, filtros y orden en el servidor~~ (requisito obligatorio de Daniel): **hechos el 2026-10-15**, migración `11`. Ver [`2026-10-15-get-paginacion-filtros`](bitacora/2026-10-15-get-paginacion-filtros/DOCUMENTACION.md). Todo endpoint nuevo de lista tiene que seguir la convención de `docs/frontend/contract.md`.
      - ~~Admin de servidores (tokens, licencias, panel)~~: **hecho el 2026-10-16**, solo en local (migración `12` y endpoints `/api/v1/admin/servers`). Ver [`2026-10-16-api-admin-servidores`](bitacora/2026-10-16-api-admin-servidores/DOCUMENTACION.md).
      - ~~Configuración del ELO y recálculo~~: **hechos el 2026-10-16**, solo en local (migración `13`, la simulación, y endpoints `/api/v1/elo/config` y `/api/v1/admin/elo/*`). Recalcular pide doble confirmación (`confirm: "estoy seguro"`). Ver [`2026-10-16-api-elo-config`](bitacora/2026-10-16-api-elo-config/DOCUMENTACION.md).
+     - ~~Perfiles sin reclamar, `!claim` y varios SteamID por ficha~~ (base y backend): **hechos el 2026-10-16**, solo en local (migración `15` y endpoints). Falta el **plugin 2.1.0** con `!claim` (va en el corte, en la misma tanda que la 2.0.0) y el frontend. Ver [`2026-10-16-claim-steamid`](bitacora/2026-10-16-claim-steamid/DOCUMENTACION.md).
      - ~~Demos desde el admin~~: **hechas el 2026-10-16**, solo en local (migración `14` y endpoints `/api/v1/admin/demos*` y `/api/v1/admin/demo-workers`): resumen, listado, reintentar una demo perdida y tokens del Worker de demos (el token nuevo pide doble confirmación). Ver [`2026-10-16-api-demos-admin`](bitacora/2026-10-16-api-demos-admin/DOCUMENTACION.md).
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.

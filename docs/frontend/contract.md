@@ -45,7 +45,7 @@ sequenceDiagram
 - **El `refresh_token` rota en cada renovación, pero no es estrictamente de un solo uso.** Cada `/auth/refresh` devuelve uno nuevo, y Supabase Auth igual acepta reusar el anterior por un rato (`refresh_token_reuse_interval`: 10 segundos en la configuración local; es el valor estándar de Supabase). Lo que se midió en local (GoTrue v2.197.0, 2026-10-16):
   - Reusar el anterior dentro de los 10 segundos devuelve **200** y el mismo token nuevo de la primera renovación.
   - Pasados los 10 segundos, y aunque el token nuevo ya se hubiera usado, el anterior también dio **200**, con un token nuevo de la misma sesión. El vigente siguió funcionando.
-  - En producción el valor se confirma en el panel de Supabase (Authentication → Sessions) antes del corte.
+  - **Se deja el comportamiento por defecto de Supabase** (decisión de Daniel, 2026-10-16). La defensa si una cuenta se ve comprometida es cerrar sesión (`POST /auth/logout`), que revoca la sesión entera.
 - **Qué hace el frontend:** guardar siempre el último `refresh_token` que llegó y no depender de que el anterior se rechace ni de que se acepte. Con varias pestañas, que una sola renueve y comparta el resultado (evita renovaciones duplicadas y carreras).
 - Las rutas públicas aceptan el token si viene: con sesión, la respuesta puede traer más datos (por ejemplo, los datos personales de un perfil privado que el usuario puede ver, o si el usuario es capitán de un equipo).
 - `user.role` es `user`, `organizer` o `admin`. Las pantallas de admin se muestran solo a `admin`; "Crear torneo" y la gestión de torneos, a `organizer` y `admin` (en un torneo concreto, `viewer.can_manage` dice si puede gestionarlo). La API lo vuelve a verificar.
@@ -124,7 +124,10 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/teams/{id}/pending` | `kind` | **`created_at` desc**, `expires_at` |
 | `GET /api/v1/me/pcw/matches` | `status` | **`starts_at` desc**, `played_at` |
 | `GET /api/v1/servers` | `q` | **`name` asc** |
-| `GET /api/v1/me/profile-requests` (deprecado) | `status` | **`created_at` desc** |
+| `GET /api/v1/players/unclaimed` | `q` (nombres que usó y SteamID) | **`last_played` desc**, `matches`, `elo`, `last_nick` |
+| `GET /api/v1/players/steam/{steamid}/matches` | Como `/players/{id}/matches` | Como `/players/{id}/matches` |
+| `GET /api/v1/players/steam/{steamid}/map-stats` | `map` | Como `/players/{id}/map-stats` |
+| `GET /api/v1/me/steam-requests` | `status` | **`created_at` desc** |
 | `GET /api/v1/admin/users` | `q`, `role`, `has_player`, `has_steam` | **`alias` asc**, `role` |
 | `GET /api/v1/admin/steam/unlinked` | `q` (nombre o SteamID) | **`last_played` desc**, `matches`, `last_nick` |
 | `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
@@ -133,7 +136,8 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/admin/demos` | `status` (`pending`, `uploaded`, `missing`, `expired`), `server`, `kind`, `from`, `to`, `q` | **`played_at` desc**, `demo_size`, `demo_attempts`, `demo_uploaded_at`, `expires_at` |
 | `GET /api/v1/admin/demo-workers` | `q`, `active`, `online` | **`name` asc**, `created_at`, `last_seen_at` |
 | `GET /api/v1/admin/servers` | `q` (nombre, dirección, IPs, versión), `active`, `license` (`ok`, `expiring`, `expired`, `revoked`), `online`, `has_panel` | **`name` asc**, `created_at`, `last_seen_at`, `license_expires_at`, `matches` |
-| `GET /api/v1/admin/profile-requests` (deprecado) | `status` | **`created_at` desc** |
+| `GET /api/v1/admin/steam-requests` | `status`, `q` | **`status` asc** (pendientes primero, después la más nueva), `created_at` |
+| `GET /api/v1/admin/claims` | `ok`, `steam_id`, `q`, `from`, `to` | **`created_at` desc** |
 
 **Los detalles no traen listas que crecen.** La ficha del jugador, el equipo y el torneo devuelven sus datos; sus listas van en los sub-endpoints de la tabla (`/players/{id}/map-stats`, `/medals`, `/teams`, `/matches`; `/teams/{id}/members`; `/events/{id}/registrations`, `/matches`, `/standings`). El detalle de una partida sí trae lo que es fijo y corto: rosters, mapas de la serie, jugadores de un mix y veto.
 
@@ -185,7 +189,7 @@ Lo único obligatorio es crear la cuenta. Todo lo demás se completa con sesión
 
 **Lo que no se hace en el registro**
 
-- **Vincular el SteamID** (lo que hace falta para entrar a un equipo) **no es** el campo `steam` del perfil, que es solo un dato para mostrar. El vínculo real lo hace un admin al aprobar un reclamo o desde el panel; más adelante será con `!claim` desde el juego. El registro conviene que avise que, para entrar a un equipo, hace falta vincularlo.
+- **Vincular el SteamID** (lo que hace falta para entrar a un equipo) **no es** el campo `steam` del perfil, que es solo un dato para mostrar. El vínculo real se hace con `!claim <código>` desde el juego (sección 5b). El registro conviene que avise que, para entrar a un equipo, hay que vincularlo.
 - **La privacidad** es del jugador vinculado, no de la cuenta, y hoy la cambia el admin. Una cuenta nueva no tiene jugador.
 
 ```mermaid
@@ -204,7 +208,7 @@ flowchart LR
 |---|---|---|
 | **Stats de jugadores** | El admin las cargaba a mano, o salían de los mixes | **Solo salen de partidas jugadas en el servidor**: mixes, y PCW y torneos jugados con `!match`. No hay carga manual. Las stats por mapa también se calculan. Siempre están al día |
 | **Mixes** | Cada mix creaba dos equipos `mix` mezclados con los equipos reales | Los bandos van **dentro de la partida**: nombre, jugadores y ganador (bando 1, 2 o empate) de cada lado. Los listados de equipos solo tienen equipos reales (oficiales y PCW) |
-| **Jugadores sin cuenta en un mix** | | Quien juega sin estar vinculado aparece en el mix como **invitado** con el nombre que usaba en el juego. Su ELO se calcula igual (por SteamID). Cuando ese SteamID se vincula a un jugador, todos sus mixes pasan a mostrarlo con su alias y la ficha muestra su ELO y stats completos |
+| **Jugadores sin cuenta en un mix** | | Quien juega sin estar vinculado aparece en el mix con el nombre que usaba en el juego, sus stats y su cambio de ELO (por SteamID), y tiene un **perfil sin reclamar** (sección 5b). Cuando ese SteamID se vincula a una ficha, todos sus mixes pasan a mostrarla con su alias y la ficha muestra su ELO y stats completos |
 | **Miembros de un equipo** | Arreglo de ids | Lista con rol (`player`, `sub`, `coach`) y fechas de alta y baja. El **historial de equipos** sale de ahí |
 | **Video y link de demo** | Campos cargados a mano | **Se eliminan.** La demo se descarga desde el botón que usa R2 (estado: `none`, `pending`, `uploaded`, `missing` o `expired`) |
 | **IP del servidor de la partida** | Se mostraba para conectarse | Se mantiene |
@@ -213,7 +217,7 @@ flowchart LR
 | **Email en el chat de partida** | Se guardaba y se podía leer | La API **no lo devuelve**: el autor se muestra con su alias |
 | **Avatar** | Hasta 5 MB y GIF | **1 MB, solo JPEG, PNG o WebP** |
 | **Matchmaking** | Cola 1v1 a 5v5 sin terminar | **Se elimina.** No hay pantallas de matchmaking |
-| **Reclamar un perfil** | Botón "Reclamar este perfil" → aprobación de un admin | Va a pasar al juego con `!claim <código>` (plan sin aprobar). Mientras tanto `/api/v1/me/profile-requests` y los endpoints de admin de reclamos siguen, **deprecados**. No invertir mucho en esa pantalla |
+| **Reclamar un perfil** | Botón "Reclamar este perfil" → aprobación de un admin | **`!claim <código>` desde el juego** (sección 5b). Los reclamos viejos se borraron: no hay pantalla de reclamos |
 
 ## 4. Alias (disponible)
 
@@ -238,9 +242,38 @@ Un jugador con cuenta tiene **un solo nombre en la web: el alias**. Une lo que a
 | Endpoint | Pantalla |
 |---|---|
 | `GET /api/v1/players` | **Jugadores** y **ranking de jugadores** (por defecto, ordenado por ELO): avatar, alias, nivel, ELO, partidas, equipos actuales, rating, K/D |
-| `GET /api/v1/players/{id}` | **Ficha:** datos, ELO (actual, pico, partidas), nivel, stats, equipos actuales y datos personales. Si el perfil es privado y el usuario no puede verlos: `details: null` y `private: true` (mostrar "Perfil privado" en esa sección, no en toda la ficha) |
+| `GET /api/v1/players/{id}` | **Ficha:** datos, ELO (actual, pico, partidas), nivel, stats, equipos actuales, `steam_ids` (todos sus SteamID, el principal primero) y datos personales. Una ficha con SteamID pero sin cuenta (`has_account: false`) muestra "¿Sos vos? Vinculala con `!claim`". Si el perfil es privado y el usuario no puede verlos: `details: null` y `private: true` (mostrar "Perfil privado" en esa sección, no en toda la ficha) |
 | `GET /api/v1/players/{id}/map-stats` · `/medals` · `/teams` | Pestañas de la ficha: stats por mapa, medallas e historial de equipos |
 | `GET /api/v1/players/{id}/matches` | **Partidas del jugador:** fecha, mapa, tipo, bandos, resultado, si ganó, sus stats, su cambio de ELO y el nombre que usó en el juego |
+
+## 5b. Perfiles sin reclamar y `!claim` (disponible en la API; el comando del servidor sale con el plugin 2.1.0)
+
+**Tres cosas distintas:** la **cuenta** (email, alias), la **ficha** de jugador (la página del jugador, va al ranking) y el **SteamID** (con el que el servidor registra cada partida). La ficha une una cuenta con sus SteamID.
+
+**Perfil sin reclamar:** un SteamID que jugó y no es de ninguna ficha. **No es una ficha** y **no aparece en el ranking ni en la lista de jugadores**.
+
+| Endpoint | Pantalla |
+|---|---|
+| `GET /api/v1/players/steam/{steamid}` | **Perfil sin reclamar:** último nombre que usó y los anteriores, ELO, nivel, stats, primera y última partida, y el cartel "Perfil sin reclamar: ¿sos vos? Registrate y usá `!claim` en el servidor". Si ese SteamID ya es de una ficha, responde `claimed: true` y `player_id`: redirigir a la ficha |
+| `GET /api/v1/players/steam/{steamid}/matches` · `/map-stats` | Sus pestañas, igual que en la ficha |
+| `GET /api/v1/players/unclaimed` | Buscar perfiles sin reclamar (aparte del ranking) |
+| Detalle de partida | Cada jugador sin ficha trae `steam_id`: su nombre enlaza al perfil sin reclamar |
+
+**Vincular el SteamID con `!claim`** (Mi perfil, tarjeta "Vincular con el servidor"):
+
+| Endpoint | Qué hace |
+|---|---|
+| `POST /api/v1/me/claim-code` | Código de 6 caracteres, válido 10 minutos (hasta 5 por hora): `{ code, expires_at, command }`. El anterior sin usar deja de valer |
+| `GET /api/v1/me/claim-code` | `steam_ids` (el principal primero), `max_steam_ids`, `last_code` (`status`: `pending`, `used` o `expired`, y `result`: el mensaje que vio el jugador) y `pending_requests`. Consultarlo cada 5 segundos mientras el código está `pending` |
+| `GET /api/v1/me/steam-requests` | Mis pedidos de SteamID adicional: `pending`, `approved`, `rejected` (con `reason`) o `expired` |
+
+1. El usuario genera el código y la tarjeta muestra el código grande, la cuenta regresiva y "Entrá al servidor y escribí `!claim K7P2QX`".
+2. En el servidor escribe el comando. El servidor responde en el chat.
+3. **Primer SteamID:** se vincula al instante. Si la cuenta no tenía ficha, se crea con su alias y todo el historial de ese SteamID. Funciona aunque nunca haya jugado (la ficha nace vacía y ya puede entrar a un equipo).
+4. **SteamID adicional** (otra PC u otro servidor): queda **pendiente** hasta que lo apruebe un admin. Mostrar "Pedido enviado: un admin lo tiene que aprobar" y la lista de pedidos, con el aviso: "Hasta que un admin lo apruebe, `!match` no te reconoce desde esa PC" (en un torneo no puede jugar con su equipo desde ahí; en una PCW entra como stand-in).
+5. Todos los SteamID de una ficha suman a **un solo ELO**.
+
+Mensajes que puede ver el jugador en el servidor (`result`): "Listo: tu cuenta quedó vinculada", "Pedido enviado: un admin lo tiene que aprobar", "Tu cuenta ya está vinculada a este SteamID", "Ya pediste este SteamID…", "Llegaste al máximo de SteamID…", "Ese SteamID pertenece a otra cuenta", "Ese SteamID es de otra ficha…", "Ese SteamID tiene un pedido pendiente de otra cuenta", "Código inválido o vencido…", "Demasiados intentos…".
 
 ## 6. Equipos y plantel (disponible)
 
@@ -467,7 +500,8 @@ stateDiagram-v2
 | Torneos | Lo mismo que el organizador, sobre todos los torneos | Disponible |
 | Jugadores | Alta, edición y baja (`/api/v1/admin/players`). El nick solo se edita en jugadores sin cuenta (en los vinculados manda el alias). Vincular una cuenta es `PATCH` con `user_id`. La baja falla con mensaje si tiene partidas | Disponible |
 | Foto y medallas | `POST /api/v1/admin/players/{id}/photo` (mismas reglas que el avatar), `POST …/{id}/medals`, `DELETE /api/v1/admin/medals/{id}` | Disponible |
-| SteamID sin vincular | `GET /api/v1/admin/steam/unlinked`, `POST /api/v1/admin/steam/link` | Disponible |
+| SteamID sin vincular | `GET /api/v1/admin/steam/unlinked`, `POST /api/v1/admin/steam/link` (suma el SteamID a la ficha: principal si no tiene, adicional si ya tiene; hasta 4; `player_id: null` lo quita) | Disponible |
+| SteamID de las fichas | Ver "SteamID y `!claim` (admin)" abajo | Disponible |
 | Usuarios y alias | `GET /api/v1/admin/users?q=` (alias, rol, jugador). `PUT /api/v1/admin/users/{id}/alias`: si choca con una palabra bloqueada, ofrecer "Guardar igual" (`force: true`) | Disponible |
 | Palabras bloqueadas | Lista, alta y baja, y "Nombres actuales que la contienen" (`/api/v1/admin/blocked-words`, `…/hits`) | Disponible |
 | Equipos | Alta, edición y baja; sumar a un jugador directamente y cambiar su rol. Nombre o sigla con palabra bloqueada: ofrecer "Guardar igual" (`force: true`). La baja falla si tiene partidas o inscripciones | Disponible |
@@ -476,7 +510,6 @@ stateDiagram-v2
 | Servidores | Ver "Servidores (admin)" abajo | Disponible |
 | ELO | Ver "ELO (admin)" abajo | Disponible |
 | Demos | Ver "Demos (admin)" abajo | Disponible |
-| Reclamos de perfil | Listar, aprobar y rechazar | Disponible, **deprecados** |
 
 ### Servidores (admin)
 
@@ -540,9 +573,23 @@ stateDiagram-v2
 - **Token del Worker:** se muestra una sola vez, con `secret_command` (cómo cargarlo en Cloudflare).
 - **Token nuevo, con doble confirmación (obligatorio):** el Worker deja de subir demos hasta que se carga el token nuevo en Cloudflare. Igual que al recalcular el ELO: preguntar si está seguro, pedir escribir **`estoy seguro`** (el botón queda deshabilitado hasta que coincide) y mandarlo en `confirm`. La API lo exige: sin él, `400 VALIDATION_ERROR` en `confirm`.
 
+### SteamID y `!claim` (admin)
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/v1/admin/steam-requests` | Pedidos de SteamID adicional: SteamID, nick que usó, ficha, cuenta, servidor, `matches`, `player_steam_count` y `shares_match` |
+| `POST /api/v1/admin/steam-requests/{id}/approve` | Aprobar: lo suma a la ficha, le pasa el historial y **recalcula el ELO de todos**. Falla (`400`) si comparte partidas con otro SteamID de la ficha (`shares_match: true`: no mostrar el botón) |
+| `POST /api/v1/admin/steam-requests/{id}/reject` | Rechazar. Body `{ reason }` (`reason` opcional; lo ve el jugador) |
+| `GET /api/v1/admin/claims` | Registro de cada `!claim`, aceptado o no, y de los reclamos del sistema viejo |
+| `GET` / `PUT /api/v1/admin/steam/config` | `max_steam_ids`: tope de SteamID por ficha que se pueden pedir con `!claim` (de 1 a 4, por defecto 3) |
+| `DELETE /api/v1/admin/steam/{steamid}` | Quitar un SteamID de su ficha: sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo |
+| `POST /api/v1/admin/steam/{steamid}/primary` | Hacer principal un SteamID adicional |
+
+- Aprobar, quitar o cambiar el principal **recalculan el ELO de todos** (pueden mover un poco los cambios de ELO de otros jugadores). Avisarlo en la confirmación.
+- Los pedidos pendientes **reservan** el SteamID y vencen a los 30 días.
+
 ## 10. Lo que todavía no está definido
 
-- El flujo exacto de `!claim` (dónde se genera y se muestra el código).
 - El dominio y las URLs de producción.
 
 ## 11. Registro de decisiones
@@ -608,3 +655,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-16 | Demos | **El token nuevo del Worker pide doble confirmación** ("estoy seguro"), como el recálculo del ELO | Propuesta aceptada |
 | 2026-10-16 | Demos | Fuera por ahora: borrar una demo antes de que venza y correr el Worker a mano desde la web | Propuesta aceptada |
 | 2026-10-16 | Sesión | Aclaración: el `refresh_token` **rota** en cada renovación, pero Supabase acepta reusar el anterior (`refresh_token_reuse_interval`, 10 s). No es estrictamente de un solo uso; el frontend guarda siempre el último y no depende del rechazo del anterior. Lo reportó el equipo de frontend y se midió en local | Frontend |
+| 2026-10-16 | Perfil sin reclamar | Un SteamID que jugó sin ficha tiene una página pública armada con sus partidas; no se crea ninguna ficha hasta reclamarlo, y **no va al ranking** | Daniel |
+| 2026-10-16 | `!claim` | Código de 6 caracteres generado en Mi perfil y `!claim <código>` en el servidor. El primer SteamID se vincula al instante (crea la ficha si no hay); los reclamos viejos con aprobación se borran | Daniel |
+| 2026-10-16 | Varios SteamID | Una ficha puede tener varios SteamID (tope configurable, de 1 a 4, por defecto 3). Los adicionales los pide el usuario con `!claim` y los aprueba un admin. Un SteamID es de una sola ficha. **Un solo ELO por ficha** | Daniel |
+| 2026-10-16 | Sesión | Se deja el reuso del refresh token como lo maneja Supabase por defecto; el frontend guarda siempre el último. Cerrar sesión revoca la sesión entera | Daniel |
