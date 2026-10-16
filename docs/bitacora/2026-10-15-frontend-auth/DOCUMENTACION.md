@@ -123,7 +123,7 @@ Se decide qué mostrar por `error.code`, nunca por el texto (`src/api/errors.ts`
 
 Las reglas de zod copian las del backend: email hasta 254 caracteres, contraseña de 6 a 72, alias de 2 a 24 sin `<` ni `>`, y para el perfil las mismas listas de países y roles y las mismas expresiones de Steam, FACEIT y Discord. Las listas están atadas al schema generado: si el backend agrega un país o un rol, el typecheck falla.
 
-**Alias en vivo:** consulta `GET /api/v1/aliases/{alias}/available` con una espera de 400 ms. Si la API responde 404 (endpoint todavía sin desplegar), no muestra nada y no bloquea el registro.
+**Alias en vivo:** consulta `GET /api/v1/aliases/{alias}/available` con una espera de 400 ms y muestra "Disponible" o el motivo (`length`, `chars`, `blocked`, `taken`). Si la verificación falla por red o por un error del servidor, no muestra nada y no bloquea el registro: la API vuelve a validar al enviar.
 
 **Pasos opcionales:** envían solo los campos completados; si no hay ninguno, no llaman a la API. El avatar se recorta a 256×256, siempre en JPEG y sin pasar de 1 MB, antes de subirlo.
 
@@ -132,7 +132,7 @@ Las reglas de zod copian las del backend: email hasta 254 caracteres, contraseñ
 | Qué | Archivo |
 |---|---|
 | Reglas para trabajar en el frontend y pendientes | `web/frontend/CLAUDE.md` |
-| Copia del contrato del backend | `web/frontend/docs/contrato-api.md` |
+| Contrato con el backend | `docs/frontend/contract.md` |
 | Cliente tipado y `unwrap` | `web/frontend/src/api/client.ts` |
 | Tipos de la API (generados) | `web/frontend/src/api/schema.d.ts` |
 | Errores y mensajes | `web/frontend/src/api/errors.ts` |
@@ -148,4 +148,5 @@ Las reglas de zod copian las del backend: email hasta 254 caracteres, contraseñ
 | Perfil (esquemas y mutaciones) | `web/frontend/src/features/profile/` |
 | Recorte del avatar | `web/frontend/src/lib/image.ts` |
 | Rutas | `web/frontend/src/routes/` |
-| Pruebas | `*.test.ts(x)` junto a cada archivo, utilidades en `web/frontend/src/test/` |
+| Pruebas unitarias | `*.test.ts(x)` junto a cada archivo, utilidades en `web/frontend/src/test/` |
+| Pruebas de punta a punta | `web/frontend/e2e/` (Playwright) |
