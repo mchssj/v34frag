@@ -4,7 +4,7 @@
 
 La fase deja el modelo de datos listo para el backend y la web nueva: saca lo que no se usaba, deja de crear equipos falsos para los mixes, pasa los planteles a una tabla propia, calcula las stats solo desde las partidas jugadas y suma `!match` (vincular un juego del servidor a una partida de torneo o PCW) y los formatos de PCW que decide el admin.
 
-Son doce migraciones en `supabase/replanteo/` (la `09`, la `10`, la `11` y la `12`, de las entregas de jugadores y equipos, de partidas, torneos y PCW, de los listados y del admin de servidores). **No se aplican en producción hasta el corte**, porque la web vieja depende del esquema actual. Mientras tanto viven solo en la Supabase local, donde el backend se desarrolla y se prueba sobre el esquema nuevo.
+Son trece migraciones en `supabase/replanteo/` (de la `09` a la `13`, de las entregas de jugadores y equipos, de partidas, torneos y PCW, de los listados, del admin de servidores y de la configuración del ELO). **No se aplican en producción hasta el corte**, porque la web vieja depende del esquema actual. Mientras tanto viven solo en la Supabase local, donde el backend se desarrolla y se prueba sobre el esquema nuevo.
 
 Cada migración verifica que la base esté en el estado esperado y aborta sin cambiar nada si no lo está. Cada una tiene su inversa, que deja la estructura idéntica a la de antes, y sus pruebas. Un ensayo con la copia de producción demuestra que el ELO, las victorias y derrotas y las stats de todos los jugadores quedan **idénticos**.
 
@@ -34,6 +34,7 @@ flowchart LR
 | 10 | `10_partidas_torneos.sql` | Organizadores, plantillas de torneo y motor en la base, inscripción con jugadores, veto, chat y PCW como equipo (ver [`2026-10-15-api-partidas-torneos-pcw`](../2026-10-15-api-partidas-torneos-pcw/DOCUMENTACION.md)) |
 | 11 | `11_listados.sql` | Vistas para los listados paginados, filtrados y ordenados en el servidor (ver [`2026-10-15-get-paginacion-filtros`](../2026-10-15-get-paginacion-filtros/DOCUMENTACION.md)) |
 | 12 | `12_servidores.sql` | Admin de servidores: nombre único, IP permitida válida, alta con id y token, borrar solo sin partidas, listado del admin y solo servidores con licencia vigente para asignar partidas (ver [`2026-10-16-api-admin-servidores`](../2026-10-16-api-admin-servidores/DOCUMENTACION.md)) |
+| 13 | `13_elo_simulacion.sql` | Simulación del recálculo del ELO sin guardar nada (ver [`2026-10-16-api-elo-config`](../2026-10-16-api-elo-config/DOCUMENTACION.md)) |
 
 ## Mixes sin equipos y `winner_side`
 
