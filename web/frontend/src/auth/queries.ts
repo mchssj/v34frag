@@ -7,13 +7,11 @@ import {
 
 import { api, unwrap, type Schemas } from "@/api/client"
 import { ApiError, isApiError } from "@/api/errors"
-import { env } from "@/lib/env"
 import type { LoginValues, SignupValues } from "./schemas"
 import { toSession, tokenStore } from "./tokenStore"
 
 export type AuthUser = Schemas["AuthUser"]
-// Provisorio: el contrato agrega "organizer"; sale del schema al regenerar con el backend nuevo.
-export type Role = AuthUser["role"] | "organizer"
+export type Role = AuthUser["role"]
 
 export const authKeys = {
   me: ["auth", "me"] as const,
@@ -98,33 +96,22 @@ export function useLogout() {
   })
 }
 
-export type AliasReason = "length" | "chars" | "blocked" | "taken"
-export type AliasAvailability = {
-  available: boolean
-  reason: AliasReason | null
-}
+export type AliasAvailability = Schemas["AliasAvailability"]
+export type AliasReason = NonNullable<AliasAvailability["reason"]>
 
-// Provisorio: GET /api/v1/aliases/{alias}/available todavía no está en la rama del backend.
-// Al regenerar el schema, reemplazar el fetch por api.GET. Un 404 devuelve null (sin verificar).
+/** Disponibilidad del alias. Con sesión, el alias propio cuenta como libre. */
 export function aliasAvailabilityOptions(alias: string) {
   const value = alias.trim()
   return queryOptions({
+    // Sin distinguir mayúsculas, igual que la unicidad en la base.
     queryKey: authKeys.alias(value.toLowerCase()),
-    queryFn: async ({ signal }): Promise<AliasAvailability | null> => {
-      const res = await fetch(
-        `${env.apiUrl}/api/v1/aliases/${encodeURIComponent(value)}/available`,
-        { signal }
-      )
-      if (res.status === 404) return null
-      if (!res.ok)
-        throw new ApiError({
-          status: res.status,
-          code: "INTERNAL",
-          message: "",
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/aliases/{alias}/available", {
+          params: { path: { alias: value } },
+          signal,
         })
-      const body = (await res.json()) as Partial<AliasAvailability>
-      return { available: body.available === true, reason: body.reason ?? null }
-    },
+      ),
     staleTime: 30_000,
     retry: false,
   })

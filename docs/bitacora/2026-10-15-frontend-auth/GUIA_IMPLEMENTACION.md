@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado el 2026-10-16 en la rama `feat/frontend-fase-1` (rebase sobre `origin/feat/backend-api-fase-1`), **sin desplegar**. Typecheck, lint, build y 82 pruebas automáticas en verde. **Todavía no se probó contra la API levantada** (ver "Pruebas").
+Implementado y **probado de punta a punta contra la API real** el 2026-10-16, en la rama `feat/frontend-fase-1` (rebase sobre `origin/feat/backend-api-fase-1` al `0e56b8b`), **sin desplegar**. Typecheck, lint y build en verde; 83 pruebas unitarias y 15 de punta a punta con Playwright, todas en verde.
 
 ## Archivos
 
@@ -10,7 +10,7 @@ Implementado el 2026-10-16 en la rama `feat/frontend-fase-1` (rebase sobre `orig
 |---|---|
 | `web/` → `web/frontend/` | El frontend se movió para convivir con `web/backend` |
 | `web/frontend/CLAUDE.md` | Nuevo: reglas (alcance, comentarios en español), comandos, stack, estructura y pendientes |
-| `web/frontend/docs/contrato-api.md` | Nuevo: copia del contrato del backend del 2026-10-15 |
+| `web/frontend/e2e/*`, `playwright.config.ts`, `tsconfig.e2e.json` | Nuevos: pruebas de punta a punta con Playwright |
 | `web/frontend/.env.example` | Nuevo: `VITE_API_URL` |
 | `web/frontend/.gitattributes` | Nuevo: LF siempre (Prettier usa `endOfLine: lf`) |
 | `web/frontend/pnpm-workspace.yaml` | Misma política que el backend: `minimumReleaseAge` de 7 días y `trustPolicy: no-downgrade` |
@@ -47,7 +47,7 @@ La configuración local del backend (`.dev.vars.example`) ya permite `http://loc
 
 ### Automáticas (`pnpm test`, Vitest)
 
-82 pruebas en 9 archivos, todas en verde el 2026-10-16:
+83 pruebas en 9 archivos, todas en verde el 2026-10-16:
 
 | Archivo | Qué cubre |
 |---|---|
@@ -63,9 +63,30 @@ La configuración local del backend (`.dev.vars.example`) ya permite `http://loc
 
 Las pruebas usan mocks de `BroadcastChannel` y `navigator.locks` (`src/test/fakes.ts`) que simulan varias pestañas con storages separados y entrega asíncrona, y MSW para la API en los formularios.
 
-### Contra la API real
+### De punta a punta (`pnpm test:e2e`, Playwright)
 
-**No se hizo todavía.** Necesita la Supabase local en Docker (`pnpm db:start` del backend). Queda pendiente la lista de verificación del plan: registro con alias libre y tomado, login correcto e incorrecto, recarga, token vencido, dos pestañas en los dos modos, sesión que muere en una página pública, API apagada, 403 en `/admin` y `redirect` malicioso.
+El 2026-10-16, contra la API del backend (`0e56b8b`) con la Supabase local en Docker y el esquema real (replanteo 01 a 12), en Chromium. 15 pruebas en verde en una sola corrida (26 s), que cubren toda la lista de verificación del plan:
+
+| Prueba | Resultado |
+|---|---|
+| Landing de visitante sin esperas | ✔ |
+| Link de confirmación: los tokens no quedan en la URL y avisa "cuenta confirmada" | ✔ |
+| Sesión muerta en una página pública: la landing sigue como visitante y se borra la sesión | ✔ |
+| Alias tomado avisado mientras se escribe (sin distinguir mayúsculas) | ✔ |
+| Registro completo con datos personales, redes y avatar (verificado después en `GET /api/v1/me/profile`) | ✔ |
+| Login incorrecto y después `redirect=//evil.com` → termina en `/` | ✔ |
+| Ruta protegida → login → vuelve; la recarga mantiene la sesión; el logout la cierra y revoca el refresh token | ✔ |
+| Dos pestañas con Recordarme: el logout en una cierra la otra | ✔ |
+| Sin Recordarme: otra pestaña recibe la sesión por `BroadcastChannel`; al reabrir el navegador se pierde | ✔ |
+| Token vencido: se renueva sin que se note (cambia el refresh token) | ✔ |
+| Con Recordarme, la sesión sigue al reabrir el navegador | ✔ |
+| Usuario común en `/admin` → 403 | ✔ |
+| API caída con sesión: "No se pudo conectar", sin mandar al login | ✔ |
+| Página de cuenta con sesión → sale al inicio | ✔ |
+
+La suite respeta el límite real de la API (10 intentos de login o registro por minuto): corre en serie, gasta 9 y comparte una cuenta creada por la API para las pruebas que solo necesitan una sesión.
+
+También se verificó por HTTP: CORS desde `localhost:5173` (con `Retry-After` y `X-Request-Id` expuestos), los `code` de error, el `409` con `details[0].path = "tag"` para un alias repetido, y la rotación del refresh token.
 
 ## En qué se apartó del plan
 
@@ -81,7 +102,19 @@ Las pruebas usan mocks de `BroadcastChannel` y `navigator.locks` (`src/test/fake
 7. **Link de confirmación del email:** el plan lo dejaba fuera de alcance. Se agregó la limpieza de la URL (`callback.ts`) porque, sin eso, los tokens que manda Supabase quedaban visibles en la barra y en el historial. La página de destino propia sigue pendiente con el backend.
 8. **Componentes de shadcn:** `spinner` y `separator` en lugar de `progress`. `sonner` se conectó al `ThemeProvider` propio y se quitó `next-themes`.
 9. **Setup de pruebas:** `cleanup()` de Testing Library después de cada prueba (sin *globals* de Vitest no es automático) y un *stub* de `ResizeObserver`, que jsdom no implementa porque no calcula *layout* y que Radix usa en Checkbox y Select. Es solo para pruebas: en el navegador `ResizeObserver` es nativo.
-10. **Copia del contrato** en `web/frontend/docs/contrato-api.md`, hasta que el backend lo suba a `docs/frontend/`.
+10. **Contrato:** durante la implementación se usó una copia local; cuando el backend subió `docs/frontend/contract.md` se borró la copia y el CLAUDE.md apunta al original.
+11. **Backend actualizado el 2026-10-16:** el equipo subió 29 commits (jugadores, equipos, partidas, torneos, PCW, paginación, admin de servidores). Se hizo rebase de la rama sobre `0e56b8b` (único conflicto: la tabla del índice de la bitácora) y `pnpm gen:api` desde la API levantada. Con eso se quitó todo lo provisorio: la disponibilidad del alias usa `api.GET` con el tipo `AliasAvailability` y `Role` sale del schema (`user`, `organizer`, `admin`). No hubo cambios que rompieran lo implementado.
+12. **Pruebas de punta a punta con Playwright** (no estaban en el plan, que preveía una verificación manual): `e2e/`, `playwright.config.ts` y `tsconfig.e2e.json`, para que la verificación quede automatizada y se pueda repetir.
+
+## Pendientes para el backend
+
+- **El refresh token no es estrictamente de un solo uso.** La Supabase local tiene `refresh_token_reuse_interval = 10` (`web/backend/supabase/config.toml`): un refresh token ya usado se acepta de nuevo durante 10 segundos (se comprobó: devolvió 200). Es el comportamiento estándar de Supabase para pedidos concurrentes y el frontend no depende de eso, pero el contrato dice "de un solo uso": conviene aclararlo en el contrato.
+
+## Incidentes durante las pruebas
+
+- **Exportar el backend con `git archive` en Windows:** con `core.autocrlf=true`, `git archive` convierte los archivos a CRLF y la migración 04 del replanteo fallaba (busca un texto exacto dentro de una función). Se resolvió exportando con `git -c core.autocrlf=false archive`; los archivos quedan idénticos al repo. No es un problema del backend.
+- **Rutas largas en Windows:** la CLI de Supabase no arrancaba desde la copia en el scratchpad porque la ruta pasaba los 260 caracteres. Se usó un *junction* con una ruta corta y el binario directo. No le pasa a quien trabaja en `web/backend`.
+- **Servidor de desarrollo después del rebase:** Vite quedó con módulos que no encontraba mientras git movía los archivos. Se resolvió reiniciándolo.
 
 ## Cómo revertir
 

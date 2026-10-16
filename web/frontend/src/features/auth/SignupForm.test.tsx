@@ -24,9 +24,9 @@ vi.mock("@tanstack/react-router", () => ({
 
 const API = "http://api.test"
 const server = setupServer(
-  // Por defecto el endpoint del alias no existe (como en la rama actual del backend).
-  http.get(`${API}/api/v1/aliases/:alias/available`, () =>
-    HttpResponse.json({ error: { code: "NOT_FOUND" } }, { status: 404 })
+  // Por defecto el alias está libre.
+  http.get(`${API}/api/v1/aliases/:alias/available`, ({ params }) =>
+    HttpResponse.json({ alias: params.alias, available: true, reason: null })
   )
 )
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }))
@@ -110,7 +110,7 @@ describe("SignupForm", () => {
     const signup = vi.fn()
     server.use(
       http.get(`${API}/api/v1/aliases/:alias/available`, () =>
-        HttpResponse.json({ available: false, reason: "taken" })
+        HttpResponse.json({ alias: "Mecha", available: false, reason: "taken" })
       ),
       http.post(`${API}/auth/signup`, () => {
         signup()
@@ -178,6 +178,27 @@ describe("SignupForm", () => {
     expect(
       await screen.findByText("Ya hay una cuenta con ese email.")
     ).toBeInTheDocument()
+  })
+
+  it("si la verificación del alias falla, no bloquea el registro", async () => {
+    server.use(
+      http.get(`${API}/api/v1/aliases/:alias/available`, () =>
+        HttpResponse.json(
+          { error: { code: "INTERNAL", message: "x", requestId: "r" } },
+          { status: 500 }
+        )
+      ),
+      http.post(`${API}/auth/signup`, () =>
+        HttpResponse.json(
+          { session: null, needsConfirmation: true },
+          { status: 201 }
+        )
+      )
+    )
+    const { user } = renderWithQuery(<SignupForm />)
+    await fill(user)
+    await user.click(submit())
+    await waitFor(() => expect(navigate).toHaveBeenCalled())
   })
 
   it("valida el alias en el navegador", async () => {

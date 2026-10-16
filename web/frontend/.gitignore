@@ -30,3 +30,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Playwright
+/e2e/.auth/
+/test-results/
+/playwright-report/

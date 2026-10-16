@@ -25,7 +25,7 @@ export function useAliasAvailability(value: string) {
   const settled = debounced === value.trim()
   return {
     checking: valid && (!settled || query.isFetching),
-    // null = no se pudo verificar (endpoint sin desplegar o error): no bloquea el envío.
+    // null = no se pudo verificar (red o error del servidor): no bloquea el envío.
     result: valid && settled ? (query.data ?? null) : null,
   }
 }

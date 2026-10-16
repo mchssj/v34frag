@@ -1,6 +1,6 @@
 # CLAUDE.md — frontend (`web/frontend`)
 
-Frontend nuevo de v34frag: SPA con Vite + React 19 + TypeScript. Reemplaza al `index.html` de la raíz del repo, que sigue en producción hasta el corte. Habla **solo con la API** de `web/backend` (nunca con Supabase directo).
+Frontend nuevo de v34frag: SPA con Vite + React 19 + TypeScript. Reemplaza al `index.html` de la raíz del repo, que sigue en producción hasta el corte. Habla **solo con la API** de `web/backend` (nunca con Supabase directo). El contrato está en `docs/frontend/contract.md`.
 
 ## Reglas
 
@@ -20,12 +20,15 @@ pnpm install
 pnpm dev          # http://localhost:5173 (necesita VITE_API_URL en .env.local)
 pnpm build        # typecheck + build
 pnpm test         # Vitest (una vez); pnpm test:watch para modo watch
+pnpm test:e2e     # Playwright contra la API real (ver abajo)
 pnpm lint
 pnpm typecheck
 pnpm gen:api      # regenera src/api/schema.d.ts desde la API local (http://localhost:8787)
 ```
 
 `pnpm gen:api` necesita la API corriendo (`web/backend`, `pnpm dev:node`). Para generar desde un archivo: `pnpm exec openapi-typescript <ruta>/openapi.json -o src/api/schema.d.ts`.
+
+**Pruebas de punta a punta (`e2e/`):** necesitan la API local con Supabase en Docker (`web/backend`: `pnpm db:start` y `pnpm dev:node`) y Chromium (`pnpm exec playwright install chromium`). Playwright levanta el frontend solo. Corren en serie y gastan 9 intentos de login o registro: la API permite 10 por minuto, así que entre dos corridas completas hay que esperar un minuto.
 
 La política de dependencias es la misma que la del backend (`pnpm-workspace.yaml`): solo versiones publicadas hace al menos 7 días y `trustPolicy: no-downgrade`.
 
@@ -39,7 +42,8 @@ La política de dependencias es la misma que la del backend (`pnpm-workspace.yam
 | openapi-fetch + openapi-typescript | Cliente tipado desde la OpenAPI del backend |
 | react-hook-form + zod | Formularios |
 | shadcn/ui (Radix, preset `b3PBYm`) + Tailwind 4 | Componentes y estilos |
-| Vitest + Testing Library | Pruebas |
+| Vitest + Testing Library + MSW | Pruebas unitarias y de componentes |
+| Playwright | Pruebas de punta a punta contra la API real |
 
 ## Estructura
 
@@ -64,7 +68,7 @@ src/
 
 ## Pendientes
 
-- **Backend desactualizado:** la rama `feat/backend-api-fase-1` del remoto todavía no tiene lo nuevo del contrato (`docs/contrato-api.md`): `GET /api/v1/aliases/{alias}/available`, alias único, `PUT /me/alias`, rol `organizer`, equipos, torneos, etc. Cuando se suba: rebase de esta rama y `pnpm gen:api`. Lo provisorio está marcado con `// Provisorio:`.
+- **Contrato con el backend:** `docs/frontend/contract.md` (decisiones de diseño) y la OpenAPI (nombres exactos; manda si no coinciden). Cada vez que se trae una versión nueva del backend: rebase de esta rama y `pnpm gen:api` con la API local levantada.
 - **Confirmación de email:** el backend manda el link a `FRONTEND_URL` y Supabase vuelve con los tokens en el fragmento de la URL (flujo implicit). El frontend los descarta y pide iniciar sesión (`src/auth/callback.ts`). Falta definir con el backend una página de destino propia y la recuperación de contraseña.
 - **Mejora de la sesión:** pasar el refresh token a una cookie `httpOnly; Secure; SameSite=Strict` del dominio de la API (cambio en el backend). El cambio en el frontend queda aislado en `tokenStore` y `refresh`.
 - **Despliegue (VPS):** configurar una cabecera CSP con `connect-src` limitado a `api.<dominio>`.
