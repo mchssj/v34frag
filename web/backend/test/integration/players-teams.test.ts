@@ -347,18 +347,6 @@ describe('más casos del plantel y del admin', () => {
     expect((await req('DELETE', `/api/v1/admin/teams/${team}`, { token: adm.token })).status).toBe(204);
   });
 
-  it('reclamo de perfil (deprecado): aprobar vincula el jugador a la cuenta', async () => {
-    const u = await createUser({ tag: `Recl${rnd()}` });
-    const pl = (await req('POST', '/api/v1/admin/players', { token: adm.token, body: { nick: `Libre${rnd()}` } })).body.id;
-    const r = await req('POST', '/api/v1/me/profile-requests', { token: u.token, body: { player_id: pl } });
-    expect(r.status).toBe(201);
-    const list = await req('GET', '/api/v1/admin/profile-requests?status=pending&per=100', { token: adm.token });
-    expect(list.body.items).toContainEqual(expect.objectContaining({ id: r.body.id, user_id: u.id, status: 'pending' }));
-    expect((await req('POST', `/api/v1/admin/profile-requests/${r.body.id}/approve`, { token: adm.token })).status).toBe(204);
-    expect((await req('POST', `/api/v1/admin/profile-requests/${r.body.id}/reject`, { token: adm.token })).status).toBe(400);
-    expect((await req('GET', `/api/v1/players/${pl}`)).body).toMatchObject({ has_account: true });
-  });
-
   it('foto de un jugador', async () => {
     const pl = (await req('POST', '/api/v1/admin/players', { token: adm.token, body: { nick: `Foto${rnd()}` } })).body.id;
     // PNG de 1x1.

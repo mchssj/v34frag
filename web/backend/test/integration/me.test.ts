@@ -15,8 +15,6 @@ const upload = (token: string, file?: File) => {
   if (file) fd.append('file', file);
   return app.request('/api/v1/me/avatar', { method: 'POST', headers: auth(token), body: fd }, env);
 };
-const requestClaim = (token: string, player_id: string) =>
-  app.request('/api/v1/me/profile-requests', { method: 'POST', headers: { ...auth(token), 'Content-Type': 'application/json' }, body: JSON.stringify({ player_id }) }, env);
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 async function insert<T = { id: string }>(table: string, row: Record<string, unknown>): Promise<T> {
@@ -170,31 +168,5 @@ describe('POST /api/v1/me/avatar', () => {
   it('400 si falta el archivo', async () => {
     const u = await createUser();
     expect((await upload(u.token)).status).toBe(400);
-  });
-});
-
-describe('solicitudes de reclamo de perfil', () => {
-  it('crea una solicitud pendiente, la lista y rechaza el duplicado', async () => {
-    const u = await createUser();
-    const pl = await insert<{ id: string; nick: string }>('players', { nick: `Libre${uid()}` });
-    const res = await requestClaim(u.token, pl.id);
-    expect(res.status).toBe(201);
-    expect(await res.json()).toMatchObject({ player_id: pl.id, status: 'pending', player: { id: pl.id, nick: pl.nick } });
-    expect((await requestClaim(u.token, pl.id)).status).toBe(409);
-
-    const otro = await createUser();
-    await requestClaim(otro.token, pl.id);
-    const list = await (await app.request('/api/v1/me/profile-requests', { headers: auth(u.token) }, env)).json();
-    expect(list).toMatchObject({ total: 1, page: 1, sort: 'created_at', order: 'desc' });
-    expect(list.items[0].player_id).toBe(pl.id);
-  });
-
-  it('409 si el jugador ya tiene cuenta, 404 si no existe, 400 si el id no es uuid', async () => {
-    const u = await createUser();
-    const dueno = await createUser();
-    const pl = await insert('players', { nick: `Tomado${uid()}`, user_id: dueno.id });
-    expect((await requestClaim(u.token, pl.id)).status).toBe(409);
-    expect((await requestClaim(u.token, '00000000-0000-4000-8000-000000000000')).status).toBe(404);
-    expect((await requestClaim(u.token, 'no-es-uuid')).status).toBe(400);
   });
 });

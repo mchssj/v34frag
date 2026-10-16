@@ -1,6 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { currentUser, isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
+import { STEAM64 } from '../schemas/claim';
 import { notModified } from '../lib/etag';
 import { AppError } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
@@ -157,7 +158,7 @@ export const matches = createRouter()
         : Promise.resolve([]),
       series
         ? Promise.resolve([])
-        : sb.from('match_player_stats').select('player_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta').eq('match_id', id).then(mustHave),
+        : sb.from('match_player_stats').select('player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta').eq('match_id', id).then(mustHave),
       series ? sb.from('match_vetos').select('seq, team_id, map, action, version').eq('match_id', id).then(mustHave) : Promise.resolve([]),
       series ? sb.from('map_pool').select('name, versions').eq('active', true).order('position').then(mustHave) : Promise.resolve([]),
       m.server_id ? sb.from('game_servers_public').select('id, name, connect_address').eq('id', m.server_id).maybeSingle().then(must) : Promise.resolve(null),
@@ -187,6 +188,8 @@ export const matches = createRouter()
     const players: z.infer<typeof PlayerLine>[] = stats
       .map((s) => ({
         player_id: s.player_id, alias: s.player_id ? (aliases.get(s.player_id) ?? null) : null, game_nick: s.nick, side: s.team,
+        // Sin ficha: el SteamID64 enlaza a su perfil sin reclamar (bots y NOSTEAM no tienen).
+        steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
         kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
         rating: s.rating, elo_delta: s.elo_delta,
       }))

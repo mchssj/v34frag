@@ -70,6 +70,7 @@ export const PlayerLine = z
     player_id: z.uuid().nullable(),
     alias: z.string().nullable().openapi({ description: 'Alias si está vinculado; si no, null' }),
     game_nick: z.string().nullable(),
+    steam_id: z.string().nullable().openapi({ description: 'Solo si no tiene ficha: enlaza a `/api/v1/players/steam/{steamid}` (perfil sin reclamar)' }),
     side: z.number().int().nullable(),
     kills: num, deaths: num, assists: num, headshots: num, damage: num, rounds: num, rating: num,
     elo_delta: num,

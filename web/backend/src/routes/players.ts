@@ -1,6 +1,6 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import { optionalUser } from '../lib/auth';
-import { levelOf, must, notFound, searchTerm } from '../lib/db';
+import { levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import { errorResponses, json } from '../schemas/common';
@@ -139,6 +139,7 @@ export const players = createRouter()
       sb.from('player_overview').select(OVERVIEW).eq('id', id).maybeSingle().then(must),
       sb.from('players').select('user_id, steam_id, bio, achievements, team_history, privacy').eq('id', id).maybeSingle().then(must),
     ]);
+    const steams = player ? mustHave(await sb.from('player_steam_all').select('steam_id, is_primary').eq('player_id', id)) : [];
     if (!overview || !player) throw notFound('ese jugador');
     const [stats, details] = await Promise.all([
       sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses').eq('player_id', id).maybeSingle().then(must),
@@ -148,6 +149,7 @@ export const players = createRouter()
       {
         ...toSummary(overview),
         steam_id: player.steam_id,
+        steam_ids: steams.sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || (a.steam_id ?? '').localeCompare(b.steam_id ?? '')).map((s) => s.steam_id ?? ''),
         bio: player.bio,
         achievements: player.achievements,
         team_history_text: player.team_history,

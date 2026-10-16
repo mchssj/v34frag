@@ -8,7 +8,9 @@ export default defineConfig({
       },
       {
         // Requieren la Supabase local levantada (pnpm db:start).
-        test: { name: 'integration', include: ['test/integration/**/*.test.ts'], environment: 'node', testTimeout: 20_000 },
+        // Un archivo a la vez: varios tocan estado global de la base (configuración y recálculo del ELO,
+        // tope de SteamID) y en paralelo se pisan.
+        test: { name: 'integration', include: ['test/integration/**/*.test.ts'], environment: 'node', testTimeout: 20_000, fileParallelism: false },
       },
     ],
     coverage: {

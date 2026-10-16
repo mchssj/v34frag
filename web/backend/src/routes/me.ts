@@ -8,14 +8,11 @@ import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { AVATAR_MAX_BYTES, readImage, storageError } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
-import { Envelope, envelope, listQuery, runList } from '../lib/list';
 import {
   AvatarResult,
   AvatarUpload,
   MyProfile,
   ProfilePatch,
-  ProfileRequest,
-  ProfileRequestBody,
 } from '../schemas/profile';
 import { profileOf, roleOf } from '../services/account';
 
@@ -81,12 +78,6 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
   };
 }
 
-const MyClaimQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
-  status: z.enum(['pending', 'approved', 'rejected']).optional(),
-});
-
-const REQUEST_FIELDS = 'id, player_id, status, created_at, player:players(id, nick)';
-
 // ---------- rutas ----------
 
 const getProfile = createRoute({
@@ -140,39 +131,6 @@ const uploadAvatar = createRoute({
   },
 });
 
-const listRequests = createRoute({
-  method: 'get',
-  path: '/api/v1/me/profile-requests',
-  tags: ['Mi perfil'],
-  summary: 'Mis solicitudes de reclamo de perfil',
-  description:
-    'Solicitudes de reclamo de perfil del usuario. **Deprecado:** el reclamo de perfil va a pasar al juego ' +
-    '(`!claim <código>`); sigue funcionando hasta entonces.',
-  deprecated: true,
-  security: bearer,
-  middleware: [requireUser] as const,
-  request: { query: MyClaimQuery },
-  responses: { 200: { description: 'Solicitudes', ...json(Envelope(ProfileRequest).openapi('ProfileRequestList')) }, ...errorResponses(400, 401) },
-});
-
-const createRequest = createRoute({
-  method: 'post',
-  path: '/api/v1/me/profile-requests',
-  tags: ['Mi perfil'],
-  summary: 'Reclamar un perfil de jugador',
-  description:
-    'Pide que un admin vincule el jugador a tu cuenta. El jugador no puede tener cuenta vinculada. ' +
-    '**Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`); sigue funcionando hasta entonces.',
-  deprecated: true,
-  security: bearer,
-  middleware: [requireUser] as const,
-  request: { body: { required: true, ...json(ProfileRequestBody) } },
-  responses: {
-    201: { description: 'Solicitud creada (pendiente)', ...json(ProfileRequest) },
-    ...errorResponses(400, 401, 404, 409),
-  },
-});
-
 export const me = createRouter()
   .openapi(getProfile, async (c) => c.json(await loadMyProfile(c), 200))
   .openapi(patchProfile, async (c) => {
@@ -222,32 +180,4 @@ export const me = createRouter()
       );
     }
     return c.json({ avatar_url }, 200);
-  })
-  .openapi(listRequests, async (c) => {
-    const p = c.req.valid('query');
-    const { sb, user } = c.var;
-    let q = sb.from('profile_requests').select(REQUEST_FIELDS, { count: 'exact' }).eq('user_id', user.id);
-    if (p.status) q = q.eq('status', p.status);
-    const { rows, total } = await runList<z.infer<typeof ProfileRequest>, typeof q>(q, p, {});
-    return c.json(envelope(rows, total, p), 200);
-  })
-  .openapi(createRequest, async (c) => {
-    const { sb, user } = c.var;
-    const { player_id } = c.req.valid('json');
-
-    const player = must(await sb.from('players').select('id, user_id').eq('id', player_id).maybeSingle());
-    if (!player) throw new AppError(404, 'NOT_FOUND', 'Ese jugador no existe.');
-    if (player.user_id) {
-      throw new AppError(409, 'CONFLICT', player.user_id === user.id ? 'Ese jugador ya está vinculado a tu cuenta.' : 'Ese jugador ya fue reclamado por otra cuenta.');
-    }
-    const pending = mustHave(
-      await sb.from('profile_requests').select('id').eq('user_id', user.id).eq('player_id', player_id).eq('status', 'pending').limit(1),
-    );
-    if (pending.length) throw new AppError(409, 'CONFLICT', 'Ya tienes una solicitud pendiente para ese jugador.');
-
-    const row = mustHave(
-      await sb.from('profile_requests').insert({ player_id, user_id: user.id, status: 'pending' }).select(REQUEST_FIELDS).single(),
-    );
-    return c.json(row, 201);
   });
-

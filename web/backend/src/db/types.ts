@@ -18,6 +18,81 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"claim_codes": {
+                  Row: {
+                    "code": string,"created_at": string,"expires_at": string,"result": string | null,"used_at": string | null,"used_steam_id": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "code": string,"created_at"?: string,"expires_at": string,"result"?: string | null,"used_at"?: string | null,"used_steam_id"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"expires_at"?: string,"result"?: string | null,"used_at"?: string | null,"used_steam_id"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"claim_config": {
+                  Row: {
+                    "id": number,"max_steam_ids": number,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "id"?: number,"max_steam_ids"?: number,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "id"?: number,"max_steam_ids"?: number,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"claim_log": {
+                  Row: {
+                    "code": string | null,"created_at": string,"id": number,"nick": string | null,"ok": boolean,"player_id": string | null,"result": string,"server_id": string | null,"steam_id": string | null,"user_id": string | null
+                  }
+                  Insert: {
+                    "code"?: string | null,"created_at"?: string,"id"?: never,"nick"?: string | null,"ok": boolean,"player_id"?: string | null,"result": string,"server_id"?: string | null,"steam_id"?: string | null,"user_id"?: string | null
+                  }
+                  Update: {
+                    "code"?: string | null,"created_at"?: string,"id"?: never,"nick"?: string | null,"ok"?: boolean,"player_id"?: string | null,"result"?: string,"server_id"?: string | null,"steam_id"?: string | null,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"demo_workers": {
                   Row: {
                     "active": boolean,"created_at": string,"id": string,"last_seen_at": string | null,"name": string,"token_hash": string
@@ -235,6 +310,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "player_matches"
       referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
+      referencedColumns: ["match_id"]
     }
                   ]
                 },"match_player_stats": {
@@ -271,6 +352,12 @@ isOneToOne: false
       columns: ["match_id"]
 isOneToOne: false
       referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_player_stats_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_player_stats_player_id_fkey"
@@ -326,6 +413,12 @@ isOneToOne: false
       columns: ["match_id"]
 isOneToOne: false
       referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_vetos_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_vetos_team_id_fkey"
@@ -399,6 +492,12 @@ isOneToOne: false
       columns: ["parent_match_id"]
 isOneToOne: false
       referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
     },{
       foreignKeyName: "matches_server_id_fkey"
@@ -517,6 +616,12 @@ isOneToOne: false
       referencedRelation: "player_matches"
       referencedColumns: ["match_id"]
     },{
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
+      referencedColumns: ["match_id"]
+    },{
       foreignKeyName: "pcw_posts_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -554,6 +659,37 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"player_extra_steam_ids": {
+                  Row: {
+                    "added_at": string,"added_by": string | null,"player_id": string,"steam_id": string
+                  }
+                  Insert: {
+                    "added_at"?: string,"added_by"?: string | null,"player_id": string,"steam_id": string
+                  }
+                  Update: {
+                    "added_at"?: string,"added_by"?: string | null,"player_id"?: string,"steam_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "player_extra_steam_ids_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "player_extra_steam_ids_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_extra_steam_ids_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"player_medals": {
                   Row: {
@@ -612,37 +748,6 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"profile_requests": {
-                  Row: {
-                    "created_at": string,"id": string,"player_id": string,"status": string,"user_id": string
-                  }
-                  Insert: {
-                    "created_at"?: string,"id"?: string,"player_id": string,"status"?: string,"user_id": string
-                  }
-                  Update: {
-                    "created_at"?: string,"id"?: string,"player_id"?: string,"status"?: string,"user_id"?: string
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "profile_requests_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: false
-      referencedRelation: "admin_user_list"
-      referencedColumns: ["player_id"]
-    },{
-      foreignKeyName: "profile_requests_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: false
-      referencedRelation: "player_overview"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "profile_requests_player_id_fkey"
-      columns: ["player_id"]
-isOneToOne: false
-      referencedRelation: "players"
-      referencedColumns: ["id"]
-    }
-                  ]
                 },"profiles": {
                   Row: {
                     "id": string,"role": string,"tag": string | null,"tag_changed_at": string | null,"updated_at": string | null
@@ -668,6 +773,55 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"steam_requests": {
+                  Row: {
+                    "created_at": string,"id": number,"nick": string | null,"player_id": string,"reason": string | null,"resolved_at": string | null,"resolved_by": string | null,"server_id": string | null,"status": string,"steam_id": string,"user_id": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: never,"nick"?: string | null,"player_id": string,"reason"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"server_id"?: string | null,"status"?: string,"steam_id": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: never,"nick"?: string | null,"player_id"?: string,"reason"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"server_id"?: string | null,"status"?: string,"steam_id"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"team_invites": {
                   Row: {
@@ -948,7 +1102,50 @@ isOneToOne: false
                 }
           }
           Views: {
-            "admin_demo_list": {
+            "admin_claim_log": {
+                  Row: {
+                    "alias": string | null,"code": string | null,"created_at": string | null,"id": number | null,"nick": string | null,"ok": boolean | null,"player_id": string | null,"player_nick": string | null,"result": string | null,"search": string | null,"server_id": string | null,"server_name": string | null,"steam_id": string | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"admin_demo_list": {
                   Row: {
                     "demo_attempts": number | null,"demo_size": number | null,"demo_status": string | null,"demo_uploaded_at": string | null,"expires_at": string | null,"external_id": string | null,"id": string | null,"kind": string | null,"map": string | null,"parent_match_id": string | null,"played_at": string | null,"score1": number | null,"score2": number | null,"search": string | null,"server_has_panel": boolean | null,"server_id": string | null,"server_name": string | null,"side1_name": string | null,"side2_name": string | null,"status": string | null
                   }
@@ -976,6 +1173,12 @@ isOneToOne: false
       columns: ["parent_match_id"]
 isOneToOne: false
       referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
     },{
       foreignKeyName: "matches_server_id_fkey"
@@ -1029,6 +1232,49 @@ isOneToOne: false
                          }
                         Relationships: [
                     
+                  ]
+                },"admin_steam_requests": {
+                  Row: {
+                    "alias": string | null,"created_at": string | null,"id": number | null,"matches": number | null,"nick": string | null,"player_id": string | null,"player_nick": string | null,"player_steam_count": number | null,"reason": string | null,"resolved_at": string | null,"search": string | null,"server_id": string | null,"server_name": string | null,"shares_match": boolean | null,"status": string | null,"status_order": number | null,"steam_id": string | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"admin_team_requests": {
                   Row: {
@@ -1253,6 +1499,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "player_matches"
       referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
+      referencedColumns: ["match_id"]
     }
                   ]
                 },"match_list": {
@@ -1295,6 +1547,12 @@ isOneToOne: false
       columns: ["parent_match_id"]
 isOneToOne: false
       referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
     },{
       foreignKeyName: "matches_team1_fkey"
@@ -1374,6 +1632,12 @@ isOneToOne: false
       columns: ["match_id"]
 isOneToOne: false
       referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
     },{
       foreignKeyName: "pcw_posts_team_id_fkey"
@@ -1497,6 +1761,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "player_matches"
       referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
+      referencedColumns: ["match_id"]
     }
                   ]
                 },"player_overview": {
@@ -1531,6 +1801,13 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"player_steam_all": {
+                  Row: {
+                    "added_at": string | null,"is_primary": boolean | null,"player_id": string | null,"steam_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"public_profiles": {
                   Row: {
                     "id": string | null,"tag": string | null
@@ -1542,6 +1819,64 @@ isOneToOne: false
                            "id"?: string | null,"tag"?: string | null
                          }
                         Relationships: [
+                    
+                  ]
+                },"steam_profile_list": {
+                  Row: {
+                    "elo": number | null,"elo_matches": number | null,"first_played": string | null,"last_nick": string | null,"last_played": string | null,"matches": number | null,"nicks": (string)[] | null,"peak_elo": number | null,"search": string | null,"steam_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"steam_profile_map_stats": {
+                  Row: {
+                    "adr": number | null,"kd": number | null,"losses": number | null,"map_name": string | null,"maps": number | null,"rating": number | null,"steam_id": string | null,"wins": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"steam_profile_matches": {
+                  Row: {
+                    "assists": number | null,"damage": number | null,"deaths": number | null,"demo_status": string | null,"elo_after": number | null,"elo_before": number | null,"elo_delta": number | null,"game_nick": string | null,"headshots": number | null,"kills": number | null,"kind": string | null,"map": string | null,"match_id": string | null,"parent_match_id": string | null,"played_at": string | null,"rating": number | null,"rounds": number | null,"score1": number | null,"score2": number | null,"side": number | null,"side1_name": string | null,"side2_name": string | null,"status": string | null,"steam_id": string | null,"team1_name": string | null,"team2_name": string | null,"winner_side": number | null,"won": boolean | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "match_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
+      referencedColumns: ["match_id"]
+    }
+                  ]
+                },"steam_profile_stats": {
+                  Row: {
+                    "adr": number | null,"assists": number | null,"damage": number | null,"deaths": number | null,"hs": number | null,"kd": number | null,"kills": number | null,"losses": number | null,"maps": number | null,"rating": number | null,"rounds": number | null,"steam_id": string | null,"wins": number | null
+                  }
+                  Relationships: [
                     
                   ]
                 },"steam_unlinked": {
@@ -1673,6 +2008,12 @@ isOneToOne: false
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string
                            },
+"admin_remove_steam":
+{ Args: { "p_steam": string }; Returns: undefined
+                           },
+"admin_set_primary_steam":
+{ Args: { "p_steam": string }; Returns: undefined
+                           },
 "admin_users":
 { Args: { "p_q"?: string }; Returns: {
               "id": string,"player_id": string,"player_steam_id": string,"role": string,"tag": string,"tag_changed_at": string
@@ -1680,6 +2021,9 @@ isOneToOne: false
                            },
 "alias_check":
 { Args: { "p_tag": string }; Returns: string
+                           },
+"approve_steam_request":
+{ Args: { "p_id": number }; Returns: undefined
                            },
 "approve_team_request":
 { Args: { "p_user": string }; Returns: string
@@ -1697,6 +2041,14 @@ isOneToOne: false
                            },
 "cancel_pcw_post":
 { Args: { "p_post": string }; Returns: undefined
+                           },
+"claim_with_code":
+{ Args: { "p_code": string,"p_nick"?: string,"p_steam": string,"p_token": string }; Returns: Json
+                           },
+"create_claim_code":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "code": string,"expires_at": string
+            }[]
                            },
 "create_demo_worker_token":
 { Args: { "p_name": string }; Returns: string
@@ -1771,6 +2123,9 @@ isOneToOne: false
                            },
 "elo_apply_match":
 { Args: { "p_match": string }; Returns: undefined
+                           },
+"elo_key":
+{ Args: { "p_steam": string }; Returns: string
                            },
 "elo_recompute_all":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -1875,6 +2230,9 @@ isOneToOne: false
 "is_organizer":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"is_steam64":
+{ Args: { "p": string }; Returns: boolean
+                           },
 "is_team_captain":
 { Args: { "p_team": string }; Returns: boolean
                            },
@@ -1917,6 +2275,9 @@ isOneToOne: false
 "pcw_side_team":
 { Args: { "p_side": string,"p_team": string }; Returns: undefined
                            },
+"reject_steam_request":
+{ Args: { "p_id": number,"p_reason": string }; Returns: undefined
+                           },
 "reject_team_request":
 { Args: { "p_user": string }; Returns: undefined
                            },
@@ -1928,6 +2289,9 @@ isOneToOne: false
                            },
 "search_norm":
 { Args: { "p": string }; Returns: string
+                           },
+"set_claim_config":
+{ Args: { "p_max_steam_ids": number }; Returns: number
                            },
 "set_my_tag":
 { Args: { "p_tag": string }; Returns: undefined
@@ -1946,6 +2310,24 @@ isOneToOne: false
                            },
 "set_user_tag":
 { Args: { "p_force"?: boolean,"p_tag": string,"p_user": string }; Returns: undefined
+                           },
+"steam_attach":
+{ Args: { "p_by": string,"p_player": string,"p_steam": string }; Returns: boolean
+                           },
+"steam_detach":
+{ Args: { "p_steam": string }; Returns: boolean
+                           },
+"steam_history_release":
+{ Args: { "p_player": string,"p_steam": string }; Returns: undefined
+                           },
+"steam_history_to":
+{ Args: { "p_player": string,"p_steam": string }; Returns: undefined
+                           },
+"steam_owner":
+{ Args: { "p_steam": string }; Returns: string
+                           },
+"steam_requests_expire":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "team_can_join":
 { Args: { "p_player": string,"p_team": string }; Returns: undefined

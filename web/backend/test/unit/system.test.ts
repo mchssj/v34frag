@@ -53,8 +53,7 @@ describe('documentación', () => {
     expect(doc.paths['/api/v1/me/profile'].get).toBeDefined();
     expect(doc.paths['/api/v1/me/profile'].patch).toBeDefined();
     expect(doc.paths['/api/v1/me/avatar'].post.requestBody.content['multipart/form-data']).toBeDefined();
-    expect(doc.paths['/api/v1/me/profile-requests'].post.deprecated).toBe(true);
-    expect(doc.paths['/api/v1/me/profile-requests'].get.deprecated).toBe(true);
+    expect(doc.paths['/api/v1/me/profile-requests']).toBeUndefined();
     expect(doc.paths['/api/v1/me/profile'].get.deprecated).toBeUndefined();
     expect(doc.paths['/api/v1/pcw/formats'].get).toBeDefined();
     expect(doc.paths['/api/v1/admin/pcw/formats'].put.security).toEqual([{ bearerAuth: [] }]);

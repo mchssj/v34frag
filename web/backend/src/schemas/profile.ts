@@ -113,15 +113,3 @@ export const AvatarUpload = z
       .openapi({ type: 'string', format: 'binary', description: 'JPEG, PNG o WebP, máximo 1 MB. Conviene recortarla a 256×256 antes de subirla.' }),
   })
   .openapi('AvatarUpload');
-
-export const ProfileRequestBody = z.object({ player_id: z.uuid() }).openapi('ProfileRequestBody');
-
-export const ProfileRequest = z
-  .object({
-    id: z.uuid(),
-    player_id: z.uuid(),
-    status: z.string().openapi({ example: 'pending', description: 'pending, approved o rejected' }),
-    created_at: z.string(),
-    player: z.object({ id: z.uuid(), nick: z.string() }).nullable(),
-  })
-  .openapi('ProfileRequest');

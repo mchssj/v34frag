@@ -86,7 +86,8 @@ export const PublicDetails = z
   .openapi('PublicDetails');
 
 export const PlayerDetail = PlayerSummary.extend({
-  steam_id: z.string().nullable(),
+  steam_id: z.string().nullable().openapi({ description: 'SteamID principal' }),
+  steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero' }),
   bio: z.string().nullable(),
   achievements: z.string().nullable(),
   team_history_text: z.string().nullable().openapi({ description: 'Historial cargado a mano por el admin (texto libre)' }),

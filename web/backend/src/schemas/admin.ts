@@ -148,17 +148,6 @@ export const RankingConfig = z
   })
   .openapi('RankingConfig');
 
-export const ProfileRequestAdmin = z
-  .object({
-    id: z.uuid(),
-    user_id: z.uuid(),
-    alias: z.string().nullable(),
-    player: z.object({ id: z.uuid(), nick: z.string() }).nullable(),
-    status: z.string(),
-    created_at: z.string(),
-  })
-  .openapi('ProfileRequestAdmin');
-
 export const IdParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 export const UserIdParam = z.object({ userId: z.uuid().openapi({ param: { name: 'userId', in: 'path' } }) });
 export const TeamPlayerParam = IdParam.extend({ playerId: z.uuid().openapi({ param: { name: 'playerId', in: 'path' } }) });
@@ -187,11 +176,6 @@ export const BlockedHitQuery = listQuery(['kind', 'name'], { sort: 'kind', order
   kind: z.enum(['alias', 'player', 'team']).optional(),
 });
 export const BlockedHitList = Envelope(BlockedHit).openapi('BlockedHitList');
-
-export const ClaimQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
-  status: z.enum(['pending', 'approved', 'rejected']).optional(),
-});
-export const ProfileRequestAdminList = Envelope(ProfileRequestAdmin).openapi('ProfileRequestAdminList');
 
 export const TeamRequestQuery = listQuery(['status', 'name'], { sort: 'status', order: 'asc' }).extend({
   status: z.enum(['pending', 'approved', 'rejected']).optional(),

@@ -22,10 +22,8 @@ import {
   BlockedWordBody,
   BlockedWordList,
   BlockedWordQuery,
-  ClaimQuery,
   IdParam,
   MedalBody,
-  ProfileRequestAdminList,
   SteamLinkBody,
   SteamUnlinkedList,
   SteamUnlinkedQuery,
@@ -111,7 +109,7 @@ const unlinked = createRoute({
 const steamLink = createRoute({
   method: 'post', path: '/api/v1/admin/steam/link', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Vincular un SteamID',
-  description: 'Pasa todas las partidas de ese SteamID al jugador (y lo saca de invitado en los mixes). `player_id: null` lo desvincula.',
+  description: 'Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO. `player_id: null` lo quita de su ficha.',
   request: { body: { required: true, ...json(SteamLinkBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
 });
@@ -159,35 +157,6 @@ const hits = createRoute({
   request: { query: BlockedHitQuery },
   responses: { 200: { description: 'Coincidencias', ...json(BlockedHitList) }, ...errorResponses(400, 401, 403) },
 });
-
-// ---------- reclamos de perfil (deprecados) ----------
-
-const deprecatedNote = ' **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`).';
-const listClaims = createRoute({
-  method: 'get', path: '/api/v1/admin/profile-requests', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const, deprecated: true,
-  summary: 'Solicitudes de reclamo de perfil', description: 'Por defecto, la más nueva primero.' + deprecatedNote,
-  request: { query: ClaimQuery },
-  responses: { 200: { description: 'Solicitudes', ...json(ProfileRequestAdminList) }, ...errorResponses(400, 401, 403) },
-});
-const approveClaim = createRoute({
-  method: 'post', path: '/api/v1/admin/profile-requests/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const, deprecated: true,
-  summary: 'Aprobar un reclamo', description: 'Vincula el jugador a la cuenta: su nombre pasa a ser el alias.' + deprecatedNote,
-  request: { params: IdParam },
-  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
-});
-const rejectClaim = createRoute({
-  method: 'post', path: '/api/v1/admin/profile-requests/{id}/reject', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const, deprecated: true,
-  summary: 'Rechazar un reclamo', description: deprecatedNote.trim(),
-  request: { params: IdParam },
-  responses: { ...done, ...errorResponses(400, 401, 403, 404) },
-});
-
-async function pendingClaim(c: C, id: string) {
-  const r = must(await c.var.sb.from('profile_requests').select('id, player_id, user_id, status').eq('id', id).maybeSingle());
-  if (!r) throw notFound('esa solicitud');
-  if (r.status !== 'pending') throw new AppError(400, 'BUSINESS_RULE', 'Esa solicitud ya no está pendiente.');
-  return r;
-}
 
 export const adminPlayers = createRouter()
   .openapi(createPlayer, async (c) => {
@@ -310,30 +279,4 @@ export const adminPlayers = createRouter()
     type Row = { kind: string; id: string; name: string; word: string };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
     return c.json(envelope(rows.map((r) => ({ ...r, kind: r.kind as 'alias' | 'player' | 'team' })), total, p), 200);
-  })
-  .openapi(listClaims, async (c) => {
-    const p = c.req.valid('query');
-    const { sb } = c.var;
-    let q = sb.from('profile_requests').select('id, user_id, status, created_at, player:players(id, nick)', { count: 'exact' });
-    if (p.status) q = q.eq('status', p.status);
-    type Row = { id: string; user_id: string | null; status: string; created_at: string; player: { id: string; nick: string } | null };
-    const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    const ids = [...new Set(rows.map((r) => r.user_id).filter((x): x is string => !!x))];
-    const people = ids.length ? mustHave(await sb.from('admin_user_list').select('id, alias').in('id', ids)) : [];
-    const alias = new Map(people.map((u) => [u.id!, u.alias]));
-    return c.json(
-      envelope(rows.map((r) => ({ id: r.id, user_id: r.user_id!, alias: alias.get(r.user_id!) ?? null, player: r.player, status: r.status, created_at: r.created_at })), total, p),
-      200,
-    );
-  })
-  .openapi(approveClaim, async (c) => {
-    const r = await pendingClaim(c, c.req.valid('param').id);
-    must(await c.var.sb.from('players').update({ user_id: r.user_id }).eq('id', r.player_id!));
-    must(await c.var.sb.from('profile_requests').update({ status: 'approved' }).eq('id', r.id));
-    return c.body(null, 204);
-  })
-  .openapi(rejectClaim, async (c) => {
-    const r = await pendingClaim(c, c.req.valid('param').id);
-    must(await c.var.sb.from('profile_requests').update({ status: 'rejected' }).eq('id', r.id));
-    return c.body(null, 204);
   });
