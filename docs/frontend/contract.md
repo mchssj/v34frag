@@ -1,6 +1,6 @@
 # Contrato para el frontend
 
-Fecha: 2026-10-15. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, ELO y lo ya decidido de torneos. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+Fecha: 2026-10-15. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW y ELO. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
 
 Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /api/openapi.json`). Si este documento y la OpenAPI no coinciden en un detalle, manda la OpenAPI. Las decisiones de diseño (qué se muestra, a quién y con qué reglas) mandan acá.
 
@@ -44,7 +44,7 @@ sequenceDiagram
 - Ante un 401, renovar con `/auth/refresh` una sola vez y reintentar. Si el refresh también da 401, mandar al login.
 - El `refresh_token` es de un solo uso: con varias pestañas, que una sola renueve y comparta el resultado.
 - Las rutas públicas aceptan el token si viene: con sesión, la respuesta puede traer más datos (por ejemplo, los datos personales de un perfil privado que el usuario puede ver, o si el usuario es capitán de un equipo).
-- `user.role` es `user` o `admin`. Las pantallas de admin se muestran solo a `admin`, pero la API lo vuelve a verificar.
+- `user.role` es `user`, `organizer` o `admin`. Las pantallas de admin se muestran solo a `admin`; "Crear torneo" y la gestión de torneos, a `organizer` y `admin` (en un torneo concreto, `viewer.can_manage` dice si puede gestionarlo). La API lo vuelve a verificar.
 
 ### Errores
 
@@ -88,6 +88,55 @@ Siempre con este formato:
 
 - **Privacidad del perfil:** público o privado (ya no existe "solo miembros"). Privado oculta los **datos personales** (nombre real, país, redes); la ficha, las stats y las partidas siguen siendo públicas.
 
+### Registro por pasos
+
+Lo único obligatorio es crear la cuenta. Todo lo demás se completa con sesión y se puede omitir.
+
+**Paso obligatorio: `POST /auth/signup`**
+
+| Campo | Reglas |
+|---|---|
+| `email` | Email válido, hasta 254 caracteres |
+| `password` | De 6 a 72 caracteres (Supabase puede exigir más según su configuración) |
+| `tag` | El **alias**: de 2 a 24 caracteres, sin `<` ni `>`, único sin distinguir mayúsculas y sin palabras bloqueadas |
+
+- **Alias en vivo:** se valida mientras se escribe con `GET /api/v1/aliases/{alias}/available`. Responde `available` y `reason`: `length`, `chars`, `blocked` o `taken`.
+- **Errores del alias:** si está tomado, `409`; si tiene una palabra bloqueada, `400`. En los dos casos `details[0].path = "tag"`.
+- **Con confirmación de email** (`needsConfirmation: true`): **no hay sesión hasta que confirme**. Mostrar "revisa tu correo" y ofrecer los pasos opcionales después del primer login.
+- **Sin confirmación:** la respuesta ya trae la sesión y se sigue directo.
+- **Límite:** 10 intentos por minuto por IP, compartido con el login.
+
+**Pasos opcionales**
+
+- **Datos personales y redes:** `PATCH /api/v1/me/profile`. Exige al menos un campo; si el usuario omite el paso, no se llama. Un paso o dos, da igual: acepta cualquier subconjunto.
+
+  | Campo | Reglas |
+  |---|---|
+  | `real_name` | Hasta 60 caracteres: letras, espacios, punto, apóstrofe y guion |
+  | `country` | Uno de la lista (países de Latinoamérica, España, Estados Unidos, "Otro") |
+  | `game_role` | AWPer, Rifler, IGL, Support, Entry fragger, Lurker u Otro |
+  | `steam` | SteamID64, `STEAM_X:Y:Z`, link del perfil o nombre de perfil |
+  | `faceit` | Nickname o link de faceit.com |
+  | `discord` | Nombre de usuario, de 2 a 40 caracteres, sin espacios |
+
+- **Avatar:** `POST /api/v1/me/avatar`, con las reglas de la tabla de arriba.
+- **Si el perfil está completo:** se ve en `details` de `GET /api/v1/me/profile`, para ofrecer "completa tu perfil" a quien lo omitió.
+
+**Lo que no se hace en el registro**
+
+- **Vincular el SteamID** (lo que hace falta para entrar a un equipo) **no es** el campo `steam` del perfil, que es solo un dato para mostrar. El vínculo real lo hace un admin al aprobar un reclamo o desde el panel; más adelante será con `!claim` desde el juego. El registro conviene que avise que, para entrar a un equipo, hace falta vincularlo.
+- **La privacidad** es del jugador vinculado, no de la cuenta, y hoy la cambia el admin. Una cuenta nueva no tiene jugador.
+
+```mermaid
+flowchart LR
+  A[1. Cuenta<br/>email, contraseña, alias] -->|POST /auth/signup| B{¿Confirmar email?}
+  B -->|sí| C[Revisa tu correo<br/>pasos opcionales al primer login]
+  B -->|no, hay sesión| D[2. Datos personales<br/>opcional]
+  D -->|PATCH /me/profile u Omitir| E[3. Redes<br/>opcional]
+  E -->|PATCH /me/profile u Omitir| F[4. Avatar<br/>opcional]
+  F -->|POST /me/avatar u Omitir| G[Listo]
+```
+
 ## 3. Modelo de datos nuevo (lo que cambia respecto de la web vieja)
 
 | Tema | Antes | Después |
@@ -98,7 +147,8 @@ Siempre con este formato:
 | **Miembros de un equipo** | Arreglo de ids | Lista con rol (`player`, `sub`, `coach`) y fechas de alta y baja. El **historial de equipos** sale de ahí |
 | **Video y link de demo** | Campos cargados a mano | **Se eliminan.** La demo se descarga desde el botón que usa R2 (estado: `none`, `pending`, `uploaded`, `missing` o `expired`) |
 | **IP del servidor de la partida** | Se mostraba para conectarse | Se mantiene |
-| **Formato suizo de torneo** | Aparecía como opción sin generar llave | **Se quita** |
+| **Formato suizo de torneo** | Aparecía como opción sin generar llave | **Vuelve como plantilla nueva**, "suizo + playoffs" al estilo del Major de CS2, con su motor (sección 8b) |
+| **Resultados de torneos y PCW** | Cada capitán cargaba mapas, rondas y capturas; un admin aprobaba | **Llegan solos del servidor con `!match`.** A mano los cargan el organizador o el admin. No hay pantalla de reportes ni capturas |
 | **Email en el chat de partida** | Se guardaba y se podía leer | La API **no lo devuelve**: el autor se muestra con su alias |
 | **Avatar** | Hasta 5 MB y GIF | **1 MB, solo JPEG, PNG o WebP** |
 | **Matchmaking** | Cola 1v1 a 5v5 sin terminar | **Se elimina.** No hay pantallas de matchmaking |
@@ -140,8 +190,8 @@ Un jugador con cuenta tiene **un solo nombre en la web: el alias**. Une lo que a
 | Cómo se entra | **Estilo FACEIT:** el capitán invita y el jugador acepta, o el jugador pide entrar y el capitán acepta. El admin puede todo, incluso sumar a alguien directamente |
 | SteamID obligatorio | Solo puede entrar a un equipo quien tiene **cuenta con SteamID vinculado**. Si no lo tiene, la acción falla: mostrar cómo vincularlo |
 | Varios equipos | Un jugador **puede estar en varios equipos** a la vez |
-| Torneos | Un jugador no puede estar inscrito en un mismo torneo con dos equipos. La inscripción del segundo equipo falla con un mensaje que nombra al jugador y al otro equipo; se destraba cuando cualquiera de los dos equipos lo saca. Tampoco puede entrar a un equipo inscrito en un torneo donde ya está con otro equipo |
-| PCW | No se puede jugar una PCW si un jugador está en el roster de los dos bandos: aceptarla falla con un mensaje. Al publicar o aceptar, el bando va a poder jugar **como uno de sus equipos oficiales** (todo el roster de ese plantel) para sumar al ranking: llega con la entrega de PCW |
+| Torneos | Un jugador no puede estar **inscrito** en un mismo torneo con dos equipos (sección 8b). Entrar a un equipo es libre: lo que se controla es la inscripción |
+| PCW | No se puede jugar una PCW si un jugador está en el roster de los dos bandos: aceptarla falla con un mensaje. Al publicar o aceptar, el bando puede jugar **como uno de sus equipos oficiales** (sección 8) |
 | Vencimiento | Invitaciones y pedidos vencen a los **7 días** (`expires_at`). Uno abierto por jugador y equipo. Los listados de la API ya excluyen los vencidos |
 | Capitán | No puede salir sin ceder antes la capitanía. La cede a un miembro con cuenta |
 | Salir o ser sacado | El jugador queda como ex integrante (historial) |
@@ -182,57 +232,150 @@ stateDiagram-v2
 - `GET /api/v1/ranking/teams?pcw=0|1`: posición, equipo, PJ, G, P y puntos.
 - **Por defecto cuenta solo torneos.** Un interruptor "Contar también PCW" pasa `pcw=1`: suman las PCW jugadas como el equipo (no las de bandos sueltos).
 - **Los puntos son por partida ganada**, no por ganar el torneo entero. Al principio: **30 por partida de torneo** y **5 por PCW**. Los configura el admin y la respuesta trae los valores vigentes, para mostrarlos como leyenda.
-- Si una partida vale más según la fase del torneo se decide en el plan de torneos.
+- Toda partida de torneo ganada vale lo mismo, sin importar la fase. Los W.O. no suman.
 
-## 8. Partidas, `!match` y PCW
+## 8. Partidas, `!match` y PCW (disponible)
 
-### `!match` (base disponible; pantallas pendientes)
+### Partidas
 
-- Cada partida de torneo y PCW tiene un **código de 5 caracteres**. En el servidor, un inscrito de un equipo escribe `!match <código>` y alguien del otro equipo lo confirma con el mismo código (un admin puede vincular solo).
-- Cada mapa jugado queda como un mix vinculado a la partida, con su demo y sus stats. La partida suma el resultado mapa por mapa (BO1, BO3, BO5). Los bandos del mix llevan el nombre de cada equipo.
-- **La web muestra el código** en el detalle de las partidas de torneo y PCW **solo a los integrantes de los dos equipos y a los admins**, y lista los mapas jugados.
-- En el servidor, `!status` muestra el vínculo.
+| Endpoint | Pantalla |
+|---|---|
+| `GET /api/v1/matches?kind=&status=&event=&team=&page=&per=` | **Partidas, Resultados y Mixes**: `kind` `official` (torneo), `pcw` o `mix`. Cada una trae `label` con la fase ("Semifinal", "Grupo A · fecha 2", "Suizo · fase 1 · ronda 3"…), los dos bandos con equipo y marcador, y `parent_match_id` si es un mapa vinculado con `!match` |
+| `GET /api/v1/matches/{id}` | **Detalle**: serie (`maps_detail`) y mapas jugados (`games`, cada uno es un mix con su propio detalle), roster de cada lado (en torneo, los inscritos; en PCW, el roster con invitados), servidor (para el botón "Conectar"), `demo_url` (mix), stats y MVP (mix), veto, código de `!match` y `viewer` (`can_veto`, `can_chat`, `can_manage`, `is_participant`) |
+| `GET /api/v1/matches/{id}/chat?after=<id>` | Chat: los últimos 50, o los nuevos desde un id |
+| `POST /api/v1/matches/{id}/chat` · `DELETE /api/v1/chat/{id}` | Escribir (en torneos y PCW: los dos equipos, el organizador y los admins; en mixes, cualquiera con sesión) y borrar el propio |
+| `POST /api/v1/matches/{id}/veto` (`{ map, version? }`) | Veto del capitán en su turno |
+| `GET /api/v1/maps` | Pool del veto con versiones |
 
-### Reglas de plantel para jugar
+- **Actualización en vivo:**
+  - El detalle de partida y de torneo responde con `ETag`. Conviene consultar cada 3 a 5 segundos mandando `If-None-Match` con el último `ETag`.
+  - Si no cambió, la API responde `304` sin cuerpo.
+  - Para el chat se usa `after` con el id del último mensaje.
+- **Veto:**
+  - `veto.sequence` es la secuencia de bans y picks según el BO; `veto.next` dice a qué equipo y qué acción le toca (null si terminó).
+  - `veto.maps_to_play` trae los mapas en orden con su versión, el decisivo al final.
+  - Si el mapa tiene más de una versión (Inferno: `de_inferno` o `de_inferno_classic`), el pick pide elegirla. La versión del decisivo la fija el organizador (en PCW, la normal).
+- **Demo:** `demo_url` viene armado cuando la demo está subida; si no, mostrar el estado (`pending`, `missing`, `expired`).
+
+### `!match`
+
+- **Código:**
+  - Cada partida de torneo y PCW tiene un **código de 5 caracteres**, que viene en `link_code` del detalle **solo** para los integrantes de los dos equipos, el organizador y los admins.
+  - En el servidor, un jugador de un equipo escribe `!match <código>` y alguien del otro lo confirma.
+- **Resultado automático:**
+  - Cada mapa terminado suma a la serie.
+  - Cuando un equipo gana la serie, la partida se cierra sola y el torneo avanza solo: la llave, la ronda siguiente del suizo, los playoffs y el campeón.
+  - **No hay pantalla para que los capitanes carguen el resultado.**
+- **Si no se pudo jugar en el servidor:** en torneos, el organizador o el admin cargan el resultado (`POST /api/v1/matches/{id}/result`). Una PCW sin `!match` no tiene resultado; solo el admin puede cargarle uno.
+- **Overtime:** no hay mapas empatados, el servidor juega overtime.
+
+### Reglas para jugar
 
 | Tipo | Regla |
 |---|---|
-| Torneo | El equipo necesita **5 jugadores** en su plantel para inscribirse. En el servidor juegan solo inscritos |
-| PCW | Para publicarla o aceptarla hacen falta **4 jugadores con cuenta** (roster de 1 a 7 entre cuentas e invitados). En el servidor cada lado puede sumar hasta **2 stand-ins**. Al menos 3 del roster por lado para que cuente |
+| Torneo | En el servidor juegan **solo los jugadores inscritos** de cada equipo (sin stand-ins); el mínimo por lado es `players_min` del torneo |
+| PCW | Para publicarla o aceptarla hacen falta **4 jugadores con cuenta** (roster de 1 a 7 entre cuentas e invitados). En el servidor cada lado puede sumar hasta **2 stand-ins**; al menos 3 del roster por lado para que cuente |
 
-La base rechaza lo que no cumple, con un mensaje para mostrar (`BUSINESS_RULE`).
+### PCW
 
-### Formatos de PCW (disponible)
+| Endpoint | Pantalla |
+|---|---|
+| `GET /api/v1/pcw/posts` | Anuncios abiertos: formato, mapas, hora, nota, roster y, si juega como un equipo, cuál |
+| `POST /api/v1/pcw/posts` | Publicar: `best_of` (de `GET /api/v1/pcw/formats`), `players`, `guests`, `team_id` opcional, `starts_at`, `maps`, `note`, `name` |
+| `POST /api/v1/pcw/posts/{id}/accept` | Aceptar con el roster propio (`team_id` opcional). Devuelve el id de la partida: abrir su detalle |
+| `GET /api/v1/me/pcw` | **Mis PCW**: mi anuncio abierto y mis prácticas (pendientes primero) |
+| `DELETE /api/v1/pcw/posts/{id}` · `POST /api/v1/pcw/matches/{id}/cancel` | Cancelar mi anuncio o una práctica sin mapas jugados |
+
+- **"Jugar como equipo":** el capitán o dueño de un equipo oficial puede elegirlo al publicar o aceptar. Todo el roster con cuenta tiene que ser de ese plantel y la PCW ganada suma al ranking del equipo (con `pcw=1`). El formulario puede cargar el plantel del equipo elegido.
+- **Vencimiento:** una PCW que no se jugó a las 48 h de su hora se cancela sola.
+
+### Formatos de PCW
 
 | Endpoint | Notas |
 |---|---|
 | `GET /api/v1/pcw/formats` | Sin sesión. `{ formats: [1, 3, 5] }`. El formulario de publicar una PCW ofrece solo esos |
 | `PUT /api/v1/admin/pcw/formats` | Solo admin. `{ formats: [1, 3] }`, al menos uno. Pantalla Admin → PCW con tres casillas (BO1, BO3, BO5) que no deja desmarcar la última |
 
-Una PCW ya publicada o aceptada conserva su formato.
+## 8b. Torneos (disponible)
 
-### Pendiente
+### Quién
 
-Endpoints de partidas (listado, detalle, chat, veto de mapas, reportes) y de PCW (publicar, aceptar, cancelar). Se mantienen todas las funciones de la web vieja.
+- **Organizador:** un usuario con `role = 'organizer'`, que nombra el admin. Crea torneos y en **los suyos** hace todo lo del admin. El admin gestiona todos.
+- **En cada torneo,** `viewer.can_manage` del detalle dice si quien consulta puede gestionarlo.
 
-## 8b. Torneos (decisiones tomadas; endpoints pendientes)
+### Plantillas y valores por defecto
 
-Los endpoints de torneos salen en una entrega propia. Esto ya está decidido y conviene diseñarlo así desde el principio:
+El organizador elige una plantilla y ajusta `config`. En cada fase elige **BO1, BO3 o BO5**.
 
-| Tema | Decisión |
-|---|---|
-| Funciones | Se mantienen las de la web vieja: creación, llaves, grupos, inscripciones, veto de mapas, reportes de resultado y chat de partida |
-| Formatos de llave | Los de la web vieja **sin el suizo** (se quita de las opciones) |
-| Formato de las partidas | Lo decide **el creador del torneo** (BO1, BO3 o BO5), igual que hoy con `best_of` y `final_bo` |
-| Jugadores por equipo | El creador define **cuántos jugadores del plantel inscribe cada equipo**, con un máximo de **10** (el tamaño máximo del plantel) |
-| Mínimo para inscribirse | Hoy, **5 jugadores** en el plantel (regla de la base). Se revisa cuando se defina la cantidad de inscritos |
-| Un jugador, un equipo por torneo | Un jugador puede estar en varios equipos, pero **no inscrito en el mismo torneo con dos**. El segundo equipo recibe un error que nombra al jugador y al otro equipo, y se destraba cuando cualquiera de los dos lo saca de su plantel. Hoy se compara el plantel completo; cuando existan los inscritos por equipo, se compara contra los inscritos |
-| Entrar a un equipo inscrito | Mientras el torneo no tenga campeón, un jugador no puede entrar a un equipo inscrito si ya está en otro equipo de ese torneo |
-| Jugar en el servidor | Con `!match` y el código de la partida. En torneo **juegan solo inscritos** (sin stand-ins) |
-| Código de la partida | Lo ven solo los integrantes de los dos equipos y los admins |
-| Ranking | Cada **partida de torneo ganada** suma puntos (30 al principio, configurable), no ganar el torneo entero |
-| Puntos según la fase | Si una partida vale más en grupos, playoffs, semifinal o final **está por decidirse** en el plan de torneos |
-| Partidas que no cuentan | Byes y partidas huérfanas (con etapa pero sin torneo), como en la web vieja |
+| Plantilla (`template`) | Fases | Por defecto |
+|---|---|---|
+| `single` (eliminación directa) | Llave | Todas las rondas y la final BO3; 3.er puesto apagado |
+| `double` (doble eliminación) | Upper, lower, final del upper, final del lower, gran final | BO3; gran final BO5; **sin reset**; mapa de ventaja apagado |
+| `groups` (grupos + playoffs) | Grupos A, B, C… de todos contra todos → playoffs | 2 grupos, clasifican 2; grupos BO1; playoffs y final BO3 |
+| `swiss` (suizo + playoffs) | 1 a 3 fases suizas de 16 (u 8) → playoffs | 3 victorias clasifican y 3 derrotas eliminan (2 y 2 con 8); BO1, decisivas BO3; playoffs y final BO3 |
+
+- **Mapa de ventaja** (doble eliminación): el campeón del upper empieza la gran final 1-0, en BO3 o BO5. El marcador ya lo muestra desde el principio.
+- **3.er puesto:** opcional. Si se activa, BO3.
+- **Grupos:**
+  - Victoria 3 puntos, derrota 0.
+  - Desempate, en orden:
+    1. Puntos.
+    2. Diferencia de rondas.
+    3. Resultado entre los empatados.
+    4. Rondas ganadas.
+    5. El organizador.
+  - En playoffs, el 1.º de un grupo se cruza con el 2.º de otro.
+  - Con 1 grupo y 1 clasificado funciona como una liga.
+- **Suizo:**
+  - Se cruzan equipos con el mismo récord (0-0, después 1-0 y 0-1…), sin repetir rival.
+  - Cada equipo empieza en la fase 1, salvo que el organizador lo ponga en otra (equipos que entran directo, como en el Major).
+  - Hacen falta exactamente 16 (u 8) en la fase 1 y la mitad en cada fase siguiente.
+- **Empate sin resolver en un grupo:**
+  - `tie_pending: { grp }` indica el grupo, y la fila trae `tied: true` en los empatados.
+  - El organizador ordena esos equipos con `POST /api/v1/events/{id}/ties` y los playoffs se arman solos.
+
+### Inscripción
+
+- **Quién:** el capitán inscribe a su equipo eligiendo **qué jugadores juegan**, entre `players_min` y `players_max` del torneo (por defecto 5 y 7; máximo 10). Tienen que ser del plantel y tener SteamID.
+- **Un jugador, un equipo:** si un jugador ya está inscrito con otro equipo en el mismo torneo, la inscripción falla con un mensaje que nombra al jugador y al equipo.
+- **Cambios:** el capitán cambia los inscritos o da de baja al equipo hasta que se genera el fixture. Después, solo el organizador cambia jugadores.
+- **Si un inscrito sale del equipo,** deja de estar inscrito. Mostrar un aviso si el equipo queda por debajo del mínimo.
+
+### Flujo
+
+```mermaid
+stateDiagram-v2
+  [*] --> registration: el organizador crea
+  registration --> in_progress: generar fixture
+  in_progress --> registration: reiniciar (sin partidas jugadas)
+  in_progress --> finished: campeón (automático)
+  registration --> cancelled
+  in_progress --> cancelled
+```
+
+- **Antes de generar:** el formato (plantilla, configuración, inscritos por equipo) y la siembra solo se cambian antes de generar.
+- **Después de generar, todo avanza solo** con cada resultado. El organizador puede:
+  - Asignar hora y servidor a cada partida (`PATCH /api/v1/matches/{id}`; la lista sale de `GET /api/v1/servers`).
+  - Cargar o corregir un resultado (`POST /api/v1/matches/{id}/result` con `maps`, `walkover` o `clear`). Una corrección falla si ya se jugaron partidas que dependían de esa.
+  - Marcar **W.O.**: gana el equipo que se presentó. Cuenta para la llave, pero **no suma puntos en el ranking**.
+  - Reiniciar el veto de una partida.
+- **Borrar un torneo:** solo sin partidas jugadas; si no, se cancela.
+
+### Endpoints
+
+| Endpoint | Quién | Pantalla |
+|---|---|---|
+| `GET /api/v1/events?status=` | Todos | **Torneos** |
+| `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, inscritos con jugadores y siembra, tablas de grupos y del suizo, partidas (con `stage`, `phase`, `grp`, `round` y `pos` para dibujar la llave), campeón. Con `ETag` |
+| `PUT`/`DELETE /api/v1/events/{id}/registrations/{teamId}` | Capitán u organizador | Inscribir, cambiar inscritos (`{ players, start_stage? }`) o dar de baja |
+| `POST /api/v1/events`, `PATCH`/`DELETE /api/v1/events/{id}`, `POST …/cancel` | Organizador o admin | Crear, editar, borrar, cancelar |
+| `PUT /api/v1/events/{id}/seeds` | Organizador o admin | Orden de siembra (todos los inscritos) |
+| `POST /api/v1/events/{id}/generate` · `…/reset` · `…/ties` | Organizador o admin | Fixture y empates |
+
+**Para dibujar las llaves:** las partidas traen `stage` y la posición.
+- **`stage`:** `ko`, `third`, `upper`, `lower`, `grand`, `group` o `swiss`.
+- **Posición:** `phase` (fase), `round` (columna) y `pos` (fila).
+- **Byes:** no vienen en el listado.
 
 ## 8c. ELO y stats
 
@@ -250,6 +393,11 @@ Los endpoints de torneos salen en una entrega propia. Esto ya está decidido y c
 | Pantalla | Endpoints | Estado |
 |---|---|---|
 | Formatos de PCW | `PUT /api/v1/admin/pcw/formats` | Disponible |
+| Organizadores | `PUT /api/v1/admin/users/{id}/role` (`user` u `organizer`); la lista sale de `GET /api/v1/admin/users` | Disponible |
+| Pool de mapas | `GET /api/v1/maps` y `PUT /api/v1/admin/maps` (lista completa en orden, con versiones y activos) | Disponible |
+| Resultado de una PCW | `POST /api/v1/admin/pcw/matches/{id}/result` (`{ maps }`) | Disponible |
+| Partidas huérfanas | `DELETE /api/v1/admin/matches/{id}` (sin stats) | Disponible |
+| Torneos | Lo mismo que el organizador, sobre todos los torneos | Disponible |
 | Jugadores | Alta, edición y baja (`/api/v1/admin/players`). El nick solo se edita en jugadores sin cuenta (en los vinculados manda el alias). Vincular una cuenta es `PATCH` con `user_id`. La baja falla con mensaje si tiene partidas | Disponible |
 | Foto y medallas | `POST /api/v1/admin/players/{id}/photo` (mismas reglas que el avatar), `POST …/{id}/medals`, `DELETE /api/v1/admin/medals/{id}` | Disponible |
 | SteamID sin vincular | `GET /api/v1/admin/steam/unlinked`, `POST /api/v1/admin/steam/link` | Disponible |
@@ -263,8 +411,7 @@ Los endpoints de torneos salen en una entrega propia. Esto ya está decidido y c
 ## 10. Lo que todavía no está definido
 
 - El flujo exacto de `!claim` (dónde se genera y se muestra el código).
-- Los endpoints de partidas, torneos, PCW y servidores.
-- Si los puntos del ranking cambian según la fase del torneo.
+- Los endpoints de admin de servidores (tokens, licencias, panel), de la configuración del ELO y de las demos.
 - El dominio y las URLs de producción.
 
 ## 11. Registro de decisiones
@@ -301,3 +448,22 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-15 | URLs | Por id de jugador y de equipo (el alias puede cambiar) | Propuesta aceptada |
 | 2026-10-15 | Nivel | Lo calcula la API (1 a 10) con los tramos de la web vieja | Propuesta aceptada |
 | 2026-10-15 | Listados | Paginados en el servidor, búsqueda sin tildes ni mayúsculas | Propuesta aceptada |
+| 2026-10-15 | Creador de torneos | El admin y los **organizadores** que nombra el admin; el organizador gestiona solo sus torneos | Daniel |
+| 2026-10-15 | Resultados | Llegan del servidor con `!match`; a mano solo el organizador o el admin; se quitan los reportes y capturas de los capitanes | Daniel |
+| 2026-10-15 | PCW sin `!match` | No tiene resultado (solo el admin puede cargarle uno) | Daniel |
+| 2026-10-15 | Plantillas | Eliminación directa, doble eliminación, grupos + playoffs y suizo + playoffs (como el Major de CS2, hasta 3 fases) | Daniel |
+| 2026-10-15 | BO | El organizador elige BO1, BO3 o BO5 en cada fase; valores por defecto en la sección 8b | Daniel |
+| 2026-10-15 | Gran final | Sin reset; "mapa de ventaja" opcional | Daniel |
+| 2026-10-15 | Empates | Overtime obligatorio; en grupos, desempate por diferencia de rondas y después el resto de criterios | Daniel |
+| 2026-10-15 | Pool de mapas | dust2_ob, cache, cbble, inferno (normal o classic), mirage_rc1, nuke_old_blue, season, tuscan; el admin lo puede cambiar | Daniel |
+| 2026-10-15 | Mapa decisivo con versiones | Lo fija el organizador | Daniel |
+| 2026-10-15 | Chat de torneos y PCW | Escriben los dos equipos, el organizador y los admins | Daniel |
+| 2026-10-15 | Puntos del ranking | Valor único por partida ganada (no cambia según la fase) | Daniel |
+| 2026-10-15 | Motor de torneos | En la base: el torneo avanza solo con cada resultado | Propuesta aceptada |
+| 2026-10-15 | W.O. | Avanza el que se presentó; no suma puntos en el ranking | Propuesta aceptada |
+| 2026-10-15 | Código de `!match` | Oculto en la base; solo los dos equipos, el organizador y los admins | Propuesta aceptada |
+| 2026-10-15 | Partidas sueltas | Se quita "crear partida suelta" | Propuesta aceptada |
+| 2026-10-15 | Borrar un torneo | Solo sin partidas jugadas; si no, se cancela | Propuesta aceptada |
+| 2026-10-15 | PCW vencidas | Se cancelan solas a las 48 h de su hora | Propuesta aceptada |
+| 2026-10-15 | En vivo | `ETag` y `304` en los detalles | Propuesta aceptada |
+| 2026-10-15 | Demo | La API arma `demo_url` | Propuesta aceptada |

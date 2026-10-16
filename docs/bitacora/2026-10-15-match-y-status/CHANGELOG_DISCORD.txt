@@ -22,3 +22,23 @@ Los capitanes invitan jugadores y tú puedes pedir entrar a un equipo. Un equipo
 Para entrar a un equipo necesitas tu SteamID vinculado.
 Puedes estar en varios equipos, pero no en dos del mismo torneo.
 El ranking de equipos da puntos por cada partida de torneo ganada. También puedes verlo sumando las PCW jugadas como el equipo, que dan menos puntos.
+
+Torneos
+Ahora hay organizadores: además del admin, pueden crear y manejar sus propios torneos.
+Formatos: eliminación directa, doble eliminación, grupos + playoffs y suizo + playoffs como en el Major de CS2.
+El organizador elige BO1, BO3 o BO5 en cada fase. En doble eliminación puede darle al campeón del upper un mapa de ventaja en la gran final.
+Al inscribir tu equipo, el capitán elige qué jugadores juegan el torneo.
+Los resultados llegan solos del servidor con !match y la llave avanza sola: el ganador pasa de ronda y al final queda el campeón.
+Ya no hace falta que los capitanes carguen el resultado con capturas. Si algo falla, el organizador lo corrige.
+Si un equipo no se presenta, el organizador marca W.O. y avanza el otro (no suma puntos al ranking).
+
+Veto de mapas
+Mapas: dust2_ob, cache, cbble, inferno, mirage_rc1, nuke_old_blue, season y tuscan.
+Si eliges Inferno, eliges también si se juega la versión normal o la classic.
+
+Chat de partida
+En torneos y PCW escriben solo los jugadores de los dos equipos, el organizador y los admins.
+
+PCW
+Al publicar o aceptar una PCW puedes jugar como uno de tus equipos: si la ganas, suma al ranking de ese equipo.
+Una PCW que no se juega con !match dentro de las 48 horas de su hora se cancela sola.

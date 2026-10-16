@@ -239,7 +239,7 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | Migración `20261011220000` | `csstv_steam64` y `elo_apply_match` aceptan SteamID64 de cuentas nuevas (`765612` + 11 dígitos), además de `7656119` + 10. |
 | Migración `20261011200000` | `elo_apply_match` cuenta a los jugadores sin SteamID64 como μ 25 / σ 8.33 en la fuerza de su equipo, sin darles ELO. |
 
-## Después del corte: replanteo (`supabase/replanteo/01` a `09`)
+## Después del corte: replanteo (`supabase/replanteo/01` a `10`)
 
 > **Todavía no está en producción.** Todo lo de arriba describe el modelo actual, el que usa la web vieja. Estas migraciones se aplican en el corte, junto con el backend y la web nueva. Detalle en la bitácora [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
 
@@ -257,6 +257,9 @@ erDiagram
   players ||--o{ team_invites : player_id
   teams ||--o{ teams : "parent_team_id (PCW como equipo)"
   ranking_config ||--o{ team_standings : "puntos"
+  events ||--o{ tournament_registration_players : event_id
+  events ||--o{ event_stage_teams : "grupos y suizo"
+  matches ||--o{ match_vetos : "veto (map_pool)"
 ```
 
 | Qué | Antes | Después |
@@ -274,7 +277,12 @@ erDiagram
 | Entrar a un equipo | El admin editaba el arreglo | `team_invites` (invitación del capitán o pedido del jugador). Tope de 10 activos, SteamID obligatorio, sin choques de torneo ni de partida pendiente (`team_members_rules`, `tournament_registrations_unicos`) |
 | Ranking de equipos | Calculado en el navegador (3 puntos por victoria de torneo) | Vista `team_standings` con puntos de `ranking_config` (30 por partida de torneo, 5 por PCW jugada como el equipo, `teams.parent_team_id`) |
 | Listados | El navegador traía tablas enteras | Vistas `player_overview`, `team_overview`, `player_matches` y `steam_unlinked`, paginadas por la API |
-| Bajas | Por cascada | Un jugador o equipo con partidas no se puede borrar |
+| Bajas | Por cascada | Un jugador, equipo o torneo con partidas jugadas no se puede borrar |
+| Torneos | `events.format`, `best_of`, `final_bo`, `stage` (texto) y el motor de llaves en el navegador | `events.template` (`single`, `double`, `groups`, `swiss`), `config` (BO por fase y números de la plantilla), `status`, `organizer_id`, `players_min`/`players_max`. **El motor está en la base** (`event_generate`, `event_progress`, `event_set_result`) y avanza solo, también con `!match` |
+| Inscripción | Equipo completo | `tournament_registration_players`: jugadores inscritos (un jugador, un equipo por torneo). `!match` en torneos usa los inscritos |
+| Resultados | Reportes de los capitanes (`result_reports`) y aprobación del admin | Llegan del servidor con `!match`; a mano, el organizador o el admin. `result_reports` se quita |
+| Veto | Lista fija en la web, sin validar | `map_pool` (versiones, Inferno tiene dos) y `veto_act` valida turno, acción y mapa |
+| Código de `!match` | Legible por cualquiera | Columna oculta; `match_link_code` para participantes, organizador y admins |
 | Matchmaking | 4 tablas `matchmaking_*` y 11 funciones | Borrado |
 | Limpieza | `player_claims`, `profiles.player_id`, `player_medals.color`, `matches.demo_url`, `matches.video_url`, formato `swiss` | Borrados |
 

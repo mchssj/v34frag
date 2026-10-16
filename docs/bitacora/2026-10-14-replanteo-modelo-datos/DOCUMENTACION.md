@@ -4,7 +4,7 @@
 
 La fase deja el modelo de datos listo para el backend y la web nueva: saca lo que no se usaba, deja de crear equipos falsos para los mixes, pasa los planteles a una tabla propia, calcula las stats solo desde las partidas jugadas y suma `!match` (vincular un juego del servidor a una partida de torneo o PCW) y los formatos de PCW que decide el admin.
 
-Son nueve migraciones en `supabase/replanteo/` (la `09`, de la entrega de jugadores y equipos). **No se aplican en producción hasta el corte**, porque la web vieja depende del esquema actual. Mientras tanto viven solo en la Supabase local, donde el backend se desarrolla y se prueba sobre el esquema nuevo.
+Son diez migraciones en `supabase/replanteo/` (la `09` y la `10`, de las entregas de jugadores y equipos y de partidas, torneos y PCW). **No se aplican en producción hasta el corte**, porque la web vieja depende del esquema actual. Mientras tanto viven solo en la Supabase local, donde el backend se desarrolla y se prueba sobre el esquema nuevo.
 
 Cada migración verifica que la base esté en el estado esperado y aborta sin cambiar nada si no lo está. Cada una tiene su inversa, que deja la estructura idéntica a la de antes, y sus pruebas. Un ensayo con la copia de producción demuestra que el ELO, las victorias y derrotas y las stats de todos los jugadores quedan **idénticos**.
 
@@ -13,7 +13,7 @@ flowchart LR
   P[(Producción<br/>esquema actual)] -- volcar.sh --> S[supabase/schema/]
   S --> L[(Supabase local)]
   M[supabase/migrations/<br/>pendientes] --> L
-  R[supabase/replanteo/<br/>01 a 09] --> L
+  R[supabase/replanteo/<br/>01 a 10] --> L
   L --> B[Backend y sus pruebas]
   R -. en el corte .-> P
 ```
@@ -31,6 +31,7 @@ flowchart LR
 | 07 | `07_match_vincular.sql` | `!match` y reglas de plantel (ver [`2026-10-15-match-y-status`](../2026-10-15-match-y-status/DOCUMENTACION.md)) |
 | 08 | `08_formatos_pcw.sql` | Formatos de PCW habilitados por el admin (ver [`2026-10-15-formatos-pcw`](../2026-10-15-formatos-pcw/DOCUMENTACION.md)) |
 | 09 | `09_jugadores_equipos.sql` | Alias único, palabras bloqueadas, plantel con invitaciones, ranking y vistas para los listados (ver [`2026-10-15-api-jugadores-equipos`](../2026-10-15-api-jugadores-equipos/DOCUMENTACION.md)) |
+| 10 | `10_partidas_torneos.sql` | Organizadores, plantillas de torneo y motor en la base, inscripción con jugadores, veto, chat y PCW como equipo (ver [`2026-10-15-api-partidas-torneos-pcw`](../2026-10-15-api-partidas-torneos-pcw/DOCUMENTACION.md)) |
 
 ## Mixes sin equipos y `winner_side`
 

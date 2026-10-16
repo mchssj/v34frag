@@ -22,9 +22,10 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - El creador también decide el formato (BO1, BO3, BO5) de las partidas.
   - **Ranking de equipos:** cada partida de torneo ganada suma puntos (30 al principio, configurable). Decidir si vale más según la fase (grupos, playoffs, semifinal, final).
   - Hoy la regla de la `07` pide 5 jugadores en el plantel para inscribirse.
-  - **Un jugador no puede estar inscrito en un mismo torneo con dos equipos** (un jugador sí puede estar en varios equipos). La `09` lo controla comparando planteles (`tournament_registrations_unicos` y `team_members_rules`). Cuando se definan los inscritos por equipo, pasar la comparación a los inscritos.
+  - **Un jugador no puede estar inscrito en un mismo torneo con dos equipos** (un jugador sí puede estar en varios equipos). Desde la `10` se compara contra los jugadores inscritos (`tournament_registration_players`).
+  - Hecho en la `10` (2026-10-15): inscritos por equipo, plantillas con BO por fase y puntos únicos por partida ganada.
   - Daniel, 2026-10-15.
-- **PCW** (cuando se planee la entrega de PCW): al publicar o aceptar una PCW, el bando elige uno de sus equipos oficiales ("jugar como equipo") y todo su roster tiene que ser de ese plantel. Así la PCW ganada suma al ranking de ese equipo. La base ya lo soporta (`teams.parent_team_id`, replanteo `09`); falta el parámetro en `create_pcw_post` y `accept_pcw` y el formulario. Decidido por Daniel el 2026-10-15.
+- ~~**PCW "como equipo"**~~: hecho en la `10` (2026-10-15).
 - **[`docs/frontend/contract.md`](frontend/contract.md):** contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza su sección y la marca de estado (disponible, en implementación, pendiente).
 
 ## Estado del repositorio
@@ -71,11 +72,11 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
-### 1.5 Corte del replanteo: migraciones 01 a 09 y plugin 2.0.0 (`!match` y `!status`)
+### 1.5 Corte del replanteo: migraciones 01 a 10 y plugin 2.0.0 (`!match` y `!status`)
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-- **Base:** `supabase/replanteo/01` a `09`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas (en la copia del 2026-10-14 no hay).
+- **Base:** `supabase/replanteo/01` a `10`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas y la `10` si hay roles desconocidos (en la copia del 2026-10-14 no hay ninguno de los dos).
 - **`sm_status`:** revisar con `docs/bitacora/2026-10-15-match-y-status/pruebas/smx_grep.py` que ningún plugin que solo está en el servidor real (`IGN`, `grenadedrop`, `spectatorswitch`, `CM_PickupWeapon`, `SendFileExploitFixV3.3`) registre `sm_status`. En los del servidor local no aparece.
 - **Plugin 2.0.0**, en la misma tanda:
   - **Servidor real:** `.smx` genérico, sin `CSSTV_DEBUG`, por `SFTP_CSS_*`, con la 1.8.0 en `plugins/disabled/`.
@@ -151,7 +152,8 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
   1. ~~**Fase de "replantear" módulos**~~: **terminada el 2026-10-15**, solo en local (migraciones 01 a 08 en `supabase/replanteo/`, más la `09` de jugadores y equipos; se aplican en el corte). Ver [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
   2. **Endpoints de dominio**, cada uno con su plan:
      - ~~Jugadores, equipos, plantel, ranking y su admin~~: **hechos el 2026-10-15**, solo en local (migración `09` y endpoints). Ver [`2026-10-15-api-jugadores-equipos`](bitacora/2026-10-15-api-jugadores-equipos/DOCUMENTACION.md).
-     - Partidas, torneos, PCW y servidores: pendientes.
+     - ~~Partidas, torneos y PCW~~: **hechos el 2026-10-15**, solo en local (migración `10` y endpoints). Ver [`2026-10-15-api-partidas-torneos-pcw`](bitacora/2026-10-15-api-partidas-torneos-pcw/DOCUMENTACION.md).
+     - Pendientes: admin de servidores (tokens, licencias, panel), configuración del ELO y recálculo, y demos desde el admin.
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
 
