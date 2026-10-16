@@ -126,6 +126,7 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
 | `GET /api/v1/admin/blocked-words/hits` | `kind` | **`kind` asc**, `name` |
 | `GET /api/v1/admin/team-requests` | `status`, `q` | **`status` asc** (pendientes primero), `name` |
+| `GET /api/v1/admin/servers` | `q` (nombre, dirección, IPs, versión), `active`, `license` (`ok`, `expiring`, `expired`, `revoked`), `online`, `has_panel` | **`name` asc**, `created_at`, `last_seen_at`, `license_expires_at`, `matches` |
 | `GET /api/v1/admin/profile-requests` (deprecado) | `status` | **`created_at` desc** |
 
 **Los detalles no traen listas que crecen.** La ficha del jugador, el equipo y el torneo devuelven sus datos; sus listas van en los sub-endpoints de la tabla (`/players/{id}/map-stats`, `/medals`, `/teams`, `/matches`; `/teams/{id}/members`; `/events/{id}/registrations`, `/matches`, `/standings`). El detalle de una partida sí trae lo que es fijo y corto: rosters, mapas de la serie, jugadores de un mix y veto.
@@ -411,7 +412,7 @@ stateDiagram-v2
 
 - **Antes de generar:** el formato (plantilla, configuración, inscritos por equipo) y la siembra solo se cambian antes de generar.
 - **Después de generar, todo avanza solo** con cada resultado. El organizador puede:
-  - Asignar hora y servidor a cada partida (`PATCH /api/v1/matches/{id}`; la lista sale de `GET /api/v1/servers`).
+  - Asignar hora y servidor a cada partida (`PATCH /api/v1/matches/{id}`; la lista sale de `GET /api/v1/servers`, que trae solo los servidores activos con licencia vigente).
   - Cargar o corregir un resultado (`POST /api/v1/matches/{id}/result` con `maps`, `walkover` o `clear`). Una corrección falla si ya se jugaron partidas que dependían de esa.
   - Marcar **W.O.**: gana el equipo que se presentó. Cuenta para la llave, pero **no suma puntos en el ranking**.
   - Reiniciar el veto de una partida.
@@ -465,12 +466,31 @@ stateDiagram-v2
 | Equipos | Alta, edición y baja; sumar a un jugador directamente y cambiar su rol. Nombre o sigla con palabra bloqueada: ofrecer "Guardar igual" (`force: true`). La baja falla si tiene partidas o inscripciones | Disponible |
 | Solicitudes de equipo nuevo | Listar (`has_steam` dice si se puede aprobar), aprobar y rechazar | Disponible |
 | Puntos del ranking | `GET`/`PUT /api/v1/admin/ranking/config` | Disponible |
+| Servidores | Ver "Servidores (admin)" abajo | Disponible |
 | Reclamos de perfil | Listar, aprobar y rechazar | Disponible, **deprecados** |
+
+### Servidores (admin)
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/v1/admin/servers` | Lista (filtros en la sección 1). Cada servidor: `name`, `active`, `license_state`, `license_expires_at`, `allowed_ip`, `online`, `last_seen_at`, `last_ip`, `plugin_version`, `connect_address`, `panel_server_id`, `matches`, `last_match_at` |
+| `GET /api/v1/admin/servers/{id}` | Un servidor, con los mismos campos |
+| `POST /api/v1/admin/servers` | Alta. Body: `name` (obligatorio, de 2 a 40, único sin distinguir mayúsculas), `connect_address` (`host:puerto`), `panel_server_id`, `license_expires_at` (ISO 8601), `allowed_ip`. Responde `201` con `{ id, token, cfg, build_command }` |
+| `PATCH /api/v1/admin/servers/{id}` | Cualquiera de los campos del alta (`null` o `""` borra), más `active` (`false` revoca, `true` reactiva). Devuelve el servidor |
+| `POST /api/v1/admin/servers/{id}/token` | Token nuevo: el anterior deja de funcionar al instante y el servidor queda activo. Mismo cuerpo de respuesta que el alta |
+| `DELETE /api/v1/admin/servers/{id}` | Solo sin partidas. Con partidas, `400 BUSINESS_RULE`: ofrecer "Revocar" |
+
+- **El token se muestra una sola vez** (la base guarda su hash). Mostrar `cfg` en un cuadro con "Copiar" y avisar que no se vuelve a ver; si se pierde, se genera otro.
+- **`build_command`:** para servidores externos (como RBK), que llevan el build licenciado. Mostrarlo junto al token.
+- **`license_state`:** `ok`; `expiring` (vence en 7 días o menos: aviso amarillo); `expired` (el servidor no puede jugar mixes ni subir resultados: aviso rojo); `revoked`.
+- **`online`:** el servidor validó su licencia en los últimos 35 minutos (lo hace al cargar cada mapa y cada 30 minutos).
+- **IP permitida:** `last_ip` es la IP de la última conexión válida; ofrecer "Usar la última IP" para cargarla en `allowed_ip`.
+- Nombre repetido: `409 CONFLICT`.
 
 ## 10. Lo que todavía no está definido
 
 - El flujo exacto de `!claim` (dónde se genera y se muestra el código).
-- Los endpoints de admin de servidores (tokens, licencias, panel), de la configuración del ELO y de las demos.
+- Los endpoints de la configuración del ELO y de las demos (con los tokens del Worker de demos).
 - El dominio y las URLs de producción.
 
 ## 11. Registro de decisiones
@@ -527,3 +547,5 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-15 | En vivo | `ETag` y `304` en los detalles | Propuesta aceptada |
 | 2026-10-15 | Demo | La API arma `demo_url` | Propuesta aceptada |
 | 2026-10-15 | Listados | **Todo GET de lista pagina, filtra y ordena en el servidor** (`page`, `per`, `sort`, `order` y filtros); los detalles no traen listas que crecen; el chat pagina por cursor | Daniel |
+| 2026-10-16 | Servidores | Nombre único; borrar solo sin partidas (con partidas se revoca); para asignar partidas, solo servidores activos con licencia vigente | Propuesta aceptada |
+| 2026-10-16 | Servidores | Sin estado en vivo desde el panel de Pterodactyl por ahora: alcanza con `online` | Propuesta aceptada |
