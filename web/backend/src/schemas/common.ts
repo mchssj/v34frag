@@ -38,3 +38,12 @@ export const Paginated = <T extends z.ZodType>(item: T) =>
     page: z.number().int(),
     per: z.number().int(),
   });
+
+// Doble confirmación de acciones delicadas (recalcular el ELO, rotar el token del Worker de demos): el frontend
+// pregunta si está seguro y pide escribir este texto; la API también lo exige.
+export const CONFIRM_TEXT = 'estoy seguro';
+export const confirmField = (action: string) =>
+  z
+    .string()
+    .openapi({ description: `Doble confirmación: el texto \`${CONFIRM_TEXT}\` que escribió el admin` })
+    .refine((v) => v.trim().toLowerCase() === CONFIRM_TEXT, { message: `Para ${action}, escribe "${CONFIRM_TEXT}".` });

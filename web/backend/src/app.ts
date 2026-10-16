@@ -9,6 +9,7 @@ import { requestLog, withConfig } from './lib/middleware';
 import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
+import { adminDemos } from './routes/admin-demos';
 import { adminPlayers } from './routes/admin-players';
 import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
@@ -66,6 +67,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', adminPlayers);
   app.route('/', adminTeams);
   app.route('/', adminServers);
+  app.route('/', adminDemos);
   app.route('/', elo);
   app.route('/', matches);
   app.route('/', events);

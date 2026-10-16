@@ -215,6 +215,12 @@ isOneToOne: false
       foreignKeyName: "match_chat_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -243,6 +249,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "match_player_stats_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "match_player_stats_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
@@ -292,6 +304,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "match_vetos_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "match_vetos_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
@@ -357,6 +375,12 @@ isOneToOne: false
       columns: ["event_id"]
 isOneToOne: false
       referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
@@ -469,6 +493,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "pcw_posts_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
@@ -918,7 +948,76 @@ isOneToOne: false
                 }
           }
           Views: {
-            "admin_server_list": {
+            "admin_demo_list": {
+                  Row: {
+                    "demo_attempts": number | null,"demo_size": number | null,"demo_status": string | null,"demo_uploaded_at": string | null,"expires_at": string | null,"external_id": string | null,"id": string | null,"kind": string | null,"map": string | null,"parent_match_id": string | null,"played_at": string | null,"score1": number | null,"score2": number | null,"search": string | null,"server_has_panel": boolean | null,"server_id": string | null,"server_name": string | null,"side1_name": string | null,"side2_name": string | null,"status": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "match_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"admin_demo_summary": {
+                  Row: {
+                    "expired": number | null,"missing": number | null,"oldest_pending_at": string | null,"pending": number | null,"uploaded": number | null,"uploaded_bytes": number | null,"worker_last_seen_at": string | null,"worker_online": boolean | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"admin_demo_worker_list": {
+                  Row: {
+                    "active": boolean | null,"created_at": string | null,"id": string | null,"last_seen_at": string | null,"name": string | null,"online": boolean | null,"search": string | null
+                  }
+                  Insert: {
+                           "active"?: boolean | null,"created_at"?: string | null,"id"?: string | null,"last_seen_at"?: string | null,"name"?: string | null,"online"?: never,"search"?: never
+                         }
+                        Update: {
+                           "active"?: boolean | null,"created_at"?: string | null,"id"?: string | null,"last_seen_at"?: string | null,"name"?: string | null,"online"?: never,"search"?: never
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"admin_server_list": {
                   Row: {
                     "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"search": string | null
                   }
@@ -1134,6 +1233,12 @@ isOneToOne: false
       foreignKeyName: "match_chat_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -1166,6 +1271,12 @@ isOneToOne: false
       columns: ["event_id"]
 isOneToOne: false
       referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
@@ -1241,6 +1352,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "pcw_posts_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
@@ -1355,6 +1472,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
@@ -1534,10 +1657,18 @@ isOneToOne: false
             "accept_pcw":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[],"p_post": string,"p_team"?: string }; Returns: string
                            },
+"admin_create_demo_worker":
+{ Args: { "p_name": string }; Returns: {
+              "id": string,"token": string
+            }[]
+                           },
 "admin_create_server":
 { Args: { "p_allowed_ip"?: string,"p_connect_address"?: string,"p_license_expires_at"?: string,"p_name": string,"p_panel_server_id"?: string }; Returns: {
               "id": string,"token": string
             }[]
+                           },
+"admin_demo_retry":
+{ Args: { "p_match": string }; Returns: undefined
                            },
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string
@@ -1788,6 +1919,9 @@ isOneToOne: false
                            },
 "reject_team_request":
 { Args: { "p_user": string }; Returns: undefined
+                           },
+"rotate_demo_worker_token":
+{ Args: { "p_worker": string }; Returns: string
                            },
 "rotate_server_token":
 { Args: { "p_server": string }; Returns: string

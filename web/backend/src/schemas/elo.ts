@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
+import { CONFIRM_TEXT, confirmField } from './common';
 
 // Configuración del ELO, vista previa, simulación y recálculo (plan docs/bitacora/2026-10-16-api-elo-config).
 // Los rangos son los de elo_set_config.
@@ -23,11 +24,7 @@ export const EloValues = z
   })
   .openapi('EloValues');
 
-export const CONFIRM_TEXT = 'estoy seguro';
-const confirm = z
-  .string()
-  .openapi({ description: `Doble confirmación: el texto \`${CONFIRM_TEXT}\` que escribió el admin` })
-  .refine((v) => v.trim().toLowerCase() === CONFIRM_TEXT, { message: `Para recalcular, escribe "${CONFIRM_TEXT}".` });
+const confirm = confirmField('recalcular');
 
 export const EloConfigPut = z
   .object({
