@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { admin, createUser, localEnv } from './local';
+// Sufijo para que los alias (únicos desde el replanteo 09) no choquen entre corridas.
+const sfx = Date.now().toString(36).slice(-5);
 
 const app = createApp();
 const env = localEnv();
@@ -30,51 +32,53 @@ const PNG = (size = 64) => {
 
 describe('GET /api/v1/me/profile', () => {
   it('usuario nuevo: tag, fecha de alta y sin jugador ni equipo', async () => {
-    const u = await createUser({ tag: 'Perfil1' });
+    const u = await createUser({ tag: `Perfil${sfx}` });
     const res = await getProfile(u.token);
     expect(res.status).toBe(200);
     const p = await res.json();
-    expect(p.user).toMatchObject({ id: u.id, email: u.email, tag: 'Perfil1', role: 'user' });
+    expect(p.user).toMatchObject({ id: u.id, email: u.email, tag: `Perfil${sfx}`, role: 'user' });
     expect(Date.parse(p.user.created_at)).toBeGreaterThan(0);
     expect(p.details.joined_at).toBe(p.user.created_at);
-    expect(p).toMatchObject({ player: null, team: null, matches_played: 0 });
+    expect(p).toMatchObject({ player: null, teams: [], matches_played: 0 });
   });
 
-  it('con jugador vinculado: equipo oficial (no el de PCW) y solo partidas válidas', async () => {
+  it('con jugador vinculado: equipos oficiales (no los de PCW) y partidas jugadas terminadas', async () => {
     const u = await createUser();
-    const pl = await insert('players', { nick: `Jug${uid()}`, user_id: u.id, steam_id: `7656119${Date.now().toString().slice(-10)}` });
-    // Juega en un equipo PCW (se ignora) y en uno oficial; desde el replanteo 05 el plantel va en team_members.
+    const steam = `7656119${Date.now().toString().slice(-10)}`;
+    const pl = await insert('players', { nick: `Jug${uid()}`, user_id: u.id, steam_id: steam });
+    // Juega en un equipo PCW (se ignora) y en dos oficiales; desde el replanteo 05 el plantel va en team_members.
     const pcw = await insert('teams', { name: `PCW ${uid()}`, kind: 'pcw' });
-    const team = await insert<{ id: string; name: string }>('teams', { name: `Oficial ${uid()}`, tag: 'OFI', kind: 'official' });
+    const team = await insert<{ id: string; name: string }>('teams', { name: `A Oficial ${uid()}`, tag: 'OFI', kind: 'official' });
+    const team2 = await insert<{ id: string; name: string }>('teams', { name: `B Oficial ${uid()}`, tag: 'DOS', kind: 'official' });
     await insert('team_members', { team_id: pcw.id, player_id: pl.id });
     await insert('team_members', { team_id: team.id, player_id: pl.id });
-    const rival = await insert('teams', { name: `Rival ${uid()}`, kind: 'official' });
-    const ev = await insert('events', { name: `Torneo ${uid()}` });
-    const m = (extra: Record<string, unknown>) => insert('matches', { team1: team.id, team2: rival.id, status: 'finished', ...extra });
-    await m({});
-    await m({ team1: rival.id, team2: team.id, stage: 'Final', event_id: ev.id });
-    await m({ bye: true });
-    await m({ status: 'upcoming' });
-    await m({ stage: 'Semifinal' }); // huérfana: etapa sin torneo
-    const res = await getProfile(u.token);
-    const p = await res.json();
-    expect(p.player).toMatchObject({ id: pl.id, nick: expect.stringMatching(/^Jug/) });
-    expect(p.team).toEqual({ id: team.id, name: team.name, tag: 'OFI' });
-    expect(p.matches_played).toBe(2);
+    await insert('team_members', { team_id: team2.id, player_id: pl.id });
+    // Partidas jugadas: cuenta la terminada, no la cancelada.
+    const mix = (status: string) => insert<{ id: string }>('matches', { kind: 'mix', status, side1_name: 'A', side2_name: 'B' });
+    for (const m of [await mix('finished'), await mix('cancelled')]) {
+      await insert('match_player_stats', { match_id: m.id, steam_id: steam, player_id: pl.id, team: 1, nick: 'x', rounds: 10 });
+    }
+    const p = await (await getProfile(u.token)).json();
+    expect(p.player).toMatchObject({ id: pl.id, nick: expect.any(String) });
+    expect(p.teams).toEqual([
+      { id: team.id, name: team.name, tag: 'OFI', is_captain: false, is_member: true },
+      { id: team2.id, name: team2.name, tag: 'DOS', is_captain: false, is_member: true },
+    ]);
+    expect(p.matches_played).toBe(1);
   });
 
-  it('sin jugador: usa el equipo del que es capitán', async () => {
+  it('sin jugador: muestra el equipo del que es capitán', async () => {
     const u = await createUser();
     const team = await insert<{ id: string }>('teams', { name: `Capi ${uid()}`, kind: 'official', captain_id: u.id });
-    expect((await (await getProfile(u.token)).json()).team.id).toBe(team.id);
+    expect((await (await getProfile(u.token)).json()).teams).toEqual([expect.objectContaining({ id: team.id, is_captain: true, is_member: false })]);
   });
 });
 
 describe('PATCH /api/v1/me/profile', () => {
   it('actualiza y normaliza los campos, y cambia el tag', async () => {
-    const u = await createUser({ tag: 'Viejo' });
+    const u = await createUser({ tag: `Viejo${sfx}` });
     const res = await patch(u.token, {
-      tag: '  Nuevo  ',
+      tag: `  Nuevo${sfx}  `,
       real_name: '  José Pérez ',
       country: 'Colombia',
       game_role: 'AWPer',
@@ -84,7 +88,7 @@ describe('PATCH /api/v1/me/profile', () => {
     });
     expect(res.status).toBe(200);
     const p = await res.json();
-    expect(p.user.tag).toBe('Nuevo');
+    expect(p.user.tag).toBe(`Nuevo${sfx}`);
     expect(p.details).toMatchObject({
       real_name: 'José Pérez',
       country: 'Colombia',

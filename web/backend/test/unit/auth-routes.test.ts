@@ -17,7 +17,11 @@ function gotrue(route: Route) {
   const fn = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
     const url = String(input instanceof Request ? input.url : input);
     if (url.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
-    return route(url, init) ?? new Response('no simulado: ' + url, { status: 599 });
+    const r = route(url, init);
+    if (r) return r;
+    // El registro valida el alias antes: por defecto está libre.
+    if (url.includes('/rest/v1/rpc/alias_check')) return Response.json('ok');
+    return new Response('no simulado: ' + url, { status: 599 });
   });
   vi.stubGlobal('fetch', fn);
   return fn;
@@ -49,6 +53,19 @@ describe('POST /auth/signup', () => {
     const call = fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/signup'))!;
     expect(String(call[0])).toContain('redirect_to=https%3A%2F%2Fcsstv.pages.dev');
     expect(JSON.parse(String(call[1]?.body))).toMatchObject({ email: 'a@b.co', data: { tag: 'Tag1' } });
+  });
+
+  it.each([
+    ['taken', 409, 'CONFLICT'],
+    ['blocked', 400, 'VALIDATION_ERROR'],
+  ])('alias %s: %i %s y no crea la cuenta', async (reason, status, code) => {
+    const fetch = gotrue((url) => (url.includes('/rest/v1/rpc/alias_check') ? Response.json(reason) : undefined));
+    const res = await post('/auth/signup', { email: 'a@b.co', password: 'secreta1', tag: 'Tag1' });
+    expect(res.status).toBe(status);
+    const body = await json(res);
+    expect(body.error.code).toBe(code);
+    expect(body.error.details).toEqual([{ path: 'tag', message: expect.any(String) }]);
+    expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/signup'))).toBe(false);
   });
 
   it('si set_my_tag falla después del registro, igual responde 201 y lo registra', async () => {

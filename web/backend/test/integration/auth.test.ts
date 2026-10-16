@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { admin, createUser, localEnv } from './local';
+// Sufijo para que los alias (únicos desde el replanteo 09) no choquen entre corridas.
+const sfx = Date.now().toString(36).slice(-5);
 
 const app = createApp();
 const env = localEnv();
@@ -34,14 +36,14 @@ async function esperar<T>(fn: () => Promise<T>, ok: (v: T) => boolean, ms = 3000
 describe('POST /auth/signup', () => {
   it('crea la cuenta con el tag y devuelve la sesión (local sin confirmación de email)', async () => {
     const email = nuevoEmail();
-    const res = await post('/auth/signup', { email, password: 'clave-segura-1', tag: '  Nuevo1  ' });
+    const res = await post('/auth/signup', { email, password: 'clave-segura-1', tag: `  Nuevo1${sfx}  ` });
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.needsConfirmation).toBe(false);
-    expect(body.session.user).toMatchObject({ email, tag: 'Nuevo1', role: 'user' });
+    expect(body.session.user).toMatchObject({ email, tag: `Nuevo1${sfx}`, role: 'user' });
     expect(body.session.access_token).toBeTruthy();
     const p = await admin().from('profiles').select('tag').eq('id', body.session.user.id).single();
-    expect(p.data?.tag).toBe('Nuevo1');
+    expect(p.data?.tag).toBe(`Nuevo1${sfx}`);
   });
 
   it('409 si el email ya tiene cuenta', async () => {
@@ -67,12 +69,12 @@ describe('POST /auth/signup', () => {
 
 describe('POST /auth/login', () => {
   it('inicia sesión con rol y tag, y actualiza last_seen', async () => {
-    const u = await createUser({ tag: 'Logueado', role: 'admin' });
+    const u = await createUser({ tag: `Logueado${sfx}`, role: 'admin' });
     const antes = await lastSeen(u.id);
     const res = await post('/auth/login', { email: u.email, password: u.password });
     expect(res.status).toBe(200);
     const s = await res.json();
-    expect(s.user).toMatchObject({ id: u.id, email: u.email, tag: 'Logueado', role: 'admin' });
+    expect(s.user).toMatchObject({ id: u.id, email: u.email, tag: `Logueado${sfx}`, role: 'admin' });
     expect(s.expires_at).toBeGreaterThan(Date.now() / 1000);
     const despues = await esperar(() => lastSeen(u.id), (v) => v !== null && v !== antes);
     expect(despues).not.toBe(antes);
@@ -103,23 +105,23 @@ describe('POST /auth/login', () => {
 
 describe('refresh, me y logout', () => {
   it('refresh entrega una sesión nueva y el refresh_token usado deja de servir', async () => {
-    const u = await createUser({ tag: 'Refresco' });
+    const u = await createUser({ tag: `Refresco${sfx}` });
     const res = await post('/auth/refresh', { refresh_token: u.refresh });
     expect(res.status).toBe(200);
     const s = await res.json();
     expect(s.refresh_token).not.toBe(u.refresh);
-    expect(s.user).toMatchObject({ id: u.id, tag: 'Refresco' });
+    expect(s.user).toMatchObject({ id: u.id, tag: `Refresco${sfx}` });
     // Reusar el viejo fuera del margen de reutilización de Supabase invalida la familia de tokens.
     const otra = await post('/auth/refresh', { refresh_token: 'token-que-no-existe' });
     expect(otra.status).toBe(401);
   });
 
   it('me devuelve la cuenta con fecha de registro', async () => {
-    const u = await createUser({ tag: 'Yo' });
+    const u = await createUser({ tag: `Yo${sfx}` });
     const res = await getMe(u.token);
     expect(res.status).toBe(200);
     const me = await res.json();
-    expect(me).toMatchObject({ id: u.id, email: u.email, tag: 'Yo', role: 'user' });
+    expect(me).toMatchObject({ id: u.id, email: u.email, tag: `Yo${sfx}`, role: 'user' });
     expect(Date.parse(me.created_at)).toBeGreaterThan(0);
   });
 

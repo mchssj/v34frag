@@ -54,12 +54,12 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
     case 'PGRST301': // JWT inválido
     case 'PGRST303': // JWT vencido
       return new AppError(401, 'UNAUTHORIZED', 'La sesión no es válida o venció.');
-    case '42501': // RLS o permiso denegado
-      return new AppError(403, 'FORBIDDEN', 'No tienes permiso para hacer esto.');
+    case '42501': // RLS o permiso denegado; si viene de un raise de una función, su mensaje es para el usuario
+      return new AppError(403, 'FORBIDDEN', ownMessage(err.message) ?? 'No tienes permiso para hacer esto.');
     case 'PGRST116': // .single() sin filas
       return new AppError(404, 'NOT_FOUND', 'No se encontró lo que buscas.');
     case '23505':
-      return new AppError(409, 'CONFLICT', 'Ya existe un registro igual.');
+      return new AppError(409, 'CONFLICT', ownMessage(err.message) ?? 'Ya existe un registro igual.');
     case '23503':
       return new AppError(400, 'VALIDATION_ERROR', 'Hace referencia a algo que no existe.');
     case '23514':
@@ -70,6 +70,10 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);
 }
+
+// Mensajes que genera Postgres por su cuenta (en inglés); los demás vienen de un raise y son para el usuario.
+const PG_MESSAGE = /^(permission denied|new row violates|duplicate key value|insufficient privilege)/i;
+const ownMessage = (m: string) => (m && !PG_MESSAGE.test(m) ? m : null);
 
 // Error de Supabase Auth (AuthApiError y compañía): `code` es el error_code de GoTrue.
 export interface AuthLikeError {

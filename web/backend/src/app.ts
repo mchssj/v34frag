@@ -8,10 +8,16 @@ import { errorBody, onError } from './lib/errors';
 import { requestLog, withConfig } from './lib/middleware';
 import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
+import { account } from './routes/account';
+import { adminPlayers } from './routes/admin-players';
+import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
 import { me } from './routes/me';
 import { pcw } from './routes/pcw';
+import { players } from './routes/players';
+import { roster } from './routes/roster';
 import { system } from './routes/system';
+import { teams } from './routes/teams';
 
 // Mensajes de validación en español para el frontend.
 z.config(z.locales.es());
@@ -48,6 +54,12 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', auth);
   app.route('/', me);
   app.route('/', pcw);
+  app.route('/', account);
+  app.route('/', players);
+  app.route('/', teams);
+  app.route('/', roster);
+  app.route('/', adminPlayers);
+  app.route('/', adminTeams);
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',

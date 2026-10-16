@@ -48,27 +48,19 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     sb.from('players').select('id, nick, photo_url, steam_id').eq('user_id', user.id).limit(1).maybeSingle().then(must),
   ]);
 
-  // Equipo oficial (no PCW): donde juega hoy el jugador vinculado; si no, del que es capitán o dueño.
-  const official = () => sb.from('teams').select('id, name, tag').eq('kind', 'official').limit(1);
-  let team: { id: string; name: string; tag: string | null } | null = null;
-  if (player) {
-    const ids = mustHave(
-      await sb.from('team_members').select('team_id').eq('player_id', player.id).is('left_at', null),
-    ).map((r) => r.team_id);
-    if (ids.length) team = must(await official().in('id', ids).maybeSingle());
-  }
-  team ??= must(await official().or(`captain_id.eq.${user.id},owner_id.eq.${user.id}`).maybeSingle());
+  // Equipos oficiales (no PCW) donde juega hoy el jugador vinculado, más los que capitanea o de los que es dueño.
+  const memberOf = player
+    ? mustHave(await sb.from('team_members').select('team_id').eq('player_id', player.id).is('left_at', null)).map((r) => r.team_id)
+    : [];
+  const filter = [`captain_id.eq.${user.id}`, `owner_id.eq.${user.id}`, ...(memberOf.length ? [`id.in.(${memberOf.join(',')})`] : [])];
+  const teams = mustHave(
+    await sb.from('teams').select('id, name, tag, captain_id').eq('kind', 'official').or(filter.join(',')).order('name'),
+  ).map((t) => ({ id: t.id, name: t.name, tag: t.tag, is_captain: t.captain_id === user.id, is_member: memberOf.includes(t.id) }));
 
+  // Partidas jugadas: las de la vista player_matches (mixes, PCW y torneos terminados).
   let matches_played = 0;
-  if (team) {
-    // Terminadas, sin byes y sin partidas huérfanas (con etapa de torneo pero sin torneo), como isOrph().
-    const valid = 'or(stage.is.null,event_id.not.is.null)';
-    const { count, error } = await sb
-      .from('matches')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'finished')
-      .eq('bye', false)
-      .or(`and(team1.eq.${team.id},${valid}),and(team2.eq.${team.id},${valid})`);
+  if (player) {
+    const { count, error } = await sb.from('player_matches').select('match_id', { count: 'exact', head: true }).eq('player_id', player.id);
     if (error) throw fromPostgrest(error);
     matches_played = count ?? 0;
   }
@@ -83,7 +75,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     },
     details: details ?? EMPTY_DETAILS,
     player,
-    team,
+    teams,
     matches_played,
   };
 }
@@ -97,7 +89,7 @@ const getProfile = createRoute({
   path: '/api/v1/me/profile',
   tags: ['Mi perfil'],
   summary: 'Mi perfil',
-  description: 'Datos de la cuenta, detalles del perfil, jugador vinculado, equipo actual y partidas jugadas.',
+  description: 'Datos de la cuenta, detalles del perfil, jugador vinculado, equipos oficiales actuales y partidas jugadas.',
   security: bearer,
   middleware: [requireUser] as const,
   responses: { 200: { description: 'Perfil', ...json(MyProfile) }, ...errorResponses(401) },
@@ -109,12 +101,12 @@ const patchProfile = createRoute({
   tags: ['Mi perfil'],
   summary: 'Editar mi perfil',
   description:
-    'Solo se cambian los campos enviados. `null` o `""` borra un campo. El tag se cambia con `set_my_tag` ' +
-    '(la misma regla que en la web: 2 a 24 caracteres).',
+    'Solo se cambian los campos enviados. `null` o `""` borra un campo. `tag` es el alias y sigue las reglas de ' +
+    '`PUT /api/v1/me/alias` (único, sin palabras bloqueadas, una vez cada 15 días): conviene usar esa ruta.',
   security: bearer,
   middleware: [requireUser] as const,
   request: { body: { required: true, ...json(ProfilePatch) } },
-  responses: { 200: { description: 'Perfil actualizado', ...json(MyProfile) }, ...errorResponses(400, 401) },
+  responses: { 200: { description: 'Perfil actualizado', ...json(MyProfile) }, ...errorResponses(400, 401, 409) },
 });
 
 const uploadAvatar = createRoute({

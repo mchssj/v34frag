@@ -4,7 +4,7 @@ import type { Context } from 'hono';
 import type { Config } from '../env';
 import { requireUser } from '../lib/auth';
 import { inBackground } from '../lib/background';
-import { AppError, fromAuthError, logError } from '../lib/errors';
+import { AppError, fromAuthError, fromPostgrest, logError } from '../lib/errors';
 import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { createRouter } from '../lib/router';
 import { anonClient, userClient } from '../lib/supabase';
@@ -46,7 +46,7 @@ const signup = createRoute({
   tags: ['Auth'],
   summary: 'Crear una cuenta',
   description:
-    'Registra la cuenta en Supabase Auth con el tag como nickname. Si el proyecto pide confirmar el email, ' +
+    'Registra la cuenta en Supabase Auth con el tag como alias (`409` si está tomado). Si el proyecto pide confirmar el email, ' +
     'devuelve `session: null` y `needsConfirmation: true`: el usuario recibe un correo con un link al frontend.',
   middleware: [rateLimit(RATE_RULES.auth)] as const,
   request: { body: { required: true, ...json(SignupBody) } },
@@ -113,6 +113,14 @@ export const auth = createRouter()
   .openapi(signup, async (c) => {
     const cfg = c.var.config;
     const { email, password, tag } = c.req.valid('json');
+    // El alias se valida antes de crear la cuenta: si no, la base le pondría uno genérico.
+    const check = await anonClient(cfg).rpc('alias_check', { p_tag: tag });
+    if (check.error) throw fromPostgrest(check.error);
+    if (check.data === 'taken') throw new AppError(409, 'CONFLICT', 'Ese alias ya está en uso.', [{ path: 'tag', message: 'Ese alias ya está en uso.' }]);
+    if (check.data !== 'ok') {
+      const message = check.data === 'blocked' ? 'El alias contiene una palabra no permitida.' : 'El alias tiene caracteres no permitidos.';
+      throw new AppError(400, 'VALIDATION_ERROR', message, [{ path: 'tag', message }]);
+    }
     const { data, error } = await anonClient(cfg).auth.signUp({
       email,
       password,

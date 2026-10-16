@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { requireAdmin, requireUser } from '../../src/lib/auth';
 import { createUser, local, localEnv } from './local';
+// Sufijo para que los alias (únicos desde el replanteo 09) no choquen entre corridas.
+const sfx = Date.now().toString(36).slice(-5);
 
 function app() {
   const a = createApp();
@@ -18,13 +20,13 @@ const get = (path: string, token?: string) =>
 
 describe('requireUser / requireAdmin contra la Supabase local', () => {
   it('un usuario real pasa requireUser y su cliente aplica la RLS', async () => {
-    const u = await createUser({ tag: 'Integra1' });
+    const u = await createUser({ tag: `Integra1${sfx}` });
     await createUser(); // otro usuario, que no debe ser visible
     const res = await get('/yo', u.token);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.id).toBe(u.id);
-    expect(body.visibles).toEqual([{ id: u.id, tag: 'Integra1' }]);
+    expect(body.visibles).toEqual([{ id: u.id, tag: `Integra1${sfx}` }]);
   });
 
   it('la clave pública (anon) no sirve como sesión', async () => {

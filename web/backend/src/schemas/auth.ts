@@ -7,7 +7,7 @@ export const Tag = z
   .trim()
   .min(2)
   .max(24)
-  .openapi({ description: 'Nickname visible en la web (2 a 24 caracteres)', example: 'Mecha' });
+  .openapi({ description: 'Alias: el nombre en la web. Único sin distinguir mayúsculas, 2 a 24 caracteres', example: 'Mecha' });
 
 export const SignupBody = z
   .object({

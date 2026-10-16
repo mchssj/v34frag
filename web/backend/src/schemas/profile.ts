@@ -89,11 +89,18 @@ export const MyProfile = z
       .object({ id: z.uuid(), nick: z.string(), photo_url: z.string().nullable(), steam_id: z.string().nullable() })
       .nullable()
       .openapi({ description: 'Jugador vinculado a la cuenta (lo vincula un admin al aprobar un reclamo)' }),
-    team: z
-      .object({ id: z.uuid(), name: z.string(), tag: z.string().nullable() })
-      .nullable()
-      .openapi({ description: 'Equipo oficial actual: donde juega el jugador vinculado, o del que es capitán o dueño' }),
-    matches_played: z.number().int().openapi({ description: 'Partidas oficiales terminadas de ese equipo' }),
+    teams: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          name: z.string(),
+          tag: z.string().nullable(),
+          is_captain: z.boolean(),
+          is_member: z.boolean().openapi({ description: 'false si solo es dueño o capitán sin estar en el plantel' }),
+        }),
+      )
+      .openapi({ description: 'Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno)' }),
+    matches_played: z.number().int().openapi({ description: 'Partidas terminadas que jugó en el servidor (mixes, PCW y torneos)' }),
   })
   .openapi('MyProfile');
 

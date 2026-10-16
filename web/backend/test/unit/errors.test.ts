@@ -16,10 +16,19 @@ describe('fromPostgrest', () => {
     ['XX000', 500, 'INTERNAL'],
     [undefined, 500, 'INTERNAL'],
   ])('%s → %i %s', (code, status, appCode) => {
-    const e = fromPostgrest({ code, message: 'detalle interno' });
+    // Mensaje como los que genera Postgres (en inglés): no se muestra.
+    const pg = code === '42501' ? 'permission denied for table x: ' : code === '23505' ? 'duplicate key value violates x: ' : '';
+    const e = fromPostgrest({ code, message: pg + 'detalle interno' });
     expect(e.status).toBe(status);
     expect(e.code).toBe(appCode);
     expect(e.message).not.toContain('detalle interno');
+  });
+
+  it.each([
+    ['42501', 403, 'Solo el capitán o un admin puede invitar jugadores'],
+    ['23505', 409, 'Ese alias ya está en uso'],
+  ])('%s con un raise propio conserva el mensaje', (code, status, message) => {
+    expect(fromPostgrest({ code, message })).toMatchObject({ status, message });
   });
 
   it('P0001 conserva el mensaje de la función SQL (es para el usuario)', () => {

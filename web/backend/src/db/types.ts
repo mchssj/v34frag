@@ -5,7 +5,20 @@ export type Database = {
   
   "public": {
           Tables: {
-            "demo_workers": {
+            "blocked_words": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"id": string,"word": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"word": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"word"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"demo_workers": {
                   Row: {
                     "active": boolean,"created_at": string,"id": string,"last_seen_at": string | null,"name": string,"token_hash": string
                   }
@@ -43,6 +56,18 @@ export type Database = {
                   }
                   Relationships: [
                     {
+      foreignKeyName: "events_champion_fkey"
+      columns: ["champion"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_champion_fkey"
+      columns: ["champion"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
       foreignKeyName: "events_champion_fkey"
       columns: ["champion"]
 isOneToOne: false
@@ -99,6 +124,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "matches"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
     }
                   ]
                 },"match_player_stats": {
@@ -117,6 +148,18 @@ isOneToOne: false
       columns: ["match_id"]
 isOneToOne: false
       referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "match_player_stats_player_id_fkey"
@@ -143,6 +186,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "matches"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_vetos_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_vetos_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_vetos_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
     },{
       foreignKeyName: "match_vetos_team_id_fkey"
       columns: ["team_id"]
@@ -175,6 +236,12 @@ isOneToOne: false
       referencedRelation: "matches"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
       foreignKeyName: "matches_server_id_fkey"
       columns: ["server_id"]
 isOneToOne: false
@@ -184,8 +251,32 @@ isOneToOne: false
       foreignKeyName: "matches_team1_fkey"
       columns: ["team1"]
 isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_team1_fkey"
+      columns: ["team1"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "matches_team1_fkey"
+      columns: ["team1"]
+isOneToOne: false
       referencedRelation: "teams"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_team2_fkey"
+      columns: ["team2"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_team2_fkey"
+      columns: ["team2"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
     },{
       foreignKeyName: "matches_team2_fkey"
       columns: ["team2"]
@@ -225,6 +316,24 @@ isOneToOne: false
       referencedRelation: "matches"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "pcw_posts_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pcw_posts_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
       foreignKeyName: "pcw_posts_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -257,6 +366,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "player_medals_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "player_medals_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
@@ -305,19 +420,38 @@ isOneToOne: false
       foreignKeyName: "profile_requests_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     }
                   ]
                 },"profiles": {
                   Row: {
-                    "id": string,"role": string,"tag": string | null,"updated_at": string | null
+                    "id": string,"role": string,"tag": string | null,"tag_changed_at": string | null,"updated_at": string | null
                   }
                   Insert: {
-                    "id": string,"role"?: string,"tag"?: string | null,"updated_at"?: string | null
+                    "id": string,"role"?: string,"tag"?: string | null,"tag_changed_at"?: string | null,"updated_at"?: string | null
                   }
                   Update: {
-                    "id"?: string,"role"?: string,"tag"?: string | null,"updated_at"?: string | null
+                    "id"?: string,"role"?: string,"tag"?: string | null,"tag_changed_at"?: string | null,"updated_at"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ranking_config": {
+                  Row: {
+                    "id": number,"updated_at": string,"updated_by": string | null,"win_official": number,"win_pcw": number
+                  }
+                  Insert: {
+                    "id"?: number,"updated_at"?: string,"updated_by"?: string | null,"win_official"?: number,"win_pcw"?: number
+                  }
+                  Update: {
+                    "id"?: number,"updated_at"?: string,"updated_by"?: string | null,"win_official"?: number,"win_pcw"?: number
                   }
                   Relationships: [
                     
@@ -340,7 +474,68 @@ isOneToOne: false
       referencedRelation: "matches"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "result_reports_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
       foreignKeyName: "result_reports_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "result_reports_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "result_reports_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"team_invites": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"expires_at": string,"id": string,"kind": string,"player_id": string,"resolved_at": string | null,"resolved_by": string | null,"status": string,"team_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"kind": string,"player_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"team_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"kind"?: string,"player_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"team_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_invites_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_invites_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_invites_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_invites_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "team_invites_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
       referencedRelation: "teams"
@@ -362,8 +557,26 @@ isOneToOne: false
       foreignKeyName: "team_members_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_members_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_members_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
     },{
       foreignKeyName: "team_members_team_id_fkey"
       columns: ["team_id"]
@@ -387,16 +600,34 @@ isOneToOne: false
                   ]
                 },"teams": {
                   Row: {
-                    "captain_id": string | null,"guests": (string)[],"id": string,"kind": string,"name": string,"owner_id": string | null,"tag": string | null
+                    "captain_id": string | null,"guests": (string)[],"id": string,"kind": string,"name": string,"owner_id": string | null,"parent_team_id": string | null,"tag": string | null
                   }
                   Insert: {
-                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name": string,"owner_id"?: string | null,"tag"?: string | null
+                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name": string,"owner_id"?: string | null,"parent_team_id"?: string | null,"tag"?: string | null
                   }
                   Update: {
-                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name"?: string,"owner_id"?: string | null,"tag"?: string | null
+                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name"?: string,"owner_id"?: string | null,"parent_team_id"?: string | null,"tag"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "teams_parent_team_id_fkey"
+      columns: ["parent_team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_parent_team_id_fkey"
+      columns: ["parent_team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "teams_parent_team_id_fkey"
+      columns: ["parent_team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"tournament_registrations": {
                   Row: {
@@ -419,6 +650,18 @@ isOneToOne: false
       foreignKeyName: "tournament_registrations_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournament_registrations_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "tournament_registrations_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
       referencedRelation: "teams"
       referencedColumns: ["id"]
     }
@@ -435,9 +678,53 @@ isOneToOne: false
       foreignKeyName: "match_player_stats_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     }
+                  ]
+                },"player_matches": {
+                  Row: {
+                    "assists": number | null,"damage": number | null,"deaths": number | null,"demo_status": string | null,"elo_after": number | null,"elo_before": number | null,"elo_delta": number | null,"game_nick": string | null,"headshots": number | null,"kills": number | null,"kind": string | null,"map": string | null,"match_id": string | null,"parent_match_id": string | null,"played_at": string | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"score1": number | null,"score2": number | null,"side": number | null,"side1_name": string | null,"side2_name": string | null,"status": string | null,"team1_name": string | null,"team2_name": string | null,"winner_side": number | null,"won": boolean | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    }
+                  ]
+                },"player_overview": {
+                  Row: {
+                    "elo": number | null,"elo_matches": number | null,"has_account": boolean | null,"has_steam": boolean | null,"id": string | null,"kd": number | null,"losses": number | null,"maps": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"privacy": string | null,"rating": number | null,"search": string | null,"teams": Json | null,"wins": number | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"player_stats": {
                   Row: {
@@ -445,6 +732,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "match_player_stats_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
@@ -465,11 +758,75 @@ isOneToOne: false
                         Relationships: [
                     
                   ]
+                },"steam_unlinked": {
+                  Row: {
+                    "last_nick": string | null,"last_played": string | null,"matches": number | null,"steam_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"team_overview": {
+                  Row: {
+                    "captain_id": string | null,"captain_nick": string | null,"captain_player_id": string | null,"id": string | null,"kind": string | null,"members": number | null,"name": string | null,"owner_id": string | null,"parent_team_id": string | null,"search": string | null,"tag": string | null
+                  }
+                  Insert: {
+                           "captain_id"?: string | null,"captain_nick"?: never,"captain_player_id"?: never,"id"?: string | null,"kind"?: string | null,"members"?: never,"name"?: string | null,"owner_id"?: string | null,"parent_team_id"?: string | null,"search"?: never,"tag"?: string | null
+                         }
+                        Update: {
+                           "captain_id"?: string | null,"captain_nick"?: never,"captain_player_id"?: never,"id"?: string | null,"kind"?: string | null,"members"?: never,"name"?: string | null,"owner_id"?: string | null,"parent_team_id"?: string | null,"search"?: never,"tag"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "teams_parent_team_id_fkey"
+      columns: ["parent_team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_parent_team_id_fkey"
+      columns: ["parent_team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "teams_parent_team_id_fkey"
+      columns: ["parent_team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"team_standings": {
+                  Row: {
+                    "name": string | null,"official_lost": number | null,"official_played": number | null,"official_points": number | null,"official_won": number | null,"pcw_lost": number | null,"pcw_played": number | null,"pcw_points": number | null,"pcw_won": number | null,"tag": string | null,"team_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Functions: {
             "accept_pcw":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[],"p_post": string }; Returns: string
+                           },
+"admin_name_blocked":
+{ Args: { "p": string }; Returns: string
+                           },
+"admin_users":
+{ Args: { "p_q"?: string }; Returns: {
+              "id": string,"player_id": string,"player_steam_id": string,"role": string,"tag": string,"tag_changed_at": string
+            }[]
+                           },
+"alias_check":
+{ Args: { "p_tag": string }; Returns: string
+                           },
+"approve_team_request":
+{ Args: { "p_user": string }; Returns: string
+                           },
+"blocked_names_hits":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "id": string,"kind": string,"name": string,"word": string
+            }[]
                            },
 "cancel_pcw_match":
 { Args: { "p_match": string }; Returns: undefined
@@ -572,6 +929,12 @@ isOneToOne: false
 "link_steam_id":
 { Args: { "p_player": string,"p_steam": string }; Returns: undefined
                            },
+"name_blocked":
+{ Args: { "p": string }; Returns: string
+                           },
+"name_norm":
+{ Args: { "p": string }; Returns: string
+                           },
 "norm_maps":
 { Args: { "j": Json }; Returns: Json
                            },
@@ -581,8 +944,14 @@ isOneToOne: false
 "pcw_make_side":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[] }; Returns: string
                            },
+"reject_team_request":
+{ Args: { "p_user": string }; Returns: undefined
+                           },
 "rotate_server_token":
 { Args: { "p_server": string }; Returns: string
+                           },
+"search_norm":
+{ Args: { "p": string }; Returns: string
                            },
 "set_my_tag":
 { Args: { "p_tag": string }; Returns: undefined
@@ -590,8 +959,38 @@ isOneToOne: false
 "set_pcw_formats":
 { Args: { "p_best_of": (number)[] }; Returns: (number)[]
                            },
+"set_ranking_config":
+{ Args: { "p_official": number,"p_pcw": number }; Returns: undefined
+                           },
 "set_team_captain":
 { Args: { "p_team": string,"p_user": string }; Returns: undefined
+                           },
+"set_user_tag":
+{ Args: { "p_force"?: boolean,"p_tag": string,"p_user": string }; Returns: undefined
+                           },
+"team_can_join":
+{ Args: { "p_player": string,"p_team": string }; Returns: undefined
+                           },
+"team_invite":
+{ Args: { "p_alias"?: string,"p_player"?: string,"p_team": string }; Returns: string
+                           },
+"team_invite_answer":
+{ Args: { "p_accept": boolean,"p_id": string }; Returns: undefined
+                           },
+"team_invite_cancel":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"team_invites_expire":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"team_kick":
+{ Args: { "p_player": string,"p_team": string }; Returns: undefined
+                           },
+"team_leave":
+{ Args: { "p_team": string }; Returns: undefined
+                           },
+"team_request_join":
+{ Args: { "p_team": string }; Returns: string
                            }
           }
           Enums: {

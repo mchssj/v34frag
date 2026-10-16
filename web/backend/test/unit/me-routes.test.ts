@@ -36,20 +36,16 @@ const rows = (data: unknown[]) => Response.json(data);
 const one = (data: unknown | null) => Response.json(data === null ? [] : [data]);
 
 // Perfil base: cuenta, detalles, jugador y equipo por membresía, 3 partidas.
-function profileWorld(over: { player?: unknown | null; teamByMember?: unknown | null; teamByCaptain?: unknown | null } = {}): Handler {
+function profileWorld(over: { player?: unknown | null; memberOf?: string[]; teams?: unknown[] } = {}): Handler {
   return (url, method) => {
     const p = url.pathname;
     if (p.endsWith('/profiles')) return one({ role: 'user', tag: 'Yo' });
     if (p.endsWith('/profile_details') && method === 'GET') return one({ joined_at: '2026-01-02T00:00:00Z', avatar_url: null, discord: 'd' });
     if (p.endsWith('/profile_details') && method === 'POST') return new Response(null, { status: 201 });
     if (p.endsWith('/players')) return one(over.player === undefined ? { id: PLAYER, nick: 'Jug', photo_url: null, steam_id: null } : over.player);
-    if (p.endsWith('/team_members')) return Response.json(over.teamByMember === null ? [] : [{ team_id: TEAM }]);
-    if (p.endsWith('/teams')) {
-      const byMember = url.searchParams.has('id');
-      const t = byMember ? over.teamByMember : over.teamByCaptain;
-      return one(t === undefined ? (byMember ? { id: TEAM, name: 'Equipo', tag: 'EQ' } : null) : t);
-    }
-    if (p.endsWith('/matches')) return new Response(null, { status: 200, headers: { 'content-range': '*/3' } });
+    if (p.endsWith('/team_members')) return Response.json((over.memberOf ?? [TEAM]).map((team_id) => ({ team_id })));
+    if (p.endsWith('/teams')) return Response.json(over.teams ?? [{ id: TEAM, name: 'Equipo', tag: 'EQ', captain_id: null }]);
+    if (p.endsWith('/player_matches')) return new Response(null, { status: 200, headers: { 'content-range': '*/3' } });
     if (p.endsWith('/rpc/set_my_tag')) return new Response(null, { status: 204 });
     return undefined;
   };
@@ -67,7 +63,7 @@ const call = async (method: string, path: string, body?: unknown) =>
   );
 
 describe('GET /api/v1/me/profile', () => {
-  it('arma el perfil: equipo oficial por membresía y partidas válidas', async () => {
+  it('arma el perfil: equipos oficiales por membresía, capitanía o dueño, y partidas jugadas', async () => {
     const calls = postgrest(profileWorld());
     const res = await call('GET', '/api/v1/me/profile');
     expect(res.status).toBe(200);
@@ -75,34 +71,38 @@ describe('GET /api/v1/me/profile', () => {
     expect(p).toMatchObject({
       user: { id: USER, tag: 'Yo', role: 'user', created_at: '2026-01-02T00:00:00Z' },
       player: { id: PLAYER },
-      team: { id: TEAM, tag: 'EQ' },
+      teams: [{ id: TEAM, tag: 'EQ', is_captain: false, is_member: true }],
       matches_played: 3,
     });
     expect(p.details.discord).toBe('d');
     const teams = calls.find((c) => c.url.includes('/rest/v1/teams'))!.url;
     expect(teams).toContain('kind=eq.official');
-    expect(teams).toContain(`id=in.(${TEAM})`);
+    expect(teams).toContain(`or=(captain_id.eq.${USER},owner_id.eq.${USER},id.in.(${TEAM}))`);
     const members = calls.find((c) => c.url.includes('/rest/v1/team_members'))!.url;
     expect(members).toContain(`player_id=eq.${PLAYER}`);
     expect(members).toContain('left_at=is.null');
-    const matches = calls.find((c) => c.url.includes('/rest/v1/matches'))!.url;
-    expect(matches).toContain('status=eq.finished');
-    expect(matches).toContain('bye=eq.false');
-    expect(matches).toContain(`team1.eq.${TEAM}`);
+    expect(calls.find((c) => c.url.includes('/rest/v1/player_matches'))!.url).toContain(`player_id=eq.${PLAYER}`);
   });
 
-  it('sin jugador vinculado busca el equipo por capitán o dueño', async () => {
-    const calls = postgrest(profileWorld({ player: null, teamByCaptain: { id: TEAM, name: 'Capi', tag: null } }));
+  it('puede estar en varios equipos; marca de cuál es capitán', async () => {
+    const OTHER = '99999999-9999-4999-8999-999999999999';
+    postgrest(profileWorld({
+      memberOf: [TEAM, OTHER],
+      teams: [{ id: OTHER, name: 'Alfa', tag: 'A', captain_id: USER }, { id: TEAM, name: 'Equipo', tag: 'EQ', captain_id: null }],
+    }));
     const p = await json(await call('GET', '/api/v1/me/profile'));
-    expect(p.team).toEqual({ id: TEAM, name: 'Capi', tag: null });
-    expect(calls.find((c) => c.url.includes('/rest/v1/teams'))!.url).toContain(`captain_id.eq.${USER},owner_id.eq.${USER}`);
+    expect(p.teams).toEqual([
+      { id: OTHER, name: 'Alfa', tag: 'A', is_captain: true, is_member: true },
+      { id: TEAM, name: 'Equipo', tag: 'EQ', is_captain: false, is_member: true },
+    ]);
   });
 
-  it('sin equipo no consulta partidas y devuelve 0', async () => {
-    const calls = postgrest(profileWorld({ player: null, teamByCaptain: null }));
+  it('sin jugador vinculado: solo equipos que capitanea o creó, y 0 partidas sin consultarlas', async () => {
+    const calls = postgrest(profileWorld({ player: null, teams: [{ id: TEAM, name: 'Capi', tag: null, captain_id: USER }] }));
     const p = await json(await call('GET', '/api/v1/me/profile'));
-    expect(p).toMatchObject({ team: null, matches_played: 0 });
-    expect(calls.some((c) => c.url.includes('/rest/v1/matches'))).toBe(false);
+    expect(p).toMatchObject({ teams: [{ id: TEAM, name: 'Capi', tag: null, is_captain: true, is_member: false }], matches_played: 0 });
+    expect(calls.find((c) => c.url.includes('/rest/v1/teams'))!.url).toContain(`or=(captain_id.eq.${USER},owner_id.eq.${USER})`);
+    expect(calls.some((c) => c.url.includes('/rest/v1/team_members') || c.url.includes('/rest/v1/player_matches'))).toBe(false);
   });
 
   it('un error de la base se traduce (42501 → 403)', async () => {
