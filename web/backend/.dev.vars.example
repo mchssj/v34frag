@@ -11,3 +11,5 @@ GIT_SHA=dev
 CLIENT_IP_HEADER=
 # Opcional en esta etapa:
 # SUPABASE_SERVICE_KEY=
+# URL pública del Worker de demos (sin barra final). Sin ella la API no arma demo_url.
+# DEMO_BASE_URL=https://<worker-de-demos>.workers.dev

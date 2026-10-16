@@ -155,26 +155,18 @@ describe('equipos y plantel', () => {
     expect(hist).toEqual([expect.objectContaining({ team: expect.objectContaining({ id: team }), left_at: expect.any(String) })]);
   });
 
-  it('un jugador en varios equipos, pero no en dos del mismo torneo', async () => {
+  it('un jugador puede estar en varios equipos', async () => {
     const x = await player();
-    const mk = async () => {
+    const ids: string[] = [];
+    for (let k = 0; k < 2; k++) {
       const t = await req('POST', '/api/v1/admin/teams', { token: adm.token, body: { name: `Eq ${rnd()}`, tag: 'EQ' } });
       expect(t.status).toBe(201);
-      const extra = await Promise.all([player(), player(), player(), player()]);
-      for (const p of [x, ...extra]) {
-        expect((await req('POST', `/api/v1/admin/teams/${t.body.id}/members`, { token: adm.token, body: { player_id: p.playerId } })).status).toBe(204);
-      }
-      return t.body.id as string;
-    };
-    const [t1, t2] = [await mk(), await mk()];
+      expect((await req('POST', `/api/v1/admin/teams/${t.body.id}/members`, { token: adm.token, body: { player_id: x.playerId } })).status).toBe(204);
+      ids.push(t.body.id);
+    }
     const pl = (await req('GET', `/api/v1/players/${x.playerId}`)).body;
-    expect(pl.teams.map((t: { id: string }) => t.id).sort()).toEqual([t1, t2].sort());
-
-    const sb = admin();
-    const ev = (await sb.from('events').insert({ name: `Copa ${rnd()}` }).select('id').single()).data!.id;
-    expect((await sb.from('tournament_registrations').insert({ event_id: ev, team_id: t1 })).error).toBeNull();
-    const clash = await sb.from('tournament_registrations').insert({ event_id: ev, team_id: t2 });
-    expect(clash.error?.message).toMatch(new RegExp(`^${x.alias} ya está inscrito en este torneo con `));
+    expect(pl.teams.map((t: { id: string }) => t.id).sort()).toEqual(ids.sort());
+    // Que no esté inscrito con dos equipos en el mismo torneo se prueba en tournaments.test.ts (replanteo 10).
   });
 
   it('tope de 10 y SteamID obligatorio', async () => {

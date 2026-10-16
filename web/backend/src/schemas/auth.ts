@@ -33,7 +33,7 @@ export const AuthUser = z
     id: z.uuid(),
     email: z.string().nullable(),
     tag: z.string().nullable(),
-    role: z.enum(['user', 'admin']),
+    role: z.enum(['user', 'organizer', 'admin']).openapi({ description: '`organizer` crea y gestiona sus torneos; `admin`, todo' }),
     created_at: z.string().nullable().openapi({ description: 'Fecha de registro de la cuenta' }),
   })
   .openapi('AuthUser');

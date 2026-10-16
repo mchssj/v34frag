@@ -22,6 +22,8 @@ FRONTEND_URL = "https://csstv.pages.dev"
 # La reemplaza el pipeline con --var GIT_SHA:<commit>.
 GIT_SHA = "manual"
 CLIENT_IP_HEADER = "cf-connecting-ip"
+# Worker de demos: la API arma demo_url = <DEMO_BASE_URL>/demo/<match_uid>.
+DEMO_BASE_URL = "https://v34frag-demos.agusb06-ab.workers.dev"
 
 # Límite de intentos de login y registro (src/lib/ratelimit.ts, regla "auth").
 [[ratelimits]]
@@ -44,6 +46,7 @@ CORS_ORIGINS = "https://csstv.pages.dev,https://*.csstv.pages.dev,http://localho
 FRONTEND_URL = "https://csstv.pages.dev"
 GIT_SHA = "manual"
 CLIENT_IP_HEADER = "cf-connecting-ip"
+DEMO_BASE_URL = "https://v34frag-demos.agusb06-ab.workers.dev"
 
 [[env.preview.ratelimits]]
 name = "RL_AUTH"

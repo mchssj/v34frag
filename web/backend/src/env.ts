@@ -17,6 +17,11 @@ const EnvSchema = z.object({
     .transform((s) => s.trim().toLowerCase())
     .pipe(z.enum(['', 'x-forwarded-for', 'cf-connecting-ip', 'x-real-ip']))
     .default(''),
+  // URL pública del Worker de demos (descarga en <DEMO_BASE_URL>/demo/<match_uid>). Sin ella no se arma demo_url.
+  DEMO_BASE_URL: z
+    .url()
+    .transform((s) => s.replace(/\/+$/, ''))
+    .optional(),
   // Todavía no se usa: se declara para que el despliegue falle temprano si viene mal formado.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),
 });

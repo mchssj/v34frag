@@ -12,8 +12,11 @@ import { account } from './routes/account';
 import { adminPlayers } from './routes/admin-players';
 import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
+import { events } from './routes/events';
+import { matches } from './routes/matches';
 import { me } from './routes/me';
 import { pcw } from './routes/pcw';
+import { pcwPlay } from './routes/pcw-play';
 import { players } from './routes/players';
 import { roster } from './routes/roster';
 import { system } from './routes/system';
@@ -60,6 +63,9 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', roster);
   app.route('/', adminPlayers);
   app.route('/', adminTeams);
+  app.route('/', matches);
+  app.route('/', events);
+  app.route('/', pcwPlay);
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',

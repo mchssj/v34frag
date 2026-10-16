@@ -16,7 +16,7 @@ import {
   ProfileRequest,
   ProfileRequestBody,
 } from '../schemas/profile';
-import { profileOf } from '../services/account';
+import { profileOf, roleOf } from '../services/account';
 
 type C = Context<AppEnv>;
 type Res = { data: unknown; error: PostgrestLikeError | null };
@@ -70,7 +70,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
       id: user.id,
       email: user.email,
       tag: account?.tag ?? null,
-      role: account?.role === 'admin' ? 'admin' : 'user',
+      role: roleOf(account?.role),
       created_at: details?.joined_at ?? null,
     },
     details: details ?? EMPTY_DETAILS,
