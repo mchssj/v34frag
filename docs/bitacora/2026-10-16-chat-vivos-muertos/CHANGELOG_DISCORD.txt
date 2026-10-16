@@ -6,4 +6,4 @@ El chat general lo leen todos. El chat de equipo lo lee solo tu equipo, vivos y 
 
 Voz
 En el calentamiento se escuchan todos.
-En la partida solo escuchás a tu equipo, y los muertos pueden hablar con sus compañeros vivos.
+En la partida solo escuchas a tu equipo, y los muertos pueden hablar con sus compañeros vivos.
