@@ -37,12 +37,16 @@ sequenceDiagram
   F->>A: cualquier ruta con sesión + Authorization: Bearer <access_token>
   A-->>F: 401 UNAUTHORIZED (token vencido, dura 1 hora)
   F->>A: POST /auth/refresh {refresh_token}
-  A-->>F: tokens nuevos (el refresh_token anterior deja de servir)
+  A-->>F: tokens nuevos (rotación: guardar siempre el último refresh_token)
 ```
 
 - Guardar los dos tokens. No hay cookies.
 - Ante un 401, renovar con `/auth/refresh` una sola vez y reintentar. Si el refresh también da 401, mandar al login.
-- El `refresh_token` es de un solo uso: con varias pestañas, que una sola renueve y comparta el resultado.
+- **El `refresh_token` rota en cada renovación, pero no es estrictamente de un solo uso.** Cada `/auth/refresh` devuelve uno nuevo, y Supabase Auth igual acepta reusar el anterior por un rato (`refresh_token_reuse_interval`: 10 segundos en la configuración local; es el valor estándar de Supabase). Lo que se midió en local (GoTrue v2.197.0, 2026-10-16):
+  - Reusar el anterior dentro de los 10 segundos devuelve **200** y el mismo token nuevo de la primera renovación.
+  - Pasados los 10 segundos, y aunque el token nuevo ya se hubiera usado, el anterior también dio **200**, con un token nuevo de la misma sesión. El vigente siguió funcionando.
+  - En producción el valor se confirma en el panel de Supabase (Authentication → Sessions) antes del corte.
+- **Qué hace el frontend:** guardar siempre el último `refresh_token` que llegó y no depender de que el anterior se rechace ni de que se acepte. Con varias pestañas, que una sola renueve y comparta el resultado (evita renovaciones duplicadas y carreras).
 - Las rutas públicas aceptan el token si viene: con sesión, la respuesta puede traer más datos (por ejemplo, los datos personales de un perfil privado que el usuario puede ver, o si el usuario es capitán de un equipo).
 - `user.role` es `user`, `organizer` o `admin`. Las pantallas de admin se muestran solo a `admin`; "Crear torneo" y la gestión de torneos, a `organizer` y `admin` (en un torneo concreto, `viewer.can_manage` dice si puede gestionarlo). La API lo vuelve a verificar.
 
@@ -126,6 +130,8 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
 | `GET /api/v1/admin/blocked-words/hits` | `kind` | **`kind` asc**, `name` |
 | `GET /api/v1/admin/team-requests` | `status`, `q` | **`status` asc** (pendientes primero), `name` |
+| `GET /api/v1/admin/demos` | `status` (`pending`, `uploaded`, `missing`, `expired`), `server`, `kind`, `from`, `to`, `q` | **`played_at` desc**, `demo_size`, `demo_attempts`, `demo_uploaded_at`, `expires_at` |
+| `GET /api/v1/admin/demo-workers` | `q`, `active`, `online` | **`name` asc**, `created_at`, `last_seen_at` |
 | `GET /api/v1/admin/servers` | `q` (nombre, dirección, IPs, versión), `active`, `license` (`ok`, `expiring`, `expired`, `revoked`), `online`, `has_panel` | **`name` asc**, `created_at`, `last_seen_at`, `license_expires_at`, `matches` |
 | `GET /api/v1/admin/profile-requests` (deprecado) | `status` | **`created_at` desc** |
 
@@ -469,6 +475,7 @@ stateDiagram-v2
 | Puntos del ranking | `GET`/`PUT /api/v1/admin/ranking/config` | Disponible |
 | Servidores | Ver "Servidores (admin)" abajo | Disponible |
 | ELO | Ver "ELO (admin)" abajo | Disponible |
+| Demos | Ver "Demos (admin)" abajo | Disponible |
 | Reclamos de perfil | Listar, aprobar y rechazar | Disponible, **deprecados** |
 
 ### Servidores (admin)
@@ -514,15 +521,33 @@ stateDiagram-v2
 2. Pide escribir **`estoy seguro`** en un campo de texto. El botón de enviar queda deshabilitado hasta que el texto coincide (sin distinguir mayúsculas ni espacios en los bordes).
 3. Manda ese texto en `confirm`. La API también lo exige: sin él, o con otro texto, responde `400 VALIDATION_ERROR` en el campo `confirm` y no recalcula.
 
+### Demos (admin)
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/v1/admin/demos/summary` | `pending`, `uploaded`, `missing`, `expired`, `uploaded_bytes` (lo que ocupan en R2), `oldest_pending_at`, `worker_online` y `worker_last_seen_at` |
+| `GET /api/v1/admin/demos` | Listado (filtros en la sección 1). Cada demo: partida (`match_id`, tipo, estado, mapa, fecha, bandos, marcador, `parent_match_id`), `server` (`{ id, name, has_panel }`), `demo_status`, `demo_size` (bytes), `demo_attempts`, `demo_uploaded_at`, `expires_at`, `demo_url` y `can_retry` |
+| `POST /api/v1/admin/demos/{matchId}/retry` | Una demo `missing` vuelve a la cola del Worker. `204`, o `400` con el motivo (ya subida, vencida, ya en la cola o servidor sin id del panel) |
+| `GET /api/v1/admin/demo-workers` | Workers de demos: `name`, `active`, `online`, `last_seen_at` |
+| `POST /api/v1/admin/demo-workers` | Alta. Body: `name` (único). `201` con `{ id, token, secret_command }` |
+| `PATCH /api/v1/admin/demo-workers/{id}` | `name` o `active` (`false` revoca). Devuelve el Worker |
+| `POST /api/v1/admin/demo-workers/{id}/token` | Token nuevo. Body: `{ confirm }`. Responde como el alta |
+| `DELETE /api/v1/admin/demo-workers/{id}` | `204` |
+
+- **Avisos en el resumen:** `worker_online: false` (el Worker no está corriendo: las demos no se suben), `missing > 0` (ofrecer el filtro de perdidas) y `oldest_pending_at` de hace más de una hora.
+- **Vencimiento:** las demos se guardan 90 días; mostrar `expires_at` y el tamaño en MB.
+- **Reintentar:** el botón solo con `can_retry: true`. Después, la demo aparece como pendiente y el Worker la busca en los próximos 10 minutos.
+- **Token del Worker:** se muestra una sola vez, con `secret_command` (cómo cargarlo en Cloudflare).
+- **Token nuevo, con doble confirmación (obligatorio):** el Worker deja de subir demos hasta que se carga el token nuevo en Cloudflare. Igual que al recalcular el ELO: preguntar si está seguro, pedir escribir **`estoy seguro`** (el botón queda deshabilitado hasta que coincide) y mandarlo en `confirm`. La API lo exige: sin él, `400 VALIDATION_ERROR` en `confirm`.
+
 ## 10. Lo que todavía no está definido
 
 - El flujo exacto de `!claim` (dónde se genera y se muestra el código).
-- Los endpoints de las demos (con los tokens del Worker de demos).
 - El dominio y las URLs de producción.
 
 ## 11. Registro de decisiones
 
-Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son las que tomó Daniel; "Propuesta aceptada" son propuestas técnicas que quedaron en un plan aprobado.
+Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son las que tomó Daniel; "Propuesta aceptada" son propuestas técnicas que quedaron en un plan aprobado; "Frontend" son aclaraciones que reportó el equipo de frontend y se verificaron.
 
 | Fecha | Tema | Decisión | Origen |
 |---|---|---|---|
@@ -579,3 +604,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-16 | ELO | La vista previa de la configuración la calcula la API (la fórmula no se copia en el frontend) | Propuesta aceptada |
 | 2026-10-16 | ELO | Simulación del recálculo antes de aplicarlo (`POST /api/v1/admin/elo/simulate`) | Daniel |
 | 2026-10-16 | ELO | **Recalcular pide doble confirmación**: preguntar si está seguro y escribir "estoy seguro" para habilitar el envío; la API exige el texto en `confirm` | Daniel |
+| 2026-10-16 | Demos | Panel de demos del admin: resumen, listado con vencimiento y descarga, reintentar una demo perdida y tokens del Worker de demos | Propuesta aceptada |
+| 2026-10-16 | Demos | **El token nuevo del Worker pide doble confirmación** ("estoy seguro"), como el recálculo del ELO | Propuesta aceptada |
+| 2026-10-16 | Demos | Fuera por ahora: borrar una demo antes de que venza y correr el Worker a mano desde la web | Propuesta aceptada |
+| 2026-10-16 | Sesión | Aclaración: el `refresh_token` **rota** en cada renovación, pero Supabase acepta reusar el anterior (`refresh_token_reuse_interval`, 10 s). No es estrictamente de un solo uso; el frontend guarda siempre el último y no depende del rechazo del anterior. Lo reportó el equipo de frontend y se midió en local | Frontend |
