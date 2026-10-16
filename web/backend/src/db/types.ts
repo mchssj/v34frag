@@ -1650,6 +1650,11 @@ isOneToOne: false
 "elo_set_config":
 { Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct"?: number,"p_min_pct"?: number,"p_recompute"?: boolean,"p_start_elo": number }; Returns: number
                            },
+"elo_simulate":
+{ Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct": number,"p_min_pct": number,"p_start_elo": number }; Returns: {
+              "abs_delta": number,"changed": boolean,"delta": number,"elo_after": number,"elo_before": number,"matches_after": number,"matches_before": number,"name": string,"player_id": string,"search": string,"steam_id": string
+            }[]
+                           },
 "elo_weight":
 { Args: { "p_full_pct": number,"p_min_pct": number,"p_rounds": number,"p_total": number }; Returns: number
                            },

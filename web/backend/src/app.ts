@@ -13,6 +13,7 @@ import { adminPlayers } from './routes/admin-players';
 import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
+import { elo } from './routes/elo';
 import { events } from './routes/events';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
@@ -65,6 +66,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', adminPlayers);
   app.route('/', adminTeams);
   app.route('/', adminServers);
+  app.route('/', elo);
   app.route('/', matches);
   app.route('/', events);
   app.route('/', pcwPlay);
