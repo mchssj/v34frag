@@ -146,13 +146,24 @@ describe('PATCH /api/v1/me/profile', () => {
 describe('solicitudes de reclamo', () => {
   const reqRow = { id: '77777777-7777-4777-8777-777777777777', player_id: PLAYER, status: 'pending', created_at: '2026-10-14T00:00:00Z', player: { id: PLAYER, nick: 'Jug' } };
 
-  it('lista las propias, la más nueva primero', async () => {
-    const calls = postgrest((url) => (url.pathname.endsWith('/profile_requests') ? rows([reqRow]) : undefined));
-    const res = await call('GET', '/api/v1/me/profile-requests');
-    expect(await json(res)).toEqual([reqRow]);
+  it('lista las propias con el sobre de listados: por defecto la más nueva primero, paginadas', async () => {
+    const calls = postgrest((url) =>
+      url.pathname.endsWith('/profile_requests') ? new Response(JSON.stringify([reqRow]), { headers: { 'content-range': '0-0/1' } }) : undefined,
+    );
+    const res = await call('GET', '/api/v1/me/profile-requests?status=pending');
+    expect(await json(res)).toEqual({ items: [reqRow], total: 1, page: 1, per: 20, sort: 'created_at', order: 'desc' });
     const u = calls.find((c) => c.url.includes('/profile_requests'))!.url;
     expect(u).toContain(`user_id=eq.${USER}`);
-    expect(u).toContain('order=created_at.desc');
+    expect(u).toContain('status=eq.pending');
+    expect(u).toContain('order=created_at.desc.nullslast,id.asc');
+    expect(u).toContain('offset=0&limit=20');
+  });
+
+  it('un orden que no está en la lista da 400', async () => {
+    postgrest(() => undefined);
+    const res = await call('GET', '/api/v1/me/profile-requests?sort=status');
+    expect(res.status).toBe(400);
+    expect((await json(res)).error.code).toBe('VALIDATION_ERROR');
   });
 
   it.each([

@@ -1,6 +1,5 @@
 import { z } from '@hono/zod-openapi';
-import { PageQuery } from '../lib/db';
-import { Paginated } from './common';
+import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 
 const num = z.number().nullable();
 
@@ -8,9 +7,13 @@ export const TeamRef = z
   .object({ id: z.uuid(), name: z.string(), tag: z.string().nullable() })
   .openapi('TeamRef');
 
-export const PlayerListQuery = PageQuery.extend({
+export const PlayerListQuery = listQuery(['elo', 'alias', 'elo_matches', 'rating', 'kd', 'wins'], { sort: 'elo', order: 'desc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias y en los equipos actuales, sin distinguir mayúsculas ni tildes' }),
-  sort: z.enum(['elo', 'alias']).default('elo').openapi({ description: '`elo` (de mayor a menor, por defecto) o `alias`' }),
+  team: z.uuid().optional().openapi({ description: 'Jugadores activos de un equipo oficial' }),
+  has_account: boolParam('Con o sin cuenta en la web'),
+  has_steam: boolParam('Con o sin SteamID vinculado'),
+  elo_min: z.coerce.number().int().optional(),
+  elo_max: z.coerce.number().int().optional(),
 });
 
 export const PlayerSummary = z
@@ -32,7 +35,7 @@ export const PlayerSummary = z
   })
   .openapi('PlayerSummary');
 
-export const PlayerList = Paginated(PlayerSummary).openapi('PlayerList');
+export const PlayerList = Envelope(PlayerSummary).openapi('PlayerList');
 
 export const PlayerStats = z
   .object({
@@ -44,10 +47,16 @@ export const PlayerStats = z
 export const PlayerMapStats = z
   .object({ map: z.string(), maps: num, rating: num, kd: num, adr: num, wins: num, losses: num })
   .openapi('PlayerMapStats');
+export const MapStatsQuery = listQuery(['maps', 'rating', 'kd', 'adr', 'wins'], { sort: 'maps', order: 'desc' }).extend({
+  map: z.string().max(40).optional().openapi({ description: 'Mapa (contiene)' }),
+});
+export const PlayerMapStatsList = Envelope(PlayerMapStats).openapi('PlayerMapStatsList');
 
 export const Medal = z
   .object({ id: z.uuid(), title: z.string(), icon: z.string().nullable(), created_at: z.string() })
   .openapi('Medal');
+export const MedalQuery = listQuery(['created_at', 'title'], { sort: 'created_at', order: 'desc' });
+export const MedalList = Envelope(Medal).openapi('MedalList');
 
 export const TeamStint = z
   .object({
@@ -57,6 +66,10 @@ export const TeamStint = z
     left_at: z.string().nullable().openapi({ description: 'null = sigue en el equipo' }),
   })
   .openapi('TeamStint');
+export const StintQuery = listQuery(['joined_at', 'left_at', 'name'], { sort: 'joined_at', order: 'desc' }).extend({
+  active: boolParam('`true` solo los equipos actuales; `false`, los anteriores'),
+});
+export const TeamStintList = Envelope(TeamStint).openapi('TeamStintList');
 
 export const PublicDetails = z
   .object({
@@ -80,12 +93,11 @@ export const PlayerDetail = PlayerSummary.extend({
   privacy: z.enum(['public', 'private']),
   peak_elo: z.number().int().nullable(),
   stats: PlayerStats.nullable().openapi({ description: 'null si no jugó partidas terminadas' }),
-  map_stats: z.array(PlayerMapStats),
-  medals: z.array(Medal),
-  history: z.array(TeamStint).openapi({ description: 'Paso por equipos oficiales, el más nuevo primero' }),
   details: PublicDetails.nullable().openapi({ description: 'Datos personales. null si no tiene cuenta o si su perfil es privado' }),
   private: z.boolean().openapi({ description: 'true si los datos personales están ocultos por privacidad' }),
-}).openapi('PlayerDetail');
+}).openapi('PlayerDetail', {
+  description: 'Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches',
+});
 
 export const PlayerMatch = z
   .object({
@@ -107,6 +119,13 @@ export const PlayerMatch = z
   })
   .openapi('PlayerMatch');
 
-export const PlayerMatchList = Paginated(PlayerMatch).openapi('PlayerMatchList');
+export const PlayerMatchQuery = listQuery(['played_at', 'rating', 'kills', 'elo_delta'], { sort: 'played_at', order: 'desc' }).extend({
+  kind: z.enum(['mix', 'pcw', 'official']).optional(),
+  result: z.enum(['won', 'lost', 'draw']).optional(),
+  map: z.string().max(40).optional().openapi({ description: 'Mapa (contiene)' }),
+  from: dateParam('Jugadas desde'),
+  to: dateParam('Jugadas hasta'),
+});
+export const PlayerMatchList = Envelope(PlayerMatch).openapi('PlayerMatchList');
 
 export const IdParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });

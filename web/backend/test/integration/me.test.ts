@@ -185,8 +185,8 @@ describe('solicitudes de reclamo de perfil', () => {
     const otro = await createUser();
     await requestClaim(otro.token, pl.id);
     const list = await (await app.request('/api/v1/me/profile-requests', { headers: auth(u.token) }, env)).json();
-    expect(list).toHaveLength(1);
-    expect(list[0].player_id).toBe(pl.id);
+    expect(list).toMatchObject({ total: 1, page: 1, sort: 'created_at', order: 'desc' });
+    expect(list.items[0].player_id).toBe(pl.id);
   });
 
   it('409 si el jugador ya tiene cuenta, 404 si no existe, 400 si el id no es uuid', async () => {

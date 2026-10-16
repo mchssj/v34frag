@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi';
+import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 
 const BestOf = z.union([z.literal(1), z.literal(3), z.literal(5)]).openapi({ description: 'BO1, BO3 o BO5', example: 3 });
 
@@ -75,3 +76,22 @@ export const MapPoolItem = z
   })
   .openapi('MapPoolItem');
 export const MapPoolBody = z.object({ maps: z.array(MapPoolItem).min(2).max(20) }).openapi('MapPoolBody');
+
+export const PcwPostQuery = listQuery(['created_at', 'starts_at'], { sort: 'created_at', order: 'desc' }).extend({
+  best_of: z.coerce.number().int().refine((v) => [1, 3, 5].includes(v), 'BO1, BO3 o BO5').optional(),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el bando y el equipo con el que juega' }),
+  from: dateParam('Hora de inicio desde'),
+  to: dateParam('Hora de inicio hasta'),
+});
+export const PcwPostList = Envelope(PcwPost).openapi('PcwPostList');
+
+export const MapQuery = listQuery(['position', 'name'], { sort: 'position', order: 'asc' }).extend({
+  q: z.string().max(40).optional(),
+  include_inactive: boolParam('Incluir los mapas desactivados (para el admin)'),
+});
+export const MapItem = z.object({ name: z.string(), versions: z.array(z.string()), active: z.boolean(), position: z.number().int() }).openapi('MapItem');
+export const MapList = Envelope(MapItem).openapi('MapList');
+
+export const ServerQuery = listQuery(['name'], { sort: 'name', order: 'asc' }).extend({ q: z.string().max(60).optional() });
+export const ServerItem = z.object({ id: z.uuid(), name: z.string(), address: z.string().nullable() }).openapi('ServerItem');
+export const ServerList = Envelope(ServerItem).openapi('ServerList');

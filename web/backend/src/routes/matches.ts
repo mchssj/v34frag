@@ -1,13 +1,15 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { currentUser, isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
-import { must, mustHave, notFound, pageRange } from '../lib/db';
+import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { notModified } from '../lib/etag';
 import { AppError } from '../lib/errors';
+import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import { bearer, errorResponses, json } from '../schemas/common';
 import {
   ChatBody,
   ChatMessage,
+  ChatPage,
   ChatParam,
   ChatQuery,
   MatchDetail,
@@ -20,12 +22,9 @@ import {
   type PlayerLine,
   type RosterPlayer,
 } from '../schemas/matches';
-import { demoUrl, eventRounds, MATCH_LIST, toSummary, vetoState, type MatchRow } from '../services/matches';
-import { lastRounds, stageLabel } from '../services/stages';
+import { demoUrl, MATCH_LIST, toSummary, vetoState, type MatchRow } from '../services/matches';
 
-const DETAIL =
-  MATCH_LIST +
-  ', pos, maps, team1_id:team1, team2_id:team2, lineup1, lineup2, side1_guests, side2_guests, server_id, server_ip, bye, cancel_reason, external_id, advantage_side';
+const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side';
 
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -33,7 +32,7 @@ const done = { 204: { description: 'Hecho' } } as const;
 
 const list = createRoute({
   method: 'get', path: '/api/v1/matches', tags: ['Partidas'], middleware: [optionalUser] as const,
-  summary: 'Partidas', description: 'Torneo, PCW y mixes, la más nueva primero. Sin sesión.',
+  summary: 'Partidas', description: 'Torneo, PCW y mixes (sin byes). Por defecto, la más nueva primero. Sin sesión.',
   request: { query: MatchListQuery },
   responses: { 200: { description: 'Partidas', ...json(MatchList) }, ...errorResponses(400, 401) },
 });
@@ -50,9 +49,12 @@ const detail = createRoute({
 
 const chat = createRoute({
   method: 'get', path: '/api/v1/matches/{id}/chat', tags: ['Partidas'], middleware: [optionalUser] as const,
-  summary: 'Chat de la partida', description: 'Los últimos 50 mensajes, o los nuevos con `after`. El más viejo primero.',
+  summary: 'Chat de la partida',
+  description:
+    'Paginación por cursor: sin parámetros, los últimos `limit`; con `before`, los anteriores a ese id (historial); ' +
+    'con `after`, los nuevos desde ese id (para consultar cada pocos segundos). Siempre del más viejo al más nuevo.',
   request: { params: MatchParam, query: ChatQuery },
-  responses: { 200: { description: 'Mensajes', ...json(z.array(ChatMessage)) }, ...errorResponses(400, 401) },
+  responses: { 200: { description: 'Mensajes', ...json(ChatPage) }, ...errorResponses(400, 401) },
 });
 
 // ---------- con sesión ----------
@@ -114,40 +116,41 @@ const adminDelete = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
 
-type DetailRow = MatchRow & {
-  pos: number | null; maps: unknown; team1_id: string | null; team2_id: string | null; lineup1: string[]; lineup2: string[];
-  side1_guests: string[]; side2_guests: string[]; server_id: string | null; server_ip: string | null; bye: boolean;
-  cancel_reason: string | null; external_id: string | null; advantage_side: number | null;
+type DetailRow = {
+  maps: unknown; server_id: string | null; server_ip: string | null; cancel_reason: string | null; external_id: string | null;
+  advantage_side: number | null;
 };
 
 export const matches = createRouter()
   .openapi(list, async (c) => {
-    const { kind, status, event, team, page, per } = c.req.valid('query');
-    const { from, to } = pageRange({ page, per });
-    let q = c.var.sb.from('matches').select(MATCH_LIST, { count: 'exact' }).eq('bye', false);
-    if (kind) q = q.eq('kind', kind);
-    if (status) q = q.eq('status', status);
-    if (event) q = q.eq('event_id', event);
-    if (team) q = q.or(`team1.eq.${team},team2.eq.${team}`);
-    const { data, error, count } = await q
-      .order('played_at', { ascending: false, nullsFirst: false })
-      .order('starts_at', { ascending: false, nullsFirst: false })
-      .range(from, to);
-    if (error) must({ data, error });
-    const rows = (data ?? []) as unknown as MatchRow[];
-    const rounds = await eventRounds(c.var.sb, rows);
-    return c.json({ items: rows.map((m) => toSummary(m, rounds)), total: count ?? 0, page, per }, 200);
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('match_list').select(MATCH_LIST, { count: 'exact' }).eq('bye', false);
+    if (p.kind) q = q.eq('kind', p.kind);
+    if (p.status) q = q.eq('status', p.status);
+    if (p.event) q = q.eq('event_id', p.event);
+    if (p.team) q = q.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
+    if (p.player) q = q.contains('player_ids', [p.player]);
+    if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
+    if (p.from) q = q.gte('at', p.from);
+    if (p.to) q = q.lte('at', p.to);
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('search', `%${term}%`);
+    const { rows, total } = await runList<MatchRow, typeof q>(q, p, {});
+    return c.json(envelope(rows.map(toSummary), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');
     const { sb, config } = c.var;
-    const m = must(await sb.from('matches').select(DETAIL).eq('id', id).maybeSingle()) as unknown as DetailRow | null;
-    if (!m) throw notFound('esa partida');
+    const [base, extra] = await Promise.all([
+      sb.from('match_list').select(MATCH_LIST).eq('id', id).maybeSingle().then(must),
+      sb.from('matches').select(DETAIL).eq('id', id).maybeSingle().then(must),
+    ]);
+    if (!base || !extra) throw notFound('esa partida');
+    const m = { ...(base as unknown as MatchRow), ...(extra as unknown as DetailRow) };
     const user = currentUser(c);
     const series = m.kind !== 'mix';
 
-    const [rounds, ev, games, stats, vetos, pool, server, caps] = await Promise.all([
-      eventRounds(sb, [m]),
+    const [ev, games, stats, vetos, pool, server, caps] = await Promise.all([
       m.event_id ? sb.from('events').select('config').eq('id', m.event_id).maybeSingle().then(must) : Promise.resolve(null),
       series
         ? sb.from('matches').select('id, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
@@ -214,8 +217,7 @@ export const matches = createRouter()
     }
 
     const body = {
-      ...toSummary(m, rounds),
-      label: m.event_id ? stageLabel(m, rounds.get(m.event_id) ?? lastRounds([m])) : null,
+      ...toSummary(m),
       stage: m.stage,
       phase: m.phase,
       grp: m.grp,
@@ -245,11 +247,24 @@ export const matches = createRouter()
   })
   .openapi(chat, async (c) => {
     const { id } = c.req.valid('param');
-    const { after } = c.req.valid('query');
+    const { after, before, limit } = c.req.valid('query');
+    if (after !== undefined && before !== undefined) throw new AppError(400, 'VALIDATION_ERROR', 'Mandá `after` o `before`, no los dos.');
     let q = c.var.sb.from('match_chat_public').select('id, user_id, alias, message, created_at').eq('match_id', id);
     if (after !== undefined) q = q.gt('id', after);
-    const rows = mustHave(await q.order('id', { ascending: false }).limit(50));
-    return c.json(rows.reverse().map((r) => ({ id: r.id!, user_id: r.user_id, alias: r.alias ?? 'Usuario', message: r.message ?? '', created_at: r.created_at! })), 200);
+    if (before !== undefined) q = q.lt('id', before);
+    // Con `after` se leen los más viejos primero; si no, los más nuevos y se dan vuelta.
+    const rows = mustHave(await q.order('id', { ascending: after !== undefined }).limit(limit + 1));
+    const has_more = rows.length > limit;
+    const page = rows.slice(0, limit);
+    if (after === undefined) page.reverse();
+    return c.json(
+      {
+        items: page.map((r) => ({ id: r.id!, user_id: r.user_id, alias: r.alias ?? 'Usuario', message: r.message ?? '', created_at: r.created_at! })),
+        has_more,
+        limit,
+      },
+      200,
+    );
   })
   .openapi(sendChat, async (c) => {
     const { id } = c.req.valid('param');

@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi';
+import { boolParam, Envelope, listQuery } from '../lib/list';
 
 const optText = (max: number) =>
   z
@@ -161,3 +162,39 @@ export const ProfileRequestAdmin = z
 export const IdParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 export const UserIdParam = z.object({ userId: z.uuid().openapi({ param: { name: 'userId', in: 'path' } }) });
 export const TeamPlayerParam = IdParam.extend({ playerId: z.uuid().openapi({ param: { name: 'playerId', in: 'path' } }) });
+
+// ---------- listados ----------
+
+export const SteamUnlinkedQuery = listQuery(['last_played', 'matches', 'last_nick'], { sort: 'last_played', order: 'desc' }).extend({
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el último nombre y en el SteamID' }),
+});
+export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedList');
+
+export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
+  role: z.enum(['user', 'organizer', 'admin']).optional(),
+  has_player: boolParam('Con o sin jugador vinculado'),
+  has_steam: boolParam('Con o sin SteamID vinculado'),
+});
+export const AdminUserList = Envelope(AdminUser).openapi('AdminUserList');
+
+export const BlockedWordQuery = listQuery(['word', 'created_at'], { sort: 'word', order: 'asc' }).extend({
+  q: z.string().max(40).optional(),
+});
+export const BlockedWordList = Envelope(BlockedWord).openapi('BlockedWordList');
+
+export const BlockedHitQuery = listQuery(['kind', 'name'], { sort: 'kind', order: 'asc' }).extend({
+  kind: z.enum(['alias', 'player', 'team']).optional(),
+});
+export const BlockedHitList = Envelope(BlockedHit).openapi('BlockedHitList');
+
+export const ClaimQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
+});
+export const ProfileRequestAdminList = Envelope(ProfileRequestAdmin).openapi('ProfileRequestAdminList');
+
+export const TeamRequestQuery = listQuery(['status', 'name'], { sort: 'status', order: 'asc' }).extend({
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la sigla y el alias de quien pidió' }),
+});
+export const AdminTeamRequestList = Envelope(AdminTeamRequest).openapi('AdminTeamRequestList');

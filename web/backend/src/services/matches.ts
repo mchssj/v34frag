@@ -1,43 +1,34 @@
 import type { z } from '@hono/zod-openapi';
 import type { Config } from '../env';
-import { mustHave } from '../lib/db';
-import type { Db } from '../lib/supabase';
 import type { MatchSummary, VetoState } from '../schemas/matches';
-import { lastRounds, stageLabel, type StageInfo } from './stages';
+import { stageLabel, type StageInfo } from './stages';
 
-// Columnas de matches que se pueden leer (link_code está oculto desde el replanteo 10).
+// Columnas de la vista match_list (replanteo 11) que arman un MatchSummary.
 export const MATCH_LIST =
-  'id, kind, status, event_id, stage, phase, grp, round, best_of, map, starts_at, played_at, score1, score2, winner_side, ' +
-  'side1_name, side2_name, end_reason, demo_status, parent_match_id, ' +
-  'team1:teams!matches_team1_fkey(id, name, tag), team2:teams!matches_team2_fkey(id, name, tag), event:events!matches_event_id_fkey(id, name)';
+  'id, kind, status, event_id, event_name, stage, phase, grp, round, pos, bye, best_of, map, starts_at, played_at, score1, score2, winner_side, ' +
+  'side1_name, side2_name, team1_id, team1_name, team1_tag, team2_id, team2_name, team2_tag, end_reason, demo_status, parent_match_id, last_round';
 
-type TeamRef = { id: string; name: string; tag: string | null } | null;
 export type MatchRow = StageInfo & {
-  id: string; kind: string; status: string; event_id: string | null; best_of: number; map: string | null;
-  starts_at: string | null; played_at: string | null; score1: number | null; score2: number | null; winner_side: number | null;
-  side1_name: string | null; side2_name: string | null; end_reason: string | null; demo_status: string; parent_match_id: string | null;
-  team1: TeamRef; team2: TeamRef; event: { id: string; name: string } | null;
+  id: string; kind: string; status: string; event_id: string | null; event_name: string | null; pos: number | null; bye: boolean;
+  best_of: number; map: string | null; starts_at: string | null; played_at: string | null; score1: number | null; score2: number | null;
+  winner_side: number | null; side1_name: string | null; side2_name: string | null; team1_id: string | null; team1_name: string | null;
+  team1_tag: string | null; team2_id: string | null; team2_name: string | null; team2_tag: string | null; end_reason: string | null;
+  demo_status: string; parent_match_id: string | null; last_round: number | null;
 };
 
-/** Última ronda de cada etapa de los torneos de estas partidas (para "Final", "Semifinal"…). */
-export async function eventRounds(sb: Db, rows: { event_id: string | null }[]) {
-  const ids = [...new Set(rows.map((r) => r.event_id).filter((x): x is string => !!x))];
-  const out = new Map<string, Map<string, number>>();
-  if (!ids.length) return out;
-  const all = mustHave(await sb.from('matches').select('event_id, stage, phase, grp, round').in('event_id', ids));
-  for (const id of ids) out.set(id, lastRounds(all.filter((r) => r.event_id === id)));
-  return out;
-}
+const team = (id: string | null, name: string | null, tag: string | null) => (id ? { id, name: name ?? '', tag } : null);
 
-export function toSummary(m: MatchRow, rounds: Map<string, Map<string, number>>): z.infer<typeof MatchSummary> {
+export function toSummary(m: MatchRow): z.infer<typeof MatchSummary> {
+  const last = new Map<string, number>();
+  if (m.stage && m.last_round !== null) last.set(`${m.stage}:${m.phase ?? 1}`, m.last_round);
   return {
     id: m.id,
     kind: m.kind as 'mix' | 'pcw' | 'official',
     status: m.status as 'upcoming' | 'live' | 'finished' | 'cancelled',
-    label: m.event_id ? stageLabel(m, rounds.get(m.event_id) ?? new Map()) : null,
-    event: m.event,
-    side1: { name: m.team1?.name ?? m.side1_name, team: m.team1, score: m.score1 },
-    side2: { name: m.team2?.name ?? m.side2_name, team: m.team2, score: m.score2 },
+    label: m.event_id ? stageLabel(m, last) : null,
+    event: m.event_id ? { id: m.event_id, name: m.event_name ?? '' } : null,
+    side1: { name: m.team1_name ?? m.side1_name, team: team(m.team1_id, m.team1_name, m.team1_tag), score: m.score1 },
+    side2: { name: m.team2_name ?? m.side2_name, team: team(m.team2_id, m.team2_name, m.team2_tag), score: m.score2 },
     winner_side: m.winner_side,
     best_of: m.best_of,
     map: m.map,

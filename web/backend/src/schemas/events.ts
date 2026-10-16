@@ -1,7 +1,6 @@
 import { z } from '@hono/zod-openapi';
-import { PageQuery } from '../lib/db';
-import { Paginated } from './common';
-import { MatchSummary } from './matches';
+import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
+import { MatchStatus, MatchSummary } from './matches';
 import { TeamRef } from './players';
 
 export const Template = z.enum(['single', 'double', 'groups', 'swiss']).openapi({
@@ -36,7 +35,14 @@ export const EventConfig = z
       'swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3. 3.er puesto apagado.',
   });
 
-export const EventListQuery = PageQuery.extend({ status: EventStatus.optional() });
+export const EventListQuery = listQuery(['starts_on', 'name', 'status'], { sort: 'starts_on', order: 'desc' }).extend({
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre' }),
+  status: EventStatus.optional(),
+  template: Template.optional(),
+  organizer: z.uuid().optional().openapi({ description: 'Torneos de un organizador (id de usuario)' }),
+  from: dateParam('Empiezan desde esta fecha'),
+  to: dateParam('Empiezan hasta esta fecha'),
+});
 
 export const EventSummary = z
   .object({
@@ -54,7 +60,7 @@ export const EventSummary = z
   })
   .openapi('EventSummary');
 
-export const EventList = Paginated(EventSummary).openapi('EventList');
+export const EventList = Envelope(EventSummary).openapi('EventList');
 
 export const Registration = z
   .object({
@@ -65,20 +71,58 @@ export const Registration = z
   })
   .openapi('Registration');
 
-export const GroupRow = z
-  .object({
-    team: TeamRef, place: z.number().int(), tied: z.boolean().openapi({ description: 'Empatado en todos los criterios con el de al lado' }),
-    played: z.number().int(), won: z.number().int(), lost: z.number().int(), points: z.number().int(),
-    rounds_for: z.number().int(), rounds_against: z.number().int(), rounds_diff: z.number().int(),
-  })
-  .openapi('GroupRow');
+export const RegistrationQuery = listQuery(['seed', 'name'], { sort: 'seed', order: 'asc' }).extend({
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre y la sigla del equipo' }),
+  start_stage: z.coerce.number().int().min(1).max(3).optional(),
+});
+export const RegistrationList = Envelope(Registration).openapi('RegistrationList');
 
-export const SwissRow = z
+export const EventMatch = MatchSummary.extend({
+  stage: z.string().nullable().openapi({ description: '`ko`, `third`, `upper`, `lower`, `grand`, `group` o `swiss`' }),
+  phase: z.number().int().nullable(),
+  grp: z.number().int().nullable(),
+  round: z.number().int().nullable(),
+  pos: z.number().int().nullable(),
+  bye: z.boolean(),
+}).openapi('EventMatch');
+
+export const EventMatchQuery = listQuery(['bracket', 'starts_at', 'played_at'], { sort: 'bracket', order: 'asc' }, 200).extend({
+  stage: z.enum(['ko', 'third', 'upper', 'lower', 'grand', 'group', 'swiss']).optional(),
+  phase: z.coerce.number().int().optional(),
+  grp: z.coerce.number().int().optional(),
+  round: z.coerce.number().int().optional(),
+  status: MatchStatus.optional(),
+  team: z.uuid().optional(),
+  include_byes: boolParam('Incluir los byes (para dibujar la llave completa)'),
+});
+export const EventMatchList = Envelope(EventMatch).openapi('EventMatchList');
+
+export const Standing = z
   .object({
-    team: TeamRef, wins: z.number().int(), losses: z.number().int(), buchholz: z.number().int(), rounds_diff: z.number().int(),
-    state: z.enum(['active', 'qualified', 'eliminated']),
+    stage: z.enum(['group', 'swiss']),
+    grp: z.number().int().openapi({ description: 'Grupo (1 = A); 1 en el suizo' }),
+    phase: z.number().int().openapi({ description: 'Fase suiza; 1 en grupos' }),
+    team: TeamRef,
+    place: z.number().int(),
+    tied: z.boolean().openapi({ description: 'Grupos: empatado en todos los criterios con el de al lado' }),
+    played: z.number().int(),
+    won: z.number().int(),
+    lost: z.number().int(),
+    points: z.number().int().nullable().openapi({ description: 'Grupos: 3 por victoria' }),
+    rounds_for: z.number().int().nullable(),
+    rounds_against: z.number().int().nullable(),
+    rounds_diff: z.number().int(),
+    buchholz: z.number().int().nullable().openapi({ description: 'Suizo' }),
+    state: z.enum(['active', 'qualified', 'eliminated']).nullable().openapi({ description: 'Suizo' }),
   })
-  .openapi('SwissRow');
+  .openapi('Standing');
+
+export const StandingQuery = listQuery(['place'], { sort: 'place', order: 'asc' }, 200).extend({
+  stage: z.enum(['group', 'swiss']).optional(),
+  grp: z.coerce.number().int().optional(),
+  phase: z.coerce.number().int().optional(),
+});
+export const StandingList = Envelope(Standing).openapi('StandingList');
 
 export const EventDetail = EventSummary.extend({
   rules: z.string().nullable(),
@@ -87,12 +131,10 @@ export const EventDetail = EventSummary.extend({
   players_max: z.number().int(),
   config: z.record(z.string(), z.unknown()).openapi({ description: 'Configuración completa (con los valores por defecto)' }),
   tie_pending: z.object({ grp: z.number().int() }).nullable().openapi({ description: 'Empate de grupo que tiene que resolver el organizador' }),
-  registrations: z.array(Registration),
-  groups: z.array(z.object({ grp: z.number().int(), name: z.string(), rows: z.array(GroupRow) })),
-  swiss: z.array(z.object({ phase: z.number().int(), rows: z.array(SwissRow) })),
-  matches: z.array(MatchSummary.extend({ stage: z.string().nullable(), phase: z.number().int().nullable(), grp: z.number().int().nullable(), round: z.number().int().nullable(), pos: z.number().int().nullable() })),
   viewer: z.object({ can_manage: z.boolean() }).nullable(),
-}).openapi('EventDetail');
+}).openapi('EventDetail', {
+  description: 'Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings',
+});
 
 export const EventCreate = z
   .object({

@@ -3,6 +3,7 @@ import type { Context } from 'hono';
 import { isAdmin, requireUser } from '../lib/auth';
 import { AppError } from '../lib/errors';
 import { must, mustHave, notFound } from '../lib/db';
+import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { bearer, errorResponses, json } from '../schemas/common';
@@ -10,9 +11,9 @@ import {
   CaptainBody,
   Created,
   InviteBody,
-  MyInvites,
+  InviteList,
+  InviteQuery,
   TeamParam,
-  TeamPending,
   TeamPlayerParam,
   type Invite,
 } from '../schemas/teams';
@@ -53,8 +54,9 @@ async function inviteOfKind(c: C, id: string, kind: 'invite' | 'request') {
 const myInvites = createRoute({
   method: 'get', path: '/api/v1/me/team-invites', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
   summary: 'Mis invitaciones y pedidos',
-  description: 'Invitaciones de equipos que recibí y pedidos para entrar que hice, abiertos.',
-  responses: { 200: { description: 'Abiertas', ...json(MyInvites) }, ...errorResponses(401) },
+  description: 'Invitaciones de equipos que recibí (`kind=invite`) y pedidos para entrar que hice (`kind=request`), abiertos y sin vencer.',
+  request: { query: InviteQuery },
+  responses: { 200: { description: 'Abiertas', ...json(InviteList) }, ...errorResponses(400, 401) },
 });
 const joinRequest = createRoute({
   method: 'post', path: '/api/v1/teams/{id}/join-requests', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
@@ -89,9 +91,10 @@ const leave = createRoute({
 
 const pending = createRoute({
   method: 'get', path: '/api/v1/teams/{id}/pending', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Invitaciones y pedidos del equipo', description: 'Solo el capitán o un admin.',
-  request: { params: TeamParam },
-  responses: { 200: { description: 'Abiertas', ...json(TeamPending) }, ...errorResponses(401, 403, 404) },
+  summary: 'Invitaciones y pedidos del equipo',
+  description: 'Solo el capitán o un admin. Invitaciones enviadas (`kind=invite`) y pedidos recibidos (`kind=request`), abiertos y sin vencer.',
+  request: { params: TeamParam, query: InviteQuery.omit({ team: true }) },
+  responses: { 200: { description: 'Abiertas', ...json(InviteList) }, ...errorResponses(400, 401, 403, 404) },
 });
 const invite = createRoute({
   method: 'post', path: '/api/v1/teams/{id}/invites', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
@@ -131,12 +134,15 @@ const captain = createRoute({
 
 export const roster = createRouter()
   .openapi(myInvites, async (c) => {
+    const p = c.req.valid('query');
     const { sb, user } = c.var;
     const mine = must(await sb.from('players').select('id').eq('user_id', user.id).maybeSingle());
-    if (!mine) return c.json({ invites: [], requests: [] }, 200);
-    const rows = mustHave(await openOnly(sb.from('team_invites').select(INVITE).eq('player_id', mine.id)).order('created_at', { ascending: false })) as unknown as InviteRow[];
-    const all = rows.map(toInvite);
-    return c.json({ invites: all.filter((i) => i.kind === 'invite'), requests: all.filter((i) => i.kind === 'request') }, 200);
+    if (!mine) return c.json(envelope([], 0, p), 200);
+    let q = openOnly(sb.from('team_invites').select(INVITE, { count: 'exact' }).eq('player_id', mine.id));
+    if (p.kind) q = q.eq('kind', p.kind);
+    if (p.team) q = q.eq('team_id', p.team);
+    const { rows, total } = await runList<InviteRow, typeof q>(q, p, {});
+    return c.json(envelope(rows.map(toInvite), total, p), 200);
   })
   .openapi(joinRequest, async (c) => {
     const id = mustHave(await c.var.sb.rpc('team_request_join', { p_team: c.req.valid('param').id }));
@@ -166,15 +172,17 @@ export const roster = createRouter()
   })
   .openapi(pending, async (c) => {
     const { id } = c.req.valid('param');
+    const p = c.req.valid('query');
     const { sb, user } = c.var;
     const team = must(await sb.from('teams').select('captain_id').eq('id', id).maybeSingle());
     if (!team) throw notFound('ese equipo');
     if (team.captain_id !== user.id && !(await isAdmin(c))) {
       throw new AppError(403, 'FORBIDDEN', 'Solo el capitán o un admin ve las invitaciones del equipo.');
     }
-    const rows = mustHave(await openOnly(sb.from('team_invites').select(INVITE).eq('team_id', id)).order('created_at', { ascending: false })) as unknown as InviteRow[];
-    const all = rows.map(toInvite);
-    return c.json({ invites: all.filter((i) => i.kind === 'invite'), requests: all.filter((i) => i.kind === 'request') }, 200);
+    let q = openOnly(sb.from('team_invites').select(INVITE, { count: 'exact' }).eq('team_id', id));
+    if (p.kind) q = q.eq('kind', p.kind);
+    const { rows, total } = await runList<InviteRow, typeof q>(q, p, {});
+    return c.json(envelope(rows.map(toInvite), total, p), 200);
   })
   .openapi(invite, async (c) => {
     const { player_id, alias } = c.req.valid('json');

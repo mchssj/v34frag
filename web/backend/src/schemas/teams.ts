@@ -1,13 +1,13 @@
 import { z } from '@hono/zod-openapi';
-import { PageQuery } from '../lib/db';
-import { Paginated } from './common';
+import { boolParam, Envelope, listQuery } from '../lib/list';
 import { TeamRef } from './players';
 
 export const MAX_ROSTER = 10;
 
-export const TeamListQuery = PageQuery.extend({
+export const TeamListQuery = listQuery(['name', 'members'], { sort: 'name', order: 'asc' }).extend({
   kind: z.enum(['official', 'pcw']).default('official').openapi({ description: '`official` (por defecto) o `pcw`' }),
   q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre y la sigla, sin distinguir mayúsculas ni tildes' }),
+  has_space: boolParam('`true`: equipos oficiales con lugar (menos de 10 jugadores)'),
 });
 
 const PlayerRef = z
@@ -27,7 +27,7 @@ export const TeamSummary = z
   })
   .openapi('TeamSummary');
 
-export const TeamList = Paginated(TeamSummary).openapi('TeamList');
+export const TeamList = Envelope(TeamSummary).openapi('TeamList');
 
 export const RosterEntry = z
   .object({
@@ -44,6 +44,12 @@ export const RosterEntry = z
   })
   .openapi('RosterEntry');
 
+export const MemberQuery = listQuery(['alias', 'joined_at', 'left_at', 'elo'], { sort: 'alias', order: 'asc' }).extend({
+  active: boolParam('`true` el plantel actual; `false` los ex integrantes'),
+  role: z.enum(['player', 'sub', 'coach']).optional(),
+});
+export const MemberList = Envelope(RosterEntry).openapi('MemberList');
+
 export const Record_ = z
   .object({
     official: z.object({ played: z.number().int(), won: z.number().int(), lost: z.number().int(), points: z.number().int() }),
@@ -51,33 +57,15 @@ export const Record_ = z
   })
   .openapi('TeamRecord');
 
-export const TeamMatch = z
-  .object({
-    id: z.uuid(),
-    kind: z.enum(['official', 'pcw']),
-    status: z.string(),
-    starts_at: z.string().nullable(),
-    played_at: z.string().nullable(),
-    team1: TeamRef.nullable(),
-    team2: TeamRef.nullable(),
-    score1: z.number().nullable(),
-    score2: z.number().nullable(),
-    winner_side: z.number().int().nullable(),
-    event_id: z.uuid().nullable(),
-    stage: z.string().nullable(),
-  })
-  .openapi('TeamMatch');
-
 export const TeamDetail = TeamSummary.extend({
-  roster: z.array(RosterEntry).openapi({ description: 'Plantel activo' }),
-  former: z.array(RosterEntry).openapi({ description: 'Ex integrantes, el más reciente primero' }),
   record: Record_.nullable().openapi({ description: 'Récord del ranking (solo equipos oficiales)' }),
-  recent_matches: z.array(TeamMatch).openapi({ description: 'Últimas 10 partidas de torneo o PCW' }),
   viewer: z
     .object({ is_captain: z.boolean(), is_member: z.boolean(), is_admin: z.boolean() })
     .nullable()
     .openapi({ description: 'Qué puede hacer quien consulta (null sin sesión)' }),
-}).openapi('TeamDetail');
+}).openapi('TeamDetail', {
+  description: 'El plantel y los ex integrantes van en /teams/{id}/members; las partidas, en /matches?team={id}',
+});
 
 export const Invite = z
   .object({
@@ -91,19 +79,11 @@ export const Invite = z
   })
   .openapi('Invite');
 
-export const MyInvites = z
-  .object({
-    invites: z.array(Invite).openapi({ description: 'Invitaciones recibidas, abiertas' }),
-    requests: z.array(Invite).openapi({ description: 'Pedidos para entrar enviados, abiertos' }),
-  })
-  .openapi('MyInvites');
-
-export const TeamPending = z
-  .object({
-    invites: z.array(Invite).openapi({ description: 'Invitaciones enviadas, abiertas' }),
-    requests: z.array(Invite).openapi({ description: 'Pedidos recibidos, abiertos' }),
-  })
-  .openapi('TeamPending');
+export const InviteQuery = listQuery(['created_at', 'expires_at'], { sort: 'created_at', order: 'desc' }).extend({
+  kind: z.enum(['invite', 'request']).optional().openapi({ description: '`invite` (invitaciones del capitán) o `request` (pedidos para entrar)' }),
+  team: z.uuid().optional(),
+});
+export const InviteList = Envelope(Invite).openapi('InviteList');
 
 export const InviteBody = z
   .object({
@@ -145,31 +125,33 @@ export const TeamRequest = z
 
 // ---------- ranking ----------
 
-export const RankingQuery = z.object({
+export const RankingQuery = listQuery(['points', 'won', 'played', 'name'], { sort: 'points', order: 'desc' }).extend({
   pcw: z
     .enum(['0', '1'])
     .default('0')
     .transform((v) => v === '1')
     .openapi({ type: 'string', enum: ['0', '1'], description: '`1` suma también las PCW jugadas como el equipo' }),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre y la sigla' }),
 });
 
-export const Ranking = z
+export const RankingItem = z
   .object({
+    position: z.number().int().openapi({ description: 'Posición (empatados en puntos, victorias y derrotas comparten posición)' }),
+    team: TeamRef,
+    played: z.number().int(),
+    won: z.number().int(),
+    lost: z.number().int(),
+    points: z.number().int(),
+  })
+  .openapi('RankingItem');
+
+export const Ranking = Envelope(RankingItem)
+  .extend({
     pcw: z.boolean(),
-    points: z.object({
+    points_per_win: z.object({
       official: z.number().int().openapi({ description: 'Puntos por partida de torneo ganada' }),
       pcw: z.number().int().openapi({ description: 'Puntos por PCW ganada' }),
     }),
-    items: z.array(
-      z.object({
-        position: z.number().int(),
-        team: TeamRef,
-        played: z.number().int(),
-        won: z.number().int(),
-        lost: z.number().int(),
-        points: z.number().int(),
-      }),
-    ),
   })
   .openapi('Ranking');
 

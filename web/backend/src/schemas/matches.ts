@@ -1,17 +1,23 @@
 import { z } from '@hono/zod-openapi';
-import { PageQuery } from '../lib/db';
-import { Paginated } from './common';
+import { dateParam, Envelope, listQuery } from '../lib/list';
 import { TeamRef } from './players';
 
 const num = z.number().nullable();
 
 export const MatchKind = z.enum(['mix', 'pcw', 'official']);
 
-export const MatchListQuery = PageQuery.extend({
+export const MatchStatus = z.enum(['upcoming', 'live', 'finished', 'cancelled']);
+
+export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'played_at', order: 'desc' }).extend({
   kind: MatchKind.optional().openapi({ description: '`official` (torneo), `pcw` o `mix`. Sin filtro: todas' }),
-  status: z.enum(['upcoming', 'live', 'finished', 'cancelled']).optional(),
+  status: MatchStatus.optional(),
   event: z.uuid().optional().openapi({ description: 'Partidas de un torneo' }),
   team: z.uuid().optional().openapi({ description: 'Partidas de un equipo' }),
+  player: z.uuid().optional().openapi({ description: 'Partidas donde jugó un jugador (en una serie, en alguno de sus mapas)' }),
+  map: z.string().max(40).optional().openapi({ description: 'Mapa (contiene)' }),
+  from: dateParam('Desde (fecha jugada, o programada si no se jugó)'),
+  to: dateParam('Hasta (fecha jugada, o programada si no se jugó)'),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en equipos, bandos y torneo' }),
 });
 
 const Side = z
@@ -42,7 +48,7 @@ export const MatchSummary = z
   })
   .openapi('MatchSummary');
 
-export const MatchList = Paginated(MatchSummary).openapi('MatchList');
+export const MatchList = Envelope(MatchSummary).openapi('MatchList');
 
 export const RosterPlayer = z
   .object({ player_id: z.uuid().nullable(), alias: z.string(), guest: z.boolean().openapi({ description: 'Invitado sin ficha (solo PCW)' }) })
@@ -108,8 +114,18 @@ export const ChatMessage = z
   .openapi('ChatMessage');
 
 export const ChatQuery = z.object({
-  after: z.coerce.number().int().optional().openapi({ description: 'Solo los mensajes con id mayor (para consultar los nuevos)' }),
+  after: z.coerce.number().int().optional().openapi({ description: 'Los mensajes con id mayor (los nuevos), del más viejo al más nuevo' }),
+  before: z.coerce.number().int().optional().openapi({ description: 'Los mensajes con id menor (los anteriores, para cargar historial)' }),
+  limit: z.coerce.number().int().min(1).max(100).default(50).openapi({ description: 'Cuántos (máximo 100)' }),
 });
+
+export const ChatPage = z
+  .object({
+    items: z.array(ChatMessage).openapi({ description: 'Del más viejo al más nuevo' }),
+    has_more: z.boolean().openapi({ description: 'Hay más en la dirección pedida (anteriores sin `after`; nuevos con `after`)' }),
+    limit: z.number().int(),
+  })
+  .openapi('ChatPage');
 
 export const ChatBody = z.object({ message: z.string().trim().min(1).max(300) }).openapi('ChatBody');
 export const VetoBody = z

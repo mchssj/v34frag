@@ -84,8 +84,9 @@ describe('alias', () => {
     const noForce = await req('PUT', `/api/v1/admin/users/${p.id}/alias`, { token: adm.token, body: { alias: forced } });
     expect(noForce.status).toBe(400);
     expect((await req('PUT', `/api/v1/admin/users/${p.id}/alias`, { token: adm.token, body: { alias: forced, force: true } })).status).toBe(204);
-    const hits = await req('GET', '/api/v1/admin/blocked-words/hits', { token: adm.token });
-    expect(hits.body).toContainEqual({ kind: 'alias', id: p.id, name: forced, word });
+    const hits = await req('GET', '/api/v1/admin/blocked-words/hits?kind=alias&per=100', { token: adm.token });
+    expect(hits.body.items).toContainEqual({ kind: 'alias', id: p.id, name: forced, word });
+    expect(hits.body).toMatchObject({ sort: 'kind', order: 'asc', per: 100 });
   });
 });
 
@@ -103,8 +104,8 @@ describe('equipos y plantel', () => {
     const put = await req('PUT', '/api/v1/me/team-request', { token: cap.token, body: { name, tag: 'tit' } });
     expect(put.body).toEqual({ name, tag: 'TIT', status: 'pending' });
     expect((await req('GET', '/api/v1/admin/team-requests', { token: cap.token })).status).toBe(403);
-    const list = await req('GET', '/api/v1/admin/team-requests', { token: adm.token });
-    expect(list.body).toContainEqual(expect.objectContaining({ user_id: cap.id, name, has_steam: true, status: 'pending' }));
+    const list = await req('GET', `/api/v1/admin/team-requests?status=pending&q=${encodeURIComponent(name)}`, { token: adm.token });
+    expect(list.body.items).toEqual([expect.objectContaining({ user_id: cap.id, name, has_steam: true, status: 'pending' })]);
     const ap = await req('POST', `/api/v1/admin/team-requests/${cap.id}/approve`, { token: adm.token });
     expect(ap.status).toBe(201);
     team = ap.body.id;
@@ -113,7 +114,8 @@ describe('equipos y plantel', () => {
     const detail = await req('GET', `/api/v1/teams/${team}`, { token: cap.token });
     expect(detail.body).toMatchObject({ name, tag: 'TIT', members: 1, max_members: 10, captain: { player_id: cap.playerId } });
     expect(detail.body.viewer).toEqual({ is_captain: true, is_member: true, is_admin: false });
-    expect(detail.body.roster[0]).toMatchObject({ player_id: cap.playerId, is_captain: true });
+    const roster = await req('GET', `/api/v1/teams/${team}/members?active=true`);
+    expect(roster.body.items).toEqual([expect.objectContaining({ player_id: cap.playerId, is_captain: true })]);
   });
 
   it('invitación y pedido de punta a punta, salir, sacar y ceder la capitanía', async () => {
@@ -124,7 +126,7 @@ describe('equipos y plantel', () => {
     expect((await req('POST', `/api/v1/teams/${team}/invites`, { token: a.token, body: { alias: b.alias } })).status).toBe(403);
     const inv = await req('POST', `/api/v1/teams/${team}/invites`, { token: cap.token, body: { alias: a.alias } });
     expect(inv.status).toBe(201);
-    expect((await req('GET', '/api/v1/me/team-invites', { token: a.token })).body.invites).toEqual([
+    expect((await req('GET', '/api/v1/me/team-invites?kind=invite', { token: a.token })).body.items).toEqual([
       expect.objectContaining({ id: inv.body.id, kind: 'invite', team: expect.objectContaining({ id: team }) }),
     ]);
     // Un pedido no se acepta por la ruta de invitaciones.
@@ -135,8 +137,8 @@ describe('equipos y plantel', () => {
     const jr = await req('POST', `/api/v1/teams/${team}/join-requests`, { token: b.token });
     expect(jr.status).toBe(201);
     expect((await req('GET', `/api/v1/teams/${team}/pending`, { token: a.token })).status).toBe(403);
-    const pend = await req('GET', `/api/v1/teams/${team}/pending`, { token: cap.token });
-    expect(pend.body.requests.map((r: { id: string }) => r.id)).toEqual([jr.body.id]);
+    const pend = await req('GET', `/api/v1/teams/${team}/pending?kind=request`, { token: cap.token });
+    expect(pend.body.items.map((r: { id: string }) => r.id)).toEqual([jr.body.id]);
     expect((await req('POST', `/api/v1/join-requests/${jr.body.id}/accept`, { token: cap.token })).status).toBe(204);
     expect((await req('GET', `/api/v1/teams/${team}`)).body.members).toBe(3);
 
@@ -147,11 +149,13 @@ describe('equipos y plantel', () => {
     // A (capitán ahora) saca a B.
     expect((await req('DELETE', `/api/v1/teams/${team}/members/${b.playerId}`, { token: a.token })).status).toBe(204);
 
-    const t = (await req('GET', `/api/v1/teams/${team}`)).body;
-    expect(t.roster.map((r: { player_id: string }) => r.player_id)).toEqual([a.playerId]);
-    expect(t.former.map((r: { player_id: string }) => r.player_id).sort()).toEqual([b.playerId, cap.playerId].sort());
+    const actives = (await req('GET', `/api/v1/teams/${team}/members?active=true`)).body.items;
+    expect(actives.map((r: { player_id: string }) => r.player_id)).toEqual([a.playerId]);
+    const former = (await req('GET', `/api/v1/teams/${team}/members?active=false&sort=left_at&order=desc`)).body;
+    expect(former.items.map((r: { player_id: string }) => r.player_id).sort()).toEqual([b.playerId, cap.playerId].sort());
+    expect(former.total).toBe(2);
     // El historial del jugador lo muestra.
-    const hist = (await req('GET', `/api/v1/players/${b.playerId}`)).body.history;
+    const hist = (await req('GET', `/api/v1/players/${b.playerId}/teams?active=false`)).body.items;
     expect(hist).toEqual([expect.objectContaining({ team: expect.objectContaining({ id: team }), left_at: expect.any(String) })]);
   });
 
@@ -200,18 +204,23 @@ describe('ranking, listados y fichas', () => {
       { team1: rival, team2: side, kind: 'pcw', status: 'finished', best_of: 1, score1: 0, score2: 1, winner: side },
     ]);
     const find = (r: { body: { items: { team: { id: string } }[] } }, id: string) => r.body.items.find((i) => i.team.id === id);
-
-    const only = await req('GET', '/api/v1/ranking/teams');
-    expect(only.body.points).toEqual({ official: 30, pcw: 5 });
+    // Los equipos de esta prueba se buscan por nombre ("R …"), para no depender de la página.
+    const only = await req('GET', '/api/v1/ranking/teams?q=R%20&per=100');
+    expect(only.body.points_per_win).toEqual({ official: 30, pcw: 5 });
     expect(find(only, a)).toMatchObject({ played: 1, won: 1, lost: 0, points: 30 });
     expect(find(only, b)).toMatchObject({ played: 1, won: 0, lost: 1, points: 0 });
     expect(find(only, side)).toBeUndefined();
 
-    const all = await req('GET', '/api/v1/ranking/teams?pcw=1');
+    const all = await req('GET', '/api/v1/ranking/teams?pcw=1&q=R%20&per=100');
     expect(find(all, a)).toMatchObject({ played: 3, won: 2, lost: 1, points: 35 });
 
     expect((await req('PUT', '/api/v1/admin/ranking/config', { token: adm.token, body: { win_official: 40, win_pcw: 10 } })).status).toBe(200);
-    expect(find(await req('GET', '/api/v1/ranking/teams?pcw=1'), a)).toMatchObject({ points: 50 });
+    expect(find(await req('GET', '/api/v1/ranking/teams?pcw=1&q=R%20&per=100'), a)).toMatchObject({ points: 50 });
+    // Orden por nombre ascendente, y un orden inválido da 400.
+    const byName = await req('GET', '/api/v1/ranking/teams?q=R%20&per=100&sort=name&order=asc');
+    const names = byName.body.items.map((i: { team: { name: string } }) => i.team.name);
+    expect(names).toEqual([...names].sort((x: string, y: string) => x.localeCompare(y)));
+    expect((await req('GET', '/api/v1/ranking/teams?sort=elo')).status).toBe(400);
     expect((await req('GET', '/api/v1/admin/ranking/config', { token: adm.token })).body).toEqual({ win_official: 40, win_pcw: 10 });
     await req('PUT', '/api/v1/admin/ranking/config', { token: adm.token, body: { win_official: 30, win_pcw: 5 } });
   });
@@ -227,7 +236,8 @@ describe('ranking, listados y fichas', () => {
     expect(found.body.items[0]).toMatchObject({ id: p.playerId, alias, has_account: true, has_steam: true, level: null, teams: [] });
 
     const pub = await req('GET', `/api/v1/players/${p.playerId}`);
-    expect(pub.body).toMatchObject({ private: false, details: { real_name: 'Juan Pérez' }, stats: null, medals: [] });
+    expect(pub.body).toMatchObject({ private: false, details: { real_name: 'Juan Pérez' }, stats: null });
+    expect((await req('GET', `/api/v1/players/${p.playerId}/medals`)).body).toMatchObject({ items: [], total: 0 });
 
     await admin().from('players').update({ privacy: 'private' }).eq('id', p.playerId);
     const priv = await req('GET', `/api/v1/players/${p.playerId}`);
@@ -267,15 +277,15 @@ describe('admin de jugadores', () => {
 
     const medal = await req('POST', `/api/v1/admin/players/${id}/medals`, { token: adm.token, body: { title: 'Campeón' } });
     expect(medal.body).toMatchObject({ title: 'Campeón', icon: '🏆' });
-    expect((await req('GET', `/api/v1/players/${id}`)).body.medals).toHaveLength(1);
+    expect((await req('GET', `/api/v1/players/${id}/medals`)).body.total).toBe(1);
     expect((await req('DELETE', `/api/v1/admin/medals/${medal.body.id}`, { token: adm.token })).status).toBe(204);
 
     // Un SteamID que jugó sin estar vinculado aparece y se vincula con sus partidas.
     const s = steam();
     const m = (await admin().from('matches').insert({ kind: 'mix', status: 'finished', best_of: 1, side1_name: 'A', side2_name: 'B', side1_guests: ['anon'], played_at: new Date().toISOString() }).select('id').single()).data!.id;
     await admin().from('match_player_stats').insert({ match_id: m, steam_id: s, team: 1, nick: 'anon', kills: 1, deaths: 1, rounds: 10 });
-    const un = await req('GET', '/api/v1/admin/steam/unlinked', { token: adm.token });
-    expect(un.body).toContainEqual(expect.objectContaining({ steam_id: s, last_nick: 'anon', matches: 1 }));
+    const un = await req('GET', `/api/v1/admin/steam/unlinked?q=${s}`, { token: adm.token });
+    expect(un.body.items).toEqual([expect.objectContaining({ steam_id: s, last_nick: 'anon', matches: 1 })]);
     expect((await req('POST', '/api/v1/admin/steam/link', { token: adm.token, body: { steam_id: s, player_id: id } })).status).toBe(204);
     expect((await req('GET', `/api/v1/players/${id}/matches`)).body.total).toBe(1);
 
@@ -287,7 +297,9 @@ describe('admin de jugadores', () => {
     expect((await req('PATCH', `/api/v1/admin/players/${id}`, { token: adm.token, body: { user_id: u.id } })).body.nick).toBe(alias);
     expect((await req('PATCH', `/api/v1/admin/players/${id}`, { token: adm.token, body: { nick: 'Otro' } })).status).toBe(400);
     const users = await req('GET', `/api/v1/admin/users?q=${encodeURIComponent(alias)}`, { token: adm.token });
-    expect(users.body).toEqual([expect.objectContaining({ id: u.id, alias, player_id: id })]);
+    expect(users.body.items).toEqual([expect.objectContaining({ id: u.id, alias, player_id: id })]);
+    const withPlayer = await req('GET', `/api/v1/admin/users?q=${encodeURIComponent(alias)}&has_player=false`, { token: adm.token });
+    expect(withPlayer.body.total).toBe(0);
 
     const sinPartidas = (await req('POST', '/api/v1/admin/players', { token: adm.token, body: { nick: `Borrar${rnd()}` } })).body.id;
     expect((await req('DELETE', `/api/v1/admin/players/${sinPartidas}`, { token: adm.token })).status).toBe(204);
@@ -300,7 +312,7 @@ describe('admin de jugadores', () => {
     const blocked = await req('POST', '/api/v1/admin/teams', { token: adm.token, body: { name: `Los ${w.body.word}`, tag: 'X' } });
     expect(blocked.body.error.details[0].path).toBe('name');
     expect((await req('POST', '/api/v1/admin/teams', { token: adm.token, body: { name: `Los ${w.body.word}`, tag: 'X', force: true } })).status).toBe(201);
-    expect((await req('GET', '/api/v1/admin/blocked-words', { token: adm.token })).body).toContainEqual(expect.objectContaining({ id: w.body.id }));
+    expect((await req('GET', `/api/v1/admin/blocked-words?q=${w.body.word}`, { token: adm.token })).body.items).toContainEqual(expect.objectContaining({ id: w.body.id }));
     expect((await req('DELETE', `/api/v1/admin/blocked-words/${w.body.id}`, { token: adm.token })).status).toBe(204);
   });
 });
@@ -319,16 +331,16 @@ describe('más casos del plantel y del admin', () => {
     const inv2 = (await req('POST', `/api/v1/teams/${team}/invites`, { token: cap.token, body: { player_id: a.playerId } })).body.id;
     expect((await req('DELETE', `/api/v1/team-invites/${inv2}`, { token: cap.token })).status).toBe(204);
     const jr = (await req('POST', `/api/v1/teams/${team}/join-requests`, { token: a.token })).body.id;
-    expect((await req('GET', '/api/v1/me/team-invites', { token: a.token })).body.requests).toHaveLength(1);
+    expect((await req('GET', '/api/v1/me/team-invites?kind=request', { token: a.token })).body.total).toBe(1);
     expect((await req('DELETE', `/api/v1/join-requests/${jr}`, { token: a.token })).status).toBe(204);
     const jr2 = (await req('POST', `/api/v1/teams/${team}/join-requests`, { token: a.token })).body.id;
     expect((await req('POST', `/api/v1/join-requests/${jr2}/reject`, { token: cap.token })).status).toBe(204);
-    expect((await req('GET', '/api/v1/me/team-invites', { token: a.token })).body).toEqual({ invites: [], requests: [] });
+    expect((await req('GET', '/api/v1/me/team-invites', { token: a.token })).body).toMatchObject({ items: [], total: 0 });
     expect((await req('GET', `/api/v1/teams/${team}`)).body.members).toBe(1);
 
     // Un usuario sin jugador no tiene invitaciones; una cuenta sin jugador no puede ser capitán.
     const solo = await createUser();
-    expect((await req('GET', '/api/v1/me/team-invites', { token: solo.token })).body).toEqual({ invites: [], requests: [] });
+    expect((await req('GET', '/api/v1/me/team-invites', { token: solo.token })).body).toMatchObject({ items: [], total: 0 });
     const nop = (await req('POST', '/api/v1/admin/players', { token: adm.token, body: { nick: `SinCta${rnd()}` } })).body.id;
     expect((await req('PATCH', `/api/v1/admin/teams/${team}`, { token: adm.token, body: { captain_player_id: nop } })).status).toBe(400);
     expect((await req('PATCH', `/api/v1/admin/teams/${team}`, { token: adm.token, body: { name: `Renombrado ${rnd()}` } })).status).toBe(204);
@@ -340,8 +352,8 @@ describe('más casos del plantel y del admin', () => {
     const pl = (await req('POST', '/api/v1/admin/players', { token: adm.token, body: { nick: `Libre${rnd()}` } })).body.id;
     const r = await req('POST', '/api/v1/me/profile-requests', { token: u.token, body: { player_id: pl } });
     expect(r.status).toBe(201);
-    const list = await req('GET', '/api/v1/admin/profile-requests', { token: adm.token });
-    expect(list.body).toContainEqual(expect.objectContaining({ id: r.body.id, user_id: u.id, status: 'pending' }));
+    const list = await req('GET', '/api/v1/admin/profile-requests?status=pending&per=100', { token: adm.token });
+    expect(list.body.items).toContainEqual(expect.objectContaining({ id: r.body.id, user_id: u.id, status: 'pending' }));
     expect((await req('POST', `/api/v1/admin/profile-requests/${r.body.id}/approve`, { token: adm.token })).status).toBe(204);
     expect((await req('POST', `/api/v1/admin/profile-requests/${r.body.id}/reject`, { token: adm.token })).status).toBe(400);
     expect((await req('GET', `/api/v1/players/${pl}`)).body).toMatchObject({ has_account: true });

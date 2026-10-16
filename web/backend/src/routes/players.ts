@@ -1,14 +1,22 @@
-import { createRoute, z } from '@hono/zod-openapi';
+import { createRoute, type z } from '@hono/zod-openapi';
 import { optionalUser } from '../lib/auth';
-import { levelOf, must, mustHave, notFound, PageQuery, pageRange, searchTerm } from '../lib/db';
+import { levelOf, must, notFound, searchTerm } from '../lib/db';
+import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import { errorResponses, json } from '../schemas/common';
 import {
   IdParam,
+  MapStatsQuery,
+  MedalList,
+  MedalQuery,
   PlayerDetail,
   PlayerList,
   PlayerListQuery,
+  PlayerMapStatsList,
   PlayerMatchList,
+  PlayerMatchQuery,
+  StintQuery,
+  TeamStintList,
   type PlayerSummary,
 } from '../schemas/players';
 
@@ -48,7 +56,7 @@ const list = createRoute({
   tags: ['Jugadores'],
   summary: 'Jugadores',
   description:
-    'Listado paginado, por defecto ordenado por ELO (el ranking de jugadores). Sin sesión. ' +
+    'Listado paginado; por defecto ordenado por ELO (el ranking de jugadores). Sin sesión. ' +
     'El nivel (1 a 10) sale de los tramos de ELO 0, 501, 751, 901, 1051, 1201, 1351, 1531, 1751 y 2001.',
   middleware: [optionalUser] as const,
   request: { query: PlayerListQuery },
@@ -61,8 +69,8 @@ const detail = createRoute({
   tags: ['Jugadores'],
   summary: 'Ficha de un jugador',
   description:
-    'Datos, ELO, stats, stats por mapa, medallas, equipos actuales e historial. Los datos personales (`details`) ' +
-    'solo vienen si el perfil es público, si es el propio o si quien consulta es admin.',
+    'Datos, ELO, stats y equipos actuales. Los datos personales (`details`) solo vienen si el perfil es público, si es el propio ' +
+    'o si quien consulta es admin. Stats por mapa, medallas, historial y partidas van en sus listados.',
   middleware: [optionalUser] as const,
   request: { params: IdParam },
   responses: { 200: { description: 'Ficha', ...json(PlayerDetail) }, ...errorResponses(400, 401, 404) },
@@ -73,26 +81,56 @@ const matches = createRoute({
   path: '/api/v1/players/{id}/matches',
   tags: ['Jugadores'],
   summary: 'Partidas de un jugador',
-  description: 'Partidas terminadas que jugó en el servidor, la más nueva primero, con sus stats y su cambio de ELO.',
+  description: 'Partidas terminadas que jugó en el servidor, con sus stats y su cambio de ELO.',
   middleware: [optionalUser] as const,
-  request: { params: IdParam, query: PageQuery },
+  request: { params: IdParam, query: PlayerMatchQuery },
   responses: { 200: { description: 'Partidas', ...json(PlayerMatchList) }, ...errorResponses(400, 401) },
+});
+
+const mapStats = createRoute({
+  method: 'get',
+  path: '/api/v1/players/{id}/map-stats',
+  tags: ['Jugadores'],
+  summary: 'Stats por mapa de un jugador',
+  middleware: [optionalUser] as const,
+  request: { params: IdParam, query: MapStatsQuery },
+  responses: { 200: { description: 'Stats por mapa', ...json(PlayerMapStatsList) }, ...errorResponses(400, 401) },
+});
+
+const medals = createRoute({
+  method: 'get',
+  path: '/api/v1/players/{id}/medals',
+  tags: ['Jugadores'],
+  summary: 'Medallas de un jugador',
+  middleware: [optionalUser] as const,
+  request: { params: IdParam, query: MedalQuery },
+  responses: { 200: { description: 'Medallas', ...json(MedalList) }, ...errorResponses(400, 401) },
+});
+
+const teams = createRoute({
+  method: 'get',
+  path: '/api/v1/players/{id}/teams',
+  tags: ['Jugadores'],
+  summary: 'Historial de equipos de un jugador',
+  description: 'Equipos oficiales actuales y anteriores, con rol y fechas de alta y baja.',
+  middleware: [optionalUser] as const,
+  request: { params: IdParam, query: StintQuery },
+  responses: { 200: { description: 'Equipos', ...json(TeamStintList) }, ...errorResponses(400, 401) },
 });
 
 export const players = createRouter()
   .openapi(list, async (c) => {
-    const { q, sort, page, per } = c.req.valid('query');
-    const { from, to } = pageRange({ page, per });
-    let query = c.var.sb.from('player_overview').select(OVERVIEW, { count: 'exact' });
-    const term = searchTerm(q);
-    if (term) query = query.ilike('search', `%${term}%`);
-    query =
-      sort === 'alias'
-        ? query.order('nick', { ascending: true })
-        : query.order('elo', { ascending: false, nullsFirst: false }).order('nick', { ascending: true });
-    const { data, error, count } = await query.range(from, to);
-    if (error) must({ data, error });
-    return c.json({ items: (data ?? []).map(toSummary), total: count ?? 0, page, per }, 200);
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('player_overview').select(OVERVIEW, { count: 'exact' });
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('search', `%${term}%`);
+    if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
+    if (p.has_account !== undefined) q = q.eq('has_account', p.has_account);
+    if (p.has_steam !== undefined) q = q.eq('has_steam', p.has_steam);
+    if (p.elo_min !== undefined) q = q.gte('elo', p.elo_min);
+    if (p.elo_max !== undefined) q = q.lte('elo', p.elo_max);
+    const { rows, total } = await runList<OverviewRow, typeof q>(q, p, { alias: 'nick' });
+    return c.json(envelope(rows.map(toSummary), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');
@@ -102,24 +140,10 @@ export const players = createRouter()
       sb.from('players').select('user_id, steam_id, bio, achievements, team_history, privacy').eq('id', id).maybeSingle().then(must),
     ]);
     if (!overview || !player) throw notFound('ese jugador');
-
-    const [stats, mapStats, medals, history, details] = await Promise.all([
+    const [stats, details] = await Promise.all([
       sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses').eq('player_id', id).maybeSingle().then(must),
-      sb.from('player_map_stats').select('map_name, maps, rating, kd, adr, wins, losses').eq('player_id', id).order('maps', { ascending: false }).then(mustHave),
-      sb.from('player_medals').select('id, title, icon, created_at').eq('player_id', id).order('created_at').then(mustHave),
-      sb.from('team_members')
-        .select('role, joined_at, left_at, team:teams!inner(id, name, tag, kind)')
-        .eq('player_id', id)
-        .eq('team.kind', 'official')
-        .order('left_at', { ascending: false, nullsFirst: true })
-        .order('joined_at', { ascending: false, nullsFirst: false })
-        .then(mustHave),
-      player.user_id
-        ? sb.from('profile_details').select(DETAILS).eq('user_id', player.user_id).maybeSingle().then(must)
-        : Promise.resolve(null),
+      player.user_id ? sb.from('profile_details').select(DETAILS).eq('user_id', player.user_id).maybeSingle().then(must) : Promise.resolve(null),
     ]);
-
-    const privacy = player.privacy === 'private' ? 'private' : 'public';
     return c.json(
       {
         ...toSummary(overview),
@@ -127,17 +151,9 @@ export const players = createRouter()
         bio: player.bio,
         achievements: player.achievements,
         team_history_text: player.team_history,
-        privacy,
+        privacy: player.privacy === 'private' ? ('private' as const) : ('public' as const),
         peak_elo: overview.peak_elo,
         stats: stats ?? null,
-        map_stats: mapStats.map(({ map_name, ...m }) => ({ map: map_name ?? '?', ...m })),
-        medals,
-        history: history.map((h) => ({
-          team: { id: h.team.id, name: h.team.name, tag: h.team.tag },
-          role: h.role,
-          joined_at: h.joined_at,
-          left_at: h.left_at,
-        })),
         details: details ?? null,
         private: !!player.user_id && !details,
       },
@@ -146,22 +162,60 @@ export const players = createRouter()
   })
   .openapi(matches, async (c) => {
     const { id } = c.req.valid('param');
-    const { page, per } = c.req.valid('query');
-    const { from, to } = pageRange({ page, per });
-    const { data, error, count } = await c.var.sb
-      .from('player_matches')
-      .select(MATCH_FIELDS, { count: 'exact' })
-      .eq('player_id', id)
-      .order('played_at', { ascending: false, nullsFirst: false })
-      .range(from, to);
-    if (error) must({ data, error });
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('player_matches').select(MATCH_FIELDS, { count: 'exact' }).eq('player_id', id);
+    if (p.kind) q = q.eq('kind', p.kind);
+    if (p.result === 'won') q = q.eq('won', true);
+    if (p.result === 'lost') q = q.eq('won', false);
+    if (p.result === 'draw') q = q.is('won', null);
+    if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
+    if (p.from) q = q.gte('played_at', p.from);
+    if (p.to) q = q.lte('played_at', p.to);
+    type Row = Record<string, unknown> & { match_id: string; kind: string; side1_name: string | null; side2_name: string | null; team1_name: string | null; team2_name: string | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'match_id');
     // En PCW y torneos el bando es el equipo; en los mixes, el nombre del bando. Empate: won = null.
-    const items = (data ?? []).map(({ team1_name, team2_name, ...m }) => ({
+    const items = rows.map(({ team1_name, team2_name, ...m }) => ({
       ...m,
-      match_id: m.match_id!,
       kind: m.kind as 'mix' | 'pcw' | 'official',
       side1_name: m.side1_name ?? team1_name,
       side2_name: m.side2_name ?? team2_name,
     }));
-    return c.json({ items, total: count ?? 0, page, per }, 200);
+    return c.json(envelope(items, total, p) as never, 200);
+  })
+  .openapi(mapStats, async (c) => {
+    const { id } = c.req.valid('param');
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('player_map_stats').select('map_name, maps, rating, kd, adr, wins, losses', { count: 'exact' }).eq('player_id', id);
+    if (p.map) q = q.ilike('map_name', `%${searchTerm(p.map) ?? ''}%`);
+    type Row = { map_name: string | null; maps: number | null; rating: number | null; kd: number | null; adr: number | null; wins: number | null; losses: number | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'map_name');
+    return c.json(envelope(rows.map(({ map_name, ...m }) => ({ map: map_name ?? '?', ...m })), total, p), 200);
+  })
+  .openapi(medals, async (c) => {
+    const { id } = c.req.valid('param');
+    const p = c.req.valid('query');
+    const q = c.var.sb.from('player_medals').select('id, title, icon, created_at', { count: 'exact' }).eq('player_id', id);
+    type Row = { id: string; title: string; icon: string | null; created_at: string };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {});
+    return c.json(envelope(rows, total, p), 200);
+  })
+  .openapi(teams, async (c) => {
+    const { id } = c.req.valid('param');
+    const p = c.req.valid('query');
+    let q = c.var.sb
+      .from('team_members_view')
+      .select('team_id, team_name, team_tag, role, joined_at, left_at', { count: 'exact' })
+      .eq('player_id', id)
+      .eq('team_kind', 'official');
+    if (p.active !== undefined) q = q.eq('active', p.active);
+    type Row = { team_id: string; team_name: string; team_tag: string | null; role: string; joined_at: string | null; left_at: string | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, { name: 'team_name' }, 'team_id');
+    return c.json(
+      envelope(
+        rows.map((r) => ({ team: { id: r.team_id, name: r.team_name, tag: r.team_tag }, role: r.role, joined_at: r.joined_at, left_at: r.left_at })),
+        total,
+        p,
+      ),
+      200,
+    );
   });

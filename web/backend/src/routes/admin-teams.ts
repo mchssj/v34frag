@@ -1,19 +1,21 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { requireAdmin, requireUser } from '../lib/auth';
-import { must, mustHave, notFound } from '../lib/db';
+import { must, mustHave, notFound, searchTerm } from '../lib/db';
+import { envelope, runList } from '../lib/list';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import {
   AdminTeamCreate,
   AdminTeamPatch,
-  AdminTeamRequest,
+  AdminTeamRequestList,
   IdParam,
   MemberBody,
   RankingConfig,
   RoleBody,
   TeamPlayerParam,
+  TeamRequestQuery,
   UserIdParam,
 } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
@@ -69,8 +71,9 @@ const setRole = createRoute({
 
 const requests = createRoute({
   method: 'get', path: '/api/v1/admin/team-requests', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Solicitudes de equipo nuevo', description: 'Pendientes primero. `has_steam` dice si se puede aprobar.',
-  responses: { 200: { description: 'Solicitudes', ...json(z.array(AdminTeamRequest)) }, ...errorResponses(401, 403) },
+  summary: 'Solicitudes de equipo nuevo', description: 'Por defecto, las pendientes primero. `has_steam` dice si se puede aprobar.',
+  request: { query: TeamRequestQuery },
+  responses: { 200: { description: 'Solicitudes', ...json(AdminTeamRequestList) }, ...errorResponses(400, 401, 403) },
 });
 const approve = createRoute({
   method: 'post', path: '/api/v1/admin/team-requests/{userId}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -147,19 +150,14 @@ export const adminTeams = createRouter()
     return c.body(null, 204);
   })
   .openapi(requests, async (c) => {
-    const { sb } = c.var;
-    const [rows, people] = await Promise.all([
-      sb.from('team_requests').select('user_id, name, tag, status').then(mustHave),
-      sb.rpc('admin_users', {}).then(mustHave),
-    ]);
-    const byId = new Map(people.map((u) => [u.id, u]));
-    const order = (s: string) => (s === 'pending' ? 0 : 1);
-    return c.json(
-      rows
-        .map((r) => ({ ...r, alias: byId.get(r.user_id)?.tag ?? null, has_steam: !!byId.get(r.user_id)?.player_steam_id }))
-        .sort((a, b) => order(a.status) - order(b.status) || a.name.localeCompare(b.name)),
-      200,
-    );
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('admin_team_requests').select('user_id, alias, has_steam, name, tag, status', { count: 'exact' });
+    if (p.status) q = q.eq('status', p.status);
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('search', `%${term}%`);
+    type Row = { user_id: string; alias: string | null; has_steam: boolean; name: string; tag: string | null; status: string };
+    const { rows, total } = await runList<Row, typeof q>(q, p, { status: ['status_order', 'name'] }, 'user_id');
+    return c.json(envelope(rows, total, p), 200);
   })
   .openapi(approve, async (c) => {
     const id = mustHave(await c.var.sb.rpc('approve_team_request', { p_user: c.req.valid('param').userId }));

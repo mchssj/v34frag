@@ -1,4 +1,4 @@
-import { createRoute, type z } from '@hono/zod-openapi';
+import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { requireUser } from '../lib/auth';
@@ -8,6 +8,7 @@ import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { AVATAR_MAX_BYTES, readImage, storageError } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
+import { Envelope, envelope, listQuery, runList } from '../lib/list';
 import {
   AvatarResult,
   AvatarUpload,
@@ -80,6 +81,10 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
   };
 }
 
+const MyClaimQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
+});
+
 const REQUEST_FIELDS = 'id, player_id, status, created_at, player:players(id, nick)';
 
 // ---------- rutas ----------
@@ -146,7 +151,8 @@ const listRequests = createRoute({
   deprecated: true,
   security: bearer,
   middleware: [requireUser] as const,
-  responses: { 200: { description: 'Solicitudes, la más nueva primero', ...json(ProfileRequest.array()) }, ...errorResponses(401) },
+  request: { query: MyClaimQuery },
+  responses: { 200: { description: 'Solicitudes', ...json(Envelope(ProfileRequest).openapi('ProfileRequestList')) }, ...errorResponses(400, 401) },
 });
 
 const createRequest = createRoute({
@@ -218,11 +224,12 @@ export const me = createRouter()
     return c.json({ avatar_url }, 200);
   })
   .openapi(listRequests, async (c) => {
+    const p = c.req.valid('query');
     const { sb, user } = c.var;
-    const rows = mustHave(
-      await sb.from('profile_requests').select(REQUEST_FIELDS).eq('user_id', user.id).order('created_at', { ascending: false }),
-    );
-    return c.json(rows, 200);
+    let q = sb.from('profile_requests').select(REQUEST_FIELDS, { count: 'exact' }).eq('user_id', user.id);
+    if (p.status) q = q.eq('status', p.status);
+    const { rows, total } = await runList<z.infer<typeof ProfileRequest>, typeof q>(q, p, {});
+    return c.json(envelope(rows, total, p), 200);
   })
   .openapi(createRequest, async (c) => {
     const { sb, user } = c.var;

@@ -3,7 +3,8 @@ import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { requireAdmin, requireUser } from '../lib/auth';
 import { inBackground } from '../lib/background';
-import { must, mustHave, notFound } from '../lib/db';
+import { must, mustHave, notFound, searchTerm } from '../lib/db';
+import { envelope, runList } from '../lib/list';
 import { AppError, fromPostgrest } from '../lib/errors';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
@@ -13,15 +14,21 @@ import {
   AdminPlayer,
   AdminPlayerCreate,
   AdminPlayerPatch,
-  AdminUser,
-  BlockedHit,
+  AdminUserList,
+  AdminUserQuery,
+  BlockedHitList,
+  BlockedHitQuery,
   BlockedWord,
   BlockedWordBody,
+  BlockedWordList,
+  BlockedWordQuery,
+  ClaimQuery,
   IdParam,
   MedalBody,
-  ProfileRequestAdmin,
+  ProfileRequestAdminList,
   SteamLinkBody,
-  SteamUnlinked,
+  SteamUnlinkedList,
+  SteamUnlinkedQuery,
 } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { AvatarResult, AvatarUpload } from '../schemas/profile';
@@ -97,8 +104,9 @@ const deleteMedal = createRoute({
 
 const unlinked = createRoute({
   method: 'get', path: '/api/v1/admin/steam/unlinked', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'SteamIDs sin vincular', description: 'SteamIDs que jugaron y no tienen jugador, el último en jugar primero.',
-  responses: { 200: { description: 'SteamIDs', ...json(z.array(SteamUnlinked)) }, ...errorResponses(401, 403) },
+  summary: 'SteamIDs sin vincular', description: 'SteamIDs que jugaron y no tienen jugador. Por defecto, el último en jugar primero.',
+  request: { query: SteamUnlinkedQuery },
+  responses: { 200: { description: 'SteamIDs', ...json(SteamUnlinkedList) }, ...errorResponses(400, 401, 403) },
 });
 const steamLink = createRoute({
   method: 'post', path: '/api/v1/admin/steam/link', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -112,9 +120,9 @@ const steamLink = createRoute({
 
 const users = createRoute({
   method: 'get', path: '/api/v1/admin/users', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Usuarios', description: 'Alias, rol y jugador vinculado. `q` busca en el alias.',
-  request: { query: z.object({ q: z.string().max(60).optional() }) },
-  responses: { 200: { description: 'Usuarios', ...json(z.array(AdminUser)) }, ...errorResponses(401, 403) },
+  summary: 'Usuarios', description: 'Alias, rol y jugador vinculado.',
+  request: { query: AdminUserQuery },
+  responses: { 200: { description: 'Usuarios', ...json(AdminUserList) }, ...errorResponses(400, 401, 403) },
 });
 const userAlias = createRoute({
   method: 'put', path: '/api/v1/admin/users/{id}/alias', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -129,7 +137,8 @@ const userAlias = createRoute({
 const words = createRoute({
   method: 'get', path: '/api/v1/admin/blocked-words', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Palabras bloqueadas',
-  responses: { 200: { description: 'Palabras', ...json(z.array(BlockedWord)) }, ...errorResponses(401, 403) },
+  request: { query: BlockedWordQuery },
+  responses: { 200: { description: 'Palabras', ...json(BlockedWordList) }, ...errorResponses(400, 401, 403) },
 });
 const addWord = createRoute({
   method: 'post', path: '/api/v1/admin/blocked-words', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -147,7 +156,8 @@ const hits = createRoute({
   method: 'get', path: '/api/v1/admin/blocked-words/hits', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Nombres actuales con palabras bloqueadas',
   description: 'Alias, nicks de jugadores sin cuenta y nombres o siglas de equipos oficiales, para corregirlos.',
-  responses: { 200: { description: 'Coincidencias', ...json(z.array(BlockedHit)) }, ...errorResponses(401, 403) },
+  request: { query: BlockedHitQuery },
+  responses: { 200: { description: 'Coincidencias', ...json(BlockedHitList) }, ...errorResponses(400, 401, 403) },
 });
 
 // ---------- reclamos de perfil (deprecados) ----------
@@ -155,8 +165,9 @@ const hits = createRoute({
 const deprecatedNote = ' **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`).';
 const listClaims = createRoute({
   method: 'get', path: '/api/v1/admin/profile-requests', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const, deprecated: true,
-  summary: 'Solicitudes de reclamo de perfil', description: 'La más nueva primero.' + deprecatedNote,
-  responses: { 200: { description: 'Solicitudes', ...json(z.array(ProfileRequestAdmin)) }, ...errorResponses(401, 403) },
+  summary: 'Solicitudes de reclamo de perfil', description: 'Por defecto, la más nueva primero.' + deprecatedNote,
+  request: { query: ClaimQuery },
+  responses: { 200: { description: 'Solicitudes', ...json(ProfileRequestAdminList) }, ...errorResponses(400, 401, 403) },
 });
 const approveClaim = createRoute({
   method: 'post', path: '/api/v1/admin/profile-requests/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const, deprecated: true,
@@ -243,8 +254,13 @@ export const adminPlayers = createRouter()
     return c.body(null, 204);
   })
   .openapi(unlinked, async (c) => {
-    const rows = mustHave(await c.var.sb.from('steam_unlinked').select('steam_id, last_nick, matches, last_played').order('last_played', { ascending: false }));
-    return c.json(rows.map((r) => ({ steam_id: r.steam_id ?? '', last_nick: r.last_nick, matches: r.matches ?? 0, last_played: r.last_played })), 200);
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('steam_unlinked').select('steam_id, last_nick, matches, last_played', { count: 'exact' });
+    const term = searchTerm(p.q);
+    if (term) q = q.or(`last_nick.ilike.*${term}*,steam_id.ilike.*${term}*`);
+    type Row = { steam_id: string | null; last_nick: string | null; matches: number | null; last_played: string | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'steam_id');
+    return c.json(envelope(rows.map((r) => ({ steam_id: r.steam_id ?? '', last_nick: r.last_nick, matches: r.matches ?? 0, last_played: r.last_played })), total, p), 200);
   })
   .openapi(steamLink, async (c) => {
     const { steam_id, player_id } = c.req.valid('json');
@@ -253,11 +269,16 @@ export const adminPlayers = createRouter()
     return c.body(null, 204);
   })
   .openapi(users, async (c) => {
-    const rows = mustHave(await c.var.sb.rpc('admin_users', { p_q: c.req.valid('query').q?.trim() || undefined }));
-    return c.json(
-      rows.map((u) => ({ id: u.id, alias: u.tag ?? '', role: u.role, alias_changed_at: u.tag_changed_at, player_id: u.player_id, steam_id: u.player_steam_id })),
-      200,
-    );
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('admin_user_list').select('id, alias, role, alias_changed_at, player_id, steam_id', { count: 'exact' });
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('search', `%${term}%`);
+    if (p.role) q = q.eq('role', p.role);
+    if (p.has_player !== undefined) q = q.eq('has_player', p.has_player);
+    if (p.has_steam !== undefined) q = q.eq('has_steam', p.has_steam);
+    type Row = { id: string; alias: string | null; role: string; alias_changed_at: string | null; player_id: string | null; steam_id: string | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {});
+    return c.json(envelope(rows.map((u) => ({ ...u, alias: u.alias ?? '' })), total, p), 200);
   })
   .openapi(userAlias, async (c) => {
     const { alias, force } = c.req.valid('json');
@@ -265,8 +286,13 @@ export const adminPlayers = createRouter()
     return c.body(null, 204);
   })
   .openapi(words, async (c) => {
-    const rows = mustHave(await c.var.sb.from('blocked_words').select('id, word, created_at').order('word'));
-    return c.json(rows, 200);
+    const p = c.req.valid('query');
+    let q = c.var.sb.from('blocked_words').select('id, word, created_at', { count: 'exact' });
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('word', `%${term.replace(/ /g, '')}%`);
+    type Row = { id: string; word: string; created_at: string };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {});
+    return c.json(envelope(rows, total, p), 200);
   })
   .openapi(addWord, async (c) => {
     const row = mustHave(await c.var.sb.from('blocked_words').insert({ word: c.req.valid('json').word }).select('id, word, created_at').single());
@@ -278,18 +304,25 @@ export const adminPlayers = createRouter()
     return c.body(null, 204);
   })
   .openapi(hits, async (c) => {
-    const rows = mustHave(await c.var.sb.rpc('blocked_names_hits'));
-    return c.json(rows.map((r) => ({ ...r, kind: r.kind as 'alias' | 'player' | 'team' })), 200);
+    const p = c.req.valid('query');
+    let q = c.var.sb.rpc('blocked_names_hits', {}, { count: 'exact' });
+    if (p.kind) q = q.eq('kind', p.kind);
+    type Row = { kind: string; id: string; name: string; word: string };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {});
+    return c.json(envelope(rows.map((r) => ({ ...r, kind: r.kind as 'alias' | 'player' | 'team' })), total, p), 200);
   })
   .openapi(listClaims, async (c) => {
+    const p = c.req.valid('query');
     const { sb } = c.var;
-    const [rows, people] = await Promise.all([
-      sb.from('profile_requests').select('id, user_id, status, created_at, player:players(id, nick)').order('created_at', { ascending: false }).then(mustHave),
-      sb.rpc('admin_users', {}).then(mustHave),
-    ]);
-    const alias = new Map(people.map((u) => [u.id, u.tag]));
+    let q = sb.from('profile_requests').select('id, user_id, status, created_at, player:players(id, nick)', { count: 'exact' });
+    if (p.status) q = q.eq('status', p.status);
+    type Row = { id: string; user_id: string | null; status: string; created_at: string; player: { id: string; nick: string } | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {});
+    const ids = [...new Set(rows.map((r) => r.user_id).filter((x): x is string => !!x))];
+    const people = ids.length ? mustHave(await sb.from('admin_user_list').select('id, alias').in('id', ids)) : [];
+    const alias = new Map(people.map((u) => [u.id!, u.alias]));
     return c.json(
-      rows.map((r) => ({ id: r.id, user_id: r.user_id!, alias: alias.get(r.user_id!) ?? null, player: r.player, status: r.status, created_at: r.created_at })),
+      envelope(rows.map((r) => ({ id: r.id, user_id: r.user_id!, alias: alias.get(r.user_id!) ?? null, player: r.player, status: r.status, created_at: r.created_at })), total, p),
       200,
     );
   })
