@@ -1,6 +1,8 @@
 # Contrato para el frontend
 
-Fecha: 2026-10-15. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW y ELO. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+Fecha: 2026-10-16. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar y `!claim`. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+
+**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 15).
 
 Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /api/openapi.json`). Si este documento y la OpenAPI no coinciden en un detalle, manda la OpenAPI. Las decisiones de diseño (qué se muestra, a quién y con qué reglas) mandan acá.
 
@@ -14,6 +16,28 @@ Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /ap
 
 Nada está en producción: el backend y el esquema nuevo se publican juntos en el corte.
 
+## 0. Novedades desde la entrega del 2026-10-15
+
+Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya existía: revisar el código que lo use.
+
+| Tema | Qué cambió | Dónde |
+|---|---|---|
+| **Listados (rompe)** | Todo `GET` de lista pagina, filtra y ordena en el servidor y responde `{ items, total, page, per, sort, order }`. `sort` fuera de la lista cerrada da `400` | Sección 1, "Listados" |
+| **Detalles sin listas (rompe)** | La ficha del jugador, el equipo y el torneo ya no traen sus listas: van en sub-endpoints (`/players/{id}/map-stats`, `/medals`, `/teams`; `/teams/{id}/members`; `/events/{id}/registrations`, `/matches`, `/standings`) | Secciones 5, 6 y 8b |
+| **Chat de partida (rompe)** | Pagina por cursor: `before`, `after`, `limit`; responde `{ items, has_more, limit }` | Sección 8 |
+| **Mis PCW (rompe)** | `GET /api/v1/me/pcw` se dividió en `/me/pcw/post` (el anuncio abierto) y `/me/pcw/matches` (las prácticas) | Sección 8 |
+| **Ranking (rompe)** | `points` pasó a `points_per_win` en la respuesta (los puntos de cada fila siguen en `points`) | Sección 7 |
+| **Reclamos de perfil (rompe)** | Se borraron `/api/v1/me/profile-requests` y `/api/v1/admin/profile-requests`. El vínculo con el juego es `!claim` | Sección 5b |
+| **Perfil sin reclamar** (nuevo) | Página pública por SteamID para quien jugó sin ficha; no va al ranking. El detalle de partida trae `steam_id` de los jugadores sin ficha para enlazarla | Sección 5b |
+| **`!claim`** (nuevo) | Código en Mi perfil, `!claim <código>` en el servidor, varios SteamID por ficha con aprobación del admin. La ficha trae `steam_ids` | Secciones 5b y 9 |
+| **Admin de servidores** (nuevo) | Alta con token y cfg, licencia, IP permitida, revocar, borrar | Sección 9 |
+| **Configuración del ELO** (nuevo) | Lectura pública, vista previa, simulación y recálculo | Secciones 8c y 9 |
+| **Demos** (nuevo) | Resumen, listado, reintentar una demo perdida, tokens del Worker | Sección 9 |
+| **Doble confirmación** (nuevo) | Recalcular el ELO y generar un token nuevo del Worker piden escribir "estoy seguro"; la API exige `confirm` | Sección 9 |
+| **Sesión** (aclaración) | El `refresh_token` rota pero no es estrictamente de un solo uso: guardar siempre el último | Sección 1, "Sesión" |
+
+El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
+
 ## 1. Cómo se consume la API (disponible)
 
 El frontend habla **solo con la API**. No usa `supabase-js` ni la clave pública de Supabase.
@@ -25,6 +49,28 @@ El frontend habla **solo con la API**. No usa `supabase-js` ni la clave pública
 | Estado del servicio | `GET /api/health` (`?deep=1` verifica también Supabase) |
 | Código y guía | `web/backend/README.md` |
 | URL en producción | `api.<dominio>`. El dominio todavía no está comprado: dejar la URL configurable por entorno |
+
+### Levantar la API en local
+
+Requisitos: Node 24, pnpm 12 (con Corepack: `corepack enable pnpm`) y Docker Desktop corriendo.
+
+```bash
+cd web/backend
+pnpm install --frozen-lockfile
+cp .dev.vars.example .dev.vars   # apunta a la Supabase local; CORS ya acepta http://localhost:*
+pnpm db:start                    # Supabase en Docker con el esquema nuevo (replanteo 01 a 15); la base arranca vacía
+pnpm dev:node                    # API en http://localhost:8787 (documentación en /api/docs)
+```
+
+| Qué | Dónde |
+|---|---|
+| Correos de Auth (confirmación del registro) | http://127.0.0.1:54324 (Inbucket: los correos no salen de la máquina) |
+| Ver y editar la base | http://127.0.0.1:54323 (Supabase Studio) |
+| Hacer admin a una cuenta | En Studio, SQL: `update profiles set role = 'admin' where tag = '<alias>';`. Organizadores: `PUT /api/v1/admin/users/{id}/role` |
+| Borrar todo y empezar de nuevo | `pnpm db:reset` |
+
+- **Datos:** la base local arranca vacía. Las cuentas, equipos, torneos y PCW se crean con la API. Las partidas jugadas, stats y ELO llegan del servidor de juego. Para probar pantallas con datos de partidas se cargan a mano en Studio (`matches` y `match_player_stats`); si hace falta un script de datos de prueba, pedirlo.
+- **Nunca** apuntar el `.dev.vars` a la Supabase de producción: la web vieja la sigue usando y el esquema nuevo no está ahí hasta el corte.
 
 ### Sesión
 
@@ -503,9 +549,9 @@ stateDiagram-v2
 | SteamID sin vincular | `GET /api/v1/admin/steam/unlinked`, `POST /api/v1/admin/steam/link` (suma el SteamID a la ficha: principal si no tiene, adicional si ya tiene; hasta 4; `player_id: null` lo quita) | Disponible |
 | SteamID de las fichas | Ver "SteamID y `!claim` (admin)" abajo | Disponible |
 | Usuarios y alias | `GET /api/v1/admin/users?q=` (alias, rol, jugador). `PUT /api/v1/admin/users/{id}/alias`: si choca con una palabra bloqueada, ofrecer "Guardar igual" (`force: true`) | Disponible |
-| Palabras bloqueadas | Lista, alta y baja, y "Nombres actuales que la contienen" (`/api/v1/admin/blocked-words`, `…/hits`) | Disponible |
-| Equipos | Alta, edición y baja; sumar a un jugador directamente y cambiar su rol. Nombre o sigla con palabra bloqueada: ofrecer "Guardar igual" (`force: true`). La baja falla si tiene partidas o inscripciones | Disponible |
-| Solicitudes de equipo nuevo | Listar (`has_steam` dice si se puede aprobar), aprobar y rechazar | Disponible |
+| Palabras bloqueadas | Lista, alta y baja, y "Nombres actuales que la contienen": `GET`/`POST /api/v1/admin/blocked-words`, `DELETE /api/v1/admin/blocked-words/{id}`, `GET /api/v1/admin/blocked-words/hits` | Disponible |
+| Equipos | Alta, edición y baja; sumar a un jugador directamente y cambiar su rol. Nombre o sigla con palabra bloqueada: ofrecer "Guardar igual" (`force: true`). La baja falla si tiene partidas o inscripciones. Caminos: `POST /api/v1/admin/teams`, `PATCH`/`DELETE /api/v1/admin/teams/{id}`, `POST /api/v1/admin/teams/{id}/members`, `PATCH /api/v1/admin/teams/{id}/members/{playerId}` (rol) | Disponible |
+| Solicitudes de equipo nuevo | Listar (`has_steam` dice si se puede aprobar), aprobar y rechazar: `GET /api/v1/admin/team-requests`, `POST /api/v1/admin/team-requests/{userId}/approve` y `/reject` | Disponible |
 | Puntos del ranking | `GET`/`PUT /api/v1/admin/ranking/config` | Disponible |
 | Servidores | Ver "Servidores (admin)" abajo | Disponible |
 | ELO | Ver "ELO (admin)" abajo | Disponible |
