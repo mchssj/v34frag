@@ -43,10 +43,10 @@ Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs
 
 Ordenado por urgencia.
 
-### 1.0 Chat para vivos y muertos (`csstv_allchat` 1.0.0): verificar en los dos servidores
+### 1.0 Chat para vivos y muertos (`csstv_allchat` 1.0.1): verificar en los dos servidores
 
-- **Subido el 2026-10-16** al servidor real y a RBK (mismo `.smx`, sin licencia; md5 `eb6097c6d6668e75ec3fc1001add1992`). En RBK además se agregó `sm_deadtalk 2` al `live.cfg` (copia en `live.cfg.bak_20261016`).
-- **Se carga en el próximo cambio de mapa.** Después, en cada servidor: `sm plugins list` muestra "CSSTV All Chat (1.0.0)", el log de errores no tiene `already one in progress` ni `Could not send a usermessage`, y con jugadores reales un vivo lee el chat de un muerto.
+- **Subido el 2026-10-16** al servidor real y a RBK (mismo `.smx`, sin licencia). Versión 1.0.1 (md5 `7ee903912264b7425e7d91517606e20a`): el chat de equipo lo lee solo el propio equipo, no los espectadores. La 1.0.0 quedó en `plugins/disabled/`. En RBK además se agregó `sm_deadtalk 2` al `live.cfg` (copia en `live.cfg.bak_20261016`).
+- **Se carga en el próximo cambio de mapa.** Después, en cada servidor: `sm plugins list` muestra "CSSTV All Chat (1.0.1)", el log de errores no tiene `already one in progress` ni `Could not send a usermessage`, y con jugadores reales un vivo lee el chat de un muerto.
 - **Si algo falla:** `csstv_allchat 0` en la consola lo apaga al instante.
 - Publicar el changelog: `bitacora/2026-10-16-chat-vivos-muertos/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-16-chat-vivos-muertos`](bitacora/2026-10-16-chat-vivos-muertos/)

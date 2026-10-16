@@ -3,7 +3,7 @@
  *
  * El chat de texto lo leen todos, vivos o muertos (plan docs/bitacora/2026-10-16-chat-vivos-muertos):
  *   - chat global: todos;
- *   - chat de equipo de CT o T: su equipo (vivos y muertos) y los espectadores;
+ *   - chat de equipo de CT o T: solo su equipo (vivos y muertos), no los espectadores;
  *   - chat de equipo de un espectador: los espectadores.
  *
  * Cómo: escucha el SayText2 de chat que manda el juego SIN modificarlo ni bloquearlo, anota a quién le llegó
@@ -19,7 +19,7 @@
 
 #include <sourcemod>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define MAX_QUEUE      32     // mensajes por frame (más que suficiente: el chat tiene antiflood)
 #define MAX_PARAMS     4      // SayText2: frase + hasta 4 parámetros
 #define TEAM_SPEC      1
@@ -30,7 +30,7 @@ public Plugin myinfo =
 {
 	name = "CSSTV All Chat",
 	author = "v34frag",
-	description = "El chat de texto lo leen vivos y muertos (el de equipo, su equipo y los espectadores)",
+	description = "El chat de texto lo leen vivos y muertos (el de equipo, solo su equipo)",
 	version = PLUGIN_VERSION,
 	url = ""
 };
@@ -51,7 +51,7 @@ bool g_bFlushPending;
 public void OnPluginStart()
 {
 	CreateConVar("csstv_allchat_version", PLUGIN_VERSION, "Versión de CSSTV All Chat.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
-	g_cvEnabled = CreateConVar("csstv_allchat", "1", "1: vivos y muertos leen todo el chat (el de equipo, su equipo y los espectadores). 0: chat normal del juego.", _, true, 0.0, true, 1.0);
+	g_cvEnabled = CreateConVar("csstv_allchat", "1", "1: vivos y muertos leen todo el chat (el de equipo, solo su equipo). 0: chat normal del juego.", _, true, 0.0, true, 1.0);
 	g_umSayText2 = GetUserMessageId("SayText2");
 	if (g_umSayText2 == INVALID_MESSAGE_ID)
 		SetFailState("Este juego no tiene SayText2.");
@@ -153,8 +153,8 @@ bool ShouldRead(int n, int client)
 	int author = g_iAuthor[n];
 	int from = IsClientInGame(author) ? GetClientTeam(author) : TEAM_SPEC;
 	if (from == TEAM_T || from == TEAM_CT)
-		return team == from || team <= TEAM_SPEC;
-	return team <= TEAM_SPEC;   // equipo de un espectador: los espectadores
+		return team == from;    // equipo de CT o T: solo ese equipo, vivos y muertos (no los espectadores)
+	return team <= TEAM_SPEC;   // equipo de un espectador: solo los espectadores
 }
 
 public void Frame_Flush(any data)

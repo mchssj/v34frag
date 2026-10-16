@@ -2,12 +2,12 @@
 
 ## Qué hace
 
-`csstv_allchat` (1.0.0) hace que **todos lean el chat de texto, vivos o muertos**:
+`csstv_allchat` (1.0.1) hace que **todos lean el chat de texto, vivos o muertos**:
 
 | Quién escribe | Chat | Lo lee |
 |---|---|---|
 | Cualquiera (vivo, muerto o espectador) | Global | Todos |
-| Jugador de CT o T (vivo o muerto) | Equipo | Su equipo (vivos y muertos) y los espectadores |
+| Jugador de CT o T (vivo o muerto) | Equipo | **Solo su equipo** (vivos y muertos); los espectadores no |
 | Espectador | Equipo | Los espectadores |
 
 - Es un plugin **aparte** de `csstv_reporter` y funciona con la 1.8.0 y la 2.0.0.
@@ -51,7 +51,7 @@ sequenceDiagram
 | Cvar | Por defecto | Qué hace |
 |---|---|---|
 | `csstv_allchat` | `1` | `0` lo apaga al instante (chat normal del juego) sin descargar el plugin |
-| `csstv_allchat_version` | `1.0.0` | Solo lectura |
+| `csstv_allchat_version` | `1.0.1` | Solo lectura |
 
 **Build de depuración** (`spcomp csstv_allchat.sp ALLCHAT_DEBUG=`):
 - Escribe en el log cada mensaje capturado y a quién lo reenvía.
@@ -80,5 +80,5 @@ Esto reemplaza el punto 7.1 de `PENDIENTES.md` (que pedía `sm_deadtalk 0`).
 | Qué | Dónde |
 |---|---|
 | Código | `server/addons/sourcemod/scripting/csstv_allchat.sp` |
-| Compilado | `server/addons/sourcemod/plugins/csstv_allchat.smx` (7841 bytes, md5 `eb6097c6d6668e75ec3fc1001add1992`) |
+| Compilado | `server/addons/sourcemod/plugins/csstv_allchat.smx` (1.0.1: 7808 bytes, md5 `7ee903912264b7425e7d91517606e20a`) |
 | Cfg de partida | `server/cfg/csstv/live.cfg` (en los servidores, `cstrike/cfg/csstv/live.cfg`) |

@@ -2,7 +2,7 @@ v34frag 1.8.1 --  Changelog
 
 Chat para vivos y muertos
 Ahora todos leen el chat, estés vivo o muerto.
-El chat general lo leen todos. El chat de equipo lo lee tu equipo (vivos y muertos) y los espectadores.
+El chat general lo leen todos. El chat de equipo lo lee solo tu equipo, vivos y muertos.
 
 Voz
 En el calentamiento se escuchan todos.

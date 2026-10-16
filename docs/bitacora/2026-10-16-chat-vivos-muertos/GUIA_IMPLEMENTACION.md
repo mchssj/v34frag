@@ -2,6 +2,13 @@
 
 ## Estado
 
+**1.0.1 (2026-10-16, el mismo día):** Daniel aclaró que los espectadores **no** leen el chat de equipo de CT ni de T; "solo lo lean los de espectador" se refería al `say_team` de un espectador. Se corrigió la regla, se probó en el servidor local y se subió a los dos servidores (1.0.1: 7808 bytes, md5 `7ee903912264b7425e7d91517606e20a`). La 1.0.0 quedó en `plugins/disabled/csstv_allchat_1.0.0.smx` de cada servidor.
+
+- **Prueba de la 1.0.1:** sin `csstv_reporter` en el servidor local (para no conectar con ninguna Supabase), con bots T y CT vivos y muertos y SourceTV como espectador. El chat de equipo de T y de CT, de vivos y de muertos, se reenvía solo al propio equipo; SourceTV no lo recibe; el chat global llega a todos. Sin errores.
+- **Despliegue:** el script verifica que el `.smx` del servidor sea la 1.0.0 que subimos (md5), la guarda en `plugins/disabled/`, sube la 1.0.1 y compara el md5.
+
+### 1.0.0
+
 Hecho, probado en el servidor local y **subido a los dos servidores el 2026-10-16**. Daniel aprobó el plan ese día, con la opción B de la voz.
 
 | Servidor | Plugin | `live.cfg` |
@@ -41,8 +48,8 @@ Hecho, probado en el servidor local y **subido a los dos servidores el 2026-10-1
 | Prueba | Resultado |
 |---|---|
 | Chat global de un muerto (T) | Se reenvía a los vivos de los dos equipos |
-| Chat de equipo de un muerto (T) | A su compañero vivo y a los espectadores; no a los CT |
-| Chat de equipo de un vivo (T y CT) | A su compañero muerto y a los espectadores; no al rival |
+| Chat de equipo de un muerto (T) | A su compañero vivo y a los espectadores (1.0.0; en la 1.0.1, sin los espectadores); no a los CT |
+| Chat de equipo de un vivo (T y CT) | A su compañero muerto y a los espectadores (1.0.0; en la 1.0.1, sin los espectadores); no al rival |
 | Chat global de un vivo | No hace falta reenviar (el juego ya lo manda a todos) |
 | Chat global y de equipo de un espectador | El global, a todos; el de equipo queda entre espectadores |
 | **Caso del crash con la 1.8.0:** `!pause` escrito en el chat en partida en vivo, chat de un muerto mientras arranca, chat de vivos y muertos durante la pausa, `!hp` y los dos `!unpause` | Pausa y reanudación normales, **sin errores de mensajes** |
