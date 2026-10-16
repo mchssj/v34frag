@@ -1,0 +1,15 @@
+# Ajustes de pnpm (igual que web/backend). No es un monorepo.
+
+# Solo versiones publicadas hace al menos 7 días (en minutos), en modo estricto.
+minimumReleaseAge: 10080
+
+# Rechaza versiones publicadas con menos garantías (provenance) que las anteriores.
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Backport de la rama 6, publicado después de las 7.x con provenance (falso positivo conocido).
+  - semver@6.3.1
+
+# Paquetes autorizados a correr scripts de instalación.
+allowBuilds:
+  esbuild: true
+  msw: false

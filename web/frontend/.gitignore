@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Caché del plugin de TanStack Router
+.tanstack
+
+# Variables locales
+.env
+.env.*
+!.env.example
