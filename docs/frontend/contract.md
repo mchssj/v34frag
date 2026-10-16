@@ -447,6 +447,7 @@ stateDiagram-v2
 | Nivel | 1 a 10, calculado por la API con los tramos de la sección 5 |
 | Stats | Solo de partidas terminadas en el servidor (mixes, y PCW y torneos con `!match`). Una partida cancelada no cuenta |
 | Ranking de jugadores | Es el listado de jugadores ordenado por ELO (`GET /api/v1/players`) |
+| Configuración | `GET /api/v1/elo/config`, sin sesión: los valores vigentes, para una página "Cómo se calcula el ELO" |
 
 ## 9. Admin
 
@@ -467,6 +468,7 @@ stateDiagram-v2
 | Solicitudes de equipo nuevo | Listar (`has_steam` dice si se puede aprobar), aprobar y rechazar | Disponible |
 | Puntos del ranking | `GET`/`PUT /api/v1/admin/ranking/config` | Disponible |
 | Servidores | Ver "Servidores (admin)" abajo | Disponible |
+| ELO | Ver "ELO (admin)" abajo | Disponible |
 | Reclamos de perfil | Listar, aprobar y rechazar | Disponible, **deprecados** |
 
 ### Servidores (admin)
@@ -487,10 +489,35 @@ stateDiagram-v2
 - **IP permitida:** `last_ip` es la IP de la última conexión válida; ofrecer "Usar la última IP" para cargarla en `allowed_ip`.
 - Nombre repetido: `409 CONFLICT`.
 
+### ELO (admin)
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/v1/elo/config` | `{ config, updated_at, updated_by }`. `config` tiene los siete valores; `updated_by` (`{ id, alias }`) solo lo ve un admin |
+| `POST /api/v1/admin/elo/preview` | Body: los siete valores. Devuelve los ejemplos (`even`, `high_rating`, `low_rating`, `new_player`, `floor` y `participation`). No guarda nada: llamarlo mientras el admin edita, con un pequeño retardo entre teclas |
+| `POST /api/v1/admin/elo/simulate` | Body: los siete valores. Listado (`q`, `changed`; `sort`: **`abs_delta` desc**, `delta`, `elo_after`, `elo_before`, `name`) de cómo quedaría cada jugador si se recalcula todo: `elo_before`, `elo_after`, `delta`, partidas antes y después. No guarda nada |
+| `PUT /api/v1/admin/elo/config` | Body: `{ config, recompute, confirm }`. Sin `recompute`, vale para los mixes nuevos y `recomputed` es `null`. Con `recompute: true`, también recalcula todo y pide `confirm` |
+| `POST /api/v1/admin/elo/recompute` | Body: `{ confirm }`. Recalcula todo con la configuración actual. Responde `{ recomputed }` (mixes aplicados) |
+
+| Valor | Rango | Qué es |
+|---|---|---|
+| `base` | 5 a 100 | ELO que gana o pierde cada uno con equipos parejos |
+| `bonus_max` | 0 a 20 | Tope del bonus o castigo por rendimiento |
+| `bonus_factor` | 0 a 50 (admite decimales) | Bonus por cada punto de rating sobre o bajo 1,00 |
+| `elo_floor` | 0 a 1000 | Nadie baja de este ELO |
+| `start_elo` | 100 a 5000, no menor que `elo_floor` | ELO de un jugador nuevo |
+| `min_pct` | 1 a 100 | Con menos de este % de las rondas, el ELO no cambia |
+| `full_pct` | `min_pct` a 100 | Desde este % de las rondas cuenta completo |
+
+**Recalcular pide doble confirmación (obligatorio).** Recalcular rehace el ELO de todos los jugadores con todo el historial y no se puede deshacer desde la web. Antes de enviar `PUT /api/v1/admin/elo/config` con `recompute: true` o `POST /api/v1/admin/elo/recompute`, el frontend:
+1. Pregunta si está seguro, con un resumen de lo que va a pasar (sugerencia: mostrar la simulación con los valores nuevos).
+2. Pide escribir **`estoy seguro`** en un campo de texto. El botón de enviar queda deshabilitado hasta que el texto coincide (sin distinguir mayúsculas ni espacios en los bordes).
+3. Manda ese texto en `confirm`. La API también lo exige: sin él, o con otro texto, responde `400 VALIDATION_ERROR` en el campo `confirm` y no recalcula.
+
 ## 10. Lo que todavía no está definido
 
 - El flujo exacto de `!claim` (dónde se genera y se muestra el código).
-- Los endpoints de la configuración del ELO y de las demos (con los tokens del Worker de demos).
+- Los endpoints de las demos (con los tokens del Worker de demos).
 - El dominio y las URLs de producción.
 
 ## 11. Registro de decisiones
@@ -549,3 +576,6 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-15 | Listados | **Todo GET de lista pagina, filtra y ordena en el servidor** (`page`, `per`, `sort`, `order` y filtros); los detalles no traen listas que crecen; el chat pagina por cursor | Daniel |
 | 2026-10-16 | Servidores | Nombre único; borrar solo sin partidas (con partidas se revoca); para asignar partidas, solo servidores activos con licencia vigente | Propuesta aceptada |
 | 2026-10-16 | Servidores | Sin estado en vivo desde el panel de Pterodactyl por ahora: alcanza con `online` | Propuesta aceptada |
+| 2026-10-16 | ELO | La vista previa de la configuración la calcula la API (la fórmula no se copia en el frontend) | Propuesta aceptada |
+| 2026-10-16 | ELO | Simulación del recálculo antes de aplicarlo (`POST /api/v1/admin/elo/simulate`) | Daniel |
+| 2026-10-16 | ELO | **Recalcular pide doble confirmación**: preguntar si está seguro y escribir "estoy seguro" para habilitar el envío; la API exige el texto en `confirm` | Daniel |

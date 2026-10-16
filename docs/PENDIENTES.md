@@ -72,11 +72,11 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
-### 1.5 Corte del replanteo: migraciones 01 a 12 y plugin 2.0.0 (`!match` y `!status`)
+### 1.5 Corte del replanteo: migraciones 01 a 13 y plugin 2.0.0 (`!match` y `!status`)
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-- **Base:** `supabase/replanteo/01` a `12`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas (en la copia del 2026-10-14 no hay ninguno de esos casos).
+- **Base:** `supabase/replanteo/01` a `13`, en orden, con respaldo previo. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas (en la copia del 2026-10-14 no hay ninguno de esos casos).
 - **`sm_status`:** revisar con `docs/bitacora/2026-10-15-match-y-status/pruebas/smx_grep.py` que ningún plugin que solo está en el servidor real (`IGN`, `grenadedrop`, `spectatorswitch`, `CM_PickupWeapon`, `SendFileExploitFixV3.3`) registre `sm_status`. En los del servidor local no aparece.
 - **Plugin 2.0.0**, en la misma tanda:
   - **Servidor real:** `.smx` genérico, sin `CSSTV_DEBUG`, por `SFTP_CSS_*`, con la 1.8.0 en `plugins/disabled/`.
@@ -155,7 +155,8 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
      - ~~Partidas, torneos y PCW~~: **hechos el 2026-10-15**, solo en local (migración `10` y endpoints). Ver [`2026-10-15-api-partidas-torneos-pcw`](bitacora/2026-10-15-api-partidas-torneos-pcw/DOCUMENTACION.md).
      - ~~Listados con paginación, filtros y orden en el servidor~~ (requisito obligatorio de Daniel): **hechos el 2026-10-15**, migración `11`. Ver [`2026-10-15-get-paginacion-filtros`](bitacora/2026-10-15-get-paginacion-filtros/DOCUMENTACION.md). Todo endpoint nuevo de lista tiene que seguir la convención de `docs/frontend/contract.md`.
      - ~~Admin de servidores (tokens, licencias, panel)~~: **hecho el 2026-10-16**, solo en local (migración `12` y endpoints `/api/v1/admin/servers`). Ver [`2026-10-16-api-admin-servidores`](bitacora/2026-10-16-api-admin-servidores/DOCUMENTACION.md).
-     - Pendientes: configuración del ELO y recálculo, y demos desde el admin (incluye los tokens del Worker de demos).
+     - ~~Configuración del ELO y recálculo~~: **hechos el 2026-10-16**, solo en local (migración `13`, la simulación, y endpoints `/api/v1/elo/config` y `/api/v1/admin/elo/*`). Recalcular pide doble confirmación (`confirm: "estoy seguro"`). Ver [`2026-10-16-api-elo-config`](bitacora/2026-10-16-api-elo-config/DOCUMENTACION.md).
+     - Pendientes: demos desde el admin (incluye los tokens del Worker de demos).
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
 
