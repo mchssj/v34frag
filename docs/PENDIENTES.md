@@ -12,7 +12,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Plugin 2.0.0 (`!match` y `!status`):** hecho y probado con bots, sin commit ni despliegue.
   - Faltan las pruebas manuales con jugadores reales ([`PRUEBAS_MANUALES.md`](bitacora/2026-10-15-match-y-status/PRUEBAS_MANUALES.md)), que además conviene hacer con la web nueva avanzada.
   - Falta el despliegue en el servidor real y en RBK (punto 1.5).
-- **`sm_deadtalk 0` obligatorio siempre** (deuda técnica, punto 7.1).
+- **Excepción:** `csstv_allchat` (chat para vivos y muertos) se hizo y se subió el 2026-10-16, a pedido de Daniel, como plugin aparte (punto 1.0).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
 ## Decisiones anotadas para planes futuros
@@ -42,6 +42,14 @@ Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs
 ## 1. Desplegar lo que ya está hecho
 
 Ordenado por urgencia.
+
+### 1.0 Chat para vivos y muertos (`csstv_allchat` 1.0.0): verificar en los dos servidores
+
+- **Subido el 2026-10-16** al servidor real y a RBK (mismo `.smx`, sin licencia; md5 `eb6097c6d6668e75ec3fc1001add1992`). En RBK además se agregó `sm_deadtalk 2` al `live.cfg` (copia en `live.cfg.bak_20261016`).
+- **Se carga en el próximo cambio de mapa.** Después, en cada servidor: `sm plugins list` muestra "CSSTV All Chat (1.0.0)", el log de errores no tiene `already one in progress` ni `Could not send a usermessage`, y con jugadores reales un vivo lee el chat de un muerto.
+- **Si algo falla:** `csstv_allchat 0` en la consola lo apaga al instante.
+- Publicar el changelog: `bitacora/2026-10-16-chat-vivos-muertos/CHANGELOG_DISCORD.txt`.
+- **Bitácora:** [`2026-10-16-chat-vivos-muertos`](bitacora/2026-10-16-chat-vivos-muertos/)
 
 ### 1.1 Deploy del Worker con la ruta `/crash` (Accelerator) — urgente
 
@@ -172,13 +180,9 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 
 ## 7. Deuda técnica
 
-### 7.1 `sm_deadtalk 0` obligatorio siempre
+### 7.1 Voz en partida (reemplaza "`sm_deadtalk 0` obligatorio")
 
-Anotado por Daniel el 2026-10-15. El cvar `sm_deadtalk` tiene que quedar **siempre en `0`** (los muertos no hablan con los vivos), en el servidor real y en RBK. Hoy se pone a mano (`!cvar sm_deadtalk 0`) y nada impide que alguien lo cambie o que un cfg lo pise en un cambio de mapa.
-
-- **Qué falta:** que el plugin lo fuerce (ponerlo en `0` al cargar el mapa y al empezar cada partida, y volver a `0` si alguien lo cambia, con un hook de cambio del cvar). Además, dejarlo en los cfg del servidor.
-- **Cuándo:** con los plugins, al final (ver "Orden de trabajo"). Va en la misma tanda de despliegue al servidor real y a RBK.
-- Antes de implementarlo, confirmar qué plugin define `sm_deadtalk` en cada servidor (SourceMod base o alguno de [`PLUGINS_EXTERNOS.md`](PLUGINS_EXTERNOS.md)).
+Daniel definió el 2026-10-16 (opción B): **en el calentamiento se escuchan todos; en la partida, solo el propio equipo, vivos y muertos.** Lo hacen los cfg de fase (`sv_alltalk 1` en `warmup.cfg` y `end.cfg`; `sv_alltalk 0` y `sm_deadtalk 2` en `live.cfg`), ya puestos en los dos servidores. Ver [`2026-10-16-chat-vivos-muertos`](bitacora/2026-10-16-chat-vivos-muertos/DOCUMENTACION.md).
 
 ## Contexto útil para una sesión nueva
 
