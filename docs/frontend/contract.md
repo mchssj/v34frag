@@ -1,6 +1,6 @@
 # Contrato para el frontend
 
-Fecha: 2026-10-15. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW y jugadores y equipos. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+Fecha: 2026-10-15. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, ELO y lo ya decidido de torneos. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
 
 Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /api/openapi.json`). Si este documento y la OpenAPI no coinciden en un detalle, manda la OpenAPI. Las decisiones de diseño (qué se muestra, a quién y con qué reglas) mandan acá.
 
@@ -213,7 +213,37 @@ Una PCW ya publicada o aceptada conserva su formato.
 
 ### Pendiente
 
-Endpoints de partidas (listado, detalle, chat, veto de mapas, reportes), torneos (creación, llaves, grupos, inscripción, cuántos jugadores inscribe cada equipo, máximo 10) y PCW (publicar, aceptar, cancelar). Se mantienen todas las funciones de la web vieja.
+Endpoints de partidas (listado, detalle, chat, veto de mapas, reportes) y de PCW (publicar, aceptar, cancelar). Se mantienen todas las funciones de la web vieja.
+
+## 8b. Torneos (decisiones tomadas; endpoints pendientes)
+
+Los endpoints de torneos salen en una entrega propia. Esto ya está decidido y conviene diseñarlo así desde el principio:
+
+| Tema | Decisión |
+|---|---|
+| Funciones | Se mantienen las de la web vieja: creación, llaves, grupos, inscripciones, veto de mapas, reportes de resultado y chat de partida |
+| Formatos de llave | Los de la web vieja **sin el suizo** (se quita de las opciones) |
+| Formato de las partidas | Lo decide **el creador del torneo** (BO1, BO3 o BO5), igual que hoy con `best_of` y `final_bo` |
+| Jugadores por equipo | El creador define **cuántos jugadores del plantel inscribe cada equipo**, con un máximo de **10** (el tamaño máximo del plantel) |
+| Mínimo para inscribirse | Hoy, **5 jugadores** en el plantel (regla de la base). Se revisa cuando se defina la cantidad de inscritos |
+| Un jugador, un equipo por torneo | Un jugador puede estar en varios equipos, pero **no inscrito en el mismo torneo con dos**. El segundo equipo recibe un error que nombra al jugador y al otro equipo, y se destraba cuando cualquiera de los dos lo saca de su plantel. Hoy se compara el plantel completo; cuando existan los inscritos por equipo, se compara contra los inscritos |
+| Entrar a un equipo inscrito | Mientras el torneo no tenga campeón, un jugador no puede entrar a un equipo inscrito si ya está en otro equipo de ese torneo |
+| Jugar en el servidor | Con `!match` y el código de la partida. En torneo **juegan solo inscritos** (sin stand-ins) |
+| Código de la partida | Lo ven solo los integrantes de los dos equipos y los admins |
+| Ranking | Cada **partida de torneo ganada** suma puntos (30 al principio, configurable), no ganar el torneo entero |
+| Puntos según la fase | Si una partida vale más en grupos, playoffs, semifinal o final **está por decidirse** en el plan de torneos |
+| Partidas que no cuentan | Byes y partidas huérfanas (con etapa pero sin torneo), como en la web vieja |
+
+## 8c. ELO y stats
+
+| Tema | Decisión |
+|---|---|
+| A quién se le calcula | A cada **SteamID** que juega un mix en el servidor, tenga o no cuenta o ficha. Al vincular el SteamID a un jugador, su ELO y su historial aparecen completos en la ficha (no se recalcula: ya estaba al día) |
+| Valor inicial | 1000 |
+| Participación | Quien juega menos del **35 %** de las rondas no recibe ELO; desde el 90 % cuenta completo. Entre medio, proporcional. Valores configurables por el admin |
+| Nivel | 1 a 10, calculado por la API con los tramos de la sección 5 |
+| Stats | Solo de partidas terminadas en el servidor (mixes, y PCW y torneos con `!match`). Una partida cancelada no cuenta |
+| Ranking de jugadores | Es el listado de jugadores ordenado por ELO (`GET /api/v1/players`) |
 
 ## 9. Admin
 
@@ -234,4 +264,40 @@ Endpoints de partidas (listado, detalle, chat, veto de mapas, reportes), torneos
 
 - El flujo exacto de `!claim` (dónde se genera y se muestra el código).
 - Los endpoints de partidas, torneos, PCW y servidores.
+- Si los puntos del ranking cambian según la fase del torneo.
 - El dominio y las URLs de producción.
+
+## 11. Registro de decisiones
+
+Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son las que tomó Daniel; "Propuesta aceptada" son propuestas técnicas que quedaron en un plan aprobado.
+
+| Fecha | Tema | Decisión | Origen |
+|---|---|---|---|
+| 2026-10-14 | Arquitectura | El frontend habla solo con la API (OpenAPI en `/api/openapi.json`); no usa Supabase directo | Daniel |
+| 2026-10-14 | Sesión | Tokens Bearer (sin cookies), renovación con `/auth/refresh` de un solo uso | Propuesta aceptada |
+| 2026-10-14 | Hosting | VPS de Hostinger con dominio propio; la URL de la API es configurable | Daniel |
+| 2026-10-14 | Avatar | 1 MB, JPEG, PNG o WebP (sin GIF), recortado a 256×256 | Propuesta aceptada |
+| 2026-10-14 | Privacidad | Solo público o privado; privado oculta datos personales, no la ficha ni las stats | Daniel |
+| 2026-10-14 | Stats | Solo desde partidas jugadas en el servidor; sin carga manual | Daniel |
+| 2026-10-14 | Mixes | Sin equipos `mix`: los bandos van dentro de la partida | Daniel |
+| 2026-10-14 | Demos | Se quitan los campos manuales de video y demo; la demo sale de R2 | Daniel |
+| 2026-10-14 | Matchmaking | Se elimina; no hay pantallas | Daniel |
+| 2026-10-14 | Torneo suizo | Se quita de las opciones | Daniel |
+| 2026-10-14 | Reclamo de perfil | Va a pasar al juego con `!claim`; los endpoints actuales quedan deprecados | Daniel |
+| 2026-10-15 | `!match` | Código de 5 caracteres por partida de torneo y PCW, visible solo para los dos equipos y los admins | Daniel |
+| 2026-10-15 | Reglas para jugar | Torneo: 5 en el plantel y sin stand-ins. PCW: 4 con cuenta para publicar o aceptar, hasta 2 stand-ins por lado | Daniel |
+| 2026-10-15 | Formatos de PCW | Los decide el admin (BO1, BO3, BO5) | Daniel |
+| 2026-10-15 | Plantel | Estilo FACEIT: el capitán invita y el jugador pide entrar | Daniel |
+| 2026-10-15 | Tamaño del plantel | Hasta 10 jugadores | Daniel |
+| 2026-10-15 | Varios equipos | Un jugador puede estar en varios equipos, pero no en dos del mismo torneo | Daniel |
+| 2026-10-15 | PCW con un jugador compartido | No se puede jugar | Daniel |
+| 2026-10-15 | SteamID | Obligatorio para entrar a un equipo (y para pedir uno nuevo) | Daniel |
+| 2026-10-15 | Alias | Un solo nombre en la web, único; el usuario lo cambia cada 15 días y el admin siempre | Daniel |
+| 2026-10-15 | Palabras bloqueadas | Lista del admin; se aplica a alias, equipos y bandos de PCW, con "Guardar igual" para el admin | Daniel (lista); propuesta aceptada (alcance) |
+| 2026-10-15 | Jugadores con nick distinto del alias | Pasan a mostrar el alias | Daniel |
+| 2026-10-15 | Ranking de equipos | Puntos por partida ganada: 30 de torneo y 5 de PCW, configurables; por defecto solo torneos, con opción de sumar PCW | Daniel |
+| 2026-10-15 | PCW en el ranking | Suma solo si el bando juega como uno de sus equipos oficiales | Daniel |
+| 2026-10-15 | Torneos | El creador define cuántos inscribe cada equipo (máximo 10) y el formato de las partidas | Daniel |
+| 2026-10-15 | URLs | Por id de jugador y de equipo (el alias puede cambiar) | Propuesta aceptada |
+| 2026-10-15 | Nivel | Lo calcula la API (1 a 10) con los tramos de la web vieja | Propuesta aceptada |
+| 2026-10-15 | Listados | Paginados en el servidor, búsqueda sin tildes ni mayúsculas | Propuesta aceptada |
