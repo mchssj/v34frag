@@ -45,10 +45,14 @@ setup("cuenta compartida", async ({ request }) => {
       origins: [
         {
           origin: APP,
-          localStorage: [{ name: STORAGE_KEY, value: JSON.stringify(session) }],
+          localStorage: [
+            { name: STORAGE_KEY, value: JSON.stringify(session) },
+            // La Bienvenida ya vista: estas pruebas no tratan sobre ella.
+            { name: `csstv.welcome-seen.${s.user.id}`, value: "1" },
+          ],
         },
       ],
     })
   )
-  writeFileSync(USER_INFO, JSON.stringify(user))
+  writeFileSync(USER_INFO, JSON.stringify({ ...user, id: s.user.id }))
 })

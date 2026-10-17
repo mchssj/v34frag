@@ -9,9 +9,18 @@ export const emailField = z
   .max(254, "El email puede tener hasta 254 caracteres.")
   .pipe(z.email("El email no es válido."))
 
+// Email del registro: la expresión del handoff (el backend vuelve a validar).
+export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+export const registerEmailField = z
+  .string()
+  .trim()
+  .max(254, "El email puede tener hasta 254 caracteres.")
+  .regex(EMAIL_RE, "Ingresa un email válido.")
+
+// El handoff pide 8 o más; el backend acepta desde 6.
 export const newPasswordField = z
   .string()
-  .min(6, "La contraseña tiene que tener al menos 6 caracteres.")
+  .min(8, "Usa al menos 8 caracteres.")
   .max(72, "La contraseña puede tener hasta 72 caracteres.")
 
 export const aliasField = z
@@ -32,7 +41,7 @@ export const loginSchema = z.object({
 export type LoginValues = z.infer<typeof loginSchema>
 
 export const signupSchema = z.object({
-  email: emailField,
+  email: registerEmailField,
   password: newPasswordField,
   tag: aliasField,
 })

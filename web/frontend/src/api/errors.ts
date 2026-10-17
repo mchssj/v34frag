@@ -127,17 +127,24 @@ export function isApiError(e: unknown, code?: ApiErrorCode): e is ApiError {
 }
 
 /** Mensaje para mostrar al usuario según el code (nunca según el texto). */
-export function errorMessage(e: unknown): string {
+export function errorMessage(
+  e: unknown,
+  opts: { retryIn?: number } = {}
+): string {
   if (!isApiError(e)) return "Ocurrió un error inesperado."
   switch (e.code) {
     case "INVALID_CREDENTIALS":
       return "Email o contraseña incorrectos."
     case "EMAIL_NOT_CONFIRMED":
-      return "Confirma tu email antes de iniciar sesión. Revisa tu correo."
+      return "Confirma tu email. Te enviamos un link al registrarte."
     case "RATE_LIMITED":
-      return e.retryAfter
-        ? `Demasiados intentos. Espera ${e.retryAfter} s y vuelve a probar.`
+    {
+      // retryIn: segundos que faltan según la cuenta regresiva de la pantalla.
+      const seconds = opts.retryIn ?? e.retryAfter
+      return seconds
+        ? `Demasiados intentos. Espera ${seconds} segundos y vuelve a probar.`
         : "Demasiados intentos. Espera un momento y vuelve a probar."
+    }
     case "UNAUTHORIZED":
       return "Tu sesión venció. Inicia sesión de nuevo."
     case "FORBIDDEN":
@@ -149,8 +156,8 @@ export function errorMessage(e: unknown): string {
     case "INTERNAL":
     case "CONFIG_INVALID":
       return e.requestId
-        ? `Error del servidor. Si se repite, avisa con este código: ${e.requestId}`
-        : "Error del servidor. Intenta de nuevo en un momento."
+        ? `Algo salió mal. Código de seguimiento: ${e.requestId}`
+        : "Algo salió mal. Intenta de nuevo en un momento."
     // Mensajes escritos para el usuario por el backend.
     case "BUSINESS_RULE":
     case "CONFLICT":
@@ -159,6 +166,14 @@ export function errorMessage(e: unknown): string {
     case "FILE_TOO_LARGE":
       return e.message || "Revisa los datos e intenta de nuevo."
   }
+}
+
+/** Errores pasajeros en los que tiene sentido ofrecer "Reintentar". */
+export function isRetryable(e: unknown): boolean {
+  return (
+    isApiError(e) &&
+    (e.code === "INTERNAL" || e.code === "CONFIG_INVALID" || e.code === "NETWORK")
+  )
 }
 
 /**

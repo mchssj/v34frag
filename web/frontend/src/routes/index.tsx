@@ -1,52 +1,36 @@
-import { Link, createFileRoute } from "@tanstack/react-router"
-import { useStore } from "zustand"
+import { createFileRoute } from "@tanstack/react-router"
 
-import { useMe } from "@/auth/queries"
-import { tokenStore } from "@/auth/tokenStore"
-import { Button } from "@/components/ui/button"
+import { redirectIfSignedIn } from "@/auth/guards"
+import { CompetitionSection } from "@/features/landing/CompetitionSection"
+import { Hero } from "@/features/landing/Hero"
+import { HowItWorks } from "@/features/landing/HowItWorks"
+import { LandingHeader } from "@/features/landing/LandingHeader"
+import { ServersSection } from "@/features/landing/ServersSection"
 
+// Solo visitantes: con sesión se va a /home.
 export const Route = createFileRoute("/")({
+  beforeLoad: redirectIfSignedIn,
   component: Landing,
 })
 
-// Provisoria: el diseño final llega con los artifacts.
 function Landing() {
-  const hasSession = useStore(tokenStore, (s) => s.session !== null)
-  const { data: user } = useMe()
-
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 text-center">
-      <h1 className="font-heading text-4xl font-bold tracking-tight">
-        v34frag
-      </h1>
-      <p className="max-w-md text-muted-foreground">
-        Mixes, torneos, PCW y ranking de la comunidad de Counter-Strike: Source
-        v34.
-      </p>
-      {hasSession && user ? (
-        <div className="flex flex-col items-center gap-3">
-          <p>
-            Hola,{" "}
-            <span className="font-semibold">{user.tag ?? user.email}</span>
-          </p>
-          <Button asChild>
-            <Link to="/panel">Ir al panel</Link>
-          </Button>
+    <div className="flex min-h-svh flex-col bg-background leading-design text-foreground">
+      <LandingHeader />
+      <main className="flex flex-col">
+        <Hero />
+        <HowItWorks />
+        <ServersSection />
+        <CompetitionSection />
+      </main>
+      <footer className="mt-auto border-t">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-4 p-6 text-[13px] text-muted-foreground">
+          <span>CSSTV · Comunidad de Counter-Strike: Source</span>
+          <span className="ml-auto">
+            Proyecto de la comunidad, sin relación con Valve.
+          </span>
         </div>
-      ) : (
-        <div className="flex gap-3">
-          <Button asChild>
-            <Link to="/ingresar" search={{}}>
-              Ingresar
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/registro" search={{}}>
-              Crear cuenta
-            </Link>
-          </Button>
-        </div>
-      )}
-    </main>
+      </footer>
+    </div>
   )
 }

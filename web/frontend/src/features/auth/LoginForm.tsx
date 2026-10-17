@@ -1,26 +1,32 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Controller, useForm } from "react-hook-form"
 
-import { applyFieldErrors } from "@/api/errors"
+import { applyFieldErrors, errorMessage, isRetryable } from "@/api/errors"
 import { useLogin } from "@/auth/queries"
 import { loginSchema, type LoginValues } from "@/auth/schemas"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Spinner } from "@/components/ui/spinner"
-import { FormAlert } from "./FormAlert"
-import { TextField } from "./TextField"
+import { needsWelcome } from "@/features/onboarding/queries"
+import { AuthField, AuthHeading, ErrorAlert } from "./ui"
 import { useRetryCountdown } from "./useRetryCountdown"
 
 const FIELDS = ["email", "password"] as const
 
-export function LoginForm({ redirectTo }: { redirectTo: string }) {
+export function LoginForm({
+  redirectTo,
+  notice,
+}: {
+  redirectTo: string
+  notice?: ReactNode
+}) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const login = useLogin()
   const [formError, setFormError] = useState<unknown>(null)
-  const retryIn = useRetryCountdown(login.error)
+  const retryIn = useRetryCountdown(formError)
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -28,68 +34,104 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
     mode: "onTouched",
   })
 
+  // Los errores generales se limpian al escribir.
+  useEffect(
+    () =>
+      form.subscribe({
+        formState: { values: true },
+        callback: () => setFormError(null),
+      }),
+    [form]
+  )
+
   const onSubmit = form.handleSubmit(async (values) => {
     setFormError(null)
     try {
-      await login.mutateAsync(values)
-      // replace: volver atrás no regresa al login.
-      await navigate({ href: redirectTo, replace: true })
+      const user = await login.mutateAsync(values)
+      if (await needsWelcome(queryClient, user.id)) {
+        await navigate({ to: "/welcome", replace: true })
+      } else {
+        await navigate({ href: redirectTo, replace: true })
+      }
     } catch (e) {
       if (!applyFieldErrors(e, form.setError, FIELDS)) setFormError(e)
-      form.resetField("password", { keepError: true })
     }
   })
 
   const busy = form.formState.isSubmitting
 
   return (
-    <form onSubmit={onSubmit} noValidate>
-      <FieldGroup>
-        <FormAlert error={formError} retryIn={retryIn} />
-        <TextField
+    <div className="flex w-full max-w-[360px] flex-col gap-5">
+      <AuthHeading
+        center
+        title="Inicia sesión"
+        subtitle="Ingresa tu email para entrar a tu cuenta"
+      />
+      {notice}
+      {formError != null && (
+        <ErrorAlert
+          message={errorMessage(formError, { retryIn })}
+          action={
+            isRetryable(formError)
+              ? { label: "Reintentar", onClick: () => void onSubmit() }
+              : undefined
+          }
+        />
+      )}
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+        <AuthField
           control={form.control}
           name="email"
           label="Email"
           type="email"
           autoComplete="email"
+          placeholder="tu@email.com"
         />
-        <TextField
+        <AuthField
           control={form.control}
           name="password"
           label="Contraseña"
           type="password"
           autoComplete="current-password"
+          placeholder="••••••••"
         />
         <Controller
           control={form.control}
           name="remember"
           render={({ field }) => (
-            <Field orientation="horizontal">
+            <div className="-mt-1 flex items-center gap-2">
               <Checkbox
                 id="remember"
                 checked={field.value}
                 onCheckedChange={(v) => field.onChange(v === true)}
               />
-              <FieldLabel htmlFor="remember" className="font-normal">
+              <label
+                htmlFor="remember"
+                className="text-[13px] text-muted-foreground"
+              >
                 Recordarme en este equipo
-              </FieldLabel>
-            </Field>
+              </label>
+            </div>
           )}
         />
-        <Button type="submit" disabled={busy || retryIn > 0}>
-          {busy && <Spinner />}
-          Ingresar
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full text-sm"
+          disabled={busy || retryIn > 0}
+        >
+          {busy ? "Entrando…" : "Iniciar sesión"}
         </Button>
-        <p className="text-center text-sm text-muted-foreground">
-          ¿No tienes cuenta?{" "}
-          <Link
-            to="/registro"
-            className="text-foreground underline underline-offset-4"
-          >
-            Crear cuenta
-          </Link>
-        </p>
-      </FieldGroup>
-    </form>
+      </form>
+      <p className="text-center text-[13px] text-muted-foreground">
+        ¿No tienes cuenta?{" "}
+        <Link
+          to="/register"
+          className="font-medium text-foreground underline underline-offset-4"
+        >
+          Regístrate
+        </Link>
+      </p>
+    </div>
   )
 }

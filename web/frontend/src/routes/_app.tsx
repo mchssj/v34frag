@@ -10,6 +10,8 @@ import { requireAuth } from "@/auth/guards"
 import { useLogout, useMe } from "@/auth/queries"
 import { ROLE_LABEL } from "@/auth/roles"
 import { RouteError } from "@/components/RouteError"
+import { Logo } from "@/components/brand/Logo"
+import { ThemeToggle } from "@/components/brand/ThemeToggle"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -44,16 +46,16 @@ function AppLayout() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between border-b px-4 py-3">
-        <nav className="flex items-center gap-4">
-          <Link to="/" className="font-heading font-bold tracking-tight">
-            v34frag
+      <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between gap-6 border-b bg-background/80 px-6 backdrop-blur-[10px]">
+        <nav className="flex items-center gap-6">
+          <Link to="/home" aria-label="CSSTV, ir al inicio">
+            <Logo />
           </Link>
           <Link
-            to="/panel"
+            to="/home"
             className="text-sm text-muted-foreground [&.active]:text-foreground"
           >
-            Panel
+            Inicio
           </Link>
           {user.role === "admin" && (
             <Link
@@ -64,6 +66,8 @@ function AppLayout() {
             </Link>
           )}
         </nav>
+        <div className="flex items-center gap-2">
+        <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
@@ -84,7 +88,7 @@ function AppLayout() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/completar-perfil" search={{ paso: "datos" }}>
+              <Link to="/welcome">
                 <UserRoundIcon /> Completar perfil
               </Link>
             </DropdownMenuItem>
@@ -96,6 +100,7 @@ function AppLayout() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </header>
       <div className="flex-1 p-6">
         <Outlet />

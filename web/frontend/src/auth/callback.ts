@@ -29,7 +29,7 @@ export function consumeAuthCallback(
   else if (!type || type === "signup" || type === "email") result = "confirmed"
 
   const target = result
-    ? `/ingresar?aviso=${result === "confirmed" ? "cuenta-confirmada" : "enlace-invalido"}`
+    ? `/login?aviso=${result === "confirmed" ? "cuenta-confirmada" : "enlace-invalido"}`
     : loc.pathname
   // replaceState: los tokens no quedan en la barra ni al volver atrás.
   history.replaceState(history.state, "", target)

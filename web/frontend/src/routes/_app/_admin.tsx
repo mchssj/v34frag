@@ -25,7 +25,7 @@ function AdminError(props: ErrorComponentProps) {
       <h1 className="font-heading text-2xl font-semibold">Sin permiso</h1>
       <p className="text-muted-foreground">{props.error.message}</p>
       <Button asChild>
-        <Link to="/panel">Volver al panel</Link>
+        <Link to="/home">Volver al inicio</Link>
       </Button>
     </main>
   )

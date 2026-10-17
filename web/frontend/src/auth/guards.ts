@@ -33,7 +33,7 @@ async function loadUser(queryClient: QueryClient): Promise<AuthUser | null> {
 export async function requireAuth({ context, location }: GuardArgs) {
   const user = await loadUser(context.queryClient)
   if (!user)
-    throw redirect({ to: "/ingresar", search: { redirect: location.href } })
+    throw redirect({ to: "/login", search: { redirect: location.href } })
   return { user }
 }
 
@@ -52,7 +52,26 @@ export async function requireGuest({
     // Con la API caída se muestra igual la página de login.
     return
   }
-  if (user) throw redirect({ href: safeRedirect(search.redirect) })
+  if (user) throw redirect({ href: safeRedirect(search.redirect, "/home") })
+}
+
+/**
+ * Landing: solo para visitantes. Sin sesión guardada no espera a otras pestañas (un visitante
+ * nunca espera); si otra pestaña comparte una sesión, AuthSync re-ejecuta la guarda.
+ */
+export async function redirectIfSignedIn({
+  context,
+}: {
+  context: { queryClient: QueryClient }
+}) {
+  if (!tokenStore.getState().session) return
+  let user: AuthUser | null
+  try {
+    user = await context.queryClient.ensureQueryData(meQueryOptions)
+  } catch {
+    return
+  }
+  if (user) throw redirect({ to: "/home" })
 }
 
 /** Exige un rol. beforeLoad no puede dibujar: lanza ForbiddenError y lo muestra el errorComponent. */

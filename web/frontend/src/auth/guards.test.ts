@@ -5,13 +5,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ApiError, networkError } from "@/api/errors"
 import {
   ForbiddenError,
+  redirectIfSignedIn,
   requireAuth,
   requireGuest,
   requireRole,
 } from "./guards"
 import type { AuthUser } from "./queries"
 
-const { queryFn } = vi.hoisted(() => ({ queryFn: vi.fn() }))
+const { queryFn, store } = vi.hoisted(() => ({
+  queryFn: vi.fn(),
+  store: { session: null as object | null },
+}))
 
 vi.mock("./queries", () => ({
   meQueryOptions: {
@@ -21,7 +25,10 @@ vi.mock("./queries", () => ({
   },
 }))
 vi.mock("./tokenStore", () => ({
-  tokenStore: { ready: () => Promise.resolve() },
+  tokenStore: {
+    ready: () => Promise.resolve(),
+    getState: () => ({ session: store.session }),
+  },
 }))
 
 const user: AuthUser = {
@@ -38,6 +45,7 @@ beforeEach(() => {
     defaultOptions: { queries: { retry: false } },
   })
   queryFn.mockReset()
+  store.session = null
 })
 
 const location = { href: "/completar-perfil?paso=redes" }
@@ -64,7 +72,7 @@ describe("requireAuth", () => {
     const e = await caught(requireAuth({ context: { queryClient }, location }))
     expect(isRedirect(e)).toBe(true)
     expect((e as { options: object }).options).toMatchObject({
-      to: "/ingresar",
+      to: "/login",
       search: { redirect: "/completar-perfil?paso=redes" },
     })
   })
@@ -102,7 +110,7 @@ describe("requireGuest", () => {
         search: { redirect: "//evil.com" },
       })
     )
-    expect((e as { options: object }).options).toMatchObject({ href: "/" })
+    expect((e as { options: object }).options).toMatchObject({ href: "/home" })
   })
 
   it("sin sesión o con la API caída deja ver la página", async () => {
@@ -129,5 +137,29 @@ describe("requireRole", () => {
     expect(() => requireRole("admin")({ context: { user } })).toThrow(
       ForbiddenError
     )
+  })
+})
+
+describe("redirectIfSignedIn (landing)", () => {
+  it("sin sesión guardada no consulta la API ni espera", async () => {
+    await expect(
+      redirectIfSignedIn({ context: { queryClient } })
+    ).resolves.toBeUndefined()
+    expect(queryFn).not.toHaveBeenCalled()
+  })
+
+  it("con sesión va a /home", async () => {
+    store.session = {}
+    queryFn.mockResolvedValue(user)
+    const e = await caught(redirectIfSignedIn({ context: { queryClient } }))
+    expect((e as { options: object }).options).toMatchObject({ to: "/home" })
+  })
+
+  it("con la API caída deja ver la landing", async () => {
+    store.session = {}
+    queryFn.mockRejectedValue(networkError())
+    await expect(
+      redirectIfSignedIn({ context: { queryClient } })
+    ).resolves.toBeUndefined()
   })
 })

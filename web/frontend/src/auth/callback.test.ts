@@ -17,11 +17,11 @@ describe("consumeAuthCallback", () => {
     const { target, history } = run(
       "/#access_token=x&refresh_token=y&expires_at=1&type=signup"
     )
-    expect(target).toBe("/ingresar?aviso=cuenta-confirmada")
+    expect(target).toBe("/login?aviso=cuenta-confirmada")
     expect(history.replaceState).toHaveBeenCalledWith(
       null,
       "",
-      "/ingresar?aviso=cuenta-confirmada"
+      "/login?aviso=cuenta-confirmada"
     )
   })
 
@@ -29,11 +29,11 @@ describe("consumeAuthCallback", () => {
     const { target } = run(
       "/#error=access_denied&error_code=otp_expired&error_description=Email+link"
     )
-    expect(target).toBe("/ingresar?aviso=enlace-invalido")
+    expect(target).toBe("/login?aviso=enlace-invalido")
   })
 
   it("con flujo PKCE (?code=) en la raíz también limpia la URL", () => {
-    expect(run("/?code=abc").target).toBe("/ingresar?aviso=cuenta-confirmada")
+    expect(run("/?code=abc").target).toBe("/login?aviso=cuenta-confirmada")
   })
 
   it("otros tipos de link solo limpian la URL", () => {
