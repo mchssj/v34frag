@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y **probado de punta a punta contra la API real** el 2026-10-16, en la rama `feat/frontend-fase-1` (rebase sobre `origin/feat/backend-api-fase-1` al `0e56b8b`), **sin desplegar**. Typecheck, lint y build en verde; 83 pruebas unitarias y 15 de punta a punta con Playwright, todas en verde.
+Implementado y **probado de punta a punta contra la API real** el 2026-10-16, en la rama `feat/frontend-fase-1` (rebase sobre `origin/feat/backend-api-fase-1` al `0c0b433`), **sin desplegar**. Typecheck, lint y build en verde; 83 pruebas unitarias y 15 de punta a punta con Playwright, todas en verde.
 
 ## Archivos
 
@@ -106,15 +106,18 @@ También se verificó por HTTP: CORS desde `localhost:5173` (con `Retry-After` y
 11. **Backend actualizado el 2026-10-16:** el equipo subió 29 commits (jugadores, equipos, partidas, torneos, PCW, paginación, admin de servidores). Se hizo rebase de la rama sobre `0e56b8b` (único conflicto: la tabla del índice de la bitácora) y `pnpm gen:api` desde la API levantada. Con eso se quitó todo lo provisorio: la disponibilidad del alias usa `api.GET` con el tipo `AliasAvailability` y `Role` sale del schema (`user`, `organizer`, `admin`). No hubo cambios que rompieran lo implementado.
 12. **Pruebas de punta a punta con Playwright** (no estaban en el plan, que preveía una verificación manual): `e2e/`, `playwright.config.ts` y `tsconfig.e2e.json`, para que la verificación quede automatizada y se pueda repetir.
 
+13. **Segundo rebase el 2026-10-16** sobre `0c0b433` (18 commits más: ajustes de ELO, configuración del ELO, demos, `!claim` y la entrega del frontend del 16/10), sin conflictos. Tipos regenerados; no se rompió nada. Según la entrega, el aviso del registro ahora explica que el SteamID se vincula con `!claim` (antes decía que lo vinculaba un admin).
+14. **Copia de producción en la base local** (autorizada por el equipo de backend el 2026-10-16): mismo procedimiento que el ensayo del ELO (`docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/`). `pg_dump --data-only` de solo lectura (todo `public` y `auth.users`) a `~/.v34frag/prod-copy/`, fuera del repo; carga sobre el esquema de producción con `session_replication_role = replica` y replanteo 01 a 15 encima. Resultado: 40 cuentas, 72 jugadores, 17 equipos (89 miembros), 19 partidas y 41 ELO. Se usó el `pg_dump` del contenedor local (no hay uno instalado en esta máquina) y el usuario del pooler `postgres.<ref>` (el `PG_USER` del `.env` de la raíz es `postgres` y el pooler lo rechaza). Producción no se modificó. Las 15 pruebas de punta a punta pasan también con estos datos.
+
 ## Pendientes para el backend
 
-- **El refresh token no es estrictamente de un solo uso.** La Supabase local tiene `refresh_token_reuse_interval = 10` (`web/backend/supabase/config.toml`): un refresh token ya usado se acepta de nuevo durante 10 segundos (se comprobó: devolvió 200). Es el comportamiento estándar de Supabase para pedidos concurrentes y el frontend no depende de eso, pero el contrato dice "de un solo uso": conviene aclararlo en el contrato.
+- Ninguno abierto. La aclaración del refresh token (rota pero no es estrictamente de un solo uso) ya está en el contrato desde el 2026-10-16; el frontend ya guardaba siempre el último.
 
 ## Incidentes durante las pruebas
 
 - **Exportar el backend con `git archive` en Windows:** con `core.autocrlf=true`, `git archive` convierte los archivos a CRLF y la migración 04 del replanteo fallaba (busca un texto exacto dentro de una función). Se resolvió exportando con `git -c core.autocrlf=false archive`; los archivos quedan idénticos al repo. No es un problema del backend.
 - **Rutas largas en Windows:** la CLI de Supabase no arrancaba desde la copia en el scratchpad porque la ruta pasaba los 260 caracteres. Se usó un *junction* con una ruta corta y el binario directo. No le pasa a quien trabaja en `web/backend`.
-- **Servidor de desarrollo después del rebase:** Vite quedó con módulos que no encontraba mientras git movía los archivos. Se resolvió reiniciándolo.
+- **Servidor de desarrollo después de cada rebase:** Vite queda con módulos que no encuentra mientras git mueve los archivos. Se resuelve reiniciándolo (pasó en los dos rebases).
 
 ## Cómo revertir
 

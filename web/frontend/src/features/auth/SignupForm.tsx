@@ -100,8 +100,8 @@ export function SignupForm() {
         <Alert>
           <InfoIcon />
           <AlertDescription>
-            Para entrar a un equipo necesitas tener tu SteamID vinculado a la
-            cuenta. Lo vincula un administrador.
+            Para entrar a un equipo necesitas vincular tu SteamID: generas un
+            código en Mi perfil y escribes <code>!claim</code> en el servidor.
           </AlertDescription>
         </Alert>
         <Button type="submit" disabled={busy || retryIn > 0}>

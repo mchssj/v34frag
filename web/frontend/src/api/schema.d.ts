@@ -525,138 +525,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/me/profile-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Mis solicitudes de reclamo de perfil
-         * @deprecated
-         * @description Solicitudes de reclamo de perfil del usuario. **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`); sigue funcionando hasta entonces.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Página, desde 1 */
-                    page?: number;
-                    /** @description Elementos por página (máximo 100) */
-                    per?: number;
-                    /** @description Campo de orden: `created_at` */
-                    sort?: "created_at";
-                    /** @description `asc` o `desc` */
-                    order?: "asc" | "desc";
-                    status?: "pending" | "approved" | "rejected";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Solicitudes */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ProfileRequestList"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Reclamar un perfil de jugador
-         * @deprecated
-         * @description Pide que un admin vincule el jugador a tu cuenta. El jugador no puede tener cuenta vinculada. **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`); sigue funcionando hasta entonces.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ProfileRequestBody"];
-                };
-            };
-            responses: {
-                /** @description Solicitud creada (pendiente) */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ProfileRequest"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Conflicto con un registro existente */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/pcw/formats": {
         parameters: {
             query?: never;
@@ -982,6 +850,970 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/unclaimed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar perfiles sin reclamar
+         * @description SteamID que jugaron y todavía no son de ninguna ficha. **No es el ranking**: los perfiles sin reclamar no van al ranking ni a la lista de jugadores.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `last_played`, `matches`, `elo`, `last_nick` */
+                    sort?: "last_played" | "matches" | "elo" | "last_nick";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en los nombres que usó y en el SteamID */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Perfiles sin reclamar */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnclaimedList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/steam/{steamid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Perfil sin reclamar
+         * @description Lo que jugó un SteamID sin ficha. Si ya es de una ficha, `claimed: true` y `player_id` para redirigir.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Perfil */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SteamProfile"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/steam/{steamid}/matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Partidas de un perfil sin reclamar */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `played_at`, `rating`, `kills`, `elo_delta` */
+                    sort?: "played_at" | "rating" | "kills" | "elo_delta";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    kind?: "mix" | "pcw" | "official";
+                    result?: "won" | "lost" | "draw";
+                    /** @description Mapa (contiene) */
+                    map?: string;
+                    /** @description Jugadas desde */
+                    from?: string;
+                    /** @description Jugadas hasta */
+                    to?: string;
+                };
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Partidas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerMatchList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/steam/{steamid}/map-stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stats por mapa de un perfil sin reclamar */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `maps`, `rating`, `kd`, `adr`, `wins` */
+                    sort?: "maps" | "rating" | "kd" | "adr" | "wins";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Mapa (contiene) */
+                    map?: string;
+                };
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Stats por mapa */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerMapStatsList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/claim-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estado del vínculo con el servidor
+         * @description Mis SteamID, el tope y el último código (para consultar cada 5 segundos mientras se espera el `!claim`).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Estado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MySteamStatus"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Código para vincular el SteamID
+         * @description Código de un solo uso, válido 10 minutos (hasta 5 por hora). En el servidor: `!claim <código>`. El primer SteamID se vincula al instante; uno adicional queda pendiente hasta que lo apruebe un admin. El código anterior sin usar deja de valer.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Código */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClaimCode"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/steam-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mis solicitudes de SteamID adicional */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    status?: "pending" | "approved" | "rejected" | "expired";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Solicitudes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MySteamRequestList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/steam-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Solicitudes de SteamID adicional
+         * @description Por defecto, las pendientes primero. Las de más de 30 días vencen solas.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `status`, `created_at` */
+                    sort?: "status" | "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    status?: "pending" | "approved" | "rejected" | "expired";
+                    /** @description Busca en el nick, la ficha, el alias y el SteamID */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Solicitudes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminSteamRequestList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/steam-requests/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar un SteamID adicional
+         * @description Lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha). Falla si comparte partidas con otro SteamID de la ficha.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/steam-requests/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rechazar un SteamID adicional */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SteamRequestReject"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registro de reclamos
+         * @description Cada `!claim`, aceptado o no, y los reclamos del sistema viejo.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Aceptados o rechazados */
+                    ok?: "true" | "false";
+                    steam_id?: string;
+                    /** @description Busca en el nick, el alias, la ficha y el SteamID */
+                    q?: string;
+                    /** @description Desde */
+                    from?: string;
+                    /** @description Hasta */
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Registro */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClaimLogList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/steam/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tope de SteamID por ficha */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SteamConfig"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Cambiar el tope de SteamID por ficha
+         * @description De 1 a 4. Bajarlo no les quita SteamID a quienes ya tienen más: solo frena nuevas solicitudes.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SteamConfig"];
+                };
+            };
+            responses: {
+                /** @description Guardado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SteamConfig"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/steam/{steamid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Quitar un SteamID de su ficha
+         * @description Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/steam/{steamid}/primary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hacer principal un SteamID adicional
+         * @description Recalcula el ELO (cambia la clave del ELO de la ficha).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -3152,7 +3984,7 @@ export interface paths {
         put?: never;
         /**
          * Vincular un SteamID
-         * @description Pasa todas las partidas de ese SteamID al jugador (y lo saca de invitado en los mixes). `player_id: null` lo desvincula.
+         * @description Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO. `player_id: null` lo quita de su ficha.
          */
         post: {
             parameters: {
@@ -3657,244 +4489,6 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/profile-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Solicitudes de reclamo de perfil
-         * @deprecated
-         * @description Por defecto, la más nueva primero. **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`).
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Página, desde 1 */
-                    page?: number;
-                    /** @description Elementos por página (máximo 100) */
-                    per?: number;
-                    /** @description Campo de orden: `created_at` */
-                    sort?: "created_at";
-                    /** @description `asc` o `desc` */
-                    order?: "asc" | "desc";
-                    status?: "pending" | "approved" | "rejected";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Solicitudes */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ProfileRequestAdminList"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/profile-requests/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Aprobar un reclamo
-         * @deprecated
-         * @description Vincula el jugador a la cuenta: su nombre pasa a ser el alias. **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`).
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Conflicto con un registro existente */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/profile-requests/{id}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Rechazar un reclamo
-         * @deprecated
-         * @description **Deprecado:** el reclamo de perfil va a pasar al juego (`!claim <código>`).
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -4990,6 +5584,915 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/demos/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumen de las demos
+         * @description Cantidad por estado, espacio en R2, la pendiente más vieja y si el Worker está en línea.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Resumen */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DemoSummary"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/demos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Demos
+         * @description Partidas con demo (no `none`), con estado, tamaño, intentos, vencimiento, servidor y link de descarga.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `played_at`, `demo_size`, `demo_attempts`, `demo_uploaded_at`, `expires_at` */
+                    sort?: "played_at" | "demo_size" | "demo_attempts" | "demo_uploaded_at" | "expires_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Estado de la demo */
+                    status?: "pending" | "uploaded" | "missing" | "expired";
+                    /** @description Id del servidor */
+                    server?: string;
+                    /** @description Tipo de partida */
+                    kind?: "mix" | "pcw" | "official";
+                    /** @description Jugadas desde */
+                    from?: string;
+                    /** @description Jugadas hasta */
+                    to?: string;
+                    /** @description Busca en los bandos, el mapa, el servidor y el id de la partida en el servidor */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Demos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminDemoList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/demos/{matchId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reintentar una demo perdida
+         * @description Una demo `missing` vuelve a la cola del Worker con los intentos en 0. `400` con el motivo si no se puede.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    matchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/demo-workers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workers de demos */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `name`, `created_at`, `last_seen_at` */
+                    sort?: "name" | "created_at" | "last_seen_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    q?: string;
+                    /** @description Activos o revocados */
+                    active?: "true" | "false";
+                    /** @description En línea */
+                    online?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Workers */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DemoWorkerList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Crear un Worker de demos
+         * @description Devuelve el token (**se muestra una sola vez**) y cómo cargarlo en Cloudflare.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DemoWorkerCreate"];
+                };
+            };
+            responses: {
+                /** @description Creado */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DemoWorkerToken"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/demo-workers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Borrar un Worker de demos */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Editar un Worker de demos
+         * @description Nombre, o revocar (`active: false`) y reactivar. Devuelve el Worker.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DemoWorkerPatch"];
+                };
+            };
+            responses: {
+                /** @description Worker */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DemoWorker"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/demo-workers/{id}/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Token nuevo para un Worker
+         * @description El anterior deja de funcionar al instante: el Worker no sube demos hasta que se carga el nuevo en Cloudflare. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DemoWorkerRotate"];
+                };
+            };
+            responses: {
+                /** @description Token nuevo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DemoWorkerToken"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/elo/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Configuración del ELO
+         * @description Los valores con los que se calcula el ELO de los mixes. Sin sesión. `updated_by` solo lo ve un admin.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloConfig"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/elo/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Cambiar la configuración del ELO
+         * @description Vale para los mixes nuevos. Con `recompute: true` además recalcula todo el historial, y entonces pide `confirm: "estoy seguro"` (doble confirmación en el frontend).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EloConfigPut"];
+                };
+            };
+            responses: {
+                /** @description Guardada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloSaved"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/elo/recompute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recalcular el ELO de todos
+         * @description Vuelve a aplicar todos los mixes (y los ajustes manuales) en orden, con la configuración actual. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EloRecompute"];
+                };
+            };
+            responses: {
+                /** @description Recalculado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloRecomputed"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/elo/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa de una configuración
+         * @description Ejemplos con los valores enviados (equipos parejos, rating alto y bajo, jugador nuevo, participación). No guarda nada ni toca la base.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EloValues"];
+                };
+            };
+            responses: {
+                /** @description Ejemplos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloPreview"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/elo/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Simular el recálculo
+         * @description Cómo quedaría cada jugador si se recalcula todo con los valores enviados. No guarda nada. Cada página vuelve a simular (con la cantidad de mixes de hoy, menos de un segundo).
+         */
+        post: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `abs_delta`, `delta`, `elo_after`, `elo_before`, `name` */
+                    sort?: "abs_delta" | "delta" | "elo_after" | "elo_before" | "name";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el nombre y el SteamID */
+                    q?: string;
+                    /** @description Solo los que cambian (o los que no) */
+                    changed?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EloValues"];
+                };
+            };
+            responses: {
+                /** @description Jugadores */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloSimulation"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7631,37 +9134,6 @@ export interface components {
              */
             file: string;
         };
-        ProfileRequestList: {
-            items: components["schemas"]["ProfileRequest"][];
-            /** @description Total con los filtros aplicados */
-            total: number;
-            page: number;
-            per: number;
-            sort: string;
-            /** @enum {string} */
-            order: "asc" | "desc";
-        };
-        ProfileRequest: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            player_id: string;
-            /**
-             * @description pending, approved o rejected
-             * @example pending
-             */
-            status: string;
-            created_at: string;
-            player: {
-                /** Format: uuid */
-                id: string;
-                nick: string;
-            } | null;
-        };
-        ProfileRequestBody: {
-            /** Format: uuid */
-            player_id: string;
-        };
         PcwFormats: {
             /**
              * @description Formatos que se pueden elegir al publicar una PCW, de menor a mayor
@@ -7717,8 +9189,8 @@ export interface components {
              */
             tag: string;
         };
-        PlayerList: {
-            items: components["schemas"]["PlayerSummary"][];
+        UnclaimedList: {
+            items: components["schemas"]["UnclaimedSummary"][];
             /** @description Total con los filtros aplicados */
             total: number;
             page: number;
@@ -7727,50 +9199,31 @@ export interface components {
             /** @enum {string} */
             order: "asc" | "desc";
         };
-        PlayerSummary: {
-            /** Format: uuid */
-            id: string;
-            /** @description Alias de la cuenta, o el nick que puso el admin si no tiene cuenta */
-            alias: string;
-            has_account: boolean;
-            /** @description Si tiene SteamID vinculado (hace falta para entrar a un equipo) */
-            has_steam: boolean;
-            photo_url: string | null;
-            /** @description null si todavía no jugó con su SteamID */
+        UnclaimedSummary: {
+            steam_id: string;
+            /** @description El último nombre que usó en el juego */
+            last_nick: string | null;
+            /** @description Los últimos nombres que usó (hasta 5, el más reciente primero) */
+            nicks: string[];
+            matches: number;
+            first_played: string | null;
+            last_played: string | null;
             elo: number | null;
-            /** @description Nivel 1 a 10 según el ELO */
-            level: number | null;
-            elo_matches: number;
-            maps: number | null;
-            rating: number | null;
-            kd: number | null;
-            wins: number | null;
-            losses: number | null;
-            /** @description Equipos oficiales donde está hoy (puede ser más de uno) */
-            teams: components["schemas"]["TeamRef"][];
-        };
-        TeamRef: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            tag: string | null;
-        };
-        /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
-        PlayerDetail: components["schemas"]["PlayerSummary"] & {
-            steam_id: string | null;
-            bio: string | null;
-            achievements: string | null;
-            /** @description Historial cargado a mano por el admin (texto libre) */
-            team_history_text: string | null;
-            /** @enum {string} */
-            privacy: "public" | "private";
             peak_elo: number | null;
-            stats: components["schemas"]["PlayerStats"];
-            details: components["schemas"]["PublicDetails"];
-            /** @description true si los datos personales están ocultos por privacidad */
-            private: boolean;
+            elo_matches: number;
+            level: number | null;
         };
-        /** @description null si no jugó partidas terminadas */
+        SteamProfile: {
+            steam_id: string;
+            /** @description `true`: ese SteamID ya es de una ficha (redirigir a `player_id`) */
+            claimed: boolean;
+            /** Format: uuid */
+            player_id: string | null;
+            /** @description Solo si no está reclamado */
+            profile: components["schemas"]["UnclaimedSummary"] & ({
+                stats: components["schemas"]["PlayerStats"];
+            } | null);
+        };
         PlayerStats: {
             maps: number | null;
             rounds: number | null;
@@ -7784,18 +9237,6 @@ export interface components {
             adr: number | null;
             wins: number | null;
             losses: number | null;
-        } | null;
-        /** @description Datos personales. null si no tiene cuenta o si su perfil es privado */
-        PublicDetails: {
-            avatar_url: string | null;
-            real_name: string | null;
-            country: string | null;
-            game_role: string | null;
-            steam: string | null;
-            faceit: string | null;
-            discord: string | null;
-            joined_at: string | null;
-            last_seen: string | null;
         } | null;
         PlayerMatchList: {
             items: components["schemas"]["PlayerMatch"][];
@@ -7860,6 +9301,202 @@ export interface components {
             wins: number | null;
             losses: number | null;
         };
+        ClaimCode: {
+            code: string;
+            expires_at: string;
+            /**
+             * @description Lo que se escribe en el chat del servidor
+             * @example !claim K7P2QX
+             */
+            command: string;
+        };
+        MySteamStatus: {
+            /** @description El principal primero */
+            steam_ids: {
+                steam_id: string;
+                is_primary: boolean;
+            }[];
+            /** @description Tope de SteamID por ficha que se pueden pedir con `!claim` */
+            max_steam_ids: number;
+            last_code: {
+                code: string;
+                /**
+                 * @description `pending`: sin usar y vigente
+                 * @enum {string}
+                 */
+                status: "pending" | "used" | "expired";
+                expires_at: string;
+                used_at: string | null;
+                used_steam_id: string | null;
+                /** @description El mensaje que vio el jugador en el servidor */
+                result: string | null;
+            } | null;
+            /** @description Solicitudes de SteamID adicional pendientes */
+            pending_requests: number;
+        };
+        MySteamRequestList: {
+            items: components["schemas"]["MySteamRequest"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        MySteamRequest: {
+            id: number;
+            steam_id: string;
+            nick: string | null;
+            /** @enum {string} */
+            status: "pending" | "approved" | "rejected" | "expired";
+            /** @description Motivo del rechazo */
+            reason: string | null;
+            created_at: string;
+            resolved_at: string | null;
+        };
+        AdminSteamRequestList: {
+            items: components["schemas"]["AdminSteamRequest"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminSteamRequest: components["schemas"]["MySteamRequest"] & {
+            player: {
+                /** Format: uuid */
+                id: string;
+                nick: string;
+            };
+            user: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+            server: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+            /** @description Partidas jugadas con ese SteamID */
+            matches: number;
+            /** @description SteamID que ya tiene la ficha */
+            player_steam_count: number;
+            /** @description `true`: jugó una partida junto a otro SteamID de la ficha (no se puede aprobar) */
+            shares_match: boolean;
+        };
+        SteamRequestReject: {
+            /** @description Lo ve el jugador */
+            reason?: string;
+        };
+        ClaimLogList: {
+            items: components["schemas"]["ClaimLogItem"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        ClaimLogItem: {
+            id: number;
+            created_at: string;
+            ok: boolean;
+            result: string;
+            steam_id: string | null;
+            nick: string | null;
+            user: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+            player: {
+                /** Format: uuid */
+                id: string;
+                nick: string;
+            } | null;
+            server: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+        };
+        SteamConfig: {
+            /** @description Tope de SteamID por ficha que se pueden pedir con `!claim` (de 1 a 4) */
+            max_steam_ids: number;
+        };
+        PlayerList: {
+            items: components["schemas"]["PlayerSummary"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        PlayerSummary: {
+            /** Format: uuid */
+            id: string;
+            /** @description Alias de la cuenta, o el nick que puso el admin si no tiene cuenta */
+            alias: string;
+            has_account: boolean;
+            /** @description Si tiene SteamID vinculado (hace falta para entrar a un equipo) */
+            has_steam: boolean;
+            photo_url: string | null;
+            /** @description null si todavía no jugó con su SteamID */
+            elo: number | null;
+            /** @description Nivel 1 a 10 según el ELO */
+            level: number | null;
+            elo_matches: number;
+            maps: number | null;
+            rating: number | null;
+            kd: number | null;
+            wins: number | null;
+            losses: number | null;
+            /** @description Equipos oficiales donde está hoy (puede ser más de uno) */
+            teams: components["schemas"]["TeamRef"][];
+        };
+        TeamRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            tag: string | null;
+        };
+        /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
+        PlayerDetail: components["schemas"]["PlayerSummary"] & {
+            /** @description SteamID principal */
+            steam_id: string | null;
+            /** @description Todos sus SteamID, el principal primero */
+            steam_ids: string[];
+            bio: string | null;
+            achievements: string | null;
+            /** @description Historial cargado a mano por el admin (texto libre) */
+            team_history_text: string | null;
+            /** @enum {string} */
+            privacy: "public" | "private";
+            peak_elo: number | null;
+            stats: components["schemas"]["PlayerStats"] & unknown;
+            details: components["schemas"]["PublicDetails"];
+            /** @description true si los datos personales están ocultos por privacidad */
+            private: boolean;
+        };
+        /** @description Datos personales. null si no tiene cuenta o si su perfil es privado */
+        PublicDetails: {
+            avatar_url: string | null;
+            real_name: string | null;
+            country: string | null;
+            game_role: string | null;
+            steam: string | null;
+            faceit: string | null;
+            discord: string | null;
+            joined_at: string | null;
+            last_seen: string | null;
+        } | null;
         MedalList: {
             items: components["schemas"]["Medal"][];
             /** @description Total con los filtros aplicados */
@@ -8209,30 +9846,6 @@ export interface components {
             name: string;
             word: string;
         };
-        ProfileRequestAdminList: {
-            items: components["schemas"]["ProfileRequestAdmin"][];
-            /** @description Total con los filtros aplicados */
-            total: number;
-            page: number;
-            per: number;
-            sort: string;
-            /** @enum {string} */
-            order: "asc" | "desc";
-        };
-        ProfileRequestAdmin: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            user_id: string;
-            alias: string | null;
-            player: {
-                /** Format: uuid */
-                id: string;
-                nick: string;
-            } | null;
-            status: string;
-            created_at: string;
-        };
         AdminTeamCreate: {
             name: string;
             tag: string;
@@ -8369,6 +9982,213 @@ export interface components {
             /** @description `false` revoca (el token deja de funcionar), `true` reactiva */
             active?: boolean;
         };
+        DemoSummary: {
+            pending: number;
+            uploaded: number;
+            missing: number;
+            expired: number;
+            /** @description Lo que ocupan en R2 las demos subidas (sin las vencidas) */
+            uploaded_bytes: number;
+            /** @description La pendiente más vieja (aviso si pasa de una hora) */
+            oldest_pending_at: string | null;
+            /** @description Algún Worker activo usó su token en los últimos 25 minutos (corre cada 10) */
+            worker_online: boolean;
+            worker_last_seen_at: string | null;
+        };
+        AdminDemoList: {
+            items: components["schemas"]["AdminDemo"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminDemo: {
+            /** Format: uuid */
+            match_id: string;
+            kind: string;
+            /** @description Estado de la partida (`finished` o `cancelled`) */
+            status: string;
+            map: string | null;
+            played_at: string | null;
+            side1_name: string | null;
+            side2_name: string | null;
+            score1: number | null;
+            score2: number | null;
+            /**
+             * Format: uuid
+             * @description Partida de PCW o torneo de la que este mapa forma parte
+             */
+            parent_match_id: string | null;
+            server: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                has_panel: boolean;
+            } | null;
+            /** @enum {string} */
+            demo_status: "pending" | "uploaded" | "missing" | "expired";
+            /** @description Bytes */
+            demo_size: number | null;
+            demo_attempts: number;
+            demo_uploaded_at: string | null;
+            /** @description Subida + 90 días (solo las subidas) */
+            expires_at: string | null;
+            /** @description Descarga (solo las subidas) */
+            demo_url: string | null;
+            /** @description `missing` y con servidor con id del panel */
+            can_retry: boolean;
+        };
+        DemoWorkerList: {
+            items: components["schemas"]["DemoWorker"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        DemoWorker: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            active: boolean;
+            /** @description Usó su token en los últimos 25 minutos */
+            online: boolean;
+            last_seen_at: string | null;
+            created_at: string;
+        };
+        DemoWorkerToken: {
+            /** Format: uuid */
+            id: string;
+            /** @description Se muestra una sola vez: la base guarda solo su hash */
+            token: string;
+            /** @description Cómo cargarlo en el Worker de Cloudflare */
+            secret_command: string;
+        };
+        DemoWorkerCreate: {
+            /** @description Único, sin distinguir mayúsculas */
+            name: string;
+        };
+        DemoWorkerPatch: {
+            name?: string;
+            /** @description `false` revoca (el Worker deja de poder subir demos), `true` reactiva */
+            active?: boolean;
+        };
+        DemoWorkerRotate: {
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm: string;
+        };
+        EloConfig: {
+            config: components["schemas"]["EloValues"];
+            updated_at: string | null;
+            /** @description Solo para un admin */
+            updated_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+        };
+        EloValues: {
+            /** @description ELO que gana o pierde cada uno con equipos parejos */
+            base: number;
+            /** @description Tope del bonus (o castigo) por rendimiento */
+            bonus_max: number;
+            /** @description Bonus por cada punto de rating sobre (o bajo) 1,00 */
+            bonus_factor: number;
+            /** @description Nadie baja de este ELO */
+            elo_floor: number;
+            /** @description ELO con el que empieza un jugador nuevo (no menor que `elo_floor`) */
+            start_elo: number;
+            /** @description Con menos de este % de las rondas jugadas no cambia el ELO */
+            min_pct: number;
+            /** @description Desde este % de las rondas cuenta completo (entre `min_pct` y 100) */
+            full_pct: number;
+        };
+        EloSaved: {
+            config: components["schemas"]["EloValues"];
+            /** @description Mixes recalculados, o `null` si no se recalculó */
+            recomputed: number | null;
+        };
+        EloConfigPut: {
+            config: components["schemas"]["EloValues"];
+            /**
+             * @description Además, recalcular todo el historial con los valores nuevos
+             * @default false
+             */
+            recompute: boolean;
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm?: string;
+        };
+        EloRecomputed: {
+            /** @description Mixes recalculados */
+            recomputed: number;
+        };
+        EloRecompute: {
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm: string;
+        };
+        EloPreview: {
+            /** @description Equipos parejos, rating 1,00 */
+            even: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+            };
+            high_rating: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+            };
+            low_rating: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+            };
+            new_player: {
+                elo: number;
+                level: number | null;
+            };
+            floor: number;
+            /** @description `win` y `lose` en `null`: no llega al mínimo y su ELO no cambia */
+            participation: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+                rounds: number;
+                total: number;
+                pct: number;
+                weight: number;
+            }[];
+        };
+        EloSimulation: {
+            items: components["schemas"]["EloSimulatedPlayer"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        EloSimulatedPlayer: {
+            steam_id: string;
+            /** Format: uuid */
+            player_id: string | null;
+            /** @description Nombre de la ficha, o el último que usó en el juego */
+            name: string | null;
+            /** @description `null`: hoy no tiene ELO */
+            elo_before: number | null;
+            /** @description `null`: con los valores nuevos no tendría ELO */
+            elo_after: number | null;
+            delta: number;
+            matches_before: number;
+            matches_after: number;
+            changed: boolean;
+        };
         MatchList: {
             items: components["schemas"]["MatchSummary"][];
             /** @description Total con los filtros aplicados */
@@ -8482,6 +10302,8 @@ export interface components {
             /** @description Alias si está vinculado; si no, null */
             alias: string | null;
             game_nick: string | null;
+            /** @description Solo si no tiene ficha: enlaza a `/api/v1/players/steam/{steamid}` (perfil sin reclamar) */
+            steam_id: string | null;
             side: number | null;
             kills: number | null;
             deaths: number | null;

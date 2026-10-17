@@ -30,6 +30,8 @@ pnpm gen:api      # regenera src/api/schema.d.ts desde la API local (http://loca
 
 **Pruebas de punta a punta (`e2e/`):** necesitan la API local con Supabase en Docker (`web/backend`: `pnpm db:start` y `pnpm dev:node`) y Chromium (`pnpm exec playwright install chromium`). Playwright levanta el frontend solo. Corren en serie y gastan 9 intentos de login o registro: la API permite 10 por minuto, así que entre dos corridas completas hay que esperar un minuto.
 
+**Datos locales:** la base local puede tener una copia de producción (procedimiento en `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/`, copia en `~/.v34frag/prod-copy/`, fuera del repo). Tiene emails y hashes reales: nunca se copia al repo, a pruebas ni a capturas. Después de cada rebase, reiniciar `pnpm dev` (Vite queda con módulos viejos).
+
 La política de dependencias es la misma que la del backend (`pnpm-workspace.yaml`): solo versiones publicadas hace al menos 7 días y `trustPolicy: no-downgrade`.
 
 ## Stack
