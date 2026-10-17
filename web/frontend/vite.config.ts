@@ -6,6 +6,8 @@ import { defineConfig } from "vite"
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Caché de dependencias siempre dentro de web/frontend (si no, puede terminar en web/node_modules).
+  cacheDir: resolve(import.meta.dirname, "node_modules/.vite"),
   plugins: [
     // Tiene que ir antes que react(): genera src/routeTree.gen.ts desde src/routes.
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
