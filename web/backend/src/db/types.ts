@@ -1209,6 +1209,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"user_preferences": {
+                  Row: {
+                    "preferences": NonNullable<Json>,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "preferences"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "preferences"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -2540,6 +2553,9 @@ isOneToOne: false
                            },
 "set_claim_config":
 { Args: { "p_max_steam_ids": number }; Returns: number
+                           },
+"set_my_preferences":
+{ Args: { "p_changes": Json }; Returns: Json
                            },
 "set_my_tag":
 { Args: { "p_tag": string }; Returns: undefined

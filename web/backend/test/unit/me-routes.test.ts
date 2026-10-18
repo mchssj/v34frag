@@ -36,7 +36,7 @@ const rows = (data: unknown[]) => Response.json(data);
 const one = (data: unknown | null) => Response.json(data === null ? [] : [data]);
 
 // Perfil base: cuenta, detalles, jugador y equipo por membresía, 3 partidas.
-function profileWorld(over: { player?: unknown | null; memberOf?: string[]; teams?: unknown[] } = {}): Handler {
+function profileWorld(over: { player?: unknown | null; memberOf?: string[]; teams?: unknown[]; prefs?: unknown } = {}): Handler {
   return (url, method) => {
     const p = url.pathname;
     if (p.endsWith('/profiles')) return one({ role: 'user', tag: 'Yo' });
@@ -47,6 +47,8 @@ function profileWorld(over: { player?: unknown | null; memberOf?: string[]; team
     if (p.endsWith('/teams')) return Response.json(over.teams ?? [{ id: TEAM, name: 'Equipo', tag: 'EQ', captain_id: null }]);
     if (p.endsWith('/player_matches')) return new Response(null, { status: 200, headers: { 'content-range': '*/3' } });
     if (p.endsWith('/rpc/set_my_tag')) return new Response(null, { status: 204 });
+    if (p.endsWith('/user_preferences')) return one(over.prefs === undefined ? null : { preferences: over.prefs });
+    if (p.endsWith('/rpc/set_my_preferences')) return Response.json({});
     return undefined;
   };
 }
@@ -105,6 +107,15 @@ describe('GET /api/v1/me/profile', () => {
     expect(calls.some((c) => c.url.includes('/rest/v1/team_members') || c.url.includes('/rest/v1/player_matches'))).toBe(false);
   });
 
+  it('preferencias: null sin fila; el valor guardado; un valor desconocido se ignora', async () => {
+    postgrest(profileWorld());
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: null });
+    postgrest(profileWorld({ prefs: { theme_fx: 'silent', otra: 1 } }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: 'silent' });
+    postgrest(profileWorld({ prefs: { theme_fx: 'fuerte' } }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: null });
+  });
+
   it('un error de la base se traduce (42501 → 403)', async () => {
     postgrest((url) => (url.pathname.endsWith('/profiles') ? Response.json({ code: '42501', message: 'rls' }, { status: 403 }) : profileWorld()(url, 'GET')));
     const res = await call('GET', '/api/v1/me/profile');
@@ -129,6 +140,25 @@ describe('PATCH /api/v1/me/profile', () => {
     await call('PATCH', '/api/v1/me/profile', { tag: 'Otro' });
     expect(JSON.parse(calls.find((c) => c.url.includes('/rpc/set_my_tag'))!.body!)).toEqual({ p_tag: 'Otro' });
     expect(calls.some((c) => c.method === 'POST' && c.url.includes('/rest/v1/profile_details'))).toBe(false);
+  });
+
+  it('preferencias: llama a set_my_preferences con lo enviado y no toca profile_details', async () => {
+    const calls = postgrest(profileWorld());
+    expect((await call('PATCH', '/api/v1/me/profile', { preferences: { theme_fx: 'off' } })).status).toBe(200);
+    expect(JSON.parse(calls.find((c) => c.url.includes('/rpc/set_my_preferences'))!.body!)).toEqual({ p_changes: { theme_fx: 'off' } });
+    expect(calls.some((c) => c.method === 'POST' && c.url.includes('/rest/v1/profile_details'))).toBe(false);
+    await call('PATCH', '/api/v1/me/profile', { preferences: { theme_fx: null } });
+    expect(JSON.parse(calls.filter((c) => c.url.includes('/rpc/set_my_preferences')).at(-1)!.body!)).toEqual({ p_changes: { theme_fx: null } });
+  });
+
+  it('preferencias: 400 VALIDATION_ERROR con otro valor o una clave desconocida', async () => {
+    const calls = postgrest(profileWorld());
+    for (const preferences of [{ theme_fx: 'fuerte' }, { theme_fx: true }, { otra: 1 }, 'full']) {
+      const res = await call('PATCH', '/api/v1/me/profile', { preferences });
+      expect(res.status).toBe(400);
+      expect((await json(res)).error.code).toBe('VALIDATION_ERROR');
+    }
+    expect(calls.some((c) => c.url.includes('/rpc/set_my_preferences'))).toBe(false);
   });
 
   it('el mensaje de set_my_tag llega al usuario como BUSINESS_RULE', async () => {

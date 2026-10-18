@@ -13,6 +13,7 @@ import {
   AvatarUpload,
   MyProfile,
   ProfilePatch,
+  THEME_FX,
 } from '../schemas/profile';
 import { profileOf, roleOf } from '../services/account';
 
@@ -37,13 +38,20 @@ const EMPTY_DETAILS = {
 
 // ---------- lógica ----------
 
+/** theme_fx guardado, o null si no hay o no es un valor conocido. */
+const themeFxOf = (prefs: unknown) => {
+  const v = (prefs as { theme_fx?: unknown } | null | undefined)?.theme_fx;
+  return THEME_FX.find((x) => x === v) ?? null;
+};
+
 /** Lo mismo que mostraba rProfileView() en la web. */
 async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
   const { sb, user, config } = c.var;
-  const [account, details, player] = await Promise.all([
+  const [account, details, player, prefs] = await Promise.all([
     profileOf(config, user.token, user.id),
     sb.from('profile_details').select(DETAILS).eq('user_id', user.id).maybeSingle().then(must),
     sb.from('players').select('id, nick, photo_url, steam_id').eq('user_id', user.id).limit(1).maybeSingle().then(must),
+    sb.from('user_preferences').select('preferences').eq('user_id', user.id).maybeSingle().then(must),
   ]);
 
   // Equipos oficiales (no PCW) donde juega hoy el jugador vinculado, más los que capitanea o de los que es dueño.
@@ -75,6 +83,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     player,
     teams,
     matches_played,
+    preferences: { theme_fx: themeFxOf(prefs?.preferences) },
   };
 }
 
@@ -135,7 +144,7 @@ export const me = createRouter()
   .openapi(getProfile, async (c) => c.json(await loadMyProfile(c), 200))
   .openapi(patchProfile, async (c) => {
     const { sb, user, config } = c.var;
-    const { tag, ...fields } = c.req.valid('json');
+    const { tag, preferences, ...fields } = c.req.valid('json');
 
     if (tag !== undefined && tag !== (await profileOf(config, user.token, user.id))?.tag) {
       must(await sb.rpc('set_my_tag', { p_tag: tag }));
@@ -146,6 +155,7 @@ export const me = createRouter()
         await sb.from('profile_details').upsert({ user_id: user.id, ...changes, updated_at: new Date().toISOString() }),
       );
     }
+    if (preferences !== undefined) must(await sb.rpc('set_my_preferences', { p_changes: preferences }));
     return c.json(await loadMyProfile(c), 200);
   })
   .openapi(uploadAvatar, async (c) => {

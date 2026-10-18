@@ -53,6 +53,17 @@ const fromList = <T extends readonly [string, ...string[]]>(values: T) =>
     .optional()
     .transform((v) => (v === '' ? null : v));
 
+// Preferencias de la cuenta (tabla user_preferences): solo las ve y las cambia el propio usuario.
+export const THEME_FX = ['full', 'silent', 'off'] as const;
+const themeFx = z.enum(THEME_FX).nullable().openapi({
+  description: 'Efectos al cambiar de tema: `full` (con sonido), `silent` (sin sonido), `off` (desactivados) o `null` (todavía no eligió)',
+});
+export const Preferences = z.object({ theme_fx: themeFx }).openapi('Preferences');
+export const PreferencesPatch = z
+  .object({ theme_fx: themeFx.optional() })
+  .strict()
+  .openapi('PreferencesPatch', { description: 'Solo se cambian las claves enviadas; `null` borra una' });
+
 export const ProfilePatch = z
   .object({
     tag: Tag.optional(),
@@ -62,6 +73,7 @@ export const ProfilePatch = z
     steam: text(120, cleanSteam, 'Usa tu SteamID64 (17 dígitos), el link de tu perfil o tu nombre de perfil.', '76561198000000000'),
     faceit: text(120, cleanFaceit, 'Usa tu nickname de FACEIT o el link de tu perfil.', 'mecha'),
     discord: text(40, (v) => (/^[A-Za-z0-9_.#\-]{2,40}$/.test(v) ? v : null), 'Usa tu nombre de usuario de Discord, sin espacios.', 'mecha_css'),
+    preferences: PreferencesPatch.optional(),
   })
   .refine((o) => Object.values(o).some((v) => v !== undefined), { message: 'No hay nada para actualizar.' })
   .openapi('ProfilePatch');
@@ -101,6 +113,7 @@ export const MyProfile = z
       )
       .openapi({ description: 'Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno)' }),
     matches_played: z.number().int().openapi({ description: 'Partidas terminadas que jugó en el servidor (mixes, PCW y torneos)' }),
+    preferences: Preferences.openapi({ description: 'Preferencias de la cuenta: siempre con todas sus claves (`null` si no eligió)' }),
   })
   .openapi('MyProfile');
 
