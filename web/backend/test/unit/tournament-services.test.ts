@@ -27,6 +27,13 @@ describe('stageLabel', () => {
   ])('%j → %s', (m, label) => {
     expect(stageLabel(m, last)).toBe(label);
   });
+  it('grupos de doble eliminación (groups_double)', () => {
+    const l = new Map([['group_upper:1', 3], ['group_lower:1', 4]]);
+    expect(stageLabel({ stage: 'group_upper', phase: 1, grp: 1, round: 2 }, l)).toBe('Grupo A · upper · ronda 2');
+    expect(stageLabel({ stage: 'group_upper', phase: 1, grp: 2, round: 3 }, l)).toBe('Grupo B · final del upper');
+    expect(stageLabel({ stage: 'group_lower', phase: 1, grp: 1, round: 1 }, l)).toBe('Grupo A · lower · ronda 1');
+    expect(stageLabel({ stage: 'group_lower', phase: 1, grp: 2, round: 4 }, l)).toBe('Grupo B · final del lower');
+  });
   it('ronda lejana de la final', () => {
     expect(stageLabel({ stage: 'ko', phase: 1, grp: null, round: 1 }, new Map([['ko:1', 6]]))).toBe('Ronda 1');
   });

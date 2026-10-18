@@ -32,6 +32,10 @@ export function stageLabel(m: StageInfo, last: Map<string, number>): string | nu
       return 'Gran final';
     case 'group':
       return `Grupo ${String.fromCharCode(64 + (m.grp ?? 1))} · fecha ${round}`;
+    case 'group_upper':
+      return `Grupo ${String.fromCharCode(64 + (m.grp ?? 1))} · ${round === max ? 'final del upper' : `upper · ronda ${round}`}`;
+    case 'group_lower':
+      return `Grupo ${String.fromCharCode(64 + (m.grp ?? 1))} · ${round === max ? 'final del lower' : `lower · ronda ${round}`}`;
     case 'swiss':
       return `Suizo · fase ${m.phase ?? 1} · ronda ${round}`;
     default:

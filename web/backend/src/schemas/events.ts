@@ -3,8 +3,10 @@ import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { MatchStatus, MatchSummary } from './matches';
 import { TeamRef } from './players';
 
-export const Template = z.enum(['single', 'double', 'groups', 'swiss']).openapi({
-  description: '`single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs',
+export const Template = z.enum(['single', 'double', 'groups', 'swiss', 'groups_double']).openapi({
+  description:
+    '`single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs, ' +
+    '`groups_double` grupos de doble eliminación + playoffs',
 });
 export const EventStatus = z.enum(['registration', 'in_progress', 'finished', 'cancelled']);
 
@@ -20,7 +22,7 @@ export const EventConfig = z
     bo: Bo, bo_semi: Bo, bo_final: Bo, third_place: z.boolean(), bo_third: Bo,
     // double
     bo_upper_final: Bo, bo_lower_final: Bo, bo_grand_final: Bo, advantage: z.boolean(),
-    // groups
+    // groups (y groups_double: groups de 1 a 8, advance 2 o 3, bo_group)
     groups: z.number().int().min(1).max(16), advance: z.number().int().min(1).max(8), double_rr: z.boolean(), bo_group: Bo,
     // swiss
     stages: z.number().int().min(1).max(3), size: z.union([z.literal(8), z.literal(16)]), wins: z.union([z.literal(2), z.literal(3)]), bo_decisive: Bo,
@@ -32,7 +34,8 @@ export const EventConfig = z
     description:
       'Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; ' +
       'double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; ' +
-      'swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3. 3.er puesto apagado.',
+      'swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3; groups_double 2 grupos, clasifican 3, grupos BO3, ' +
+      'playoffs BO3 y final BO5. 3.er puesto apagado.',
   });
 
 export const EventListQuery = listQuery(['starts_on', 'name', 'status'], { sort: 'starts_on', order: 'desc' }).extend({
@@ -99,11 +102,11 @@ export const EventMatchList = Envelope(EventMatch).openapi('EventMatchList');
 
 export const Standing = z
   .object({
-    stage: z.enum(['group', 'swiss']),
+    stage: z.enum(['group', 'swiss', 'group_double']).openapi({ description: '`group_double`: grupo de doble eliminación (`groups_double`)' }),
     grp: z.number().int().openapi({ description: 'Grupo (1 = A); 1 en el suizo' }),
     phase: z.number().int().openapi({ description: 'Fase suiza; 1 en grupos' }),
     team: TeamRef,
-    place: z.number().int(),
+    place: z.number().int().openapi({ description: 'En group_double: 1.º gana la final del upper, 2.º la final del lower, 3.º la pierde; los eliminados en la misma ronda comparten puesto' }),
     tied: z.boolean().openapi({ description: 'Grupos: empatado en todos los criterios con el de al lado' }),
     played: z.number().int(),
     won: z.number().int(),
@@ -113,12 +116,12 @@ export const Standing = z
     rounds_against: z.number().int().nullable(),
     rounds_diff: z.number().int(),
     buchholz: z.number().int().nullable().openapi({ description: 'Suizo' }),
-    state: z.enum(['active', 'qualified', 'eliminated']).nullable().openapi({ description: 'Suizo' }),
+    state: z.enum(['active', 'qualified', 'eliminated']).nullable().openapi({ description: 'Suizo y group_double (`active`: sigue en carrera)' }),
   })
   .openapi('Standing');
 
 export const StandingQuery = listQuery(['place'], { sort: 'place', order: 'asc' }, 200).extend({
-  stage: z.enum(['group', 'swiss']).optional(),
+  stage: z.enum(['group', 'swiss', 'group_double']).optional(),
   grp: z.coerce.number().int().optional(),
   phase: z.coerce.number().int().optional(),
 });
@@ -131,6 +134,10 @@ export const EventDetail = EventSummary.extend({
   players_max: z.number().int(),
   config: z.record(z.string(), z.unknown()).openapi({ description: 'Configuración completa (con los valores por defecto)' }),
   tie_pending: z.object({ grp: z.number().int() }).nullable().openapi({ description: 'Empate de grupo que tiene que resolver el organizador' }),
+  draw: z
+    .object({ at: z.string(), by: z.object({ user_id: z.uuid().nullable(), alias: z.string().nullable() }) })
+    .nullable()
+    .openapi({ description: 'Sorteo de la siembra (POST /events/{id}/draw): cuándo y quién. null si la siembra se cargó a mano o cambió después' }),
   viewer: z.object({ can_manage: z.boolean() }).nullable(),
 }).openapi('EventDetail', {
   description: 'Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings',
@@ -164,6 +171,13 @@ export const RegistrationBody = z
   .openapi('RegistrationBody');
 
 export const SeedsBody = z.object({ teams: z.array(z.uuid()).max(256) }).openapi('SeedsBody');
+
+export const DrawResult = z
+  .object({
+    seeds: z.array(TeamRef).openapi({ description: 'La siembra sorteada, del 1 en adelante' }),
+    drawn_at: z.string(),
+  })
+  .openapi('DrawResult');
 export const TieBody = z
   .object({ grp: z.number().int().min(1), order: z.array(z.uuid()).min(2) })
   .openapi('TieBody', { description: 'Orden de los equipos empatados, del mejor al peor' });

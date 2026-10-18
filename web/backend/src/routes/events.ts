@@ -7,6 +7,7 @@ import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import { bearer, errorResponses, json } from '../schemas/common';
 import {
+  DrawResult,
   EventCreate,
   EventDetail,
   EventList,
@@ -29,7 +30,7 @@ import { Created } from '../schemas/teams';
 import { MATCH_LIST, toSummary, type MatchRow } from '../services/matches';
 
 const LIST = 'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, teams';
-const EXTRA = 'id, rules, min_teams, players_min, players_max, config, tie_pending';
+const EXTRA = 'id, rules, min_teams, players_min, players_max, config, tie_pending, drawn_at, drawn_by';
 const done = { 204: { description: 'Hecho' } } as const;
 
 type EventRow = {
@@ -149,6 +150,17 @@ const seeds = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
 
+const draw = createRoute({
+  method: 'post', path: '/api/v1/events/{id}/draw', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Sortear la siembra',
+  description:
+    'Mezcla al azar el orden de los inscritos (el organizador o un admin, antes de generar). Se puede repetir. ' +
+    'En las plantillas con grupos, el reparto en serpentina deja sorteados los grupos y el lugar dentro de cada uno. ' +
+    'Queda registrado quién y cuándo sorteó (`draw` en el detalle); cambiar la siembra a mano, o una inscripción o baja, borra ese registro.',
+  request: { params: EventParam },
+  responses: { 200: { description: 'Siembra sorteada', ...json(DrawResult) }, ...errorResponses(400, 401, 403) },
+});
+
 const generate = createRoute({
   method: 'post', path: '/api/v1/events/{id}/generate', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
   summary: 'Generar el fixture',
@@ -204,6 +216,15 @@ export const events = createRouter()
       players_max: extra.players_max,
       config: (extra.config ?? {}) as Record<string, unknown>,
       tie_pending: (extra.tie_pending as { grp: number } | null) ?? null,
+      draw: extra.drawn_at
+        ? {
+            at: extra.drawn_at,
+            by: {
+              user_id: extra.drawn_by,
+              alias: extra.drawn_by ? (must(await sb.from('players').select('nick').eq('user_id', extra.drawn_by).maybeSingle())?.nick ?? null) : null,
+            },
+          }
+        : null,
       viewer,
     };
     if (await notModified(c, body)) return c.body(null, 304);
@@ -267,7 +288,7 @@ export const events = createRouter()
     const { rows, total } = await runList<Row, typeof q>(q, p, { place: ['stage', 'phase', 'grp', 'place'] }, 'team_id');
     const body = envelope(
       rows.map((r) => ({
-        stage: r.stage as 'group' | 'swiss', grp: r.grp, phase: r.phase, team: { id: r.team_id, name: r.name, tag: r.tag },
+        stage: r.stage as 'group' | 'swiss' | 'group_double', grp: r.grp, phase: r.phase, team: { id: r.team_id, name: r.name, tag: r.tag },
         place: r.place, tied: !!r.tied, played: r.played ?? 0, won: r.won ?? 0, lost: r.lost ?? 0, points: r.points,
         rounds_for: r.rounds_for, rounds_against: r.rounds_against, rounds_diff: r.rounds_diff ?? 0, buchholz: r.buchholz,
         state: r.state as 'active' | 'qualified' | 'eliminated' | null,
@@ -322,6 +343,19 @@ export const events = createRouter()
     const rows = mustHave(await c.var.sb.from('events').update({ seeds: teams }).eq('id', id).select('id'));
     if (!rows.length) throw new AppError(403, 'FORBIDDEN', 'Solo el organizador del torneo o un admin cambia la siembra.');
     return c.body(null, 204);
+  })
+  .openapi(draw, async (c) => {
+    const { id } = c.req.valid('param');
+    const ids = mustHave(await c.var.sb.rpc('event_draw', { p_event: id })) as string[];
+    const [teams, ev] = await Promise.all([
+      c.var.sb.from('teams').select('id, name, tag').in('id', ids).then(mustHave),
+      c.var.sb.from('events').select('drawn_at').eq('id', id).single().then(mustHave),
+    ]);
+    const byId = new Map(teams.map((t) => [t.id, t]));
+    return c.json(
+      { seeds: ids.map((t) => ({ id: t, name: byId.get(t)?.name ?? '', tag: byId.get(t)?.tag ?? null })), drawn_at: ev.drawn_at as string },
+      200,
+    );
   })
   .openapi(generate, async (c) => {
     must(await c.var.sb.rpc('event_generate', { p_event: c.req.valid('param').id }));

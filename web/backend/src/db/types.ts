@@ -183,13 +183,13 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "champion": string | null,"config": NonNullable<Json>,"ends_on": string | null,"id": string,"max_teams": number | null,"min_teams": number | null,"name": string,"organizer_id": string | null,"players_max": number,"players_min": number,"prize": string | null,"rules": string | null,"seeds": (string)[],"starts_on": string | null,"status": string,"template": string,"tie_pending": Json | null
+                    "champion": string | null,"config": NonNullable<Json>,"drawn_at": string | null,"drawn_by": string | null,"ends_on": string | null,"id": string,"max_teams": number | null,"min_teams": number | null,"name": string,"organizer_id": string | null,"players_max": number,"players_min": number,"prize": string | null,"rules": string | null,"seeds": (string)[],"starts_on": string | null,"status": string,"template": string,"tie_pending": Json | null
                   }
                   Insert: {
-                    "champion"?: string | null,"config"?: NonNullable<Json>,"ends_on"?: string | null,"id"?: string,"max_teams"?: number | null,"min_teams"?: number | null,"name": string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
+                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"max_teams"?: number | null,"min_teams"?: number | null,"name": string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
                   }
                   Update: {
-                    "champion"?: string | null,"config"?: NonNullable<Json>,"ends_on"?: string | null,"id"?: string,"max_teams"?: number | null,"min_teams"?: number | null,"name"?: string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
+                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"max_teams"?: number | null,"min_teams"?: number | null,"name"?: string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
                   }
                   Relationships: [
                     {
@@ -1406,6 +1406,49 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"event_group_double_standings": {
+                  Row: {
+                    "event_id": string | null,"grp": number | null,"lost": number | null,"place": number | null,"rounds_against": number | null,"rounds_diff": number | null,"rounds_for": number | null,"seed": number | null,"state": string | null,"team_id": string | null,"won": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_stage_teams_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "event_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "event_stage_teams_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "event_stage_teams_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "event_stage_teams_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_ranking"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "event_stage_teams_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_standings"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "event_stage_teams_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"event_group_standings": {
                   Row: {
                     "event_id": string | null,"grp": number | null,"lost": number | null,"manual_rank": number | null,"played": number | null,"points": number | null,"rounds_against": number | null,"rounds_diff": number | null,"rounds_for": number | null,"seed": number | null,"team_id": string | null,"won": number | null
@@ -2340,6 +2383,9 @@ isOneToOne: false
 "event_build_double":
 { Args: { "p_cfg": Json,"p_event": string,"p_teams": (string)[] }; Returns: undefined
                            },
+"event_build_group_double":
+{ Args: { "p_cfg": Json,"p_event": string,"p_teams": (string)[] }; Returns: undefined
+                           },
 "event_build_groups":
 { Args: { "p_cfg": Json,"p_event": string,"p_teams": (string)[] }; Returns: undefined
                            },
@@ -2352,6 +2398,9 @@ isOneToOne: false
 "event_config_pick":
 { Args: { "p_defaults": Json,"p_given": Json }; Returns: Json
                            },
+"event_draw":
+{ Args: { "p_event": string }; Returns: (string)[]
+                           },
 "event_engine_on":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -2360,6 +2409,9 @@ isOneToOne: false
                            },
 "event_group_clashes":
 { Args: { "p_event": string,"p_seeds": (string)[] }; Returns: number
+                           },
+"event_group_double_team":
+{ Args: { "p_event": string,"p_grp": number,"p_place": number }; Returns: string
                            },
 "event_group_order":
 { Args: { "p_event": string,"p_grp": number }; Returns: {
