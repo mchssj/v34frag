@@ -1,8 +1,8 @@
 # Contrato para el frontend
 
-Fecha: 2026-10-16. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar y `!claim`. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+Fecha: 2026-10-17. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar, `!claim` y mixes en vivo e interrumpidos. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
 
-**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 15).
+**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 16).
 
 Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /api/openapi.json`). Si este documento y la OpenAPI no coinciden en un detalle, manda la OpenAPI. Las decisiones de diseño (qué se muestra, a quién y con qué reglas) mandan acá.
 
@@ -35,6 +35,8 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Demos** (nuevo) | Resumen, listado, reintentar una demo perdida, tokens del Worker | Sección 9 |
 | **Doble confirmación** (nuevo) | Recalcular el ELO y generar un token nuevo del Worker piden escribir "estoy seguro"; la API exige `confirm` | Sección 9 |
 | **Sesión** (aclaración) | El `refresh_token` rota pero no es estrictamente de un solo uso: guardar siempre el último | Sección 1, "Sesión" |
+| **Mixes en vivo** (nuevo, 2026-10-17) | `GET /api/v1/mixes/live` y su detalle: marcador, rondas y stats parciales de los mixes que se están jugando. El detalle de una partida de torneo o PCW trae `live` con el mapa en juego | Sección 8d |
+| **Mixes interrumpidos** (nuevo, 2026-10-17) | Un mix cortado por una caída queda cancelado con `cancel_reason: "crash"` y `review: "pending"`; un admin aplica el ELO (con doble confirmación) o lo descarta. El resumen de partida suma `cancel_reason` y `review`; el detalle, `review_detail` | Secciones 8d y 9 |
 
 El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
 
@@ -292,7 +294,7 @@ Un jugador con cuenta tiene **un solo nombre en la web: el alias**. Une lo que a
 | `GET /api/v1/players/{id}/map-stats` · `/medals` · `/teams` | Pestañas de la ficha: stats por mapa, medallas e historial de equipos |
 | `GET /api/v1/players/{id}/matches` | **Partidas del jugador:** fecha, mapa, tipo, bandos, resultado, si ganó, sus stats, su cambio de ELO y el nombre que usó en el juego |
 
-## 5b. Perfiles sin reclamar y `!claim` (disponible en la API; el comando del servidor sale con el plugin 2.1.0)
+## 5b. Perfiles sin reclamar y `!claim` (disponible en la API; el comando del servidor sale con el plugin 2.2.0)
 
 **Tres cosas distintas:** la **cuenta** (email, alias), la **ficha** de jugador (la página del jugador, va al ranking) y el **SteamID** (con el que el servidor registra cada partida). La ficha une una cuenta con sus SteamID.
 
@@ -534,6 +536,28 @@ stateDiagram-v2
 | Ranking de jugadores | Es el listado de jugadores ordenado por ELO (`GET /api/v1/players`) |
 | Configuración | `GET /api/v1/elo/config`, sin sesión: los valores vigentes, para una página "Cómo se calcula el ELO" |
 
+## 8d. Mixes en vivo e interrumpidos (disponible)
+
+El servidor manda una foto del mix al final de cada ronda. Si el servidor se cae (o se reinicia) con un mix en curso, al volver lo guarda como **interrumpido** con la última ronda, y un admin decide si cuenta para el ELO.
+
+| Endpoint | Pantalla |
+|---|---|
+| `GET /api/v1/mixes/live` | **Mixes → En vivo**, arriba de la lista. Filtros: `server`, `player`, `map`, `stale`, `q`; orden `updated_at` (por defecto, desc) o `started_at`. Cada uno: servidor, mapa, bandos con marcador, `rounds_played` de `max_rounds`, `updated_at` (última ronda), `stale` y `parent_match_id` si se juega con `!match` |
+| `GET /api/v1/mixes/live/{uid}` | **Detalle en vivo**: lo mismo, más `seq`, `rounds` (ganador y lado del bando 1 en cada ronda) y `players` (stats parciales por bando, con `alias` si tiene ficha o `steam_id` para el perfil sin reclamar). `404` cuando terminó: ir al detalle de la partida |
+| `GET /api/v1/matches?review=pending` | Mixes interrumpidos pendientes de revisión (también `applied` y `discarded`) |
+| `GET /api/v1/matches/{id}` | `review_detail` en un interrumpido; `live` en una partida de torneo o PCW con un mapa en juego |
+
+- **Refresco:** consultar el listado cada 20 segundos y el detalle con `If-None-Match` (responde `304` hasta la próxima ronda). Cuando un mix desaparece del listado, terminó: su resultado está en `GET /api/v1/matches?kind=mix`.
+- **`stale: true`:** más de 10 minutos sin fotos. Mostrarlo atenuado ("sin novedades del servidor"). Al admin, ofrecer "Cerrar como interrumpido".
+- **Marcador del mapa en juego de una serie** (`live` del detalle de partida): ya viene en el orden de los bandos de la partida (`score1` es el del equipo 1).
+- **Un interrumpido en las listas:**
+  - Cancelado con `cancel_reason: "crash"`: etiqueta "Interrumpida", más "ELO pendiente" mientras `review` sea `pending`.
+  - Aprobado: queda terminado con `end_reason: "crash"` y su ganador. Etiqueta "Interrumpida".
+- **Reglas para aprobar** (las valida la API; `review_detail` las trae calculadas):
+  - Mínimo **35 %** de las rondas del mix (`min_rounds`), redondeado hacia arriba. Sin empate.
+  - Gana el bando que iba adelante, y cuenta para el ELO, las victorias y las stats como cualquier mix terminado.
+  - Si se jugaba con `!match`, al aprobarlo se vincula a su partida de torneo o PCW y suma el mapa. Si no se aprueba, el organizador puede cargar el resultado a mano.
+
 ## 9. Admin
 
 | Pantalla | Endpoints | Estado |
@@ -618,6 +642,19 @@ stateDiagram-v2
 - **Reintentar:** el botón solo con `can_retry: true`. Después, la demo aparece como pendiente y el Worker la busca en los próximos 10 minutos.
 - **Token del Worker:** se muestra una sola vez, con `secret_command` (cómo cargarlo en Cloudflare).
 - **Token nuevo, con doble confirmación (obligatorio):** el Worker deja de subir demos hasta que se carga el token nuevo en Cloudflare. Igual que al recalcular el ELO: preguntar si está seguro, pedir escribir **`estoy seguro`** (el botón queda deshabilitado hasta que coincide) y mandarlo en `confirm`. La API lo exige: sin él, `400 VALIDATION_ERROR` en `confirm`.
+
+### Mixes interrumpidos (admin)
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/v1/matches?kind=mix&review=pending` | Pendientes. En el detalle, `review_detail`: `rounds_played`, `max_rounds`, `min_rounds`, `can_apply` y `blocked_reason` |
+| `POST /api/v1/admin/mixes/{id}/apply-elo` | Aplicar el ELO. Body `{ confirm }`. `204`; `400 BUSINESS_RULE` con el motivo (no llega al 35 %, empate, ya revisado); `404` si no es un interrumpido |
+| `POST /api/v1/admin/mixes/{id}/discard` | Descartar: queda cancelado, sin ELO. `204`; `404` si no está pendiente |
+| `GET /api/v1/mixes/live?stale=true` | Mixes en vivo sin fotos hace más de 10 minutos (el servidor se cayó y no volvió) |
+| `POST /api/v1/admin/mixes/live/{uid}/close` | Cerrarlo como interrumpido con la última foto. `200` con `{ match_id }`; `400` si todavía manda fotos; `404` si ya no está en vivo |
+
+- **Aplicar el ELO, con doble confirmación (obligatorio).** Igual que al recalcular: preguntar si está seguro, mostrando quién gana y con cuántas rondas; pedir escribir **`estoy seguro`**; mandarlo en `confirm`. El botón solo con `can_apply: true`; si no, mostrar `blocked_reason`.
+- **Descartar** y **Cerrar como interrumpido** llevan una confirmación simple.
 
 ### SteamID y `!claim` (admin)
 
@@ -705,3 +742,8 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-16 | `!claim` | Código de 6 caracteres generado en Mi perfil y `!claim <código>` en el servidor. El primer SteamID se vincula al instante (crea la ficha si no hay); los reclamos viejos con aprobación se borran | Daniel |
 | 2026-10-16 | Varios SteamID | Una ficha puede tener varios SteamID (tope configurable, de 1 a 4, por defecto 3). Los adicionales los pide el usuario con `!claim` y los aprueba un admin. Un SteamID es de una sola ficha. **Un solo ELO por ficha** | Daniel |
 | 2026-10-16 | Sesión | Se deja el reuso del refresh token como lo maneja Supabase por defecto; el frontend guarda siempre el último. Cerrar sesión revoca la sesión entera | Daniel |
+| 2026-10-17 | Mixes en vivo | La lista de mixes muestra los que se están jugando, actualizados al final de cada ronda | Daniel |
+| 2026-10-17 | Mix interrumpido | Un mix cortado por una caída o un reinicio del servidor se guarda con la última ronda. Cuenta para el ELO solo si un admin lo aprueba: mínimo 35 % de las rondas del mix y sin empate; gana el que iba adelante | Daniel |
+| 2026-10-17 | Aprobar el ELO de un interrumpido | Doble confirmación ("estoy seguro"), como el recálculo | Daniel |
+| 2026-10-17 | Interrumpido con `!match` | Al aprobarlo, también se vincula a su partida de torneo o PCW. Si no se aprueba, el organizador carga el resultado a mano | Daniel |
+| 2026-10-17 | Mapa en juego de una serie | El detalle de una partida de torneo o PCW muestra el mapa que se está jugando | Daniel |
