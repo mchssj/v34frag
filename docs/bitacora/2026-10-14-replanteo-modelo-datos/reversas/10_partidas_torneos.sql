@@ -345,7 +345,7 @@ alter table public.tournament_registrations drop column start_stage;
 alter table public.matches drop column phase, drop column advantage_side;
 alter table public.matches drop constraint matches_end_reason_check;
 update public.matches set end_reason = null where end_reason = 'walkover';
-alter table public.matches add constraint matches_end_reason_check check (end_reason is null or end_reason = 'surrender');
+alter table public.matches add constraint matches_end_reason_check check (end_reason is null or end_reason in ('surrender', 'crash'));
 alter table public.events
   add column format text default 'playoffs',
   add column stage text default 'Inscripciones',

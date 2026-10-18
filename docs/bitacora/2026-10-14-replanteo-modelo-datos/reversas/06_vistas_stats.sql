@@ -176,6 +176,15 @@ select pg_temp.reemplazar('public.link_steam_id(text, uuid)', array[
    '  perform recompute_player_stats(p_player);']
 ]);
 
+do $$ begin
+  if to_regprocedure('public.elo_crash_apply(uuid)') is not null then
+    perform pg_temp.reemplazar('public.elo_crash_apply(uuid)', array[
+      [E'  -- (replanteo 06) las stats de los jugadores salen de la vista player_stats\n',
+       E'  foreach x in array array(select distinct player_id from match_player_stats where match_id = p_match and player_id is not null) loop\n    perform recompute_player_stats(x);\n  end loop;\n']
+    ]);
+  end if;
+end $$;
+
 -- Stats de cada jugador desde sus partidas, como hacía la ingesta.
 do $$
 declare p uuid;

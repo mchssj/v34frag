@@ -87,7 +87,7 @@ alter table public.matches
   add column advantage_side smallint,
   add constraint matches_advantage_side_check check (advantage_side in (1, 2));
 alter table public.matches drop constraint matches_end_reason_check;
-alter table public.matches add constraint matches_end_reason_check check (end_reason is null or end_reason in ('surrender', 'walkover'));
+alter table public.matches add constraint matches_end_reason_check check (end_reason is null or end_reason in ('surrender', 'walkover', 'crash'));   -- crash: migración 20261017120000_mixes_en_vivo
 comment on column public.matches.phase is 'Torneos: fase (1 = primera; en suizo, la fase suiza; los playoffs van después)';
 comment on column public.matches.advantage_side is 'Gran final con mapa de ventaja: bando que empieza 1-0';
 

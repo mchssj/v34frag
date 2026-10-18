@@ -99,6 +99,18 @@ select pg_temp.reemplazar('public.elo_apply_match(uuid)', array[
    'res1 := case m.winner_side when 1 then 1 when 2 then 0 else 0.5 end;']
 ]);
 
+-- Mix interrumpido aprobado por un admin (migración 20261017120000_mixes_en_vivo): gana el bando que iba adelante.
+do $$ begin
+  if to_regprocedure('public.elo_crash_apply(uuid)') is not null then
+    perform pg_temp.reemplazar('public.elo_crash_apply(uuid)', array[
+      ['select id, kind, status, cancel_reason, team1, team2, score1, score2 into m',
+       'select id, kind, status, cancel_reason, score1, score2 into m'],
+      ['winner = case when score1 > score2 then team1 else team2 end',
+       'winner_side = case when score1 > score2 then 1 else 2 end']
+    ]);
+  end if;
+end $$;
+
 -- Victorias y derrotas: el bando del jugador contra winner_side.
 select pg_temp.reemplazar('public.recompute_player_stats(uuid)', array[
   ['count(*) filter (where m.winner is not null and m.winner =  case s.team when 1 then m.team1 else m.team2 end) as w,',

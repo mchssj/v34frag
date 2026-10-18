@@ -46,6 +46,16 @@ select pg_temp.reemplazar('public.link_steam_id(text, uuid)', array[
    '  -- (replanteo 06) las stats de p_player salen de la vista player_stats']
 ]);
 
+-- Mix interrumpido aprobado por un admin (migración 20261017120000_mixes_en_vivo).
+do $$ begin
+  if to_regprocedure('public.elo_crash_apply(uuid)') is not null then
+    perform pg_temp.reemplazar('public.elo_crash_apply(uuid)', array[
+      [E'  foreach x in array array(select distinct player_id from match_player_stats where match_id = p_match and player_id is not null) loop\n    perform recompute_player_stats(x);\n  end loop;\n',
+       E'  -- (replanteo 06) las stats de los jugadores salen de la vista player_stats\n']
+    ]);
+  end if;
+end $$;
+
 drop function public.recompute_player_stats(uuid);
 
 -- ---------- 2. sacar la carga manual ----------

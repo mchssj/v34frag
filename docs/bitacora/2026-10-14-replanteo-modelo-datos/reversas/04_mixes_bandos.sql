@@ -43,6 +43,17 @@ select pg_temp.reemplazar('public.elo_apply_match(uuid)', array[
    'res1 := case when m.winner is null then 0.5 when m.winner = m.team1 then 1 else 0 end;']
 ]);
 
+do $$ begin
+  if to_regprocedure('public.elo_crash_apply(uuid)') is not null then
+    perform pg_temp.reemplazar('public.elo_crash_apply(uuid)', array[
+      ['select id, kind, status, cancel_reason, score1, score2 into m',
+       'select id, kind, status, cancel_reason, team1, team2, score1, score2 into m'],
+      ['winner_side = case when score1 > score2 then 1 else 2 end',
+       'winner = case when score1 > score2 then team1 else team2 end']
+    ]);
+  end if;
+end $$;
+
 select pg_temp.reemplazar('public.recompute_player_stats(uuid)', array[
   ['count(*) filter (where m.winner_side = s.team) as w,',
    'count(*) filter (where m.winner is not null and m.winner =  case s.team when 1 then m.team1 else m.team2 end) as w,'],
