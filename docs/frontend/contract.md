@@ -1,8 +1,8 @@
 # Contrato para el frontend
 
-Fecha: 2026-10-18. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar, `!claim`, mixes en vivo e interrumpidos y la plantilla de grupos de doble eliminación con sorteo. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+Fecha: 2026-10-18. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar, `!claim`, mixes en vivo e interrumpidos la plantilla de grupos de doble eliminación con sorteo y las preferencias de la cuenta. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
 
-**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 17).
+**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 18).
 
 Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /api/openapi.json`). Si este documento y la OpenAPI no coinciden en un detalle, manda la OpenAPI. Las decisiones de diseño (qué se muestra, a quién y con qué reglas) mandan acá.
 
@@ -36,6 +36,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Doble confirmación** (nuevo) | Recalcular el ELO y generar un token nuevo del Worker piden escribir "estoy seguro"; la API exige `confirm` | Sección 9 |
 | **Sesión** (aclaración) | El `refresh_token` rota pero no es estrictamente de un solo uso: guardar siempre el último | Sección 1, "Sesión" |
 | **Mixes en vivo** (nuevo, 2026-10-17) | `GET /api/v1/mixes/live` y su detalle: marcador, rondas y stats parciales de los mixes que se están jugando. El detalle de una partida de torneo o PCW trae `live` con el mapa en juego | Sección 8d |
+| **Preferencias de la cuenta** (nuevo, 2026-10-18) | `GET`/`PATCH /api/v1/me/profile` con `preferences.theme_fx` (efectos al cambiar de tema), guardado en la cuenta | Sección 2 |
 | **Grupos de doble eliminación** (nuevo, 2026-10-18) | Plantilla `groups_double`: cada grupo juega una doble eliminación (1.º gana la final del upper, 2.º y 3.º salen de la final del lower) y los clasificados van a playoffs. La tabla del grupo llega con `stage: "group_double"` | Sección 8b |
 | **Sorteo** (nuevo, 2026-10-18) | `POST /api/v1/events/{id}/draw` mezcla la siembra al azar; el detalle del torneo trae `draw` (cuándo y quién) | Sección 8b |
 | **Mixes interrumpidos** (nuevo, 2026-10-17) | Un mix cortado por una caída queda cancelado con `cancel_reason: "crash"` y `review: "pending"`; un admin aplica el ELO (con doble confirmación) o lo descarta. El resumen de partida suma `cancel_reason` y `review`; el detalle, `review_detail` | Secciones 8d y 9 |
@@ -197,10 +198,16 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 |---|---|
 | `POST /auth/signup` | `{ email, password, tag }`. Si hay que confirmar el email, responde `session: null` y `needsConfirmation: true`: mostrar "revisa tu correo". El `tag` es el **alias** (sección 4): `409` si está tomado y `400` con `details[].path = "tag"` si tiene una palabra no permitida. Conviene validarlo antes con `GET /api/v1/aliases/{alias}/available` |
 | `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me` | |
-| `GET /api/v1/me/profile` | Cuenta, detalles, jugador vinculado, equipos actuales y partidas jugadas. `teams` es una lista (un jugador puede estar en varios equipos), con `is_captain` e `is_member`. `matches_played` cuenta las partidas que jugó en el servidor |
-| `PATCH /api/v1/me/profile` | Solo se cambian los campos enviados. `null` o `""` borran un campo. Para el alias usar `PUT /me/alias` (sección 4) |
+| `GET /api/v1/me/profile` | Cuenta, detalles, jugador vinculado, equipos actuales, partidas jugadas y `preferences`. `teams` es una lista (un jugador puede estar en varios equipos), con `is_captain` e `is_member`. `matches_played` cuenta las partidas que jugó en el servidor |
+| `PATCH /api/v1/me/profile` | Solo se cambian los campos enviados. `null` o `""` borran un campo. Para el alias usar `PUT /me/alias` (sección 4). Acepta `preferences` (ver abajo) |
 | `POST /api/v1/me/avatar` | `multipart/form-data`, campo `file`. **JPEG, PNG o WebP, máximo 1 MB** (no GIF). Recortar a 256×256 antes de subir |
 
+- **Preferencias de la cuenta** (`preferences`, solo las ve y las cambia el propio usuario):
+  - `GET /api/v1/me/profile` siempre trae el objeto con todas sus claves: `preferences: { theme_fx: "full" | "silent" | "off" | null }`. `null` = todavía no eligió.
+  - `theme_fx`: efectos al cambiar de tema. `"full"` con sonido, `"silent"` sin sonido, `"off"` desactivados.
+  - `PATCH /api/v1/me/profile` con `{ "preferences": { "theme_fx": "silent" } }` cambia solo esa clave; `null` la borra. Las claves que no se mandan no se tocan (las preferencias futuras no se pisan).
+  - Otro valor, o una clave desconocida dentro de `preferences`, responde `400 VALIDATION_ERROR` con el campo en `details[].path`.
+  - Al iniciar sesión, tomar el valor del servidor y reemplazar el del navegador; si es `null`, quedarse con el del navegador. Sin sesión, solo el navegador.
 - **Privacidad del perfil:** público o privado (ya no existe "solo miembros"). Privado oculta los **datos personales** (nombre real, país, redes); la ficha, las stats y las partidas siguen siendo públicas.
 
 ### Registro por pasos
@@ -764,6 +771,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-17 | Aprobar el ELO de un interrumpido | Doble confirmación ("estoy seguro"), como el recálculo | Daniel |
 | 2026-10-17 | Interrumpido con `!match` | Al aprobarlo, también se vincula a su partida de torneo o PCW. Si no se aprueba, el organizador carga el resultado a mano | Daniel |
 | 2026-10-17 | Mapa en juego de una serie | El detalle de una partida de torneo o PCW muestra el mapa que se está jugando | Daniel |
+| 2026-10-18 | Preferencias de la cuenta | `preferences.theme_fx` (`full`, `silent`, `off` o `null`) en `GET`/`PATCH /me/profile`, dentro de un objeto para sumar otras; solo del propio usuario y sin pisar otras claves | Frontend (aprobado por Daniel) |
 | 2026-10-18 | Plantilla `groups_double` | "Grupos de doble eliminación + playoffs": doble eliminación por grupo sin final del grupo (1.º gana la final del upper, 2.º y 3.º salen de la final del lower), libres para los primeros lugares, playoffs con los 1.º esperando en semifinales. Por defecto 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5 | Daniel |
 | 2026-10-18 | Sorteo | Se sortea todo (grupos y lugar dentro del grupo) con `POST /events/{id}/draw`, para todas las plantillas; queda registrado quién y cuándo sorteó | Daniel |
 | 2026-10-18 | Tamaños de `groups_double` | De 1 a 8 grupos, de 4 a 8 equipos por grupo, clasifican 2 o 3; siempre hay playoffs. Los perdedores de la ronda 2 del upper bajan cruzados | Propuesta aceptada |
