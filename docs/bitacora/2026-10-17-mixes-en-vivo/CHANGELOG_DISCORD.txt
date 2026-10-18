@@ -1,0 +1,9 @@
+v34frag 2.1.1 --  Changelog
+
+Mixes en vivo
+- En la web, en la sección Mixes, ahora ves los mixes que se están jugando: marcador, rondas jugadas y las estadísticas de cada jugador, que se actualizan al final de cada ronda.
+
+Si el servidor se cae o se reinicia en medio de un mix
+- El mix ya no se pierde: queda guardado con el marcador de la última ronda que se alcanzó a jugar, marcado como "Interrumpida".
+- Un admin revisa cada mix interrumpido y decide si cuenta para el ELO. Para que cuente, se tiene que haber jugado al menos el 35 % de las rondas del mix y no puede estar empatado. Si cuenta, gana el equipo que iba adelante.
+- Mientras el admin no lo revisa, vas a ver la etiqueta "ELO pendiente".
