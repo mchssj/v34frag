@@ -116,8 +116,9 @@ void J_KeyStr(const char[] key, const char[] value, bool comma = true)
 /**
  * Arma el resultado en g_sJson. Con cancelled = true la partida se guarda como cancelada
  * (reason: "admin" o "map_change"; by: nick de quien la canceló).
+ * Con liveSeq > 0 es una foto del mix en curso (csstv/live.inc): "status":"live" y "live_seq".
  */
-void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason = "", const char[] by = "")
+void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason = "", const char[] by = "", int liveSeq = 0)
 {
 	char map[64], tag[24];
 	GetCurrentMap(map, sizeof(map));
@@ -135,7 +136,13 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 	J_KeyInt("ended_at", endedAt);
 	J_KeyInt("max_rounds", g_iMatchMaxRounds);
 	J_KeyInt("overtimes", g_iSegment);
-	if (cancelled)
+	if (liveSeq > 0)
+	{
+		// Live_Recover busca este texto exacto para pasarlo a cancelado por caída.
+		J_KeyStr("status", "live");
+		J_KeyInt("live_seq", liveSeq);
+	}
+	else if (cancelled)
 	{
 		J_KeyStr("status", "cancelled");
 		J_KeyStr("cancel_reason", reason);
@@ -167,7 +174,7 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 	J_Char('}');
 
 	J_Raw(",\"winner\":");
-	if (cancelled) J_Raw("null");
+	if (cancelled || liveSeq > 0) J_Raw("null");
 	else if (g_iTotA > g_iTotB) J_Str("a");
 	else if (g_iTotB > g_iTotA) J_Str("b");
 	else J_Raw("null");

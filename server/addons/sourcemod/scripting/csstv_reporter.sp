@@ -9,7 +9,8 @@
  * csstv/license.inc valida la licencia del servidor: sin ella no se juegan mixes.
  * csstv/knife.inc (ronda de cuchillo), csstv/gg.inc (rendición), csstv/summary.inc
  * (resumen final), csstv/menu.inc (categoría v34frag del menú de admin) y csstv/maps.inc
- * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas).
+ * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas). csstv/live.inc manda una foto
+ * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -30,7 +31,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.0.0"
+#define PLUGIN_VERSION "2.1.1"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -120,6 +121,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/stats.inc"
 #include "csstv/json.inc"
 #include "csstv/queue.inc"
+#include "csstv/live.inc"
 #include "csstv/http.inc"
 #include "csstv/license_id.inc"
 #include "csstv/license.inc"
@@ -191,6 +193,7 @@ public void OnPluginStart()
 
 	Stats_Init();
 	Queue_Init();
+	Live_Init();   // después de Queue_Init: un mix cortado por una caída pasa a la cola
 	Qol_Init();
 	Rr_Init();
 	Knife_Init();
@@ -206,6 +209,7 @@ public void OnMapStart()
 {
 	ResetMatch();
 	Queue_EnsureDirs();
+	Live_FlushMapChange();   // mix cortado por el fin del mapa anterior: ahora sí es un cambio de mapa
 	Maps_OnMapStart();
 }
 
@@ -423,6 +427,9 @@ public Action Cmd_Status(int client, int args)
 	char mode[96];
 	Http_ModeText(mode, sizeof(mode));
 	ReplyToCommand(client, "[%s] Envío: %s · en cola: %d · rechazados: %d", g_sTag, mode, Queue_Count(false), Queue_Count(true));
+	char live[96];
+	Live_StatusText(live, sizeof(live));
+	ReplyToCommand(client, "[%s] Fotos en vivo: %s", g_sTag, live);
 	char lic[160];
 	License_StatusText(lic, sizeof(lic));
 	ReplyToCommand(client, "[%s] Licencia: %s", g_sTag, lic);
@@ -537,6 +544,7 @@ void ResetMatch()
 {
 	g_State = State_Warmup;
 	g_sMatchUid[0] = '\0';
+	Live_Reset();
 	g_iStartedAt = 0;
 	g_iMatchMaxRounds = 0;
 	g_iAbandonSince = 0;
@@ -737,6 +745,8 @@ void OnRoundCompleted(int winnerSide, int reason)
 		PrintToChatAll("%s Medio tiempo. Se cambian los lados.", PREFIX);
 		CreateTimer(g_cvHalftimeDelay.FloatValue, Timer_Halftime, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
+	if (g_State != State_Finished)
+		Live_Snapshot();
 }
 
 public Action Timer_Halftime(Handle timer)
@@ -837,6 +847,7 @@ void FinishMatch()
 	Json_BuildPayload(endedAt);
 	if (QueueResult("terminada"))
 		PrintToChatAll("%s Enviando el resultado a CSSTV…", PREFIX);
+	Live_Discard();
 
 	RestoreStartMoney();
 	ExecIfExists("csstv/end.cfg");
@@ -860,16 +871,27 @@ void CancelMatch(const char[] reason, const char[] by)
 		PrintToChatAll("%s Partida cancelada. No se jugó ninguna ronda, así que no se guarda.", PREFIX);
 		if (g_bDemoRecorded)
 			Demo_Discard(g_sMatchUid);
+		Live_Discard();
 		return;
 	}
 	PrintToChatAll("%s Partida cancelada (%s %d - %d %s). Queda guardada como cancelada.", PREFIX, g_sTeam[0], g_iTotA, g_iTotB, g_sTeam[1]);
 	Json_BuildPayload(GetTime(), true, reason, by);
 	if (StrEqual(reason, "map_change"))
+	{
+		// Se encola al arrancar el mapa siguiente (csstv/live.inc): si el servidor se reinicia en el
+		// medio, al volver queda como interrumpido. Sin foto en vivo, se encola ya, como antes.
+		if (Live_DeferMapChange())
+		{
+			Live_Reset();
+			return;
+		}
 		QueueResult("cancelada por cambio de mapa");
+	}
 	else if (StrEqual(reason, "abandoned"))
 		QueueResult("cancelada por abandono");
 	else
 		QueueResult("cancelada por un admin");
+	Live_Discard();
 }
 
 /**
