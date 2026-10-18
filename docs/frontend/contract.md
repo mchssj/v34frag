@@ -1,8 +1,8 @@
 # Contrato para el frontend
 
-Fecha: 2026-10-17. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar, `!claim` y mixes en vivo e interrumpidos. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
+Fecha: 2026-10-18. Reúne **todas las decisiones de diseño que afectan al frontend nuevo**, de todas las fases del backend: base y Auth, Mi perfil, replanteo del modelo de datos, `!match`, formatos de PCW, jugadores y equipos, partidas, torneos, PCW, ELO, listados, admin de servidores, configuración del ELO, demos, perfiles sin reclamar, `!claim`, mixes en vivo e interrumpidos y la plantilla de grupos de doble eliminación con sorteo. Al final hay un registro de todas las decisiones con su fecha y su origen. Reemplaza como referencia única a [`2026-10-14-decisiones-para-frontend.md`](2026-10-14-decisiones-para-frontend.md), que queda como historia.
 
-**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 16).
+**La API de dominio está completa** (2026-10-16): todos los endpoints de este documento están **disponibles** en la rama `feat/backend-api-fase-1`, probados contra la Supabase local con el esquema nuevo (migraciones del replanteo 01 a 17).
 
 Los nombres exactos de endpoints, campos y tipos son los de la OpenAPI (`GET /api/openapi.json`). Si este documento y la OpenAPI no coinciden en un detalle, manda la OpenAPI. Las decisiones de diseño (qué se muestra, a quién y con qué reglas) mandan acá.
 
@@ -36,6 +36,8 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Doble confirmación** (nuevo) | Recalcular el ELO y generar un token nuevo del Worker piden escribir "estoy seguro"; la API exige `confirm` | Sección 9 |
 | **Sesión** (aclaración) | El `refresh_token` rota pero no es estrictamente de un solo uso: guardar siempre el último | Sección 1, "Sesión" |
 | **Mixes en vivo** (nuevo, 2026-10-17) | `GET /api/v1/mixes/live` y su detalle: marcador, rondas y stats parciales de los mixes que se están jugando. El detalle de una partida de torneo o PCW trae `live` con el mapa en juego | Sección 8d |
+| **Grupos de doble eliminación** (nuevo, 2026-10-18) | Plantilla `groups_double`: cada grupo juega una doble eliminación (1.º gana la final del upper, 2.º y 3.º salen de la final del lower) y los clasificados van a playoffs. La tabla del grupo llega con `stage: "group_double"` | Sección 8b |
+| **Sorteo** (nuevo, 2026-10-18) | `POST /api/v1/events/{id}/draw` mezcla la siembra al azar; el detalle del torneo trae `draw` (cuándo y quién) | Sección 8b |
 | **Mixes interrumpidos** (nuevo, 2026-10-17) | Un mix cortado por una caída queda cancelado con `cancel_reason: "crash"` y `review: "pending"`; un admin aplica el ELO (con doble confirmación) o lo descarta. El resumen de partida suma `cancel_reason` y `review`; el detalle, `review_detail` | Secciones 8d y 9 |
 
 El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
@@ -457,6 +459,7 @@ El organizador elige una plantilla y ajusta `config`. En cada fase elige **BO1, 
 | `double` (doble eliminación) | Upper, lower, final del upper, final del lower, gran final | BO3; gran final BO5; **sin reset**; mapa de ventaja apagado |
 | `groups` (grupos + playoffs) | Grupos A, B, C… de todos contra todos → playoffs | 2 grupos, clasifican 2; grupos BO1; playoffs y final BO3 |
 | `swiss` (suizo + playoffs) | 1 a 3 fases suizas de 16 (u 8) → playoffs | 3 victorias clasifican y 3 derrotas eliminan (2 y 2 con 8); BO1, decisivas BO3; playoffs y final BO3 |
+| `groups_double` (grupos de doble eliminación + playoffs) | Grupos A, B… con una doble eliminación cada uno → playoffs | 2 grupos, clasifican 3; grupos BO3; playoffs BO3 y **final BO5**; 3.er puesto apagado |
 
 - **Mapa de ventaja** (doble eliminación): el campeón del upper empieza la gran final 1-0, en BO3 o BO5. El marcador ya lo muestra desde el principio.
 - **3.er puesto:** opcional. Si se activa, BO3.
@@ -474,6 +477,19 @@ El organizador elige una plantilla y ajusta `config`. En cada fase elige **BO1, 
   - Se cruzan equipos con el mismo récord (0-0, después 1-0 y 0-1…), sin repetir rival.
   - Cada equipo empieza en la fase 1, salvo que el organizador lo ponga en otra (equipos que entran directo, como en el Major).
   - Hacen falta exactamente 16 (u 8) en la fase 1 y la mitad en cada fase siguiente.
+- **Grupos de doble eliminación** (`groups_double`):
+  - De 1 a 8 grupos, de 4 a 8 equipos por grupo (reparto en serpentina por la siembra). Clasifican 2 o 3 por grupo; siempre hay playoffs.
+  - Cada grupo es una doble eliminación **sin final del grupo**: 1.º gana la final del upper; 2.º gana la final del lower; 3.º la pierde. Un equipo queda afuera con su segunda derrota.
+  - Con menos de 8 en un grupo hay libres para los primeros de la siembra: con 6, los lugares 1 y 2 pasan directo a la ronda 2 del upper. Los libres del lower se resuelven solos cuando bajan los perdedores.
+  - Los que pierden la ronda 2 del upper bajan **cruzados** (para no repetir rival enseguida).
+  - Playoffs: los 1.º, después los 2.º, después los 3.º. Con 2 grupos y 3 clasificados: cuartos 2.º B vs 3.º A y 2.º A vs 3.º B; los 1.º esperan en semifinales (1.º A con el ganador de 2.º B–3.º A).
+  - Nombres de las fases (`label`): "Grupo A · upper · ronda 1", "Grupo A · final del upper", "Grupo B · lower · ronda 2", "Grupo B · final del lower".
+  - Tabla del grupo: `GET /events/{id}/standings?stage=group_double`. Cada fila: `place` (los eliminados en la misma ronda comparten puesto), `won`, `lost`, rondas y `state` (`active` mientras sigue en carrera, `qualified` o `eliminated`). No hay empates para resolver.
+  - Diagrama con un ejemplo completo: https://claude.ai/artifact/3zRgeGRrE8VS7VUAcuy13y
+- **Sorteo** (todas las plantillas):
+  - `POST /api/v1/events/{id}/draw` (organizador o admin, antes de generar) mezcla al azar la siembra con todos los inscritos y la devuelve (`seeds`, `drawn_at`). Se puede repetir hasta generar.
+  - Con grupos, el sorteo decide el grupo y el lugar dentro del grupo.
+  - El detalle del torneo trae `draw: { at, by: { user_id, alias } }`: mostrarlo ("Sorteado por X el …") para que los equipos vean que no se acomodó a mano. Cambiar la siembra a mano, o una inscripción o baja, lo borra (`draw: null`).
 - **Empate sin resolver en un grupo:**
   - `tie_pending: { grp }` indica el grupo, y la fila trae `tied: true` en los empatados.
   - El organizador ordena esos equipos con `POST /api/v1/events/{id}/ties` y los playoffs se arman solos.
@@ -513,10 +529,11 @@ stateDiagram-v2
 | `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, estado, campeón, empate pendiente y `viewer`. Con `ETag` |
 | `GET /api/v1/events/{id}/registrations` | Todos | Inscritos con siembra y jugadores |
 | `GET /api/v1/events/{id}/matches` | Todos | Partidas (con `stage`, `phase`, `grp`, `round`, `pos` y `bye` para dibujar la llave; hasta 200 por página). Con `ETag` |
-| `GET /api/v1/events/{id}/standings` | Todos | Tablas de grupos y del suizo con la posición. Con `ETag` |
+| `GET /api/v1/events/{id}/standings` | Todos | Tablas de grupos (`group`), grupos de doble eliminación (`group_double`) y del suizo, con la posición. Con `ETag` |
 | `PUT`/`DELETE /api/v1/events/{id}/registrations/{teamId}` | Capitán u organizador | Inscribir, cambiar inscritos (`{ players, start_stage? }`) o dar de baja |
 | `POST /api/v1/events`, `PATCH`/`DELETE /api/v1/events/{id}`, `POST …/cancel` | Organizador o admin | Crear, editar, borrar, cancelar |
-| `PUT /api/v1/events/{id}/seeds` | Organizador o admin | Orden de siembra (todos los inscritos) |
+| `PUT /api/v1/events/{id}/seeds` | Organizador o admin | Orden de siembra a mano (todos los inscritos) |
+| `POST /api/v1/events/{id}/draw` | Organizador o admin | Sorteo de la siembra (`{ seeds, drawn_at }`) |
 | `POST /api/v1/events/{id}/generate` · `…/reset` · `…/ties` | Organizador o admin | Fixture y empates |
 
 **Para dibujar las llaves:** las partidas traen `stage` y la posición.
@@ -747,3 +764,6 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-17 | Aprobar el ELO de un interrumpido | Doble confirmación ("estoy seguro"), como el recálculo | Daniel |
 | 2026-10-17 | Interrumpido con `!match` | Al aprobarlo, también se vincula a su partida de torneo o PCW. Si no se aprueba, el organizador carga el resultado a mano | Daniel |
 | 2026-10-17 | Mapa en juego de una serie | El detalle de una partida de torneo o PCW muestra el mapa que se está jugando | Daniel |
+| 2026-10-18 | Plantilla `groups_double` | "Grupos de doble eliminación + playoffs": doble eliminación por grupo sin final del grupo (1.º gana la final del upper, 2.º y 3.º salen de la final del lower), libres para los primeros lugares, playoffs con los 1.º esperando en semifinales. Por defecto 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5 | Daniel |
+| 2026-10-18 | Sorteo | Se sortea todo (grupos y lugar dentro del grupo) con `POST /events/{id}/draw`, para todas las plantillas; queda registrado quién y cuándo sorteó | Daniel |
+| 2026-10-18 | Tamaños de `groups_double` | De 1 a 8 grupos, de 4 a 8 equipos por grupo, clasifican 2 o 3; siempre hay playoffs. Los perdedores de la ronda 2 del upper bajan cruzados | Propuesta aceptada |
