@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { dateParam, Envelope, listQuery } from '../lib/list';
+import { LiveGameRef } from './live';
 import { TeamRef } from './players';
 
 const num = z.number().nullable();
@@ -7,6 +8,9 @@ const num = z.number().nullable();
 export const MatchKind = z.enum(['mix', 'pcw', 'official']);
 
 export const MatchStatus = z.enum(['upcoming', 'live', 'finished', 'cancelled']);
+
+/** Revisión de un mix interrumpido por una caída: pendiente, ELO aplicado o descartado. */
+export const ReviewStatus = z.enum(['pending', 'applied', 'discarded']);
 
 export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'played_at', order: 'desc' }).extend({
   kind: MatchKind.optional().openapi({ description: '`official` (torneo), `pcw` o `mix`. Sin filtro: todas' }),
@@ -18,6 +22,7 @@ export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'pla
   from: dateParam('Desde (fecha jugada, o programada si no se jugó)'),
   to: dateParam('Hasta (fecha jugada, o programada si no se jugó)'),
   q: z.string().max(60).optional().openapi({ description: 'Busca en equipos, bandos y torneo' }),
+  review: ReviewStatus.optional().openapi({ description: 'Mixes interrumpidos por una caída: `pending` (falta que un admin decida), `applied` o `discarded`' }),
 });
 
 const Side = z
@@ -42,7 +47,9 @@ export const MatchSummary = z
     map: z.string().nullable(),
     starts_at: z.string().nullable(),
     played_at: z.string().nullable(),
-    end_reason: z.string().nullable().openapi({ description: '`surrender` (rendición) o `walkover` (W.O.)' }),
+    end_reason: z.string().nullable().openapi({ description: '`surrender` (rendición), `walkover` (W.O.) o `crash` (mix interrumpido con el ELO aprobado)' }),
+    cancel_reason: z.string().nullable().openapi({ description: 'Cancelada: `admin`, `map_change`, `abandoned` o `crash` (interrumpida por una caída)' }),
+    review: ReviewStatus.nullable().openapi({ description: 'Mix interrumpido por una caída: estado de la revisión del ELO; null en el resto' }),
     demo_status: z.string(),
     parent_match_id: z.uuid().nullable().openapi({ description: 'Mix vinculado con !match: la partida de torneo o PCW a la que pertenece' }),
   })
@@ -87,13 +94,23 @@ export const VetoState = z
   })
   .openapi('VetoState');
 
+export const MixReview = z
+  .object({
+    status: ReviewStatus,
+    max_rounds: z.number().int().openapi({ description: 'Rondas del mix (sin prórroga)' }),
+    rounds_played: z.number().int(),
+    min_rounds: z.number().int().openapi({ description: '35 % de max_rounds, hacia arriba' }),
+    can_apply: z.boolean().openapi({ description: 'Pendiente, con el mínimo de rondas y sin empate' }),
+    blocked_reason: z.string().nullable().openapi({ description: 'Por qué no se puede aprobar (si está pendiente)' }),
+  })
+  .openapi('MixReview');
+
 export const MatchDetail = MatchSummary.extend({
   stage: z.string().nullable(),
   phase: z.number().int().nullable(),
   grp: z.number().int().nullable(),
   round: z.number().int().nullable(),
   advantage_side: z.number().int().nullable().openapi({ description: 'Gran final con mapa de ventaja: bando que empezó 1-0' }),
-  cancel_reason: z.string().nullable(),
   server: z.object({ id: z.uuid().nullable(), name: z.string().nullable(), address: z.string().nullable() }).nullable(),
   demo_url: z.string().nullable().openapi({ description: 'Mix con la demo subida: link de descarga' }),
   link_code: z.string().nullable().openapi({ description: 'Código de !match: solo para los dos equipos, el organizador y los admins' }),
@@ -104,6 +121,8 @@ export const MatchDetail = MatchSummary.extend({
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
   mvp: PlayerLine.nullable().openapi({ description: 'Mix: el de mejor rating' }),
   veto: VetoState.nullable().openapi({ description: 'Torneo o PCW' }),
+  review_detail: MixReview.nullable().openapi({ description: 'Mix interrumpido por una caída: lo que necesita el admin para decidir' }),
+  live: LiveGameRef.nullable().openapi({ description: 'Torneo o PCW: el juego vinculado con !match que se está jugando ahora' }),
   viewer: z
     .object({ can_veto: z.boolean(), can_chat: z.boolean(), can_manage: z.boolean(), is_participant: z.boolean() })
     .nullable()

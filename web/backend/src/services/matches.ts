@@ -1,12 +1,13 @@
 import type { z } from '@hono/zod-openapi';
 import type { Config } from '../env';
-import type { MatchSummary, VetoState } from '../schemas/matches';
+import type { MatchSummary, MixReview, VetoState } from '../schemas/matches';
 import { stageLabel, type StageInfo } from './stages';
 
 // Columnas de la vista match_list (replanteo 11) que arman un MatchSummary.
 export const MATCH_LIST =
   'id, kind, status, event_id, event_name, stage, phase, grp, round, pos, bye, best_of, map, starts_at, played_at, score1, score2, winner_side, ' +
-  'side1_name, side2_name, team1_id, team1_name, team1_tag, team2_id, team2_name, team2_tag, end_reason, demo_status, parent_match_id, last_round';
+  'side1_name, side2_name, team1_id, team1_name, team1_tag, team2_id, team2_name, team2_tag, end_reason, demo_status, parent_match_id, last_round, ' +
+  'cancel_reason, review, review_max_rounds';
 
 export type MatchRow = StageInfo & {
   id: string; kind: string; status: string; event_id: string | null; event_name: string | null; pos: number | null; bye: boolean;
@@ -14,6 +15,7 @@ export type MatchRow = StageInfo & {
   winner_side: number | null; side1_name: string | null; side2_name: string | null; team1_id: string | null; team1_name: string | null;
   team1_tag: string | null; team2_id: string | null; team2_name: string | null; team2_tag: string | null; end_reason: string | null;
   demo_status: string; parent_match_id: string | null; last_round: number | null;
+  cancel_reason: string | null; review: string | null; review_max_rounds: number | null;
 };
 
 const team = (id: string | null, name: string | null, tag: string | null) => (id ? { id, name: name ?? '', tag } : null);
@@ -35,8 +37,32 @@ export function toSummary(m: MatchRow): z.infer<typeof MatchSummary> {
     starts_at: m.starts_at,
     played_at: m.played_at,
     end_reason: m.end_reason,
+    cancel_reason: m.cancel_reason,
+    review: m.review as 'pending' | 'applied' | 'discarded' | null,
     demo_status: m.demo_status,
     parent_match_id: m.parent_match_id,
+  };
+}
+
+/** Rondas mínimas para aprobar el ELO de un mix interrumpido: 35 % de las del mix, hacia arriba (crash_min_rounds en la base). */
+export const crashMinRounds = (maxRounds: number) => Math.ceil((Math.max(maxRounds, 1) * 35) / 100);
+
+/** Revisión de un mix interrumpido, con lo que el admin necesita para decidir. null si no es un interrumpido. */
+export function mixReview(m: Pick<MatchRow, 'review' | 'review_max_rounds' | 'score1' | 'score2'>): z.infer<typeof MixReview> | null {
+  if (!m.review || m.review_max_rounds === null) return null;
+  const s1 = m.score1 ?? 0;
+  const s2 = m.score2 ?? 0;
+  const played = s1 + s2;
+  const min = crashMinRounds(m.review_max_rounds);
+  const pending = m.review === 'pending';
+  const blocked = !pending ? null : played < min ? `Se jugaron ${played} de ${m.review_max_rounds} rondas: hacen falta ${min} (35 %).` : s1 === s2 ? 'Iban empatados: no hay ganador para el ELO.' : null;
+  return {
+    status: m.review as 'pending' | 'applied' | 'discarded',
+    max_rounds: m.review_max_rounds,
+    rounds_played: played,
+    min_rounds: min,
+    can_apply: pending && blocked === null,
+    blocked_reason: blocked,
   };
 }
 

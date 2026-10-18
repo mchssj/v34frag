@@ -23,7 +23,8 @@ import {
   type PlayerLine,
   type RosterPlayer,
 } from '../schemas/matches';
-import { demoUrl, MATCH_LIST, toSummary, vetoState, type MatchRow } from '../services/matches';
+import { LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
+import { demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side';
 
@@ -128,6 +129,7 @@ export const matches = createRouter()
     let q = c.var.sb.from('match_list').select(MATCH_LIST, { count: 'exact' }).eq('bye', false);
     if (p.kind) q = q.eq('kind', p.kind);
     if (p.status) q = q.eq('status', p.status);
+    if (p.review) q = q.eq('review', p.review);
     if (p.event) q = q.eq('event_id', p.event);
     if (p.team) q = q.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
     if (p.player) q = q.contains('player_ids', [p.player]);
@@ -151,7 +153,7 @@ export const matches = createRouter()
     const user = currentUser(c);
     const series = m.kind !== 'mix';
 
-    const [ev, games, stats, vetos, pool, server, caps] = await Promise.all([
+    const [ev, games, stats, vetos, pool, server, caps, liveGame] = await Promise.all([
       m.event_id ? sb.from('events').select('config').eq('id', m.event_id).maybeSingle().then(must) : Promise.resolve(null),
       series
         ? sb.from('matches').select('id, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
@@ -165,6 +167,10 @@ export const matches = createRouter()
       series && (m.team1_id || m.team2_id)
         ? sb.from('teams').select('id, captain_id, guests').in('id', [m.team1_id, m.team2_id].filter((x): x is string => !!x)).then(mustHave)
         : Promise.resolve([]),
+      // Torneo o PCW: el juego vinculado con !match que se está jugando ahora (mixes en vivo, replanteo 16).
+      series
+        ? sb.from('live_match_list').select(LIVE_LIST).eq('parent_match_id', id).order('updated_at', { ascending: false }).limit(1).maybeSingle().then(must)
+        : Promise.resolve(null),
     ]);
 
     // Planteles: en torneo, los inscritos; en PCW, el roster del bando (con invitados).
@@ -243,6 +249,8 @@ export const matches = createRouter()
       players,
       mvp,
       veto,
+      review_detail: mixReview(m),
+      live: liveGame ? toLiveGame(liveGame as unknown as LiveRow) : null,
       viewer,
     };
     if (await notModified(c, body)) return c.body(null, 304);

@@ -17,6 +17,7 @@ import { auth } from './routes/auth';
 import { claim } from './routes/claim';
 import { elo } from './routes/elo';
 import { events } from './routes/events';
+import { live } from './routes/live';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
 import { pcw } from './routes/pcw';
@@ -72,6 +73,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', adminDemos);
   app.route('/', elo);
   app.route('/', matches);
+  app.route('/', live);
   app.route('/', events);
   app.route('/', pcwPlay);
 
