@@ -362,12 +362,15 @@ Para borrar un mix de prueba, abrilo en la web con la cuenta admin y usá **Borr
 addons/sourcemod/data/csstv/
 ├── queue/    pendientes de envío
 ├── sent/     enviados (respaldo; se pueden borrar)
-└── failed/   rechazados por la web (token inválido o datos inválidos)
+├── failed/   rechazados por la web (token inválido o datos inválidos)
+└── live/     última foto del mix en curso (desde la 2.1.0; no borrar con un mix en curso)
 
 csstv_demos/   demos de SourceTV (en cstrike/, no en addons/)
 ```
 
 Los errores se registran en `addons/sourcemod/logs/errors_*.log` y los eventos normales en `addons/sourcemod/logs/L*.log`.
+
+**Mixes en vivo (2.1.0):** al final de cada ronda el plugin guarda una foto del mix en `live/` y la manda a la web, que la muestra en Mixes. Si el servidor se cae (o se recarga el plugin) con un mix en curso, al volver la foto pasa a `queue/` como mix interrumpido, y en la web un admin decide si da ELO (Admin → Servidores → Mixes interrumpidos). `csstv_live 0` apaga las fotos. Con `csstv_send 0` (script de Python) no se mandan fotos, pero el mix interrumpido sí llega por la cola. Detalle: `docs/bitacora/2026-10-17-mixes-en-vivo/`.
 
 ## Solución de problemas
 
