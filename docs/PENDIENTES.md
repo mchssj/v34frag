@@ -126,6 +126,22 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 ## 2. Investigaciones abiertas
 
+### 2.0 Tirones y sonido en el servidor real (#1)
+
+- **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".
+- **Hallazgos:**
+  - Arranca con `-tickrate 101 +fps_max 101`: `fps_max` igual al tickrate.
+  - En `server.cfg` las tasas mínimas (101) están por encima de las máximas (100).
+  - El servidor está fijado a un solo núcleo.
+  - Ningún plugin bloquea sonidos.
+- **Hecho:** `csstv_perf` (plugin de medición) subido **solo al servidor real** el 2026-10-18. Se carga en el próximo cambio de mapa y escribe `logs/csstv_perf_AAAAMMDD.log`.
+- **Primer mix medido (2026-10-18, 10 jugadores):** la red y el CPU están bien (0 % de pérdida, choke saliente ~0, ningún tick perdido). El 30 % de los ticks sale a destiempo porque el `fps_max` real es **150**: lo fuerza `extreme_host.smx`, el plugin del hosting, en cada mapa. Detalle en la guía de la bitácora.
+- **Siguiente, de a uno y con visto bueno:**
+  1. ~~Datos de al menos un mix~~: hecho.
+  2. `fps_max 600` sin tocar `extreme_host.smx`: `csstv_perf` 1.1.0 lo vuelve a 600 cada vez que alguien lo cambia. **Subida al servidor real el 2026-10-18** (la 1.0.0 en `plugins/disabled/`); carga en el próximo cambio de mapa. Falta medir otro mix y comparar.
+  3. Tasas coherentes (66/101).
+- **Bitácora:** [`2026-10-18-diagnostico-red-servidor`](bitacora/2026-10-18-diagnostico-red-servidor/)
+
 ### 2.1 Crashes del servidor real
 
 El servidor real se cae seguido (unas 12 veces entre el 12 y el 14 de octubre). Los momentos no tienen relación entre sí: con `bot_add`, con el servidor vacío, a mitad de un mix y en bucle al arrancar. El crash del 14/10 a las 16:41 coincidió con el inicio de una pausa (`!pause`), pero lo más probable es que sea casualidad. No quedó ningún rastro de dónde muere.

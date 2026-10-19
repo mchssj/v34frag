@@ -42,7 +42,7 @@ Las demás (`bintools`, `sdktools`, `sdkhooks`, `game.cstrike`, `clientprefs`, `
 | `kigen-ac_redux_legacy.smx` | 58708 | `a3cca8652b395b286ba7f240285184c0` | 2026-10-12 | Anticheat KACR. Log en `logs/KACR.log` (baneos por spam de conexión, cvars corruptas) |
 | `SendFileExploitFixV3.3.smx` | 5614 | `874a71caffc7e4db2bf67d6bc5c8e532` | 2026-10-14 16:52 | "Antiflood" de mecha: bloquea el exploit de `SendFile`/`ReceiveFile`. Compilado para CS:GO (2021); carga sin errores en v34 |
 | `extremehost.smx` | 4057 | `3fee63e72f6fea47cd639be2d63b585e` | Hosting (2023) | Cambia la descripción del juego con un timer: imprime "Timer Executed" en la consola |
-| `extreme_host.smx` | 3687 | `db86bca074beeb2ff3416bc90b9d57a0` | Hosting (2023) | Del hosting, con un timer que ejecuta comandos |
+| `extreme_host.smx` | 3687 | `db86bca074beeb2ff3416bc90b9d57a0` | Hosting (2023) | Del hosting: en cada mapa, con un timer, ejecuta `sm_rcon fps_max 150` (visto el 2026-10-18 con `csstv_perf`) |
 
 Los demás plugins de la carpeta son los de SourceMod 1.10 (`admin-flatfile`, `adminmenu`, `basecommands`, `antiflood` de chat, etc.). En `plugins/disabled/` están SMAC, `mapchooser`, `rockthevote`, `nominations` y las versiones anteriores de `csstv_reporter`.
 
