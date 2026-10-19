@@ -39,10 +39,41 @@ Log `csstv_perf_20261018.log` bajado del servidor real (solo lectura). 77 ventan
 
 **Conclusión:** la red y el CPU están bien. Lo que se ve raro son los ticks irregulares por `fps_max 150` (forzado por el hosting), que hacen que los jugadores "salten" y que el sonido llegue a destiempo. Subir `fps_max` en `server.cfg` no alcanza: el plugin del hosting lo vuelve a poner en 150 en cada mapa.
 
+## Resultado con `fps_max 600` (2026-10-19, dos mixes de 10 jugadores)
+
+Mixes: de_season (01:44 a 02:07, 11-3) y de_mirage_rc1 (02:20 a 02:47, 16-4).
+
+**`fps_max` quedó en 600** en los tres cambios de mapa. El plugin del hosting lo vuelve a 150 unos 15 s después de cargar el mapa y `csstv_perf` lo sube en el mismo segundo (`fps_max 150 → 600 (150)` en el log).
+
+**Corrección del análisis del primer mix.** El reloj que usa el plugin (`GetEngineTime`) en este servidor solo avanza de a **7,8 ms (1/128 s)**: los "peor tick" son siempre 15,6, 23,4, 31,2, 39,0, 46,8 o 54,6 ms. Con ticks de 9,9 ms, un reloj así mide saltos de 7,8 y 15,6 ms que en promedio dan 9,9, y alrededor del 27 % cae en 15,6. Por eso el "30 % de ticks a destiempo" **no era real**: es el redondeo del reloj. El dato que sirve es el de **más de 2 intervalos** (medido ≥ 23,4 ms, es decir, un tick que de verdad llegó tarde).
+
+| Mix | `fps_max` | Ticks más de 2 intervalos tarde | Más de 5 | Peor tick |
+|---|---|---|---|---|
+| de_inferno, 2026-10-18 | 150 | **0,75 %** | 1 | 54,6 ms |
+| de_season, 2026-10-19 | 600 | **0,12 %** | 0 | 46,8 ms |
+| de_mirage_rc1, 2026-10-19 | 600 | **0,12 %** | 0 | 46,8 ms |
+
+**Lectura:**
+- Con `fps_max 600`, los ticks que de verdad llegan tarde bajaron **6 veces**.
+- El servidor no pierde ticks: 99,97 % en los tres mixes.
+- No manda menos de lo que debe: choke saliente casi 0 en todos.
+
+**Lo que queda es de algunos jugadores, no del servidor:**
+
+| Jugador | Qué se ve | Qué significa |
+|---|---|---|
+| jordipolla | Choke entrante entre 24 y 55 % **todo el mix** (rate 80000, cmd 100, ping 26) | Su PC no alcanza a mandar los 100 paquetes por segundo que pide su `cl_cmdrate`: casi seguro, menos de 100 FPS. Para los demás se mueve a saltos |
+| honzzq | Choke entrante ~11 % constante, ping 70 a 98, `rate 30000` (el servidor lo sube a 80000) | Conexión más lenta; también puede ser FPS |
+| Lukas | En de_season, de golpe ping de 345 ms y 47 % de pérdida (01:57 a 02:06), después normal | Un corte de su conexión durante el mix |
+| always, kyan, juanma y otros | Un pico suelto de 80 % de choke entrante en una sola ventana | Un momento puntual del cliente (alt-tab, carga). No es un patrón |
+
+Las quejas de "aparecen y desaparecen" pueden venir de **un** jugador con mala conexión o pocos FPS: los demás lo ven saltar. Conviene pedirle a jordipolla `net_graph 3` y que mire sus FPS.
+
+## Pasos siguientes (de a uno)
 
 1. **Juntar datos de al menos un mix** con la configuración actual, y anotar la hora de las quejas. Pedir capturas de `net_graph 3` a quien se queje.
 2. **`fps_max 600` con `csstv_perf` 1.1.0** (hecha y probada en local el 2026-10-18; **subida al servidor real el 2026-10-18**: 8352 bytes, md5 `6fadc64f…` verificado, con la 1.0.0 en `plugins/disabled/csstv_perf_1.0.0.smx`): Daniel no quiere tocar `extreme_host.smx`, así que en lugar de `server.cfg` el plugin vigila `fps_max` y lo vuelve a 600 cada vez que alguien lo cambia (cvar `csstv_perf_fps_max`, 0 = no tocarlo). Se sube al servidor real y carga en el próximo cambio de mapa. Después, medir otro mix y comparar con el primero (30,4 % de ticks a destiempo). Vigilar el uso de CPU: con más FPS el servidor trabaja más. Se aplica en el próximo cambio de mapa, sin mix en curso. Después, juntar datos otra vez y comparar.
-3. **Tasas coherentes** en `cfg/server.cfg`: `sv_minupdaterate 66`, `sv_maxupdaterate 101`, `sv_mincmdrate 66`, `sv_maxcmdrate 101`. Hoy los mínimos (101) están por encima de los máximos (100).
+3. **Tasas coherentes** en `cfg/server.cfg` (baja prioridad: con choke saliente ~0 en todos, las tasas no son el problema; sirve para dejar el cfg prolijo): `sv_minupdaterate 66`, `sv_maxupdaterate 101`, `sv_mincmdrate 66`, `sv_maxcmdrate 101`. Hoy los mínimos (101) están por encima de los máximos (100).
 
 Cada paso, con el visto bueno de Daniel y respaldo del `server.cfg`.
 

@@ -138,8 +138,8 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Primer mix medido (2026-10-18, 10 jugadores):** la red y el CPU están bien (0 % de pérdida, choke saliente ~0, ningún tick perdido). El 30 % de los ticks sale a destiempo porque el `fps_max` real es **150**: lo fuerza `extreme_host.smx`, el plugin del hosting, en cada mapa. Detalle en la guía de la bitácora.
 - **Siguiente, de a uno y con visto bueno:**
   1. ~~Datos de al menos un mix~~: hecho.
-  2. `fps_max 600` sin tocar `extreme_host.smx`: `csstv_perf` 1.1.0 lo vuelve a 600 cada vez que alguien lo cambia. **Subida al servidor real el 2026-10-18** (la 1.0.0 en `plugins/disabled/`); carga en el próximo cambio de mapa. Falta medir otro mix y comparar.
-  3. Tasas coherentes (66/101).
+  2. ~~`fps_max 600`~~: hecho con `csstv_perf` 1.1.0. Medido el 2026-10-19 en dos mixes: los ticks que llegan tarde de verdad bajaron de 0,75 % a 0,12 %. El "30 % a destiempo" del primer análisis era el redondeo del reloj (7,8 ms), no algo real. Lo que queda son jugadores puntuales (jordipolla con choke entrante de 24 a 55 % todo el mix: sus FPS). Detalle en la guía.
+  3. Tasas coherentes (66/101): baja prioridad, las tasas no muestran problema.
 - **Bitácora:** [`2026-10-18-diagnostico-red-servidor`](bitacora/2026-10-18-diagnostico-red-servidor/)
 
 ### 2.1 Crashes del servidor real
