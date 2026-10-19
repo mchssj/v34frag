@@ -83,11 +83,19 @@ export function parseInfo(buf: Uint8Array): A2sInfo {
 /**
  * Consulta un servidor. Si responde con un desafío (el servidor real lo pide; el local de pruebas no), lo reenvía
  * por el mismo socket. El tiempo máximo es para todo, desafío incluido.
+ *
+ * ping_ms: lo que tardó el último envío (el que trae la información), en milisegundos. Es la latencia desde el
+ * backend hasta el servidor, no el ping de un jugador.
  */
-export function a2sInfo(udp: UdpExchange, host: string, port: number, timeoutMs: number): Promise<A2sInfo> {
+export function a2sInfo(udp: UdpExchange, host: string, port: number, timeoutMs: number): Promise<A2sInfo & { ping_ms: number }> {
   return udp(host, port, timeoutMs, async (s) => {
-    let res = await s.send(infoRequest());
-    if (res.length >= 9 && res[4] === S2C_CHALLENGE) res = await s.send(infoRequest(res.subarray(5, 9)));
-    return parseInfo(res);
+    const timed = async (packet: Uint8Array) => {
+      const t0 = performance.now();
+      const res = await s.send(packet);
+      return { res, ms: performance.now() - t0 };
+    };
+    let r = await timed(infoRequest());
+    if (r.res.length >= 9 && r.res[4] === S2C_CHALLENGE) r = await timed(infoRequest(r.res.subarray(5, 9)));
+    return { ...parseInfo(r.res), ping_ms: Math.round(r.ms) };
   });
 }

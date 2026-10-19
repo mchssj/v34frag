@@ -84,3 +84,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-19 | Mis partidas | `GET /api/v1/me/matches`; sin ficha, lista vacía (no un error) | Daniel (pedido); propuesta aceptada (forma) |
 | 2026-10-19 | Partidas por servidor | Filtro `server` en `GET /api/v1/matches` | Propuesta aceptada |
 | 2026-10-19 | Contrato por módulos | Un archivo por módulo en `docs/frontend/contrato/`, con índice y registro de decisiones aparte | Daniel |
+| 2026-10-19 | Modo de un servidor | Lista fija: `mix`, `competitive`, `public`, `deathmatch`, `retakes`, `practice`; la carga el admin | Daniel |
+| 2026-10-19 | Región de un servidor | Texto libre de 2 a 30 caracteres; la carga el admin | Daniel |
+| 2026-10-19 | Ping de un servidor | `ping_ms` es la latencia desde el backend: el ping del jugador no se puede medir desde el navegador | Propuesta (limitación técnica) |
+| 2026-10-19 | Partidas en vivo en el estado | `live_matches` por servidor y en los totales: mixes con foto en los últimos 10 minutos | Daniel (pedido); propuesta aceptada (forma) |

@@ -220,13 +220,13 @@ isOneToOne: false
                   ]
                 },"game_servers": {
                   Row: {
-                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"name": string,"panel_server_id": string | null,"plugin_version": string | null,"token_hash": string
+                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"mode": string | null,"name": string,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"token_hash": string
                   }
                   Insert: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"name": string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"token_hash": string
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mode"?: string | null,"name": string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"token_hash": string
                   }
                   Update: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"name"?: string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"token_hash"?: string
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mode"?: string | null,"name"?: string,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"token_hash"?: string
                   }
                   Relationships: [
                     
@@ -1351,13 +1351,13 @@ isOneToOne: false
                   ]
                 },"admin_server_list": {
                   Row: {
-                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"search": string | null
+                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"mode": string | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"search": string | null
                   }
                   Insert: {
-                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"search"?: never
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never
                          }
                         Update: {
-                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"search"?: never
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never
                          }
                         Relationships: [
                     
@@ -1631,13 +1631,13 @@ isOneToOne: false
                   ]
                 },"game_servers_public": {
                   Row: {
-                    "connect_address": string | null,"id": string | null,"name": string | null
+                    "connect_address": string | null,"id": string | null,"mode": string | null,"name": string | null,"region": string | null
                   }
                   Insert: {
-                           "connect_address"?: string | null,"id"?: string | null,"name"?: string | null
+                           "connect_address"?: string | null,"id"?: string | null,"mode"?: string | null,"name"?: string | null,"region"?: string | null
                          }
                         Update: {
-                           "connect_address"?: string | null,"id"?: string | null,"name"?: string | null
+                           "connect_address"?: string | null,"id"?: string | null,"mode"?: string | null,"name"?: string | null,"region"?: string | null
                          }
                         Relationships: [
                     
@@ -2250,7 +2250,7 @@ isOneToOne: false
             }[]
                            },
 "admin_create_server":
-{ Args: { "p_allowed_ip"?: string,"p_connect_address"?: string,"p_license_expires_at"?: string,"p_name": string,"p_panel_server_id"?: string }; Returns: {
+{ Args: { "p_allowed_ip"?: string,"p_connect_address"?: string,"p_license_expires_at"?: string,"p_mode"?: string,"p_name": string,"p_panel_server_id"?: string,"p_region"?: string }; Returns: {
               "id": string,"token": string
             }[]
                            },

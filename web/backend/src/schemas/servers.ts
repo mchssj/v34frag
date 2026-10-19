@@ -23,11 +23,20 @@ const PanelId = z
 const Ip = z.string().trim().pipe(z.union([z.ipv4(), z.ipv6()], { error: 'No es una IP válida (sin máscara)' }));
 const Expires = z.iso.datetime({ offset: true });
 
+/** Modos de juego (replanteo 20). El frontend los traduce. */
+export const SERVER_MODES = ['mix', 'competitive', 'public', 'deathmatch', 'retakes', 'practice'] as const;
+export const ServerMode = z.enum(SERVER_MODES).openapi({
+  description: '`mix`, `competitive` (torneos y PCW), `public`, `deathmatch`, `retakes` o `practice`',
+});
+const Region = z.string().trim().min(2, 'Entre 2 y 30 caracteres').max(30, 'Entre 2 y 30 caracteres');
+
 const fields = {
   connect_address: nullable(Address, 'Dirección para el botón "Conectar" (`host:puerto`)'),
   panel_server_id: nullable(PanelId, 'Id del servidor en el panel de Pterodactyl (lo usa el Worker de demos)'),
   license_expires_at: nullable(Expires, 'Vencimiento de la licencia (ISO 8601). Sin valor, no vence'),
   allowed_ip: nullable(Ip, 'Única IP desde la que se acepta el token. Sin valor, cualquiera'),
+  mode: nullable(ServerMode, 'Modo de juego'),
+  region: nullable(Region, 'Región para mostrar en la web, texto libre (por ejemplo "Argentina")'),
 };
 
 export const ServerCreate = z
@@ -61,6 +70,8 @@ export const AdminServer = z
     plugin_version: z.string().nullable(),
     connect_address: z.string().nullable(),
     panel_server_id: z.string().nullable(),
+    mode: ServerMode.nullable(),
+    region: z.string().nullable(),
     matches: z.number().int().openapi({ description: 'Partidas jugadas o asignadas en el servidor' }),
     last_match_at: z.string().nullable(),
     created_at: z.string(),
@@ -80,10 +91,11 @@ export const AdminServerQuery = listQuery(['name', 'created_at', 'last_seen_at',
   sort: 'name',
   order: 'asc',
 }).extend({
-  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la dirección, las IPs y la versión del plugin' }),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la dirección, las IPs, la versión del plugin y la región' }),
   active: boolParam('Activos o revocados'),
   license: z.enum(LICENSE_STATES).optional().openapi({ description: 'Estado de la licencia' }),
   online: boolParam('En línea (validó la licencia en los últimos 35 minutos)'),
   has_panel: boolParam('Con id del panel cargado'),
+  mode: ServerMode.optional(),
 });
 export const AdminServerList = Envelope(AdminServer).openapi('AdminServerList');

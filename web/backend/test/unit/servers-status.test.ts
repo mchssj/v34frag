@@ -65,7 +65,13 @@ describe('A2S', () => {
       issued.set(socket, 7);
       return Uint8Array.from([0xff, 0xff, 0xff, 0xff, 0x41, 7, 0, 0, 0]);
     });
-    expect((await a2sInfo(udp, 'h', 1, 1000)).map).toBe('de_dust2');
+    // performance.now: el primer envío tarda 5 ms y el segundo 12; ping_ms es solo el del segundo.
+    const now = [0, 5, 100, 112];
+    vi.spyOn(performance, 'now').mockImplementation(() => now.shift()!);
+    const info = await a2sInfo(udp, 'h', 1, 1000);
+    vi.mocked(performance.now).mockRestore();
+    expect(info.map).toBe('de_dust2');
+    expect(info.ping_ms).toBe(12);
     expect(calls.map((c) => c.socket)).toEqual([1, 1]);
     expect(calls[0]!.packet).toEqual(infoRequest());
     expect(Array.from(calls[1]!.packet.slice(-4))).toEqual([7, 0, 0, 0]);
@@ -81,11 +87,16 @@ describe('A2S', () => {
   });
 });
 
-/** Supabase simulado: solo game_servers_public. */
-function db(rows: { id: string; name: string; connect_address: string | null }[]) {
+type ServerRow = { id: string; name: string; connect_address: string | null; mode?: string | null; region?: string | null };
+/** Supabase simulado: game_servers_public y los server_id de live_match_list (ya filtrados por stale = false). */
+function db(rows: ServerRow[], live: { server_id: string }[] = []) {
   const fetch = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input instanceof Request ? input.url : input);
-    if (url.includes('/rest/v1/game_servers_public')) return Response.json(rows);
+    if (url.includes('/rest/v1/game_servers_public')) return Response.json(rows.map((r) => ({ mode: null, region: null, ...r })));
+    if (url.includes('/rest/v1/live_match_list')) {
+      if (!url.includes('stale=eq.false')) return new Response('falta el filtro stale', { status: 599 });
+      return Response.json(live);
+    }
     return new Response('no simulado: ' + url, { status: 599 });
   });
   vi.stubGlobal('fetch', fetch);
@@ -94,8 +105,8 @@ function db(rows: { id: string; name: string; connect_address: string | null }[]
 const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
 const C = '33333333-3333-4333-8333-333333333333';
-const ROWS = [
-  { id: A, name: 'v34frag #1', connect_address: '10.0.0.1:27062' },
+const ROWS: ServerRow[] = [
+  { id: A, name: 'v34frag #1', connect_address: '10.0.0.1:27062', mode: 'mix', region: 'Argentina' },
   { id: B, name: 'RBK', connect_address: '10.0.0.2:27015' },
   { id: C, name: 'Sin dirección', connect_address: null },
 ];
@@ -111,17 +122,22 @@ describe('GET /api/v1/servers/status', () => {
     app.request('/api/v1/servers/status', { headers }, testEnv());
 
   it('estado de cada servidor y totales; uno que no responde no frena a los demás', async () => {
-    db(ROWS);
+    // Dos mixes en vivo en #1, uno en RBK y uno de un servidor que ya no está en la lista (no cuenta).
+    db(ROWS, [{ server_id: A }, { server_id: A }, { server_id: B }, { server_id: '44444444-4444-4444-8444-444444444444' }]);
     const { udp, calls } = servers();
     const res = await get(createApp({ udp }));
     expect(res.status).toBe(200);
     const body = await json(res);
+    expect(body.servers[0].ping_ms).toEqual(expect.any(Number));
     expect(body.servers).toEqual([
-      { id: A, name: 'v34frag #1', address: '10.0.0.1:27062', online: true, map: 'de_dust2', players: 10, max_players: 12, bots: 1 },
-      { id: B, name: 'RBK', address: '10.0.0.2:27015', online: false, map: null, players: null, max_players: null, bots: null },
-      { id: C, name: 'Sin dirección', address: null, online: false, map: null, players: null, max_players: null, bots: null },
+      { id: A, name: 'v34frag #1', address: '10.0.0.1:27062', mode: 'mix', region: 'Argentina', online: true, ping_ms: body.servers[0].ping_ms,
+        map: 'de_dust2', players: 10, max_players: 12, bots: 1, live_matches: 2 },
+      { id: B, name: 'RBK', address: '10.0.0.2:27015', mode: null, region: null, online: false, ping_ms: null,
+        map: null, players: null, max_players: null, bots: null, live_matches: 1 },
+      { id: C, name: 'Sin dirección', address: null, mode: null, region: null, online: false, ping_ms: null,
+        map: null, players: null, max_players: null, bots: null, live_matches: 0 },
     ]);
-    expect(body.totals).toEqual({ servers: 3, online: 1, players: 10 });
+    expect(body.totals).toEqual({ servers: 3, online: 1, players: 10, live_matches: 3 });
     expect(calls).toHaveLength(2); // al de sin dirección no se le pregunta
   });
 

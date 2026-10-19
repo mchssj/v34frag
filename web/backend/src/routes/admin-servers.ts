@@ -8,14 +8,14 @@ import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { IdParam } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
-import { AdminServer, AdminServerList, AdminServerQuery, ServerCreate, ServerPatch, ServerToken } from '../schemas/servers';
+import { AdminServer, AdminServerList, AdminServerQuery, type SERVER_MODES, ServerCreate, ServerPatch, ServerToken } from '../schemas/servers';
 
-// Admin de servidores de juego: alta, token, licencia, IP permitida, revocar, borrar, dirección e id del panel
-// (plan docs/bitacora/2026-10-16-api-admin-servidores). Todo con el token del admin: manda la RLS.
+// Admin de servidores de juego: alta, token, licencia, IP permitida, revocar, borrar, dirección, id del panel, modo y
+// región (planes docs/bitacora/2026-10-16-api-admin-servidores y 2026-10-19-api-servidores-ping-modo-region). Todo con el token del admin: manda la RLS.
 
 type C = Context<AppEnv>;
 const COLUMNS =
-  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, matches, last_match_at, created_at';
+  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, matches, last_match_at, created_at';
 
 /** Nombre corto para `server/build_licenciado.sh`: minúsculas, sin tildes, letras, números y guiones. */
 export function shortName(name: string): string {
@@ -80,7 +80,7 @@ const create = createRoute({
 const patch = createRoute({
   method: 'patch', path: '/api/v1/admin/servers/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Editar un servidor',
-  description: 'Nombre, dirección, id del panel, vencimiento, IP permitida, o revocar (`active: false`) y reactivar. Devuelve el servidor.',
+  description: 'Nombre, dirección, id del panel, vencimiento, IP permitida, modo, región, o revocar (`active: false`) y reactivar. Devuelve el servidor.',
   request: { params: IdParam, body: { required: true, ...json(ServerPatch) } },
   responses: { 200: { description: 'Servidor', ...json(AdminServer) }, ...errorResponses(400, 401, 403, 404, 409) },
 });
@@ -108,6 +108,7 @@ export const adminServers = createRouter()
     if (p.license) q = q.eq('license_state', p.license);
     if (p.online !== undefined) q = q.eq('online', p.online);
     if (p.has_panel !== undefined) q = q.eq('has_panel', p.has_panel);
+    if (p.mode) q = q.eq('mode', p.mode);
     type Row = Awaited<ReturnType<typeof getServer>>;
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
     return c.json(envelope(rows.map(toServer), total, p), 200);
@@ -123,6 +124,8 @@ export const adminServers = createRouter()
         p_panel_server_id: b.panel_server_id ?? undefined,
         p_license_expires_at: b.license_expires_at ?? undefined,
         p_allowed_ip: b.allowed_ip ?? undefined,
+        p_mode: b.mode ?? undefined,
+        p_region: b.region ?? undefined,
       }),
     )[0];
     if (!row) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió el servidor.');
@@ -164,6 +167,8 @@ function toServer(s: ServerRow) {
     plugin_version: s.plugin_version ?? null,
     connect_address: s.connect_address ?? null,
     panel_server_id: s.panel_server_id ?? null,
+    mode: (s.mode ?? null) as (typeof SERVER_MODES)[number] | null,
+    region: s.region ?? null,
     matches: s.matches ?? 0,
     last_match_at: s.last_match_at ?? null,
     created_at: s.created_at ?? '',

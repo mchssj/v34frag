@@ -57,7 +57,9 @@ describe('admin de servidores', () => {
   });
 
   it('crea un servidor, su token valida la licencia y aparece en línea', async () => {
-    const t = await createServer({ name: `Señor Server ${sfx}`, connect_address: '1.2.3.4:27015', panel_server_id: 'abcd1234' });
+    const t = await createServer({
+      name: `Señor Server ${sfx}`, connect_address: '1.2.3.4:27015', panel_server_id: 'abcd1234', mode: 'mix', region: ' Argentina ',
+    });
     expect(t.token).toMatch(/^csstv_[0-9a-f]{64}$/);
     expect(t.cfg).toContain(`csstv_server_token "${t.token}"`);
     expect(t.cfg).toContain(`csstv_api_url "${env.SUPABASE_URL}/rest/v1/rpc/ingest_server_chunk"`);
@@ -69,7 +71,7 @@ describe('admin de servidores', () => {
     const s = await res.json();
     expect(s).toMatchObject({
       name: `Señor Server ${sfx}`, active: true, license_state: 'ok', online: true, plugin_version: '2.0.0',
-      connect_address: '1.2.3.4:27015', panel_server_id: 'abcd1234', matches: 0,
+      connect_address: '1.2.3.4:27015', panel_server_id: 'abcd1234', mode: 'mix', region: 'Argentina', matches: 0,
     });
     expect(s).not.toHaveProperty('token_hash');
   });
@@ -87,6 +89,9 @@ describe('admin de servidores', () => {
       { name: `Dir ${sfx}`, connect_address: '1.2.3.4' },
       { name: `Panel ${sfx}`, panel_server_id: 'a/b' },
       { name: `Vence ${sfx}`, license_expires_at: 'mañana' },
+      { name: `Modo ${sfx}`, mode: 'surf' },
+      { name: `Región ${sfx}`, region: 'A' },
+      { name: `Región ${sfx}`, region: 'x'.repeat(31) },
     ]) {
       const res = await call('POST', '/api/v1/admin/servers', body);
       expect(res.status, JSON.stringify(body)).toBe(400);
@@ -104,6 +109,10 @@ describe('admin de servidores', () => {
     expect(await license(t.token)).toMatchObject({ ok: false, reason: 'ip' });
     res = await call('PATCH', `/api/v1/admin/servers/${t.id}`, { allowed_ip: '', license_expires_at: null });
     expect(await res.json()).toMatchObject({ allowed_ip: null, license_expires_at: null, license_state: 'ok' });
+    res = await call('PATCH', `/api/v1/admin/servers/${t.id}`, { mode: 'retakes', region: 'Chile' });
+    expect(await res.json()).toMatchObject({ mode: 'retakes', region: 'Chile' });
+    res = await call('PATCH', `/api/v1/admin/servers/${t.id}`, { mode: null, region: '' });
+    expect(await res.json()).toMatchObject({ mode: null, region: null });
 
     res = await call('PATCH', `/api/v1/admin/servers/${t.id}`, { name: `otro ${sfx}` });
     expect(res.status).toBe(409);
@@ -128,7 +137,7 @@ describe('admin de servidores', () => {
 
   it('lista con filtros y orden', async () => {
     const vencido = await createServer({ name: `Lista${sfx} A`, license_expires_at: new Date(Date.now() - 86_400_000).toISOString() });
-    await createServer({ name: `Lista${sfx} B`, panel_server_id: 'panel-0001' });
+    await createServer({ name: `Lista${sfx} B`, panel_server_id: 'panel-0001', mode: 'deathmatch', region: `Región${sfx}` });
 
     let body = await (await call('GET', `/api/v1/admin/servers?q=lista${sfx}&sort=name&order=desc`)).json();
     expect(body).toMatchObject({ total: 2, sort: 'name', order: 'desc' });
@@ -138,6 +147,11 @@ describe('admin de servidores', () => {
     expect(body.items.map((s: { id: string }) => s.id)).toEqual([vencido.id]);
     body = await (await call('GET', `/api/v1/admin/servers?q=lista${sfx}&has_panel=true`)).json();
     expect(body.items.map((s: { name: string }) => s.name)).toEqual([`Lista${sfx} B`]);
+    body = await (await call('GET', `/api/v1/admin/servers?q=lista${sfx}&mode=deathmatch`)).json();
+    expect(body.items.map((s: { name: string }) => s.name)).toEqual([`Lista${sfx} B`]);
+    body = await (await call('GET', `/api/v1/admin/servers?q=region${sfx}`)).json();
+    expect(body.items.map((s: { name: string }) => s.name)).toEqual([`Lista${sfx} B`]);
+    expect((await call('GET', '/api/v1/admin/servers?mode=surf')).status).toBe(400);
     body = await (await call('GET', `/api/v1/admin/servers?q=lista${sfx}&online=true`)).json();
     expect(body.total).toBe(0);
     body = await (await call('GET', `/api/v1/admin/servers?q=lista${sfx}&active=true&per=1&page=2&sort=created_at`)).json();
@@ -176,7 +190,7 @@ describe('estado de los servidores', () => {
   it('lista los activos con licencia vigente de la base, con lo que respondió cada uno', async () => {
     const { A2sError } = await import('../../src/lib/a2s');
     const name = `Estado ${Math.random().toString(36).slice(2, 8)}`;
-    const id = (await admin().from('game_servers').insert({ name, token_hash: `h-${name}`, connect_address: '10.9.9.9:27062' }).select('id').single()).data!.id as string;
+    const id = (await admin().from('game_servers').insert({ name, token_hash: `h-${name}`, connect_address: '10.9.9.9:27062', mode: 'public', region: 'Argentina' }).select('id').single()).data!.id as string;
     const off = (await admin().from('game_servers').insert({ name: `${name} revocado`, token_hash: `h2-${name}`, connect_address: '10.9.9.8:27062', active: false }).select('id').single()).data!.id as string;
     created.push(id, off);
     const fake = Buffer.from('ffffffff49074e00646500637300435300f00005140000', 'hex');
@@ -191,8 +205,9 @@ describe('estado de los servidores', () => {
     });
     const res = await app.request('/api/v1/servers/status', {}, localEnv());
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { servers: { id: string; name: string; online: boolean; players: number | null }[] };
-    expect(body.servers.find((s) => s.id === id)).toMatchObject({ name, online: true, players: 5 });
+    const body = (await res.json()) as { servers: { id: string; name: string; online: boolean; players: number | null }[]; totals: { live_matches: number } };
+    expect(body.servers.find((s) => s.id === id)).toMatchObject({ name, mode: 'public', region: 'Argentina', online: true, players: 5, live_matches: 0 });
+    expect(body.totals.live_matches).toEqual(expect.any(Number));
     expect(body.servers.some((s) => s.name === `${name} revocado`)).toBe(false);
   });
 });

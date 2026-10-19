@@ -98,23 +98,29 @@ El servidor manda una foto del mix al final de cada ronda. Si el servidor se cae
 
 ## 8e. Estado de los servidores (disponible desde el 2026-10-19)
 
-`GET /api/v1/servers/status`, **público** (sin sesión). Para la portada o un widget: cuántos servidores hay prendidos y cuántos jugadores tiene cada uno.
+`GET /api/v1/servers/status`, **público** (sin sesión). Para la portada o un widget: cuántos servidores hay prendidos, cuántos jugadores y mixes en vivo tiene cada uno, su modo, su región y su latencia.
 
 ```json
 {
   "servers": [
-    { "id": "…", "name": "v34frag #1", "address": "ip:27062", "online": true,
-      "map": "de_inferno", "players": 10, "max_players": 12, "bots": 1 }
+    { "id": "…", "name": "v34frag #1", "address": "ip:27062", "mode": "mix", "region": "Argentina",
+      "online": true, "ping_ms": 18, "map": "de_inferno", "players": 10, "max_players": 12, "bots": 1, "live_matches": 1 }
   ],
-  "totals": { "servers": 2, "online": 2, "players": 14 },
+  "totals": { "servers": 2, "online": 2, "players": 14, "live_matches": 1 },
   "checked_at": "2026-10-19T03:10:00Z"
 }
 ```
 
+- **Línea de totales** ("N partidas en vivo · N jugadores en el servidor"): `totals.live_matches` y `totals.players`.
+- **`live_matches`:** mixes en vivo con foto en los últimos 10 minutos, los mismos que `GET /api/v1/mixes/live` muestra en curso (sección 8d). El total suma los de los servidores de la lista.
+- **`mode`:** `mix`, `competitive` (torneos y PCW), `public`, `deathmatch`, `retakes` o `practice`. El frontend los traduce ("Mix", "Competitivo", "Público", "Deathmatch", "Retakes", "Práctica"). `null` si el admin no lo cargó: no mostrarlo.
+- **`region`:** texto libre que carga el admin (por ejemplo "Argentina"). Se muestra tal cual. `null` si no está cargada.
+- **`ping_ms`:** **no es el ping del jugador** (el navegador no puede medirlo: el juego usa UDP). Es la latencia de la consulta desde el backend hasta el servidor, en milisegundos. Sirve como indicador de que responde bien; si se muestra, que diga "latencia" o lleve un tooltip que lo aclare. `null` si no respondió.
+
 - **Qué servidores:** los activos con licencia vigente.
 - **Cómo lo sabe:** el backend le pregunta a cada uno con la consulta del navegador de servidores del juego (A2S).
 - **`players`:** jugadores conectados, **sin bots ni SourceTV**.
-- **Servidor que no responde en 1,5 s:** `online: false` y `map`, `players`, `max_players` y `bots` en `null`. Mostrarlo como "Apagado" o "Sin respuesta".
+- **Servidor que no responde en 1,5 s:** `online: false` y `ping_ms`, `map`, `players`, `max_players` y `bots` en `null` (`mode`, `region` y `live_matches` vienen igual). Mostrarlo como "Apagado" o "Sin respuesta".
 - **Refresco:** la respuesta se guarda 20 s en el backend, así que no sirve consultar más seguido. Con `If-None-Match` responde `304` si no cambió.
 - **`address`:** para el botón "Conectar" (`steam://connect/<address>`).
 - **Filtro por servidor:** `GET /api/v1/matches?server=<id>` lista las partidas jugadas en ese servidor (el `id` sale de acá).
