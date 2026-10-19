@@ -88,3 +88,6 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-19 | Región de un servidor | Texto libre de 2 a 30 caracteres; la carga el admin | Daniel |
 | 2026-10-19 | Ping de un servidor | `ping_ms` es la latencia desde el backend: el ping del jugador no se puede medir desde el navegador | Propuesta (limitación técnica) |
 | 2026-10-19 | Partidas en vivo en el estado | `live_matches` por servidor y en los totales: mixes con foto en los últimos 10 minutos | Daniel (pedido); propuesta aceptada (forma) |
+| 2026-10-19 | Desvincular un SteamID | Lo pide el jugador desde Mi perfil y lo aprueba un admin (misma bandeja que los adicionales). No se puede pedir para el único SteamID de la ficha | Daniel (pedido); propuesta aceptada (el único SteamID) |
+| 2026-10-19 | SteamID principal | Lo elige el jugador sin aprobación, una vez cada 24 horas; el admin, sin límite. Cambiarlo no recalcula el ELO | Daniel (pedido); propuesta (límite) |
+| 2026-10-19 | Fecha de cada SteamID | Mi perfil muestra cuándo se vinculó cada SteamID (`added_at`); la fecha es del SteamID y no cambia al hacerlo principal. `null` si se vinculó antes de que se guardara | Daniel |

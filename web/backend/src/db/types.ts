@@ -772,13 +772,13 @@ isOneToOne: false
                   ]
                 },"player_extra_steam_ids": {
                   Row: {
-                    "added_at": string,"added_by": string | null,"player_id": string,"steam_id": string
+                    "added_at": string | null,"added_by": string | null,"player_id": string,"steam_id": string
                   }
                   Insert: {
-                    "added_at"?: string,"added_by"?: string | null,"player_id": string,"steam_id": string
+                    "added_at"?: string | null,"added_by"?: string | null,"player_id": string,"steam_id": string
                   }
                   Update: {
-                    "added_at"?: string,"added_by"?: string | null,"player_id"?: string,"steam_id"?: string
+                    "added_at"?: string | null,"added_by"?: string | null,"player_id"?: string,"steam_id"?: string
                   }
                   Relationships: [
                     {
@@ -834,13 +834,13 @@ isOneToOne: false
                   ]
                 },"players": {
                   Row: {
-                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"privacy": string,"steam_id": string | null,"team_history": string | null,"user_id": string | null
+                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"primary_steam_changed_at": string | null,"privacy": string,"steam_added_at": string | null,"steam_id": string | null,"team_history": string | null,"user_id": string | null
                   }
                   Insert: {
-                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"privacy"?: string,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
                   }
                   Update: {
-                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"privacy"?: string,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -886,13 +886,13 @@ isOneToOne: false
                   ]
                 },"steam_requests": {
                   Row: {
-                    "created_at": string,"id": number,"nick": string | null,"player_id": string,"reason": string | null,"resolved_at": string | null,"resolved_by": string | null,"server_id": string | null,"status": string,"steam_id": string,"user_id": string | null
+                    "created_at": string,"id": number,"kind": string,"nick": string | null,"note": string | null,"player_id": string,"reason": string | null,"resolved_at": string | null,"resolved_by": string | null,"server_id": string | null,"status": string,"steam_id": string,"user_id": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"id"?: never,"nick"?: string | null,"player_id": string,"reason"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"server_id"?: string | null,"status"?: string,"steam_id": string,"user_id"?: string | null
+                    "created_at"?: string,"id"?: never,"kind"?: string,"nick"?: string | null,"note"?: string | null,"player_id": string,"reason"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"server_id"?: string | null,"status"?: string,"steam_id": string,"user_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"id"?: never,"nick"?: string | null,"player_id"?: string,"reason"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"server_id"?: string | null,"status"?: string,"steam_id"?: string,"user_id"?: string | null
+                    "created_at"?: string,"id"?: never,"kind"?: string,"nick"?: string | null,"note"?: string | null,"player_id"?: string,"reason"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"server_id"?: string | null,"status"?: string,"steam_id"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1364,7 +1364,7 @@ isOneToOne: false
                   ]
                 },"admin_steam_requests": {
                   Row: {
-                    "alias": string | null,"created_at": string | null,"id": number | null,"matches": number | null,"nick": string | null,"player_id": string | null,"player_nick": string | null,"player_steam_count": number | null,"reason": string | null,"resolved_at": string | null,"search": string | null,"server_id": string | null,"server_name": string | null,"shares_match": boolean | null,"status": string | null,"status_order": number | null,"steam_id": string | null,"user_id": string | null
+                    "alias": string | null,"created_at": string | null,"id": number | null,"kind": string | null,"matches": number | null,"nick": string | null,"note": string | null,"player_id": string | null,"player_nick": string | null,"player_steam_count": number | null,"reason": string | null,"resolved_at": string | null,"search": string | null,"server_id": string | null,"server_name": string | null,"shares_match": boolean | null,"status": string | null,"status_order": number | null,"steam_id": string | null,"user_id": string | null
                   }
                   Relationships: [
                     {
@@ -2560,6 +2560,9 @@ isOneToOne: false
 "reject_team_request":
 { Args: { "p_user": string }; Returns: undefined
                            },
+"request_steam_unlink":
+{ Args: { "p_note"?: string,"p_steam": string }; Returns: number
+                           },
 "rotate_demo_worker_token":
 { Args: { "p_worker": string }; Returns: string
                            },
@@ -2574,6 +2577,9 @@ isOneToOne: false
                            },
 "set_my_preferences":
 { Args: { "p_changes": Json }; Returns: Json
+                           },
+"set_my_primary_steam":
+{ Args: { "p_steam": string }; Returns: undefined
                            },
 "set_my_tag":
 { Args: { "p_tag": string }; Returns: undefined
@@ -2604,6 +2610,9 @@ isOneToOne: false
                            },
 "steam_history_to":
 { Args: { "p_player": string,"p_steam": string }; Returns: undefined
+                           },
+"steam_make_primary":
+{ Args: { "p_by": string,"p_steam": string }; Returns: undefined
                            },
 "steam_owner":
 { Args: { "p_steam": string }; Returns: string

@@ -33,8 +33,17 @@
 | Endpoint | Qué hace |
 |---|---|
 | `POST /api/v1/me/claim-code` | Código de 6 caracteres, válido 10 minutos (hasta 5 por hora): `{ code, expires_at, command }`. El anterior sin usar deja de valer |
-| `GET /api/v1/me/claim-code` | `steam_ids` (el principal primero), `max_steam_ids`, `last_code` (`status`: `pending`, `used` o `expired`, y `result`: el mensaje que vio el jugador) y `pending_requests`. Consultarlo cada 5 segundos mientras el código está `pending` |
-| `GET /api/v1/me/steam-requests` | Mis pedidos de SteamID adicional: `pending`, `approved`, `rejected` (con `reason`) o `expired` |
+| `GET /api/v1/me/claim-code` | `steam_ids` (el principal primero; cada uno con `is_primary`, `added_at`: cuándo se vinculó, y `unlink_pending`), `max_steam_ids`, `last_code` (`status`: `pending`, `used` o `expired`, y `result`: el mensaje que vio el jugador) y `pending_requests` (los dos tipos de pedido). Consultarlo cada 5 segundos mientras el código está `pending` |
+| `GET /api/v1/me/steam-requests` | Mis pedidos de SteamID: `kind` (`add`: adicional con `!claim`; `remove`: desvincular), `status` (`pending`, `approved`, `rejected` con `reason`, o `expired`) y `note` (mi motivo, en `remove`). Filtros `status` y `kind` |
+| `POST /api/v1/me/steam/{steamid}/unlink` | **Pedir desvincular** un SteamID de mi ficha. Body opcional `{ reason }` (hasta 200 caracteres; lo ve el admin). `201` con el pedido. Lo aprueba un admin |
+| `POST /api/v1/me/steam/{steamid}/primary` | **Hacer principal** uno de mis SteamID adicionales, sin aprobación. `204`. Una vez cada 24 horas |
+
+**Mis SteamID** (Mi perfil, lista de `steam_ids`):
+- Cada SteamID muestra **cuándo se vinculó** (`added_at`, fecha y hora ISO). La fecha es del SteamID: no cambia al hacerlo principal. Si es `null` (SteamID que vinculó un admin antes de que se guardara la fecha), mostrar "Fecha desconocida".
+- Cada SteamID adicional tiene "Hacer principal" y cada uno, "Desvincular", salvo que sea el único (la ficha no puede quedar sin SteamID: sin él no puede estar en un equipo).
+- **Desvincular** abre una confirmación con un campo opcional "¿Por qué?". Queda **pendiente** hasta que un admin lo apruebe (vence a los 30 días): mostrar "Pedido para desvincular: falta que lo apruebe un admin" en el SteamID con `unlink_pending: true` y ocultar sus botones. Al aprobarlo, las partidas de ese SteamID vuelven a quedar sin ficha (perfil sin reclamar) y el ELO de la ficha se recalcula sin ellas. Si era el principal, el adicional más viejo pasa a serlo.
+- **Hacer principal** no cambia el ELO ni las partidas: solo cuál SteamID se muestra como principal. Si ya lo cambió en las últimas 24 horas, falla (`400`) con "Ya cambiaste tu SteamID principal en las últimas 24 horas…".
+- Errores (`400`, mostrar `error.message`): "Ese SteamID no es de tu ficha", "Ya pediste desvincular ese SteamID…", "Es tu único SteamID: no se puede desvincular", "Ese SteamID tiene un pedido para desvincularlo: no puede ser el principal".
 
 1. El usuario genera el código y la tarjeta muestra el código grande, la cuenta regresiva y "Entrá al servidor y escribí `!claim K7P2QX`".
 2. En el servidor escribe el comando. El servidor responde en el chat.

@@ -105,13 +105,14 @@
 
 | Endpoint | Qué hace |
 |---|---|
-| `GET /api/v1/admin/steam-requests` | Pedidos de SteamID adicional: SteamID, nick que usó, ficha, cuenta, servidor, `matches`, `player_steam_count` y `shares_match` |
-| `POST /api/v1/admin/steam-requests/{id}/approve` | Aprobar: lo suma a la ficha, le pasa el historial y **recalcula el ELO de todos**. Falla (`400`) si comparte partidas con otro SteamID de la ficha (`shares_match: true`: no mostrar el botón) |
+| `GET /api/v1/admin/steam-requests` | Pedidos de SteamID: `kind` (`add`: adicional con `!claim`; `remove`: el jugador pide desvincularlo), SteamID, nick que usó, ficha, cuenta, servidor, `matches`, `player_steam_count`, `shares_match` y `note` (el motivo del jugador, en `remove`). Filtros `status`, `kind` y `q` |
+| `POST /api/v1/admin/steam-requests/{id}/approve` | Aprobar. **`add`:** lo suma a la ficha, le pasa el historial y **recalcula el ELO de todos**; falla (`400`) si comparte partidas con otro SteamID de la ficha (`shares_match: true`: no mostrar el botón). **`remove`:** lo saca de la ficha (como `DELETE /api/v1/admin/steam/{steamid}`); falla si es el único SteamID de la ficha |
 | `POST /api/v1/admin/steam-requests/{id}/reject` | Rechazar. Body `{ reason }` (`reason` opcional; lo ve el jugador) |
 | `GET /api/v1/admin/claims` | Registro de cada `!claim`, aceptado o no, y de los reclamos del sistema viejo |
 | `GET` / `PUT /api/v1/admin/steam/config` | `max_steam_ids`: tope de SteamID por ficha que se pueden pedir con `!claim` (de 1 a 4, por defecto 3) |
-| `DELETE /api/v1/admin/steam/{steamid}` | Quitar un SteamID de su ficha: sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo |
-| `POST /api/v1/admin/steam/{steamid}/primary` | Hacer principal un SteamID adicional |
+| `DELETE /api/v1/admin/steam/{steamid}` | Quitar un SteamID de su ficha: sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si el jugador había pedido desvincularlo, el pedido queda aprobado |
+| `POST /api/v1/admin/steam/{steamid}/primary` | Hacer principal un SteamID adicional (sin el límite de 24 horas del jugador) |
 
-- Aprobar, quitar o cambiar el principal **recalculan el ELO de todos** (pueden mover un poco los cambios de ELO de otros jugadores). Avisarlo en la confirmación.
+- Aprobar o quitar un SteamID de una ficha con varios **recalculan el ELO de todos** (pueden mover un poco los cambios de ELO de otros jugadores). Avisarlo en la confirmación. Cambiar el principal **no** recalcula: el ELO de la ficha queda igual.
+- En la bandeja, un pedido `remove` se muestra como "Quiere desvincular" con su `note`; uno `add`, como "SteamID adicional".
 - Los pedidos pendientes **reservan** el SteamID y vencen a los 30 días.

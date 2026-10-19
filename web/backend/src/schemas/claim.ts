@@ -52,7 +52,16 @@ export const ClaimCode = z
 
 export const MySteamStatus = z
   .object({
-    steam_ids: z.array(z.object({ steam_id: z.string(), is_primary: z.boolean() })).openapi({ description: 'El principal primero' }),
+    steam_ids: z
+      .array(
+        z.object({
+          steam_id: z.string(),
+          is_primary: z.boolean(),
+          added_at: z.string().nullable().openapi({ description: 'Cuándo se vinculó a la ficha. `null`: no se sabe (se vinculó antes de que se guardara la fecha)' }),
+          unlink_pending: z.boolean().openapi({ description: '`true`: pidió desvincularlo y falta que lo apruebe un admin' }),
+        }),
+      )
+      .openapi({ description: 'El principal primero' }),
     max_steam_ids: z.number().int().openapi({ description: 'Tope de SteamID por ficha que se pueden pedir con `!claim`' }),
     last_code: z
       .object({
@@ -64,17 +73,20 @@ export const MySteamStatus = z
         result: z.string().nullable().openapi({ description: 'El mensaje que vio el jugador en el servidor' }),
       })
       .nullable(),
-    pending_requests: z.number().int().openapi({ description: 'Solicitudes de SteamID adicional pendientes' }),
+    pending_requests: z.number().int().openapi({ description: 'Pedidos pendientes (de SteamID adicional y de desvincular)' }),
   })
   .openapi('MySteamStatus');
 
 export const STEAM_REQUEST_STATES = ['pending', 'approved', 'rejected', 'expired'] as const;
+export const STEAM_REQUEST_KINDS = ['add', 'remove'] as const;
 export const MySteamRequest = z
   .object({
     id: z.number().int(),
+    kind: z.enum(STEAM_REQUEST_KINDS).openapi({ description: '`add`: SteamID adicional (con `!claim`); `remove`: desvincularlo de la ficha' }),
     steam_id: z.string(),
     nick: z.string().nullable(),
     status: z.enum(STEAM_REQUEST_STATES),
+    note: z.string().nullable().openapi({ description: 'Motivo que escribió el jugador al pedir desvincularlo' }),
     reason: z.string().nullable().openapi({ description: 'Motivo del rechazo' }),
     created_at: z.string(),
     resolved_at: z.string().nullable(),
@@ -82,7 +94,11 @@ export const MySteamRequest = z
   .openapi('MySteamRequest');
 export const MySteamRequestQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
   status: z.enum(STEAM_REQUEST_STATES).optional(),
+  kind: z.enum(STEAM_REQUEST_KINDS).optional(),
 });
+export const UnlinkBody = z
+  .object({ reason: z.string().trim().max(200).optional().openapi({ description: 'Por qué lo quiere desvincular (lo ve el admin)' }) })
+  .openapi('SteamUnlinkRequest');
 export const MySteamRequestList = Envelope(MySteamRequest).openapi('MySteamRequestList');
 
 // ---------- admin ----------
@@ -93,10 +109,11 @@ export const AdminSteamRequest = MySteamRequest.extend({
   server: z.object({ id: z.uuid(), name: z.string() }).nullable(),
   matches: z.number().int().openapi({ description: 'Partidas jugadas con ese SteamID' }),
   player_steam_count: z.number().int().openapi({ description: 'SteamID que ya tiene la ficha' }),
-  shares_match: z.boolean().openapi({ description: '`true`: jugó una partida junto a otro SteamID de la ficha (no se puede aprobar)' }),
+  shares_match: z.boolean().openapi({ description: '`true`: jugó una partida junto a otro SteamID de la ficha (no se puede aprobar). Siempre `false` en `remove`' }),
 }).openapi('AdminSteamRequest');
 export const AdminSteamRequestQuery = listQuery(['status', 'created_at'], { sort: 'status', order: 'asc' }).extend({
   status: z.enum(STEAM_REQUEST_STATES).optional(),
+  kind: z.enum(STEAM_REQUEST_KINDS).optional(),
   q: z.string().max(60).optional().openapi({ description: 'Busca en el nick, la ficha, el alias y el SteamID' }),
 });
 export const AdminSteamRequestList = Envelope(AdminSteamRequest).openapi('AdminSteamRequestList');

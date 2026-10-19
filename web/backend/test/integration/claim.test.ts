@@ -175,6 +175,75 @@ describe('!claim', () => {
     expect((await call('DELETE', `/api/v1/admin/steam/${steam(5)}`, undefined, u.token)).status).toBe(403);
   });
 
+  it('el jugador elige su principal y pide desvincular (lo aprueba un admin)', async () => {
+    const u = await createUser({ tag: `Cu${seed}` });
+    expect(await claim(steam(3), await newCode(u.token))).toMatchObject({ ok: true, pending: false });
+    const pid = (await call('GET', `/api/v1/players/steam/${steam(3)}`)).body.player_id as string;
+    players.push(pid);
+    expect(await claim(steam(13), await newCode(u.token))).toMatchObject({ ok: true, pending: true });
+    const add = (await call('GET', `/api/v1/me/steam-requests?kind=add&status=pending`, undefined, u.token)).body.items[0];
+    expect(add).toMatchObject({ kind: 'add', steam_id: steam(13), note: null });
+    expect((await call('POST', `/api/v1/admin/steam-requests/${add.id}/approve`, undefined, adminToken)).status).toBe(204);
+
+    // Principal: sin aprobación, una vez cada 24 horas.
+    // Cada SteamID trae cuándo se vinculó, y la conserva al cambiar el principal.
+    const dates = (await call('GET', '/api/v1/me/claim-code', undefined, u.token)).body.steam_ids as { steam_id: string; added_at: string }[];
+    expect(dates.map((s) => s.steam_id)).toEqual([steam(3), steam(13)]);
+    for (const s of dates) expect(Date.now() - new Date(s.added_at).getTime()).toBeLessThan(60_000);
+    const merged = (await call('GET', `/api/v1/players/${pid}`)).body;
+    expect(merged).toMatchObject({ steam_id: steam(3), elo_matches: 2 });
+    expect((await call('POST', `/api/v1/me/steam/${steam(13)}/primary`)).status).toBe(401);
+    expect((await call('POST', `/api/v1/me/steam/${steam(13)}/primary`, undefined, u.token)).status).toBe(204);
+    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({
+      steam_id: steam(13), steam_ids: [steam(13), steam(3)], elo: merged.elo, peak_elo: merged.peak_elo, elo_matches: 2,
+    });
+    // Recalcular todo da lo mismo que pasar la fila a la clave nueva.
+    const r = await admin().rpc('elo_recompute_all');
+    if (r.error) throw r.error;
+    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({ elo: merged.elo, peak_elo: merged.peak_elo, elo_matches: 2 });
+    expect((await call('POST', `/api/v1/me/steam/${steam(13)}/primary`, undefined, u.token)).status).toBe(204);
+    const again = await call('POST', `/api/v1/me/steam/${steam(3)}/primary`, undefined, u.token);
+    expect(again.status).toBe(400);
+    expect(again.body.error.message).toMatch(/^Ya cambiaste tu SteamID principal en las últimas 24 horas/);
+    expect((await call('POST', `/api/v1/me/steam/${steam(1)}/primary`, undefined, u.token)).body.error.message).toBe('Ese SteamID no es de tu ficha');
+
+    // Desvincular: queda pendiente y reserva el SteamID; el único no se puede.
+    const req = await call('POST', `/api/v1/me/steam/${steam(3)}/unlink`, { reason: 'Era la PC de un amigo' }, u.token);
+    expect(req.status).toBe(201);
+    expect(req.body).toMatchObject({ kind: 'remove', steam_id: steam(3), status: 'pending', note: 'Era la PC de un amigo', reason: null });
+    expect((await call('GET', '/api/v1/me/claim-code', undefined, u.token)).body).toMatchObject({
+      steam_ids: [
+        { steam_id: steam(13), is_primary: true, added_at: dates[1]?.added_at, unlink_pending: false },
+        { steam_id: steam(3), is_primary: false, added_at: dates[0]?.added_at, unlink_pending: true },
+      ],
+      pending_requests: 1,
+    });
+    expect((await call('POST', `/api/v1/me/steam/${steam(3)}/unlink`, {}, u.token)).body.error.message).toMatch(/^Ya pediste desvincular ese SteamID/);
+    expect((await call('POST', `/api/v1/me/steam/${steam(13)}/unlink`, undefined, u.token)).body.error.message).toBe('Es tu único SteamID: no se puede desvincular');
+    expect((await call('POST', `/api/v1/me/steam/${steam(1)}/unlink`, undefined, u.token)).body.error.message).toBe('Ese SteamID no es de tu ficha');
+    expect((await call('POST', `/api/v1/me/steam/${steam(3)}/unlink`)).status).toBe(401);
+
+    const list = await call('GET', `/api/v1/admin/steam-requests?kind=remove&q=${seed}`, undefined, adminToken);
+    expect(list.body.items).toEqual([
+      expect.objectContaining({ id: req.body.id, kind: 'remove', note: 'Era la PC de un amigo', shares_match: false, player_steam_count: 2, player: { id: pid, nick: `Cu${seed}` } }),
+    ]);
+    expect((await call('POST', `/api/v1/admin/steam-requests/${req.body.id}/approve`, undefined, adminToken)).status).toBe(204);
+    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({ steam_ids: [steam(13)], elo_matches: 1 });
+    expect((await call('GET', `/api/v1/players/steam/${steam(3)}`)).body).toMatchObject({ claimed: false });
+    expect((await call('GET', '/api/v1/me/steam-requests?kind=remove', undefined, u.token)).body.items).toEqual([
+      expect.objectContaining({ steam_id: steam(3), status: 'approved' }),
+    ]);
+
+    // Sin body; con el pedido pendiente no puede ser principal; si el admin lo quita directo, el pedido queda aprobado.
+    expect((await call('POST', '/api/v1/admin/steam/link', { steam_id: steam(14), player_id: pid }, adminToken)).status).toBe(204);
+    const r14 = await call('POST', `/api/v1/me/steam/${steam(14)}/unlink`, undefined, u.token);
+    expect(r14.body).toMatchObject({ kind: 'remove', steam_id: steam(14), note: null });
+    expect((await call('POST', `/api/v1/me/steam/${steam(14)}/primary`, undefined, u.token)).body.error.message).toMatch(/^Ese SteamID tiene un pedido para desvincularlo/);
+    expect((await call('DELETE', `/api/v1/admin/steam/${steam(14)}`, undefined, adminToken)).status).toBe(204);
+    expect((await call('GET', `/api/v1/me/steam-requests?kind=remove&status=approved`, undefined, u.token)).body.total).toBe(2);
+    expect((await call('GET', `/api/v1/players/${pid}`)).body.steam_ids).toEqual([steam(13)]);
+  });
+
   it('el servidor sin licencia no vincula', async () => {
     const r = await plugin.rpc('claim_with_code', { p_token: 'no-existe', p_steam: steam(8), p_code: 'AAAAAA', p_nick: 'x' });
     expect(r.data).toMatchObject({ ok: false, message: 'Este servidor no tiene una licencia válida de CSSTV' });

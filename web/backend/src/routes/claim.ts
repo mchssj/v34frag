@@ -10,6 +10,7 @@ import {
   ClaimCode,
   ClaimLogList,
   ClaimLogQuery,
+  MySteamRequest,
   MySteamRequestList,
   MySteamRequestQuery,
   MySteamStatus,
@@ -20,6 +21,7 @@ import {
   SteamProfile,
   UnclaimedList,
   UnclaimedQuery,
+  UnlinkBody,
 } from '../schemas/claim';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { MapStatsQuery, PlayerMapStatsList, PlayerMatchList, PlayerMatchQuery } from '../schemas/players';
@@ -94,28 +96,49 @@ const myStatus = createRoute({
 });
 const myRequests = createRoute({
   method: 'get', path: '/api/v1/me/steam-requests', tags: ['Mi perfil'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Mis solicitudes de SteamID adicional', request: { query: MySteamRequestQuery },
+  summary: 'Mis pedidos de SteamID', description: 'De SteamID adicional (`kind: add`, con `!claim`) y de desvincular (`kind: remove`).',
+  request: { query: MySteamRequestQuery },
   responses: { 200: { description: 'Solicitudes', ...json(MySteamRequestList) }, ...errorResponses(400, 401) },
+});
+const unlinkRequest = createRoute({
+  method: 'post', path: '/api/v1/me/steam/{steamid}/unlink', tags: ['Mi perfil'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Pedir desvincular un SteamID',
+  description:
+    'Queda pendiente hasta que un admin lo apruebe (`POST /api/v1/admin/steam-requests/{id}/approve`); vence a los 30 días. Al aprobarlo, sus ' +
+    'partidas vuelven a quedar sin ficha y, si era el principal, el adicional más viejo pasa a serlo. No se puede pedir para el único SteamID de la ficha.',
+  request: { params: SteamParam, body: { required: false, ...json(UnlinkBody) } },
+  responses: { 201: { description: 'Pedido', ...json(MySteamRequest) }, ...errorResponses(400, 401) },
+});
+const myPrimary = createRoute({
+  method: 'post', path: '/api/v1/me/steam/{steamid}/primary', tags: ['Mi perfil'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Hacer principal uno de mis SteamID',
+  description:
+    'Sin aprobación, **una vez cada 24 horas**. El ELO de la ficha no cambia: pasa a la clave del principal nuevo. No se puede con un SteamID que tiene pedido de desvincular.',
+  request: { params: SteamParam },
+  responses: { ...done, ...errorResponses(400, 401) },
 });
 
 // ---------- admin ----------
 
 const adminRequests = createRoute({
   method: 'get', path: '/api/v1/admin/steam-requests', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Solicitudes de SteamID adicional', description: 'Por defecto, las pendientes primero. Las de más de 30 días vencen solas.',
+  summary: 'Pedidos de SteamID',
+  description: 'De SteamID adicional (`kind: add`) y de desvincular (`kind: remove`). Por defecto, los pendientes primero. Los de más de 30 días vencen solos.',
   request: { query: AdminSteamRequestQuery },
   responses: { 200: { description: 'Solicitudes', ...json(AdminSteamRequestList) }, ...errorResponses(400, 401, 403) },
 });
 const approve = createRoute({
   method: 'post', path: '/api/v1/admin/steam-requests/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Aprobar un SteamID adicional',
-  description: 'Lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha). Falla si comparte partidas con otro SteamID de la ficha.',
+  summary: 'Aprobar un pedido de SteamID',
+  description:
+    '`add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha); falla si comparte partidas con otro SteamID de la ficha. ' +
+    '`remove`: lo saca de la ficha como `DELETE /api/v1/admin/steam/{steamid}`; falla si es el único SteamID de la ficha.',
   request: { params: RequestIdParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 const reject = createRoute({
   method: 'post', path: '/api/v1/admin/steam-requests/{id}/reject', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Rechazar un SteamID adicional', request: { params: RequestIdParam, body: { required: true, ...json(RejectBody) } },
+  summary: 'Rechazar un pedido de SteamID', request: { params: RequestIdParam, body: { required: true, ...json(RejectBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 const claimLog = createRoute({
@@ -138,15 +161,27 @@ const putConfig = createRoute({
 const removeSteam = createRoute({
   method: 'delete', path: '/api/v1/admin/steam/{steamid}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Quitar un SteamID de su ficha',
-  description: 'Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO.',
+  description:
+    'Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO. ' +
+    'Si el jugador había pedido desvincularlo, el pedido queda aprobado.',
   request: { params: SteamParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 const setPrimary = createRoute({
   method: 'post', path: '/api/v1/admin/steam/{steamid}/primary', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Hacer principal un SteamID adicional', description: 'Recalcula el ELO (cambia la clave del ELO de la ficha).',
+  summary: 'Hacer principal un SteamID adicional', description: 'Sin límite de cambios. El ELO de la ficha no cambia: pasa a la clave del principal nuevo.',
   request: { params: SteamParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
+});
+
+type RequestRow = {
+  id: number; kind: string; steam_id: string; nick: string | null; status: string; note: string | null; reason: string | null; created_at: string; resolved_at: string | null;
+};
+const REQUEST = 'id, kind, steam_id, nick, status, note, reason, created_at, resolved_at';
+const toRequest = (r: RequestRow) => ({
+  ...r,
+  kind: r.kind as 'add' | 'remove',
+  status: r.status as 'pending' | 'approved' | 'rejected' | 'expired',
 });
 
 type MatchRow = Record<string, unknown> & { match_id: string; kind: string; side1_name: string | null; side2_name: string | null; team1_name: string | null; team2_name: string | null };
@@ -215,14 +250,17 @@ export const claim = createRouter()
       sb.from('claim_config').select('max_steam_ids').eq('id', 1).maybeSingle().then(must),
     ]);
     const [steams, pending] = await Promise.all([
-      player ? sb.from('player_steam_all').select('steam_id, is_primary').eq('player_id', player.id).then(mustHave) : Promise.resolve([]),
-      sb.from('steam_requests').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'pending'),
+      player ? sb.from('player_steam_all').select('steam_id, is_primary, added_at').eq('player_id', player.id).then(mustHave) : Promise.resolve([]),
+      sb.from('steam_requests').select('steam_id, kind').eq('user_id', user.id).eq('status', 'pending').then(mustHave),
     ]);
+    const unlinking = new Set(pending.filter((r) => r.kind === 'remove').map((r) => r.steam_id));
     const now = Date.now();
     return c.json(
       {
         steam_ids: steams
-          .map((s) => ({ steam_id: s.steam_id ?? '', is_primary: s.is_primary ?? false }))
+          .map((s) => ({
+            steam_id: s.steam_id ?? '', is_primary: s.is_primary ?? false, added_at: s.added_at ?? null, unlink_pending: unlinking.has(s.steam_id ?? ''),
+          }))
           .sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.steam_id.localeCompare(b.steam_id)),
         max_steam_ids: cfg?.max_steam_ids ?? 3,
         last_code: last
@@ -235,33 +273,42 @@ export const claim = createRouter()
               result: last.result,
             }
           : null,
-        pending_requests: pending.count ?? 0,
+        pending_requests: pending.length,
       },
       200,
     );
   })
   .openapi(myRequests, async (c) => {
     const p = c.req.valid('query');
-    let q = c.var.sb
-      .from('steam_requests')
-      .select('id, steam_id, nick, status, reason, created_at, resolved_at', { count: 'exact' })
-      .eq('user_id', c.var.user.id);
+    let q = c.var.sb.from('steam_requests').select(REQUEST, { count: 'exact' }).eq('user_id', c.var.user.id);
     if (p.status) q = q.eq('status', p.status);
-    type Row = { id: number; steam_id: string; nick: string | null; status: string; reason: string | null; created_at: string; resolved_at: string | null };
-    const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    return c.json(envelope(rows.map((r) => ({ ...r, status: r.status as 'pending' | 'approved' | 'rejected' | 'expired' })), total, p), 200);
+    if (p.kind) q = q.eq('kind', p.kind);
+    const { rows, total } = await runList<RequestRow, typeof q>(q, p, {});
+    return c.json(envelope(rows.map(toRequest), total, p), 200);
+  })
+  .openapi(unlinkRequest, async (c) => {
+    const sb = c.var.sb;
+    const id = mustHave(await sb.rpc('request_steam_unlink', { p_steam: c.req.valid('param').steamid, p_note: c.req.valid('json')?.reason ?? '' }));
+    const row = must(await sb.from('steam_requests').select(REQUEST).eq('id', id).maybeSingle());
+    if (!row) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió el pedido.');
+    return c.json(toRequest(row), 201);
+  })
+  .openapi(myPrimary, async (c) => {
+    must(await c.var.sb.rpc('set_my_primary_steam', { p_steam: c.req.valid('param').steamid }));
+    return c.body(null, 204);
   })
   .openapi(adminRequests, async (c) => {
     const p = c.req.valid('query');
     must(await c.var.sb.rpc('steam_requests_expire'));
     let q = c.var.sb
       .from('admin_steam_requests')
-      .select('id, status, created_at, resolved_at, reason, steam_id, nick, player_id, player_nick, user_id, alias, server_id, server_name, matches, player_steam_count, shares_match', { count: 'exact' });
+      .select('id, kind, status, created_at, resolved_at, note, reason, steam_id, nick, player_id, player_nick, user_id, alias, server_id, server_name, matches, player_steam_count, shares_match', { count: 'exact' });
     if (p.status) q = q.eq('status', p.status);
+    if (p.kind) q = q.eq('kind', p.kind);
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     type Row = {
-      id: number; status: string; created_at: string; resolved_at: string | null; reason: string | null; steam_id: string; nick: string | null;
+      id: number; kind: string; status: string; created_at: string; resolved_at: string | null; note: string | null; reason: string | null; steam_id: string; nick: string | null;
       player_id: string; player_nick: string; user_id: string | null; alias: string | null; server_id: string | null; server_name: string | null;
       matches: number; player_steam_count: number; shares_match: boolean;
     };
@@ -269,7 +316,8 @@ export const claim = createRouter()
     return c.json(
       envelope(
         rows.map((r) => ({
-          id: r.id, steam_id: r.steam_id, nick: r.nick, status: r.status as 'pending' | 'approved' | 'rejected' | 'expired', reason: r.reason,
+          id: r.id, kind: r.kind as 'add' | 'remove', steam_id: r.steam_id, nick: r.nick, status: r.status as 'pending' | 'approved' | 'rejected' | 'expired',
+          note: r.note, reason: r.reason,
           created_at: r.created_at, resolved_at: r.resolved_at,
           player: { id: r.player_id, nick: r.player_nick },
           user: r.user_id ? { id: r.user_id, alias: r.alias } : null,

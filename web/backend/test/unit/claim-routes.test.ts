@@ -59,6 +59,32 @@ describe('!claim: valores por defecto', () => {
     expect((await json(await call('GET', '/api/v1/me/claim-code'))).last_code).toMatchObject({ status: 'expired' });
   });
 
+  it('estado con un pedido de desvincular pendiente', async () => {
+    postgrest((url) => {
+      if (url.pathname.endsWith('/players')) return Response.json([{ id: USER }]);
+      if (url.pathname.endsWith('/player_steam_all'))
+        return Response.json([{ steam_id: S, is_primary: false, added_at: '2026-10-19T12:00:00+00:00' }, { steam_id: '76561198000000002', is_primary: true }]);
+      if (url.pathname.endsWith('/steam_requests')) return Response.json([{ steam_id: S, kind: 'remove' }, { steam_id: '76561198000000003', kind: 'add' }]);
+      return undefined;
+    });
+    expect(await json(await call('GET', '/api/v1/me/claim-code'))).toMatchObject({
+      steam_ids: [
+        { steam_id: '76561198000000002', is_primary: true, added_at: null, unlink_pending: false },
+        { steam_id: S, is_primary: false, added_at: '2026-10-19T12:00:00+00:00', unlink_pending: true },
+      ],
+      pending_requests: 2,
+    });
+  });
+
+  it('pedido de desvincular: la base no devuelve el pedido o el id', async () => {
+    postgrest((url) => (url.pathname.endsWith('/rpc/request_steam_unlink') ? Response.json(7) : undefined));
+    expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, { reason: 'x' })).status).toBe(500);
+    postgrest((url) => (url.pathname.endsWith('/rpc/request_steam_unlink') ? Response.json(null) : undefined));
+    expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, {})).status).toBe(500);
+    expect((await call('POST', '/api/v1/me/steam/123/unlink')).status).toBe(400);
+    expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, { reason: 'x'.repeat(201) })).status).toBe(400);
+  });
+
   it('la base no devuelve el código: 500', async () => {
     postgrest(() => undefined);
     expect((await call('POST', '/api/v1/me/claim-code')).status).toBe(500);
