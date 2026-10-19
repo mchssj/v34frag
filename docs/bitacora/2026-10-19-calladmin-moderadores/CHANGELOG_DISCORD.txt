@@ -1,0 +1,19 @@
+v34frag 2.2.2 --  Changelog
+
+Vende lo que compraste con !sell
+- ¿Compraste algo por error? Escribe !sell y elige qué vender en el menú. Te devuelve lo que pagaste.
+- !sell all vende todo de una, sin menú. Lo puedes poner en un bind.
+- Solo se vende lo que compraste en esta ronda y sigues teniendo. Lo que traes de la ronda anterior o levantaste del piso no se vende.
+- Se puede vender durante el freezetime y hasta 5 segundos después, en cualquier parte del mapa.
+- Si te dañaron el chaleco o ya lanzaste la granada, ya no se puede vender.
+
+Moderadores
+- Ahora hay moderadores además de los admins. Pueden kickear, banear por un tiempo, mutear y cambiar el mapa cuando no hay un mix en curso.
+
+Llama a un moderador con !calladmin
+- ¿Hay un cheater o alguien molestando? Escribe !calladmin y elige en el menú a quién reportas y por qué.
+- También puedes escribir el motivo directo: !calladmin hay un cheater en el CT.
+- El aviso les llega al momento a los moderadores en Discord, con tu nombre, el servidor y el mix en curso.
+- Si eliges "Otro motivo", lo escribes en el chat y solo lo ven los moderadores.
+- Puedes enviar un reporte cada 2 minutos. Úsalo solo cuando haga falta.
+

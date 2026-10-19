@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Guía de comandos para moderadores · v34frag</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.5pt; color: #1b1f24; line-height: 1.4; margin: 0; }
+  h1 { font-size: 20pt; margin: 0 0 2px; }
+  .sub { color: #5b6470; margin: 0 0 14px; }
+  h2 { font-size: 12.5pt; margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #d63b3b; }
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 6px; }
+  th, td { text-align: left; vertical-align: top; padding: 5px 7px; border-bottom: 1px solid #e3e6ea; }
+  th { background: #f3f4f6; font-size: 9.5pt; }
+  td:first-child { width: 42%; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; background: #f3f4f6; padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+  .box { border: 1px solid #e3e6ea; border-left: 4px solid #2f6fdb; background: #f7f9fc; padding: 8px 10px; margin: 8px 0; }
+  .warn { border-left-color: #d63b3b; background: #fdf6f6; }
+  ul { margin: 4px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  .cols { display: flex; gap: 14px; }
+  .cols > div { flex: 1; }
+  .foot { margin-top: 14px; color: #8a929c; font-size: 8.5pt; }
+  h2, table, .box, .keep { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>Guía de comandos para moderadores</h1>
+<p class="sub">Servidores v34frag #1 y v34frag #2 · actualizada el 2026-10-19</p>
+
+<div class="box">
+  <b>Cómo se escriben.</b> En el chat, con <code>!</code> adelante (<code>!kick</code>) todos ven el comando; con <code>/</code> (<code>/kick</code>) no lo ve nadie. En la consola se usa <code>sm_</code> (<code>sm_kick</code>).<br>
+  <b>A quién apuntar.</b> Con parte del nombre (<code>!kick juan</code>) o con el número de usuario (<code>!kick #12</code>), que sale en <code>!who</code> o <code>status</code> en la consola. Si el nombre coincide con varios jugadores, usa el número.<br>
+  <b>Lo más fácil:</b> <code>!admin</code> abre un menú con casi todo esto.
+</div>
+
+<h2>Básicos</h2>
+<table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>!admin</code></td><td>Menú de moderación: jugadores, castigos y chat.</td></tr>
+  <tr><td><code>!who</code></td><td>Lista los jugadores con su número y si tienen permisos.</td></tr>
+</table>
+
+<h2>Sacar y banear</h2>
+<table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>!kick &lt;jugador&gt; [motivo]</code></td><td>Lo saca del servidor. Puede volver a entrar.</td></tr>
+  <tr><td><code>!ban &lt;jugador&gt; &lt;minutos&gt; [motivo]</code></td><td>Lo banea por un tiempo. Ej.: <code>!ban juan 60 toxico</code> (1 hora), <code>1440</code> = 1 día, <code>10080</code> = 1 semana.</td></tr>
+  <tr><td><code>sm_addban &lt;minutos&gt; "&lt;SteamID&gt;" [motivo]</code></td><td>Banea un SteamID que ya no está en el servidor (en la consola, con el SteamID entre comillas).</td></tr>
+</table>
+<div class="box warn">No puedes banear para siempre (<code>0</code> minutos) ni desbanear: para eso, pídeselo a un admin.</div>
+
+<h2>Chat y voz</h2>
+<table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>!mute &lt;jugador&gt;</code> · <code>!unmute</code></td><td>Le quita (o le devuelve) la voz.</td></tr>
+  <tr><td><code>!gag &lt;jugador&gt;</code> · <code>!ungag</code></td><td>Le quita (o le devuelve) el chat de texto.</td></tr>
+  <tr><td><code>!silence &lt;jugador&gt;</code> · <code>!unsilence</code></td><td>Las dos cosas a la vez.</td></tr>
+  <tr><td><code>!say &lt;mensaje&gt;</code></td><td>Mensaje a todos en el chat, como moderador.</td></tr>
+  <tr><td><code>!csay &lt;mensaje&gt;</code></td><td>Mensaje grande en el centro de la pantalla.</td></tr>
+  <tr><td><code>!psay &lt;jugador&gt; &lt;mensaje&gt;</code></td><td>Mensaje privado a un jugador.</td></tr>
+</table>
+<p>El mute, el gag y el silence duran hasta que el jugador se desconecta.</p>
+
+<div class="keep">
+<h2>En la partida</h2>
+<table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>!slay &lt;jugador&gt;</code></td><td>Lo mata en la ronda (por ejemplo, si está trabado o molestando).</td></tr>
+  <tr><td><code>!slap &lt;jugador&gt; [daño]</code></td><td>Un empujón, con daño opcional.</td></tr>
+  <tr><td><code>!beacon &lt;jugador&gt;</code></td><td>Le pone una baliza para encontrarlo.</td></tr>
+  <tr><td><code>!rename &lt;jugador&gt; &lt;nombre&gt;</code></td><td>Le cambia el nombre (por ejemplo, uno ofensivo).</td></tr>
+</table>
+</div>
+
+<h2>Mixes y mapa</h2>
+<table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>!live</code></td><td>Empieza el mix con los equipos como están, sin esperar los <code>!ready</code>. Con <code>!live knife</code>, primero hay ronda de cuchillo para elegir lado.</td></tr>
+  <tr><td><code>!swap</code></td><td>En el calentamiento, pasa los CT a T y los T a CT.</td></tr>
+  <tr><td><code>!map &lt;mapa&gt;</code></td><td>Cambia el mapa en 3 segundos, <b>solo si no hay un mix en curso</b>. Sirve el nombre corto (<code>!map dust2</code>, <code>!map mirage</code>). <code>!map</code> solo abre la lista.</td></tr>
+</table>
+<div class="box warn">Con un mix en curso no se puede cambiar el mapa ni cancelar el mix. Si hay que cancelarlo, avísale a un admin.</div>
+
+<h2>Reportes (<code>!calladmin</code>)</h2>
+<ul>
+  <li>Cuando un jugador usa <code>!calladmin</code>, el reporte llega al canal de reportes de Discord con una mención a <b>@MOD</b>. Si estás conectado a ese servidor, también te aparece en el chat.</li>
+  <li>El reporte dice quién reportó, a quién, el motivo, el servidor y, si hay mix, el código de la partida (sirve para buscar la demo).</li>
+  <li>Entra al servidor, mira qué pasa y usa los comandos de arriba. Si hace falta un ban permanente o cancelar el mix, avísale a un admin.</li>
+</ul>
+
+<div class="cols">
+  <div>
+    <h2>Lo que puedes hacer</h2>
+    <ul>
+      <li>Kick y ban por tiempo.</li>
+      <li>Mute, gag y silence.</li>
+      <li>Slay, slap, beacon y rename.</li>
+      <li>Empezar un mix (<code>!live</code>) y cambiar de lado en el calentamiento (<code>!swap</code>).</li>
+      <li>Cambiar el mapa sin mix en curso.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>Lo que hace un admin</h2>
+    <ul>
+      <li>Ban permanente y desbanear.</li>
+      <li>Cancelar un mix.</li>
+      <li>Cambiar el mapa durante un mix.</li>
+      <li>Votaciones, configuración y contraseña del servidor.</li>
+      <li>Los comandos no funcionan contra un admin.</li>
+    </ul>
+  </div>
+</div>
+
+<p class="foot">v34frag · Guía para moderadores · Si algo no funciona como dice acá, avísale a un admin.</p>
+</body>
+</html>
