@@ -175,6 +175,7 @@ Daniel quiere que el director automático de la SourceTV siga mostrando las kill
 |---|---|---|
 | [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS de Hostinger. La parte de despliegue hay que replanearla para el VPS |
 | [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS de Hostinger: servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
+| [`2026-10-18-plugin-sell`](bitacora/2026-10-18-plugin-sell/PLAN.md) | `!sell` (pedido del PO): plugin aparte `csstv_sell` con un menú para vender lo comprado en la ronda, hasta 5 s después del freezetime, devolviendo lo pagado. Va a los dos servidores | Aprobación de Daniel y las 4 decisiones de la sección 5: el arma reemplazada, disparar en los 5 s, las balas y la zona de compra. Guardado como pendiente el 2026-10-18 |
 
 ## 4. Verificaciones que nunca se hicieron
 
