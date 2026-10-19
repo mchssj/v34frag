@@ -1,0 +1,9 @@
+v34frag 2.2.0 --  Changelog
+
+Vincula tu cuenta de la web con !claim
+- En la web, en Mi perfil, genera tu código. Vale 10 minutos.
+- En el servidor escribe !claim seguido del código, por ejemplo: !claim K7P2QX
+- Si es la primera vez, tu cuenta queda vinculada al instante y se le suman las partidas que ya jugaste con ese SteamID.
+- Si juegas desde otra PC o en otro servidor, haz lo mismo desde ahí: queda como pedido y un admin lo aprueba.
+- Lo puedes usar en cualquier momento, también en medio de una partida. La respuesta solo la ves tú.
+- Para entrar a un equipo necesitas tener tu cuenta vinculada.

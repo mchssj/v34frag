@@ -8,7 +8,7 @@ Daniel aprobó el plan el 2026-10-16, con todo en el ambiente local.
 |---|---|
 | Base (migración `15`) | Hecha y probada en local. **Sin commit y sin desplegar**: se aplica en el corte, después de la `14` y de la migración de ajustes de ELO |
 | Backend | Hecho y probado en local. Sin commit |
-| Plugin 2.1.0 (`!claim`) | **Sin hacer.** Va con los plugins, al final, y sale en la misma tanda del corte (servidor real y RBK) |
+| Plugin 2.1.0 (`!claim`) | **Hecho el 2026-10-18 como 2.2.0** (el 2.1.0 quedó para los mixes en vivo): ver [`2026-10-18-plugin-claim`](../2026-10-18-plugin-claim/GUIA_IMPLEMENTACION.md). Sale en la misma tanda del corte (servidor real y RBK) |
 | Frontend | Contrato listo (sección 5b y "SteamID y `!claim` (admin)") |
 
 ## Archivos
@@ -35,7 +35,7 @@ Daniel aprobó el plan el 2026-10-16, con todo en el ambiente local.
 1. **Antes:** la migración de ajustes de ELO (`20261015210000_elo_ajustes.sql`) aplicada en producción. La `15` aborta si no está.
 2. **Base:** `supabase/replanteo/15_claim.sql` después de la `14`. Los reclamos viejos aprobados pasan a `claim_log`, y la tabla `profile_requests` se borra (está en el respaldo previo).
 3. **Backend:** sale con el primer despliegue. Sin variables nuevas.
-4. **Plugin 2.1.0** (cuando esté): `.smx` genérico al servidor real y build licenciado a RBK, en la misma tanda.
+4. **Plugin 2.2.0** (hecho; pasos en `2026-10-18-plugin-claim`): `.smx` genérico al servidor real y build licenciado a RBK, en la misma tanda.
 5. **Prueba real:**
    - Una cuenta nueva, sin mixes, usa `!claim` en el servidor real.
    - Después pide un SteamID desde otra PC y un admin lo aprueba.
