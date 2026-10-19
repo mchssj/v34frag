@@ -98,9 +98,14 @@ export const MyProfile = z
     user: AuthUser,
     details: ProfileDetails,
     player: z
-      .object({ id: z.uuid(), nick: z.string(), photo_url: z.string().nullable(), steam_id: z.string().nullable() })
+      .object({
+        id: z.uuid(),
+        nick: z.string(),
+        photo_url: z.string().nullable(),
+        steam_id: z.string().nullable().openapi({ description: 'El SteamID principal. Todos los de la cuenta están en `GET /api/v1/me/claim-code` (`steam_ids`)' }),
+      })
       .nullable()
-      .openapi({ description: 'Jugador vinculado a la cuenta (lo vincula un admin al aprobar un reclamo)' }),
+      .openapi({ description: 'Ficha de jugador de la cuenta. Se crea o se vincula con `!claim` en el servidor; null si todavía no lo usó' }),
     teams: z
       .array(
         z.object({

@@ -1719,7 +1719,7 @@ isOneToOne: false
                   ]
                 },"match_list": {
                   Row: {
-                    "at": string | null,"best_of": number | null,"bye": boolean | null,"cancel_reason": string | null,"demo_status": string | null,"end_reason": string | null,"event_id": string | null,"event_name": string | null,"grp": number | null,"id": string | null,"kind": string | null,"last_round": number | null,"map": string | null,"parent_match_id": string | null,"phase": number | null,"played_at": string | null,"player_ids": (string)[] | null,"pos": number | null,"review": string | null,"review_max_rounds": number | null,"round": number | null,"score1": number | null,"score2": number | null,"search": string | null,"side1_name": string | null,"side2_name": string | null,"stage": string | null,"stage_order": number | null,"starts_at": string | null,"status": string | null,"team1_id": string | null,"team1_name": string | null,"team1_tag": string | null,"team2_id": string | null,"team2_name": string | null,"team2_tag": string | null,"winner_side": number | null
+                    "at": string | null,"best_of": number | null,"bye": boolean | null,"cancel_reason": string | null,"demo_status": string | null,"end_reason": string | null,"event_id": string | null,"event_name": string | null,"grp": number | null,"id": string | null,"kind": string | null,"last_round": number | null,"map": string | null,"parent_match_id": string | null,"phase": number | null,"played_at": string | null,"player_ids": (string)[] | null,"pos": number | null,"review": string | null,"review_max_rounds": number | null,"round": number | null,"score1": number | null,"score2": number | null,"search": string | null,"server_id": string | null,"side1_name": string | null,"side2_name": string | null,"stage": string | null,"stage_order": number | null,"starts_at": string | null,"status": string | null,"team1_id": string | null,"team1_name": string | null,"team1_tag": string | null,"team2_id": string | null,"team2_name": string | null,"team2_tag": string | null,"winner_side": number | null
                   }
                   Relationships: [
                     {
@@ -1770,6 +1770,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "matches_team1_fkey"
       columns: ["team1_id"]

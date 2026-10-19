@@ -1,6 +1,6 @@
 # Decisiones del backend y del modelo de datos: lo que afecta al frontend
 
-> **Reemplazado** el 2026-10-15 por [`contract.md`](contract.md), que reúne todas las decisiones y se mantiene al día. Este archivo queda como historia.
+> **Reemplazado** el 2026-10-15 por [`contract.md`](contract.md) (desde el 2026-10-19, [`contrato/`](contrato/README.md)), que reúne todas las decisiones y se mantiene al día. Este archivo queda como historia.
 
 Fecha: 2026-10-14. Estado: **decidido, todavía no implementado** (salvo lo marcado como "ya disponible"). Los nombres finales de endpoints y campos van a estar en la OpenAPI del backend.
 

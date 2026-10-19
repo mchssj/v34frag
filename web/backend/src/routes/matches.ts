@@ -133,6 +133,7 @@ export const matches = createRouter()
     if (p.event) q = q.eq('event_id', p.event);
     if (p.team) q = q.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
     if (p.player) q = q.contains('player_ids', [p.player]);
+    if (p.server) q = q.eq('server_id', p.server);
     if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
     if (p.from) q = q.gte('at', p.from);
     if (p.to) q = q.lte('at', p.to);

@@ -24,6 +24,13 @@ export const LoginBody = z
   })
   .openapi('LoginBody');
 
+export const PasswordChangeBody = z
+  .object({
+    current_password: z.string().min(1).max(72),
+    new_password: z.string().min(6).max(72).openapi({ description: 'Las mismas reglas del registro: de 6 a 72 caracteres' }),
+  })
+  .openapi('PasswordChangeBody');
+
 export const RefreshBody = z
   .object({ refresh_token: z.string().min(1).max(512) })
   .openapi('RefreshBody');

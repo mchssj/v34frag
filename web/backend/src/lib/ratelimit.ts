@@ -12,6 +12,8 @@ export type RateRule = {
 export const RATE_RULES = {
   // Login y registro: 10 intentos por minuto por IP (los dos endpoints comparten el contador).
   auth: { name: 'auth', limit: 10, windowSec: 60, binding: 'RL_AUTH' },
+  // Cambio de contraseña: 5 intentos por minuto por cuenta (frena a quien prueba claves con una sesión robada).
+  password: { name: 'password', limit: 5, windowSec: 60, binding: 'RL_PASSWORD' },
 } as const satisfies Record<string, RateRule>;
 
 export type RateResult = { ok: boolean; retryAfter: number };
@@ -62,10 +64,11 @@ export function clientIp(c: Context<AppEnv>): string {
   return ip ? ip.slice(0, 64) : 'unknown';
 }
 
+/** Por defecto cuenta por IP; keyOf permite contar por otra cosa (por ejemplo, la cuenta, después de requireUser). */
 export const rateLimit =
-  (rule: RateRule): MiddlewareHandler<AppEnv> =>
+  (rule: RateRule, keyOf: (c: Context<AppEnv>) => string = clientIp): MiddlewareHandler<AppEnv> =>
   async (c, next) => {
-    const key = clientIp(c);
+    const key = keyOf(c);
     const binding = c.env?.[rule.binding];
     const res = isWorkersBinding(binding)
       ? { ok: (await binding.limit({ key: `${rule.name}:${key}` })).success, retryAfter: rule.windowSec }

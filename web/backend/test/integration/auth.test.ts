@@ -137,3 +137,53 @@ describe('refresh, me y logout', () => {
     expect((await post('/auth/logout', undefined, u.token)).status).toBe(204);
   });
 });
+
+describe('POST /api/v1/me/password', () => {
+  it('cambia la contraseña, cierra las otras sesiones y devuelve una sesión nueva', async () => {
+    const u = await createUser();
+    // Otra sesión de la misma cuenta (otra PC).
+    const otraPc = await (await post('/auth/login', { email: u.email, password: u.password })).json();
+
+    const res = await post('/api/v1/me/password', { current_password: u.password, new_password: 'otra-clave-nueva-456' }, u.token);
+    expect(res.status).toBe(200);
+    const s = await res.json();
+    expect(s.user).toMatchObject({ id: u.id, email: u.email });
+    expect(s.refresh_token).toBeTruthy();
+
+    expect((await post('/auth/login', { email: u.email, password: u.password })).status).toBe(401);
+    expect((await post('/auth/login', { email: u.email, password: 'otra-clave-nueva-456' })).status).toBe(200);
+    // Las sesiones de antes ya no se renuevan; la nueva sí.
+    expect((await post('/auth/refresh', { refresh_token: u.refresh })).status).toBe(401);
+    expect((await post('/auth/refresh', { refresh_token: otraPc.refresh_token })).status).toBe(401);
+    expect((await post('/auth/refresh', { refresh_token: s.refresh_token })).status).toBe(200);
+  });
+
+  it('400 WRONG_PASSWORD, SAME_PASSWORD y VALIDATION_ERROR; 401 sin sesión', async () => {
+    const u = await createUser();
+    const mal = await post('/api/v1/me/password', { current_password: 'no-es-esta', new_password: 'otra-clave-456' }, u.token);
+    expect(mal.status).toBe(400);
+    expect((await mal.json()).error.code).toBe('WRONG_PASSWORD');
+    const igual = await post('/api/v1/me/password', { current_password: u.password, new_password: u.password }, u.token);
+    expect((await igual.json()).error.code).toBe('SAME_PASSWORD');
+    const corta = await post('/api/v1/me/password', { current_password: u.password, new_password: '123' }, u.token);
+    expect((await corta.json()).error.code).toBe('VALIDATION_ERROR');
+    expect((await post('/api/v1/me/password', { current_password: u.password, new_password: 'otra-clave-456' })).status).toBe(401);
+    // Nada de eso la cambió.
+    expect((await post('/auth/login', { email: u.email, password: u.password })).status).toBe(200);
+  });
+
+  it('429 al sexto intento de la misma cuenta en un minuto', async () => {
+    const limitada = createApp();
+    const u = await createUser();
+    const intento = () =>
+      limitada.request(
+        '/api/v1/me/password',
+        { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${u.token}` }, body: JSON.stringify({ current_password: 'no-es-esta', new_password: 'otra-clave-456' }) },
+        env,
+      );
+    for (let i = 0; i < 5; i++) expect((await intento()).status).toBe(400);
+    const res = await intento();
+    expect(res.status).toBe(429);
+    expect(res.headers.get('retry-after')).toBeTruthy();
+  });
+});

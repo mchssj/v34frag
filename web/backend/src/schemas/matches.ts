@@ -18,6 +18,7 @@ export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'pla
   event: z.uuid().optional().openapi({ description: 'Partidas de un torneo' }),
   team: z.uuid().optional().openapi({ description: 'Partidas de un equipo' }),
   player: z.uuid().optional().openapi({ description: 'Partidas donde jugó un jugador (en una serie, en alguno de sus mapas)' }),
+  server: z.uuid().optional().openapi({ description: 'Partidas de un servidor (`GET /api/v1/servers/status` da los ids)' }),
   map: z.string().max(40).optional().openapi({ description: 'Mapa (contiene)' }),
   from: dateParam('Desde (fecha jugada, o programada si no se jugó)'),
   to: dateParam('Hasta (fecha jugada, o programada si no se jugó)'),

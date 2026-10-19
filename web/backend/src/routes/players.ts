@@ -1,9 +1,10 @@
 import { createRoute, type z } from '@hono/zod-openapi';
-import { optionalUser } from '../lib/auth';
+import { optionalUser, requireUser } from '../lib/auth';
 import { levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
-import { errorResponses, json } from '../schemas/common';
+import type { Db } from '../lib/supabase';
+import { bearer, errorResponses, json } from '../schemas/common';
 import {
   IdParam,
   MapStatsQuery,
@@ -87,6 +88,20 @@ const matches = createRoute({
   responses: { 200: { description: 'Partidas', ...json(PlayerMatchList) }, ...errorResponses(400, 401) },
 });
 
+const myMatches = createRoute({
+  method: 'get',
+  path: '/api/v1/me/matches',
+  tags: ['Mi perfil'],
+  summary: 'Mis partidas',
+  description:
+    'Como `GET /api/v1/players/{id}/matches`, con la ficha de la cuenta. Si la cuenta todavía no tiene ficha (no usó `!claim`), ' +
+    'la lista viene vacía.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  request: { query: PlayerMatchQuery },
+  responses: { 200: { description: 'Partidas', ...json(PlayerMatchList) }, ...errorResponses(400, 401) },
+});
+
 const mapStats = createRoute({
   method: 'get',
   path: '/api/v1/players/{id}/map-stats',
@@ -117,6 +132,28 @@ const teams = createRoute({
   request: { params: IdParam, query: StintQuery },
   responses: { 200: { description: 'Equipos', ...json(TeamStintList) }, ...errorResponses(400, 401) },
 });
+
+/** Partidas terminadas de una ficha, con sus stats (lo comparten la ficha y Mi perfil). */
+async function playerMatches(sb: Db, playerId: string, p: z.infer<typeof PlayerMatchQuery>) {
+  let q = sb.from('player_matches').select(MATCH_FIELDS, { count: 'exact' }).eq('player_id', playerId);
+  if (p.kind) q = q.eq('kind', p.kind);
+  if (p.result === 'won') q = q.eq('won', true);
+  if (p.result === 'lost') q = q.eq('won', false);
+  if (p.result === 'draw') q = q.is('won', null);
+  if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
+  if (p.from) q = q.gte('played_at', p.from);
+  if (p.to) q = q.lte('played_at', p.to);
+  type Row = Record<string, unknown> & { match_id: string; kind: string; side1_name: string | null; side2_name: string | null; team1_name: string | null; team2_name: string | null };
+  const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'match_id');
+  // En PCW y torneos el bando es el equipo; en los mixes, el nombre del bando. Empate: won = null.
+  const items = rows.map(({ team1_name, team2_name, ...m }) => ({
+    ...m,
+    kind: m.kind as 'mix' | 'pcw' | 'official',
+    side1_name: m.side1_name ?? team1_name,
+    side2_name: m.side2_name ?? team2_name,
+  }));
+  return envelope(items, total, p);
+}
 
 export const players = createRouter()
   .openapi(list, async (c) => {
@@ -165,24 +202,13 @@ export const players = createRouter()
   .openapi(matches, async (c) => {
     const { id } = c.req.valid('param');
     const p = c.req.valid('query');
-    let q = c.var.sb.from('player_matches').select(MATCH_FIELDS, { count: 'exact' }).eq('player_id', id);
-    if (p.kind) q = q.eq('kind', p.kind);
-    if (p.result === 'won') q = q.eq('won', true);
-    if (p.result === 'lost') q = q.eq('won', false);
-    if (p.result === 'draw') q = q.is('won', null);
-    if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
-    if (p.from) q = q.gte('played_at', p.from);
-    if (p.to) q = q.lte('played_at', p.to);
-    type Row = Record<string, unknown> & { match_id: string; kind: string; side1_name: string | null; side2_name: string | null; team1_name: string | null; team2_name: string | null };
-    const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'match_id');
-    // En PCW y torneos el bando es el equipo; en los mixes, el nombre del bando. Empate: won = null.
-    const items = rows.map(({ team1_name, team2_name, ...m }) => ({
-      ...m,
-      kind: m.kind as 'mix' | 'pcw' | 'official',
-      side1_name: m.side1_name ?? team1_name,
-      side2_name: m.side2_name ?? team2_name,
-    }));
-    return c.json(envelope(items, total, p) as never, 200);
+    return c.json((await playerMatches(c.var.sb, id, p)) as never, 200);
+  })
+  .openapi(myMatches, async (c) => {
+    const p = c.req.valid('query');
+    const me = must(await c.var.sb.from('players').select('id').eq('user_id', c.var.user.id).maybeSingle());
+    if (!me) return c.json(envelope([], 0, p) as never, 200);
+    return c.json((await playerMatches(c.var.sb, me.id, p)) as never, 200);
   })
   .openapi(mapStats, async (c) => {
     const { id } = c.req.valid('param');

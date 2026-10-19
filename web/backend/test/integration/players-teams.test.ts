@@ -263,6 +263,30 @@ describe('ranking, listados y fichas', () => {
     const ms = await req('GET', `/api/v1/players/${p.playerId}/matches`);
     expect(ms.body).toMatchObject({ total: 1, items: [{ match_id: m, kind: 'mix', won: true, game_nick: 'en el juego', side1_name: 'A' }] });
   });
+
+  it('mis partidas y partidas de un servidor', async () => {
+    const p = await player();
+    const st = (await admin().from('players').select('steam_id').eq('id', p.playerId).single()).data!.steam_id!;
+    const srv = (await admin().from('game_servers').insert({ name: `Srv ${rnd()}`, token_hash: `h-${rnd()}` }).select('id').single()).data!.id as string;
+    const mk = async (server: string | null) =>
+      (await admin().from('matches').insert({ kind: 'mix', status: 'finished', best_of: 1, score1: 16, score2: 10, winner_side: 2, side1_name: 'A', side2_name: 'B', played_at: new Date().toISOString(), server_id: server }).select('id').single()).data!.id as string;
+    const m1 = await mk(srv);
+    const m2 = await mk(null);
+    await admin().from('match_player_stats').insert({ match_id: m1, steam_id: st, player_id: p.playerId, team: 1, nick: 'yo', kills: 10, deaths: 12, rounds: 26 });
+
+    const mine = await req('GET', '/api/v1/me/matches', { token: p.token });
+    expect(mine.body).toMatchObject({ total: 1, items: [{ match_id: m1, won: false, game_nick: 'yo' }] });
+    expect((await req('GET', '/api/v1/me/matches?kind=pcw', { token: p.token })).body.total).toBe(0);
+    expect((await req('GET', '/api/v1/me/matches')).status).toBe(401);
+    // Cuenta sin ficha (no usó !claim): lista vacía, no un error.
+    const sinFicha = await req('GET', '/api/v1/me/matches', { token: (await createUser()).token });
+    expect(sinFicha).toMatchObject({ status: 200, body: { total: 0, items: [] } });
+
+    const bySrv = await req('GET', `/api/v1/matches?server=${srv}`);
+    expect(bySrv.body.items.map((i: { id: string }) => i.id)).toEqual([m1]);
+    expect((await req('GET', '/api/v1/matches?kind=mix&per=100')).body.items.some((i: { id: string }) => i.id === m2)).toBe(true);
+    expect((await req('GET', '/api/v1/matches?server=no-es-un-id')).status).toBe(400);
+  });
 });
 
 describe('admin de jugadores', () => {

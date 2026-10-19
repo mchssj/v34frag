@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { isAllowedOrigin } from './lib/cors';
 import { errorBody, onError } from './lib/errors';
 import { requestLog, withConfig } from './lib/middleware';
+import type { UdpExchange } from './lib/a2s';
 import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
@@ -24,6 +25,7 @@ import { pcw } from './routes/pcw';
 import { pcwPlay } from './routes/pcw-play';
 import { players } from './routes/players';
 import { roster } from './routes/roster';
+import { servers } from './routes/servers';
 import { system } from './routes/system';
 import { teams } from './routes/teams';
 
@@ -33,6 +35,8 @@ z.config(z.locales.es());
 export type AppOptions = {
   // Por defecto, contador en memoria del proceso (en Workers se usa el binding si existe).
   rateLimiter?: RateLimiter;
+  // Envío UDP para el estado de los servidores (A2S). Lo pasa node.ts; el Worker no tiene UDP.
+  udp?: UdpExchange;
 };
 
 export function createApp(options: AppOptions = {}) {
@@ -43,6 +47,7 @@ export function createApp(options: AppOptions = {}) {
   app.use('*', withConfig);
   app.use('*', async (c, next) => {
     c.set('rateLimiter', rateLimiter);
+    c.set('udp', options.udp);
     await next();
   });
   app.use('*', requestLog);
@@ -76,6 +81,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', live);
   app.route('/', events);
   app.route('/', pcwPlay);
+  app.route('/', servers);
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',

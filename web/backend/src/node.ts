@@ -1,6 +1,7 @@
 // Entrada de Node (pnpm dev:node). La misma app que en Workers, servida con @hono/node-server.
 import { serve } from '@hono/node-server';
 import { createApp } from './app';
+import { nodeUdp } from './lib/udp-node';
 
 try {
   process.loadEnvFile('.dev.vars');
@@ -8,7 +9,7 @@ try {
   // Sin .dev.vars: se usan las variables del entorno.
 }
 
-const app = createApp();
+const app = createApp({ udp: nodeUdp });
 const port = Number(process.env.PORT ?? 8787);
 
 serve({ fetch: (req) => app.fetch(req, process.env), port }, (info) => {

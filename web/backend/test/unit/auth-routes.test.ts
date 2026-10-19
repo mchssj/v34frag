@@ -184,3 +184,65 @@ describe('fromAuthError', () => {
     expect(fromAuthError({ status: 500, message: 'x' }).code).toBe('INTERNAL');
   });
 });
+
+describe('POST /api/v1/me/password', () => {
+  // GoTrue simulado: el login con la actual da una sesión nueva; `put` y `logout` responden lo que diga cada caso.
+  async function cambio(opts: { put?: () => Response; logout?: () => Response; claims?: Record<string, unknown> } = {}) {
+    const token = await signToken(key, userClaims(USER, opts.claims));
+    const fresh = await signToken(key, userClaims(USER));
+    const fetch = gotrue((url, init) => {
+      if (url.includes('/auth/v1/user') && init.method === 'GET') return Response.json({ id: USER, aud: 'authenticated', email: 'de-auth@b.co' });
+      if (url.includes('/auth/v1/token?grant_type=password'))
+        return Response.json({
+          access_token: fresh, refresh_token: 'r-nuevo', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, token_type: 'bearer',
+          user: { id: USER, aud: 'authenticated', email: 'a@b.co', created_at: '2026-10-14T00:00:00Z' },
+        });
+      if (url.includes('/auth/v1/user') && init.method === 'PUT') return opts.put?.() ?? Response.json({ id: USER });
+      if (url.includes('/auth/v1/logout')) return opts.logout?.() ?? new Response(null, { status: 204 });
+      if (url.includes('/rest/v1/profiles')) return Response.json([{ role: 'user', tag: 'Tag1' }]);
+      return undefined;
+    });
+    const res = await post('/api/v1/me/password', { current_password: 'vieja-123', new_password: 'nueva-456' }, token);
+    return { res, fetch, fresh };
+  }
+
+  it('usa la sesión nueva para cambiarla y cerrar las otras, y la devuelve', async () => {
+    const { res, fetch, fresh } = await cambio();
+    expect(res.status).toBe(200);
+    expect(await json(res)).toMatchObject({ refresh_token: 'r-nuevo', user: { id: USER } });
+    const put = fetch.mock.calls.find(([u, i]) => String(u).includes('/auth/v1/user') && i?.method === 'PUT')!;
+    expect(JSON.parse(String(put[1]?.body))).toEqual({ password: 'nueva-456' });
+    expect((put[1]?.headers as Record<string, string>).Authorization).toBe(`Bearer ${fresh}`);
+    const out = fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/logout'))!;
+    expect(String(out[0])).toContain('scope=others');
+  });
+
+  it('si el token no trae el correo, lo pide a Auth', async () => {
+    const { res, fetch } = await cambio({ claims: { email: undefined } });
+    expect(res.status).toBe(200);
+    const login = fetch.mock.calls.find(([u]) => String(u).includes('grant_type=password'))!;
+    expect(JSON.parse(String(login[1]?.body))).toMatchObject({ email: 'de-auth@b.co', password: 'vieja-123' });
+  });
+
+  it.each([
+    ['same_password', 'SAME_PASSWORD'],
+    ['weak_password', 'VALIDATION_ERROR'],
+  ])('Auth rechaza la nueva (%s): 400 %s', async (error_code, code) => {
+    const { res } = await cambio({ put: () => authError(422, error_code) });
+    expect(res.status).toBe(400);
+    expect((await json(res)).error.code).toBe(code);
+  });
+
+  it('500 si Auth falla al cambiarla, sin cerrar las otras sesiones', async () => {
+    const { res, fetch } = await cambio({ put: () => authError(500, 'unexpected_failure') });
+    expect(res.status).toBe(500);
+    expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/logout'))).toBe(false);
+  });
+
+  it('si no se pueden cerrar las otras sesiones, la contraseña igual quedó cambiada: 200 y lo registra', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { res } = await cambio({ logout: () => new Response(null, { status: 500 }) });
+    expect(res.status).toBe(200);
+    expect(String(log.mock.calls[0]?.[0])).toContain('otras sesiones');
+  });
+});

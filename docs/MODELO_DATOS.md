@@ -208,7 +208,7 @@ Cambios para recibir los mixes del servidor. Detalle de instalación en [GUIA_SE
 |---|---|
 | `matches.kind`, `teams.kind` | Nuevo valor `mix`. Cada mix crea dos equipos `mix` temporales; `score1/score2` guardan **rondas**. |
 | `matches` | `external_id` (UNIQUE, `match_uid` del plugin) y `server_id`. |
-| `players` | `steam_id` (SteamID64, UNIQUE) y `stats_auto` (recalcular stats desde los mixes). |
+| `players` | `steam_id` (SteamID64, UNIQUE) y `stats_auto` (recalcular stats desde los mixes). Desde el corte (replanteo `15`), `steam_id` es el **principal**: una ficha puede tener más SteamID (ver "Después del corte"). |
 | `match_player_stats` | `player_id`, `nick`, `rounds`, `k1`–`k5`, `first_kills`, `first_deaths`, `plants`, `defuses`, `teamkills`, `suicides`, `rating`; UNIQUE (`match_id`, `steam_id`); FK a `matches` con borrado en cascada; RLS (lectura pública, escritura admin). |
 | `game_servers` | Servidores autorizados: `name`, `token_hash` (SHA-256), `active`, `last_seen_at`. Solo admin. |
 | `ingest_chunks` | Partes en tránsito del envío; sin acceso directo. |
@@ -240,7 +240,7 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | Migración `20261011220000` | `csstv_steam64` y `elo_apply_match` aceptan SteamID64 de cuentas nuevas (`765612` + 11 dígitos), además de `7656119` + 10. |
 | Migración `20261011200000` | `elo_apply_match` cuenta a los jugadores sin SteamID64 como μ 25 / σ 8.33 en la fuerza de su equipo, sin darles ELO. |
 
-## Después del corte: replanteo (`supabase/replanteo/01` a `10`)
+## Después del corte: replanteo (`supabase/replanteo/01` a `19`)
 
 > **Todavía no está en producción.** Todo lo de arriba describe el modelo actual, el que usa la web vieja. Estas migraciones se aplican en el corte, junto con el backend y la web nueva. Detalle en la bitácora [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
 
@@ -261,6 +261,10 @@ erDiagram
   events ||--o{ tournament_registration_players : event_id
   events ||--o{ event_stage_teams : "grupos y suizo"
   matches ||--o{ match_vetos : "veto (map_pool)"
+  players ||--o{ player_extra_steam_ids : "SteamID adicionales"
+  players ||--o{ steam_requests : "pedidos de SteamID adicional"
+  claim_codes }o--|| profiles : "códigos de !claim"
+  game_servers ||--o{ matches : server_id
 ```
 
 | Qué | Antes | Después |
@@ -285,6 +289,15 @@ erDiagram
 | Veto | Lista fija en la web, sin validar | `map_pool` (versiones, Inferno tiene dos) y `veto_act` valida turno, acción y mapa |
 | Código de `!match` | Legible por cualquiera | Columna oculta; `match_link_code` para participantes, organizador y admins |
 | Matchmaking | 4 tablas `matchmaking_*` y 11 funciones | Borrado |
+| **SteamID por ficha** (`15`) | Uno: `players.steam_id`, lo vinculaba un admin | **Varios por ficha:** `players.steam_id` es el principal y los adicionales van en `player_extra_steam_ids`; la vista `player_steam_all` los junta (`is_primary`). El primero se vincula con `!claim` (`claim_codes`, `claim_with_code`); los adicionales se piden con `!claim` desde la otra PC o el otro servidor (`steam_requests`) y los aprueba un admin. Tope por ficha en `claim_config.max_steam_ids` (de 1 a 4, 3 por defecto). Un SteamID es de **una sola ficha** y hay **un solo ELO por ficha** (clave del ELO: el SteamID principal). La ingesta y `!match` reconocen todos los SteamID. Cada intento queda en `claim_log` |
+| Perfil sin reclamar (`15`) | `steam_unlinked` (solo admin) | Vistas públicas por SteamID para quien jugó sin ficha; no crean ficha ni van al ranking |
+| Listados (`11`) | — | Vistas de lectura para la API con paginación, filtros y orden: `match_list` (con `server_id` desde la `19`), `event_list`, `event_registrations`, `event_standings`, etc. |
+| Servidores (`12`) | `game_servers` editado a mano | Nombre único, IP permitida, `admin_create_server` (id y token), licencia y la vista `admin_server_list` |
+| ELO (`13`) | — | `elo_simulate`: vista previa de un cambio de configuración, sin guardar |
+| Demos (`14`) | — | Admin de demos y de los Workers de demos (`admin_demo_list`, `admin_demo_retry`, tokens) |
+| Mixes en vivo (`16`) | — | `live_match_list` y `live_match_players`; `match_list` suma `cancel_reason` y la revisión de los interrumpidos |
+| Torneos (`17`) | — | Plantilla `groups_double` y sorteo (`event_draw`, `events.drawn_at`/`drawn_by`) |
+| Preferencias (`18`) | En el navegador | `user_preferences` (solo el propio usuario) y `set_my_preferences` |
 | Limpieza | `player_claims`, `profiles.player_id`, `player_medals.color`, `matches.demo_url`, `matches.video_url`, formato `swiss` | Borrados |
 
 ## Pendiente de confirmar

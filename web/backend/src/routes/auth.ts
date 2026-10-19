@@ -9,7 +9,7 @@ import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { createRouter } from '../lib/router';
 import { anonClient, userClient } from '../lib/supabase';
 import type { AppEnv } from '../lib/types';
-import { AuthUser, LoginBody, RefreshBody, Session, SignupBody, SignupResult, type SessionT } from '../schemas/auth';
+import { AuthUser, LoginBody, PasswordChangeBody, RefreshBody, Session, SignupBody, SignupResult, type SessionT } from '../schemas/auth';
 import { toAuthUser } from '../services/account';
 import { bearer, errorResponses, json } from '../schemas/common';
 
@@ -96,6 +96,24 @@ const logout = createRoute({
   },
 });
 
+const changePassword = createRoute({
+  method: 'post',
+  path: '/api/v1/me/password',
+  tags: ['Mi perfil'],
+  summary: 'Cambiar mi contraseña',
+  description:
+    'Pide la contraseña actual. Cierra todas las demás sesiones de la cuenta (otras PCs, el celular) y también la que hizo el ' +
+    'pedido: devuelve una sesión nueva, que el frontend tiene que guardar en lugar de la anterior. ' +
+    '`400 WRONG_PASSWORD` si la actual no es correcta y `400 SAME_PASSWORD` si la nueva es igual. Hasta 5 intentos por minuto.',
+  security: bearer,
+  middleware: [requireUser, rateLimit(RATE_RULES.password, (c) => `user:${c.var.user.id}`)] as const,
+  request: { body: { required: true, ...json(PasswordChangeBody) } },
+  responses: {
+    200: { description: 'Contraseña cambiada: la sesión nueva', ...json(Session) },
+    ...errorResponses(400, 401, 429),
+  },
+});
+
 const me = createRoute({
   method: 'get',
   path: '/auth/me',
@@ -163,6 +181,43 @@ export const auth = createRouter()
       throw new AppError(500, 'INTERNAL', 'No se pudo cerrar la sesión.', undefined);
     }
     return c.body(null, 204);
+  })
+  .openapi(changePassword, async (c) => {
+    const cfg = c.var.config;
+    const { current_password, new_password } = c.req.valid('json');
+    if (current_password === new_password) {
+      throw new AppError(400, 'SAME_PASSWORD', 'La contraseña nueva tiene que ser distinta de la actual.', [{ path: 'new_password', message: 'Es igual a la actual.' }]);
+    }
+    let email = c.var.user.email;
+    if (!email) {
+      const u = await anonClient(cfg).auth.getUser(c.var.user.token);
+      if (u.error || !u.data.user) throw fromAuthError(u.error ?? { message: 'sin usuario', status: 401 });
+      email = u.data.user.email ?? null;
+    }
+    if (!email) throw new AppError(400, 'BUSINESS_RULE', 'La cuenta no tiene correo: no se puede cambiar la contraseña.');
+
+    // Un login con la actual la comprueba y da una sesión recién creada, que cumple si Supabase exige una sesión reciente.
+    const fresh = await anonClient(cfg).auth.signInWithPassword({ email, password: current_password });
+    if (fresh.error?.code === 'invalid_credentials') {
+      throw new AppError(400, 'WRONG_PASSWORD', 'La contraseña actual no es correcta.', [{ path: 'current_password', message: 'No es correcta.' }]);
+    }
+    if (fresh.error) throw fromAuthError(fresh.error);
+    if (!fresh.data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
+    const session = fresh.data.session;
+    const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' };
+
+    const upd = await fetch(`${cfg.SUPABASE_URL}/auth/v1/user`, { method: 'PUT', headers, body: JSON.stringify({ password: new_password }) });
+    if (!upd.ok) {
+      const body = (await upd.json().catch(() => ({}))) as { code?: string; error_code?: string; msg?: string; message?: string };
+      const code = body.error_code ?? body.code;
+      if (code === 'same_password') throw new AppError(400, 'SAME_PASSWORD', 'La contraseña nueva tiene que ser distinta de la actual.');
+      if (code === 'weak_password') throw new AppError(400, 'VALIDATION_ERROR', body.msg ?? body.message ?? 'La contraseña es demasiado débil.', [{ path: 'new_password', message: 'Es demasiado débil.' }]);
+      throw new AppError(500, 'INTERNAL', 'No se pudo cambiar la contraseña.');
+    }
+    // Todas las demás sesiones (incluida la que hizo el pedido) dejan de valer; queda solo la nueva.
+    const out = await fetch(`${cfg.SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers });
+    if (!out.ok) logError(c, new Error(`logout de las otras sesiones tras cambiar la contraseña: HTTP ${out.status}`));
+    return c.json(await toSession(cfg, session), 200);
   })
   .openapi(me, async (c) => {
     const cfg = c.var.config;

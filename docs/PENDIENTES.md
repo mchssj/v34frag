@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-17**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-19**.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -27,7 +27,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - Hecho en la `10` (2026-10-15): inscritos por equipo, plantillas con BO por fase y puntos únicos por partida ganada.
   - Daniel, 2026-10-15.
 - ~~**PCW "como equipo"**~~: hecho en la `10` (2026-10-15).
-- **[`docs/frontend/contract.md`](frontend/contract.md):** contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza su sección y la marca de estado (disponible, en implementación, pendiente).
+- **[`docs/frontend/contrato/`](frontend/contrato/README.md)** (antes `contract.md`, partido por módulos el 2026-10-19): contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza el archivo de su módulo, las novedades del índice y `decisiones.md`.
 
 ## Estado del repositorio
 
@@ -82,11 +82,11 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
-### 1.5 Corte del replanteo: migraciones 01 a 18 y plugin 2.0.0 (`!match` y `!status`) con 2.1.0 (mixes en vivo) y 2.2.0 (`!claim`)
+### 1.5 Corte del replanteo: migraciones 01 a 19 y plugin 2.0.0 (`!match` y `!status`) con 2.1.0 (mixes en vivo) y 2.2.0 (`!claim`)
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-- **Base:** `supabase/replanteo/01` a `18`, en orden, con respaldo previo. La `16` necesita la migración de mixes en vivo (`20261017120000`), ya aplicada en producción. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
+- **Base:** `supabase/replanteo/01` a `19`, en orden, con respaldo previo. La `16` necesita la migración de mixes en vivo (`20261017120000`), ya aplicada en producción. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
 - **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
 - **Plugin 2.2.0 con `!claim`** (bitácora `2026-10-16-claim-steamid`, que lo llama 2.1.0: el número pasó a los mixes en vivo, punto 1.7): **hecho y probado con bots el 2026-10-18**, sin desplegar. Sale en esta misma tanda: genérico al servidor real y licenciado a RBK. Pasos en [`2026-10-18-plugin-claim`](bitacora/2026-10-18-plugin-claim/GUIA_IMPLEMENTACION.md).
 - ~~**`sm_status`**~~: revisado el 2026-10-17 con `smx_grep.py` sobre todos los plugins de los dos servidores: ninguno lo registra.
@@ -209,13 +209,15 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
   2. ~~**Endpoints de dominio**~~: **terminados el 2026-10-16**, solo en local. Cada uno con su plan:
      - ~~Jugadores, equipos, plantel, ranking y su admin~~: **hechos el 2026-10-15**, solo en local (migración `09` y endpoints). Ver [`2026-10-15-api-jugadores-equipos`](bitacora/2026-10-15-api-jugadores-equipos/DOCUMENTACION.md).
      - ~~Partidas, torneos y PCW~~: **hechos el 2026-10-15**, solo en local (migración `10` y endpoints). Ver [`2026-10-15-api-partidas-torneos-pcw`](bitacora/2026-10-15-api-partidas-torneos-pcw/DOCUMENTACION.md).
-     - ~~Listados con paginación, filtros y orden en el servidor~~ (requisito obligatorio de Daniel): **hechos el 2026-10-15**, migración `11`. Ver [`2026-10-15-get-paginacion-filtros`](bitacora/2026-10-15-get-paginacion-filtros/DOCUMENTACION.md). Todo endpoint nuevo de lista tiene que seguir la convención de `docs/frontend/contract.md`.
+     - ~~Listados con paginación, filtros y orden en el servidor~~ (requisito obligatorio de Daniel): **hechos el 2026-10-15**, migración `11`. Ver [`2026-10-15-get-paginacion-filtros`](bitacora/2026-10-15-get-paginacion-filtros/DOCUMENTACION.md). Todo endpoint nuevo de lista tiene que seguir la convención de `docs/frontend/contrato/api.md` (sección 1, "Listados").
      - ~~Admin de servidores (tokens, licencias, panel)~~: **hecho el 2026-10-16**, solo en local (migración `12` y endpoints `/api/v1/admin/servers`). Ver [`2026-10-16-api-admin-servidores`](bitacora/2026-10-16-api-admin-servidores/DOCUMENTACION.md).
      - ~~Configuración del ELO y recálculo~~: **hechos el 2026-10-16**, solo en local (migración `13`, la simulación, y endpoints `/api/v1/elo/config` y `/api/v1/admin/elo/*`). Recalcular pide doble confirmación (`confirm: "estoy seguro"`). Ver [`2026-10-16-api-elo-config`](bitacora/2026-10-16-api-elo-config/DOCUMENTACION.md).
      - ~~Perfiles sin reclamar, `!claim` y varios SteamID por ficha~~ (base y backend): **hechos el 2026-10-16**, solo en local (migración `15` y endpoints). El **plugin 2.2.0** con `!claim` quedó hecho el 2026-10-18 ([`2026-10-18-plugin-claim`](bitacora/2026-10-18-plugin-claim/)) y sale en el corte. Falta el frontend. Ver [`2026-10-16-claim-steamid`](bitacora/2026-10-16-claim-steamid/DOCUMENTACION.md).
      - ~~Demos desde el admin~~: **hechas el 2026-10-16**, solo en local (migración `14` y endpoints `/api/v1/admin/demos*` y `/api/v1/admin/demo-workers`): resumen, listado, reintentar una demo perdida y tokens del Worker de demos (el token nuevo pide doble confirmación). Ver [`2026-10-16-api-demos-admin`](bitacora/2026-10-16-api-demos-admin/DOCUMENTACION.md).
      - ~~Preferencias de la cuenta (`preferences.theme_fx`)~~: **hechas el 2026-10-18**, solo en local (migración `18` y `GET`/`PATCH /api/v1/me/profile`), a pedido del frontend. Ver [`2026-10-18-preferencias-perfil`](bitacora/2026-10-18-preferencias-perfil/DOCUMENTACION.md).
      - ~~Plantilla "Grupos de doble eliminación + playoffs" (`groups_double`) y sorteo~~: **hechos el 2026-10-18**, solo en local (migración `17` y `POST /api/v1/events/{id}/draw`). Ver [`2026-10-18-torneo-grupos-doble`](bitacora/2026-10-18-torneo-grupos-doble/DOCUMENTACION.md).
+     - ~~Estado de los servidores, cambio de contraseña y mis partidas~~: **hechos el 2026-10-19**, solo en local (migración `19` y `GET /api/v1/servers/status`, `POST /api/v1/me/password`, `GET /api/v1/me/matches`, filtro `server` en `GET /api/v1/matches`). El contrato del frontend pasó a `docs/frontend/contrato/` (un archivo por módulo). Falta consultar RBK con A2S cuando se cargue su `connect_address`. Ver [`2026-10-19-api-servidores-password-historial`](bitacora/2026-10-19-api-servidores-password-historial/DOCUMENTACION.md).
+     - **"Olvidé mi contraseña"** (pendiente): necesita el envío de correos (Resend, plan del VPS). Cuando esté, `POST /auth/recover` con el enlace al frontend y la pantalla para poner la nueva.
      - ~~Mixes en vivo e interrumpidos~~: **hechos el 2026-10-17**, solo en local (migración `16` y endpoints `/api/v1/mixes/live*`, `/api/v1/admin/mixes/*` y `review` en partidas). Aprobar el ELO pide doble confirmación y vincula el juego si se jugaba con `!match`. Ver [`2026-10-17-api-mixes-en-vivo`](bitacora/2026-10-17-api-mixes-en-vivo/DOCUMENTACION.md).
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.

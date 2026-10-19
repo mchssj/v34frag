@@ -8,6 +8,8 @@ export type ErrorCode =
   | 'VALIDATION_ERROR'
   | 'UNAUTHORIZED'
   | 'INVALID_CREDENTIALS'
+  | 'WRONG_PASSWORD'
+  | 'SAME_PASSWORD'
   | 'EMAIL_NOT_CONFIRMED'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
@@ -17,6 +19,7 @@ export type ErrorCode =
   | 'INVALID_FILE'
   | 'FILE_TOO_LARGE'
   | 'CONFIG_INVALID'
+  | 'NOT_AVAILABLE'
   | 'INTERNAL';
 
 export class AppError extends Error {

@@ -16,7 +16,7 @@ export const json = <T>(schema: T) => ({ content: { 'application/json': { schema
 export const bearer = [{ bearerAuth: [] }];
 
 // Respuestas de error comunes, para declararlas en cada ruta.
-export const errorResponses = (...statuses: (400 | 401 | 403 | 404 | 409 | 413 | 429)[]) =>
+export const errorResponses = (...statuses: (400 | 401 | 403 | 404 | 409 | 413 | 429 | 501)[]) =>
   Object.fromEntries(
     statuses.map((s) => [s, { description: ERROR_DESC[s], content: { 'application/json': { schema: ErrorResponse } } }]),
   );
@@ -29,6 +29,7 @@ const ERROR_DESC = {
   409: 'Conflicto con un registro existente',
   413: 'Archivo demasiado grande',
   429: 'Demasiados intentos',
+  501: 'No disponible en este despliegue',
 } as const;
 
 export const Paginated = <T extends z.ZodType>(item: T) =>

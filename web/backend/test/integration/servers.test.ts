@@ -171,3 +171,28 @@ describe('admin de servidores', () => {
     expect((await call('DELETE', `/api/v1/admin/servers/${libre.id}`)).status).toBe(404);
   });
 });
+
+describe('estado de los servidores', () => {
+  it('lista los activos con licencia vigente de la base, con lo que respondió cada uno', async () => {
+    const { A2sError } = await import('../../src/lib/a2s');
+    const name = `Estado ${Math.random().toString(36).slice(2, 8)}`;
+    const id = (await admin().from('game_servers').insert({ name, token_hash: `h-${name}`, connect_address: '10.9.9.9:27062' }).select('id').single()).data!.id as string;
+    const off = (await admin().from('game_servers').insert({ name: `${name} revocado`, token_hash: `h2-${name}`, connect_address: '10.9.9.8:27062', active: false }).select('id').single()).data!.id as string;
+    created.push(id, off);
+    const fake = Buffer.from('ffffffff49074e00646500637300435300f00005140000', 'hex');
+    const app = createApp({
+      udp: (host, _port, _timeoutMs, talk) =>
+        talk({
+          send: async () => {
+            if (host === '10.9.9.9') return Uint8Array.from(fake);
+            throw new A2sError('sin respuesta');
+          },
+        }),
+    });
+    const res = await app.request('/api/v1/servers/status', {}, localEnv());
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { servers: { id: string; name: string; online: boolean; players: number | null }[] };
+    expect(body.servers.find((s) => s.id === id)).toMatchObject({ name, online: true, players: 5 });
+    expect(body.servers.some((s) => s.name === `${name} revocado`)).toBe(false);
+  });
+});
