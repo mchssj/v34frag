@@ -242,6 +242,27 @@ describe('!claim', () => {
     expect((await call('DELETE', `/api/v1/admin/steam/${steam(14)}`, undefined, adminToken)).status).toBe(204);
     expect((await call('GET', `/api/v1/me/steam-requests?kind=remove&status=approved`, undefined, u.token)).body.total).toBe(2);
     expect((await call('GET', `/api/v1/players/${pid}`)).body.steam_ids).toEqual([steam(13)]);
+
+    // Cancelar el pedido mientras está pendiente: queda cancelled, el SteamID sigue en la ficha y se puede volver a pedir.
+    expect((await call('POST', '/api/v1/admin/steam/link', { steam_id: steam(15), player_id: pid }, adminToken)).status).toBe(204);
+    const r15 = (await call('POST', `/api/v1/me/steam/${steam(15)}/unlink`, undefined, u.token)).body;
+    expect((await call('DELETE', `/api/v1/me/steam/${steam(15)}/unlink`)).status).toBe(401);
+    expect((await call('DELETE', `/api/v1/me/steam/${steam(15)}/unlink`, undefined, u.token)).status).toBe(204);
+    expect((await call('GET', '/api/v1/me/steam-requests?status=cancelled', undefined, u.token)).body.items).toEqual([
+      expect.objectContaining({ id: r15.id, kind: 'remove', steam_id: steam(15), status: 'cancelled', resolved_at: expect.any(String) }),
+    ]);
+    expect((await call('GET', '/api/v1/me/claim-code', undefined, u.token)).body).toMatchObject({
+      steam_ids: [{ steam_id: steam(13), unlink_pending: false }, { steam_id: steam(15), unlink_pending: false }],
+      pending_requests: 0,
+    });
+    const twice = await call('DELETE', `/api/v1/me/steam/${steam(15)}/unlink`, undefined, u.token);
+    expect(twice.status).toBe(400);
+    expect(twice.body.error.message).toBe('No tenés un pedido pendiente para desvincular ese SteamID');
+    expect((await call('POST', `/api/v1/admin/steam-requests/${r15.id}/approve`, undefined, adminToken)).body.error.message).toBe('La solicitud ya no está pendiente (cancelled)');
+    expect((await call('GET', `/api/v1/admin/steam-requests?status=cancelled&q=${seed}`, undefined, adminToken)).body.items).toEqual([
+      expect.objectContaining({ id: r15.id, status: 'cancelled' }),
+    ]);
+    expect((await call('POST', `/api/v1/me/steam/${steam(15)}/unlink`, undefined, u.token)).status).toBe(201);
   });
 
   it('el servidor sin licencia no vincula', async () => {

@@ -42,6 +42,7 @@ export const AuthUser = z
     tag: z.string().nullable(),
     role: z.enum(['user', 'organizer', 'admin']).openapi({ description: '`organizer` crea y gestiona sus torneos; `admin`, todo' }),
     created_at: z.string().nullable().openapi({ description: 'Fecha de registro de la cuenta' }),
+    password_changed_at: z.string().nullable().openapi({ description: 'Último cambio de contraseña; null si no la cambió desde que se guarda la fecha (2026-10-19)' }),
   })
   .openapi('AuthUser');
 

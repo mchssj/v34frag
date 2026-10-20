@@ -85,6 +85,25 @@ describe('!claim: valores por defecto', () => {
     expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, { reason: 'x'.repeat(201) })).status).toBe(400);
   });
 
+  it('cancelar el pedido de desvincular: pasa el SteamID y responde 204; el error de la base es 400', async () => {
+    let body = '';
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const raw = String(input instanceof Request ? input.url : input);
+      if (raw.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
+      if (raw.includes('/rpc/cancel_steam_unlink')) {
+        body = String(init?.body);
+        return body.includes(S) ? new Response(null, { status: 204 }) : Response.json({ code: 'P0001', message: 'No tenés un pedido pendiente para desvincular ese SteamID' }, { status: 400 });
+      }
+      return Response.json([]);
+    }));
+    expect((await call('DELETE', `/api/v1/me/steam/${S}/unlink`)).status).toBe(204);
+    expect(JSON.parse(body)).toEqual({ p_steam: S });
+    const err = await call('DELETE', '/api/v1/me/steam/76561198000000009/unlink');
+    expect(err.status).toBe(400);
+    expect((await json(err)).error.message).toBe('No tenés un pedido pendiente para desvincular ese SteamID');
+    expect((await call('DELETE', '/api/v1/me/steam/123/unlink')).status).toBe(400);
+  });
+
   it('la base no devuelve el código: 500', async () => {
     postgrest(() => undefined);
     expect((await call('POST', '/api/v1/me/claim-code')).status).toBe(500);

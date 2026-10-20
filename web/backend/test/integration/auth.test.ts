@@ -123,6 +123,7 @@ describe('refresh, me y logout', () => {
     const me = await res.json();
     expect(me).toMatchObject({ id: u.id, email: u.email, tag: `Yo${sfx}`, role: 'user' });
     expect(Date.parse(me.created_at)).toBeGreaterThan(0);
+    expect(me.password_changed_at).toBeNull();
   });
 
   it('me sin token responde 401', async () => {
@@ -149,12 +150,21 @@ describe('POST /api/v1/me/password', () => {
     const s = await res.json();
     expect(s.user).toMatchObject({ id: u.id, email: u.email });
     expect(s.refresh_token).toBeTruthy();
+    // La fecha del cambio la guarda el trigger de auth.users y sale en la sesión, en /auth/me y en Mi perfil.
+    expect(Date.now() - Date.parse(s.user.password_changed_at)).toBeLessThan(60_000);
+    expect((await (await getMe(s.access_token)).json()).password_changed_at).toBe(s.user.password_changed_at);
+    const perfil = await app.request('/api/v1/me/profile', { headers: { Authorization: `Bearer ${s.access_token}` } }, env);
+    expect((await perfil.json()).user.password_changed_at).toBe(s.user.password_changed_at);
 
     expect((await post('/auth/login', { email: u.email, password: u.password })).status).toBe(401);
     expect((await post('/auth/login', { email: u.email, password: 'otra-clave-nueva-456' })).status).toBe(200);
     // Las sesiones de antes ya no se renuevan; la nueva sí.
     expect((await post('/auth/refresh', { refresh_token: u.refresh })).status).toBe(401);
     expect((await post('/auth/refresh', { refresh_token: otraPc.refresh_token })).status).toBe(401);
+    // La otra PC, con su access_token todavía vigente, recibe 401 en /auth/me (antes era 500) y el frontend vuelve al login.
+    const cerrada = await getMe(otraPc.access_token);
+    expect(cerrada.status).toBe(401);
+    expect((await cerrada.json()).error.code).toBe('UNAUTHORIZED');
     expect((await post('/auth/refresh', { refresh_token: s.refresh_token })).status).toBe(200);
   });
 
@@ -168,8 +178,10 @@ describe('POST /api/v1/me/password', () => {
     const corta = await post('/api/v1/me/password', { current_password: u.password, new_password: '123' }, u.token);
     expect((await corta.json()).error.code).toBe('VALIDATION_ERROR');
     expect((await post('/api/v1/me/password', { current_password: u.password, new_password: 'otra-clave-456' })).status).toBe(401);
-    // Nada de eso la cambió.
-    expect((await post('/auth/login', { email: u.email, password: u.password })).status).toBe(200);
+    // Nada de eso la cambió, ni el login tocó la fecha.
+    const login = await post('/auth/login', { email: u.email, password: u.password });
+    expect(login.status).toBe(200);
+    expect((await login.json()).user.password_changed_at).toBeNull();
   });
 
   it('429 al sexto intento de la misma cuenta en un minuto', async () => {

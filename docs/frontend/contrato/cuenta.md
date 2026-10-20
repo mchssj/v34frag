@@ -25,6 +25,8 @@
   - Responde **`200` con una sesión nueva** (`access_token`, `refresh_token`, `expires_at`, `user`, como el login). **Guardarla en lugar de la anterior:** el cambio cierra todas las demás sesiones de la cuenta (otras PCs, el celular) y también la que hizo el pedido.
   - Errores: `400 WRONG_PASSWORD` (la actual no es correcta: marcar el campo `current_password`), `400 SAME_PASSWORD` (la nueva es igual a la actual), `400 VALIDATION_ERROR` (la nueva es corta o débil), `429` (más de 5 intentos por minuto de la misma cuenta).
   - Conviene avisar antes de confirmar: "Se va a cerrar la sesión en tus otros dispositivos".
+  - **Fecha del último cambio** (disponible desde el 2026-10-19): `user.password_changed_at` (ISO) en `GET /auth/me`, en `user` de cada sesión (también la que devuelve el cambio) y en `user` de `GET /api/v1/me/profile`. Mostrarla como "Último cambio: …". **`null`:** no la cambió desde que se guarda la fecha (2026-10-19, también las cuentas nuevas): mostrar "Nunca" o no mostrar nada. Cuenta cualquier cambio, también el futuro "Olvidé mi contraseña".
+  - El otro dispositivo, con su sesión cerrada, recibe `401` en `GET /auth/me` y vuelve al login.
   - **"Olvidé mi contraseña" todavía no existe:** necesita el envío de correos, que llega con el despliegue en el VPS.
 - **Mis partidas** (`GET /api/v1/me/matches`, disponible desde el 2026-10-19):
   - Igual que `GET /api/v1/players/{id}/matches` con la ficha de la cuenta: mismos filtros, orden y respuesta, con las stats y el cambio de ELO de cada partida (sección [1](api.md), "Listados").

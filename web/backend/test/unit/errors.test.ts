@@ -1,6 +1,6 @@
 import { HTTPException } from 'hono/http-exception';
 import { describe, expect, it, vi } from 'vitest';
-import { AppError, fromPostgrest } from '../../src/lib/errors';
+import { AppError, fromAuthError, fromPostgrest } from '../../src/lib/errors';
 import { json, makeApp, testEnv } from '../helpers';
 
 describe('fromPostgrest', () => {
@@ -34,6 +34,17 @@ describe('fromPostgrest', () => {
   it('P0001 conserva el mensaje de la función SQL (es para el usuario)', () => {
     const e = fromPostgrest({ code: 'P0001', message: 'El tag debe tener entre 2 y 24 caracteres' });
     expect(e).toMatchObject({ status: 400, code: 'BUSINESS_RULE', message: 'El tag debe tener entre 2 y 24 caracteres' });
+  });
+});
+
+describe('fromAuthError', () => {
+  it('sesión cerrada: el AuthSessionMissingError de supabase-js (status 400, sin code) es 401', () => {
+    const e = fromAuthError({ name: 'AuthSessionMissingError', status: 400, code: undefined, message: 'Auth session missing!' });
+    expect(e).toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
+  });
+
+  it('un error desconocido sigue siendo 500', () => {
+    expect(fromAuthError({ name: 'AuthApiError', status: 400, message: 'x' })).toMatchObject({ status: 500, code: 'INTERNAL' });
   });
 });
 

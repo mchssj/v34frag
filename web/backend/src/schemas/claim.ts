@@ -77,7 +77,7 @@ export const MySteamStatus = z
   })
   .openapi('MySteamStatus');
 
-export const STEAM_REQUEST_STATES = ['pending', 'approved', 'rejected', 'expired'] as const;
+export const STEAM_REQUEST_STATES = ['pending', 'approved', 'rejected', 'expired', 'cancelled'] as const;
 export const STEAM_REQUEST_KINDS = ['add', 'remove'] as const;
 export const MySteamRequest = z
   .object({
@@ -85,7 +85,7 @@ export const MySteamRequest = z
     kind: z.enum(STEAM_REQUEST_KINDS).openapi({ description: '`add`: SteamID adicional (con `!claim`); `remove`: desvincularlo de la ficha' }),
     steam_id: z.string(),
     nick: z.string().nullable(),
-    status: z.enum(STEAM_REQUEST_STATES),
+    status: z.enum(STEAM_REQUEST_STATES).openapi({ description: '`expired`: pasaron 30 días sin resolverlo; `cancelled`: el jugador canceló el pedido de desvincular' }),
     note: z.string().nullable().openapi({ description: 'Motivo que escribió el jugador al pedir desvincularlo' }),
     reason: z.string().nullable().openapi({ description: 'Motivo del rechazo' }),
     created_at: z.string(),

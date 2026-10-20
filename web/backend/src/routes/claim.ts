@@ -18,6 +18,7 @@ import {
   RequestIdParam,
   SteamConfig,
   SteamParam,
+  STEAM_REQUEST_STATES,
   SteamProfile,
   UnclaimedList,
   UnclaimedQuery,
@@ -109,6 +110,13 @@ const unlinkRequest = createRoute({
   request: { params: SteamParam, body: { required: false, ...json(UnlinkBody) } },
   responses: { 201: { description: 'Pedido', ...json(MySteamRequest) }, ...errorResponses(400, 401) },
 });
+const cancelUnlink = createRoute({
+  method: 'delete', path: '/api/v1/me/steam/{steamid}/unlink', tags: ['Mi perfil'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Cancelar el pedido de desvincular un SteamID',
+  description: 'Mientras siga pendiente. El pedido queda con `status: cancelled` y el SteamID sigue en la ficha. Falla si no hay un pedido pendiente para ese SteamID.',
+  request: { params: SteamParam },
+  responses: { ...done, ...errorResponses(400, 401) },
+});
 const myPrimary = createRoute({
   method: 'post', path: '/api/v1/me/steam/{steamid}/primary', tags: ['Mi perfil'], security: bearer, middleware: [requireUser] as const,
   summary: 'Hacer principal uno de mis SteamID',
@@ -181,7 +189,7 @@ const REQUEST = 'id, kind, steam_id, nick, status, note, reason, created_at, res
 const toRequest = (r: RequestRow) => ({
   ...r,
   kind: r.kind as 'add' | 'remove',
-  status: r.status as 'pending' | 'approved' | 'rejected' | 'expired',
+  status: r.status as (typeof STEAM_REQUEST_STATES)[number],
 });
 
 type MatchRow = Record<string, unknown> & { match_id: string; kind: string; side1_name: string | null; side2_name: string | null; team1_name: string | null; team2_name: string | null };
@@ -293,6 +301,10 @@ export const claim = createRouter()
     if (!row) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió el pedido.');
     return c.json(toRequest(row), 201);
   })
+  .openapi(cancelUnlink, async (c) => {
+    must(await c.var.sb.rpc('cancel_steam_unlink', { p_steam: c.req.valid('param').steamid }));
+    return c.body(null, 204);
+  })
   .openapi(myPrimary, async (c) => {
     must(await c.var.sb.rpc('set_my_primary_steam', { p_steam: c.req.valid('param').steamid }));
     return c.body(null, 204);
@@ -316,7 +328,7 @@ export const claim = createRouter()
     return c.json(
       envelope(
         rows.map((r) => ({
-          id: r.id, kind: r.kind as 'add' | 'remove', steam_id: r.steam_id, nick: r.nick, status: r.status as 'pending' | 'approved' | 'rejected' | 'expired',
+          id: r.id, kind: r.kind as 'add' | 'remove', steam_id: r.steam_id, nick: r.nick, status: r.status as (typeof STEAM_REQUEST_STATES)[number],
           note: r.note, reason: r.reason,
           created_at: r.created_at, resolved_at: r.resolved_at,
           player: { id: r.player_id, nick: r.player_nick },

@@ -80,6 +80,7 @@ const ownMessage = (m: string) => (m && !PG_MESSAGE.test(m) ? m : null);
 
 // Error de Supabase Auth (AuthApiError y compañía): `code` es el error_code de GoTrue.
 export interface AuthLikeError {
+  name?: string | undefined;
   code?: string | undefined;
   status?: number | undefined;
   message: string;
@@ -113,6 +114,11 @@ export function fromAuthError(err: AuthLikeError): AppError {
       return new AppError(401, 'UNAUTHORIZED', 'La sesión no es válida o venció. Inicia sesión de nuevo.');
   }
   if (err.status === 401 || err.status === 403) return new AppError(401, 'UNAUTHORIZED', 'La sesión no es válida o venció.');
+  // Sesión cerrada (otro dispositivo cambió la contraseña o cerró sesión): Auth responde 403 session_not_found, pero
+  // supabase-js lo convierte en AuthSessionMissingError con status 400 y sin code.
+  if (err.name === 'AuthSessionMissingError') {
+    return new AppError(401, 'UNAUTHORIZED', 'La sesión no es válida o venció. Inicia sesión de nuevo.');
+  }
   return new AppError(500, 'INTERNAL', 'Error interno.');
 }
 

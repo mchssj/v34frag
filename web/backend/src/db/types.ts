@@ -860,13 +860,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "id": string,"role": string,"tag": string | null,"tag_changed_at": string | null,"updated_at": string | null
+                    "id": string,"password_changed_at": string | null,"role": string,"tag": string | null,"tag_changed_at": string | null,"updated_at": string | null
                   }
                   Insert: {
-                    "id": string,"role"?: string,"tag"?: string | null,"tag_changed_at"?: string | null,"updated_at"?: string | null
+                    "id": string,"password_changed_at"?: string | null,"role"?: string,"tag"?: string | null,"tag_changed_at"?: string | null,"updated_at"?: string | null
                   }
                   Update: {
-                    "id"?: string,"role"?: string,"tag"?: string | null,"tag_changed_at"?: string | null,"updated_at"?: string | null
+                    "id"?: string,"password_changed_at"?: string | null,"role"?: string,"tag"?: string | null,"tag_changed_at"?: string | null,"updated_at"?: string | null
                   }
                   Relationships: [
                     
@@ -2293,6 +2293,9 @@ isOneToOne: false
                            },
 "cancel_pcw_post":
 { Args: { "p_post": string }; Returns: undefined
+                           },
+"cancel_steam_unlink":
+{ Args: { "p_steam": string }; Returns: undefined
                            },
 "claim_with_code":
 { Args: { "p_code": string,"p_nick"?: string,"p_steam": string,"p_token": string }; Returns: Json

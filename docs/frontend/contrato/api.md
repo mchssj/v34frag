@@ -43,7 +43,7 @@ sequenceDiagram
   participant F as Frontend
   participant A as API
   F->>A: POST /auth/login {email, password}
-  A-->>F: access_token, refresh_token, expires_at, user {id, email, tag, role, created_at}
+  A-->>F: access_token, refresh_token, expires_at, user {id, email, tag, role, created_at, password_changed_at}
   F->>A: cualquier ruta con sesión + Authorization: Bearer <access_token>
   A-->>F: 401 UNAUTHORIZED (token vencido, dura 1 hora)
   F->>A: POST /auth/refresh {refresh_token}
@@ -52,6 +52,7 @@ sequenceDiagram
 
 - Guardar los dos tokens. No hay cookies.
 - Ante un 401, renovar con `/auth/refresh` una sola vez y reintentar. Si el refresh también da 401, mandar al login.
+- Una sesión cerrada desde otro dispositivo (cambio de contraseña o logout) da `401` en `GET /auth/me` aunque el `access_token` no haya vencido (hasta el 2026-10-19 daba `500`). Las demás rutas lo siguen aceptando hasta que vence; después el refresh da `401`.
 - **El `refresh_token` rota en cada renovación, pero no es estrictamente de un solo uso.** Cada `/auth/refresh` devuelve uno nuevo, y Supabase Auth igual acepta reusar el anterior por un rato (`refresh_token_reuse_interval`: 10 segundos en la configuración local; es el valor estándar de Supabase). Lo que se midió en local (GoTrue v2.197.0, 2026-10-16):
   - Reusar el anterior dentro de los 10 segundos devuelve **200** y el mismo token nuevo de la primera renovación.
   - Pasados los 10 segundos, y aunque el token nuevo ya se hubiera usado, el anterior también dio **200**, con un token nuevo de la misma sesión. El vigente siguió funcionando.
@@ -141,7 +142,7 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/players/unclaimed` | `q` (nombres que usó y SteamID) | **`last_played` desc**, `matches`, `elo`, `last_nick` |
 | `GET /api/v1/players/steam/{steamid}/matches` | Como `/players/{id}/matches` | Como `/players/{id}/matches` |
 | `GET /api/v1/players/steam/{steamid}/map-stats` | `map` | Como `/players/{id}/map-stats` |
-| `GET /api/v1/me/steam-requests` | `status`, `kind` (`add`, `remove`) | **`created_at` desc** |
+| `GET /api/v1/me/steam-requests` | `status` (`pending`, `approved`, `rejected`, `expired`, `cancelled`), `kind` (`add`, `remove`) | **`created_at` desc** |
 | `GET /api/v1/admin/users` | `q`, `role`, `has_player`, `has_steam` | **`alias` asc**, `role` |
 | `GET /api/v1/admin/steam/unlinked` | `q` (nombre o SteamID) | **`last_played` desc**, `matches`, `last_nick` |
 | `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
@@ -150,7 +151,7 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/admin/demos` | `status` (`pending`, `uploaded`, `missing`, `expired`), `server`, `kind`, `from`, `to`, `q` | **`played_at` desc**, `demo_size`, `demo_attempts`, `demo_uploaded_at`, `expires_at` |
 | `GET /api/v1/admin/demo-workers` | `q`, `active`, `online` | **`name` asc**, `created_at`, `last_seen_at` |
 | `GET /api/v1/admin/servers` | `q` (nombre, dirección, IPs, versión, región), `active`, `license` (`ok`, `expiring`, `expired`, `revoked`), `online`, `has_panel`, `mode` | **`name` asc**, `created_at`, `last_seen_at`, `license_expires_at`, `matches` |
-| `GET /api/v1/admin/steam-requests` | `status`, `kind` (`add`, `remove`), `q` | **`status` asc** (pendientes primero, después la más nueva), `created_at` |
+| `GET /api/v1/admin/steam-requests` | `status` (incluye `cancelled`), `kind` (`add`, `remove`), `q` | **`status` asc** (pendientes primero, después la más nueva), `created_at` |
 | `GET /api/v1/admin/claims` | `ok`, `steam_id`, `q`, `from`, `to` | **`created_at` desc** |
 
 **Los detalles no traen listas que crecen.** La ficha del jugador, el equipo y el torneo devuelven sus datos; sus listas van en los sub-endpoints de la tabla (`/players/{id}/map-stats`, `/medals`, `/teams`, `/matches`; `/teams/{id}/members`; `/events/{id}/registrations`, `/matches`, `/standings`). El detalle de una partida sí trae lo que es fijo y corto: rosters, mapas de la serie, jugadores de un mix y veto.

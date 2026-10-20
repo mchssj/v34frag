@@ -199,7 +199,7 @@ describe('POST /api/v1/me/password', () => {
         });
       if (url.includes('/auth/v1/user') && init.method === 'PUT') return opts.put?.() ?? Response.json({ id: USER });
       if (url.includes('/auth/v1/logout')) return opts.logout?.() ?? new Response(null, { status: 204 });
-      if (url.includes('/rest/v1/profiles')) return Response.json([{ role: 'user', tag: 'Tag1' }]);
+      if (url.includes('/rest/v1/profiles')) return Response.json([{ role: 'user', tag: 'Tag1', password_changed_at: '2026-10-19T20:00:00+00:00' }]);
       return undefined;
     });
     const res = await post('/api/v1/me/password', { current_password: 'vieja-123', new_password: 'nueva-456' }, token);
@@ -209,7 +209,7 @@ describe('POST /api/v1/me/password', () => {
   it('usa la sesión nueva para cambiarla y cerrar las otras, y la devuelve', async () => {
     const { res, fetch, fresh } = await cambio();
     expect(res.status).toBe(200);
-    expect(await json(res)).toMatchObject({ refresh_token: 'r-nuevo', user: { id: USER } });
+    expect(await json(res)).toMatchObject({ refresh_token: 'r-nuevo', user: { id: USER, password_changed_at: '2026-10-19T20:00:00+00:00' } });
     const put = fetch.mock.calls.find(([u, i]) => String(u).includes('/auth/v1/user') && i?.method === 'PUT')!;
     expect(JSON.parse(String(put[1]?.body))).toEqual({ password: 'nueva-456' });
     expect((put[1]?.headers as Record<string, string>).Authorization).toBe(`Bearer ${fresh}`);

@@ -114,5 +114,6 @@
 | `POST /api/v1/admin/steam/{steamid}/primary` | Hacer principal un SteamID adicional (sin el límite de 24 horas del jugador) |
 
 - Aprobar o quitar un SteamID de una ficha con varios **recalculan el ELO de todos** (pueden mover un poco los cambios de ELO de otros jugadores). Avisarlo en la confirmación. Cambiar el principal **no** recalcula: el ELO de la ficha queda igual.
+- Un pedido que el jugador canceló llega con `status: cancelled` (desde el 2026-10-19): mostrarlo como "Cancelado por el jugador", sin botones (aprobarlo o rechazarlo da `400`).
 - En la bandeja, un pedido `remove` se muestra como "Quiere desvincular" con su `note`; uno `add`, como "SteamID adicional".
 - Los pedidos pendientes **reservan** el SteamID y vencen a los 30 días.

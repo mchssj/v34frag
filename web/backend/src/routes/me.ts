@@ -78,6 +78,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
       tag: account?.tag ?? null,
       role: roleOf(account?.role),
       created_at: details?.joined_at ?? null,
+      password_changed_at: account?.password_changed_at ?? null,
     },
     details: details ?? EMPTY_DETAILS,
     player,
