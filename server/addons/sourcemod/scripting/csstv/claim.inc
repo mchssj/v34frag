@@ -21,9 +21,12 @@
 #define CLAIM_COOLDOWN 10
 
 int g_iClaimLast[MAXPLAYERS + 1];   // GetTime() del último pedido del jugador
+ConVar g_cvClaim;
 
 void Claim_Init()
 {
+	// En 0 hasta el corte: claim_with_code es del replanteo y no existe en la base de producción.
+	g_cvClaim = CreateConVar("csstv_claim", "1", "!claim habilitado (0 hasta que la web nueva esté en producción).", _, true, 0.0, true, 1.0);
 	RegConsoleCmd("sm_claim", Cmd_Claim, "Vincular tu SteamID a tu cuenta de la web: !claim <código> (el código está en Mi perfil).");
 }
 
@@ -39,6 +42,11 @@ public Action Cmd_Claim(int client, int args)
 	if (!License_Allows())
 	{
 		License_Reply(client);
+		return Plugin_Handled;
+	}
+	if (!g_cvClaim.BoolValue)
+	{
+		QolReply(client, "[%s] !claim todavía no está disponible: llega con la web nueva.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (!g_cvSend.BoolValue || !Http_Available() || !Http_Configured())

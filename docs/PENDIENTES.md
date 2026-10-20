@@ -15,6 +15,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** `csstv_allchat` (chat para vivos y muertos) se hizo y se subió el 2026-10-16, a pedido de Daniel, como plugin aparte (punto 1.0).
 - **Excepción:** mixes en vivo y mixes interrumpidos (plugin **2.1.0**), pedido por Daniel el 2026-10-17 para el plugin y la web vieja. Hecho, probado en local y **desplegado el 2026-10-17** en la base, la web, el servidor real y RBK (punto 1.7).
 - **Excepción:** `!sell` (`csstv_sell` 1.0.0), pedido del PO, empezado por Daniel el 2026-10-19 como plugin aparte. Hecho, probado con bots y **subido a los dos servidores el 2026-10-19**; falta el menú con un jugador (punto 1.8).
+- **Excepción:** `!whois` (reporter **2.3.0**), pedido por Daniel el 2026-10-19: nicks que usó un jugador en las partidas y su perfil en la web, para admins y moderadores. **Implementado sin probar ni desplegar** (pidió solo implementar; punto 1.10).
 - **Excepción:** `!calladmin` con Discord y rol de moderador (`csstv_calladmin` 1.0.0), pedido por Daniel el 2026-10-19 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-19**, todavía sin moderadores (punto 1.9). El webhook y el ID del rol `@MOD` están en el `.env` (`DISCORD_CALLADMIN_WEBHOOK`, `DISCORD_MOD_ROLE_ID`).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
@@ -43,6 +44,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | `!calladmin` y moderadores: `csstv_calladmin.sp`, su `.smx`, `cfg/sourcemod/csstv_calladmin.cfg`, la bitácora `2026-10-19-calladmin-moderadores/` y la guía de comandos en PDF (2026-10-19) | Commiteado el 2026-10-19 en la rama `feat/backend-api-fase-1` (sin push) |
 | Cancelar el pedido de desvincular, fecha del cambio de contraseña y `401` de `/auth/me` (2026-10-19): replanteo `22` con su inversa y sus pruebas, `web/backend` (rutas, esquemas, errores, tipos y pruebas), contrato del frontend y la bitácora `2026-10-19-api-cancelar-desvincular-fecha-password/` | Commiteado el 2026-10-19 en la rama `feat/backend-api-fase-1` (sin push) |
 | Desvincular un SteamID y elegir el principal (2026-10-19): replanteo `21` con su inversa y sus pruebas, `web/backend` (rutas, esquemas, tipos y pruebas), contrato del frontend y la bitácora `2026-10-19-api-steam-desvincular-principal/` | Commiteado el 2026-10-19 en la rama `feat/backend-api-fase-1` (sin push) |
+| `!whois` (2026-10-19): migración `20261019180000_whois.sql`, replanteo `23` con su inversa y sus pruebas, `csstv/whois.inc`, `csstv_claim` en `claim.inc`, reporter 2.3.0 (`.sp` y `.smx`), `csstv_reporter.cfg` y la bitácora `2026-10-19-plugin-whois/` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
 | `.idea/` y `message.txt` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
@@ -94,6 +96,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 - **Base:** `supabase/replanteo/01` a `21`, en orden, con respaldo previo. La `16` necesita la migración de mixes en vivo (`20261017120000`), ya aplicada en producción. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
 - **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
+- **La `23` (`!whois`) necesita la migración de producción `20261019180000_whois.sql`** (punto 1.10) aplicada antes. En el corte, `csstv_claim "1"` en los dos servidores.
 - **Plugin 2.2.0 con `!claim`** (bitácora `2026-10-16-claim-steamid`, que lo llama 2.1.0: el número pasó a los mixes en vivo, punto 1.7): **hecho y probado con bots el 2026-10-18**, sin desplegar. Sale en esta misma tanda: genérico al servidor real y licenciado a RBK. Pasos en [`2026-10-18-plugin-claim`](bitacora/2026-10-18-plugin-claim/GUIA_IMPLEMENTACION.md).
 - ~~**`sm_status`**~~: revisado el 2026-10-17 con `smx_grep.py` sobre todos los plugins de los dos servidores: ninguno lo registra.
 - **Plugin 2.0.0:** ya está subido dentro de la 2.1.0 (punto 1.7), en el servidor real y en RBK. En el corte solo falta subir la 2.2.0 (`!claim`, ya hecha), por los mismos accesos y con el mismo cuidado (genérico al servidor real, licenciado a RBK).
@@ -154,6 +157,18 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Si algo falla:** `csstv_calladmin_enabled 0` corta `!calladmin` y `csstv_calladmin_modmap 0` corta el `!map` del moderador.
 - Publicar el changelog: `bitacora/2026-10-19-calladmin-moderadores/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-19-calladmin-moderadores`](bitacora/2026-10-19-calladmin-moderadores/)
+
+### 1.10 `!whois` (reporter 2.3.0): probar y desplegar
+
+- **Implementado el 2026-10-19, sin probar y sin desplegar** (Daniel pidió solo implementar). El reporter compila; las pruebas SQL de la `23` están escritas pero no se corrieron.
+- **Pruebas:** base local (`pnpm db:reset` y `correr.sh`) y servidor local con bots en `CSSTV_DEBUG`. Casos en la [`GUIA_IMPLEMENTACION.md`](bitacora/2026-10-19-plugin-whois/GUIA_IMPLEMENTACION.md).
+- **Despliegue, en este orden:**
+  1. **Base de producción:** correr `supabase/migrations/20261019180000_whois.sql` en el SQL Editor. Solo agrega `csstv_whois` y `csstv_steam0`; la web vieja no cambia.
+  2. **Plugin 2.3.0 en los dos servidores en la misma tanda:** **servidor real** (`SFTP_CSS_*`, `.smx` genérico) y **RBK** (`SERVER1_*`, build licenciado). Se carga en el próximo cambio de mapa.
+  3. **cfg de los dos:** `csstv_claim "0"` (la 2.3.0 trae `!claim`, que no funciona hasta el corte).
+- **En el corte:** la `23` va después de la `22`; `csstv_claim "1"`.
+- Publicar el changelog: `bitacora/2026-10-19-plugin-whois/CHANGELOG_DISCORD.txt`.
+- **Bitácora:** [`2026-10-19-plugin-whois`](bitacora/2026-10-19-plugin-whois/)
 
 ## 2. Investigaciones abiertas
 

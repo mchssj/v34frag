@@ -11,7 +11,8 @@
  * (resumen final), csstv/menu.inc (categoría v34frag del menú de admin) y csstv/maps.inc
  * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas). csstv/live.inc manda una foto
  * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
- * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web.
+ * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
+ * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -32,7 +33,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.2.0"
+#define PLUGIN_VERSION "2.3.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
@@ -136,6 +137,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/match.inc"
 #include "csstv/status.inc"
 #include "csstv/claim.inc"
+#include "csstv/whois.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -206,6 +208,7 @@ public void OnPluginStart()
 	Match_Init();
 	Status_Init();
 	Claim_Init();
+	Whois_Init();
 }
 
 public void OnMapStart()
@@ -245,6 +248,7 @@ public void OnClientPutInServer(int client)
 	Stats_ClientReset(client);
 	Board_OnClientPut(client);
 	Claim_ClientReset(client);
+	Whois_ClientReset(client);
 }
 
 public void OnClientPostAdminCheck(int client)
