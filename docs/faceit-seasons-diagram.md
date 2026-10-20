@@ -3,11 +3,11 @@
 ## Seasonal Cycle Diagram
 
 ```mermaid
-graph TD
-    A[Season Start: Soft Reset] --> B[10 Placement Matches]
-    B --> C[Competitive Season<br/>Duration: ~2-3 months]
-    C --> D[Season End]
-    D --> A[Next Season: Soft Reset]
+flowchart TD
+    A[Inicio de Temporada: Reset Suave] --> B[10 Partidos de Colocación]
+    B --> C[Temporada Competitiva<br/>Duración: ~2-3 meses]
+    C --> D[Fin de Temporada]
+    D --> A[Próxima Temporada: Reset Suave]
     
     style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style B fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
@@ -19,24 +19,24 @@ graph TD
 
 ```mermaid
 pie
-    title Typical Faceit League Prize Distribution
-    "1st Place" : 35
-    "2nd Place" : 25
-    "3rd Place" : 15
-    "4th-5th Place" : 12
-    "6th-8th Place" : 8
-    "9th-12th Place" : 5
+    title Distribución Típica de Premios en Faceit League
+    "1º Lugar" : 35
+    "2º Lugar" : 25
+    "3º Lugar" : 15
+    "4º-5º Lugar" : 12
+    "6º-8º Lugar" : 8
+    "9º-12º Lugar" : 5
 ```
 
-## Example: Faceit League Season 2 (2024)
-- **Prize Pool:** $34,000
-- **Duration:** July 16 - September 15, 2024
-- **Participants:** 81 players
-- **Format:** Regional qualifiers → Playoffs
+## Ejemplo: Faceit League Season 2 (2024)
+- **Premio Total:** $34,000
+- **Duración:** 16 de julio - 15 de septiembre, 2024
+- **Participantes:** 81 jugadores
+- **Formato:** Clasificatorios regionales → Playoffs
 
-## Key Points:
-1. Seasons begin with a soft reset of player Elo ratings
-2. Players complete 10 placement matches to establish season starting rank
-3. Competitive season lasts approximately 2-3 months
-4. Prize pools are distributed top-heavy, with significant rewards for top finishers
-5. Prize amounts vary by season and region
+## Puntos Clave:
+1. Las temporadas comienzan con un reset suave del Elo de los jugadores
+2. Los jugadores completan 10 partidos de colocación para establecer su rango inicial
+3. La temporada competitiva dura aproximadamente 2-3 meses
+4. Los premios se distribuyen de forma sesgada hacia lo alto, con recompensas significativas para los mejores puestos
+5. Los montos de premio varían según la temporada y región
