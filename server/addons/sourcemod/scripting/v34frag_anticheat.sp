@@ -102,13 +102,16 @@ public Action Command_Status(int client, int args)
 
 public Action Command_TestLog(int client, int args)
 {
+    char actorName[MAX_NAME_LENGTH];
+    GetClientName(client, actorName, sizeof(actorName));
+
     LogToFileEx("v34frag_anticheat.log",
-        "TEST actor=%N userid=%d mode=passive sanctions=disabled",
-        client,
+        "TEST actor=%s userid=%d mode=passive sanctions=disabled",
+        actorName,
         GetClientUserId(client)
     );
 
-    ReplyToCommand(client, "[v34FRAGNATION AC] Evento de prueba escrito en logs/v34frag_anticheat.log.");
+    ReplyToCommand(client, "[v34FRAGNATION AC] Evento de prueba escrito en el log de SourceMod.");
     return Plugin_Handled;
 }
 
@@ -119,8 +122,7 @@ public void Event_WeaponFire(Event event, const char[] name, bool dontBroadcast)
         return;
     }
 
-    int userid = event.GetInt("userid");
-    int client = GetClientOfUserId(userid);
+    int client = GetClientOfUserId(event.GetInt("userid"));
     if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client))
     {
         return;
@@ -175,11 +177,13 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 
     if (victim > 0 && IsClientInGame(victim) && !IsFakeClient(victim))
     {
-        char detail[128];
+        char weapon[64];
+        char detail[160];
+        event.GetString("weapon", weapon, sizeof(weapon));
         Format(detail, sizeof(detail), "attacker_userid=%d headshot=%d weapon=%s",
             event.GetInt("attacker"),
             event.GetBool("headshot"),
-            event.GetString("weapon", detail, sizeof(detail)) ? detail : "unknown"
+            weapon
         );
         LogPlayerEvent("PLAYER_DEATH_VICTIM", victim, detail);
     }
@@ -194,7 +198,9 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     if (gCvarEnabled.BoolValue)
     {
-        LogToFileEx("v34frag_anticheat.log", "ROUND_START map=%s", GetCurrentMapSafe());
+        char map[PLATFORM_MAX_PATH];
+        GetCurrentMap(map, sizeof(map));
+        LogToFileEx("v34frag_anticheat.log", "ROUND_START map=%s", map);
     }
 }
 
@@ -202,7 +208,9 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
     if (gCvarEnabled.BoolValue)
     {
-        LogToFileEx("v34frag_anticheat.log", "ROUND_END map=%s", GetCurrentMapSafe());
+        char map[PLATFORM_MAX_PATH];
+        GetCurrentMap(map, sizeof(map));
+        LogToFileEx("v34frag_anticheat.log", "ROUND_END map=%s", map);
     }
 }
 
@@ -215,7 +223,10 @@ void LogPlayerEvent(const char[] eventName, int client, const char[] detail)
 
     char steamId[64];
     char playerName[MAX_NAME_LENGTH];
+    char map[PLATFORM_MAX_PATH];
+
     GetClientName(client, playerName, sizeof(playerName));
+    GetCurrentMap(map, sizeof(map));
 
     if (!GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId), true))
     {
@@ -229,18 +240,6 @@ void LogPlayerEvent(const char[] eventName, int client, const char[] detail)
         steamId,
         playerName,
         detail,
-        GetCurrentMapSafe()
+        map
     );
-}
-
-void GetCurrentMapSafe(char[] buffer, int maxlen)
-{
-    GetCurrentMap(buffer, maxlen);
-}
-
-char[] GetCurrentMapSafe()
-{
-    char map[PLATFORM_MAX_PATH];
-    GetCurrentMap(map, sizeof(map));
-    return map;
 }
