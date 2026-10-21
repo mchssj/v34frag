@@ -93,3 +93,9 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-19 | Fecha de cada SteamID | Mi perfil muestra cuándo se vinculó cada SteamID (`added_at`); la fecha es del SteamID y no cambia al hacerlo principal. `null` si se vinculó antes de que se guardara | Daniel |
 | 2026-10-19 | Cancelar el pedido de desvincular | El jugador lo cancela mientras está pendiente (`DELETE /api/v1/me/steam/{steamid}/unlink`); el pedido queda `cancelled`, no se borra. Solo los de desvincular | Daniel (pedido); propuesta (forma) |
 | 2026-10-19 | Fecha del último cambio de contraseña | `password_changed_at` en el usuario. La guarda la base con cualquier cambio de contraseña; `null` si no la cambió desde ese día | Daniel (pedido); propuesta (forma) |
+| 2026-10-21 | Temporadas: cierre | Automático al llegar la fecha (cron del VPS cada 10 minutos) y botón "Terminar temporada" con doble confirmación. Con un mix en vivo el cron espera, hasta 6 horas | Daniel (cierre y botón); propuesta aceptada (mix en vivo) |
+| 2026-10-21 | Temporadas: duración y hora | 30 días por defecto, configurable; cierra a las 06:00 de Argentina (de donde son la mayoría de los jugadores) del día de fin | Daniel |
+| 2026-10-21 | Temporadas: top y mínimo | Top 20 y 20 mixes en la temporada, configurables. Cuentan los mixes que le movieron el ELO. Desempate: más mixes, después quien llegó antes a ese ELO | Daniel (valores); propuesta aceptada (qué cuenta y desempate) |
+| 2026-10-21 | Temporadas: medallas | Por tramos: 🏆 Campeón, 🥈 Subcampeón, 🥉 Tercer puesto, 🎖️ Top 10 y 🏅 Top N; editables. Título "Temporada 1 · #3". Quedan aunque después se recalcule el ELO | Daniel |
+| 2026-10-21 | Temporadas: reinicio | Solo nivel 10: conserva el porcentaje configurado (10 % al principio) de lo que tenía sobre 2001. 2540 → 2055 | Daniel |
+| 2026-10-21 | Temporadas: ELO pico | `peak_elo` es el de la temporada: al empezar cada una arranca en el ELO actual | Propuesta aceptada |

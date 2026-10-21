@@ -803,13 +803,13 @@ isOneToOne: false
                   ]
                 },"player_medals": {
                   Row: {
-                    "created_at": string,"icon": string | null,"id": string,"player_id": string | null,"title": string
+                    "created_at": string,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"tier": string | null,"title": string
                   }
                   Insert: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"title": string
+                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"tier"?: string | null,"title": string
                   }
                   Update: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"title"?: string
+                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"tier"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -829,6 +829,30 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_medals_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "player_season_list"
+      referencedColumns: ["season_id"]
+    },{
+      foreignKeyName: "player_medals_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "season_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_medals_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "season_live_standings"
+      referencedColumns: ["season_id"]
+    },{
+      foreignKeyName: "player_medals_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "seasons"
       referencedColumns: ["id"]
     }
                   ]
@@ -880,6 +904,87 @@ isOneToOne: false
                   }
                   Update: {
                     "id"?: number,"updated_at"?: string,"updated_by"?: string | null,"win_official"?: number,"win_pcw"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"season_config": {
+                  Row: {
+                    "duration_days": number,"id": number,"min_matches": number,"reset_floor": number,"reset_pct": number,"tiers": NonNullable<Json>,"top_n": number,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "duration_days"?: number,"id"?: number,"min_matches"?: number,"reset_floor"?: number,"reset_pct"?: number,"tiers"?: NonNullable<Json>,"top_n"?: number,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "duration_days"?: number,"id"?: number,"min_matches"?: number,"reset_floor"?: number,"reset_pct"?: number,"tiers"?: NonNullable<Json>,"top_n"?: number,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"season_standings": {
+                  Row: {
+                    "eligible": boolean,"elo": number,"elo_after": number,"icon": string | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank": number | null,"season_id": string,"tier": string | null,"wins": number
+                  }
+                  Insert: {
+                    "eligible": boolean,"elo": number,"elo_after": number,"icon"?: string | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank"?: number | null,"season_id": string,"tier"?: string | null,"wins": number
+                  }
+                  Update: {
+                    "eligible"?: boolean,"elo"?: number,"elo_after"?: number,"icon"?: string | null,"losses"?: number,"matches"?: number,"peak_elo"?: number,"player_id"?: string,"rank"?: number | null,"season_id"?: string,"tier"?: string | null,"wins"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "player_season_list"
+      referencedColumns: ["season_id"]
+    },{
+      foreignKeyName: "season_standings_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "season_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "season_live_standings"
+      referencedColumns: ["season_id"]
+    },{
+      foreignKeyName: "season_standings_season_id_fkey"
+      columns: ["season_id"]
+isOneToOne: false
+      referencedRelation: "seasons"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"seasons": {
+                  Row: {
+                    "closed_at": string | null,"closed_by": string | null,"created_at": string,"created_by": string | null,"ends_at": string,"id": string,"min_matches": number,"name": string,"number": number,"reset_floor": number,"reset_pct": number,"starts_at": string,"status": string,"tiers": NonNullable<Json>,"top_n": number
+                  }
+                  Insert: {
+                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at": string,"id"?: string,"min_matches": number,"name": string,"number": number,"reset_floor": number,"reset_pct": number,"starts_at"?: string,"status"?: string,"tiers": NonNullable<Json>,"top_n": number
+                  }
+                  Update: {
+                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string,"id"?: string,"min_matches"?: number,"name"?: string,"number"?: number,"reset_floor"?: number,"reset_pct"?: number,"starts_at"?: string,"status"?: string,"tiers"?: NonNullable<Json>,"top_n"?: number
                   }
                   Relationships: [
                     
@@ -2022,6 +2127,31 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"player_season_list": {
+                  Row: {
+                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"losses": number | null,"matches": number | null,"name": string | null,"number": number | null,"peak_elo": number | null,"player_id": string | null,"rank": number | null,"season_id": string | null,"tier": string | null,"wins": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"player_stats": {
                   Row: {
                     "adr": number | null,"assists": number | null,"damage": number | null,"deaths": number | null,"hs": number | null,"kd": number | null,"kills": number | null,"losses": number | null,"maps": number | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"wins": number | null
@@ -2065,6 +2195,45 @@ isOneToOne: false
                            "id"?: string | null,"tag"?: string | null
                          }
                         Relationships: [
+                    
+                  ]
+                },"season_list": {
+                  Row: {
+                    "champion_id": string | null,"champion_nick": string | null,"closed_at": string | null,"ends_at": string | null,"id": string | null,"medals": number | null,"min_matches": number | null,"name": string | null,"number": number | null,"reset_floor": number | null,"reset_pct": number | null,"starts_at": string | null,"status": string | null,"tiers": Json | null,"top_n": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["champion_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["champion_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["champion_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"season_live_standings": {
+                  Row: {
+                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"search": string | null,"season_id": string | null,"tier": string | null,"wins": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"season_standings_list": {
+                  Row: {
+                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"search": string | null,"season_id": string | null,"tier": string | null,"wins": number | null
+                  }
+                  Relationships: [
                     
                   ]
                 },"steam_profile_list": {
@@ -2359,11 +2528,17 @@ isOneToOne: false
 "csstv_request_ip":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"csstv_steam0":
+{ Args: { "p_s64": string }; Returns: string
+                           },
 "csstv_steam2":
 { Args: { "p": string }; Returns: string
                            },
 "csstv_steam64":
 { Args: { "p": string }; Returns: string
+                           },
+"csstv_whois":
+{ Args: { "p_online"?: string,"p_query"?: string,"p_steam"?: string,"p_token": string }; Returns: Json
                            },
 "demo_auth":
 { Args: { "p_token": string }; Returns: string
@@ -2402,6 +2577,9 @@ isOneToOne: false
                            },
 "elo_remove_adjustment":
 { Args: { "p_id": number }; Returns: undefined
+                           },
+"elo_season_event":
+{ Args: { "p_close": boolean,"p_season": string }; Returns: undefined
                            },
 "elo_set_config":
 { Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct"?: number,"p_min_pct"?: number,"p_recompute"?: boolean,"p_start_elo": number }; Returns: number
@@ -2575,6 +2753,51 @@ isOneToOne: false
 "search_norm":
 { Args: { "p": string }; Returns: string
                            },
+"season_check":
+{ Args: { "p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_tiers"?: Json,"p_top_n": number }; Returns: undefined
+                           },
+"season_close":
+{ Args: { "p_confirm": string,"p_id": string }; Returns: Json
+                           },
+"season_close_due":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"season_close_run":
+{ Args: { "p_by": string,"p_season": string }; Returns: Json
+                           },
+"season_default_end":
+{ Args: { "p_days": number,"p_from": string }; Returns: string
+                           },
+"season_preview":
+{ Args: { "p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: {
+              "eligible": boolean,"elo": number,"elo_after": number,"icon": string,"matches": number,"nick": string,"player_id": string,"rank": number,"reset": boolean,"search": string,"tier": string
+            }[]
+                           },
+"season_preview_summary":
+{ Args: { "p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: Json
+                           },
+"season_rank":
+{ Args: { "p_from": string,"p_min_matches": number,"p_until": string }; Returns: {
+              "eligible": boolean,"elo": number,"last_at": string,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank": number,"wins": number
+            }[]
+                           },
+"season_reset_elo":
+{ Args: { "p_elo": number,"p_floor": number,"p_pct": number }; Returns: number
+                           },
+"season_start":
+{ Args: { "p_ends_at"?: string,"p_name"?: string }; Returns: string
+                           },
+"season_tier":
+{ Args: { "p_rank": number,"p_tiers": Json,"p_top_n": number }; Returns: {
+              "icon": string,"name": string
+            }[]
+                           },
+"season_tiers_ok":
+{ Args: { "p": Json }; Returns: boolean
+                           },
+"season_update":
+{ Args: { "p_ends_at"?: string,"p_id": string,"p_min_matches"?: number,"p_name"?: string,"p_reset_floor"?: number,"p_reset_pct"?: number,"p_tiers"?: Json,"p_top_n"?: number }; Returns: undefined
+                           },
 "set_claim_config":
 { Args: { "p_max_steam_ids": number }; Returns: number
                            },
@@ -2593,6 +2816,9 @@ isOneToOne: false
 "set_ranking_config":
 { Args: { "p_official": number,"p_pcw": number }; Returns: undefined
                            },
+"set_season_config":
+{ Args: { "p_duration_days": number,"p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_tiers": Json,"p_top_n": number }; Returns: undefined
+                           },
 "set_team_captain":
 { Args: { "p_team": string,"p_user": string }; Returns: undefined
                            },
@@ -2607,6 +2833,9 @@ isOneToOne: false
                            },
 "steam_detach":
 { Args: { "p_steam": string }; Returns: boolean
+                           },
+"steam_group":
+{ Args: { "p_s64": string }; Returns: (string)[]
                            },
 "steam_history_release":
 { Args: { "p_player": string,"p_steam": string }; Returns: undefined

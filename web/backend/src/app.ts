@@ -25,6 +25,7 @@ import { pcw } from './routes/pcw';
 import { pcwPlay } from './routes/pcw-play';
 import { players } from './routes/players';
 import { roster } from './routes/roster';
+import { seasons } from './routes/seasons';
 import { servers } from './routes/servers';
 import { system } from './routes/system';
 import { teams } from './routes/teams';
@@ -77,6 +78,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', adminServers);
   app.route('/', adminDemos);
   app.route('/', elo);
+  app.route('/', seasons);
   app.route('/', matches);
   app.route('/', live);
   app.route('/', events);

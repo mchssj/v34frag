@@ -20,6 +20,7 @@
     "deploy:preview": "wrangler deploy --env preview",
     "db:types": "supabase gen types typescript --local --schema public > src/db/types.ts",
     "smoke": "node scripts/smoke.mjs",
+    "season:tick": "tsx scripts/season-tick.mts",
     "test:coverage": "vitest run --coverage",
     "test:coverage:unit": "vitest run --project unit --coverage"
   },

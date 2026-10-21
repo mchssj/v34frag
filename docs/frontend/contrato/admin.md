@@ -69,6 +69,10 @@
 2. Pide escribir **`estoy seguro`** en un campo de texto. El botón de enviar queda deshabilitado hasta que el texto coincide (sin distinguir mayúsculas ni espacios en los bordes).
 3. Manda ese texto en `confirm`. La API también lo exige: sin él, o con otro texto, responde `400 VALIDATION_ERROR` en el campo `confirm` y no recalcula.
 
+### Temporadas (admin)
+
+Configuración, abrir la temporada 1, cambiar la activa, vista previa del cierre y "Terminar temporada" (con doble confirmación): sección [8f](temporadas.md).
+
 ### Demos (admin)
 
 | Endpoint | Qué hace |

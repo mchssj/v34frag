@@ -22,7 +22,8 @@ const EnvSchema = z.object({
     .url()
     .transform((s) => s.replace(/\/+$/, ''))
     .optional(),
-  // Todavía no se usa: se declara para que el despliegue falle temprano si viene mal formado.
+  // La API no la usa: la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
+  // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),
 });
 

@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-20**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-21**.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -48,6 +48,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | `!whois` (2026-10-19): migración `20261019180000_whois.sql`, replanteo `23` con su inversa y sus pruebas, `csstv/whois.inc`, `csstv_claim` en `claim.inc`, reporter 2.3.0 (`.sp` y `.smx`), `csstv_reporter.cfg` y la bitácora `2026-10-19-plugin-whois/` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
 | Menú de `!whois` (2026-10-20): migración `20261020120000_whois_menu.sql`, replanteo `23` reescrito con su inversa y sus pruebas, `csstv/whois.inc`, reporter 2.3.1 (`.sp` y `.smx`) y la bitácora `2026-10-20-whois-menu/`; además el registro del despliegue de la 2.3.0 en este archivo y en `2026-10-19-plugin-whois/GUIA_IMPLEMENTACION.md` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
 | Consejos en el chat y Discord (2026-10-20): `csstv/tips.inc`, `csstv/summary.inc`, reporter 2.4.0 (`.sp` y `.smx`), `csstv_reporter.cfg` y la bitácora `2026-10-20-consejos-y-discord/` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
+| Temporadas (2026-10-21): replanteo `24` con su inversa y sus pruebas, `web/backend` (rutas, esquemas, tipos, script del cron y pruebas), contrato del frontend (`temporadas.md` y los demás módulos), el cron en el plan del VPS y la bitácora `2026-10-20-temporadas/` | Commiteado el 2026-10-21 en la rama `feat/backend-api-fase-1` (sin push) |
 | `.idea/` y `message.txt` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
@@ -100,6 +101,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Base:** `supabase/replanteo/01` a `21`, en orden, con respaldo previo. La `16` necesita la migración de mixes en vivo (`20261017120000`), ya aplicada en producción. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
 - **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
 - **La `23` (`!whois`) necesita las migraciones de producción `20261019180000_whois.sql` y `20261020120000_whois_menu.sql`** (puntos 1.10 y 1.11) aplicadas antes. En el corte, `csstv_claim "1"` en los dos servidores.
+- **La `24` (temporadas)** va después de la `23`. Después del corte, abrir la temporada 1 desde el admin; el cierre automático necesita el VPS (punto 6).
 - **Plugin 2.2.0 con `!claim`** (bitácora `2026-10-16-claim-steamid`, que lo llama 2.1.0: el número pasó a los mixes en vivo, punto 1.7): **hecho y probado con bots el 2026-10-18**, sin desplegar. Sale en esta misma tanda: genérico al servidor real y licenciado a RBK. Pasos en [`2026-10-18-plugin-claim`](bitacora/2026-10-18-plugin-claim/GUIA_IMPLEMENTACION.md).
 - ~~**`sm_status`**~~: revisado el 2026-10-17 con `smx_grep.py` sobre todos los plugins de los dos servidores: ninguno lo registra.
 - **Plugin 2.0.0:** ya está subido dentro de la 2.1.0 (punto 1.7), en el servidor real y en RBK. En el corte solo falta subir la 2.2.0 (`!claim`, ya hecha), por los mismos accesos y con el mismo cuidado (genérico al servidor real, licenciado a RBK).
@@ -164,6 +166,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 ### 1.10 `!whois` (reporter 2.3.0): verificar en los dos servidores
 
 - **Implementado el 2026-10-19 sin probar** (Daniel pidió solo implementar). El reporter compila; las pruebas SQL de la `23` están escritas pero no se corrieron.
+- **La prueba SQL de la `23` falla** (corrida el 2026-10-21 con `correr.sh`, al probar las temporadas): "por STEAM_0 del adicional: nicks y partidas de toda la ficha (privada igual), ficha y alias". `correr.sh` se corta ahí y no llega a las migraciones siguientes. Falta revisar si el error está en la `23` o en la prueba.
 - **Desplegado el 2026-10-20** (pedido de Daniel, sin las pruebas):
   - **Base de producción:** Daniel corrió `20261019180000_whois.sql` en el SQL Editor.
   - **Servidor real** (`SFTP_CSS_*`): `.smx` genérico, md5 `dbb117f1bb383a1dfc7b5a9619109a1b`.
@@ -307,6 +310,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
      - ~~Ping, modo, región y partidas en vivo en el estado de los servidores~~: **hechos el 2026-10-19**, solo en local (migración `20` y campos nuevos en `GET /api/v1/servers/status` y en el admin de servidores). Probados en local (pruebas SQL, unitarias y de integración). Después del corte, cargar modo y región del servidor real y de RBK. Ver [`2026-10-19-api-servidores-ping-modo-region`](bitacora/2026-10-19-api-servidores-ping-modo-region/DOCUMENTACION.md).
      - ~~Desvincular un SteamID (con aprobación del admin) y elegir el principal desde Mi perfil~~: **hechos el 2026-10-19**, solo en local (migración `21`, `POST /api/v1/me/steam/{steamid}/unlink` y `/primary`). Probados en local (pruebas SQL, unitarias y de integración). Falta el frontend. Ver [`2026-10-19-api-steam-desvincular-principal`](bitacora/2026-10-19-api-steam-desvincular-principal/DOCUMENTACION.md).
      - ~~Cancelar el pedido de desvincular un SteamID y fecha del último cambio de contraseña~~: **hechos el 2026-10-19**, solo en local (migración `22`, `DELETE /api/v1/me/steam/{steamid}/unlink` y `password_changed_at` en el usuario). En la misma tanda, `/auth/me` con una sesión cerrada pasó a responder `401` en vez de `500` (bug reportado por el frontend). Probados en local (pruebas SQL, unitarias y de integración). Falta el frontend. Ver [`2026-10-19-api-cancelar-desvincular-fecha-password`](bitacora/2026-10-19-api-cancelar-desvincular-fecha-password/DOCUMENTACION.md).
+     - ~~Temporadas (medallas al top y reinicio del nivel 10)~~: **hechas el 2026-10-21**, solo en local (migración `24`, endpoints `/api/v1/seasons*`, `/api/v1/players/{id}/seasons` y `/api/v1/admin/seasons*`, y el script del cron `pnpm season:tick`). Probadas en local (pruebas SQL, unitarias y de integración). En el corte: aplicar la `24` y abrir la temporada 1 desde el admin. **El cierre automático necesita el VPS** (timer de systemd y `season.env` con la clave de servicio, en el plan del VPS); hasta entonces se cierra con el botón. Falta el frontend. Publicar `CHANGELOG_DISCORD.txt` cuando la web nueva esté en línea. Ver [`2026-10-20-temporadas`](bitacora/2026-10-20-temporadas/DOCUMENTACION.md).
      - **"Olvidé mi contraseña"** (pendiente): necesita el envío de correos (Resend, plan del VPS). Cuando esté, `POST /auth/recover` con el enlace al frontend y la pantalla para poner la nueva.
      - ~~Mixes en vivo e interrumpidos~~: **hechos el 2026-10-17**, solo en local (migración `16` y endpoints `/api/v1/mixes/live*`, `/api/v1/admin/mixes/*` y `review` en partidas). Aprobar el ELO pide doble confirmación y vincula el juego si se jugaba con `!match`. Ver [`2026-10-17-api-mixes-en-vivo`](bitacora/2026-10-17-api-mixes-en-vivo/DOCUMENTACION.md).
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.

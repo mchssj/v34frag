@@ -53,7 +53,17 @@ export const MapStatsQuery = listQuery(['maps', 'rating', 'kd', 'adr', 'wins'], 
 export const PlayerMapStatsList = Envelope(PlayerMapStats).openapi('PlayerMapStatsList');
 
 export const Medal = z
-  .object({ id: z.uuid(), title: z.string(), icon: z.string().nullable(), created_at: z.string() })
+  .object({
+    id: z.uuid(),
+    title: z.string(),
+    icon: z.string().nullable(),
+    created_at: z.string(),
+    season: z
+      .object({ id: z.uuid(), number: z.number().int(), name: z.string() })
+      .nullable()
+      .openapi({ description: 'Temporada en la que la ganó; `null` en las medallas que da el admin a mano' }),
+    rank: z.number().int().nullable().openapi({ description: 'Puesto en esa temporada' }),
+  })
   .openapi('Medal');
 export const MedalQuery = listQuery(['created_at', 'title'], { sort: 'created_at', order: 'desc' });
 export const MedalList = Envelope(Medal).openapi('MedalList');

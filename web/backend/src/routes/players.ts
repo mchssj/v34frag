@@ -222,10 +222,14 @@ export const players = createRouter()
   .openapi(medals, async (c) => {
     const { id } = c.req.valid('param');
     const p = c.req.valid('query');
-    const q = c.var.sb.from('player_medals').select('id, title, icon, created_at', { count: 'exact' }).eq('player_id', id);
-    type Row = { id: string; title: string; icon: string | null; created_at: string };
+    const q = c.var.sb
+      .from('player_medals')
+      .select('id, title, icon, created_at, rank, season:seasons(id, number, name)', { count: 'exact' })
+      .eq('player_id', id);
+    type Row = { id: string; title: string; icon: string | null; created_at: string; rank: number | null;
+                 season: { id: string; number: number; name: string } | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    return c.json(envelope(rows, total, p), 200);
+    return c.json(envelope(rows.map((r) => ({ ...r, season: r.season ?? null, rank: r.rank ?? null })), total, p), 200);
   })
   .openapi(teams, async (c) => {
     const { id } = c.req.valid('param');

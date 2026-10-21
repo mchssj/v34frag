@@ -88,7 +88,11 @@ flowchart LR
    - `tudominio`: `root /srv/v34frag/web/current`, `try_files {path} /index.html`, `file_server`, `encode`, caché larga para los archivos con hash y corta para `index.html`.
    - `api.tudominio`: `reverse_proxy 127.0.0.1:8787`.
    - En los dos: cabeceras de seguridad (HSTS) y logs.
-8. Todo esto queda como **scripts y archivos en el repo** (`deploy/vps/`): `preparar.sh`, `v34frag-api.service`, `Caddyfile`, `sudoers-deploy` y `api.env.example`, para que el VPS se pueda rehacer igual.
+8. **Cierre automático de las temporadas** (agregado el 2026-10-21, plan [`2026-10-20-temporadas`](../2026-10-20-temporadas/PLAN.md)):
+   - `v34frag-season.service` (`Type=oneshot`, `User=v34frag`, `EnvironmentFile=/srv/v34frag/api/season.env`, `ExecStart=/usr/bin/node /srv/v34frag/api/current/season-tick.mjs`) y `v34frag-season.timer` (`OnCalendar=*:0/10`, `Persistent=true`).
+   - Llama a `season_close_due()`: cierra la temporada si venció (con un mix en vivo espera, hasta 6 horas). Escribe en `journald` solo si cierra o espera.
+   - `season.env` tiene `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (permisos 600, dueño `v34frag`). Es aparte de `api.env` para que la API siga sin la clave de servicio.
+9. Todo esto queda como **scripts y archivos en el repo** (`deploy/vps/`): `preparar.sh`, `v34frag-api.service`, `v34frag-season.service`, `v34frag-season.timer`, `Caddyfile`, `sudoers-deploy`, `api.env.example` y `season.env.example`, para que el VPS se pueda rehacer igual.
 
 ## 3. Variables de producción de la API (`api.env`)
 
@@ -103,14 +107,14 @@ flowchart LR
 | `DEMO_BASE_URL` | La URL del Worker de demos |
 | `GIT_SHA` | El commit, lo pone el pipeline al desplegar |
 
-- No lleva la `service_role` de Supabase: la API actúa siempre con el token del usuario.
+- No lleva la `service_role` de Supabase: la API actúa siempre con el token del usuario. Solo el cron de las temporadas la usa, desde su propio `season.env` (sección 2, punto 8).
 - El archivo vive solo en el VPS, con permisos 600 y dueño `v34frag`.
 
 ## 4. Cambios en el repo (cuando se implemente)
 
 | Qué | Detalle |
 |---|---|
-| `web/backend`: script `build` | esbuild: `src/node.ts` → `dist/server.mjs` (ESM, plataforma Node 24, con las dependencias y source maps) |
+| `web/backend`: script `build` | esbuild: `src/node.ts` → `dist/server.mjs` y `scripts/season-tick.mts` → `dist/season-tick.mjs` (ESM, plataforma Node 24, con las dependencias y source maps) |
 | `web/backend`: script `start` | `node dist/server.mjs` |
 | `src/node.ts` | Escuchar solo en `127.0.0.1` en producción (`HOST`), y cerrar ordenado con `SIGTERM` (termina los requests en curso antes del reinicio) |
 | Prueba del build | Arrancar `dist/server.mjs` en el CI y pedir `/api/health` |

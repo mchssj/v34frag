@@ -124,6 +124,10 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/me/matches` | Como `/players/{id}/matches` | Como `/players/{id}/matches` |
 | `GET /api/v1/players/{id}/map-stats` | `map` | **`maps` desc**, `rating`, `kd`, `adr`, `wins` |
 | `GET /api/v1/players/{id}/medals` | — | **`created_at` desc**, `title` |
+| `GET /api/v1/players/{id}/seasons` | — | **`number` desc** |
+| `GET /api/v1/seasons` | `status` | **`number` desc** |
+| `GET /api/v1/seasons/{id}/standings` | `q`, `eligible` | **`rank` asc** (sin puesto al final, por ELO), `elo`, `matches`, `alias` |
+| `GET /api/v1/admin/seasons/preview` | `top_n`, `min_matches`, `reset_pct`, `reset_floor` (obligatorios), `q`, `reset`, `medal` | **`rank` asc**, `elo`, `alias` |
 | `GET /api/v1/players/{id}/teams` | `active` | **`joined_at` desc**, `left_at`, `name` |
 | `GET /api/v1/teams` | `kind` (por defecto `official`), `q`, `has_space` | **`name` asc**, `members` |
 | `GET /api/v1/teams/{id}/members` | `active`, `role` | **`alias` asc**, `joined_at`, `left_at`, `elo` |
