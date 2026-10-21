@@ -1,0 +1,6 @@
+v34frag 2.4.0 --  Changelog
+
+Consejos en el chat y nuestro Discord
+- Cada 3 minutos sale en el chat un consejo con un comando del servidor: !sell, !pause, !calladmin, !gg, !hp, !rtv, !ready, !score y !status.
+- Solo te muestra los que sirven en ese momento: !pause y !gg con la partida en vivo, !rtv y !ready en el calentamiento.
+- Al terminar cada partida, después del resumen, te dejamos el link de nuestro Discord: dsc.gg/v34frag

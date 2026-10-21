@@ -17,6 +17,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** `!sell` (`csstv_sell` 1.0.0), pedido del PO, empezado por Daniel el 2026-10-19 como plugin aparte. Hecho, probado con bots y **subido a los dos servidores el 2026-10-19**; falta el menú con un jugador (punto 1.8).
 - **Excepción:** `!whois` (reporter **2.3.0**), pedido por Daniel el 2026-10-19: nicks que usó un jugador en las partidas y su perfil en la web, para admins y moderadores. Implementado sin probar y **desplegado el 2026-10-20** en la base, el servidor real y RBK (punto 1.10). El menú cuando hay varias coincidencias (reporter **2.3.1**) se implementó sin probar y se **desplegó el 2026-10-20** en la base y los dos servidores (punto 1.11).
 - **Excepción:** `!calladmin` con Discord y rol de moderador (`csstv_calladmin` 1.0.0), pedido por Daniel el 2026-10-19 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-19**, todavía sin moderadores (punto 1.9). El webhook y el ID del rol `@MOD` están en el `.env` (`DISCORD_CALLADMIN_WEBHOOK`, `DISCORD_MOD_ROLE_ID`).
+- **Excepción:** consejos de comandos en el chat cada 3 minutos y el Discord al terminar la partida (reporter **2.4.0**), pedido por Daniel el 2026-10-20. Aprobado, hecho, probado con bots y **desplegado el 2026-10-20** en los dos servidores (punto 1.12).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
 ## Decisiones anotadas para planes futuros
@@ -46,6 +47,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | Desvincular un SteamID y elegir el principal (2026-10-19): replanteo `21` con su inversa y sus pruebas, `web/backend` (rutas, esquemas, tipos y pruebas), contrato del frontend y la bitácora `2026-10-19-api-steam-desvincular-principal/` | Commiteado el 2026-10-19 en la rama `feat/backend-api-fase-1` (sin push) |
 | `!whois` (2026-10-19): migración `20261019180000_whois.sql`, replanteo `23` con su inversa y sus pruebas, `csstv/whois.inc`, `csstv_claim` en `claim.inc`, reporter 2.3.0 (`.sp` y `.smx`), `csstv_reporter.cfg` y la bitácora `2026-10-19-plugin-whois/` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
 | Menú de `!whois` (2026-10-20): migración `20261020120000_whois_menu.sql`, replanteo `23` reescrito con su inversa y sus pruebas, `csstv/whois.inc`, reporter 2.3.1 (`.sp` y `.smx`) y la bitácora `2026-10-20-whois-menu/`; además el registro del despliegue de la 2.3.0 en este archivo y en `2026-10-19-plugin-whois/GUIA_IMPLEMENTACION.md` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
+| Consejos en el chat y Discord (2026-10-20): `csstv/tips.inc`, `csstv/summary.inc`, reporter 2.4.0 (`.sp` y `.smx`), `csstv_reporter.cfg` y la bitácora `2026-10-20-consejos-y-discord/` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
 | `.idea/` y `message.txt` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
@@ -191,6 +193,24 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   1. **Base de producción:** correr `supabase/migrations/20261020120000_whois_menu.sql` en el SQL Editor. La 2.3.0 que está en los servidores sigue funcionando con ella.
   2. **Plugin 2.3.1 en los dos servidores en la misma tanda:** **servidor real** (`SFTP_CSS_*`, `.smx` genérico) y **RBK** (`SERVER1_*`, build licenciado). La 2.3.0 a `plugins/disabled/`, como mucho 3 versiones anteriores (en RBK se borra la 1.8.0). El cfg no cambia.
 - Pasos y casos de prueba en la [`GUIA_IMPLEMENTACION.md`](bitacora/2026-10-20-whois-menu/GUIA_IMPLEMENTACION.md). Changelog: `bitacora/2026-10-20-whois-menu/CHANGELOG_DISCORD.txt`.
+
+### 1.12 Consejos en el chat y Discord al terminar la partida (reporter 2.4.0): verificar en los dos servidores
+
+- **Hecho y probado con bots el 2026-10-20** en el servidor local, con tiempos cortos. Falta ver los colores con un jugador real.
+- **Desplegado el 2026-10-20** (pedido de Daniel):
+  - **Servidor real** (`SFTP_CSS_*`): `.smx` genérico, md5 `0c4b2bb43df76d7574942c0a251c3525`.
+  - **RBK** (`SERVER1_*`): build licenciado, md5 `3bbaeaee9a049ce0c7d092ab49b42500`.
+  - En los dos, la 2.3.1 quedó en `plugins/disabled/csstv_reporter_2.3.1.smx` y se borró la 2.1.0. En `disabled/` quedan la 2.1.1, la 2.3.0 y la 2.3.1.
+  - Se agregó `csstv_tips_interval "180"` al cfg.
+  - No se recargó nada: se carga en el próximo cambio de mapa.
+- **Falta verificar** en cada servidor:
+  - `sm plugins list` muestra 2.4.0.
+  - Sale un consejo cada 3 minutos.
+  - Al final del primer mix sale `dsc.gg/v34frag`.
+  - En RBK, por SFTP: `addons/sourcemod/logs/` sin errores del reporter.
+  - Esto reemplaza las verificaciones pendientes de los puntos 1.10 y 1.11, que se pueden hacer en el mismo cambio de mapa.
+- **Si molesta:** `csstv_tips_interval 0` apaga los consejos al instante.
+- Changelog: `bitacora/2026-10-20-consejos-y-discord/CHANGELOG_DISCORD.txt`. Detalle en la [`GUIA_IMPLEMENTACION.md`](bitacora/2026-10-20-consejos-y-discord/GUIA_IMPLEMENTACION.md).
 
 ## 2. Investigaciones abiertas
 

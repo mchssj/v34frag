@@ -6,6 +6,8 @@
  *   (top 3)
  * y a cada jugador, en privado:
  *   [v34frag] Tu partida: 18/16/4 · ADR 82 · HS 44% · 3 primeras kills
+ * y al final, a todos:
+ *   [v34frag] ¡Gracias por jugar! Únete a nuestro Discord: dsc.gg/v34frag
  * El MVP es el de más kills; si empatan, el de más daño. ADR = daño / rondas jugadas.
  */
 
@@ -34,7 +36,10 @@ void Summary_Print()
 		order[b + 1] = r;
 	}
 	if (!n)
+	{
+		Summary_Discord();
 		return;
+	}
 
 	char name[MAX_NAME_LENGTH];
 	Summary_Name(order[0], name, sizeof(name));
@@ -62,6 +67,12 @@ void Summary_Print()
 		QolChat(i, "%s Tu partida: {#amarillo}%d/%d/%d{#normal} · ADR %d · HS %d%%%s", PREFIX,
 			g_Stats[r][ST_KILLS], g_Stats[r][ST_DEATHS], g_Stats[r][ST_ASSISTS], Summary_Adr(r), Summary_Hs(r), fk);
 	}
+	Summary_Discord();
+}
+
+void Summary_Discord()
+{
+	QolChatAll("%s ¡Gracias por jugar! Únete a nuestro Discord: {#amarillo}%s", PREFIX, DISCORD_INVITE);
 }
 
 /** Primera línea: el ganador primero. */

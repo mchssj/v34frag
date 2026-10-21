@@ -33,11 +33,13 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.3.1"
+#define PLUGIN_VERSION "2.4.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "v34frag";
 char g_sPrefix[48] = "\x04[v34frag]\x01";
 #define PREFIX g_sPrefix
+// Invitación al Discord: al final del resumen de la partida y en los consejos del chat.
+#define DISCORD_INVITE "dsc.gg/v34frag"
 
 #define TEAM_SPEC 1
 #define TEAM_T 2
@@ -138,6 +140,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/status.inc"
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
+#include "csstv/tips.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -209,6 +212,7 @@ public void OnPluginStart()
 	Status_Init();
 	Claim_Init();
 	Whois_Init();
+	Tips_Init();
 }
 
 public void OnMapStart()
