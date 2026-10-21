@@ -7,8 +7,11 @@ begin
   raise notice 'OK: %', msg;
 end $$;
 create function pg_temp.s(n int) returns text language sql immutable as $$ select '7656119823' || lpad(n::text, 7, '0') $$;
-create function pg_temp.w(p_steam text, p_query text default null) returns jsonb language sql as $$
-  select public.csstv_whois('token-whois-23', p_steam, p_query) $$;
+create function pg_temp.w(p_steam text, p_query text default null, p_online text default null) returns jsonb language sql as $$
+  select public.csstv_whois('token-whois-23', p_steam, p_query, p_online) $$;
+-- Un candidato del menú: steam|online|nick|partidas|ficha.
+create function pg_temp.cand(n int, online boolean, nick text, matches int, ficha int) returns text language sql as $$
+  select concat_ws('|', public.csstv_steam0(pg_temp.s(n)), case when online then public.csstv_steam0(pg_temp.s(n)) else '' end, nick, matches, ficha) $$;
 -- Mensaje del error de una sentencia, o null si no falla.
 create function pg_temp.error(q text) returns text language plpgsql as $$
 begin
@@ -70,9 +73,42 @@ select pg_temp.ok((select r @> '{"ok": true, "player_nick": "Ficha23"}' from pg_
 select pg_temp.ok((select r @> '{"ok": true, "multiple": false, "player_nick": "Ficha23"}' from pg_temp.w(null, 'comun23') r),
   'dos SteamID de la misma ficha son un solo candidato');
 select pg_temp.ok((select r @> '{"ok": true, "multiple": true, "total": 2}'
-                      and r->>'candidates' = 'suelto23a (' || public.csstv_steam0(pg_temp.s(3)) || '), otro23 (' || public.csstv_steam0(pg_temp.s(4)) || ')'
+                      and r->>'candidates' = pg_temp.cand(3, false, 'suelto23a', 1, 0) || ';' || pg_temp.cand(4, false, 'otro23', 2, 0)
                      from pg_temp.w(null, 'suelto23') r),
-  'varios: por fecha (y SteamID si empatan), cada uno con su último nick y SteamID, sin el bot');
+  'varios: por fecha (y SteamID si empatan), cada uno con su último nick, partidas y ficha, sin el bot');
+
+-- ---------- conectados (p_online) ----------
+select pg_temp.ok((select r @> '{"multiple": true, "total": 2}'
+                      and r->>'candidates' = pg_temp.cand(4, true, 'otro23', 2, 0) || ';' || pg_temp.cand(3, false, 'suelto23a', 1, 0)
+                     from pg_temp.w(null, 'suelto23', public.csstv_steam0(pg_temp.s(4))) r),
+  'un conectado que también aparece por un nick viejo sale una vez, primero y marcado');
+select pg_temp.ok((select r @> '{"multiple": true, "total": 2}'
+                      and r->>'candidates' = pg_temp.cand(9, true, '', 0, 0) || ';' || pg_temp.cand(3, false, 'suelto23a', 1, 0)
+                     from pg_temp.w(null, 'suelto23a', public.csstv_steam0(pg_temp.s(9)) || ', basura') r),
+  'un conectado que nunca jugó es candidato; lo que no es SteamID se ignora');
+select pg_temp.ok((select r->>'candidates' = concat_ws('|', public.csstv_steam0(pg_temp.s(1)), public.csstv_steam0(pg_temp.s(2)), 'comun23y', 4, 1)
+                                             || ';' || pg_temp.cand(3, false, 'suelto23a', 1, 0)
+                     from pg_temp.w(null, 'suelto23a', public.csstv_steam0(pg_temp.s(2))) r),
+  'conectado con un adicional: el candidato es la ficha (clave el principal, online el conectado, nicks y partidas de toda la ficha)');
+select pg_temp.ok((select r @> '{"ok": true, "multiple": false, "player_nick": "Ficha23", "steam_count": 2}' from pg_temp.w(null, 'viejo23', public.csstv_steam0(pg_temp.s(2))) r),
+  'conectado con un adicional y un nick viejo del principal: una sola persona, sin menú');
+select pg_temp.ok((select r @> '{"ok": true, "multiple": false, "player_nick": "Ficha23"}' from pg_temp.w(null, 'zz23zz', pg_temp.s(2)) r),
+  'solo el conectado coincide: sus datos directo');
+
+-- ---------- tope de 15 ----------
+insert into public.matches(id, kind, status, map, score1, score2, winner_side, played_at) values
+  ('cccccccc-2300-4000-8000-000000000005', 'mix', 'finished', 'de_dust2', 16, 10, 1, now() - interval '1 day');
+insert into public.match_player_stats(match_id, steam_id, team, nick, rounds)
+  select 'cccccccc-2300-4000-8000-000000000005', pg_temp.s(100 + i), 1 + i % 2, 'muchos23_' || i, 26 from generate_series(1, 16) i;
+select pg_temp.ok((select r @> '{"multiple": true, "total": 16}' and array_length(string_to_array(r->>'candidates', ';'), 1) = 15
+                     from pg_temp.w(null, 'muchos23') r),
+  'con 16 candidatos, total 16 y 15 en la lista');
+insert into public.match_player_stats(match_id, steam_id, team, nick, rounds) values
+  ('cccccccc-2300-4000-8000-000000000005', pg_temp.s(200), 1, 'raro23|a;b', 26),
+  ('cccccccc-2300-4000-8000-000000000005', pg_temp.s(201), 2, 'raro23c', 26);
+select pg_temp.ok((select r->>'candidates' = pg_temp.cand(200, false, 'raro23/a,b', 1, 0) || ';' || pg_temp.cand(201, false, 'raro23c', 1, 0)
+                     from pg_temp.w(null, 'raro23') r),
+  'los nicks van sin | ni ; (no rompen la lista)');
 select pg_temp.ok((select (r->>'ok')::boolean = false and r->>'message' like 'Nadie jugó con un nombre parecido a "nadie23zz"' from pg_temp.w(null, 'nadie23zz') r),
   'nadie parecido');
 select pg_temp.ok((select (r->>'ok')::boolean = false from pg_temp.w(null, '%%') r), '% no es un comodín');
@@ -80,6 +116,9 @@ select pg_temp.ok((select r->>'message' = 'Escribí entre 2 y 32 caracteres del 
 select pg_temp.ok((select r->>'message' = 'Escribí entre 2 y 32 caracteres del nombre' from pg_temp.w('', repeat('x', 33)) r), 'texto muy largo (y SteamID vacío)');
 
 -- ---------- permisos ----------
-select pg_temp.ok(has_function_privilege('anon', 'public.csstv_whois(text, text, text)', 'execute'), 'el plugin la llama con la anon key');
+select pg_temp.ok(has_function_privilege('anon', 'public.csstv_whois(text, text, text, text)', 'execute'), 'el plugin la llama con la anon key');
+select pg_temp.ok((select r @> '{"ok": true, "player_nick": "Ficha23"}' from public.csstv_whois('token-whois-23', pg_temp.s(1)) r),
+  'la llamada de la 2.3.0 (sin p_online) sigue funcionando');
+select pg_temp.ok(to_regprocedure('public.csstv_whois(text, text, text)') is null, 'no queda la versión de 3 parámetros');
 
 rollback;

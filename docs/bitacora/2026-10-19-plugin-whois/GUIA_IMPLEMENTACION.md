@@ -47,7 +47,21 @@
    - `csstv_claim 0`: `!claim` responde que todavía no está disponible.
 3. Revisar el log: `!whois de <admin>: …`.
 
-## Despliegue (pendiente)
+## Despliegue hecho (2026-10-20)
+
+Daniel pidió desplegar sin las pruebas.
+
+1. **Base de producción:** Daniel corrió `supabase/migrations/20261019180000_whois.sql` en el SQL Editor.
+2. **Plugin**, con un script SFTP (`paramiko`) que primero solo inspeccionó y después, en cada servidor: pasó la 2.1.1 a `plugins/disabled/csstv_reporter_2.1.1.smx`, subió la 2.3.0 y la volvió a bajar para comparar el md5, agregó `csstv_claim "0"` al final del `cfg/sourcemod/csstv_reporter.cfg` (la copia del cfg anterior quedó solo en local) y dejó en `plugins/disabled/` como mucho 3 versiones anteriores de cada plugin `csstv_*`.
+
+| Servidor | Acceso | `.smx` | md5 | Antes | Borrado de `disabled/` |
+|---|---|---|---|---|---|
+| Servidor real | `SFTP_CSS_*` | genérico | `dbb117f1bb383a1dfc7b5a9619109a1b` | 2.1.1 (`d96245b1…`) | nada |
+| RBK | `SERVER1_*` | licenciado | `cb5ff8854b685700c4deee60a52b4e26` | 2.1.1 (`f3f684f8…`) | `csstv_reporter_1.7.0.smx` |
+
+No se recargó nada: la 2.3.0 se carga en el próximo cambio de mapa de cada servidor. **Falta verificar** (paso 4 de abajo) y publicar el changelog.
+
+## Pasos del despliegue
 
 1. **Base de producción:** Supabase > SQL Editor > pegar `supabase/migrations/20261019180000_whois.sql` > Run. Solo agrega dos funciones y no toca la web vieja. Comprobar que `csstv_whois` existe.
 2. **Plugin 2.3.0 en los dos servidores en la misma tanda**, sin recargar con un mix en curso (se carga en el próximo cambio de mapa):

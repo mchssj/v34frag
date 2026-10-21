@@ -1,5 +1,7 @@
 # `!whois` en el servidor: documentación
 
+> **Actualizado el 2026-10-20** por [`2026-10-20-whois-menu`](../2026-10-20-whois-menu/DOCUMENTACION.md) (reporter 2.3.1): la búsqueda por texto junta los conectados y la base, y con varias coincidencias abre un menú. Lo de abajo describe la 2.3.0.
+
 ## Qué hace
 
 `!whois <nombre | SteamID>` les dice a los admins y moderadores **qué nicks usó un jugador en las partidas** y **qué perfil tiene vinculado en la web**, si lo tiene. Sirve para jugadores conectados y desconectados.

@@ -1,14 +1,19 @@
 /**
  * !whois: nicks que usó un jugador en las partidas y su perfil en la web
- * (plan: docs/bitacora/2026-10-19-plugin-whois).
+ * (planes: docs/bitacora/2026-10-19-plugin-whois y 2026-10-20-whois-menu).
  *
  *  - !whois <nombre | SteamID>: solo admins y moderadores (ADMFLAG_GENERIC, flag b).
- *    Un nombre busca primero entre los conectados (parte del nombre, sin distinguir mayúsculas;
- *    un nombre exacto gana). Si no hay ninguno conectado, busca en la base por un nick de las
- *    partidas, el nick de la ficha o el alias de la cuenta (jugadores desconectados).
+ *  - Un SteamID, o el nombre exacto de un conectado (sin distinguir mayúsculas), va directo.
+ *  - Si no, la base busca el texto en los nicks de las partidas, el nick de la ficha y el alias de la
+ *    cuenta, y suma los conectados cuyo nombre lo contiene (el plugin le manda sus SteamID). Los
+ *    candidatos son personas: un conectado que también aparece por un nick viejo sale una vez, y
+ *    después del corte los SteamID de una misma ficha son uno solo.
+ *  - Con un candidato muestra sus datos. Con varios abre un menú (hasta 15, conectados primero);
+ *    desde la consola, la lista en texto con los SteamID.
  *  - La respuesta va solo al que preguntó (chat o consola) y queda en el log quién buscó a quién.
  *  - La base (csstv_whois) responde siempre 200 con un objeto plano: { ok, message } si no hay
- *    nada, { ok, multiple, total, candidates } si hay varios, o los datos de uno.
+ *    nada, { ok, multiple, total, candidates } si hay varios, o los datos de uno. candidates:
+ *    "steam|online|nick|partidas|ficha" separados por ";".
  */
 
 #if defined _csstv_whois_included
@@ -17,9 +22,11 @@
 #define _csstv_whois_included
 
 #define WHOIS_COOLDOWN 3
+#define WHOIS_MENU_MAX 15
+#define WHOIS_MENU_TIME 30
 
 int g_iWhoisLast[MAXPLAYERS + 1];               // GetTime() de la última consulta del admin
-char g_sWhoisLabel[MAXPLAYERS + 1][MAX_NAME_LENGTH];   // nombre del conectado consultado ("" si fue por texto o SteamID)
+char g_sWhoisLabel[MAXPLAYERS + 1][MAX_NAME_LENGTH];   // nombre del conectado consultado ("" si es un desconectado)
 ReplySource g_iWhoisReply[MAXPLAYERS + 1];      // chat o consola: la respuesta llega después del comando
 
 void Whois_Init()
@@ -64,20 +71,18 @@ public Action Cmd_Whois(int client, int args)
 		return Plugin_Handled;
 	}
 
-	char steam[40], label[MAX_NAME_LENGTH];
+	char steam[40], label[MAX_NAME_LENGTH], online[1024];
 	if (Whois_IsSteamId(text))
 	{
 		strcopy(steam, sizeof(steam), text);
 	}
 	else
 	{
-		int target = Whois_FindConnected(client, text);
-		if (target == -1)
-			return Plugin_Handled;   // ya se avisó (varios conectados)
-		if (target > 0)
+		int exact = Whois_MatchConnected(text, online, sizeof(online));
+		if (exact > 0)
 		{
-			GetClientName(target, label, sizeof(label));
-			if (!Link_ClientKey(target, steam, sizeof(steam)))
+			GetClientName(exact, label, sizeof(label));
+			if (!Link_ClientKey(exact, steam, sizeof(steam)))
 			{
 				QolReply(client, "[%s] {#amarillo}%s{#normal} no tiene SteamID (¿es un bot?).", g_sTag, label);
 				return Plugin_Handled;
@@ -88,10 +93,13 @@ public Action Cmd_Whois(int client, int args)
 	if (client > 0)
 	{
 		g_iWhoisLast[client] = now;
-		strcopy(g_sWhoisLabel[client], sizeof(g_sWhoisLabel[]), label);
 		g_iWhoisReply[client] = GetCmdReplySource();
+		strcopy(g_sWhoisLabel[client], sizeof(g_sWhoisLabel[]), label);
 	}
-	Whois_Send(client, steam, steam[0] ? "" : text);
+	if (steam[0])
+		Whois_Send(client, steam, "", "");
+	else
+		Whois_Send(client, "", text, online);
 	return Plugin_Handled;
 }
 
@@ -120,13 +128,14 @@ bool Whois_IsSteamId(const char[] s)
 }
 
 /**
- * El conectado cuyo nombre contiene el texto (sin distinguir mayúsculas); un nombre exacto gana.
- * 0 si no hay ninguno (se busca en la base). -1 si hay varios: se los lista al admin.
+ * El conectado cuyo nombre es exactamente el texto (sin distinguir mayúsculas), o 0. En online deja
+ * los SteamID de los conectados cuyo nombre contiene el texto, separados por coma (sin los bots).
  */
-int Whois_FindConnected(int client, const char[] text)
+int Whois_MatchConnected(const char[] text, char[] online, int maxlen)
 {
-	int found[MAXPLAYERS + 1], count, exact;
-	char name[MAX_NAME_LENGTH];
+	int exact;
+	char name[MAX_NAME_LENGTH], key[40];
+	online[0] = '\0';
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsClientSourceTV(i))
@@ -134,30 +143,28 @@ int Whois_FindConnected(int client, const char[] text)
 		GetClientName(i, name, sizeof(name));
 		if (StrEqual(name, text, false))
 			exact = i;
-		if (StrContains(name, text, false) != -1)
-			found[count++] = i;
+		if (StrContains(name, text, false) != -1 && Link_ClientKey(i, key, sizeof(key))
+		    && strlen(online) + strlen(key) + 2 < maxlen)
+			Format(online, maxlen, "%s%s%s", online, online[0] ? "," : "", key);
 	}
-	if (exact)
-		return exact;
-	if (count == 1)
-		return found[0];
-	if (count == 0)
-		return 0;
-
-	char list[192];
-	for (int k = 0; k < count && k < 5; k++)
-	{
-		GetClientName(found[k], name, sizeof(name));
-		ReplaceString(name, sizeof(name), "{", "(");
-		Format(list, sizeof(list), "%s%s%s", list, k ? ", " : "", name);
-	}
-	QolReply(client, "[%s] Hay %d conectados con \"%s\": %s%s. Escribí más del nombre o usá el SteamID.", g_sTag, count, text, list, count > 5 ? "…" : "");
-	return -1;
+	return exact;
 }
 
-void Whois_Send(int client, const char[] steam, const char[] query)
+/** El conectado con ese SteamID (STEAM_0:X:Y), o 0. */
+int Whois_ClientBySteam(const char[] steam)
 {
-	char url[256], key[512], token[128], steamJson[48], queryJson[128], body[512];
+	if (!steam[0])
+		return 0;
+	char key[40];
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && Link_ClientKey(i, key, sizeof(key)) && StrEqual(key, steam, false))
+			return i;
+	return 0;
+}
+
+void Whois_Send(int client, const char[] steam, const char[] query, const char[] online)
+{
+	char url[256], key[512], token[128], steamJson[48], queryJson[128], onlineJson[1024], body[1536];
 	g_cvApiUrl.GetString(url, sizeof(url));
 	int rpc = StrContains(url, "/rpc/", false);
 	if (rpc == -1)
@@ -172,7 +179,8 @@ void Whois_Send(int client, const char[] steam, const char[] query)
 	SanitizeId(token);
 	Claim_SafeNick(steam, steamJson, sizeof(steamJson));
 	Claim_SafeNick(query, queryJson, sizeof(queryJson));
-	Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_steam\":\"%s\",\"p_query\":\"%s\"}", token, steamJson, queryJson);
+	Claim_SafeNick(online, onlineJson, sizeof(onlineJson));
+	Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_steam\":\"%s\",\"p_query\":\"%s\",\"p_online\":\"%s\"}", token, steamJson, queryJson, onlineJson);
 
 	System2HTTPRequest req = new System2HTTPRequest(Whois_OnResponse, "%s", url);
 	req.SetHeader("apikey", "%s", key);
@@ -200,7 +208,7 @@ public void Whois_OnResponse(bool success, const char[] error, System2HTTPReques
 	if (request.Any && !client)
 		return;
 	int status = success && response != null ? response.StatusCode : 0;
-	char text[2048];
+	char text[4096];
 	if (response != null)
 		response.GetContent(text, sizeof(text));
 
@@ -233,11 +241,7 @@ void Whois_Show(int client, int status, const char[] text, const char[] error)
 	Claim_JsonField(text, "multiple", multiple, sizeof(multiple));
 	if (StrEqual(multiple, "true"))
 	{
-		char total[8], candidates[200];
-		Claim_JsonField(text, "total", total, sizeof(total));
-		Whois_Field(text, "candidates", candidates, sizeof(candidates));
-		QolReply(client, "[%s] Hay %s jugadores parecidos: %s%s.", g_sTag, total, candidates, StringToInt(total) > 5 ? " (…)" : "");
-		QolReply(client, "[%s] Usá {#amarillo}!whois <SteamID>{#normal} para ver uno.", g_sTag);
+		Whois_ShowCandidates(client, text);
 		return;
 	}
 
@@ -252,10 +256,12 @@ void Whois_Show(int client, int status, const char[] text, const char[] error)
 	Whois_Field(text, "player_nick", playerNick, sizeof(playerNick));
 	Whois_Field(text, "alias", alias, sizeof(alias));
 
-	// Encabezado: el nombre del conectado consultado o, si fue por texto o SteamID, el último nick.
+	// Encabezado: el nombre del conectado consultado o, si es un desconectado, el último nick.
 	char title[MAX_NAME_LENGTH];
 	if (client > 0 && g_sWhoisLabel[client][0])
 		strcopy(title, sizeof(title), g_sWhoisLabel[client]);
+	else if (Whois_ClientBySteam(steam))
+		GetClientName(Whois_ClientBySteam(steam), title, sizeof(title));
 	else if (nicks[0])
 	{
 		if (SplitString(nicks, ",", title, sizeof(title)) == -1)
@@ -282,6 +288,95 @@ void Whois_Show(int client, int status, const char[] text, const char[] error)
 		return;
 	}
 	QolReply(client, "  En la web: ficha {#verde}%s{#normal}%s%s", playerNick, alias[0] ? " · cuenta " : "", alias);
+}
+
+/** Varios candidatos: menú si preguntó por el chat; si no, la lista en texto. */
+void Whois_ShowCandidates(int client, const char[] text)
+{
+	char totalText[8], list[2048], items[WHOIS_MENU_MAX][160];
+	Claim_JsonField(text, "total", totalText, sizeof(totalText));
+	Whois_Field(text, "candidates", list, sizeof(list));
+	int total = StringToInt(totalText);
+	int count = ExplodeString(list, ";", items, sizeof(items), sizeof(items[]));
+
+	bool useMenu = client > 0 && g_iWhoisReply[client] == SM_REPLY_TO_CHAT;
+	Menu menu;
+	if (useMenu)
+	{
+		menu = new Menu(Whois_MenuHandler);
+		menu.SetTitle("¿A quién querés revisar? (%d)", total);
+	}
+	else
+		QolReply(client, "[%s] Hay %d jugadores parecidos:", g_sTag, total);
+
+	for (int k = 0; k < count; k++)
+	{
+		// steam|online|nick|partidas|ficha
+		char parts[5][64];
+		if (ExplodeString(items[k], "|", parts, sizeof(parts), sizeof(parts[])) < 5)
+			continue;
+		char name[MAX_NAME_LENGTH], line[128];
+		int target = Whois_ClientBySteam(parts[1]);
+		if (target)
+			GetClientName(target, name, sizeof(name));
+		else
+			strcopy(name, sizeof(name), parts[2][0] ? parts[2] : "?");
+		bool ficha = StrEqual(parts[4], "1");
+		if (parts[1][0])
+			Format(line, sizeof(line), "%s · conectado%s", name, ficha ? " · ficha" : "");
+		else
+			Format(line, sizeof(line), "%s · %s partidas%s", name, parts[3], ficha ? " · ficha" : "");
+
+		if (useMenu)
+		{
+			char info[96];
+			Format(info, sizeof(info), "%s|%s", parts[0], parts[1]);
+			menu.AddItem(info, line);
+		}
+		else
+		{
+			ReplaceString(line, sizeof(line), "{", "(");
+			QolReply(client, "  %s (%s)", line, parts[0]);
+		}
+	}
+
+	if (!useMenu)
+	{
+		if (total > count)
+			QolReply(client, "  … y %d más: escribí más del nombre.", total - count);
+		QolReply(client, "[%s] Usá {#amarillo}!whois <SteamID>{#normal} para ver uno.", g_sTag);
+		return;
+	}
+	if (total > count)
+	{
+		char more[64];
+		Format(more, sizeof(more), "Hay %d: escribí más del nombre", total);
+		menu.AddItem("", more, ITEMDRAW_DISABLED);
+	}
+	menu.Display(client, WHOIS_MENU_TIME);
+}
+
+public int Whois_MenuHandler(Menu menu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_End)
+	{
+		delete menu;
+	}
+	else if (action == MenuAction_Select)
+	{
+		// info: "steam|online" (online vacío si está desconectado). Sin la espera de 3 segundos.
+		char info[96], parts[2][48];
+		menu.GetItem(item, info, sizeof(info));
+		ExplodeString(info, "|", parts, sizeof(parts), sizeof(parts[]));
+		int target = Whois_ClientBySteam(parts[1]);
+		if (target)
+			GetClientName(target, g_sWhoisLabel[client], sizeof(g_sWhoisLabel[]));
+		else
+			g_sWhoisLabel[client][0] = '\0';
+		g_iWhoisReply[client] = SM_REPLY_TO_CHAT;
+		Whois_Send(client, parts[0], "", "");
+	}
+	return 0;
 }
 
 /** Un texto de la respuesta, sin llaves (que la base no pueda meter colores). */
