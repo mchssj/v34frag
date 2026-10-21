@@ -82,7 +82,7 @@ si no:          nuevo = elo
 
 **Prueba interactiva del porcentaje (pedido de Daniel):** en la configuración, elegir un jugador (o escribir un ELO) y mover el porcentaje con un control deslizante; se ve en el momento "2540 → 2055". Se calcula en el navegador con la fórmula de arriba, sin una consulta por cada movimiento. Al lado, la vista previa del cierre con los valores del formulario (esa sí consulta la API, con un pequeño retardo).
 
-**"Terminar temporada" pide doble confirmación (obligatorio),** como recalcular el ELO:
+**"Terminar temporada" pide doble confirmación (obligatorio),** como deshacer un ajuste de ELO:
 1. Pregunta si está seguro, con un resumen de lo que va a pasar (el `summary` de la vista previa: cuántas medallas y cuántos nivel 10 bajan).
 2. Pide escribir **`estoy seguro`**. El botón queda deshabilitado hasta que el texto coincide (sin distinguir mayúsculas ni espacios en los bordes).
 3. Manda ese texto en `confirm`. Sin él, o con otro texto, la API responde `400 VALIDATION_ERROR` en `confirm` y no cierra.

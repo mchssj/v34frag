@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { EloConfigPut, EloValues, RecomputeBody } from '../../src/schemas/elo';
+import { AdjustBody, EloValues, UndoBody } from '../../src/schemas/elo';
 import { delta, ELO_DEFAULTS, preview, weight } from '../../src/services/elo';
 import { json, makeApp, testEnv } from '../helpers';
 import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
@@ -68,14 +68,27 @@ describe('esquemas', () => {
 
   it('acepta un factor con decimales', () => expect(EloValues.parse({ ...D, bonus_factor: 7.5 }).bonus_factor).toBe(7.5));
 
-  it('recalcular pide "estoy seguro"', () => {
-    expect(EloConfigPut.safeParse({ config: D }).success).toBe(true);
-    expect(EloConfigPut.safeParse({ config: D, recompute: true }).success).toBe(false);
-    expect(EloConfigPut.safeParse({ config: D, recompute: true, confirm: 'si' }).success).toBe(false);
-    expect(EloConfigPut.safeParse({ config: D, recompute: true, confirm: '  Estoy Seguro ' }).success).toBe(true);
-    expect(RecomputeBody.safeParse({}).success).toBe(false);
-    expect(RecomputeBody.safeParse({ confirm: 'estoy segura' }).success).toBe(false);
-    expect(RecomputeBody.safeParse({ confirm: 'estoy seguro' }).success).toBe(true);
+  it('ajuste: sumar o fijar (uno de los dos), de 1 a 10 fichas sin repetir y con motivo', () => {
+    const P = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222'];
+    const ok = (b: object) => AdjustBody.safeParse({ player_ids: P, reason: 'mix caído', ...b }).success;
+    expect(ok({ delta: 20 })).toBe(true);
+    expect(ok({ delta: -500 })).toBe(true);
+    expect(ok({ set_elo: 1500 })).toBe(true);
+    expect(ok({})).toBe(false);
+    expect(ok({ delta: 20, set_elo: 1500 })).toBe(false);
+    expect(ok({ delta: 0 })).toBe(false);
+    expect(ok({ delta: 501 })).toBe(false);
+    expect(ok({ set_elo: 10001 })).toBe(false);
+    expect(ok({ delta: 20, reason: '  ' })).toBe(false);
+    expect(ok({ delta: 20, player_ids: [P[0], P[0]] })).toBe(false);
+    expect(ok({ delta: 20, player_ids: Array.from({ length: 11 }, () => crypto.randomUUID()) })).toBe(false);
+    expect(ok({ delta: 20, player_ids: [] })).toBe(false);
+  });
+
+  it('deshacer pide "estoy seguro"', () => {
+    expect(UndoBody.safeParse({}).success).toBe(false);
+    expect(UndoBody.safeParse({ confirm: 'si' }).success).toBe(false);
+    expect(UndoBody.safeParse({ confirm: ' Estoy Seguro ' }).success).toBe(true);
   });
 });
 
@@ -142,38 +155,20 @@ describe('rutas', () => {
     });
   });
 
-  it('guardar sin recalcular: recomputed null', async () => {
+  it('guardar: vale para los mixes nuevos, nunca recalcula', async () => {
     const calls = postgrest('admin', (url) => config(url) ?? (url.pathname.endsWith('/rpc/elo_set_config') ? Response.json(0) : undefined));
-    const res = await call('PUT', '/api/v1/admin/elo/config', { config: D });
+    const res = await call('PUT', '/api/v1/admin/elo/config', { config: D, recompute: true, confirm: 'estoy seguro' });
     expect(res.status).toBe(200);
-    expect(await json(res)).toEqual({ config: { ...D, bonus_factor: 10 }, recomputed: null });
+    expect(await json(res)).toEqual({ config: { ...D, bonus_factor: 10 } });
     expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/'))!.body!)).toEqual({
       p_base: 30, p_bonus_max: 5, p_bonus_factor: 10, p_floor: 100, p_start_elo: 1000, p_min_pct: 35, p_full_pct: 90, p_recompute: false,
     });
   });
 
-  it('guardar y recalcular', async () => {
-    postgrest('admin', (url) => config(url) ?? (url.pathname.endsWith('/rpc/elo_set_config') ? Response.json(13) : undefined));
-    const res = await call('PUT', '/api/v1/admin/elo/config', { config: D, recompute: true, confirm: 'estoy seguro' });
-    expect((await json(res)).recomputed).toBe(13);
-  });
-
-  it('recalcular sin confirmar: 400 y no llama a la base', async () => {
-    const calls = postgrest('admin', () => undefined);
-    const res = await call('POST', '/api/v1/admin/elo/recompute', { confirm: 'dale' });
-    expect(res.status).toBe(400);
-    expect((await json(res)).error.details).toEqual([{ path: 'confirm', message: 'Para recalcular, escribe "estoy seguro".' }]);
-    expect(calls.some((x) => x.url.includes('/rpc/'))).toBe(false);
-  });
-
-  it('recalcular', async () => {
-    postgrest('admin', (url) => (url.pathname.endsWith('/rpc/elo_recompute_all') ? Response.json(13) : undefined));
-    expect(await json(await call('POST', '/api/v1/admin/elo/recompute', { confirm: 'estoy seguro' }))).toEqual({ recomputed: 13 });
-  });
-
-  it('recalcular devuelve null: 0', async () => {
-    postgrest('admin', (url) => (url.pathname.endsWith('/rpc/elo_recompute_all') ? Response.json(null) : undefined));
-    expect(await json(await call('POST', '/api/v1/admin/elo/recompute', { confirm: 'estoy seguro' }))).toEqual({ recomputed: 0 });
+  it('recalcular y simular ya no existen', async () => {
+    postgrest('admin', () => undefined);
+    expect((await call('POST', '/api/v1/admin/elo/recompute', { confirm: 'estoy seguro' })).status).toBe(404);
+    expect((await call('POST', '/api/v1/admin/elo/simulate', D)).status).toBe(404);
   });
 
   it('vista previa: no toca la base', async () => {
@@ -184,25 +179,83 @@ describe('rutas', () => {
     expect(calls.some((x) => x.url.includes('/rest/v1/') && !x.url.includes('/profiles'))).toBe(false);
   });
 
-  it('un usuario común no simula', async () => {
+  it('un usuario común no ajusta', async () => {
     postgrest('user', () => undefined);
-    expect((await call('POST', '/api/v1/admin/elo/simulate', D)).status).toBe(403);
+    expect((await call('POST', '/api/v1/admin/elo/adjustments', { player_ids: [USER], delta: 20, reason: 'x' })).status).toBe(403);
+    expect((await call('GET', '/api/v1/admin/elo/adjustments')).status).toBe(403);
   });
 
-  it('simular: filtros, orden y desempate por SteamID', async () => {
-    const sim = { steam_id: '76561198000000001', player_id: null, name: 'x', elo_before: 1000, elo_after: 1010, delta: 10, abs_delta: 10,
-                  matches_before: 1, matches_after: 1, changed: true, search: 'x' };
+  it('ajustar: manda el modo que no se usa en null', async () => {
     const calls = postgrest('admin', (url) =>
-      url.pathname.endsWith('/rpc/elo_simulate') ? Response.json([sim], { headers: { 'Content-Range': '0-0/1' } }) : undefined,
+      url.pathname.endsWith('/rpc/elo_adjust_players')
+        ? Response.json([
+            { adjustment_id: 7, player_id: USER, nick: 'Alfa', elo_before: 1000, elo_after: 1020 },
+            { adjustment_id: null, player_id: ADMIN2, nick: null, elo_before: 1500, elo_after: 1500 },
+          ])
+        : undefined,
     );
-    const res = await call('POST', '/api/v1/admin/elo/simulate?q=Kyán&changed=true&sort=delta&order=asc', D);
+    const res = await call('POST', '/api/v1/admin/elo/adjustments', { player_ids: [USER, ADMIN2], set_elo: 1500, reason: ' corrección ' });
+    expect(res.status).toBe(201);
+    expect(await json(res)).toEqual({
+      items: [
+        { adjustment_id: 7, player: { id: USER, alias: 'Alfa' }, elo_before: 1000, elo_after: 1020 },
+        { adjustment_id: null, player: { id: ADMIN2, alias: '' }, elo_before: 1500, elo_after: 1500 },
+      ],
+    });
+    expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/'))!.body!)).toEqual({
+      p_players: [USER, ADMIN2], p_delta: null, p_set_elo: 1500, p_reason: 'corrección',
+    });
+  });
+
+  it('listado del admin: tipo, ficha y quién', async () => {
+    const calls = postgrest('admin', (url) =>
+      url.pathname.endsWith('/admin_elo_adjustment_list')
+        ? Response.json([
+            { id: 1, player_id: USER, nick: 'Alfa', steam_id: '76561198000000001', delta: 480, set_elo: 1500, reason: 'r', applied_at: 'x',
+              created_by: ADMIN2, created_by_alias: 'Daniel' },
+            { id: 2, player_id: null, nick: null, steam_id: null, delta: 20, set_elo: null, reason: null, applied_at: 'y', created_by: null,
+              created_by_alias: null },
+          ])
+        : undefined,
+    );
+    const body = await json(await call('GET', `/api/v1/admin/elo/adjustments?q=Álfa&player=${USER}&from=2026-10-01`));
+    expect(body.items).toEqual([
+      { id: 1, kind: 'set', delta: 480, set_elo: 1500, reason: 'r', applied_at: 'x', player: { id: USER, alias: 'Alfa' },
+        steam_id: '76561198000000001', created_by: { id: ADMIN2, alias: 'Daniel' } },
+      { id: 2, kind: 'delta', delta: 20, set_elo: null, reason: '', applied_at: 'y', player: null, steam_id: '', created_by: null },
+    ]);
+    const c = calls.find((x) => x.url.includes('/admin_elo_adjustment_list'))!;
+    for (const part of ['search=ilike.%alfa%', `player_id=eq.${USER}`, 'applied_at=gte.2026-10-01', 'order=applied_at.desc.nullslast,id.asc'])
+      expect(c.url).toContain(part);
+  });
+
+  it('deshacer: 400 sin confirmar, 404 si no existe, y no llama a la base', async () => {
+    const calls = postgrest('admin', (url) => (url.pathname.endsWith('/elo_adjustments') ? Response.json([]) : undefined));
+    expect((await call('DELETE', '/api/v1/admin/elo/adjustments/9', { confirm: 'no' })).status).toBe(400);
+    expect((await call('DELETE', '/api/v1/admin/elo/adjustments/9', { confirm: 'estoy seguro' })).status).toBe(404);
+    expect(calls.some((x) => x.url.includes('/rpc/'))).toBe(false);
+  });
+
+  it('deshacer', async () => {
+    const calls = postgrest('admin', (url) =>
+      url.pathname.endsWith('/elo_adjustments')
+        ? Response.json([{ id: 9 }])
+        : url.pathname.endsWith('/rpc/elo_remove_adjustment')
+          ? Response.json(null)
+          : undefined,
+    );
+    expect((await call('DELETE', '/api/v1/admin/elo/adjustments/9', { confirm: 'estoy seguro' })).status).toBe(204);
+    expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/'))!.body!)).toEqual({ p_id: 9 });
+  });
+
+  it('ajustes de un jugador: públicos', async () => {
+    postgrest('user', (url) =>
+      url.pathname.endsWith('/player_elo_adjustment_list')
+        ? Response.json([{ id: 3, delta: -20, set_elo: null, reason: 'abandono', applied_at: 'z' }])
+        : undefined,
+    );
+    const res = await call('GET', `/api/v1/players/${USER}/elo-adjustments`, undefined, false);
     expect(res.status).toBe(200);
-    const body = await json(res);
-    expect(body).toMatchObject({ total: 1, sort: 'delta', order: 'asc' });
-    expect(body.items[0]).not.toHaveProperty('search');
-    expect(body.items[0]).not.toHaveProperty('abs_delta');
-    const c = calls.find((x) => x.url.includes('/rpc/elo_simulate'))!;
-    for (const part of ['search=ilike.%kyan%', 'changed=eq.true', 'order=delta.asc.nullslast,steam_id.asc']) expect(c.url).toContain(part);
-    expect(JSON.parse(c.body!)).toMatchObject({ p_base: 30, p_full_pct: 90 });
+    expect((await json(res)).items).toEqual([{ id: 3, kind: 'delta', delta: -20, set_elo: null, reason: 'abandono', applied_at: 'z' }]);
   });
 });

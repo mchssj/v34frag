@@ -50,9 +50,8 @@
 |---|---|
 | `GET /api/v1/elo/config` | `{ config, updated_at, updated_by }`. `config` tiene los siete valores; `updated_by` (`{ id, alias }`) solo lo ve un admin |
 | `POST /api/v1/admin/elo/preview` | Body: los siete valores. Devuelve los ejemplos (`even`, `high_rating`, `low_rating`, `new_player`, `floor` y `participation`). No guarda nada: llamarlo mientras el admin edita, con un pequeño retardo entre teclas |
-| `POST /api/v1/admin/elo/simulate` | Body: los siete valores. Listado (`q`, `changed`; `sort`: **`abs_delta` desc**, `delta`, `elo_after`, `elo_before`, `name`) de cómo quedaría cada jugador si se recalcula todo: `elo_before`, `elo_after`, `delta`, partidas antes y después. No guarda nada |
-| `PUT /api/v1/admin/elo/config` | Body: `{ config, recompute, confirm }`. Sin `recompute`, vale para los mixes nuevos y `recomputed` es `null`. Con `recompute: true`, también recalcula todo y pide `confirm` |
-| `POST /api/v1/admin/elo/recompute` | Body: `{ confirm }`. Recalcula todo con la configuración actual. Responde `{ recomputed }` (mixes aplicados) |
+| `PUT /api/v1/admin/elo/config` | Body: `{ config }`. Responde `{ config }`. **Vale para los mixes nuevos**: no recalcula el historial (avisarlo en el formulario) |
+| ~~`POST /api/v1/admin/elo/recompute`~~ y ~~`POST /api/v1/admin/elo/simulate`~~ | **Se borraron el 2026-10-21** (pedido de Daniel): desde la web ya no se recalcula el ELO de todos. Para corregir a jugadores puntuales están los ajustes manuales (abajo) |
 
 | Valor | Rango | Qué es |
 |---|---|---|
@@ -64,10 +63,30 @@
 | `min_pct` | 1 a 100 | Con menos de este % de las rondas, el ELO no cambia |
 | `full_pct` | `min_pct` a 100 | Desde este % de las rondas cuenta completo |
 
-**Recalcular pide doble confirmación (obligatorio).** Recalcular rehace el ELO de todos los jugadores con todo el historial y no se puede deshacer desde la web. Antes de enviar `PUT /api/v1/admin/elo/config` con `recompute: true` o `POST /api/v1/admin/elo/recompute`, el frontend:
-1. Pregunta si está seguro, con un resumen de lo que va a pasar (sugerencia: mostrar la simulación con los valores nuevos).
+### Ajustes manuales de ELO (admin, desde el 2026-10-21)
+
+Para corregir el ELO de jugadores puntuales (un mix caído, un abandono, un error), en lugar de recalcular a todos.
+
+| Endpoint | Qué hace |
+|---|---|
+| `POST /api/v1/admin/elo/adjustments` | Body: `{ player_ids, delta \| set_elo, reason }`. De 1 a 10 fichas (sin repetir, todas con SteamID). **Uno de los dos:** `delta` suma o resta (de −500 a +500, sin 0) o `set_elo` fija el ELO (0 a 10000). `reason` es obligatorio (hasta 200) y **lo ve el jugador**. Responde `201 { items: [{ adjustment_id, player, elo_before, elo_after }] }`; con `set_elo`, quien ya tenía ese ELO viene con `adjustment_id: null` (no se ajustó) |
+| `GET /api/v1/admin/elo/adjustments` | Listado: `id`, `kind` (`delta` o `set`), `delta`, `set_elo`, `reason`, `applied_at`, `player` (`{ id, alias }` o `null`), `steam_id` y `created_by` (`{ id, alias }`). Filtros `player`, `q` (alias, motivo o SteamID), `from`, `to`; `sort`: **`applied_at` desc**, `delta` |
+| `DELETE /api/v1/admin/elo/adjustments/{id}` | **Deshacer**. Body: `{ confirm }`. Responde `204`; `404` si no existe |
+
+- **Cuenta desde ahora** y respeta el ELO mínimo (`elo_floor`). Solo mueve el ELO y el pico: no cambia partidas, victorias ni stats.
+- **`set_elo` guarda el valor:** si después la base recalcula sola (al aprobar o quitar un SteamID, o con un mix que llega tarde a una temporada cerrada), el jugador vuelve a quedar en ese valor en esa fecha. `delta` es el cambio que hubo al fijarlo.
+- **Deshacer** resta el cambio. Si es un "fijar", o después hubo un cierre o comienzo de temporada o un "fijar" de la misma ficha, recalcula el ELO de todos para que quede como si el ajuste no hubiera existido: avisarlo en la confirmación.
+
+**Pantalla sugerida:**
+1. Buscar y elegir hasta 10 jugadores (`GET /api/v1/players?q=`), con su ELO actual.
+2. Elegir "Sumar o restar" o "Fijar en", y el motivo.
+3. Antes de confirmar, mostrar cómo queda cada uno ("1480 → 1500"), calculado en el navegador con el ELO actual y el mínimo de `GET /api/v1/elo/config`. La respuesta trae el resultado real.
+4. Debajo, el listado con "Deshacer".
+
+**Deshacer pide doble confirmación (obligatorio).**
+1. Pregunta si está seguro, con el ajuste (jugador, cambio y motivo).
 2. Pide escribir **`estoy seguro`** en un campo de texto. El botón de enviar queda deshabilitado hasta que el texto coincide (sin distinguir mayúsculas ni espacios en los bordes).
-3. Manda ese texto en `confirm`. La API también lo exige: sin él, o con otro texto, responde `400 VALIDATION_ERROR` en el campo `confirm` y no recalcula.
+3. Manda ese texto en `confirm`. La API también lo exige: sin él, o con otro texto, responde `400 VALIDATION_ERROR` en el campo `confirm` y no lo deshace.
 
 ### Temporadas (admin)
 
@@ -90,7 +109,7 @@ Configuración, abrir la temporada 1, cambiar la activa, vista previa del cierre
 - **Vencimiento:** las demos se guardan 90 días; mostrar `expires_at` y el tamaño en MB.
 - **Reintentar:** el botón solo con `can_retry: true`. Después, la demo aparece como pendiente y el Worker la busca en los próximos 10 minutos.
 - **Token del Worker:** se muestra una sola vez, con `secret_command` (cómo cargarlo en Cloudflare).
-- **Token nuevo, con doble confirmación (obligatorio):** el Worker deja de subir demos hasta que se carga el token nuevo en Cloudflare. Igual que al recalcular el ELO: preguntar si está seguro, pedir escribir **`estoy seguro`** (el botón queda deshabilitado hasta que coincide) y mandarlo en `confirm`. La API lo exige: sin él, `400 VALIDATION_ERROR` en `confirm`.
+- **Token nuevo, con doble confirmación (obligatorio):** el Worker deja de subir demos hasta que se carga el token nuevo en Cloudflare. Igual que al deshacer un ajuste de ELO: preguntar si está seguro, pedir escribir **`estoy seguro`** (el botón queda deshabilitado hasta que coincide) y mandarlo en `confirm`. La API lo exige: sin él, `400 VALIDATION_ERROR` en `confirm`.
 
 ### Mixes interrumpidos (admin)
 
@@ -102,7 +121,7 @@ Configuración, abrir la temporada 1, cambiar la activa, vista previa del cierre
 | `GET /api/v1/mixes/live?stale=true` | Mixes en vivo sin fotos hace más de 10 minutos (el servidor se cayó y no volvió) |
 | `POST /api/v1/admin/mixes/live/{uid}/close` | Cerrarlo como interrumpido con la última foto. `200` con `{ match_id }`; `400` si todavía manda fotos; `404` si ya no está en vivo |
 
-- **Aplicar el ELO, con doble confirmación (obligatorio).** Igual que al recalcular: preguntar si está seguro, mostrando quién gana y con cuántas rondas; pedir escribir **`estoy seguro`**; mandarlo en `confirm`. El botón solo con `can_apply: true`; si no, mostrar `blocked_reason`.
+- **Aplicar el ELO, con doble confirmación (obligatorio).** Igual que al deshacer un ajuste de ELO: preguntar si está seguro, mostrando quién gana y con cuántas rondas; pedir escribir **`estoy seguro`**; mandarlo en `confirm`. El botón solo con `can_apply: true`; si no, mostrar `blocked_reason`.
 - **Descartar** y **Cerrar como interrumpido** llevan una confirmación simple.
 
 ### SteamID y `!claim` (admin)

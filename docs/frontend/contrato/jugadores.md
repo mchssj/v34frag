@@ -12,6 +12,7 @@
 | `GET /api/v1/players` | **Jugadores** y **ranking de jugadores** (por defecto, ordenado por ELO): avatar, alias, nivel, ELO, partidas, equipos actuales, rating, K/D |
 | `GET /api/v1/players/{id}` | **Ficha:** datos, ELO (actual, pico, partidas), nivel, stats, equipos actuales, `steam_ids` (todos sus SteamID, el principal primero) y datos personales. Una ficha con SteamID pero sin cuenta (`has_account: false`) muestra "¿Sos vos? Vinculala con `!claim`". Si el perfil es privado y el usuario no puede verlos: `details: null` y `private: true` (mostrar "Perfil privado" en esa sección, no en toda la ficha) |
 | `GET /api/v1/players/{id}/map-stats` · `/medals` · `/teams` | Pestañas de la ficha: stats por mapa, medallas e historial de equipos. Cada medalla trae `season` y `rank` si es de una temporada (`null` si la dio el admin a mano) |
+| `GET /api/v1/players/{id}/elo-adjustments` | **Ajustes de ELO** que le hizo un admin: `kind` (`delta`: sumó o restó; `set`: fijó el ELO en `set_elo`), `delta`, `reason` y `applied_at`. Mostrarlos en el historial de ELO de la ficha ("+20 · mix caído", "Fijado en 1500 · corrección"). `sort`: **`applied_at` desc** |
 | `GET /api/v1/players/{id}/seasons` | Pestaña **Temporadas**: puesto, ELO, pico, mixes y medalla en cada temporada cerrada (sección [8f](temporadas.md)) |
 | `GET /api/v1/players/{id}/matches` | **Partidas del jugador:** fecha, mapa, tipo, bandos, resultado, si ganó, sus stats, su cambio de ELO y el nombre que usó en el juego |
 

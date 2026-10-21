@@ -1,8 +1,8 @@
 import { z } from '@hono/zod-openapi';
-import { boolParam, Envelope, listQuery } from '../lib/list';
-import { CONFIRM_TEXT, confirmField } from './common';
+import { dateParam, Envelope, listQuery } from '../lib/list';
+import { confirmField } from './common';
 
-// Configuración del ELO, vista previa, simulación y recálculo (plan docs/bitacora/2026-10-16-api-elo-config).
+// Configuración del ELO y vista previa (plan docs/bitacora/2026-10-16-api-elo-config) y ajustes manuales.
 // Los rangos son los de elo_set_config.
 
 const int = (min: number, max: number, description: string) =>
@@ -24,21 +24,9 @@ export const EloValues = z
   })
   .openapi('EloValues');
 
-const confirm = confirmField('recalcular');
-
 export const EloConfigPut = z
-  .object({
-    config: EloValues,
-    recompute: z.boolean().default(false).openapi({ description: 'Además, recalcular todo el historial con los valores nuevos' }),
-    confirm: confirm.optional(),
-  })
-  .superRefine((v, ctx) => {
-    if (v.recompute && v.confirm === undefined)
-      ctx.addIssue({ code: 'custom', path: ['confirm'], message: `Para recalcular, escribe "${CONFIRM_TEXT}".` });
-  })
-  .openapi('EloConfigPut');
-
-export const RecomputeBody = z.object({ confirm }).openapi('EloRecompute');
+  .object({ config: EloValues })
+  .openapi('EloConfigPut', { description: 'Vale para los mixes nuevos. Desde la web ya no se recalcula el historial' });
 
 export const EloConfig = z
   .object({
@@ -48,14 +36,7 @@ export const EloConfig = z
   })
   .openapi('EloConfig');
 
-export const EloSaved = z
-  .object({
-    config: EloValues,
-    recomputed: z.number().int().nullable().openapi({ description: 'Mixes recalculados, o `null` si no se recalculó' }),
-  })
-  .openapi('EloSaved');
-
-export const Recomputed = z.object({ recomputed: z.number().int().openapi({ description: 'Mixes recalculados' }) }).openapi('EloRecomputed');
+export const EloSaved = z.object({ config: EloValues }).openapi('EloSaved');
 
 const Pair = z.object({ rating: z.number(), win: z.number().int().nullable(), lose: z.number().int().nullable() });
 export const EloPreview = z
@@ -71,22 +52,68 @@ export const EloPreview = z
   })
   .openapi('EloPreview');
 
-export const SimulateQuery = listQuery(['abs_delta', 'delta', 'elo_after', 'elo_before', 'name'], { sort: 'abs_delta', order: 'desc' }).extend({
-  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre y el SteamID' }),
-  changed: boolParam('Solo los que cambian (o los que no)'),
-});
+// ---------- ajustes manuales (plan docs/bitacora/2026-10-21-ajustes-elo-admin) ----------
 
-export const SimulatedPlayer = z
+export const AdjustBody = z
   .object({
-    steam_id: z.string(),
-    player_id: z.uuid().nullable(),
-    name: z.string().nullable().openapi({ description: 'Nombre de la ficha, o el último que usó en el juego' }),
-    elo_before: z.number().int().nullable().openapi({ description: '`null`: hoy no tiene ELO' }),
-    elo_after: z.number().int().nullable().openapi({ description: '`null`: con los valores nuevos no tendría ELO' }),
-    delta: z.number().int(),
-    matches_before: z.number().int(),
-    matches_after: z.number().int(),
-    changed: z.boolean(),
+    player_ids: z
+      .array(z.uuid())
+      .min(1, 'Elegí al menos un jugador')
+      .max(10, 'Hasta 10 jugadores')
+      .refine((ids) => new Set(ids).size === ids.length, { message: 'Sin repetir jugadores' })
+      .openapi({ description: 'Fichas a ajustar (de 1 a 10), todas con SteamID' }),
+    delta: z.number().int().min(-500, 'Entre -500 y +500').max(500, 'Entre -500 y +500').refine((v) => v !== 0, { message: 'No puede ser 0' })
+      .optional().openapi({ description: 'Sumar (o restar, en negativo)' }),
+    set_elo: z.number().int().min(0, 'Entre 0 y 10000').max(10000, 'Entre 0 y 10000').optional()
+      .openapi({ description: 'Fijar el ELO en este valor (con el piso de la configuración)' }),
+    reason: z.string().trim().min(1, 'El motivo es obligatorio').max(200).openapi({ description: 'Lo ve el jugador en su perfil' }),
   })
-  .openapi('EloSimulatedPlayer');
-export const SimulationList = Envelope(SimulatedPlayer).openapi('EloSimulation');
+  .superRefine((v, ctx) => {
+    if ((v.delta === undefined) === (v.set_elo === undefined))
+      ctx.addIssue({ code: 'custom', path: ['delta'], message: 'Elegí sumar o restar (`delta`) o fijar (`set_elo`), uno de los dos' });
+  })
+  .openapi('EloAdjustBody');
+
+export const AdjustResult = z
+  .object({
+    items: z.array(
+      z.object({
+        adjustment_id: z.number().int().nullable().openapi({ description: '`null`: con "fijar", ya tenía ese ELO y no se ajustó' }),
+        player: z.object({ id: z.uuid(), alias: z.string() }),
+        elo_before: z.number().int(),
+        elo_after: z.number().int(),
+      }),
+    ),
+  })
+  .openapi('EloAdjustResult');
+
+const adjustmentFields = {
+  id: z.number().int(),
+  kind: z.enum(['delta', 'set']).openapi({ description: '`delta`: sumó o restó; `set`: fijó el ELO en `set_elo`' }),
+  delta: z.number().int().openapi({ description: 'Cambio (en `set`, el que hubo al hacerlo)' }),
+  set_elo: z.number().int().nullable(),
+  reason: z.string(),
+  applied_at: z.string(),
+};
+export const PlayerAdjustment = z.object(adjustmentFields).openapi('EloPlayerAdjustment');
+export const PlayerAdjustmentQuery = listQuery(['applied_at'], { sort: 'applied_at', order: 'desc' });
+export const PlayerAdjustmentList = Envelope(PlayerAdjustment).openapi('EloPlayerAdjustmentList');
+
+export const AdminAdjustment = z
+  .object({
+    ...adjustmentFields,
+    player: z.object({ id: z.uuid(), alias: z.string() }).nullable().openapi({ description: '`null` si el SteamID ya no es de ninguna ficha' }),
+    steam_id: z.string(),
+    created_by: z.object({ id: z.uuid(), alias: z.string().nullable() }).nullable(),
+  })
+  .openapi('EloAdminAdjustment');
+export const AdminAdjustmentQuery = listQuery(['applied_at', 'delta'], { sort: 'applied_at', order: 'desc' }).extend({
+  player: z.uuid().optional().openapi({ description: 'Solo los de esta ficha' }),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el alias, el motivo y el SteamID' }),
+  from: dateParam('Hechos desde'),
+  to: dateParam('Hechos hasta'),
+});
+export const AdminAdjustmentList = Envelope(AdminAdjustment).openapi('EloAdminAdjustmentList');
+
+export const AdjustmentIdParam = z.object({ id: z.coerce.number().int().positive().openapi({ param: { name: 'id', in: 'path' } }) });
+export const UndoBody = z.object({ confirm: confirmField('deshacer el ajuste') }).openapi('EloAdjustUndo');

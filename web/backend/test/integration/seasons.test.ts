@@ -175,9 +175,9 @@ describe('temporadas', () => {
     expect(hist.items).toEqual([expect.objectContaining({ season: { id: seasonId, number: 1, name: 'Temporada 1' }, rank: 2, medal: { name: 'Subcampeón', icon: '🥈' } })]);
   });
 
-  it('un recálculo después del cierre deja el mismo ELO', async () => {
+  it('un recálculo (automático: desde la web ya no se puede) después del cierre deja el mismo ELO', async () => {
     const before = await Promise.all(steam.map(eloOf));
-    expect((await call('POST', '/api/v1/admin/elo/recompute', { confirm: OK })).status).toBe(200);
+    check(await admin().rpc('elo_recompute_all'));
     expect(await Promise.all(steam.map(eloOf))).toEqual(before);
   });
 });

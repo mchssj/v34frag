@@ -99,3 +99,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-21 | Temporadas: medallas | Por tramos: 🏆 Campeón, 🥈 Subcampeón, 🥉 Tercer puesto, 🎖️ Top 10 y 🏅 Top N; editables. Título "Temporada 1 · #3". Quedan aunque después se recalcule el ELO | Daniel |
 | 2026-10-21 | Temporadas: reinicio | Solo nivel 10: conserva el porcentaje configurado (10 % al principio) de lo que tenía sobre 2001. 2540 → 2055 | Daniel |
 | 2026-10-21 | Temporadas: ELO pico | `peak_elo` es el de la temporada: al empezar cada una arranca en el ELO actual | Propuesta aceptada |
+| 2026-10-21 | Sin "Recalcular ELO" | Se quita de la web recalcular el ELO de todos (y la simulación). La configuración vale para los mixes nuevos. Los recálculos automáticos de la base (SteamID adicionales, mix que llega tarde a una temporada cerrada) se quedan y tienen en cuenta los ajustes | Daniel |
+| 2026-10-21 | Ajustes manuales de ELO | El admin suma o resta (−500 a +500) o fija el ELO de hasta 10 jugadores, con motivo obligatorio; cuenta desde ese momento. Un "fijar" se vuelve a fijar en un recálculo | Daniel (sumar, restar y fijar; hasta 10); propuesta aceptada (rangos y recálculo) |
+| 2026-10-21 | Ajustes visibles | El jugador ve en su ficha sus ajustes: cambio, motivo y fecha | Daniel |
+| 2026-10-21 | Deshacer un ajuste | Con doble confirmación. Resta el cambio, o recalcula si restar no daría lo mismo (un "fijar", una temporada o un "fijar" posterior) | Propuesta aceptada |

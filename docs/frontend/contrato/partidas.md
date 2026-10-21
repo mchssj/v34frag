@@ -73,7 +73,8 @@
 | Nivel | 1 a 10, calculado por la API con los tramos de la sección 5 |
 | Stats | Solo de partidas terminadas en el servidor (mixes, y PCW y torneos con `!match`). Una partida cancelada no cuenta |
 | Ranking de jugadores | Es el listado de jugadores ordenado por ELO (`GET /api/v1/players`) |
-| Configuración | `GET /api/v1/elo/config`, sin sesión: los valores vigentes, para una página "Cómo se calcula el ELO" |
+| Configuración | `GET /api/v1/elo/config`, sin sesión: los valores vigentes, para una página "Cómo se calcula el ELO". Un cambio vale para los mixes nuevos: no se recalcula el historial |
+| Ajustes manuales | Un admin puede sumar, restar o fijar el ELO de un jugador, con un motivo. El jugador los ve en su ficha (`GET /api/v1/players/{id}/elo-adjustments`). Admin: sección [9](admin.md) |
 ## 8d. Mixes en vivo e interrumpidos (disponible)
 
 El servidor manda una foto del mix al final de cada ronda. Si el servidor se cae (o se reinicia) con un mix en curso, al volver lo guarda como **interrumpido** con la última ronda, y un admin decide si cuenta para el ELO.

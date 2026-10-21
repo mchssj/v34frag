@@ -108,13 +108,13 @@ isOneToOne: false
                   ]
                 },"elo_adjustments": {
                   Row: {
-                    "applied_at": string,"created_at": string,"created_by": string | null,"delta": number,"id": number,"reason": string,"steam_id": string
+                    "applied_at": string,"created_at": string,"created_by": string | null,"delta": number,"id": number,"reason": string,"set_elo": number | null,"steam_id": string
                   }
                   Insert: {
-                    "applied_at"?: string,"created_at"?: string,"created_by"?: string | null,"delta": number,"id"?: never,"reason": string,"steam_id": string
+                    "applied_at"?: string,"created_at"?: string,"created_by"?: string | null,"delta": number,"id"?: never,"reason": string,"set_elo"?: number | null,"steam_id": string
                   }
                   Update: {
-                    "applied_at"?: string,"created_at"?: string,"created_by"?: string | null,"delta"?: number,"id"?: never,"reason"?: string,"steam_id"?: string
+                    "applied_at"?: string,"created_at"?: string,"created_by"?: string | null,"delta"?: number,"id"?: never,"reason"?: string,"set_elo"?: number | null,"steam_id"?: string
                   }
                   Relationships: [
                     
@@ -1454,6 +1454,13 @@ isOneToOne: false
                         Relationships: [
                     
                   ]
+                },"admin_elo_adjustment_list": {
+                  Row: {
+                    "applied_at": string | null,"created_by": string | null,"created_by_alias": string | null,"delta": number | null,"id": number | null,"nick": string | null,"player_id": string | null,"reason": string | null,"search": string | null,"set_elo": number | null,"steam_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"admin_server_list": {
                   Row: {
                     "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"mode": string | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"search": string | null
@@ -2034,6 +2041,13 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"player_elo_adjustment_list": {
+                  Row: {
+                    "applied_at": string | null,"delta": number | null,"id": number | null,"player_id": string | null,"reason": string | null,"set_elo": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"player_map_stats": {
                   Row: {
                     "adr": number | null,"kd": number | null,"losses": number | null,"map_name": string | null,"maps": number | null,"player_id": string | null,"rating": number | null,"wins": number | null
@@ -2557,11 +2571,22 @@ isOneToOne: false
 "elo_add_adjustment":
 { Args: { "p_at"?: string,"p_delta": number,"p_reason": string,"p_steam_ids": (string)[] }; Returns: number
                            },
+"elo_adjust_players":
+{ Args: { "p_delta": number,"p_players": (string)[],"p_reason": string,"p_set_elo": number }; Returns: {
+              "adjustment_id": number,"elo_after": number,"elo_before": number,"nick": string,"player_id": string
+            }[]
+                           },
 "elo_apply_adjustment":
 { Args: { "p_delta": number,"p_steam_id": string }; Returns: undefined
                            },
+"elo_apply_adjustment_row":
+{ Args: { "p_id": number }; Returns: undefined
+                           },
 "elo_apply_match":
 { Args: { "p_match": string }; Returns: undefined
+                           },
+"elo_apply_set":
+{ Args: { "p_elo": number,"p_steam_id": string }; Returns: undefined
                            },
 "elo_crash_apply":
 { Args: { "p_match": string }; Returns: undefined
