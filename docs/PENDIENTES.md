@@ -52,6 +52,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | Temporadas (2026-10-21): replanteo `24` con su inversa y sus pruebas, `web/backend` (rutas, esquemas, tipos, script del cron y pruebas), contrato del frontend (`temporadas.md` y los demás módulos), el cron en el plan del VPS y la bitácora `2026-10-20-temporadas/` | Commiteado el 2026-10-21 en la rama `feat/backend-api-fase-1` (sin push) |
 | Anti-wallhack y humo (2026-10-22): bitácora `2026-10-22-anti-wallhack-y-humo/`, `PENDIENTES.md` y `PLUGINS_EXTERNOS.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | Nombre CMLeague (2026-10-22): fuentes y `.smx` de reporter 2.4.1, sell 1.0.1, calladmin 1.0.1 y allchat 1.0.2, cfgs de `server/cfg/sourcemod/`, `CLAUDE.md` y la bitácora `2026-10-22-nombre-cmleague/` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
+| RBK igual al real (2026-10-22): `server/cfg/sourcemod/csstv_reporter.cfg` y la bitácora `2026-10-22-rbk-igual-al-real/`, y la regla de configuración obligatoria en `CLAUDE.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | `.idea/` y `message.txt` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
@@ -232,6 +233,24 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - publicar `bitacora/2026-10-22-nombre-cmleague/CHANGELOG_DISCORD.txt`;
   - si se quiere, cambiar el nombre de los archivos de las demos (`v34frag_…dem`) con el próximo deploy del Worker (punto 1.1).
 - **Bitácora:** [`2026-10-22-nombre-cmleague`](bitacora/2026-10-22-nombre-cmleague/)
+
+### 1.14 RBK igual al servidor real (con Stripper) y prórroga y medio tiempo nuevos: falta reiniciar RBK
+
+- **Qué es:**
+  - RBK queda igual a nuestro servidor. Le faltaba Stripper:Source, que les saca la niebla a los mapas, y tenía otros valores de partida y otros plugins.
+  - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"`.
+- **Subido el 2026-10-22.**
+  - Servidor real: se carga en el próximo cambio de mapa.
+  - **RBK: falta que Daniel lo reinicie desde el panel.** Metamod y las extensiones solo cargan al arrancar.
+- **Después del reinicio**, verificar por SFTP:
+  - logs de errores sin nada nuevo;
+  - `license.txt` actualizado;
+  - `csstv_perf` con `fps_max 150 → 600`.
+
+  Y en el juego, que no haya niebla.
+- **Accelerator** quedó retirado en los dos servidores (`addons/sourcemod/accelerator_retirado/`): en el real ya estaba así sin estar anotado.
+- Changelog: `bitacora/2026-10-22-rbk-igual-al-real/CHANGELOG_DISCORD.txt`.
+- **Bitácora:** [`2026-10-22-rbk-igual-al-real`](bitacora/2026-10-22-rbk-igual-al-real/)
 
 ## 2. Investigaciones abiertas
 

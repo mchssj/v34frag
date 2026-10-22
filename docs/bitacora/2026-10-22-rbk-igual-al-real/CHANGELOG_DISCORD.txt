@@ -1,0 +1,9 @@
+CMLeague --  Changelog
+
+CMLeague #2 sin niebla
+- El servidor #2 ya no tiene niebla en los mapas, igual que el #1.
+- Los dos servidores quedan con la misma configuración: mismos mapas, mismo freezetime (15 s), misma bomba (40 s) y sin fuego amigo en la partida.
+
+Prórroga y medio tiempo
+- En la prórroga empiezas con 12000.
+- La pausa del medio tiempo dura 5 segundos.

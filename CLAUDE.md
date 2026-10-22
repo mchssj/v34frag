@@ -26,6 +26,13 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - Nuestro servidor recibe el `.smx` genérico (`SFTP_CSS_*`). Cada servidor externo recibe su build licenciado (`server/build_licenciado.sh <license_key> <slug>`) por su propio acceso (`SERVER1_*` para RBK).
   - Una tarea de despliegue al servidor no está terminada hasta que quedó subida en todos. La guía de implementación y `docs/PENDIENTES.md` tienen que nombrar cada servidor.
   - Si aparece un servidor externo nuevo, se suma a esta lista.
+- **Configuración obligatoria e igual en todos los servidores** (los que tenemos y los que lleguemos a tener). Decidido por Daniel el 2026-10-22. La referencia es nuestro servidor real: [`docs/bitacora/2026-10-22-rbk-igual-al-real/DOCUMENTACION.md`](docs/bitacora/2026-10-22-rbk-igual-al-real/DOCUMENTACION.md).
+  - Stripper:Source con `addons/stripper/global_filters.cfg` (sin niebla) y `addons/stripper/maps/`.
+  - Los mismos plugins y extensiones. Sin el anti-wallhack de KACR (`kacr_eyes_antiwall "0"`), con `Anti_Wallhack_Lite` y con `csstv_perf` (sostiene `fps_max 600`).
+  - Los mismos `cfg/csstv/warmup.cfg`, `live.cfg` y `end.cfg`, y el mismo `mapcycle.txt`.
+  - Los mismos valores en `csstv_reporter.cfg` (prórroga MR3 con 12000, medio tiempo de 5 s) y en `server.cfg` (`sv_pure 2`, `phys_timescale 1.7`, `clientmod_smoke_type 2`).
+  - Solo cambia lo propio de cada servidor: token, tag y licencia del reporter, `csstv_demo`, `hostname`, `tv_title`, contraseñas, admins, `csstv_calladmin_server` y `_address`, y FastDL.
+  - Todo cambio de configuración en un servidor se hace en todos en la misma tanda. Un servidor nuevo se arma copiando la configuración del real (script de referencia: `docs/bitacora/2026-10-22-rbk-igual-al-real/pruebas/rbk_igual.py`) y se compara con `comparar.py` antes de darlo por listo.
 
 ## Cuidados
 

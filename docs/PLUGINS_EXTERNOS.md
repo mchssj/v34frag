@@ -55,6 +55,8 @@ Agregados después del inventario (vistos el 2026-10-22 por SFTP, sin md5):
 
 KACR: `kacr_eyes_antiwall` (por defecto "1") está en "0" en los dos servidores desde el 2026-10-22. En el servidor real se volvió a prender un rato ese día como prueba A/B y después se apagó otra vez.
 
+**Desde el 2026-10-22, RBK tiene los mismos plugins, extensiones y Stripper que el servidor real** (ver [bitácora](bitacora/2026-10-22-rbk-igual-al-real/)). Accelerator está retirado en los dos: sus archivos están en `addons/sourcemod/accelerator_retirado/`.
+
 Los demás plugins de la carpeta son los de SourceMod 1.10 (`admin-flatfile`, `adminmenu`, `basecommands`, `antiflood` de chat, etc.). En `plugins/disabled/` están SMAC, `mapchooser`, `rockthevote`, `nominations` y las versiones anteriores de `csstv_reporter`.
 
 ## Errores conocidos en cada arranque
