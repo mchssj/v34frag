@@ -44,6 +44,17 @@ Las demás (`bintools`, `sdktools`, `sdkhooks`, `game.cstrike`, `clientprefs`, `
 | `extremehost.smx` | 4057 | `3fee63e72f6fea47cd639be2d63b585e` | Hosting (2023) | Cambia la descripción del juego con un timer: imprime "Timer Executed" en la consola |
 | `extreme_host.smx` | 3687 | `db86bca074beeb2ff3416bc90b9d57a0` | Hosting (2023) | Del hosting: en cada mapa, con un timer, ejecuta `sm_rcon fps_max 150` (visto el 2026-10-18 con `csstv_perf`) |
 
+Agregados después del inventario (vistos el 2026-10-22 por SFTP, sin md5):
+
+| Plugin | Tamaño | Instalado | Qué hace |
+|---|---|---|---|
+| `Anti_Wallhack_Lite.smx` 1.3.0 (BrokenT) | 14857 | 2026-10-20 01:45 | Anti-wallhack: oculta jugadores, armas y sonidos. Movido a `plugins/disabled/` el 2026-10-22, devuelto a `plugins/` ese mismo día como prueba A/B y **también subido a RBK** (md5 `373446f5…`) ([bitácora](bitacora/2026-10-22-anti-wallhack-y-humo/)) |
+| `soft_detector.smx` | 3089 | 2026-10-20 01:46 | Detecta software de trampas (`logs/softdetector.log`) |
+| `clientmod_emulator.smx` (+ `.sp`) | 7183 | 2026-10-20 14:27 | Bloquea el emulador de ClientMod (`plugin.clientmod_emulator.cfg`) |
+| `convar_detector.smx` (+ `.sp`) | 5198 | 2026-10-20 14:27 | Revisa cvars de los clientes |
+
+KACR: `kacr_eyes_antiwall` (por defecto "1") está en "0" en los dos servidores desde el 2026-10-22. En el servidor real se volvió a prender un rato ese día como prueba A/B y después se apagó otra vez.
+
 Los demás plugins de la carpeta son los de SourceMod 1.10 (`admin-flatfile`, `adminmenu`, `basecommands`, `antiflood` de chat, etc.). En `plugins/disabled/` están SMAC, `mapchooser`, `rockthevote`, `nominations` y las versiones anteriores de `csstv_reporter`.
 
 ## Errores conocidos en cada arranque

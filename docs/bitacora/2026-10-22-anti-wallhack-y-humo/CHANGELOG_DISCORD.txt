@@ -1,0 +1,9 @@
+CMLeague --  Changelog
+
+Jugadores que aparecen y desaparecen
+- Cambiamos el anti-wallhack del servidor. El anterior ocultaba a los rivales que el servidor creía que no estabas viendo, y por eso a veces aparecían de golpe, como si tuvieran lag.
+- Ahora se ven sin cortes y el servidor sigue protegido contra el wallhack.
+- Si todavía ves a alguien aparecer y desaparecer, avísanos en el Discord con la hora y el mapa.
+
+Humo más denso
+- El humo ahora es más denso y se ve menos a través de él.
