@@ -1,13 +1,13 @@
 /**
  * Resumen al terminar la partida (también por !gg; no en una cancelada):
- *   [v34frag] Fin de la partida: Equipo daniloev 16 - 12 Equipo pepe. ¡Gana Equipo daniloev!
- *   [v34frag] MVP: daniloev (27 kills, 98 ADR)
- *   [v34frag] 1. daniloev  27/14/5  ADR 98  HS 52%
+ *   [CMLeague] Fin de la partida: Equipo daniloev 16 - 12 Equipo pepe. ¡Gana Equipo daniloev!
+ *   [CMLeague] MVP: daniloev (27 kills, 98 ADR)
+ *   [CMLeague] 1. daniloev  27/14/5  ADR 98  HS 52%
  *   (top 3)
  * y a cada jugador, en privado:
- *   [v34frag] Tu partida: 18/16/4 · ADR 82 · HS 44% · 3 primeras kills
+ *   [CMLeague] Tu partida: 18/16/4 · ADR 82 · HS 44% · 3 primeras kills
  * y al final, a todos:
- *   [v34frag] ¡Gracias por jugar! Únete a nuestro Discord: dsc.gg/v34frag
+ *   [CMLeague] ¡Gracias por jugar! Únete a nuestro Discord: dsc.gg/v34frag
  * El MVP es el de más kills; si empatan, el de más daño. ADR = daño / rondas jugadas.
  */
 

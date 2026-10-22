@@ -22,7 +22,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define MAX_MONEY      16000
 #define TEAM_T         2
 #define TEAM_CT        3
@@ -42,7 +42,7 @@
 public Plugin myinfo =
 {
 	name = "CSSTV Sell",
-	author = "v34frag",
+	author = "CMLeague",
 	description = "!sell: vender lo comprado en la ronda hasta 5 s después del freezetime",
 	version = PLUGIN_VERSION,
 	url = ""
@@ -706,7 +706,7 @@ void ApplyColorTags(char[] text, int len, bool rgb, bool strip = false)
 		ReplaceString(text, len, g_sColorTag[i], strip ? "" : (rgb ? g_sColorRgb[i] : g_sColorBasic[i]), false);
 }
 
-/** Mensaje de chat solo para el jugador, con el prefijo [v34frag] y etiquetas de color según su cliente. */
+/** Mensaje de chat solo para el jugador, con el prefijo [CMLeague] y etiquetas de color según su cliente. */
 void SellChat(int client, const char[] fmt, any ...)
 {
 	char tag[32], text[224], buf[256];
@@ -715,7 +715,7 @@ void SellChat(int client, const char[] fmt, any ...)
 		cv.GetString(tag, sizeof(tag));
 	SetGlobalTransTarget(client);
 	VFormat(text, sizeof(text), fmt, 3);
-	Format(buf, sizeof(buf), "[%s] %s", tag[0] ? tag : "v34frag", text);
+	Format(buf, sizeof(buf), "[%s] %s", tag[0] ? tag : "CMLeague", text);
 #if defined SELL_DEBUG
 	char plain[256];
 	strcopy(plain, sizeof(plain), buf);

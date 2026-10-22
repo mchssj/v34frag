@@ -544,7 +544,7 @@ void Maps_ChangeTo(const char[] map)
 public Action Timer_MapsChange(Handle timer)
 {
 	if (g_bMapChanging && g_State == State_Warmup)
-		ForceChangeLevel(g_sNextMap, "v34frag: votación de mapa de los jugadores");
+		ForceChangeLevel(g_sNextMap, "CMLeague: votación de mapa de los jugadores");
 	else
 		g_bMapChanging = false;
 	return Plugin_Stop;

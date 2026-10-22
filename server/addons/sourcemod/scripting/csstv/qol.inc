@@ -78,7 +78,7 @@ void Qol_Init()
 	g_cvDemo         = CreateConVar("csstv_demo", "1", "Grabar un demo de SourceTV por partida (requiere tv_enable 1 al cargar el mapa).", _, true, 0.0, true, 1.0);
 	g_cvDemoKeep     = CreateConVar("csstv_demo_keep", "50", "Demos que se conservan en csstv_demos/ (0 = todos).", _, true, 0.0, true, 10000.0);
 	g_cvChatColors   = CreateConVar("csstv_chat_colors", "1", "Colores del chat: 0 solo básicos, 1 RGB para quien usa ClientMod (detectado con su API), 2 siempre RGB.", _, true, 0.0, true, 2.0);
-	g_cvChatTag      = CreateConVar("csstv_chat_tag", "v34frag", "Texto del prefijo de los mensajes: [v34frag].");
+	g_cvChatTag      = CreateConVar("csstv_chat_tag", "CMLeague", "Texto del prefijo de los mensajes: [CMLeague].");
 	g_cvChatTag.AddChangeHook(OnChatTagChanged);
 	g_cvLockTeams    = CreateConVar("csstv_lock_teams", "1", "Durante la partida: no se puede cambiar de equipo, y elegir modelo estando vivo no mata al jugador.", _, true, 0.0, true, 1.0);
 	g_cvAliveHud     = CreateConVar("csstv_alive_hud", "1", "Contador de vivos (CT 5 vs 4 T) fijo durante la partida: 0 no, 1 arriba al centro (HudMsg), 2 en el centro de la pantalla.", _, true, 0.0, true, 2.0);
@@ -120,7 +120,7 @@ bool QolTarget(int client)
 
 public void OnChatTagChanged(ConVar cv, const char[] oldValue, const char[] newValue)
 {
-	strcopy(g_sTag, sizeof(g_sTag), newValue[0] ? newValue : "v34frag");
+	strcopy(g_sTag, sizeof(g_sTag), newValue[0] ? newValue : "CMLeague");
 	Format(g_sPrefix, sizeof(g_sPrefix), "\x04[%s]\x01", g_sTag);
 }
 
@@ -429,8 +429,8 @@ void Qol_RoundHeader()
 
 /**
  * Daño de la ronda anterior, con el formato de la consola del juego:
- *   [v34frag] Damage Given to "Rival" - 54 in 2 hits      (verde)
- *   [v34frag] Damage Taken from "Rival" - 27 in 1 hit     (rojo)
+ *   [CMLeague] Damage Given to "Rival" - 54 in 2 hits      (verde)
+ *   [CMLeague] Damage Taken from "Rival" - 27 in 1 hit     (rojo)
  * Primero todo el daño dado y después el recibido; solo rivales con daño.
  */
 void Qol_DamageReport(int client)

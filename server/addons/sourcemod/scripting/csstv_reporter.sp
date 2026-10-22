@@ -8,7 +8,7 @@
  * equipos bloqueados, contador de vivos y créditos. csstv/rr.inc agrega !rr.
  * csstv/license.inc valida la licencia del servidor: sin ella no se juegan mixes.
  * csstv/knife.inc (ronda de cuchillo), csstv/gg.inc (rendición), csstv/summary.inc
- * (resumen final), csstv/menu.inc (categoría v34frag del menú de admin) y csstv/maps.inc
+ * (resumen final), csstv/menu.inc (categoría CMLeague del menú de admin) y csstv/maps.inc
  * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas). csstv/live.inc manda una foto
  * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
  * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
@@ -33,10 +33,10 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.4.0"
+#define PLUGIN_VERSION "2.4.1"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
-char g_sTag[32] = "v34frag";
-char g_sPrefix[48] = "\x04[v34frag]\x01";
+char g_sTag[32] = "CMLeague";
+char g_sPrefix[48] = "\x04[CMLeague]\x01";
 #define PREFIX g_sPrefix
 // Invitación al Discord: al final del resumen de la partida y en los consejos del chat.
 #define DISCORD_INVITE "dsc.gg/v34frag"

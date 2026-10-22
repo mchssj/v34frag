@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-21**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-22**.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -50,6 +50,8 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | Consejos en el chat y Discord (2026-10-20): `csstv/tips.inc`, `csstv/summary.inc`, reporter 2.4.0 (`.sp` y `.smx`), `csstv_reporter.cfg` y la bitácora `2026-10-20-consejos-y-discord/` | Commiteado el 2026-10-20 en la rama `feat/backend-api-fase-1` (sin push) |
 | Ajustes manuales de ELO y sin recalcular (2026-10-21): replanteo `25` con su inversa y sus pruebas, `web/backend` (rutas y esquemas del ELO, tipos y pruebas), contrato del frontend y la bitácora `2026-10-21-ajustes-elo-admin/` | Commiteado el 2026-10-21 en la rama `feat/backend-api-fase-1` (sin push) |
 | Temporadas (2026-10-21): replanteo `24` con su inversa y sus pruebas, `web/backend` (rutas, esquemas, tipos, script del cron y pruebas), contrato del frontend (`temporadas.md` y los demás módulos), el cron en el plan del VPS y la bitácora `2026-10-20-temporadas/` | Commiteado el 2026-10-21 en la rama `feat/backend-api-fase-1` (sin push) |
+| Anti-wallhack y humo (2026-10-22): bitácora `2026-10-22-anti-wallhack-y-humo/`, `PENDIENTES.md` y `PLUGINS_EXTERNOS.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
+| Nombre CMLeague (2026-10-22): fuentes y `.smx` de reporter 2.4.1, sell 1.0.1, calladmin 1.0.1 y allchat 1.0.2, cfgs de `server/cfg/sourcemod/`, `CLAUDE.md` y la bitácora `2026-10-22-nombre-cmleague/` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | `.idea/` y `message.txt` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
@@ -217,6 +219,20 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Si molesta:** `csstv_tips_interval 0` apaga los consejos al instante.
 - Changelog: `bitacora/2026-10-20-consejos-y-discord/CHANGELOG_DISCORD.txt`. Detalle en la [`GUIA_IMPLEMENTACION.md`](bitacora/2026-10-20-consejos-y-discord/GUIA_IMPLEMENTACION.md).
 
+### 1.13 Nombre CMLeague (reporter 2.4.1, sell 1.0.1, calladmin 1.0.1, allchat 1.0.2): verificar en los dos servidores
+
+- **Qué es:** todo lo que ven los jugadores dice CMLeague en lugar de v34frag: nombre del servidor, SourceTV, prefijo del chat, avisos de `!calladmin` y autor de los plugins. El link de Discord sigue siendo `dsc.gg/v34frag` (decisión de Daniel). La infraestructura (Worker de demos, API, Supabase) conserva sus nombres.
+- **Desplegado el 2026-10-22** en el servidor real (reporter genérico) y en RBK (reporter licenciado), con los cfgs (`hostname`, `tv_title`, `csstv_chat_tag`, `csstv_calladmin_server`). Se carga en el próximo cambio de mapa. Probado con bots.
+- **Verificar:**
+  - el nombre en la lista de servidores;
+  - `[CMLeague]` en el chat;
+  - `sm plugins list` con las versiones nuevas;
+  - en RBK, por SFTP, los logs sin errores y `license.txt` actualizado.
+- **Falta:**
+  - publicar `bitacora/2026-10-22-nombre-cmleague/CHANGELOG_DISCORD.txt`;
+  - si se quiere, cambiar el nombre de los archivos de las demos (`v34frag_…dem`) con el próximo deploy del Worker (punto 1.1).
+- **Bitácora:** [`2026-10-22-nombre-cmleague`](bitacora/2026-10-22-nombre-cmleague/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
@@ -226,13 +242,25 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - Arranca con `-tickrate 101 +fps_max 101`: `fps_max` igual al tickrate.
   - En `server.cfg` las tasas mínimas (101) están por encima de las máximas (100).
   - El servidor está fijado a un solo núcleo.
-  - Ningún plugin bloquea sonidos.
+  - ~~Ningún plugin bloquea sonidos~~: corregido el 2026-10-22. `Anti_Wallhack_Lite.smx` (subido el 2026-10-20) intercepta sonidos, y KACR tenía su anti-wallhack prendido desde el 12/10.
 - **Hecho:** `csstv_perf` (plugin de medición) subido **solo al servidor real** el 2026-10-18. Se carga en el próximo cambio de mapa y escribe `logs/csstv_perf_AAAAMMDD.log`.
 - **Primer mix medido (2026-10-18, 10 jugadores):** la red y el CPU están bien (0 % de pérdida, choke saliente ~0, ningún tick perdido). El 30 % de los ticks sale a destiempo porque el `fps_max` real es **150**: lo fuerza `extreme_host.smx`, el plugin del hosting, en cada mapa. Detalle en la guía de la bitácora.
 - **Siguiente, de a uno y con visto bueno:**
   1. ~~Datos de al menos un mix~~: hecho.
   2. ~~`fps_max 600`~~: hecho con `csstv_perf` 1.1.0. Medido el 2026-10-19 en dos mixes: los ticks que llegan tarde de verdad bajaron de 0,75 % a 0,12 %. El "30 % a destiempo" del primer análisis era el redondeo del reloj (7,8 ms), no algo real. Lo que queda son jugadores puntuales (jordipolla con choke entrante de 24 a 55 % todo el mix: sus FPS). Detalle en la guía.
   3. Tasas coherentes (66/101): baja prioridad, las tasas no muestran problema.
+  4. **Anti-wallhack apagados y humo más denso: aplicado el 2026-10-22 en los dos servidores**, se carga en el próximo cambio de mapa.
+     - Los logs del 18 al 22/10 siguen limpios: 99,97 % de ticks y 0 % de pérdida. La causa más probable de que los jugadores "aparezcan y desaparezcan" son los anti-wallhack, que ocultan a los rivales (`SetTransmit`).
+     - Cambios: `kacr_eyes_antiwall "0"` en el real y en RBK, `Anti_Wallhack_Lite.smx` a `disabled/` (solo en el real) y `clientmod_smoke_type 2` en el real y en RBK.
+     - **Falta:** verificar en la consola después del cambio de mapa, preguntar a los jugadores después de uno o dos mixes, publicar el `CHANGELOG_DISCORD.txt` y preguntar quién subió `Anti_Wallhack_Lite.smx` y por qué.
+     - **Prueba A/B (2026-10-22, pedido de Daniel):**
+       - El humo `2` quedó aprobado.
+       - En el **servidor real** los dos anti-wallhack se volvieron a prender (`kacr_eyes_antiwall "1"` y `Anti_Wallhack_Lite.smx` de vuelta en `plugins/`); en **RBK** siguen apagados.
+       - Después se volvió a apagar el de KACR en el servidor real (`kacr_eyes_antiwall "0"` en los dos servidores). **Hoy solo queda prendido `Anti_Wallhack_Lite.smx` en el servidor real**, y se prueba ese plugin solo.
+       - **Resultado:** Daniel confirmó que así funciona bien. El 2026-10-22 se subió `Anti_Wallhack_Lite.smx` también a RBK, así que los dos servidores quedan iguales: sin el anti-wallhack de KACR, con `Anti_Wallhack_Lite` y con el humo en `2`.
+       - Falta publicar el `CHANGELOG_DISCORD.txt`.
+     - Si siguen las quejas en los dos servidores: `se_clockcorrection_ticks 2` (ClientMod) solo, en los dos.
+     - Bitácora: [`2026-10-22-anti-wallhack-y-humo`](bitacora/2026-10-22-anti-wallhack-y-humo/).
 - **Bitácora:** [`2026-10-18-diagnostico-red-servidor`](bitacora/2026-10-18-diagnostico-red-servidor/)
 
 ### 2.1 Crashes del servidor real

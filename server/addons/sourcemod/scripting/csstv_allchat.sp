@@ -19,7 +19,7 @@
 
 #include <sourcemod>
 
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 #define MAX_QUEUE      32     // mensajes por frame (más que suficiente: el chat tiene antiflood)
 #define MAX_PARAMS     4      // SayText2: frase + hasta 4 parámetros
 #define TEAM_SPEC      1
@@ -29,7 +29,7 @@
 public Plugin myinfo =
 {
 	name = "CSSTV All Chat",
-	author = "v34frag",
+	author = "CMLeague",
 	description = "El chat de texto lo leen vivos y muertos (el de equipo, solo su equipo)",
 	version = PLUGIN_VERSION,
 	url = ""

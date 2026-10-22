@@ -12,7 +12,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - `pruebas/`: opcional.
   - Una fila nueva en `docs/bitacora/README.md`.
   - El formato está en `docs/bitacora/PLANTILLA.md`. Todo en español, con diagramas Mermaid.
-- **Changelog para jugadores:** `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `v34frag X.Y.Z --  Changelog`, con tuteo y sin detalles técnicos.
+- **Changelog para jugadores:** `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `CMLeague X.Y.Z --  Changelog` (el nombre visible es CMLeague desde el 2026-10-22), con tuteo y sin detalles técnicos.
 - **Commits:** Conventional Commits en español (`feat(servidor): …`, `docs(bitacora): …`). Solo cuando Daniel lo pide.
 - **Inventario de plugins y extensiones de terceros del servidor real:** `docs/PLUGINS_EXTERNOS.md`.
 - **Paquetes de JavaScript:** **pnpm** (12.8.1, con Corepack), nunca npm, en `web/backend` y `cloudflare/demo-worker`.

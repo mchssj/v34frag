@@ -29,7 +29,7 @@
 #include <sdktools>
 #include <system2>
 
-#define PLUGIN_VERSION   "1.0.0"
+#define PLUGIN_VERSION   "1.0.1"
 #define REASON_MAX       128
 #define BODY_MAX         2047     // límite de System2
 #define AWAIT_SECONDS    45       // "Otro": tiempo para escribir el motivo en el chat
@@ -41,7 +41,7 @@
 public Plugin myinfo =
 {
 	name = "CSSTV CallAdmin",
-	author = "v34frag",
+	author = "CMLeague",
 	description = "!calladmin a Discord y !map del moderador sin mix en curso",
 	version = PLUGIN_VERSION,
 	url = ""
@@ -96,7 +96,7 @@ public void OnPluginStart()
 	g_cvEnabled        = CreateConVar("csstv_calladmin_enabled", "1", "Activa !calladmin.", _, true, 0.0, true, 1.0);
 	g_cvWebhook        = CreateConVar("csstv_calladmin_webhook", "", "URL del webhook de Discord del canal de reportes.", FCVAR_PROTECTED | FCVAR_DONTRECORD);
 	g_cvRole           = CreateConVar("csstv_calladmin_role", "1561742511045738526", "ID del rol de Discord a mencionar (vacío = sin mención).");
-	g_cvServer         = CreateConVar("csstv_calladmin_server", "", "Nombre del servidor en el mensaje (ej. v34frag #1). Vacío = hostname.");
+	g_cvServer         = CreateConVar("csstv_calladmin_server", "", "Nombre del servidor en el mensaje (ej. CMLeague #1). Vacío = hostname.");
 	g_cvAddress        = CreateConVar("csstv_calladmin_address", "", "IP:puerto público para conectarse (vacío = ip y hostport del servidor).");
 	g_cvCooldown       = CreateConVar("csstv_calladmin_cooldown", "120", "Segundos entre dos reportes del mismo jugador.", _, true, 0.0, true, 3600.0);
 	g_cvGlobalCooldown = CreateConVar("csstv_calladmin_global_cooldown", "30", "Segundos entre dos reportes del servidor.", _, true, 0.0, true, 3600.0);
@@ -895,7 +895,7 @@ void ApplyColorTags(char[] text, int len, bool rgb, bool strip = false)
 		ReplaceString(text, len, g_sColorTag[i], strip ? "" : (rgb ? g_sColorRgb[i] : g_sColorBasic[i]), false);
 }
 
-/** Mensaje de chat solo para el jugador, con el prefijo [v34frag] y etiquetas de color según su cliente. */
+/** Mensaje de chat solo para el jugador, con el prefijo [CMLeague] y etiquetas de color según su cliente. */
 void Chat(int client, const char[] fmt, any ...)
 {
 	char tag[32], text[224], buf[256];
@@ -904,7 +904,7 @@ void Chat(int client, const char[] fmt, any ...)
 		cv.GetString(tag, sizeof(tag));
 	SetGlobalTransTarget(client);
 	VFormat(text, sizeof(text), fmt, 3);
-	Format(buf, sizeof(buf), "[%s] %s", tag[0] ? tag : "v34frag", text);
+	Format(buf, sizeof(buf), "[%s] %s", tag[0] ? tag : "CMLeague", text);
 #if defined CALLADMIN_DEBUG
 	char plain[256];
 	strcopy(plain, sizeof(plain), buf);

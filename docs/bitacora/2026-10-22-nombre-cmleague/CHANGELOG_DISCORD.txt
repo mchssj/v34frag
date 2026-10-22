@@ -1,0 +1,6 @@
+CMLeague 2.4.1 --  Changelog
+
+Ahora somos CMLeague
+- Los servidores ahora se llaman CMLeague #1 y CMLeague #2. Búscalos así en la lista de servidores.
+- Los mensajes del chat salen con [CMLeague].
+- Nuestro Discord sigue siendo el mismo: dsc.gg/v34frag

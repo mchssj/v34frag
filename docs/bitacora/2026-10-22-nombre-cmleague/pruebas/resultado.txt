@@ -1,0 +1,35 @@
+1. Versiones y autor
+  17 "CSSTV All Chat" (1.0.2) by CMLeague
+  18 "CSSTV CallAdmin" (1.0.1) by CMLeague
+  19 "CSSTV Match Reporter" (2.4.1) by CSSTV
+  20 "CSSTV Sell" (1.0.1) by CMLeague
+  Author: CSSTV
+  Version: 2.4.1
+  Author: CMLeague
+  Version: 1.0.1
+  Author: CMLeague
+  Version: 1.0.1
+  Author: CMLeague
+  Version: 1.0.2
+2. Valor por defecto del prefijo
+> csstv_chat_tag
+"csstv_chat_tag" = "CMLeague"
+ - Texto del prefijo de los mensajes: [CMLeague].
+3. Partida mr2: mensajes y resumen final con [CMLeague]
+  [CMLeague] La partida empieza: Equipo Rick (CT) vs Equipo Jon (T). MR2: gana el primero en llegar a 3.
+  [CMLeague] Ronda 1/4 · Equipo Rick (CT) 0 - 0 Equipo Jon (T)
+  [CMLeague] Ronda 1/4 · Equipo Rick (CT) 0 - 0 Equipo Jon (T)
+  [CMLeague] Ronda 2/4 · Equipo Rick (CT) 1 - 0 Equipo Jon (T)
+  [CMLeague] Última ronda antes del cambio de lado.
+  [CMLeague] Ronda 3/4 · Equipo Rick (T) 2 - 0 Equipo Jon (CT)
+  [CMLeague] Match point para el Equipo Rick.
+  [CMLeague] Ronda 4/4 · Equipo Rick (T) 2 - 1 Equipo Jon (CT)
+  ...
+  [CMLeague] Fin de la partida: Equipo Rick 2 - 2 Equipo Jon. Empate.
+  [CMLeague] MVP: Rick (6 kills, 155 ADR)
+  [CMLeague] 1. Rick  6/2/0  ADR 155  HS 0%
+  [CMLeague] 2. Jon  2/2/0  ADR 59  HS 0%
+  [CMLeague] 3. Jeff  0/2/0  ADR 11  HS 0%
+  [CMLeague] ¡Gracias por jugar! Únete a nuestro Discord: dsc.gg/v34frag
+4. Con csstv_chat_tag cambiado, el prefijo sigue al cfg
+  [Prueba] Escribe !hp para ver quién te mató en la ronda y cuánta vida le queda.
