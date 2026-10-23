@@ -12,6 +12,19 @@ const WEAPONS = {
   player: "Mundo", point_hurt: "Mundo", trigger_hurt: "Mundo", env_explosion: "Bomba",
 };
 
+// Letra de cada ícono en clientmodkillfeed.ttf (la fuente del kill feed de ClientMod; la sirve el relay).
+const KILL_GLYPHS = {
+  usp: "a", ak47: "b", glock: "c", tmp: "d", aug: "e", deagle: "f", hegrenade: "h", g3sg1: "i", knife: "j", m3: "k",
+  mac10: "l", p90: "m", scout: "n", sg550: "o", ump45: "q", awp: "r", elite: "s", famas: "t", fiveseven: "u", galil: "v",
+  m4a1: "w", mp5navy: "x", p228: "y", m249: "z", sg552: "A", xm1014: "B", c4: "I", env_explosion: "I",
+};
+export const ICON = { skull: "C", headshot: "D", penetrated: "!", flashAssist: '"', blind: "#", smoke: "$", noscope: "%" };
+
+/** El ícono del arma; la calavera si no hay uno (caída, trigger_hurt, el mundo). */
+export function weaponGlyph(cls) {
+  return KILL_GLYPHS[cls] ?? ICON.skull;
+}
+
 export function weaponName(cls) {
   if (!cls) return "";
   return WEAPONS[cls] ?? cls.toUpperCase();

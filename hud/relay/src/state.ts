@@ -1,13 +1,13 @@
 // Estado de la partida tal como lo ve el HUD: solo se le aplican los paquetes que ya cumplieron el retraso.
 
-import type { NameLine, Packet, Phase, PlayerLine } from "./protocol.ts";
+import type { KillExtras, NameLine, Packet, Phase, PlayerLine } from "./protocol.ts";
 
 export interface Player extends PlayerLine {
   name: string;
   steamid: string;
 }
 
-export interface Kill {
+export interface Kill extends KillExtras {
   at: number;
   attacker: number;
   victim: number;

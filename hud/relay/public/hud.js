@@ -1,5 +1,5 @@
 // HUD para OBS. Recibe del relay el estado ya retrasado y lo dibuja; el reloj corre solo entre paquetes.
-import { TEAM_CT, TEAM_T, clock, connect, el, weaponName } from "/common.js";
+import { ICON, TEAM_CT, TEAM_T, clock, connect, el, weaponGlyph, weaponName } from "/common.js";
 
 const KILL_MS = 5000;
 const BANNER_MS = 5000;
@@ -7,6 +7,17 @@ const BANNER_MS = 5000;
 let state = null;
 let control = null;
 let killsKey = "";
+// Si el relay encontró la fuente de ClientMod, el feed va con íconos; si no, con los nombres de las armas.
+let icons = false;
+new FontFace("cmkill", "url(/font/killfeed.ttf)")
+  .load()
+  .then((f) => {
+    document.fonts.add(f);
+    icons = true;
+    killsKey = "";
+    renderKills();
+  })
+  .catch(() => {});
 
 const $ = (id) => document.getElementById(id);
 
@@ -118,12 +129,33 @@ function renderKills() {
   const items = visible.map((k) => {
     const a = byUid.get(k.attacker);
     const v = byUid.get(k.victim);
+    const killer = a && k.attacker !== k.victim;
+    const as = k.assister && k.assister !== k.attacker ? byUid.get(k.assister) : undefined;
+    if (!icons)
+      return el(
+        "div",
+        { class: "kill" },
+        killer ? el("span", { class: playerSide(a) }, a.name) : null,
+        as ? el("span", { class: playerSide(as) }, `+ ${as.name}`) : null,
+        el("span", { class: "weapon" }, weaponName(k.weapon)),
+        k.headshot ? el("span", { class: "hs" }, "HS") : null,
+        el("span", { class: v ? playerSide(v) : "" }, v?.name ?? ""),
+      );
+    // El mismo orden que el kill feed de ClientMod.
+    const icon = (glyph, cls = "") => el("span", { class: `icon ${cls}` }, glyph);
     return el(
       "div",
       { class: "kill" },
-      a && k.attacker !== k.victim ? el("span", { class: playerSide(a) }, a.name) : null,
-      el("span", { class: "weapon" }, weaponName(k.weapon)),
-      k.headshot ? el("span", { class: "hs" }, "HS") : null,
+      killer && k.blind ? icon(ICON.blind) : null,
+      killer ? el("span", { class: playerSide(a) }, a.name) : null,
+      as ? el("span", { class: "plus" }, "+") : null,
+      as && k.flashAssist ? icon(ICON.flashAssist) : null,
+      as ? el("span", { class: playerSide(as) }, as.name) : null,
+      icon(weaponGlyph(k.weapon), "weapon-icon"),
+      k.noscope ? icon(ICON.noscope) : null,
+      k.smoke ? icon(ICON.smoke) : null,
+      k.penetrated ? icon(ICON.penetrated) : null,
+      k.headshot ? icon(ICON.headshot) : null,
       el("span", { class: v ? playerSide(v) : "" }, v?.name ?? ""),
     );
   });

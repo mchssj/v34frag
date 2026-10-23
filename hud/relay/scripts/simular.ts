@@ -129,7 +129,15 @@ function fight(): void {
     victim.deaths++;
     attacker.kills++;
     attacker.money += 300;
-    send("E", `kill|${attacker.uid}|${victim.uid}|${attacker.active}|${Math.random() < 0.4 ? 1 : 0}`);
+    // Lo que agrega clientmod_deathnotice: asistente (a veces con flash), paredes, ciego, humo y no scope.
+    const mate = pick(players.filter((p) => p.alive && p.team === attacker.team && p !== attacker).concat(attacker));
+    const assister = mate !== attacker && Math.random() < 0.4 ? mate.uid : 0;
+    const chance = (p: number): number => (Math.random() < p ? 1 : 0);
+    const sniper = ["awp", "scout"].includes(attacker.active);
+    send(
+      "E",
+      `kill|${attacker.uid}|${victim.uid}|${attacker.active}|${chance(0.4)}|${assister}|${assister ? chance(0.5) : 0}|${chance(0.2)}|${chance(0.1)}|${chance(0.15)}|${sniper ? chance(0.5) : 0}`,
+    );
     if (victim.bomb) {
       victim.bomb = false;
       const heir = t.find((p) => p.alive && p !== victim);

@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { mergeControl, DEFAULT_CONTROL } from "../src/control.ts";
 import { DelayQueue } from "../src/delay.ts";
+import { findKillfeedFont } from "../src/font.ts";
 import { parsePacket, type Packet } from "../src/protocol.ts";
 import { GameModel } from "../src/state.ts";
 
@@ -46,10 +48,20 @@ describe("protocolo", () => {
   });
 
   it("lee los eventos", () => {
-    assert.deepEqual(packet(`CMH1|${KEY}|9|E|kill|2|3|ak47|1`), { type: "E", seq: 9, event: { kind: "kill", attacker: 2, victim: 3, weapon: "ak47", headshot: true } });
+    const noExtras = { assister: 0, flashAssist: false, penetrated: 0, blind: false, smoke: false, noscope: false };
+    // Plugin 1.0.0: sin los campos de clientmod_deathnotice.
+    assert.deepEqual(packet(`CMH1|${KEY}|9|E|kill|2|3|ak47|1`), { type: "E", seq: 9, event: { kind: "kill", attacker: 2, victim: 3, weapon: "ak47", headshot: true, ...noExtras } });
     assert.deepEqual(packet(`CMH1|${KEY}|10|E|phase|planted|40`), { type: "E", seq: 10, event: { kind: "phase", phase: "planted", seconds: 40 } });
     assert.deepEqual(packet(`CMH1|${KEY}|11|E|bomb|defuse|2`), { type: "E", seq: 11, event: { kind: "bomb", what: "defuse", uid: 2 } });
     assert.deepEqual(packet(`CMH1|${KEY}|12|E|end|3|7`), { type: "E", seq: 12, event: { kind: "end", winner: 3, reason: 7 } });
+  });
+
+  it("lee los agregados de clientmod_deathnotice en la kill", () => {
+    assert.deepEqual(packet(`CMH1|${KEY}|9|E|kill|2|3|awp|0|4|1|2|1|1|1`), {
+      type: "E",
+      seq: 9,
+      event: { kind: "kill", attacker: 2, victim: 3, weapon: "awp", headshot: false, assister: 4, flashAssist: true, penetrated: 2, blind: true, smoke: true, noscope: true },
+    });
   });
 
   it("rechaza la clave equivocada, otro prefijo y formatos rotos", () => {
@@ -160,5 +172,21 @@ describe("control", () => {
     const c = mergeControl({ ...DEFAULT_CONTROL, teamCT: "A", teamT: "B" }, { swap: true });
     assert.deepEqual([c.teamCT, c.teamT], ["B", "A"]);
     assert.equal(mergeControl(c, { teamT: "x".repeat(50) }).teamT.length, 32);
+  });
+});
+
+describe("fuente de los íconos", () => {
+  const FONT = join("cstrike", "resource", "clientmodkillfeed.ttf");
+
+  it("usa gameDir si está configurado", () => {
+    const dir = join("X:", "Juegos", "ClientMod");
+    assert.equal(findKillfeedFont(dir, (p) => p === join(dir, FONT)), join(dir, FONT));
+    assert.equal(findKillfeedFont(dir, () => false), null);
+  });
+
+  it("sin gameDir la busca en la carpeta por defecto de cada disco", () => {
+    const d = join("D:\\CSSv34_ClientMod", FONT);
+    assert.equal(findKillfeedFont(null, (p) => p === d), d);
+    assert.equal(findKillfeedFont(null, () => false), null);
   });
 });

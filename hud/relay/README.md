@@ -26,6 +26,7 @@ flowchart LR
 2. **Relay:** poner `relay.exe` en una carpeta propia, por ejemplo `Documentos\CMLeague HUD\`, y abrirlo una vez. Crea `relay.json` y se cierra.
    - Windows puede mostrar "Windows protegió tu PC", porque el `.exe` no está firmado: *Más información* → *Ejecutar de todas formas*.
 3. Abrir `relay.json` con el Bloc de notas y reemplazar `PEGAR_ACA_LA_CLAVE` por la clave que pasa Daniel. No tocar lo demás.
+   - **Íconos del feed de kills:** el relay usa la fuente del kill feed de ClientMod (`cstrike\resource\clientmodkillfeed.ttf`) y la busca solo en `C:\CSSv34_ClientMod` a `F:\CSSv34_ClientMod`. Si ClientMod está en otra carpeta, ponerla en `"gameDir"`, con la barra doble: `"gameDir": "D:\\Juegos\\CSSv34_ClientMod"`. Al abrir, la consola dice "Íconos del feed: …" si la encontró.
 4. **OBS**, en la escena de la transmisión:
    - Una *Captura de juego* de CS:S, conectado a la SourceTV del servidor #1. Mejor con el juego en 1920×1080.
    - **Encima**, una fuente *Navegador*:
@@ -50,6 +51,7 @@ flowchart LR
 | "con clave incorrecta" | La clave de `relay.json` no es la del servidor |
 | "Sin paquetes hace X s" | No hay jugadores en el servidor, o se cortó playit |
 | "No se pudo abrir el puerto 8090" | Hay otro `relay.exe` abierto: cerrarlo |
+| "No se encontró la fuente de ClientMod" | El feed muestra los nombres de las armas en lugar de los íconos. Poner la carpeta de ClientMod en `"gameDir"` |
 
 **Regla mientras el relay corra en la PC del streamer:** en torneos solo transmite alguien neutral. Los datos le llegan a su PC antes que la imagen.
 
@@ -84,6 +86,7 @@ pnpm build:exe     # dist/relay.exe (Node + relay + HUD en un solo archivo)
 | Retraso | `src/delay.ts` |
 | Estado que ve el HUD | `src/state.ts` |
 | HTTP y SSE (solo en `127.0.0.1`) | `src/server.ts` |
+| Fuente de los íconos del feed (de la instalación del streamer, nunca en el repo ni en el `.exe`) | `src/font.ts` |
 | Nombres, jugador enfocado y lo que se muestra | `src/control.ts` (se guarda en `relay-control.json`) |
 | HUD y página de control | `public/` |
 

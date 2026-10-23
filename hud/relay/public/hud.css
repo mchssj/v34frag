@@ -64,6 +64,10 @@ html, body {
 .kill .t { color: var(--t); }
 .kill .weapon { color: var(--muted); font-size: 18px; text-transform: uppercase; }
 .kill .hs { color: #ff7b72; font-size: 16px; }
+.kill .plus { color: var(--muted); }
+/* Íconos de clientmodkillfeed.ttf: blancos, como en el juego. */
+.kill .icon { font-family: "cmkill"; font-weight: normal; font-size: 30px; line-height: 1; color: var(--text); }
+.kill .icon.weapon-icon { font-size: 36px; }
 @keyframes in { from { opacity: 0; transform: translateX(20px); } }
 
 /* Jugadores */

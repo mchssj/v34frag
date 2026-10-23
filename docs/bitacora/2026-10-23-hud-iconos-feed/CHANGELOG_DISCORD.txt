@@ -1,0 +1,5 @@
+CMLeague --  Changelog
+
+HUD de las transmisiones
+- El feed de kills del HUD ahora muestra los íconos del juego en lugar del nombre del arma.
+- También muestra lo mismo que ves en el juego con ClientMod: asistencias, asistencia con flash, wallbang, kill a través del humo, sin mira y ciego.

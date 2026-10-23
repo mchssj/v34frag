@@ -9,9 +9,11 @@ export interface Config {
   httpPort: number;
   /** Segundos de retraso. null: usar el tv_delay que manda el servidor. */
   delay: number | null;
+  /** Carpeta de ClientMod del streamer, para los íconos del feed. null: buscarla en C:\ a F:\CSSv34_ClientMod. */
+  gameDir: string | null;
 }
 
-const DEFAULTS: Config = { key: "", udpPort: 27500, httpPort: 8090, delay: null };
+const DEFAULTS: Config = { key: "", udpPort: 27500, httpPort: 8090, delay: null, gameDir: null };
 
 export function configPath(isSea: boolean): string {
   return join(isSea ? dirname(process.execPath) : process.cwd(), "relay.json");
@@ -37,5 +39,7 @@ export function loadConfig(path: string): LoadResult {
     if (!Number.isInteger(c[k]) || c[k] < 1 || c[k] > 65535) return { ok: false, message: `"${k}" tiene que ser un puerto (1 a 65535).` };
   if (c.delay !== null && (typeof c.delay !== "number" || c.delay < 0 || c.delay > 300))
     return { ok: false, message: `"delay" tiene que ser null o un número de 0 a 300 segundos.` };
+  if (c.gameDir !== null && typeof c.gameDir !== "string")
+    return { ok: false, message: `"gameDir" tiene que ser null o la carpeta de ClientMod, por ejemplo "C:\\\\CSSv34_ClientMod" (en relay.json la barra va doble).` };
   return { ok: true, config: c };
 }

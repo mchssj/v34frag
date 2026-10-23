@@ -15,7 +15,9 @@
  *   CMH1|<clave>|<secuencia>|F|<tv_delay>|<mapa>|<ronda>|<puntos T>|<puntos CT>|<fase>|<segundos>|<jugadores>
  *   CMH1|<clave>|<secuencia>|N|<uid>,<steamid>,<nombre>;…
  *   CMH1|<clave>|<secuencia>|D|<jugadores que cambiaron>
- *   CMH1|<clave>|<secuencia>|E|kill|<uid atacante>|<uid víctima>|<arma>|<headshot>
+ *   CMH1|<clave>|<secuencia>|E|kill|<uid atacante>|<uid víctima>|<arma>|<headshot>|<uid asistente>|<asistió con flash>
+ *        |<paredes atravesadas>|<atacante ciego>|<a través del humo>|<sin mira>   (lo agrega clientmod_deathnotice;
+ *        sin ese plugin van en 0)
  *   CMH1|<clave>|<secuencia>|E|phase|<fase>|<segundos>          fase: freeze, live, planted, over
  *   CMH1|<clave>|<secuencia>|E|bomb|<plant|defuse|explode>|<uid>
  *   CMH1|<clave>|<secuencia>|E|end|<equipo ganador>|<motivo>
@@ -31,7 +33,7 @@
 #include <sdktools>
 #include <socket>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.1.0"
 #define TEAM_T         2
 #define TEAM_CT        3
 #define SLOT_C4        4
@@ -510,10 +512,14 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	char weapon[32], body[96];
+	char weapon[32], body[128];
 	event.GetString("weapon", weapon, sizeof(weapon));
 	Sanitize(weapon);
-	FormatEx(body, sizeof(body), "kill|%d|%d|%s|%d", event.GetInt("attacker"), event.GetInt("userid"), weapon, event.GetBool("headshot"));
+	// assister, assistedflash, penetrated, attackerblind, smoke y noscope los agrega clientmod_deathnotice al
+	// player_death (resource/modevents.res), para el mismo kill feed que ven los jugadores.
+	FormatEx(body, sizeof(body), "kill|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d", event.GetInt("attacker"), event.GetInt("userid"), weapon,
+		event.GetBool("headshot"), event.GetInt("assister"), event.GetBool("assistedflash"), event.GetInt("penetrated"),
+		event.GetBool("attackerblind"), event.GetBool("smoke"), event.GetBool("noscope"));
 	SendPacket("E", body);
 }
 

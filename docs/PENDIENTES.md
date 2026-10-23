@@ -254,7 +254,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 ### 1.15 HUD de observer (`csstv_hud` 1.0.0): subido solo al servidor real, sin probar
 
-- **Excepción pedida por Daniel el 2026-10-22:** sin pruebas en el servidor local y **solo al servidor real**. RBK no lo tiene: cuando se confirme que funciona, se sube también a RBK con `csstv_hud "0"` (regla de `CLAUDE.md`).
+- **Excepción pedida por Daniel el 2026-10-22:** sin pruebas en el servidor local y **solo al servidor real**. Desde el 2026-10-23 RBK también lo tiene (1.1.0), con `csstv_hud "0"`.
 - **Subido el 2026-10-22** al servidor real (`SFTP_CSS_*`), verificado bajándolo de nuevo:
   - `addons/sourcemod/plugins/csstv_hud.smx` (14738 bytes, md5 `72645cac9e61aa5ad768586eee72d06d`).
   - `cfg/sourcemod/csstv_hud.cfg` con `csstv_hud "1"`, la clave (`HUD_RELAY_KEY` del `.env`) y **el host y el puerto vacíos**: no manda nada hasta cargarlos.
@@ -265,6 +265,11 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - `relay.exe` no se versiona: se arma con `pnpm build:exe` y se le pasa al streamer junto con la clave (`HUD_RELAY_KEY`).
   - **En qué se apartó del plan:** en la [guía de implementación](bitacora/2026-10-22-hud-observer/GUIA_IMPLEMENTACION.md) (documentación y guía escritas el 2026-10-23).
   - **Falta ver con la SourceTV real:** cómo ocultar las barras de espectador de CS:S debajo del HUD.
+- **Íconos en el feed (`csstv_hud` 1.1.0 y relay 1.1.0): hechos el 2026-10-23.** El feed usa los íconos de ClientMod y sus agregados (asistencia, flash, wallbang, ciego, humo y no scope).
+  - **`csstv_hud.smx` 1.1.0 subido el 2026-10-23 al servidor real y a RBK** (md5 `cce849f760bbef2b5d038a992c96c4bf`), verificado bajándolo de nuevo. Se carga en el próximo cambio de mapa. **RBK ya tiene el plugin**, con `csstv_hud "0"` y sin host ni clave.
+  - Falta pasarle al streamer el `relay.exe` 1.1.0 y ver una kill real con los campos de ClientMod.
+  - Bitácora: [`2026-10-23-hud-iconos-feed`](bitacora/2026-10-23-hud-iconos-feed/).
+- **Descartado por ahora (Daniel, 2026-10-23):** que el HUD siga solo al jugador que mira el observer (binds con `spec_player` y el log de la consola) y ocultar la barra superior del espectador (`hidepanel specgui` o un `spectator.res` en `cstrike_custom/`). Están analizados en la conversación del 2026-10-23 y no se tocan por ahora.
 - **Si algo falla:** `csstv_hud 0` lo apaga al instante.
 - **Bitácora:** [`2026-10-22-hud-observer`](bitacora/2026-10-22-hud-observer/)
 

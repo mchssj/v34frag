@@ -8,6 +8,8 @@ export interface HttpHandlers {
   initial(): { event: string; data: unknown }[];
   onControl(body: unknown): void;
   status(): unknown;
+  /** La fuente de los íconos del feed, o null si no se encontró. */
+  font(): Buffer | null;
 }
 
 const PAGES: Record<string, AssetName> = { "/": "hud.html", "/hud": "hud.html", "/control": "control.html" };
@@ -53,6 +55,13 @@ export class HttpServer {
     if (req.method === "GET" && path === "/events") return this.events(res);
     if (req.method === "GET" && path === "/api/status") return json(res, 200, this.handlers.status());
     if (req.method === "POST" && path === "/api/control") return this.control(req, res);
+    if (req.method === "GET" && path === "/font/killfeed.ttf") {
+      const font = this.handlers.font();
+      if (!font) return json(res, 404, { error: "no se encontró la fuente de ClientMod" });
+      res.writeHead(200, { "content-type": "font/ttf", "cache-control": "no-store" });
+      res.end(font);
+      return;
+    }
 
     const page = PAGES[path] ?? (ASSETS as readonly string[]).find((a) => path === `/${a}`);
     if (req.method === "GET" && page) {

@@ -48,10 +48,20 @@ export type Packet =
   | { type: "E"; seq: number; event: GameEvent };
 
 export type GameEvent =
-  | { kind: "kill"; attacker: number; victim: number; weapon: string; headshot: boolean }
+  | ({ kind: "kill"; attacker: number; victim: number; weapon: string; headshot: boolean } & KillExtras)
   | { kind: "phase"; phase: Phase; seconds: number }
   | { kind: "bomb"; what: "plant" | "defuse" | "explode"; uid: number }
   | { kind: "end"; winner: number; reason: number };
+
+/** Lo que agrega clientmod_deathnotice al player_death. Con el plugin 1.0.0 o sin ese plugin, todo en 0. */
+export interface KillExtras {
+  assister: number; // uid; 0 = sin asistencia
+  flashAssist: boolean;
+  penetrated: number; // paredes atravesadas
+  blind: boolean; // el atacante estaba ciego
+  smoke: boolean;
+  noscope: boolean;
+}
 
 export type ParseResult = { ok: true; packet: Packet } | { ok: false; reason: "prefix" | "key" | "format" };
 
@@ -114,7 +124,10 @@ function parseNames(s: string): NameLine[] {
 function parseEvent(f: string[]): GameEvent | null {
   switch (f[0]) {
     case "kill":
-      return { kind: "kill", attacker: int(f[1]), victim: int(f[2]), weapon: f[3] ?? "", headshot: f[4] === "1" };
+      return {
+        kind: "kill", attacker: int(f[1]), victim: int(f[2]), weapon: f[3] ?? "", headshot: f[4] === "1",
+        assister: int(f[5]), flashAssist: f[6] === "1", penetrated: int(f[7]), blind: f[8] === "1", smoke: f[9] === "1", noscope: f[10] === "1",
+      };
     case "phase":
       return { kind: "phase", phase: phase(f[1]), seconds: int(f[2]) };
     case "bomb":
