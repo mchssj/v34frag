@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import { mergeControl, DEFAULT_CONTROL } from "../src/control.ts";
 import { DelayQueue } from "../src/delay.ts";
-import { findKillfeedFont } from "../src/font.ts";
+import { findFont } from "../src/font.ts";
 import { parsePacket, type Packet } from "../src/protocol.ts";
 import { GameModel } from "../src/state.ts";
 
@@ -175,18 +175,20 @@ describe("control", () => {
   });
 });
 
-describe("fuente de los íconos", () => {
+describe("fuentes de los íconos", () => {
   const FONT = join("cstrike", "resource", "clientmodkillfeed.ttf");
 
   it("usa gameDir si está configurado", () => {
     const dir = join("X:", "Juegos", "ClientMod");
-    assert.equal(findKillfeedFont(dir, (p) => p === join(dir, FONT)), join(dir, FONT));
-    assert.equal(findKillfeedFont(dir, () => false), null);
+    assert.equal(findFont(dir, "killfeed", (p) => p === join(dir, FONT)), join(dir, FONT));
+    assert.equal(findFont(dir, "killfeed", () => false), null);
   });
 
-  it("sin gameDir la busca en la carpeta por defecto de cada disco", () => {
+  it("sin gameDir las busca en la carpeta por defecto de cada disco", () => {
     const d = join("D:\\CSSv34_ClientMod", FONT);
-    assert.equal(findKillfeedFont(null, (p) => p === d), d);
-    assert.equal(findKillfeedFont(null, () => false), null);
+    assert.equal(findFont(null, "killfeed", (p) => p === d), d);
+    assert.equal(findFont(null, "killfeed", () => false), null);
+    const cs = join("C:\\CSSv34_ClientMod", "cstrike", "resource", "cs.ttf");
+    assert.equal(findFont(null, "cs", (p) => p === cs), cs);
   });
 });

@@ -58,15 +58,19 @@ html, body {
 #banner.t { border-bottom: 4px solid var(--t); color: var(--t); }
 
 /* Feed de kills */
-#kills { position: absolute; top: 24px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+/* Debajo de la barra negra de arriba del espectador del juego (el 10 % del alto: 108 px a 1080). */
+#kills { position: absolute; top: 122px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .kill { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--panel); border-radius: 6px; font-size: 22px; animation: in 0.2s ease-out; }
 .kill .ct { color: var(--ct); }
 .kill .t { color: var(--t); }
 .kill .weapon { color: var(--muted); font-size: 18px; text-transform: uppercase; }
 .kill .hs { color: #ff7b72; font-size: 16px; }
 .kill .plus { color: var(--muted); }
-/* Íconos de clientmodkillfeed.ttf: blancos, como en el juego. */
-.kill .icon { font-family: "cmkill"; font-weight: normal; font-size: 30px; line-height: 1; color: var(--text); }
+/* Íconos de clientmodkillfeed.ttf (y el kit, de cs.ttf): blancos, como en el juego. */
+/* Sin mayúsculas: en la fuente "w" es la M4A1 y "W" otro ícono. */
+.icon { font-family: "cmkill"; font-weight: normal; line-height: 1; color: var(--text); text-transform: none; }
+.icon.cs { font-family: "csicons"; }
+.kill .icon { font-size: 30px; }
 .kill .icon.weapon-icon { font-size: 36px; }
 @keyframes in { from { opacity: 0; transform: translateX(20px); } }
 
@@ -98,6 +102,18 @@ html, body {
 .player .tag.c4 { background: #8b1e1e; }
 .player .tag.kit { background: #1f4f8b; }
 .player .nades { letter-spacing: 1px; }
+.player .bottom { gap: 8px; }
+.player .icon { font-size: 22px; }
+.player .icon.gun { font-size: 30px; }
+.player .icon.c4 { color: #ff6b5e; }
+/* Borde de la flash (ámbar, como sus franjas) y del humo (gris), alrededor de la silueta blanca. */
+.icon.flash { --edge: #f2a91d; }
+.icon.smoke { --edge: #9a9d98; }
+.icon.flash, .icon.smoke {
+  text-shadow: 1.5px 0 var(--edge), -1.5px 0 var(--edge), 0 1.5px var(--edge), 0 -1.5px var(--edge),
+    1px 1px var(--edge), -1px -1px var(--edge), 1px -1px var(--edge), -1px 1px var(--edge);
+}
+.player .icon.kit { color: #6aa8ff; font-size: 24px; }
 
 /* Jugador enfocado */
 #focus {
@@ -115,7 +131,11 @@ html, body {
 #focus .armor { color: var(--muted); }
 #focus .weapon { flex: 1; text-transform: uppercase; }
 #focus .money { color: var(--money); }
-#focus .nades { color: var(--muted); }
+#focus .nades { color: var(--muted); display: flex; gap: 6px; }
+#focus .icon { font-size: 30px; }
+#focus .icon.gun { font-size: 44px; }
+#focus .icon.c4 { color: #ff6b5e; }
+#focus .icon.kit { color: #6aa8ff; }
 
 #offline {
   position: absolute; top: 8px; left: 8px; padding: 4px 10px; font-size: 14px;

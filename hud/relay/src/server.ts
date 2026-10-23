@@ -3,13 +3,14 @@
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { readAsset, ASSETS, type AssetName } from "./assets.ts";
+import { FONTS, type FontName } from "./font.ts";
 
 export interface HttpHandlers {
   initial(): { event: string; data: unknown }[];
   onControl(body: unknown): void;
   status(): unknown;
-  /** La fuente de los íconos del feed, o null si no se encontró. */
-  font(): Buffer | null;
+  /** Una fuente de los íconos, o null si no se encontró. */
+  font(name: FontName): Buffer | null;
 }
 
 const PAGES: Record<string, AssetName> = { "/": "hud.html", "/hud": "hud.html", "/control": "control.html" };
@@ -55,9 +56,10 @@ export class HttpServer {
     if (req.method === "GET" && path === "/events") return this.events(res);
     if (req.method === "GET" && path === "/api/status") return json(res, 200, this.handlers.status());
     if (req.method === "POST" && path === "/api/control") return this.control(req, res);
-    if (req.method === "GET" && path === "/font/killfeed.ttf") {
-      const font = this.handlers.font();
-      if (!font) return json(res, 404, { error: "no se encontró la fuente de ClientMod" });
+    const fontName = /^\/font\/(\w+)\.ttf$/.exec(path)?.[1];
+    if (req.method === "GET" && fontName && Object.hasOwn(FONTS, fontName)) {
+      const font = this.handlers.font(fontName as FontName);
+      if (!font) return json(res, 404, { error: "no se encontró la fuente" });
       res.writeHead(200, { "content-type": "font/ttf", "cache-control": "no-store" });
       res.end(font);
       return;

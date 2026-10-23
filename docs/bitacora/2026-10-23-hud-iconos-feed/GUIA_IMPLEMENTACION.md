@@ -45,9 +45,36 @@ Con `subir_hud_110.py` (en el scratchpad de la sesión). Antes de subir nada, co
 
 El relay 1.0.0 con el plugin 1.1.0, o al revés, funciona: los campos nuevos se ignoran o quedan en 0.
 
+## Segunda parte: relay 1.2.0 (2026-10-23)
+
+Daniel pidió, después de probar la 1.1.0:
+- Bajar el feed de kills, porque tapaba la barra negra de arriba del espectador. Decidió combinar el HUD del juego con el nuestro para que se siga viendo el nombre del jugador mirado, y apagar el deathnotice del juego.
+- Íconos también en la lista de jugadores.
+
+| Archivo | Cambio |
+|---|---|
+| `hud/relay/src/font.ts` | `findFont(gameDir, "killfeed" o "cs")`: busca también `cs.ttf`, para el kit |
+| `hud/relay/src/server.ts` | `/font/killfeed.ttf` y `/font/cs.ttf`. Cualquier otro nombre da 404 |
+| `hud/relay/src/main.ts` | 1.2.0. `kitIcon` en `/api/status` |
+| `hud/relay/public/common.js` | `EQUIP` (chaleco, casco, granadas y C4) y `DEFUSER` |
+| `hud/relay/public/hud.js` | Tarjetas y enfocado con íconos (`cardIcons`, `nadeIcons`, `armorIcon` y `kit`). Con texto si no hay fuente |
+| `hud/relay/public/hud.css` | Feed en `top: 122px`. Estilos de los íconos, sin `text-transform`, porque en la fuente `w` (M4A1) y `W` son íconos distintos |
+| `hud/relay/test/relay.test.ts` | Búsqueda de las dos fuentes (19 pruebas) |
+
+**Pruebas:**
+- 19 pruebas y el typecheck, sin errores.
+- El HUD con `pnpm simular 1` encima de una captura del juego (`image.png` de Daniel) escalada a 1920×1080. El feed queda debajo de la barra negra. Las armas, las granadas, el chaleco, la C4 y el kit salen con íconos.
+- Un error encontrado en la prueba: el `text-transform: uppercase` de la columna del arma convertía la `w` en `W`, y salía un ícono de munición. Corregido.
+- **`relay.exe` 1.2.0:** 92,7 MB, md5 `cb27ec4f389d74a0cf414f0c18ce24e8`. Arranca y `/api/status` dice `killfeedIcons: true` y `kitIcon: true`. Tiene ícono para las 24 armas de fuego, el cuchillo, las tres granadas y la C4. La flash y el humo en la mano usan los íconos de equipamiento (`P` y `Q`), porque no tienen ícono de kill.
+
+- **Flash y humo:** en la fuente son dos latas casi iguales. A pedido de Daniel, que pasó fotos de referencia de los modelos del juego (`fb.jpg` y `sg.jpg`), la flash lleva un borde ámbar (`#f2a91d`, el de sus franjas) y el humo uno gris (`#9a9d98`), alrededor de la silueta blanca. Probado con capturas ampliadas: se distinguen.
+
+**Despliegue:** solo el `relay.exe` 1.2.0 para el streamer. El plugin no cambia.
+
 ## En qué se apartó del plan
 
 - La bomba (`c4` y `env_explosion`) usa el ícono de la C4 (`I`) en lugar de la calavera.
+- La 1.2.0 (feed más abajo e íconos en las tarjetas) no estaba en el plan: la pidió Daniel después de probar la 1.1.0.
 
 ## Cómo revertir
 

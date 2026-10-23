@@ -267,8 +267,10 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - **Falta ver con la SourceTV real:** cómo ocultar las barras de espectador de CS:S debajo del HUD.
 - **Íconos en el feed (`csstv_hud` 1.1.0 y relay 1.1.0): hechos el 2026-10-23.** El feed usa los íconos de ClientMod y sus agregados (asistencia, flash, wallbang, ciego, humo y no scope).
   - **`csstv_hud.smx` 1.1.0 subido el 2026-10-23 al servidor real y a RBK** (md5 `cce849f760bbef2b5d038a992c96c4bf`), verificado bajándolo de nuevo. Se carga en el próximo cambio de mapa. **RBK ya tiene el plugin**, con `csstv_hud "0"` y sin host ni clave.
-  - Falta pasarle al streamer el `relay.exe` 1.1.0 y ver una kill real con los campos de ClientMod.
+  - Daniel lo probó en una transmisión el 2026-10-23: funciona bien.
+  - **Relay 1.2.0 (2026-10-23):** el feed baja a `top: 122px` para quedar debajo de la barra negra del espectador del juego, y las tarjetas de los jugadores también usan íconos (arma, granadas, chaleco, C4 y el kit, que sale de `cs.ttf`). Falta pasarle al streamer el `relay.exe` 1.2.0.
   - Bitácora: [`2026-10-23-hud-iconos-feed`](bitacora/2026-10-23-hud-iconos-feed/).
+- **Decidido el 2026-10-23 (Daniel):** la transmisión combina el HUD del juego con el nuestro. Así se sigue viendo el nombre del jugador mirado, en la barra de abajo del espectador. El deathnotice del juego se apaga.
 - **Descartado por ahora (Daniel, 2026-10-23):** que el HUD siga solo al jugador que mira el observer (binds con `spec_player` y el log de la consola) y ocultar la barra superior del espectador (`hidepanel specgui` o un `spectator.res` en `cstrike_custom/`). Están analizados en la conversación del 2026-10-23 y no se tocan por ahora.
 - **Si algo falla:** `csstv_hud 0` lo apaga al instante.
 - **Bitácora:** [`2026-10-22-hud-observer`](bitacora/2026-10-22-hud-observer/)

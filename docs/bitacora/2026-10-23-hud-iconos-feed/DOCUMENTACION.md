@@ -56,14 +56,34 @@ El mismo orden que el kill feed de ClientMod:
 
 Los nombres van con el color de su equipo y los íconos en blanco.
 
+## Íconos en las tarjetas de los jugadores (relay 1.2.0)
+
+Desde la 1.2.0, las tarjetas de los jugadores y la del enfocado también usan íconos:
+
+| Qué | Ícono | Letra |
+|---|---|---|
+| Arma (la principal o, si no tiene, la secundaria; en el enfocado, la que tiene en la mano) | El mismo del feed | Ver la tabla de arriba |
+| Granadas, una por ícono (dos flashes son dos íconos) | HE, flash (con borde ámbar) y humo (con borde gris) | `O`, `P` y `Q` |
+| Chaleco o chaleco con casco | El escudo | `p` y `E` |
+| Bomba | La C4, en rojo | `I` |
+| Kit de desactivación | Las pinzas, en azul. Están en `cs.ttf`, la otra fuente del juego, que el relay sirve en `/font/cs.ttf` | `E` de `cs.ttf` |
+
+Sin `clientmodkillfeed.ttf`, las tarjetas vuelven al texto de la 1.0.0. Sin `cs.ttf`, el kit sale como "KIT".
+
+## Convivencia con el HUD del juego
+
+Daniel decidió el 2026-10-23 que la transmisión combine el HUD del juego con el nuestro: así se sigue viendo el nombre del jugador que mira el observer, que sale en la barra de abajo del espectador. El deathnotice del juego se apaga, y queda solo el nuestro.
+
+La barra negra de arriba del espectador ocupa el 10 % del alto de la pantalla (108 px a 1080). Por eso el feed de kills empieza en `top: 122px`, justo debajo de esa barra.
+
 ## Dónde está cada cosa
 
 | Qué | Archivo |
 |---|---|
 | Lectura de los campos de ClientMod | `server/addons/sourcemod/scripting/csstv_hud.sp` (`Event_PlayerDeath`) |
 | Evento `kill` en el relay | `hud/relay/src/protocol.ts` (`KillExtras`) |
-| Búsqueda de la fuente | `hud/relay/src/font.ts` |
+| Búsqueda de las fuentes (`clientmodkillfeed.ttf` y `cs.ttf`) | `hud/relay/src/font.ts` |
 | `gameDir` | `hud/relay/src/config.ts` |
-| Ruta `/font/killfeed.ttf` | `hud/relay/src/server.ts` |
-| Letra de cada ícono | `hud/relay/public/common.js` (`KILL_GLYPHS` e `ICON`) |
-| Feed | `hud/relay/public/hud.js` (`renderKills`) y `hud.css` |
+| Rutas `/font/killfeed.ttf` y `/font/cs.ttf` | `hud/relay/src/server.ts` |
+| Letra de cada ícono | `hud/relay/public/common.js` (`KILL_GLYPHS`, `ICON`, `EQUIP` y `DEFUSER`) |
+| Feed, tarjetas y enfocado | `hud/relay/public/hud.js` (`renderKills`, `cardIcons` y `renderFocus`) y `hud.css` |

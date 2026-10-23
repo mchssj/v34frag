@@ -17,8 +17,13 @@ const KILL_GLYPHS = {
   usp: "a", ak47: "b", glock: "c", tmp: "d", aug: "e", deagle: "f", hegrenade: "h", g3sg1: "i", knife: "j", m3: "k",
   mac10: "l", p90: "m", scout: "n", sg550: "o", ump45: "q", awp: "r", elite: "s", famas: "t", fiveseven: "u", galil: "v",
   m4a1: "w", mp5navy: "x", p228: "y", m249: "z", sg552: "A", xm1014: "B", c4: "I", env_explosion: "I",
+  // En la mano (tarjeta del enfocado): no tienen ícono de kill, se usan los de equipamiento.
+  flashbang: "P", smokegrenade: "Q",
 };
 export const ICON = { skull: "C", headshot: "D", penetrated: "!", flashAssist: '"', blind: "#", smoke: "$", noscope: "%" };
+// Equipamiento en la misma fuente. El kit de desactivación está en cs.ttf (letra "E").
+export const EQUIP = { kevlar: "p", kevlarHelmet: "E", he: "O", flash: "P", smoke: "Q", c4: "I" };
+export const DEFUSER = "E";
 
 /** El ícono del arma; la calavera si no hay uno (caída, trigger_hurt, el mundo). */
 export function weaponGlyph(cls) {

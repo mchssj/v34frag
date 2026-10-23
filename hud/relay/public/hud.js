@@ -1,5 +1,5 @@
 // HUD para OBS. Recibe del relay el estado ya retrasado y lo dibuja; el reloj corre solo entre paquetes.
-import { ICON, TEAM_CT, TEAM_T, clock, connect, el, weaponGlyph, weaponName } from "/common.js";
+import { DEFUSER, EQUIP, ICON, TEAM_CT, TEAM_T, clock, connect, el, weaponGlyph, weaponName } from "/common.js";
 
 const KILL_MS = 5000;
 const BANNER_MS = 5000;
@@ -7,17 +7,24 @@ const BANNER_MS = 5000;
 let state = null;
 let control = null;
 let killsKey = "";
-// Si el relay encontró la fuente de ClientMod, el feed va con íconos; si no, con los nombres de las armas.
-let icons = false;
-new FontFace("cmkill", "url(/font/killfeed.ttf)")
-  .load()
-  .then((f) => {
-    document.fonts.add(f);
-    icons = true;
-    killsKey = "";
-    renderKills();
-  })
-  .catch(() => {});
+// Si el relay encontró las fuentes del juego, el HUD va con íconos; si no, con los nombres de las armas.
+let icons = false; // clientmodkillfeed.ttf: armas, agregados del feed, chaleco, granadas y C4
+let kitIcon = false; // cs.ttf: el kit de desactivación
+function loadFont(family, url, onLoad) {
+  new FontFace(family, `url(${url})`)
+    .load()
+    .then((f) => {
+      document.fonts.add(f);
+      onLoad();
+      killsKey = "";
+      render();
+    })
+    .catch(() => {});
+}
+loadFont("cmkill", "/font/killfeed.ttf", () => (icons = true));
+loadFont("csicons", "/font/cs.ttf", () => (kitIcon = true));
+
+const icon = (glyph, cls = "") => el("span", { class: `icon ${cls}` }, glyph);
 
 const $ = (id) => document.getElementById(id);
 
@@ -31,6 +38,25 @@ function nades(p) {
   if (p.flash) out.push(p.flash > 1 ? `F×${p.flash}` : "F");
   if (p.smoke) out.push(p.smoke > 1 ? `S×${p.smoke}` : "S");
   return out.join(" ");
+}
+
+// La flash y el humo son dos latas casi iguales en la fuente: se distinguen por el color del borde.
+const NADE_CLASS = { flashbang: "flash", smokegrenade: "smoke" };
+
+// Una granada por ícono, como en el juego: dos flashes son dos íconos.
+function nadeIcons(p) {
+  const out = [];
+  for (const [n, glyph, cls] of [[p.he, EQUIP.he, ""], [p.flash, EQUIP.flash, "flash"], [p.smoke, EQUIP.smoke, "smoke"]])
+    for (let i = 0; i < n; i++) out.push(icon(glyph, `nade ${cls}`));
+  return out;
+}
+
+function armorIcon(p) {
+  return p.armor ? icon(p.helmet ? EQUIP.kevlarHelmet : EQUIP.kevlar, "armor") : null;
+}
+
+function kit(p) {
+  return kitIcon ? icon(DEFUSER, "cs kit") : el("span", { class: "tag kit" }, "KIT");
 }
 
 function armorText(p) {
@@ -51,7 +77,7 @@ function playerCard(p) {
       el("span", { class: "name" }, p.name),
       el("span", { class: "kd" }, `${p.kills} / ${p.deaths}`),
     ),
-    el(
+    icons ? cardIcons(p) : el(
       "div",
       { class: "bottom" },
       el("span", { class: "money" }, `$${p.money}`),
@@ -62,6 +88,21 @@ function playerCard(p) {
       p.alive ? el("span", { class: "nades" }, nades(p)) : null,
       el("span", {}, p.damage ? `${p.damage} dmg` : ""),
     ),
+  );
+}
+
+function cardIcons(p) {
+  const weapon = p.primary || p.secondary;
+  return el(
+    "div",
+    { class: "bottom" },
+    el("span", { class: "money" }, `$${p.money}`),
+    el("span", { class: "weapon" }, p.alive && weapon ? icon(weaponGlyph(weapon), "gun") : ""),
+    ...(p.alive ? nadeIcons(p) : []),
+    p.alive ? armorIcon(p) : null,
+    p.alive && p.bomb ? icon(EQUIP.c4, "c4") : null,
+    p.alive && p.defuser ? kit(p) : null,
+    el("span", {}, p.damage ? `${p.damage} dmg` : ""),
   );
 }
 
@@ -88,9 +129,19 @@ function renderFocus() {
       "div",
       { class: "body" },
       el("span", { class: `hp${p.alive && p.hp <= 25 ? " low" : ""}` }, p.alive ? String(p.hp) : "✕"),
-      el("span", { class: "armor" }, p.alive ? armorText(p) : "Muerto"),
-      el("span", { class: "weapon" }, p.alive ? weaponName(p.active) : ""),
-      el("span", { class: "nades" }, p.alive ? nades(p) : ""),
+      ...(icons
+        ? [
+            p.alive ? armorIcon(p) : el("span", { class: "armor" }, "Muerto"),
+            el("span", { class: "weapon" }, p.alive && p.active ? icon(weaponGlyph(p.active), `gun ${NADE_CLASS[p.active] ?? ""}`) : ""),
+            el("span", { class: "nades" }, ...(p.alive ? nadeIcons(p) : [])),
+            p.alive && p.bomb ? icon(EQUIP.c4, "c4") : null,
+            p.alive && p.defuser ? kit(p) : null,
+          ]
+        : [
+            el("span", { class: "armor" }, p.alive ? armorText(p) : "Muerto"),
+            el("span", { class: "weapon" }, p.alive ? weaponName(p.active) : ""),
+            el("span", { class: "nades" }, p.alive ? nades(p) : ""),
+          ]),
       el("span", { class: "money" }, `$${p.money}`),
     ),
   );
@@ -142,7 +193,6 @@ function renderKills() {
         el("span", { class: v ? playerSide(v) : "" }, v?.name ?? ""),
       );
     // El mismo orden que el kill feed de ClientMod.
-    const icon = (glyph, cls = "") => el("span", { class: `icon ${cls}` }, glyph);
     return el(
       "div",
       { class: "kill" },

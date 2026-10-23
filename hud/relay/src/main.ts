@@ -8,12 +8,12 @@ import { isSea } from "node:sea";
 import { configPath, loadConfig } from "./config.ts";
 import { loadControl, mergeControl, saveControl } from "./control.ts";
 import { DelayQueue } from "./delay.ts";
-import { findKillfeedFont, loadFont } from "./font.ts";
+import { findFont, loadFont } from "./font.ts";
 import { parsePacket } from "./protocol.ts";
 import { HttpServer } from "./server.ts";
 import { GameModel } from "./state.ts";
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const RELEASE_MS = 50;
 const STATUS_MS = 10000;
 
@@ -46,8 +46,8 @@ async function main(): Promise<void> {
   const controlPath = join(dirname(cfgPath), "relay-control.json");
   let control = loadControl(controlPath);
 
-  const fontPath = findKillfeedFont(config.gameDir);
-  const font = loadFont(fontPath);
+  const fontPath = findFont(config.gameDir, "killfeed");
+  const fonts = { killfeed: loadFont(fontPath), cs: loadFont(findFont(config.gameDir, "cs")) };
 
   const queue = new DelayQueue();
   const model = new GameModel();
@@ -77,9 +77,10 @@ async function main(): Promise<void> {
       delaySeconds: delaySeconds(),
       queued: queue.size,
       clients: http.clientCount,
-      killfeedIcons: font !== null,
+      killfeedIcons: fonts.killfeed !== null,
+      kitIcon: fonts.cs !== null,
     }),
-    font: () => font,
+    font: (name) => fonts[name],
   });
 
   const udp = createSocket("udp4");
@@ -113,9 +114,9 @@ async function main(): Promise<void> {
   log(`HUD para OBS:      http://localhost:${config.httpPort}/hud`);
   log(`Página de control: http://localhost:${config.httpPort}/control`);
   log(
-    font
-      ? `Íconos del feed: ${fontPath}`
-      : `No se encontró la fuente de ClientMod (cstrike/resource/clientmodkillfeed.ttf): el feed muestra los nombres de las armas. Poné la carpeta de ClientMod en "gameDir" de relay.json.`,
+    fonts.killfeed
+      ? `Íconos: ${fontPath}`
+      : `No se encontró la fuente de ClientMod (cstrike/resource/clientmodkillfeed.ttf): el HUD muestra los nombres de las armas. Poné la carpeta de ClientMod en "gameDir" de relay.json.`,
   );
   log(config.delay === null ? "Retraso: el tv_delay del servidor." : `Retraso fijo: ${config.delay} s (relay.json).`);
 
