@@ -103,3 +103,9 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-21 | Ajustes manuales de ELO | El admin suma o resta (−500 a +500) o fija el ELO de hasta 10 jugadores, con motivo obligatorio; cuenta desde ese momento. Un "fijar" se vuelve a fijar en un recálculo | Daniel (sumar, restar y fijar; hasta 10); propuesta aceptada (rangos y recálculo) |
 | 2026-10-21 | Ajustes visibles | El jugador ve en su ficha sus ajustes: cambio, motivo y fecha | Daniel |
 | 2026-10-21 | Deshacer un ajuste | Con doble confirmación. Resta el cambio, o recalcula si restar no daría lo mismo (un "fijar", una temporada o un "fijar" posterior) | Propuesta aceptada |
+| 2026-10-23 | Clips: qué se guarda | Por jugador y por ronda en vivo (con prórroga): 3+ kills o un clutch ganado. No first kills, plants ni 2k | Daniel (tipos); propuesta aceptada (filtro) |
+| 2026-10-23 | Clips: escala | Ace, 1v5 y 1v4, 4k, 1v3, 3k, 1v2, 1v1. Empate: la ronda ganada y después la más tardía. Un registro por jugador y ronda, con su tipo más valioso | Daniel |
+| 2026-10-23 | Clips: topes | 2 por jugador (por ficha) y 10 por partida, aplicados en la web y configurables por el admin | Daniel (valores y dónde); propuesta aceptada (por ficha) |
+| 2026-10-23 | Clutch | Empieza cuando queda último vivo de su equipo; el tipo es la cantidad de rivales vivos en ese momento. Cuenta si su equipo gana la ronda, aunque no los mate a todos o muera después de plantar. Un 1v3 que llega al 1v1 sigue siendo 1v3 | Daniel |
+| 2026-10-23 | Clips de partidas canceladas | Se guardan y se muestran | Daniel |
+| 2026-10-23 | Clips sin video | Por ahora la ronda y el segundo de la demo; el video es una fase aparte (render en una máquina propia). La web vieja no los muestra | Daniel |

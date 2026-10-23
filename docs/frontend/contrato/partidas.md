@@ -1,4 +1,4 @@
-# Contrato para el frontend: Partidas, `!match`, PCW, ELO y mixes en vivo
+# Contrato para el frontend: Partidas, `!match`, PCW, ELO, mixes en vivo y clips
 
 > Parte del contrato para el frontend. Índice, estado y novedades: [`README.md`](README.md). Las decisiones de todos los módulos están en [`decisiones.md`](decisiones.md).
 
@@ -126,3 +126,19 @@ El servidor manda una foto del mix al final de cada ronda. Si el servidor se cae
 - **`address`:** para el botón "Conectar" (`steam://connect/<address>`).
 - **Filtro por servidor:** `GET /api/v1/matches?server=<id>` lista las partidas jugadas en ese servidor (el `id` sale de acá).
 - **`501 NOT_AVAILABLE`:** solo si la API corre fuera de Node. En el VPS siempre está disponible.
+
+## 8g. Clips: jugadas destacadas (disponible desde el 2026-10-23)
+
+El servidor anota las jugadas destacadas de cada ronda en vivo (incluida la prórroga) y las manda con el resultado: **ace** (5 kills), **4k**, **3k** y **clutches ganados** (del 1v1 al 1v5). Por ahora son la ronda y el momento exacto dentro de la demo, **no un video**: el video se arma más adelante (fase C).
+
+| Endpoint | Pantalla |
+|---|---|
+| `GET /api/v1/matches/{id}/clips` | **Detalle de la partida → "Mejores jugadas"**, debajo del marcador y las stats. Sin sesión. Filtros: `player` (ficha) y `type`; orden `position` (por defecto, asc: la mejor primero) o `round`. Máximo `per=50`. `404` si la partida no existe; lista vacía si no tiene clips (las partidas anteriores a los clips no tienen) |
+
+- **Ya vienen elegidos:** la base aplica la escala y los topes (hoy 2 por jugador y 10 por partida). El frontend no filtra ni reordena: muestra `items` en el orden en que llegan. Si la lista está vacía, no mostrar la sección.
+- **`type`:** `ace`, `4k`, `3k` o `clutch_N` (N = rivales: `clutch_2` es "Clutch 1v2"). Un 4k que además fue un 1v2 llega una sola vez, con el tipo que más vale.
+- **Quién:** `player` (`{ id, alias }`, enlaza a su ficha; vale para su SteamID principal o uno adicional) o, sin ficha, `steam_id` para el perfil sin reclamar. Bots y NOSTEAM: los dos en `null`; mostrar `game_nick`.
+- **Cuándo:** "Ronda `round`, `m:ss`" con `round_seconds` (desde el fin del freezetime). `round_won: false` es una jugada de una ronda que su equipo perdió (un 3k o 4k igual cuenta).
+- **En la demo:** `demo_seconds` es el segundo de la demo donde empieza la jugada ("minuto 23:14 de la demo"), junto al botón "Descargar demo" del detalle. `null` en partidas sin `tickrate`. Los ticks crudos (`kill_ticks`, `clutch_start_tick`, `end_tick`, `tickrate`) son para el render de la fase C; el frontend no los necesita.
+- **Partidas canceladas o interrumpidas:** sus clips se muestran igual.
+- **Cambia la escala:** si un admin la cambia (sección [9](admin.md)), el orden y los topes cambian al instante en todas las partidas.

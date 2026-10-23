@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-22**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-23**.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -18,6 +18,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** `!whois` (reporter **2.3.0**), pedido por Daniel el 2026-10-19: nicks que usó un jugador en las partidas y su perfil en la web, para admins y moderadores. Implementado sin probar y **desplegado el 2026-10-20** en la base, el servidor real y RBK (punto 1.10). El menú cuando hay varias coincidencias (reporter **2.3.1**) se implementó sin probar y se **desplegó el 2026-10-20** en la base y los dos servidores (punto 1.11).
 - **Excepción:** `!calladmin` con Discord y rol de moderador (`csstv_calladmin` 1.0.0), pedido por Daniel el 2026-10-19 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-19**, todavía sin moderadores (punto 1.9). El webhook y el ID del rol `@MOD` están en el `.env` (`DISCORD_CALLADMIN_WEBHOOK`, `DISCORD_MOD_ROLE_ID`).
 - **Excepción:** consejos de comandos en el chat cada 3 minutos y el Discord al terminar la partida (reporter **2.4.0**), pedido por Daniel el 2026-10-20. Aprobado, hecho, probado con bots y **desplegado el 2026-10-20** en los dos servidores (punto 1.12).
+- **Excepción:** clips automáticos (reporter **2.5.0**), pedido por Daniel el 2026-10-23 para que los clips se vayan juntando antes de la web nueva. Aprobado, hecho, probado con bots y **desplegado el 2026-10-23** en la base y los dos servidores (punto 1.16).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
 ## Decisiones anotadas para planes futuros
@@ -53,7 +54,8 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | Anti-wallhack y humo (2026-10-22): bitácora `2026-10-22-anti-wallhack-y-humo/`, `PENDIENTES.md` y `PLUGINS_EXTERNOS.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | Nombre CMLeague (2026-10-22): fuentes y `.smx` de reporter 2.4.1, sell 1.0.1, calladmin 1.0.1 y allchat 1.0.2, cfgs de `server/cfg/sourcemod/`, `CLAUDE.md` y la bitácora `2026-10-22-nombre-cmleague/` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | RBK igual al real (2026-10-22): `server/cfg/sourcemod/csstv_reporter.cfg` y la bitácora `2026-10-22-rbk-igual-al-real/`, y la regla de configuración obligatoria en `CLAUDE.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
-| `.idea/` y `message.txt` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
+| Clips automáticos (2026-10-23): migración `20261023120000`, replanteo `26` con su inversa y sus pruebas, `csstv/clips.inc` y los cambios del reporter 2.5.0 (`.sp` y `.smx`), `csstv_reporter.cfg`, `web/backend` (rutas, esquemas, tipos y pruebas), contrato del frontend y la bitácora `2026-10-22-clips-automaticos/` | Commiteado el 2026-10-23 en la rama `feat/backend-api-fase-1` (sin push) |
+| `.idea/`, `message.txt`, `fb.jpg`, `sg.jpg` e `image.png` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
 
@@ -275,6 +277,20 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Si algo falla:** `csstv_hud 0` lo apaga al instante.
 - **Bitácora:** [`2026-10-22-hud-observer`](bitacora/2026-10-22-hud-observer/)
 
+### 1.16 Clips automáticos (reporter 2.5.0): verificar en los dos servidores
+
+- **Qué es:** el servidor anota las jugadas destacadas de cada ronda (ace, 4k, 3k y clutches ganados) con los ticks de la demo de cada kill, y la base las clasifica, ordena y aplica los topes (2 por jugador y 10 por partida, configurables por el admin). Todavía no hay video.
+- **Desplegado el 2026-10-23:** la migración `20261023120000_clips.sql` en la base (la aplicó Daniel), el reporter 2.5.0 genérico en el servidor real y el licenciado en RBK, y `csstv_clips "1"` en el cfg de los dos. Se carga en el próximo cambio de mapa. Probado con bots contra la Supabase local.
+- **Verificar en cada servidor**, después del cambio de mapa:
+  - `sm plugins list` con la 2.5.0;
+  - registros en `match_clips` y `tickrate` en el primer mix real;
+  - en RBK, por SFTP, los logs sin errores.
+- **Falta:**
+  - el backend (`GET /api/v1/matches/{id}/clips` y `/admin/clips/config`) y el replanteo `26` salen con el corte;
+  - la galería en el frontend nuevo (contrato, sección 8g) y publicar `CHANGELOG_DISCORD.txt` cuando esté;
+  - **fase C (video):** requerimiento aparte. Empieza con una prueba de concepto en el portátil de Daniel (Asus E1504FA) con demos de R2. Ahí se mide el desfase exacto de ticks contra el `.dem`. Las demos vencen a los 90 días (`RETENTION_DAYS`), así que los clips más viejos que eso no van a tener video, salvo que se decida guardar más tiempo esas demos.
+- **Bitácora:** [`2026-10-22-clips-automaticos`](bitacora/2026-10-22-clips-automaticos/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
@@ -390,6 +406,10 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
 
 ## 7. Deuda técnica
+
+### 7.0 Prueba del replanteo `23` desactualizada
+
+`docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/23_whois.sql` espera `player_nick = 'Ficha23'`, pero desde la `09` el nick de una ficha vinculada a un usuario es su alias (`Alias23`). Por eso `correr.sh` se corta en la `23` y no llega a probar de la `24` en adelante. Hay que cambiar el valor esperado (encontrado el 2026-10-23; no se tocó, porque es de otro requerimiento).
 
 ### 7.1 Voz en partida (reemplaza "`sm_deadtalk 0` obligatorio")
 

@@ -27,7 +27,7 @@ Cada archivo conserva el número de sus secciones, así las referencias de la bi
 | [`modelo-datos.md`](modelo-datos.md) | 3 | Qué cambia respecto de la web vieja |
 | [`jugadores.md`](jugadores.md) | 5 y 5b | Jugadores, perfiles sin reclamar, `!claim` y varios SteamID por cuenta |
 | [`equipos.md`](equipos.md) | 6 y 7 | Equipos, plantel y ranking de equipos |
-| [`partidas.md`](partidas.md) | 8, 8c, 8d y 8e | Partidas, `!match`, PCW, ELO, mixes en vivo y estado de los servidores |
+| [`partidas.md`](partidas.md) | 8, 8c, 8d, 8e y 8g | Partidas, `!match`, PCW, ELO, mixes en vivo, estado de los servidores y clips |
 | [`torneos.md`](torneos.md) | 8b | Torneos, plantillas y sorteo |
 | [`temporadas.md`](temporadas.md) | 8f | Temporadas: ranking por temporada, medallas y reinicio del nivel 10 |
 | [`admin.md`](admin.md) | 9 | Admin |
@@ -70,6 +70,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Temporadas** (nuevo, 2026-10-21) | `GET /api/v1/seasons`, `/seasons/current` (cuenta regresiva) y `/seasons/{id}/standings` (en vivo o la foto del cierre); `GET /api/v1/players/{id}/seasons`. Las medallas suman `season` y `rank`. Admin: configuración, abrir, cambiar la activa, vista previa del cierre y "Terminar temporada" con doble confirmación. `peak_elo` pasa a ser el pico de la temporada | Secciones [5](jugadores.md), [8f](temporadas.md) y [9](admin.md) |
 | **Varios SteamID** (aclaración, 2026-10-19) | Resumen en la sección 5b y fila en el modelo de datos; Mi perfil aclara que `player.steam_id` es el principal | Secciones [3](modelo-datos.md) y [5b](jugadores.md) |
 | **Mixes interrumpidos** (nuevo, 2026-10-17) | Un mix cortado por una caída queda cancelado con `cancel_reason: "crash"` y `review: "pending"`; un admin aplica el ELO (con doble confirmación) o lo descarta. El resumen de partida suma `cancel_reason` y `review`; el detalle, `review_detail` | Secciones [8d](partidas.md) y [9](admin.md) |
+| **Clips: jugadas destacadas** (nuevo, 2026-10-23) | `GET /api/v1/matches/{id}/clips`: ace, 4k, 3k y clutches ganados de la partida, ya ordenados y con los topes aplicados, con la ronda y el segundo de la demo. Escala y topes en `GET`/`PATCH /api/v1/admin/clips/config` | Secciones [8g](partidas.md) y [9](admin.md) |
 
 El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
 

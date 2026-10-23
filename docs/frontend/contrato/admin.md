@@ -23,6 +23,7 @@
 | Puntos del ranking | `GET`/`PUT /api/v1/admin/ranking/config` | Disponible |
 | Servidores | Ver "Servidores (admin)" abajo | Disponible |
 | ELO | Ver "ELO (admin)" abajo | Disponible |
+| Clips | Ver "Clips (admin)" abajo | Disponible |
 | Demos | Ver "Demos (admin)" abajo | Disponible |
 
 ### Servidores (admin)
@@ -62,6 +63,22 @@
 | `start_elo` | 100 a 5000, no menor que `elo_floor` | ELO de un jugador nuevo |
 | `min_pct` | 1 a 100 | Con menos de este % de las rondas, el ELO no cambia |
 | `full_pct` | `min_pct` a 100 | Desde este % de las rondas cuenta completo |
+
+### Clips (admin, desde el 2026-10-23)
+
+Escala y topes de las jugadas destacadas (sección [8g](partidas.md)).
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/v1/admin/clips/config` | `{ config, updated_at, updated_by }`. `updated_by` es `{ id, alias }` |
+| `PATCH /api/v1/admin/clips/config` | Body: solo lo que cambia (en `priorities`, solo los tipos que cambian). Responde lo mismo que el `GET`. **Vale al instante para todas las partidas**, también las viejas: los datos no se tocan, cambia qué se muestra y en qué orden (avisarlo en el formulario) |
+
+| Valor | Rango | Qué es |
+|---|---|---|
+| `priorities` | 1 a 99 por tipo (`ace`, `clutch_5`, `clutch_4`, `4k`, `clutch_3`, `3k`, `clutch_2`, `clutch_1`) | 1 es lo más valioso. Empates: primero la jugada de una ronda ganada, después la ronda más tardía. De fábrica: ace 1, 1v5 y 1v4 2, 4k 3, 1v3 4, 3k 5, 1v2 6, 1v1 7 |
+| `per_player` | 1 a 10 | Clips por jugador en cada partida (por ficha: sus SteamID suman juntos) |
+| `per_match` | 1 a 50 | Clips por partida |
+| `split_gap_seconds`, `pre_seconds`, `post_seconds` | 1 a 60, 0 a 15, 0 a 15 | Para el video (fase C, todavía no existe): cortar el clip si pasan más de esos segundos entre dos kills, y márgenes antes y después. Se pueden mostrar como "Video (próximamente)" |
 
 ### Ajustes manuales de ELO (admin, desde el 2026-10-21)
 
