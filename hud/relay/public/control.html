@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CMLeague HUD · control</title>
+  <style>
+    :root { --bg: #121418; --panel: #1b1f26; --line: #2c323c; --text: #e1e4e8; --muted: #9aa3ae; --accent: #388bfd; --ct: #4f8fe6; --t: #e3a33b; --ok: #4cc38a; --bad: #e5534b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 "Segoe UI", system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 24px 0 8px; }
+    .status { color: var(--muted); font-size: 13px; }
+    .status b.ok { color: var(--ok); }
+    .status b.bad { color: var(--bad); }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    .teams { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    input[type=text] { width: 100%; padding: 8px 10px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; font-size: 15px; }
+    input.ct { border-left: 4px solid var(--ct); }
+    input.t { border-left: 4px solid var(--t); }
+    button { padding: 8px 12px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; font-size: 14px; cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .players { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .players h3 { margin: 0 0 6px; font-size: 14px; }
+    .players .ct h3 { color: var(--ct); }
+    .players .t h3 { color: var(--t); }
+    .players button { display: flex; width: 100%; gap: 8px; margin-bottom: 6px; text-align: left; }
+    .players button .key { color: var(--muted); width: 14px; }
+    .players button.dead { opacity: 0.5; }
+    .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+    .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    @media (max-width: 560px) { .players, .teams { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CMLeague HUD · control</h1>
+    <div class="status" id="status">Conectando con el relay…</div>
+
+    <h2>Equipos</h2>
+    <section>
+      <div class="teams">
+        <div><label for="teamCT">Juega de CT</label><input type="text" id="teamCT" class="ct" maxlength="32"></div>
+        <button id="swap" title="Usalo en el medio tiempo">⇄ Intercambiar</button>
+        <div><label for="teamT">Juega de T</label><input type="text" id="teamT" class="t" maxlength="32"></div>
+      </div>
+      <div class="hint">En el medio tiempo los equipos cambian de lado: tocá “Intercambiar”.</div>
+    </section>
+
+    <h2>Jugador enfocado</h2>
+    <section>
+      <div class="players" id="players"></div>
+      <button id="nofocus">Sin jugador enfocado (Esc)</button>
+      <div class="hint">Teclas: 1 a 5 para CT, 6 a 9 y 0 para T, Esc para sacarlo. Con esta pestaña al frente.</div>
+    </section>
+
+    <h2>Qué se muestra</h2>
+    <section class="toggles" id="toggles"></section>
+  </main>
+  <script type="module" src="/control.js"></script>
+</body>
+</html>

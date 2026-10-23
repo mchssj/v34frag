@@ -1,0 +1,12 @@
+# Ajustes de pnpm para este proyecto (no es un monorepo).
+
+# Solo se instalan versiones publicadas hace al menos 7 días (en minutos). Al configurarlo a mano,
+# pnpm lo aplica en modo estricto: falla en vez de instalar algo más nuevo.
+minimumReleaseAge: 10080
+
+# Rechaza una versión publicada con menos garantías (provenance) que las anteriores.
+trustPolicy: no-downgrade
+
+# Paquetes autorizados a correr scripts de instalación. El resto queda bloqueado.
+allowBuilds:
+  esbuild: true    # binario nativo, arma el .js único del .exe

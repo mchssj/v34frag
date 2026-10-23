@@ -1,0 +1,120 @@
+/* HUD de observer de CMLeague: 1920×1080 con fondo transparente para el Browser Source de OBS. */
+:root {
+  --ct: #4f8fe6;
+  --ct-dim: rgba(79, 143, 230, 0.25);
+  --t: #e3a33b;
+  --t-dim: rgba(227, 163, 59, 0.25);
+  --panel: rgba(14, 16, 20, 0.84);
+  --panel-2: rgba(30, 34, 42, 0.9);
+  --text: #e8eaee;
+  --muted: #9aa3ae;
+  --hp: #4cc38a;
+  --hp-low: #e5534b;
+  --money: #7ee787;
+  --accent: #388bfd;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: transparent;
+  color: var(--text);
+  font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif;
+  font-weight: 600;
+}
+
+#hud { position: relative; width: 1920px; height: 1080px; }
+.hidden { display: none !important; }
+
+/* Marcador */
+#score {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  display: grid; grid-template-columns: 300px 70px 150px 70px 300px; align-items: stretch;
+  height: 64px; background: var(--panel); border-radius: 0 0 10px 10px; overflow: hidden;
+}
+#score .team { display: flex; align-items: center; padding: 0 18px; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; overflow: hidden; }
+#score .team.ct { justify-content: flex-end; border-left: 6px solid var(--ct); }
+#score .team.t { border-right: 6px solid var(--t); }
+#score .pts { display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; }
+#score .pts.ct { background: var(--ct-dim); color: var(--ct); }
+#score .pts.t { background: var(--t-dim); color: var(--t); }
+#score .mid { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--panel-2); }
+#score .time { font-size: 32px; font-weight: 700; line-height: 1; }
+#score .round { font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+#score .mid.planted { background: #8b1e1e; }
+#score .mid.planted .round { color: #ffd2d2; }
+
+/* Cartel de fin de ronda */
+#banner {
+  position: absolute; top: 76px; left: 50%; transform: translateX(-50%);
+  padding: 10px 36px; border-radius: 8px; font-size: 28px; text-transform: uppercase; letter-spacing: 2px;
+  background: var(--panel); opacity: 0; transition: opacity 0.3s;
+}
+#banner.show { opacity: 1; }
+#banner.ct { border-bottom: 4px solid var(--ct); color: var(--ct); }
+#banner.t { border-bottom: 4px solid var(--t); color: var(--t); }
+
+/* Feed de kills */
+#kills { position: absolute; top: 24px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.kill { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--panel); border-radius: 6px; font-size: 22px; animation: in 0.2s ease-out; }
+.kill .ct { color: var(--ct); }
+.kill .t { color: var(--t); }
+.kill .weapon { color: var(--muted); font-size: 18px; text-transform: uppercase; }
+.kill .hs { color: #ff7b72; font-size: 16px; }
+@keyframes in { from { opacity: 0; transform: translateX(20px); } }
+
+/* Jugadores */
+.side { position: absolute; bottom: 24px; width: 420px; display: flex; flex-direction: column; gap: 6px; }
+.side.left { left: 24px; }
+.side.right { right: 24px; }
+
+.player { position: relative; height: 70px; background: var(--panel); border-radius: 6px; overflow: hidden; display: grid; grid-template-rows: 34px 36px; }
+.left .player { border-left: 5px solid var(--ct); }
+.right .player { border-right: 5px solid var(--t); }
+.player.focused { outline: 2px solid var(--text); }
+.player.dead { opacity: 0.45; }
+
+.player .bar { position: absolute; left: 0; top: 0; height: 34px; background: var(--ct-dim); transition: width 0.25s; }
+.right .player .bar { left: auto; right: 0; background: var(--t-dim); }
+.player .top { position: relative; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 22px; }
+.right .player .top, .right .player .bottom { flex-direction: row-reverse; }
+.player .hp { width: 44px; font-size: 24px; font-weight: 700; text-align: center; }
+.player .hp.low { color: var(--hp-low); }
+.player .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.right .player .name { text-align: right; }
+.player .kd { color: var(--muted); font-size: 18px; }
+.player .bottom { display: flex; align-items: center; gap: 12px; padding: 0 12px; font-size: 17px; color: var(--muted); }
+.player .money { color: var(--money); width: 64px; }
+.player .weapon { flex: 1; color: var(--text); text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+.right .player .weapon { text-align: right; }
+.player .tag { padding: 0 6px; border-radius: 3px; background: var(--panel-2); color: var(--text); font-size: 14px; }
+.player .tag.c4 { background: #8b1e1e; }
+.player .tag.kit { background: #1f4f8b; }
+.player .nades { letter-spacing: 1px; }
+
+/* Jugador enfocado */
+#focus {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  width: 620px; background: var(--panel); border-radius: 8px; overflow: hidden;
+}
+#focus.ct { border-top: 5px solid var(--ct); }
+#focus.t { border-top: 5px solid var(--t); }
+#focus .head { display: flex; align-items: baseline; gap: 14px; padding: 10px 18px 4px; }
+#focus .name { flex: 1; font-size: 32px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#focus .kd { font-size: 22px; color: var(--muted); }
+#focus .body { display: flex; align-items: center; gap: 22px; padding: 4px 18px 12px; font-size: 22px; }
+#focus .hp { font-size: 44px; font-weight: 700; min-width: 70px; }
+#focus .hp.low { color: var(--hp-low); }
+#focus .armor { color: var(--muted); }
+#focus .weapon { flex: 1; text-transform: uppercase; }
+#focus .money { color: var(--money); }
+#focus .nades { color: var(--muted); }
+
+#offline {
+  position: absolute; top: 8px; left: 8px; padding: 4px 10px; font-size: 14px;
+  background: rgba(139, 30, 30, 0.85); border-radius: 4px; display: none;
+}
+#offline.show { display: block; }

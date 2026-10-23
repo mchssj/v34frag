@@ -1,0 +1,24 @@
+{
+  "name": "cmleague-hud-relay",
+  "private": true,
+  "description": "Relay del HUD de observer: recibe los paquetes UDP de csstv_hud, los retrasa como la SourceTV y los sirve al HUD de OBS (ver docs/bitacora/2026-10-22-hud-observer).",
+  "type": "module",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=12"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "simular": "node scripts/simular.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "build:exe": "node scripts/build-exe.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.0",
+    "esbuild": "0.28.1",
+    "postject": "1.0.0-alpha.6",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@12.8.1"
+}
