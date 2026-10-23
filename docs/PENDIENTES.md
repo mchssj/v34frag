@@ -252,6 +252,22 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - Changelog: `bitacora/2026-10-22-rbk-igual-al-real/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-22-rbk-igual-al-real`](bitacora/2026-10-22-rbk-igual-al-real/)
 
+### 1.15 HUD de observer (`csstv_hud` 1.0.0): subido solo al servidor real, sin probar
+
+- **Excepción pedida por Daniel el 2026-10-22:** sin pruebas en el servidor local y **solo al servidor real**. RBK no lo tiene: cuando se confirme que funciona, se sube también a RBK con `csstv_hud "0"` (regla de `CLAUDE.md`).
+- **Subido el 2026-10-22** al servidor real (`SFTP_CSS_*`), verificado bajándolo de nuevo:
+  - `addons/sourcemod/plugins/csstv_hud.smx` (14738 bytes, md5 `72645cac9e61aa5ad768586eee72d06d`).
+  - `cfg/sourcemod/csstv_hud.cfg` con `csstv_hud "1"`, la clave (`HUD_RELAY_KEY` del `.env`) y **el host y el puerto vacíos**: no manda nada hasta cargarlos.
+  - Usa la extensión Socket 3.0.1 que ya estaba (`socket.ext.so`, el mismo binario que en RBK).
+- Se carga en el próximo cambio de mapa. Es un plugin aparte: cargarlo con `sm plugins load csstv_hud` no cancela partidas.
+- **Para probar:** `csstv_hud_host` y `csstv_hud_port` con la dirección de playit.gg del streamer (en la consola y en el cfg) y `csstv_hud_status`.
+- **Relay y HUD (`hud/relay/` 1.0.0): hechos el 2026-10-22**, probados solo en local con la partida simulada (`pnpm simular`): 16 pruebas, tipos y `relay.exe` armado y probado. Falta probarlos con el servidor real y playit. Guía del streamer en [`hud/relay/README.md`](../hud/relay/README.md).
+  - `relay.exe` no se versiona: se arma con `pnpm build:exe` y se le pasa al streamer junto con la clave (`HUD_RELAY_KEY`).
+  - **En qué se apartó del plan:** en la [guía de implementación](bitacora/2026-10-22-hud-observer/GUIA_IMPLEMENTACION.md) (documentación y guía escritas el 2026-10-23).
+  - **Falta ver con la SourceTV real:** cómo ocultar las barras de espectador de CS:S debajo del HUD.
+- **Si algo falla:** `csstv_hud 0` lo apaga al instante.
+- **Bitácora:** [`2026-10-22-hud-observer`](bitacora/2026-10-22-hud-observer/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
