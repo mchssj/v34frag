@@ -13,6 +13,8 @@
  * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
  * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
  * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
+ * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
+ * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -33,7 +35,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.4.1"
+#define PLUGIN_VERSION "2.5.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -124,6 +126,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 
 #include "csstv/stats.inc"
 #include "csstv/json.inc"
+#include "csstv/clips.inc"
 #include "csstv/queue.inc"
 #include "csstv/live.inc"
 #include "csstv/http.inc"
@@ -213,6 +216,7 @@ public void OnPluginStart()
 	Claim_Init();
 	Whois_Init();
 	Tips_Init();
+	Clips_Init();
 }
 
 public void OnMapStart()
@@ -253,6 +257,7 @@ public void OnClientPutInServer(int client)
 	Board_OnClientPut(client);
 	Claim_ClientReset(client);
 	Whois_ClientReset(client);
+	Clips_ClientReset(client);
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -266,6 +271,7 @@ public void OnClientDisconnect(int client)
 	g_bReady[client] = false;
 	Recon_Remember(client);
 	Board_SaveClient(client);
+	Clips_OnLeave(client);   // antes de Stats_ClientLeave: puede dejar a un compañero en clutch
 	Stats_ClientLeave(client);
 	Maps_OnClientDisconnect(client);
 }
@@ -580,6 +586,7 @@ void ResetMatch()
 	for (int i = 1; i <= MaxClients; i++)
 		g_bReady[i] = false;
 	Stats_Reset();
+	Clips_Clear();
 	Qol_Reset();
 	Rr_Reset();
 	Knife_Reset();
@@ -703,6 +710,7 @@ void OnRestartsDone()
 		GetCurrentMap(map, sizeof(map));
 		LogMessage("Partida %s en vivo en %s.", g_sMatchUid, map);
 		PrintToChatAll("%s ¡EN VIVO! ¡EN VIVO! ¡EN VIVO! Suerte a todos.", PREFIX);
+		Clips_OnLiveStart();   // en el mismo cuadro: los ticks de los clips cuentan desde la demo
 		Demo_Start();
 	}
 	else
@@ -734,6 +742,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	if (aWon) { g_iSegA++; g_iTotA++; }
 	else      { g_iSegB++; g_iTotB++; }
 	g_iSegRound++;
+	Clips_RoundEnd(winnerSide, g_iTotA + g_iTotB);   // antes de FinishMatch y de la foto en vivo
 	Stats_SnapshotRound(g_iTotA + g_iTotB);
 	Board_SaveAll();
 
@@ -1001,6 +1010,7 @@ public Action Timer_AfterFinish(Handle timer)
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Stats_RoundStart();
+	Clips_RoundStart();
 	Rr_OnRoundStart();
 	Qol_ScheduleScoreSync();
 	if (g_bRestarting)
@@ -1064,6 +1074,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		return;
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	Stats_OnDeath(victim, attacker, event.GetBool("headshot"));
+	Clips_OnDeath(victim, attacker);
 	char weapon[32];
 	event.GetString("weapon", weapon, sizeof(weapon));
 	Qol_OnDeath(victim, attacker, weapon);

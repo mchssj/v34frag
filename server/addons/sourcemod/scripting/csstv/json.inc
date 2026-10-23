@@ -223,5 +223,7 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 		J_KeyInt("suicides", g_Stats[p][ST_SUICIDES]);
 		J_Char('}');
 	}
-	J_Raw("]}");
+	J_Char(']');
+	Clips_WriteJson();   // al final: si no entran, se sacan sin cortar el resto
+	J_Char('}');
 }
