@@ -52,6 +52,16 @@ Capturas y medidas en 1440, 1260, 1000, 999, 768, 640, 639, 390 y 320 px, en cla
 - **Umbral del chip del CTA:** se bajó de 400 a 360 px. Sin el tema ni "Iniciar sesión" en la barra, el chip entra desde unos 330 px; con 360 se ve en los teléfonos comunes (360 y 390 px) y solo se quita en los de 320.
 - **Tema en el menú:** se usa un grupo de opciones del menú (`DropdownMenuRadioGroup`) en lugar del `ThemeSwitch`. Los botones sueltos dentro de un menú de Radix no se alcanzan con el teclado; las opciones del menú sí.
 
+## Agregados posteriores
+
+- **2026-10-17: banderas.**
+  - **Pie:** banderas de Argentina y Colombia junto a "Counter-Strike: Source", con `role="img"` y `aria-label`. Prueba e2e en `e2e/landing.spec.ts`.
+  - **Selector de país** de la Bienvenida: bandera en cada opción y en el valor elegido. "Otro" muestra un globo; ahí la bandera es decorativa, porque el nombre va al lado.
+  - **Componente:** `src/components/brand/CountryFlag.tsx`, que traduce los nombres de `COUNTRIES` a la bandera.
+  - **Dependencia nueva:** `country-flag-icons` 1.6.20 (MIT, sin scripts de instalación). Son SVG y no emojis, porque Windows no dibuja los emojis de banderas (muestra "AR", "CO"). El build incluye solo las 22 banderas usadas, unos 5 KB comprimidos.
+  - **Detalle de shadcn:** `Select` y `DropdownMenu` fuerzan `size-4` en los SVG sin `size-` en la clase. La bandera lleva `size-auto` para mantener su 18×12.
+  - **Prueba intermitente corregida:** "en pantallas angostas el tema e 'Iniciar sesión' están en el menú" reabría el menú durante su animación de cierre, y la capa que se cerraba tomaba el clic como "afuera". Ahora espera a que el menú se cierre; pasó 15 de 15 repeticiones.
+
 ## Cómo revertir
 
 Revertir el commit en `feat/frontend-fase-1`. No hay cambios fuera de `web/frontend` y esta carpeta de la bitácora.

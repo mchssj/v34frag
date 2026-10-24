@@ -91,11 +91,20 @@ Ninguna vista se desborda en 320, 360, 390 ni 768 px, tampoco las vistas con ses
   - los 24 px entre botones se aplican también desde `lg`.
 - **Botones:** los de shadcn Nova tienen un borde transparente de 1 px, que el sistema usa para el foco, y los del prototipo no. Quedan 2 px más anchos y se aceptó así para no quitar el estilo de foco.
 
+## Cambios posteriores
+
+- **2026-10-18: la Bienvenida muestra solo los pasos que faltan.**
+  - **Antes:** después de "Guardar y seguir" siempre aparecía la vinculación, aunque el SteamID ya estuviera vinculado. Se veían las instrucciones de `!claim` sin código y "Vinculado" al mismo tiempo.
+  - **Ahora:** los pasos se arman al entrar con lo pendiente (`welcomeSteps` en `src/features/onboarding/queries.ts`) y el progreso cuenta solo esos ("paso 1 de 1"). En el último paso, el botón del Estilo dice "Guardar y terminar".
+  - **El estado "Vinculado" se mantiene** para quien vincula durante la Bienvenida.
+  - **Desvío del handoff:** el diseño siempre muestra "paso N de 2" y no tiene "Guardar y terminar".
+  - **Pruebas:** `welcomeSteps` (4 casos), `WelcomeFlow.test.tsx` (ya vinculado, sin nada, solo falta vincular) y la e2e de registro actualizada (al volver desde el aviso, "paso 1 de 1 · Vinculación"). Revisado en el navegador con una cuenta vinculada sin puesto.
+
 ## Pedidos al backend
 
 Para reemplazar los valores fijos o mostrar lo que falta:
 
-1. **Estado público de los servidores:** en línea, mapa, jugadores y ping. Hoy `/api/v1/servers` exige sesión y no tiene estado en vivo.
+1. ~~**Estado público de los servidores:** en línea, mapa, jugadores y ping.~~ **Resuelto el 2026-10-19:** `GET /api/v1/servers/status` alimenta la sección Servidores, el pill del hero y la IP de la Bienvenida; los valores fijos de `config/site.ts` se borraron (ver `2026-10-19-vinculacion-contrasena`, "Ampliación").
 2. **Reenviar el email de confirmación y cambiar el email** antes de confirmar.
 3. **`onboarding_done` y `email_verified`** en el usuario, para no depender de `localStorage`.
 4. **Fecha de cierre de inscripción y banner** del torneo.
