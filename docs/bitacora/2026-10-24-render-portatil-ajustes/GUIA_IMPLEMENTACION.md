@@ -44,3 +44,17 @@ Los puntos 5.1, 5.2 y el `|` se confirman en `procesar.log` del portátil. Hay q
 - que las jugadas de la ronda 1 salgan;
 - "startmovie no grabó nada en 20 s; lo mando otra vez";
 - que no haya más "pasó de largo".
+
+## Cámara en el jugador equivocado (2026-10-24)
+
+- **Qué pasó:** los dos clips de JESHO del inferno de las 02:14 (4k de la ronda 20 y 4k de la ronda 17) salieron desde el POV de otro jugador. Su nombre en el juego es `CANDY LOVE愛.`: el `愛` no llega bien a la consola, `spec_player "<nombre>"` no encuentra a nadie y la cámara se queda en el jugador anterior.
+- **Probado con el juego en la PC de Daniel:**
+  - `spec_player 3` (el índice de entidad) no sirve: en las demos, `spec_player` solo acepta el nombre exacto, y con un número la cámara queda fija sin seguir a nadie;
+  - lo que funciona es `spec_player "<un jugador vivo con nombre escribible>"` seguido de `spec_next` hasta llegar a él. `spec_next` va al siguiente jugador vivo por número. Con eso, el 4k de JESHO salió en su primera persona (la pistola en las dos primeras kills y el AK en la última, igual que el feed).
+- **Cambios:**
+  - `leer_demo.py`: el índice de entidad de cada jugador por tick (`slot_at`, de la entrada de la tabla `userinfo` + 1) y los vivos en un tick (`alive_at`);
+  - `render_clip.spec_target()`: el nombre si se puede escribir; si no, el ancla con menos pasos de `spec_next`. `render_clip.py --steamid` para probar a mano;
+  - `procesar.build_job` pasa el SteamID. Las jugadas de jugadores con comillas o `;` en el nombre, que antes quedaban `skipped`, ahora se graban igual;
+  - `discord_publicados.json` anota por jugada y por video: una jugada que se vuelve a grabar se publica de nuevo;
+  - `discord.delete()` borra un mensaje del webhook (para los clips grabados con la cámara equivocada).
+

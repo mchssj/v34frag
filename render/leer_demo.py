@@ -114,6 +114,7 @@ class Demo:
         self.tables = []  # [{"name", "max", "fixed", "bits", "entries": [[nombre, datos]]}]
         self.players = {}  # userid -> {"name", "steamid", "bot"}
         self.names = {}  # steamid -> [(tick, nombre)], para saber cómo se llamaba en cada momento
+        self.slots = {}  # steamid -> [(tick, índice de entidad)], el número que acepta spec_player
         self.events = []
         self.server_tick = 0
         self.errors = []
@@ -147,7 +148,7 @@ class Demo:
             else:
                 t["entries"].append([name, data])
             if t["name"] == "userinfo" and data:
-                self.userinfo(br.data, data, tick)
+                self.userinfo(br.data, data, tick, idx)
             if len(history) == 32:
                 history.pop(0)
             history.append(name)
@@ -159,7 +160,7 @@ class Demo:
         except (EOFError, IndexError) as e:
             self.errors.append(f"tick {tick}: tabla {t['name']}: {e}")
 
-    def userinfo(self, buf, data, tick=0):
+    def userinfo(self, buf, data, tick=0, slot=None):
         start, nbits = data
         if nbits < 8 * 132:  # player_info_t
             return
@@ -176,18 +177,31 @@ class Demo:
         hist = self.names.setdefault(sid, [])
         if not hist or hist[-1][1] != name:
             hist.append((tick, name))
+        # La entrada de la tabla userinfo es el lugar del jugador en el servidor: su entidad es ese número + 1.
+        if slot is not None:
+            sl = self.slots.setdefault(sid, [])
+            if not sl or sl[-1][1] != slot + 1:
+                sl.append((tick, slot + 1))
 
     def name_at(self, steamid, tick):
         """Cómo se llamaba el jugador con ese SteamID (STEAM_X:Y:Z o BOT:nombre) en ese tick de la demo."""
-        hist = self.names.get(steamid)
+        return self._at(self.names, steamid, tick)
+
+    def slot_at(self, steamid, tick):
+        """El índice de entidad del jugador en ese tick (cambia si se reconecta en otro lugar)."""
+        return self._at(self.slots, steamid, tick)
+
+    @staticmethod
+    def _at(table, steamid, tick):
+        hist = table.get(steamid)
         if not hist:
             return None
-        name = hist[0][1]
-        for t, n in hist:
+        value = hist[0][1]
+        for t, v in hist:
             if t > tick:
                 break
-            name = n
-        return name
+            value = v
+        return value
 
     # ---- mensajes de red ----
 
@@ -404,6 +418,40 @@ def rounds(d):
     for i, r in enumerate(out, 1):
         r["n"] = i
     return out
+
+
+def alive_at(d, tick):
+    """Los SteamID vivos en ese tick: los que estaban en T o CT al empezar la ronda, menos los que murieron antes.
+
+    La demo empieza en el vivo, así que los equipos de la primera mitad salen del "oldteam" del primer cambio de
+    equipo de cada jugador. La primera ronda no tiene round_start: empieza en el tick 0."""
+    team = {}
+    for ev in d.events:
+        if ev["event"] == "player_team" and ev["userid"] not in team and ev.get("oldteam") in (2, 3):
+            team[ev["userid"]] = ev["oldteam"]
+    start = 0
+    for ev in d.events:
+        if ev["tick"] > tick:
+            break
+        if ev["event"] == "round_start":
+            start = ev["tick"]
+    for ev in d.events:
+        if ev["tick"] > start:
+            break
+        if ev["event"] == "player_team":
+            if ev.get("disconnect"):
+                team.pop(ev["userid"], None)
+            else:
+                team[ev["userid"]] = ev["team"]
+    alive = {u for u, t in team.items() if t in (2, 3)}
+    for ev in d.events:
+        if ev["tick"] >= tick:
+            break
+        if ev["tick"] >= start and ev["event"] == "player_death":
+            alive.discard(ev["userid"])
+        elif ev["tick"] > start and ev["event"] == "player_team":
+            alive.discard(ev["userid"])  # el que cambia de equipo durante la ronda queda muerto
+    return {player(d, u)["steamid"] for u in alive if player(d, u)["steamid"]}
 
 
 def clips(rs):

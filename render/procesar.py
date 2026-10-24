@@ -176,10 +176,10 @@ def build_job(d, rounds, clip, offset, seg_cfg):
     name = d.name_at(sid, events[0]) if sid else None
     if not name:
         raise Skip("El jugador no aparece en la demo")
-    if '"' in name or ";" in name:
-        raise Skip(f"El nombre del jugador en la demo no se puede usar en la consola: {name}")
-    return {"key": clip["id"][:8], "player": name, "segs": render_clip.segments(events, d.tick_interval, seg_cfg),
-            "clip": clip}
+    # La cámara lo sigue por el SteamID: render_clip.spec_target escribe el nombre si se puede y, si no (caracteres no
+    # latinos, comillas o ";"), llega a él con spec_next desde otro jugador vivo.
+    return {"key": clip["id"][:8], "player": name, "steamid": sid,
+            "segs": render_clip.segments(events, d.tick_interval, seg_cfg), "clip": clip}
 
 
 # ---- Demo ----
@@ -337,8 +337,10 @@ def publish_discord(cfg, api, r2, drive, webhook):
         log(f"Discord: {len(rows)} jugadas para publicar.")
         for row in rows:
             cid = row["clip_id"]
-            if cid in posted:
-                api.rpc("clip_discord_mark", p_clip=cid, p_message_id=posted[cid])
+            # La anotación es por jugada y por video: si la jugada se vuelve a grabar (otra clave), se publica de nuevo.
+            done_key = f"{cid}:{row.get('video_key')}"
+            if done_key in posted:
+                api.rpc("clip_discord_mark", p_clip=cid, p_message_id=posted[done_key])
                 continue
             src = os.path.join(folder, f"{cid}.mp4")
             light = os.path.join(folder, f"{cid}_720.mp4")
@@ -356,7 +358,7 @@ def publish_discord(cfg, api, r2, drive, webhook):
                 size = render_clip.light_version(cfg, src, light, row.get("video_seconds") or 30)
                 msg = discord.post(webhook, discord.clip_message(row), light,
                                    filename=f"{row['type']}_{row['round']}.mp4")
-                posted[cid] = msg
+                posted[done_key] = msg
                 json.dump(posted, open(state_path, "w", encoding="utf-8"))
                 api.rpc("clip_discord_mark", p_clip=cid, p_message_id=msg)
                 log(f"  {cid[:8]}: publicada en Discord ({discord.type_label(row['type'])} de {row['player_name']}, "

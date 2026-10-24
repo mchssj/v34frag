@@ -101,6 +101,18 @@ def post(webhook, payload, file_path, filename="clip.mp4", tries=4):
     raise DiscordError("Discord siguió pidiendo esperar (429)")
 
 
+def delete(webhook, message_id):
+    """Borra un mensaje que publicó este webhook (por ejemplo, un clip grabado con la cámara equivocada)."""
+    req = urllib.request.Request(f"{webhook}/messages/{message_id}", method="DELETE", headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return 404
+        raise DiscordError(f"Discord respondió {e.code}: {e.read()[:300]!r}") from None
+
+
 def prueba(video, env_path):
     row = {"type": "ace", "player_name": "Prueba", "map": "cbble", "round": 1, "score1": 16, "score2": 13,
            "position": 1, "video_seconds": 12, "video_drive_id": None}

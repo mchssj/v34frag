@@ -370,6 +370,39 @@ def ffmpeg_segment(cfg, prefix, frames, out, skip=0):
     subprocess.run(cmd + [out], check=True)
 
 
+def console_safe(name):
+    """Si el nombre se puede escribir en la consola: solo caracteres latinos imprimibles, sin comillas ni ";"."""
+    return bool(name) and all(32 <= ord(c) < 127 for c in name) and '"' not in name and ";" not in name
+
+
+def spec_target(d, steamid, tick):
+    """Los comandos para que la cámara siga al jugador en ese tick de la demo.
+
+    Si su nombre se puede escribir, spec_player "<nombre>". Si no (el "愛" de un jugador, el 2026-10-24, llegaba mal a
+    la consola y la cámara se quedaba en otro), se sigue a un jugador vivo con nombre escribible y se pasa con
+    spec_next hasta llegar a él: spec_next va al siguiente jugador vivo por número (índice de entidad). Se elige el que
+    queda a menos pasos. spec_player solo acepta el nombre exacto: con el número no sigue a nadie."""
+    name = d.name_at(steamid, tick)
+    if console_safe(name):
+        return [f'spec_player "{name}"']
+    target = d.slot_at(steamid, tick)
+    alive = sorted((d.slot_at(s, tick), s) for s in leer_demo.alive_at(d, tick) if d.slot_at(s, tick))
+    slots = [sl for sl, _ in alive]
+    if target not in slots:
+        raise RuntimeError(f"{name!r} no está vivo en el tick {tick} y su nombre no se puede escribir en la consola")
+    best = None
+    for k, (sl, sid) in enumerate(alive):
+        anchor = d.name_at(sid, tick)
+        if sl == target or not console_safe(anchor):
+            continue
+        steps = (slots.index(target) - k) % len(slots)  # spec_next desde el ancla hasta el objetivo
+        if best is None or steps < best[0]:
+            best = (steps, anchor)
+    if best is None:
+        raise RuntimeError(f"no hay ningún jugador vivo con nombre escribible para llegar a {name!r}")
+    return [f'spec_player "{best[1]}"'] + ["spec_next"] * best[0]
+
+
 def lead_frames(cfg):
     return round(cfg.get("lead_seconds", 0.5) * cfg["fps"])
 
@@ -448,8 +481,9 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
                 # espectador se oculta: tapa la imagen y se queda con el teclado. Sin chat ni mapa:
                 # hud_saytext_time 0 y overview_mode 0 (el mapa de arriba a la izquierda es el overview del
                 # espectador, no el radar).
-                spec = [f'spec_player "{job["player"]}"', "spec_mode 3", "hidepanel specmenu", "hidepanel specgui",
-                        "hidepanel overview", "overview_mode 0", "hud_saytext_time 0"]
+                target = spec_target(d, job["steamid"], j0) if job.get("steamid") else [f'spec_player "{job["player"]}"']
+                spec = target + ["spec_mode 3", "hidepanel specmenu", "hidepanel specgui",
+                                 "hidepanel overview", "overview_mode 0", "hud_saytext_time 0"]
                 frames = segment_frames((t0, t1), d.tick_interval, cfg)
                 name = f"{job['key']}_{i}_"
                 prefix = os.path.join(frames_dir, name)
@@ -564,6 +598,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("demo")
     ap.add_argument("--player", required=True)
+    ap.add_argument("--steamid", help="seguir al jugador por su SteamID (STEAM_X:Y:Z) en vez del nombre escrito")
     ap.add_argument("--round", type=int)
     ap.add_argument("--ticks")
     ap.add_argument("--config", default=os.path.join(AQUI, "config.json"))
@@ -596,7 +631,7 @@ def main():
     os.makedirs(cfg["out_dir"], exist_ok=True)
     frames_dir = os.path.join(cfg["client_dir"], "cstrike", "cmleague", "cuadros")
     t_game = time.time()
-    prefixes = record_session(cfg, a.demo, d, [{"key": "clip", "player": a.player, "segs": segs}], frames_dir)["clip"]
+    prefixes = record_session(cfg, a.demo, d, [{"key": "clip", "player": a.player, "steamid": a.steamid, "segs": segs}], frames_dir)["clip"]
     times = {"juego_s": round(time.time() - t_game, 1)}
 
     # 3. FFmpeg.
