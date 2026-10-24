@@ -11,26 +11,33 @@ export type PlayerSummary = Schemas["PlayerSummary"]
 const MINUTE = 60_000
 
 export const publicKeys = {
-  liveCount: ["public", "live-count"] as const,
+  live: ["public", "live"] as const,
   featuredLive: ["public", "featured-live"] as const,
   mixesTotal: ["public", "mixes-total"] as const,
   nextEvent: ["public", "next-event"] as const,
   topPlayers: ["public", "top-players"] as const,
 }
 
-export const liveCountOptions = queryOptions({
-  queryKey: publicKeys.liveCount,
-  queryFn: async ({ signal }) =>
-    (
-      await unwrap(
-        api.GET("/api/v1/matches", {
-          params: { query: { status: "live", per: 1 } },
-          signal,
-        })
-      )
-    ).total,
+/**
+ * Partidas en vivo: una página de 1 trae el total y la destacada. Una sola consulta para la
+ * landing, el badge del sidebar y la NowBar (cada uno toma su parte con `select`).
+ */
+export const liveMatchesOptions = queryOptions({
+  queryKey: publicKeys.live,
+  queryFn: ({ signal }) =>
+    unwrap(
+      api.GET("/api/v1/matches", {
+        params: { query: { status: "live", per: 1 } },
+        signal,
+      })
+    ),
   staleTime: MINUTE,
   refetchInterval: MINUTE,
+})
+
+export const liveCountOptions = queryOptions({
+  ...liveMatchesOptions,
+  select: (page) => page.total,
 })
 
 /** Partida oficial en vivo para la tarjeta del login (null si no hay). */
@@ -97,6 +104,36 @@ export const topPlayersOptions = queryOptions({
     ).items,
   staleTime: 5 * MINUTE,
 })
+
+export type ServerStatus = Schemas["ServerStatusItem"]
+type ServerMode = NonNullable<ServerStatus["mode"]>
+
+/**
+ * Estado de los servidores (A2S desde el backend). Lo comparten el pill del hero, la sección
+ * Servidores y el paso de Vinculación. El backend lo guarda 20 s, así que no conviene más seguido.
+ */
+export const serverStatusOptions = queryOptions({
+  queryKey: ["public", "servers-status"] as const,
+  queryFn: ({ signal }) =>
+    unwrap(api.GET("/api/v1/servers/status", { signal })),
+  staleTime: 20_000,
+  refetchInterval: 30_000,
+})
+
+export const SERVER_MODE: Record<ServerMode, string> = {
+  mix: "Mix",
+  competitive: "Competitivo",
+  public: "Público",
+  deathmatch: "Deathmatch",
+  retakes: "Retakes",
+  practice: "Práctica",
+}
+
+/** Servidor para el `connect` del `!claim`: uno de mix en línea; si no hay, cualquiera en línea. */
+export function claimServer(servers: ServerStatus[]): ServerStatus | null {
+  const reachable = servers.filter((s) => s.online && s.address)
+  return reachable.find((s) => s.mode === "mix") ?? reachable[0] ?? null
+}
 
 const numberFormat = new Intl.NumberFormat("es-AR")
 export const formatNumber = (n: number) => numberFormat.format(n)

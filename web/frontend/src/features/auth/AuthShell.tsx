@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router"
 import type { ReactNode } from "react"
 
-import { Logo } from "@/components/brand/Logo"
+import { BrandLockup } from "@/components/brand/Brand"
 import { Button } from "@/components/ui/button"
 
 export type SideCopy = { title: string; subtitle: string } | null
@@ -27,8 +27,12 @@ export function AuthShell({
     <div className="grid min-h-svh grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] bg-background leading-design text-foreground">
       <div className="flex min-w-0 flex-col gap-6 px-8 py-7">
         <header className="flex items-center justify-between">
-          <Link to="/" aria-label="CSSTV, ir al inicio" className="rounded-lg">
-            <Logo />
+          <Link
+            to="/"
+            aria-label="CM League, ir al inicio"
+            className="rounded-lg"
+          >
+            <BrandLockup className="h-7" />
           </Link>
           {"to" in swap ? (
             <Button asChild variant="ghost" className="text-[13px]">

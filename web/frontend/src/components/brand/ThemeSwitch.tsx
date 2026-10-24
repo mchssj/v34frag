@@ -1,7 +1,7 @@
 import { cn } from "cn"
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 
-import { useTheme } from "@/components/theme-provider"
+import { useTheme, type Theme } from "@/components/theme-provider"
 
 export const THEME_MODES = [
   { value: "light", label: "Claro", icon: SunIcon },
@@ -9,8 +9,14 @@ export const THEME_MODES = [
   { value: "system", label: "Sistema", icon: MonitorIcon },
 ] as const
 
-/** Selector de tema segmentado (landing). La app interna usa ThemeToggle. */
-export function ThemeSwitch({ className }: { className?: string }) {
+/** Selector de tema segmentado (landing). `onPick` reemplaza a setTheme (p. ej. con efectos). */
+export function ThemeSwitch({
+  className,
+  onPick,
+}: {
+  className?: string
+  onPick?: (theme: Theme) => void
+}) {
   const { theme, setTheme } = useTheme()
   return (
     <div
@@ -28,7 +34,7 @@ export function ThemeSwitch({ className }: { className?: string }) {
           title={label}
           aria-label={label}
           aria-pressed={theme === value}
-          onClick={() => setTheme(value)}
+          onClick={() => (onPick ?? setTheme)(value)}
           className="grid size-[30px] place-items-center rounded-[calc(var(--radius)-4px)] text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm"
         >
           <Icon className="size-3.5" aria-hidden />

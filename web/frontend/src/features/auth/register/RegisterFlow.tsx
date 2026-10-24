@@ -35,7 +35,10 @@ export function RegisterFlow() {
   const [formError, setFormError] = useState<unknown>(null)
   const [created, setCreated] = useState<{ alias: string; email: string }>()
   // Rechazo del backend para un alias concreto (409 en uso, 400 no permitido).
-  const [rejected, setRejected] = useState<{ alias: string; state: AliasState }>()
+  const [rejected, setRejected] = useState<{
+    alias: string
+    state: AliasState
+  }>()
   const retryIn = useRetryCountdown(formError)
 
   const form = useForm<SignupValues>({
@@ -88,10 +91,10 @@ export function RegisterFlow() {
         )
         // 409 sin detalle de campo: el email ya tiene una cuenta.
         if (fieldIssue || e.code === "CONFLICT") {
-          form.setError(
-            (fieldIssue?.path as "email" | "password") ?? "email",
-            { type: "server", message: fieldIssue?.message || e.message }
-          )
+          form.setError((fieldIssue?.path as "email" | "password") ?? "email", {
+            type: "server",
+            message: fieldIssue?.message || e.message,
+          })
           setTried(true)
           setStep(1)
           return

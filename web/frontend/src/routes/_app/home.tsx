@@ -13,7 +13,7 @@ function HomePage() {
   const user = useMe().data ?? initial
 
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-[-0.5px]">
         Hola, {user.tag ?? "jugador"}
       </h1>

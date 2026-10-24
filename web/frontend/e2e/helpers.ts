@@ -1,4 +1,11 @@
-import { expect, type BrowserContext, type Page } from "@playwright/test"
+import {
+  expect,
+  type BrowserContext,
+  type Locator,
+  type Page,
+} from "@playwright/test"
+
+import { spendAuth } from "./authBudget"
 
 export const API = process.env.VITE_API_URL ?? "http://localhost:8787"
 export const APP = "http://localhost:5173"
@@ -45,6 +52,7 @@ export async function login(
   await page.getByLabel("Contraseña").fill(PASSWORD)
   if (opts.remember === false)
     await page.getByLabel("Recordarme en este equipo").uncheck()
+  await spendAuth()
   await page.getByRole("button", { name: "Iniciar sesión" }).click()
 }
 
@@ -62,4 +70,19 @@ export async function skipWelcome(
 export async function expectHome(page: Page, alias: string) {
   await expect(page).toHaveURL(/\/home$/)
   await expect(page.getByText(`Hola, ${alias}`)).toBeVisible()
+}
+
+/** Cerrar sesión: Mi perfil → Cuenta. */
+export async function logout(page: Page) {
+  await page.getByRole("link", { name: /^Mi perfil/ }).click()
+  await page.getByRole("link", { name: "Cuenta" }).click()
+  await page.getByRole("button", { name: "Cerrar sesión" }).click()
+}
+
+/** Sube el zoom del encuadre del avatar con el teclado y comprueba que cambió. */
+export async function zoomIn(dialog: Locator, steps = 20) {
+  const slider = dialog.getByRole("slider", { name: "Zoom" })
+  await slider.focus()
+  for (let i = 0; i < steps; i++) await slider.press("ArrowRight")
+  await expect(slider).not.toHaveAttribute("aria-valuenow", "1")
 }

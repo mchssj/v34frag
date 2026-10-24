@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import { redirectIfSignedIn } from "@/auth/guards"
+import { CountryFlag } from "@/components/brand/CountryFlag"
 import { CompetitionSection } from "@/features/landing/CompetitionSection"
 import { Hero } from "@/features/landing/Hero"
 import { HowItWorks } from "@/features/landing/HowItWorks"
@@ -25,7 +26,15 @@ function Landing() {
       </main>
       <footer className="mt-auto border-t">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-4 p-6 text-[13px] text-muted-foreground">
-          <span>CSSTV · Comunidad de Counter-Strike: Source</span>
+          <span className="inline-flex items-center gap-1.5">
+            CM League · Comunidad de Counter-Strike: Source
+            <CountryFlag
+              country="Argentina"
+              label="Bandera de Argentina"
+              className="ml-0.5"
+            />
+            <CountryFlag country="Colombia" label="Bandera de Colombia" />
+          </span>
           <span className="ml-auto">
             Proyecto de la comunidad, sin relación con Valve.
           </span>

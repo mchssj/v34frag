@@ -9,12 +9,16 @@ import {
   USER_STATE,
   expectHome,
   login,
+  logout,
   readSession,
   skipWelcome,
   uniqueUser,
+  zoomIn,
 } from "./helpers"
+import { spendAuth } from "./authBudget"
 
-// Login y registro cuentan para el límite de 10 por minuto: cada prueba anota cuántos gasta.
+// Login y registro cuentan para el límite de 10 por minuto (spendAuth espera si hace falta): cada
+// prueba anota cuántos gasta.
 const main = () =>
   JSON.parse(readFileSync(USER_INFO, "utf8")) as {
     email: string
@@ -38,7 +42,9 @@ test.describe("sin sesión", () => {
     await expect(
       page.getByRole("heading", { name: /La liga competitiva de/ })
     ).toBeVisible()
-    await expect(page.getByRole("link", { name: "Iniciar sesión" })).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: "Iniciar sesión" })
+    ).toBeVisible()
     await expect(
       page.getByRole("link", { name: "Crear cuenta", exact: true })
     ).toBeVisible()
@@ -76,13 +82,17 @@ test.describe("sin sesión", () => {
       [STORAGE_KEY]
     )
     await page.goto("/")
-    await expect(page.getByRole("link", { name: "Iniciar sesión" })).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: "Iniciar sesión" })
+    ).toBeVisible()
     await expect.poll(() => readSession(page)).toBeNull()
   })
 
   test("el alias tomado se avisa mientras se escribe", async ({ page }) => {
     await registerUntilAlias(page, uniqueUser().email)
-    await page.getByLabel("Alias", { exact: true }).fill(main().alias.toUpperCase())
+    await page
+      .getByLabel("Alias", { exact: true })
+      .fill(main().alias.toUpperCase())
     await expect(page.getByText("En uso")).toBeVisible()
   })
 })
@@ -91,41 +101,124 @@ test("registro → Bienvenida → aviso del Home (1 registro)", async ({
   page,
   request,
 }) => {
+  // El connect sale del estado de los servidores: uno de mix en línea (simulado, para no depender del real).
+  await page.route("**/api/v1/servers/status", (route) =>
+    route.fulfill({
+      json: {
+        servers: [
+          {
+            id: "dm",
+            name: "DM",
+            address: "10.0.0.2:27015",
+            mode: "deathmatch",
+            region: null,
+            online: true,
+            ping_ms: 9,
+            map: "de_dust2",
+            players: 3,
+            max_players: 16,
+            bots: 0,
+            live_matches: 0,
+          },
+          {
+            id: "mix",
+            name: "Mix",
+            address: "10.0.0.1:27015",
+            mode: "mix",
+            region: null,
+            online: true,
+            ping_ms: 9,
+            map: "de_inferno",
+            players: 8,
+            max_players: 12,
+            bots: 0,
+            live_matches: 1,
+          },
+        ],
+        totals: { servers: 2, online: 2, players: 11, live_matches: 1 },
+        checked_at: "2026-10-19T12:00:00Z",
+      },
+    })
+  )
   const user = uniqueUser()
   await registerUntilAlias(page, user.email)
   await page.getByLabel("Alias", { exact: true }).fill(user.alias)
   await expect(page.getByText("Disponible")).toBeVisible()
+  await spendAuth()
   await page.getByRole("button", { name: "Crear cuenta" }).click()
 
   // La Supabase local no pide confirmar el email: sigue directo a la Bienvenida.
   await expect(page).toHaveURL(/\/welcome$/)
-  await expect(page.getByText(`Email confirmado · hola, ${user.alias}`)).toBeVisible()
+  // Paso 1: foto (recortada y subida al elegirla) y nombre.
+  await expect(
+    page.getByText("Completa tu perfil · paso 1 de 4 · Foto y nombre")
+  ).toBeVisible()
+  await expect(
+    page.getByText(`Email confirmado · hola, ${user.alias}`)
+  ).toBeVisible()
+  await page
+    .locator('input[type="file"]')
+    .setInputFiles("src/assets/landing-bg.webp")
+  // Encuadre antes de subir: zoom y guardar.
+  const crop = page.getByRole("dialog", { name: "Encuadra tu foto" })
+  await expect(crop).toBeVisible()
+  await zoomIn(crop)
+  await crop.getByRole("button", { name: "Guardar foto" }).click()
+  await expect(crop).toBeHidden()
+  await expect(
+    page.getByRole("button", { name: "Elegir foto de perfil" }).locator("img")
+  ).toBeVisible()
+  await page.getByLabel(/^Nombre real/).fill("Martín Ruiz")
+  await expect(
+    page.getByText("Martín Ruiz · visible para admins y capitanes")
+  ).toBeVisible()
+  await page.getByRole("button", { name: "Guardar y seguir" }).click()
+
+  // Paso 2: estilo de juego.
+  await expect(
+    page.getByText("Completa tu perfil · paso 2 de 4 · Estilo de juego")
+  ).toBeVisible()
   await page.getByText("AWPer", { exact: true }).click()
   await page.getByLabel("País").click()
   await page.getByRole("option", { name: "Chile" }).click()
   await page.getByRole("button", { name: "Guardar y seguir" }).click()
 
-  await expect(page.getByText("Completa tu perfil · paso 2 de 2 · Vinculación")).toBeVisible()
+  // Paso 3: contactos (Discord se normaliza: sin #1234 y en minúsculas).
+  await expect(
+    page.getByText("Completa tu perfil · paso 3 de 4 · Contactos")
+  ).toBeVisible()
+  await page.getByLabel("Discord").fill("Zeta.CS#1234")
+  await page.getByRole("button", { name: "Guardar y seguir" }).click()
+
+  await expect(
+    page.getByText("Completa tu perfil · paso 4 de 4 · Vinculación")
+  ).toBeVisible()
   const code = await page.getByLabel(/^Código /).getAttribute("aria-label")
   expect(code).toMatch(/^Código [A-Z0-9]{6}$/)
-  await expect(page.getByText("connect 45.235.98.12:27015")).toBeVisible()
+  await expect(page.getByText("connect 10.0.0.1:27015")).toBeVisible()
   await page.getByRole("button", { name: "Lo hago después" }).click()
 
   await expectHome(page, user.alias)
-  await expect(page.getByText("Completa tu perfil · 1 de 2")).toBeVisible()
+  await expect(page.getByText("Completa tu perfil · 3 de 4")).toBeVisible()
 
   const session = await readSession(page)
   const profile = await request.get(`${API}/api/v1/me/profile`, {
     headers: { Authorization: `Bearer ${session!.accessToken}` },
   })
-  expect((await profile.json()).details).toMatchObject({
+  const details = (await profile.json()).details
+  expect(details).toMatchObject({
+    real_name: "Martín Ruiz",
     game_role: "AWPer",
     country: "Chile",
+    discord: "zeta.cs",
   })
+  expect(details.avatar_url).toBeTruthy()
 
-  // Desde el aviso vuelve al primer paso pendiente, con el mismo código (no gasta otro).
+  // Desde el aviso vuelve solo a lo que falta (la vinculación), con el mismo código (no gasta otro).
   await page.getByRole("link", { name: "Continuar" }).click()
-  await expect(page.getByText("Completa tu perfil · paso 2 de 2 · Vinculación")).toBeVisible()
+  await expect(
+    page.getByText("Completa tu perfil · paso 1 de 1 · Vinculación")
+  ).toBeVisible()
   await expect(page.getByLabel(/^Código /)).toHaveAttribute("aria-label", code!)
 })
 
@@ -136,6 +229,7 @@ test("login incorrecto y después un redirect malicioso termina en el inicio (2 
   await page.goto("/login?redirect=//evil.com")
   await page.getByLabel("Email").fill(main().email)
   await page.getByLabel("Contraseña").fill("incorrecta")
+  await spendAuth()
   await page.getByRole("button", { name: "Iniciar sesión" }).click()
   await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible()
 
@@ -147,6 +241,7 @@ test("ruta protegida → login → Bienvenida → Saltar; recarga; logout (1 reg
   page,
 }) => {
   const user = uniqueUser()
+  await spendAuth()
   const res = await page.request.post(`${API}/auth/signup`, {
     data: { email: user.email, password: PASSWORD, tag: user.alias },
   })
@@ -159,13 +254,12 @@ test("ruta protegida → login → Bienvenida → Saltar; recarga; logout (1 reg
   await expect(page).toHaveURL(/\/welcome$/)
   await page.getByRole("button", { name: "Saltar por ahora" }).click()
   await expectHome(page, user.alias)
-  await expect(page.getByText("Completa tu perfil · 0 de 2")).toBeVisible()
+  await expect(page.getByText("Completa tu perfil · 0 de 4")).toBeVisible()
 
   await page.reload()
   await expectHome(page, user.alias)
 
-  await page.getByRole("button", { name: user.alias }).click()
-  await page.getByRole("menuitem", { name: "Salir" }).click()
+  await logout(page)
   await expect(page).toHaveURL("http://localhost:5173/")
   await expect(page.getByRole("link", { name: "Iniciar sesión" })).toBeVisible()
   expect(await readSession(page)).toBeNull()
@@ -188,8 +282,7 @@ test("dos pestañas con Recordarme: el logout en una cierra la otra (1 login)", 
   await b.goto("/home")
   await expectHome(b, main().alias)
 
-  await a.getByRole("button", { name: main().alias }).click()
-  await a.getByRole("menuitem", { name: "Salir" }).click()
+  await logout(a)
   await expect(b).toHaveURL(/\/login/)
 })
 
@@ -254,10 +347,14 @@ test.describe("con la sesión compartida", () => {
     await expectHome(page, main().alias)
   })
 
-  test("un usuario común ve 403 en /admin", async ({ page }) => {
-    await page.goto("/admin")
-    await expect(page.getByText("403")).toBeVisible()
-    await expect(page.getByText("Sin permiso")).toBeVisible()
+  test("un usuario común no ve Administración y si entra a /admin vuelve al inicio", async ({
+    page,
+  }) => {
+    await page.goto("/admin/players")
+    await expectHome(page, main().alias)
+    await expect(
+      page.getByRole("link", { name: "Usuarios y moderación" })
+    ).toHaveCount(0)
   })
 
   test("con la API caída no manda al login: muestra el error", async ({

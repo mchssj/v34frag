@@ -13,11 +13,36 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as WelcomeRouteImport } from './routes/welcome'
-import { Route as AppAdminRouteImport } from './routes/_app/_admin'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppHallOfFameRouteImport } from './routes/_app/hall-of-fame'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
+import { Route as AppMixesRouteImport } from './routes/_app/mixes'
+import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
+import { Route as AppPcwRouteImport } from './routes/_app/pcw'
+import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
-import { Route as AppAdminAdminRouteImport } from './routes/_app/_admin/admin'
+import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
+import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
+import { Route as AppAdminServersRouteImport } from './routes/_app/admin.servers'
+import { Route as AppAdminTeamsRouteImport } from './routes/_app/admin.teams'
+import { Route as AppAdminUsersRouteImport } from './routes/_app/admin.users'
+import { Route as AppEventsIndexRouteImport } from './routes/_app/events.index'
+import { Route as AppEventsIdRouteImport } from './routes/_app/events.$id'
+import { Route as AppMatchIdRouteImport } from './routes/_app/match.$id'
+import { Route as AppMatchesIndexRouteImport } from './routes/_app/matches.index'
+import { Route as AppMatchesResultsRouteImport } from './routes/_app/matches.results'
+import { Route as AppPlayerNickRouteImport } from './routes/_app/player.$nick'
+import { Route as AppPlayersIndexRouteImport } from './routes/_app/players.index'
+import { Route as AppPlayersCompareRouteImport } from './routes/_app/players.compare'
+import { Route as AppProfileIndexRouteImport } from './routes/_app/profile.index'
+import { Route as AppProfileAccountRouteImport } from './routes/_app/profile.account'
+import { Route as AppProfileLinkRouteImport } from './routes/_app/profile.link'
+import { Route as AppProfilePreferencesRouteImport } from './routes/_app/profile.preferences'
+import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.privacy'
+import { Route as AppRankingIndexRouteImport } from './routes/_app/ranking.index'
+import { Route as AppRankingTeamsRouteImport } from './routes/_app/ranking.teams'
+import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,12 +63,38 @@ const WelcomeRoute = WelcomeRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/_admin',
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHallOfFameRoute = AppHallOfFameRouteImport.update({
+  id: '/hall-of-fame',
+  path: '/hall-of-fame',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMixesRoute = AppMixesRouteImport.update({
+  id: '/mixes',
+  path: '/mixes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMyteamRoute = AppMyteamRouteImport.update({
+  id: '/myteam',
+  path: '/myteam',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPcwRoute = AppPcwRouteImport.update({
+  id: '/pcw',
+  path: '/pcw',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -56,27 +107,178 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AuthRoute,
 } as any)
-const AppAdminAdminRoute = AppAdminAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminPlayersRoute = AppAdminPlayersRouteImport.update({
+  id: '/players',
+  path: '/players',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminServersRoute = AppAdminServersRouteImport.update({
+  id: '/servers',
+  path: '/servers',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminTeamsRoute = AppAdminTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppEventsIndexRoute = AppEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEventsIdRoute = AppEventsIdRouteImport.update({
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMatchIdRoute = AppMatchIdRouteImport.update({
+  id: '/match/$id',
+  path: '/match/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMatchesIndexRoute = AppMatchesIndexRouteImport.update({
+  id: '/matches/',
+  path: '/matches/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMatchesResultsRoute = AppMatchesResultsRouteImport.update({
+  id: '/matches/results',
+  path: '/matches/results',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlayerNickRoute = AppPlayerNickRouteImport.update({
+  id: '/player/$nick',
+  path: '/player/$nick',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlayersIndexRoute = AppPlayersIndexRouteImport.update({
+  id: '/players/',
+  path: '/players/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlayersCompareRoute = AppPlayersCompareRouteImport.update({
+  id: '/players/compare',
+  path: '/players/compare',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppProfileAccountRoute = AppProfileAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppProfileLinkRoute = AppProfileLinkRouteImport.update({
+  id: '/link',
+  path: '/link',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppProfilePreferencesRoute = AppProfilePreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppProfilePrivacyRoute = AppProfilePrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppRankingIndexRoute = AppRankingIndexRouteImport.update({
+  id: '/ranking/',
+  path: '/ranking/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRankingTeamsRoute = AppRankingTeamsRouteImport.update({
+  id: '/ranking/teams',
+  path: '/ranking/teams',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTeamsIdRoute = AppTeamsIdRouteImport.update({
+  id: '/teams/$id',
+  path: '/teams/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/welcome': typeof WelcomeRoute
+  '/admin': typeof AppAdminRouteWithChildren
+  '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
+  '/mixes': typeof AppMixesRoute
+  '/myteam': typeof AppMyteamRoute
+  '/pcw': typeof AppPcwRoute
+  '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/admin': typeof AppAdminAdminRoute
+  '/admin/events': typeof AppAdminEventsRoute
+  '/admin/players': typeof AppAdminPlayersRoute
+  '/admin/servers': typeof AppAdminServersRoute
+  '/admin/teams': typeof AppAdminTeamsRoute
+  '/admin/users': typeof AppAdminUsersRoute
+  '/events/$id': typeof AppEventsIdRoute
+  '/match/$id': typeof AppMatchIdRoute
+  '/matches/results': typeof AppMatchesResultsRoute
+  '/player/$nick': typeof AppPlayerNickRoute
+  '/players/compare': typeof AppPlayersCompareRoute
+  '/profile/account': typeof AppProfileAccountRoute
+  '/profile/link': typeof AppProfileLinkRoute
+  '/profile/preferences': typeof AppProfilePreferencesRoute
+  '/profile/privacy': typeof AppProfilePrivacyRoute
+  '/ranking/teams': typeof AppRankingTeamsRoute
+  '/teams/$id': typeof AppTeamsIdRoute
+  '/events/': typeof AppEventsIndexRoute
+  '/matches/': typeof AppMatchesIndexRoute
+  '/players/': typeof AppPlayersIndexRoute
+  '/profile/': typeof AppProfileIndexRoute
+  '/ranking/': typeof AppRankingIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/welcome': typeof WelcomeRoute
+  '/admin': typeof AppAdminRouteWithChildren
+  '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
+  '/mixes': typeof AppMixesRoute
+  '/myteam': typeof AppMyteamRoute
+  '/pcw': typeof AppPcwRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/admin': typeof AppAdminAdminRoute
+  '/admin/events': typeof AppAdminEventsRoute
+  '/admin/players': typeof AppAdminPlayersRoute
+  '/admin/servers': typeof AppAdminServersRoute
+  '/admin/teams': typeof AppAdminTeamsRoute
+  '/admin/users': typeof AppAdminUsersRoute
+  '/events/$id': typeof AppEventsIdRoute
+  '/match/$id': typeof AppMatchIdRoute
+  '/matches/results': typeof AppMatchesResultsRoute
+  '/player/$nick': typeof AppPlayerNickRoute
+  '/players/compare': typeof AppPlayersCompareRoute
+  '/profile/account': typeof AppProfileAccountRoute
+  '/profile/link': typeof AppProfileLinkRoute
+  '/profile/preferences': typeof AppProfilePreferencesRoute
+  '/profile/privacy': typeof AppProfilePrivacyRoute
+  '/ranking/teams': typeof AppRankingTeamsRoute
+  '/teams/$id': typeof AppTeamsIdRoute
+  '/events': typeof AppEventsIndexRoute
+  '/matches': typeof AppMatchesIndexRoute
+  '/players': typeof AppPlayersIndexRoute
+  '/profile': typeof AppProfileIndexRoute
+  '/ranking': typeof AppRankingIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,28 +286,141 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/welcome': typeof WelcomeRoute
-  '/_app/_admin': typeof AppAdminRouteWithChildren
+  '/_app/admin': typeof AppAdminRouteWithChildren
+  '/_app/hall-of-fame': typeof AppHallOfFameRoute
   '/_app/home': typeof AppHomeRoute
+  '/_app/mixes': typeof AppMixesRoute
+  '/_app/myteam': typeof AppMyteamRoute
+  '/_app/pcw': typeof AppPcwRoute
+  '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
-  '/_app/_admin/admin': typeof AppAdminAdminRoute
+  '/_app/admin/events': typeof AppAdminEventsRoute
+  '/_app/admin/players': typeof AppAdminPlayersRoute
+  '/_app/admin/servers': typeof AppAdminServersRoute
+  '/_app/admin/teams': typeof AppAdminTeamsRoute
+  '/_app/admin/users': typeof AppAdminUsersRoute
+  '/_app/events/$id': typeof AppEventsIdRoute
+  '/_app/match/$id': typeof AppMatchIdRoute
+  '/_app/matches/results': typeof AppMatchesResultsRoute
+  '/_app/player/$nick': typeof AppPlayerNickRoute
+  '/_app/players/compare': typeof AppPlayersCompareRoute
+  '/_app/profile/account': typeof AppProfileAccountRoute
+  '/_app/profile/link': typeof AppProfileLinkRoute
+  '/_app/profile/preferences': typeof AppProfilePreferencesRoute
+  '/_app/profile/privacy': typeof AppProfilePrivacyRoute
+  '/_app/ranking/teams': typeof AppRankingTeamsRoute
+  '/_app/teams/$id': typeof AppTeamsIdRoute
+  '/_app/events/': typeof AppEventsIndexRoute
+  '/_app/matches/': typeof AppMatchesIndexRoute
+  '/_app/players/': typeof AppPlayersIndexRoute
+  '/_app/profile/': typeof AppProfileIndexRoute
+  '/_app/ranking/': typeof AppRankingIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/welcome' | '/home' | '/login' | '/register' | '/admin'
+  fullPaths:
+    | '/'
+    | '/welcome'
+    | '/admin'
+    | '/hall-of-fame'
+    | '/home'
+    | '/mixes'
+    | '/myteam'
+    | '/pcw'
+    | '/profile'
+    | '/login'
+    | '/register'
+    | '/admin/events'
+    | '/admin/players'
+    | '/admin/servers'
+    | '/admin/teams'
+    | '/admin/users'
+    | '/events/$id'
+    | '/match/$id'
+    | '/matches/results'
+    | '/player/$nick'
+    | '/players/compare'
+    | '/profile/account'
+    | '/profile/link'
+    | '/profile/preferences'
+    | '/profile/privacy'
+    | '/ranking/teams'
+    | '/teams/$id'
+    | '/events/'
+    | '/matches/'
+    | '/players/'
+    | '/profile/'
+    | '/ranking/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/welcome' | '/home' | '/login' | '/register' | '/admin'
+  to:
+    | '/'
+    | '/welcome'
+    | '/admin'
+    | '/hall-of-fame'
+    | '/home'
+    | '/mixes'
+    | '/myteam'
+    | '/pcw'
+    | '/login'
+    | '/register'
+    | '/admin/events'
+    | '/admin/players'
+    | '/admin/servers'
+    | '/admin/teams'
+    | '/admin/users'
+    | '/events/$id'
+    | '/match/$id'
+    | '/matches/results'
+    | '/player/$nick'
+    | '/players/compare'
+    | '/profile/account'
+    | '/profile/link'
+    | '/profile/preferences'
+    | '/profile/privacy'
+    | '/ranking/teams'
+    | '/teams/$id'
+    | '/events'
+    | '/matches'
+    | '/players'
+    | '/profile'
+    | '/ranking'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/_auth'
     | '/welcome'
-    | '/_app/_admin'
+    | '/_app/admin'
+    | '/_app/hall-of-fame'
     | '/_app/home'
+    | '/_app/mixes'
+    | '/_app/myteam'
+    | '/_app/pcw'
+    | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
-    | '/_app/_admin/admin'
+    | '/_app/admin/events'
+    | '/_app/admin/players'
+    | '/_app/admin/servers'
+    | '/_app/admin/teams'
+    | '/_app/admin/users'
+    | '/_app/events/$id'
+    | '/_app/match/$id'
+    | '/_app/matches/results'
+    | '/_app/player/$nick'
+    | '/_app/players/compare'
+    | '/_app/profile/account'
+    | '/_app/profile/link'
+    | '/_app/profile/preferences'
+    | '/_app/profile/privacy'
+    | '/_app/ranking/teams'
+    | '/_app/teams/$id'
+    | '/_app/events/'
+    | '/_app/matches/'
+    | '/_app/players/'
+    | '/_app/profile/'
+    | '/_app/ranking/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,11 +460,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WelcomeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/_admin': {
-      id: '/_app/_admin'
-      path: ''
-      fullPath: '/'
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/hall-of-fame': {
+      id: '/_app/hall-of-fame'
+      path: '/hall-of-fame'
+      fullPath: '/hall-of-fame'
+      preLoaderRoute: typeof AppHallOfFameRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/home': {
@@ -157,6 +479,34 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/mixes': {
+      id: '/_app/mixes'
+      path: '/mixes'
+      fullPath: '/mixes'
+      preLoaderRoute: typeof AppMixesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/myteam': {
+      id: '/_app/myteam'
+      path: '/myteam'
+      fullPath: '/myteam'
+      preLoaderRoute: typeof AppMyteamRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pcw': {
+      id: '/_app/pcw'
+      path: '/pcw'
+      fullPath: '/pcw'
+      preLoaderRoute: typeof AppPcwRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
     '/_auth/login': {
@@ -173,36 +523,236 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_app/_admin/admin': {
-      id: '/_app/_admin/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AppAdminAdminRouteImport
+    '/_app/admin/events': {
+      id: '/_app/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AppAdminEventsRouteImport
       parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/players': {
+      id: '/_app/admin/players'
+      path: '/players'
+      fullPath: '/admin/players'
+      preLoaderRoute: typeof AppAdminPlayersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/servers': {
+      id: '/_app/admin/servers'
+      path: '/servers'
+      fullPath: '/admin/servers'
+      preLoaderRoute: typeof AppAdminServersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/teams': {
+      id: '/_app/admin/teams'
+      path: '/teams'
+      fullPath: '/admin/teams'
+      preLoaderRoute: typeof AppAdminTeamsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/users': {
+      id: '/_app/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AppAdminUsersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/events/': {
+      id: '/_app/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof AppEventsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/events/$id': {
+      id: '/_app/events/$id'
+      path: '/events/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof AppEventsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/match/$id': {
+      id: '/_app/match/$id'
+      path: '/match/$id'
+      fullPath: '/match/$id'
+      preLoaderRoute: typeof AppMatchIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/matches/': {
+      id: '/_app/matches/'
+      path: '/matches'
+      fullPath: '/matches/'
+      preLoaderRoute: typeof AppMatchesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/matches/results': {
+      id: '/_app/matches/results'
+      path: '/matches/results'
+      fullPath: '/matches/results'
+      preLoaderRoute: typeof AppMatchesResultsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/player/$nick': {
+      id: '/_app/player/$nick'
+      path: '/player/$nick'
+      fullPath: '/player/$nick'
+      preLoaderRoute: typeof AppPlayerNickRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/players/': {
+      id: '/_app/players/'
+      path: '/players'
+      fullPath: '/players/'
+      preLoaderRoute: typeof AppPlayersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/players/compare': {
+      id: '/_app/players/compare'
+      path: '/players/compare'
+      fullPath: '/players/compare'
+      preLoaderRoute: typeof AppPlayersCompareRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile/': {
+      id: '/_app/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof AppProfileIndexRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/profile/account': {
+      id: '/_app/profile/account'
+      path: '/account'
+      fullPath: '/profile/account'
+      preLoaderRoute: typeof AppProfileAccountRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/profile/link': {
+      id: '/_app/profile/link'
+      path: '/link'
+      fullPath: '/profile/link'
+      preLoaderRoute: typeof AppProfileLinkRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/profile/preferences': {
+      id: '/_app/profile/preferences'
+      path: '/preferences'
+      fullPath: '/profile/preferences'
+      preLoaderRoute: typeof AppProfilePreferencesRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/profile/privacy': {
+      id: '/_app/profile/privacy'
+      path: '/privacy'
+      fullPath: '/profile/privacy'
+      preLoaderRoute: typeof AppProfilePrivacyRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/ranking/': {
+      id: '/_app/ranking/'
+      path: '/ranking'
+      fullPath: '/ranking/'
+      preLoaderRoute: typeof AppRankingIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ranking/teams': {
+      id: '/_app/ranking/teams'
+      path: '/ranking/teams'
+      fullPath: '/ranking/teams'
+      preLoaderRoute: typeof AppRankingTeamsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/teams/$id': {
+      id: '/_app/teams/$id'
+      path: '/teams/$id'
+      fullPath: '/teams/$id'
+      preLoaderRoute: typeof AppTeamsIdRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
 interface AppAdminRouteChildren {
-  AppAdminAdminRoute: typeof AppAdminAdminRoute
+  AppAdminEventsRoute: typeof AppAdminEventsRoute
+  AppAdminPlayersRoute: typeof AppAdminPlayersRoute
+  AppAdminServersRoute: typeof AppAdminServersRoute
+  AppAdminTeamsRoute: typeof AppAdminTeamsRoute
+  AppAdminUsersRoute: typeof AppAdminUsersRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
-  AppAdminAdminRoute: AppAdminAdminRoute,
+  AppAdminEventsRoute: AppAdminEventsRoute,
+  AppAdminPlayersRoute: AppAdminPlayersRoute,
+  AppAdminServersRoute: AppAdminServersRoute,
+  AppAdminTeamsRoute: AppAdminTeamsRoute,
+  AppAdminUsersRoute: AppAdminUsersRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
+interface AppProfileRouteChildren {
+  AppProfileAccountRoute: typeof AppProfileAccountRoute
+  AppProfileLinkRoute: typeof AppProfileLinkRoute
+  AppProfilePreferencesRoute: typeof AppProfilePreferencesRoute
+  AppProfilePrivacyRoute: typeof AppProfilePrivacyRoute
+  AppProfileIndexRoute: typeof AppProfileIndexRoute
+}
+
+const AppProfileRouteChildren: AppProfileRouteChildren = {
+  AppProfileAccountRoute: AppProfileAccountRoute,
+  AppProfileLinkRoute: AppProfileLinkRoute,
+  AppProfilePreferencesRoute: AppProfilePreferencesRoute,
+  AppProfilePrivacyRoute: AppProfilePrivacyRoute,
+  AppProfileIndexRoute: AppProfileIndexRoute,
+}
+
+const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
+  AppProfileRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
+  AppHallOfFameRoute: typeof AppHallOfFameRoute
   AppHomeRoute: typeof AppHomeRoute
+  AppMixesRoute: typeof AppMixesRoute
+  AppMyteamRoute: typeof AppMyteamRoute
+  AppPcwRoute: typeof AppPcwRoute
+  AppProfileRoute: typeof AppProfileRouteWithChildren
+  AppEventsIdRoute: typeof AppEventsIdRoute
+  AppMatchIdRoute: typeof AppMatchIdRoute
+  AppMatchesResultsRoute: typeof AppMatchesResultsRoute
+  AppPlayerNickRoute: typeof AppPlayerNickRoute
+  AppPlayersCompareRoute: typeof AppPlayersCompareRoute
+  AppRankingTeamsRoute: typeof AppRankingTeamsRoute
+  AppTeamsIdRoute: typeof AppTeamsIdRoute
+  AppEventsIndexRoute: typeof AppEventsIndexRoute
+  AppMatchesIndexRoute: typeof AppMatchesIndexRoute
+  AppPlayersIndexRoute: typeof AppPlayersIndexRoute
+  AppRankingIndexRoute: typeof AppRankingIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
+  AppHallOfFameRoute: AppHallOfFameRoute,
   AppHomeRoute: AppHomeRoute,
+  AppMixesRoute: AppMixesRoute,
+  AppMyteamRoute: AppMyteamRoute,
+  AppPcwRoute: AppPcwRoute,
+  AppProfileRoute: AppProfileRouteWithChildren,
+  AppEventsIdRoute: AppEventsIdRoute,
+  AppMatchIdRoute: AppMatchIdRoute,
+  AppMatchesResultsRoute: AppMatchesResultsRoute,
+  AppPlayerNickRoute: AppPlayerNickRoute,
+  AppPlayersCompareRoute: AppPlayersCompareRoute,
+  AppRankingTeamsRoute: AppRankingTeamsRoute,
+  AppTeamsIdRoute: AppTeamsIdRoute,
+  AppEventsIndexRoute: AppEventsIndexRoute,
+  AppMatchesIndexRoute: AppMatchesIndexRoute,
+  AppPlayersIndexRoute: AppPlayersIndexRoute,
+  AppRankingIndexRoute: AppRankingIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

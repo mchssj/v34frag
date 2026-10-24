@@ -42,14 +42,17 @@ function toJpeg(
   return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality))
 }
 
+/** Área cuadrada a recortar, en píxeles de la imagen original. */
+export type CropArea = { x: number; y: number; width: number; height: number }
+
 /**
- * Recorte cuadrado centrado a 256×256 en JPEG (siempre JPEG: Safari viejo no genera WebP
- * y devuelve PNG sin avisar). Baja la calidad si hace falta para no pasar de 1 MB.
+ * Recorta `area` (el encuadre que eligió la persona) a 256×256 en JPEG (siempre JPEG: Safari
+ * viejo no genera WebP y devuelve PNG sin avisar). Baja la calidad si hace falta para no pasar
+ * de 1 MB.
  */
-export async function cropAvatar(file: File): Promise<Blob> {
+export async function cropAvatar(file: File, area: CropArea): Promise<Blob> {
   checkAvatarSource(file)
   const img = await loadImage(file)
-  const side = Math.min(img.naturalWidth, img.naturalHeight)
   const canvas = document.createElement("canvas")
   canvas.width = AVATAR_SIZE
   canvas.height = AVATAR_SIZE
@@ -57,10 +60,10 @@ export async function cropAvatar(file: File): Promise<Blob> {
   if (!ctx) throw new ImageError("Tu navegador no permite procesar imágenes.")
   ctx.drawImage(
     img,
-    (img.naturalWidth - side) / 2,
-    (img.naturalHeight - side) / 2,
-    side,
-    side,
+    area.x,
+    area.y,
+    area.width,
+    area.height,
     0,
     0,
     AVATAR_SIZE,

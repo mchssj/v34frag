@@ -52,7 +52,8 @@ export type _RolesComplete = AssertNever<
   Exclude<GameRole, (typeof GAME_ROLES)[number]>
 >
 
-const STEAM64 = /^(7656119\d{10}|765612\d{11})$/
+const STEAM_LINK =
+  /^(?:https?:\/\/)?(?:www\.)?steamcommunity\.com\/(id|profiles)\/([A-Za-z0-9_-]{2,64})\/?$/i
 const NICK = /^[A-Za-z0-9_-]{2,32}$/
 
 const optional = (max: number, test: (v: string) => boolean, message: string) =>
@@ -73,30 +74,44 @@ export const personalSchema = z.object({
 })
 export type PersonalValues = z.infer<typeof personalSchema>
 
+const FACEIT_LINK =
+  /^(?:https?:\/\/)?(?:www\.)?faceit\.com\/[a-z-]+\/players\/([^/?#]+)/i
+
 export const socialsSchema = z.object({
-  steam: optional(
-    120,
-    (v) =>
-      /^https?:\/\/steamcommunity\.com\/(id|profiles)\/[A-Za-z0-9_-]+\/?$/i.test(
-        v
-      ) ||
-      STEAM64.test(v) ||
-      /^STEAM_[0-5]:[01]:\d+$/i.test(v) ||
-      NICK.test(v),
-    "Usa tu SteamID64 (17 dígitos), el link de tu perfil o tu nombre de perfil."
-  ),
-  faceit: optional(
-    120,
-    (v) => /^https?:\/\/(www\.)?faceit\.com\/\S*$/i.test(v) || NICK.test(v),
-    "Usa tu nickname de FACEIT o el link de tu perfil."
-  ),
-  discord: optional(
-    40,
-    (v) => /^[A-Za-z0-9_.#-]{2,40}$/.test(v),
-    "Usa tu nombre de usuario de Discord, sin espacios."
-  ),
+  // Solo el link del perfil, como dato informativo: el SteamID se vincula con !claim.
+  // Se guarda normalizado (https, sin www), que es lo que acepta la API.
+  steam: z
+    .string()
+    .trim()
+    .transform((v) => {
+      const m = v.match(STEAM_LINK)
+      return m ? `https://steamcommunity.com/${m[1].toLowerCase()}/${m[2]}` : v
+    })
+    .refine(
+      (v) => v === "" || STEAM_LINK.test(v),
+      "Pega el link de tu perfil de Steam (steamcommunity.com/id/… o /profiles/…)."
+    ),
+  // Se guarda el nick: del link faceit.com/{idioma}/players/{nick} queda solo el nick.
+  faceit: z
+    .string()
+    .trim()
+    .transform((v) => v.match(FACEIT_LINK)?.[1] ?? v)
+    .refine(
+      (v) => v === "" || NICK.test(v),
+      "Usa tu nick de FACEIT o el link de tu perfil."
+    ),
+  // Usuario de Discord actual: sin el #1234 de las cuentas viejas y en minúsculas.
+  discord: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/#\d{1,4}$/, "").toLowerCase())
+    .refine(
+      (v) => v === "" || /^[a-z0-9_.]{2,32}$/.test(v),
+      "De 2 a 32 caracteres: minúsculas, números, _ y punto."
+    ),
 })
-export type SocialsValues = z.infer<typeof socialsSchema>
+export type SocialsInput = z.input<typeof socialsSchema>
+export type SocialsValues = z.output<typeof socialsSchema>
 
 /** Solo los campos completados: en el registro un campo vacío no se envía (en PATCH, "" lo borraría). */
 export function filledFields<T extends Record<string, string>>(

@@ -10,6 +10,9 @@ const alertVariants = cva(
         default: "bg-card text-card-foreground",
         destructive:
           "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+        // Advertencias (ámbar), p. ej. el aviso de fotosensibilidad de los efectos de tema.
+        warning:
+          "border-amber-500/40 bg-amber-50 text-amber-950 *:data-[slot=alert-description]:text-amber-950/80 dark:border-amber-500/30 dark:bg-amber-950 dark:text-amber-50 dark:*:data-[slot=alert-description]:text-amber-50/75 *:[svg]:text-amber-600 dark:*:[svg]:text-amber-400",
       },
     },
     defaultVariants: {

@@ -4,8 +4,8 @@ import { ArrowRightIcon, MenuIcon, XIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { THEME_MODES, ThemeSwitch } from "@/components/brand/ThemeSwitch"
-import { Wordmark } from "@/components/brand/Wordmark"
-import { useTheme } from "@/components/theme-provider"
+import { BrandLockup, BrandMark } from "@/components/brand/Brand"
+import { useTheme, type Theme } from "@/components/theme-provider"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  THEME_FX_OPTIONS,
+  useThemeFxPref,
+  type ThemeFxPref,
+} from "@/features/theme-fx/pref"
+import { ThemeFxContextMenu } from "@/features/theme-fx/ThemeFxContextMenu"
+import { ThemeFxDialog } from "@/features/theme-fx/ThemeFxDialog"
+import { useThemeFx } from "@/features/theme-fx/useThemeFx"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { scrollToSection, scrollToTop, type SectionId } from "./scroll"
 
@@ -34,7 +42,10 @@ export function LandingHeader() {
   const [open, setOpen] = useState(false)
   // Menos de 640px: el tema e "Iniciar sesión" no entran en la barra y van al menú.
   const roomy = useMediaQuery("(min-width: 640px)")
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
+  // Cambio de tema con flashbang / smoke y su preferencia.
+  const fx = useThemeFx()
+  const [fxPref, setFxPref] = useThemeFxPref()
 
   // Al pasar a ≥ 1000px el botón del menú se oculta: el menú no puede quedar abierto.
   useEffect(() => {
@@ -52,14 +63,21 @@ export function LandingHeader() {
         <button
           type="button"
           onClick={scrollToTop}
-          aria-label="CSSTV, volver arriba"
+          aria-label="CM League, volver arriba"
           className={cn(
-            "flex shrink-0 items-baseline gap-2 rounded-lg whitespace-nowrap",
+            "flex shrink-0 items-center gap-2.5 rounded-lg whitespace-nowrap",
             focusRing
           )}
         >
-          <Wordmark className="text-base tracking-[-0.4px]" />
-          <span className="hidden text-sm text-muted-foreground min-[1000px]:inline">
+          {/* Por debajo de 400px el lockup no entra junto a los botones: solo el isotipo. */}
+          <span className="flex min-[400px]:hidden">
+            <BrandMark className="size-7" />
+          </span>
+          <span className="hidden min-[400px]:flex">
+            <BrandLockup className="h-7" />
+          </span>
+          {/* La bajada recién desde 1200px: entre 1000 y 1199 ya está la navegación completa. */}
+          <span className="hidden text-sm text-muted-foreground min-[1200px]:inline">
             Counter-Strike Source
           </span>
         </button>
@@ -86,7 +104,9 @@ export function LandingHeader() {
 
         {roomy && (
           <>
-            <ThemeSwitch className="shrink-0" />
+            <ThemeFxContextMenu>
+              <ThemeSwitch onPick={fx.pickTheme} />
+            </ThemeFxContextMenu>
             <Link
               to="/login"
               search={{}}
@@ -109,10 +129,10 @@ export function LandingHeader() {
           )}
         >
           Crear cuenta
-          {/* El chip de la flecha no entra en pantallas de menos de 360px. */}
+          {/* Sin chip bajo 360px. En oscuro, negro con flecha naranja: un velo negro sobre #FF6900 se ve marrón. */}
           <span
             aria-hidden
-            className="hidden size-[30px] place-items-center rounded-[calc(var(--radius)-4px)] bg-black/15 min-[360px]:grid"
+            className="hidden size-[30px] place-items-center rounded-[calc(var(--radius)-4px)] bg-black/15 min-[360px]:grid dark:bg-primary-foreground dark:text-primary"
           >
             <ArrowRightIcon className="size-3.5" />
           </span>
@@ -163,9 +183,7 @@ export function LandingHeader() {
                 <DropdownMenuLabel className="px-3">Tema</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={theme}
-                  onValueChange={(v) =>
-                    setTheme(v as (typeof THEME_MODES)[number]["value"])
-                  }
+                  onValueChange={(v) => fx.pickTheme(v as Theme)}
                 >
                   {THEME_MODES.map(({ value, label, icon: Icon }) => (
                     <DropdownMenuRadioItem
@@ -180,9 +198,29 @@ export function LandingHeader() {
                 </DropdownMenuRadioGroup>
               </>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="px-3">
+              Efectos de tema
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={fxPref ?? "full"}
+              onValueChange={(v) => setFxPref(v as ThemeFxPref)}
+            >
+              {THEME_FX_OPTIONS.map(({ value, label, icon: Icon }) => (
+                <DropdownMenuRadioItem
+                  key={value}
+                  value={value}
+                  className="h-[38px] pl-3"
+                >
+                  <Icon aria-hidden />
+                  {label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <ThemeFxDialog open={fx.askOpen} onChoose={fx.resolveAsk} />
     </header>
   )
 }

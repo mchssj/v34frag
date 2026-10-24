@@ -1,16 +1,14 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { redirect } from "@tanstack/react-router"
 
-import { meQueryOptions, type AuthUser, type Role } from "./queries"
+import {
+  adminSectionOf,
+  canAccessAdminSection,
+  canSeeAdmin,
+} from "./permissions"
+import { meQueryOptions, type AuthUser } from "./queries"
 import { safeRedirect } from "./redirect"
 import { tokenStore } from "./tokenStore"
-
-export class ForbiddenError extends Error {
-  constructor() {
-    super("No tienes permiso para ver esta página.")
-    this.name = "ForbiddenError"
-  }
-}
 
 type GuardArgs = {
   context: { queryClient: QueryClient }
@@ -74,9 +72,19 @@ export async function redirectIfSignedIn({
   if (user) throw redirect({ to: "/home" })
 }
 
-/** Exige un rol. beforeLoad no puede dibujar: lanza ForbiddenError y lo muestra el errorComponent. */
-export function requireRole(...roles: Role[]) {
-  return ({ context }: { context: { user: AuthUser } }) => {
-    if (!roles.includes(context.user.role)) throw new ForbiddenError()
-  }
+/**
+ * Administración: el admin entra a todas las secciones y el organizador solo a Torneos (si pide
+ * otra, vuelve ahí). El resto de los usuarios va al inicio.
+ */
+export function requireAdminSection({
+  context,
+  location,
+}: {
+  context: { user: AuthUser }
+  location: { pathname: string }
+}) {
+  const { role } = context.user
+  const section = adminSectionOf(location.pathname)
+  if (section && canAccessAdminSection(role, section)) return
+  throw redirect({ to: canSeeAdmin(role) ? "/admin/events" : "/home" })
 }

@@ -65,10 +65,7 @@ function LoginPage() {
 
   return (
     <AuthShell swap={{ label: "Crear cuenta", to: "/register" }} side={side}>
-      <LoginForm
-        redirectTo={safeRedirect(redirect, "/home")}
-        notice={notice}
-      />
+      <LoginForm redirectTo={safeRedirect(redirect, "/home")} notice={notice} />
     </AuthShell>
   )
 }

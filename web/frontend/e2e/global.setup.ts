@@ -11,6 +11,7 @@ import {
   USER_STATE,
   uniqueUser,
 } from "./helpers"
+import { spendAuth } from "./authBudget"
 
 // Crea la cuenta compartida por la API y guarda su sesión, sin gastar un login por prueba.
 setup("cuenta compartida", async ({ request }) => {
@@ -21,6 +22,7 @@ setup("cuenta compartida", async ({ request }) => {
   ).toBeTruthy()
 
   const user = uniqueUser("main")
+  await spendAuth()
   const res = await request.post(`${API}/auth/signup`, {
     data: { email: user.email, password: PASSWORD, tag: user.alias },
   })

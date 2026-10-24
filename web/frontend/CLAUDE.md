@@ -30,7 +30,7 @@ pnpm gen:api      # regenera src/api/schema.d.ts desde la API local (http://loca
 
 **Pruebas de punta a punta (`e2e/`):** necesitan la API local con Supabase en Docker (`web/backend`: `pnpm db:start` y `pnpm dev:node`) y Chromium (`pnpm exec playwright install chromium`). Playwright levanta el frontend solo. Corren en serie y gastan 9 intentos de login o registro: la API permite 10 por minuto, así que entre dos corridas completas hay que esperar un minuto.
 
-**Datos locales:** la base local puede tener una copia de producción (procedimiento en `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/`, copia en `~/.v34frag/prod-copy/`, fuera del repo). Tiene emails y hashes reales: nunca se copia al repo, a pruebas ni a capturas. Después de cada rebase, reiniciar `pnpm dev` (Vite queda con módulos viejos).
+**Datos locales:** la base local puede tener una copia de producción (procedimiento en `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/`, copia en `~/.v34frag/prod-copy/`, fuera del repo). Tiene emails y hashes reales: nunca se copia al repo, a pruebas ni a capturas.
 
 La política de dependencias es la misma que la del backend (`pnpm-workspace.yaml`): solo versiones publicadas hace al menos 7 días y `trustPolicy: no-downgrade`.
 
@@ -52,11 +52,11 @@ La política de dependencias es la misma que la del backend (`pnpm-workspace.yam
 ```
 src/
   api/        schema.d.ts (generado), client.ts (openapi-fetch + authFetch), errors.ts (ApiError y mensajes)
-  auth/       tokenStore, refresh, authFetch, queries, guards, AuthSync, schemas, callback, redirect
+  auth/       tokenStore, refresh, authFetch, queries, guards, permissions (reglas por rol), AuthSync, schemas, callback, redirect
   assets/     imagen del hero (AVIF y WebP)
-  components/ ui/ (shadcn), brand/ (Logo, Wordmark, ThemeToggle de la app, ThemeSwitch de la landing, LevelBadge, LiveDot, SectionHeading), theme-provider
+  components/ ui/ (shadcn), brand/ (Brand: isotipo, wordmark y lockup de CM League; ThemeToggle de la app, ThemeSwitch de la landing, CountryFlag, LevelBadge, LiveDot, SectionHeading), theme-provider
   config/     site.ts: datos fijos que la API todavía no expone (servidores, Discord, IP del !claim)
-  features/   componentes por dominio (auth/, auth/register/, landing/, onboarding/, profile/, public/)
+  features/   componentes por dominio (auth/, auth/register/, landing/, onboarding/, profile/, public/, shell/, theme-fx/)
   lib/        env.ts (VITE_API_URL validada), image.ts (recorte del avatar), useMediaQuery.ts
   routes/     una ruta por archivo; _auth = páginas sin sesión, _app = con sesión, _admin = rol admin
   test/       setup y utilidades de prueba
@@ -67,6 +67,7 @@ src/
 - **Fuente de verdad:** el handoff `CSSTV/desings/design_handoff_landing_auth/` (README y prototipo `CSSTV.dc.html`). Copy, colores, medidas y estados son finales.
 - **Tokens** en `src/index.css`: colores del preset más `--win`; radios `lg` (radius − 2px), `xl` (+4px), `tile` (+2px), `hero` (+6px); `font-mono` = Geist Mono; `animate-live` (se apaga con `prefers-reduced-motion`).
 - **`leading-design`:** el diseño deja el `line-height` en `normal`. Va en la raíz de cada vista del handoff (landing, `AuthShell`, aviso del Home) y también ajusta `text-xs`, `text-sm`, etc. Un `leading-*` explícito sigue ganando. En vistas de otro handoff, revisar qué usa el prototipo antes de aplicarlo.
+- **Marca CM League:** SVG oficiales del paquete `CSSTV/CM-League-Logo/` en `src/assets/brand/` (versión fondo claro y fondo oscuro de isotipo, wordmark y lockup), mostrados con `BrandMark`, `BrandWordmark` y `BrandLockup` (`components/brand/Brand.tsx`); favicon en `public/` (`favicon.svg`, `favicon.ico`, `apple-touch-icon.png`). **No se recolorean ni se estiran:** solo se fija el alto. Mínimos: isotipo 16px, lockup 24px. Son imágenes decorativas, así que el link que las contiene necesita `aria-label`. Las claves internas (`csstv.*`, `csstv-theme`) no se renombran: borrarían sesiones y preferencias. Detalle en `docs/bitacora/2026-10-24-marca-cm-league/`.
 - **Tema:** Sistema por defecto, clave `csstv-theme`. `public/theme-init.js` lo aplica antes del render (sin destello).
 - **Datos fijos:** lo que la API no expone va en `src/config/site.ts`, nunca suelto en los componentes.
 - **Comparar con el prototipo:** capturas con Playwright del prototipo (servido por HTTP) y de `vite preview`, en 1440 y 390 px, claro y oscuro. Medir posiciones, no a ojo.
@@ -82,8 +83,10 @@ src/
 
 ## Pendientes
 
-- **Contrato con el backend:** `docs/frontend/contract.md` (decisiones de diseño) y la OpenAPI (nombres exactos; manda si no coinciden). Cada vez que se trae una versión nueva del backend: rebase de esta rama y `pnpm gen:api` con la API local levantada.
+- **Contrato con el backend:** `docs/frontend/contrato/` (decisiones de diseño, por módulo) y la OpenAPI (nombres exactos; manda si no coinciden). Cada vez que se trae una versión nueva del backend: rebase de esta rama y `pnpm gen:api` con la API local levantada.
+- **Antes de un rebase, detener `pnpm dev`** y levantarlo de nuevo al terminar. Si Vite queda corriendo, se reinicia con el `vite.config.ts` de los commits viejos que el rebase va reaplicando (sin el `cacheDir` fijo) y crea `web/node_modules/.vite`. Además queda con módulos viejos.
 - **Confirmación de email:** el backend manda el link a `FRONTEND_URL` y Supabase vuelve con los tokens en el fragmento de la URL (flujo implicit). El frontend los descarta y pide iniciar sesión (`src/auth/callback.ts`). Falta definir con el backend una página de destino propia y la recuperación de contraseña.
 - **Mejora de la sesión:** pasar el refresh token a una cookie `httpOnly; Secure; SameSite=Strict` del dominio de la API (cambio en el backend). El cambio en el frontend queda aislado en `tokenStore` y `refresh`.
+- **Roles de la plataforma (por definir con el equipo):** qué roles existen (cuenta: `user`, `organizer`, `admin`; contexto: capitán, miembro, gestor de torneo, quién veta), qué puede hacer cada uno y cómo se asignan. Hasta entonces, no comparar `role` suelto en los componentes. Detalle en `docs/bitacora/2026-10-18-layout-autenticado/PLAN.md`.
 - **Datos que faltan en la API para el diseño** (hoy fijos o sin mostrar): lista en la guía de `docs/bitacora/2026-10-16-frontend-diseno-landing-auth/`.
 - **Despliegue (VPS):** configurar una cabecera CSP con `connect-src` limitado a `api.<dominio>`.

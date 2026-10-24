@@ -4,15 +4,26 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { profileKeys } from "@/features/profile/queries"
 import {
   claimKeys,
+  markStepSaved,
   markWelcomeSeen,
   needsWelcome,
   onboardingFrom,
+  welcomeSteps,
   type MyProfile,
   type SteamStatus,
 } from "./queries"
 
-const profile = (gameRole: string | null) =>
-  ({ details: { game_role: gameRole } }) as unknown as MyProfile
+type Details = Partial<{
+  avatar_url: string
+  real_name: string
+  game_role: string
+  discord: string
+  steam: string
+  faceit: string
+}>
+
+const profile = (details: Details = {}, id = "u1") =>
+  ({ user: { id }, details }) as unknown as MyProfile
 const steam = (ids: string[]) =>
   ({
     steam_ids: ids.map((steam_id, i) => ({ steam_id, is_primary: i === 0 })),
@@ -21,41 +32,59 @@ const steam = (ids: string[]) =>
     pending_requests: 0,
   }) as SteamStatus
 
+const FULL: Details = {
+  real_name: "Martín",
+  game_role: "AWPer",
+  discord: "zeta",
+}
+
+beforeEach(() => localStorage.clear())
+
 describe("onboardingFrom", () => {
-  it("cuenta puesto y vinculación", () => {
-    expect(onboardingFrom(profile(null), steam([]))).toEqual({
+  it("cuenta los 4 pasos según los datos cargados", () => {
+    expect(onboardingFrom(profile(), steam([]))).toEqual({
+      photo: false,
       style: false,
+      contacts: false,
       linked: false,
       done: 0,
       complete: false,
     })
-    expect(onboardingFrom(profile("AWPer"), steam(["7656"]))).toMatchObject({
-      done: 2,
+    expect(onboardingFrom(profile(FULL), steam(["7656"]))).toMatchObject({
+      done: 4,
       complete: true,
     })
-    expect(onboardingFrom(profile(null), steam(["7656"]))).toMatchObject({
-      style: false,
-      linked: true,
-      done: 1,
+    expect(
+      onboardingFrom(profile({ avatar_url: "x", steam: "zeta" }), steam([]))
+    ).toMatchObject({ photo: true, contacts: true, done: 2 })
+  })
+
+  it("Foto y Contactos guardados vacíos cuentan como hechos, por cuenta", () => {
+    markStepSaved("u1", "photo")
+    markStepSaved("u1", "contacts")
+    expect(onboardingFrom(profile(), steam([]))).toMatchObject({
+      photo: true,
+      contacts: true,
+      done: 2,
     })
+    expect(onboardingFrom(profile({}, "otro"), steam([])).done).toBe(0)
   })
 })
 
 describe("needsWelcome", () => {
   let queryClient: QueryClient
   beforeEach(() => {
-    localStorage.clear()
     queryClient = new QueryClient()
   })
 
   it("sí cuando falta algo y todavía no se mostró", async () => {
-    queryClient.setQueryData(profileKeys.mine, profile(null))
+    queryClient.setQueryData(profileKeys.mine, profile())
     queryClient.setQueryData(claimKeys.status, steam([]))
     expect(await needsWelcome(queryClient, "u1")).toBe(true)
   })
 
   it("no si ya se mostró en este navegador", async () => {
-    queryClient.setQueryData(profileKeys.mine, profile(null))
+    queryClient.setQueryData(profileKeys.mine, profile())
     queryClient.setQueryData(claimKeys.status, steam([]))
     markWelcomeSeen("u1")
     expect(await needsWelcome(queryClient, "u1")).toBe(false)
@@ -63,8 +92,28 @@ describe("needsWelcome", () => {
   })
 
   it("no si el perfil ya está completo", async () => {
-    queryClient.setQueryData(profileKeys.mine, profile("IGL"))
+    queryClient.setQueryData(profileKeys.mine, profile(FULL))
     queryClient.setQueryData(claimKeys.status, steam(["7656"]))
     expect(await needsWelcome(queryClient, "u1")).toBe(false)
+  })
+})
+
+describe("welcomeSteps", () => {
+  const steps = (details: Details, linked: boolean) =>
+    welcomeSteps(
+      onboardingFrom(profile(details), steam(linked ? ["7656"] : []))
+    )
+
+  it("solo los pasos que faltan, en orden", () => {
+    expect(steps({}, false)).toEqual(["photo", "style", "contacts", "link"])
+    expect(steps({ game_role: "IGL" }, true)).toEqual(["photo", "contacts"])
+    expect(steps({ real_name: "M", discord: "z" }, false)).toEqual([
+      "style",
+      "link",
+    ])
+  })
+
+  it("con todo completo quedan los tres pasos editables", () => {
+    expect(steps(FULL, true)).toEqual(["photo", "style", "contacts"])
   })
 })

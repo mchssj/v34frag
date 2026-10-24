@@ -1,51 +1,28 @@
+import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { useEffect, useRef, useState } from "react"
 
 import { errorMessage } from "@/api/errors"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Button } from "@/components/ui/button"
-import { CLAIM_SERVER } from "@/config/site"
 import { AuthHeading, ErrorAlert } from "@/features/auth/ui"
+import { claimServer, serverStatusOptions } from "@/features/public/queries"
+import {
+  currentCode,
+  expiryText,
+  useSecondsLeft,
+  type ClaimCode,
+} from "./claim"
 import { useCreateClaimCode, type SteamStatus } from "./queries"
-
-type Code = { code: string; expiresAt: number }
-
-/** El último código si sigue vigente (el POST está limitado a 5 por hora). */
-function currentCode(status: SteamStatus | undefined): Code | null {
-  const last = status?.last_code
-  if (!last || last.status !== "pending") return null
-  const expiresAt = Date.parse(last.expires_at)
-  return expiresAt > Date.now() ? { code: last.code, expiresAt } : null
-}
-
-/** Segundos hasta el vencimiento; null hasta el primer cálculo. */
-function useSecondsLeft(expiresAt: number | undefined) {
-  const [left, setLeft] = useState<number | null>(null)
-  useEffect(() => {
-    if (!expiresAt) return
-    const tick = () =>
-      setLeft(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)))
-    const first = setTimeout(tick, 0)
-    const id = setInterval(tick, 1000)
-    return () => {
-      clearTimeout(first)
-      clearInterval(id)
-    }
-  }, [expiresAt])
-  return left
-}
-
-function expiryText(seconds: number) {
-  if (seconds >= 60) {
-    const minutes = Math.ceil(seconds / 60)
-    return `Vence en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}`
-  }
-  return `Vence en ${seconds} segundos`
-}
 
 export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
   const create = useCreateClaimCode()
-  const [code, setCode] = useState<Code | null>(() => currentCode(status))
+  // Un servidor en línea para el connect (null si no hay ninguno).
+  const server = useQuery({
+    ...serverStatusOptions,
+    select: (s) => claimServer(s.servers),
+  }).data
+  const [code, setCode] = useState<ClaimCode | null>(() => currentCode(status))
   const requested = useRef(false)
   const linked = (status?.steam_ids.length ?? 0) > 0
   const seconds = useSecondsLeft(code?.expiresAt)
@@ -66,15 +43,29 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
     requested.current = true
     create
       .mutateAsync()
-      .then((c) => setCode({ code: c.code, expiresAt: Date.parse(c.expires_at) }))
+      .then((c) =>
+        setCode({ code: c.code, expiresAt: Date.parse(c.expires_at) })
+      )
       .catch(() => {})
   }, [linked, code, create])
 
-  const primary = status?.steam_ids.find((s) => s.is_primary) ?? status?.steam_ids[0]
+  const primary =
+    status?.steam_ids.find((s) => s.is_primary) ?? status?.steam_ids[0]
   const result = status?.last_code?.result
   const steps = [
-    { text: "Entra a un servidor de CSSTV:", code: `connect ${CLAIM_SERVER.address}` },
-    { text: "Escribe en el chat:", code: code ? `!claim ${code.code}` : "!claim …" },
+    server?.address
+      ? {
+          text: "Entra a un servidor de CM League:",
+          code: `connect ${server.address}`,
+        }
+      : {
+          text: "Entra a un servidor de CM League cuando haya uno en línea.",
+          code: null,
+        },
+    {
+      text: "Escribe en el chat:",
+      code: code ? `!claim ${code.code}` : "!claim …",
+    },
     { text: "Espera la confirmación aquí. Toma unos segundos.", code: null },
   ]
 
@@ -91,7 +82,10 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
           <span className="text-xs text-muted-foreground">
             Tu código de un solo uso
           </span>
-          <span className="flex gap-1.5" aria-label={code ? `Código ${code.code}` : "Generando código"}>
+          <span
+            className="flex gap-1.5"
+            aria-label={code ? `Código ${code.code}` : "Generando código"}
+          >
             {(code?.code ?? "······").split("").map((c, i) => (
               <span
                 key={i}
@@ -120,13 +114,17 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">
-              {code && seconds !== null ? expiryText(seconds) : "Generando código…"}
+              {code && seconds !== null
+                ? expiryText(seconds)
+                : "Generando código…"}
             </span>
           )}
         </div>
       )}
 
-      {create.error != null && <ErrorAlert message={errorMessage(create.error)} />}
+      {create.error != null && (
+        <ErrorAlert message={errorMessage(create.error)} />
+      )}
 
       <ol className="flex flex-col gap-2.5">
         {steps.map((s, i) => {
@@ -136,7 +134,9 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
               <span
                 className={cn(
                   "grid size-6 shrink-0 place-items-center rounded-full font-mono text-[11px] font-semibold",
-                  done ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+                  done
+                    ? "bg-foreground text-background"
+                    : "bg-muted text-muted-foreground"
                 )}
               >
                 {i + 1}
@@ -163,7 +163,10 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
         )}
       >
         {linked ? (
-          <span className="size-2 shrink-0 rounded-full bg-current" aria-hidden />
+          <span
+            className="size-2 shrink-0 rounded-full bg-current"
+            aria-hidden
+          />
         ) : (
           <LiveDot className="bg-current" />
         )}

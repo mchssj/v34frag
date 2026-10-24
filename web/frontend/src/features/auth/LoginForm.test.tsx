@@ -2,7 +2,15 @@ import { screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import type { ReactNode } from "react"
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest"
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 
 import { tokenStore } from "@/auth/tokenStore"
 import { renderWithQuery } from "@/test/render"
@@ -31,7 +39,13 @@ const apiSession = {
   access_token: "a1",
   refresh_token: "r1",
   expires_at: Math.floor(Date.now() / 1000) + 3600,
-  user: { id: "u1", email: "a@b.co", tag: "Mecha", role: "user", created_at: null },
+  user: {
+    id: "u1",
+    email: "a@b.co",
+    tag: "Mecha",
+    role: "user",
+    created_at: null,
+  },
 }
 
 const apiError = (code: string, status: number, headers = {}) =>
@@ -56,42 +70,60 @@ describe("LoginForm", () => {
   })
 
   it("muestra el error de credenciales y lo limpia al escribir", async () => {
-    server.use(http.post(`${API}/auth/login`, () => apiError("INVALID_CREDENTIALS", 401)))
-    const { user } = renderWithQuery(<LoginForm redirectTo="/home" />)
-    await fill(user)
-    await user.click(submit())
-    expect(await screen.findByText("Email o contraseña incorrectos.")).toBeInTheDocument()
-    expect(navigate).not.toHaveBeenCalled()
-    await user.type(screen.getByLabelText("Contraseña"), "x")
-    expect(screen.queryByText("Email o contraseña incorrectos.")).not.toBeInTheDocument()
-  })
-
-  it("con email sin confirmar muestra el mensaje del diseño", async () => {
-    server.use(http.post(`${API}/auth/login`, () => apiError("EMAIL_NOT_CONFIRMED", 403)))
+    server.use(
+      http.post(`${API}/auth/login`, () => apiError("INVALID_CREDENTIALS", 401))
+    )
     const { user } = renderWithQuery(<LoginForm redirectTo="/home" />)
     await fill(user)
     await user.click(submit())
     expect(
-      await screen.findByText("Confirma tu email. Te enviamos un link al registrarte.")
+      await screen.findByText("Email o contraseña incorrectos.")
+    ).toBeInTheDocument()
+    expect(navigate).not.toHaveBeenCalled()
+    await user.type(screen.getByLabelText("Contraseña"), "x")
+    expect(
+      screen.queryByText("Email o contraseña incorrectos.")
+    ).not.toBeInTheDocument()
+  })
+
+  it("con email sin confirmar muestra el mensaje del diseño", async () => {
+    server.use(
+      http.post(`${API}/auth/login`, () => apiError("EMAIL_NOT_CONFIRMED", 403))
+    )
+    const { user } = renderWithQuery(<LoginForm redirectTo="/home" />)
+    await fill(user)
+    await user.click(submit())
+    expect(
+      await screen.findByText(
+        "Confirma tu email. Te enviamos un link al registrarte."
+      )
     ).toBeInTheDocument()
   })
 
   it("con credenciales correctas guarda la sesión y va a la ruta de vuelta", async () => {
     needsWelcome.mockResolvedValue(false)
-    server.use(http.post(`${API}/auth/login`, () => HttpResponse.json(apiSession)))
-    const { user, queryClient } = renderWithQuery(<LoginForm redirectTo="/home" />)
+    server.use(
+      http.post(`${API}/auth/login`, () => HttpResponse.json(apiSession))
+    )
+    const { user, queryClient } = renderWithQuery(
+      <LoginForm redirectTo="/home" />
+    )
     await fill(user)
     await user.click(submit())
     await waitFor(() =>
       expect(navigate).toHaveBeenCalledWith({ href: "/home", replace: true })
     )
     expect(tokenStore.getState().session).toMatchObject({ accessToken: "a1" })
-    expect(queryClient.getQueryData(["auth", "me"])).toMatchObject({ tag: "Mecha" })
+    expect(queryClient.getQueryData(["auth", "me"])).toMatchObject({
+      tag: "Mecha",
+    })
   })
 
   it("en el primer ingreso va a la Bienvenida", async () => {
     needsWelcome.mockResolvedValue(true)
-    server.use(http.post(`${API}/auth/login`, () => HttpResponse.json(apiSession)))
+    server.use(
+      http.post(`${API}/auth/login`, () => HttpResponse.json(apiSession))
+    )
     const { user } = renderWithQuery(<LoginForm redirectTo="/home" />)
     await fill(user)
     await user.click(submit())
@@ -103,7 +135,9 @@ describe("LoginForm", () => {
 
   it("sin Recordarme la sesión va a sessionStorage", async () => {
     needsWelcome.mockResolvedValue(false)
-    server.use(http.post(`${API}/auth/login`, () => HttpResponse.json(apiSession)))
+    server.use(
+      http.post(`${API}/auth/login`, () => HttpResponse.json(apiSession))
+    )
     const { user } = renderWithQuery(<LoginForm redirectTo="/" />)
     await fill(user)
     await user.click(screen.getByLabelText("Recordarme en este equipo"))
@@ -123,7 +157,9 @@ describe("LoginForm", () => {
     await fill(user)
     await user.click(submit())
     expect(
-      await screen.findByText(/Demasiados intentos\. Espera (30|29) segundos y vuelve a probar\./)
+      await screen.findByText(
+        /Demasiados intentos\. Espera (30|29) segundos y vuelve a probar\./
+      )
     ).toBeInTheDocument()
     expect(submit()).toBeDisabled()
   })
@@ -133,7 +169,9 @@ describe("LoginForm", () => {
     let calls = 0
     server.use(
       http.post(`${API}/auth/login`, () =>
-        ++calls === 1 ? apiError("INTERNAL", 500) : HttpResponse.json(apiSession)
+        ++calls === 1
+          ? apiError("INTERNAL", 500)
+          : HttpResponse.json(apiSession)
       )
     )
     const { user } = renderWithQuery(<LoginForm redirectTo="/home" />)

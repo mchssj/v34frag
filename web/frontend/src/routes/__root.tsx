@@ -10,6 +10,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { AuthSync } from "@/auth/AuthSync"
 import { Button } from "@/components/ui/button"
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { RouteError } from "@/components/RouteError"
 
 export interface RouterContext {
@@ -24,17 +25,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout() {
   return (
-    <>
+    <TooltipProvider>
       <AuthSync />
       <Outlet />
-      <Toaster richColors position="top-center" />
+      {/* Toasts de la plataforma: abajo a la derecha, 2,6 s (handoff del layout). */}
+      <Toaster position="bottom-right" duration={2600} />
       {import.meta.env.DEV && (
         <>
           <TanStackRouterDevtools position="bottom-right" />
           <ReactQueryDevtools buttonPosition="bottom-left" />
         </>
       )}
-    </>
+    </TooltipProvider>
   )
 }
 

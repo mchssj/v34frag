@@ -35,3 +35,8 @@ dist-ssr
 /e2e/.auth/
 /test-results/
 /playwright-report/
+
+# Sonidos de Counter-Strike: Source (Valve): solo para pruebas locales, nunca al repo.
+# Sin ellos, los efectos de tema usan el sonido sintetizado.
+/public/sounds/grenade_hit1.wav
+/public/sounds/sg_explode.wav

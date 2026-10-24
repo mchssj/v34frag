@@ -5,6 +5,8 @@ export type ApiErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
   | "INVALID_CREDENTIALS"
+  | "WRONG_PASSWORD"
+  | "SAME_PASSWORD"
   | "EMAIL_NOT_CONFIRMED"
   | "FORBIDDEN"
   | "NOT_FOUND"
@@ -14,6 +16,7 @@ export type ApiErrorCode =
   | "INVALID_FILE"
   | "FILE_TOO_LARGE"
   | "CONFIG_INVALID"
+  | "NOT_AVAILABLE"
   | "INTERNAL"
   | "NETWORK"
 
@@ -51,6 +54,8 @@ const KNOWN_CODES = new Set<string>([
   "VALIDATION_ERROR",
   "UNAUTHORIZED",
   "INVALID_CREDENTIALS",
+  "WRONG_PASSWORD",
+  "SAME_PASSWORD",
   "EMAIL_NOT_CONFIRMED",
   "FORBIDDEN",
   "NOT_FOUND",
@@ -60,6 +65,7 @@ const KNOWN_CODES = new Set<string>([
   "INVALID_FILE",
   "FILE_TOO_LARGE",
   "CONFIG_INVALID",
+  "NOT_AVAILABLE",
   "INTERNAL",
 ])
 
@@ -135,10 +141,13 @@ export function errorMessage(
   switch (e.code) {
     case "INVALID_CREDENTIALS":
       return "Email o contraseña incorrectos."
+    case "WRONG_PASSWORD":
+      return "La contraseña actual no es correcta."
+    case "SAME_PASSWORD":
+      return "Tiene que ser distinta de la actual."
     case "EMAIL_NOT_CONFIRMED":
       return "Confirma tu email. Te enviamos un link al registrarte."
-    case "RATE_LIMITED":
-    {
+    case "RATE_LIMITED": {
       // retryIn: segundos que faltan según la cuenta regresiva de la pantalla.
       const seconds = opts.retryIn ?? e.retryAfter
       return seconds
@@ -151,6 +160,8 @@ export function errorMessage(
       return e.message || "No tienes permiso para hacer esto."
     case "NOT_FOUND":
       return e.message || "No se encontró lo que buscas."
+    case "NOT_AVAILABLE":
+      return e.message || "Esto todavía no está disponible."
     case "NETWORK":
       return "No se pudo conectar con el servidor. Revisa tu conexión."
     case "INTERNAL":
@@ -172,7 +183,9 @@ export function errorMessage(
 export function isRetryable(e: unknown): boolean {
   return (
     isApiError(e) &&
-    (e.code === "INTERNAL" || e.code === "CONFIG_INVALID" || e.code === "NETWORK")
+    (e.code === "INTERNAL" ||
+      e.code === "CONFIG_INVALID" ||
+      e.code === "NETWORK")
   )
 }
 

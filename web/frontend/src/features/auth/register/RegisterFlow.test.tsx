@@ -2,7 +2,15 @@ import { screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import type { ReactNode } from "react"
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest"
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 
 import { tokenStore } from "@/auth/tokenStore"
 import { renderWithQuery } from "@/test/render"
@@ -17,7 +25,14 @@ vi.mock("@tanstack/react-router", () => ({
 const API = "http://api.test"
 const server = setupServer(
   http.get(`${API}/api/v1/matches`, () =>
-    HttpResponse.json({ items: [], total: 1850, page: 1, per: 1, sort: "played_at", order: "desc" })
+    HttpResponse.json({
+      items: [],
+      total: 1850,
+      page: 1,
+      per: 1,
+      sort: "played_at",
+      order: "desc",
+    })
   ),
   http.get(`${API}/api/v1/aliases/:alias/available`, ({ params }) =>
     HttpResponse.json({ alias: params.alias, available: true, reason: null })
@@ -49,9 +64,13 @@ describe("RegisterFlow", () => {
     const { user } = renderWithQuery(<RegisterFlow />)
     expect(screen.getByText("Paso 1 de 3 · Cuenta")).toBeInTheDocument()
     await user.type(screen.getByLabelText("Email"), "no-es-email")
-    expect(screen.queryByText("Ingresa un email válido.")).not.toBeInTheDocument()
+    expect(
+      screen.queryByText("Ingresa un email válido.")
+    ).not.toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Continuar" }))
-    expect(await screen.findByText("Ingresa un email válido.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("Ingresa un email válido.")
+    ).toBeInTheDocument()
     expect(screen.getByText("Usa al menos 8 caracteres.")).toBeInTheDocument()
   })
 
@@ -68,7 +87,11 @@ describe("RegisterFlow", () => {
     const signup = vi.fn()
     server.use(
       http.get(`${API}/api/v1/aliases/:alias/available`, ({ params }) =>
-        HttpResponse.json({ alias: params.alias, available: false, reason: "taken" })
+        HttpResponse.json({
+          alias: params.alias,
+          available: false,
+          reason: "taken",
+        })
       ),
       http.post(`${API}/auth/signup`, () => {
         signup()
@@ -88,7 +111,10 @@ describe("RegisterFlow", () => {
     server.use(
       http.post(`${API}/auth/signup`, async ({ request }) => {
         body = await request.json()
-        return HttpResponse.json({ session: null, needsConfirmation: true }, { status: 201 })
+        return HttpResponse.json(
+          { session: null, needsConfirmation: true },
+          { status: 201 }
+        )
       })
     )
     const { user } = renderWithQuery(<RegisterFlow />)
@@ -98,7 +124,11 @@ describe("RegisterFlow", () => {
     await user.click(screen.getByRole("button", { name: "Crear cuenta" }))
     expect(await screen.findByText("Revisa tu correo")).toBeInTheDocument()
     expect(screen.getByText("ju••••••@gmail.com")).toBeInTheDocument()
-    expect(body).toEqual({ email: "juan.perez@gmail.com", password: "Larga-a1", tag: "Mecha" })
+    expect(body).toEqual({
+      email: "juan.perez@gmail.com",
+      password: "Larga-a1",
+      tag: "Mecha",
+    })
     expect(tokenStore.getState().session).toBeNull()
   })
 
@@ -112,7 +142,13 @@ describe("RegisterFlow", () => {
               access_token: "a1",
               refresh_token: "r1",
               expires_at: Math.floor(Date.now() / 1000) + 3600,
-              user: { id: "u1", email: "x@y.co", tag: "Mecha", role: "user", created_at: null },
+              user: {
+                id: "u1",
+                email: "x@y.co",
+                tag: "Mecha",
+                role: "user",
+                created_at: null,
+              },
             },
           },
           { status: 201 }
@@ -134,7 +170,13 @@ describe("RegisterFlow", () => {
     server.use(
       http.post(`${API}/auth/signup`, () =>
         HttpResponse.json(
-          { error: { code: "CONFLICT", message: "Ya hay una cuenta con ese email.", requestId: "r" } },
+          {
+            error: {
+              code: "CONFLICT",
+              message: "Ya hay una cuenta con ese email.",
+              requestId: "r",
+            },
+          },
           { status: 409 }
         )
       )
@@ -144,7 +186,9 @@ describe("RegisterFlow", () => {
     await typeAlias(user)
     await screen.findByText("Disponible")
     await user.click(screen.getByRole("button", { name: "Crear cuenta" }))
-    expect(await screen.findByText("Ya hay una cuenta con ese email.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("Ya hay una cuenta con ese email.")
+    ).toBeInTheDocument()
     expect(screen.getByText("Paso 1 de 3 · Cuenta")).toBeInTheDocument()
   })
 

@@ -308,6 +308,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cambiar mi contraseña
+         * @description Pide la contraseña actual. Cierra todas las demás sesiones de la cuenta (otras PCs, el celular) y también la que hizo el pedido: devuelve una sesión nueva, que el frontend tiene que guardar en lugar de la anterior. `400 WRONG_PASSWORD` si la actual no es correcta y `400 SAME_PASSWORD` si la nueva es igual. Hasta 5 intentos por minuto.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PasswordChangeBody"];
+                };
+            };
+            responses: {
+                /** @description Contraseña cambiada: la sesión nueva */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Session"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Demasiados intentos */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/me": {
         parameters: {
             query?: never;
@@ -1228,7 +1298,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Mis solicitudes de SteamID adicional */
+        /**
+         * Mis pedidos de SteamID
+         * @description De SteamID adicional (`kind: add`, con `!claim`) y de desvincular (`kind: remove`).
+         */
         get: {
             parameters: {
                 query?: {
@@ -1240,7 +1313,8 @@ export interface paths {
                     sort?: "created_at";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    status?: "pending" | "approved" | "rejected" | "expired";
+                    status?: "pending" | "approved" | "rejected" | "expired" | "cancelled";
+                    kind?: "add" | "remove";
                 };
                 header?: never;
                 path?: never;
@@ -1285,6 +1359,167 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/steam/{steamid}/unlink": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pedir desvincular un SteamID
+         * @description Queda pendiente hasta que un admin lo apruebe (`POST /api/v1/admin/steam-requests/{id}/approve`); vence a los 30 días. Al aprobarlo, sus partidas vuelven a quedar sin ficha y, si era el principal, el adicional más viejo pasa a serlo. No se puede pedir para el único SteamID de la ficha.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["SteamUnlinkRequest"];
+                };
+            };
+            responses: {
+                /** @description Pedido */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MySteamRequest"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Cancelar el pedido de desvincular un SteamID
+         * @description Mientras siga pendiente. El pedido queda con `status: cancelled` y el SteamID sigue en la ficha. Falla si no hay un pedido pendiente para ese SteamID.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/steam/{steamid}/primary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hacer principal uno de mis SteamID
+         * @description Sin aprobación, **una vez cada 24 horas**. El ELO de la ficha no cambia: pasa a la clave del principal nuevo. No se puede con un SteamID que tiene pedido de desvincular.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    steamid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/steam-requests": {
         parameters: {
             query?: never;
@@ -1293,8 +1528,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Solicitudes de SteamID adicional
-         * @description Por defecto, las pendientes primero. Las de más de 30 días vencen solas.
+         * Pedidos de SteamID
+         * @description De SteamID adicional (`kind: add`) y de desvincular (`kind: remove`). Por defecto, los pendientes primero. Los de más de 30 días vencen solos.
          */
         get: {
             parameters: {
@@ -1307,7 +1542,8 @@ export interface paths {
                     sort?: "status" | "created_at";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    status?: "pending" | "approved" | "rejected" | "expired";
+                    status?: "pending" | "approved" | "rejected" | "expired" | "cancelled";
+                    kind?: "add" | "remove";
                     /** @description Busca en el nick, la ficha, el alias y el SteamID */
                     q?: string;
                 };
@@ -1373,8 +1609,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Aprobar un SteamID adicional
-         * @description Lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha). Falla si comparte partidas con otro SteamID de la ficha.
+         * Aprobar un pedido de SteamID
+         * @description `add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha); falla si comparte partidas con otro SteamID de la ficha. `remove`: lo saca de la ficha como `DELETE /api/v1/admin/steam/{steamid}`; falla si es el único SteamID de la ficha.
          */
         post: {
             parameters: {
@@ -1438,7 +1674,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Rechazar un SteamID adicional */
+        /** Rechazar un pedido de SteamID */
         post: {
             parameters: {
                 query?: never;
@@ -1700,7 +1936,7 @@ export interface paths {
         post?: never;
         /**
          * Quitar un SteamID de su ficha
-         * @description Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO.
+         * @description Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO. Si el jugador había pedido desvincularlo, el pedido queda aprobado.
          */
         delete: {
             parameters: {
@@ -1765,7 +2001,7 @@ export interface paths {
         put?: never;
         /**
          * Hacer principal un SteamID adicional
-         * @description Recalcula el ELO (cambia la clave del ELO de la ficha).
+         * @description Sin límite de cambios. El ELO de la ficha no cambia: pasa a la clave del principal nuevo.
          */
         post: {
             parameters: {
@@ -1999,6 +2235,80 @@ export interface paths {
                 path: {
                     id: string;
                 };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Partidas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerMatchList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis partidas
+         * @description Como `GET /api/v1/players/{id}/matches`, con la ficha de la cuenta. Si la cuenta todavía no tiene ficha (no usó `!claim`), la lista viene vacía.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `played_at`, `rating`, `kills`, `elo_delta` */
+                    sort?: "played_at" | "rating" | "kills" | "elo_delta";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    kind?: "mix" | "pcw" | "official";
+                    result?: "won" | "lost" | "draw";
+                    /** @description Mapa (contiene) */
+                    map?: string;
+                    /** @description Jugadas desde */
+                    from?: string;
+                    /** @description Jugadas hasta */
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -5207,7 +5517,7 @@ export interface paths {
                     sort?: "name" | "created_at" | "last_seen_at" | "license_expires_at" | "matches";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    /** @description Busca en el nombre, la dirección, las IPs y la versión del plugin */
+                    /** @description Busca en el nombre, la dirección, las IPs, la versión del plugin y la región */
                     q?: string;
                     /** @description Activos o revocados */
                     active?: "true" | "false";
@@ -5217,6 +5527,8 @@ export interface paths {
                     online?: "true" | "false";
                     /** @description Con id del panel cargado */
                     has_panel?: "true" | "false";
+                    /** @description `mix`, `competitive` (torneos y PCW), `public`, `deathmatch`, `retakes` o `practice` */
+                    mode?: "mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice";
                 };
                 header?: never;
                 path?: never;
@@ -5456,7 +5768,7 @@ export interface paths {
         head?: never;
         /**
          * Editar un servidor
-         * @description Nombre, dirección, id del panel, vencimiento, IP permitida, o revocar (`active: false`) y reactivar. Devuelve el servidor.
+         * @description Nombre, dirección, id del panel, vencimiento, IP permitida, modo, región, o revocar (`active: false`) y reactivar. Devuelve el servidor.
          */
         patch: {
             parameters: {
@@ -6225,7 +6537,7 @@ export interface paths {
         get?: never;
         /**
          * Cambiar la configuración del ELO
-         * @description Vale para los mixes nuevos. Con `recompute: true` además recalcula todo el historial, y entonces pide `confirm: "estoy seguro"` (doble confirmación en el frontend).
+         * @description Vale para los mixes nuevos: no recalcula el historial. Para corregir a jugadores puntuales, `POST /admin/elo/adjustments`.
          */
         put: {
             parameters: {
@@ -6279,76 +6591,6 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/elo/recompute": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Recalcular el ELO de todos
-         * @description Vuelve a aplicar todos los mixes (y los ajustes manuales) en orden, con la configuración actual. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend).
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["EloRecompute"];
-                };
-            };
-            responses: {
-                /** @description Recalculado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EloRecomputed"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -6425,52 +6667,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/elo/simulate": {
+    "/api/v1/admin/elo/adjustments": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
         /**
-         * Simular el recálculo
-         * @description Cómo quedaría cada jugador si se recalcula todo con los valores enviados. No guarda nada. Cada página vuelve a simular (con la cantidad de mixes de hoy, menos de un segundo).
+         * Ajustes manuales de ELO
+         * @description Todos los ajustes, con la ficha, el cambio, el motivo y quién lo hizo.
          */
-        post: {
+        get: {
             parameters: {
                 query?: {
                     /** @description Página, desde 1 */
                     page?: number;
                     /** @description Elementos por página (máximo 100) */
                     per?: number;
-                    /** @description Campo de orden: `abs_delta`, `delta`, `elo_after`, `elo_before`, `name` */
-                    sort?: "abs_delta" | "delta" | "elo_after" | "elo_before" | "name";
+                    /** @description Campo de orden: `applied_at`, `delta` */
+                    sort?: "applied_at" | "delta";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    /** @description Busca en el nombre y el SteamID */
+                    /** @description Solo los de esta ficha */
+                    player?: string;
+                    /** @description Busca en el alias, el motivo y el SteamID */
                     q?: string;
-                    /** @description Solo los que cambian (o los que no) */
-                    changed?: "true" | "false";
+                    /** @description Hechos desde */
+                    from?: string;
+                    /** @description Hechos hasta */
+                    to?: string;
                 };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Ajustes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloAdminAdjustmentList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Ajustar el ELO
+         * @description Suma o resta (`delta`) o fija (`set_elo`) el ELO de 1 a 10 fichas, con un motivo que el jugador ve en su perfil. Cuenta desde ahora y respeta el ELO mínimo. Solo mueve el ELO y el pico (no partidas ni stats). Un recálculo automático lo vuelve a aplicar en su fecha.
+         */
+        post: {
+            parameters: {
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["EloValues"];
+                    "application/json": components["schemas"]["EloAdjustBody"];
                 };
             };
             responses: {
-                /** @description Jugadores */
-                200: {
+                /** @description ELO antes y después de cada ficha */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["EloSimulation"];
+                        "application/json": components["schemas"]["EloAdjustResult"];
                     };
                 };
                 /** @description Datos inválidos */
@@ -6508,6 +6804,867 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/elo/adjustments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Deshacer un ajuste
+         * @description Lo borra y resta su cambio. Si es un "fijar", o después hubo un cierre o comienzo de temporada o un "fijar" de la misma ficha, recalcula el ELO de todos para que quede como si no hubiera existido. Pide `confirm: "estoy seguro"`.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EloAdjustUndo"];
+                };
+            };
+            responses: {
+                /** @description Deshecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/elo-adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ajustes de ELO de un jugador
+         * @description Los ajustes manuales que le hizo un admin: cambio, valor fijado, motivo y fecha. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `applied_at` */
+                    sort?: "applied_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Ajustes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloPlayerAdjustmentList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/seasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Temporadas
+         * @description Todas las temporadas, la activa y las cerradas, con su campeón y la cantidad de medallas. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `number` */
+                    sort?: "number";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    status?: "active" | "closed";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Temporadas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/seasons/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Temporada activa
+         * @description Fechas (para la cuenta regresiva), top N, mínimo de mixes, reinicio y tramos de medallas. 404 si no hay ninguna activa.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Temporada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Season"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/seasons/{id}/standings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ranking de una temporada
+         * @description En vivo si está activa; la foto del cierre si está cerrada (no cambia aunque después se recalcule el ELO). Por defecto, por puesto: primero los que llegan al mínimo de mixes y después el resto por ELO.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `rank`, `elo`, `matches`, `alias` */
+                    sort?: "rank" | "elo" | "matches" | "alias";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el alias */
+                    q?: string;
+                    /** @description `true` solo los que llegan al mínimo de mixes */
+                    eligible?: "true" | "false";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Ranking */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonStandingList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/seasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Temporadas de un jugador
+         * @description Su puesto, ELO, pico, mixes y medalla en cada temporada cerrada. La activa está en `/seasons/{id}/standings`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `number` */
+                    sort?: "number";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Temporadas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerSeasonList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seasons/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Configuración de las temporadas
+         * @description Valores por defecto con los que se abre la próxima temporada.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonConfigRead"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Cambiar la configuración de las temporadas
+         * @description Vale para la próxima temporada que se abra. La activa se cambia con `PATCH /admin/seasons/{id}`.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SeasonConfig"];
+                };
+            };
+            responses: {
+                /** @description Guardada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonConfigRead"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Abrir una temporada
+         * @description Abre la primera temporada (o la siguiente, si no hay ninguna activa) con los valores de la configuración. Después, cada cierre abre la siguiente solo. 409 si ya hay una activa.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SeasonCreate"];
+                };
+            };
+            responses: {
+                /** @description Temporada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Season"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seasons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar la temporada activa
+         * @description Nombre, fecha de fin y parámetros del cierre. Lo que no llega no cambia. Una temporada cerrada no se cambia.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SeasonPatch"];
+                };
+            };
+            responses: {
+                /** @description Temporada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Season"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/seasons/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Terminar la temporada
+         * @description Cierra la temporada ya: foto del ranking, medallas al top N, reinicio del nivel 10 y apertura de la siguiente. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend). No se deshace.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SeasonClose"];
+                };
+            };
+            responses: {
+                /** @description Cerrada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonClosed"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seasons/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vista previa del cierre
+         * @description Cómo quedaría el cierre de la temporada activa si fuera ahora, con los valores de la consulta (los tramos son los de la activa). No cambia nada. Cada página vuelve a calcular el ranking.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `rank`, `elo`, `alias` */
+                    sort?: "rank" | "elo" | "alias";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Top N */
+                    top_n: number;
+                    /** @description Mínimo de mixes */
+                    min_matches: number;
+                    /** @description Porcentaje que conserva */
+                    reset_pct?: number | null;
+                    /** @description Piso del reinicio */
+                    reset_floor?: number | null;
+                    /** @description Busca en el alias */
+                    q?: string;
+                    /** @description `true` solo los que se reinician (nivel 10) */
+                    reset?: "true" | "false";
+                    /** @description `true` solo los que reciben medalla */
+                    medal?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Vista previa */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonPreview"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/matches": {
         parameters: {
             query?: never;
@@ -6539,6 +7696,8 @@ export interface paths {
                     team?: string;
                     /** @description Partidas donde jugó un jugador (en una serie, en alguno de sus mapas) */
                     player?: string;
+                    /** @description Partidas de un servidor (`GET /api/v1/servers/status` da los ids) */
+                    server?: string;
                     /** @description Mapa (contiene) */
                     map?: string;
                     /** @description Desde (fecha jugada, o programada si no se jugó) */
@@ -6547,6 +7706,8 @@ export interface paths {
                     to?: string;
                     /** @description Busca en equipos, bandos y torneo */
                     q?: string;
+                    /** @description Mixes interrumpidos por una caída: `pending` (falta que un admin decida), `applied` o `discarded` */
+                    review?: "pending" | "applied" | "discarded";
                 };
                 header?: never;
                 path?: never;
@@ -7173,6 +8334,582 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/matches/{id}/clips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clips de una partida
+         * @description Las jugadas destacadas (ace, 4k, 3k y clutches ganados), ya ordenadas y con los topes por jugador y por partida aplicados. Con los ticks de la demo de cada kill. Sin sesión. Una partida sin clips (o anterior a los clips) responde la lista vacía.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 50) */
+                    per?: number;
+                    /** @description Campo de orden: `position`, `round` */
+                    sort?: "position" | "round";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Solo los clips de esta ficha */
+                    player?: string;
+                    /** @description Solo los de este tipo */
+                    type?: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Clips */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Configuración de los clips
+         * @description La escala de prioridad de cada tipo, los topes por jugador y por partida, y los cortes del video (fase C).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipConfig"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar la configuración de los clips
+         * @description Solo lo que cambia. Vale al instante para el listado de todas las partidas (las viejas también): los datos no se tocan.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClipConfigPatch"];
+                };
+            };
+            responses: {
+                /** @description Guardada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipConfig"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/mixes/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mixes en vivo
+         * @description La última foto de cada mix en curso (el servidor manda una al final de cada ronda). Por defecto, el de la ronda más reciente primero. Para refrescar, consultar cada 20 segundos.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `updated_at`, `started_at` */
+                    sort?: "updated_at" | "started_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Mixes de un servidor */
+                    server?: string;
+                    /** @description Mixes donde juega un jugador (por su ficha) */
+                    player?: string;
+                    /** @description Mapa (contiene) */
+                    map?: string;
+                    /** @description `true`: sin fotos hace más de 10 minutos (el servidor pudo caerse y no volver); `false`: el resto */
+                    stale?: "true" | "false";
+                    /** @description Busca en bandos, jugadores, mapa y servidor */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mixes en vivo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LiveMixList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mixes/live/{uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detalle de un mix en vivo
+         * @description Marcador, rondas y stats parciales de cada jugador. 404 cuando el mix terminó: su resultado está en `GET /api/v1/matches?kind=mix`. Responde con `ETag`: con `If-None-Match` contesta `304` si no llegó una foto nueva.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description match_uid del servidor (por ejemplo `srv1-20261017T195321-f890`) */
+                    uid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mix en vivo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LiveMixDetail"];
+                    };
+                };
+                /** @description Sin cambios */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/mixes/{id}/apply-elo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aplicar el ELO de un mix interrumpido
+         * @description Mix cancelado por una caída (`review: pending`) con al menos el 35 % de las rondas y sin empate: pasa a terminado, gana el bando que iba adelante y se aplica el ELO. Si se jugaba con !match, se vincula a su partida de torneo o PCW. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ApplyEloBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/mixes/{id}/discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Descartar un mix interrumpido
+         * @description Queda cancelado y no cuenta para el ELO.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/mixes/live/{uid}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cerrar como interrumpido un mix en vivo
+         * @description Para un mix sin fotos hace más de 10 minutos (`stale: true`): el servidor se cayó y no volvió. Queda cancelado por caída con la última foto y pendiente de revisión. Si después el servidor vuelve y lo manda, es la misma partida.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description match_uid del servidor (por ejemplo `srv1-20261017T195321-f890`) */
+                    uid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Partida creada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClosedMix"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events": {
         parameters: {
             query?: never;
@@ -7198,8 +8935,8 @@ export interface paths {
                     /** @description Busca en el nombre */
                     q?: string;
                     status?: "registration" | "in_progress" | "finished" | "cancelled";
-                    /** @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs */
-                    template?: "single" | "double" | "groups" | "swiss";
+                    /** @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs, `groups_double` grupos de doble eliminación + playoffs */
+                    template?: "single" | "double" | "groups" | "swiss" | "groups_double";
                     /** @description Torneos de un organizador (id de usuario) */
                     organizer?: string;
                     /** @description Empiezan desde esta fecha */
@@ -7677,7 +9414,7 @@ export interface paths {
                     sort?: "place";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    stage?: "group" | "swiss";
+                    stage?: "group" | "swiss" | "group_double";
                     grp?: number | null;
                     phase?: number | null;
                 };
@@ -8000,6 +9737,74 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/draw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sortear la siembra
+         * @description Mezcla al azar el orden de los inscritos (el organizador o un admin, antes de generar). Se puede repetir. En las plantillas con grupos, el reparto en serpentina deja sorteados los grupos y el lugar dentro de cada uno. Queda registrado quién y cuándo sorteó (`draw` en el detalle); cambiar la siembra a mano, o una inscripción o baja, borra ese registro.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Siembra sorteada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DrawResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -8971,6 +10776,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/servers/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estado de los servidores
+         * @description Los servidores activos con licencia vigente, consultados con A2S (la consulta del navegador de servidores del juego): si están prendidos, latencia, mapa y jugadores conectados, con su modo, su región y los mixes en vivo, más los totales. La respuesta se guarda 20 s. Con `ETag` (`304` si no cambió). No es un listado paginado: son pocos servidores y es una foto completa.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Estado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ServersStatus"];
+                    };
+                };
+                /** @description Sin cambios desde el ETag enviado */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description No disponible en este despliegue */
+                501: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -9031,6 +10891,8 @@ export interface components {
             role: "user" | "organizer" | "admin";
             /** @description Fecha de registro de la cuenta */
             created_at: string | null;
+            /** @description Último cambio de contraseña; null si no la cambió desde que se guarda la fecha (2026-10-19) */
+            password_changed_at: string | null;
         };
         SignupBody: {
             /**
@@ -9057,15 +10919,21 @@ export interface components {
         RefreshBody: {
             refresh_token: string;
         };
+        PasswordChangeBody: {
+            current_password: string;
+            /** @description Las mismas reglas del registro: de 6 a 72 caracteres */
+            new_password: string;
+        };
         MyProfile: {
             user: components["schemas"]["AuthUser"];
             details: components["schemas"]["ProfileDetails"];
-            /** @description Jugador vinculado a la cuenta (lo vincula un admin al aprobar un reclamo) */
+            /** @description Ficha de jugador de la cuenta. Se crea o se vincula con `!claim` en el servidor; null si todavía no lo usó */
             player: {
                 /** Format: uuid */
                 id: string;
                 nick: string;
                 photo_url: string | null;
+                /** @description El SteamID principal. Todos los de la cuenta están en `GET /api/v1/me/claim-code` (`steam_ids`) */
                 steam_id: string | null;
             } | null;
             /** @description Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno) */
@@ -9080,6 +10948,7 @@ export interface components {
             }[];
             /** @description Partidas terminadas que jugó en el servidor (mixes, PCW y torneos) */
             matches_played: number;
+            preferences: components["schemas"]["Preferences"];
         };
         ProfileDetails: {
             avatar_url: string | null;
@@ -9092,6 +10961,14 @@ export interface components {
             joined_at: string | null;
             last_seen: string | null;
             updated_at: string | null;
+        };
+        /** @description Preferencias de la cuenta: siempre con todas sus claves (`null` si no eligió) */
+        Preferences: {
+            /**
+             * @description Efectos al cambiar de tema: `full` (con sonido), `silent` (sin sonido), `off` (desactivados) o `null` (todavía no eligió)
+             * @enum {string|null}
+             */
+            theme_fx: "full" | "silent" | "off" | null;
         };
         ProfilePatch: {
             /**
@@ -9123,6 +11000,15 @@ export interface components {
              * @example mecha_css
              */
             discord?: string | null;
+            preferences?: components["schemas"]["PreferencesPatch"];
+        };
+        /** @description Solo se cambian las claves enviadas; `null` borra una */
+        PreferencesPatch: {
+            /**
+             * @description Efectos al cambiar de tema: `full` (con sonido), `silent` (sin sonido), `off` (desactivados) o `null` (todavía no eligió)
+             * @enum {string|null}
+             */
+            theme_fx?: "full" | "silent" | "off" | null;
         };
         AvatarResult: {
             avatar_url: string;
@@ -9315,6 +11201,10 @@ export interface components {
             steam_ids: {
                 steam_id: string;
                 is_primary: boolean;
+                /** @description Cuándo se vinculó a la ficha. `null`: no se sabe (se vinculó antes de que se guardara la fecha) */
+                added_at: string | null;
+                /** @description `true`: pidió desvincularlo y falta que lo apruebe un admin */
+                unlink_pending: boolean;
             }[];
             /** @description Tope de SteamID por ficha que se pueden pedir con `!claim` */
             max_steam_ids: number;
@@ -9331,7 +11221,7 @@ export interface components {
                 /** @description El mensaje que vio el jugador en el servidor */
                 result: string | null;
             } | null;
-            /** @description Solicitudes de SteamID adicional pendientes */
+            /** @description Pedidos pendientes (de SteamID adicional y de desvincular) */
             pending_requests: number;
         };
         MySteamRequestList: {
@@ -9346,14 +11236,28 @@ export interface components {
         };
         MySteamRequest: {
             id: number;
+            /**
+             * @description `add`: SteamID adicional (con `!claim`); `remove`: desvincularlo de la ficha
+             * @enum {string}
+             */
+            kind: "add" | "remove";
             steam_id: string;
             nick: string | null;
-            /** @enum {string} */
-            status: "pending" | "approved" | "rejected" | "expired";
+            /**
+             * @description `expired`: pasaron 30 días sin resolverlo; `cancelled`: el jugador canceló el pedido de desvincular
+             * @enum {string}
+             */
+            status: "pending" | "approved" | "rejected" | "expired" | "cancelled";
+            /** @description Motivo que escribió el jugador al pedir desvincularlo */
+            note: string | null;
             /** @description Motivo del rechazo */
             reason: string | null;
             created_at: string;
             resolved_at: string | null;
+        };
+        SteamUnlinkRequest: {
+            /** @description Por qué lo quiere desvincular (lo ve el admin) */
+            reason?: string;
         };
         AdminSteamRequestList: {
             items: components["schemas"]["AdminSteamRequest"][];
@@ -9385,7 +11289,7 @@ export interface components {
             matches: number;
             /** @description SteamID que ya tiene la ficha */
             player_steam_count: number;
-            /** @description `true`: jugó una partida junto a otro SteamID de la ficha (no se puede aprobar) */
+            /** @description `true`: jugó una partida junto a otro SteamID de la ficha (no se puede aprobar). Siempre `false` en `remove` */
             shares_match: boolean;
         };
         SteamRequestReject: {
@@ -9513,6 +11417,15 @@ export interface components {
             title: string;
             icon: string | null;
             created_at: string;
+            /** @description Temporada en la que la ganó; `null` en las medallas que da el admin a mano */
+            season: {
+                /** Format: uuid */
+                id: string;
+                number: number;
+                name: string;
+            } | null;
+            /** @description Puesto en esa temporada */
+            rank: number | null;
         };
         TeamStintList: {
             items: components["schemas"]["TeamStint"][];
@@ -9942,6 +11855,12 @@ export interface components {
             plugin_version: string | null;
             connect_address: string | null;
             panel_server_id: string | null;
+            /**
+             * @description `mix`, `competitive` (torneos y PCW), `public`, `deathmatch`, `retakes` o `practice`
+             * @enum {string|null}
+             */
+            mode: "mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice" | null;
+            region: string | null;
             /** @description Partidas jugadas o asignadas en el servidor */
             matches: number;
             last_match_at: string | null;
@@ -9968,6 +11887,10 @@ export interface components {
             license_expires_at?: string | "" | null;
             /** @description Única IP desde la que se acepta el token. Sin valor, cualquiera. `null` o `""` lo borra */
             allowed_ip?: string | "" | null;
+            /** @description Modo de juego. `null` o `""` lo borra */
+            mode?: ("mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice") | "" | null;
+            /** @description Región para mostrar en la web, texto libre (por ejemplo "Argentina"). `null` o `""` lo borra */
+            region?: string | "" | null;
         };
         AdminServerPatch: {
             name?: string;
@@ -9979,6 +11902,10 @@ export interface components {
             license_expires_at?: string | "" | null;
             /** @description Única IP desde la que se acepta el token. Sin valor, cualquiera. `null` o `""` lo borra */
             allowed_ip?: string | "" | null;
+            /** @description Modo de juego. `null` o `""` lo borra */
+            mode?: ("mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice") | "" | null;
+            /** @description Región para mostrar en la web, texto libre (por ejemplo "Argentina"). `null` o `""` lo borra */
+            region?: string | "" | null;
             /** @description `false` revoca (el token deja de funcionar), `true` reactiva */
             active?: boolean;
         };
@@ -10110,26 +12037,10 @@ export interface components {
         };
         EloSaved: {
             config: components["schemas"]["EloValues"];
-            /** @description Mixes recalculados, o `null` si no se recalculó */
-            recomputed: number | null;
         };
+        /** @description Vale para los mixes nuevos. Desde la web ya no se recalcula el historial */
         EloConfigPut: {
             config: components["schemas"]["EloValues"];
-            /**
-             * @description Además, recalcular todo el historial con los valores nuevos
-             * @default false
-             */
-            recompute: boolean;
-            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
-            confirm?: string;
-        };
-        EloRecomputed: {
-            /** @description Mixes recalculados */
-            recomputed: number;
-        };
-        EloRecompute: {
-            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
-            confirm: string;
         };
         EloPreview: {
             /** @description Equipos parejos, rating 1,00 */
@@ -10164,8 +12075,8 @@ export interface components {
                 weight: number;
             }[];
         };
-        EloSimulation: {
-            items: components["schemas"]["EloSimulatedPlayer"][];
+        EloAdminAdjustmentList: {
+            items: components["schemas"]["EloAdminAdjustment"][];
             /** @description Total con los filtros aplicados */
             total: number;
             page: number;
@@ -10174,20 +12085,301 @@ export interface components {
             /** @enum {string} */
             order: "asc" | "desc";
         };
-        EloSimulatedPlayer: {
-            steam_id: string;
-            /** Format: uuid */
-            player_id: string | null;
-            /** @description Nombre de la ficha, o el último que usó en el juego */
-            name: string | null;
-            /** @description `null`: hoy no tiene ELO */
-            elo_before: number | null;
-            /** @description `null`: con los valores nuevos no tendría ELO */
-            elo_after: number | null;
+        EloAdminAdjustment: {
+            id: number;
+            /**
+             * @description `delta`: sumó o restó; `set`: fijó el ELO en `set_elo`
+             * @enum {string}
+             */
+            kind: "delta" | "set";
+            /** @description Cambio (en `set`, el que hubo al hacerlo) */
             delta: number;
-            matches_before: number;
-            matches_after: number;
-            changed: boolean;
+            set_elo: number | null;
+            reason: string;
+            applied_at: string;
+            /** @description `null` si el SteamID ya no es de ninguna ficha */
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            steam_id: string;
+            created_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+        };
+        EloAdjustResult: {
+            items: {
+                /** @description `null`: con "fijar", ya tenía ese ELO y no se ajustó */
+                adjustment_id: number | null;
+                player: {
+                    /** Format: uuid */
+                    id: string;
+                    alias: string;
+                };
+                elo_before: number;
+                elo_after: number;
+            }[];
+        };
+        EloAdjustBody: {
+            /** @description Fichas a ajustar (de 1 a 10), todas con SteamID */
+            player_ids: string[];
+            /** @description Sumar (o restar, en negativo) */
+            delta?: number;
+            /** @description Fijar el ELO en este valor (con el piso de la configuración) */
+            set_elo?: number;
+            /** @description Lo ve el jugador en su perfil */
+            reason: string;
+        };
+        EloAdjustUndo: {
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm: string;
+        };
+        EloPlayerAdjustmentList: {
+            items: components["schemas"]["EloPlayerAdjustment"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        EloPlayerAdjustment: {
+            id: number;
+            /**
+             * @description `delta`: sumó o restó; `set`: fijó el ELO en `set_elo`
+             * @enum {string}
+             */
+            kind: "delta" | "set";
+            /** @description Cambio (en `set`, el que hubo al hacerlo) */
+            delta: number;
+            set_elo: number | null;
+            reason: string;
+            applied_at: string;
+        };
+        SeasonList: {
+            items: components["schemas"]["Season"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        Season: {
+            /** Format: uuid */
+            id: string;
+            number: number;
+            name: string;
+            /** @enum {string} */
+            status: "active" | "closed";
+            starts_at: string;
+            /** @description Fin planeado (06:00 de Argentina por defecto). El cron la cierra al llegar */
+            ends_at: string;
+            closed_at: string | null;
+            /** @description Cuántos reciben medalla */
+            top_n: number;
+            /** @description Mixes jugados en la temporada para entrar al ranking */
+            min_matches: number;
+            /** @description Porcentaje de lo que tenía sobre el piso que conserva un nivel 10 al reiniciar (0 = vuelve al piso) */
+            reset_pct: number;
+            /** @description Piso del reinicio (el inicio del nivel 10) */
+            reset_floor: number;
+            tiers: components["schemas"]["SeasonTier"][];
+            /** @description Puesto 1 de la foto final; `null` mientras está activa */
+            champion: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            medals: number;
+        };
+        SeasonTier: {
+            /** @description Desde este puesto */
+            from: number;
+            /** @description Hasta este puesto; `null` en el último tramo (llega hasta el top N) */
+            to: number | null;
+            /** @description Nombre de la medalla. `{top}` se reemplaza por el top N ("Top {top}" → "Top 20") */
+            name: string;
+            /** @description Un emoji */
+            icon: string;
+        };
+        SeasonStandingList: {
+            items: components["schemas"]["SeasonStanding"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        SeasonStanding: {
+            /** @description `null`: todavía no llega al mínimo de mixes */
+            rank: number | null;
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+                photo_url: string | null;
+            };
+            eligible: boolean;
+            elo: number;
+            level: number | null;
+            /** @description Pico de la temporada */
+            peak_elo: number;
+            /** @description Mixes de la temporada */
+            matches: number;
+            wins: number;
+            losses: number;
+            /** @description ELO después del reinicio (en la activa: si cerrara ahora) */
+            elo_after: number;
+            /** @description `null`: sin medalla */
+            medal: {
+                name: string;
+                icon: string;
+            } | null;
+        };
+        PlayerSeasonList: {
+            items: components["schemas"]["PlayerSeason"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        PlayerSeason: {
+            /** @description `null`: todavía no llega al mínimo de mixes */
+            rank: number | null;
+            eligible: boolean;
+            elo: number;
+            level: number | null;
+            /** @description Pico de la temporada */
+            peak_elo: number;
+            /** @description Mixes de la temporada */
+            matches: number;
+            wins: number;
+            losses: number;
+            /** @description ELO después del reinicio (en la activa: si cerrara ahora) */
+            elo_after: number;
+            /** @description `null`: sin medalla */
+            medal: {
+                name: string;
+                icon: string;
+            } | null;
+            season: {
+                /** Format: uuid */
+                id: string;
+                number: number;
+                name: string;
+            };
+        };
+        SeasonConfigRead: components["schemas"]["SeasonConfig"] & {
+            updated_at: string | null;
+        };
+        SeasonConfig: {
+            /** @description Duración por defecto de la próxima temporada, en días */
+            duration_days: number;
+            /** @description Cuántos reciben medalla */
+            top_n: number;
+            /** @description Mixes jugados en la temporada para entrar al ranking */
+            min_matches: number;
+            /** @description Porcentaje de lo que tenía sobre el piso que conserva un nivel 10 al reiniciar (0 = vuelve al piso) */
+            reset_pct: number;
+            /** @description Piso del reinicio (el inicio del nivel 10) */
+            reset_floor: number;
+            /** @description Tramos de medallas, en orden */
+            tiers: components["schemas"]["SeasonTier"][];
+        };
+        SeasonCreate: {
+            /** @description Por defecto "Temporada N" */
+            name?: string;
+            /**
+             * Format: date-time
+             * @description Por defecto, a la duración de la configuración, a las 06:00 de Argentina
+             */
+            ends_at?: string;
+        };
+        SeasonPatch: {
+            name?: string;
+            /**
+             * Format: date-time
+             * @description Fecha de fin (futura)
+             */
+            ends_at?: string;
+            /** @description Cuántos reciben medalla */
+            top_n?: number;
+            /** @description Mixes jugados en la temporada para entrar al ranking */
+            min_matches?: number;
+            /** @description Porcentaje de lo que tenía sobre el piso que conserva un nivel 10 al reiniciar (0 = vuelve al piso) */
+            reset_pct?: number;
+            /** @description Piso del reinicio (el inicio del nivel 10) */
+            reset_floor?: number;
+            /** @description Tramos de medallas, en orden */
+            tiers?: components["schemas"]["SeasonTier"][];
+        };
+        SeasonClosed: {
+            /** Format: uuid */
+            season_id: string;
+            /**
+             * Format: uuid
+             * @description La temporada que se abrió
+             */
+            next_season_id: string;
+            medals: number;
+            /** @description Jugadores que se reiniciaron */
+            reset: number;
+            closed_at: string;
+        };
+        SeasonClose: {
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm: string;
+        };
+        SeasonPreview: {
+            items: components["schemas"]["SeasonPreviewRow"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+            summary: {
+                players: number;
+                /** @description Llegan al mínimo de mixes */
+                eligible: number;
+                medals: number;
+                /** @description Nivel 10 que se reinician */
+                reset: number;
+                /** @description Cuánto bajan en promedio los que se reinician */
+                avg_drop: number;
+                max_drop: number;
+            };
+        };
+        SeasonPreviewRow: {
+            rank: number | null;
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            };
+            eligible: boolean;
+            elo: number;
+            matches: number;
+            /** @description `null`: sin medalla */
+            medal: {
+                name: string;
+                icon: string;
+            } | null;
+            elo_after: number;
+            /** @description Se reinicia (está sobre el piso) */
+            reset: boolean;
         };
         MatchList: {
             items: components["schemas"]["MatchSummary"][];
@@ -10221,8 +12413,15 @@ export interface components {
             map: string | null;
             starts_at: string | null;
             played_at: string | null;
-            /** @description `surrender` (rendición) o `walkover` (W.O.) */
+            /** @description `surrender` (rendición), `walkover` (W.O.) o `crash` (mix interrumpido con el ELO aprobado) */
             end_reason: string | null;
+            /** @description Cancelada: `admin`, `map_change`, `abandoned` o `crash` (interrumpida por una caída) */
+            cancel_reason: string | null;
+            /**
+             * @description Mix interrumpido por una caída: estado de la revisión del ELO; null en el resto
+             * @enum {string|null}
+             */
+            review: "pending" | "applied" | "discarded" | null;
             demo_status: string;
             /**
              * Format: uuid
@@ -10244,7 +12443,6 @@ export interface components {
             round: number | null;
             /** @description Gran final con mapa de ventaja: bando que empezó 1-0 */
             advantage_side: number | null;
-            cancel_reason: string | null;
             server: {
                 /** Format: uuid */
                 id: string | null;
@@ -10271,6 +12469,8 @@ export interface components {
             players: components["schemas"]["PlayerLine"][];
             mvp: components["schemas"]["PlayerLine"] & (Record<string, never> | null);
             veto: components["schemas"]["VetoState"];
+            review_detail: components["schemas"]["MixReview"];
+            live: components["schemas"]["LiveGameRef"];
             /** @description Qué puede hacer quien consulta (null sin sesión) */
             viewer: {
                 can_veto: boolean;
@@ -10345,6 +12545,32 @@ export interface components {
                 decider: boolean;
             }[];
         } | null;
+        /** @description Mix interrumpido por una caída: lo que necesita el admin para decidir */
+        MixReview: {
+            /** @enum {string} */
+            status: "pending" | "applied" | "discarded";
+            /** @description Rondas del mix (sin prórroga) */
+            max_rounds: number;
+            rounds_played: number;
+            /** @description 35 % de max_rounds, hacia arriba */
+            min_rounds: number;
+            /** @description Pendiente, con el mínimo de rondas y sin empate */
+            can_apply: boolean;
+            /** @description Por qué no se puede aprobar (si está pendiente) */
+            blocked_reason: string | null;
+        } | null;
+        /** @description Torneo o PCW: el juego vinculado con !match que se está jugando ahora */
+        LiveGameRef: {
+            uid: string;
+            map: string | null;
+            /** @description Rondas del bando 1 de la partida */
+            score1: number | null;
+            score2: number | null;
+            rounds_played: number;
+            max_rounds: number | null;
+            updated_at: string;
+            stale: boolean;
+        } | null;
         ChatPage: {
             /** @description Del más viejo al más nuevo */
             items: components["schemas"]["ChatMessage"][];
@@ -10391,6 +12617,231 @@ export interface components {
              */
             clear?: true;
         };
+        ClipList: {
+            items: components["schemas"]["Clip"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        Clip: {
+            /** Format: uuid */
+            id: string;
+            /** @description Puesto dentro de la partida: 1 es la mejor jugada */
+            position: number;
+            /**
+             * @description `ace` (5 kills), `4k`, `3k` o `clutch_N` (1vN ganado). El de más prioridad entre sus kills y su clutch
+             * @enum {string}
+             */
+            type: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
+            /** @description Prioridad del tipo en la escala actual: 1 es lo más valioso */
+            priority: number;
+            /** @description Ronda de la partida (la prórroga sigue numerando) */
+            round: number;
+            /** @description Segundos desde el fin del freezetime hasta la primera kill (o el inicio del clutch) */
+            round_seconds: number;
+            /** @description Si su equipo ganó la ronda */
+            round_won: boolean;
+            /** @description La ficha (por su SteamID principal o uno adicional). `null` sin ficha */
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description Nick en el juego en esa partida */
+            game_nick: string;
+            /** @description SteamID64 si no tiene ficha, para el perfil sin reclamar. `null` con ficha, bots y NOSTEAM */
+            steam_id: string | null;
+            /** @description Kills en la ronda (0 a 5) */
+            kills: number;
+            /** @description Tick de la demo de cada kill, en orden */
+            kill_ticks: number[];
+            /** @description Contra cuántos quedó solo (1 a 5). `null` sin clutch */
+            clutch_vs: number | null;
+            /** @description Tick de la demo en que quedó solo */
+            clutch_start_tick: number | null;
+            /** @description Tick de la demo en que terminó la ronda (solo con clutch) */
+            end_tick: number | null;
+            /** @description Ticks por segundo de la partida. `null` en partidas viejas */
+            tickrate: number | null;
+            /** @description Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate */
+            demo_seconds: number | null;
+            video: components["schemas"]["ClipVideo"];
+        };
+        ClipVideo: {
+            /**
+             * @description `pending` (en cola), `processing` (grabándose), `done` (listo), `failed` (falló tres veces), `skipped` (no se puede grabar) o `unavailable` (la partida no tiene demo: nunca va a tener video)
+             * @enum {string}
+             */
+            status: "pending" | "processing" | "done" | "failed" | "skipped" | "unavailable";
+            /** @description El `.mp4` (con Range) mientras está en R2: los primeros 15 días. `null` si no */
+            url: string | null;
+            /** @description El reproductor de Google Drive (`iframe`), para siempre. Usar `url` si viene y, si no, este. `null` si no está en Drive */
+            embed_url: string | null;
+            /** @description Duración del video. `null` sin video */
+            seconds: number | null;
+        };
+        ClipConfig: {
+            config: components["schemas"]["ClipConfigValues"];
+            updated_at: string | null;
+            updated_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+        };
+        ClipConfigValues: {
+            priorities: components["schemas"]["ClipPriorities"];
+            /** @description Clips por jugador en cada partida (por ficha; un SteamID sin ficha cuenta solo) */
+            per_player: number;
+            /** @description Clips por partida */
+            per_match: number;
+            /** @description Para el video (fase C): más segundos que esto entre dos kills parte el clip en tramos */
+            split_gap_seconds: number;
+            /** @description Para el video (fase C): segundos antes de la primera kill */
+            pre_seconds: number;
+            /** @description Para el video (fase C): segundos después de la última kill */
+            post_seconds: number;
+        };
+        ClipPriorities: {
+            /** @description Prioridad de `ace` (1 es lo más valioso) */
+            ace: number;
+            /** @description Prioridad de `clutch_5` (1 es lo más valioso) */
+            clutch_5: number;
+            /** @description Prioridad de `clutch_4` (1 es lo más valioso) */
+            clutch_4: number;
+            /** @description Prioridad de `4k` (1 es lo más valioso) */
+            "4k": number;
+            /** @description Prioridad de `clutch_3` (1 es lo más valioso) */
+            clutch_3: number;
+            /** @description Prioridad de `3k` (1 es lo más valioso) */
+            "3k": number;
+            /** @description Prioridad de `clutch_2` (1 es lo más valioso) */
+            clutch_2: number;
+            /** @description Prioridad de `clutch_1` (1 es lo más valioso) */
+            clutch_1: number;
+        };
+        /** @description Solo lo que cambia. Se aplica al listado de todas las partidas al instante: los datos no se tocan */
+        ClipConfigPatch: {
+            /** @description Solo los tipos que cambian */
+            priorities?: {
+                /** @description Prioridad de `ace` (1 es lo más valioso) */
+                ace?: number;
+                /** @description Prioridad de `clutch_5` (1 es lo más valioso) */
+                clutch_5?: number;
+                /** @description Prioridad de `clutch_4` (1 es lo más valioso) */
+                clutch_4?: number;
+                /** @description Prioridad de `4k` (1 es lo más valioso) */
+                "4k"?: number;
+                /** @description Prioridad de `clutch_3` (1 es lo más valioso) */
+                clutch_3?: number;
+                /** @description Prioridad de `3k` (1 es lo más valioso) */
+                "3k"?: number;
+                /** @description Prioridad de `clutch_2` (1 es lo más valioso) */
+                clutch_2?: number;
+                /** @description Prioridad de `clutch_1` (1 es lo más valioso) */
+                clutch_1?: number;
+            };
+            /** @description Clips por jugador en cada partida (por ficha; un SteamID sin ficha cuenta solo) */
+            per_player?: number;
+            /** @description Clips por partida */
+            per_match?: number;
+            /** @description Para el video (fase C): más segundos que esto entre dos kills parte el clip en tramos */
+            split_gap_seconds?: number;
+            /** @description Para el video (fase C): segundos antes de la primera kill */
+            pre_seconds?: number;
+            /** @description Para el video (fase C): segundos después de la última kill */
+            post_seconds?: number;
+        };
+        LiveMixList: {
+            items: components["schemas"]["LiveMixSummary"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        LiveMixSummary: {
+            uid: string;
+            server: {
+                /** Format: uuid */
+                id: string;
+                name: string | null;
+            };
+            map: string | null;
+            side1: components["schemas"]["LiveSide"];
+            side2: components["schemas"]["LiveSide"];
+            rounds_played: number;
+            /** @description Rondas del mix (sin prórroga) */
+            max_rounds: number | null;
+            started_at: string | null;
+            /** @description Llegada de la última foto (fin de la última ronda) */
+            updated_at: string;
+            /** @description Sin fotos hace más de 10 minutos: un admin lo puede cerrar como interrumpido */
+            stale: boolean;
+            /**
+             * Format: uuid
+             * @description Vinculado con !match: la partida de torneo o PCW abierta
+             */
+            parent_match_id: string | null;
+        };
+        LiveSide: {
+            /** @description "Equipo <nick>" o "Mix de <el que más mató>" */
+            name: string | null;
+            score: number | null;
+        };
+        LiveMixDetail: components["schemas"]["LiveMixSummary"] & {
+            /** @description Número de foto: sube en cada ronda (con !rr el marcador puede bajar) */
+            seq: number;
+            /** @description Rondas jugadas en orden */
+            rounds: {
+                n: number;
+                /** @description Bando que ganó la ronda (1 o 2) */
+                winner_side: number | null;
+                /**
+                 * @description Lado del bando 1 en esa ronda
+                 * @enum {string|null}
+                 */
+                side1_as: "CT" | "T" | null;
+                /** @description Motivo del fin de ronda del motor */
+                reason: number | null;
+            }[];
+            /** @description Stats parciales, por bando y de mejor a peor rating */
+            players: components["schemas"]["LivePlayerLine"][];
+        };
+        LivePlayerLine: {
+            /** Format: uuid */
+            player_id: string | null;
+            /** @description Alias si tiene ficha; si no, null */
+            alias: string | null;
+            game_nick: string;
+            /** @description Solo si no tiene ficha: enlaza al perfil sin reclamar */
+            steam_id: string | null;
+            side: number | null;
+            kills: number | null;
+            deaths: number | null;
+            assists: number | null;
+            headshots: number | null;
+            damage: number | null;
+            rounds: number | null;
+            rating: number | null;
+        };
+        ApplyEloBody: {
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm: string;
+        };
+        ClosedMix: {
+            /**
+             * Format: uuid
+             * @description La partida creada como interrumpida
+             */
+            match_id: string;
+        };
         EventList: {
             items: components["schemas"]["EventSummary"][];
             /** @description Total con los filtros aplicados */
@@ -10406,10 +12857,10 @@ export interface components {
             id: string;
             name: string;
             /**
-             * @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs
+             * @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs, `groups_double` grupos de doble eliminación + playoffs
              * @enum {string}
              */
-            template: "single" | "double" | "groups" | "swiss";
+            template: "single" | "double" | "groups" | "swiss" | "groups_double";
             /** @enum {string} */
             status: "registration" | "in_progress" | "finished" | "cancelled";
             starts_on: string | null;
@@ -10438,6 +12889,15 @@ export interface components {
             /** @description Empate de grupo que tiene que resolver el organizador */
             tie_pending: {
                 grp: number;
+            } | null;
+            /** @description Sorteo de la siembra (POST /events/{id}/draw): cuándo y quién. null si la siembra se cargó a mano o cambió después */
+            draw: {
+                at: string;
+                by: {
+                    /** Format: uuid */
+                    user_id: string | null;
+                    alias: string | null;
+                };
             } | null;
             viewer: {
                 can_manage: boolean;
@@ -10495,13 +12955,17 @@ export interface components {
             order: "asc" | "desc";
         };
         Standing: {
-            /** @enum {string} */
-            stage: "group" | "swiss";
+            /**
+             * @description `group_double`: grupo de doble eliminación (`groups_double`)
+             * @enum {string}
+             */
+            stage: "group" | "swiss" | "group_double";
             /** @description Grupo (1 = A); 1 en el suizo */
             grp: number;
             /** @description Fase suiza; 1 en grupos */
             phase: number;
             team: components["schemas"]["TeamRef"];
+            /** @description En group_double: 1.º gana la final del upper, 2.º la final del lower, 3.º la pierde; los eliminados en la misma ronda comparten puesto */
             place: number;
             /** @description Grupos: empatado en todos los criterios con el de al lado */
             tied: boolean;
@@ -10516,7 +12980,7 @@ export interface components {
             /** @description Suizo */
             buchholz: number | null;
             /**
-             * @description Suizo
+             * @description Suizo y group_double (`active`: sigue en carrera)
              * @enum {string|null}
              */
             state: "active" | "qualified" | "eliminated" | null;
@@ -10530,10 +12994,10 @@ export interface components {
         EventCreate: {
             name: string;
             /**
-             * @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs
+             * @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs, `groups_double` grupos de doble eliminación + playoffs
              * @enum {string}
              */
-            template: "single" | "double" | "groups" | "swiss";
+            template: "single" | "double" | "groups" | "swiss" | "groups_double";
             config?: components["schemas"]["EventConfig"];
             players_min?: number;
             players_max?: number;
@@ -10546,7 +13010,7 @@ export interface components {
             min_teams?: number | null;
             max_teams?: number | null;
         };
-        /** @description Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3. 3.er puesto apagado. */
+        /** @description Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3; groups_double 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5. 3.er puesto apagado. */
         EventConfig: {
             bo?: 1 | 3 | 5;
             bo_semi?: 1 | 3 | 5;
@@ -10581,10 +13045,10 @@ export interface components {
         EventPatch: {
             name?: string;
             /**
-             * @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs
+             * @description `single` eliminación directa, `double` doble eliminación, `groups` grupos + playoffs, `swiss` suizo + playoffs, `groups_double` grupos de doble eliminación + playoffs
              * @enum {string}
              */
-            template?: "single" | "double" | "groups" | "swiss";
+            template?: "single" | "double" | "groups" | "swiss" | "groups_double";
             config?: components["schemas"]["EventConfig"];
             players_min?: number;
             players_max?: number;
@@ -10599,6 +13063,11 @@ export interface components {
         };
         SeedsBody: {
             teams: string[];
+        };
+        DrawResult: {
+            /** @description La siembra sorteada, del 1 en adelante */
+            seeds: components["schemas"]["TeamRef"][];
+            drawn_at: string;
         };
         /** @description Orden de los equipos empatados, del mejor al peor */
         TieBody: {
@@ -10760,6 +13229,47 @@ export interface components {
         RoleChange: {
             /** @enum {string} */
             role: "user" | "organizer";
+        };
+        ServersStatus: {
+            servers: components["schemas"]["ServerStatusItem"][];
+            totals: {
+                /** @description Servidores activos con licencia vigente */
+                servers: number;
+                /** @description Los que respondieron */
+                online: number;
+                /** @description Jugadores conectados entre todos */
+                players: number;
+                /** @description Mixes en vivo entre todos */
+                live_matches: number;
+            };
+            /** @description Cuándo se consultó (la respuesta se guarda 20 s) */
+            checked_at: string;
+        };
+        ServerStatusItem: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Para el botón "Conectar" (`host:puerto`) */
+            address: string | null;
+            /**
+             * @description Modo de juego. null si no está cargado
+             * @enum {string|null}
+             */
+            mode: "mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice" | null;
+            /** @description Región (texto libre). null si no está cargada */
+            region: string | null;
+            /** @description Respondió a la consulta en 1,5 s */
+            online: boolean;
+            /** @description Latencia de la consulta desde el backend hasta el servidor, en ms. No es el ping del jugador. null si no respondió */
+            ping_ms: number | null;
+            map: string | null;
+            /** @description Jugadores conectados, sin bots ni SourceTV. null si no respondió */
+            players: number | null;
+            max_players: number | null;
+            /** @description Bots, SourceTV incluido */
+            bots: number | null;
+            /** @description Mixes en vivo en este servidor (con foto en los últimos 10 minutos) */
+            live_matches: number;
         };
     };
     responses: never;

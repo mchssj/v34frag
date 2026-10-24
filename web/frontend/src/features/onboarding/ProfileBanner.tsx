@@ -16,7 +16,9 @@ export function ProfileBanner() {
   if (!status || status.complete) return null
 
   const items = [
+    { label: "Foto y nombre", done: status.photo },
     { label: "Puesto y país", done: status.style },
+    { label: "Contactos", done: status.contacts },
     { label: "Jugador vinculado", done: status.linked },
   ]
 
@@ -30,7 +32,7 @@ export function ProfileBanner() {
       </span>
       <div className="flex min-w-[220px] flex-1 flex-col gap-1.5">
         <span className="text-sm font-semibold">
-          Completa tu perfil · {status.done} de 2
+          Completa tu perfil · {status.done} de 4
         </span>
         <ul className="flex flex-wrap gap-3.5 text-[13px]">
           {items.map(({ label, done }) => {

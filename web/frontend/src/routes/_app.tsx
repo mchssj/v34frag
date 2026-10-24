@@ -1,27 +1,21 @@
-import {
-  Link,
-  Outlet,
-  createFileRoute,
-  useNavigate,
-} from "@tanstack/react-router"
-import { LogOutIcon, UserRoundIcon } from "lucide-react"
+import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 
 import { requireAuth } from "@/auth/guards"
-import { useLogout, useMe } from "@/auth/queries"
-import { ROLE_LABEL } from "@/auth/roles"
+import { seesCaptainNotifications } from "@/auth/permissions"
+import { useMe } from "@/auth/queries"
 import { RouteError } from "@/components/RouteError"
-import { Logo } from "@/components/brand/Logo"
-import { ThemeToggle } from "@/components/brand/ThemeToggle"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  SIDEBAR_COOKIE_NAME,
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
+import { AppSidebar } from "@/features/shell/AppSidebar"
+import { CommandMenu } from "@/features/shell/CommandMenu"
+import { NowBar } from "@/features/shell/NowBar"
+import { useShellIdentity } from "@/features/shell/queries"
+import { Topbar } from "@/features/shell/Topbar"
+import { useSyncThemeFx } from "@/features/theme-fx/useSyncThemeFx"
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: requireAuth,
@@ -29,82 +23,50 @@ export const Route = createFileRoute("/_app")({
   component: AppLayout,
 })
 
-// Layout con sesión. Provisorio hasta el diseño final.
+/** Estado guardado del sidebar (cookie de shadcn); sin estado, colapsado en ventanas de menos de 900px. */
+function initialSidebarOpen() {
+  const saved = document.cookie.match(
+    new RegExp(`(?:^|; )${SIDEBAR_COOKIE_NAME}=(true|false)`)
+  )?.[1]
+  return saved ? saved === "true" : window.innerWidth >= 900
+}
+
+// Shell de la app con sesión: sidebar, topbar, franja "ahora" y búsqueda ⌘K.
 function AppLayout() {
   const initial = Route.useRouteContext({ select: (c) => c.user })
   // useMe se mantiene al día (por ejemplo, si cambia el rol); la guarda garantiza el primer valor.
   const user = useMe().data ?? initial
-  const logout = useLogout()
-  const navigate = useNavigate()
+  const { team } = useShellIdentity()
+  useSyncThemeFx()
+  const [searchOpen, setSearchOpen] = useState(false)
 
-  async function onLogout() {
-    await logout.mutateAsync()
-    await navigate({ to: "/", replace: true })
-  }
-
-  const alias = user.tag ?? user.email ?? "Cuenta"
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        setSearchOpen((o) => !o)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between gap-6 border-b bg-background/80 px-6 backdrop-blur-[10px]">
-        <nav className="flex items-center gap-6">
-          <Link to="/home" aria-label="CSSTV, ir al inicio">
-            <Logo />
-          </Link>
-          <Link
-            to="/home"
-            className="text-sm text-muted-foreground [&.active]:text-foreground"
-          >
-            Inicio
-          </Link>
-          {user.role === "admin" && (
-            <Link
-              to="/admin"
-              className="text-sm text-muted-foreground [&.active]:text-foreground"
-            >
-              Admin
-            </Link>
-          )}
-        </nav>
-        <div className="flex items-center gap-2">
-        <ThemeToggle />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2">
-              <Avatar className="size-7">
-                <AvatarFallback>
-                  {alias.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="hidden sm:inline">{alias}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="flex flex-col">
-              <span>{alias}</span>
-              <span className="text-xs font-normal text-muted-foreground">
-                {user.email} · {ROLE_LABEL[user.role]}
-              </span>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/welcome">
-                <UserRoundIcon /> Completar perfil
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => void onLogout()}
-              disabled={logout.isPending}
-            >
-              <LogOutIcon /> Salir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <SidebarProvider defaultOpen={initialSidebarOpen()}>
+      <AppSidebar user={user} />
+      <SidebarInset className="min-h-[calc(100svh-16px)] min-w-0 md:peer-data-[variant=inset]:shadow-[0_1px_3px_rgb(0_0_0/.06),0_0_0_1px_var(--border)]">
+        <Topbar
+          onSearch={() => setSearchOpen(true)}
+          captain={seesCaptainNotifications(user.role, !!team?.is_captain)}
+        />
+        <NowBar />
+        <div className="flex flex-1 justify-center p-6">
+          <div className="w-full max-w-[1320px] min-w-0">
+            <Outlet />
+          </div>
         </div>
-      </header>
-      <div className="flex-1 p-6">
-        <Outlet />
-      </div>
-    </div>
+      </SidebarInset>
+      <CommandMenu user={user} open={searchOpen} onOpenChange={setSearchOpen} />
+    </SidebarProvider>
   )
 }

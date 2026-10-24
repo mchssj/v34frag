@@ -6,24 +6,24 @@ import heroAvif from "@/assets/landing-bg.avif"
 import heroWebp from "@/assets/landing-bg.webp"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Button } from "@/components/ui/button"
-import { SERVERS } from "@/config/site"
-import { formatNumber, liveCountOptions } from "@/features/public/queries"
+import { formatNumber, serverStatusOptions } from "@/features/public/queries"
 import { scrollToSection } from "./scroll"
 
 const heroImage = `image-set(url("${heroAvif}") type("image/avif"), url("${heroWebp}") type("image/webp"))`
-// Jugadores en los servidores: valor fijo hasta que la API exponga el estado en vivo.
-const playersOnline = SERVERS.filter((s) => s.online).reduce(
-  (sum, s) => sum + s.players,
-  0
-)
 
+/** "N partidas en vivo · N jugadores en el servidor", de los totales del estado de los servidores. */
 function LivePill() {
-  const live = useQuery(liveCountOptions).data
+  const totals = useQuery({
+    ...serverStatusOptions,
+    select: (s) => s.totals,
+  }).data
+  // Mientras carga se guarda el alto del pill, para que el hero no salte.
+  if (!totals) return <span className="h-7" aria-hidden />
+  const live = totals.live_matches
   const parts = [
-    live !== undefined &&
-      `${formatNumber(live)} ${live === 1 ? "partida" : "partidas"} en vivo`,
-    `${formatNumber(playersOnline)} jugadores en el servidor`,
-  ].filter(Boolean)
+    `${formatNumber(live)} ${live === 1 ? "partida" : "partidas"} en vivo`,
+    `${formatNumber(totals.players)} ${totals.players === 1 ? "jugador" : "jugadores"} en el servidor`,
+  ]
   return (
     <span className="inline-flex h-7 items-center gap-2 rounded-full border bg-card pr-3 pl-2.5 text-xs font-medium">
       <LiveDot />

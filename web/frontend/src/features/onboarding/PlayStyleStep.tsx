@@ -1,5 +1,4 @@
 import {
-  CircleCheckIcon,
   CrosshairIcon,
   FootprintsIcon,
   MegaphoneIcon,
@@ -16,7 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { CountryFlag } from "@/components/brand/CountryFlag"
 import { AuthHeading } from "@/features/auth/ui"
+import { Greeting } from "./Greeting"
 import { COUNTRIES, GAME_ROLES } from "@/features/profile/schemas"
 
 export type GameRole = (typeof GAME_ROLES)[number]
@@ -33,13 +34,14 @@ const ROLES: { value: GameRole; hint: string; icon: LucideIcon }[] = [
 ]
 
 export function PlayStyleStep({
-  alias,
+  greetAlias,
   role,
   country,
   onRole,
   onCountry,
 }: {
-  alias: string
+  /** Alias para el saludo, si este es el primer paso que se ve. */
+  greetAlias: string | null
   role: GameRole
   country: Country
   onRole: (role: GameRole) => void
@@ -48,10 +50,7 @@ export function PlayStyleStep({
   return (
     <>
       <div className="flex flex-col gap-1.5">
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-win">
-          <CircleCheckIcon className="size-3.5" aria-hidden />
-          Email confirmado · hola, {alias}
-        </span>
+        {greetAlias && <Greeting alias={greetAlias} />}
         <AuthHeading
           size="lg"
           title="¿Cómo juegas?"
@@ -101,7 +100,10 @@ export function PlayStyleStep({
           <SelectContent>
             {COUNTRIES.map((c) => (
               <SelectItem key={c} value={c}>
-                {c}
+                <span className="flex items-center gap-2">
+                  <CountryFlag country={c} />
+                  {c}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

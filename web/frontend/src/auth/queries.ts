@@ -42,7 +42,7 @@ export function useMe() {
   return useQuery(meQueryOptions)
 }
 
-function missingSession() {
+export function missingSession() {
   return new ApiError({
     status: 500,
     code: "INTERNAL",

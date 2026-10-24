@@ -4,11 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ApiError, networkError } from "@/api/errors"
 import {
-  ForbiddenError,
   redirectIfSignedIn,
+  requireAdminSection,
   requireAuth,
   requireGuest,
-  requireRole,
 } from "./guards"
 import type { AuthUser } from "./queries"
 
@@ -37,6 +36,7 @@ const user: AuthUser = {
   tag: "Mecha",
   role: "user",
   created_at: null,
+  password_changed_at: null,
 }
 
 let queryClient: QueryClient
@@ -126,17 +126,38 @@ describe("requireGuest", () => {
   })
 })
 
-describe("requireRole", () => {
-  it("deja pasar el rol pedido", () => {
-    expect(() =>
-      requireRole("admin")({ context: { user: { ...user, role: "admin" } } })
-    ).not.toThrow()
+describe("requireAdminSection", () => {
+  const at = (role: AuthUser["role"], pathname: string) => () =>
+    requireAdminSection({
+      context: { user: { ...user, role } },
+      location: { pathname },
+    })
+  const target = (fn: () => void) => {
+    try {
+      fn()
+    } catch (e) {
+      if (isRedirect(e)) return e.options.to
+      throw e
+    }
+    return "pasa"
+  }
+
+  it("el admin entra a todas las secciones", () => {
+    expect(target(at("admin", "/admin/players"))).toBe("pasa")
+    expect(target(at("admin", "/admin/users"))).toBe("pasa")
   })
 
-  it("con otro rol lanza ForbiddenError", () => {
-    expect(() => requireRole("admin")({ context: { user } })).toThrow(
-      ForbiddenError
-    )
+  it("el organizador solo entra a Torneos; si pide otra sección, vuelve ahí", () => {
+    expect(target(at("organizer", "/admin/events"))).toBe("pasa")
+    expect(target(at("organizer", "/admin/servers"))).toBe("/admin/events")
+  })
+
+  it("un usuario común vuelve al inicio", () => {
+    expect(target(at("user", "/admin/events"))).toBe("/home")
+  })
+
+  it("/admin sin sección lleva a Torneos a quien puede entrar", () => {
+    expect(target(at("admin", "/admin"))).toBe("/admin/events")
   })
 })
 

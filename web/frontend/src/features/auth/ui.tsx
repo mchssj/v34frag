@@ -46,7 +46,7 @@ export function AuthHeading({
 type FieldProps<T extends FieldValues> = {
   control: Control<T>
   name: Path<T>
-  label: string
+  label: ReactNode
   type?: "text" | "email" | "password"
   autoComplete?: string
   placeholder?: string

@@ -6,13 +6,14 @@ import { createTokenStore, STORAGE_KEY, toSession } from "./tokenStore"
 function tab(
   local: MemoryStorage,
   bus = createBus(),
-  own = new MemoryStorage()
+  own = new MemoryStorage(),
+  handshakeMs = 30
 ) {
   const store = createTokenStore({
     local,
     session: own,
     channel: bus.channel(),
-    handshakeMs: 30,
+    handshakeMs,
   })
   return { store, own }
 }
@@ -102,7 +103,9 @@ describe("tokenStore: varias pestañas", () => {
     const local = new MemoryStorage()
     const a = tab(local, bus)
     a.store.setSession(session(1), false)
-    const b = tab(local, bus)
+    // Plazo largo: ready() se resuelve apenas responde la otra pestaña. Con 30 ms, una máquina
+    // cargada podía vencerlo antes de que llegara la respuesta (prueba intermitente).
+    const b = tab(local, bus, new MemoryStorage(), 5000)
     await b.store.ready()
     expect(b.store.getState().session?.refreshToken).toBe("r1")
   })

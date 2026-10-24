@@ -1,3 +1,11 @@
+import {
+  differenceInCalendarDays,
+  format,
+  formatDistanceStrict,
+  parseISO,
+  startOfToday,
+} from "date-fns"
+import { es } from "date-fns/locale"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
@@ -16,23 +24,19 @@ const TEMPLATE: Record<EventSummary["template"], string> = {
   single: "Eliminación directa",
   double: "Doble eliminación",
   groups: "Grupos + playoffs",
+  groups_double: "Grupos de doble eliminación + playoffs",
   swiss: "Suizo + playoffs",
 }
 
-// Fechas "AAAA-MM-DD" en hora local (new Date("2026-11-02") sería UTC y podría correr un día).
-function parseDay(day: string) {
-  const [y, m, d] = day.split("-").map(Number)
-  return new Date(y, m - 1, d)
-}
+// parseISO lee "AAAA-MM-DD" en hora local (new Date() lo tomaría como UTC y podría correr un día).
 const shortDate = (day: string) =>
-  parseDay(day)
-    .toLocaleDateString("es-AR", { day: "2-digit", month: "short" })
-    .replace(".", "")
+  format(parseISO(day), "dd MMM", { locale: es })
 
 function startsIn(day: string) {
-  const days = Math.ceil((parseDay(day).getTime() - Date.now()) / 86_400_000)
-  if (days <= 0) return "Hoy"
-  return days === 1 ? "1 día" : `${days} días`
+  const date = parseISO(day)
+  const today = startOfToday()
+  if (differenceInCalendarDays(date, today) <= 0) return "Hoy"
+  return formatDistanceStrict(date, today, { unit: "day", locale: es })
 }
 
 const cardClass = "flex flex-col overflow-hidden rounded-hero border bg-card"
