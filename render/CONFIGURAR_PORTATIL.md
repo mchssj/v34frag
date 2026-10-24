@@ -42,7 +42,7 @@ git pull
 
 Comprueba que existan:
 - `render/procesar.py`, `render_clip.py`, `leer_demo.py`, `r2.py`, `drive.py`, `instalar_tarea.ps1` y `config.example.json`;
-- en `render/leer_demo.py`, el arreglo del intervalo de tick (busca `playback_time / h["playback_ticks"]`). Sin ese arreglo, la demo del primer mix (cbble) graba tramos mal calculados. Si falta, avísale a Daniel: está en la PC, sin commitear.
+- en `render/leer_demo.py`, el arreglo del intervalo de tick (busca `playback_ticks` en `leer_demo.py`: tiene que aparecer en un `if not self.tick_interval`). Sin ese arreglo, la demo del primer mix (cbble) graba tramos mal calculados. Si falta, avísale a Daniel: está en la PC, sin commitear.
 
 ## 2. Python y FFmpeg
 
@@ -73,18 +73,21 @@ Esa carpeta tiene que tener `CMLauncher.exe`, `clientmod.ini` y `cstrike/`.
 
 ## 4. `.env` reducido
 
-Daniel copia a mano, desde la PC, un `.env` en la **raíz del repo del portátil** con solo estas 11 variables (no el `.env` entero: el de la PC tiene accesos a los servidores, al FTP y al panel):
+Daniel copia a mano, desde la PC, un `.env` en la **raíz del repo del portátil** con solo estas 12 variables (no el `.env` entero: el de la PC tiene accesos a los servidores, al FTP y al panel):
 
 ```
 RENDER_SUPABASE_URL  RENDER_SUPABASE_KEY  RENDER_WORKER_TOKEN
 CF_ACCOUNT_ID_CLIPS  CF_API_TOKEN_CLIPS  CF_R2_BUCKET_CLIPS  CF_R2_ACCESS_KEY_ID_CLIPS  CF_R2_SECRET_ACCESS_CLIPS
 GOOGLE_CLIENT_ID  GOOGLE_CLIENT_SECRET  GOOGLE_REFRESH_TOKEN
+DISCORD_CLIPS_WEBHOOK
 ```
+
+`DISCORD_CLIPS_WEBHOOK` es el webhook del canal de Discord donde se publican las 5 mejores jugadas de cada mix (bitácora `2026-10-24-clips-discord`).
 
 El token de Drive sirve en cualquier máquina: no hace falta volver a correr `drive_login.py`. Comprueba que estén **sin mostrar los valores**:
 
 ```
-python -I -c "import re;v=dict(l.strip().split('=',1) for l in open('.env',encoding='utf-8') if '=' in l and not l.startswith('#'));[print(k, 'ok' if v.get(k,'').strip() else 'FALTA') for k in 'RENDER_SUPABASE_URL RENDER_SUPABASE_KEY RENDER_WORKER_TOKEN CF_ACCOUNT_ID_CLIPS CF_API_TOKEN_CLIPS CF_R2_BUCKET_CLIPS CF_R2_ACCESS_KEY_ID_CLIPS CF_R2_SECRET_ACCESS_CLIPS GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GOOGLE_REFRESH_TOKEN'.split()]"
+python -I -c "import re;v=dict(l.strip().split('=',1) for l in open('.env',encoding='utf-8') if '=' in l and not l.startswith('#'));[print(k, 'ok' if v.get(k,'').strip() else 'FALTA') for k in 'RENDER_SUPABASE_URL RENDER_SUPABASE_KEY RENDER_WORKER_TOKEN CF_ACCOUNT_ID_CLIPS CF_API_TOKEN_CLIPS CF_R2_BUCKET_CLIPS CF_R2_ACCESS_KEY_ID_CLIPS CF_R2_SECRET_ACCESS_CLIPS GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GOOGLE_REFRESH_TOKEN DISCORD_CLIPS_WEBHOOK'.split()]"
 ```
 
 ## 5. `render/config.json`
@@ -100,7 +103,8 @@ Copia `render/config.example.json` a `render/config.json` y cambia solo las ruta
 
 El resto se deja como está en el ejemplo:
 - 1920x1080 a 60 cuadros;
-- `"drive": true`, `demo_worker_url`, `r2_days` 15, `gap_seconds` 15 y `lead_seconds` 0,5.
+- `"drive": true`, `"discord": true`, `"discord_top": 5`, `demo_worker_url`, `r2_days` 15, `gap_seconds` 15 y `lead_seconds` 0,5;
+- `"crf": 23` y `"preset": "veryfast"`. Con otros valores, los videos pesan mucho más: el primer inferno salió con 40 MB para 14 s.
 
 Necesita unos 5 GB libres en el disco de `client_dir` durante cada grabación: los cuadros TGA se escriben ahí y se borran enseguida.
 
@@ -143,14 +147,14 @@ python -I render_clip.py C:\CMLeague_Render\demos_prueba\cbble.dem --player "Old
   - Si en el portátil pasa de unos 6 minutos, proponle a Daniel bajar a 720p (`"width": 1280, "height": 720`).
   - Cada partida tiene hasta 10 jugadas.
 
-Después borra el `.mp4`, el `.json` y la demo de prueba.
+Borra el `.mp4`, el `.json` y la demo de prueba **solo después de que Daniel haya visto el video**.
 
 ## 8. Instalar la tarea
 
-En una PowerShell **como administrador** (Daniel), desde `render/`:
+En una PowerShell **como administrador** (Daniel), en una sola línea (pegar dos líneas juntas en PowerShell falla). `-Python` hace falta si `python` en el PATH es otra versión (en el portátil quedó la 3.9 primero):
 
 ```
-.\instalar_tarea.ps1
+powershell -ExecutionPolicy Bypass -File <ruta del repo>\render\instalar_tarea.ps1 -Python "<ruta de python.exe 3.12 o más nuevo>"
 ```
 
 - Crea la tarea "CMLeague clips": cada 10 minutos, con privilegios más altos, solo con la sesión iniciada, y sin arrancar otra corrida si la anterior sigue.
