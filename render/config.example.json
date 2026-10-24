@@ -1,0 +1,21 @@
+{
+  "client_dir": "D:\\CMLeague_Render\\ClientMod",
+  "work_dir": "D:\\CMLeague_Render\\trabajo",
+  "out_dir": "D:\\CMLeague_Render\\videos",
+  "ffmpeg": "ffmpeg",
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "crf": 23,
+  "preset": "veryfast",
+  "pre_seconds": 3,
+  "post_seconds": 2,
+  "split_gap_seconds": 8,
+  "registry_key": "HKCU\\Software\\CSSv34_ClientMod",
+  "lead_seconds": 0.5,
+  "demo_worker_url": "https://v34frag-demos.agusb06-ab.workers.dev",
+  "r2_days": 15,
+  "max_matches_per_run": 5,
+  "drive": false,
+  "gap_seconds": 15
+}
