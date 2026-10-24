@@ -9,12 +9,14 @@ En cada corrida:
   3. Graba todas sus jugadas en una sola sesión del juego, pasa cada una a .mp4, la sube a R2 (y a Google Drive, si
      está activado), verifica el tamaño con HEAD, la ata a su jugada (clip_render_done) y borra el .mp4.
   4. Repite con la siguiente partida, hasta --max-partidas. Una jugada que falla vuelve a la cola (clip_render_fail).
-  5. Una vez por día: borra de R2 los videos con más de r2_days días que ya están en Drive (clip_archive_due) y
+  5. Publica en Discord las mejores jugadas con video que todavía no se publicaron (clip_discord_pending), con una
+     versión liviana del video adjunta, y las marca (clip_discord_mark). Con "discord": true en config.json.
+  6. Una vez por día: borra de R2 los videos con más de r2_days días que ya están en Drive (clip_archive_due) y
      vacía la papelera (clip_trash_list).
 
 Variables (del .env de la raíz del repo, o del que se pase con --env; las del entorno ganan):
   RENDER_SUPABASE_URL, RENDER_SUPABASE_KEY (la clave pública), RENDER_WORKER_TOKEN y las CF_*_CLIPS de r2.py.
-  Con Drive: las GOOGLE_* de drive.py.
+  Con Drive: las GOOGLE_* de drive.py. Con Discord: DISCORD_CLIPS_WEBHOOK.
 
 Corre como administrador (como render_clip.py): la tarea programada usa "privilegios más altos"; a mano, se eleva
 sola con un aviso de UAC. Un candado en work_dir evita dos corridas a la vez.
@@ -40,6 +42,8 @@ from render_clip import log  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_ENV = os.path.join(AQUI, "..", ".env")
 STEAM64_BASE = 76561197960265728
+# Cloudflare le responde 403 al User-Agent por defecto de Python ("Python-urllib"), y el Worker de demos está detrás.
+USER_AGENT = "CMLeague-render/1.0"
 
 
 def load_env(path):
@@ -50,7 +54,7 @@ def load_env(path):
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 vals[k.strip()] = v.strip().strip('"').strip("'")
-    vals.update({k: v for k, v in os.environ.items() if k.startswith(("RENDER_", "CF_", "GOOGLE_"))})
+    vals.update({k: v for k, v in os.environ.items() if k.startswith(("RENDER_", "CF_", "GOOGLE_", "DISCORD_"))})
     missing = [k for k in ("RENDER_SUPABASE_URL", "RENDER_SUPABASE_KEY", "RENDER_WORKER_TOKEN") if not vals.get(k)]
     if missing:
         raise SystemExit(f"faltan en el .env: {', '.join(missing)}")
@@ -74,7 +78,7 @@ class Api:
     def rpc(self, fn, **params):
         body = json.dumps({"p_token": self.token, **params}).encode()
         req = urllib.request.Request(self.base + fn, data=body, method="POST", headers={
-            "apikey": self.key, "Authorization": f"Bearer {self.key}", "Content-Type": "application/json"})
+            "User-Agent": USER_AGENT, "apikey": self.key, "Authorization": f"Bearer {self.key}", "Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 data = r.read()
@@ -194,7 +198,8 @@ def download_demo(cfg, match):
     url = cfg["demo_worker_url"].rstrip("/") + "/demo/" + match["external_id"]
     log(f"Bajando la demo {match['external_id']} ({(size or 0) / 1e6:.0f} MB).")
     try:
-        with urllib.request.urlopen(url, timeout=600) as r, open(path + ".part", "wb") as f:
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=600) as r, open(path + ".part", "wb") as f:
             while chunk := r.read(1 << 20):
                 f.write(chunk)
     except urllib.error.HTTPError as e:
@@ -267,7 +272,10 @@ def process_match(cfg, api, r2, drive, job):
         # La copia de la demo que usa el juego (la de work_dir/demos se borra cuando no quedan reintentos).
         copia = os.path.join(cfg["client_dir"], "cstrike", "cmleague", "demos", os.path.basename(demo_path))
         if os.path.exists(copia):
-            os.remove(copia)
+            try:
+                os.remove(copia)
+            except OSError as e:  # el juego quedó abierto y la tiene tomada: no cortar la corrida por eso
+                log(f"Aviso: no se pudo borrar {copia}: {e}")
     log(f"Sesión del juego: {time.time() - t0:.0f} s.")
 
     os.makedirs(cfg["out_dir"], exist_ok=True)
@@ -299,6 +307,64 @@ def process_match(cfg, api, r2, drive, job):
             if os.path.exists(out):
                 os.remove(out)
     return final
+
+
+# ---- Discord ----
+
+def publish_discord(cfg, api, r2, drive, webhook):
+    """Publica las mejores jugadas con video que todavía no salieron en Discord, en orden de partida y de puesto.
+
+    Antes de marcar en la base, el id del mensaje se anota en work_dir/discord_publicados.json: si la marca falla, la
+    próxima corrida la marca sin volver a publicarla. Si Discord falla, se corta y se reintenta en la próxima corrida."""
+    import discord
+    state_path = os.path.join(cfg["work_dir"], "discord_publicados.json")
+    try:
+        posted = json.load(open(state_path, encoding="utf-8"))
+    except (OSError, ValueError):
+        posted = {}
+    rows = api.rpc("clip_discord_pending", p_top=cfg.get("discord_top", 5), p_limit=20) or []
+    if not rows:
+        return
+    log(f"Discord: {len(rows)} jugadas para publicar.")
+    folder = os.path.join(cfg["work_dir"], "discord")
+    os.makedirs(folder, exist_ok=True)
+    for row in rows:
+        cid = row["clip_id"]
+        if cid in posted:
+            api.rpc("clip_discord_mark", p_clip=cid, p_message_id=posted[cid])
+            continue
+        src = os.path.join(folder, f"{cid}.mp4")
+        light = os.path.join(folder, f"{cid}_720.mp4")
+        try:
+            # El video: de R2 mientras está (más rápido) y si no, de Drive.
+            if row.get("video_in_r2") and row.get("video_key"):
+                st, data = r2.get(row["video_key"])
+                if st != 200:
+                    raise RuntimeError(f"R2 GET {st}")
+                open(src, "wb").write(data)
+            elif row.get("video_drive_id") and drive:
+                drive.download(row["video_drive_id"], src)
+            else:
+                log(f"  {cid[:8]}: sin video en R2 ni en Drive; no se puede publicar")
+                continue
+            size = render_clip.light_version(cfg, src, light, row.get("video_seconds") or 30)
+            msg = discord.post(webhook, discord.clip_message(row), light,
+                               filename=f"{row['type']}_{row['round']}.mp4")
+            posted[cid] = msg
+            json.dump(posted, open(state_path, "w", encoding="utf-8"))
+            api.rpc("clip_discord_mark", p_clip=cid, p_message_id=msg)
+            log(f"  {cid[:8]}: publicada en Discord ({discord.type_label(row['type'])} de {row['player_name']}, "
+                f"{size / 1e6:.1f} MB)")
+        except discord.DiscordError as e:
+            log(f"  {cid[:8]}: Discord falló, sigo en la próxima corrida: {e}")
+            break
+        except Exception as e:  # noqa: BLE001 — un problema de esta jugada no frena a las demás
+            log(f"  {cid[:8]}: no se pudo publicar en Discord: {e}")
+        finally:
+            for f in (src, light):
+                if os.path.exists(f):
+                    os.remove(f)
+        time.sleep(2)
 
 
 # ---- Tareas diarias ----
@@ -380,6 +446,16 @@ def main():
             demo = os.path.join(cfg["work_dir"], "demos", job["match"]["external_id"] + ".dem")
             if os.path.exists(demo):
                 os.remove(demo)
+        else:
+            # Algo falló y quedó para reintentar: la base devolvería la misma partida (la más vieja) y se gastarían
+            # los tres intentos en un minuto. El reintento queda para la próxima corrida.
+            log("Quedaron jugadas para reintentar: sigo en la próxima corrida.")
+            break
+    if cfg.get("discord"):
+        if env.get("DISCORD_CLIPS_WEBHOOK"):
+            publish_discord(cfg, api, r2, drive, env["DISCORD_CLIPS_WEBHOOK"])
+        else:
+            log("Aviso: \"discord\" está activado pero falta DISCORD_CLIPS_WEBHOOK en el .env.")
     if not a.sin_diario:
         daily(cfg, api, r2, drive)
 

@@ -40,6 +40,7 @@ import leer_demo  # noqa: E402
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
+SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
 
 
 def log(msg):
@@ -150,9 +151,16 @@ def post_key(hwnd, scan, vk=None):
 
 
 def console_command(hwnd, text):
-    """Abre la consola, escribe el texto y aprieta Enter. El texto tiene que cerrar la consola (hideconsole)."""
+    """Abre la consola, escribe el texto y aprieta Enter. El texto tiene que cerrar la consola (hideconsole).
+
+    La tecla de la consola también puede escribir su carácter en la línea (en un teclado latinoamericano es "|"; en el
+    español, "º"), y quedaba "|demo_pause; …": el primer comando no existía. Se borra la línea con Backspace y el
+    texto empieza con ";", así un carácter suelto solo anula un comando vacío."""
     post_key(hwnd, SCAN_CONSOLE)
     time.sleep(0.3)
+    for _ in range(4):
+        post_key(hwnd, 0x0E, 0x08)  # Backspace
+    text = "; " + text
     for ch in text:
         user32.PostMessageW(hwnd, WM_CHAR, ord(ch), 1)
         time.sleep(0.005)
@@ -195,6 +203,10 @@ class Game:
             "net_graph 0",
             "cl_showfps 0",
             f"playdemo {demo_rel}",
+            # Al cargar, la demo corre sola (unas 10 veces más rápido) hasta el primer paso por la consola: un tramo de
+            # los primeros segundos (la ronda 1) ya habría pasado. Si el motor lo toma al terminar la carga, queda en
+            # pausa en el tick 0; si no, no hace nada.
+            "demo_pause",
             "",
         ]))
         # Parámetros del launcher: se guarda el ini original y se restaura al final.
@@ -443,37 +455,51 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
                 prefix = os.path.join(frames_dir, name)
                 # Se salta un poco antes (j0) y esos cuadros se descartan en FFmpeg.
                 goto = ["demo_pause", f"demo_gototick {j0}"] + spec + ["hideconsole", "gameui_hide"]
-                game.step(goto)
-                # El salto avanza la demo a toda velocidad y tarda: mientras tanto, la consola escribe cada kill
-                # que pasa. Llegó cuando apareció la última kill anterior al tramo y el log se quedó quieto. La
-                # línea se busca desde el tramo anterior (la demo sigue un poco después de cada tramo).
-                since = game.step_pos if since is None else since
-                before = [k for k in all_kills if prev_end < k["tick"] < j0]
-                if game.restarted():
-                    # Para el juego el salto fue hacia atrás (la demo había seguido más de lo previsto después del
-                    # tramo anterior) y la reinició. Después del reinicio la demo no queda en pausa: se espera la
-                    # carga y se pausa y se salta otra vez, como al abrir el juego. Las kills se vuelven a escribir
-                    # desde el principio.
-                    log(f"Aviso: el salto a {j0} reinició la demo; vuelvo a saltar desde el principio.")
-                    game.wait_text("Redownloading all lightmaps", game.step_pos, 600)
-                    game.step(goto)
-                    if game.restarted():
-                        raise RuntimeError(f"{job['key']} tramo {i}: la demo se reinició dos veces")
-                    since, before = game.step_pos, [k for k in all_kills if k["tick"] < j0]
-                last = kill_line(before[-1]) if before else None
-                game.wait_seek(last, since)
-                # Si ya pasó la primera kill del tramo, la demo se pasó de largo: mejor fallar que grabar otra cosa.
                 after = next((k for k in all_kills if k["tick"] >= j0), None)
-                text = game.log_text(since)
-                if after and kill_line(after) in text[text.rfind(last) + len(last) if last and last in text else 0:]:
-                    raise RuntimeError(f"{job['key']} tramo {i}: la demo pasó de largo el tick {j0}")
+                for attempt in range(1, SEEK_TRIES + 1):
+                    game.step(goto)
+                    # El salto avanza la demo a toda velocidad y tarda: mientras tanto, la consola escribe cada kill
+                    # que pasa. Llegó cuando apareció la última kill anterior al tramo y el log se quedó quieto. La
+                    # línea se busca desde el tramo anterior (la demo sigue un poco después de cada tramo).
+                    since = game.step_pos if since is None else since
+                    before = [k for k in all_kills if prev_end < k["tick"] < j0]
+                    if game.restarted():
+                        # Para el juego el salto fue hacia atrás (la demo había seguido más de lo previsto después
+                        # del tramo anterior, o es un reintento) y la reinició. Después del reinicio la demo no queda
+                        # en pausa: se espera la carga y se pausa y se salta otra vez, como al abrir el juego. Las
+                        # kills se vuelven a escribir desde el principio.
+                        log(f"Aviso: el salto a {j0} reinició la demo; vuelvo a saltar desde el principio.")
+                        game.wait_text("Redownloading all lightmaps", game.step_pos, 600)
+                        game.step(goto)
+                        if game.restarted():
+                            raise RuntimeError(f"{job['key']} tramo {i}: la demo se reinició dos veces")
+                        since, before = game.step_pos, [k for k in all_kills if k["tick"] < j0]
+                    last = kill_line(before[-1]) if before else None
+                    game.wait_seek(last, since)
+                    # Si ya pasó la primera kill del tramo, la demo se pasó de largo (en el portátil del 2026-10-23,
+                    # una vez de dos en el primer salto): se vuelve a saltar, y si no se puede, mejor fallar que
+                    # grabar otra cosa.
+                    text = game.log_text(since)
+                    if not (after and kill_line(after) in text[text.rfind(last) + len(last) if last and last in text else 0:]):
+                        break
+                    if attempt == SEEK_TRIES:
+                        raise RuntimeError(f"{job['key']} tramo {i}: la demo pasó de largo el tick {j0} ({SEEK_TRIES} veces)")
+                    log(f"Aviso: la demo pasó de largo el tick {j0}; vuelvo a saltar ({attempt + 1} de {SEEK_TRIES}).")
+                    since = None  # el reintento busca la línea desde su propio paso
                 prev_end = t1
                 game.step(spec + ["hideconsole", "gameui_hide", f"startmovie {rel_frames}/{name}", "demo_resume"])
                 since = game.step_pos
                 t0w = time.time()
+                retried = False
                 while count_frames(prefix) < lead + frames + 2:
                     if time.time() - t0w > 300:
                         raise TimeoutError(f"{job['key']} tramo {i}: {count_frames(prefix)} de {lead + frames} cuadros en 300 s")
+                    # En el portátil, una vez, startmovie no grabó ningún cuadro y en la corrida siguiente el mismo tramo
+                    # salió bien: si a los 20 s no hay ninguno, se manda otra vez.
+                    if not retried and count_frames(prefix) == 0 and time.time() - t0w > 20:
+                        retried = True
+                        log(f"Aviso: {job['key']} tramo {i}: startmovie no grabó nada en 20 s; lo mando otra vez.")
+                        game.step(spec + ["hideconsole", "gameui_hide", f"startmovie {rel_frames}/{name}", "demo_resume"])
                     time.sleep(0.2)
                 game.stop_movie(prefix)
                 out[job["key"]][i] = prefix
@@ -513,6 +539,25 @@ def encode(cfg, prefixes, segs, tick_interval, out):
         for prefix in prefixes:
             for f in glob.glob(prefix + "*"):
                 os.remove(f)
+
+
+def light_version(cfg, src, dst, seconds, max_bytes=9_500_000):
+    """Versión liviana para Discord: 720p, CRF 28 y AAC de 96 kbps. Si igual pasa de max_bytes (una jugada larga), se
+    vuelve a codificar a la tasa de bits que entra. Devuelve el tamaño final."""
+    base = [cfg["ffmpeg"], "-y", "-loglevel", "error", "-i", src, "-vf", "scale=-2:720", "-c:v", "libx264",
+            "-preset", cfg.get("preset", "veryfast"), "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k",
+            "-movflags", "+faststart"]
+    subprocess.run(base[:-2] + ["-crf", "28"] + base[-2:] + [dst], check=True)
+    if os.path.getsize(dst) <= max_bytes:
+        return os.path.getsize(dst)
+    kbps = int(max_bytes * 8 * 0.92 / max(float(seconds), 1) / 1000) - 96
+    if kbps < 200:
+        raise RuntimeError(f"la jugada dura {seconds} s: no entra en {max_bytes} bytes con calidad aceptable")
+    subprocess.run(base[:-2] + ["-b:v", f"{kbps}k", "-maxrate", f"{kbps}k", "-bufsize", f"{kbps * 2}k"]
+                   + base[-2:] + [dst], check=True)
+    if os.path.getsize(dst) > max_bytes:
+        raise RuntimeError(f"la versión liviana pesa {os.path.getsize(dst)} bytes (máximo {max_bytes})")
+    return os.path.getsize(dst)
 
 
 def main():

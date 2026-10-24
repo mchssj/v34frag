@@ -16,6 +16,8 @@
   "demo_worker_url": "https://v34frag-demos.agusb06-ab.workers.dev",
   "r2_days": 15,
   "max_matches_per_run": 5,
-  "drive": false,
-  "gap_seconds": 15
+  "drive": true,
+  "gap_seconds": 15,
+  "discord": true,
+  "discord_top": 5
 }

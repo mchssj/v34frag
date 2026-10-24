@@ -128,6 +128,18 @@ class Drive:
             raise DriveError(f"Drive guardó {info.get('size')} bytes de {size}")
         return fid
 
+    def download(self, file_id, path):
+        """Baja el archivo a path (solo los que creó esta app)."""
+        req = urllib.request.Request(f"{API}/files/{file_id}?alt=media",
+                                     headers={"Authorization": f"Bearer {self.token()}"})
+        try:
+            with urllib.request.urlopen(req, timeout=300) as r, open(path, "wb") as f:
+                while chunk := r.read(1 << 20):
+                    f.write(chunk)
+        except urllib.error.HTTPError as e:
+            raise DriveError(f"GET {file_id}: {e.code} {e.read()[:300]!r}") from None
+        return path
+
     def delete(self, file_id):
         """Borra el archivo (si ya no estaba, no es error)."""
         st, _, _ = self._request("DELETE", f"{API}/files/{file_id}", ok=(200, 204, 404))
