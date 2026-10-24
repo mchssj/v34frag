@@ -1,0 +1,88 @@
+diff --git a/render/procesar.py b/render/procesar.py
+index 367985b..cca936c 100644
+--- a/render/procesar.py
++++ b/render/procesar.py
+@@ -193,8 +193,10 @@ def download_demo(cfg, match):
+         return path
+     url = cfg["demo_worker_url"].rstrip("/") + "/demo/" + match["external_id"]
+     log(f"Bajando la demo {match['external_id']} ({(size or 0) / 1e6:.0f} MB).")
++    # Con el User-Agent por defecto de Python, Cloudflare responde 403 (error 1010) en algunas máquinas.
++    req = urllib.request.Request(url, headers={"User-Agent": "CMLeague-render/1.0"})
+     try:
+-        with urllib.request.urlopen(url, timeout=600) as r, open(path + ".part", "wb") as f:
++        with urllib.request.urlopen(req, timeout=600) as r, open(path + ".part", "wb") as f:
+             while chunk := r.read(1 << 20):
+                 f.write(chunk)
+     except urllib.error.HTTPError as e:
+diff --git a/render/render_clip.py b/render/render_clip.py
+index e2cd7d0..6a8cf92 100644
+--- a/render/render_clip.py
++++ b/render/render_clip.py
+@@ -40,6 +40,7 @@ import leer_demo  # noqa: E402
+ 
+ AQUI = os.path.dirname(os.path.abspath(__file__))
+ LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
++SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
+ 
+ 
+ def log(msg):
+@@ -443,30 +444,37 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
+                 prefix = os.path.join(frames_dir, name)
+                 # Se salta un poco antes (j0) y esos cuadros se descartan en FFmpeg.
+                 goto = ["demo_pause", f"demo_gototick {j0}"] + spec + ["hideconsole", "gameui_hide"]
+-                game.step(goto)
+-                # El salto avanza la demo a toda velocidad y tarda: mientras tanto, la consola escribe cada kill
+-                # que pasa. Llegó cuando apareció la última kill anterior al tramo y el log se quedó quieto. La
+-                # línea se busca desde el tramo anterior (la demo sigue un poco después de cada tramo).
+-                since = game.step_pos if since is None else since
+-                before = [k for k in all_kills if prev_end < k["tick"] < j0]
+-                if game.restarted():
+-                    # Para el juego el salto fue hacia atrás (la demo había seguido más de lo previsto después del
+-                    # tramo anterior) y la reinició. Después del reinicio la demo no queda en pausa: se espera la
+-                    # carga y se pausa y se salta otra vez, como al abrir el juego. Las kills se vuelven a escribir
+-                    # desde el principio.
+-                    log(f"Aviso: el salto a {j0} reinició la demo; vuelvo a saltar desde el principio.")
+-                    game.wait_text("Redownloading all lightmaps", game.step_pos, 600)
++                after = next((k for k in all_kills if k["tick"] >= j0), None)
++                for attempt in range(1, SEEK_TRIES + 1):
+                     game.step(goto)
++                    # El salto avanza la demo a toda velocidad y tarda: mientras tanto, la consola escribe cada kill
++                    # que pasa. Llegó cuando apareció la última kill anterior al tramo y el log se quedó quieto. La
++                    # línea se busca desde el tramo anterior (la demo sigue un poco después de cada tramo).
++                    since = game.step_pos if since is None else since
++                    before = [k for k in all_kills if prev_end < k["tick"] < j0]
+                     if game.restarted():
+-                        raise RuntimeError(f"{job['key']} tramo {i}: la demo se reinició dos veces")
+-                    since, before = game.step_pos, [k for k in all_kills if k["tick"] < j0]
+-                last = kill_line(before[-1]) if before else None
+-                game.wait_seek(last, since)
+-                # Si ya pasó la primera kill del tramo, la demo se pasó de largo: mejor fallar que grabar otra cosa.
+-                after = next((k for k in all_kills if k["tick"] >= j0), None)
+-                text = game.log_text(since)
+-                if after and kill_line(after) in text[text.rfind(last) + len(last) if last and last in text else 0:]:
+-                    raise RuntimeError(f"{job['key']} tramo {i}: la demo pasó de largo el tick {j0}")
++                        # Para el juego el salto fue hacia atrás (la demo había seguido más de lo previsto después
++                        # del tramo anterior, o es un reintento) y la reinició. Después del reinicio la demo no queda
++                        # en pausa: se espera la carga y se pausa y se salta otra vez, como al abrir el juego. Las
++                        # kills se vuelven a escribir desde el principio.
++                        log(f"Aviso: el salto a {j0} reinició la demo; vuelvo a saltar desde el principio.")
++                        game.wait_text("Redownloading all lightmaps", game.step_pos, 600)
++                        game.step(goto)
++                        if game.restarted():
++                            raise RuntimeError(f"{job['key']} tramo {i}: la demo se reinició dos veces")
++                        since, before = game.step_pos, [k for k in all_kills if k["tick"] < j0]
++                    last = kill_line(before[-1]) if before else None
++                    game.wait_seek(last, since)
++                    # Si ya pasó la primera kill del tramo, la demo se pasó de largo (en el portátil del 2026-10-23,
++                    # una vez de dos en el primer salto): se vuelve a saltar, y si no se puede, mejor fallar que
++                    # grabar otra cosa.
++                    text = game.log_text(since)
++                    if not (after and kill_line(after) in text[text.rfind(last) + len(last) if last and last in text else 0:]):
++                        break
++                    if attempt == SEEK_TRIES:
++                        raise RuntimeError(f"{job['key']} tramo {i}: la demo pasó de largo el tick {j0} ({SEEK_TRIES} veces)")
++                    log(f"Aviso: la demo pasó de largo el tick {j0}; vuelvo a saltar ({attempt + 1} de {SEEK_TRIES}).")
++                    since = None  # el reintento busca la línea desde su propio paso
+                 prev_end = t1
+                 game.step(spec + ["hideconsole", "gameui_hide", f"startmovie {rel_frames}/{name}", "demo_resume"])
+                 since = game.step_pos
