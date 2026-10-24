@@ -1,0 +1,12 @@
+# Ajustes de pnpm para este proyecto (no es un monorepo). Los mismos que cloudflare/demo-worker.
+
+# Solo se instalan versiones publicadas hace al menos 7 días (en minutos), en modo estricto.
+minimumReleaseAge: 10080
+
+# Rechaza una versión publicada con menos garantías (provenance) que las anteriores.
+trustPolicy: no-downgrade
+
+# Paquetes autorizados a correr scripts de instalación (los dos de wrangler).
+allowBuilds:
+  esbuild: true
+  workerd: true

@@ -1,0 +1,17 @@
+{
+  "name": "cmleague-clips-worker",
+  "private": true,
+  "description": "Sirve los videos de los clips desde R2 (ver docs/bitacora/2026-10-23-clips-render-automatico).",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.146.0"
+  },
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=12"
+  }
+}
