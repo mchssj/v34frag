@@ -2,7 +2,12 @@
 
 ## Qué hace
 
-Las 5 mejores jugadas de cada mix se publican solas en un canal de Discord, una por mensaje, con su video. Las publica la máquina de render (`render/procesar.py`) al final de cada corrida, después de grabar.
+Las 5 mejores jugadas de cada mix se publican solas en un canal de Discord, una por mensaje, con su video. Las publica la máquina de render (`render/procesar.py`) en dos momentos de cada corrida:
+
+- **al empezar:** lo que haya quedado sin publicar de antes;
+- **después de grabar cada partida,** antes de pasar a la siguiente: así sus jugadas salen apenas están listas y no al final de la corrida.
+
+Publica de a 20 por pedido hasta vaciar la cola.
 
 El video que se ve en el chat es una copia liviana (720p, menos de 10 MB) que se sube a Discord como archivo adjunto. Discord la guarda mientras exista el mensaje, así que no vence. El mensaje lleva además el link "Ver en 1080p" al video de Google Drive, que tampoco vence.
 
@@ -32,7 +37,7 @@ sequenceDiagram
 | Qué jugadas | Las de puesto 1 a 5 (`discord_top`) de cada partida, con video listo (`done`) y sin publicar. Con el tope por partida en 5 (`clip_config`, desde el 2026-10-24), son todas las visibles |
 | Cuándo | Cuando la partida ya no tiene, entre esas 5, jugadas en cola o grabándose: salen juntas. Las que fallaron o se saltaron no frenan a las demás |
 | Orden | Partida más vieja primero y, dentro de cada una, del puesto 1 al 5 |
-| Las ya grabadas | Entran solas: el estado sale de la base |
+| Las ya grabadas | Entran solas, al empezar la próxima corrida: el estado sale de la base |
 
 ## El mensaje
 

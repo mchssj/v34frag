@@ -11,10 +11,10 @@ insert into render_workers (name, token_hash) values
 update clip_config set per_player = 2, per_match = 5 where id = 1;
 
 -- Tres partidas: A (vieja, todo grabado), B (más nueva, una de sus 5 mejores todavía en cola) y C (en vivo).
-insert into matches (id, kind, status, map, score1, score2, winner_side, played_at, external_id, demo_status) values
-  ('d15c0000-2410-4000-8000-00000000000a', 'mix', 'finished',  'cbble', 16, 13, 1, now() - interval '2 days', 'srv1-disc-a', 'uploaded'),
-  ('d15c0000-2410-4000-8000-00000000000b', 'mix', 'cancelled', 'dust2', 10,  8, null, now() - interval '1 day',  'srv1-disc-b', 'uploaded'),
-  ('d15c0000-2410-4000-8000-00000000000c', 'mix', 'live',      'nuke',   3,  2, null, now(),                     'srv1-disc-c', 'none');
+insert into matches (id, kind, status, map, score1, score2, played_at, external_id, demo_status) values
+  ('d15c0000-2410-4000-8000-00000000000a', 'mix', 'finished',  'cbble', 16, 13, now() - interval '2 days', 'srv1-disc-a', 'uploaded'),
+  ('d15c0000-2410-4000-8000-00000000000b', 'mix', 'cancelled', 'dust2', 10,  8, now() - interval '1 day',  'srv1-disc-b', 'uploaded'),
+  ('d15c0000-2410-4000-8000-00000000000c', 'mix', 'live',      'nuke',   3,  2, now(),                     'srv1-disc-c', 'none');
 
 -- Una jugada (ronda r, jugador j, n kills) con o sin video.
 create function pg_temp.jugada(p_match text, p_round integer, p_jugador integer, p_kills integer, p_video text)

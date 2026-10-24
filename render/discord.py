@@ -54,7 +54,7 @@ def clip_message(row):
     secs = row.get("video_seconds")
     desc = (f"{map_name(row['map'])} · ronda {row['round']} · {row['score1']}-{row['score2']}"
             + (f" · {float(secs):.0f} s" if secs else "")
-            + f"\n#{row['position']} de la partida")
+            + ("\nElegida por los admins" if row.get("forced") else f"\n#{row['position']} de la partida"))
     embed = {"title": title[:256], "description": desc,
              "color": CLUTCH_COLOR if str(row["type"]).startswith("clutch_") else TYPE_COLOR.get(row["type"], 0x6B7280)}
     if row.get("video_drive_id"):
@@ -99,6 +99,18 @@ def post(webhook, payload, file_path, filename="clip.mp4", tries=4):
                 continue
             raise DiscordError(f"Discord respondió {e.code}: {raw[:300]!r}") from None
     raise DiscordError("Discord siguió pidiendo esperar (429)")
+
+
+def delete(webhook, message_id):
+    """Borra un mensaje que publicó este webhook (por ejemplo, un clip grabado con la cámara equivocada)."""
+    req = urllib.request.Request(f"{webhook}/messages/{message_id}", method="DELETE", headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return 404
+        raise DiscordError(f"Discord respondió {e.code}: {e.read()[:300]!r}") from None
 
 
 def prueba(video, env_path):
