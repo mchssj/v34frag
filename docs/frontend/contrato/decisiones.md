@@ -109,3 +109,6 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-23 | Clutch | Empieza cuando queda último vivo de su equipo; el tipo es la cantidad de rivales vivos en ese momento. Cuenta si su equipo gana la ronda, aunque no los mate a todos o muera después de plantar. Un 1v3 que llega al 1v1 sigue siendo 1v3 | Daniel |
 | 2026-10-23 | Clips de partidas canceladas | Se guardan y se muestran | Daniel |
 | 2026-10-23 | Clips sin video | Por ahora la ronda y el segundo de la demo; el video es una fase aparte (render en una máquina propia). La web vieja no los muestra | Daniel |
+| 2026-10-23 | Video de los clips: cuáles | Se graban solas las jugadas visibles (las que dejan los topes, hoy 10 por partida y 2 por jugador), apenas termina la partida y su demo está en R2 | Daniel |
+| 2026-10-23 | Video de los clips: dónde | Los primeros 15 días en R2 (el `.mp4` con el reproductor de la web, servido por un Worker de la cuenta de Daniel) y para siempre en Google Drive (reproductor embebido). YouTube descartado: la API deja privados los videos de proyectos sin auditar y tiene cupo diario | Daniel |
+| 2026-10-23 | Video de los clips: calidad | 1080p a 60 cuadros, primera persona del jugador, con el feed de kills y sin el HUD del espectador | Daniel (1080p); propuesta aceptada (cámara) |

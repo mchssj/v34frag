@@ -11,8 +11,10 @@ const CONFIG = { priorities: PRIORITIES, per_player: 2, per_match: 10, split_gap
 const ROW = {
   id: '11111111-1111-4111-8111-111111111111', position: 1, type: 'ace', priority: 1, round: 14, round_seconds: 42, round_won: true,
   player_steamid: '76561199900000001', player_id: PLAYER, player_name: 'nickDelJuego', kills: 5, kill_ticks: [6600, 6700, 6800, 6900, 7000],
-  clutch_vs: null, clutch_start_tick: null, end_tick: null, tickrate: 66,
+  clutch_vs: null, clutch_start_tick: null, end_tick: null, tickrate: 66, demo_status: 'uploaded',
+  video_status: null, video_key: null, video_seconds: null, video_drive_id: null, video_in_r2: false,
 };
+const NO_VIDEO = { status: 'pending', url: null, embed_url: null, seconds: null };
 
 let key: TestKey;
 beforeAll(async () => {
@@ -38,7 +40,7 @@ function postgrest(handler: (url: URL) => Response | undefined) {
     }),
   );
 }
-const call = async (method: string, path: string, body?: unknown) =>
+const call = async (method: string, path: string, body?: unknown, env = testEnv()) =>
   makeApp().request(
     path,
     {
@@ -46,7 +48,7 @@ const call = async (method: string, path: string, body?: unknown) =>
       headers: { Authorization: `Bearer ${await signToken(key, userClaims(USER))}`, 'Content-Type': 'application/json' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     },
-    testEnv(),
+    env,
   );
 const withMatch = (rows: unknown[], extra?: (url: URL) => Response | undefined) => (url: URL) => {
   if (url.pathname.endsWith('/matches')) return Response.json({ id: MATCH });
@@ -109,12 +111,46 @@ describe('clips: respuestas', () => {
     expect(body.items[0]).toEqual({
       id: ROW.id, position: 1, type: 'ace', priority: 1, round: 14, round_seconds: 42, round_won: true,
       player: { id: PLAYER, alias: 'AliasWeb' }, game_nick: 'nickDelJuego', steam_id: null, kills: 5, kill_ticks: ROW.kill_ticks,
-      clutch_vs: null, clutch_start_tick: null, end_tick: null, tickrate: 66, demo_seconds: 100,
+      clutch_vs: null, clutch_start_tick: null, end_tick: null, tickrate: 66, demo_seconds: 100, video: NO_VIDEO,
     });
     // Sin kills: la jugada empieza en el inicio del clutch (990 / 66 = 15 s).
     expect(body.items[1]).toMatchObject({ player: null, steam_id: '76561199900000002', clutch_vs: 2, demo_seconds: 15 });
     // Bot y partida sin tickrate.
     expect(body.items[2]).toMatchObject({ player: null, steam_id: null, demo_seconds: null });
+  });
+
+  it('video: R2 los primeros días, Drive siempre, y sin demo nunca', async () => {
+    const MATCH_ID = '44444444-4444-4444-8444-444444444444';
+    const CLIP_ID = '55555555-5555-4555-8555-555555555555';
+    const key = `clips/${MATCH_ID}/${CLIP_ID}-20261023190000.mp4`;
+    const done = { video_status: 'done', video_key: key, video_seconds: 12.18, video_drive_id: '1AbC-dEf_123' };
+    const rows = [
+      { ...ROW, ...done, video_in_r2: true },
+      { ...ROW, ...done, video_in_r2: false },
+      { ...ROW, ...done, video_in_r2: true, video_drive_id: null },
+      { ...ROW, video_status: 'processing' },
+      { ...ROW, video_status: 'skipped' },
+      { ...ROW, demo_status: 'expired' },
+      { ...ROW, demo_status: 'pending' },
+    ].map((r, i) => ({ ...r, position: i + 1 }));
+    postgrest(withMatch(rows));
+    const env = testEnv({ CLIPS_BASE_URL: 'https://clips.test/' });
+    const items = (await json(await call('GET', `/api/v1/matches/${MATCH}/clips?per=50`, undefined, env))).items;
+    const drive = 'https://drive.google.com/file/d/1AbC-dEf_123/preview';
+    expect(items.map((c: { video: unknown }) => c.video)).toEqual([
+      { status: 'done', url: `https://clips.test/clip/${MATCH_ID}/${CLIP_ID}-20261023190000.mp4`, embed_url: drive, seconds: 12.18 },
+      { status: 'done', url: null, embed_url: drive, seconds: 12.18 },
+      { status: 'done', url: `https://clips.test/clip/${MATCH_ID}/${CLIP_ID}-20261023190000.mp4`, embed_url: null, seconds: 12.18 },
+      { status: 'processing', url: null, embed_url: null, seconds: null },
+      { status: 'skipped', url: null, embed_url: null, seconds: null },
+      { status: 'unavailable', url: null, embed_url: null, seconds: null },
+      NO_VIDEO,
+    ]);
+    // Sin CLIPS_BASE_URL no hay url: queda el reproductor de Drive.
+    postgrest(withMatch(rows.slice(0, 1)));
+    expect((await json(await call('GET', `/api/v1/matches/${MATCH}/clips`))).items[0].video).toMatchObject({ url: null, embed_url: drive });
+    const q = calls.find((x) => x.url.pathname.endsWith('/match_clip_list'))!.url.searchParams;
+    expect(q.get('select')).toContain('video_in_r2');
   });
 
   it('filtros y orden van a la base', async () => {

@@ -4,7 +4,7 @@ import { admin, createUser, localEnv } from './local';
 
 // Clips automáticos contra la Supabase local (migración 20261023120000_clips y replanteo 26).
 const app = createApp();
-const env = localEnv();
+const env = localEnv({ CLIPS_BASE_URL: 'https://clips.test' });
 let adminToken: string;
 let userToken: string;
 let before: Record<string, unknown> | null = null;
@@ -102,6 +102,30 @@ describe('clips de una partida', () => {
     expect(page.items.map((c: any) => c.type)).toEqual(['4k']);
     expect((await list('?sort=round')).items.map((c: any) => c.round)).toEqual([2, 3, 4, 9]);
     expect((await list('?sort=round&order=desc')).items.map((c: any) => c.round)).toEqual([9, 4, 3, 2]);
+  });
+
+  it('video: sin demo nunca; con la demo en R2, en cola y después listo (R2 y Drive)', async () => {
+    const a = admin();
+    expect((await list()).items.every((c: any) => c.video.status === 'unavailable')).toBe(true);
+    check(await a.from('matches').update({ demo_status: 'uploaded' }).eq('id', matchId));
+    const items = (await list()).items;
+    expect(items.every((c: any) => c.video.status === 'pending' && c.video.url === null)).toBe(true);
+    const ace = items[0];
+    const key = `clips/${matchId}/${ace.id}-20261023190000.mp4`;
+    check(
+      await a.from('match_clips').update({
+        video_status: 'done', video_key: key, video_bytes: 9_000_000, video_seconds: 12.18, video_drive_id: '1DriveDePrueba',
+        video_rendered_at: new Date().toISOString(),
+      }).eq('id', ace.id),
+    );
+    expect((await list()).items[0].video).toEqual({
+      status: 'done', url: `https://clips.test/clip/${matchId}/${ace.id}-20261023190000.mp4`,
+      embed_url: 'https://drive.google.com/file/d/1DriveDePrueba/preview', seconds: 12.18,
+    });
+    // A los 15 días se borra de R2: queda el reproductor de Drive.
+    check(await a.from('match_clips').update({ video_r2_deleted_at: new Date().toISOString() }).eq('id', ace.id));
+    expect((await list()).items[0].video).toMatchObject({ status: 'done', url: null, embed_url: 'https://drive.google.com/file/d/1DriveDePrueba/preview' });
+    check(await a.from('matches').update({ demo_status: 'none' }).eq('id', matchId));
   });
 
   it('partida sin clips: lista vacía; partida que no existe: 404', async () => {

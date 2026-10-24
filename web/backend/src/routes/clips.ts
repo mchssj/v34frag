@@ -6,7 +6,7 @@ import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { STEAM64 } from '../schemas/claim';
-import { ClipConfig, ClipConfigPatch, ClipList, ClipListQuery, CLIP_TYPES, type Clip } from '../schemas/clips';
+import { ClipConfig, ClipConfigPatch, ClipList, ClipListQuery, CLIP_TYPES, type Clip, type ClipVideo } from '../schemas/clips';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { MatchParam } from '../schemas/matches';
 
@@ -18,7 +18,7 @@ type Type = (typeof CLIP_TYPES)[number];
 const CONFIG_COLUMNS = 'priorities, per_player, per_match, split_gap_seconds, pre_seconds, post_seconds, updated_at, updated_by';
 const LIST_COLUMNS =
   'id, position, type, priority, round, round_seconds, round_won, player_steamid, player_id, player_name, kills, kill_ticks, ' +
-  'clutch_vs, clutch_start_tick, end_tick, tickrate';
+  'clutch_vs, clutch_start_tick, end_tick, tickrate, demo_status, video_status, video_key, video_seconds, video_drive_id, video_in_r2';
 
 /** La configuración con quién la cambió por última vez (su alias). */
 async function readConfig(c: C) {
@@ -59,10 +59,25 @@ type Row = {
   id: string | null; position: number | null; type: string | null; priority: number | null; round: number | null;
   round_seconds: number | null; round_won: boolean | null; player_steamid: string | null; player_id: string | null;
   player_name: string | null; kills: number | null; kill_ticks: number[] | null; clutch_vs: number | null;
-  clutch_start_tick: number | null; end_tick: number | null; tickrate: number | null;
+  clutch_start_tick: number | null; end_tick: number | null; tickrate: number | null; demo_status: string | null;
+  video_status: string | null; video_key: string | null; video_seconds: number | null; video_drive_id: string | null;
+  video_in_r2: boolean | null;
 };
 
-const toClip = (r: Row, aliases: Map<string, string>): z.infer<typeof Clip> => {
+// El video (fase C2, docs/bitacora/2026-10-23-clips-render-automatico): los primeros 15 días, el .mp4 del Worker de
+// clips; siempre, el reproductor de Drive. Sin demo (none, missing, expired) la jugada nunca va a tener video.
+const toVideo = (r: Row, clipsBase: string | undefined): z.infer<typeof ClipVideo> => {
+  const done = r.video_status === 'done';
+  const status = r.video_status ?? (r.demo_status === 'uploaded' || r.demo_status === 'pending' ? 'pending' : 'unavailable');
+  return {
+    status: status as z.infer<typeof ClipVideo>['status'],
+    url: done && r.video_in_r2 && clipsBase && r.video_key?.startsWith('clips/') ? `${clipsBase}/clip/${r.video_key.slice(6)}` : null,
+    embed_url: done && r.video_drive_id ? `https://drive.google.com/file/d/${encodeURIComponent(r.video_drive_id)}/preview` : null,
+    seconds: done && r.video_seconds != null ? Number(r.video_seconds) : null,
+  };
+};
+
+const toClip = (r: Row, aliases: Map<string, string>, clipsBase: string | undefined): z.infer<typeof Clip> => {
   const ticks = r.kill_ticks ?? [];
   // Donde empieza la jugada: la primera kill o, si no hubo, el inicio del clutch.
   const first = ticks[0] ?? r.clutch_start_tick;
@@ -84,6 +99,7 @@ const toClip = (r: Row, aliases: Map<string, string>): z.infer<typeof Clip> => {
     end_tick: r.end_tick,
     tickrate: r.tickrate,
     demo_seconds: r.tickrate && first != null ? Math.round((first / r.tickrate) * 10) / 10 : null,
+    video: toVideo(r, clipsBase),
   };
 };
 
@@ -101,7 +117,7 @@ export const clips = createRouter()
     const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'position');
     const linked = [...new Set(rows.map((r) => r.player_id).filter((x): x is string => !!x))];
     const aliases = linked.length ? new Map(mustHave(await sb.from('players').select('id, nick').in('id', linked)).map((x) => [x.id, x.nick])) : new Map<string, string>();
-    return c.json(envelope(rows.map((r) => toClip(r, aliases)), total, p), 200);
+    return c.json(envelope(rows.map((r) => toClip(r, aliases, c.var.config.CLIPS_BASE_URL)), total, p), 200);
   })
   .openapi(getConfig, async (c) => {
     c.header('Cache-Control', 'no-store');

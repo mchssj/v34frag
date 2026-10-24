@@ -11,6 +11,23 @@ export const ClipListQuery = listQuery(['position', 'round'], { sort: 'position'
   type: z.enum(CLIP_TYPES).optional().openapi({ description: 'Solo los de este tipo' }),
 });
 
+export const CLIP_VIDEO_STATUS = ['pending', 'processing', 'done', 'failed', 'skipped', 'unavailable'] as const;
+
+export const ClipVideo = z
+  .object({
+    status: z.enum(CLIP_VIDEO_STATUS).openapi({
+      description:
+        '`pending` (en cola), `processing` (grabándose), `done` (listo), `failed` (falló tres veces), `skipped` (no se puede grabar) ' +
+        'o `unavailable` (la partida no tiene demo: nunca va a tener video)',
+    }),
+    url: z.string().nullable().openapi({ description: 'El `.mp4` (con Range) mientras está en R2: los primeros 15 días. `null` si no' }),
+    embed_url: z.string().nullable().openapi({
+      description: 'El reproductor de Google Drive (`iframe`), para siempre. Usar `url` si viene y, si no, este. `null` si no está en Drive',
+    }),
+    seconds: z.number().nullable().openapi({ description: 'Duración del video. `null` sin video' }),
+  })
+  .openapi('ClipVideo');
+
 export const Clip = z
   .object({
     id: z.uuid(),
@@ -30,6 +47,7 @@ export const Clip = z
     end_tick: z.number().int().nullable().openapi({ description: 'Tick de la demo en que terminó la ronda (solo con clutch)' }),
     tickrate: z.number().int().nullable().openapi({ description: 'Ticks por segundo de la partida. `null` en partidas viejas' }),
     demo_seconds: z.number().nullable().openapi({ description: 'Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate' }),
+    video: ClipVideo,
   })
   .openapi('Clip');
 

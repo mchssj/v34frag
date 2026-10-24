@@ -129,7 +129,7 @@ El servidor manda una foto del mix al final de cada ronda. Si el servidor se cae
 
 ## 8g. Clips: jugadas destacadas (disponible desde el 2026-10-23)
 
-El servidor anota las jugadas destacadas de cada ronda en vivo (incluida la prórroga) y las manda con el resultado: **ace** (5 kills), **4k**, **3k** y **clutches ganados** (del 1v1 al 1v5). Por ahora son la ronda y el momento exacto dentro de la demo, **no un video**: el video se arma más adelante (fase C).
+El servidor anota las jugadas destacadas de cada ronda en vivo (incluida la prórroga) y las manda con el resultado: **ace** (5 kills), **4k**, **3k** y **clutches ganados** (del 1v1 al 1v5). Cada una trae la ronda y el momento exacto dentro de la demo y, cuando la máquina de render la grabó, **su video** (`video`, desde el 2026-10-23: unos minutos u horas después de terminar la partida).
 
 | Endpoint | Pantalla |
 |---|---|
@@ -140,5 +140,11 @@ El servidor anota las jugadas destacadas de cada ronda en vivo (incluida la pró
 - **Quién:** `player` (`{ id, alias }`, enlaza a su ficha; vale para su SteamID principal o uno adicional) o, sin ficha, `steam_id` para el perfil sin reclamar. Bots y NOSTEAM: los dos en `null`; mostrar `game_nick`.
 - **Cuándo:** "Ronda `round`, `m:ss`" con `round_seconds` (desde el fin del freezetime). `round_won: false` es una jugada de una ronda que su equipo perdió (un 3k o 4k igual cuenta).
 - **En la demo:** `demo_seconds` es el segundo de la demo donde empieza la jugada ("minuto 23:14 de la demo"), junto al botón "Descargar demo" del detalle. `null` en partidas sin `tickrate`. Los ticks crudos (`kill_ticks`, `clutch_start_tick`, `end_tick`, `tickrate`) son para el render de la fase C; el frontend no los necesita.
+- **Video (`video`):** `{ status, url, embed_url, seconds }`. Con `status: "done"`:
+  - si viene `url`, es el `.mp4` (los primeros 15 días): `<video src={url} controls preload="metadata">`. Admite saltar dentro del video (Range).
+  - si no, `embed_url` es el reproductor de Google Drive, para siempre: `<iframe src={embed_url} allow="autoplay; fullscreen" allowfullscreen>`. Es más lento que el `.mp4`.
+  - `seconds` es la duración, para mostrarla en la tarjeta.
+
+  Los demás estados no tienen video: `pending` (en cola) y `processing` (grabándose) se muestran como "Video en camino"; `failed`, `skipped` y `unavailable` (la partida no tiene demo) como "Sin video", y la jugada se muestra igual con la ronda y el segundo de la demo. Los videos se graban solos y la lista no avisa cuando cambian: se ven al volver a pedir el listado.
 - **Partidas canceladas o interrumpidas:** sus clips se muestran igual.
 - **Cambia la escala:** si un admin la cambia (sección [9](admin.md)), el orden y los topes cambian al instante en todas las partidas.

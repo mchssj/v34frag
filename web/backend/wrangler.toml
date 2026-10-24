@@ -24,6 +24,8 @@ GIT_SHA = "manual"
 CLIENT_IP_HEADER = "cf-connecting-ip"
 # Worker de demos: la API arma demo_url = <DEMO_BASE_URL>/demo/<match_uid>.
 DEMO_BASE_URL = "https://v34frag-demos.agusb06-ab.workers.dev"
+# Worker de clips (cuenta de Daniel, cloudflare/clips-worker): la API arma video.url = <CLIPS_BASE_URL>/clip/…
+CLIPS_BASE_URL = "https://cmleague-clips.cmleague.workers.dev"
 
 # Límite de intentos de login y registro (src/lib/ratelimit.ts, regla "auth").
 [[ratelimits]]
@@ -53,6 +55,7 @@ FRONTEND_URL = "https://csstv.pages.dev"
 GIT_SHA = "manual"
 CLIENT_IP_HEADER = "cf-connecting-ip"
 DEMO_BASE_URL = "https://v34frag-demos.agusb06-ab.workers.dev"
+CLIPS_BASE_URL = "https://cmleague-clips.cmleague.workers.dev"
 
 [[env.preview.ratelimits]]
 name = "RL_AUTH"

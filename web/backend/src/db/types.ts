@@ -112,6 +112,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"clip_video_trash": {
+                  Row: {
+                    "created_at": string,"id": number,"video_drive_id": string | null,"video_key": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: never,"video_drive_id"?: string | null,"video_key"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: never,"video_drive_id"?: string | null,"video_key"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"demo_workers": {
                   Row: {
                     "active": boolean,"created_at": string,"id": string,"last_seen_at": string | null,"name": string,"token_hash": string
@@ -376,13 +389,13 @@ isOneToOne: false
                   ]
                 },"match_clips": {
                   Row: {
-                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string,"end_tick": number | null,"id": string,"kill_ticks": (number)[],"match_id": string,"player_name": string,"player_steamid": string,"round": number,"round_seconds": number,"round_won": boolean
+                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string,"end_tick": number | null,"id": string,"kill_ticks": (number)[],"match_id": string,"player_name": string,"player_steamid": string,"round": number,"round_seconds": number,"round_won": boolean,"video_attempts": number,"video_bytes": number | null,"video_claimed_at": string | null,"video_drive_id": string | null,"video_error": string | null,"video_key": string | null,"video_r2_deleted_at": string | null,"video_rendered_at": string | null,"video_seconds": number | null,"video_status": string | null
                   }
                   Insert: {
-                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id": string,"player_name"?: string,"player_steamid": string,"round": number,"round_seconds"?: number,"round_won": boolean
+                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id": string,"player_name"?: string,"player_steamid": string,"round": number,"round_seconds"?: number,"round_won": boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_rendered_at"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
                   }
                   Update: {
-                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id"?: string,"player_name"?: string,"player_steamid"?: string,"round"?: number,"round_seconds"?: number,"round_won"?: boolean
+                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id"?: string,"player_name"?: string,"player_steamid"?: string,"round"?: number,"round_seconds"?: number,"round_won"?: boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_rendered_at"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
                   }
                   Relationships: [
                     {
@@ -990,6 +1003,19 @@ isOneToOne: false
                   }
                   Update: {
                     "id"?: number,"updated_at"?: string,"updated_by"?: string | null,"win_official"?: number,"win_pcw"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"render_workers": {
+                  Row: {
+                    "active": boolean,"created_at": string,"id": string,"last_seen_at": string | null,"name": string,"token_hash": string
+                  }
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"last_seen_at"?: string | null,"name": string,"token_hash": string
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"last_seen_at"?: string | null,"name"?: string,"token_hash"?: string
                   }
                   Relationships: [
                     
@@ -1959,7 +1985,7 @@ isOneToOne: false
                   ]
                 },"match_clip_list": {
                   Row: {
-                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string | null,"demo_status": string | null,"end_tick": number | null,"id": string | null,"kill_ticks": (number)[] | null,"kills": number | null,"match_id": string | null,"match_status": string | null,"player_id": string | null,"player_name": string | null,"player_steamid": string | null,"position": number | null,"priority": number | null,"round": number | null,"round_seconds": number | null,"round_won": boolean | null,"tickrate": number | null,"type": string | null
+                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string | null,"demo_status": string | null,"end_tick": number | null,"id": string | null,"kill_ticks": (number)[] | null,"kills": number | null,"match_id": string | null,"match_status": string | null,"player_id": string | null,"player_name": string | null,"player_steamid": string | null,"position": number | null,"priority": number | null,"round": number | null,"round_seconds": number | null,"round_won": boolean | null,"tickrate": number | null,"type": string | null,"video_drive_id": string | null,"video_in_r2": boolean | null,"video_key": string | null,"video_seconds": number | null,"video_status": string | null
                   }
                   Relationships: [
                     {
@@ -2690,8 +2716,33 @@ isOneToOne: false
 "claim_with_code":
 { Args: { "p_code": string,"p_nick"?: string,"p_steam": string,"p_token": string }; Returns: Json
                            },
+"clip_archive_due":
+{ Args: { "p_days"?: number,"p_limit"?: number,"p_token": string }; Returns: {
+              "clip_id": string,"video_key": string
+            }[]
+                           },
+"clip_archive_mark":
+{ Args: { "p_clip": string,"p_token": string }; Returns: boolean
+                           },
+"clip_render_claim":
+{ Args: { "p_token": string }; Returns: Json
+                           },
+"clip_render_done":
+{ Args: { "p_bytes": number,"p_clip": string,"p_drive_id"?: string,"p_key": string,"p_seconds": number,"p_token": string }; Returns: boolean
+                           },
+"clip_render_fail":
+{ Args: { "p_clip": string,"p_error": string,"p_final"?: boolean,"p_token": string }; Returns: string
+                           },
 "clip_set_config":
 { Args: { "p_per_match": number,"p_per_player": number,"p_post_seconds": number,"p_pre_seconds": number,"p_priorities": Json,"p_split_gap_seconds": number }; Returns: undefined
+                           },
+"clip_trash_done":
+{ Args: { "p_id": number,"p_token": string }; Returns: boolean
+                           },
+"clip_trash_list":
+{ Args: { "p_limit"?: number,"p_token": string }; Returns: {
+              "created_at": string,"id": number,"video_drive_id": string,"video_key": string
+            }[]
                            },
 "clip_type":
 { Args: { "p_clutch_vs": number,"p_kills": number,"p_priorities": Json,"p_won": boolean }; Returns: string
@@ -2709,6 +2760,9 @@ isOneToOne: false
                            },
 "create_pcw_post":
 { Args: { "p_best_of": number,"p_guests": (string)[],"p_maps": string,"p_name": string,"p_note": string,"p_players": (string)[],"p_starts_at": string,"p_team"?: string }; Returns: string
+                           },
+"create_render_worker_token":
+{ Args: { "p_name": string }; Returns: string
                            },
 "create_server_token":
 { Args: { "p_name": string }; Returns: string
@@ -2981,6 +3035,9 @@ isOneToOne: false
                            },
 "reject_team_request":
 { Args: { "p_user": string }; Returns: undefined
+                           },
+"render_auth":
+{ Args: { "p_token": string }; Returns: string
                            },
 "request_steam_unlink":
 { Args: { "p_note"?: string,"p_steam": string }; Returns: number

@@ -22,6 +22,12 @@ const EnvSchema = z.object({
     .url()
     .transform((s) => s.replace(/\/+$/, ''))
     .optional(),
+  // URL pública del Worker de clips (video en <CLIPS_BASE_URL>/clip/<partida>/<jugada>-<sufijo>.mp4 mientras está
+  // en R2). Sin ella no se arma video.url (queda el reproductor de Drive).
+  CLIPS_BASE_URL: z
+    .url()
+    .transform((s) => s.replace(/\/+$/, ''))
+    .optional(),
   // La API no la usa: la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
   // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),

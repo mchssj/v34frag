@@ -13,3 +13,5 @@ CLIENT_IP_HEADER=
 # SUPABASE_SERVICE_KEY=
 # URL pública del Worker de demos (sin barra final). Sin ella la API no arma demo_url.
 # DEMO_BASE_URL=https://<worker-de-demos>.workers.dev
+# URL pública del Worker de clips (sin barra final). Sin ella la API no arma video.url (queda el de Drive).
+# CLIPS_BASE_URL=https://cmleague-clips.cmleague.workers.dev
