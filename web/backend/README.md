@@ -18,6 +18,8 @@ API REST de la web v34frag: **Node 24 + Hono + TypeScript**, sobre Supabase (Aut
 
 ## Arrancar en local
 
+En **Windows con Docker Desktop**, el paso a paso desde cero (instalación, Git Bash y problemas frecuentes) está en [`docs/GUIA_BACKEND_LOCAL.md`](../../docs/GUIA_BACKEND_LOCAL.md). Los `pnpm db:*` se corren en **Git Bash**: desde PowerShell, `bash` es el de WSL y fallan.
+
 ```bash
 cd web/backend
 pnpm install --frozen-lockfile
