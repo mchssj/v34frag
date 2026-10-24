@@ -108,6 +108,34 @@ También se verificó por HTTP: CORS desde `localhost:5173` (con `Retry-After` y
 
 13. **Segundo rebase el 2026-10-16** sobre `0c0b433` (18 commits más: ajustes de ELO, configuración del ELO, demos, `!claim` y la entrega del frontend del 16/10), sin conflictos. Tipos regenerados; no se rompió nada. Según la entrega, el aviso del registro ahora explica que el SteamID se vincula con `!claim` (antes decía que lo vinculaba un admin).
 14. **Copia de producción en la base local** (autorizada por el equipo de backend el 2026-10-16): mismo procedimiento que el ensayo del ELO (`docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/`). `pg_dump --data-only` de solo lectura (todo `public` y `auth.users`) a `~/.v34frag/prod-copy/`, fuera del repo; carga sobre el esquema de producción con `session_replication_role = replica` y replanteo 01 a 15 encima. Resultado: 40 cuentas, 72 jugadores, 17 equipos (89 miembros), 19 partidas y 41 ELO. Se usó el `pg_dump` del contenedor local (no hay uno instalado en esta máquina) y el usuario del pooler `postgres.<ref>` (el `PG_USER` del `.env` de la raíz es `postgres` y el pooler lo rechaza). Producción no se modificó. Las 15 pruebas de punta a punta pasan también con estos datos.
+15. **Tercer rebase el 2026-10-19** sobre `5b1c934` (17 commits más: mixes en vivo, grupos de doble eliminación y sorteo, `preferences.theme_fx`, plugin 2.2.0 con `!claim`, estado de los servidores, cambio de contraseña y "mis partidas").
+    - **Conflictos:** solo en la tabla del índice de la bitácora (las dos ramas sumaron filas), resuelto conservando todas en orden de fecha. Respaldo previo en la rama local `backup/frontend-pre-rebase-2026-10-19` y en un stash.
+    - **Tipos regenerados:** solo se rompió `CompetitionSection`, que necesitaba el nombre de la plantilla nueva `groups_double` ("Grupos de doble eliminación + playoffs").
+    - **Base local recargada:** los replanteos 04, 06 y 10 cambiaron y hay una migración nueva (`20261017120000`). Como cada replanteo aborta si se aplica dos veces, se recargó todo: esquema de producción, copia de producción, replanteo 01 a 19 y `local-overrides.sql`. Antes se guardó un respaldo de los datos locales en `~/.v34frag/`, fuera del repo, y se recuperó de ahí la contraseña local de prueba de KilluaZ.
+    - **Límite de logins en las e2e:** la suite gasta unos 12 logins y registros, y la API deja 10 por minuto en una ventana fija. Pasaba o fallaba según cómo cayeran en la ventana, y con la API recién levantada falló dos veces seguidas. Ahora `e2e/authBudget.ts` (`spendAuth`) espera antes de cada login o registro hasta que en los últimos 61 s haya menos de 10; si ningún tramo de 60 s pasa de 10, tampoco lo pasa ninguna ventana fija. La espera no cuenta para el tiempo máximo de la prueba. Dos corridas seguidas: 38 de 38.
+    - **Verificación:** typecheck, lint, 145 pruebas unitarias y 38 e2e en verde.
+16. **Cuarto rebase el 2026-10-19** sobre `897668b` (6 commits más: ping, modo, región y mixes en vivo en el estado de los servidores; desvincular un SteamID con aprobación, elegir el principal y la fecha de cada SteamID; plugins `csstv_sell` y `csstv_calladmin`).
+    - **Conflictos:** solo en la tabla del índice de la bitácora, otra vez. Se ordenó por fecha y se quitó una fila que quedaba repetida. Respaldo en la rama `backup/frontend-pre-rebase-2026-10-19b` y en un stash.
+    - **Base local:** los replanteos `20_servidores_modo_region.sql` y `21_steam_desvincular.sql` son nuevos y no se cambió ninguno anterior, así que se aplicaron encima, sin recargar. Antes, un respaldo de los datos locales en `~/.v34frag/`.
+    - **Tipos regenerados:**
+      - cada SteamID de `GET /me/claim-code` suma `added_at` y `unlink_pending`; se actualizaron los datos de prueba;
+      - `GET /me/steam-requests` ahora mezcla pedidos de SteamID adicional (`kind: add`) y de desvincular (`kind: remove`); la lista de pendientes de Vinculación filtra `kind: "add"`, porque si no, un pedido de desvincular aparecería como una cuenta pendiente.
+    - **Verificación:** typecheck, lint, 174 pruebas unitarias y 39 e2e en verde.
+17. **Quinto rebase el 2026-10-22** sobre `3b9ccbc` (4 commits más: cancelar el pedido de desvincular, fecha del último cambio de contraseña, arreglo del 500 con sesión cerrada, y `!whois` con los consejos del plugin 2.4.0).
+    - **Conflictos:** solo el índice de la bitácora. Se quitó una fila vieja de `!sell` que venía en el stash. Respaldo en la rama `backup/frontend-pre-rebase-2026-10-20` y en un stash.
+    - **Base local:** las migraciones `20261019180000_whois` y `20261020120000_whois_menu` (solo funciones) y los replanteos 22 y 23 se aplicaron encima, en el orden de la recarga completa, sin errores. Respaldo previo en `~/.v34frag/`.
+    - **Tipos regenerados:**
+      - `AuthUser` suma `password_changed_at`; se actualizó un dato de prueba;
+      - suma `DELETE /api/v1/me/steam/{steamid}/unlink` y el estado `cancelled` en los pedidos.
+    - **Bug del 500, resuelto:** el backend trata `AuthSessionMissingError` como `401`. Verificado contra la API local: con el token de una sesión cerrada, `/auth/me` responde `401`.
+    - **Verificación:** typecheck, lint, 183 pruebas unitarias y 40 e2e en verde.
+18. **Sexto rebase el 2026-10-24** sobre `0a6e1bb` (26 commits más: temporadas con medallas y reinicio del nivel 10, ajustes manuales de ELO, clips automáticos con video y publicación en Discord, HUD de observer, política de privacidad y ajustes del servidor).
+    - **Conflictos:** ninguno; el stash volvió sin tocar el índice. Respaldo en la rama `backup/frontend-pre-rebase-2026-10-24`.
+    - **Base local:** las migraciones `20261023120000_clips` (sin transacción propia, así que se aplicó con `psql -1`), `20261023180000_clips_video` y `20261024120000_clips_discord`, y los replanteos 24, 25 y 26, encima y en el orden de la recarga completa, sin errores. Respaldo previo en `~/.v34frag/`.
+    - **Tipos regenerados:** suman temporadas, clips y ajustes de ELO, sin romper nada del frontend.
+    - **Cambio del contrato que rompe:** se borraron `POST /admin/elo/recompute` y `/simulate`. El frontend no los usa.
+    - **`CLIPS_BASE_URL`:** variable nueva y opcional del backend; no hace falta en local.
+    - **Verificación:** typecheck, lint, 186 pruebas unitarias y 40 e2e en verde.
 
 ## Pendientes para el backend
 
@@ -117,7 +145,8 @@ También se verificó por HTTP: CORS desde `localhost:5173` (con `Retry-After` y
 
 - **Exportar el backend con `git archive` en Windows:** con `core.autocrlf=true`, `git archive` convierte los archivos a CRLF y la migración 04 del replanteo fallaba (busca un texto exacto dentro de una función). Se resolvió exportando con `git -c core.autocrlf=false archive`; los archivos quedan idénticos al repo. No es un problema del backend.
 - **Rutas largas en Windows:** la CLI de Supabase no arrancaba desde la copia en el scratchpad porque la ruta pasaba los 260 caracteres. Se usó un *junction* con una ruta corta y el binario directo. No le pasa a quien trabaja en `web/backend`.
-- **Servidor de desarrollo después de cada rebase:** Vite queda con módulos que no encuentra mientras git mueve los archivos. Se resuelve reiniciándolo (pasó en los dos rebases).
+- **Servidor de desarrollo después de cada rebase:** Vite queda con módulos que no encuentra mientras git mueve los archivos. Se resuelve reiniciándolo (pasó en los dos rebases; en el tercero se reinició antes de probar).
+- **`19_listado_servidor.sql` viene con CRLF** en el commit del backend (los demás replanteos están en LF). A psql no le afecta, porque el CR es espacio en blanco, y se cargó tal cual. Conviene avisarle al backend para que lo normalice.
 
 ## Cómo revertir
 
