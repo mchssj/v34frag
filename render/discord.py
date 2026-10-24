@@ -54,7 +54,7 @@ def clip_message(row):
     secs = row.get("video_seconds")
     desc = (f"{map_name(row['map'])} · ronda {row['round']} · {row['score1']}-{row['score2']}"
             + (f" · {float(secs):.0f} s" if secs else "")
-            + f"\n#{row['position']} de la partida")
+            + ("\nElegida por los admins" if row.get("forced") else f"\n#{row['position']} de la partida"))
     embed = {"title": title[:256], "description": desc,
              "color": CLUTCH_COLOR if str(row["type"]).startswith("clutch_") else TYPE_COLOR.get(row["type"], 0x6B7280)}
     if row.get("video_drive_id"):
