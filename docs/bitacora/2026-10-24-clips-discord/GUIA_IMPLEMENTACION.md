@@ -52,6 +52,7 @@ Implementado y probado en local el 2026-10-24. La migración ya está en producc
 
 ## En qué se apartó del plan
 
+- **Se publica al empezar la corrida y después de cada partida grabada,** no solo al final (Daniel, 2026-10-24: para no hacer esperar a los jugadores). Cada llamada publica de a 20 hasta vaciar la cola. Las que fallan en esa llamada no se reintentan hasta la siguiente.
 - **Un error de una jugada no frena a las demás.** Solo un error de Discord corta la publicación.
 - **El título lleva color por tipo y el adjunto se llama con el tipo y la ronda** (`4k_10.mp4`).
 - **Con el tope por partida en 5, el top 5 de Discord son todas las visibles.** `discord_top` queda para publicar menos si hace falta.

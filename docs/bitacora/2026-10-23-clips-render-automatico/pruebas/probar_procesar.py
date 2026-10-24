@@ -86,7 +86,8 @@ def main():
     # Configuración: la de la máquina, con carpetas temporales y video chico (la prueba no mide calidad).
     cfg = json.load(open(os.path.join(RAIZ, "render", "config.json"), encoding="utf-8"))
     revisar = os.path.join(cfg["out_dir"], "prueba_c2")
-    cfg.update({"work_dir": os.path.join(tmp, "trabajo"), "out_dir": os.path.join(tmp, "videos"), "drive": False})
+    cfg.update({"work_dir": os.path.join(tmp, "trabajo"), "out_dir": os.path.join(tmp, "videos"), "drive": False,
+                "discord": False})  # nunca publicar jugadas de prueba en el canal real
     if not juego:
         cfg.update({"client_dir": os.path.join(tmp, "cliente"), "height": 180, "width": 320})
         os.makedirs(os.path.join(tmp, "cliente", "cstrike"))

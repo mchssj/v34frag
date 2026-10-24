@@ -9,8 +9,9 @@ En cada corrida:
   3. Graba todas sus jugadas en una sola sesión del juego, pasa cada una a .mp4, la sube a R2 (y a Google Drive, si
      está activado), verifica el tamaño con HEAD, la ata a su jugada (clip_render_done) y borra el .mp4.
   4. Repite con la siguiente partida, hasta --max-partidas. Una jugada que falla vuelve a la cola (clip_render_fail).
-  5. Publica en Discord las mejores jugadas con video que todavía no se publicaron (clip_discord_pending), con una
-     versión liviana del video adjunta, y las marca (clip_discord_mark). Con "discord": true en config.json.
+  5. Discord (con "discord": true en config.json): al empezar la corrida y después de grabar cada partida, publica
+     las mejores jugadas con video que todavía no salieron (clip_discord_pending), con una versión liviana del video
+     adjunta, y las marca (clip_discord_mark).
   6. Una vez por día: borra de R2 los videos con más de r2_days días que ya están en Drive (clip_archive_due) y
      vacía la papelera (clip_trash_list).
 
@@ -312,59 +313,65 @@ def process_match(cfg, api, r2, drive, job):
 # ---- Discord ----
 
 def publish_discord(cfg, api, r2, drive, webhook):
-    """Publica las mejores jugadas con video que todavía no salieron en Discord, en orden de partida y de puesto.
+    """Publica las mejores jugadas con video que todavía no salieron en Discord, en orden de partida y de puesto, de a
+    20 por pedido hasta vaciar la cola. Se llama al empezar la corrida y después de grabar cada partida, así nadie
+    espera a que termine la corrida para ver sus clips.
 
     Antes de marcar en la base, el id del mensaje se anota en work_dir/discord_publicados.json: si la marca falla, la
-    próxima corrida la marca sin volver a publicarla. Si Discord falla, se corta y se reintenta en la próxima corrida."""
+    próxima vez se marca sin volver a publicarla. Si Discord falla, se corta y se reintenta la próxima vez. Devuelve
+    False si Discord falló."""
     import discord
     state_path = os.path.join(cfg["work_dir"], "discord_publicados.json")
     try:
         posted = json.load(open(state_path, encoding="utf-8"))
     except (OSError, ValueError):
         posted = {}
-    rows = api.rpc("clip_discord_pending", p_top=cfg.get("discord_top", 5), p_limit=20) or []
-    if not rows:
-        return
-    log(f"Discord: {len(rows)} jugadas para publicar.")
     folder = os.path.join(cfg["work_dir"], "discord")
     os.makedirs(folder, exist_ok=True)
-    for row in rows:
-        cid = row["clip_id"]
-        if cid in posted:
-            api.rpc("clip_discord_mark", p_clip=cid, p_message_id=posted[cid])
-            continue
-        src = os.path.join(folder, f"{cid}.mp4")
-        light = os.path.join(folder, f"{cid}_720.mp4")
-        try:
-            # El video: de R2 mientras está (más rápido) y si no, de Drive.
-            if row.get("video_in_r2") and row.get("video_key"):
-                st, data = r2.get(row["video_key"])
-                if st != 200:
-                    raise RuntimeError(f"R2 GET {st}")
-                open(src, "wb").write(data)
-            elif row.get("video_drive_id") and drive:
-                drive.download(row["video_drive_id"], src)
-            else:
-                log(f"  {cid[:8]}: sin video en R2 ni en Drive; no se puede publicar")
+    skipped = set()  # las que no se pudieron publicar en esta llamada (no se reintentan hasta la próxima)
+    while True:
+        rows = [r for r in api.rpc("clip_discord_pending", p_top=cfg.get("discord_top", 5), p_limit=20) or []
+                if r["clip_id"] not in skipped]
+        if not rows:
+            return True
+        log(f"Discord: {len(rows)} jugadas para publicar.")
+        for row in rows:
+            cid = row["clip_id"]
+            if cid in posted:
+                api.rpc("clip_discord_mark", p_clip=cid, p_message_id=posted[cid])
                 continue
-            size = render_clip.light_version(cfg, src, light, row.get("video_seconds") or 30)
-            msg = discord.post(webhook, discord.clip_message(row), light,
-                               filename=f"{row['type']}_{row['round']}.mp4")
-            posted[cid] = msg
-            json.dump(posted, open(state_path, "w", encoding="utf-8"))
-            api.rpc("clip_discord_mark", p_clip=cid, p_message_id=msg)
-            log(f"  {cid[:8]}: publicada en Discord ({discord.type_label(row['type'])} de {row['player_name']}, "
-                f"{size / 1e6:.1f} MB)")
-        except discord.DiscordError as e:
-            log(f"  {cid[:8]}: Discord falló, sigo en la próxima corrida: {e}")
-            break
-        except Exception as e:  # noqa: BLE001 — un problema de esta jugada no frena a las demás
-            log(f"  {cid[:8]}: no se pudo publicar en Discord: {e}")
-        finally:
-            for f in (src, light):
-                if os.path.exists(f):
-                    os.remove(f)
-        time.sleep(2)
+            src = os.path.join(folder, f"{cid}.mp4")
+            light = os.path.join(folder, f"{cid}_720.mp4")
+            try:
+                # El video: de R2 mientras está (más rápido) y si no, de Drive.
+                if row.get("video_in_r2") and row.get("video_key"):
+                    st, data = r2.get(row["video_key"])
+                    if st != 200:
+                        raise RuntimeError(f"R2 GET {st}")
+                    open(src, "wb").write(data)
+                elif row.get("video_drive_id") and drive:
+                    drive.download(row["video_drive_id"], src)
+                else:
+                    raise RuntimeError("sin video en R2 ni en Drive")
+                size = render_clip.light_version(cfg, src, light, row.get("video_seconds") or 30)
+                msg = discord.post(webhook, discord.clip_message(row), light,
+                                   filename=f"{row['type']}_{row['round']}.mp4")
+                posted[cid] = msg
+                json.dump(posted, open(state_path, "w", encoding="utf-8"))
+                api.rpc("clip_discord_mark", p_clip=cid, p_message_id=msg)
+                log(f"  {cid[:8]}: publicada en Discord ({discord.type_label(row['type'])} de {row['player_name']}, "
+                    f"{size / 1e6:.1f} MB)")
+            except discord.DiscordError as e:
+                log(f"  {cid[:8]}: Discord falló, sigo la próxima vez: {e}")
+                return False
+            except Exception as e:  # noqa: BLE001 — un problema de esta jugada no frena a las demás
+                log(f"  {cid[:8]}: no se pudo publicar en Discord: {e}")
+                skipped.add(cid)
+            finally:
+                for f in (src, light):
+                    if os.path.exists(f):
+                        os.remove(f)
+            time.sleep(2)
 
 
 # ---- Tareas diarias ----
@@ -436,11 +443,19 @@ def main():
         import drive as drive_mod
         drive = drive_mod.Drive(drive_mod.load_env(a.env))
 
+    # Discord: al empezar (lo que haya quedado de antes) y después de cada partida grabada.
+    webhook = env.get("DISCORD_CLIPS_WEBHOOK") if cfg.get("discord") else None
+    if cfg.get("discord") and not webhook:
+        log("Aviso: \"discord\" está activado pero falta DISCORD_CLIPS_WEBHOOK en el .env.")
+    publish = (lambda: publish_discord(cfg, api, r2, drive, webhook)) if webhook else (lambda: None)
+    publish()
+
     for _ in range(a.max_partidas or cfg.get("max_matches_per_run", 5)):
         job = api.rpc("clip_render_claim")
         if not job:
             break
         result = process_match(cfg, api, r2, drive, job)
+        publish()
         # La demo se borra cuando ya no le quedan jugadas por reintentar.
         if all(st in ("done", "skipped", "failed", "gone") for st in result.values()):
             demo = os.path.join(cfg["work_dir"], "demos", job["match"]["external_id"] + ".dem")
@@ -451,11 +466,6 @@ def main():
             # los tres intentos en un minuto. El reintento queda para la próxima corrida.
             log("Quedaron jugadas para reintentar: sigo en la próxima corrida.")
             break
-    if cfg.get("discord"):
-        if env.get("DISCORD_CLIPS_WEBHOOK"):
-            publish_discord(cfg, api, r2, drive, env["DISCORD_CLIPS_WEBHOOK"])
-        else:
-            log("Aviso: \"discord\" está activado pero falta DISCORD_CLIPS_WEBHOOK en el .env.")
     if not a.sin_diario:
         daily(cfg, api, r2, drive)
 
