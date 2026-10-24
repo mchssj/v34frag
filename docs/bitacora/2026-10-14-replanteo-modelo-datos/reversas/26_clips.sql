@@ -1,5 +1,5 @@
 -- Inversa de supabase/replanteo/26_clips.sql: match_clip_list vuelve a buscar la ficha solo por players.steam_id,
--- como en la migración 20261023120000_clips.sql. Los clips no cambian.
+-- como en la migración 20261023180000_clips_video.sql. Los clips no cambian.
 begin;
 
 do $$
@@ -33,7 +33,10 @@ select r.id, r.match_id, r.rank_match::integer as position, r.type, r.priority, 
        r.round_seconds::integer as round_seconds, r.round_won,
        r.player_steamid, pl.id as player_id, coalesce(nullif(r.player_name, ''), pl.nick) as player_name,
        cardinality(r.kill_ticks) as kills, r.kill_ticks, r.clutch_vs::integer as clutch_vs, r.clutch_start_tick, r.end_tick,
-       m.tickrate::integer as tickrate, m.demo_status, m.status as match_status, r.created_at
+       m.tickrate::integer as tickrate, m.demo_status, m.status as match_status, r.created_at,
+       -- (20261023180000) video
+       r.video_status, r.video_key, r.video_seconds, r.video_drive_id,
+       (r.video_status = 'done' and r.video_r2_deleted_at is null) as video_in_r2
   from por_partida r
   join matches m on m.id = r.match_id
   left join players pl on pl.steam_id = r.player_steamid

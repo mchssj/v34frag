@@ -5,7 +5,8 @@
 --     en una partida suman juntos. Un SteamID sin ficha sigue contando solo.
 --   - Los clips guardan el SteamID que mandó el servidor, no la ficha: un SteamID adicional que se suma después
 --     también lleva sus clips viejos a la ficha.
--- Necesita la migración 20261023120000_clips.sql (producción) y la 15 (steam_owner).
+-- Necesita las migraciones 20261023120000_clips.sql y 20261023180000_clips_video.sql (producción) y la 15
+-- (steam_owner).
 -- NO aplicar en producción antes del corte (ver README.md).
 begin;
 
@@ -22,7 +23,7 @@ begin
   end if;
 end $$;
 
--- Igual que en 20261023120000_clips.sql, salvo la ficha (owner_id) y el tope por ficha.
+-- Igual que en 20261023180000_clips_video.sql, salvo la ficha (owner_id) y el tope por ficha.
 create or replace view public.match_clip_list with (security_invoker = true) as
 with cfg as (
   select priorities, per_player, per_match from clip_config where id = 1
@@ -48,7 +49,10 @@ select r.id, r.match_id, r.rank_match::integer as position, r.type, r.priority, 
        r.round_seconds::integer as round_seconds, r.round_won,
        r.player_steamid, pl.id as player_id, coalesce(nullif(r.player_name, ''), pl.nick) as player_name,
        cardinality(r.kill_ticks) as kills, r.kill_ticks, r.clutch_vs::integer as clutch_vs, r.clutch_start_tick, r.end_tick,
-       m.tickrate::integer as tickrate, m.demo_status, m.status as match_status, r.created_at
+       m.tickrate::integer as tickrate, m.demo_status, m.status as match_status, r.created_at,
+       -- (20261023180000) video
+       r.video_status, r.video_key, r.video_seconds, r.video_drive_id,
+       (r.video_status = 'done' and r.video_r2_deleted_at is null) as video_in_r2
   from por_partida r
   join matches m on m.id = r.match_id
   left join players pl on pl.id = r.owner_id
