@@ -55,6 +55,9 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | Nombre CMLeague (2026-10-22): fuentes y `.smx` de reporter 2.4.1, sell 1.0.1, calladmin 1.0.1 y allchat 1.0.2, cfgs de `server/cfg/sourcemod/`, `CLAUDE.md` y la bitácora `2026-10-22-nombre-cmleague/` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | RBK igual al real (2026-10-22): `server/cfg/sourcemod/csstv_reporter.cfg` y la bitácora `2026-10-22-rbk-igual-al-real/`, y la regla de configuración obligatoria en `CLAUDE.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | Clips automáticos (2026-10-23): migración `20261023120000`, replanteo `26` con su inversa y sus pruebas, `csstv/clips.inc` y los cambios del reporter 2.5.0 (`.sp` y `.smx`), `csstv_reporter.cfg`, `web/backend` (rutas, esquemas, tipos y pruebas), contrato del frontend y la bitácora `2026-10-22-clips-automaticos/` | Commiteado el 2026-10-23 en la rama `feat/backend-api-fase-1` (sin push) |
+| Video de los clips (2026-10-23): `render/` (C1 y C2: lector de demos, render, `procesar.py`, R2, Drive, tarea y config de ejemplo), la migración `20261023180000_clips_video.sql`, la `26` y su inversa con el video, `cloudflare/clips-worker/`, `web/backend` (`video` en los clips, `CLIPS_BASE_URL`, tipos y pruebas), el contrato del frontend, `privacidad.html`, las bitácoras `2026-10-23-clips-video/` y `2026-10-23-clips-render-automatico/` y sus filas en `bitacora/README.md` | Commiteado el 2026-10-23 en la rama `feat/backend-api-fase-1` (sin push) |
+| `package.json` vacío en la raíz (el de `npm init -y`, apareció el 2026-10-23 a las 21:38) | Sin commit. No es de ningún requerimiento: preguntarle a Daniel; si nadie lo usa, se borra |
+| `docs/GUIA_BACKEND_LOCAL.md` y el cambio de `web/backend/README.md` que la enlaza | Sin commit. No son de los clips |
 | `.idea/`, `message.txt`, `fb.jpg`, `sg.jpg` e `image.png` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
@@ -288,8 +291,31 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:**
   - el backend (`GET /api/v1/matches/{id}/clips` y `/admin/clips/config`) y el replanteo `26` salen con el corte;
   - la galería en el frontend nuevo (contrato, sección 8g) y publicar `CHANGELOG_DISCORD.txt` cuando esté;
-  - **fase C (video):** requerimiento aparte. Empieza con una prueba de concepto en el portátil de Daniel (Asus E1504FA) con demos de R2. Ahí se mide el desfase exacto de ticks contra el `.dem`. Las demos vencen a los 90 días (`RETENTION_DAYS`), así que los clips más viejos que eso no van a tener video, salvo que se decida guardar más tiempo esas demos.
+  - **fase C (video):** la **prueba de concepto (C1) está hecha** en la PC de Daniel (2026-10-23, [`2026-10-23-clips-video`](bitacora/2026-10-23-clips-video/)): lector de demos validado, render automático a 720p y 1080p, subida a R2. Falta probarla en el portátil. La **grabación automática (C2)** está aprobada e implementada ([`2026-10-23-clips-render-automatico`](bitacora/2026-10-23-clips-render-automatico/)); falta la prueba con el juego y desplegar. Ver el punto 1.17.
 - **Bitácora:** [`2026-10-22-clips-automaticos`](bitacora/2026-10-22-clips-automaticos/)
+
+### 1.17 Video de los clips (fase C): grabación automática implementada, falta probar con el juego y desplegar
+
+- **C1, prueba de concepto (hecha el 2026-10-23, sin commit):** `render/` (`leer_demo.py`, `render_clip.py`, `r2.py`, `config.example.json`). Graba una jugada de una demo con una copia del cliente ClientMod (`D:\CMLeague_Render\ClientMod`) y FFmpeg, sin intervención salvo un aviso de UAC. Corre como administrador y maneja el juego escribiendo en su consola (todo lo demás falla: ver la documentación). 12,2 s de video: 5,1 MB y 82 s a 720p; 8,7 MB y 119 s a 1080p, en la PC de Daniel.
+  - Los primeros cuadros sin el arma y los nombres con comillas se resolvieron en C2 (medio segundo de más que se descarta; las comillas quedan `skipped`). La prueba en el portátil pasa al paso 6 de C2.
+- **C2, grabación automática (aprobada e implementada el 2026-10-23; base, Worker y Drive en producción; falta el portátil):**
+  - **Qué hace:** tarea programada cada 10 min (`render/procesar.py`) que toma las jugadas visibles sin video, baja la demo, graba una partida por sesión, sube cada video a R2 (15 días) y a Google Drive (siempre), lo ata a su fila de `match_clips` y borra lo local.
+  - **Piezas:**
+    - la migración `20261023180000_clips_video.sql`, con la `26` y su inversa actualizadas;
+    - el Worker `cloudflare/clips-worker`;
+    - `video` en `GET /api/v1/matches/{id}/clips` (contrato 8g);
+    - `render/drive.py` y `instalar_tarea.ps1`.
+  - **Probado en local:** la base (62 pruebas), el desfase contra la demo de tuscan, `procesar.py` de punta a punta con la grabación simulada y subidas reales a R2, el Worker con `wrangler dev` (17) y el backend (291 unitarias y 104 de integración).
+  - **Falta, en orden** (pasos en la [guía](bitacora/2026-10-23-clips-render-automatico/GUIA_IMPLEMENTACION.md)):
+    1. ~~la prueba con el juego de verdad~~ (hecha el 2026-10-23 en la PC de Daniel: 4 videos bien al tercer intento; ver los incidentes de la guía);
+    2. ~~desplegar el Worker y cargar `CLIPS_BASE_URL`~~ (hecho el 2026-10-23: `https://cmleague-clips.cmleague.workers.dev`, verificado con un video de prueba);
+    3. ~~el proyecto de Google Cloud y `drive_login.py`~~ (hecho el 2026-10-23: app "En producción", token en el `.env`, `drive.py prueba` OK; falta `"drive": true` en `config.json`);
+    4. ~~la migración en producción y el token de render~~ (hecho el 2026-10-23: `RENDER_*` en el `.env`, verificado con un token inventado (401) y `match_clip_list` público);
+    5. el portátil (Daniel instaló un ClientMod limpio): copiar los mapas de la liga, `render/`, Python de python.org, FFmpeg, un `.env` reducido (`RENDER_*`, `CF_*_CLIPS`, `GOOGLE_*`) y `config.json` con sus rutas; abrir el juego una vez a mano; medir una jugada a 1080p;
+    6. `instalar_tarea.ps1` en el portátil (no en la PC: `render/config.json` de la PC ya está en 1080p con Drive, para pruebas).
+  - **Después:** el primer mix real con la 2.5.0 (clips detectados por el plugin, clutches reales, el desfase real con `tv_delay`) y su video por el Worker y en Drive.
+- **Cuentas:** los videos de los clips van al R2 de la **cuenta de Cloudflare de Daniel** (variables `CF_*_CLIPS` en el `.env`, conexión probada); las demos se quedan en la cuenta de kyan. YouTube se descartó.
+- **Bitácora:** [`2026-10-23-clips-video`](bitacora/2026-10-23-clips-video/) y [`2026-10-23-clips-render-automatico`](bitacora/2026-10-23-clips-render-automatico/)
 
 ## 2. Investigaciones abiertas
 

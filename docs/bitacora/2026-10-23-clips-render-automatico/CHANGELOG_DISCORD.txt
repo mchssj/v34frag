@@ -1,0 +1,5 @@
+CMLeague 2.5.0 --  Changelog
+
+Tus mejores jugadas ahora tienen video: cada ace, 4k, 3k y clutch que aparece en el detalle de la partida se graba solo, en primera persona, unos minutos después de que termina el mix.
+Lo ves ahí mismo en la web, sin descargar la demo.
+Los videos quedan guardados para siempre.
