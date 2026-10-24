@@ -362,6 +362,11 @@ class Demo:
             else:
                 self.errors.append(f"comando {cmd} desconocido en el byte {off - 5}; se corta la lectura")
                 break
+        # En algunas demos el svc_ServerInfo no se lee bien (la del primer mix con la 2.5.0 dio 7e-11): se usa la
+        # cabecera, que tiene los ticks y los segundos de la grabación.
+        if not self.tick_interval or not 0.0009 < self.tick_interval < 0.11:
+            h = self.header
+            self.tick_interval = h["playback_time"] / h["playback_ticks"] if h["playback_ticks"] else None
         return self
 
 
