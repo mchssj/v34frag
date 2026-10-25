@@ -143,7 +143,9 @@ describe('temporadas: respuestas', () => {
             { id: SEASON, title: 'MVP', icon: '⭐', created_at: '2026-10-01T00:00:00+00:00', rank: null, season: null },
             { id: USER, title: 'Temporada 1 · #1', icon: '🏆', created_at: '2026-11-20T09:00:00+00:00', rank: 1, season: { id: SEASON, number: 1, name: 'Temporada 1' } },
           ])
-        : undefined,
+        : url.pathname.endsWith('/players')
+          ? Response.json({ id: PLAYER })
+          : undefined,
     );
     const body = await json(await call('GET', `/api/v1/players/${PLAYER}/medals`));
     expect(body.items.map((m: { season: unknown; rank: unknown }) => [m.season, m.rank])).toEqual([

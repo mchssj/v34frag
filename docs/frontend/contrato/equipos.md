@@ -52,6 +52,12 @@ stateDiagram-v2
 ## 7. Ranking de equipos (disponible)
 
 - `GET /api/v1/ranking/teams?pcw=0|1`: posición, equipo, PJ, G, P y puntos, paginado. `points_per_win` trae los puntos vigentes por victoria.
+- Desde el 2026-10-24 cada fila suma, en el modo pedido (con o sin PCW):
+  - `win_rate`: % de victorias (0 a 100; null sin partidas).
+  - `trend`: puestos que subió (positivo, "▲n") o bajó (negativo, "▼n") desde hace 30 días; `0` igual ("–"); `null` si hace 30 días no tenía partidas en ese modo ("–").
+  - `form`: últimos 5 resultados (`W`/`L`), del más viejo al más nuevo.
+- **Desempate:** más victorias y después menos derrotas. Los empatados en todo comparten posición.
+- **Sin logo:** los equipos no tienen logo; mostrar la sigla en un cuadro.
 - **Por defecto cuenta solo torneos.** Un interruptor "Contar también PCW" pasa `pcw=1`: suman las PCW jugadas como el equipo (no las de bandos sueltos).
 - **Los puntos son por partida ganada**, no por ganar el torneo entero. Al principio: **30 por partida de torneo** y **5 por PCW**. Los configura el admin y la respuesta trae los valores vigentes, para mostrarlos como leyenda.
 - Toda partida de torneo ganada vale lo mismo, sin importar la fase. Los W.O. no suman.

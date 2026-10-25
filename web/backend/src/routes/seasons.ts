@@ -7,6 +7,7 @@ import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { IdParam } from '../schemas/players';
+import { resolvePlayer } from '../services/players';
 import {
   PlayerSeasonList,
   PlayerSeasonQuery,
@@ -207,7 +208,7 @@ export const seasons = createRouter()
     );
   })
   .openapi(playerSeasons, async (c) => {
-    const { id } = c.req.valid('param');
+    const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
     const p = c.req.valid('query');
     const q = c.var.sb
       .from('player_season_list')

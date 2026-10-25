@@ -8,8 +8,10 @@ import { createRouter } from '../lib/router';
 import { IdParam } from '../schemas/admin';
 import { STEAM64 } from '../schemas/claim';
 import { bearer, errorResponses, json } from '../schemas/common';
-import { ApplyEloBody, ClosedMix, LiveMixDetail, LiveMixList, LiveMixQuery, type LivePlayerLine, UidParam } from '../schemas/live';
-import { LIVE_LIST, liveRounds, toLiveSummary, type LiveRow } from '../services/live';
+import {
+  ApplyEloBody, ClosedMix, DeletedMix, DeleteMixBody, LiveMixDetail, LiveMixList, LiveMixQuery, type LivePlayerLine, UidParam,
+} from '../schemas/live';
+import { LIVE_LIST, liveRounds, serverTvs, toLiveSummary, type LiveRow } from '../services/live';
 
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -65,6 +67,17 @@ const close = createRoute({
   responses: { 200: { description: 'Partida creada', ...json(ClosedMix) }, ...errorResponses(400, 401, 403, 404) },
 });
 
+const remove = createRoute({
+  method: 'delete', path: '/api/v1/admin/mixes/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Borrar un mix',
+  description:
+    'Mix terminado o cancelado, sin partida vinculada con !match. El admin elige qué pasa con el ELO que dio: `keep` (queda como está) o ' +
+    '`revert` (se le resta a cada jugador). Nunca recalcula la historia. Se borran sus stats, chat, clips y la revisión de la caída; ' +
+    'queda registrado para los admins. Pide `confirm: "estoy seguro"`.',
+  request: { params: IdParam, body: { required: true, ...json(DeleteMixBody) } },
+  responses: { 200: { description: 'Borrado', ...json(DeletedMix) }, ...errorResponses(400, 401, 403, 404) },
+});
+
 // Las funciones de los interrumpidos avisan con 22023 (regla) y P0002 (no existe): el mensaje es para el usuario.
 function adminRpc<R extends { data: unknown; error: PostgrestLikeError | null }>(r: R): R['data'] {
   if (r.error?.code === '22023') throw new AppError(400, 'BUSINESS_RULE', r.error.message);
@@ -89,7 +102,8 @@ export const live = createRouter()
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     const { rows, total } = await runList<LiveRow, typeof q>(q, p, {}, 'uid');
-    return c.json(envelope(rows.map(toLiveSummary), total, p), 200);
+    const tvs = await serverTvs(c.var.sb, rows.map((r) => r.server_id));
+    return c.json(envelope(rows.map((r) => toLiveSummary(r, tvs.get(r.server_id) ?? null)), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const { uid } = c.req.valid('param');
@@ -118,7 +132,8 @@ export const live = createRouter()
       }))
       .sort((a, b) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0));
 
-    const body = { ...toLiveSummary(l), seq: l.seq, rounds: liveRounds((foto as { rounds?: unknown } | null)?.rounds), players };
+    const tv = (await serverTvs(sb, [l.server_id])).get(l.server_id) ?? null;
+    const body = { ...toLiveSummary(l, tv), seq: l.seq, rounds: liveRounds((foto as { rounds?: unknown } | null)?.rounds), players };
     if (await notModified(c, body)) return c.body(null, 304);
     return c.json(body, 200);
   })
@@ -129,6 +144,11 @@ export const live = createRouter()
   .openapi(discard, async (c) => {
     adminRpc(await c.var.sb.rpc('elo_crash_discard', { p_match: c.req.valid('param').id }));
     return c.body(null, 204);
+  })
+  .openapi(remove, async (c) => {
+    const { elo } = c.req.valid('json');
+    const r = adminRpc(await c.var.sb.rpc('admin_delete_mix', { p_match: c.req.valid('param').id, p_elo: elo })) as { elo_mode: string; players: number };
+    return c.json({ elo_mode: r.elo_mode as 'keep' | 'revert' | 'none', players: r.players }, 200);
   })
   .openapi(close, async (c) => {
     const id = adminRpc(await c.var.sb.rpc('live_match_close', { p_uid: c.req.valid('param').uid }));

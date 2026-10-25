@@ -22,6 +22,7 @@ import {
   UndoBody,
 } from '../schemas/elo';
 import { IdParam } from '../schemas/players';
+import { resolvePlayer } from '../services/players';
 import { ELO_DEFAULTS, preview, type EloConfig as Values } from '../services/elo';
 
 // Configuración del ELO y vista previa (plan docs/bitacora/2026-10-16-api-elo-config) y ajustes manuales de hasta 10 fichas
@@ -183,7 +184,7 @@ export const elo = createRouter()
     return c.body(null, 204);
   })
   .openapi(playerAdjustments, async (c) => {
-    const { id } = c.req.valid('param');
+    const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
     const p = c.req.valid('query');
     const q = c.var.sb.from('player_elo_adjustment_list').select('id, delta, set_elo, reason, applied_at', { count: 'exact' }).eq('player_id', id);
     const { rows, total } = await runList<AdjRow, typeof q>(q, p, {});

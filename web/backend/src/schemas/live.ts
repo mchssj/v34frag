@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi';
-import { boolParam, Envelope, listQuery } from '../lib/list';
+import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { confirmField } from './common';
 
 const num = z.number().nullable();
@@ -21,6 +21,11 @@ export const UidParam = z.object({
     .openapi({ param: { name: 'uid', in: 'path' }, description: 'match_uid del servidor (por ejemplo `srv1-20261017T195321-f890`)' }),
 });
 
+/** SourceTV del servidor, para "Ver en TV" (`steam://connect/{host}:{port}`). */
+export const TvRef = z
+  .object({ host: z.string(), port: z.number().int() })
+  .openapi('TvRef', { description: 'SourceTV del servidor. null si el servidor no tiene cargado el puerto (`tv_port`)' });
+
 const LiveSide = z
   .object({ name: z.string().nullable().openapi({ description: '"Equipo <nick>" o "Mix de <el que más mató>"' }), score: num })
   .openapi('LiveSide');
@@ -38,6 +43,7 @@ export const LiveMixSummary = z
     updated_at: z.string().openapi({ description: 'Llegada de la última foto (fin de la última ronda)' }),
     stale: z.boolean().openapi({ description: 'Sin fotos hace más de 10 minutos: un admin lo puede cerrar como interrumpido' }),
     parent_match_id: z.uuid().nullable().openapi({ description: 'Vinculado con !match: la partida de torneo o PCW abierta' }),
+    tv: TvRef.nullable(),
   })
   .openapi('LiveMixSummary');
 
@@ -86,3 +92,82 @@ export const LiveGameRef = z
 export const ApplyEloBody = z.object({ confirm: confirmField('aplicar el ELO del mix interrumpido') }).openapi('ApplyEloBody');
 
 export const ClosedMix = z.object({ match_id: z.uuid().openapi({ description: 'La partida creada como interrumpida' }) }).openapi('ClosedMix');
+
+// ---------- listado único de mixes (plan docs/bitacora/2026-10-24-api-mixes-perfil-ranking) ----------
+
+export const MIX_STATUSES = ['live', 'finished', 'cancelled'] as const;
+
+export const MixListQuery = listQuery(['started_at', 'rounds'], { sort: 'started_at', order: 'desc' }).extend({
+  q: z.string().max(60).optional().openapi({ description: 'Busca en bandos, mapa, servidor y nombres de los jugadores (alias y nombre del juego)' }),
+  map: z.string().max(40).optional().openapi({ description: 'Mapa (contiene)' }),
+  server: z.uuid().optional().openapi({ description: 'Mixes de un servidor' }),
+  status: z.enum(MIX_STATUSES).optional().openapi({ description: '`live`, `finished` o `cancelled`. Sin filtro: todos' }),
+  mine: boolParam('`true`: solo los mixes donde jugó el usuario (pide sesión; sin ficha, la lista viene vacía)'),
+  hide_cancelled: boolParam('`true`: sin los cancelados'),
+  from: dateParam('Empezados desde'),
+  to: dateParam('Empezados hasta'),
+});
+
+export const MixMvp = z
+  .object({
+    player_id: z.uuid().nullable().openapi({ description: 'Ficha, si tiene' }),
+    alias: z.string().nullable().openapi({ description: 'Alias si tiene ficha; si no, null' }),
+    game_nick: z.string().nullable().openapi({ description: 'Nombre que usó en el juego' }),
+    elo: z.number().int().nullable(),
+    level: z.number().int().min(1).max(10).nullable(),
+    rating: num,
+  })
+  .openapi('MixMvp');
+
+export const MixItem = z
+  .object({
+    match_id: z.uuid().nullable().openapi({ description: 'Partida (terminado o cancelado): `GET /api/v1/matches/{id}`. null en vivo' }),
+    live_uid: z.string().nullable().openapi({ description: 'En vivo: `GET /api/v1/mixes/live/{uid}`. null si ya terminó' }),
+    status: z.enum(MIX_STATUSES),
+    map: z.string().nullable(),
+    server: z.object({ id: z.uuid(), name: z.string().nullable() }).nullable(),
+    started_at: z.string().nullable(),
+    ended_at: z.string().nullable().openapi({ description: 'null en vivo' }),
+    side1: LiveSide,
+    side2: LiveSide,
+    winner_side: z.number().int().nullable().openapi({ description: '1, 2 o null (en vivo, cancelado o empate)' }),
+    rounds_played: z.number().int(),
+    current_round: z.number().int().nullable().openapi({ description: 'En vivo: la ronda que se está jugando. null si terminó' }),
+    max_rounds: z.number().int().nullable().openapi({ description: 'En vivo: rondas del mix (sin prórroga)' }),
+    stale: z.boolean().openapi({ description: 'En vivo sin fotos hace más de 10 minutos' }),
+    mvp: MixMvp.nullable().openapi({ description: 'El de mejor rating (parcial en vivo)' }),
+    demo_status: z.string().openapi({ description: '`none`, `pending`, `uploaded`, `missing` o `expired`' }),
+    cancel_reason: z.string().nullable(),
+    tv: TvRef.nullable().openapi({ description: 'Solo en vivo' }),
+  })
+  .openapi('MixItem');
+
+export const MixList = Envelope(MixItem).openapi('MixList', {
+  description: 'Con el orden por defecto (`started_at` desc) los mixes en vivo van primero',
+});
+
+export const MixStats = z
+  .object({
+    live_now: z.number().int().openapi({ description: 'Mixes en vivo ahora (con foto en los últimos 10 minutos)' }),
+    players_recent: z.number().int().openapi({ description: 'Jugadores distintos en mixes terminados de los últimos `window_days` días' }),
+    top_map: z.string().nullable().openapi({ description: 'Mapa más jugado en ese período' }),
+    avg_rounds: num.openapi({ description: 'Promedio de rondas por mix en ese período' }),
+    window_days: z.number().int(),
+  })
+  .openapi('MixStats');
+
+export const DeleteMixBody = z
+  .object({
+    elo: z.enum(['keep', 'revert']).openapi({
+      description: '`keep`: el ELO que dio el mix se mantiene; `revert`: se le resta a cada jugador. Nunca recalcula la historia',
+    }),
+    confirm: confirmField('borrar el mix'),
+  })
+  .openapi('DeleteMixBody');
+
+export const DeletedMix = z
+  .object({
+    elo_mode: z.enum(['keep', 'revert', 'none']).openapi({ description: '`none`: el mix no había movido el ELO' }),
+    players: z.number().int().openapi({ description: 'Jugadores cuyo ELO se mantuvo o se revirtió' }),
+  })
+  .openapi('DeletedMix');

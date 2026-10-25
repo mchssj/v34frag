@@ -112,3 +112,18 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-23 | Video de los clips: cuáles | Se graban solas las jugadas visibles (las que dejan los topes, hoy 10 por partida y 2 por jugador), apenas termina la partida y su demo está en R2 | Daniel |
 | 2026-10-23 | Video de los clips: dónde | Los primeros 15 días en R2 (el `.mp4` con el reproductor de la web, servido por un Worker de la cuenta de Daniel) y para siempre en Google Drive (reproductor embebido). YouTube descartado: la API deja privados los videos de proyectos sin auditar y tiene cupo diario | Daniel |
 | 2026-10-23 | Video de los clips: calidad | 1080p a 60 cuadros, primera persona del jugador, con el feed de kills y sin el HUD del espectador | Daniel (1080p); propuesta aceptada (cámara) |
+| 2026-10-24 | Mixes en un solo listado | `GET /api/v1/mixes` junta en vivo, terminados y cancelados; los en vivo primero. Atajos "Solo donde jugué" y "Ocultar canceladas" | Daniel |
+| 2026-10-24 | KPIs de mixes | En vivo ahora y, de los últimos 30 días, jugadores, mapa más jugado y promedio de rondas | Daniel (30 días) |
+| 2026-10-24 | SourceTV | Cada servidor guarda su puerto de SourceTV (`tv_port`); los mixes en vivo traen `tv` para "Ver en TV" | Daniel |
+| 2026-10-24 | Demos públicas | El link de la demo sigue siendo directo, sin firmar | Daniel |
+| 2026-10-24 | Mixes en vivo sin SSE | Por ahora se refresca consultando; SSE o WebSocket quedan para más adelante | Daniel |
+| 2026-10-24 | Borrar un mix | El admin elige mantener o revertir el ELO que dio; nunca se recalcula la historia. "Mantener" guarda un ajuste interno (con la fecha del mix) que lo sostiene si la base recalcula sola, y no se muestra en el perfil del jugador | Daniel (mantener o revertir, sin recalcular); propuesta aceptada (ajuste interno oculto) |
+| 2026-10-24 | Perfil por nick | Las rutas públicas de un jugador aceptan el id o el nick; el nick es único en todas las fichas (también las que no tienen cuenta) | Daniel |
+| 2026-10-24 | SteamID en el perfil | Nunca en el perfil público: solo para el dueño y los admins | Daniel |
+| 2026-10-24 | Historial de ELO | Endpoint dedicado y liviano para el gráfico, la tendencia del ranking y el comparador | Daniel |
+| 2026-10-24 | Palmarés | Torneos ganados y finales perdidas, con el equipo con el que estaba inscrito y la fecha | Daniel (torneos con fecha y equipo); propuesta aceptada (subcampeón) |
+| 2026-10-24 | Medallas | Dos endpoints: el detalle y uno agrupado con la cantidad | Daniel |
+| 2026-10-24 | Título y subtítulo de las partidas | Los arma el front; la API manda el torneo y la fase | Daniel |
+| 2026-10-24 | Ranking de jugadores | Posición global por ELO (no cambia al filtrar), filtro por nivel y tendencia de los últimos 30 mixes | Daniel |
+| 2026-10-24 | Ranking de equipos | `win_rate`, tendencia contra hace 30 días y últimos 5 resultados | Daniel (30 días) |
+| 2026-10-24 | Comparador | Dos jugadores cualesquiera (no solo el logueado), con los mixes jugados juntos y como rivales | Daniel |

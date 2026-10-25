@@ -29,6 +29,7 @@ export const ServerMode = z.enum(SERVER_MODES).openapi({
   description: '`mix`, `competitive` (torneos y PCW), `public`, `deathmatch`, `retakes` o `practice`',
 });
 const Region = z.string().trim().min(2, 'Entre 2 y 30 caracteres').max(30, 'Entre 2 y 30 caracteres');
+const TvPort = z.number().int().min(1, 'Un puerto entre 1 y 65535').max(65535, 'Un puerto entre 1 y 65535');
 
 const fields = {
   connect_address: nullable(Address, 'Dirección para el botón "Conectar" (`host:puerto`)'),
@@ -37,6 +38,7 @@ const fields = {
   allowed_ip: nullable(Ip, 'Única IP desde la que se acepta el token. Sin valor, cualquiera'),
   mode: nullable(ServerMode, 'Modo de juego'),
   region: nullable(Region, 'Región para mostrar en la web, texto libre (por ejemplo "Argentina")'),
+  tv_port: nullable(TvPort, 'Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo'),
 };
 
 export const ServerCreate = z
@@ -72,6 +74,7 @@ export const AdminServer = z
     panel_server_id: z.string().nullable(),
     mode: ServerMode.nullable(),
     region: z.string().nullable(),
+    tv_port: z.number().int().nullable().openapi({ description: 'Puerto de SourceTV' }),
     matches: z.number().int().openapi({ description: 'Partidas jugadas o asignadas en el servidor' }),
     last_match_at: z.string().nullable(),
     created_at: z.string(),

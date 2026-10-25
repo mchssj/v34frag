@@ -30,9 +30,9 @@
 
 | Endpoint | Qué hace |
 |---|---|
-| `GET /api/v1/admin/servers` | Lista (filtros en la sección 1). Cada servidor: `name`, `active`, `license_state`, `license_expires_at`, `allowed_ip`, `online`, `last_seen_at`, `last_ip`, `plugin_version`, `connect_address`, `panel_server_id`, `mode`, `region`, `matches`, `last_match_at` |
+| `GET /api/v1/admin/servers` | Lista (filtros en la sección 1). Cada servidor: `name`, `active`, `license_state`, `license_expires_at`, `allowed_ip`, `online`, `last_seen_at`, `last_ip`, `plugin_version`, `connect_address`, `panel_server_id`, `mode`, `region`, `tv_port`, `matches`, `last_match_at` |
 | `GET /api/v1/admin/servers/{id}` | Un servidor, con los mismos campos |
-| `POST /api/v1/admin/servers` | Alta. Body: `name` (obligatorio, de 2 a 40, único sin distinguir mayúsculas), `connect_address` (`host:puerto`), `panel_server_id`, `license_expires_at` (ISO 8601), `allowed_ip`, `mode` (`mix`, `competitive`, `public`, `deathmatch`, `retakes` o `practice`), `region` (texto libre, de 2 a 30). Responde `201` con `{ id, token, cfg, build_command }` |
+| `POST /api/v1/admin/servers` | Alta. Body: `name` (obligatorio, de 2 a 40, único sin distinguir mayúsculas), `connect_address` (`host:puerto`), `panel_server_id`, `license_expires_at` (ISO 8601), `allowed_ip`, `mode` (`mix`, `competitive`, `public`, `deathmatch`, `retakes` o `practice`), `region` (texto libre, de 2 a 30), `tv_port` (puerto de SourceTV, de 1 a 65535). Responde `201` con `{ id, token, cfg, build_command }` |
 | `PATCH /api/v1/admin/servers/{id}` | Cualquiera de los campos del alta (`null` o `""` borra), más `active` (`false` revoca, `true` reactiva). Devuelve el servidor |
 | `POST /api/v1/admin/servers/{id}/token` | Token nuevo: el anterior deja de funcionar al instante y el servidor queda activo. Mismo cuerpo de respuesta que el alta |
 | `DELETE /api/v1/admin/servers/{id}` | Solo sin partidas. Con partidas, `400 BUSINESS_RULE`: ofrecer "Revocar" |
@@ -43,6 +43,7 @@
 - **`online`:** el servidor validó su licencia en los últimos 35 minutos (lo hace al cargar cada mapa y cada 30 minutos).
 - **IP permitida:** `last_ip` es la IP de la última conexión válida; ofrecer "Usar la última IP" para cargarla en `allowed_ip`.
 - **Modo y región:** se muestran en el estado público de los servidores (sección [8e](partidas.md)). El modo es un selector con la lista fija; la región, un campo de texto.
+- **Puerto de SourceTV (`tv_port`):** el `tv_port` del servidor (por ejemplo 27020). Con él, los mixes en vivo muestran "Ver en TV" (`steam://connect/{host}:{tv_port}`, el host sale de `connect_address`). Campo numérico opcional.
 - Nombre repetido: `409 CONFLICT`.
 
 ### ELO (admin)
@@ -140,6 +141,20 @@ Configuración, abrir la temporada 1, cambiar la activa, vista previa del cierre
 
 - **Aplicar el ELO, con doble confirmación (obligatorio).** Igual que al deshacer un ajuste de ELO: preguntar si está seguro, mostrando quién gana y con cuántas rondas; pedir escribir **`estoy seguro`**; mandarlo en `confirm`. El botón solo con `can_apply: true`; si no, mostrar `blocked_reason`.
 - **Descartar** y **Cerrar como interrumpido** llevan una confirmación simple.
+
+### Borrar un mix (admin, desde el 2026-10-24)
+
+| Endpoint | Qué hace |
+|---|---|
+| `DELETE /api/v1/admin/mixes/{id}` | Body `{ elo: "keep" \| "revert", confirm }`. `200` con `{ elo_mode, players }` (`elo_mode: "none"` si el mix no había movido el ELO). `400 BUSINESS_RULE` si no es un mix terminado o cancelado, o si está vinculado con `!match` a una partida de torneo o PCW; `404` si no existe |
+
+- **"Borrar este mix"** en la sala del mix, solo para admins. El diálogo pregunta qué pasa con el ELO:
+  - **Mantener el ELO** (`keep`): los jugadores se quedan con lo que ganaron o perdieron.
+  - **Revertir el ELO** (`revert`): a cada jugador se le resta lo que le dio ese mix.
+  - En los dos casos **no se recalcula la historia**: los mixes posteriores quedan como están.
+- **Doble confirmación (obligatoria):** escribir **`estoy seguro`** y mandarlo en `confirm`.
+- Se borran también sus stats, chat y clips. La demo queda en R2 hasta que venza. El borrado queda registrado para los admins.
+- Toast: "Mix borrado. Se mantuvo el ELO." o "Mix borrado. ELO revertido."
 
 ### SteamID y `!claim` (admin)
 

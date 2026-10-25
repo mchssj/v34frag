@@ -252,7 +252,9 @@ describe('rutas', () => {
     postgrest('user', (url) =>
       url.pathname.endsWith('/player_elo_adjustment_list')
         ? Response.json([{ id: 3, delta: -20, set_elo: null, reason: 'abandono', applied_at: 'z' }])
-        : undefined,
+        : url.pathname.endsWith('/players')
+          ? Response.json({ id: USER })
+          : undefined,
     );
     const res = await call('GET', `/api/v1/players/${USER}/elo-adjustments`, undefined, false);
     expect(res.status).toBe(200);

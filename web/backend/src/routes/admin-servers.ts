@@ -11,11 +11,12 @@ import { bearer, errorResponses, json } from '../schemas/common';
 import { AdminServer, AdminServerList, AdminServerQuery, type SERVER_MODES, ServerCreate, ServerPatch, ServerToken } from '../schemas/servers';
 
 // Admin de servidores de juego: alta, token, licencia, IP permitida, revocar, borrar, dirección, id del panel, modo y
-// región (planes docs/bitacora/2026-10-16-api-admin-servidores y 2026-10-19-api-servidores-ping-modo-region). Todo con el token del admin: manda la RLS.
+// región (planes docs/bitacora/2026-10-16-api-admin-servidores y 2026-10-19-api-servidores-ping-modo-region), y puerto de SourceTV
+// (2026-10-24-api-mixes-perfil-ranking). Todo con el token del admin: manda la RLS.
 
 type C = Context<AppEnv>;
 const COLUMNS =
-  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, matches, last_match_at, created_at';
+  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, tv_port, matches, last_match_at, created_at';
 
 /** Nombre corto para `server/build_licenciado.sh`: minúsculas, sin tildes, letras, números y guiones. */
 export function shortName(name: string): string {
@@ -126,6 +127,7 @@ export const adminServers = createRouter()
         p_allowed_ip: b.allowed_ip ?? undefined,
         p_mode: b.mode ?? undefined,
         p_region: b.region ?? undefined,
+        p_tv_port: b.tv_port ?? undefined,
       }),
     )[0];
     if (!row) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió el servidor.');
@@ -169,6 +171,7 @@ function toServer(s: ServerRow) {
     panel_server_id: s.panel_server_id ?? null,
     mode: (s.mode ?? null) as (typeof SERVER_MODES)[number] | null,
     region: s.region ?? null,
+    tv_port: s.tv_port ?? null,
     matches: s.matches ?? 0,
     last_match_at: s.last_match_at ?? null,
     created_at: s.created_at ?? '',
