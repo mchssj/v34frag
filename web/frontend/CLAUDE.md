@@ -56,7 +56,7 @@ src/
   assets/     imagen del hero (AVIF y WebP)
   components/ ui/ (shadcn), brand/ (Brand: isotipo, wordmark y lockup de CM League; ThemeToggle de la app, ThemeSwitch de la landing, CountryFlag, LevelBadge, LiveDot, SectionHeading), theme-provider
   config/     site.ts: datos fijos que la API todavía no expone (servidores, Discord, IP del !claim)
-  features/   componentes por dominio (auth/, auth/register/, landing/, onboarding/, profile/, public/, shell/, theme-fx/)
+  features/   componentes por dominio (auth/, auth/register/, landing/, maps/, mixes/, onboarding/, profile/, public/, shell/, theme-fx/)
   lib/        env.ts (VITE_API_URL validada), image.ts (recorte del avatar), useMediaQuery.ts
   routes/     una ruta por archivo; _auth = páginas sin sesión, _app = con sesión, _admin = rol admin
   test/       setup y utilidades de prueba
@@ -88,5 +88,7 @@ src/
 - **Confirmación de email:** el backend manda el link a `FRONTEND_URL` y Supabase vuelve con los tokens en el fragmento de la URL (flujo implicit). El frontend los descarta y pide iniciar sesión (`src/auth/callback.ts`). Falta definir con el backend una página de destino propia y la recuperación de contraseña.
 - **Mejora de la sesión:** pasar el refresh token a una cookie `httpOnly; Secure; SameSite=Strict` del dominio de la API (cambio en el backend). El cambio en el frontend queda aislado en `tokenStore` y `refresh`.
 - **Roles de la plataforma (por definir con el equipo):** qué roles existen (cuenta: `user`, `organizer`, `admin`; contexto: capitán, miembro, gestor de torneo, quién veta), qué puede hacer cada uno y cómo se asignan. Hasta entonces, no comparar `role` suelto en los componentes. Detalle en `docs/bitacora/2026-10-18-layout-autenticado/PLAN.md`.
+- **Maestra de mapas (por hacer, back y front):** Administración gestiona la lista de mapas; la lista de servidores advierte qué mapas de la maestra le faltan a cada uno; el select de mapas de Mixes sale de esa lista. Detalle en `docs/PENDIENTES.md` (sección 6). Decidido por Daniel el 2026-10-24, junto con dos reglas de Mixes: `cancel_reason` se muestra tal cual (texto libre) y "Solo donde jugué" sin ficha muestra la lista vacía.
+- **`.env.local`:** en esta copia no existe y sin él `pnpm dev` deja la página en blanco (`VITE_API_URL`). Crearlo desde `.env.example`.
 - **Datos que faltan en la API para el diseño** (hoy fijos o sin mostrar): lista en la guía de `docs/bitacora/2026-10-16-frontend-diseno-landing-auth/`.
 - **Despliegue (VPS):** configurar una cabecera CSP con `connect-src` limitado a `api.<dominio>`.

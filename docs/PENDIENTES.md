@@ -437,6 +437,14 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
      - ~~Ajustes manuales de ELO desde el admin y sin "Recalcular ELO"~~: **hechos el 2026-10-21**, solo en local (migración `25`, `/api/v1/admin/elo/adjustments` y `GET /api/v1/players/{id}/elo-adjustments`; se borraron `POST /api/v1/admin/elo/recompute` y `/simulate`). Probados en local (pruebas SQL, unitarias y de integración). La web vieja conserva su botón hasta el corte (pedido de Daniel). Falta el frontend. Ver [`2026-10-21-ajustes-elo-admin`](bitacora/2026-10-21-ajustes-elo-admin/DOCUMENTACION.md).
      - **"Olvidé mi contraseña"** (pendiente): necesita el envío de correos (Resend, plan del VPS). Cuando esté, `POST /auth/recover` con el enlace al frontend y la pantalla para poner la nueva.
      - ~~Mixes en vivo e interrumpidos~~: **hechos el 2026-10-17**, solo en local (migración `16` y endpoints `/api/v1/mixes/live*`, `/api/v1/admin/mixes/*` y `review` en partidas). Aprobar el ELO pide doble confirmación y vincula el juego si se jugaba con `!match`. Ver [`2026-10-17-api-mixes-en-vivo`](bitacora/2026-10-17-api-mixes-en-vivo/DOCUMENTACION.md).
+- **Maestra de mapas** (pendiente, pedido por Daniel el 2026-10-24, sin plan): el admin gestiona la lista de mapas como una maestra (alta, edición y baja), y esa lista alimenta el select "Todos los mapas" del listado de mixes (y cualquier otro filtro por mapa).
+  - **Backend:** tabla y endpoints de la maestra (`GET` público, CRUD en `/api/v1/admin/…`), con la foto de cada mapa que sube el admin (fondo del marcador de la sala del mix, plan `2026-10-24-frontend-mixes`), y en `GET /api/v1/admin/servers` los mapas de la maestra que le faltan a cada servidor.
+  - **Plugin:** para saber qué mapas tiene cada servidor, el reporter tiene que informarlos (por ejemplo, los `.bsp` de `maps/` al validar la licencia o al cargar un mapa). Hoy no lo hace. Va en el orden de la sección "Orden de trabajo" (los plugins al final), así que hasta entonces la advertencia no tiene datos.
+  - **Frontend:** pantalla de la maestra en Administración, advertencia en la lista de servidores ("Le faltan N mapas", con el detalle) y el select de mapas del listado de mixes desde la maestra.
+- **Pedidos del frontend de Mixes** (2026-10-24, bitácora [`2026-10-24-frontend-mixes`](bitacora/2026-10-24-frontend-mixes/GUIA_IMPLEMENTACION.md)):
+  - `match_id` en el `404` de `GET /api/v1/mixes/live/{uid}` (o un endpoint que lo resuelva), para pasar de la sala en vivo a la sala final.
+  - `level` (y `elo`) en `PlayerLine` y `LivePlayerLine`, para la insignia de nivel de cada jugador en la sala.
+  - `review` en `MixItem`, para el chip "ELO pendiente" de un interrumpido en el listado.
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
 
@@ -445,6 +453,14 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 ### 7.0 Prueba del replanteo `23` desactualizada
 
 `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/23_whois.sql` espera `player_nick = 'Ficha23'`, pero desde la `09` el nick de una ficha vinculada a un usuario es su alias (`Alias23`). Por eso `correr.sh` se corta en la `23` y no llega a probar de la `24` en adelante. Hay que cambiar el valor esperado (encontrado el 2026-10-23; no se tocó, porque es de otro requerimiento). La `27` (2026-10-24) se probó con el mismo ciclo de `correr.sh`, a mano.
+
+### 7.2 Ensayo del corte con la copia de producción del 2026-10-25 (02:02 UTC)
+
+Cargada en la base local, con los replanteos 01 a 27 encima. Aparecieron dos datos que frenan el corte y hay que resolver en producción antes de aplicarlo (en la copia local se renombraron para seguir):
+
+- **Alias repetido `musul`** (frena la `09`): dos cuentas. La original es del 2026-10-08 y tiene ficha (`18973074-…`). La otra es del 2026-10-20, sin ficha (`18b6b088-…`), y parece un registro duplicado. En local quedó como `musul_2`. Falta que Daniel decida qué hacer con ella.
+- **Nick repetido `geusz`** (frena la `27`): dos fichas sin cuenta, cada una con su SteamID. Una tiene 2 partidas y 2 equipos (`9321d9c9-…`); la otra, 4 partidas y ningún equipo (`401abdde-…`). En local, la segunda quedó como `geusz_2`. Falta decidir si se fusionan (¿misma persona con dos Steam?) o se renombra una.
+- **`cargar_datos.sh` choca con `clip_config`:** la migración de clips crea la fila `id = 1` y la copia también la trae. Para cargar, se vaciaron las tablas de `public` antes de `public.sql`. Hay que sumarlo al script.
 
 ### 7.1 Voz en partida (reemplaza "`sm_deadtalk 0` obligatorio")
 
