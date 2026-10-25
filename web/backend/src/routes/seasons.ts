@@ -1,12 +1,12 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { optionalUser, requireAdmin, requireUser } from '../lib/auth';
-import { levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
+import { levelBounds, levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { bearer, errorResponses, json } from '../schemas/common';
-import { IdParam } from '../schemas/players';
+import { IdParam, type TeamRef } from '../schemas/players';
 import { resolvePlayer } from '../services/players';
 import {
   PlayerSeasonList,
@@ -34,7 +34,7 @@ import {
 type C = Context<AppEnv>;
 type Tier = z.infer<typeof SeasonTier>;
 const SEASON = 'id, number, name, status, starts_at, ends_at, closed_at, top_n, min_matches, reset_pct, reset_floor, tiers, champion_id, champion_nick, medals';
-const STANDING = 'player_id, nick, photo_url, rank, eligible, elo, peak_elo, matches, wins, losses, elo_after, tier, icon';
+const STANDING = 'player_id, nick, photo_url, rank, eligible, elo, peak_elo, matches, wins, losses, elo_after, tier, icon, teams, rating, kd';
 const CONFIG = 'duration_days, top_n, min_matches, reset_pct, reset_floor, tiers, updated_at';
 
 type SeasonRow = {
@@ -197,10 +197,21 @@ export const seasons = createRouter()
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.eligible !== undefined) q = q.eq('eligible', p.eligible);
-    const { rows, total } = await runList<StandingRow, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id');
+    const lv = levelBounds(p.level);
+    if (lv.gte !== undefined) q = q.gte('elo', lv.gte);
+    if (lv.lt !== undefined) q = q.lt('elo', lv.lt);
+    if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
+    type Row = StandingRow & { teams: unknown; rating: number | null; kd: number | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id');
     return c.json(
       envelope(
-        rows.map(({ player_id, nick, photo_url, ...r }) => ({ player: { id: player_id!, alias: nick ?? '', photo_url }, ...stats(r) })),
+        rows.map(({ player_id, nick, photo_url, teams, rating, kd, ...r }) => ({
+          player: { id: player_id!, alias: nick ?? '', photo_url },
+          ...stats(r),
+          teams: Array.isArray(teams) ? (teams as z.infer<typeof TeamRef>[]) : [],
+          rating: rating === null ? null : Number(rating),
+          kd: kd === null ? null : Number(kd),
+        })),
         total,
         p,
       ),

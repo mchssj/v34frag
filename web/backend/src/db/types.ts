@@ -209,13 +209,13 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "champion": string | null,"config": NonNullable<Json>,"drawn_at": string | null,"drawn_by": string | null,"ends_on": string | null,"id": string,"max_teams": number | null,"min_teams": number | null,"name": string,"organizer_id": string | null,"players_max": number,"players_min": number,"prize": string | null,"rules": string | null,"seeds": (string)[],"starts_on": string | null,"status": string,"template": string,"tie_pending": Json | null
+                    "champion": string | null,"config": NonNullable<Json>,"drawn_at": string | null,"drawn_by": string | null,"ends_on": string | null,"id": string,"map_pool": (string)[] | null,"max_teams": number | null,"min_teams": number | null,"name": string,"organizer_id": string | null,"players_max": number,"players_min": number,"prize": string | null,"rules": string | null,"seeds": (string)[],"starts_on": string | null,"status": string,"template": string,"tie_pending": Json | null
                   }
                   Insert: {
-                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"max_teams"?: number | null,"min_teams"?: number | null,"name": string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
+                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"map_pool"?: (string)[] | null,"max_teams"?: number | null,"min_teams"?: number | null,"name": string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
                   }
                   Update: {
-                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"max_teams"?: number | null,"min_teams"?: number | null,"name"?: string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
+                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"map_pool"?: (string)[] | null,"max_teams"?: number | null,"min_teams"?: number | null,"name"?: string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
                   }
                   Relationships: [
                     {
@@ -309,13 +309,13 @@ isOneToOne: false
                   ]
                 },"map_pool": {
                   Row: {
-                    "active": boolean,"name": string,"position": number,"versions": (string)[]
+                    "active": boolean,"image_url": string | null,"mixes": boolean,"name": string,"position": number,"versions": (string)[],"veto_default": boolean
                   }
                   Insert: {
-                    "active"?: boolean,"name": string,"position"?: number,"versions": (string)[]
+                    "active"?: boolean,"image_url"?: string | null,"mixes"?: boolean,"name": string,"position"?: number,"versions": (string)[],"veto_default"?: boolean
                   }
                   Update: {
-                    "active"?: boolean,"name"?: string,"position"?: number,"versions"?: (string)[]
+                    "active"?: boolean,"image_url"?: string | null,"mixes"?: boolean,"name"?: string,"position"?: number,"versions"?: (string)[],"veto_default"?: boolean
                   }
                   Relationships: [
                     
@@ -787,13 +787,13 @@ isOneToOne: false
                   ]
                 },"pcw_posts": {
                   Row: {
-                    "best_of": number,"by_user": string,"created_at": string,"id": string,"maps": string | null,"match_id": string | null,"note": string | null,"starts_at": string | null,"status": string,"team_id": string
+                    "best_of": number,"by_user": string,"created_at": string,"id": string,"map_pool": (string)[] | null,"maps": string | null,"match_id": string | null,"note": string | null,"starts_at": string | null,"status": string,"team_id": string
                   }
                   Insert: {
-                    "best_of"?: number,"by_user": string,"created_at"?: string,"id"?: string,"maps"?: string | null,"match_id"?: string | null,"note"?: string | null,"starts_at"?: string | null,"status"?: string,"team_id": string
+                    "best_of"?: number,"by_user": string,"created_at"?: string,"id"?: string,"map_pool"?: (string)[] | null,"maps"?: string | null,"match_id"?: string | null,"note"?: string | null,"starts_at"?: string | null,"status"?: string,"team_id": string
                   }
                   Update: {
-                    "best_of"?: number,"by_user"?: string,"created_at"?: string,"id"?: string,"maps"?: string | null,"match_id"?: string | null,"note"?: string | null,"starts_at"?: string | null,"status"?: string,"team_id"?: string
+                    "best_of"?: number,"by_user"?: string,"created_at"?: string,"id"?: string,"map_pool"?: (string)[] | null,"maps"?: string | null,"match_id"?: string | null,"note"?: string | null,"starts_at"?: string | null,"status"?: string,"team_id"?: string
                   }
                   Relationships: [
                     {
@@ -1055,13 +1055,13 @@ isOneToOne: false
                   ]
                 },"season_standings": {
                   Row: {
-                    "eligible": boolean,"elo": number,"elo_after": number,"icon": string | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank": number | null,"season_id": string,"tier": string | null,"wins": number
+                    "eligible": boolean,"elo": number,"elo_after": number,"icon": string | null,"kd": number | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank": number | null,"rating": number | null,"season_id": string,"tier": string | null,"wins": number
                   }
                   Insert: {
-                    "eligible": boolean,"elo": number,"elo_after": number,"icon"?: string | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank"?: number | null,"season_id": string,"tier"?: string | null,"wins": number
+                    "eligible": boolean,"elo": number,"elo_after": number,"icon"?: string | null,"kd"?: number | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank"?: number | null,"rating"?: number | null,"season_id": string,"tier"?: string | null,"wins": number
                   }
                   Update: {
-                    "eligible"?: boolean,"elo"?: number,"elo_after"?: number,"icon"?: string | null,"losses"?: number,"matches"?: number,"peak_elo"?: number,"player_id"?: string,"rank"?: number | null,"season_id"?: string,"tier"?: string | null,"wins"?: number
+                    "eligible"?: boolean,"elo"?: number,"elo_after"?: number,"icon"?: string | null,"kd"?: number | null,"losses"?: number,"matches"?: number,"peak_elo"?: number,"player_id"?: string,"rank"?: number | null,"rating"?: number | null,"season_id"?: string,"tier"?: string | null,"wins"?: number
                   }
                   Relationships: [
                     {
@@ -2174,7 +2174,7 @@ isOneToOne: false
                   ]
                 },"pcw_post_list": {
                   Row: {
-                    "best_of": number | null,"by_alias": string | null,"by_user": string | null,"created_at": string | null,"id": string | null,"maps": string | null,"match_id": string | null,"note": string | null,"parent_name": string | null,"parent_tag": string | null,"parent_team_id": string | null,"search": string | null,"side_name": string | null,"starts_at": string | null,"status": string | null,"team_id": string | null
+                    "best_of": number | null,"by_alias": string | null,"by_user": string | null,"created_at": string | null,"id": string | null,"map_pool": (string)[] | null,"maps": string | null,"match_id": string | null,"note": string | null,"parent_name": string | null,"parent_tag": string | null,"parent_team_id": string | null,"search": string | null,"side_name": string | null,"starts_at": string | null,"status": string | null,"team_id": string | null
                   }
                   Relationships: [
                     {
@@ -2638,14 +2638,14 @@ isOneToOne: false
                   ]
                 },"season_live_standings": {
                   Row: {
-                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"search": string | null,"season_id": string | null,"tier": string | null,"wins": number | null
+                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"kd": number | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"rating": number | null,"search": string | null,"season_id": string | null,"tier": string | null,"wins": number | null
                   }
                   Relationships: [
                     
                   ]
                 },"season_standings_list": {
                   Row: {
-                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"search": string | null,"season_id": string | null,"tier": string | null,"wins": number | null
+                    "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"kd": number | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"rating": number | null,"search": string | null,"season_id": string | null,"teams": Json | null,"tier": string | null,"wins": number | null
                   }
                   Relationships: [
                     
@@ -2942,7 +2942,7 @@ isOneToOne: false
 { Args: { "p_name": string }; Returns: string
                            },
 "create_pcw_post":
-{ Args: { "p_best_of": number,"p_guests": (string)[],"p_maps": string,"p_name": string,"p_note": string,"p_players": (string)[],"p_starts_at": string,"p_team"?: string }; Returns: string
+{ Args: { "p_best_of": number,"p_guests": (string)[],"p_map_pool"?: (string)[],"p_maps": string,"p_name": string,"p_note": string,"p_players": (string)[],"p_starts_at": string,"p_team"?: string }; Returns: string
                            },
 "create_render_worker_token":
 { Args: { "p_name": string }; Returns: string
@@ -3114,6 +3114,9 @@ isOneToOne: false
 "event_group_qualifiers":
 { Args: { "p_event": string }; Returns: (string)[]
                            },
+"event_max_bo":
+{ Args: { "p_config": Json }; Returns: number
+                           },
 "event_progress":
 { Args: { "p_event": string }; Returns: undefined
                            },
@@ -3183,12 +3186,31 @@ isOneToOne: false
 "live_match_close":
 { Args: { "p_uid": string }; Returns: string
                            },
+"map_pool_check":
+{ Args: { "p_min": number,"p_new": (string)[],"p_old": (string)[] }; Returns: undefined
+                           },
 "match_chat_can_write":
 { Args: { "p_match": string }; Returns: boolean
                            },
 "match_link_code":
 { Args: { "p_match": string }; Returns: string
                            },
+"match_map_pool":
+{ Args: { "p_match": string }; Returns: {
+              "active": boolean,
+"image_url": string | null,
+"mixes": boolean,
+"name": string,
+"position": number,
+"versions": (string)[],
+"veto_default": boolean
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "map_pool"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "match_ref":
 { Args: { "p_match": string }; Returns: Json
                            },
@@ -3300,6 +3322,11 @@ isOneToOne: false
                            },
 "season_default_end":
 { Args: { "p_days": number,"p_from": string }; Returns: string
+                           },
+"season_player_stats":
+{ Args: { "p_from": string,"p_until": string }; Returns: {
+              "kd": number,"player_id": string,"rating": number
+            }[]
                            },
 "season_preview":
 { Args: { "p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: {

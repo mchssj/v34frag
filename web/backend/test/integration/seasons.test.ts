@@ -111,10 +111,10 @@ describe('temporadas', () => {
     const at = new Date().toISOString();
     check(await a.from('matches').insert(mixes.map((id) => ({ id, kind: 'mix', status: 'finished', map: 'de_dust2', score1: 16, score2: 10, winner_side: 1, played_at: at }))));
     check(await a.from('match_player_stats').insert([
-      { match_id: mixes[0], steam_id: steam[0], team: 1, nick: 'a', rounds: 26, rating: 1 },
-      { match_id: mixes[0], steam_id: steam[2], team: 2, nick: 'c', rounds: 26, rating: 1 },
-      { match_id: mixes[1], steam_id: steam[1], team: 1, nick: 'b', rounds: 26, rating: 1 },
-      { match_id: mixes[1], steam_id: steam[2], team: 2, nick: 'c', rounds: 26, rating: 1 },
+      { match_id: mixes[0], steam_id: steam[0], team: 1, nick: 'a', rounds: 26, rating: 1, kills: 20, deaths: 10, k1: 20 },
+      { match_id: mixes[0], steam_id: steam[2], team: 2, nick: 'c', rounds: 26, rating: 1, kills: 0, deaths: 0, k1: 0 },
+      { match_id: mixes[1], steam_id: steam[1], team: 1, nick: 'b', rounds: 26, rating: 1, kills: 0, deaths: 0, k1: 0 },
+      { match_id: mixes[1], steam_id: steam[2], team: 2, nick: 'c', rounds: 26, rating: 1, kills: 0, deaths: 0, k1: 0 },
     ]));
     check(await a.rpc('elo_recompute_all'));
 
@@ -123,8 +123,12 @@ describe('temporadas', () => {
     const body = await res.json();
     expect(body.items.map((x: { player: { alias: string }; rank: number; medal: { name: string } | null }) => [x.player.alias, x.rank, x.medal?.name ?? null]))
       .toEqual([[nicks[0], 1, 'Campeón'], [nicks[1], 2, 'Subcampeón'], [nicks[2], 3, null]]);
-    expect(body.items[0]).toMatchObject({ matches: 1, wins: 1, losses: 0, level: 10 });
-    expect(body.items[2]).toMatchObject({ matches: 2, wins: 0, losses: 2 });
+    expect(body.items[0]).toMatchObject({ matches: 1, wins: 1, losses: 0, level: 10, kd: 2, rating: expect.any(Number), teams: [] });
+    expect(body.items[2]).toMatchObject({ matches: 2, wins: 0, losses: 2, kd: 0 });
+
+    // Rating y K/D de la temporada, filtro de nivel y orden por K/D (replanteo 30).
+    const lv = await (await call('GET', `/api/v1/seasons/${seasonId}/standings?q=${seed}&level=10&sort=kd&order=desc`, undefined, '')).json();
+    expect(lv.items.map((x: { player: { alias: string } }) => x.player.alias)).toEqual([nicks[0], nicks[1]]);
   });
 
   it('vista previa: no cambia nada', async () => {
@@ -163,7 +167,7 @@ describe('temporadas', () => {
     expect(cur).toMatchObject({ id: r.next_season_id, number: 2, name: 'Temporada 2', top_n: 20, min_matches: 20 });
 
     const foto = await (await call('GET', `/api/v1/seasons/${seasonId}/standings?q=${seed}`, undefined, '')).json();
-    expect(foto.items[0]).toMatchObject({ rank: 1, elo: elo[0], elo_after: 2001 + Math.round((elo[0]! - 2001) * 0.1), medal: { name: 'Campeón', icon: '🏆' } });
+    expect(foto.items[0]).toMatchObject({ rank: 1, elo: elo[0], elo_after: 2001 + Math.round((elo[0]! - 2001) * 0.1), medal: { name: 'Campeón', icon: '🏆' }, kd: 2 });
   });
 
   it('el jugador: medalla con su temporada e historial', async () => {

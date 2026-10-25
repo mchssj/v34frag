@@ -30,12 +30,20 @@ const Roster = {
   name: z.string().trim().max(24).optional().openapi({ description: 'Nombre del bando (por defecto, "Pick de <alias>")' }),
 };
 
+export const MapPoolNames = z
+  .array(z.string().regex(/^[a-z0-9_]{2,40}$/))
+  .min(1)
+  .max(20)
+  .nullable()
+  .openapi({ description: 'Pool del veto (nombres del catálogo, disponibles y sin repetir; al menos el BO más alto). `null`: el pool por defecto' });
+
 export const PcwPostBody = z
   .object({
     best_of: BestOf,
     maps: z.string().trim().max(120).optional(),
     starts_at: z.iso.datetime({ offset: true }).optional().openapi({ description: 'Sin hora: a convenir' }),
     note: z.string().trim().max(200).optional(),
+    map_pool: MapPoolNames.optional(),
     ...Roster,
   })
   .openapi('PcwPostBody');
@@ -62,6 +70,7 @@ export const PcwPost = z
     status: z.string(),
     match_id: z.uuid().nullable(),
     created_at: z.string(),
+    map_pool: z.array(z.string()).nullable().openapi({ description: 'Pool del veto; `null`: el pool por defecto' }),
     side: Side,
   })
   .openapi('PcwPost');
@@ -72,10 +81,22 @@ export const MapPoolItem = z
   .object({
     name: z.string().regex(/^[a-z0-9_]{2,40}$/).openapi({ example: 'de_inferno' }),
     versions: z.array(z.string().regex(/^[a-z0-9_]{2,40}$/)).min(1).max(5).optional().openapi({ description: 'Versiones del servidor; la primera es el nombre. Por defecto, solo el nombre' }),
-    active: z.boolean().default(true),
+    active: z.boolean().default(true).openapi({ description: 'Disponible. Un mapa no se borra: se retira con `false`' }),
+    mixes: z.boolean().optional().openapi({ description: 'Sale en el select de Mixes. Si no viene, queda como estaba (en un mapa nuevo, como `active`)' }),
+    veto_default: z.boolean().optional().openapi({ description: 'Pool por defecto del veto. Si no viene, queda como estaba (en un mapa nuevo, como `active`)' }),
   })
   .openapi('MapPoolItem');
-export const MapPoolBody = z.object({ maps: z.array(MapPoolItem).min(2).max(20) }).openapi('MapPoolBody');
+export const MapPoolBody = z
+  .object({ maps: z.array(MapPoolItem).min(2).max(40).openapi({ description: 'El catálogo completo, en orden: tiene que traer todos los mapas que ya existen' }) })
+  .openapi('MapPoolBody');
+export const MapNameParam = z.object({ name: z.string().regex(/^[a-z0-9_]{2,40}$/).openapi({ param: { name: 'name', in: 'path' }, example: 'de_inferno' }) });
+export const MapImageUpload = z
+  .object({
+    file: z
+      .custom<File>((v) => typeof File !== 'undefined' && v instanceof File, { message: 'Falta el archivo (campo "file").' })
+      .openapi({ type: 'string', format: 'binary', description: 'JPEG, PNG o WebP, máximo 2 MB. Captura horizontal sin HUD, idealmente 1920×1080.' }),
+  })
+  .openapi('MapImageUpload');
 
 export const PcwPostQuery = listQuery(['created_at', 'starts_at'], { sort: 'created_at', order: 'desc' }).extend({
   best_of: z.coerce.number().int().refine((v) => [1, 3, 5].includes(v), 'BO1, BO3 o BO5').optional(),
@@ -87,9 +108,21 @@ export const PcwPostList = Envelope(PcwPost).openapi('PcwPostList');
 
 export const MapQuery = listQuery(['position', 'name'], { sort: 'position', order: 'asc' }).extend({
   q: z.string().max(40).optional(),
-  include_inactive: boolParam('Incluir los mapas desactivados (para el admin)'),
+  include_inactive: boolParam('Incluir los mapas retirados (para el admin y para las fotos de las salas viejas)'),
+  mixes: boolParam('`true` solo los del select de Mixes'),
+  veto_default: boolParam('`true` solo los del pool por defecto del veto'),
 });
-export const MapItem = z.object({ name: z.string(), versions: z.array(z.string()), active: z.boolean(), position: z.number().int() }).openapi('MapItem');
+export const MapItem = z
+  .object({
+    name: z.string(),
+    versions: z.array(z.string()),
+    active: z.boolean().openapi({ description: 'Disponible (`false`: retirado)' }),
+    position: z.number().int(),
+    mixes: z.boolean().openapi({ description: 'Sale en el select de Mixes' }),
+    veto_default: z.boolean().openapi({ description: 'En el pool por defecto del veto (PCW y torneos sin pool propio)' }),
+    image_url: z.string().nullable().openapi({ description: 'Foto del mapa: fondo del marcador de la sala. Vale para todas sus versiones' }),
+  })
+  .openapi('MapItem');
 export const MapList = Envelope(MapItem).openapi('MapList');
 
 export const ServerQuery = listQuery(['name'], { sort: 'name', order: 'asc' }).extend({ q: z.string().max(60).optional() });

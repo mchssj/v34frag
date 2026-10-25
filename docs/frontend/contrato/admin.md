@@ -8,7 +8,8 @@
 |---|---|---|
 | Formatos de PCW | `PUT /api/v1/admin/pcw/formats` | Disponible |
 | Organizadores | `PUT /api/v1/admin/users/{id}/role` (`user` u `organizer`); la lista sale de `GET /api/v1/admin/users` | Disponible |
-| Pool de mapas | `GET /api/v1/maps` y `PUT /api/v1/admin/maps` (lista completa en orden, con versiones y activos) | Disponible |
+| Catálogo de mapas | `GET /api/v1/maps?include_inactive=true` y `PUT /api/v1/admin/maps`: la lista completa en orden, con versiones, `active` (disponible; `false` = retirado), `mixes` (sale en el select de Mixes) y `veto_default` (pool por defecto del veto). **No borra:** tiene que traer todos los mapas que existen (si falta uno, `400`). Al menos 2 en el pool por defecto, y un retirado no puede estar en él. `mixes` y `veto_default` que no vienen quedan como estaban (en un mapa nuevo, como `active`) | Disponible |
+| Foto de un mapa | `POST /api/v1/admin/maps/{name}/image` (`multipart/form-data`, campo `file`, JPG/PNG/WebP de hasta 2 MB; reemplaza a la anterior) y `DELETE` de la misma ruta para quitarla. Devuelven el mapa. Es el fondo del marcador de la sala del mix y vale para todas sus versiones | Disponible |
 | Resultado de una PCW | `POST /api/v1/admin/pcw/matches/{id}/result` (`{ maps }`) | Disponible |
 | Partidas huérfanas | `DELETE /api/v1/admin/matches/{id}` (sin stats) | Disponible |
 | Torneos | Lo mismo que el organizador, sobre todos los torneos | Disponible |

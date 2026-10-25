@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { admin, createUser, localEnv } from './local';
 
@@ -41,12 +41,31 @@ async function team() {
   return { id: t.id as string, name: t.name as string, cap, players };
 }
 
+// Las pruebas usan el catálogo de mapas del replanteo 10 (8 mapas, Inferno con dos versiones) y dejan el que había.
+const SEED = [
+  ['de_dust2_ob'], ['de_cache'], ['de_cbble'], ['de_inferno', 'de_inferno_classic'], ['de_mirage_rc1'], ['de_nuke_old_blue'], ['de_season'], ['de_tuscan'],
+].map((versions, i) => ({ name: versions[0]!, versions, position: i + 1, active: true, mixes: true, veto_default: true }));
+let poolBefore: Record<string, unknown>[] = [];
+async function setPool(rows: Record<string, unknown>[]) {
+  const sb = admin();
+  const del = await sb.from('map_pool').delete().not('name', 'is', null);
+  if (del.error) throw del.error;
+  const ins = await sb.from('map_pool').insert(rows);
+  if (ins.error) throw ins.error;
+}
+
 let adm: U;
 let org: U;
 beforeAll(async () => {
+  poolBefore = (await admin().from('map_pool').select('*')).data ?? [];
+  await setPool(SEED);
   adm = await createUser({ role: 'admin' });
   org = await createUser({ tag: `Org${rnd()}` });
   expect((await req('PUT', `/api/v1/admin/users/${org.id}/role`, { token: adm.token, body: { role: 'organizer' } })).status).toBe(204);
+});
+
+afterAll(async () => {
+  if (poolBefore.length) await setPool(poolBefore);
 });
 
 describe('torneo de punta a punta', () => {
@@ -174,7 +193,9 @@ describe('partida: detalle, veto, chat y código', () => {
     const t2 = t1 === a ? b : a;
 
     const pool = await req('GET', '/api/v1/maps');
-    expect(pool.body.items).toContainEqual({ name: 'de_inferno', versions: ['de_inferno', 'de_inferno_classic'], active: true, position: 4 });
+    expect(pool.body.items).toContainEqual({
+      name: 'de_inferno', versions: ['de_inferno', 'de_inferno_classic'], active: true, position: 4, mixes: true, veto_default: true, image_url: null,
+    });
 
     let d = await req('GET', `/api/v1/matches/${m.id}`, { token: t1.cap.token });
     expect(d.body.veto.sequence).toEqual(['ban', 'ban', 'pick', 'pick', 'ban', 'ban', 'ban']);
@@ -279,13 +300,90 @@ describe('PCW', () => {
 
   it('admin: pool de mapas y roles', async () => {
     const before = (await req('GET', '/api/v1/maps')).body.items;
-    const maps = before.map((m: { name: string; versions: string[] }) => ({ name: m.name, versions: m.versions, active: m.name !== 'de_season' }));
+    const maps = before.map((m: { name: string; versions: string[] }) => ({ name: m.name, versions: m.versions, active: m.name !== 'de_season', veto_default: m.name !== 'de_season' }));
     expect((await req('PUT', '/api/v1/admin/maps', { token: org.token, body: { maps } })).status).toBe(403);
     expect((await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps } })).status).toBe(204);
     expect((await req('GET', '/api/v1/maps')).body.items.map((m: { name: string }) => m.name)).not.toContain('de_season');
     expect((await req('GET', '/api/v1/maps?include_inactive=true&q=season')).body.items).toEqual([expect.objectContaining({ name: 'de_season', active: false })]);
-    expect((await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps: before.map((m: { name: string; versions: string[] }) => ({ name: m.name, versions: m.versions, active: true })) } })).status).toBe(204);
+    // Un mapa no se borra: si falta en la lista, 400.
+    const short = await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps: maps.slice(1) } });
+    expect(short.status).toBe(400);
+    expect(short.body.error.message).toContain('Faltan: de_dust2_ob');
+    // Retirado y en el pool por defecto: 400.
+    const bad = maps.map((m: { name: string }) => (m.name === 'de_season' ? { ...m, veto_default: true } : m));
+    expect((await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps: bad } })).status).toBe(400);
+    expect((await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps: before.map((m: { name: string; versions: string[] }) => ({ name: m.name, versions: m.versions, active: true, veto_default: true })) } })).status).toBe(204);
+    expect((await req('GET', '/api/v1/maps?mixes=true')).body.total).toBe(8);
     expect((await req('PUT', `/api/v1/admin/users/${adm.id}/role`, { token: adm.token, body: { role: 'user' } })).status).toBe(400);
     expect((await req('GET', '/auth/me', { token: org.token })).body.role).toBe('organizer');
+  });
+});
+
+describe('catálogo de mapas: pools propios y foto', () => {
+  it('torneo con pool propio: el veto usa ese pool, que no cambia después del primer veto', async () => {
+    // de_russka: disponible, fuera del pool por defecto y de Mixes.
+    expect((await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps: [...SEED, { name: 'de_russka', active: true, mixes: false, veto_default: false }] } })).status).toBe(204);
+    expect((await req('GET', '/api/v1/maps?veto_default=true')).body.items.map((m: { name: string }) => m.name)).not.toContain('de_russka');
+
+    const body = { name: `Pool ${rnd()}`, template: 'single', config: { bo: 1, bo_semi: 1, bo_final: 1, bo_third: 1 }, players_max: 5 };
+    expect((await req('POST', '/api/v1/events', { token: org.token, body: { ...body, map_pool: ['de_russka', 'de_nope'] } })).body.error.message).toBe('El mapa de_nope no está disponible');
+    const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { ...body, map_pool: ['de_russka', 'de_cache', 'de_tuscan'] } })).body.id;
+    expect((await req('GET', `/api/v1/events/${ev}`)).body.map_pool).toEqual(['de_russka', 'de_cache', 'de_tuscan']);
+    const [a, b] = await Promise.all([team(), team()]);
+    for (const t of [a, b]) await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { players: t.players } });
+    await req('POST', `/api/v1/events/${ev}/generate`, { token: org.token });
+    const m = (await req('GET', `/api/v1/matches?event=${ev}`)).body.items[0];
+    const t1 = m.side1.team.id === a.id ? a : b;
+
+    const d = await req('GET', `/api/v1/matches/${m.id}`, { token: t1.cap.token });
+    expect(d.body.veto.pool.map((x: { name: string }) => x.name)).toEqual(['de_cache', 'de_tuscan', 'de_russka']);
+    expect(d.body.veto.sequence).toEqual(['ban', 'ban']);
+    const v = (map: string) => req('POST', `/api/v1/matches/${m.id}/veto`, { token: t1.cap.token, body: { map } });
+    expect((await v('de_dust2_ob')).body.error.message).toBe('Ese mapa no está en el pool');
+    expect((await v('de_russka')).status).toBe(204);
+    const change = await req('PATCH', `/api/v1/events/${ev}`, { token: org.token, body: { map_pool: ['de_cache', 'de_tuscan', 'de_cbble'] } });
+    expect(change.body.error.message).toBe('El pool de mapas del torneo no se cambia después del primer veto');
+    expect((await req('PUT', '/api/v1/admin/maps', { token: adm.token, body: { maps: [...SEED, { name: 'de_russka', active: false, mixes: false, veto_default: false }] } })).status).toBe(204);
+  });
+
+  it('PCW con pool propio: al menos su BO, y el veto de la partida lo usa', async () => {
+    const [a, b] = await Promise.all([team(), team()]);
+    const short = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 3, players: a.players.slice(0, 4), map_pool: ['de_cache', 'de_cbble'] } });
+    expect(short.body.error.message).toBe('El pool de mapas necesita al menos 3 mapas (el BO más alto)');
+    const post = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 1, players: a.players.slice(0, 4), map_pool: ['de_cache', 'de_cbble'] } });
+    expect(post.status).toBe(201);
+    const listed = (await req('GET', '/api/v1/pcw/posts?per=100')).body.items.find((p: { id: string }) => p.id === post.body.id);
+    expect(listed.map_pool).toEqual(['de_cache', 'de_cbble']);
+    const acc = await req('POST', `/api/v1/pcw/posts/${post.body.id}/accept`, { token: b.cap.token, body: { players: b.players.slice(0, 4) } });
+    const d = await req('GET', `/api/v1/matches/${acc.body.id}`, { token: a.cap.token });
+    expect(d.body.veto.pool.map((x: { name: string }) => x.name)).toEqual(['de_cache', 'de_cbble']);
+    expect(d.body.veto.sequence).toEqual(['ban']);
+    expect((await req('POST', `/api/v1/pcw/matches/${acc.body.id}/cancel`, { token: a.cap.token })).status).toBe(204);
+  });
+
+  it('foto de un mapa: se sube al bucket, reemplaza a la anterior y se quita', async () => {
+    const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), (ch) => ch.charCodeAt(0));
+    const up = (token = adm.token) => {
+      const fd = new FormData();
+      fd.append('file', new File([png], 'a.png', { type: 'image/png' }));
+      return app.request('/api/v1/admin/maps/de_tuscan/image', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd }, env);
+    };
+    const files = async () => (await admin().storage.from('photos').list('maps/de_tuscan')).data ?? [];
+    expect((await up(org.token)).status).toBe(403);
+    const first = await up();
+    expect(first.status).toBe(200);
+    const url = (await first.json()).image_url as string;
+    expect(url).toContain('/photos/maps/de_tuscan/');
+    expect((await fetch(url)).status).toBe(200);
+    const second = (await (await up()).json()).image_url as string;
+    expect(second).not.toBe(url);
+    await new Promise((r) => setTimeout(r, 300));
+    expect((await files()).length).toBe(1);
+    expect((await req('GET', '/api/v1/maps?q=tuscan')).body.items[0].image_url).toBe(second);
+    const gone = await req('DELETE', '/api/v1/admin/maps/de_tuscan/image', { token: adm.token });
+    expect(gone.body.image_url).toBeNull();
+    await new Promise((r) => setTimeout(r, 300));
+    expect((await files()).length).toBe(0);
+    expect((await req('DELETE', '/api/v1/admin/maps/de_nope/image', { token: adm.token })).status).toBe(404);
   });
 });

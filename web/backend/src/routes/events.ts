@@ -30,7 +30,7 @@ import { Created } from '../schemas/teams';
 import { MATCH_LIST, toSummary, type MatchRow } from '../services/matches';
 
 const LIST = 'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, teams';
-const EXTRA = 'id, rules, min_teams, players_min, players_max, config, tie_pending, drawn_at, drawn_by';
+const EXTRA = 'id, rules, min_teams, players_min, players_max, config, tie_pending, drawn_at, drawn_by, map_pool';
 const done = { 204: { description: 'Hecho' } } as const;
 
 type EventRow = {
@@ -216,6 +216,7 @@ export const events = createRouter()
       players_max: extra.players_max,
       config: (extra.config ?? {}) as Record<string, unknown>,
       tie_pending: (extra.tie_pending as { grp: number } | null) ?? null,
+      map_pool: extra.map_pool,
       draw: extra.drawn_at
         ? {
             at: extra.drawn_at,

@@ -99,8 +99,10 @@ describe('temporadas: respuestas', () => {
       if (url.pathname.endsWith('/season_list')) return Response.json(ROW);
       if (url.pathname.endsWith('/season_standings_list'))
         return Response.json([
-          { player_id: PLAYER, nick: 'Alfa', photo_url: null, rank: 1, eligible: true, elo: 2540, peak_elo: 2600, matches: 25, wins: 15, losses: 10, elo_after: 2055, tier: 'Campeón', icon: '🏆' },
-          { player_id: USER, nick: null, photo_url: null, rank: null, eligible: false, elo: 900, peak_elo: null, matches: null, wins: null, losses: null, elo_after: null, tier: null, icon: null },
+          { player_id: PLAYER, nick: 'Alfa', photo_url: null, rank: 1, eligible: true, elo: 2540, peak_elo: 2600, matches: 25, wins: 15, losses: 10, elo_after: 2055, tier: 'Campeón', icon: '🏆',
+            teams: [{ id: SEASON, name: 'Equipo', tag: 'EQ' }], rating: '1.12', kd: 1.3 },
+          { player_id: USER, nick: null, photo_url: null, rank: null, eligible: false, elo: 900, peak_elo: null, matches: null, wins: null, losses: null, elo_after: null, tier: null, icon: null,
+            teams: null, rating: null, kd: null },
         ]);
       return undefined;
     });
@@ -108,12 +110,32 @@ describe('temporadas: respuestas', () => {
     expect(body.items[0]).toEqual({
       rank: 1, player: { id: PLAYER, alias: 'Alfa', photo_url: null }, eligible: true, elo: 2540, level: 10, peak_elo: 2600,
       matches: 25, wins: 15, losses: 10, elo_after: 2055, medal: { name: 'Campeón', icon: '🏆' },
+      teams: [{ id: SEASON, name: 'Equipo', tag: 'EQ' }], rating: 1.12, kd: 1.3,
     });
-    expect(body.items[1]).toMatchObject({ rank: null, player: { alias: '' }, level: 3, peak_elo: 900, matches: 0, elo_after: 900, medal: null });
+    expect(body.items[1]).toMatchObject({ rank: null, player: { alias: '' }, level: 3, peak_elo: 900, matches: 0, elo_after: 900, medal: null,
+      teams: [], rating: null, kd: null });
     const q = calls.find((x) => x.url.pathname.endsWith('/season_standings_list'))!.url.searchParams;
     expect(q.get('search')).toBe('ilike.%alfa%');
     expect(q.get('eligible')).toBe('eq.true');
     expect(q.get('order')).toBe('rank.asc.nullslast,elo.desc.nullslast,player_id.asc');
+  });
+
+  it('ranking: filtros de nivel y equipo, y orden por rating', async () => {
+    postgrest((url) => (url.pathname.endsWith('/season_list') ? Response.json(ROW) : undefined));
+    const get = async (qs: string) => {
+      calls.length = 0;
+      expect((await call('GET', `/api/v1/seasons/${SEASON}/standings?${qs}`)).status).toBe(200);
+      return calls.find((x) => x.url.pathname.endsWith('/season_standings_list'))!.url.searchParams;
+    };
+    let q = await get(`level=7-9&team=${PLAYER}&sort=rating&order=desc`);
+    expect(q.getAll('elo')).toEqual(['gte.1351', 'lt.2001']);
+    expect(q.get('teams')).toBe(`cs.[{"id":"${PLAYER}"}]`);
+    expect(q.get('order')).toBe('rating.desc.nullslast,player_id.asc');
+    q = await get('level=10&sort=kd');
+    expect(q.getAll('elo')).toEqual(['gte.2001']);
+    q = await get('level=1-6');
+    expect(q.getAll('elo')).toEqual(['lt.1351']);
+    expect((await call('GET', `/api/v1/seasons/${SEASON}/standings?level=5`)).status).toBe(400);
   });
 
   it('vista previa: filas, filtros y resumen', async () => {

@@ -128,7 +128,7 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/players/{id}/elo-adjustments` | — | **`applied_at` desc** |
 | `GET /api/v1/admin/elo/adjustments` | `player`, `q`, `from`, `to` | **`applied_at` desc**, `delta` |
 | `GET /api/v1/seasons` | `status` | **`number` desc** |
-| `GET /api/v1/seasons/{id}/standings` | `q`, `eligible` | **`rank` asc** (sin puesto al final, por ELO), `elo`, `matches`, `alias` |
+| `GET /api/v1/seasons/{id}/standings` | `q`, `eligible`, `level` (`10`, `7-9`, `1-6`), `team` | **`rank` asc** (sin puesto al final, por ELO), `elo`, `matches`, `alias`, `rating`, `kd` |
 | `GET /api/v1/admin/seasons/preview` | `top_n`, `min_matches`, `reset_pct`, `reset_floor` (obligatorios), `q`, `reset`, `medal` | **`rank` asc**, `elo`, `alias` |
 | `GET /api/v1/players/{id}/teams` | `active` | **`joined_at` desc**, `left_at`, `name` |
 | `GET /api/v1/teams` | `kind` (por defecto `official`), `q`, `has_space` | **`name` asc**, `members` |
@@ -140,7 +140,7 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/events/{id}/matches` | `stage`, `phase`, `grp`, `round`, `status`, `team`, `include_byes` | **`bracket` asc** (fase, etapa, grupo, ronda, posición), `starts_at`, `played_at` |
 | `GET /api/v1/events/{id}/standings` | `stage` (`group`, `swiss`), `grp`, `phase` | **`place` asc** |
 | `GET /api/v1/pcw/posts` | `best_of`, `q`, `from`, `to` | **`created_at` desc**, `starts_at` |
-| `GET /api/v1/maps` | `q`, `include_inactive` | **`position` asc**, `name` |
+| `GET /api/v1/maps` | `q`, `include_inactive`, `mixes`, `veto_default` | **`position` asc**, `name` |
 | `GET /api/v1/me/team-invites` | `kind` (`invite`, `request`), `team` | **`created_at` desc**, `expires_at` |
 | `GET /api/v1/teams/{id}/pending` | `kind` | **`created_at` desc**, `expires_at` |
 | `GET /api/v1/me/pcw/matches` | `status` | **`starts_at` desc**, `played_at` |

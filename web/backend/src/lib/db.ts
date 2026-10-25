@@ -50,6 +50,14 @@ export function searchTerm(q: string | undefined): string | null {
 /** ELO desde el que empieza cada nivel (1 a 10), como la web vieja. */
 export const LEVEL_FLOORS = [0, 501, 751, 901, 1051, 1201, 1351, 1531, 1751, 2001] as const;
 
+/** Rango de ELO de un filtro de nivel (`10`, `7-9` o `1-6`): nivel 7 empieza en LEVEL_FLOORS[6] y el 10 en LEVEL_FLOORS[9]. */
+export function levelBounds(level: '10' | '7-9' | '1-6' | undefined): { gte?: number; lt?: number } {
+  if (level === '10') return { gte: LEVEL_FLOORS[9] };
+  if (level === '7-9') return { gte: LEVEL_FLOORS[6], lt: LEVEL_FLOORS[9] };
+  if (level === '1-6') return { lt: LEVEL_FLOORS[6] };
+  return {};
+}
+
 export function levelOf(elo: number | null | undefined): number | null {
   if (elo === null || elo === undefined) return null;
   let level = 1;

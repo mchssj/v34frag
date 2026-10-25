@@ -2,6 +2,8 @@ import { AppError } from './errors';
 
 // Lo mismo que acepta el bucket avatars en Supabase (file_size_limit y allowed_mime_types).
 export const AVATAR_MAX_BYTES = 1024 * 1024;
+// Fotos de la maestra de mapas (bucket photos, sin límite propio: lo pone la API).
+export const MAP_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 
 export type ImageType = { mime: 'image/jpeg' | 'image/png' | 'image/webp'; ext: 'jpg' | 'png' | 'webp' };
 
