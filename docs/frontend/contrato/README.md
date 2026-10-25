@@ -86,6 +86,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Notificaciones** (nuevo, 2026-10-25) | `GET /api/v1/notifications` (lista), `/notifications/unread-count` (contador con ETag: consultarlo cada 30 s, al enfocar y tras una acción) y `POST /notifications/read`. Las crea la base; el texto lo arma el front con `type` y `data`. Preferencias por categoría en `preferences.notifications` de `/me/profile` (`news` apagada por defecto; tres obligatorias) | Sección [12](notificaciones.md) |
 | **Líder en el historial de equipos y orden de los sin puesto** (2026-10-24) | `GET /api/v1/players/{id}/teams` suma `is_captain` en cada fila. En `GET /api/v1/seasons/{id}/standings` y en la vista previa del cierre, los que no llegan al mínimo van al final por ELO de mayor a menor (antes, de menor a mayor) | Secciones [5](jugadores.md) y [8f](temporadas.md) |
 | **Ranking de equipos** (2026-10-24) | Cada fila suma `win_rate`, `trend` (puestos que subió o bajó desde hace 30 días) y `form` (últimos 5 resultados) | Sección [7](equipos.md) |
+| **Aviso de `!claim` (aclaración)** (2026-10-25) | La ficha sin cuenta ya no muestra "¿Sos vos? Vinculala con `!claim`". El perfil sin reclamar muestra "¿Este SteamID es tuyo? Vincúlalo desde tu cuenta" con un botón a `/profile/link`. Sin cambios en la API | Sección [5b](jugadores.md) |
 
 El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
 
