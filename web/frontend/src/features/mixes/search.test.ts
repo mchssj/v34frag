@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { pageList } from "./MixesList"
+import { pageList } from "@/components/brand/ListPagination"
 import { mixesSearchSchema, toMixesQuery } from "./search"
 
 describe("mixesSearchSchema", () => {

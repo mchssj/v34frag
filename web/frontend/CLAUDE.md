@@ -54,9 +54,9 @@ src/
   api/        schema.d.ts (generado), client.ts (openapi-fetch + authFetch), errors.ts (ApiError y mensajes)
   auth/       tokenStore, refresh, authFetch, queries, guards, permissions (reglas por rol), AuthSync, schemas, callback, redirect
   assets/     imagen del hero (AVIF y WebP)
-  components/ ui/ (shadcn), brand/ (Brand: isotipo, wordmark y lockup de CM League; ThemeToggle de la app, ThemeSwitch de la landing, CountryFlag, LevelBadge, LiveDot, SectionHeading), theme-provider
+  components/ ui/ (shadcn), brand/ (Brand: isotipo, wordmark y lockup de CM League; ThemeToggle de la app, ThemeSwitch de la landing, CountryFlag, LevelBadge, ListPagination, LiveDot, SectionHeading), theme-provider
   config/     site.ts: datos fijos que la API todavía no expone (servidores, Discord, IP del !claim)
-  features/   componentes por dominio (auth/, auth/register/, landing/, maps/, mixes/, onboarding/, profile/, public/, shell/, theme-fx/)
+  features/   componentes por dominio (auth/, auth/register/, landing/, maps/, mixes/, onboarding/, profile/, public/, ranking/, shell/, theme-fx/)
   lib/        env.ts (VITE_API_URL validada), image.ts (recorte del avatar), useMediaQuery.ts
   routes/     una ruta por archivo; _auth = páginas sin sesión, _app = con sesión, _admin = rol admin
   test/       setup y utilidades de prueba
