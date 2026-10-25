@@ -16,7 +16,6 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppHallOfFameRouteImport } from './routes/_app/hall-of-fame'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
-import { Route as AppMixesRouteImport } from './routes/_app/mixes'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
@@ -32,6 +31,7 @@ import { Route as AppEventsIdRouteImport } from './routes/_app/events.$id'
 import { Route as AppMatchIdRouteImport } from './routes/_app/match.$id'
 import { Route as AppMatchesIndexRouteImport } from './routes/_app/matches.index'
 import { Route as AppMatchesResultsRouteImport } from './routes/_app/matches.results'
+import { Route as AppMixesIndexRouteImport } from './routes/_app/mixes.index'
 import { Route as AppPlayerNickRouteImport } from './routes/_app/player.$nick'
 import { Route as AppPlayersIndexRouteImport } from './routes/_app/players.index'
 import { Route as AppPlayersCompareRouteImport } from './routes/_app/players.compare'
@@ -43,6 +43,7 @@ import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.pri
 import { Route as AppRankingIndexRouteImport } from './routes/_app/ranking.index'
 import { Route as AppRankingTeamsRouteImport } from './routes/_app/ranking.teams'
 import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
+import { Route as AppMixesLiveUidRouteImport } from './routes/_app/mixes.live.$uid'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -75,11 +76,6 @@ const AppHallOfFameRoute = AppHallOfFameRouteImport.update({
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMixesRoute = AppMixesRouteImport.update({
-  id: '/mixes',
-  path: '/mixes',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMyteamRoute = AppMyteamRouteImport.update({
@@ -157,6 +153,11 @@ const AppMatchesResultsRoute = AppMatchesResultsRouteImport.update({
   path: '/matches/results',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMixesIndexRoute = AppMixesIndexRouteImport.update({
+  id: '/mixes/',
+  path: '/mixes/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPlayerNickRoute = AppPlayerNickRouteImport.update({
   id: '/player/$nick',
   path: '/player/$nick',
@@ -212,6 +213,11 @@ const AppTeamsIdRoute = AppTeamsIdRouteImport.update({
   path: '/teams/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
+  id: '/mixes/live/$uid',
+  path: '/mixes/live/$uid',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -219,7 +225,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRouteWithChildren
   '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
-  '/mixes': typeof AppMixesRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
   '/profile': typeof AppProfileRouteWithChildren
@@ -243,9 +248,11 @@ export interface FileRoutesByFullPath {
   '/teams/$id': typeof AppTeamsIdRoute
   '/events/': typeof AppEventsIndexRoute
   '/matches/': typeof AppMatchesIndexRoute
+  '/mixes/': typeof AppMixesIndexRoute
   '/players/': typeof AppPlayersIndexRoute
   '/profile/': typeof AppProfileIndexRoute
   '/ranking/': typeof AppRankingIndexRoute
+  '/mixes/live/$uid': typeof AppMixesLiveUidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -253,7 +260,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminRouteWithChildren
   '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
-  '/mixes': typeof AppMixesRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
   '/login': typeof AuthLoginRoute
@@ -276,9 +282,11 @@ export interface FileRoutesByTo {
   '/teams/$id': typeof AppTeamsIdRoute
   '/events': typeof AppEventsIndexRoute
   '/matches': typeof AppMatchesIndexRoute
+  '/mixes': typeof AppMixesIndexRoute
   '/players': typeof AppPlayersIndexRoute
   '/profile': typeof AppProfileIndexRoute
   '/ranking': typeof AppRankingIndexRoute
+  '/mixes/live/$uid': typeof AppMixesLiveUidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -289,7 +297,6 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/hall-of-fame': typeof AppHallOfFameRoute
   '/_app/home': typeof AppHomeRoute
-  '/_app/mixes': typeof AppMixesRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
   '/_app/profile': typeof AppProfileRouteWithChildren
@@ -313,9 +320,11 @@ export interface FileRoutesById {
   '/_app/teams/$id': typeof AppTeamsIdRoute
   '/_app/events/': typeof AppEventsIndexRoute
   '/_app/matches/': typeof AppMatchesIndexRoute
+  '/_app/mixes/': typeof AppMixesIndexRoute
   '/_app/players/': typeof AppPlayersIndexRoute
   '/_app/profile/': typeof AppProfileIndexRoute
   '/_app/ranking/': typeof AppRankingIndexRoute
+  '/_app/mixes/live/$uid': typeof AppMixesLiveUidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -325,7 +334,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/hall-of-fame'
     | '/home'
-    | '/mixes'
     | '/myteam'
     | '/pcw'
     | '/profile'
@@ -349,9 +357,11 @@ export interface FileRouteTypes {
     | '/teams/$id'
     | '/events/'
     | '/matches/'
+    | '/mixes/'
     | '/players/'
     | '/profile/'
     | '/ranking/'
+    | '/mixes/live/$uid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -359,7 +369,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/hall-of-fame'
     | '/home'
-    | '/mixes'
     | '/myteam'
     | '/pcw'
     | '/login'
@@ -382,9 +391,11 @@ export interface FileRouteTypes {
     | '/teams/$id'
     | '/events'
     | '/matches'
+    | '/mixes'
     | '/players'
     | '/profile'
     | '/ranking'
+    | '/mixes/live/$uid'
   id:
     | '__root__'
     | '/'
@@ -394,7 +405,6 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/hall-of-fame'
     | '/_app/home'
-    | '/_app/mixes'
     | '/_app/myteam'
     | '/_app/pcw'
     | '/_app/profile'
@@ -418,9 +428,11 @@ export interface FileRouteTypes {
     | '/_app/teams/$id'
     | '/_app/events/'
     | '/_app/matches/'
+    | '/_app/mixes/'
     | '/_app/players/'
     | '/_app/profile/'
     | '/_app/ranking/'
+    | '/_app/mixes/live/$uid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -479,13 +491,6 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AppHomeRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/mixes': {
-      id: '/_app/mixes'
-      path: '/mixes'
-      fullPath: '/mixes'
-      preLoaderRoute: typeof AppMixesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/myteam': {
@@ -593,6 +598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMatchesResultsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/mixes/': {
+      id: '/_app/mixes/'
+      path: '/mixes'
+      fullPath: '/mixes/'
+      preLoaderRoute: typeof AppMixesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/player/$nick': {
       id: '/_app/player/$nick'
       path: '/player/$nick'
@@ -670,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeamsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/mixes/live/$uid': {
+      id: '/_app/mixes/live/$uid'
+      path: '/mixes/live/$uid'
+      fullPath: '/mixes/live/$uid'
+      preLoaderRoute: typeof AppMixesLiveUidRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -717,7 +736,6 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppHallOfFameRoute: typeof AppHallOfFameRoute
   AppHomeRoute: typeof AppHomeRoute
-  AppMixesRoute: typeof AppMixesRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
   AppProfileRoute: typeof AppProfileRouteWithChildren
@@ -730,15 +748,16 @@ interface AppRouteChildren {
   AppTeamsIdRoute: typeof AppTeamsIdRoute
   AppEventsIndexRoute: typeof AppEventsIndexRoute
   AppMatchesIndexRoute: typeof AppMatchesIndexRoute
+  AppMixesIndexRoute: typeof AppMixesIndexRoute
   AppPlayersIndexRoute: typeof AppPlayersIndexRoute
   AppRankingIndexRoute: typeof AppRankingIndexRoute
+  AppMixesLiveUidRoute: typeof AppMixesLiveUidRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppHallOfFameRoute: AppHallOfFameRoute,
   AppHomeRoute: AppHomeRoute,
-  AppMixesRoute: AppMixesRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
   AppProfileRoute: AppProfileRouteWithChildren,
@@ -751,8 +770,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppTeamsIdRoute: AppTeamsIdRoute,
   AppEventsIndexRoute: AppEventsIndexRoute,
   AppMatchesIndexRoute: AppMatchesIndexRoute,
+  AppMixesIndexRoute: AppMixesIndexRoute,
   AppPlayersIndexRoute: AppPlayersIndexRoute,
   AppRankingIndexRoute: AppRankingIndexRoute,
+  AppMixesLiveUidRoute: AppMixesLiveUidRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

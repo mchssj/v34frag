@@ -6,6 +6,7 @@ const server = (over: Partial<ServerStatus>): ServerStatus => ({
   id: "s",
   name: "Servidor",
   address: "1.2.3.4:27015",
+  tv_address: null,
   mode: null,
   region: null,
   online: true,

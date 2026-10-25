@@ -26,6 +26,9 @@ export function adminSectionOf(pathname: string): AdminSection | null {
   return ADMIN_SECTIONS.find((s) => s === section) ?? null
 }
 
+/** Borrar un mix desde su sala: solo admin (contrato, admin.md). */
+export const canDeleteMix = (role: Role) => role === "admin"
+
 /** Notificaciones de capitán (PCW, veto): capitanes y admin. */
 export const seesCaptainNotifications = (role: Role, isCaptain: boolean) =>
   isCaptain || role === "admin"

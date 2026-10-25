@@ -37,6 +37,10 @@ describe("activeNavKey", () => {
     expect(activeNavKey("/match/1")).toBeNull()
   })
 
+  it("la sala de un mix en vivo marca Mixes", () => {
+    expect(activeNavKey("/mixes/live/abc")).toBe("mixes")
+  })
+
   it("Administración por sección", () => {
     expect(activeNavKey("/admin/players")).toBe("admin-players")
     expect(activeNavKey("/admin")).toBeNull()
@@ -80,6 +84,8 @@ describe("breadcrumbsFor", () => {
       "Mixes",
       "Mix · de_dust2",
     ])
+    expect(labels("/mixes")).toEqual(["Mixes"])
+    expect(labels("/mixes/live/abc")).toEqual(["Mixes", "En vivo"])
   })
 
   it("subpáginas y páginas simples", () => {

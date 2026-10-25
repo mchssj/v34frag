@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { Placeholder } from "@/features/shell/Placeholder"
+import { MixMatchRoom } from "@/features/mixes/MixRoomPages"
 
 export const Route = createFileRoute("/_app/match/$id")({
   component: MatchPage,
 })
 
+// Por ahora solo los mixes tienen sala; torneos y PCW siguen con el placeholder.
 function MatchPage() {
   const { id } = Route.useParams()
-  return <Placeholder title={`Partida ${id}`} />
+  return <MixMatchRoom id={id} />
 }

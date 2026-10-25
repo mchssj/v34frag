@@ -8,18 +8,28 @@ function levelClasses(level: number) {
   return "bg-muted-foreground text-background"
 }
 
+// 26: sidebar y perfil; 22: tablas de la sala del mix; 20: MVP del listado de mixes.
+const SIZES = {
+  20: "size-5 rounded-[5px] text-[10px] font-semibold",
+  22: "size-[22px] rounded-[5px] text-[11px] font-semibold",
+  26: "size-[26px] rounded-[6px] text-xs font-bold",
+} as const
+
 export function LevelBadge({
   level,
+  size = 26,
   className,
 }: {
   level: number
+  size?: keyof typeof SIZES
   className?: string
 }) {
   return (
     <span
       title={`Nivel ${level}`}
       className={cn(
-        "grid size-[26px] shrink-0 place-items-center rounded-[6px] font-mono text-xs font-bold",
+        "grid shrink-0 place-items-center font-mono",
+        SIZES[size],
         levelClasses(level),
         className
       )}

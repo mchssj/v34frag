@@ -2056,6 +2056,149 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ranking/players": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ranking de jugadores
+         * @description Jugadores con ELO (solo cuentan los mixes del servidor, con todos sus SteamID), por posición global. La posición no cambia al filtrar. Nivel: `10` (2001 o más), `7-9` (1351 a 2000) o `1-6` (menos de 1351). `elo_trend`: su ELO en sus últimos 30 mixes.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `position`, `rating`, `kd`, `matches` */
+                    sort?: "position" | "rating" | "kd" | "matches";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el alias y en los equipos actuales */
+                    q?: string;
+                    /** @description Nivel: `10`, `7-9` o `1-6` */
+                    level?: "10" | "7-9" | "1-6";
+                    /** @description Jugadores activos de un equipo oficial */
+                    team?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Ranking */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RankingPlayerList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Comparar dos jugadores
+         * @description Stats de los dos (ELO, rating, K/D, HS %, ADR, % de victorias y partidas), su ELO en los últimos 30 mixes y los mixes que jugaron juntos (mismo bando) o como rivales. `a` y `b` aceptan el id o el nick.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Jugador A: id o nick */
+                    a: string;
+                    /** @description Jugador B: id o nick */
+                    b: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Comparación */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Compare"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players": {
         parameters: {
             query?: never;
@@ -2141,13 +2284,14 @@ export interface paths {
         };
         /**
          * Ficha de un jugador
-         * @description Datos, ELO, stats y equipos actuales. Los datos personales (`details`) solo vienen si el perfil es público, si es el propio o si quien consulta es admin. Stats por mapa, medallas, historial y partidas van en sus listados.
+         * @description Datos, ELO, stats y equipos actuales. Los datos personales (`details`) solo vienen si el perfil es público, si es el propio o si quien consulta es admin. Los SteamID (`steam_id`, `steam_ids`) solo los ven el dueño y los admins. `{id}` acepta el id o el nick. Stats por mapa, medallas, historial y partidas van en sus listados.
          */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -2233,6 +2377,7 @@ export interface paths {
                 };
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -2374,6 +2519,7 @@ export interface paths {
                 };
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -2439,6 +2585,7 @@ export interface paths {
                 };
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -2509,6 +2656,7 @@ export interface paths {
                 };
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -2535,6 +2683,242 @@ export interface paths {
                 };
                 /** @description Sin sesión o sesión vencida */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/elo-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historial de ELO de un jugador
+         * @description Su ELO después de cada mix que lo movió, para el gráfico del perfil. Por defecto los 30 más recientes, del más nuevo al más viejo.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `at` */
+                    sort?: "at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Historial */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloHistoryList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/titles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Palmarés de un jugador
+         * @description Torneos que ganó (campeón) y finales que perdió (subcampeón), con el equipo con el que estaba inscrito y la fecha de la final.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `at`, `event` */
+                    sort?: "at" | "event";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `champion` o `runner_up` */
+                    result?: "champion" | "runner_up";
+                };
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Palmarés */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TitleList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/medals/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Medallas de un jugador, agrupadas
+         * @description Una fila por medalla distinta (título e icono) con la cantidad, para "Logros". El detalle de cada una está en `/players/{id}/medals`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `count`, `last_at`, `title` */
+                    sort?: "count" | "last_at" | "title";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Medallas agrupadas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalSummaryList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2772,7 +3156,7 @@ export interface paths {
         };
         /**
          * Ranking de equipos
-         * @description Equipos oficiales ordenados por puntos. Cada partida de torneo ganada suma `points.official`. Con `pcw=1` también suma `points.pcw` por cada PCW ganada jugando como el equipo. Los puntos los configura el admin.
+         * @description Equipos oficiales ordenados por puntos. Cada partida de torneo ganada suma `points.official`. Con `pcw=1` también suma `points.pcw` por cada PCW ganada jugando como el equipo. Los puntos los configura el admin. Desempate: más victorias y después menos derrotas. `trend` compara con la posición de hace 30 días; `form`, los últimos 5 resultados.
          */
         get: {
             parameters: {
@@ -6908,6 +7292,7 @@ export interface paths {
                 };
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -7181,6 +7566,7 @@ export interface paths {
                 };
                 header?: never;
                 path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
                     id: string;
                 };
                 cookie?: never;
@@ -8526,6 +8912,136 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/v1/mixes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mixes: en vivo, terminados y cancelados
+         * @description Todos los mixes en un solo listado. Por defecto, los en vivo primero y después por fecha de inicio, del más nuevo al más viejo. Una fila en vivo trae `live_uid` (su detalle en `GET /api/v1/mixes/live/{uid}`), la ronda actual y `tv`; una terminada o cancelada, `match_id` (`GET /api/v1/matches/{id}`). `mine=true` pide sesión.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `started_at`, `rounds` */
+                    sort?: "started_at" | "rounds";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en bandos, mapa, servidor y nombres de los jugadores (alias y nombre del juego) */
+                    q?: string;
+                    /** @description Mapa (contiene) */
+                    map?: string;
+                    /** @description Mixes de un servidor */
+                    server?: string;
+                    /** @description `live`, `finished` o `cancelled`. Sin filtro: todos */
+                    status?: "live" | "finished" | "cancelled";
+                    /** @description `true`: solo los mixes donde jugó el usuario (pide sesión; sin ficha, la lista viene vacía) */
+                    mine?: "true" | "false";
+                    /** @description `true`: sin los cancelados */
+                    hide_cancelled?: "true" | "false";
+                    /** @description Empezados desde */
+                    from?: string;
+                    /** @description Empezados hasta */
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mixes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MixList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mixes/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Números de los mixes
+         * @description En vivo ahora, jugadores distintos, mapa más jugado y promedio de rondas de los últimos 30 días. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Números */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MixStats"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mixes/live": {
         parameters: {
             query?: never;
@@ -8827,6 +9343,87 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/mixes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar un mix
+         * @description Mix terminado o cancelado, sin partida vinculada con !match. El admin elige qué pasa con el ELO que dio: `keep` (queda como está) o `revert` (se le resta a cada jugador). Nunca recalcula la historia. Se borran sus stats, chat, clips y la revisión de la caída; queda registrado para los admins. Pide `confirm: "estoy seguro"`.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DeleteMixBody"];
+                };
+            };
+            responses: {
+                /** @description Borrado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeletedMix"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -11167,6 +11764,14 @@ export interface components {
             elo_after: number | null;
             elo_delta: number | null;
             demo_status: string | null;
+            /** @description Torneo de la partida (en un mapa jugado con `!match`, el de su partida). null en mixes y PCW */
+            event: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+            /** @description Fase en el torneo ("Final", "Grupo A · fecha 2"…). null fuera de un torneo */
+            label: string | null;
         };
         PlayerMapStatsList: {
             items: components["schemas"]["PlayerMapStats"][];
@@ -11333,6 +11938,87 @@ export interface components {
             /** @description Tope de SteamID por ficha que se pueden pedir con `!claim` (de 1 a 4) */
             max_steam_ids: number;
         };
+        RankingPlayerList: {
+            items: components["schemas"]["RankingPlayer"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        RankingPlayer: {
+            /** @description Posición global por ELO (no cambia al filtrar; empatados comparten posición) */
+            position: number;
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+                photo_url: string | null;
+            };
+            level: number | null;
+            elo: number;
+            teams: components["schemas"]["TeamRef"][];
+            rating: number | null;
+            kd: number | null;
+            /** @description Partidas terminadas (mixes, PCW y torneos) */
+            matches: number;
+            /** @description Mixes que movieron su ELO */
+            elo_matches: number;
+            /** @description null si el perfil es privado o no tiene cuenta */
+            country: string | null;
+            /** @description Puesto preferido; null si el perfil es privado o no tiene cuenta */
+            game_role: string | null;
+            /** @description ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo */
+            elo_trend: number[];
+        };
+        TeamRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            tag: string | null;
+        };
+        Compare: {
+            a: components["schemas"]["ComparePlayer"];
+            b: components["schemas"]["ComparePlayer"];
+            together: {
+                /** @description Mixes en el mismo bando y cuántos ganaron */
+                same_team: {
+                    matches: number;
+                    wins: number;
+                };
+                /** @description Mixes como rivales y cuántos ganó A */
+                against: {
+                    matches: number;
+                    a_wins: number;
+                };
+            };
+        };
+        ComparePlayer: {
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+                photo_url: string | null;
+            };
+            teams: components["schemas"]["TeamRef"][];
+            game_role: string | null;
+            level: number | null;
+            elo: number | null;
+            rating: number | null;
+            kd: number | null;
+            /** @description % de kills con headshot */
+            hs: number | null;
+            adr: number | null;
+            /** @description % de victorias (0 a 100) */
+            win_rate: number | null;
+            /** @description Partidas terminadas */
+            matches: number;
+            elo_matches: number;
+            /** @description ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo */
+            elo_history: number[];
+        };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
             /** @description Total con los filtros aplicados */
@@ -11365,17 +12051,11 @@ export interface components {
             /** @description Equipos oficiales donde está hoy (puede ser más de uno) */
             teams: components["schemas"]["TeamRef"][];
         };
-        TeamRef: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            tag: string | null;
-        };
         /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
         PlayerDetail: components["schemas"]["PlayerSummary"] & {
-            /** @description SteamID principal */
+            /** @description SteamID principal. Solo para el dueño y los admins: para los demás, null */
             steam_id: string | null;
-            /** @description Todos sus SteamID, el principal primero */
+            /** @description Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío */
             steam_ids: string[];
             bio: string | null;
             achievements: string | null;
@@ -11445,6 +12125,69 @@ export interface components {
             joined_at: string | null;
             /** @description null = sigue en el equipo */
             left_at: string | null;
+        };
+        /** @description Un punto por mix que movió su ELO. Por defecto los 30 más recientes, del más nuevo al más viejo */
+        EloHistoryList: {
+            items: components["schemas"]["EloPoint"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        EloPoint: {
+            /** Format: uuid */
+            match_id: string;
+            map: string | null;
+            at: string | null;
+            elo_before: number | null;
+            elo_after: number;
+            elo_delta: number | null;
+        };
+        TitleList: {
+            items: components["schemas"]["Title"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        Title: {
+            event: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            };
+            /**
+             * @description `champion` (campeón) o `runner_up` (perdió la final)
+             * @enum {string}
+             */
+            result: "champion" | "runner_up";
+            team: components["schemas"]["TeamRef"] & unknown;
+            /** @description Fecha de la final (o del último partido, en una liga sin final) */
+            at: string | null;
+        };
+        /** @description Medallas agrupadas por título e icono, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
+        MedalSummaryList: {
+            items: components["schemas"]["MedalSummary"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        MedalSummary: {
+            title: string;
+            icon: string | null;
+            count: number;
+            /** @description La más reciente */
+            last_at: string;
         };
         TeamList: {
             items: components["schemas"]["TeamSummary"][];
@@ -11554,6 +12297,12 @@ export interface components {
             won: number;
             lost: number;
             points: number;
+            /** @description % de victorias (0 a 100). null sin partidas */
+            win_rate: number | null;
+            /** @description Puestos que subió (positivo) o bajó (negativo) desde hace 30 días. null si hace 30 días no tenía partidas en este modo */
+            trend: number | null;
+            /** @description Últimos 5 resultados en este modo, del más viejo al más nuevo */
+            form: ("W" | "L")[];
         };
         InviteList: {
             items: components["schemas"]["Invite"][];
@@ -11861,6 +12610,8 @@ export interface components {
              */
             mode: "mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice" | null;
             region: string | null;
+            /** @description Puerto de SourceTV */
+            tv_port: number | null;
             /** @description Partidas jugadas o asignadas en el servidor */
             matches: number;
             last_match_at: string | null;
@@ -11891,6 +12642,8 @@ export interface components {
             mode?: ("mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice") | "" | null;
             /** @description Región para mostrar en la web, texto libre (por ejemplo "Argentina"). `null` o `""` lo borra */
             region?: string | "" | null;
+            /** @description Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo. `null` o `""` lo borra */
+            tv_port?: number | "" | null;
         };
         AdminServerPatch: {
             name?: string;
@@ -11906,6 +12659,8 @@ export interface components {
             mode?: ("mix" | "competitive" | "public" | "deathmatch" | "retakes" | "practice") | "" | null;
             /** @description Región para mostrar en la web, texto libre (por ejemplo "Argentina"). `null` o `""` lo borra */
             region?: string | "" | null;
+            /** @description Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo. `null` o `""` lo borra */
+            tv_port?: number | "" | null;
             /** @description `false` revoca (el token deja de funcionar), `true` reactiva */
             active?: boolean;
         };
@@ -12451,6 +13206,8 @@ export interface components {
             } | null;
             /** @description Mix con la demo subida: link de descarga */
             demo_url: string | null;
+            /** @description Tamaño de la demo en bytes (null si no hay) */
+            demo_size: number | null;
             /** @description Código de !match: solo para los dos equipos, el organizador y los admins */
             link_code: string | null;
             roster1: components["schemas"]["RosterPlayer"][];
@@ -12756,6 +13513,89 @@ export interface components {
             /** @description Para el video (fase C): segundos después de la última kill */
             post_seconds?: number;
         };
+        /** @description Con el orden por defecto (`started_at` desc) los mixes en vivo van primero */
+        MixList: {
+            items: components["schemas"]["MixItem"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        MixItem: {
+            /**
+             * Format: uuid
+             * @description Partida (terminado o cancelado): `GET /api/v1/matches/{id}`. null en vivo
+             */
+            match_id: string | null;
+            /** @description En vivo: `GET /api/v1/mixes/live/{uid}`. null si ya terminó */
+            live_uid: string | null;
+            /** @enum {string} */
+            status: "live" | "finished" | "cancelled";
+            map: string | null;
+            server: {
+                /** Format: uuid */
+                id: string;
+                name: string | null;
+            } | null;
+            started_at: string | null;
+            /** @description null en vivo */
+            ended_at: string | null;
+            side1: components["schemas"]["LiveSide"];
+            side2: components["schemas"]["LiveSide"];
+            /** @description 1, 2 o null (en vivo, cancelado o empate) */
+            winner_side: number | null;
+            rounds_played: number;
+            /** @description En vivo: la ronda que se está jugando. null si terminó */
+            current_round: number | null;
+            /** @description En vivo: rondas del mix (sin prórroga) */
+            max_rounds: number | null;
+            /** @description En vivo sin fotos hace más de 10 minutos */
+            stale: boolean;
+            mvp: components["schemas"]["MixMvp"];
+            /** @description `none`, `pending`, `uploaded`, `missing` o `expired` */
+            demo_status: string;
+            cancel_reason: string | null;
+            tv: components["schemas"]["TvRef"];
+        };
+        LiveSide: {
+            /** @description "Equipo <nick>" o "Mix de <el que más mató>" */
+            name: string | null;
+            score: number | null;
+        };
+        /** @description El de mejor rating (parcial en vivo) */
+        MixMvp: {
+            /**
+             * Format: uuid
+             * @description Ficha, si tiene
+             */
+            player_id: string | null;
+            /** @description Alias si tiene ficha; si no, null */
+            alias: string | null;
+            /** @description Nombre que usó en el juego */
+            game_nick: string | null;
+            elo: number | null;
+            level: number | null;
+            rating: number | null;
+        } | null;
+        /** @description Solo en vivo */
+        TvRef: {
+            host: string;
+            port: number;
+        } | null;
+        MixStats: {
+            /** @description Mixes en vivo ahora (con foto en los últimos 10 minutos) */
+            live_now: number;
+            /** @description Jugadores distintos en mixes terminados de los últimos `window_days` días */
+            players_recent: number;
+            /** @description Mapa más jugado en ese período */
+            top_map: string | null;
+            /** @description Promedio de rondas por mix en ese período */
+            avg_rounds: number | null;
+            window_days: number;
+        };
         LiveMixList: {
             items: components["schemas"]["LiveMixSummary"][];
             /** @description Total con los filtros aplicados */
@@ -12789,11 +13629,7 @@ export interface components {
              * @description Vinculado con !match: la partida de torneo o PCW abierta
              */
             parent_match_id: string | null;
-        };
-        LiveSide: {
-            /** @description "Equipo <nick>" o "Mix de <el que más mató>" */
-            name: string | null;
-            score: number | null;
+            tv: components["schemas"]["TvRef"] & unknown;
         };
         LiveMixDetail: components["schemas"]["LiveMixSummary"] & {
             /** @description Número de foto: sube en cada ronda (con !rr el marcador puede bajar) */
@@ -12832,6 +13668,24 @@ export interface components {
             rating: number | null;
         };
         ApplyEloBody: {
+            /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
+            confirm: string;
+        };
+        DeletedMix: {
+            /**
+             * @description `none`: el mix no había movido el ELO
+             * @enum {string}
+             */
+            elo_mode: "keep" | "revert" | "none";
+            /** @description Jugadores cuyo ELO se mantuvo o se revirtió */
+            players: number;
+        };
+        DeleteMixBody: {
+            /**
+             * @description `keep`: el ELO que dio el mix se mantiene; `revert`: se le resta a cada jugador. Nunca recalcula la historia
+             * @enum {string}
+             */
+            elo: "keep" | "revert";
             /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
             confirm: string;
         };
@@ -13251,6 +14105,8 @@ export interface components {
             name: string;
             /** @description Para el botón "Conectar" (`host:puerto`) */
             address: string | null;
+            /** @description SourceTV (`host:puerto_tv`), para "Ver en TV". null si el servidor no tiene el puerto cargado */
+            tv_address: string | null;
             /**
              * @description Modo de juego. null si no está cargado
              * @enum {string|null}

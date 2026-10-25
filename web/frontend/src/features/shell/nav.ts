@@ -215,6 +215,10 @@ export function breadcrumbsFor(
       return second === "results"
         ? [{ label: "Partidas", to: "/matches" }, { label: "Resultados" }]
         : [{ label: "Partidas" }]
+    case "mixes":
+      return second === "live"
+        ? [{ label: "Mixes", to: "/mixes" }, { label: "En vivo" }]
+        : [{ label: "Mixes" }]
     case "match": {
       const m = data.match
       if (m?.kind === "mix")
