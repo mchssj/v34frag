@@ -446,8 +446,10 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
   - `level` (y `elo`) en `PlayerLine` y `LivePlayerLine`, para la insignia de nivel de cada jugador en la sala.
   - `review` en `MixItem`, para el chip "ELO pendiente" de un interrumpido en el listado.
 - **Pedidos del frontend de Ranking** (2026-10-24, bitácora [`2026-10-24-frontend-ranking`](bitacora/2026-10-24-frontend-ranking/GUIA_IMPLEMENTACION.md)):
-  - **Bug:** en `GET /api/v1/seasons/{id}/standings` con el orden por defecto, los jugadores sin puesto salen por ELO **de menor a mayor**. `routes/seasons.ts:200` ordena `rank` con `['rank', 'elo']` y el `asc` se aplica a los dos; el contrato dice "al final, por ELO" (de mayor a menor). Lo mismo en la vista previa del cierre (línea 275).
+  - ~~Orden de los sin puesto en `GET /api/v1/seasons/{id}/standings` y en la vista previa del cierre~~: **corregido el 2026-10-24** (`5f786eb`, rama `feat/backend-api-fase-1`, con push): `runList` acepta `elo:desc`.
   - (Opcional) `teams`, `rating`, `kd` y el filtro `level` en esa respuesta, para que la tabla de una temporada tenga las columnas del Histórico.
+- **Pedidos del frontend de Perfil público** (2026-10-24, bitácora [`2026-10-24-frontend-perfil-publico`](bitacora/2026-10-24-frontend-perfil-publico/GUIA_IMPLEMENTACION.md)):
+  - ~~`is_captain` en `GET /api/v1/players/{id}/teams`~~: **hecho el 2026-10-24** (`5f786eb`, con push). Sin migración: la vista ya lo tenía.
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
 - **Matchmaking viejo:** lo desarrollaba mchssj (rama `origin/feat/matchmaking-5v5`) y estaba inestable. Se borra en el corte (`03_matchmaking.sql`); si se rehace, es desde cero.
 
