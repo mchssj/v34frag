@@ -16,6 +16,7 @@ import {
   THEME_FX,
 } from '../schemas/profile';
 import { profileOf, roleOf } from '../services/account';
+import { notificationPrefsOf } from '../schemas/notifications';
 
 type C = Context<AppEnv>;
 type Res = { data: unknown; error: PostgrestLikeError | null };
@@ -84,7 +85,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     player,
     teams,
     matches_played,
-    preferences: { theme_fx: themeFxOf(prefs?.preferences) },
+    preferences: { theme_fx: themeFxOf(prefs?.preferences), notifications: notificationPrefsOf(prefs?.preferences) },
   };
 }
 
@@ -156,7 +157,17 @@ export const me = createRouter()
         await sb.from('profile_details').upsert({ user_id: user.id, ...changes, updated_at: new Date().toISOString() }),
       );
     }
-    if (preferences !== undefined) must(await sb.rpc('set_my_preferences', { p_changes: preferences }));
+    if (preferences !== undefined) {
+      const { notifications, ...rest } = preferences;
+      const changes: Record<string, unknown> = { ...rest };
+      // set_my_preferences une solo el primer nivel: las categorías se unen acá con las que ya había.
+      if (notifications !== undefined) {
+        const saved = must(await sb.from('user_preferences').select('preferences').eq('user_id', user.id).maybeSingle());
+        const prev = (saved?.preferences as { notifications?: Record<string, boolean> } | null)?.notifications ?? {};
+        changes.notifications = { ...prev, ...Object.fromEntries(Object.entries(notifications).filter(([, v]) => v !== undefined)) };
+      }
+      must(await sb.rpc('set_my_preferences', { p_changes: changes as never }));
+    }
     return c.json(await loadMyProfile(c), 200);
   })
   .openapi(uploadAvatar, async (c) => {

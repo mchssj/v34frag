@@ -2,6 +2,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { json, makeApp, testEnv } from '../helpers';
 import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
 
+const DEFAULTS = { team: true, tournament: true, pcw: true, elo: true, season: true, account: true, news: false, admin: true };
+
 // /api/v1/me/* con PostgREST simulado: cubre la lógica de las rutas sin Docker (para el CI).
 const USER = '44444444-4444-4444-8444-444444444444';
 const PLAYER = '55555555-5555-4555-8555-555555555555';
@@ -109,11 +111,16 @@ describe('GET /api/v1/me/profile', () => {
 
   it('preferencias: null sin fila; el valor guardado; un valor desconocido se ignora', async () => {
     postgrest(profileWorld());
-    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: null });
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: null, notifications: DEFAULTS });
     postgrest(profileWorld({ prefs: { theme_fx: 'silent', otra: 1 } }));
-    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: 'silent' });
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: 'silent', notifications: DEFAULTS });
     postgrest(profileWorld({ prefs: { theme_fx: 'fuerte' } }));
-    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: null });
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences).toEqual({ theme_fx: null, notifications: DEFAULTS });
+  });
+
+  it('notificaciones: el mapa completo, con lo guardado encima de los valores por defecto (news apagada)', async () => {
+    postgrest(profileWorld({ prefs: { notifications: { pcw: false, news: true, otra: true, team: 'no' } } }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).preferences.notifications).toEqual({ ...DEFAULTS, pcw: false, news: true });
   });
 
   it('un error de la base se traduce (42501 → 403)', async () => {
@@ -149,6 +156,22 @@ describe('PATCH /api/v1/me/profile', () => {
     expect(calls.some((c) => c.method === 'POST' && c.url.includes('/rest/v1/profile_details'))).toBe(false);
     await call('PATCH', '/api/v1/me/profile', { preferences: { theme_fx: null } });
     expect(JSON.parse(calls.filter((c) => c.url.includes('/rpc/set_my_preferences')).at(-1)!.body!)).toEqual({ p_changes: { theme_fx: null } });
+  });
+
+  it('notificaciones: une las categorías enviadas con las guardadas', async () => {
+    const calls = postgrest(profileWorld({ prefs: { theme_fx: 'off', notifications: { pcw: false } } }));
+    expect((await call('PATCH', '/api/v1/me/profile', { preferences: { notifications: { news: true } } })).status).toBe(200);
+    expect(JSON.parse(calls.find((c) => c.url.includes('/rpc/set_my_preferences'))!.body!)).toEqual({
+      p_changes: { notifications: { pcw: false, news: true } },
+    });
+  });
+
+  it('notificaciones: 400 con una categoría que no existe o un valor que no es booleano', async () => {
+    const calls = postgrest(profileWorld());
+    for (const notifications of [{ chat: true }, { pcw: 'no' }]) {
+      expect((await call('PATCH', '/api/v1/me/profile', { preferences: { notifications } })).status).toBe(400);
+    }
+    expect(calls.some((c) => c.url.includes('/rpc/set_my_preferences'))).toBe(false);
   });
 
   it('preferencias: 400 VALIDATION_ERROR con otro valor o una clave desconocida', async () => {

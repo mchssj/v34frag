@@ -89,6 +89,8 @@ type LivePlayerRow = {
   side: number | null; steam_id: string | null; player_id: string | null; game_nick: string | null;
   rounds: number | null; kills: number | null; deaths: number | null; assists: number | null; headshots: number | null; damage: number | null;
   rating: number | null;
+  k2: number | null; k3: number | null; k4: number | null; k5: number | null;
+  first_kills: number | null; first_deaths: number | null; plants: number | null; defuses: number | null;
 };
 
 export const live = createRouter()
@@ -111,7 +113,7 @@ export const live = createRouter()
     const [base, foto, people] = await Promise.all([
       sb.from('live_match_list').select(LIVE_LIST).eq('uid', uid).maybeSingle().then(must),
       sb.from('live_matches').select('rounds:payload->rounds').eq('uid', uid).maybeSingle().then(must),
-      sb.from('live_match_players').select('side, steam_id, player_id, game_nick, rounds, kills, deaths, assists, headshots, damage, rating').eq('uid', uid).then(mustHave),
+      sb.from('live_match_players').select('side, steam_id, player_id, game_nick, rounds, kills, deaths, assists, headshots, damage, rating, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('uid', uid).then(mustHave),
     ]);
     if (!base) throw notFound('ese mix en vivo (si terminó, está en las partidas)');
     const l = base as unknown as LiveRow;
@@ -129,6 +131,7 @@ export const live = createRouter()
         side: r.side,
         kills: r.kills, deaths: r.deaths, assists: r.assists, headshots: r.headshots, damage: r.damage, rounds: r.rounds,
         rating: r.rating === null ? null : Number(r.rating),
+        k2: r.k2, k3: r.k3, k4: r.k4, k5: r.k5, first_kills: r.first_kills, first_deaths: r.first_deaths, plants: r.plants, defuses: r.defuses,
       }))
       .sort((a, b) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0));
 

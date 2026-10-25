@@ -115,18 +115,18 @@ describe('PATCH /api/v1/me/profile', () => {
   it('preferencias: theme_fx se guarda, se cambia, se borra y es de cada cuenta', async () => {
     const u = await createUser();
     const otro = await createUser();
-    expect((await (await getProfile(u.token)).json()).preferences).toEqual({ theme_fx: null });
+    expect((await (await getProfile(u.token)).json()).preferences).toEqual({ theme_fx: null, notifications: expect.objectContaining({ team: true, news: false }) });
     let res = await patch(u.token, { preferences: { theme_fx: 'silent' } });
     expect(res.status).toBe(200);
-    expect((await res.json()).preferences).toEqual({ theme_fx: 'silent' });
+    expect((await res.json()).preferences).toMatchObject({ theme_fx: 'silent' });
     // Otro campo del perfil no toca las preferencias.
-    expect((await (await patch(u.token, { discord: 'pref' })).json()).preferences).toEqual({ theme_fx: 'silent' });
-    expect((await (await patch(u.token, { preferences: { theme_fx: 'off' } })).json()).preferences).toEqual({ theme_fx: 'off' });
-    expect((await (await getProfile(otro.token)).json()).preferences).toEqual({ theme_fx: null });
+    expect((await (await patch(u.token, { discord: 'pref' })).json()).preferences).toMatchObject({ theme_fx: 'silent' });
+    expect((await (await patch(u.token, { preferences: { theme_fx: 'off' } })).json()).preferences).toMatchObject({ theme_fx: 'off' });
+    expect((await (await getProfile(otro.token)).json()).preferences).toMatchObject({ theme_fx: null });
     res = await patch(u.token, { preferences: { theme_fx: 'fuerte' } });
     expect(res.status).toBe(400);
     expect((await res.json()).error.code).toBe('VALIDATION_ERROR');
-    expect((await (await patch(u.token, { preferences: { theme_fx: null } })).json()).preferences).toEqual({ theme_fx: null });
+    expect((await (await patch(u.token, { preferences: { theme_fx: null } })).json()).preferences).toMatchObject({ theme_fx: null });
     // Borrar la última preferencia deja la fila con el objeto vacío.
     const { data } = await admin().from('user_preferences').select('preferences').eq('user_id', u.id).single();
     expect(data?.preferences).toEqual({});

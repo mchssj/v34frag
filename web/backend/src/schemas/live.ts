@@ -57,6 +57,8 @@ export const LivePlayerLine = z
     steam_id: z.string().nullable().openapi({ description: 'Solo si no tiene ficha: enlaza al perfil sin reclamar' }),
     side: z.number().int().nullable(),
     kills: num, deaths: num, assists: num, headshots: num, damage: num, rounds: num, rating: num,
+    // (replanteo 29) de la foto parcial; los clutches llegan con el resultado.
+    k2: num, k3: num, k4: num, k5: num, first_kills: num, first_deaths: num, plants: num, defuses: num,
   })
   .openapi('LivePlayerLine');
 

@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { AuthUser, Tag } from './auth';
+import { NotificationPrefs, NotificationPrefsPatch } from './notifications';
 
 // Las mismas listas y reglas que el formulario "Mi perfil" de index.html.
 export const COUNTRIES = [
@@ -58,9 +59,11 @@ export const THEME_FX = ['full', 'silent', 'off'] as const;
 const themeFx = z.enum(THEME_FX).nullable().openapi({
   description: 'Efectos al cambiar de tema: `full` (con sonido), `silent` (sin sonido), `off` (desactivados) o `null` (todavía no eligió)',
 });
-export const Preferences = z.object({ theme_fx: themeFx }).openapi('Preferences');
+export const Preferences = z
+  .object({ theme_fx: themeFx, notifications: NotificationPrefs })
+  .openapi('Preferences');
 export const PreferencesPatch = z
-  .object({ theme_fx: themeFx.optional() })
+  .object({ theme_fx: themeFx.optional(), notifications: NotificationPrefsPatch.optional() })
   .strict()
   .openapi('PreferencesPatch', { description: 'Solo se cambian las claves enviadas; `null` borra una' });
 

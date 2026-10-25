@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
+import { Clutches } from './common';
 
 const num = z.number().nullable();
 
@@ -43,6 +44,12 @@ export const PlayerStats = z
     rating: num, kd: num, hs: num, adr: num, wins: num, losses: num,
   })
   .openapi('PlayerStats');
+
+// (replanteo 29) La ficha suma los totales de "Estilo de juego"; el perfil sin reclamar sigue con PlayerStats.
+export const PlayerStatsDetail = PlayerStats.extend({
+  k2: num, k3: num, k4: num, k5: num, first_kills: num, first_deaths: num, plants: num, defuses: num,
+  clutches: Clutches.openapi({ description: 'Clutches ganados en mixes, con todos sus SteamID' }),
+}).openapi('PlayerStatsDetail');
 
 export const PlayerMapStats = z
   .object({ map: z.string(), maps: num, rating: num, kd: num, adr: num, wins: num, losses: num })
@@ -104,7 +111,7 @@ export const PlayerDetail = PlayerSummary.extend({
   team_history_text: z.string().nullable().openapi({ description: 'Historial cargado a mano por el admin (texto libre)' }),
   privacy: z.enum(['public', 'private']),
   peak_elo: z.number().int().nullable(),
-  stats: PlayerStats.nullable().openapi({ description: 'null si no jugó partidas terminadas' }),
+  stats: PlayerStatsDetail.nullable().openapi({ description: 'null si no jugó partidas terminadas' }),
   details: PublicDetails.nullable().openapi({ description: 'Datos personales. null si no tiene cuenta o si su perfil es privado' }),
   private: z.boolean().openapi({ description: 'true si los datos personales están ocultos por privacidad' }),
 }).openapi('PlayerDetail', {

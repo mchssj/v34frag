@@ -23,6 +23,7 @@ import { live } from './routes/live';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
 import { mixes } from './routes/mixes';
+import { notifications } from './routes/notifications';
 import { pcw } from './routes/pcw';
 import { pcwPlay } from './routes/pcw-play';
 import { players } from './routes/players';
@@ -70,6 +71,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', system);
   app.route('/', auth);
   app.route('/', me);
+  app.route('/', notifications);
   app.route('/', pcw);
   app.route('/', account);
   app.route('/', claim); // antes que players: /players/unclaimed no es un {id}

@@ -15,9 +15,10 @@
 | `GET /api/v1/me/matches` | **Mis partidas** (ver abajo) |
 
 - **Preferencias de la cuenta** (`preferences`, solo las ve y las cambia el propio usuario):
-  - `GET /api/v1/me/profile` siempre trae el objeto con todas sus claves: `preferences: { theme_fx: "full" | "silent" | "off" | null }`. `null` = todavía no eligió.
+  - `GET /api/v1/me/profile` siempre trae el objeto con todas sus claves: `preferences: { theme_fx: "full" | "silent" | "off" | null, notifications: { team: true, …, news: false } }`. `null` = todavía no eligió.
   - `theme_fx`: efectos al cambiar de tema. `"full"` con sonido, `"silent"` sin sonido, `"off"` desactivados.
   - `PATCH /api/v1/me/profile` con `{ "preferences": { "theme_fx": "silent" } }` cambia solo esa clave; `null` la borra. Las claves que no se mandan no se tocan (las preferencias futuras no se pisan).
+  - `notifications`: categorías de notificaciones prendidas o apagadas (sección [12](notificaciones.md)). `{ "preferences": { "notifications": { "news": true } } }` cambia solo esas categorías y conserva las demás.
   - Otro valor, o una clave desconocida dentro de `preferences`, responde `400 VALIDATION_ERROR` con el campo en `details[].path`.
   - Al iniciar sesión, tomar el valor del servidor y reemplazar el del navegador; si es `null`, quedarse con el del navegador. Sin sesión, solo el navegador.
 - **Cambiar la contraseña** (`POST /api/v1/me/password`, disponible desde el 2026-10-19):

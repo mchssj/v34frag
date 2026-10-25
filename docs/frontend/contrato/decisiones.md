@@ -127,3 +127,15 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-24 | Ranking de jugadores | Posición global por ELO (no cambia al filtrar), filtro por nivel y tendencia de los últimos 30 mixes | Daniel |
 | 2026-10-24 | Ranking de equipos | `win_rate`, tendencia contra hace 30 días y últimos 5 resultados | Daniel (30 días) |
 | 2026-10-24 | Comparador | Dos jugadores cualesquiera (no solo el logueado), con los mixes jugados juntos y como rivales | Daniel |
+| 2026-10-24 | Notificaciones: alcance | Primera etapa sin tareas programadas (partida en 1 hora, PCW vencida, temporada por terminar, partida sin resultado: segunda etapa) | Daniel |
+| 2026-10-24 | Notificaciones: canal | Solo en la web | Daniel |
+| 2026-10-25 | Notificaciones: tiempo real | Contador liviano con ETag cada 30 s (y al enfocar y tras acciones) y la lista al abrir el menú | Daniel (opción B) |
+| 2026-10-24 | Notificaciones: preferencias | Se apaga por categoría; invitación, pedido para entrar y cambio de contraseña no se apagan | Daniel |
+| 2026-10-25 | Notificaciones: Novedades | Torneo nuevo y temporada nueva en una categoría propia, apagada por defecto | Daniel |
+| 2026-10-24 | Notificaciones: retención | Las últimas 100 por cuenta | Daniel |
+| 2026-10-24 | Notificaciones: pendientes | Una invitación o un pedido resuelto queda marcado (aceptada, rechazada, cancelada o vencida), sin borrarse | Daniel |
+| 2026-10-25 | Estadísticas de partida | Pestañas General, Avanzado, Entrada y Clutch con los datos que el plugin ya manda; sin Intercambio | Daniel |
+| 2026-10-25 | Partidas sin datos de clutch | "Sin datos de Clutches disponibles." en lugar de ceros | Daniel |
+| 2026-10-25 | Mejor valor de cada columna | Resaltado, como en HLTV | Daniel |
+| 2026-10-25 | Métricas que necesitan el plugin | En pausa (precisión, KAST, RWS, trades, clutches perdidos…): no sumarle carga al plugin por el riesgo de lag | Daniel |
+| 2026-10-25 | Aviso de `!claim` | La ficha sin cuenta no lleva aviso; el perfil sin reclamar lleva "¿Este SteamID es tuyo? Vincúlalo desde tu cuenta" con un botón a Mi perfil → Vincular con el servidor. El `!claim` se explica solo ahí | Daniel |

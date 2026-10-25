@@ -28,6 +28,7 @@ import {
 } from '../schemas/players';
 import { resolvePlayer } from '../services/players';
 import { stageLabel } from '../services/stages';
+import { clutchesOf } from '../services/matches';
 
 const OVERVIEW = 'id, nick, has_account, has_steam, photo_url, privacy, elo, peak_elo, elo_matches, maps, rating, kd, wins, losses, teams';
 const MATCH_FIELDS =
@@ -233,8 +234,9 @@ export const players = createRouter()
     // Los SteamID nunca salen en el perfil público: solo para el dueño y los admins.
     const user = currentUser(c);
     const seesSteam = !!user && (user.id === player.user_id || (await isAdmin(c)));
-    const [stats, details] = await Promise.all([
-      sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses').eq('player_id', id).maybeSingle().then(must),
+    const [stats, clutchRows, details] = await Promise.all([
+      sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('player_id', id).maybeSingle().then(must),
+      sb.from('player_clutches').select('vs, won').eq('player_id', id).then(mustHave),
       player.user_id ? sb.from('profile_details').select(DETAILS).eq('user_id', player.user_id).maybeSingle().then(must) : Promise.resolve(null),
     ]);
     return c.json(
@@ -249,7 +251,7 @@ export const players = createRouter()
         team_history_text: player.team_history,
         privacy: player.privacy === 'private' ? ('private' as const) : ('public' as const),
         peak_elo: overview.peak_elo,
-        stats: stats ?? null,
+        stats: stats ? { ...stats, clutches: clutchesOf(clutchRows) } : null,
         details: details ?? null,
         private: !!player.user_id && !details,
       },
