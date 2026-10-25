@@ -62,7 +62,7 @@ si no:          nuevo = elo
 |---|---|
 | `GET /api/v1/seasons` | Selector de temporada y listado: `number`, `name`, `status` (`active` o `closed`), fechas, parámetros, `tiers`, `champion` (`{ id, alias }`, `null` en la activa) y `medals`. Filtro `status`; `sort`: **`number` desc** |
 | `GET /api/v1/seasons/current` | La activa, con `ends_at` para la **cuenta regresiva**. `404` si no hay ninguna |
-| `GET /api/v1/seasons/{id}/standings` | **Ranking de la temporada**. En la activa es en vivo; en una cerrada es la foto del cierre. Cada fila: `rank`, `player` (`id`, `alias`, `photo_url`), `eligible`, `elo`, `level`, `peak_elo`, `matches`, `wins`, `losses`, `elo_after` (en la activa: si cerrara ahora) y `medal` (`{ name, icon }` o `null`). Filtros `q` y `eligible`; `sort`: **`rank` asc** (los que no llegan al mínimo van al final, por ELO), `elo`, `matches`, `alias` |
+| `GET /api/v1/seasons/{id}/standings` | **Ranking de la temporada**. En la activa es en vivo; en una cerrada es la foto del cierre. Cada fila: `rank`, `player` (`id`, `alias`, `photo_url`), `eligible`, `elo`, `level`, `peak_elo`, `matches`, `wins`, `losses`, `elo_after` (en la activa: si cerrara ahora) y `medal` (`{ name, icon }` o `null`). Filtros `q` y `eligible`; `sort`: **`rank` asc** (los que no llegan al mínimo van al final, por ELO de mayor a menor; corregido el 2026-10-24, antes salían de menor a mayor), `elo`, `matches`, `alias` |
 | `GET /api/v1/players/{id}/seasons` | Pestaña **Temporadas** de la ficha: lo mismo por cada temporada cerrada, con `season` (`{ id, number, name }`) en vez de `player`. `sort`: **`number` desc** |
 | `GET /api/v1/players/{id}/medals` | Cada medalla suma `season` (`{ id, number, name }`, `null` en las que da el admin a mano) y `rank` |
 

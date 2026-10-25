@@ -113,7 +113,7 @@ describe('temporadas: respuestas', () => {
     const q = calls.find((x) => x.url.pathname.endsWith('/season_standings_list'))!.url.searchParams;
     expect(q.get('search')).toBe('ilike.%alfa%');
     expect(q.get('eligible')).toBe('eq.true');
-    expect(q.get('order')).toBe('rank.asc.nullslast,elo.asc.nullslast,player_id.asc');
+    expect(q.get('order')).toBe('rank.asc.nullslast,elo.desc.nullslast,player_id.asc');
   });
 
   it('vista previa: filas, filtros y resumen', async () => {

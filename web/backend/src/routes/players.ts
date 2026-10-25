@@ -293,15 +293,24 @@ export const players = createRouter()
     const p = c.req.valid('query');
     let q = c.var.sb
       .from('team_members_view')
-      .select('team_id, team_name, team_tag, role, joined_at, left_at', { count: 'exact' })
+      .select('team_id, team_name, team_tag, role, is_captain, joined_at, left_at', { count: 'exact' })
       .eq('player_id', id)
       .eq('team_kind', 'official');
     if (p.active !== undefined) q = q.eq('active', p.active);
-    type Row = { team_id: string; team_name: string; team_tag: string | null; role: string; joined_at: string | null; left_at: string | null };
+    type Row = {
+      team_id: string; team_name: string; team_tag: string | null; role: string; is_captain: boolean | null;
+      joined_at: string | null; left_at: string | null;
+    };
     const { rows, total } = await runList<Row, typeof q>(q, p, { name: 'team_name' }, 'team_id');
     return c.json(
       envelope(
-        rows.map((r) => ({ team: { id: r.team_id, name: r.team_name, tag: r.team_tag }, role: r.role, joined_at: r.joined_at, left_at: r.left_at })),
+        rows.map((r) => ({
+          team: { id: r.team_id, name: r.team_name, tag: r.team_tag },
+          role: r.role,
+          is_captain: r.is_captain ?? false,
+          joined_at: r.joined_at,
+          left_at: r.left_at,
+        })),
         total,
         p,
       ),
