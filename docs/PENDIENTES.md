@@ -245,7 +245,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 - **Qué es:**
   - RBK queda igual a nuestro servidor. Le faltaba Stripper:Source, que les saca la niebla a los mapas, y tenía otros valores de partida y otros plugins.
-  - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"`.
+  - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"` (bajado a `"3.0"` el 2026-10-24, punto 1.18).
 - **Subido el 2026-10-22.**
   - Servidor real: se carga en el próximo cambio de mapa.
   - **RBK: falta que Daniel lo reinicie desde el panel.** Metamod y las extensiones solo cargan al arrancar.
@@ -318,6 +318,13 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - **Después:** el primer mix real con la 2.5.0 (clips detectados por el plugin, clutches reales, el desfase real con `tv_delay`) y su video por el Worker y en Drive.
 - **Cuentas:** los videos de los clips van al R2 de la **cuenta de Cloudflare de Daniel** (variables `CF_*_CLIPS` en el `.env`, conexión probada); las demos se quedan en la cuenta de kyan. YouTube se descartó.
 - **Bitácora:** [`2026-10-23-clips-video`](bitacora/2026-10-23-clips-video/) y [`2026-10-23-clips-render-automatico`](bitacora/2026-10-23-clips-render-automatico/)
+
+### 1.18 Medio tiempo de 3 segundos: verificar en un mix real
+
+- **Aplicado el 2026-10-24** en el servidor real (`SFTP_CSS_*`) y en RBK (`SERVER1_*`): `csstv_halftime_delay "3.0"` (antes `"5.0"`, con el que el marcador volvía a 0 en el medio tiempo). Verificado releyendo el cfg de cada uno.
+- Entra en el próximo cambio de mapa; no se recargó el plugin.
+- **Falta:** ver en el próximo mix de cada servidor que el cambio de lados conserva el marcador, y publicar `bitacora/2026-10-24-medio-tiempo-3s/CHANGELOG_DISCORD.txt`.
+- **Bitácora:** [`2026-10-24-medio-tiempo-3s`](bitacora/2026-10-24-medio-tiempo-3s/)
 
 ## 2. Investigaciones abiertas
 
