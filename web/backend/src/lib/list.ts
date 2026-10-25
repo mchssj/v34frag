@@ -64,7 +64,11 @@ export async function runList<Row, Q extends Orderable<Q>>(
 ): Promise<{ rows: Row[]; total: number }> {
   let q = query;
   const asc = p.order === 'asc';
-  for (const col of ([] as string[]).concat(columns[p.sort] ?? p.sort)) q = q.order(col, { ascending: asc, nullsFirst: false });
+  for (const spec of ([] as string[]).concat(columns[p.sort] ?? p.sort)) {
+    // `col:desc` / `col:asc`: dirección fija, sin importar `order` (desempates que no se invierten).
+    const [col, fixed] = spec.split(':') as [string, string?];
+    q = q.order(col, { ascending: fixed ? fixed === 'asc' : asc, nullsFirst: false });
+  }
   if (tiebreak) q = q.order(tiebreak, { ascending: true });
   const from = (p.page - 1) * p.per;
   const res = await q.range(from, from + p.per - 1);

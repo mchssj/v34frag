@@ -156,7 +156,10 @@ describe('equipos y plantel', () => {
     expect(former.total).toBe(2);
     // El historial del jugador lo muestra.
     const hist = (await req('GET', `/api/v1/players/${b.playerId}/teams?active=false`)).body.items;
-    expect(hist).toEqual([expect.objectContaining({ team: expect.objectContaining({ id: team }), left_at: expect.any(String) })]);
+    expect(hist).toEqual([expect.objectContaining({ team: expect.objectContaining({ id: team }), is_captain: false, left_at: expect.any(String) })]);
+    // A quedó como líder: el historial lo dice.
+    const histA = (await req('GET', `/api/v1/players/${a.playerId}/teams?active=true`)).body.items;
+    expect(histA).toEqual([expect.objectContaining({ team: expect.objectContaining({ id: team }), is_captain: true })]);
   });
 
   it('un jugador puede estar en varios equipos', async () => {

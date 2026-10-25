@@ -57,6 +57,16 @@ describe('runList', () => {
     expect(calls).toEqual([['order', 'elo', { ascending: false, nullsFirst: false }], ['range', 0, 9]]);
   });
 
+  it('una columna con dirección fija no sigue a `order` (desempate que no se invierte)', async () => {
+    const { q, calls } = fake();
+    await runList(q, { page: 1, per: 5, sort: 'rank', order: 'asc' }, { rank: ['rank', 'elo:desc'] }, null);
+    expect(calls).toEqual([
+      ['order', 'rank', { ascending: true, nullsFirst: false }],
+      ['order', 'elo', { ascending: false, nullsFirst: false }],
+      ['range', 0, 4],
+    ]);
+  });
+
   it('un error de la base se traduce', async () => {
     const q = {
       order: () => q,

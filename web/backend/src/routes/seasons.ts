@@ -197,7 +197,7 @@ export const seasons = createRouter()
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.eligible !== undefined) q = q.eq('eligible', p.eligible);
-    const { rows, total } = await runList<StandingRow, typeof q>(q, p, { rank: ['rank', 'elo'], alias: 'nick' }, 'player_id');
+    const { rows, total } = await runList<StandingRow, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id');
     return c.json(
       envelope(
         rows.map(({ player_id, nick, photo_url, ...r }) => ({ player: { id: player_id!, alias: nick ?? '', photo_url }, ...stats(r) })),
@@ -272,7 +272,7 @@ export const seasons = createRouter()
       tier: string | null; icon: string | null; elo_after: number; reset: boolean;
     };
     const [{ rows, total }, summary] = await Promise.all([
-      runList<Row, typeof q>(q, p, { rank: ['rank', 'elo'], alias: 'nick' }, 'player_id'),
+      runList<Row, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id'),
       c.var.sb.rpc('season_preview_summary', args).then(mustHave),
     ]);
     return c.json(

@@ -72,6 +72,7 @@ export const TeamStint = z
   .object({
     team: TeamRef,
     role: z.string().openapi({ description: '`player`, `sub` o `coach`' }),
+    is_captain: z.boolean().openapi({ description: 'Es (o era) el líder del equipo' }),
     joined_at: z.string().nullable().openapi({ description: 'null en los planteles migrados (no había fecha)' }),
     left_at: z.string().nullable().openapi({ description: 'null = sigue en el equipo' }),
   })
