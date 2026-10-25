@@ -34,7 +34,7 @@ Todas las rutas aceptan el nick o el id. Cada sección pide lo suyo, así que un
   - El dueño ve "Perfil privado · solo tú y los admins ven tus datos".
   - El admin recibe todo desde la API.
 - **Acciones:** "Comparar" abre `/players/compare?b={nick}` (A eres tú). El dueño ve "Editar perfil" en su lugar.
-- **Ficha sin cuenta** (`has_account: false`): aviso de `!claim` con "Generar código", que lleva a `/profile/link`.
+- **Ficha sin cuenta** (`has_account: false`): se ve como cualquier ficha, **sin aviso de `!claim`**. Vincular un SteamID se hace solo desde Mi perfil → Vincular con el servidor (`/profile/link`), sin entrar a ninguna ficha (Daniel, 2026-10-25).
 
 ## Nivel, gráfico y tiles
 

@@ -34,6 +34,7 @@ La rama `feat/backend-api-fase-1` no tiene el frontend, y Vite estaba corriendo 
 | Plan | Quedó | Por qué |
 |---|---|---|
 | Filtro de resultado "Todas" | "Cualquier resultado", separado del filtro de tipo con una línea | En la captura se veían dos chips "Todas" seguidos |
+| Ficha sin cuenta: aviso de `!claim` con "Generar código" | **Sin aviso** (corregido el 2026-10-25, después de la entrega) | Daniel: el `!claim` se hace desde la cuenta (Mi perfil → Vincular con el servidor, contrato 5b), sin entrar a ninguna ficha. La prueba de componentes ahora verifica que no aparezca |
 | Componentes `PlayerHeader`, `LevelCard`, `StatTiles` y `tabs/*` en archivos separados | `PlayerProfile.tsx` (cabecera, nivel, gráfico y tiles) y `tabs.tsx` (las seis pestañas) | Menos archivos chicos, como en Mixes y Ranking |
 | Estados vacíos | Se sumaron "Todavía no jugó partidas en el servidor.", "Todavía no jugó mapas…", "Todavía no estuvo en ningún equipo oficial.", "Todavía no escribió su biografía." y "Todavía sin títulos." | El handoff solo traía el de medallas |
 

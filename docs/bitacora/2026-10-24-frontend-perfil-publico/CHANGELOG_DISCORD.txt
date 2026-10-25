@@ -10,4 +10,3 @@ Perfil de cada jugador
 - Si un admin le ajustó el ELO (por ejemplo, por un mix caído), lo ves en el perfil con el motivo.
 - En sus equipos se marca quién es el líder.
 - Si tu perfil es privado, los demás no ven tu nombre, tu país ni tus redes.
-- Si el perfil todavía no tiene cuenta, te dice cómo vincularlo con !claim.
