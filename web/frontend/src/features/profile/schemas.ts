@@ -52,7 +52,7 @@ export type _RolesComplete = AssertNever<
   Exclude<GameRole, (typeof GAME_ROLES)[number]>
 >
 
-const STEAM_LINK =
+export const STEAM_LINK =
   /^(?:https?:\/\/)?(?:www\.)?steamcommunity\.com\/(id|profiles)\/([A-Za-z0-9_-]{2,64})\/?$/i
 const NICK = /^[A-Za-z0-9_-]{2,32}$/
 
@@ -74,7 +74,7 @@ export const personalSchema = z.object({
 })
 export type PersonalValues = z.infer<typeof personalSchema>
 
-const FACEIT_LINK =
+export const FACEIT_LINK =
   /^(?:https?:\/\/)?(?:www\.)?faceit\.com\/[a-z-]+\/players\/([^/?#]+)/i
 
 export const socialsSchema = z.object({

@@ -12121,6 +12121,8 @@ export interface components {
             team: components["schemas"]["TeamRef"];
             /** @description `player`, `sub` o `coach` */
             role: string;
+            /** @description Es (o era) el líder del equipo */
+            is_captain: boolean;
             /** @description null en los planteles migrados (no había fecha) */
             joined_at: string | null;
             /** @description null = sigue en el equipo */
