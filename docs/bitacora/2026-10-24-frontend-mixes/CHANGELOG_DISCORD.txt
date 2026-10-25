@@ -1,0 +1,14 @@
+CMLeague --  Changelog
+
+Llega con la web nueva.
+
+Sala de cada mix
+- Toca cualquier mix de la lista y entras a su sala: el marcador, las stats de cada jugador por bando (K, D, A, HS, ADR y rating) y cuánto ELO ganó o perdió cada uno.
+- El MVP del mix lleva su marca, y quien jugó sin cuenta aparece como invitado con su nombre del juego.
+- Si la demo está disponible, la descargas desde la sala. Si se está subiendo o ya venció, también te lo dice.
+- De fondo del marcador vas a ver una foto del mapa que se jugó.
+
+Mixes en vivo
+- La sala de un mix en vivo se actualiza sola en cada ronda, con el marcador y las stats parciales.
+- Desde la sala también tienes "Ver en CM League TV" para mirarlo por SourceTV.
+- Si un servidor deja de mandar novedades, el mix aparece atenuado para que sepas que algo pasa.
