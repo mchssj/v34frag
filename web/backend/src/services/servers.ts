@@ -9,6 +9,7 @@ export type ServerStatusItem = {
   id: string;
   name: string;
   address: string | null;
+  tv_address: string | null;
   mode: (typeof SERVER_MODES)[number] | null;
   region: string | null;
   online: boolean;
@@ -25,7 +26,15 @@ export type ServersStatus = {
   checked_at: string;
 };
 
-type Row = { id: string | null; name: string | null; connect_address: string | null; mode: string | null; region: string | null };
+type Row = {
+  id: string | null; name: string | null; connect_address: string | null; mode: string | null; region: string | null; tv_port: number | null;
+};
+
+/** Dirección de SourceTV: el host de `connect_address` con el puerto de SourceTV. null si falta alguno. */
+export function tvAddress(connect: string | null | undefined, tvPort: number | null | undefined): string | null {
+  const host = parseAddress(connect ?? null)?.host;
+  return host && tvPort ? `${host}:${tvPort}` : null;
+}
 
 /**
  * Los servidores activos con licencia vigente, consultados a la vez. Uno que no responde no frena a los demás.
@@ -33,7 +42,7 @@ type Row = { id: string | null; name: string | null; connect_address: string | n
  */
 export async function serversStatus(sb: Db, udp: UdpExchange, timeoutMs = STATUS_TIMEOUT_MS): Promise<ServersStatus> {
   const [srv, live] = await Promise.all([
-    sb.from('game_servers_public').select('id, name, connect_address, mode, region').order('name'),
+    sb.from('game_servers_public').select('id, name, connect_address, mode, region, tv_port').order('name'),
     sb.from('live_match_list').select('server_id').eq('stale', false),
   ]);
   if (srv.error) throw srv.error;
@@ -47,6 +56,7 @@ export async function serversStatus(sb: Db, udp: UdpExchange, timeoutMs = STATUS
         id: r.id!,
         name: r.name ?? '',
         address: r.connect_address,
+        tv_address: tvAddress(r.connect_address, r.tv_port),
         mode: r.mode as ServerStatusItem['mode'],
         region: r.region,
         live_matches: liveBy.get(r.id!) ?? 0,

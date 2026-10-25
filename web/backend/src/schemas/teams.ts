@@ -142,6 +142,11 @@ export const RankingItem = z
     won: z.number().int(),
     lost: z.number().int(),
     points: z.number().int(),
+    win_rate: z.number().nullable().openapi({ description: '% de victorias (0 a 100). null sin partidas' }),
+    trend: z.number().int().nullable().openapi({
+      description: 'Puestos que subió (positivo) o bajó (negativo) desde hace 30 días. null si hace 30 días no tenía partidas en este modo',
+    }),
+    form: z.array(z.enum(['W', 'L'])).openapi({ description: 'Últimos 5 resultados en este modo, del más viejo al más nuevo' }),
   })
   .openapi('RankingItem');
 

@@ -107,8 +107,11 @@ describe('!claim', () => {
     expect(prof.body).toMatchObject({ claimed: true, profile: null });
     const pid = prof.body.player_id as string;
     players.push(pid);
-    const ficha = await call('GET', `/api/v1/players/${pid}`);
+    // Los SteamID solo los ve el dueño (y los admins); el perfil público no los muestra.
+    const ficha = await call('GET', `/api/v1/players/${pid}`, undefined, u.token);
     expect(ficha.body).toMatchObject({ alias: `Cl${seed}`, has_account: true, has_steam: true, steam_ids: [steam(1)], elo: before });
+    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({ has_steam: true, steam_id: null, steam_ids: [] });
+    expect((await call('GET', `/api/v1/players/${encodeURIComponent(`cl${seed}`)}`)).body).toMatchObject({ id: pid }); // por nick, sin mayúsculas
     expect((await call('GET', `/api/v1/matches/${matchIds[0]}`)).body.players.find((x: { player_id: string }) => x.player_id === pid)).toMatchObject({ steam_id: null, alias: `Cl${seed}` });
 
     // Adicional que compartió partida: queda pendiente, pero no se puede aprobar.
@@ -131,7 +134,7 @@ describe('!claim', () => {
     expect((await call('POST', `/api/v1/admin/steam-requests/${r2.id}/reject`, { reason: 'Es otra persona' }, adminToken)).status).toBe(204);
     expect((await call('POST', `/api/v1/admin/steam-requests/${r11.id}/approve`, undefined, adminToken)).status).toBe(204);
 
-    const merged = await call('GET', `/api/v1/players/${pid}`);
+    const merged = await call('GET', `/api/v1/players/${pid}`, undefined, u.token);
     expect(merged.body.steam_ids).toEqual([steam(1), steam(11)]);
     expect(merged.body.elo_matches).toBe(2);
     expect(merged.body.elo).toBeGreaterThan(before);
@@ -141,10 +144,10 @@ describe('!claim', () => {
 
     // Principal nuevo y quitar uno.
     expect((await call('POST', `/api/v1/admin/steam/${steam(11)}/primary`, undefined, adminToken)).status).toBe(204);
-    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({ steam_id: steam(11), steam_ids: [steam(11), steam(1)] });
+    expect((await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body).toMatchObject({ steam_id: steam(11), steam_ids: [steam(11), steam(1)] });
     expect((await call('DELETE', `/api/v1/admin/steam/${steam(1)}`, undefined, adminToken)).status).toBe(204);
     expect((await call('GET', `/api/v1/players/steam/${steam(1)}`)).body).toMatchObject({ claimed: false });
-    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({ steam_ids: [steam(11)], elo_matches: 1 });
+    expect((await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body).toMatchObject({ steam_ids: [steam(11)], elo_matches: 1 });
 
     // Registro de reclamos.
     const log = await call('GET', `/api/v1/admin/claims?steam_id=${steam(11)}`, undefined, adminToken);
@@ -190,11 +193,11 @@ describe('!claim', () => {
     const dates = (await call('GET', '/api/v1/me/claim-code', undefined, u.token)).body.steam_ids as { steam_id: string; added_at: string }[];
     expect(dates.map((s) => s.steam_id)).toEqual([steam(3), steam(13)]);
     for (const s of dates) expect(Date.now() - new Date(s.added_at).getTime()).toBeLessThan(60_000);
-    const merged = (await call('GET', `/api/v1/players/${pid}`)).body;
+    const merged = (await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body;
     expect(merged).toMatchObject({ steam_id: steam(3), elo_matches: 2 });
     expect((await call('POST', `/api/v1/me/steam/${steam(13)}/primary`)).status).toBe(401);
     expect((await call('POST', `/api/v1/me/steam/${steam(13)}/primary`, undefined, u.token)).status).toBe(204);
-    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({
+    expect((await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body).toMatchObject({
       steam_id: steam(13), steam_ids: [steam(13), steam(3)], elo: merged.elo, peak_elo: merged.peak_elo, elo_matches: 2,
     });
     // Recalcular todo da lo mismo que pasar la fila a la clave nueva.
@@ -228,7 +231,7 @@ describe('!claim', () => {
       expect.objectContaining({ id: req.body.id, kind: 'remove', note: 'Era la PC de un amigo', shares_match: false, player_steam_count: 2, player: { id: pid, nick: `Cu${seed}` } }),
     ]);
     expect((await call('POST', `/api/v1/admin/steam-requests/${req.body.id}/approve`, undefined, adminToken)).status).toBe(204);
-    expect((await call('GET', `/api/v1/players/${pid}`)).body).toMatchObject({ steam_ids: [steam(13)], elo_matches: 1 });
+    expect((await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body).toMatchObject({ steam_ids: [steam(13)], elo_matches: 1 });
     expect((await call('GET', `/api/v1/players/steam/${steam(3)}`)).body).toMatchObject({ claimed: false });
     expect((await call('GET', '/api/v1/me/steam-requests?kind=remove', undefined, u.token)).body.items).toEqual([
       expect.objectContaining({ steam_id: steam(3), status: 'approved' }),
@@ -241,7 +244,7 @@ describe('!claim', () => {
     expect((await call('POST', `/api/v1/me/steam/${steam(14)}/primary`, undefined, u.token)).body.error.message).toMatch(/^Ese SteamID tiene un pedido para desvincularlo/);
     expect((await call('DELETE', `/api/v1/admin/steam/${steam(14)}`, undefined, adminToken)).status).toBe(204);
     expect((await call('GET', `/api/v1/me/steam-requests?kind=remove&status=approved`, undefined, u.token)).body.total).toBe(2);
-    expect((await call('GET', `/api/v1/players/${pid}`)).body.steam_ids).toEqual([steam(13)]);
+    expect((await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body.steam_ids).toEqual([steam(13)]);
 
     // Cancelar el pedido mientras está pendiente: queda cancelled, el SteamID sigue en la ficha y se puede volver a pedir.
     expect((await call('POST', '/api/v1/admin/steam/link', { steam_id: steam(15), player_id: pid }, adminToken)).status).toBe(204);

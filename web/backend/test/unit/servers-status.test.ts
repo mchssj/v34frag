@@ -87,7 +87,7 @@ describe('A2S', () => {
   });
 });
 
-type ServerRow = { id: string; name: string; connect_address: string | null; mode?: string | null; region?: string | null };
+type ServerRow = { id: string; name: string; connect_address: string | null; mode?: string | null; region?: string | null; tv_port?: number | null };
 /** Supabase simulado: game_servers_public y los server_id de live_match_list (ya filtrados por stale = false). */
 function db(rows: ServerRow[], live: { server_id: string }[] = []) {
   const fetch = vi.fn(async (input: RequestInfo | URL) => {
@@ -106,7 +106,7 @@ const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
 const C = '33333333-3333-4333-8333-333333333333';
 const ROWS: ServerRow[] = [
-  { id: A, name: 'v34frag #1', connect_address: '10.0.0.1:27062', mode: 'mix', region: 'Argentina' },
+  { id: A, name: 'v34frag #1', connect_address: '10.0.0.1:27062', mode: 'mix', region: 'Argentina', tv_port: 27020 },
   { id: B, name: 'RBK', connect_address: '10.0.0.2:27015' },
   { id: C, name: 'Sin dirección', connect_address: null },
 ];
@@ -130,11 +130,11 @@ describe('GET /api/v1/servers/status', () => {
     const body = await json(res);
     expect(body.servers[0].ping_ms).toEqual(expect.any(Number));
     expect(body.servers).toEqual([
-      { id: A, name: 'v34frag #1', address: '10.0.0.1:27062', mode: 'mix', region: 'Argentina', online: true, ping_ms: body.servers[0].ping_ms,
+      { id: A, name: 'v34frag #1', address: '10.0.0.1:27062', tv_address: '10.0.0.1:27020', mode: 'mix', region: 'Argentina', online: true, ping_ms: body.servers[0].ping_ms,
         map: 'de_dust2', players: 10, max_players: 12, bots: 1, live_matches: 2 },
-      { id: B, name: 'RBK', address: '10.0.0.2:27015', mode: null, region: null, online: false, ping_ms: null,
+      { id: B, name: 'RBK', address: '10.0.0.2:27015', tv_address: null, mode: null, region: null, online: false, ping_ms: null,
         map: null, players: null, max_players: null, bots: null, live_matches: 1 },
-      { id: C, name: 'Sin dirección', address: null, mode: null, region: null, online: false, ping_ms: null,
+      { id: C, name: 'Sin dirección', address: null, tv_address: null, mode: null, region: null, online: false, ping_ms: null,
         map: null, players: null, max_players: null, bots: null, live_matches: 0 },
     ]);
     expect(body.totals).toEqual({ servers: 3, online: 1, players: 10, live_matches: 3 });

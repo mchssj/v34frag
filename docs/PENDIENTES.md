@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-23**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-24**.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -56,9 +56,10 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | RBK igual al real (2026-10-22): `server/cfg/sourcemod/csstv_reporter.cfg` y la bitácora `2026-10-22-rbk-igual-al-real/`, y la regla de configuración obligatoria en `CLAUDE.md` | Commiteado el 2026-10-22 en la rama `feat/backend-api-fase-1` (sin push) |
 | Clips automáticos (2026-10-23): migración `20261023120000`, replanteo `26` con su inversa y sus pruebas, `csstv/clips.inc` y los cambios del reporter 2.5.0 (`.sp` y `.smx`), `csstv_reporter.cfg`, `web/backend` (rutas, esquemas, tipos y pruebas), contrato del frontend y la bitácora `2026-10-22-clips-automaticos/` | Commiteado el 2026-10-23 en la rama `feat/backend-api-fase-1` (sin push) |
 | Video de los clips (2026-10-23): `render/` (C1 y C2: lector de demos, render, `procesar.py`, R2, Drive, tarea y config de ejemplo), la migración `20261023180000_clips_video.sql`, la `26` y su inversa con el video, `cloudflare/clips-worker/`, `web/backend` (`video` en los clips, `CLIPS_BASE_URL`, tipos y pruebas), el contrato del frontend, `privacidad.html`, las bitácoras `2026-10-23-clips-video/` y `2026-10-23-clips-render-automatico/` y sus filas en `bitacora/README.md` | Commiteado el 2026-10-23 en la rama `feat/backend-api-fase-1` (sin push) |
-| `package.json` vacío en la raíz (el de `npm init -y`, apareció el 2026-10-23 a las 21:38) | Sin commit. No es de ningún requerimiento: preguntarle a Daniel; si nadie lo usa, se borra |
-| `docs/GUIA_BACKEND_LOCAL.md` y el cambio de `web/backend/README.md` que la enlaza | Sin commit. No son de los clips |
-| `.idea/`, `message.txt`, `fb.jpg`, `sg.jpg` e `image.png` | Sin commit. No son de ningún requerimiento: preguntarle a Daniel antes de commitearlos |
+| ~~`package.json` vacío en la raíz~~ | Borrado el 2026-10-24, a pedido de Daniel |
+| `docs/GUIA_BACKEND_LOCAL.md` y el cambio de `web/backend/README.md` que la enlaza | Commiteado y subido el 2026-10-24 en `feat/backend-api-fase-1` (`241e6c7`) y mergeado en `feat/frontend-fase-1` |
+| ~~`.idea/`, `message.txt`, `fb.jpg`, `sg.jpg` e `image.png`~~ | Borrados el 2026-10-24, a pedido de Daniel (queda `v34FRAGNATION_reglamento.pdf` sin commit) |
+| API para los mockups de Mixes, Perfil público y Ranking (2026-10-24): replanteo `27` con su inversa y sus pruebas, `web/backend` (rutas `mixes.ts` y `ranking.ts`, perfil por nick, SteamID ocultos, borrar un mix, SourceTV, esquemas, tipos y pruebas), contrato del frontend y la bitácora `2026-10-24-api-mixes-perfil-ranking/` | Commiteado el 2026-10-24 en la rama `feat/backend-api-fase-1` (sin push) |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
 
@@ -111,6 +112,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
 - **La `23` (`!whois`) necesita las migraciones de producción `20261019180000_whois.sql` y `20261020120000_whois_menu.sql`** (puntos 1.10 y 1.11) aplicadas antes. En el corte, `csstv_claim "1"` en los dos servidores.
 - **La `25` (ajustes de ELO desde el admin)** va después de la `24`.
+- **La `27` (mixes, perfil y ranking de la web nueva)** va después de la `26`. **Aborta si hay nicks repetidos** en `players` (sin distinguir mayúsculas): revisarlo antes con la consulta de su guía y renombrar las fichas sin cuenta que choquen. Después del corte, cargar el puerto de SourceTV (`tv_port`) del **servidor real y de RBK** en Admin › Servidores, para "Ver en TV". Pasos en [`2026-10-24-api-mixes-perfil-ranking`](bitacora/2026-10-24-api-mixes-perfil-ranking/GUIA_IMPLEMENTACION.md).
 - **La `24` (temporadas)** va después de la `23`. Después del corte, abrir la temporada 1 desde el admin; el cierre automático necesita el VPS (punto 6).
 - **Plugin 2.2.0 con `!claim`** (bitácora `2026-10-16-claim-steamid`, que lo llama 2.1.0: el número pasó a los mixes en vivo, punto 1.7): **hecho y probado con bots el 2026-10-18**, sin desplegar. Sale en esta misma tanda: genérico al servidor real y licenciado a RBK. Pasos en [`2026-10-18-plugin-claim`](bitacora/2026-10-18-plugin-claim/GUIA_IMPLEMENTACION.md).
 - ~~**`sm_status`**~~: revisado el 2026-10-17 con `smx_grep.py` sobre todos los plugins de los dos servidores: ninguno lo registra.
@@ -243,7 +245,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 - **Qué es:**
   - RBK queda igual a nuestro servidor. Le faltaba Stripper:Source, que les saca la niebla a los mapas, y tenía otros valores de partida y otros plugins.
-  - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"`.
+  - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"` (bajado a `"3.0"` el 2026-10-24, punto 1.18).
 - **Subido el 2026-10-22.**
   - Servidor real: se carga en el próximo cambio de mapa.
   - **RBK: falta que Daniel lo reinicie desde el panel.** Metamod y las extensiones solo cargan al arrancar.
@@ -316,6 +318,13 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - **Después:** el primer mix real con la 2.5.0 (clips detectados por el plugin, clutches reales, el desfase real con `tv_delay`) y su video por el Worker y en Drive.
 - **Cuentas:** los videos de los clips van al R2 de la **cuenta de Cloudflare de Daniel** (variables `CF_*_CLIPS` en el `.env`, conexión probada); las demos se quedan en la cuenta de kyan. YouTube se descartó.
 - **Bitácora:** [`2026-10-23-clips-video`](bitacora/2026-10-23-clips-video/) y [`2026-10-23-clips-render-automatico`](bitacora/2026-10-23-clips-render-automatico/)
+
+### 1.18 Medio tiempo de 3 segundos: verificar en un mix real
+
+- **Aplicado el 2026-10-24** en el servidor real (`SFTP_CSS_*`) y en RBK (`SERVER1_*`): `csstv_halftime_delay "3.0"` (antes `"5.0"`, con el que el marcador volvía a 0 en el medio tiempo). Verificado releyendo el cfg de cada uno.
+- Entra en el próximo cambio de mapa; no se recargó el plugin.
+- **Falta:** ver en el próximo mix de cada servidor que el cambio de lados conserva el marcador, y publicar `bitacora/2026-10-24-medio-tiempo-3s/CHANGELOG_DISCORD.txt`.
+- **Bitácora:** [`2026-10-24-medio-tiempo-3s`](bitacora/2026-10-24-medio-tiempo-3s/)
 
 ## 2. Investigaciones abiertas
 
@@ -435,7 +444,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 
 ### 7.0 Prueba del replanteo `23` desactualizada
 
-`docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/23_whois.sql` espera `player_nick = 'Ficha23'`, pero desde la `09` el nick de una ficha vinculada a un usuario es su alias (`Alias23`). Por eso `correr.sh` se corta en la `23` y no llega a probar de la `24` en adelante. Hay que cambiar el valor esperado (encontrado el 2026-10-23; no se tocó, porque es de otro requerimiento).
+`docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/23_whois.sql` espera `player_nick = 'Ficha23'`, pero desde la `09` el nick de una ficha vinculada a un usuario es su alias (`Alias23`). Por eso `correr.sh` se corta en la `23` y no llega a probar de la `24` en adelante. Hay que cambiar el valor esperado (encontrado el 2026-10-23; no se tocó, porque es de otro requerimiento). La `27` (2026-10-24) se probó con el mismo ciclo de `correr.sh`, a mano.
 
 ### 7.1 Voz en partida (reemplaza "`sm_deadtalk 0` obligatorio")
 

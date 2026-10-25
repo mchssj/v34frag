@@ -25,7 +25,7 @@ Cada archivo conserva el número de sus secciones, así las referencias de la bi
 | [`api.md`](api.md) | 1 | Cómo se consume la API: URL, sesión, errores, listados (paginación, filtros y orden) |
 | [`cuenta.md`](cuenta.md) | 2 y 4 | Cuenta, Mi perfil, preferencias, contraseña, mis partidas y alias |
 | [`modelo-datos.md`](modelo-datos.md) | 3 | Qué cambia respecto de la web vieja |
-| [`jugadores.md`](jugadores.md) | 5 y 5b | Jugadores, perfiles sin reclamar, `!claim` y varios SteamID por cuenta |
+| [`jugadores.md`](jugadores.md) | 5, 5b y 5c | Jugadores, perfiles sin reclamar, `!claim`, varios SteamID por cuenta, ranking de jugadores y comparador |
 | [`equipos.md`](equipos.md) | 6 y 7 | Equipos, plantel y ranking de equipos |
 | [`partidas.md`](partidas.md) | 8, 8c, 8d, 8e y 8g | Partidas, `!match`, PCW, ELO, mixes en vivo, estado de los servidores y clips |
 | [`torneos.md`](torneos.md) | 8b | Torneos, plantillas y sorteo |
@@ -72,6 +72,16 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Mixes interrumpidos** (nuevo, 2026-10-17) | Un mix cortado por una caída queda cancelado con `cancel_reason: "crash"` y `review: "pending"`; un admin aplica el ELO (con doble confirmación) o lo descarta. El resumen de partida suma `cancel_reason` y `review`; el detalle, `review_detail` | Secciones [8d](partidas.md) y [9](admin.md) |
 | **Video de los clips** (nuevo, 2026-10-23) | Cada clip de `GET /api/v1/matches/{id}/clips` suma `video`: `status`, `url` (el `.mp4`, los primeros 15 días), `embed_url` (el reproductor de Google Drive, para siempre) y `seconds` | Sección [8g](partidas.md) |
 | **Clips: jugadas destacadas** (nuevo, 2026-10-23) | `GET /api/v1/matches/{id}/clips`: ace, 4k, 3k y clutches ganados de la partida, ya ordenados y con los topes aplicados, con la ronda y el segundo de la demo. Escala y topes en `GET`/`PATCH /api/v1/admin/clips/config` | Secciones [8g](partidas.md) y [9](admin.md) |
+
+| **Mixes: listado único** (nuevo, 2026-10-24) | `GET /api/v1/mixes`: en vivo, terminados y cancelados juntos, los en vivo primero. Cada fila con MVP (nivel, nick y rating), ronda actual, estado de la demo y `tv`. Atajos `mine=true` (pide sesión) y `hide_cancelled=true`. `GET /api/v1/mixes/stats`: en vivo ahora, jugadores, mapa más jugado y promedio de rondas de los últimos 30 días | Sección [8d](partidas.md) |
+| **"Ver en TV"** (nuevo, 2026-10-24) | Los mixes en vivo (`/mixes`, `/mixes/live` y su detalle) traen `tv: { host, port }` para `steam://connect/{host}:{port}`; `GET /api/v1/servers/status` suma `tv_address`. El admin carga el puerto de SourceTV (`tv_port`) en cada servidor | Secciones [8d](partidas.md), [8e](partidas.md) y [9](admin.md) |
+| **Borrar un mix** (nuevo, 2026-10-24) | `DELETE /api/v1/admin/mixes/{id}` con `{ elo: "keep" \| "revert", confirm }`: el admin elige si el ELO que dio el mix se mantiene o se revierte. Nunca recalcula la historia. El detalle de partida suma `demo_size` (bytes) | Secciones [8d](partidas.md) y [9](admin.md) |
+| **Perfil por nick** (nuevo, 2026-10-24) | Todas las rutas públicas `/api/v1/players/{id}/…` aceptan el id o el nick (sin distinguir mayúsculas): la URL puede ser `/player/{nick}`. El nick es único en todas las fichas | Sección [5](jugadores.md) |
+| **SteamID ocultos (rompe)** (2026-10-24) | `GET /api/v1/players/{id}` devuelve `steam_id: null` y `steam_ids: []` salvo al dueño y a los admins. "Verificado" es `has_steam` | Sección [5](jugadores.md) |
+| **Jugador inexistente (rompe)** (2026-10-24) | Las sub-rutas de un jugador (`/matches`, `/map-stats`, `/medals`, `/teams`, `/seasons`, `/elo-adjustments`) responden `404` si el id o el nick no existe (antes, una lista vacía) | Sección [5](jugadores.md) |
+| **Perfil: historial de ELO, palmarés y logros** (nuevo, 2026-10-24) | `GET /api/v1/players/{id}/elo-history` (gráfico), `/titles` (campeón y subcampeón de torneos, con equipo y fecha) y `/medals/summary` (medallas agrupadas con `count`). Las partidas del jugador suman `event` y `label` (fase) para armar el título y el subtítulo | Sección [5](jugadores.md) |
+| **Ranking de jugadores y comparador** (nuevo, 2026-10-24) | `GET /api/v1/ranking/players`: posición global (no cambia al filtrar), filtro `level` (`10`, `7-9`, `1-6`) y `elo_trend` (últimos 30 mixes). `GET /api/v1/players/compare?a=&b=`: stats de dos jugadores, su ELO en los últimos 30 mixes y los mixes juntos y como rivales | Sección [5c](jugadores.md) |
+| **Ranking de equipos** (2026-10-24) | Cada fila suma `win_rate`, `trend` (puestos que subió o bajó desde hace 30 días) y `form` (últimos 5 resultados) | Sección [7](equipos.md) |
 
 El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
 

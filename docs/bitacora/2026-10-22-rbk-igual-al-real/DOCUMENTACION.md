@@ -38,7 +38,7 @@ Lo carga `addons/metamod/metaplugins.ini` (`addons/stripper/bin/stripper_mm`). `
 | Fuego amigo en la partida | 0 | `live.cfg` (el `server.cfg` tiene 1, pero en la partida manda `live.cfg`) |
 | Prórroga | MR3 (`csstv_ot_maxrounds "6"`) | `cfg/sourcemod/csstv_reporter.cfg` |
 | Plata en la prórroga | **12000** | `csstv_reporter.cfg` |
-| Pausa del medio tiempo | **5 s** | `csstv_reporter.cfg` |
+| Pausa del medio tiempo | **3 s** (5 s hasta el 2026-10-24, ver [`2026-10-24-medio-tiempo-3s`](../2026-10-24-medio-tiempo-3s/)) | `csstv_reporter.cfg` |
 | `sv_pure` | 2 | `server.cfg` y `game.cfg` |
 | `phys_timescale` | 1.7 | `server.cfg` |
 | `fps_max` | 600 | `csstv_perf`, que lo sostiene aunque el plugin del hosting lo baje a 150 |

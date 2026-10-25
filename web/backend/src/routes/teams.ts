@@ -77,7 +77,8 @@ const ranking = createRoute({
   summary: 'Ranking de equipos',
   description:
     'Equipos oficiales ordenados por puntos. Cada partida de torneo ganada suma `points.official`. Con `pcw=1` ' +
-    'también suma `points.pcw` por cada PCW ganada jugando como el equipo. Los puntos los configura el admin.',
+    'también suma `points.pcw` por cada PCW ganada jugando como el equipo. Los puntos los configura el admin. ' +
+    'Desempate: más victorias y después menos derrotas. `trend` compara con la posición de hace 30 días; `form`, los últimos 5 resultados.',
   middleware: [optionalUser] as const,
   request: { query: RankingQuery },
   responses: { 200: { description: 'Ranking', ...json(Ranking) }, ...errorResponses(400, 401) },
@@ -150,19 +151,32 @@ export const teams = createRouter()
     const mode = p.pcw ? 'total' : 'official';
     let q = sb
       .from('team_ranking')
-      .select('team_id, name, tag, official_played, official_won, official_lost, official_points, total_played, total_won, total_lost, total_points, official_position, total_position', { count: 'exact' });
+      .select(
+        'team_id, name, tag, official_played, official_won, official_lost, official_points, total_played, total_won, total_lost, total_points, ' +
+          'official_position, total_position, official_position_prev, total_position_prev, form_official, form_total',
+        { count: 'exact' },
+      );
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
-    type Row = Record<string, number> & { team_id: string; name: string; tag: string | null };
+    type Row = Record<string, number | null> & { team_id: string; name: string; tag: string | null; form_official: string[] | null; form_total: string[] | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, RANK_COLUMNS[mode], 'team_id');
     const cfg = must(await sb.from('ranking_config').select('win_official, win_pcw').eq('id', 1).maybeSingle());
-    const items = rows.map((r) => ({
-      position: r[`${mode}_position`] ?? 0,
-      team: { id: r.team_id, name: r.name, tag: r.tag },
-      played: r[`${mode}_played`] ?? 0,
-      won: r[`${mode}_won`] ?? 0,
-      lost: r[`${mode}_lost`] ?? 0,
-      points: r[`${mode}_points`] ?? 0,
-    }));
+    const items = rows.map((r) => {
+      const position = r[`${mode}_position`] ?? 0;
+      const prev = r[`${mode}_position_prev`] ?? null;
+      const played = r[`${mode}_played`] ?? 0;
+      const won = r[`${mode}_won`] ?? 0;
+      return {
+        position,
+        team: { id: r.team_id, name: r.name, tag: r.tag },
+        played,
+        won,
+        lost: r[`${mode}_lost`] ?? 0,
+        points: r[`${mode}_points`] ?? 0,
+        win_rate: played ? Math.round((won * 1000) / played) / 10 : null,
+        trend: prev === null ? null : prev - position,
+        form: ((mode === 'total' ? r.form_total : r.form_official) ?? []).filter((x): x is 'W' | 'L' => x === 'W' || x === 'L'),
+      };
+    });
     return c.json({ ...envelope(items, total, p), pcw: p.pcw, points_per_win: { official: cfg?.win_official ?? 30, pcw: cfg?.win_pcw ?? 5 } }, 200);
   });

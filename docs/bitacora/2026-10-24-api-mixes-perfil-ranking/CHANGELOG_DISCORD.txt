@@ -1,0 +1,20 @@
+CMLeague --  Changelog
+
+Llega con la web nueva.
+
+Mixes
+- Todos los mixes en una sola lista: primero los que se están jugando y después el resto, con el MVP de cada uno.
+- Un botón "Ver en TV" en los mixes en vivo te lleva directo al SourceTV del servidor, sin ocupar lugar en la partida.
+- Puedes filtrar "Solo donde jugué" y ocultar los cancelados.
+- Arriba vas a ver cuántos mixes hay en vivo, cuánta gente jugó el último mes, el mapa más jugado y el promedio de rondas.
+
+Tu perfil
+- Tu perfil tiene una dirección con tu nick: /player/tunick.
+- Gráfico de tu ELO en tus últimos 10, 20 o 30 mixes.
+- Tu palmarés: los torneos que ganaste y las finales que jugaste, con tu equipo.
+- Tus SteamID ya no se muestran en tu perfil: solo los ves tú y los admins. La insignia "Verificado" indica que tu perfil tiene al menos un SteamID vinculado con !claim.
+
+Ranking
+- Ranking de jugadores por nivel, con la tendencia de cada uno en sus últimos mixes.
+- En el ranking de equipos vas a ver cuántos puestos subió o bajó cada equipo en el último mes y sus últimos resultados.
+- Nuevo comparador: elige dos jugadores y mira sus stats lado a lado, su ELO y cuántos mixes jugaron juntos o como rivales.

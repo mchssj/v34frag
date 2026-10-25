@@ -53,6 +53,10 @@ describe('documentación', () => {
     expect(doc.paths['/api/v1/me/profile'].get).toBeDefined();
     expect(doc.paths['/api/v1/me/profile'].patch).toBeDefined();
     expect(doc.paths['/api/v1/me/avatar'].post.requestBody.content['multipart/form-data']).toBeDefined();
+    // Mixes, perfil público y ranking (2026-10-24-api-mixes-perfil-ranking).
+    for (const p of ['/api/v1/mixes', '/api/v1/mixes/stats', '/api/v1/players/{id}/elo-history', '/api/v1/players/{id}/titles',
+      '/api/v1/players/{id}/medals/summary', '/api/v1/ranking/players', '/api/v1/players/compare']) expect(doc.paths[p].get).toBeDefined();
+    expect(doc.paths['/api/v1/admin/mixes/{id}'].delete).toBeDefined();
     expect(doc.paths['/api/v1/me/profile-requests']).toBeUndefined();
     expect(doc.paths['/api/v1/me/profile'].get.deprecated).toBeUndefined();
     expect(doc.paths['/api/v1/pcw/formats'].get).toBeDefined();

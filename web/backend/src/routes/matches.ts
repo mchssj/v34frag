@@ -26,7 +26,7 @@ import {
 import { LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
 import { demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
 
-const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side';
+const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
 
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -120,7 +120,7 @@ const adminDelete = createRoute({
 
 type DetailRow = {
   maps: unknown; server_id: string | null; server_ip: string | null; cancel_reason: string | null; external_id: string | null;
-  advantage_side: number | null;
+  advantage_side: number | null; demo_size: number | null;
 };
 
 export const matches = createRouter()
@@ -236,6 +236,7 @@ export const matches = createRouter()
       cancel_reason: m.cancel_reason,
       server: m.server_id || m.server_ip ? { id: server?.id ?? null, name: server?.name ?? null, address: server?.connect_address ?? m.server_ip } : null,
       demo_url: demoUrl(config, m),
+      demo_size: m.demo_size ?? null,
       link_code,
       roster1,
       roster2,

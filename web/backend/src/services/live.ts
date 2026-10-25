@@ -1,5 +1,6 @@
 import type { z } from '@hono/zod-openapi';
-import type { LiveGameRef, LiveMixSummary } from '../schemas/live';
+import type { Db } from '../lib/supabase';
+import type { LiveGameRef, LiveMixSummary, TvRef } from '../schemas/live';
 
 // Columnas de la vista live_match_list (replanteo 16) que arman un LiveMixSummary.
 export const LIVE_LIST =
@@ -12,7 +13,27 @@ export type LiveRow = {
   side1_name: string | null; side2_name: string | null; parent_match_id: string | null; parent_side1: number | null;
 };
 
-export const toLiveSummary = (l: LiveRow): z.infer<typeof LiveMixSummary> => ({
+type Tv = z.infer<typeof TvRef>;
+
+/** SourceTV para "Ver en TV": host de la dirección del servidor y su tv_port. null si falta alguno. */
+export function toTv(host: string | null | undefined, port: number | null | undefined): Tv | null {
+  return host && port ? { host, port } : null;
+}
+
+/** SourceTV de cada servidor (los activos con licencia vigente, como game_servers_public). */
+export async function serverTvs(sb: Db, ids: string[]): Promise<Map<string, Tv>> {
+  const out = new Map<string, Tv>();
+  if (!ids.length) return out;
+  const { data, error } = await sb.from('game_servers_public').select('id, connect_address, tv_port').in('id', [...new Set(ids)]);
+  if (error) throw error;
+  for (const s of data ?? []) {
+    const tv = toTv((s.connect_address ?? '').split(':')[0], s.tv_port);
+    if (s.id && tv) out.set(s.id, tv);
+  }
+  return out;
+}
+
+export const toLiveSummary = (l: LiveRow, tv: Tv | null = null): z.infer<typeof LiveMixSummary> => ({
   uid: l.uid,
   server: { id: l.server_id, name: l.server_name },
   map: l.map,
@@ -24,6 +45,7 @@ export const toLiveSummary = (l: LiveRow): z.infer<typeof LiveMixSummary> => ({
   updated_at: l.updated_at,
   stale: !!l.stale,
   parent_match_id: l.parent_match_id,
+  tv,
 });
 
 /** Juego en curso visto desde su partida de torneo o PCW: parent_side1 = 2 da vuelta el marcador. */

@@ -22,9 +22,11 @@ import { events } from './routes/events';
 import { live } from './routes/live';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
+import { mixes } from './routes/mixes';
 import { pcw } from './routes/pcw';
 import { pcwPlay } from './routes/pcw-play';
 import { players } from './routes/players';
+import { ranking } from './routes/ranking';
 import { roster } from './routes/roster';
 import { seasons } from './routes/seasons';
 import { servers } from './routes/servers';
@@ -71,6 +73,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', pcw);
   app.route('/', account);
   app.route('/', claim); // antes que players: /players/unclaimed no es un {id}
+  app.route('/', ranking); // antes que players: /players/compare no es un {id}
   app.route('/', players);
   app.route('/', teams);
   app.route('/', roster);
@@ -82,6 +85,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', seasons);
   app.route('/', matches);
   app.route('/', clips);
+  app.route('/', mixes);
   app.route('/', live);
   app.route('/', events);
   app.route('/', pcwPlay);

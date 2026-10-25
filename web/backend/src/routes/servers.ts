@@ -12,6 +12,7 @@ const ServerStatusItem = z
     id: z.uuid(),
     name: z.string(),
     address: z.string().nullable().openapi({ description: 'Para el botón "Conectar" (`host:puerto`)' }),
+    tv_address: z.string().nullable().openapi({ description: 'SourceTV (`host:puerto_tv`), para "Ver en TV". null si el servidor no tiene el puerto cargado' }),
     mode: ServerMode.nullable().openapi({ description: 'Modo de juego. null si no está cargado' }),
     region: z.string().nullable().openapi({ description: 'Región (texto libre). null si no está cargada' }),
     online: z.boolean().openapi({ description: 'Respondió a la consulta en 1,5 s' }),

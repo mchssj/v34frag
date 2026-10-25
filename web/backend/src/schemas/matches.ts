@@ -114,6 +114,7 @@ export const MatchDetail = MatchSummary.extend({
   advantage_side: z.number().int().nullable().openapi({ description: 'Gran final con mapa de ventaja: bando que empezó 1-0' }),
   server: z.object({ id: z.uuid().nullable(), name: z.string().nullable(), address: z.string().nullable() }).nullable(),
   demo_url: z.string().nullable().openapi({ description: 'Mix con la demo subida: link de descarga' }),
+  demo_size: z.number().int().nullable().openapi({ description: 'Tamaño de la demo en bytes (null si no hay)' }),
   link_code: z.string().nullable().openapi({ description: 'Código de !match: solo para los dos equipos, el organizador y los admins' }),
   roster1: z.array(RosterPlayer),
   roster2: z.array(RosterPlayer),
