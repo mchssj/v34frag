@@ -1,0 +1,13 @@
+CMLeague --  Changelog
+
+Llega con la web nueva.
+
+Perfil de cada jugador
+- Toca a cualquier jugador del ranking y entras a su perfil: su nivel, cuánto le falta para el siguiente, su ELO y su mejor ELO de la temporada.
+- El gráfico de ELO muestra sus últimos 10, 20 o 30 mixes. Pasa el mouse por encima para ver cada punto.
+- Arriba ves su rating, K/D, HS, ADR, porcentaje de victorias y partidas jugadas.
+- Pestañas con sus stats por mapa, todas sus partidas (filtradas por mix, PCW o torneo), sus equipos, sus temporadas y su palmarés.
+- Si un admin le ajustó el ELO (por ejemplo, por un mix caído), lo ves en el perfil con el motivo.
+- En sus equipos se marca quién es el líder.
+- Si tu perfil es privado, los demás no ven tu nombre, tu país ni tus redes.
+- Si el perfil todavía no tiene cuenta, te dice cómo vincularlo con !claim.

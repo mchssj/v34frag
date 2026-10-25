@@ -80,6 +80,6 @@ Con Playwright, de las cuatro vistas (temporada, Histórico, equipos con PCW y c
 
 ## Falta
 
-- Que el backend corrija el orden de los sin puesto.
+- ~~Que el backend corrija el orden de los sin puesto~~: corregido el 2026-10-24 en `5f786eb` (ver `2026-10-24-frontend-perfil-publico`).
 - Ver Equipos con partidas de torneo reales (forma, tendencia y podio con puntos).
 - Ver una temporada cerrada (no hay ninguna en local).
