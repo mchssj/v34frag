@@ -347,6 +347,12 @@ isOneToOne: false
       foreignKeyName: "match_chat_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -392,6 +398,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_clips_match_id_fkey"
       columns: ["match_id"]
@@ -445,6 +457,12 @@ isOneToOne: true
       foreignKeyName: "match_crashes_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: true
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_crashes_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: true
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -490,6 +508,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "match_player_stats_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_player_stats_match_id_fkey"
       columns: ["match_id"]
@@ -573,6 +597,12 @@ isOneToOne: false
       foreignKeyName: "match_vetos_match_id_fkey"
       columns: ["match_id"]
 isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_vetos_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -642,6 +672,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
       columns: ["parent_match_id"]
@@ -723,6 +759,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"notifications": {
+                  Row: {
+                    "actionable": boolean,"actor_id": string | null,"category": string,"created_at": string,"data": NonNullable<Json>,"id": number,"read_at": string | null,"ref": string | null,"resolution": string | null,"type": string,"user_id": string
+                  }
+                  Insert: {
+                    "actionable"?: boolean,"actor_id"?: string | null,"category": string,"created_at"?: string,"data"?: NonNullable<Json>,"id"?: never,"read_at"?: string | null,"ref"?: string | null,"resolution"?: string | null,"type": string,"user_id": string
+                  }
+                  Update: {
+                    "actionable"?: boolean,"actor_id"?: string | null,"category"?: string,"created_at"?: string,"data"?: NonNullable<Json>,"id"?: never,"read_at"?: string | null,"ref"?: string | null,"resolution"?: string | null,"type"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"pcw_config": {
                   Row: {
                     "best_of": (number)[],"id": number,"updated_at": string,"updated_by": string | null
@@ -759,6 +808,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "pcw_posts_match_id_fkey"
       columns: ["match_id"]
@@ -1483,6 +1538,12 @@ isOneToOne: false
       foreignKeyName: "matches_parent_match_id_fkey"
       columns: ["parent_match_id"]
 isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -1822,7 +1883,7 @@ isOneToOne: false
                   ]
                 },"live_match_players": {
                   Row: {
-                    "assists": number | null,"damage": number | null,"deaths": number | null,"game_nick": string | null,"headshots": number | null,"kills": number | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"side": number | null,"steam_id": string | null,"uid": string | null
+                    "assists": number | null,"damage": number | null,"deaths": number | null,"defuses": number | null,"first_deaths": number | null,"first_kills": number | null,"game_nick": string | null,"headshots": number | null,"k2": number | null,"k3": number | null,"k4": number | null,"k5": number | null,"kills": number | null,"plants": number | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"side": number | null,"steam_id": string | null,"uid": string | null
                   }
                   Relationships: [
                     
@@ -1844,6 +1905,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "match_chat_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_chat_match_id_fkey"
       columns: ["match_id"]
@@ -1887,6 +1954,74 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "player_matches"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "steam_profile_matches"
+      referencedColumns: ["match_id"]
+    }
+                  ]
+                },"match_clutch_data": {
+                  Row: {
+                    "clutch_data": boolean | null,"match_id": string | null
+                  }
+                  Insert: {
+                           "clutch_data"?: never,"match_id"?: string | null
+                         }
+                        Update: {
+                           "clutch_data"?: never,"match_id"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"match_clutches": {
+                  Row: {
+                    "match_id": string | null,"steam_id": string | null,"vs": number | null,"won": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "admin_demo_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "live_match_list"
+      referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "match_clips_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_clips_match_id_fkey"
       columns: ["match_id"]
@@ -1942,6 +2077,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
       columns: ["parent_match_id"]
@@ -2024,6 +2165,13 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"notification_list": {
+                  Row: {
+                    "actionable": boolean | null,"actor_alias": string | null,"actor_id": string | null,"category": string | null,"created_at": string | null,"data": Json | null,"id": number | null,"read_at": string | null,"ref": string | null,"resolution": string | null,"type": string | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"pcw_post_list": {
                   Row: {
                     "best_of": number | null,"by_alias": string | null,"by_user": string | null,"created_at": string | null,"id": string | null,"maps": string | null,"match_id": string | null,"note": string | null,"parent_name": string | null,"parent_tag": string | null,"parent_team_id": string | null,"search": string | null,"side_name": string | null,"starts_at": string | null,"status": string | null,"team_id": string | null
@@ -2041,6 +2189,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "pcw_posts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "pcw_posts_match_id_fkey"
       columns: ["match_id"]
@@ -2091,6 +2245,13 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"player_clutches": {
+                  Row: {
+                    "player_id": string | null,"vs": number | null,"won": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"player_elo_adjustment_list": {
                   Row: {
                     "applied_at": string | null,"delta": number | null,"id": number | null,"player_id": string | null,"reason": string | null,"set_elo": number | null
@@ -2115,6 +2276,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "match_player_stats_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "match_player_stats_match_id_fkey"
       columns: ["match_id"]
@@ -2259,6 +2426,12 @@ isOneToOne: false
       foreignKeyName: "matches_parent_match_id_fkey"
       columns: ["parent_match_id"]
 isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
       referencedRelation: "match_list"
       referencedColumns: ["id"]
     },{
@@ -2334,7 +2507,7 @@ isOneToOne: false
                   ]
                 },"player_stats": {
                   Row: {
-                    "adr": number | null,"assists": number | null,"damage": number | null,"deaths": number | null,"hs": number | null,"kd": number | null,"kills": number | null,"losses": number | null,"maps": number | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"wins": number | null
+                    "adr": number | null,"assists": number | null,"damage": number | null,"deaths": number | null,"defuses": number | null,"first_deaths": number | null,"first_kills": number | null,"hs": number | null,"k2": number | null,"k3": number | null,"k4": number | null,"k5": number | null,"kd": number | null,"kills": number | null,"losses": number | null,"maps": number | null,"plants": number | null,"player_id": string | null,"rating": number | null,"rounds": number | null,"wins": number | null
                   }
                   Relationships: [
                     {
@@ -2508,6 +2681,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "live_match_list"
       referencedColumns: ["parent_match_id"]
+    },{
+      foreignKeyName: "matches_parent_match_id_fkey"
+      columns: ["parent_match_id"]
+isOneToOne: false
+      referencedRelation: "match_clutch_data"
+      referencedColumns: ["match_id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
       columns: ["parent_match_id"]
@@ -2871,6 +3050,9 @@ isOneToOne: false
 "elo_key":
 { Args: { "p_steam": string }; Returns: string
                            },
+"elo_level":
+{ Args: { "p_elo": number }; Returns: number
+                           },
 "elo_recompute_all":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -2938,6 +3120,9 @@ isOneToOne: false
 "event_propagate_dead":
 { Args: { "p_event": string }; Returns: undefined
                            },
+"event_ref":
+{ Args: { "p_event": string }; Returns: Json
+                           },
 "event_register":
 { Args: { "p_event": string,"p_players": (string)[],"p_start_stage"?: number,"p_team": string }; Returns: undefined
                            },
@@ -3004,6 +3189,9 @@ isOneToOne: false
 "match_link_code":
 { Args: { "p_match": string }; Returns: string
                            },
+"match_ref":
+{ Args: { "p_match": string }; Returns: Json
+                           },
 "match_roster":
 { Args: { "p_match": string,"p_team": string }; Returns: string[]
                            },
@@ -3013,6 +3201,12 @@ isOneToOne: false
 "match_schedule":
 { Args: { "p_match": string,"p_server": string,"p_starts_at": string }; Returns: undefined
                            },
+"match_users":
+{ Args: { "p_match": string }; Returns: (string)[]
+                           },
+"mix_users":
+{ Args: { "p_match": string }; Returns: (string)[]
+                           },
 "name_blocked":
 { Args: { "p": string }; Returns: string
                            },
@@ -3021,6 +3215,35 @@ isOneToOne: false
                            },
 "norm_maps":
 { Args: { "j": Json }; Returns: Json
+                           },
+"notification_category":
+{ Args: { "p_type": string }; Returns: string
+                           },
+"notification_required":
+{ Args: { "p_type": string }; Returns: boolean
+                           },
+"notification_wants":
+{ Args: { "p_type": string,"p_user": string }; Returns: boolean
+                           },
+"notifications_mark_read":
+{ Args: { "p_all"?: boolean,"p_ids"?: (number)[] }; Returns: number
+                           },
+"notifications_resolve":
+{ Args: { "p_ref": string,"p_resolution": string }; Returns: undefined
+                           },
+"notifications_unread":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "actionable": number,"last_id": number,"unread": number
+            }[]
+                           },
+"notify":
+{ Args: { "p_data"?: Json,"p_keep_actor"?: boolean,"p_ref"?: string,"p_type": string,"p_users": (string)[] }; Returns: undefined
+                           },
+"notify_admin_ids":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
+"notify_season_delayed":
+{ Args: { "p_season": string }; Returns: undefined
                            },
 "pcw_cleanup":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -3033,6 +3256,9 @@ isOneToOne: false
                            },
 "pcw_side_team":
 { Args: { "p_side": string,"p_team": string }; Returns: undefined
+                           },
+"player_ref":
+{ Args: { "p_player": string }; Returns: Json
                            },
 "players_together":
 { Args: { "p_a": string,"p_b": string }; Returns: {
@@ -3135,6 +3361,9 @@ isOneToOne: false
 "set_user_tag":
 { Args: { "p_force"?: boolean,"p_tag": string,"p_user": string }; Returns: undefined
                            },
+"side_users":
+{ Args: { "p_event"?: string,"p_team": string }; Returns: (string)[]
+                           },
 "steam_attach":
 { Args: { "p_by": string,"p_player": string,"p_steam": string }; Returns: boolean
                            },
@@ -3180,13 +3409,25 @@ isOneToOne: false
 "team_leave":
 { Args: { "p_team": string }; Returns: undefined
                            },
+"team_ref":
+{ Args: { "p_team": string }; Returns: Json
+                           },
 "team_request_join":
 { Args: { "p_team": string }; Returns: string
+                           },
+"team_roster_users":
+{ Args: { "p_team": string }; Returns: (string)[]
                            },
 "team_standings_at":
 { Args: { "p_at": string }; Returns: {
               "name": string,"official_lost": number,"official_played": number,"official_points": number,"official_won": number,"pcw_lost": number,"pcw_played": number,"pcw_points": number,"pcw_won": number,"tag": string,"team_id": string
             }[]
+                           },
+"users_of_players":
+{ Args: { "p_players": (string)[] }; Returns: (string)[]
+                           },
+"users_of_steam":
+{ Args: { "p_steam": (string)[] }; Returns: (string)[]
                            },
 "veto_act":
 { Args: { "p_map": string,"p_match": string,"p_version"?: string }; Returns: undefined

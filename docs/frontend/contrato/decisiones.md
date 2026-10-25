@@ -127,3 +127,10 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-24 | Ranking de jugadores | Posición global por ELO (no cambia al filtrar), filtro por nivel y tendencia de los últimos 30 mixes | Daniel |
 | 2026-10-24 | Ranking de equipos | `win_rate`, tendencia contra hace 30 días y últimos 5 resultados | Daniel (30 días) |
 | 2026-10-24 | Comparador | Dos jugadores cualesquiera (no solo el logueado), con los mixes jugados juntos y como rivales | Daniel |
+| 2026-10-24 | Notificaciones: alcance | Primera etapa sin tareas programadas (partida en 1 hora, PCW vencida, temporada por terminar, partida sin resultado: segunda etapa) | Daniel |
+| 2026-10-24 | Notificaciones: canal | Solo en la web | Daniel |
+| 2026-10-25 | Notificaciones: tiempo real | Contador liviano con ETag cada 30 s (y al enfocar y tras acciones) y la lista al abrir el menú | Daniel (opción B) |
+| 2026-10-24 | Notificaciones: preferencias | Se apaga por categoría; invitación, pedido para entrar y cambio de contraseña no se apagan | Daniel |
+| 2026-10-25 | Notificaciones: Novedades | Torneo nuevo y temporada nueva en una categoría propia, apagada por defecto | Daniel |
+| 2026-10-24 | Notificaciones: retención | Las últimas 100 por cuenta | Daniel |
+| 2026-10-24 | Notificaciones: pendientes | Una invitación o un pedido resuelto queda marcado (aceptada, rechazada, cancelada o vencida), sin borrarse | Daniel |

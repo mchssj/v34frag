@@ -31,6 +31,7 @@ Cada archivo conserva el número de sus secciones, así las referencias de la bi
 | [`torneos.md`](torneos.md) | 8b | Torneos, plantillas y sorteo |
 | [`temporadas.md`](temporadas.md) | 8f | Temporadas: ranking por temporada, medallas y reinicio del nivel 10 |
 | [`admin.md`](admin.md) | 9 | Admin |
+| [`notificaciones.md`](notificaciones.md) | 12 | Notificaciones: lista, contador con ETag, marcar como leídas, tipos, categorías y preferencias |
 | [`decisiones.md`](decisiones.md) | 11 | Registro de todas las decisiones, con fecha y origen |
 
 **Al cambiar algo del backend:** se actualiza el archivo de su módulo, las novedades de abajo y [`decisiones.md`](decisiones.md).
@@ -81,6 +82,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Jugador inexistente (rompe)** (2026-10-24) | Las sub-rutas de un jugador (`/matches`, `/map-stats`, `/medals`, `/teams`, `/seasons`, `/elo-adjustments`) responden `404` si el id o el nick no existe (antes, una lista vacía) | Sección [5](jugadores.md) |
 | **Perfil: historial de ELO, palmarés y logros** (nuevo, 2026-10-24) | `GET /api/v1/players/{id}/elo-history` (gráfico), `/titles` (campeón y subcampeón de torneos, con equipo y fecha) y `/medals/summary` (medallas agrupadas con `count`). Las partidas del jugador suman `event` y `label` (fase) para armar el título y el subtítulo | Sección [5](jugadores.md) |
 | **Ranking de jugadores y comparador** (nuevo, 2026-10-24) | `GET /api/v1/ranking/players`: posición global (no cambia al filtrar), filtro `level` (`10`, `7-9`, `1-6`) y `elo_trend` (últimos 30 mixes). `GET /api/v1/players/compare?a=&b=`: stats de dos jugadores, su ELO en los últimos 30 mixes y los mixes juntos y como rivales | Sección [5c](jugadores.md) |
+| **Notificaciones** (nuevo, 2026-10-25) | `GET /api/v1/notifications` (lista), `/notifications/unread-count` (contador con ETag: consultarlo cada 30 s, al enfocar y tras una acción) y `POST /notifications/read`. Las crea la base; el texto lo arma el front con `type` y `data`. Preferencias por categoría en `preferences.notifications` de `/me/profile` (`news` apagada por defecto; tres obligatorias) | Sección [12](notificaciones.md) |
 | **Líder en el historial de equipos y orden de los sin puesto** (2026-10-24) | `GET /api/v1/players/{id}/teams` suma `is_captain` en cada fila. En `GET /api/v1/seasons/{id}/standings` y en la vista previa del cierre, los que no llegan al mínimo van al final por ELO de mayor a menor (antes, de menor a mayor) | Secciones [5](jugadores.md) y [8f](temporadas.md) |
 | **Ranking de equipos** (2026-10-24) | Cada fila suma `win_rate`, `trend` (puestos que subió o bajó desde hace 30 días) y `form` (últimos 5 resultados) | Sección [7](equipos.md) |
 
