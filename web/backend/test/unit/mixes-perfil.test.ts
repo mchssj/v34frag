@@ -52,3 +52,20 @@ describe('toMixItem', () => {
     expect(r.demo_status).toBe('none');
   });
 });
+
+describe('clutchesOf (replanteo 29)', () => {
+  it('las cinco claves siempre, sumando por cantidad de rivales e ignorando valores raros', async () => {
+    const { clutchesOf } = await import('../../src/services/matches');
+    expect(clutchesOf([])).toEqual({ '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 });
+    expect(
+      clutchesOf([
+        { vs: 1, won: 2 },
+        { vs: 3, won: 1 },
+        { vs: 1, won: 1 },
+        { vs: 6, won: 9 },
+        { vs: null, won: 4 },
+        { vs: 2, won: null },
+      ]),
+    ).toEqual({ '1': 3, '2': 0, '3': 1, '4': 0, '5': 0 });
+  });
+});

@@ -24,7 +24,7 @@ import {
   type RosterPlayer,
 } from '../schemas/matches';
 import { LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
-import { demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
+import { clutchesOf, demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
 
@@ -161,7 +161,7 @@ export const matches = createRouter()
         : Promise.resolve([]),
       series
         ? Promise.resolve([])
-        : sb.from('match_player_stats').select('player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta').eq('match_id', id).then(mustHave),
+        : sb.from('match_player_stats').select('player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('match_id', id).then(mustHave),
       series ? sb.from('match_vetos').select('seq, team_id, map, action, version').eq('match_id', id).then(mustHave) : Promise.resolve([]),
       series ? sb.from('map_pool').select('name, versions').eq('active', true).order('position').then(mustHave) : Promise.resolve([]),
       m.server_id ? sb.from('game_servers_public').select('id, name, connect_address').eq('id', m.server_id).maybeSingle().then(must) : Promise.resolve(null),
@@ -189,6 +189,15 @@ export const matches = createRouter()
     const guestsOf = (t: string | null) => (caps.find((x) => x.id === t)?.guests as string[] | undefined) ?? [];
     const [roster1, roster2] = series ? await Promise.all([roster(m.team1_id, guestsOf(m.team1_id)), roster(m.team2_id, guestsOf(m.team2_id))]) : [[], []];
 
+    // Clutches ganados del mix (replanteo 29); sin datos de clutch, null en cada jugador.
+    const [clutchRows, clutchInfo] = series
+      ? [[], null]
+      : await Promise.all([
+          sb.from('match_clutches').select('steam_id, vs, won').eq('match_id', id).then(mustHave),
+          sb.from('match_clutch_data').select('clutch_data').eq('match_id', id).maybeSingle().then(must),
+        ]);
+    const clutchData = !series && !!clutchInfo?.clutch_data;
+
     // Stats del mix con el alias de los jugadores vinculados.
     const linked = stats.map((s) => s.player_id).filter((x): x is string => !!x);
     const aliases = linked.length ? new Map(mustHave(await sb.from('players').select('id, nick').in('id', linked)).map((p) => [p.id, p.nick])) : new Map<string, string>();
@@ -199,6 +208,8 @@ export const matches = createRouter()
         steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
         kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
         rating: s.rating, elo_delta: s.elo_delta,
+        k2: s.k2, k3: s.k3, k4: s.k4, k5: s.k5, first_kills: s.first_kills, first_deaths: s.first_deaths, plants: s.plants, defuses: s.defuses,
+        clutches: clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null,
       }))
       .sort((a, b) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0));
     const mvp = players.filter((p) => (p.rounds ?? 0) > 0).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
@@ -237,6 +248,7 @@ export const matches = createRouter()
       server: m.server_id || m.server_ip ? { id: server?.id ?? null, name: server?.name ?? null, address: server?.connect_address ?? m.server_ip } : null,
       demo_url: demoUrl(config, m),
       demo_size: m.demo_size ?? null,
+      clutch_data: clutchData,
       link_code,
       roster1,
       roster2,

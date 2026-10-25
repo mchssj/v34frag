@@ -48,3 +48,8 @@ export const confirmField = (action: string) =>
     .string()
     .openapi({ description: `Doble confirmación: el texto \`${CONFIRM_TEXT}\` que escribió el admin` })
     .refine((v) => v.trim().toLowerCase() === CONFIRM_TEXT, { message: `Para ${action}, escribe "${CONFIRM_TEXT}".` });
+
+/** Clutches ganados por cantidad de rivales (replanteo 29): `{ "1": 3, "2": 1, "3": 0, "4": 0, "5": 0 }`. */
+export const Clutches = z
+  .object({ '1': z.number().int(), '2': z.number().int(), '3': z.number().int(), '4': z.number().int(), '5': z.number().int() })
+  .openapi('Clutches', { description: 'Clutches ganados: la clave es la cantidad de rivales (1v1 a 1v5). Solo los ganados' });

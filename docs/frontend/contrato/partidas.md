@@ -84,9 +84,9 @@ El servidor manda una foto del mix al final de cada ronda. Si el servidor se cae
 | `GET /api/v1/mixes` | **Mixes** (desde el 2026-10-24): en vivo, terminados y cancelados en un solo listado. Por defecto (`sort=started_at`, `order=desc`) **los en vivo primero** y después del más nuevo al más viejo; también `sort=rounds`. Filtros: `q` (bandos, mapa, servidor y nombres de los jugadores), `map`, `server`, `status` (`live`, `finished`, `cancelled`), `mine=true` ("Solo donde jugué": pide sesión; sin ficha, la lista viene vacía), `hide_cancelled=true` ("Ocultar canceladas"), `from` y `to`. Cada fila: `match_id` (terminado o cancelado: clic → `/match/{id}`) o `live_uid` (en vivo: su detalle en `/mixes/live/{uid}`), `status`, `map`, `server`, `started_at`, `ended_at`, `side1`/`side2` (nombre y marcador), `winner_side` (el ganador en 600), `rounds_played`, `current_round` ("Ronda {n} · {servidor}"), `max_rounds`, `stale`, `mvp` (`player_id`, `alias` o `game_nick`, `elo`, `level`, `rating`; parcial en vivo), `demo_status`, `cancel_reason` (chip "Cancelada · {motivo}") y `tv` |
 | `GET /api/v1/mixes/stats` | **KPIs de Mixes**: `live_now` ("En vivo ahora"), `players_recent`, `top_map` y `avg_rounds`, de los últimos `window_days` (30) días. Los textos del mockup pasan a "Jugadores en los últimos 30 días" (en lugar de "esta semana") |
 | `GET /api/v1/mixes/live` | **Mixes → En vivo**, arriba de la lista. Filtros: `server`, `player`, `map`, `stale`, `q`; orden `updated_at` (por defecto, desc) o `started_at`. Cada uno: servidor, mapa, bandos con marcador, `rounds_played` de `max_rounds`, `updated_at` (última ronda), `stale` y `parent_match_id` si se juega con `!match` |
-| `GET /api/v1/mixes/live/{uid}` | **Detalle en vivo**: lo mismo, más `seq`, `rounds` (ganador y lado del bando 1 en cada ronda) y `players` (stats parciales por bando, con `alias` si tiene ficha o `steam_id` para el perfil sin reclamar). `404` cuando terminó: ir al detalle de la partida |
+| `GET /api/v1/mixes/live/{uid}` | **Detalle en vivo**: lo mismo, más `seq`, `rounds` (ganador y lado del bando 1 en cada ronda) y `players` (stats parciales por bando, con `alias` si tiene ficha o `steam_id` para el perfil sin reclamar; desde el 2026-10-25 también `k2`–`k5`, `first_kills`, `first_deaths`, `plants` y `defuses`, sin `clutches`). `404` cuando terminó: ir al detalle de la partida |
 | `GET /api/v1/matches?review=pending` | Mixes interrumpidos pendientes de revisión (también `applied` y `discarded`) |
-| `GET /api/v1/matches/{id}` | `review_detail` en un interrumpido; `live` en una partida de torneo o PCW con un mapa en juego. **Sala del mix:** `players` (K, D, A, HS, daño, rating, `elo_delta`; `player_id` null = invitado sin ficha), `mvp`, `demo_url` y `demo_size` (bytes: "Descargar demo ({MB} MB)") |
+| `GET /api/v1/matches/{id}` | `review_detail` en un interrumpido; `live` en una partida de torneo o PCW con un mapa en juego. **Sala del mix:** `players` (K, D, A, HS, daño, rating, `elo_delta`; `player_id` null = invitado sin ficha), `mvp`, `demo_url` y `demo_size` (bytes: "Descargar demo ({MB} MB)"). Desde el 2026-10-25, cada jugador suma `k2`–`k5`, `first_kills`, `first_deaths`, `plants`, `defuses` y `clutches` (`{ "1": n, …, "5": n }`, solo ganados; `null` sin datos), y la partida `clutch_data` (sección 8h) |
 
 - **"Ver en TV"** (mixes en vivo de `/mixes`, `/mixes/live` y su detalle): `tv: { host, port }` → `steam://connect/{host}:{port}`, tooltip `connect {host}:{port}`. `tv: null` si el servidor no tiene cargado el puerto de SourceTV: ocultar el botón. Las demos son públicas: `demo_url` es un link directo, sin firmar.
 - **Borrar un mix** (admin, sección [9](admin.md)): el toast pasa a "Mix borrado. Se mantuvo el ELO." o "Mix borrado. ELO revertido." según lo que eligió (no "ELO recalculado": nunca se recalcula la historia).
@@ -154,3 +154,19 @@ El servidor anota las jugadas destacadas de cada ronda en vivo (incluida la pró
   Los demás estados no tienen video: `pending` (en cola) y `processing` (grabándose) se muestran como "Video en camino"; `failed`, `skipped` y `unavailable` (la partida no tiene demo) como "Sin video", y la jugada se muestra igual con la ronda y el segundo de la demo. Los videos se graban solos y la lista no avisa cuando cambian: se ven al volver a pedir el listado.
 - **Partidas canceladas o interrumpidas:** sus clips se muestran igual.
 - **Cambia la escala:** si un admin la cambia (sección [9](admin.md)), el orden y los topes cambian al instante en todas las partidas.
+
+## 8h. Estadísticas de partida estilo HLTV (disponible desde el 2026-10-25)
+
+La tabla de cada bando en la sala del mix (terminado o en vivo) tiene pestañas: **General**, **Avanzado**, **Entrada** y **Clutch**. La API manda los **totales**; los cocientes y porcentajes los calcula el frontend. Plan y guía del frontend: `docs/bitacora/2026-10-25-stats-partida/PLAN.md` (sección 4).
+
+| Campo de `PlayerLine` | Qué es |
+|---|---|
+| `k2`, `k3`, `k4`, `k5` | Rondas en las que hizo 2, 3, 4 o 5 kills (5k = ace) |
+| `first_kills`, `first_deaths` | Duelos de entrada ganados y perdidos (la primera kill o muerte de la ronda) |
+| `plants`, `defuses` | Bombas plantadas y desactivadas |
+| `clutches` | Clutches **ganados** por cantidad de rivales: `{ "1": 2, "2": 0, "3": 1, "4": 0, "5": 0 }`. `null` si la partida no tiene datos de clutch |
+
+- **`clutch_data`** (en la partida): `false` en los mixes anteriores a que su servidor mandara jugadas (reporter 2.5.0, 2026-10-23). Ahí la pestaña Clutch dice "Sin datos de Clutches disponibles."
+- **Mix en vivo:** los mismos campos salvo `clutches` (llegan con el resultado).
+- **Fórmulas** (las calcula el frontend; "—" si el divisor es 0): K/R = `kills / rounds`; HS % = `headshots / kills`; MK = `k2 + k3 + k4 + k5`; MK % = `MK / rounds`; intentos de entrada = `first_kills + first_deaths`; % de intentos = `intentos / rounds`; % de éxito = `first_kills / intentos`.
+- **No hay** (necesitarían más trabajo del plugin, en pausa): precisión, KAST, RWS, rondas sobrevividas, trades, clutches perdidos, kills por minuto, MVP por ronda ni Swing.

@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { dateParam, Envelope, listQuery } from '../lib/list';
+import { Clutches } from './common';
 import { LiveGameRef } from './live';
 import { TeamRef } from './players';
 
@@ -82,6 +83,12 @@ export const PlayerLine = z
     side: z.number().int().nullable(),
     kills: num, deaths: num, assists: num, headshots: num, damage: num, rounds: num, rating: num,
     elo_delta: num,
+    // (replanteo 29) estadísticas estilo HLTV: totales; los cocientes los calcula el frontend.
+    k2: num, k3: num, k4: num, k5: num,
+    first_kills: num.openapi({ description: 'Duelos de entrada ganados (primera kill de la ronda)' }),
+    first_deaths: num.openapi({ description: 'Duelos de entrada perdidos (primera muerte de la ronda)' }),
+    plants: num, defuses: num,
+    clutches: Clutches.nullable().openapi({ description: 'Clutches ganados; null si la partida no tiene datos de clutch (`clutch_data`)' }),
   })
   .openapi('PlayerLine');
 
@@ -121,6 +128,7 @@ export const MatchDetail = MatchSummary.extend({
   maps_detail: z.array(z.object({ map: z.string().nullable(), r1: num, r2: num, game_id: z.uuid().nullable() })).openapi({ description: 'Torneo o PCW: mapas de la serie' }),
   games: z.array(GameRef).openapi({ description: 'Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle)' }),
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
+  clutch_data: z.boolean().openapi({ description: 'Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen)' }),
   mvp: PlayerLine.nullable().openapi({ description: 'Mix: el de mejor rating' }),
   veto: VetoState.nullable().openapi({ description: 'Torneo o PCW' }),
   review_detail: MixReview.nullable().openapi({ description: 'Mix interrumpido por una caída: lo que necesita el admin para decidir' }),

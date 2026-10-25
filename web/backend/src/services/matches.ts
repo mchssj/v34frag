@@ -112,3 +112,13 @@ export function vetoState(
     maps_to_play,
   };
 }
+
+/** Clutches ganados por cantidad de rivales, con las cinco claves aunque falten (replanteo 29). */
+export function clutchesOf(rows: { vs: number | null; won: number | null }[]) {
+  const out = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+  for (const r of rows) {
+    const k = String(r.vs) as keyof typeof out;
+    if (k in out) out[k] += r.won ?? 0;
+  }
+  return out;
+}

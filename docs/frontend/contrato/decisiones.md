@@ -134,3 +134,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-25 | Notificaciones: Novedades | Torneo nuevo y temporada nueva en una categoría propia, apagada por defecto | Daniel |
 | 2026-10-24 | Notificaciones: retención | Las últimas 100 por cuenta | Daniel |
 | 2026-10-24 | Notificaciones: pendientes | Una invitación o un pedido resuelto queda marcado (aceptada, rechazada, cancelada o vencida), sin borrarse | Daniel |
+| 2026-10-25 | Estadísticas de partida | Pestañas General, Avanzado, Entrada y Clutch con los datos que el plugin ya manda; sin Intercambio | Daniel |
+| 2026-10-25 | Partidas sin datos de clutch | "Sin datos de Clutches disponibles." en lugar de ceros | Daniel |
+| 2026-10-25 | Mejor valor de cada columna | Resaltado, como en HLTV | Daniel |
+| 2026-10-25 | Métricas que necesitan el plugin | En pausa (precisión, KAST, RWS, trades, clutches perdidos…): no sumarle carga al plugin por el riesgo de lag | Daniel |
