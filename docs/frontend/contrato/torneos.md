@@ -91,7 +91,7 @@ stateDiagram-v2
 | `GET /api/v1/events/{id}/matches` | Todos | Partidas (con `stage`, `phase`, `grp`, `round`, `pos` y `bye` para dibujar la llave; hasta 200 por página). Con `ETag` |
 | `GET /api/v1/events/{id}/standings` | Todos | Tablas de grupos (`group`), grupos de doble eliminación (`group_double`) y del suizo, con la posición. Con `ETag` |
 | `PUT`/`DELETE /api/v1/events/{id}/registrations/{teamId}` | Capitán u organizador | Inscribir, cambiar inscritos (`{ players, start_stage? }`) o dar de baja |
-| `POST /api/v1/events`, `PATCH`/`DELETE /api/v1/events/{id}`, `POST …/cancel` | Organizador o admin | Crear, editar, borrar, cancelar |
+| `POST /api/v1/events`, `PATCH`/`DELETE /api/v1/events/{id}`, `POST …/cancel` | Organizador o admin | Crear, editar, borrar, cancelar. `map_pool` (opcional): el pool del veto del torneo, entre los mapas disponibles del catálogo (`GET /maps`, por ejemplo `de_russka` aunque no esté en el pool por defecto), sin repetir y con al menos tantos mapas como el BO más alto de `config`. `null` = el pool por defecto. **No cambia después del primer veto** de una partida del torneo (`400`). El detalle lo devuelve en `map_pool` |
 | `PUT /api/v1/events/{id}/seeds` | Organizador o admin | Orden de siembra a mano (todos los inscritos) |
 | `POST /api/v1/events/{id}/draw` | Organizador o admin | Sorteo de la siembra (`{ seeds, drawn_at }`) |
 | `POST /api/v1/events/{id}/generate` · `…/reset` · `…/ties` | Organizador o admin | Fixture y empates |

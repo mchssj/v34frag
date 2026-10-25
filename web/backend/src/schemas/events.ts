@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi';
+import { MapPoolNames } from './pcw';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { MatchStatus, MatchSummary } from './matches';
 import { TeamRef } from './players';
@@ -138,6 +139,7 @@ export const EventDetail = EventSummary.extend({
     .object({ at: z.string(), by: z.object({ user_id: z.uuid().nullable(), alias: z.string().nullable() }) })
     .nullable()
     .openapi({ description: 'Sorteo de la siembra (POST /events/{id}/draw): cuándo y quién. null si la siembra se cargó a mano o cambió después' }),
+  map_pool: z.array(z.string()).nullable().openapi({ description: 'Pool del veto del torneo; `null`: el pool por defecto (GET /maps?veto_default=true)' }),
   viewer: z.object({ can_manage: z.boolean() }).nullable(),
 }).openapi('EventDetail', {
   description: 'Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings',
@@ -156,6 +158,7 @@ export const EventCreate = z
     rules: z.string().trim().max(5000).nullable().optional(),
     min_teams: z.number().int().min(2).max(256).nullable().optional(),
     max_teams: z.number().int().min(2).max(256).nullable().optional(),
+    map_pool: MapPoolNames.optional().openapi({ description: 'Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto' }),
   })
   .openapi('EventCreate');
 

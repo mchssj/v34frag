@@ -595,6 +595,192 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis notificaciones
+         * @description Las últimas 100 de la cuenta, de la más nueva a la más vieja. Filtros `unread`, `actionable` y `category`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `true` solo las sin leer */
+                    unread?: "true" | "false";
+                    /** @description `true` solo las de aceptar o rechazar que siguen pendientes */
+                    actionable?: "true" | "false";
+                    /** @description Solo una categoría */
+                    category?: "team" | "tournament" | "pcw" | "elo" | "season" | "account" | "news" | "admin";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Notificaciones */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotificationList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contador de la campana
+         * @description Sin leer y pendientes de responder. Responde con `ETag`: con `If-None-Match` contesta `304` si no cambió. La web lo consulta cada 30 segundos, al enfocar la pestaña y después de una acción.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Contador */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UnreadCount"];
+                    };
+                };
+                /** @description Sin cambios */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar como leídas
+         * @description `{ ids }` marca esas (las de otra cuenta se ignoran); `{ all: true }`, todas.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MarkRead"];
+                };
+            };
+            responses: {
+                /** @description Listo */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pcw/formats": {
         parameters: {
             query?: never;
@@ -7478,14 +7664,18 @@ export interface paths {
                     page?: number;
                     /** @description Elementos por página (máximo 100) */
                     per?: number;
-                    /** @description Campo de orden: `rank`, `elo`, `matches`, `alias` */
-                    sort?: "rank" | "elo" | "matches" | "alias";
+                    /** @description Campo de orden: `rank`, `elo`, `matches`, `alias`, `rating`, `kd` */
+                    sort?: "rank" | "elo" | "matches" | "alias" | "rating" | "kd";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
                     /** @description Busca en el alias */
                     q?: string;
                     /** @description `true` solo los que llegan al mínimo de mixes */
                     eligible?: "true" | "false";
+                    /** @description Nivel según el ELO de la temporada: `10`, `7-9` o `1-6` */
+                    level?: "10" | "7-9" | "1-6";
+                    /** @description Jugadores activos de un equipo oficial */
+                    team?: string;
                 };
                 header?: never;
                 path: {
@@ -11107,8 +11297,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Pool de mapas
-         * @description Los mapas del veto con sus versiones (Inferno tiene dos). Por defecto solo los activos. Sin sesión.
+         * Catálogo de mapas
+         * @description Todos los mapas con sus versiones (Inferno tiene dos), si salen en Mixes, si están en el pool por defecto del veto y su foto. Por defecto solo los disponibles. Sin sesión.
          */
         get: {
             parameters: {
@@ -11122,8 +11312,12 @@ export interface paths {
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
                     q?: string;
-                    /** @description Incluir los mapas desactivados (para el admin) */
+                    /** @description Incluir los mapas retirados (para el admin y para las fotos de las salas viejas) */
                     include_inactive?: "true" | "false";
+                    /** @description `true` solo los del select de Mixes */
+                    mixes?: "true" | "false";
+                    /** @description `true` solo los del pool por defecto del veto */
+                    veto_default?: "true" | "false";
                 };
                 header?: never;
                 path?: never;
@@ -11168,8 +11362,8 @@ export interface paths {
         };
         get?: never;
         /**
-         * Cambiar el pool de mapas
-         * @description Reemplaza la lista completa; el orden es el de la lista. Al menos 2 mapas activos.
+         * Cambiar el catálogo de mapas
+         * @description La lista completa, en orden. No borra: tiene que traer todos los mapas que ya existen (un mapa se retira con `active: false`). Al menos 2 mapas en el pool por defecto, y solo mapas disponibles en él.
          */
         put: {
             parameters: {
@@ -11222,6 +11416,157 @@ export interface paths {
         };
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/maps/{name}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Foto de un mapa
+         * @description `multipart/form-data`, campo `file`. JPEG, PNG o WebP de hasta 2 MB. Reemplaza a la anterior.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": components["schemas"]["MapImageUpload"];
+                };
+            };
+            responses: {
+                /** @description Mapa */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MapItem"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Quitar la foto de un mapa
+         * @description El mapa sigue igual, sin foto (el marcador sale liso).
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    name: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mapa */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MapItem"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -11566,6 +11911,18 @@ export interface components {
              * @enum {string|null}
              */
             theme_fx: "full" | "silent" | "off" | null;
+            notifications: components["schemas"]["NotificationPrefs"];
+        };
+        /** @description Categorías prendidas (`true`) o apagadas. Por defecto todas prendidas menos `news`. La invitación a un equipo, el pedido para entrar a tu equipo y el cambio de contraseña llegan siempre. */
+        NotificationPrefs: {
+            team: boolean;
+            tournament: boolean;
+            pcw: boolean;
+            elo: boolean;
+            season: boolean;
+            account: boolean;
+            news: boolean;
+            admin: boolean;
         };
         ProfilePatch: {
             /**
@@ -11606,6 +11963,18 @@ export interface components {
              * @enum {string|null}
              */
             theme_fx?: "full" | "silent" | "off" | null;
+            notifications?: components["schemas"]["NotificationPrefsPatch"];
+        };
+        /** @description Solo se cambian las categorías enviadas */
+        NotificationPrefsPatch: {
+            team?: boolean;
+            tournament?: boolean;
+            pcw?: boolean;
+            elo?: boolean;
+            season?: boolean;
+            account?: boolean;
+            news?: boolean;
+            admin?: boolean;
         };
         AvatarResult: {
             avatar_url: string;
@@ -11616,6 +11985,58 @@ export interface components {
              * @description JPEG, PNG o WebP, máximo 1 MB. Conviene recortarla a 256×256 antes de subirla.
              */
             file: string;
+        };
+        NotificationList: {
+            items: components["schemas"]["Notification"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        Notification: {
+            id: number;
+            /**
+             * @description Tipo de evento (tabla en docs/frontend/contrato/notificaciones.md)
+             * @example team_invite
+             */
+            type: string;
+            /** @enum {string} */
+            category: "team" | "tournament" | "pcw" | "elo" | "season" | "account" | "news" | "admin";
+            /** @description Ids y nombres del momento para armar el texto y el link */
+            data: {
+                [key: string]: unknown;
+            };
+            /** @description Se acepta o rechaza desde la lista (invitación o pedido para entrar) */
+            actionable: boolean;
+            /**
+             * @description En una invitación o un pedido: cómo terminó. `null` mientras esté pendiente
+             * @enum {string|null}
+             */
+            resolution: "accepted" | "rejected" | "cancelled" | "expired" | null;
+            /** @description Quién la provocó; `null` si fue el sistema (el servidor, el cron) */
+            actor: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+            created_at: string;
+            read: boolean;
+        };
+        UnreadCount: {
+            /** @description Sin leer (el número de la campana) */
+            unread: number;
+            /** @description Invitaciones y pedidos pendientes de responder */
+            actionable: number;
+        };
+        /** @description `{ ids }` marca esas; `{ all: true }`, todas */
+        MarkRead: {
+            ids: number[];
+        } | {
+            /** @enum {boolean} */
+            all: true;
         };
         PcwFormats: {
             /**
@@ -12064,10 +12485,30 @@ export interface components {
             /** @enum {string} */
             privacy: "public" | "private";
             peak_elo: number | null;
-            stats: components["schemas"]["PlayerStats"] & unknown;
+            stats: components["schemas"]["PlayerStatsDetail"];
             details: components["schemas"]["PublicDetails"];
             /** @description true si los datos personales están ocultos por privacidad */
             private: boolean;
+        };
+        /** @description null si no jugó partidas terminadas */
+        PlayerStatsDetail: components["schemas"]["PlayerStats"] & ({
+            k2: number | null;
+            k3: number | null;
+            k4: number | null;
+            k5: number | null;
+            first_kills: number | null;
+            first_deaths: number | null;
+            plants: number | null;
+            defuses: number | null;
+            clutches: components["schemas"]["Clutches"];
+        } | null);
+        /** @description Clutches ganados en mixes, con todos sus SteamID */
+        Clutches: {
+            1: number;
+            2: number;
+            3: number;
+            4: number;
+            5: number;
         };
         /** @description Datos personales. null si no tiene cuenta o si su perfil es privado */
         PublicDetails: {
@@ -13000,6 +13441,12 @@ export interface components {
                 name: string;
                 icon: string;
             } | null;
+            /** @description Equipos oficiales actuales (también en las temporadas cerradas) */
+            teams: components["schemas"]["TeamRef"][];
+            /** @description Rating de los mixes de la temporada; `null` sin mixes */
+            rating: number | null;
+            /** @description K/D de los mixes de la temporada; `null` sin mixes */
+            kd: number | null;
         };
         PlayerSeasonList: {
             items: components["schemas"]["PlayerSeason"][];
@@ -13226,6 +13673,8 @@ export interface components {
             games: components["schemas"]["GameRef"][];
             /** @description Mix: stats de cada jugador */
             players: components["schemas"]["PlayerLine"][];
+            /** @description Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen) */
+            clutch_data: boolean;
             mvp: components["schemas"]["PlayerLine"] & (Record<string, never> | null);
             veto: components["schemas"]["VetoState"];
             review_detail: components["schemas"]["MixReview"];
@@ -13272,6 +13721,17 @@ export interface components {
             rounds: number | null;
             rating: number | null;
             elo_delta: number | null;
+            k2: number | null;
+            k3: number | null;
+            k4: number | null;
+            k5: number | null;
+            /** @description Duelos de entrada ganados (primera kill de la ronda) */
+            first_kills: number | null;
+            /** @description Duelos de entrada perdidos (primera muerte de la ronda) */
+            first_deaths: number | null;
+            plants: number | null;
+            defuses: number | null;
+            clutches: components["schemas"]["Clutches"] & (Record<string, never> | null);
         };
         /** @description Torneo o PCW */
         VetoState: {
@@ -13668,6 +14128,14 @@ export interface components {
             damage: number | null;
             rounds: number | null;
             rating: number | null;
+            k2: number | null;
+            k3: number | null;
+            k4: number | null;
+            k5: number | null;
+            first_kills: number | null;
+            first_deaths: number | null;
+            plants: number | null;
+            defuses: number | null;
         };
         ApplyEloBody: {
             /** @description Doble confirmación: el texto `estoy seguro` que escribió el admin */
@@ -13755,6 +14223,8 @@ export interface components {
                     alias: string | null;
                 };
             } | null;
+            /** @description Pool del veto del torneo; `null`: el pool por defecto (GET /maps?veto_default=true) */
+            map_pool: string[] | null;
             viewer: {
                 can_manage: boolean;
             } | null;
@@ -13865,6 +14335,8 @@ export interface components {
             rules?: string | null;
             min_teams?: number | null;
             max_teams?: number | null;
+            /** @description Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto */
+            map_pool?: string[] | null;
         };
         /** @description Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3; groups_double 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5. 3.er puesto apagado. */
         EventConfig: {
@@ -13916,6 +14388,8 @@ export interface components {
             rules?: string | null;
             min_teams?: number | null;
             max_teams?: number | null;
+            /** @description Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto */
+            map_pool?: string[] | null;
         };
         SeedsBody: {
             teams: string[];
@@ -13960,6 +14434,8 @@ export interface components {
             /** Format: uuid */
             match_id: string | null;
             created_at: string;
+            /** @description Pool del veto; `null`: el pool por defecto */
+            map_pool: string[] | null;
             side: components["schemas"]["PcwSide"];
         };
         PcwSide: {
@@ -14002,6 +14478,8 @@ export interface components {
              */
             starts_at?: string;
             note?: string;
+            /** @description Pool del veto (nombres del catálogo, disponibles y sin repetir; al menos el BO más alto). `null`: el pool por defecto */
+            map_pool?: string[] | null;
             /**
              * @description Jugadores de la lista (al menos 4 con cuenta en total)
              * @default []
@@ -14052,10 +14530,18 @@ export interface components {
         MapItem: {
             name: string;
             versions: string[];
+            /** @description Disponible (`false`: retirado) */
             active: boolean;
             position: number;
+            /** @description Sale en el select de Mixes */
+            mixes: boolean;
+            /** @description En el pool por defecto del veto (PCW y torneos sin pool propio) */
+            veto_default: boolean;
+            /** @description Foto del mapa: fondo del marcador de la sala. Vale para todas sus versiones */
+            image_url: string | null;
         };
         MapPoolBody: {
+            /** @description El catálogo completo, en orden: tiene que traer todos los mapas que ya existen */
             maps: components["schemas"]["MapPoolItem"][];
         };
         MapPoolItem: {
@@ -14063,8 +14549,22 @@ export interface components {
             name: string;
             /** @description Versiones del servidor; la primera es el nombre. Por defecto, solo el nombre */
             versions?: string[];
-            /** @default true */
+            /**
+             * @description Disponible. Un mapa no se borra: se retira con `false`
+             * @default true
+             */
             active: boolean;
+            /** @description Sale en el select de Mixes. Si no viene, queda como estaba (en un mapa nuevo, como `active`) */
+            mixes?: boolean;
+            /** @description Pool por defecto del veto. Si no viene, queda como estaba (en un mapa nuevo, como `active`) */
+            veto_default?: boolean;
+        };
+        MapImageUpload: {
+            /**
+             * Format: binary
+             * @description JPEG, PNG o WebP, máximo 2 MB. Captura horizontal sin HUD, idealmente 1920×1080.
+             */
+            file: string;
         };
         ServerList: {
             items: components["schemas"]["ServerItem"][];

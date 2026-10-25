@@ -1,6 +1,7 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
 import { confirmField } from './common';
+import { LEVEL_RANGES, TeamRef } from './players';
 
 // Temporadas: ranking, medallas por tramo y reinicio del nivel 10 (plan docs/bitacora/2026-10-20-temporadas).
 // Los rangos son los de season_check y set_season_config (replanteo 24).
@@ -83,15 +84,20 @@ export const Standing = z
     losses: z.number().int(),
     elo_after: z.number().int().openapi({ description: 'ELO después del reinicio (en la activa: si cerrara ahora)' }),
     medal: Medal,
+    teams: z.array(TeamRef).openapi({ description: 'Equipos oficiales actuales (también en las temporadas cerradas)' }),
+    rating: z.number().nullable().openapi({ description: 'Rating de los mixes de la temporada; `null` sin mixes' }),
+    kd: z.number().nullable().openapi({ description: 'K/D de los mixes de la temporada; `null` sin mixes' }),
   })
   .openapi('SeasonStanding');
-export const StandingQuery = listQuery(['rank', 'elo', 'matches', 'alias'], { sort: 'rank', order: 'asc' }).extend({
+export const StandingQuery = listQuery(['rank', 'elo', 'matches', 'alias', 'rating', 'kd'], { sort: 'rank', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
   eligible: boolParam('`true` solo los que llegan al mínimo de mixes'),
+  level: z.enum(LEVEL_RANGES).optional().openapi({ description: 'Nivel según el ELO de la temporada: `10`, `7-9` o `1-6`' }),
+  team: z.uuid().optional().openapi({ description: 'Jugadores activos de un equipo oficial' }),
 });
 export const StandingList = Envelope(Standing).openapi('SeasonStandingList');
 
-export const PlayerSeason = Standing.omit({ player: true })
+export const PlayerSeason = Standing.omit({ player: true, teams: true, rating: true, kd: true })
   .extend({ season: z.object({ id: z.uuid(), number: z.number().int(), name: z.string() }) })
   .openapi('PlayerSeason');
 export const PlayerSeasonQuery = listQuery(['number'], { sort: 'number', order: 'desc' });

@@ -1,6 +1,6 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import { optionalUser } from '../lib/auth';
-import { LEVEL_FLOORS, levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
+import { levelBounds, levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { AppError } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
@@ -94,10 +94,9 @@ export const ranking = createRouter()
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
-    // Nivel 7 empieza en LEVEL_FLOORS[6] y el 10 en LEVEL_FLOORS[9].
-    if (p.level === '10') q = q.gte('elo', LEVEL_FLOORS[9]);
-    if (p.level === '7-9') q = q.gte('elo', LEVEL_FLOORS[6]).lt('elo', LEVEL_FLOORS[9]);
-    if (p.level === '1-6') q = q.lt('elo', LEVEL_FLOORS[6]);
+    const lv = levelBounds(p.level);
+    if (lv.gte !== undefined) q = q.gte('elo', lv.gte);
+    if (lv.lt !== undefined) q = q.lt('elo', lv.lt);
     type Row = OverviewRow & { position: number | null; country: string | null; game_role: string | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, { matches: 'maps' });
     const trends = await eloTrends(sb, rows.map((r) => r.id!));

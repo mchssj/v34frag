@@ -163,7 +163,8 @@ export const matches = createRouter()
         ? Promise.resolve([])
         : sb.from('match_player_stats').select('player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('match_id', id).then(mustHave),
       series ? sb.from('match_vetos').select('seq, team_id, map, action, version').eq('match_id', id).then(mustHave) : Promise.resolve([]),
-      series ? sb.from('map_pool').select('name, versions').eq('active', true).order('position').then(mustHave) : Promise.resolve([]),
+      // Pool del veto de la partida: el del torneo, el de la PCW o el pool por defecto (replanteo 30).
+      series ? sb.rpc('match_map_pool', { p_match: id }).select('name, versions').then(mustHave) : Promise.resolve([]),
       m.server_id ? sb.from('game_servers_public').select('id, name, connect_address').eq('id', m.server_id).maybeSingle().then(must) : Promise.resolve(null),
       series && (m.team1_id || m.team2_id)
         ? sb.from('teams').select('id, captain_id, guests').in('id', [m.team1_id, m.team2_id].filter((x): x is string => !!x)).then(mustHave)

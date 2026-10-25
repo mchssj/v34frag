@@ -13,7 +13,7 @@
 | `GET /api/v1/matches/{id}/chat` | Chat **por cursor**: sin parámetros, los últimos `limit` (50 por defecto, máximo 100); con `before=<id>`, los anteriores (historial); con `after=<id>`, los nuevos. Responde `{ items, has_more, limit }`, del más viejo al más nuevo |
 | `POST /api/v1/matches/{id}/chat` · `DELETE /api/v1/chat/{id}` | Escribir (en torneos y PCW: los dos equipos, el organizador y los admins; en mixes, cualquiera con sesión) y borrar el propio |
 | `POST /api/v1/matches/{id}/veto` (`{ map, version? }`) | Veto del capitán en su turno |
-| `GET /api/v1/maps` | Pool del veto con versiones (`include_inactive=true` para el admin) |
+| `GET /api/v1/maps` | Catálogo de mapas con versiones, `mixes`, `veto_default` e `image_url`. Por defecto solo los disponibles (`include_inactive=true` para el admin y para la foto de las salas viejas). **Select de Mixes:** `?mixes=true`. **Foto de un mix:** buscar el mapa del mix entre las `versions` de cada mapa (`de_inferno_classic` es de `de_inferno`). El pool del veto de una partida no sale de acá: está en `veto.pool` del detalle |
 
 - **Actualización en vivo:**
   - El detalle de partida y de torneo, y las partidas y tablas de un torneo, responden con `ETag`. Conviene consultar cada 3 a 5 segundos mandando `If-None-Match` con el último `ETag`.
@@ -49,7 +49,7 @@
 | Endpoint | Pantalla |
 |---|---|
 | `GET /api/v1/pcw/posts` | Anuncios abiertos: formato, mapas, hora, nota, roster y, si juega como un equipo, cuál |
-| `POST /api/v1/pcw/posts` | Publicar: `best_of` (de `GET /api/v1/pcw/formats`), `players`, `guests`, `team_id` opcional, `starts_at`, `maps`, `note`, `name` |
+| `POST /api/v1/pcw/posts` | Publicar: `best_of` (de `GET /api/v1/pcw/formats`), `players`, `guests`, `team_id` opcional, `starts_at`, `maps` (texto libre), `note`, `name` y `map_pool` opcional: el pool del veto, entre los mapas disponibles (`GET /maps`), sin repetir y con al menos tantos mapas como el BO. Sin `map_pool`, el veto usa el pool por defecto. Los anuncios lo devuelven en `map_pool` |
 | `POST /api/v1/pcw/posts/{id}/accept` | Aceptar con el roster propio (`team_id` opcional). Devuelve el id de la partida: abrir su detalle |
 | `GET /api/v1/me/pcw/post` · `GET /api/v1/me/pcw/matches` | **Mis PCW**: mi anuncio abierto (o `null`) y mis prácticas (`status` para ver las pendientes) |
 | `DELETE /api/v1/pcw/posts/{id}` · `POST /api/v1/pcw/matches/{id}/cancel` | Cancelar mi anuncio o una práctica sin mapas jugados |
