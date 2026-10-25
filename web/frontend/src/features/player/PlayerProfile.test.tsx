@@ -348,16 +348,16 @@ describe("Perfil público", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("ficha sin cuenta: aviso de !claim", async () => {
+  it("ficha sin cuenta: sin aviso de !claim (se vincula desde Mi perfil)", async () => {
     api({ detail: detail({ has_account: false, elo: null, level: null }) })
     renderProfile()
-    expect(await screen.findByText(/¿Es tu perfil\?/)).toBeInTheDocument()
     expect(
-      screen.getByRole("link", { name: "Generar código" })
-    ).toHaveAttribute("href", "/profile/link")
-    expect(
-      screen.getByText("Todavía no jugó mixes en el servidor.")
+      await screen.findByText("Todavía no jugó mixes en el servidor.")
     ).toBeInTheDocument()
+    expect(screen.queryByText(/!claim/)).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("link", { name: "Generar código" })
+    ).not.toBeInTheDocument()
   })
 
   it("un nick que no existe", async () => {

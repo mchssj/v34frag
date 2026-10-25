@@ -8,7 +8,6 @@ import {
   ExternalLinkIcon,
   Gamepad2Icon,
   GitCompareIcon,
-  KeyRoundIcon,
   LockIcon,
   MessageCircleIcon,
   ShieldIcon,
@@ -276,27 +275,6 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
           )}
         </div>
       </div>
-      {!p.has_account && (
-        <div className="flex flex-wrap items-center gap-3 rounded-b-xl border-t bg-muted px-5 py-3 text-[13px]">
-          <KeyRoundIcon aria-hidden className="size-4" />
-          <span className="flex-1">
-            ¿Es tu perfil? Genera un código y escribe{" "}
-            <code className="rounded-[4px] border bg-background px-1.5 py-px font-mono">
-              !claim
-            </code>{" "}
-            en el servidor para vincularlo.
-          </span>
-          <Link
-            to="/profile/link"
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "h-7 px-2.5 text-xs"
-            )}
-          >
-            Generar código
-          </Link>
-        </div>
-      )}
     </div>
   )
 }
