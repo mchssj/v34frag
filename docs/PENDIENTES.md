@@ -334,6 +334,13 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** ver en el próximo mix de cada servidor que el cambio de lados conserva el marcador, y publicar `bitacora/2026-10-24-medio-tiempo-3s/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-24-medio-tiempo-3s`](bitacora/2026-10-24-medio-tiempo-3s/)
 
+### 1.20 Fichas que perdieron el vínculo con su cuenta: se arreglan en el corte
+
+- **10 fichas** con el reclamo aprobado y sin cuenta en producción: juanma, Lukas, vodka, notions, instt, rbk, odreaz, daniloev, always y aksev. Causa probable: el panel de admin viejo vaciaba `players.user_id` al editar una ficha con el buscador de cuentas filtrado.
+- **Hecho el 2026-10-25 (local):** la migración `15` las vincula en el corte y la base local ya está corregida.
+- **La web vieja no se toca** (Daniel, 2026-10-25): hasta el corte su panel puede desvincular más fichas al editarlas; la `15` también las levanta si el reclamo sigue aprobado. Opcional, con OK de Daniel: vincular las 10 en producción antes del corte.
+- **Bitácora:** [`2026-10-25-vinculos-perdidos`](bitacora/2026-10-25-vinculos-perdidos/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
