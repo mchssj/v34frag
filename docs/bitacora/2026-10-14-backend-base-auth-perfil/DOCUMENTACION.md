@@ -12,7 +12,7 @@ Esta primera entrega cubre la **base** y dos dominios:
 
 Los demás dominios (jugadores, equipos, partidas, torneos, admin) van en entregas siguientes.
 
-El código es **TypeScript con Hono** y corre igual en **Node 24**, el destino principal (un VPS de Hostinger), y en **Cloudflare Workers**, que queda como alternativa. Habla con Supabase por HTTPS con `supabase-js`, siempre **con el token del usuario**: las políticas RLS de la base siguen siendo la barrera, y el backend agrega validación de datos y reglas encima.
+El código es **TypeScript con Hono** y corre igual en **Node 24**, el destino principal (un VPS de OVH), y en **Cloudflare Workers**, que queda como alternativa. Habla con Supabase por HTTPS con `supabase-js`, siempre **con el token del usuario**: las políticas RLS de la base siguen siendo la barrera, y el backend agrega validación de datos y reglas encima.
 
 ```mermaid
 flowchart LR

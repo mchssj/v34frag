@@ -60,6 +60,8 @@ El despliegue al VPS (build, servicio, Caddy, dominio, pipeline y SMTP de Supaba
 
 Después de aprobar el plan, Daniel decidió alojar la web y la API en un **VPS KVM 1 de Hostinger con dominio propio**, para tener el dominio y casi toda la infraestructura en un solo lugar. Cloudflare se queda solo con el Worker de demos y R2.
 
+> **2026-10-25:** Daniel cambió el proveedor a **OVH VPS-1 en Hillsboro (Oregón)**, con Ubuntu 26.04 LTS. El resto de esta sección no cambia. Detalle en [`2026-10-16-despliegue-vps/GUIA_IMPLEMENTACION.md`](../2026-10-16-despliegue-vps/GUIA_IMPLEMENTACION.md).
+
 ```mermaid
 flowchart LR
   U[Navegador] -->|"tudominio.com"| C["VPS Hostinger<br/>Caddy (HTTPS)"]
@@ -76,7 +78,7 @@ Qué cambia para el backend:
 - **Límite de intentos:** en el VPS manda el contador en memoria (`MemoryRateLimiter`). Es exacto mientras corra **un solo proceso** de Node. El binding `RL_AUTH` de Workers sigue declarado para la alternativa.
 - **IP del cliente:** en el VPS, `CLIENT_IP_HEADER=x-forwarded-for`, porque Caddy reemplaza ese header con la IP real (no confía en la que manda el cliente). Si se pone el proxy de Cloudflare delante del VPS, pasa a ser `cf-connecting-ip`.
 - **Pendiente para el despliegue** (fuera de esta entrega): build a `dist/`, `npm start`, servicio (systemd o pm2), Caddy con HTTPS automático y el pipeline. Va en un requerimiento propio, que reemplaza la parte de Pages y Workers del plan general `2026-10-14-web-pages-worker`.
-- **Correo:** el VPS no trae casillas. Para el SMTP de Supabase Auth hay que usar un servicio aparte (Resend, Brevo o Hostinger Email).
+- **Correo:** el VPS no trae casillas. Para el SMTP de Supabase Auth hay que usar un servicio aparte (Resend o Brevo).
 
 ```mermaid
 flowchart LR

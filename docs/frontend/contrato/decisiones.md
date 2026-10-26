@@ -139,26 +139,4 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-25 | Mejor valor de cada columna | Resaltado, como en HLTV | Daniel |
 | 2026-10-25 | Métricas que necesitan el plugin | En pausa (precisión, KAST, RWS, trades, clutches perdidos…): no sumarle carga al plugin por el riesgo de lag | Daniel |
 | 2026-10-25 | Aviso de `!claim` | La ficha sin cuenta no lleva aviso; el perfil sin reclamar lleva "¿Este SteamID es tuyo? Vincúlalo desde tu cuenta" con un botón a Mi perfil → Vincular con el servidor. El `!claim` se explica solo ahí | Daniel |
-| 2026-10-25 | Mix en vivo que terminó | El `404` de `/mixes/live/{uid}` trae `details.match_id` (por `matches.external_id`); sin endpoint nuevo | Propuesta, aprobada por Daniel |
-| 2026-10-25 | Nivel de cada jugador en la sala | ELO **actual** (como el MVP del listado), no el de esa partida; también en PCW y torneos | Daniel |
-| 2026-10-25 | "ELO pendiente" en el listado de mixes | `review` en cada fila del listado; sin filtro nuevo (el admin ya tiene `/matches?review=pending`) | Propuesta, aprobada por Daniel |
-| 2026-10-25 | Alcance de un baneo | Todos los servidores, incluido RBK; se aplica en el momento aunque haya un mix en curso; lista pública; sin avisos | Daniel |
-| 2026-10-25 | Quién banea desde la web | Moderadores y admins; permanente, solo un admin | Daniel |
-| 2026-10-26 | Qué levanta o cambia un moderador | Cualquier baneo que no sea permanente | Daniel |
-| 2026-10-26 | Rol de moderador | Un rol más en `role` (`moderator`). Todos los roles juegan; el admin además organiza y modera | Daniel |
-| 2026-10-26 | SteamID en la lista de baneos | Público solo en los baneos sin ficha (como los perfiles sin reclamar); con ficha, solo moderadores y admins | Propuesta, por la regla de SteamID ocultos del 2026-10-24 |
-| 2026-10-28 | VIP: cobro | Manual: Kyan cobra por fuera y un admin lo carga. Sin pasarela de pago | Daniel |
-| 2026-10-28 | VIP: vencimiento | Cada período tiene fecha de fin; sin fecha = lifetime. Vence solo | Daniel |
-| 2026-10-28 | VIP: de quién | De la cuenta, no de la ficha. Solo admins lo dan y lo quitan (Kyan es admin) | Daniel |
-| 2026-10-28 | VIP: extender | El período nuevo empieza donde termina el vigente; a un lifetime no se le da un temporal | Propuesta, aprobada con el plan |
-| 2026-10-28 | VIP: qué es público | Solo si es VIP hoy (`vip: true/false`); las fechas y las notas, el dueño y los admins | Propuesta, aprobada con el plan |
-| 2026-10-28 | VIP en producción antes del corte | La tabla, `is_vip()`, dar y quitar y las vistas, en la migración `20261028120000_vip.sql`; los avisos, en el replanteo `32` | Daniel |
-| 2026-10-28 | Clips VIP | Los VIP no cuentan en el top de 5: cada VIP suma aparte sus 3 mejores jugadas del mix (configurable), después del top y antes de las forzadas; también en Discord | Daniel |
-| 2026-10-28 | Clips VIP: de cuándo | El VIP que tenía el jugador cuando se jugó el mix | Daniel |
-| 2026-10-28 | Reprocesar un clip | Lo marca un admin; el video nuevo sube a Drive y sale en Discord solo después del "Bien" del admin, otra vez si ya había salido (sin borrar el mensaje viejo). En la web nueva; en la vieja no (hasta entonces, desde la base) | Daniel |
-| 2026-10-28 | Tamaño del plantel | Hasta 10 miembros por defecto, configurable por el admin (2 a 30); sin topes por estado (activo, suplente, coach) | Daniel |
-| 2026-10-28 | Activos en torneos | Los del modo de juego del torneo (`game_modes`: 1v1, 2v2, 3v3, 5v5; 5v5 por defecto); suplentes de 0 a 4 según el organizador | Daniel |
-| 2026-10-28 | Quién se inscribe | El capitán elige los activos entre los miembros; el coach nunca se inscribe (si juega, lo decide el organizador fuera de la plataforma) | Daniel |
-| 2026-10-28 | Roles de juego | IGL, AWPer, etc. son el `game_role` del perfil de cada jugador y se pueden repetir; no hay roles por equipo | Daniel |
-| 2026-10-28 | Logo y banner | El frontend recorta (cuadrado y 4:1); la API valida tipo, peso y medidas; errores `INVALID_FILE` y `FILE_TOO_LARGE` | Daniel |
-| 2026-10-28 | Aviso a los inscritos | `event_lineup` a cada jugador inscrito, cambiado o sacado (no al capitán) | Daniel |
+| 2026-10-25 | Hosting: proveedor | El VPS pasa de Hostinger KVM 1 a **OVH VPS-1 en Hillsboro (Oregón)**, con Ubuntu 26.04 LTS (24.04 si OVH todavía no tiene la imagen). No cambia nada para el frontend: la URL de la API sigue siendo configurable | Daniel |
