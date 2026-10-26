@@ -94,7 +94,7 @@ describe("search", () => {
     expect(toPlayerRankingQuery({ sort: "elo" })).toEqual({ page: 1, per: 25 })
   })
 
-  it("temporada: eligible y orden por ELO o mixes", () => {
+  it("temporada: eligible, nivel y orden por ELO, mixes, rating o K/D", () => {
     expect(toStandingsQuery({ eligible: true })).toEqual({
       page: 1,
       per: 25,
@@ -104,8 +104,13 @@ describe("search", () => {
       sort: "matches",
       order: "asc",
     })
-    // Rating no existe en la tabla de una temporada.
-    expect(toStandingsQuery({ sort: "rating" })).toEqual({ page: 1, per: 25 })
+    expect(toStandingsQuery({ sort: "rating", level: "7-9" })).toEqual({
+      page: 1,
+      per: 25,
+      level: "7-9",
+      sort: "rating",
+      order: "desc",
+    })
   })
 
   it("equipos: pcw siempre explícito", () => {

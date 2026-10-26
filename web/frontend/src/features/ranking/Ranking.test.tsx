@@ -87,6 +87,9 @@ const standing = (alias: string, o: Record<string, unknown> = {}) => ({
   losses: 10,
   elo_after: 1100,
   medal: { name: "Campeón", icon: "🏆" },
+  teams: [],
+  rating: 1.21,
+  kd: 1.15,
   ...o,
 })
 
@@ -166,6 +169,8 @@ describe("Ranking → Jugadores", () => {
                     eligible: false,
                     matches: 12,
                     medal: null,
+                    rating: null,
+                    kd: null,
                   }),
                 ]
           )
@@ -185,7 +190,9 @@ describe("Ranking → Jugadores", () => {
       { name: "musul" }
     )
     expect(within(musul).getByText("12/20")).toBeInTheDocument()
-    expect(within(musul).getAllByText("—")).toHaveLength(2)
+    // Sin puesto, sin rating, sin K/D y sin medalla.
+    expect(within(musul).getAllByText("—")).toHaveLength(4)
+    expect(within(musul).getByText("Sin equipo")).toBeInTheDocument()
 
     // El usuario resaltado y el reinicio del nivel 10 "si cerrara hoy".
     const me = within(screen.getByRole("table")).getByRole("link", {
@@ -197,6 +204,60 @@ describe("Ranking → Jugadores", () => {
     // El podio son los 3 primeros con puesto.
     const podium = await screen.findByRole("list", { name: "Podio" })
     expect(within(podium).getByText("juanma")).toBeInTheDocument()
+  })
+
+  it("temporada: equipo, rating, K/D, pico debajo del ELO, filtro de nivel y orden", async () => {
+    common()
+    const asked = vi.fn()
+    server.use(
+      http.get(`${API}/api/v1/seasons/current`, () => HttpResponse.json(beta)),
+      http.get(`${API}/api/v1/seasons/s1/standings`, ({ request }) => {
+        asked(Object.fromEntries(new URL(request.url).searchParams))
+        return HttpResponse.json(
+          page([
+            standing("flow", {
+              teams: [
+                { id: "t1", name: "Furia Sur", tag: "FUR" },
+                { id: "t2", name: "Los Pibes", tag: "LP" },
+                { id: "t3", name: "Mix Norte", tag: "MN" },
+              ],
+              rating: 1.152,
+              kd: 1.19,
+              elo: 1890,
+              peak_elo: 1932,
+            }),
+          ])
+        )
+      })
+    )
+    const { user, onChange } = renderPlayers({ level: "7-9", sort: "kd" })
+
+    const flow = await within(await screen.findByRole("table")).findByRole(
+      "link",
+      { name: "flow" }
+    )
+    expect(within(flow).getByText("Furia Sur")).toBeInTheDocument()
+    expect(
+      within(flow).getByLabelText("También en Los Pibes, Mix Norte")
+    ).toHaveTextContent("+2")
+    expect(within(flow).getByText("1.15")).toBeInTheDocument()
+    expect(within(flow).getByText("1.19")).toBeInTheDocument()
+    expect(within(flow).getByText("máx. 1932")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("columnheader", { name: "Pico" })
+    ).not.toBeInTheDocument()
+    expect(asked).toHaveBeenCalledWith(
+      expect.objectContaining({ level: "7-9", sort: "kd", order: "desc" })
+    )
+
+    await user.click(screen.getByRole("button", { name: "Nivel 10" }))
+    expect(onChange).toHaveBeenLastCalledWith({ level: "10", page: undefined })
+    await user.click(screen.getByRole("button", { name: /Rating/ }))
+    expect(onChange).toHaveBeenLastCalledWith({
+      sort: "rating",
+      order: undefined,
+      page: undefined,
+    })
   })
 
   it("sin temporada activa abre el Histórico", async () => {

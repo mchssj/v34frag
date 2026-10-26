@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
+  ArrowDownIcon,
   ArrowLeftIcon,
+  ArrowUpIcon,
   BanIcon,
   CircleAlertIcon,
   ClockIcon,
@@ -9,7 +11,7 @@ import {
   LoaderIcon,
   ServerIcon,
 } from "lucide-react"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -20,6 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { MapBackdrop } from "./MapBackdrop"
 import {
   cancelReasonLabel,
@@ -31,6 +38,16 @@ import {
 } from "./labels"
 import { WatchTvButton } from "./parts"
 import type { Room, RoomPlayer, RoomSide, SideResult } from "./room"
+import {
+  bestValues,
+  columnsFor,
+  nextSort,
+  sortPlayers,
+  type StatColumn,
+  type StatsSort,
+  type StatsTab,
+} from "./stats"
+import { StatsTabs } from "./StatsTabs"
 
 // Sala del mix (handoff_mixes, sección 4): cabecera, marcador, barra con la demo o la TV y una
 // tabla por bando. La usan la sala en vivo y la de un mix terminado o cancelado.
@@ -39,13 +56,26 @@ export function MixRoom({
   room,
   mapImage,
   adminAction,
+  tab = "general",
+  onTab,
 }: {
   room: Room
   mapImage: string | null
   /** "Borrar este mix" (solo admin, solo terminados o cancelados). */
   adminAction?: ReactNode
+  /** Pestaña de estadísticas (en la URL, `?stats=`). */
+  tab?: StatsTab
+  onTab?: (tab: StatsTab) => void
 }) {
   const live = room.status === "live"
+  // El orden por columna es del componente; con las dos tablas a la vez, como las pestañas.
+  const [sort, setSort] = useState<StatsSort>(null)
+  const cols = columnsFor(tab, room.status)
+  const best = bestValues(cols, [...room.side1.players, ...room.side2.players])
+  const pickTab = (t: StatsTab) => {
+    setSort(null)
+    onTab?.(t)
+  }
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -110,8 +140,34 @@ export function MixRoom({
         </Notice>
       )}
 
-      <SideTable side={room.side1} accent="a" status={room.status} />
-      <SideTable side={room.side2} accent="b" status={room.status} />
+      <StatsTabs value={tab} onChange={pickTab} />
+      {tab === "clutch" && room.clutchData !== true ? (
+        <p className="rounded-xl border bg-card px-4 py-8 text-center text-[13px] text-muted-foreground">
+          {live
+            ? "Los clutches se cuentan al terminar el mix."
+            : "Sin datos de Clutches disponibles."}
+        </p>
+      ) : (
+        (["side1", "side2"] as const).map((s, i) => (
+          <SideTable
+            key={s}
+            side={room[s]}
+            accent={i === 0 ? "a" : "b"}
+            status={room.status}
+            cols={cols}
+            best={best}
+            sort={sort}
+            onSort={(key) => setSort((cur) => nextSort(cur, key))}
+            footer={
+              tab === "clutch" && i === 1 ? (
+                <p className="border-t px-4 py-2.5 text-xs text-muted-foreground">
+                  Solo clutches ganados.
+                </p>
+              ) : undefined
+            }
+          />
+        ))
+      )}
     </section>
   )
 }
@@ -285,12 +341,23 @@ function SideTable({
   side,
   accent,
   status,
+  cols,
+  best,
+  sort,
+  onSort,
+  footer,
 }: {
   side: RoomSide
   accent: "a" | "b"
   status: Room["status"]
+  cols: StatColumn[]
+  best: Record<string, number | null>
+  sort: StatsSort
+  onSort: (key: string) => void
+  footer?: ReactNode
 }) {
   const res = RESULT[side.result]
+  const players = sortPlayers(side.players, cols, sort)
   return (
     <section
       aria-label={side.name}
@@ -317,42 +384,127 @@ function SideTable({
           {side.score}
         </span>
       </div>
-      <Table className="min-w-[720px] text-[13px]">
+      <Table
+        className={cn(
+          "table-fixed text-[13px]",
+          cols.length > 8 ? "min-w-[1000px]" : "min-w-[560px]"
+        )}
+      >
         <TableHeader>
           <TableRow className="text-xs hover:bg-transparent">
-            <TableHead className="pl-4 font-medium text-muted-foreground">
+            <TableHead className="sticky left-0 z-[1] w-[210px] bg-card pl-4 font-medium text-muted-foreground">
               Jugador
             </TableHead>
-            {["K", "D", "A", "+/-", "HS %", "ADR", "Rating"].map((h) => (
+            {cols.map((c, i) => (
               <TableHead
-                key={h}
-                className="text-center font-medium text-muted-foreground"
+                key={c.key}
+                className={cn(
+                  "font-medium text-muted-foreground",
+                  i === cols.length - 1 ? "pr-4 text-right" : "text-center"
+                )}
               >
-                {h}
+                <StatHead
+                  col={c}
+                  sort={sort?.key === c.key ? sort.dir : null}
+                  onClick={() => onSort(c.key)}
+                />
               </TableHead>
             ))}
-            <TableHead className="pr-4 text-right font-medium text-muted-foreground">
-              Δ ELO
-            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {side.players.map((p) => (
-            <PlayerRow key={p.key} p={p} showMvp={status !== "cancelled"} />
+          {players.map((p) => (
+            <PlayerRow
+              key={p.key}
+              p={p}
+              cols={cols}
+              best={best}
+              showMvp={status !== "cancelled"}
+            />
           ))}
         </TableBody>
       </Table>
+      {footer}
     </section>
+  )
+}
+
+/** Cabecera de una columna: ordena con un clic y, si tiene ayuda, la muestra en un tooltip. */
+function StatHead({
+  col,
+  sort,
+  onClick,
+}: {
+  col: StatColumn
+  sort: "asc" | "desc" | null
+  onClick: () => void
+}) {
+  const Icon = sort === "asc" ? ArrowUpIcon : ArrowDownIcon
+  const button = (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Ordenar por ${col.label}`}
+      className={cn(
+        "inline-flex items-center gap-[3px] rounded-sm font-mono hover:text-foreground",
+        col.help && "underline decoration-dotted underline-offset-[3px]",
+        sort && "text-foreground"
+      )}
+    >
+      {col.label}
+      {sort && <Icon aria-hidden className="size-3" />}
+    </button>
+  )
+  if (!col.help) return button
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent>{col.help}</TooltipContent>
+    </Tooltip>
   )
 }
 
 const num = "text-center font-mono tabular-nums"
 
-function PlayerRow({ p, showMvp }: { p: RoomPlayer; showMvp: boolean }) {
-  const pm = p.k - p.d
+function formatStat(v: number | null, c: StatColumn): ReactNode {
+  if (v === null) return <span className="text-muted-foreground">—</span>
+  switch (c.format) {
+    case "dec2":
+      return v.toFixed(2)
+    case "pct":
+      return `${v}%`
+    case "signed":
+      return (
+        <span className={v >= 0 ? "text-win" : "text-destructive"}>
+          {signed(v)}
+        </span>
+      )
+    case "zero":
+      return v === 0 ? <span className="text-muted-foreground">0</span> : v
+    default:
+      return v
+  }
+}
+
+function PlayerRow({
+  p,
+  cols,
+  best,
+  showMvp,
+}: {
+  p: RoomPlayer
+  cols: StatColumn[]
+  best: Record<string, number | null>
+  showMvp: boolean
+}) {
   return (
     <TableRow className={cn(p.me && "bg-primary/6 hover:bg-primary/8")}>
-      <TableCell className="py-[9px] pl-4">
+      <TableCell
+        className={cn(
+          "sticky left-0 z-[1] bg-card py-[9px] pl-4",
+          p.me && "bg-[color-mix(in_oklch,var(--primary)_6%,var(--card))]"
+        )}
+      >
         <span className="flex items-center gap-2 whitespace-nowrap">
           {p.alias ? (
             <Link
@@ -380,29 +532,24 @@ function PlayerRow({ p, showMvp }: { p: RoomPlayer; showMvp: boolean }) {
           )}
         </span>
       </TableCell>
-      <TableCell className={num}>{p.k}</TableCell>
-      <TableCell className={num}>{p.d}</TableCell>
-      <TableCell className={num}>{p.a}</TableCell>
-      <TableCell className={cn(num, pm >= 0 ? "text-win" : "text-destructive")}>
-        {signed(pm)}
-      </TableCell>
-      <TableCell className={num}>{p.hs === null ? "—" : `${p.hs}%`}</TableCell>
-      <TableCell className={num}>{p.adr ?? "—"}</TableCell>
-      <TableCell className={cn(num, "font-semibold")}>
-        {p.rating === null ? "—" : p.rating.toFixed(2)}
-      </TableCell>
-      <TableCell
-        className={cn(
-          "pr-4 text-right font-mono text-xs font-semibold tabular-nums",
-          p.delta === null
-            ? "text-muted-foreground"
-            : p.delta > 0
-              ? "text-win"
-              : "text-destructive"
-        )}
-      >
-        {p.delta === null ? "—" : signed(p.delta)}
-      </TableCell>
+      {cols.map((c, i) => {
+        const v = c.value(p)
+        const top = best[c.key] !== null && v === best[c.key]
+        return (
+          <TableCell
+            key={c.key}
+            data-best={top || undefined}
+            className={cn(
+              num,
+              i === cols.length - 1 && "pr-4 text-right",
+              (c.strong || top) && "font-semibold",
+              top && "text-foreground"
+            )}
+          >
+            {formatStat(v, c)}
+          </TableCell>
+        )
+      })}
     </TableRow>
   )
 }

@@ -19,7 +19,20 @@ export type RoomPlayer = {
   d: number
   a: number
   hs: number | null
+  hsKills: number
   adr: number | null
+  rounds: number
+  k2: number
+  k3: number
+  k4: number
+  k5: number
+  /** Primeros duelos de la ronda ganados (fk) y perdidos (fd). */
+  fk: number
+  fd: number
+  plants: number
+  defuses: number
+  /** Clutches ganados, 1v1 a 1v5. null en vivo (se cuentan al terminar). */
+  clutches: number[] | null
   rating: number | null
   /** null en vivo y en cancelados ("—"). */
   delta: number | null
@@ -44,6 +57,8 @@ export type Room = {
   demo: { status: string; url: string | null; size: number | null }
   cancelReason: string | null
   reviewPending: boolean
+  /** Si hay datos de clutch (el servidor ya mandaba jugadas). null en vivo. */
+  clutchData: boolean | null
   side1: RoomSide
   side2: RoomSide
 }
@@ -62,6 +77,15 @@ type Line = {
   rounds: number | null
   rating: number | null
   elo_delta?: number | null
+  k2?: number | null
+  k3?: number | null
+  k4?: number | null
+  k5?: number | null
+  first_kills?: number | null
+  first_deaths?: number | null
+  plants?: number | null
+  defuses?: number | null
+  clutches?: Partial<Record<"1" | "2" | "3" | "4" | "5", number>> | null
 }
 
 /** Lo que usa la sala de GET /matches/{id} (tipo estructural: el generado no se puede asignar tal cual). */
@@ -81,6 +105,7 @@ export type MatchInput = {
   demo_size: number | null
   cancel_reason: string | null
   review: string | null
+  clutch_data?: boolean
 }
 
 const identity = (p: Line) =>
@@ -102,7 +127,20 @@ function toPlayer(
     d: p.deaths ?? 0,
     a: p.assists ?? 0,
     hs: hsPercent(p.headshots, p.kills),
+    hsKills: p.headshots ?? 0,
     adr: adr(p.damage, p.rounds),
+    rounds: p.rounds ?? 0,
+    k2: p.k2 ?? 0,
+    k3: p.k3 ?? 0,
+    k4: p.k4 ?? 0,
+    k5: p.k5 ?? 0,
+    fk: p.first_kills ?? 0,
+    fd: p.first_deaths ?? 0,
+    plants: p.plants ?? 0,
+    defuses: p.defuses ?? 0,
+    clutches: p.clutches
+      ? (["1", "2", "3", "4", "5"] as const).map((n) => p.clutches?.[n] ?? 0)
+      : null,
     rating: p.rating,
     delta: opts.showDelta ? (p.elo_delta ?? null) : null,
   }
@@ -169,6 +207,7 @@ export function roomFromMatch(m: MatchInput, me: string | null): Room {
     demo: { status: m.demo_status, url: m.demo_url, size: m.demo_size },
     cancelReason: m.cancel_reason,
     reviewPending: m.review === "pending",
+    clutchData: m.clutch_data ?? false,
     side1,
     side2,
   }
@@ -198,6 +237,7 @@ export function roomFromLive(l: LiveMixDetail, me: string | null): Room {
     demo: { status: "none", url: null, size: null },
     cancelReason: null,
     reviewPending: false,
+    clutchData: null,
     side1,
     side2,
   }

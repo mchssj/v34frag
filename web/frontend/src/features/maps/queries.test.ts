@@ -1,21 +1,48 @@
 import { describe, expect, it } from "vitest"
 
-import { activeMapNames, mapImage, type MapEntry } from "./queries"
+import { mapImage, mixMapNames, type MapEntry } from "./queries"
+
+const map = (name: string, o: Partial<MapEntry> = {}): MapEntry => ({
+  name,
+  versions: [name],
+  active: true,
+  position: 1,
+  mixes: true,
+  veto_default: true,
+  image_url: null,
+  ...o,
+})
 
 const maps: MapEntry[] = [
-  { name: "de_nuke", active: true, image_url: "https://img/nuke.webp" },
-  { name: "de_dust2", active: true, image_url: null },
-  { name: "de_aztec", active: false, image_url: "https://img/aztec.webp" },
+  map("de_nuke", { position: 3, image_url: "https://img/nuke.webp" }),
+  map("de_inferno", {
+    position: 2,
+    versions: ["de_inferno", "de_inferno_classic"],
+    image_url: "https://img/inferno.webp",
+  }),
+  map("de_dust2", { position: 1 }),
+  map("de_russka", { position: 4, mixes: false, veto_default: false }),
+  map("de_aztec", {
+    position: 5,
+    active: false,
+    mixes: false,
+    veto_default: false,
+    image_url: "https://img/aztec.webp",
+  }),
 ]
 
-describe("maestra de mapas", () => {
-  it("los activos, ordenados, para el select", () => {
-    expect(activeMapNames(maps)).toEqual(["de_dust2", "de_nuke"])
-    expect(activeMapNames(undefined)).toEqual([])
+describe("catálogo de mapas", () => {
+  it("el select de Mixes: disponibles y de Mixes, en el orden del catálogo", () => {
+    expect(mixMapNames(maps)).toEqual(["de_dust2", "de_inferno", "de_nuke"])
+    expect(mixMapNames(undefined)).toEqual([])
   })
 
-  it("la foto por nombre, sin distinguir mayúsculas; null si no está o no tiene", () => {
+  it("la foto por nombre o versión, sin distinguir mayúsculas; null si no está o no tiene", () => {
     expect(mapImage(maps, "DE_NUKE")).toBe("https://img/nuke.webp")
+    expect(mapImage(maps, "de_inferno_classic")).toBe(
+      "https://img/inferno.webp"
+    )
+    expect(mapImage(maps, "de_aztec")).toBe("https://img/aztec.webp")
     expect(mapImage(maps, "de_dust2")).toBeNull()
     expect(mapImage(maps, "de_train")).toBeNull()
     expect(mapImage(maps, null)).toBeNull()

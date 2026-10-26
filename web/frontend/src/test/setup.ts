@@ -11,3 +11,8 @@ globalThis.ResizeObserver ??= class {
   unobserve() {}
   disconnect() {}
 }
+
+// Radix Select usa la captura del puntero y scrollIntoView al abrirse; jsdom no los trae.
+Element.prototype.hasPointerCapture ??= () => false
+Element.prototype.releasePointerCapture ??= () => {}
+Element.prototype.scrollIntoView ??= () => {}

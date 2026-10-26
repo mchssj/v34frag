@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { STATS_TABS } from "./stats"
+
 // Estado del listado en la URL (handoff: q, map, mine, hideCancel, page, per). Un valor inválido
 // vuelve al de por defecto en lugar de romper la página.
 
@@ -33,3 +35,9 @@ export function toMixesQuery(s: MixesSearch) {
     ...(s.hideCancel ? { hide_cancelled: "true" as const } : {}),
   }
 }
+
+/** Sala del mix (/match/$id y /mixes/live/$uid): la pestaña de estadísticas. General no va en la URL. */
+export const roomSearchSchema = z.object({
+  stats: z.enum(STATS_TABS).optional().catch(undefined),
+})
+export type RoomSearch = z.infer<typeof roomSearchSchema>

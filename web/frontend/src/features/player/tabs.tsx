@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { mapImage, mapsOptions } from "@/features/maps/queries"
+import { KeyPlays } from "./KeyPlays"
 import { TagBox } from "@/features/ranking/parts"
 import {
   KIND_LABEL,
@@ -96,7 +97,11 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
       </div>
       <div role="tabpanel" id="player-tab" aria-labelledby={`tab-${tab}`}>
         {tab === "resumen" && (
-          <Summary nick={nick} onAll={() => onTab("partidas")} />
+          <Summary
+            nick={nick}
+            player={player}
+            onAll={() => onTab("partidas")}
+          />
         )}
         {tab === "mapas" && <Maps nick={nick} />}
         {tab === "partidas" && (
@@ -171,7 +176,15 @@ function useOpenMatch() {
 
 // ---------- Resumen ----------
 
-function Summary({ nick, onAll }: { nick: string; onAll: () => void }) {
+function Summary({
+  nick,
+  player,
+  onAll,
+}: {
+  nick: string
+  player: PlayerDetail
+  onAll: () => void
+}) {
   const recent = useQuery(recentMatchesOptions(nick))
   const medals = useQuery(medalsOptions(nick))
   const adjustments = useQuery(adjustmentsOptions(nick))
@@ -296,6 +309,7 @@ function Summary({ nick, onAll }: { nick: string; onAll: () => void }) {
             ))}
           </div>
         )}
+        <KeyPlays stats={player.stats} />
       </div>
     </div>
   )

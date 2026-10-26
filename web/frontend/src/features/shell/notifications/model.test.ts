@@ -1,40 +1,195 @@
 import { subMinutes } from "date-fns"
-import { act, renderHook } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe as group, expect, it } from "vitest"
 
-import { mockNotifications } from "./mock"
-import { filterByTab, timeAgo, useNotifications } from "./model"
+import { sampleNotifications } from "./mock"
+import {
+  describe,
+  filterByTab,
+  isPending,
+  isUrgent,
+  timeAgo,
+  type Notification,
+} from "./model"
 
-describe("notificaciones", () => {
-  it("los tabs filtran sin leer y solicitudes (invitaciones y PCW)", () => {
-    const items = mockNotifications()
+const base = (o: Partial<Notification>): Notification => ({
+  id: 1,
+  type: "team_invite",
+  category: "team",
+  data: {},
+  actionable: false,
+  resolution: null,
+  actor: null,
+  created_at: "2026-10-25T12:00:00Z",
+  read: false,
+  ...o,
+})
+
+// Todos los tipos de la primera etapa (contrato notificaciones.md).
+const TYPES: [string, Notification["category"]][] = [
+  ["team_invite", "team"],
+  ["team_join_request", "team"],
+  ["team_invite_answered", "team"],
+  ["team_join_answered", "team"],
+  ["team_captain", "team"],
+  ["team_removed", "team"],
+  ["team_member_left", "team"],
+  ["team_role_changed", "team"],
+  ["team_added", "team"],
+  ["team_deleted", "team"],
+  ["team_request_answered", "team"],
+  ["event_registration", "tournament"],
+  ["event_fixture", "tournament"],
+  ["match_scheduled", "tournament"],
+  ["veto_turn", "tournament"],
+  ["veto_done", "tournament"],
+  ["veto_reset", "tournament"],
+  ["match_result", "tournament"],
+  ["event_progress", "tournament"],
+  ["event_cancelled", "tournament"],
+  ["pcw_accepted", "pcw"],
+  ["pcw_cancelled", "pcw"],
+  ["pcw_result", "pcw"],
+  ["level_changed", "elo"],
+  ["mix_review_resolved", "elo"],
+  ["mix_deleted", "elo"],
+  ["elo_adjusted", "elo"],
+  ["clip_ready", "elo"],
+  ["season_ranked", "season"],
+  ["season_closed", "season"],
+  ["medal_granted", "season"],
+  ["steam_claimed", "account"],
+  ["steam_request_answered", "account"],
+  ["alias_changed", "account"],
+  ["role_changed", "account"],
+  ["password_changed", "account"],
+  ["event_new", "news"],
+  ["season_started", "news"],
+  ["admin_steam_request", "admin"],
+  ["admin_team_request", "admin"],
+  ["admin_mix_review", "admin"],
+  ["admin_demo_failed", "admin"],
+  ["admin_season_delayed", "admin"],
+]
+
+const match = {
+  match_id: "m1",
+  kind: "official",
+  team1: { id: "t1", name: "Furia Sur" },
+  team2: { id: "t2", name: "RBK" },
+  event: { id: "e1", name: "Copa CM" },
+  starts_at: "2026-10-25T21:00:00Z",
+}
+
+group("notificaciones", () => {
+  it("cada tipo tiene un texto propio, sin huecos, aun con data vacía", () => {
+    for (const [type, category] of TYPES) {
+      const d = describe(base({ type, category }))
+      expect(d.title, type).not.toMatch(/undefined|null|Novedad en/)
+      expect(d.title.trim(), type).not.toBe("")
+    }
+  })
+
+  it("un tipo que la web no conoce muestra su categoría", () => {
+    expect(describe(base({ type: "algo_nuevo", category: "pcw" }))).toEqual({
+      kind: "pcw",
+      title: "Novedad en PCW",
+      body: "",
+    })
+  })
+
+  it("arma texto y link con los datos del momento", () => {
+    expect(
+      describe(
+        base({
+          type: "team_invite",
+          data: { invite_id: "i1", team: { id: "t1", name: "Furia Sur" } },
+          actor: { id: "u2", alias: "Kova" },
+        })
+      )
+    ).toMatchObject({
+      kind: "invite",
+      title: "Invitación a Furia Sur",
+      body: "Kova te invitó a unirte al plantel.",
+    })
+    expect(
+      describe(
+        base({
+          type: "veto_turn",
+          category: "tournament",
+          data: { match, action: "pick" },
+        })
+      )
+    ).toEqual({
+      kind: "veto",
+      title: "Te toca vetar",
+      body: "Furia Sur vs RBK · elegir un mapa",
+      link: { to: "/match/$id", params: { id: "m1" } },
+    })
+    expect(
+      describe(
+        base({
+          type: "match_result",
+          category: "tournament",
+          data: {
+            match,
+            score1: 2,
+            score2: 1,
+            walkover: false,
+            corrected: true,
+          },
+        })
+      )
+    ).toMatchObject({
+      title: "Resultado: Furia Sur 2-1 RBK",
+      body: "Resultado corregido.",
+    })
+    expect(
+      describe(
+        base({
+          type: "season_closed",
+          category: "season",
+          data: {
+            season: { id: "s1", name: "BETA" },
+            rank: 4,
+            eligible: true,
+            elo: 2210,
+            elo_after: 2022,
+            medal: { name: "Top 10", icon: "🏅" },
+          },
+        }),
+        "Zeta"
+      )
+    ).toEqual({
+      kind: "medal",
+      title: "Cerró BETA: terminaste 4.º",
+      body: "🏅 Top 10 · empiezas la próxima con 2022",
+      link: { to: "/player/$nick", params: { nick: "Zeta" } },
+    })
+    expect(
+      describe(
+        base({
+          type: "elo_adjusted",
+          category: "elo",
+          data: { delta: -20, reason: "Mix caído" },
+        })
+      ).title
+    ).toBe("Un admin te ajustó el ELO: −20")
+  })
+
+  it("pendientes, urgentes y pestañas", () => {
+    const items = sampleNotifications()
+    expect(items.filter(isPending).map((n) => n.type)).toEqual(["team_invite"])
+    expect(items.filter(isUrgent).map((n) => n.type)).toEqual([
+      "team_invite",
+      "veto_turn",
+    ])
     expect(filterByTab(items, "all")).toHaveLength(items.length)
     expect(filterByTab(items, "unread").every((n) => !n.read)).toBe(true)
-    expect(filterByTab(items, "requests").map((n) => n.kind)).toEqual([
-      "invite",
-      "pcw",
+    // Solicitudes: las que se responden desde la lista, también las ya resueltas.
+    expect(filterByTab(items, "requests").map((n) => n.type)).toEqual([
+      "team_invite",
+      "team_join_request",
     ])
-  })
-
-  it("PCW y veto solo para capitanes (o admin)", () => {
-    const { result } = renderHook(() => useNotifications({ captain: false }))
-    expect(
-      result.current.items.some((n) => n.kind === "pcw" || n.kind === "veto")
-    ).toBe(false)
-  })
-
-  it("marcar leídas y resolver una solicitud", () => {
-    const { result } = renderHook(() => useNotifications({ captain: true }))
-    const before = result.current.unread
-    act(() => result.current.markRead("n1"))
-    expect(result.current.unread).toBe(before - 1)
-    act(() => result.current.resolve("n2", "rejected"))
-    expect(result.current.items.find((n) => n.id === "n2")).toMatchObject({
-      resolution: "rejected",
-      read: true,
-    })
-    act(() => result.current.markAllRead())
-    expect(result.current.unread).toBe(0)
   })
 
   it("tiempo relativo", () => {

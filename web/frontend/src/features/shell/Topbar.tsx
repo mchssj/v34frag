@@ -30,13 +30,7 @@ const isMac =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
 export const SEARCH_SHORTCUT = isMac ? "⌘K" : "Ctrl K"
 
-export function Topbar({
-  onSearch,
-  captain,
-}: {
-  onSearch: () => void
-  captain: boolean
-}) {
+export function Topbar({ onSearch }: { onSearch: () => void }) {
   return (
     <header className="sticky top-0 z-10 flex h-[52px] shrink-0 items-center gap-2 rounded-t-[inherit] border-b bg-background pr-3 pl-2.5">
       <SidebarTrigger className="size-7" />
@@ -57,7 +51,7 @@ export function Topbar({
         </kbd>
       </Button>
       <ThemeMenu />
-      <NotificationsMenu captain={captain} />
+      <NotificationsMenu />
     </header>
   )
 }

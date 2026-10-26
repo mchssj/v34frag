@@ -75,21 +75,30 @@ test("el tema se cambia desde la topbar", async ({ page }) => {
   await expect(page.locator("html")).toHaveClass(/dark/)
 })
 
-test("notificaciones de ejemplo (desarrollo): aceptar una invitación", async ({
+test("la campana lee las notificaciones de la API y Preferencias guarda las categorías", async ({
   page,
 }) => {
+  // La cuenta compartida es nueva en cada corrida: todavía no tiene notificaciones.
   await page.goto("/home")
   await page.getByRole("button", { name: /^Notificaciones/ }).click()
-  await expect(page.getByText("Invitación a Furia Sur")).toBeVisible()
-  await page.getByRole("button", { name: "Aceptar" }).click()
-  await expect(page.getByText("Aceptada", { exact: true })).toBeVisible()
-  await expect(page.getByText("Invitación aceptada")).toBeVisible()
-  // Era la única sin leer: ya no queda nada por marcar.
-  await expect(
-    page.getByRole("button", { name: "Marcar todo como leído" })
-  ).toBeDisabled()
-  await page.getByRole("tab", { name: /Sin leer/ }).click()
   await expect(page.getByText("Estás al día.")).toBeVisible()
+  await page.keyboard.press("Escape")
+
+  await page.goto("/profile/preferences")
+  const news = page.getByRole("switch", { name: /Novedades/ })
+  await expect(news).not.toBeChecked()
+  await news.click()
+  await expect(page.getByText("Preferencia guardada")).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole("switch", { name: /Novedades/ })).toBeChecked()
+  await page.getByRole("switch", { name: /Novedades/ }).click()
+  await expect(
+    page.getByRole("switch", { name: /Novedades/ })
+  ).not.toBeChecked()
+  // Un usuario común no ve la categoría de Administración.
+  await expect(
+    page.getByRole("switch", { name: /Administración/ })
+  ).toHaveCount(0)
 })
 
 test.describe("en el teléfono", () => {

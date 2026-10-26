@@ -65,11 +65,12 @@ export function toPlayerRankingQuery(s: PlayerRankingSearch) {
 
 /** `GET /api/v1/seasons/{id}/standings`. Sin orden propio va por puesto (los sin puesto al final). */
 export function toStandingsQuery(s: PlayerRankingSearch) {
-  const sort = s.sort === "elo" || s.sort === "matches" ? s.sort : undefined
+  const sort = s.sort
   return {
     ...paging(s),
     ...text(s.q),
     ...(s.eligible ? { eligible: "true" as const } : {}),
+    ...(s.level ? { level: s.level } : {}),
     ...(sort ? { sort, order: s.order ?? ("desc" as const) } : {}),
   }
 }

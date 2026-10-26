@@ -8,8 +8,9 @@ import { errorMessage } from "@/api/errors"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useUpdateProfile } from "../queries"
 import { CardTitle, SectionCard, Segmented } from "../ui"
+import { NotificationPrefsCard } from "./NotificationPrefsCard"
 
-/** Tema y efectos al cambiar de tema (handoff de efectos, sección Preferencias). */
+/** Tema, efectos al cambiar de tema (handoff de efectos) y notificaciones. */
 export function PreferencesSection() {
   const { theme, setTheme } = useTheme()
   const [fx, setFx] = useThemeFxPref()
@@ -30,60 +31,63 @@ export function PreferencesSection() {
   }
 
   return (
-    <SectionCard className="px-5 py-1">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b py-4">
-        <CardTitle
-          className="min-w-[200px] flex-1"
-          title="Tema"
-          description="Apariencia de la web en este dispositivo."
-        />
-        <Segmented
-          label="Tema"
-          value={theme}
-          options={THEME_MODES}
-          onChange={setTheme}
-        />
-      </div>
-      <div className="flex flex-col gap-3 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex flex-col gap-4">
+      <SectionCard className="px-5 py-1">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b py-4">
           <CardTitle
             className="min-w-[200px] flex-1"
-            title="Efectos al cambiar de tema"
-            description="Flashbang al pasar a claro, smoke al pasar a oscuro."
+            title="Tema"
+            description="Apariencia de la web en este dispositivo."
           />
           <Segmented
-            label="Efectos al cambiar de tema"
-            // Sin preferencia guardada se marca "Con sonido", sin guardarlo.
-            value={fx ?? "full"}
-            options={THEME_FX_OPTIONS}
-            onChange={(v) => void pickFx(v)}
-            disabled={reduced}
+            label="Tema"
+            value={theme}
+            options={THEME_MODES}
+            onChange={setTheme}
           />
         </div>
-        {reduced && (
-          <p className="text-[13px] text-muted-foreground">
-            Desactivado por la configuración de movimiento reducido de tu
-            sistema.
+        <div className="flex flex-col gap-3 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <CardTitle
+              className="min-w-[200px] flex-1"
+              title="Efectos al cambiar de tema"
+              description="Flashbang al pasar a claro, smoke al pasar a oscuro."
+            />
+            <Segmented
+              label="Efectos al cambiar de tema"
+              // Sin preferencia guardada se marca "Con sonido", sin guardarlo.
+              value={fx ?? "full"}
+              options={THEME_FX_OPTIONS}
+              onChange={(v) => void pickFx(v)}
+              disabled={reduced}
+            />
+          </div>
+          {reduced && (
+            <p className="text-[13px] text-muted-foreground">
+              Desactivado por la configuración de movimiento reducido de tu
+              sistema.
+            </p>
+          )}
+          <p
+            role="note"
+            className="flex items-start gap-2 rounded-lg bg-muted p-3 text-[13px] leading-[1.45] text-pretty"
+          >
+            <TriangleAlertIcon
+              className="mt-px size-[15px] shrink-0 text-primary"
+              aria-hidden
+            />
+            <span>
+              <strong className="font-semibold">
+                Aviso de fotosensibilidad:
+              </strong>{" "}
+              los efectos incluyen un destello blanco a pantalla completa. Si
+              tienes epilepsia fotosensible o eres sensible a destellos de luz,
+              te recomendamos desactivarlos.
+            </span>
           </p>
-        )}
-        <p
-          role="note"
-          className="flex items-start gap-2 rounded-lg bg-muted p-3 text-[13px] leading-[1.45] text-pretty"
-        >
-          <TriangleAlertIcon
-            className="mt-px size-[15px] shrink-0 text-primary"
-            aria-hidden
-          />
-          <span>
-            <strong className="font-semibold">
-              Aviso de fotosensibilidad:
-            </strong>{" "}
-            los efectos incluyen un destello blanco a pantalla completa. Si
-            tienes epilepsia fotosensible o eres sensible a destellos de luz, te
-            recomendamos desactivarlos.
-          </span>
-        </p>
-      </div>
-    </SectionCard>
+        </div>
+      </SectionCard>
+      <NotificationPrefsCard />
+    </div>
   )
 }

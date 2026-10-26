@@ -83,7 +83,6 @@ export function PlayersRanking({ search, onChange }: Props) {
     onChange({
       // La activa es la opción por defecto: no hace falta en la URL.
       season: v === current.data?.id ? undefined : v,
-      level: undefined,
       eligible: undefined,
       sort: undefined,
       order: undefined,
@@ -168,27 +167,7 @@ function HistoricView({ search, onChange }: Props) {
             label="Buscar jugador"
             onChange={(q) => onChange({ q, page: undefined })}
           />
-          <div role="group" aria-label="Nivel" className="flex flex-wrap gap-1">
-            {LEVELS.map((l) => {
-              const on = search.level === l.value
-              return (
-                <button
-                  key={l.label}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => onChange({ level: l.value, page: undefined })}
-                  className={cn(
-                    "h-7 rounded-full border px-2.5 text-xs font-medium transition-colors",
-                    on
-                      ? "border-foreground bg-foreground text-background"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  {l.label}
-                </button>
-              )
-            })}
-          </div>
+          <LevelFilter search={search} onChange={onChange} />
           <span className="ml-auto text-xs text-muted-foreground">
             {list.data ? `${list.data.total} jugadores` : ""}
           </span>
@@ -316,6 +295,32 @@ function HistoricRow({
   )
 }
 
+function LevelFilter({ search, onChange }: Props) {
+  return (
+    <div role="group" aria-label="Nivel" className="flex flex-wrap gap-1">
+      {LEVELS.map((l) => {
+        const on = search.level === l.value
+        return (
+          <button
+            key={l.label}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onChange({ level: l.value, page: undefined })}
+            className={cn(
+              "h-7 rounded-full border px-2.5 text-xs font-medium transition-colors",
+              on
+                ? "border-foreground bg-foreground text-background"
+                : "hover:bg-muted"
+            )}
+          >
+            {l.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ---------- Temporada ----------
 
 function SeasonView({ season, search, onChange }: Props & { season: Season }) {
@@ -324,11 +329,10 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
   const mine = useMine()
   const navigate = useNavigate()
   const active = season.status === "active"
-  const sort =
-    search.sort === "elo" || search.sort === "matches" ? search.sort : undefined
+  const sort = search.sort
   const order = search.order ?? "desc"
 
-  const sortBy = (key: "elo" | "matches") => {
+  const sortBy = (key: NonNullable<PlayerRankingSearch["sort"]>) => {
     if (sort === key && order === "asc")
       onChange({ sort: undefined, order: undefined, page: undefined })
     else if (sort === key) onChange({ order: "asc", page: undefined })
@@ -372,11 +376,12 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
           >
             Solo con puesto
           </Toggle>
+          <LevelFilter search={search} onChange={onChange} />
           <span className="ml-auto text-xs text-muted-foreground">
             {list.data ? `${list.data.total} jugadores` : ""}
           </span>
         </div>
-        <Table className="min-w-[880px] text-sm">
+        <Table className="min-w-[1040px] text-sm">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className={cn(head, "w-14 pl-4")}>#</TableHead>
@@ -390,7 +395,23 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
                   onClick={() => sortBy("elo")}
                 />
               </TableHead>
-              <TableHead className={cn(head, "text-right")}>Pico</TableHead>
+              <TableHead className={head}>Equipo</TableHead>
+              <TableHead className={cn(head, "text-center")}>
+                <SortHead
+                  label="Rating"
+                  active={sort === "rating"}
+                  order={order}
+                  onClick={() => sortBy("rating")}
+                />
+              </TableHead>
+              <TableHead className={cn(head, "text-center")}>
+                <SortHead
+                  label="K/D"
+                  active={sort === "kd"}
+                  order={order}
+                  onClick={() => sortBy("kd")}
+                />
+              </TableHead>
               <TableHead className={cn(head, "text-center")}>
                 <SortHead
                   label="Mixes"
@@ -411,7 +432,7 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
           <TableBody>
             <ListState
               query={list}
-              cols={9}
+              cols={11}
               empty="No hay jugadores con esos filtros."
             >
               {list.data?.items.map((r) => (
@@ -473,11 +494,22 @@ function StandingRow({
       <TableCell className="text-center">
         <LevelCell level={r.level} />
       </TableCell>
-      <TableCell className="text-right font-mono font-semibold text-foreground tabular-nums">
-        {r.elo}
-      </TableCell>
       <TableCell className="text-right font-mono tabular-nums">
-        {r.peak_elo}
+        <span className="flex flex-col items-end leading-tight">
+          <span className="font-semibold text-foreground">{r.elo}</span>
+          <span className="text-[11px] text-muted-foreground">
+            máx. {r.peak_elo}
+          </span>
+        </span>
+      </TableCell>
+      <TableCell>
+        <TeamsCell teams={r.teams} />
+      </TableCell>
+      <TableCell className="text-center font-mono font-semibold text-foreground tabular-nums">
+        {fmt2(r.rating)}
+      </TableCell>
+      <TableCell className="text-center font-mono tabular-nums">
+        {fmt2(r.kd)}
       </TableCell>
       <TableCell className="text-center">
         {out ? (

@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import type { AnchorHTMLAttributes, ReactNode } from "react"
@@ -427,5 +427,73 @@ describe("Perfil público", () => {
       result: undefined,
       page: undefined,
     })
+  })
+})
+
+describe("Perfil público: mapas", () => {
+  it("cada versión tiene su tarjeta y las dos usan la foto del catálogo", async () => {
+    api()
+    server.use(
+      http.get(`${API}/api/v1/players/Zeta/map-stats`, () =>
+        HttpResponse.json(
+          page([
+            {
+              map: "de_inferno",
+              maps: 29,
+              rating: 1.1,
+              kd: 1.16,
+              adr: 83,
+              wins: 16,
+              losses: 13,
+            },
+            {
+              map: "de_inferno_classic",
+              maps: 12,
+              rating: 1.2,
+              kd: 1.22,
+              adr: 86,
+              wins: 7,
+              losses: 5,
+            },
+            {
+              map: "de_cbble",
+              maps: 3,
+              rating: 0.9,
+              kd: 0.9,
+              adr: 70,
+              wins: 1,
+              losses: 2,
+            },
+          ])
+        )
+      ),
+      http.get(`${API}/api/v1/maps`, () =>
+        HttpResponse.json(
+          page([
+            {
+              name: "de_inferno",
+              versions: ["de_inferno", "de_inferno_classic"],
+              active: true,
+              position: 1,
+              mixes: true,
+              veto_default: true,
+              image_url: "https://img.test/inferno.webp",
+            },
+          ])
+        )
+      )
+    )
+    renderProfile({ tab: "mapas" })
+    const photoOf = (name: string) =>
+      (screen.getByText(name).parentElement as HTMLElement).style
+        .backgroundImage
+    await screen.findByText("de_inferno_classic")
+    await waitFor(() =>
+      expect(photoOf("de_inferno")).toContain("https://img.test/inferno.webp")
+    )
+    expect(photoOf("de_inferno_classic")).toContain(
+      "https://img.test/inferno.webp"
+    )
+    expect(photoOf("de_cbble")).toBe("")
   })
 })

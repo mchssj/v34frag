@@ -1,12 +1,17 @@
+import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   BanIcon,
   BellIcon,
   CrosshairIcon,
+  KeyRoundIcon,
   MedalIcon,
+  MegaphoneIcon,
+  ShieldAlertIcon,
   ShieldIcon,
   TrendingUpIcon,
+  TrophyIcon,
   UserPlusIcon,
   UsersIcon,
   type LucideIcon,
@@ -14,6 +19,8 @@ import {
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
+import { errorMessage } from "@/api/errors"
+import { useMe } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -22,24 +29,36 @@ import {
 } from "@/components/ui/popover"
 import { InviteDialog } from "./InviteDialog"
 import {
+  describe,
   filterByTab,
-  isActionable,
+  isPending,
   isUrgent,
   timeAgo,
-  useNotifications,
+  type Described,
   type Notification,
   type NotificationKind,
   type NotificationTab,
 } from "./model"
+import {
+  notificationsOptions,
+  unreadCountOptions,
+  useMarkRead,
+  useResolveRequest,
+  type Resolution,
+} from "./queries"
 
 const ICONS: Record<NotificationKind, LucideIcon> = {
   invite: UserPlusIcon,
-  pcw: CrosshairIcon,
-  veto: BanIcon,
   roster: UsersIcon,
-  medal: MedalIcon,
   team: ShieldIcon,
+  tournament: TrophyIcon,
+  veto: BanIcon,
+  pcw: CrosshairIcon,
   elo: TrendingUpIcon,
+  medal: MedalIcon,
+  account: KeyRoundIcon,
+  news: MegaphoneIcon,
+  admin: ShieldAlertIcon,
 }
 
 const TABS: { value: NotificationTab; label: string }[] = [
@@ -48,11 +67,32 @@ const TABS: { value: NotificationTab; label: string }[] = [
   { value: "requests", label: "Solicitudes" },
 ]
 
-export function NotificationsMenu({ captain }: { captain: boolean }) {
+/** Cómo terminó una invitación o un pedido (también si se respondió desde otro lado). */
+export function resolutionLabel(n: Notification) {
+  const request = n.type === "team_join_request"
+  switch (n.resolution) {
+    case "accepted":
+      return request ? "Aceptado" : "Aceptada"
+    case "rejected":
+      return request ? "Rechazado" : "Rechazada"
+    case "cancelled":
+      return request ? "Cancelado" : "Cancelada"
+    case "expired":
+      return request ? "Vencido" : "Vencida"
+    default:
+      return null
+  }
+}
+
+export function NotificationsMenu() {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<NotificationTab>("all")
   const [invite, setInvite] = useState<Notification | null>(null)
-  const n = useNotifications({ captain })
+  const me = useMe().data?.tag ?? null
+  const count = useQuery(unreadCountOptions).data
+  const list = useQuery({ ...notificationsOptions, enabled: open })
+  const markRead = useMarkRead()
+  const resolveRequest = useResolveRequest()
   const navigate = useNavigate()
   const router = useRouter()
 
@@ -62,30 +102,46 @@ export function NotificationsMenu({ captain }: { captain: boolean }) {
     [router]
   )
 
-  function openItem(item: Notification) {
-    n.markRead(item.id)
-    if (item.kind === "invite") {
+  const items = list.data ?? []
+  const unread = count?.unread ?? 0
+
+  function openItem(item: Notification, d: Described) {
+    if (!item.read) markRead.mutate([item.id])
+    if (item.type === "team_invite") {
       setOpen(false)
       setInvite(item)
-    } else if (item.path) {
+    } else if (d.link) {
       setOpen(false)
-      void navigate({ to: item.path })
+      void navigate({ to: d.link.to, params: d.link.params } as never)
     }
   }
 
-  function resolve(item: Notification, resolution: "accepted" | "rejected") {
-    n.resolve(item.id, resolution)
-    const what = item.kind === "invite" ? "Invitación" : "Solicitud"
-    toast.success(
-      `${what} ${resolution === "accepted" ? "aceptada" : "rechazada"}`
+  function resolve(item: Notification, resolution: Resolution) {
+    resolveRequest.mutate(
+      { item, resolution },
+      {
+        onSuccess: () => {
+          const what = item.type === "team_invite" ? "Invitación" : "Pedido"
+          const done =
+            resolution === "accepted"
+              ? item.type === "team_invite"
+                ? "aceptada"
+                : "aceptado"
+              : item.type === "team_invite"
+                ? "rechazada"
+                : "rechazado"
+          toast.success(`${what} ${done}`)
+        },
+        onError: (e) => toast.error(errorMessage(e)),
+      }
     )
   }
 
-  const list = filterByTab(n.items, tab)
+  const shown = filterByTab(items, tab)
   const counts: Record<NotificationTab, number> = {
-    all: n.items.length,
-    unread: n.unread,
-    requests: filterByTab(n.items, "requests").length,
+    all: items.length,
+    unread: items.filter((i) => !i.read).length,
+    requests: items.filter(isPending).length,
   }
 
   return (
@@ -97,18 +153,16 @@ export function NotificationsMenu({ captain }: { captain: boolean }) {
             size="icon"
             className="relative size-8 data-[state=open]:bg-accent"
             aria-label={
-              n.unread
-                ? `Notificaciones, ${n.unread} sin leer`
-                : "Notificaciones"
+              unread ? `Notificaciones, ${unread} sin leer` : "Notificaciones"
             }
           >
             <BellIcon aria-hidden />
-            {n.unread > 0 && (
+            {unread > 0 && (
               <span
                 aria-hidden
-                className="absolute -top-1.5 -right-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 font-mono text-[10px] font-semibold text-primary-foreground ring-2 ring-background"
+                className="absolute -top-1.5 -right-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 font-mono text-[10px] font-bold text-primary-foreground"
               >
-                {n.unread}
+                {unread > 99 ? "99+" : unread}
               </span>
             )}
           </Button>
@@ -123,8 +177,8 @@ export function NotificationsMenu({ captain }: { captain: boolean }) {
               variant="ghost"
               size="sm"
               className="h-7 text-xs"
-              disabled={n.unread === 0}
-              onClick={n.markAllRead}
+              disabled={unread === 0 && counts.unread === 0}
+              onClick={() => markRead.mutate("all")}
             >
               Marcar todo como leído
             </Button>
@@ -141,37 +195,55 @@ export function NotificationsMenu({ captain }: { captain: boolean }) {
                 role="tab"
                 aria-selected={tab === t.value}
                 onClick={() => setTab(t.value)}
-                className="inline-flex h-[26px] items-center gap-1.5 rounded-md border border-transparent px-2.5 text-xs text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-selected:border-border aria-selected:bg-accent aria-selected:text-foreground"
+                className="inline-flex h-[26px] items-center gap-1.5 rounded-md border border-transparent px-2.5 text-xs text-muted-foreground hover:text-foreground aria-selected:border-border aria-selected:bg-background aria-selected:text-foreground"
               >
                 {t.label}
                 <span className="font-mono text-[11px]">{counts[t.value]}</span>
               </button>
             ))}
           </div>
-          {list.length === 0 ? (
+          {list.isPending ? (
+            <p className="border-t px-4 py-10 text-center text-sm text-muted-foreground">
+              Cargando…
+            </p>
+          ) : list.isError ? (
+            <p className="border-t px-4 py-10 text-center text-sm text-muted-foreground">
+              {errorMessage(list.error)}
+            </p>
+          ) : shown.length === 0 ? (
             <p className="border-t px-4 py-10 text-center text-sm text-muted-foreground">
               Estás al día.
             </p>
           ) : (
             <ul className="max-h-[min(460px,64vh)] overflow-y-auto border-t">
-              {list.map((item) => (
-                <NotificationRow
-                  key={item.id}
-                  item={item}
-                  onOpen={() => openItem(item)}
-                  onResolve={(r) => resolve(item, r)}
-                  onDetail={() => {
-                    setOpen(false)
-                    setInvite(item)
-                  }}
-                />
-              ))}
+              {shown.map((item) => {
+                const d = describe(item, me)
+                return (
+                  <NotificationRow
+                    key={item.id}
+                    item={item}
+                    d={d}
+                    busy={
+                      resolveRequest.isPending &&
+                      resolveRequest.variables?.item.id === item.id
+                    }
+                    onOpen={() => openItem(item, d)}
+                    onResolve={(r) => resolve(item, r)}
+                    onDetail={() => {
+                      setOpen(false)
+                      setInvite(item)
+                    }}
+                  />
+                )
+              })}
             </ul>
           )}
         </PopoverContent>
       </Popover>
       <InviteDialog
         item={invite}
+        d={invite ? describe(invite, me) : null}
+        resolution={invite ? resolutionLabel(invite) : null}
         onClose={() => setInvite(null)}
         onResolve={(r) => {
           if (invite) resolve(invite, r)
@@ -184,16 +256,21 @@ export function NotificationsMenu({ captain }: { captain: boolean }) {
 
 function NotificationRow({
   item,
+  d,
+  busy,
   onOpen,
   onResolve,
   onDetail,
 }: {
   item: Notification
+  d: Described
+  busy: boolean
   onOpen: () => void
-  onResolve: (r: "accepted" | "rejected") => void
+  onResolve: (r: Resolution) => void
   onDetail: () => void
 }) {
-  const Icon = ICONS[item.kind]
+  const Icon = ICONS[d.kind]
+  const done = resolutionLabel(item)
   return (
     <li
       className={cn(
@@ -222,13 +299,15 @@ function NotificationRow({
                 item.read ? "font-medium" : "font-semibold"
               )}
             >
-              {item.title}
+              {d.title}
             </span>
             <span className="shrink-0 text-[11px] text-muted-foreground">
-              {timeAgo(item.createdAt)}
+              {timeAgo(item.created_at)}
             </span>
           </span>
-          <span className="text-xs text-muted-foreground">{item.body}</span>
+          {d.body && (
+            <span className="text-xs text-muted-foreground">{d.body}</span>
+          )}
         </span>
         {!item.read && (
           <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary">
@@ -236,9 +315,9 @@ function NotificationRow({
           </span>
         )}
       </button>
-      {isActionable(item) && (
+      {item.actionable && (
         <div className="flex items-center gap-2 pl-11">
-          {item.resolution ? (
+          {done ? (
             <span
               className={cn(
                 "text-xs font-medium",
@@ -247,13 +326,14 @@ function NotificationRow({
                   : "text-muted-foreground"
               )}
             >
-              {item.resolution === "accepted" ? "Aceptada" : "Rechazada"}
+              {done}
             </span>
           ) : (
             <>
               <Button
                 size="sm"
                 className="h-7"
+                disabled={busy}
                 onClick={() => onResolve("accepted")}
               >
                 Aceptar
@@ -262,11 +342,12 @@ function NotificationRow({
                 size="sm"
                 variant="outline"
                 className="h-7"
+                disabled={busy}
                 onClick={() => onResolve("rejected")}
               >
                 Rechazar
               </Button>
-              {item.kind === "invite" && (
+              {item.type === "team_invite" && (
                 <Button
                   size="sm"
                   variant="ghost"

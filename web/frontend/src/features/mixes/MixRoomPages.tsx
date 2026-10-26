@@ -15,6 +15,9 @@ import { DeleteMixDialog } from "./DeleteMixDialog"
 import { MixRoom } from "./MixRoom"
 import { liveMixOptions } from "./queries"
 import { roomFromLive, roomFromMatch } from "./room"
+import type { StatsTab } from "./stats"
+
+type TabProps = { tab?: StatsTab; onTab?: (tab: StatsTab) => void }
 
 // Las dos salas del mix: la de una partida terminada o cancelada (/match/$id) y la en vivo
 // (/mixes/live/$uid). Cargan los datos y arman el modelo común de room.ts.
@@ -24,7 +27,7 @@ function useMyPlayerId() {
 }
 
 /** /match/$id: la sala si es un mix; otra partida sigue con el placeholder. */
-export function MixMatchRoom({ id }: { id: string }) {
+export function MixMatchRoom({ id, tab, onTab }: { id: string } & TabProps) {
   const match = useQuery(matchDetailOptions(id))
   const me = useMyPlayerId()
   const maps = useQuery(mapsOptions).data
@@ -56,6 +59,8 @@ export function MixMatchRoom({ id }: { id: string }) {
     <MixRoom
       room={room}
       mapImage={mapImage(maps, m.map)}
+      tab={tab}
+      onTab={onTab}
       adminAction={
         canDelete ? (
           <DeleteMixDialog
@@ -69,7 +74,7 @@ export function MixMatchRoom({ id }: { id: string }) {
 }
 
 /** /mixes/live/$uid: se refresca cada 20 s; un 404 quiere decir que el mix terminó. */
-export function MixLiveRoom({ uid }: { uid: string }) {
+export function MixLiveRoom({ uid, tab, onTab }: { uid: string } & TabProps) {
   const live = useQuery(liveMixOptions(uid))
   const me = useMyPlayerId()
   const maps = useQuery(mapsOptions).data
@@ -95,6 +100,8 @@ export function MixLiveRoom({ uid }: { uid: string }) {
     <MixRoom
       room={roomFromLive(live.data, me)}
       mapImage={mapImage(maps, live.data.map)}
+      tab={tab}
+      onTab={onTab}
     />
   )
 }

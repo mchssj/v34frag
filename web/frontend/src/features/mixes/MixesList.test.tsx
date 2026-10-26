@@ -123,6 +123,32 @@ function answer(items: MixItem[], total = items.length) {
   )
 }
 
+const catalogMap = (name: string, o: Record<string, unknown> = {}) => ({
+  name,
+  versions: [name],
+  active: true,
+  position: 1,
+  mixes: true,
+  veto_default: true,
+  image_url: null,
+  ...o,
+})
+
+function mapsAnswer(items: ReturnType<typeof catalogMap>[]) {
+  server.use(
+    http.get(`${API}/api/v1/maps`, () =>
+      HttpResponse.json({
+        items,
+        total: items.length,
+        page: 1,
+        per: 100,
+        sort: "position",
+        order: "asc",
+      })
+    )
+  )
+}
+
 function renderList(search: MixesSearch = {}, onChange = vi.fn()) {
   const wrap = (ui: ReactNode) => <TooltipProvider>{ui}</TooltipProvider>
   return {
@@ -248,8 +274,25 @@ describe("MixesList", () => {
     expect(onChange).toHaveBeenLastCalledWith({ page: undefined })
   })
 
-  it("sin maestra de mapas no hay select de mapa", async () => {
+  it("select de mapa: los del catálogo marcados para Mixes, en su orden", async () => {
     answer([finished])
+    mapsAnswer([
+      catalogMap("de_nuke", { position: 2 }),
+      catalogMap("de_dust2", { position: 1 }),
+      catalogMap("de_russka", { position: 3, mixes: false }),
+      catalogMap("de_aztec", { position: 4, active: false, mixes: false }),
+    ])
+    const { user, onChange } = renderList()
+    await user.click(await screen.findByRole("combobox", { name: "Mapa" }))
+    const options = screen.getAllByRole("option").map((o) => o.textContent)
+    expect(options).toEqual(["Todos los mapas", "de_dust2", "de_nuke"])
+    await user.click(screen.getByRole("option", { name: "de_nuke" }))
+    expect(onChange).toHaveBeenCalledWith({ map: "de_nuke", page: undefined })
+  })
+
+  it("sin mapas para Mixes en el catálogo no hay select de mapa", async () => {
+    answer([finished])
+    mapsAnswer([])
     renderList()
     await screen.findByText("Disponible")
     expect(screen.queryByRole("combobox", { name: "Mapa" })).toBeNull()

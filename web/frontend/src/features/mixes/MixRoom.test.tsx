@@ -116,6 +116,32 @@ const detail = (o: Record<string, unknown> = {}) => ({
   ...o,
 })
 
+const catalogMap = (name: string, o: Record<string, unknown> = {}) => ({
+  name,
+  versions: [name],
+  active: true,
+  position: 1,
+  mixes: true,
+  veto_default: true,
+  image_url: null,
+  ...o,
+})
+
+function mapsAnswer(items: ReturnType<typeof catalogMap>[]) {
+  server.use(
+    http.get(`${API}/api/v1/maps`, () =>
+      HttpResponse.json({
+        items,
+        total: items.length,
+        page: 1,
+        per: 100,
+        sort: "position",
+        order: "asc",
+      })
+    )
+  )
+}
+
 function profileAnswer() {
   server.use(
     http.get(`${API}/api/v1/me/profile`, () =>
@@ -186,15 +212,38 @@ describe("sala de un mix terminado", () => {
     expect(screen.queryByText("+24")).toBeNull()
   })
 
-  it("sin foto en la maestra la franja queda lisa", async () => {
+  it("sin foto en el catálogo la franja queda lisa", async () => {
     profileAnswer()
+    mapsAnswer([catalogMap("de_tuscan")])
     server.use(
       http.get(`${API}/api/v1/matches/m-1`, () => HttpResponse.json(detail()))
     )
     const { container } = renderWithQuery(wrap(<MixMatchRoom id="m-1" />))
     await screen.findByText("FINAL")
-    // La maestra todavía no está en la API: sin foto.
     expect(container.querySelector("[data-photo]")).toBeNull()
+  })
+
+  it("la foto del mapa se busca por versión", async () => {
+    profileAnswer()
+    mapsAnswer([
+      catalogMap("de_inferno", {
+        versions: ["de_inferno", "de_inferno_classic"],
+        image_url: "https://img.test/inferno.webp",
+      }),
+    ])
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(detail({ map: "de_inferno_classic" }))
+      )
+    )
+    const { container } = renderWithQuery(wrap(<MixMatchRoom id="m-1" />))
+    await screen.findByText("FINAL")
+    await waitFor(() =>
+      expect(container.querySelector("[data-photo] img")).toHaveAttribute(
+        "src",
+        "https://img.test/inferno.webp"
+      )
+    )
   })
 })
 
@@ -235,6 +284,28 @@ describe("sala en vivo", () => {
     ).toHaveAttribute("href", "steam://connect/45.235.98.12:27020")
     expect(screen.getAllByText("En juego")).toHaveLength(2)
     expect(screen.queryByText("+24")).toBeNull()
+  })
+
+  it("en vivo no hay Δ ELO y Clutch avisa que se cuenta al terminar", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/mixes/live/lv-1`, () =>
+        HttpResponse.json(live, { headers: { ETag: '"16"' } })
+      )
+    )
+    const { unmount } = renderWithQuery(wrap(<MixLiveRoom uid="lv-1" />))
+    await screen.findByText("EN VIVO")
+    expect(
+      screen.queryByRole("button", { name: "Ordenar por Δ ELO" })
+    ).toBeNull()
+    expect(
+      screen.getAllByRole("button", { name: "Ordenar por K/R" })
+    ).toHaveLength(2)
+    unmount()
+    renderWithQuery(wrap(<MixLiveRoom uid="lv-1" tab="clutch" />))
+    expect(
+      await screen.findByText("Los clutches se cuentan al terminar el mix.")
+    ).toBeInTheDocument()
   })
 
   it("404: el mix terminó", async () => {
@@ -328,5 +399,116 @@ describe("DeleteMixDialog", () => {
       await screen.findByText("El mix está vinculado a una partida de torneo.")
     ).toBeVisible()
     expect(screen.getByRole("dialog")).toBeVisible()
+  })
+})
+
+describe("pestañas de estadísticas", () => {
+  const withStats = (o: Record<string, unknown> = {}) =>
+    detail({
+      clutch_data: true,
+      players: [
+        {
+          ...zeta,
+          k2: 4,
+          k3: 1,
+          k4: 0,
+          k5: 0,
+          first_kills: 5,
+          first_deaths: 1,
+          plants: 2,
+          defuses: 0,
+          clutches: { 1: 2, 2: 1, 3: 0, 4: 0, 5: 0 },
+        },
+        {
+          ...players[2],
+          k2: 1,
+          k3: 0,
+          k4: 0,
+          k5: 0,
+          first_kills: 1,
+          first_deaths: 4,
+          plants: 0,
+          defuses: 1,
+          clutches: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+        },
+      ],
+      ...o,
+    })
+
+  it("General con las columnas nuevas y el mejor valor marcado; cambiar de pestaña avisa", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(withStats())
+      )
+    )
+    const onTab = vi.fn()
+    const { user } = renderWithQuery(
+      wrap(<MixMatchRoom id="m-1" onTab={onTab} />)
+    )
+    await screen.findByText("FINAL")
+    expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    )
+    const a = screen.getByRole("region", { name: "Bando Zeta" })
+    for (const h of ["K/R", "HS %", "2k", "5k", "Rating", "Δ ELO"])
+      expect(
+        within(a).getByRole("button", { name: `Ordenar por ${h}` })
+      ).toBeInTheDocument()
+    // Zeta tiene más kills (20) que Vasco (9): su celda es la mejor.
+    const zetaRow = within(a).getByText("Zeta").closest("tr")!
+    expect(zetaRow.querySelectorAll("[data-best]").length).toBeGreaterThan(0)
+    await user.click(screen.getByRole("tab", { name: "Avanzado" }))
+    expect(onTab).toHaveBeenCalledWith("advanced")
+  })
+
+  it("Entrada y Clutch con sus columnas; ordenar por una cabecera", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(withStats())
+      )
+    )
+    const { unmount, user } = renderWithQuery(
+      wrap(<MixMatchRoom id="m-1" tab="entry" />)
+    )
+    await screen.findByText("FINAL")
+    const a = screen.getByRole("region", { name: "Bando Zeta" })
+    expect(
+      within(a).getByRole("button", { name: "Ordenar por % éxito" })
+    ).toBeInTheDocument()
+    expect(within(a).getByText("83%")).toBeInTheDocument()
+    await user.click(
+      within(a).getByRole("button", { name: "Ordenar por Elim." })
+    )
+    expect(
+      within(a)
+        .getByRole("button", { name: "Ordenar por Elim." })
+        .querySelector("svg")
+    ).not.toBeNull()
+    unmount()
+
+    renderWithQuery(wrap(<MixMatchRoom id="m-1" tab="clutch" />))
+    await screen.findByText("FINAL")
+    expect(screen.getByText("Solo clutches ganados.")).toBeInTheDocument()
+    const z = screen.getByRole("region", { name: "Bando Zeta" })
+    expect(
+      within(z).getByRole("button", { name: "Ordenar por 1v5" })
+    ).toBeInTheDocument()
+  })
+
+  it("Clutch sin datos del servidor", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(withStats({ clutch_data: false }))
+      )
+    )
+    renderWithQuery(wrap(<MixMatchRoom id="m-1" tab="clutch" />))
+    expect(
+      await screen.findByText("Sin datos de Clutches disponibles.")
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("region", { name: "Bando Zeta" })).toBeNull()
   })
 })

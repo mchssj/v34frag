@@ -8,19 +8,24 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog"
-import type { Notification } from "./model"
+import type { Described, Notification } from "./model"
 
 /** Detalle de una invitación a un equipo, con Aceptar / Rechazar. */
 export function InviteDialog({
   item,
+  d,
+  resolution,
   onClose,
   onResolve,
 }: {
   item: Notification | null
+  d: Described | null
+  /** Cómo terminó, si ya se respondió. */
+  resolution: string | null
   onClose: () => void
   onResolve: (resolution: "accepted" | "rejected") => void
 }) {
-  const invite = item?.invite
+  const from = item?.actor?.alias
   return (
     <Dialog open={!!item} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="leading-design sm:max-w-[420px]">
@@ -30,20 +35,15 @@ export function InviteDialog({
           </span>
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-base leading-[normal] font-semibold">
-              Invitación a {invite?.team}
+              {d?.title}
             </DialogTitle>
-            <DialogDescription>De {invite?.from}</DialogDescription>
+            <DialogDescription>
+              {from ? `De ${from}` : d?.body}
+            </DialogDescription>
           </div>
         </div>
-        {invite?.message && (
-          <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">
-            {invite.message}
-          </p>
-        )}
-        {item?.resolution ? (
-          <p className="text-sm text-muted-foreground">
-            Ya la {item.resolution === "accepted" ? "aceptaste" : "rechazaste"}.
-          </p>
+        {resolution ? (
+          <p className="text-sm text-muted-foreground">{resolution}.</p>
         ) : (
           <DialogFooter>
             <Button variant="outline" onClick={() => onResolve("rejected")}>

@@ -1,15 +1,12 @@
 import { queryOptions } from "@tanstack/react-query"
 
-// Maestra de mapas: la gestiona el admin (nombre, activo y foto). Pendiente del backend
-// (docs/PENDIENTES.md, sección 6). Mientras la API no la exponga, la lista viene vacía: Mixes
-// oculta el select de mapas y el marcador de la sala sale liso. Al llegar el endpoint, solo cambia
-// el queryFn (y MapEntry pasa a ser el tipo generado).
+import { api, unwrap, type Schemas } from "@/api/client"
 
-export type MapEntry = {
-  name: string
-  active: boolean
-  image_url: string | null
-}
+// Catálogo de mapas (contrato partidas.md y admin.md, replanteo 30). Trae también los retirados:
+// una sala vieja necesita la foto de un mapa que ya no se elige. Cada mapa tiene sus versiones de
+// servidor (Inferno: de_inferno y de_inferno_classic) y una sola foto para todas.
+
+export type MapEntry = Schemas["MapItem"]
 
 export const mapKeys = {
   all: ["maps"] as const,
@@ -17,24 +14,36 @@ export const mapKeys = {
 
 export const mapsOptions = queryOptions({
   queryKey: mapKeys.all,
-  queryFn: async (): Promise<MapEntry[]> => [],
+  queryFn: async ({ signal }) =>
+    (
+      await unwrap(
+        api.GET("/api/v1/maps", {
+          params: { query: { include_inactive: "true", per: 100 } },
+          signal,
+        })
+      )
+    ).items,
   staleTime: 10 * 60_000,
 })
 
-/** Mapas activos, por nombre, para los filtros. */
-export function activeMapNames(maps: MapEntry[] | undefined): string[] {
+/** Mapas del select de Mixes: disponibles y marcados para Mixes, en el orden del catálogo. */
+export function mixMapNames(maps: MapEntry[] | undefined): string[] {
   return (maps ?? [])
-    .filter((m) => m.active)
+    .filter((m) => m.active && m.mixes)
+    .sort((a, b) => a.position - b.position)
     .map((m) => m.name)
-    .sort((a, b) => a.localeCompare(b))
 }
 
-/** Foto del mapa en la maestra (sin distinguir mayúsculas), o null. */
+/** Foto del mapa jugado: lo busca entre las versiones de cada mapa, sin distinguir mayúsculas. */
 export function mapImage(
   maps: MapEntry[] | undefined,
   name: string | null | undefined
 ): string | null {
   if (!name) return null
   const key = name.toLowerCase()
-  return maps?.find((m) => m.name.toLowerCase() === key)?.image_url ?? null
+  return (
+    maps?.find((m) =>
+      [m.name, ...m.versions].some((v) => v.toLowerCase() === key)
+    )?.image_url ?? null
+  )
 }

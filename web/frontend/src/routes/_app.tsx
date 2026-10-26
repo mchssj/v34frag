@@ -2,7 +2,6 @@ import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { requireAuth } from "@/auth/guards"
-import { seesCaptainNotifications } from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
 import { RouteError } from "@/components/RouteError"
 import {
@@ -13,7 +12,6 @@ import {
 import { AppSidebar } from "@/features/shell/AppSidebar"
 import { CommandMenu } from "@/features/shell/CommandMenu"
 import { NowBar } from "@/features/shell/NowBar"
-import { useShellIdentity } from "@/features/shell/queries"
 import { Topbar } from "@/features/shell/Topbar"
 import { useSyncThemeFx } from "@/features/theme-fx/useSyncThemeFx"
 
@@ -36,7 +34,6 @@ function AppLayout() {
   const initial = Route.useRouteContext({ select: (c) => c.user })
   // useMe se mantiene al día (por ejemplo, si cambia el rol); la guarda garantiza el primer valor.
   const user = useMe().data ?? initial
-  const { team } = useShellIdentity()
   useSyncThemeFx()
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -55,10 +52,7 @@ function AppLayout() {
     <SidebarProvider defaultOpen={initialSidebarOpen()}>
       <AppSidebar user={user} />
       <SidebarInset className="min-h-[calc(100svh-16px)] min-w-0 md:peer-data-[variant=inset]:shadow-[0_1px_3px_rgb(0_0_0/.06),0_0_0_1px_var(--border)]">
-        <Topbar
-          onSearch={() => setSearchOpen(true)}
-          captain={seesCaptainNotifications(user.role, !!team?.is_captain)}
-        />
+        <Topbar onSearch={() => setSearchOpen(true)} />
         <NowBar />
         <div className="flex flex-1 justify-center p-6">
           <div className="w-full max-w-[1320px] min-w-0">

@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Toggle } from "@/components/ui/toggle"
-import { activeMapNames, mapsOptions } from "@/features/maps/queries"
+import { mapsOptions, mixMapNames } from "@/features/maps/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtDay, fmtTime, nickOf } from "./labels"
 import {
@@ -120,7 +120,7 @@ function MixFilters({
 }) {
   const [q, setQ] = useState(search.q ?? "")
   const debounced = useDebouncedValue(q, 300)
-  const maps = activeMapNames(useQuery(mapsOptions).data)
+  const maps = mixMapNames(useQuery(mapsOptions).data)
 
   // El texto escrito pasa a la URL con debounce; si la URL cambia por otro lado, se sincroniza.
   useEffect(() => {
@@ -152,7 +152,7 @@ function MixFilters({
           className="text-[13px]"
         />
       </InputGroup>
-      {/* Sale de la maestra de mapas; mientras la API no la tenga, no hay select. */}
+      {/* Sale del catálogo de mapas (los de Mixes); si viene vacío, no hay select. */}
       {maps.length > 0 && (
         <Select
           value={search.map ?? ALL_MAPS}
