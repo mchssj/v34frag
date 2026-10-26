@@ -1,6 +1,6 @@
 # Plan: baneos de los servidores gestionados desde la web
 
-> Planeación original. Estado: **aprobado** por Daniel el 2026-10-26 (base y API en esta tanda).
+> Planeación original. Estado: **propuesta**, pendiente de aprobación.
 
 Hoy cada servidor banea por su cuenta con el `basebans` de SourceMod (`banned_user.cfg`). Un baneado en el servidor real puede entrar a RBK, y la web no se entera de nada. Con este plan, la base pasa a ser la lista única de baneos: se banea desde la web o desde el juego, y todos los servidores la aplican.
 
@@ -10,9 +10,6 @@ Hoy cada servidor banea por su cuenta con el `basebans` de SourceMod (`banned_us
 |---|---|---|
 | Alcance | Un baneo vale en **todos los servidores**, incluido RBK | Daniel, 2026-10-25 |
 | Quién banea desde la web | Admins y moderadores. **Solo un admin puede banear de forma permanente**; el moderador siempre pone un vencimiento | Daniel, 2026-10-25 |
-| Qué levanta o cambia un moderador | **Cualquier baneo que no sea permanente** (de la web, del juego o de otro moderador). Los permanentes, solo un admin | Daniel, 2026-10-26 |
-| Rol de moderador | **Un rol más** en `profiles.role`. Todos los roles juegan; el admin también organiza y modera | Daniel, 2026-10-26 |
-| Alcance de la primera tanda | Base (replanteo `31`) y API. El frontend y el plugin, después | Daniel, 2026-10-26 |
 | Mix en curso | El baneo se aplica **en el momento**: se echa al jugador aunque esté jugando | Daniel, 2026-10-25 |
 | Visibilidad | Lista de baneos **pública** | Daniel, 2026-10-25 |
 | Avisos | **Sin** Discord ni notificación al jugador | Daniel, 2026-10-25 |
@@ -72,14 +69,12 @@ Un baneo está **activo** si `lifted_at` es null y (`expires_at` es null o futur
 ### Rol de moderador en la web
 
 - `profiles.role` suma `moderator` (hoy: `user`, `organizer`, `admin`) y una función `is_moderator()` (moderador o admin).
-- Los roles no le quitan nada a nadie: todos juegan como un `user`; el admin además organiza (`is_organizer()`) y modera (`is_moderator()`). Un moderador no organiza y un organizador no modera.
-- El admin lo asigna con `set_user_role` (`PUT /admin/users/{id}/role`), que pasa a aceptar `moderator`.
-- El rol web no está atado al grupo `Moderador` de SourceMod: se asignan por separado.
+- Cómo se asigna el rol y su relación con el grupo `Moderador` de SourceMod se resuelve en la implementación, junto con el pendiente de roles de la plataforma (`docs/bitacora/2026-10-18-layout-autenticado/PLAN.md`).
 
 ### Reglas (en la base, no solo en la API)
 
 - Banear: `is_moderator()`. `expires_at` null solo con `is_admin()`.
-- Levantar o cambiar el vencimiento o el motivo: el admin, cualquiera; el moderador, cualquiera que no sea permanente. Un moderador no puede volver permanente un baneo.
+- Levantar o cambiar el vencimiento: el admin cualquiera; el moderador, los que puso él (propuesta). Un moderador no puede volver permanente un baneo.
 - No dos baneos activos para la misma ficha (o el mismo SteamID sin ficha): el nuevo reemplaza al anterior, que queda levantado con referencia al nuevo.
 
 ### Funciones para el plugin (con el token del servidor, como `ingest_server_chunk`)
