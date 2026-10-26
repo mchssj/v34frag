@@ -17,6 +17,14 @@ const line = (o: Partial<MatchInput["players"][number]> = {}) => ({
   rounds: 26,
   rating: 1.1,
   elo_delta: 25,
+  k2: null,
+  k3: null,
+  k4: null,
+  k5: null,
+  first_kills: null,
+  first_deaths: null,
+  plants: null,
+  defuses: null,
   ...o,
 })
 

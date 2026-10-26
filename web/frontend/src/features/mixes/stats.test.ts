@@ -5,6 +5,7 @@ import {
   bestValues,
   columnsFor,
   nextSort,
+  partialRounds,
   sortPlayers,
   type StatColumn,
 } from "./stats"
@@ -115,5 +116,13 @@ describe("estadísticas de la sala", () => {
       sortPlayers(players, cols, { key: "fk", dir: "asc" }).map((p) => p.nick)
     ).toEqual(["c", "a", "b"])
     expect(sortPlayers(players, cols, null)).toBe(players)
+  })
+})
+
+describe("rondas parciales", () => {
+  it("solo si jugó menos rondas que el mix", () => {
+    expect(partialRounds(player({ rounds: 12 }), 22)).toBe("12/22 rondas")
+    expect(partialRounds(player({ rounds: 22 }), 22)).toBeNull()
+    expect(partialRounds(player({ rounds: 0 }), 0)).toBeNull()
   })
 })

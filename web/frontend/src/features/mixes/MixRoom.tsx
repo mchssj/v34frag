@@ -42,6 +42,7 @@ import {
   bestValues,
   columnsFor,
   nextSort,
+  partialRounds,
   sortPlayers,
   type StatColumn,
   type StatsSort,
@@ -156,6 +157,7 @@ export function MixRoom({
             status={room.status}
             cols={cols}
             best={best}
+            totalRounds={room.side1.score + room.side2.score}
             sort={sort}
             onSort={(key) => setSort((cur) => nextSort(cur, key))}
             footer={
@@ -343,6 +345,7 @@ function SideTable({
   status,
   cols,
   best,
+  totalRounds,
   sort,
   onSort,
   footer,
@@ -352,6 +355,8 @@ function SideTable({
   status: Room["status"]
   cols: StatColumn[]
   best: Record<string, number | null>
+  /** Rondas del mix (las dos puntuaciones): para marcar a quien jugó menos. */
+  totalRounds: number
   sort: StatsSort
   onSort: (key: string) => void
   footer?: ReactNode
@@ -419,6 +424,7 @@ function SideTable({
               p={p}
               cols={cols}
               best={best}
+              rounds={partialRounds(p, totalRounds)}
               showMvp={status !== "cancelled"}
             />
           ))}
@@ -490,11 +496,14 @@ function PlayerRow({
   p,
   cols,
   best,
+  rounds,
   showMvp,
 }: {
   p: RoomPlayer
   cols: StatColumn[]
   best: Record<string, number | null>
+  /** "12/22 rondas" si jugó menos que el mix; null en un mix completo. */
+  rounds: string | null
   showMvp: boolean
 }) {
   return (
@@ -531,6 +540,14 @@ function PlayerRow({
             </span>
           )}
         </span>
+        {rounds && (
+          <span
+            title="Jugó menos rondas que el mix: entró tarde, reemplazó a alguien o se fue antes."
+            className="block text-[11px] leading-tight text-muted-foreground"
+          >
+            {rounds}
+          </span>
+        )}
       </TableCell>
       {cols.map((c, i) => {
         const v = c.value(p)

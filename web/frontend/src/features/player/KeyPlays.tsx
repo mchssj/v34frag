@@ -92,13 +92,13 @@ function Content({ stats, maps }: { stats: NonNullable<Stats>; maps: number }) {
             <b className="font-mono font-semibold tabular-nums">
               {stats.plants ?? 0}
             </b>{" "}
-            plantadas
+            bombas plantadas
           </span>
           <span>
             <b className="font-mono font-semibold tabular-nums">
               {stats.defuses ?? 0}
             </b>{" "}
-            defuses
+            bombas desactivadas
           </span>
         </span>
       </Block>

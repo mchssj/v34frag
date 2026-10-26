@@ -498,6 +498,37 @@ describe("pestañas de estadísticas", () => {
     ).toBeInTheDocument()
   })
 
+  it("Avanzado: bombas con su nombre completo, sin RP; quien jugó menos rondas lo muestra", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(
+          withStats({
+            // 14 + 12 = 26 rondas; Vasco entró tarde y jugó 10.
+            side1: { name: "Bando Zeta", team: null, score: 14 },
+            side2: { name: "Bando Vasco", team: null, score: 12 },
+            players: [
+              { ...zeta, rounds: 26 },
+              { ...players[2], rounds: 10 },
+            ],
+          })
+        )
+      )
+    )
+    renderWithQuery(wrap(<MixMatchRoom id="m-1" tab="advanced" />))
+    await screen.findByText("FINAL")
+    expect(
+      screen.getAllByRole("button", { name: "Ordenar por Bombas plantadas" })
+    ).toHaveLength(2)
+    expect(
+      screen.getAllByRole("button", { name: "Ordenar por Bombas desactivadas" })
+    ).toHaveLength(2)
+    expect(screen.queryByRole("button", { name: "Ordenar por RP" })).toBeNull()
+    expect(screen.getAllByText(/\/26 rondas/)).toHaveLength(1)
+    const b = screen.getByRole("region", { name: "Bando Vasco" })
+    expect(within(b).getByText("10/26 rondas")).toBeInTheDocument()
+  })
+
   it("Clutch sin datos del servidor", async () => {
     profileAnswer()
     server.use(

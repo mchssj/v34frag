@@ -124,14 +124,17 @@ const ADVANCED: StatColumn[] = [
     format: "pct",
   },
   {
-    key: "rp",
-    label: "RP",
-    help: "Rondas jugadas",
-    value: (p) => p.rounds,
-    format: "int",
+    key: "plants",
+    label: "Bombas plantadas",
+    value: (p) => p.plants,
+    format: "zero",
   },
-  { key: "plants", label: "Plantadas", value: (p) => p.plants, format: "zero" },
-  { key: "defuses", label: "Defuses", value: (p) => p.defuses, format: "zero" },
+  {
+    key: "defuses",
+    label: "Bombas desactivadas",
+    value: (p) => p.defuses,
+    format: "zero",
+  },
 ]
 
 const ENTRY: StatColumn[] = [
@@ -223,6 +226,14 @@ export function nextSort(current: StatsSort, key: string): StatsSort {
   if (!current || current.key !== key) return { key, dir: "desc" }
   if (current.dir === "desc") return { key, dir: "asc" }
   return null
+}
+
+/**
+ * Rondas que jugó, solo si fueron menos que las del mix (entró tarde, reemplazó a alguien o se
+ * fue antes). En un mix completo es null y no se muestra.
+ */
+export function partialRounds(p: RoomPlayer, total: number): string | null {
+  return total > 0 && p.rounds < total ? `${p.rounds}/${total} rondas` : null
 }
 
 /** Ordena en el navegador (son hasta 7 filas por bando). Los null van al final. */
