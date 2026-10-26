@@ -139,3 +139,6 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-25 | Mejor valor de cada columna | Resaltado, como en HLTV | Daniel |
 | 2026-10-25 | Métricas que necesitan el plugin | En pausa (precisión, KAST, RWS, trades, clutches perdidos…): no sumarle carga al plugin por el riesgo de lag | Daniel |
 | 2026-10-25 | Aviso de `!claim` | La ficha sin cuenta no lleva aviso; el perfil sin reclamar lleva "¿Este SteamID es tuyo? Vincúlalo desde tu cuenta" con un botón a Mi perfil → Vincular con el servidor. El `!claim` se explica solo ahí | Daniel |
+| 2026-10-25 | Mix en vivo que terminó | El `404` de `/mixes/live/{uid}` trae `details.match_id` (por `matches.external_id`); sin endpoint nuevo | Propuesta, aprobada por Daniel |
+| 2026-10-25 | Nivel de cada jugador en la sala | ELO **actual** (como el MVP del listado), no el de esa partida; también en PCW y torneos | Daniel |
+| 2026-10-25 | "ELO pendiente" en el listado de mixes | `review` en cada fila del listado; sin filtro nuevo (el admin ya tiene `/matches?review=pending`) | Propuesta, aprobada por Daniel |

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
+import { levelOf } from '../../src/lib/db';
 import { admin, createUser, localEnv } from './local';
 
 // Mixes en vivo e interrumpidos contra la Supabase local (migración 20261017120000 y replanteo 16).
@@ -105,6 +106,7 @@ describe('mixes en vivo', () => {
     expect((await call('GET', '/api/v1/mixes/live?sort=score')).status).toBe(400);
 
     const res = await call('GET', `/api/v1/mixes/live/${uid('a')}`);
+    let res2: Response;
     expect(res.status).toBe(200);
     body = await res.json();
     expect(body.seq).toBe(2);
@@ -114,10 +116,15 @@ describe('mixes en vivo', () => {
     expect(body.players).toHaveLength(6);
     expect(body.players[0]).toMatchObject({ side: 1, player_id: playerIds[2], alias: `Jv2${sfx}`, game_nick: `Nick2${sfx}`, steam_id: null });
     expect(typeof body.players[0].rating).toBe('number');
+    expect(body.players[0]).toHaveProperty('elo');
+    expect(body.players[0]).toHaveProperty('level');
     const etag = res.headers.get('ETag');
     expect(etag).toBeTruthy();
     expect((await call('GET', `/api/v1/mixes/live/${uid('a')}`, undefined, undefined, { 'If-None-Match': etag! })).status).toBe(304);
-    expect((await call('GET', `/api/v1/mixes/live/${uid('nada')}`)).status).toBe(404);
+    // Un uid que nunca existió: 404 sin match_id.
+    res2 = await call('GET', `/api/v1/mixes/live/${uid('nada')}`);
+    expect(res2.status).toBe(404);
+    expect((await res2.json()).error.details).toBeUndefined();
   });
 
   it('la PCW vinculada muestra el juego en curso con su orden de bandos', async () => {
@@ -141,7 +148,10 @@ describe('mixes interrumpidos', () => {
     res = await call('POST', `/api/v1/admin/mixes/live/${uid('a')}/close`, undefined, adminToken);
     expect(res.status).toBe(200);
     const { match_id } = await res.json();
-    expect((await call('GET', `/api/v1/mixes/live/${uid('a')}`)).status).toBe(404);
+    // Ya no está en vivo: el 404 trae la partida para pasar a la sala final.
+    res = await call('GET', `/api/v1/mixes/live/${uid('a')}`);
+    expect(res.status).toBe(404);
+    expect((await res.json()).error).toMatchObject({ code: 'NOT_FOUND', details: { match_id } });
     expect((await call('POST', `/api/v1/admin/mixes/live/${uid('a')}/close`, undefined, adminToken)).status).toBe(404);
 
     const d = await (await call('GET', `/api/v1/matches/${match_id}`)).json();
@@ -156,6 +166,9 @@ describe('mixes interrumpidos', () => {
     let list = await (await call('GET', `/api/v1/matches?kind=mix&review=pending&q=alfa${sfx}`)).json();
     expect(list.items.map((m: { id: string }) => m.id)).toContain(id);
     expect(list.items.find((m: { id: string }) => m.id === id)).toMatchObject({ cancel_reason: 'crash', review: 'pending' });
+    // El listado único de mixes también trae la revisión (chip "ELO pendiente").
+    const mixes = await (await call('GET', `/api/v1/mixes?server=${serverId}&per=100`)).json();
+    expect(mixes.items.find((m: { match_id: string | null }) => m.match_id === id)).toMatchObject({ status: 'cancelled', review: 'pending' });
 
     expect((await call('POST', `/api/v1/admin/mixes/${id}/apply-elo`, { confirm: 'estoy seguro' }, userToken)).status).toBe(403);
     expect((await call('POST', `/api/v1/admin/mixes/${id}/apply-elo`, { confirm: 'si' }, adminToken)).status).toBe(400);
@@ -165,6 +178,15 @@ describe('mixes interrumpidos', () => {
     expect(d).toMatchObject({ status: 'finished', end_reason: 'crash', winner_side: 1, parent_match_id: pcwId, review: 'applied' });
     expect(d.review_detail).toMatchObject({ status: 'applied', can_apply: false, blocked_reason: null });
     expect(d.players.every((p: { elo_delta: number | null }) => p.elo_delta !== null)).toBe(true);
+    // ELO actual y nivel de cada jugador: el de player_elo de su SteamID principal.
+    const elos = await admin().from('player_elo').select('steam_id, elo').in('steam_id', playerIds.map((_, i) => steam(i)));
+    if (elos.error) throw elos.error;
+    const byPlayer = new Map<string, number | null>(playerIds.map((pid, i) => [pid, elos.data.find((e) => e.steam_id === steam(i))?.elo ?? null]));
+    for (const p of d.players as { player_id: string; elo: number | null; level: number | null }[]) {
+      expect(p.elo).toBe(byPlayer.get(p.player_id));
+      expect(p.elo).not.toBeNull();
+      expect(p.level).toBe(levelOf(p.elo));
+    }
     const pcw = await (await call('GET', `/api/v1/matches/${pcwId}`)).json();
     expect(pcw).toMatchObject({ status: 'finished', side1: { score: 1 }, side2: { score: 0 } });
     expect(pcw.games.map((g: { id: string }) => g.id)).toContain(id);
@@ -187,6 +209,8 @@ describe('mixes interrumpidos', () => {
     expect((await call('POST', `/api/v1/admin/mixes/${tie}/discard`, undefined, adminToken)).status).toBe(404);
     const d = await (await call('GET', `/api/v1/matches/${tie}`)).json();
     expect(d).toMatchObject({ status: 'cancelled', review: 'discarded' });
+    const mixes = await (await call('GET', `/api/v1/mixes?server=${serverId}&per=100`)).json();
+    expect(mixes.items.find((m: { match_id: string | null }) => m.match_id === tie)).toMatchObject({ review: 'discarded' });
     res = await call('POST', `/api/v1/admin/mixes/${tie}/apply-elo`, { confirm: 'estoy seguro' }, adminToken);
     expect(res.status).toBe(400);
     expect((await res.json()).error.message).toMatch(/ya se revisó/);

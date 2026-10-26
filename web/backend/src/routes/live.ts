@@ -11,7 +11,7 @@ import { bearer, errorResponses, json } from '../schemas/common';
 import {
   ApplyEloBody, ClosedMix, DeletedMix, DeleteMixBody, LiveMixDetail, LiveMixList, LiveMixQuery, type LivePlayerLine, UidParam,
 } from '../schemas/live';
-import { LIVE_LIST, liveRounds, serverTvs, toLiveSummary, type LiveRow } from '../services/live';
+import { eloBySteam, eloLevel, LIVE_LIST, liveRounds, serverTvs, toLiveSummary, type LiveRow } from '../services/live';
 
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -31,7 +31,8 @@ const detail = createRoute({
   method: 'get', path: '/api/v1/mixes/live/{uid}', tags: ['Mixes en vivo'], middleware: [optionalUser] as const,
   summary: 'Detalle de un mix en vivo',
   description:
-    'Marcador, rondas y stats parciales de cada jugador. 404 cuando el mix terminó: su resultado está en `GET /api/v1/matches?kind=mix`. ' +
+    'Marcador, rondas y stats parciales de cada jugador. 404 cuando el mix terminó o un admin lo cerró: si la partida ya está guardada, ' +
+    'el error trae `details.match_id` para pasar a `GET /api/v1/matches/{id}`. ' +
     'Responde con `ETag`: con `If-None-Match` contesta `304` si no llegó una foto nueva.',
   request: { params: UidParam },
   responses: { 200: { description: 'Mix en vivo', ...json(LiveMixDetail) }, 304: { description: 'Sin cambios' }, ...errorResponses(400, 401, 404) },
@@ -115,12 +116,21 @@ export const live = createRouter()
       sb.from('live_matches').select('rounds:payload->rounds').eq('uid', uid).maybeSingle().then(must),
       sb.from('live_match_players').select('side, steam_id, player_id, game_nick, rounds, kills, deaths, assists, headshots, damage, rating, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('uid', uid).then(mustHave),
     ]);
-    if (!base) throw notFound('ese mix en vivo (si terminó, está en las partidas)');
+    if (!base) {
+      // Al terminar (o al cerrarlo un admin), csstv_ingest guarda el uid del mix en matches.external_id.
+      const done = must(await sb.from('matches').select('id').eq('external_id', uid).eq('kind', 'mix').maybeSingle());
+      if (done) throw new AppError(404, 'NOT_FOUND', 'Ese mix ya terminó.', { match_id: done.id });
+      throw notFound('ese mix en vivo (si terminó, está en las partidas)');
+    }
     const l = base as unknown as LiveRow;
     const rows = people as unknown as LivePlayerRow[];
 
     const linked = rows.map((r) => r.player_id).filter((x): x is string => !!x);
-    const aliases = linked.length ? new Map(mustHave(await sb.from('players').select('id, nick').in('id', linked)).map((x) => [x.id, x.nick])) : new Map<string, string>();
+    const fichas = linked.length ? mustHave(await sb.from('players').select('id, nick, steam_id').in('id', linked)) : [];
+    const aliases = new Map(fichas.map((x) => [x.id, x.nick]));
+    const primary = new Map(fichas.map((x) => [x.id, x.steam_id]));
+    const steamOf = (r: LivePlayerRow) => (r.player_id ? primary.get(r.player_id) : r.steam_id);
+    const elos = await eloBySteam(sb, rows.map(steamOf));
     const players: z.infer<typeof LivePlayerLine>[] = rows
       .map((r) => ({
         player_id: r.player_id,
@@ -131,6 +141,7 @@ export const live = createRouter()
         side: r.side,
         kills: r.kills, deaths: r.deaths, assists: r.assists, headshots: r.headshots, damage: r.damage, rounds: r.rounds,
         rating: r.rating === null ? null : Number(r.rating),
+        ...eloLevel(elos, steamOf(r)),
         k2: r.k2, k3: r.k3, k4: r.k4, k5: r.k5, first_kills: r.first_kills, first_deaths: r.first_deaths, plants: r.plants, defuses: r.defuses,
       }))
       .sort((a, b) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0));

@@ -1,4 +1,6 @@
 import type { z } from '@hono/zod-openapi';
+import { levelOf } from '../lib/db';
+import { fromPostgrest } from '../lib/errors';
 import type { Db } from '../lib/supabase';
 import type { LiveGameRef, LiveMixSummary, TvRef } from '../schemas/live';
 
@@ -74,4 +76,22 @@ export function liveRounds(raw: unknown) {
     side1_as: r.a_side === 'CT' || r.a_side === 'T' ? (r.a_side as 'CT' | 'T') : null,
     reason: typeof r.reason === 'number' ? r.reason : null,
   }));
+}
+
+/**
+ * ELO actual de cada SteamID (`player_elo`), en una sola consulta. Para una línea con ficha va el SteamID
+ * principal de la ficha; sin ficha, el de la línea. Bots y NOSTEAM no tienen fila: quedan sin ELO.
+ */
+export async function eloBySteam(sb: Db, steamIds: (string | null | undefined)[]): Promise<Map<string, number>> {
+  const ids = [...new Set(steamIds.filter((x): x is string => !!x))];
+  if (!ids.length) return new Map();
+  const { data, error } = await sb.from('player_elo').select('steam_id, elo').in('steam_id', ids);
+  if (error) throw fromPostgrest(error);
+  return new Map((data ?? []).map((r) => [r.steam_id, r.elo]));
+}
+
+/** `elo` y `level` de una línea de jugador a partir de `eloBySteam`. */
+export function eloLevel(elos: Map<string, number>, steamId: string | null | undefined): { elo: number | null; level: number | null } {
+  const elo = steamId ? (elos.get(steamId) ?? null) : null;
+  return { elo, level: levelOf(elo) };
 }

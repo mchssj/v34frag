@@ -23,7 +23,7 @@ import {
   type PlayerLine,
   type RosterPlayer,
 } from '../schemas/matches';
-import { LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
+import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
 import { clutchesOf, demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
@@ -198,9 +198,13 @@ export const matches = createRouter()
         ]);
     const clutchData = !series && !!clutchInfo?.clutch_data;
 
-    // Stats del mix con el alias de los jugadores vinculados.
+    // Stats del mix con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
     const linked = stats.map((s) => s.player_id).filter((x): x is string => !!x);
-    const aliases = linked.length ? new Map(mustHave(await sb.from('players').select('id, nick').in('id', linked)).map((p) => [p.id, p.nick])) : new Map<string, string>();
+    const fichas = linked.length ? mustHave(await sb.from('players').select('id, nick, steam_id').in('id', linked)) : [];
+    const aliases = new Map(fichas.map((p) => [p.id, p.nick]));
+    const primary = new Map(fichas.map((p) => [p.id, p.steam_id]));
+    const steamOf = (s: { player_id: string | null; steam_id: string }) => (s.player_id ? primary.get(s.player_id) : s.steam_id);
+    const elos = await eloBySteam(sb, stats.map(steamOf));
     const players: z.infer<typeof PlayerLine>[] = stats
       .map((s) => ({
         player_id: s.player_id, alias: s.player_id ? (aliases.get(s.player_id) ?? null) : null, game_nick: s.nick, side: s.team,
@@ -208,6 +212,7 @@ export const matches = createRouter()
         steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
         kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
         rating: s.rating, elo_delta: s.elo_delta,
+        ...eloLevel(elos, steamOf(s)),
         k2: s.k2, k3: s.k3, k4: s.k4, k5: s.k5, first_kills: s.first_kills, first_deaths: s.first_deaths, plants: s.plants, defuses: s.defuses,
         clutches: clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null,
       }))

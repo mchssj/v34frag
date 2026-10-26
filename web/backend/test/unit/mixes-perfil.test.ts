@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toMixItem } from '../../src/routes/mixes';
-import { toTv } from '../../src/services/live';
+import { eloLevel, toTv } from '../../src/services/live';
 import { likeExact } from '../../src/services/players';
 import { tvAddress } from '../../src/services/servers';
 
@@ -50,6 +50,25 @@ describe('toMixItem', () => {
     expect(r.mvp).toBeNull();
     expect(r.server).toBeNull();
     expect(r.demo_status).toBe('none');
+  });
+
+  it('review: el de match_list en un interrumpido; null en vivo y sin revisión', () => {
+    const cancelled = { ...base, status: 'cancelled', live_uid: null, match_id: '22222222-2222-4222-8222-222222222222' };
+    expect(toMixItem(cancelled, 'pending').review).toBe('pending');
+    expect(toMixItem(cancelled, 'applied').review).toBe('applied');
+    expect(toMixItem(cancelled).review).toBeNull();
+    expect(toMixItem(base, 'pending').review).toBeNull();
+  });
+});
+
+describe('eloLevel', () => {
+  const elos = new Map([['76561198000000001', 1360], ['76561198000000002', 400]]);
+  it('ELO actual y su nivel; sin fila o sin SteamID (bots, NOSTEAM), null', () => {
+    expect(eloLevel(elos, '76561198000000001')).toEqual({ elo: 1360, level: 7 });
+    expect(eloLevel(elos, '76561198000000002')).toEqual({ elo: 400, level: 1 });
+    expect(eloLevel(elos, 'BOT')).toEqual({ elo: null, level: null });
+    expect(eloLevel(elos, null)).toEqual({ elo: null, level: null });
+    expect(eloLevel(elos, undefined)).toEqual({ elo: null, level: null });
   });
 });
 
