@@ -90,7 +90,7 @@ Cada moderador se agrega en `configs/admins_simple.ini` con `"STEAM_0:X:Y"  "@Mo
 | `sm_live`, `sm_swap` | Cambiar el mapa con un mix en curso |
 | `sm_kick` | Desbanear ni banear para siempre (sin `e`, SourceMod no lo deja) |
 | `sm_ban` por tiempo, `sm_addban` | Votaciones de admin (`sm_votekick`, `sm_voteban`) |
-| `sm_mute`, `sm_gag`, `sm_silence` y sus `un-` | `sm_cvar`, `sm_execcfg`, `sm_rcon`, contraseña, cheats |
+| `sm_mute`, `sm_gag`, `sm_silence` y sus `un-` | `sm_cvar`, `sm_execcfg`, `sm_rcon`, cheats. La contraseña sí, desde el 2026-10-25, con `!pw`, `!npw` y `!rpw` ([`csstv_password`](../2026-10-25-plugin-password/DOCUMENTACION.md)) |
 | `sm_say`, `sm_csay`, `sm_psay` | Tocar a un admin (inmunidad 50 contra 99) |
 | `sm_slay`, `sm_slap`, `sm_rename`, `sm_beacon` | Ver "Cambiar mapa" en `sm_admin` |
 | `!map <mapa>` sin mix en curso | |
