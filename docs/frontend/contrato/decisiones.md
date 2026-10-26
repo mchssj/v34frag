@@ -139,3 +139,4 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-25 | Mejor valor de cada columna | Resaltado, como en HLTV | Daniel |
 | 2026-10-25 | Métricas que necesitan el plugin | En pausa (precisión, KAST, RWS, trades, clutches perdidos…): no sumarle carga al plugin por el riesgo de lag | Daniel |
 | 2026-10-25 | Aviso de `!claim` | La ficha sin cuenta no lleva aviso; el perfil sin reclamar lleva "¿Este SteamID es tuyo? Vincúlalo desde tu cuenta" con un botón a Mi perfil → Vincular con el servidor. El `!claim` se explica solo ahí | Daniel |
+| 2026-10-25 | Hosting: proveedor | El VPS pasa de Hostinger KVM 1 a **OVH VPS-1 en Hillsboro (Oregón)**, con Ubuntu 26.04 LTS (24.04 si OVH todavía no tiene la imagen). No cambia nada para el frontend: la URL de la API sigue siendo configurable | Daniel |
