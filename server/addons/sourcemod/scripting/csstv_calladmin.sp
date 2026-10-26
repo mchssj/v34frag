@@ -9,6 +9,7 @@
  *   - !map del moderador (acceso a csstv_mod_map, sin el flag g): solo sin mix en curso.
  *
  * El mensaje dice de qué servidor viene (csstv_calladmin_server): el servidor real y RBK mandan al mismo canal.
+ * El connect lleva la contraseña que tiene el servidor en ese momento (sv_password, la ponga !pw o quien sea).
  * Solo menciona al rol de csstv_calladmin_role (allowed_mentions): un @everyone escrito por un jugador no suena.
  * System2 limita el cuerpo de un POST a 2048 bytes: el mensaje se arma para no pasarse.
  *
@@ -29,7 +30,7 @@
 #include <sdktools>
 #include <system2>
 
-#define PLUGIN_VERSION   "1.0.1"
+#define PLUGIN_VERSION   "1.1.0"
 #define REASON_MAX       128
 #define BODY_MAX         2047     // límite de System2
 #define AWAIT_SECONDS    45       // "Otro": tiempo para escribir el motivo en el chat
@@ -97,7 +98,7 @@ public void OnPluginStart()
 	g_cvWebhook        = CreateConVar("csstv_calladmin_webhook", "", "URL del webhook de Discord del canal de reportes.", FCVAR_PROTECTED | FCVAR_DONTRECORD);
 	g_cvRole           = CreateConVar("csstv_calladmin_role", "1561742511045738526", "ID del rol de Discord a mencionar (vacío = sin mención).");
 	g_cvServer         = CreateConVar("csstv_calladmin_server", "", "Nombre del servidor en el mensaje (ej. CMLeague #1). Vacío = hostname.");
-	g_cvAddress        = CreateConVar("csstv_calladmin_address", "", "IP:puerto público para conectarse (vacío = ip y hostport del servidor).");
+	g_cvAddress        = CreateConVar("csstv_calladmin_address", "", "IP:puerto público para conectarse (vacío = ip y hostport del servidor). La contraseña la agrega el plugin.");
 	g_cvCooldown       = CreateConVar("csstv_calladmin_cooldown", "120", "Segundos entre dos reportes del mismo jugador.", _, true, 0.0, true, 3600.0);
 	g_cvGlobalCooldown = CreateConVar("csstv_calladmin_global_cooldown", "30", "Segundos entre dos reportes del servidor.", _, true, 0.0, true, 3600.0);
 	g_cvModMap         = CreateConVar("csstv_calladmin_modmap", "1", "El moderador (csstv_mod_map) puede cambiar el mapa sin mix en curso.", _, true, 0.0, true, 1.0);
@@ -350,7 +351,7 @@ void SendReport(int client, const char[] reasonIn)
 	char reason[REASON_MAX + 1];
 	strcopy(reason, sizeof(reason), reasonIn);
 
-	char name[MAX_NAME_LENGTH], auth[32], id64[24], server[64], host[64], address[64], map[PLATFORM_MAX_PATH];
+	char name[MAX_NAME_LENGTH], auth[32], id64[24], server[64], host[64], address[128], map[PLATFORM_MAX_PATH];
 	GetClientName(client, name, sizeof(name));
 	if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth)))
 		strcopy(auth, sizeof(auth), "sin SteamID");
@@ -360,7 +361,7 @@ void SendReport(int client, const char[] reasonIn)
 	g_cvServer.GetString(server, sizeof(server));
 	if (!server[0])
 		strcopy(server, sizeof(server), host);
-	ServerAddress(address, sizeof(address));
+	ServerConnect(address, sizeof(address));
 	GetCurrentMap(map, sizeof(map));
 
 	int ct, t, spec;
@@ -387,6 +388,8 @@ void SendReport(int client, const char[] reasonIn)
 	JsonEscape(server, eTitle, sizeof(eTitle), false);   // el título del embed no usa markdown
 	JsonEscape(host, eHost, sizeof(eHost), true);
 	JsonEscape(map, eMap, sizeof(eMap), true);
+	char eAddress[384];
+	JsonEscape(address, eAddress, sizeof(eAddress), false);   // va en un bloque de código: sin markdown
 
 	char reporter[256], reported[256], mixText[160], role[24], mention[48], title[160];
 	PlayerField(eName, auth, id64, reporter, sizeof(reporter));
@@ -418,7 +421,7 @@ void SendReport(int client, const char[] reasonIn)
 	if (g_bHasTarget[client])
 		Format(fields, sizeof(fields), "%s,{\"name\":\"Reportado\",\"value\":\"%s\",\"inline\":true}", fields, reported);
 	Format(fields, sizeof(fields), "%s,{\"name\":\"Servidor\",\"value\":\"%s%s%s%s\"}", fields, eHost,
-		address[0] ? "\\n`connect " : "", address, address[0] ? "`" : "");
+		address[0] ? "\\n`connect " : "", eAddress, address[0] ? "`" : "");
 	Format(fields, sizeof(fields), "%s,{\"name\":\"Mapa\",\"value\":\"%s\\nCT %d · T %d · espect. %d\",\"inline\":true}", fields, eMap, ct, t, spec);
 	Format(fields, sizeof(fields), "%s,{\"name\":\"Mix\",\"value\":\"%s\",\"inline\":true},{\"name\":\"Hora\",\"value\":\"<t:%d:f>\",\"inline\":true}",
 		fields, mixText, GetTime());
@@ -536,9 +539,26 @@ void ClientKey(int client, char[] key, int len)
 		GetClientIP(client, key, len);
 }
 
+/** "IP:puerto; password <sv_password>", o "IP:puerto" si no hay contraseña. Vacío si no se sabe la dirección. */
+void ServerConnect(char[] out, int len)
+{
+	ServerAddress(out, len);
+	if (!out[0])
+		return;
+	char pw[64];
+	FindConVar("sv_password").GetString(pw, sizeof(pw));
+	if (pw[0])
+		Format(out, len, "%s; password %s", out, pw);
+}
+
 void ServerAddress(char[] out, int len)
 {
 	g_cvAddress.GetString(out, len);
+	// El cfg viejo traía "IP:puerto; password ...": la contraseña ahora sale de sv_password.
+	int semi = FindCharInString(out, ';');
+	if (semi != -1)
+		out[semi] = '\0';
+	TrimString(out);
 	if (out[0])
 		return;
 	char ip[32];
