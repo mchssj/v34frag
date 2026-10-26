@@ -619,6 +619,31 @@ grant select on public.admin_claim_log to authenticated;
 -- =====================================================================================================
 -- 10. Reclamos viejos: los aprobados pasan al registro y la tabla se borra
 -- =====================================================================================================
+-- Antes, el aprobado que perdió el vínculo se vuelve a vincular: el panel de admin viejo vaciaba
+-- players.user_id al editar la ficha con el buscador de cuentas filtrado (10 fichas al 2026-10-25).
+-- Solo si la ficha sigue sin cuenta, nadie más la tiene aprobada y la cuenta no tiene otra ficha.
+with r as (
+  select distinct on (r.user_id) r.user_id, r.player_id
+    from public.profile_requests r
+    join public.players p on p.id = r.player_id and p.user_id is null
+   where r.status = 'approved'
+     and exists (select 1 from auth.users u where u.id = r.user_id)
+     and not exists (select 1 from public.players x where x.user_id = r.user_id)
+     and (select count(distinct r2.user_id) from public.profile_requests r2
+           where r2.player_id = r.player_id and r2.status = 'approved') = 1
+   order by r.user_id, r.created_at desc)
+update public.players p set user_id = r.user_id from r where p.id = r.player_id;
+
+do $$
+declare n int;
+begin
+  select count(*) into n
+    from public.profile_requests r join public.players p on p.id = r.player_id
+   where r.status = 'approved' and p.user_id is distinct from r.user_id
+     and exists (select 1 from auth.users u where u.id = r.user_id);
+  if n > 0 then raise notice 'replanteo 15: % reclamos aprobados quedan sin vincular (revisar a mano)', n; end if;
+end $$;
+
 insert into public.claim_log(user_id, player_id, ok, result, created_at)
 select r.user_id, r.player_id, r.status = 'approved', 'Reclamo de perfil (sistema viejo): ' || r.status, r.created_at
   from public.profile_requests r
