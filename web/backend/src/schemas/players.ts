@@ -103,6 +103,16 @@ export const PublicDetails = z
   })
   .openapi('PublicDetails');
 
+// Baneo activo (plan docs/bitacora/2026-10-25-baneos-web). El resto de los baneos está en schemas/bans.ts.
+export const ActiveBan = z
+  .object({
+    id: z.uuid(),
+    reason: z.string(),
+    created_at: z.string(),
+    expires_at: z.string().nullable().openapi({ description: '`null`: permanente' }),
+  })
+  .openapi('ActiveBan', { description: 'Baneo activo en los servidores' });
+
 export const PlayerDetail = PlayerSummary.extend({
   steam_id: z.string().nullable().openapi({ description: 'SteamID principal. Solo para el dueño y los admins: para los demás, null' }),
   steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío' }),
@@ -114,6 +124,7 @@ export const PlayerDetail = PlayerSummary.extend({
   stats: PlayerStatsDetail.nullable().openapi({ description: 'null si no jugó partidas terminadas' }),
   details: PublicDetails.nullable().openapi({ description: 'Datos personales. null si no tiene cuenta o si su perfil es privado' }),
   private: z.boolean().openapi({ description: 'true si los datos personales están ocultos por privacidad' }),
+  ban: ActiveBan.nullable().openapi({ description: 'Baneo activo en los servidores; null si no está baneado. Historial: /players/{id}/bans' }),
 }).openapi('PlayerDetail', {
   description: 'Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches',
 });

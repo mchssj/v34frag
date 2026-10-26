@@ -90,6 +90,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 | **Rating, K/D y equipos en el ranking de una temporada** (2026-10-25) | `GET /api/v1/seasons/{id}/standings` suma `teams` (equipos oficiales actuales), `rating` y `kd` (de los mixes de la temporada; guardados en la foto del cierre), los filtros `level` (`10`, `7-9`, `1-6`) y `team`, y el orden por `rating` y `kd` | Sección [8f](temporadas.md) |
 | **Aviso de `!claim` (aclaración)** (2026-10-25) | La ficha sin cuenta ya no muestra "¿Sos vos? Vinculala con `!claim`". El perfil sin reclamar muestra "¿Este SteamID es tuyo? Vincúlalo desde tu cuenta" con un botón a `/profile/link`. Sin cambios en la API | Sección [5b](jugadores.md) |
 | **Pedidos de Mixes** (2026-10-25) | `GET /api/v1/mixes/live/{uid}`: el `404` de un mix que ya terminó trae `error.details.match_id`. `PlayerLine` y `LivePlayerLine` suman `elo` y `level` (ELO actual). `MixItem` suma `review` (chip "ELO pendiente"). Sin cambios que rompan | Sección [8](partidas.md) |
+| **Baneos y rol de moderador** (nuevo, 2026-10-26) | Rol `moderator` en `user.role` (banea; todos los roles juegan). `GET /api/v1/bans` (lista pública), `GET /api/v1/players/{id}/bans`, `POST /api/v1/admin/bans`, `PATCH /api/v1/admin/bans/{id}` y `POST /api/v1/admin/bans/{id}/lift`. La ficha y el perfil sin reclamar suman `ban` (activo o `null`) | Secciones [5](jugadores.md) y [9](admin.md) |
 
 El chat de texto del servidor (vivos y muertos leen todo) y la voz por fases son cosas del servidor de juego: no afectan a la web.
 

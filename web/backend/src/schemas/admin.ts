@@ -161,7 +161,7 @@ export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedL
 
 export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
-  role: z.enum(['user', 'organizer', 'admin']).optional(),
+  role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),
   has_player: boolParam('Con o sin jugador vinculado'),
   has_steam: boolParam('Con o sin SteamID vinculado'),
 });

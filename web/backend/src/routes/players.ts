@@ -26,6 +26,7 @@ import {
   TitleQuery,
   type PlayerSummary,
 } from '../schemas/players';
+import { activeBan } from '../services/bans';
 import { resolvePlayer } from '../services/players';
 import { stageLabel } from '../services/stages';
 import { clutchesOf } from '../services/matches';
@@ -234,10 +235,11 @@ export const players = createRouter()
     // Los SteamID nunca salen en el perfil público: solo para el dueño y los admins.
     const user = currentUser(c);
     const seesSteam = !!user && (user.id === player.user_id || (await isAdmin(c)));
-    const [stats, clutchRows, details] = await Promise.all([
+    const [stats, clutchRows, details, ban] = await Promise.all([
       sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('player_id', id).maybeSingle().then(must),
       sb.from('player_clutches').select('vs, won').eq('player_id', id).then(mustHave),
       player.user_id ? sb.from('profile_details').select(DETAILS).eq('user_id', player.user_id).maybeSingle().then(must) : Promise.resolve(null),
+      activeBan(sb, { player: id }),
     ]);
     return c.json(
       {
@@ -254,6 +256,7 @@ export const players = createRouter()
         stats: stats ? { ...stats, clutches: clutchesOf(clutchRows) } : null,
         details: details ?? null,
         private: !!player.user_id && !details,
+        ban,
       },
       200,
     );

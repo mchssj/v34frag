@@ -26,6 +26,7 @@ import {
 } from '../schemas/claim';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { MapStatsQuery, PlayerMapStatsList, PlayerMatchList, PlayerMatchQuery } from '../schemas/players';
+import { activeBan } from '../services/bans';
 
 // Perfiles sin reclamar, !claim y varios SteamID por ficha (plan docs/bitacora/2026-10-16-claim-steamid).
 // El !claim en sí lo hace el plugin contra claim_with_code; acá están el código, el estado y lo del admin.
@@ -208,13 +209,14 @@ export const claim = createRouter()
     const { steamid } = c.req.valid('param');
     const sb = c.var.sb;
     const owner = must(await sb.from('player_steam_all').select('player_id').eq('steam_id', steamid).maybeSingle());
-    if (owner?.player_id) return c.json({ steam_id: steamid, claimed: true, player_id: owner.player_id, profile: null }, 200);
-    const [row, stats] = await Promise.all([
+    if (owner?.player_id) return c.json({ steam_id: steamid, claimed: true, player_id: owner.player_id, profile: null, ban: null }, 200);
+    const [row, stats, ban] = await Promise.all([
       sb.from('steam_profile_list').select(UNCLAIMED).eq('steam_id', steamid).maybeSingle().then(must),
       sb.from('steam_profile_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses').eq('steam_id', steamid).maybeSingle().then(must),
+      activeBan(sb, { steam: steamid }),
     ]);
     if (!row) throw notFound('un perfil con ese SteamID');
-    return c.json({ steam_id: steamid, claimed: false, player_id: null, profile: { ...toUnclaimed(row), stats: stats ?? null } }, 200);
+    return c.json({ steam_id: steamid, claimed: false, player_id: null, profile: { ...toUnclaimed(row), stats: stats ?? null }, ban }, 200);
   })
   .openapi(steamMatches, async (c) => {
     const { steamid } = c.req.valid('param');

@@ -7,7 +7,8 @@
 | Pantalla | Endpoints | Estado |
 |---|---|---|
 | Formatos de PCW | `PUT /api/v1/admin/pcw/formats` | Disponible |
-| Organizadores | `PUT /api/v1/admin/users/{id}/role` (`user` u `organizer`); la lista sale de `GET /api/v1/admin/users` | Disponible |
+| Roles | `PUT /api/v1/admin/users/{id}/role` (`user`, `organizer` o `moderator`; desde el 2026-10-26 también `moderator`); la lista sale de `GET /api/v1/admin/users` (filtro `role`). Todos los roles juegan; el admin además organiza y modera. El rol admin se da en la base | Disponible |
+| Baneos | Ver "Baneos (moderadores y admins)" abajo | Disponible |
 | Catálogo de mapas | `GET /api/v1/maps?include_inactive=true` y `PUT /api/v1/admin/maps`: la lista completa en orden, con versiones, `active` (disponible; `false` = retirado), `mixes` (sale en el select de Mixes) y `veto_default` (pool por defecto del veto). **No borra:** tiene que traer todos los mapas que existen (si falta uno, `400`). Al menos 2 en el pool por defecto, y un retirado no puede estar en él. `mixes` y `veto_default` que no vienen quedan como estaban (en un mapa nuevo, como `active`) | Disponible |
 | Foto de un mapa | `POST /api/v1/admin/maps/{name}/image` (`multipart/form-data`, campo `file`, JPG/PNG/WebP de hasta 2 MB; reemplaza a la anterior) y `DELETE` de la misma ruta para quitarla. Devuelven el mapa. Es el fondo del marcador de la sala del mix y vale para todas sus versiones | Disponible |
 | Resultado de una PCW | `POST /api/v1/admin/pcw/matches/{id}/result` (`{ maps }`) | Disponible |
@@ -26,6 +27,19 @@
 | ELO | Ver "ELO (admin)" abajo | Disponible |
 | Clips | Ver "Clips (admin)" abajo | Disponible |
 | Demos | Ver "Demos (admin)" abajo | Disponible |
+
+### Baneos (moderadores y admins)
+
+Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-web/PLAN.md). Un baneo vale en **todos los servidores** (también RBK), se aplica al conectarse y, a quien ya está jugando (aunque sea un mix), lo echa la sincronización de cada 3 minutos y de cada cambio de mapa, o al momento si un moderador o admin escribe `!syncbans` en el servidor (conviene decirlo en el formulario de "Banear") y no avisa por Discord ni por notificación. Los servidores lo aplican cuando tengan el plugin `csstv_bans` (después del corte).
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Lista | `GET /api/v1/bans` (la pública; moderadores y admins ven también el SteamID de los baneos con ficha y buscan por él) | Filtros `status` (`active`, `expired`, `lifted`), `source` (`web`, `server`, `import`), `server` y `q`. `sort`: **`created_at` desc** (también `expires_at`) |
+| Banear | `POST /api/v1/admin/bans` con `player_id` **o** `steam_id`, `reason` (hasta 200) y `expires_at` **o** `permanent: true` | Una ficha vale para todos sus SteamID (también los que sume después); necesita SteamID. Un SteamID con ficha banea la ficha. **Permanente, solo un admin:** al moderador no se le muestra la opción. Reemplaza al baneo activo que tuviera (queda levantado con `lifted.replaced_by`); un moderador no puede reemplazar uno permanente (`403`) |
+| Cambiar | `PATCH /api/v1/admin/bans/{id}` con `reason`, `expires_at` o `permanent: true` | Solo un baneo activo. Un moderador cambia cualquiera que no sea permanente y no puede volverlo permanente |
+| Levantar | `POST /api/v1/admin/bans/{id}/lift` con `reason` | No se borra: queda como `lifted`, con quién y por qué. Uno permanente, solo un admin |
+
+Los errores de permiso llegan como `403` con el mensaje para mostrar ("Solo un admin puede banear de forma permanente"); los de datos, como `400`.
 
 ### Servidores (admin)
 

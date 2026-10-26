@@ -142,3 +142,8 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-25 | Mix en vivo que terminó | El `404` de `/mixes/live/{uid}` trae `details.match_id` (por `matches.external_id`); sin endpoint nuevo | Propuesta, aprobada por Daniel |
 | 2026-10-25 | Nivel de cada jugador en la sala | ELO **actual** (como el MVP del listado), no el de esa partida; también en PCW y torneos | Daniel |
 | 2026-10-25 | "ELO pendiente" en el listado de mixes | `review` en cada fila del listado; sin filtro nuevo (el admin ya tiene `/matches?review=pending`) | Propuesta, aprobada por Daniel |
+| 2026-10-25 | Alcance de un baneo | Todos los servidores, incluido RBK; se aplica en el momento aunque haya un mix en curso; lista pública; sin avisos | Daniel |
+| 2026-10-25 | Quién banea desde la web | Moderadores y admins; permanente, solo un admin | Daniel |
+| 2026-10-26 | Qué levanta o cambia un moderador | Cualquier baneo que no sea permanente | Daniel |
+| 2026-10-26 | Rol de moderador | Un rol más en `role` (`moderator`). Todos los roles juegan; el admin además organiza y modera | Daniel |
+| 2026-10-26 | SteamID en la lista de baneos | Público solo en los baneos sin ficha (como los perfiles sin reclamar); con ficha, solo moderadores y admins | Propuesta, por la regla de SteamID ocultos del 2026-10-24 |

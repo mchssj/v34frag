@@ -5,7 +5,134 @@ export type Database = {
   
   "public": {
           Tables: {
-            "blocked_words": {
+            "bans": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"created_by_name": string | null,"created_by_steam": string | null,"expires_at": string | null,"id": string,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_name": string | null,"lifted_by_steam": string | null,"nick": string | null,"player_id": string | null,"reason": string,"replaced_by": string | null,"server_id": string | null,"source": string,"steam_id": string,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason": string,"replaced_by"?: string | null,"server_id"?: string | null,"source": string,"steam_id": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason"?: string,"replaced_by"?: string | null,"server_id"?: string | null,"source"?: string,"steam_id"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bans_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_lifted_by_fkey"
+      columns: ["lifted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_lifted_by_fkey"
+      columns: ["lifted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_lifted_by_fkey"
+      columns: ["lifted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_replaced_by_fkey"
+      columns: ["replaced_by"]
+isOneToOne: false
+      referencedRelation: "ban_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_replaced_by_fkey"
+      columns: ["replaced_by"]
+isOneToOne: false
+      referencedRelation: "bans"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"blocked_words": {
                   Row: {
                     "created_at": string,"created_by": string | null,"id": string,"word": string
                   }
@@ -1693,6 +1820,79 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"ban_list": {
+                  Row: {
+                    "created_at": string | null,"created_by": string | null,"created_by_alias": string | null,"created_by_name": string | null,"expires_at": string | null,"id": string | null,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_alias": string | null,"lifted_by_name": string | null,"nick": string | null,"permanent": boolean | null,"player_id": string | null,"reason": string | null,"replaced_by": string | null,"search": string | null,"search_all": string | null,"server_id": string | null,"server_name": string | null,"source": string | null,"status": string | null,"steam_id": string | null,"updated_at": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bans_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_lifted_by_fkey"
+      columns: ["lifted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_lifted_by_fkey"
+      columns: ["lifted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_lifted_by_fkey"
+      columns: ["lifted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_replaced_by_fkey"
+      columns: ["replaced_by"]
+isOneToOne: false
+      referencedRelation: "ban_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_replaced_by_fkey"
+      columns: ["replaced_by"]
+isOneToOne: false
+      referencedRelation: "bans"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bans_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"event_group_double_standings": {
                   Row: {
                     "event_id": string | null,"grp": number | null,"lost": number | null,"place": number | null,"rounds_against": number | null,"rounds_diff": number | null,"rounds_for": number | null,"seed": number | null,"state": string | null,"team_id": string | null,"won": number | null
@@ -2867,6 +3067,56 @@ isOneToOne: false
 "approve_team_request":
 { Args: { "p_user": string }; Returns: string
                            },
+"ban_active_for":
+{ Args: { "p_steam": string }; Returns: {
+              "created_at": string,
+"created_by": string | null,
+"created_by_name": string | null,
+"created_by_steam": string | null,
+"expires_at": string | null,
+"id": string,
+"lift_reason": string | null,
+"lifted_at": string | null,
+"lifted_by": string | null,
+"lifted_by_name": string | null,
+"lifted_by_steam": string | null,
+"nick": string | null,
+"player_id": string | null,
+"reason": string,
+"replaced_by": string | null,
+"server_id": string | null,
+"source": string,
+"steam_id": string,
+"updated_at": string,
+"updated_by": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "bans"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
+"ban_create":
+{ Args: { "p_expires": string,"p_player": string,"p_reason": string,"p_steam": string }; Returns: string
+                           },
+"ban_insert":
+{ Args: { "p_by": string,"p_by_name": string,"p_by_steam": string,"p_expires": string,"p_nick": string,"p_player": string,"p_reason": string,"p_server": string,"p_source": string,"p_steam": string }; Returns: string
+                           },
+"ban_lift":
+{ Args: { "p_id": string,"p_reason": string }; Returns: undefined
+                           },
+"ban_owner":
+{ Args: { "p_player": string,"p_steam": string }; Returns: string
+                           },
+"ban_steams":
+{ Args: { "p_player": string,"p_steam": string }; Returns: (string)[]
+                           },
+"ban_unix":
+{ Args: { "p_expires": string }; Returns: number
+                           },
+"ban_update":
+{ Args: { "p_expires": string,"p_id": string,"p_permanent"?: boolean,"p_reason": string }; Returns: undefined
+                           },
 "blocked_names_hits":
 { Args: Record<PropertyKey, never>; Returns: {
               "id": string,"kind": string,"name": string,"word": string
@@ -2955,6 +3205,18 @@ isOneToOne: false
                            },
 "csstv_auth":
 { Args: { "p_token": string }; Returns: string
+                           },
+"csstv_ban_add":
+{ Args: { "p_admin_name": string,"p_admin_steam": string,"p_minutes": number,"p_nick": string,"p_reason": string,"p_steam": string,"p_token": string }; Returns: Json
+                           },
+"csstv_ban_check":
+{ Args: { "p_steam": string,"p_token": string }; Returns: Json
+                           },
+"csstv_ban_lift":
+{ Args: { "p_admin_name": string,"p_admin_steam": string,"p_steam": string,"p_token": string }; Returns: Json
+                           },
+"csstv_bans_since":
+{ Args: { "p_cursor"?: string,"p_token": string }; Returns: Json
                            },
 "csstv_check_token":
 { Args: { "p_token": string }; Returns: Record<string, unknown>
@@ -3170,6 +3432,9 @@ isOneToOne: false
                            },
 "is_match_participant":
 { Args: { "p_match": string }; Returns: boolean
+                           },
+"is_moderator":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "is_organizer":
 { Args: Record<PropertyKey, never>; Returns: boolean
