@@ -19,6 +19,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** `!calladmin` con Discord y rol de moderador (`csstv_calladmin` 1.0.0), pedido por Daniel el 2026-10-19 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-19**, todavía sin moderadores (punto 1.9). El webhook y el ID del rol `@MOD` están en el `.env` (`DISCORD_CALLADMIN_WEBHOOK`, `DISCORD_MOD_ROLE_ID`).
 - **Excepción:** consejos de comandos en el chat cada 3 minutos y el Discord al terminar la partida (reporter **2.4.0**), pedido por Daniel el 2026-10-20. Aprobado, hecho, probado con bots y **desplegado el 2026-10-20** en los dos servidores (punto 1.12).
 - **Excepción:** clips automáticos (reporter **2.5.0**), pedido por Daniel el 2026-10-23 para que los clips se vayan juntando antes de la web nueva. Aprobado, hecho, probado con bots y **desplegado el 2026-10-23** en la base y los dos servidores (punto 1.16).
+- **Excepción:** contraseña del servidor con `!pw`, `!npw` y `!rpw` para admins y moderadores (`csstv_password` 1.0.0), pedido por Daniel el 2026-10-25 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-25** (punto 1.19).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
 ## Decisiones anotadas para planes futuros
@@ -269,6 +270,8 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 ### 1.15 HUD de observer (`csstv_hud` 1.0.0): subido solo al servidor real, sin probar
 
+- **2026-10-25:** ya no está en el servidor real (lo sacó kyan, según Daniel). Sigue en RBK con `csstv_hud "0"`.
+
 - **Excepción pedida por Daniel el 2026-10-22:** sin pruebas en el servidor local y **solo al servidor real**. Desde el 2026-10-23 RBK también lo tiene (1.1.0), con `csstv_hud "0"`.
 - **Subido el 2026-10-22** al servidor real (`SFTP_CSS_*`), verificado bajándolo de nuevo:
   - `addons/sourcemod/plugins/csstv_hud.smx` (14738 bytes, md5 `72645cac9e61aa5ad768586eee72d06d`).
@@ -334,6 +337,24 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** ver en el próximo mix de cada servidor que el cambio de lados conserva el marcador, y publicar `bitacora/2026-10-24-medio-tiempo-3s/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-24-medio-tiempo-3s`](bitacora/2026-10-24-medio-tiempo-3s/)
 
+### 1.19 Contraseña del servidor (`csstv_password` 1.0.0): verificar en los dos servidores
+
+- **Subido el 2026-10-25** al servidor real (`SFTP_CSS_*`) y a RBK (`SERVER1_*`): `addons/sourcemod/plugins/csstv_password.smx` (md5 `b5329c68684f643457b2e3dd503620cd`, el mismo en los dos, sin licencia) y `cfg/sourcemod/csstv_password.cfg`. Verificado bajándolos de nuevo. Se carga en el próximo cambio de mapa; no se recargó nada.
+- `!pw <contraseña>`, `!npw` y `!rpw` con flag `b` (moderadores y admins). Solo quien la puso ve el valor. Se mantiene entre mapas; con un reinicio vuelve la del `server.cfg`.
+- **Ojo en el servidor real:** su `server.cfg` tiene una contraseña de siempre. Después de un `!npw`, el servidor queda **abierto** hasta el próximo reinicio o hasta un `!pw`.
+- **Falta verificar** en cada servidor después del cambio de mapa: `sm plugins list` (`CSSTV Password (1.0.0)`), un `!rpw` y conectarse con otro cliente con y sin la contraseña, y un `!npw`. Publicar `bitacora/2026-10-25-plugin-password/CHANGELOG_DISCORD.txt`.
+- **Si algo falla:** `csstv_pw_enabled 0` (en la consola y en el cfg) o mover el `.smx` a `plugins/disabled/`.
+- **Encontrado al desplegar:** en el servidor real **no está `csstv_hud.smx`** (ni en `plugins/` ni en `disabled/`), aunque el punto 1.15 dice que se subió la 1.1.0. Su cfg sí está, modificado el 2026-10-24 desde el panel. En RBK sí está. Según Daniel (2026-10-25), lo sacó kyan.
+- **`!calladmin` con la contraseña actual (`csstv_calladmin` 1.1.0): subido el 2026-10-25 al servidor real y a RBK** (md5 `68272891142181ede191604b122e9827`; la 1.0.1 quedó en `plugins/disabled/` y el cfg viejo en `csstv_calladmin.cfg.bak_20261025`). El connect del reporte lleva el `sv_password` de ese momento, y `csstv_calladmin_address` quedó solo con IP:puerto. **Falta verificar** después del cambio de mapa: `sm plugins list` (`CSSTV CallAdmin (1.1.0)`) y un `!calladmin` de prueba después de un `!rpw`. Bitácora: [`2026-10-25-calladmin-password-actual`](bitacora/2026-10-25-calladmin-password-actual/).
+- **Bitácora:** [`2026-10-25-plugin-password`](bitacora/2026-10-25-plugin-password/)
+
+### 1.20 Fichas que perdieron el vínculo con su cuenta: se arreglan en el corte
+
+- **10 fichas** con el reclamo aprobado y sin cuenta en producción: juanma, Lukas, vodka, notions, instt, rbk, odreaz, daniloev, always y aksev. Causa probable: el panel de admin viejo vaciaba `players.user_id` al editar una ficha con el buscador de cuentas filtrado.
+- **Hecho el 2026-10-25 (local):** la migración `15` las vincula en el corte y la base local ya está corregida.
+- **La web vieja no se toca** (Daniel, 2026-10-25): hasta el corte su panel puede desvincular más fichas al editarlas; la `15` también las levanta si el reclamo sigue aprobado. Opcional, con OK de Daniel: vincular las 10 en producción antes del corte.
+- **Bitácora:** [`2026-10-25-vinculos-perdidos`](bitacora/2026-10-25-vinculos-perdidos/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
@@ -395,8 +416,9 @@ Daniel quiere que el director automático de la SourceTV siga mostrando las kill
 
 | Plan | Qué propone | Qué falta |
 |---|---|---|
-| [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS de Hostinger. La parte de despliegue hay que replanearla para el VPS |
-| [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS de Hostinger: servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
+| [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS (OVH desde el 2026-10-25). La parte de despliegue hay que replanearla para el VPS |
+| [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS (OVH VPS-1 en Hillsboro, Ubuntu 26.04, desde el 2026-10-25; el plan dice Hostinger y los cambios están en su guía): servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
+| [`2026-10-25-baneos-web`](bitacora/2026-10-25-baneos-web/PLAN.md) | Baneos en una lista única de Supabase para todos los servidores, gestionados desde la web (admins y moderadores; permanente solo admin), lista pública y plugin `csstv_bans` que los aplica al conectarse y cada 30 s | Aprobación de Daniel. El plugin va al final o como excepción, y necesita la tabla en producción (corte) |
 
 ## 4. Verificaciones que nunca se hicieron
 
@@ -424,7 +446,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 
 - **Bitácora:** [`2026-10-14-backend-base-auth-perfil`](bitacora/2026-10-14-backend-base-auth-perfil/). Cómo trabajar en el backend: [`web/backend/README.md`](../web/backend/README.md).
 - **`.env` de la raíz:** la línea 30 se llama `PG_PASSWORD` pero tiene el usuario. Tiene que ser `PG_USER=postgres.<ref del proyecto>` (el valor está en Supabase → Connect → Session pooler) (usuario del *Session pooler*). Hasta que se corrija, `supabase/schema/volcar.sh` necesita `PGUSER` y `PGPASSWORD` a mano.
-- **Hosting decidido:** VPS KVM 1 de Hostinger con dominio propio. Cloudflare se queda solo con el Worker de demos y R2. El despliegue (build, servicio de Node, Caddy con HTTPS, DNS, pipeline y SMTP para Supabase Auth) tiene plan propio, sin aprobar: [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md).
+- **Hosting decidido:** VPS **OVH VPS-1 en Hillsboro, Oregón** (2 vCPU, 4 GB, 40 GB NVMe), con dominio propio y **Ubuntu 26.04 LTS** (24.04 si OVH todavía no tiene la imagen). Reemplaza al KVM 1 de Hostinger (cambio de Daniel del 2026-10-25): está al lado de la Supabase de producción (`us-west-2`), tiene backup diario y sale más barato. Se contrata en `us.ovhcloud.com` (cuenta aparte de la de ovhcloud.com) y en un VPS de datacenter, no de Local Zone. Cloudflare se queda solo con el Worker de demos y R2. El despliegue (build, servicio de Node, Caddy con HTTPS, DNS, pipeline y SMTP para Supabase Auth) tiene plan propio, sin aprobar: [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md).
 - **Después de esta fase**, en este orden (decidido por Daniel):
   1. ~~**Fase de "replantear" módulos**~~: **terminada el 2026-10-15**, solo en local (migraciones 01 a 08 en `supabase/replanteo/`, más la `09` de jugadores y equipos; se aplican en el corte). Ver [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
   2. ~~**Endpoints de dominio**~~: **terminados el 2026-10-16**, solo en local. Cada uno con su plan:
