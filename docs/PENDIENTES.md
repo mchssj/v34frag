@@ -341,6 +341,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **La web vieja no se toca** (Daniel, 2026-10-25): hasta el corte su panel puede desvincular más fichas al editarlas; la `15` también las levanta si el reclamo sigue aprobado. Opcional, con OK de Daniel: vincular las 10 en producción antes del corte.
 - **Bitácora:** [`2026-10-25-vinculos-perdidos`](bitacora/2026-10-25-vinculos-perdidos/)
 
+### 1.21 Demos de RBK a R2: verificar con el primer mix de RBK
+
+- **Desplegado el 2026-10-26:**
+  - Worker `v34frag-demos` versión `1475d128`, con el secreto `PTERO_KEY_edbee7d6` (la key del panel de RBK, `SERVER1_PANEL_API_KEY` en el `.env`).
+  - En producción, `game_servers.panel_server_id = 'edbee7d6'` para RBK.
+  - En RBK (`SERVER1_*`), `csstv_demo "1"`, con la copia `csstv_reporter.cfg.bak_20261026`. Se aplica en el próximo cambio de mapa.
+- RBK ya tenía `+tv_enable 1 +tv_port 27063` en el arranque del panel. Nuestro servidor no cambia.
+- **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
+- **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

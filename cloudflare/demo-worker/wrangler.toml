@@ -28,3 +28,4 @@ SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 # Secretos (no van en este archivo):
 #   en desarrollo: .dev.vars (lo genera scripts/dev-vars.py desde el .env de la raíz)
 #   en producción: pnpm exec wrangler secret put PTERO_PANEL_API_KEY / DEMO_WORKER_TOKEN / ADMIN_KEY
+#   y una key por servidor de otra cuenta del panel: PTERO_KEY_<panel_server_id> (RBK: PTERO_KEY_edbee7d6)

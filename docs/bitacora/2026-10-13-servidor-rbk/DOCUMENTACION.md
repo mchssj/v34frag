@@ -22,12 +22,12 @@ sequenceDiagram
 | Acceso SFTP | Variables `SERVER1_*` del `.env` (alias `RBK_SERVER`), raíz con `cstrike/` |
 | SourceMod | 1.8.0.6040 (el nuestro es 1.10). El plugin se compila con los includes de 1.8, así que es compatible. |
 | MetaMod | Idéntico al nuestro |
-| Demos | Desactivadas (`csstv_demo 0`). La línea de arranque tampoco tiene `+tv_enable 1`. |
+| Demos | **Activadas desde el 2026-10-26** (`csstv_demo 1`, ver [`2026-10-26-demos-rbk`](../2026-10-26-demos-rbk/)). Antes estaban en `csstv_demo 0`. La línea de arranque real (la del panel, no el `start.sh` de la raíz) tiene `+tv_enable 1 +tv_port 27063`: lo que decía esta fila antes era un error. |
 | Mapas para votar | Su `mapcycle.txt`: `$2000$`, `de_aztec`, `de_cache`, `de_cbble`, `de_cpl_mirage`, `de_cpl_strike`, `de_dust2`, `de_inferno`, `de_inferno_classic`, `de_mirage_csgo`, `de_nuke`, `de_nuke_old_blue_ep`, `de_season`, `de_train`, `de_tuscan` |
 
-## Qué falta para tener demos
+## Demos
 
-El Worker de R2 baja cada demo por la API del panel Pterodactyl de nuestra cuenta. Para RBK haría falta una API key de cliente de la cuenta de RBK (o acceso a su servidor desde la nuestra) y que el Worker sepa de qué panel bajar cada partida según el servidor. Después, `+tv_enable 1` en su arranque y `csstv_demo 1`.
+~~El Worker de R2 baja cada demo por la API del panel Pterodactyl de nuestra cuenta. Para RBK haría falta una API key de cliente de la cuenta de RBK.~~ **Hecho el 2026-10-26:** el Worker usa la key del panel de RBK para su servidor (`PTERO_KEY_edbee7d6`). Ver [`2026-10-26-demos-rbk`](../2026-10-26-demos-rbk/DOCUMENTACION.md).
 
 ## Dónde está cada cosa
 

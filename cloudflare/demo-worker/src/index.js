@@ -2,7 +2,8 @@
  * Worker de demos de v34frag (ver docs/bitacora/2026-10-12-demos-r2-worker).
  *
  * Cron cada 10 minutos: pide a Supabase las partidas con la demo pendiente (demo_pending), baja cada
- * demo del servidor por la API de Pterodactyl y la sube a R2 en stream (sin cargarla en memoria).
+ * demo del servidor por la API de Pterodactyl (con la key de ese servidor, ver panelKey) y la sube a R2
+ * en stream (sin cargarla en memoria).
  * Marca el resultado con demo_mark y, si DELETE_AFTER_UPLOAD = "true", borra la demo del servidor.
  * Cron diario: demo_expire marca como vencidas las que pasaron RETENTION_DAYS (R2 las borra con su regla).
  *
@@ -189,11 +190,19 @@ function friendlyName(m) {
 // APIs
 // ---------------------------------------------------------------------------------------------
 
+/**
+ * Key del panel para un servidor: PTERO_KEY_<panel_server_id> si existe (otra cuenta, como RBK) y, si no,
+ * PTERO_PANEL_API_KEY (la de nuestra cuenta). Ver docs/bitacora/2026-10-26-demos-rbk.
+ */
+function panelKey(env, server) {
+  return env[`PTERO_KEY_${server}`] || env.PTERO_PANEL_API_KEY;
+}
+
 async function ptero(env, server, path, body) {
   const resp = await fetch(`${env.PTERO_PANEL_URL}/api/client/servers/${server}${path}`, {
     method: body ? 'POST' : 'GET',
     headers: {
-      Authorization: `Bearer ${env.PTERO_PANEL_API_KEY}`,
+      Authorization: `Bearer ${panelKey(env, server)}`,
       Accept: 'application/json',
       'Content-Type': 'application/json',
       'User-Agent': 'v34frag-demos',
