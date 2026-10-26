@@ -112,6 +112,14 @@ Ordenado por urgencia.
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
+**Plugins que esperan la web nueva** (salen o se prenden en el corte, en el servidor real y en RBK en la misma tanda):
+
+| Plugin | Estado | Qué falta en el corte |
+|---|---|---|
+| `!match` (en el reporter desde la 2.1.0) | Subido a los dos servidores; responde con error hasta que exista `csstv_match_lookup` (replanteo `07`) | Nada que subir. Verificar `!match ZZZZZ` y hacer las pruebas manuales con jugadores (punto 4) |
+| `!claim` (en el reporter desde la 2.3.0) | Subido a los dos servidores, apagado con `csstv_claim "0"` | `csstv_claim "1"` en el cfg de los dos (punto 1.10) |
+| `csstv_bans` (plugin nuevo, por hacer) | Base y API hechas en local (replanteo `31`); el plugin no existe todavía | Hacerlo y probarlo con bots antes del corte; importar los `banned_user.cfg` del real y de RBK; subir el genérico al real y el licenciado a RBK. Sincroniza cada 3 minutos, al empezar cada mapa y con `!syncbans` (punto 6, "Baneos gestionados desde la web") |
+
 - **Base:** `supabase/replanteo/01` a `21`, en orden, con respaldo previo. La `16` necesita la migración de mixes en vivo (`20261017120000`), ya aplicada en producción. La `09` aborta si hay alias repetidos sin distinguir mayúsculas, la `10` si hay roles desconocidos y la `12` si hay nombres de servidor repetidos o IPs permitidas inválidas, y la `14` si hay Workers de demos con el mismo nombre (en la copia del 2026-10-14 no hay ninguno de esos casos).
 - **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
 - **La `23` (`!whois`) necesita las migraciones de producción `20261019180000_whois.sql` y `20261020120000_whois_menu.sql`** (puntos 1.10 y 1.11) aplicadas antes. En el corte, `csstv_claim "1"` en los dos servidores.
@@ -125,7 +133,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - Pasos en [`2026-10-25-pool-mapas-torneos-pcw`](bitacora/2026-10-25-pool-mapas-torneos-pcw/GUIA_IMPLEMENTACION.md).
 - **Plugin 2.2.0 con `!claim`** (bitácora `2026-10-16-claim-steamid`, que lo llama 2.1.0: el número pasó a los mixes en vivo, punto 1.7): **hecho y probado con bots el 2026-10-18**, sin desplegar. Sale en esta misma tanda: genérico al servidor real y licenciado a RBK. Pasos en [`2026-10-18-plugin-claim`](bitacora/2026-10-18-plugin-claim/GUIA_IMPLEMENTACION.md).
 - ~~**`sm_status`**~~: revisado el 2026-10-17 con `smx_grep.py` sobre todos los plugins de los dos servidores: ninguno lo registra.
-- **Plugin 2.0.0:** ya está subido dentro de la 2.1.0 (punto 1.7), en el servidor real y en RBK. En el corte solo falta subir la 2.2.0 (`!claim`, ya hecha), por los mismos accesos y con el mismo cuidado (genérico al servidor real, licenciado a RBK).
+- **Plugin 2.0.0:** ya está subido dentro de la 2.1.0 (punto 1.7), en el servidor real y en RBK. `!claim` (la 2.2.0) también está subido, dentro de la 2.3.0 (punto 1.10): en el corte solo falta prenderlo con `csstv_claim "1"`.
 - **Verificar después del corte:** `!match ZZZZZ` responde "No hay ninguna partida con ese código".
 - **Changelog** para Discord: `bitacora/2026-10-15-match-y-status/CHANGELOG_DISCORD.txt` y `bitacora/2026-10-18-plugin-claim/CHANGELOG_DISCORD.txt`.
 - **Bitácoras:** [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/) y [`2026-10-15-match-y-status`](bitacora/2026-10-15-match-y-status/) (pasos exactos en su `GUIA_IMPLEMENTACION.md`).
@@ -418,7 +426,6 @@ Daniel quiere que el director automático de la SourceTV siga mostrando las kill
 |---|---|---|
 | [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS (OVH desde el 2026-10-25). La parte de despliegue hay que replanearla para el VPS |
 | [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS (OVH VPS-1 en Hillsboro, Ubuntu 26.04, desde el 2026-10-25; el plan dice Hostinger y los cambios están en su guía): servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
-| [`2026-10-25-baneos-web`](bitacora/2026-10-25-baneos-web/PLAN.md) | Baneos en una lista única de Supabase para todos los servidores, gestionados desde la web (admins y moderadores; permanente solo admin), lista pública y plugin `csstv_bans` que los aplica al conectarse y cada 30 s | Aprobación de Daniel. El plugin va al final o como excepción, y necesita la tabla en producción (corte) |
 
 ## 4. Verificaciones que nunca se hicieron
 
@@ -467,6 +474,10 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
      - ~~Ajustes manuales de ELO desde el admin y sin "Recalcular ELO"~~: **hechos el 2026-10-21**, solo en local (migración `25`, `/api/v1/admin/elo/adjustments` y `GET /api/v1/players/{id}/elo-adjustments`; se borraron `POST /api/v1/admin/elo/recompute` y `/simulate`). Probados en local (pruebas SQL, unitarias y de integración). La web vieja conserva su botón hasta el corte (pedido de Daniel). Falta el frontend. Ver [`2026-10-21-ajustes-elo-admin`](bitacora/2026-10-21-ajustes-elo-admin/DOCUMENTACION.md).
      - **"Olvidé mi contraseña"** (pendiente): necesita el envío de correos (Resend, plan del VPS). Cuando esté, `POST /auth/recover` con el enlace al frontend y la pantalla para poner la nueva.
      - ~~Mixes en vivo e interrumpidos~~: **hechos el 2026-10-17**, solo en local (migración `16` y endpoints `/api/v1/mixes/live*`, `/api/v1/admin/mixes/*` y `review` en partidas). Aprobar el ELO pide doble confirmación y vincula el juego si se jugaba con `!match`. Ver [`2026-10-17-api-mixes-en-vivo`](bitacora/2026-10-17-api-mixes-en-vivo/DOCUMENTACION.md).
+- **Baneos gestionados desde la web** (plan aprobado el 2026-10-26): **base y API hechas el 2026-10-26**, solo en local (replanteo `31`, rama `feat/backend-api-fase-1`). Tabla `bans` (lista única para todos los servidores, incluido RBK), rol `moderator` (permanente solo admin; el moderador cambia o levanta cualquiera que no sea permanente), funciones del plugin (`csstv_ban_check`, `csstv_bans_since`, `csstv_ban_add`, `csstv_ban_lift`) y `/api/v1/bans`, `/api/v1/players/{id}/bans` y `/api/v1/admin/bans*`. Ver [`2026-10-25-baneos-web`](bitacora/2026-10-25-baneos-web/DOCUMENTACION.md). Falta, en este orden:
+  - el frontend: página pública "Baneos", Administración › Baneos, el botón "Banear", el aviso en la ficha y `moderator` en los roles de Administración;
+  - el plugin `csstv_bans` (congelado hasta el final, o como excepción si Daniel la pide): consulta al conectarse, sincronización cada 3 minutos y al empezar cada mapa (no cada 30 s, para no cargar el #1; Daniel, 2026-10-26) y `!syncbans` para moderadores y admins. También la importación de los `banned_user.cfg` del real y de RBK;
+  - el despliegue con la web nueva (Daniel, 2026-10-26): el plugin, en el servidor real y en RBK (build licenciado) en la misma tanda. Está en la lista de plugins que esperan la web nueva (punto 1.5).
 - ~~**Maestra de mapas**~~ (pedido por Daniel el 2026-10-24): **backend hecho el 2026-10-25**, solo en local (replanteo `30`). Es el catálogo `map_pool`:
   - un mapa disponible o retirado (no se borra);
   - `mixes`: el select de Mixes;
