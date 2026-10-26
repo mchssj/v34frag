@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-10-25, sin commit ni despliegue. Hay 284 pruebas unitarias y de componentes en verde, y el lint y el typecheck pasan. Las pantallas se revisaron con capturas contra la API local. **Faltan las pruebas de Playwright** (ver "Pruebas").
+Implementado y probado en local el 2026-10-25, sin commit ni despliegue. Hay 286 pruebas unitarias y de componentes en verde, y el lint y el typecheck pasan. Las pantallas se revisaron con capturas contra la API local. **Faltan las pruebas de Playwright** (ver "Pruebas").
 
 ## Archivos
 
@@ -34,7 +34,7 @@ Ninguno todavía. Sale con la web nueva, después del corte del replanteo `30` (
 
 ### Unitarias y de componentes (Vitest con MSW)
 
-`pnpm test`: 39 archivos y 284 pruebas en verde. Las nuevas cubren:
+`pnpm test`: 39 archivos y 286 pruebas en verde. Las nuevas cubren:
 - el catálogo (select y foto por versión);
 - las fórmulas de cada pestaña, con los divisores en 0;
 - el mejor valor (empates, menos es mejor, todos en 0) y el orden;
@@ -78,6 +78,11 @@ Cambió `shell.spec.ts`: la prueba de la campana con datos de ejemplo pasó a se
 - **Solicitudes:** la pestaña muestra también las resueltas, con su estado. El número de la pestaña cuenta solo las pendientes.
 - **Formato de los decimales:** "Jugadas clave" usa punto, como el resto de la app ("1.9 por partida"). El mockup tenía coma.
 - **Playwright:** sin correr (ver "Pruebas").
+- **Avanzado (pedido de Daniel después de ver la sala):**
+  - sin la columna RP: las rondas jugadas solo se muestran, debajo del nombre, cuando alguien jugó menos que el mix;
+  - "Plantadas" y "Defuses" pasan a "Bombas plantadas" y "Bombas desactivadas", también en "Jugadas clave".
+
+  En la copia local, 26 de 491 líneas de jugador tienen menos rondas que el marcador y ninguna tiene más. Pruebas: 286 en verde.
 
 ## Pendiente
 

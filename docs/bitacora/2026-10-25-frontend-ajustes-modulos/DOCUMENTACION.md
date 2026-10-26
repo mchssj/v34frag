@@ -57,13 +57,14 @@ flowchart LR
 | Pestaña | Columnas |
 |---|---|
 | General | K · D · A · +/- · K/R · ADR · HS · HS % · 2k · 3k · 4k · 5k · Rating · Δ ELO |
-| Avanzado | MK · MK % · RP · Plantadas · Defuses |
+| Avanzado | MK · MK % · Bombas plantadas · Bombas desactivadas |
 | Entrada | Intentos · Elim. · Muertes · Dif. · % intentos · % éxito |
 | Clutch | 1v1 a 1v5 · Total, con "Solo clutches ganados." debajo |
 
 - **Clutch:**
   - sin `clutch_data`: "Sin datos de Clutches disponibles.";
   - en vivo: "Los clutches se cuentan al terminar el mix.", y la tabla no tiene Δ ELO.
+- **Rondas parciales:** no hay columna de rondas jugadas. Si un jugador jugó menos rondas que el mix (la suma del marcador), debajo de su nombre dice "12/22 rondas", en todas las pestañas: entró tarde, reemplazó a alguien o se fue antes. En un mix completo no aparece (`partialRounds`).
 - **Tablas:** son de ancho fijo, con la columna del jugador fija al desplazar de lado. Así las columnas de los dos bandos quedan alineadas.
 
 ## Perfil: "Jugadas clave" (`features/player/KeyPlays.tsx`)
@@ -75,7 +76,7 @@ Sale de `stats` de la ficha y va debajo de Logros y Ajustes de ELO:
 | Multi-kills | 2k, 3k, 4k y 5k, y multi-kills por partida |
 | Entradas | % de éxito y entradas por ronda |
 | Clutches ganados | 1v1 a 1v5 y el total. El 1v4 y el 1v5 en color primario si son mayores que 0 |
-| Objetivos | Plantadas y defuses |
+| Objetivos | Bombas plantadas y bombas desactivadas |
 
 Sin partidas: "Todavía no jugó partidas en el servidor."
 
