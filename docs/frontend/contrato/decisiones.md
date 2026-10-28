@@ -153,6 +153,9 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-28 | VIP: extender | El período nuevo empieza donde termina el vigente; a un lifetime no se le da un temporal | Propuesta, aprobada con el plan |
 | 2026-10-28 | VIP: qué es público | Solo si es VIP hoy (`vip: true/false`); las fechas y las notas, el dueño y los admins | Propuesta, aprobada con el plan |
 | 2026-10-28 | VIP en producción antes del corte | La tabla, `is_vip()`, dar y quitar y las vistas, en la migración `20261028120000_vip.sql`; los avisos, en el replanteo `32` | Daniel |
+| 2026-10-28 | Clips VIP | Los VIP no cuentan en el top de 5: cada VIP suma aparte sus 3 mejores jugadas del mix (configurable), después del top y antes de las forzadas; también en Discord | Daniel |
+| 2026-10-28 | Clips VIP: de cuándo | El VIP que tenía el jugador cuando se jugó el mix | Daniel |
+| 2026-10-28 | Reprocesar un clip | Lo marca un admin; el video nuevo sube a Drive y sale en Discord solo después del "Bien" del admin, otra vez si ya había salido (sin borrar el mensaje viejo). En la web nueva; en la vieja no (hasta entonces, desde la base) | Daniel |
 | 2026-10-28 | Tamaño del plantel | Hasta 10 miembros por defecto, configurable por el admin (2 a 30); sin topes por estado (activo, suplente, coach) | Daniel |
 | 2026-10-28 | Activos en torneos | Los del modo de juego del torneo (`game_modes`: 1v1, 2v2, 3v3, 5v5; 5v5 por defecto); suplentes de 0 a 4 según el organizador | Daniel |
 | 2026-10-28 | Quién se inscribe | El capitán elige los activos entre los miembros; el coach nunca se inscribe (si juega, lo decide el organizador fuera de la plataforma) | Daniel |

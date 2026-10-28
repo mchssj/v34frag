@@ -155,6 +155,8 @@ El servidor anota las jugadas destacadas de cada ronda en vivo (incluida la pró
   Los demás estados no tienen video: `pending` (en cola) y `processing` (grabándose) se muestran como "Video en camino"; `failed`, `skipped` y `unavailable` (la partida no tiene demo) como "Sin video", y la jugada se muestra igual con la ronda y el segundo de la demo. Los videos se graban solos y la lista no avisa cuando cambian: se ven al volver a pedir el listado.
 - **Partidas canceladas o interrumpidas:** sus clips se muestran igual.
 - **Cambia la escala:** si un admin la cambia (sección [9](admin.md)), el orden y los topes cambian al instante en todas las partidas.
+- **Clips VIP (`vip`, desde el 2026-10-28):** los VIP no cuentan en el top: cada uno suma aparte sus mejores jugadas (`vip_per_match`, hoy 3), a continuación del top. `vip: true` marca esas jugadas: mostrar una marca VIP en la tarjeta. Cuenta el VIP que tenía el jugador cuando se jugó el mix.
+- **Reprocesado (`review`, desde el 2026-10-28):** solo para admins (`null` para los demás). `pending`: un admin lo mandó a grabar de nuevo y falta el "Bien"; a los demás les llega como `video.status: "pending"` ("Video en camino"), sin video. `approved`: se aprobó. Para un admin, mostrar "Reprocesar" en cada clip con video (o fallido) y, si está `pending` con el video listo, "Bien" (sección [9](admin.md)).
 
 ## 8h. Estadísticas de partida estilo HLTV (disponible desde el 2026-10-25)
 

@@ -294,7 +294,9 @@ def process_match(cfg, api, r2, drive, job):
             st, got = r2.head(key)
             if st != 200 or got != size:
                 raise RuntimeError(f"R2 HEAD {st}: {got} de {size} bytes")
-            drive_id = drive.upload(out, f"{m['played_at'][:10]} {m['map']} {c['type']} {j['player']}.mp4",
+            # Un reprocesado (docs/bitacora/2026-10-28-clips-vip-y-reprocesar) lleva la marca, para encontrarlo en Drive.
+            again = f" (reproceso {c['reprocess']})" if c.get("review") == "pending" and c.get("reprocess") else ""
+            drive_id = drive.upload(out, f"{m['played_at'][:10]} {m['map']} {c['type']} {j['player']}{again}.mp4",
                                     m["played_at"][:10]) if drive else None
             ok = api.rpc("clip_render_done", p_clip=c["id"], p_key=key, p_bytes=size, p_seconds=seconds,
                          p_drive_id=drive_id)

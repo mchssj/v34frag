@@ -109,7 +109,19 @@ Escala y topes de las jugadas destacadas (sección [8g](partidas.md)).
 | `priorities` | 1 a 99 por tipo (`ace`, `clutch_5`, `clutch_4`, `4k`, `clutch_3`, `3k`, `clutch_2`, `clutch_1`) | 1 es lo más valioso. Empates: primero la jugada de una ronda ganada, después la ronda más tardía. De fábrica: ace 1, 1v5 y 1v4 2, 4k 3, 1v3 4, 3k 5, 1v2 6, 1v1 7 |
 | `per_player` | 1 a 10 | Clips por jugador en cada partida (por ficha: sus SteamID suman juntos) |
 | `per_match` | 1 a 50 | Clips por partida |
+| `vip_per_match` | 0 a 10 | Clips de cada VIP por partida, aparte del top (desde el 2026-10-28; 0 los apaga). Etiqueta: "Clips por VIP" |
 | `split_gap_seconds`, `pre_seconds`, `post_seconds` | 1 a 60, 0 a 15, 0 a 15 | Para el video (fase C, todavía no existe): cortar el clip si pasan más de esos segundos entre dos kills, y márgenes antes y después. Se pueden mostrar como "Video (próximamente)" |
+
+#### Reprocesar un clip (desde el 2026-10-28)
+
+Plan: [`docs/bitacora/2026-10-28-clips-vip-y-reprocesar/`](../../bitacora/2026-10-28-clips-vip-y-reprocesar/PLAN.md). Cuando un video sale con errores, el admin lo manda a grabar de nuevo; el video nuevo sube a Drive y **no sale en Discord hasta que el admin lo marca "Bien"** (si ya había salido, se publica otra vez).
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Reprocesar | `POST /api/v1/admin/clips/{id}/reprocess` | Solo un clip de la lista ya grabado (o fallido) y con la demo todavía en R2 (90 días). Responde el clip (`review: "pending"`, `video.status: "pending"`). El video viejo se borra de R2 y de Drive. Errores con el mensaje para mostrar (`400`, `BUSINESS_RULE`): "Esa jugada todavía no se grabó: ya está en la cola", "Esa jugada se está grabando ahora: espera a que termine", "La demo de ese mix ya no está: no se puede volver a grabar" |
+| Para revisar | `GET /api/v1/admin/clips/review` | **Administración › Clips › "Para revisar"**: `clip` (el clip completo), `match` (`id`, `map`, `played_at`), `reprocess_count` y `reprocessed_at`. Del más viejo al más nuevo. Con `clip.video.status: "done"`, el video nuevo está en `clip.video.embed_url` (Drive) o `url`: mostrarlo ahí mismo con "Bien" y "Reprocesar otra vez"; si no, "Grabándose" |
+| Bien | `POST /api/v1/admin/clips/{id}/approve` | Solo un reprocesado con el video listo ("El video nuevo todavía no está listo" si no). Responde el clip (`review: "approved"`) |
+
 
 ### Ajustes manuales de ELO (admin, desde el 2026-10-21)
 
