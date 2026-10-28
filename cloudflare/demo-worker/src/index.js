@@ -2,9 +2,12 @@
  * Worker de demos de v34frag (ver docs/bitacora/2026-10-12-demos-r2-worker).
  *
  * Cron cada 10 minutos: pide a Supabase las partidas con la demo pendiente (demo_pending), baja cada
- * demo del servidor por la API de Pterodactyl (con la key de ese servidor, ver panelKey) y la sube a R2
- * en stream (sin cargarla en memoria).
+ * demo del servidor por la API de Pterodactyl (con el panel y la key de ese servidor, ver panelFor) y la sube
+ * a R2 en stream (sin cargarla en memoria).
  * Marca el resultado con demo_mark y, si DELETE_AFTER_UPLOAD = "true", borra la demo del servidor.
+ * Si el servidor no tiene key o el panel no deja entrar (401/403/404, 5xx o sin respuesta), la pasa a la cola
+ * de SFTP con demo_fallback, sin gastar intento: la baja la tarea del VPS
+ * (ver docs/bitacora/2026-10-28-demos-servidores-externos).
  * Cron diario: demo_expire marca como vencidas las que pasaron RETENTION_DAYS (R2 las borra con su regla).
  *
  * Rutas:
@@ -53,27 +56,53 @@ async function uploadPending(env) {
   out.pending = pending.length;
   if (!pending.length) return out;
 
-  // Un listado por servidor del panel (normalmente uno solo).
+  // Un listado por servidor del panel (normalmente uno solo). Si el listado falla por acceso, se guarda el
+  // error y todas las demos de ese servidor pasan a SFTP en esta vuelta.
   const listings = new Map();
   for (const m of pending) {
     const r = { uid: m.external_id };
     out.results.push(r);
     try {
       if (!UID_RE.test(m.external_id)) throw new Error('uid inválido');
-      if (!listings.has(m.panel_server_id)) listings.set(m.panel_server_id, await listDemos(env, m.panel_server_id));
-      const file = listings.get(m.panel_server_id).get(`${m.external_id}.dem`);
+      const panel = panelFor(env, m);
+      if (!panel.key) {
+        await toSftp(env, m, r, 'el servidor no tiene key del panel');
+        continue;
+      }
+      if (!listings.has(m.panel_server_id)) {
+        listings.set(m.panel_server_id, await listDemos(env, panel).catch((e) => {
+          if (e instanceof PanelError && e.fallback) return e;
+          throw e;
+        }));
+      }
+      const listing = listings.get(m.panel_server_id);
+      if (listing instanceof PanelError) {
+        await toSftp(env, m, r, listing.message);
+        continue;
+      }
+      const file = listing.get(`${m.external_id}.dem`);
       if (!file) {
         r.status = await supabase(env, 'demo_mark', { p_uid: m.external_id, p_result: 'retry' });
         r.note = 'la demo no está en el servidor';
         continue;
       }
       const key = r2Key(m);
-      const size = await copyToR2(env, m.panel_server_id, file, key);
+      let size;
+      try {
+        size = await copyToR2(env, panel, file, key);
+      } catch (e) {
+        if (e instanceof PanelError && e.fallback) {
+          await toSftp(env, m, r, e.message);
+          continue;
+        }
+        throw e;
+      }
       r.status = await supabase(env, 'demo_mark', { p_uid: m.external_id, p_result: 'uploaded', p_key: key, p_size: size });
+      r.via = 'api';
       r.key = key;
       r.size = size;
       if (env.DELETE_AFTER_UPLOAD === 'true') {
-        await ptero(env, m.panel_server_id, '/files/delete', { root: env.DEMO_DIR, files: [file.name] });
+        await ptero(panel, '/files/delete', { root: env.DEMO_DIR, files: [file.name] });
         r.deleted = true;
       }
     } catch (e) {
@@ -88,9 +117,15 @@ async function uploadPending(env) {
   return out;
 }
 
+/** La API no sirve para esta demo: a la cola de SFTP (sin gastar intento). */
+async function toSftp(env, m, r, reason) {
+  r.fallback = reason;
+  r.status = await supabase(env, 'demo_fallback', { p_uid: m.external_id, p_reason: reason });
+}
+
 /** Demos del servidor: Map nombre -> { name, size }. */
-async function listDemos(env, server) {
-  const list = await ptero(env, server, `/files/list?directory=${encodeURIComponent(env.DEMO_DIR)}`);
+async function listDemos(env, panel) {
+  const list = await ptero(panel, `/files/list?directory=${encodeURIComponent(env.DEMO_DIR)}`);
   const map = new Map();
   for (const { attributes: f } of list.data) if (f.is_file && f.name.endsWith('.dem')) map.set(f.name, { name: f.name, size: f.size });
   return map;
@@ -122,8 +157,8 @@ async function saveCrash(env, request) {
 }
 
 /** Baja la demo del nodo y la sube a R2 en stream. Devuelve el tamaño subido; falla si no coincide. */
-async function copyToR2(env, server, file, key) {
-  const dl = await ptero(env, server, `/files/download?file=${encodeURIComponent(`${env.DEMO_DIR}/${file.name}`)}`);
+async function copyToR2(env, panel, file, key) {
+  const dl = await ptero(panel, `/files/download?file=${encodeURIComponent(`${env.DEMO_DIR}/${file.name}`)}`);
   const resp = await fetch(dl.attributes.url, { headers: { 'User-Agent': 'v34frag-demos' } });
   if (!resp.ok || !resp.body) throw new Error(`el nodo respondió ${resp.status}`);
   const len = Number(resp.headers.get('content-length'));
@@ -191,25 +226,45 @@ function friendlyName(m) {
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Key del panel para un servidor: PTERO_KEY_<panel_server_id> si existe (otra cuenta, como RBK) y, si no,
- * PTERO_PANEL_API_KEY (la de nuestra cuenta). Ver docs/bitacora/2026-10-26-demos-rbk.
+ * Panel y key de un servidor (ver docs/bitacora/2026-10-26-demos-rbk y 2026-10-28-demos-servidores-externos):
+ *   - URL: game_servers.panel_url o, si está vacía, PTERO_PANEL_URL (Extreme Host).
+ *   - Key: PTERO_KEY_<panel_server_id> si existe (otra cuenta, como RBK) y, si no, PTERO_PANEL_API_KEY (la de
+ *     nuestra cuenta), pero solo en nuestro panel: nunca se manda a otro. Sin key, la demo va por SFTP.
  */
-function panelKey(env, server) {
-  return env[`PTERO_KEY_${server}`] || env.PTERO_PANEL_API_KEY;
+function panelFor(env, m) {
+  return {
+    server: m.panel_server_id,
+    url: m.panel_url || env.PTERO_PANEL_URL,
+    key: env[`PTERO_KEY_${m.panel_server_id}`] || (m.panel_url ? null : env.PTERO_PANEL_API_KEY),
+  };
 }
 
-async function ptero(env, server, path, body) {
-  const resp = await fetch(`${env.PTERO_PANEL_URL}/api/client/servers/${server}${path}`, {
-    method: body ? 'POST' : 'GET',
-    headers: {
-      Authorization: `Bearer ${panelKey(env, server)}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'User-Agent': 'v34frag-demos',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!resp.ok) throw new Error(`Pterodactyl ${path.split('?')[0]}: HTTP ${resp.status}`);
+/** Error del panel. fallback: es de acceso (401/403/404, 5xx o sin respuesta) y la demo puede ir por SFTP. */
+class PanelError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.fallback = status === 0 || status === 401 || status === 403 || status === 404 || status >= 500;
+  }
+}
+
+async function ptero(panel, path, body) {
+  const what = `Pterodactyl ${path.split('?')[0]}`;
+  let resp;
+  try {
+    resp = await fetch(`${panel.url}/api/client/servers/${panel.server}${path}`, {
+      method: body ? 'POST' : 'GET',
+      headers: {
+        Authorization: `Bearer ${panel.key}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'v34frag-demos',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    throw new PanelError(`${what}: sin respuesta (${e && e.message ? e.message : e})`, 0);
+  }
+  if (!resp.ok) throw new PanelError(`${what}: HTTP ${resp.status}`, resp.status);
   return resp.status === 204 ? null : resp.json();
 }
 
