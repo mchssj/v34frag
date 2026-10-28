@@ -101,7 +101,7 @@ No bloquean nada, pero quedaron anotadas como pendientes.
 - `configs/adminmenu_cfgs.txt` tiene una sección sin cerrar (línea 33) y `basecommands` lo reporta en cada mapa.
 - `CM_PickupWeapon.smx` no puede escribir su cfg por permisos.
 - En `extensions/` hay archivos de CSS:DM (13/10, 22:50) sin ningún plugin que los use. Habría que preguntar quién los subió y si se pueden borrar.
-- `start.sh` en la raíz no es lo que usa el panel: el arranque real lo define Pterodactyl (puerto 27062 en la consola). Ver la nota de `+tv_enable 1` en la bitácora `2026-10-11-qol-servidor`.
+- `start.sh` en la raíz no es lo que usa el panel: el arranque real lo define Pterodactyl (el puerto 27062 era el de ExtremeHost; en MVZG es 27016). Ver la nota de `+tv_enable 1` en la bitácora `2026-10-11-qol-servidor`.
 
 ## 6. Backend API (`web/backend`)
 
@@ -128,5 +128,5 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
   - Las pruebas se hacen con bots en `$2000$` y equipos desparejos (3 contra 1), con la build de depuración (`spcomp csstv_reporter.sp CSSTV_DEBUG=`) y `csstv_debug_fakecmd <userid> <comando>`.
   - **Envía a la Supabase real:** poner `csstv_send 0` después de cada carga del cfg y vaciar `data/csstv/queue/` antes de reiniciar.
   - Scripts en `docs/bitacora/2026-10-13-plugin-1-6-0/pruebas/lib.sh`.
-- **Servidor real:** ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (RBK) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (RBK) en la misma tanda (ver `CLAUDE.md`).
+- **Servidor real:** MVZG desde octubre de 2026, antes ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. IP 190.104.34.3, puerto 27016. El TCP del puerto del juego está bloqueado en el nodo por un DDoS al RCON: ver [`DDOS_SERVIDOR.md`](DDOS_SERVIDOR.md) y pedirle lo mismo a cualquier host nuevo. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (RBK) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (RBK) en la misma tanda (ver `CLAUDE.md`).
 - **Pruebas de SQL:** PostgreSQL 18 local (`initdb` + `pg_ctl` en un puerto libre), `docs/bitacora/2026-10-11-elo-jugadores/pruebas/stub_supabase.sql`, todas las migraciones en orden y después los `pruebas_*.sql`.
