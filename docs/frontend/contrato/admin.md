@@ -9,6 +9,7 @@
 | Formatos de PCW | `PUT /api/v1/admin/pcw/formats` | Disponible |
 | Roles | `PUT /api/v1/admin/users/{id}/role` (`user`, `organizer` o `moderator`; desde el 2026-10-26 también `moderator`); la lista sale de `GET /api/v1/admin/users` (filtro `role`). Todos los roles juegan; el admin además organiza y modera. El rol admin se da en la base | Disponible |
 | Baneos | Ver "Baneos (moderadores y admins)" abajo | Disponible |
+| VIP | Ver "VIP (admin)" abajo | Disponible (2026-10-28) |
 | Catálogo de mapas | `GET /api/v1/maps?include_inactive=true` y `PUT /api/v1/admin/maps`: la lista completa en orden, con versiones, `active` (disponible; `false` = retirado), `mixes` (sale en el select de Mixes) y `veto_default` (pool por defecto del veto). **No borra:** tiene que traer todos los mapas que existen (si falta uno, `400`). Al menos 2 en el pool por defecto, y un retirado no puede estar en él. `mixes` y `veto_default` que no vienen quedan como estaban (en un mapa nuevo, como `active`) | Disponible |
 | Foto de un mapa | `POST /api/v1/admin/maps/{name}/image` (`multipart/form-data`, campo `file`, JPG/PNG/WebP de hasta 2 MB; reemplaza a la anterior) y `DELETE` de la misma ruta para quitarla. Devuelven el mapa. Es el fondo del marcador de la sala del mix y vale para todas sus versiones | Disponible |
 | Resultado de una PCW | `POST /api/v1/admin/pcw/matches/{id}/result` (`{ maps }`) | Disponible |
@@ -40,6 +41,20 @@ Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-
 | Levantar | `POST /api/v1/admin/bans/{id}/lift` con `reason` | No se borra: queda como `lifted`, con quién y por qué. Uno permanente, solo un admin |
 
 Los errores de permiso llegan como `403` con el mensaje para mostrar ("Solo un admin puede banear de forma permanente"); los de datos, como `400`.
+
+### VIP (admin)
+
+Plan: [`docs/bitacora/2026-10-28-vip-fase-0/`](../../bitacora/2026-10-28-vip-fase-0/PLAN.md). El VIP es de la **cuenta** (no de la ficha). Se cobra por fuera de la web: el admin lo carga a mano. Cada vez que se da es un período; nada se borra, se quita. **Vence solo** al pasar la fecha.
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Lista (Administración › VIP) | `GET /api/v1/admin/vips` | Cada cuenta que fue VIP: `user` (`id`, `alias`), `player` (`id`, `photo_url`, o `null`), `status` (`lifetime`, `active`, `revoked` o `expired`), `active`, `lifetime`, `until` (fin del VIP vigente; `null` si es lifetime o no está activo), `since` y `last_change`. Filtros `status`, `q` (alias) y `expiring` (temporales activos que vencen en los próximos N días, de 1 a 90: con `7`, la marca "vence pronto" para saber a quién cobrarle). `sort`: **`until` asc** (también `since`, `alias`, `last_change`); los lifetime y los inactivos, al final |
+| Historial de una cuenta | `GET /api/v1/admin/users/{id}/vip` | `vip` (`active`, `lifetime`, `until`, `since`, o `null` si nunca fue VIP) y `periods` (del más nuevo al más viejo): `starts_at`, `ends_at` (`null` = lifetime), `source` (`manual` o `import`), `note`, `granted_by` (`id`, `alias`) y `revoked` (`at`, `reason`, `by`, o `null`) |
+| Dar o extender | `POST /api/v1/admin/users/{id}/vip` con **una** de `months` (1, 3, 6 o 12), `until` (ISO 8601) o `lifetime: true`, y `note` (opcional, hasta 200) | Si ya es VIP, el período nuevo **empieza donde termina el actual** (el que paga antes no pierde días): mostrar cómo queda ("VIP hasta el AAAA-MM-DD") antes de confirmar. Con `until`, la fecha tiene que pasar el fin actual. A un lifetime no se le ofrecen duraciones. Responde como el historial |
+| Quitar | `POST /api/v1/admin/users/{id}/vip/revoke` con `reason` (obligatorio, hasta 200) | Quita los períodos vigentes y los futuros, también un lifetime. Responde como el historial |
+
+- **En Administración › Usuarios** cada fila trae `vip` (el mismo objeto que en el historial, o `null`): mostrar el estado y los botones "Dar VIP", "Extender" y "Quitar VIP".
+- **Errores:** sin duración o con más de una, `400` (`VALIDATION_ERROR`); un temporal a un lifetime ("Ya es VIP lifetime"), una fecha que no pasa el fin actual o quitar sin VIP vigente ("No tiene VIP vigente"), `400` (`BUSINESS_RULE`) con el mensaje para mostrar; cuenta que no existe, `404`.
 
 ### Servidores (admin)
 

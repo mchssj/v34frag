@@ -31,6 +31,7 @@ import {
 import { bearer, errorResponses, json } from '../schemas/common';
 import { AvatarResult, AvatarUpload } from '../schemas/profile';
 import { Medal } from '../schemas/players';
+import { vipStatusOf } from '../services/vip';
 
 type C = Context<AppEnv>;
 const PLAYER = 'id, nick, user_id, steam_id, photo_url, privacy, bio, achievements, team_history';
@@ -247,7 +248,8 @@ export const adminPlayers = createRouter()
     if (p.has_steam !== undefined) q = q.eq('has_steam', p.has_steam);
     type Row = { id: string; alias: string | null; role: string; alias_changed_at: string | null; player_id: string | null; steam_id: string | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    return c.json(envelope(rows.map((u) => ({ ...u, alias: u.alias ?? '' })), total, p), 200);
+    const vip = await vipStatusOf(c.var.sb, rows.map((u) => u.id));
+    return c.json(envelope(rows.map((u) => ({ ...u, alias: u.alias ?? '', vip: vip.get(u.id) ?? null })), total, p), 200);
   })
   .openapi(userAlias, async (c) => {
     const { alias, force } = c.req.valid('json');

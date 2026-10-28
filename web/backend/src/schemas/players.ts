@@ -33,6 +33,7 @@ export const PlayerSummary = z
     wins: num,
     losses: num,
     teams: z.array(TeamRef).openapi({ description: 'Equipos oficiales donde está hoy (puede ser más de uno)' }),
+    vip: z.boolean().openapi({ description: 'Es VIP hoy (solo el estado; las fechas, en Mi perfil y en el admin)' }),
   })
   .openapi('PlayerSummary');
 
@@ -229,7 +230,7 @@ export const RankingPlayerQuery = listQuery(['position', 'rating', 'kd', 'matche
 export const RankingPlayer = z
   .object({
     position: z.number().int().openapi({ description: 'Posición global por ELO (no cambia al filtrar; empatados comparten posición)' }),
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable() }),
+    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean() }),
     level: z.number().int().min(1).max(10).nullable(),
     elo: z.number().int(),
     teams: z.array(TeamRef),
@@ -250,7 +251,7 @@ export const CompareQuery = z.object({
 });
 export const ComparePlayer = z
   .object({
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable() }),
+    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean() }),
     teams: z.array(TeamRef),
     game_role: z.string().nullable(),
     level: z.number().int().min(1).max(10).nullable(),

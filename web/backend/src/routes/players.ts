@@ -27,6 +27,7 @@ import {
   type PlayerSummary,
 } from '../schemas/players';
 import { activeBan } from '../services/bans';
+import { vipPlayers } from '../services/vip';
 import { resolvePlayer } from '../services/players';
 import { stageLabel } from '../services/stages';
 import { clutchesOf } from '../services/matches';
@@ -42,7 +43,7 @@ type OverviewRow = {
   wins: number | null; losses: number | null; teams: unknown;
 };
 
-export const toSummary = (r: OverviewRow): z.infer<typeof PlayerSummary> => ({
+export const toSummary = (r: OverviewRow, vip: Set<string>): z.infer<typeof PlayerSummary> => ({
   id: r.id!,
   alias: r.nick ?? '',
   has_account: !!r.has_account,
@@ -57,6 +58,7 @@ export const toSummary = (r: OverviewRow): z.infer<typeof PlayerSummary> => ({
   wins: r.wins,
   losses: r.losses,
   teams: Array.isArray(r.teams) ? (r.teams as z.infer<typeof PlayerSummary>['teams']) : [],
+  vip: vip.has(r.id!),
 });
 
 // ---------- rutas ----------
@@ -221,7 +223,8 @@ export const players = createRouter()
     if (p.elo_min !== undefined) q = q.gte('elo', p.elo_min);
     if (p.elo_max !== undefined) q = q.lte('elo', p.elo_max);
     const { rows, total } = await runList<OverviewRow, typeof q>(q, p, { alias: 'nick' });
-    return c.json(envelope(rows.map(toSummary), total, p), 200);
+    const vip = await vipPlayers(c.var.sb, rows.map((r) => r.id!));
+    return c.json(envelope(rows.map((r) => toSummary(r, vip)), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const sb = c.var.sb;
@@ -235,15 +238,16 @@ export const players = createRouter()
     // Los SteamID nunca salen en el perfil público: solo para el dueño y los admins.
     const user = currentUser(c);
     const seesSteam = !!user && (user.id === player.user_id || (await isAdmin(c)));
-    const [stats, clutchRows, details, ban] = await Promise.all([
+    const [stats, clutchRows, details, ban, vip] = await Promise.all([
       sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('player_id', id).maybeSingle().then(must),
       sb.from('player_clutches').select('vs, won').eq('player_id', id).then(mustHave),
       player.user_id ? sb.from('profile_details').select(DETAILS).eq('user_id', player.user_id).maybeSingle().then(must) : Promise.resolve(null),
       activeBan(sb, { player: id }),
+      vipPlayers(sb, [id]),
     ]);
     return c.json(
       {
-        ...toSummary(overview),
+        ...toSummary(overview, vip),
         steam_id: seesSteam ? player.steam_id : null,
         steam_ids: seesSteam
           ? steams.sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || (a.steam_id ?? '').localeCompare(b.steam_id ?? '')).map((s) => s.steam_id ?? '')

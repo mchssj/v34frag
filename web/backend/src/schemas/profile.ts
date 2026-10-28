@@ -1,6 +1,7 @@
 import { z } from '@hono/zod-openapi';
 import { AuthUser, Tag } from './auth';
 import { NotificationPrefs, NotificationPrefsPatch } from './notifications';
+import { VipStatus } from './vip';
 
 // Las mismas listas y reglas que el formulario "Mi perfil" de index.html.
 export const COUNTRIES = [
@@ -122,6 +123,7 @@ export const MyProfile = z
       .openapi({ description: 'Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno)' }),
     matches_played: z.number().int().openapi({ description: 'Partidas terminadas que jugó en el servidor (mixes, PCW y torneos)' }),
     preferences: Preferences.openapi({ description: 'Preferencias de la cuenta: siempre con todas sus claves (`null` si no eligió)' }),
+    vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
   })
   .openapi('MyProfile');
 

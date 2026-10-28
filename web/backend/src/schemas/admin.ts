@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
+import { VipStatus } from './vip';
 
 const optText = (max: number) =>
   z
@@ -83,6 +84,7 @@ export const AdminUser = z
     alias_changed_at: z.string().nullable(),
     player_id: z.uuid().nullable(),
     steam_id: z.string().nullable(),
+    vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
   })
   .openapi('AdminUser');
 

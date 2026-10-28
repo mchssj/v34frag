@@ -83,6 +83,18 @@ isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
       foreignKeyName: "bans_replaced_by_fkey"
       columns: ["replaced_by"]
 isOneToOne: false
@@ -212,6 +224,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     },{
       foreignKeyName: "claim_log_server_id_fkey"
       columns: ["server_id"]
@@ -695,6 +719,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"match_vetos": {
@@ -1033,6 +1069,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_extra_steam_ids_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "player_extra_steam_ids_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"player_medals": {
@@ -1076,6 +1124,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_medals_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "player_medals_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     },{
       foreignKeyName: "player_medals_season_id_fkey"
       columns: ["season_id"]
@@ -1222,6 +1282,18 @@ isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
       foreignKeyName: "season_standings_season_id_fkey"
       columns: ["season_id"]
 isOneToOne: false
@@ -1302,6 +1374,18 @@ isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
       foreignKeyName: "steam_requests_server_id_fkey"
       columns: ["server_id"]
 isOneToOne: false
@@ -1363,6 +1447,18 @@ isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "team_invites_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "team_invites_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
       foreignKeyName: "team_invites_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -1417,6 +1513,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     },{
       foreignKeyName: "team_members_team_id_fkey"
       columns: ["team_id"]
@@ -1523,6 +1631,18 @@ isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "tournament_registration_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "tournament_registration_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
       foreignKeyName: "tournament_registration_players_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -1586,6 +1706,73 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"vip_memberships": {
+                  Row: {
+                    "created_at": string,"ends_at": string | null,"granted_by": string | null,"id": string,"note": string | null,"revoke_reason": string | null,"revoked_at": string | null,"revoked_by": string | null,"source": string,"starts_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"ends_at"?: string | null,"granted_by"?: string | null,"id"?: string,"note"?: string | null,"revoke_reason"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"source": string,"starts_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"ends_at"?: string | null,"granted_by"?: string | null,"id"?: string,"note"?: string | null,"revoke_reason"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"source"?: string,"starts_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vip_memberships_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -1624,6 +1811,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     },{
       foreignKeyName: "claim_log_server_id_fkey"
       columns: ["server_id"]
@@ -1786,6 +1985,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     },{
       foreignKeyName: "steam_requests_server_id_fkey"
       columns: ["server_id"]
@@ -2536,6 +2747,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"player_map_stats": {
@@ -2573,6 +2796,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"player_matches": {
@@ -2610,6 +2845,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     },{
       foreignKeyName: "matches_parent_match_id_fkey"
       columns: ["parent_match_id"]
@@ -2703,6 +2950,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"player_stats": {
@@ -2740,6 +2999,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"player_steam_all": {
@@ -2784,6 +3055,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournament_registration_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "tournament_registration_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"public_profiles": {
@@ -2834,6 +3117,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["champion_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["champion_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"season_live_standings": {
@@ -2963,6 +3258,18 @@ isOneToOne: false
       referencedRelation: "players"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
       foreignKeyName: "team_members_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -3022,6 +3329,56 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"vip_public": {
+                  Row: {
+                    "player_id": string | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"vip_status": {
+                  Row: {
+                    "active": boolean | null,"alias": string | null,"last_change": string | null,"lifetime": boolean | null,"photo_url": string | null,"player_id": string | null,"since": string | null,"status": string | null,"until": string | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vip_memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Functions: {
@@ -3057,6 +3414,12 @@ isOneToOne: false
 { Args: { "p_q"?: string }; Returns: {
               "id": string,"player_id": string,"player_steam_id": string,"role": string,"tag": string,"tag_changed_at": string
             }[]
+                           },
+"admin_vip_grant":
+{ Args: { "p_lifetime"?: boolean,"p_months"?: number,"p_note"?: string,"p_until"?: string,"p_user": string }; Returns: string
+                           },
+"admin_vip_revoke":
+{ Args: { "p_reason": string,"p_user": string }; Returns: number
                            },
 "alias_check":
 { Args: { "p_tag": string }; Returns: string
@@ -3444,6 +3807,9 @@ isOneToOne: false
                            },
 "is_team_captain":
 { Args: { "p_team": string }; Returns: boolean
+                           },
+"is_vip":
+{ Args: { "p_user"?: string }; Returns: boolean
                            },
 "link_steam_id":
 { Args: { "p_player": string,"p_steam": string }; Returns: undefined

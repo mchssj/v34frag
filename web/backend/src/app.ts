@@ -18,6 +18,7 @@ import { auth } from './routes/auth';
 import { claim } from './routes/claim';
 import { clips } from './routes/clips';
 import { bans } from './routes/bans';
+import { vip } from './routes/vip';
 import { elo } from './routes/elo';
 import { events } from './routes/events';
 import { live } from './routes/live';
@@ -86,6 +87,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', adminDemos);
   app.route('/', elo);
   app.route('/', bans);
+  app.route('/', vip);
   app.route('/', seasons);
   app.route('/', matches);
   app.route('/', clips);

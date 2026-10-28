@@ -147,3 +147,9 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-26 | Qué levanta o cambia un moderador | Cualquier baneo que no sea permanente | Daniel |
 | 2026-10-26 | Rol de moderador | Un rol más en `role` (`moderator`). Todos los roles juegan; el admin además organiza y modera | Daniel |
 | 2026-10-26 | SteamID en la lista de baneos | Público solo en los baneos sin ficha (como los perfiles sin reclamar); con ficha, solo moderadores y admins | Propuesta, por la regla de SteamID ocultos del 2026-10-24 |
+| 2026-10-28 | VIP: cobro | Manual: Kyan cobra por fuera y un admin lo carga. Sin pasarela de pago | Daniel |
+| 2026-10-28 | VIP: vencimiento | Cada período tiene fecha de fin; sin fecha = lifetime. Vence solo | Daniel |
+| 2026-10-28 | VIP: de quién | De la cuenta, no de la ficha. Solo admins lo dan y lo quitan (Kyan es admin) | Daniel |
+| 2026-10-28 | VIP: extender | El período nuevo empieza donde termina el vigente; a un lifetime no se le da un temporal | Propuesta, aprobada con el plan |
+| 2026-10-28 | VIP: qué es público | Solo si es VIP hoy (`vip: true/false`); las fechas y las notas, el dueño y los admins | Propuesta, aprobada con el plan |
+| 2026-10-28 | VIP en producción antes del corte | La tabla, `is_vip()`, dar y quitar y las vistas, en la migración `20261028120000_vip.sql`; los avisos, en el replanteo `32` | Daniel |
