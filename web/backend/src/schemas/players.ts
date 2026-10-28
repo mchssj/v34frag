@@ -5,7 +5,16 @@ import { Clutches } from './common';
 const num = z.number().nullable();
 
 export const TeamRef = z
-  .object({ id: z.uuid(), name: z.string(), tag: z.string().nullable() })
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    tag: z.string().nullable(),
+    logo_url: z.string().nullable().optional().openapi({
+      description:
+        'Logo del equipo (null: sin logo, se muestra la sigla). Viene en los listados y el detalle de equipos, el ranking de equipos, ' +
+        'las inscripciones y el campeón de un torneo, los lados de una partida y las invitaciones; en el resto puede faltar',
+    }),
+  })
   .openapi('TeamRef');
 
 export const PlayerListQuery = listQuery(['elo', 'alias', 'elo_matches', 'rating', 'kd', 'wins'], { sort: 'elo', order: 'desc' }).extend({

@@ -360,13 +360,13 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "champion": string | null,"config": NonNullable<Json>,"drawn_at": string | null,"drawn_by": string | null,"ends_on": string | null,"id": string,"map_pool": (string)[] | null,"max_teams": number | null,"min_teams": number | null,"name": string,"organizer_id": string | null,"players_max": number,"players_min": number,"prize": string | null,"rules": string | null,"seeds": (string)[],"starts_on": string | null,"status": string,"template": string,"tie_pending": Json | null
+                    "banner_url": string | null,"champion": string | null,"config": NonNullable<Json>,"drawn_at": string | null,"drawn_by": string | null,"ends_on": string | null,"game_mode": string,"id": string,"map_pool": (string)[] | null,"max_teams": number | null,"min_teams": number | null,"name": string,"organizer_id": string | null,"prize": string | null,"registration_closes_at": string | null,"rules": string | null,"seeds": (string)[],"starts_on": string | null,"status": string,"subs_max": number,"template": string,"tie_pending": Json | null
                   }
                   Insert: {
-                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"map_pool"?: (string)[] | null,"max_teams"?: number | null,"min_teams"?: number | null,"name": string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
+                    "banner_url"?: string | null,"champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"game_mode"?: string,"id"?: string,"map_pool"?: (string)[] | null,"max_teams"?: number | null,"min_teams"?: number | null,"name": string,"organizer_id"?: string | null,"prize"?: string | null,"registration_closes_at"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"subs_max"?: number,"template"?: string,"tie_pending"?: Json | null
                   }
                   Update: {
-                    "champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"id"?: string,"map_pool"?: (string)[] | null,"max_teams"?: number | null,"min_teams"?: number | null,"name"?: string,"organizer_id"?: string | null,"players_max"?: number,"players_min"?: number,"prize"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"template"?: string,"tie_pending"?: Json | null
+                    "banner_url"?: string | null,"champion"?: string | null,"config"?: NonNullable<Json>,"drawn_at"?: string | null,"drawn_by"?: string | null,"ends_on"?: string | null,"game_mode"?: string,"id"?: string,"map_pool"?: (string)[] | null,"max_teams"?: number | null,"min_teams"?: number | null,"name"?: string,"organizer_id"?: string | null,"prize"?: string | null,"registration_closes_at"?: string | null,"rules"?: string | null,"seeds"?: (string)[],"starts_on"?: string | null,"status"?: string,"subs_max"?: number,"template"?: string,"tie_pending"?: Json | null
                   }
                   Relationships: [
                     {
@@ -381,7 +381,26 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "teams"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_game_mode_fkey"
+      columns: ["game_mode"]
+isOneToOne: false
+      referencedRelation: "game_modes"
+      referencedColumns: ["code"]
     }
+                  ]
+                },"game_modes": {
+                  Row: {
+                    "active": boolean,"code": string,"name": string,"players_per_team": number,"sort": number
+                  }
+                  Insert: {
+                    "active"?: boolean,"code": string,"name": string,"players_per_team": number,"sort"?: number
+                  }
+                  Update: {
+                    "active"?: boolean,"code"?: string,"name"?: string,"players_per_team"?: number,"sort"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"game_servers": {
                   Row: {
@@ -1405,15 +1424,28 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"team_invites": {
+                },"team_config": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"expires_at": string,"id": string,"kind": string,"player_id": string,"resolved_at": string | null,"resolved_by": string | null,"status": string,"team_id": string
+                    "id": number,"max_members": number,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"kind": string,"player_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"team_id": string
+                    "id"?: number,"max_members"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"kind"?: string,"player_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"team_id"?: string
+                    "id"?: number,"max_members"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"team_invites": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"expires_at": string,"id": string,"kind": string,"message": string | null,"player_id": string,"resolved_at": string | null,"resolved_by": string | null,"role": string,"status": string,"team_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"kind": string,"message"?: string | null,"player_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"role"?: string,"status"?: string,"team_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string,"id"?: string,"kind"?: string,"message"?: string | null,"player_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"role"?: string,"status"?: string,"team_id"?: string
                   }
                   Relationships: [
                     {
@@ -1541,26 +1573,26 @@ isOneToOne: false
                   ]
                 },"team_requests": {
                   Row: {
-                    "name": string,"status": string,"tag": string | null,"user_id": string
+                    "logo_url": string | null,"name": string,"status": string,"tag": string | null,"user_id": string
                   }
                   Insert: {
-                    "name": string,"status"?: string,"tag"?: string | null,"user_id": string
+                    "logo_url"?: string | null,"name": string,"status"?: string,"tag"?: string | null,"user_id": string
                   }
                   Update: {
-                    "name"?: string,"status"?: string,"tag"?: string | null,"user_id"?: string
+                    "logo_url"?: string | null,"name"?: string,"status"?: string,"tag"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     
                   ]
                 },"teams": {
                   Row: {
-                    "captain_id": string | null,"guests": (string)[],"id": string,"kind": string,"name": string,"owner_id": string | null,"parent_team_id": string | null,"tag": string | null
+                    "captain_id": string | null,"founded_at": string | null,"guests": (string)[],"id": string,"kind": string,"logo_url": string | null,"looking_for": (string)[],"name": string,"owner_id": string | null,"parent_team_id": string | null,"tag": string | null
                   }
                   Insert: {
-                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name": string,"owner_id"?: string | null,"parent_team_id"?: string | null,"tag"?: string | null
+                    "captain_id"?: string | null,"founded_at"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"logo_url"?: string | null,"looking_for"?: (string)[],"name": string,"owner_id"?: string | null,"parent_team_id"?: string | null,"tag"?: string | null
                   }
                   Update: {
-                    "captain_id"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"name"?: string,"owner_id"?: string | null,"parent_team_id"?: string | null,"tag"?: string | null
+                    "captain_id"?: string | null,"founded_at"?: string | null,"guests"?: (string)[],"id"?: string,"kind"?: string,"logo_url"?: string | null,"looking_for"?: (string)[],"name"?: string,"owner_id"?: string | null,"parent_team_id"?: string | null,"tag"?: string | null
                   }
                   Relationships: [
                     {
@@ -1579,13 +1611,13 @@ isOneToOne: false
                   ]
                 },"tournament_registration_players": {
                   Row: {
-                    "event_id": string,"player_id": string,"team_id": string
+                    "event_id": string,"player_id": string,"role": string,"team_id": string
                   }
                   Insert: {
-                    "event_id": string,"player_id": string,"team_id": string
+                    "event_id": string,"player_id": string,"role"?: string,"team_id": string
                   }
                   Update: {
-                    "event_id"?: string,"player_id"?: string,"team_id"?: string
+                    "event_id"?: string,"player_id"?: string,"role"?: string,"team_id"?: string
                   }
                   Relationships: [
                     {
@@ -2168,7 +2200,7 @@ isOneToOne: false
                   ]
                 },"event_list": {
                   Row: {
-                    "champion_id": string | null,"champion_name": string | null,"champion_tag": string | null,"ends_on": string | null,"id": string | null,"max_teams": number | null,"name": string | null,"organizer_alias": string | null,"organizer_id": string | null,"prize": string | null,"search": string | null,"starts_on": string | null,"status": string | null,"teams": number | null,"template": string | null
+                    "banner_url": string | null,"bo": number | null,"bo_final": number | null,"champion_id": string | null,"champion_logo_url": string | null,"champion_name": string | null,"champion_tag": string | null,"current_match_id": string | null,"ends_on": string | null,"game_mode": string | null,"id": string | null,"max_teams": number | null,"name": string | null,"organizer_alias": string | null,"organizer_id": string | null,"players_per_team": number | null,"prize": string | null,"progress_played": number | null,"progress_total": number | null,"registration_closes_at": string | null,"search": string | null,"starts_on": string | null,"status": string | null,"subs_max": number | null,"teams": number | null,"template": string | null
                   }
                   Relationships: [
                     {
@@ -2183,11 +2215,17 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "teams"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_game_mode_fkey"
+      columns: ["game_mode"]
+isOneToOne: false
+      referencedRelation: "game_modes"
+      referencedColumns: ["code"]
     }
                   ]
                 },"event_registrations_view": {
                   Row: {
-                    "created_at": string | null,"event_id": string | null,"name": string | null,"players": number | null,"search": string | null,"seed": number | null,"start_stage": number | null,"tag": string | null,"team_id": string | null
+                    "created_at": string | null,"event_id": string | null,"logo_url": string | null,"name": string | null,"players": number | null,"search": string | null,"seed": number | null,"start_stage": number | null,"tag": string | null,"team_id": string | null
                   }
                   Relationships: [
                     {
@@ -2461,7 +2499,7 @@ isOneToOne: false
                   ]
                 },"match_list": {
                   Row: {
-                    "at": string | null,"best_of": number | null,"bye": boolean | null,"cancel_reason": string | null,"demo_status": string | null,"end_reason": string | null,"event_id": string | null,"event_name": string | null,"grp": number | null,"id": string | null,"kind": string | null,"last_round": number | null,"map": string | null,"parent_match_id": string | null,"phase": number | null,"played_at": string | null,"player_ids": (string)[] | null,"pos": number | null,"review": string | null,"review_max_rounds": number | null,"round": number | null,"score1": number | null,"score2": number | null,"search": string | null,"server_id": string | null,"side1_name": string | null,"side2_name": string | null,"stage": string | null,"stage_order": number | null,"starts_at": string | null,"status": string | null,"team1_id": string | null,"team1_name": string | null,"team1_tag": string | null,"team2_id": string | null,"team2_name": string | null,"team2_tag": string | null,"winner_side": number | null
+                    "at": string | null,"best_of": number | null,"bye": boolean | null,"cancel_reason": string | null,"demo_status": string | null,"end_reason": string | null,"event_id": string | null,"event_name": string | null,"grp": number | null,"id": string | null,"kind": string | null,"last_round": number | null,"map": string | null,"parent_match_id": string | null,"phase": number | null,"played_at": string | null,"player_ids": (string)[] | null,"pos": number | null,"review": string | null,"review_max_rounds": number | null,"round": number | null,"score1": number | null,"score2": number | null,"search": string | null,"server_id": string | null,"side1_name": string | null,"side2_name": string | null,"stage": string | null,"stage_order": number | null,"starts_at": string | null,"status": string | null,"team1_id": string | null,"team1_logo_url": string | null,"team1_name": string | null,"team1_tag": string | null,"team2_id": string | null,"team2_logo_url": string | null,"team2_name": string | null,"team2_tag": string | null,"winner_side": number | null
                   }
                   Relationships: [
                     {
@@ -3224,7 +3262,7 @@ isOneToOne: false
                   ]
                 },"team_members_view": {
                   Row: {
-                    "active": boolean | null,"alias": string | null,"elo": number | null,"has_steam": boolean | null,"is_captain": boolean | null,"joined_at": string | null,"left_at": string | null,"photo_url": string | null,"player_id": string | null,"role": string | null,"team_id": string | null,"team_kind": string | null,"team_name": string | null,"team_tag": string | null
+                    "active": boolean | null,"alias": string | null,"elo": number | null,"game_role": string | null,"has_steam": boolean | null,"is_captain": boolean | null,"joined_at": string | null,"left_at": string | null,"photo_url": string | null,"player_id": string | null,"role": string | null,"team_id": string | null,"team_kind": string | null,"team_logo_url": string | null,"team_name": string | null,"team_tag": string | null
                   }
                   Relationships: [
                     {
@@ -3285,13 +3323,13 @@ isOneToOne: false
                   ]
                 },"team_overview": {
                   Row: {
-                    "captain_id": string | null,"captain_nick": string | null,"captain_player_id": string | null,"id": string | null,"kind": string | null,"members": number | null,"name": string | null,"owner_id": string | null,"parent_team_id": string | null,"search": string | null,"tag": string | null
+                    "captain_id": string | null,"captain_nick": string | null,"captain_player_id": string | null,"events_played": number | null,"founded_at": string | null,"has_space": boolean | null,"id": string | null,"kind": string | null,"logo_url": string | null,"looking_for": (string)[] | null,"max_members": number | null,"members": number | null,"name": string | null,"owner_id": string | null,"parent_team_id": string | null,"search": string | null,"tag": string | null
                   }
                   Insert: {
-                           "captain_id"?: string | null,"captain_nick"?: never,"captain_player_id"?: never,"id"?: string | null,"kind"?: string | null,"members"?: never,"name"?: string | null,"owner_id"?: string | null,"parent_team_id"?: string | null,"search"?: never,"tag"?: string | null
+                           "captain_id"?: string | null,"captain_nick"?: never,"captain_player_id"?: never,"events_played"?: never,"founded_at"?: string | null,"has_space"?: never,"id"?: string | null,"kind"?: string | null,"logo_url"?: string | null,"looking_for"?: never,"max_members"?: never,"members"?: never,"name"?: string | null,"owner_id"?: string | null,"parent_team_id"?: string | null,"search"?: never,"tag"?: string | null
                          }
                         Update: {
-                           "captain_id"?: string | null,"captain_nick"?: never,"captain_player_id"?: never,"id"?: string | null,"kind"?: string | null,"members"?: never,"name"?: string | null,"owner_id"?: string | null,"parent_team_id"?: string | null,"search"?: never,"tag"?: string | null
+                           "captain_id"?: string | null,"captain_nick"?: never,"captain_player_id"?: never,"events_played"?: never,"founded_at"?: string | null,"has_space"?: never,"id"?: string | null,"kind"?: string | null,"logo_url"?: string | null,"looking_for"?: never,"max_members"?: never,"members"?: never,"name"?: string | null,"owner_id"?: string | null,"parent_team_id"?: string | null,"search"?: never,"tag"?: string | null
                          }
                         Relationships: [
                     {
@@ -3310,7 +3348,7 @@ isOneToOne: false
                   ]
                 },"team_ranking": {
                   Row: {
-                    "form_official": (string)[] | null,"form_total": (string)[] | null,"name": string | null,"official_lost": number | null,"official_played": number | null,"official_points": number | null,"official_position": number | null,"official_position_prev": number | null,"official_won": number | null,"search": string | null,"tag": string | null,"team_id": string | null,"total_lost": number | null,"total_played": number | null,"total_points": number | null,"total_position": number | null,"total_position_prev": number | null,"total_won": number | null
+                    "form_official": (string)[] | null,"form_total": (string)[] | null,"logo_url": string | null,"name": string | null,"official_lost": number | null,"official_played": number | null,"official_points": number | null,"official_position": number | null,"official_position_prev": number | null,"official_won": number | null,"search": string | null,"tag": string | null,"team_id": string | null,"total_lost": number | null,"total_played": number | null,"total_points": number | null,"total_position": number | null,"total_position_prev": number | null,"total_won": number | null
                   }
                   Relationships: [
                     
@@ -3752,7 +3790,7 @@ isOneToOne: false
 { Args: { "p_event": string }; Returns: Json
                            },
 "event_register":
-{ Args: { "p_event": string,"p_players": (string)[],"p_start_stage"?: number,"p_team": string }; Returns: undefined
+{ Args: { "p_active": (string)[],"p_event": string,"p_start_stage"?: number,"p_subs"?: (string)[],"p_team": string }; Returns: undefined
                            },
 "event_reset":
 { Args: { "p_event": string }; Returns: undefined
@@ -3992,6 +4030,9 @@ isOneToOne: false
 "set_claim_config":
 { Args: { "p_max_steam_ids": number }; Returns: number
                            },
+"set_game_mode_active":
+{ Args: { "p_active": boolean,"p_code": string }; Returns: undefined
+                           },
 "set_my_preferences":
 { Args: { "p_changes": Json }; Returns: Json
                            },
@@ -4012,6 +4053,9 @@ isOneToOne: false
                            },
 "set_team_captain":
 { Args: { "p_team": string,"p_user": string }; Returns: undefined
+                           },
+"set_team_config":
+{ Args: { "p_max_members": number }; Returns: undefined
                            },
 "set_user_role":
 { Args: { "p_role": string,"p_user": string }; Returns: undefined
@@ -4049,8 +4093,13 @@ isOneToOne: false
 "team_can_join":
 { Args: { "p_player": string,"p_team": string }; Returns: undefined
                            },
+"team_event_history":
+{ Args: { "p_team": string }; Returns: {
+              "ends_on": string,"event_id": string,"lost": number,"name": string,"place": number,"played": number,"result": string,"starts_on": string,"status": string,"template": string,"won": number
+            }[]
+                           },
 "team_invite":
-{ Args: { "p_alias"?: string,"p_player"?: string,"p_team": string }; Returns: string
+{ Args: { "p_alias"?: string,"p_message"?: string,"p_player"?: string,"p_role"?: string,"p_team": string }; Returns: string
                            },
 "team_invite_answer":
 { Args: { "p_accept": boolean,"p_id": string }; Returns: undefined
@@ -4067,19 +4116,31 @@ isOneToOne: false
 "team_leave":
 { Args: { "p_team": string }; Returns: undefined
                            },
+"team_max_members":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "team_ref":
 { Args: { "p_team": string }; Returns: Json
                            },
 "team_request_join":
-{ Args: { "p_team": string }; Returns: string
+{ Args: { "p_message"?: string,"p_team": string }; Returns: string
                            },
 "team_roster_users":
 { Args: { "p_team": string }; Returns: (string)[]
+                           },
+"team_set_logo":
+{ Args: { "p_team": string,"p_url": string }; Returns: undefined
+                           },
+"team_set_member_role":
+{ Args: { "p_player": string,"p_role": string,"p_team": string }; Returns: undefined
                            },
 "team_standings_at":
 { Args: { "p_at": string }; Returns: {
               "name": string,"official_lost": number,"official_played": number,"official_points": number,"official_won": number,"pcw_lost": number,"pcw_played": number,"pcw_points": number,"pcw_won": number,"tag": string,"team_id": string
             }[]
+                           },
+"team_update":
+{ Args: { "p_looking_for": (string)[],"p_team": string }; Returns: undefined
                            },
 "users_of_players":
 { Args: { "p_players": (string)[] }; Returns: (string)[]

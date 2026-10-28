@@ -102,7 +102,7 @@ describe('equipos y plantel', () => {
     cap = await player();
     const name = `Titanes ${rnd()}`;
     const put = await req('PUT', '/api/v1/me/team-request', { token: cap.token, body: { name, tag: 'tit' } });
-    expect(put.body).toEqual({ name, tag: 'TIT', status: 'pending' });
+    expect(put.body).toEqual({ name, tag: 'TIT', status: 'pending', logo_url: null });
     expect((await req('GET', '/api/v1/admin/team-requests', { token: cap.token })).status).toBe(403);
     const list = await req('GET', `/api/v1/admin/team-requests?status=pending&q=${encodeURIComponent(name)}`, { token: adm.token });
     expect(list.body.items).toEqual([expect.objectContaining({ user_id: cap.id, name, has_steam: true, status: 'pending' })]);

@@ -2,12 +2,18 @@ import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
 import { TeamRef } from './players';
 
-export const MAX_ROSTER = 10;
+export const RosterRole = z.enum(['player', 'sub', 'coach']).openapi({ description: '`player` (activo), `sub` (suplente) o `coach`' });
 
 export const TeamListQuery = listQuery(['name', 'members'], { sort: 'name', order: 'asc' }).extend({
   kind: z.enum(['official', 'pcw']).default('official').openapi({ description: '`official` (por defecto) o `pcw`' }),
   q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre y la sigla, sin distinguir mayúsculas ni tildes' }),
-  has_space: boolParam('`true`: equipos oficiales con lugar (menos de 10 jugadores)'),
+  has_space: boolParam('`true`: equipos oficiales con lugar (menos miembros que el máximo que fija el admin)'),
+  looking_for: z
+    .string()
+    .regex(/^(player|sub|coach)(,(player|sub|coach))*$/, 'Valores separados por coma: player, sub o coach.')
+    .transform((v) => [...new Set(v.split(','))] as ('player' | 'sub' | 'coach')[])
+    .optional()
+    .openapi({ type: 'string', example: 'player,sub', description: 'Equipos que buscan alguno de estos puestos (`player`, `sub`, `coach`, separados por coma)' }),
 });
 
 const PlayerRef = z
@@ -21,9 +27,11 @@ export const TeamSummary = z
     tag: z.string().nullable(),
     kind: z.enum(['official', 'pcw']),
     captain: PlayerRef.nullable().openapi({ description: 'null si el capitán no tiene jugador vinculado' }),
-    members: z.number().int().openapi({ description: `Jugadores activos (máximo ${MAX_ROSTER} en un equipo oficial)` }),
-    max_members: z.number().int().nullable().openapi({ description: `${MAX_ROSTER} en los oficiales; null en los bandos de PCW` }),
+    members: z.number().int().openapi({ description: 'Miembros actuales (activos, suplentes y coach)' }),
+    max_members: z.number().int().nullable().openapi({ description: 'Máximo de miembros de un equipo oficial (lo fija el admin; 10 por defecto); null en los bandos de PCW' }),
     plays_as: z.uuid().nullable().openapi({ description: 'Bandos de PCW: equipo oficial con el que juega (suma al ranking)' }),
+    logo_url: z.string().nullable().openapi({ description: 'Logo; null: se muestra la sigla' }),
+    looking_for: z.array(RosterRole).openapi({ description: 'Qué busca el equipo. Vacío si no busca o si el plantel está lleno' }),
   })
   .openapi('TeamSummary');
 
@@ -38,6 +46,11 @@ export const RosterEntry = z
     elo: z.number().int().nullable(),
     level: z.number().int().nullable(),
     role: z.string().openapi({ description: '`player`, `sub` o `coach`' }),
+    game_role: z.string().nullable().openapi({
+      description:
+        'Puesto que el jugador eligió en su perfil (`AWPer`, `Rifler`, `IGL`, `Support`, `Entry fragger`, `Lurker` u `Otro`). ' +
+        'Se puede repetir en un equipo. null si no eligió o si su perfil es privado',
+    }),
     is_captain: z.boolean(),
     joined_at: z.string().nullable(),
     left_at: z.string().nullable(),
@@ -54,10 +67,12 @@ export const Record_ = z
   .object({
     official: z.object({ played: z.number().int(), won: z.number().int(), lost: z.number().int(), points: z.number().int() }),
     pcw: z.object({ played: z.number().int(), won: z.number().int(), lost: z.number().int(), points: z.number().int() }),
+    events_played: z.number().int().openapi({ description: 'Torneos en curso o terminados en los que estuvo inscrito' }),
   })
   .openapi('TeamRecord');
 
 export const TeamDetail = TeamSummary.extend({
+  founded_at: z.string().nullable().openapi({ description: 'Fecha de aprobación de la solicitud. En los equipos anteriores, el ingreso más antiguo del plantel' }),
   record: Record_.nullable().openapi({ description: 'Récord del ranking (solo equipos oficiales)' }),
   viewer: z
     .object({ is_captain: z.boolean(), is_member: z.boolean(), is_admin: z.boolean() })
@@ -73,7 +88,19 @@ export const Invite = z
     kind: z.enum(['invite', 'request']).openapi({ description: '`invite`: el capitán invitó; `request`: el jugador pidió entrar' }),
     status: z.string(),
     team: TeamRef,
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable() }),
+    player: z.object({
+      id: z.uuid(),
+      alias: z.string(),
+      photo_url: z.string().nullable(),
+      elo: z.number().int().nullable(),
+      level: z.number().int().nullable(),
+    }),
+    role: RosterRole.openapi({ description: 'Estado con el que entra al aceptar. Un pedido entra como `player`' }),
+    message: z.string().nullable().openapi({ description: 'Mensaje de quien invita o pide entrar' }),
+    invited_by: z
+      .object({ player_id: z.uuid(), alias: z.string() })
+      .nullable()
+      .openapi({ description: 'Quién invitó (capitán o admin). null en los pedidos o si quien invitó no tiene ficha' }),
     created_at: z.string(),
     expires_at: z.string(),
   })
@@ -89,9 +116,71 @@ export const InviteBody = z
   .object({
     player_id: z.uuid().optional(),
     alias: z.string().trim().min(2).max(24).optional(),
+    role: RosterRole.default('player').openapi({ description: 'Estado con el que entra al aceptar (por defecto `player`)' }),
+    message: z.string().trim().max(200).optional().openapi({ description: 'Mensaje opcional, hasta 200 caracteres' }),
   })
   .refine((b) => !!b.player_id !== !!b.alias, { message: 'Mandá `player_id` o `alias` (uno solo).' })
   .openapi('InviteBody');
+
+export const JoinRequestBody = z
+  .object({ message: z.string().trim().max(200).optional().openapi({ description: 'Mensaje opcional para el capitán, hasta 200 caracteres' }) })
+  .openapi('JoinRequestBody');
+
+export const MemberRoleBody = z.object({ role: RosterRole }).openapi('MemberRoleBody');
+
+export const TeamPatch = z
+  .object({ looking_for: z.array(RosterRole).max(3).openapi({ description: 'Qué busca el equipo; `[]`: no busca' }) })
+  .openapi('TeamPatch');
+
+export const ImageFile = (description: string) =>
+  z
+    .custom<File>((v) => typeof File !== 'undefined' && v instanceof File, { message: 'Falta el archivo (campo "file").' })
+    .openapi({ type: 'string', format: 'binary', description });
+
+export const LOGO_HELP = 'JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).';
+export const LogoUpload = z.object({ file: ImageFile(LOGO_HELP) }).openapi('LogoUpload');
+export const LogoResult = z.object({ logo_url: z.string() }).openapi('LogoResult');
+
+export const TeamEventResult = z.enum(['champion', 'runner_up', 'semifinal', 'quarterfinal', 'groups', 'eliminated', 'in_progress', 'registered']);
+
+export const TeamEvent = z
+  .object({
+    event: z.object({
+      id: z.uuid(),
+      name: z.string(),
+      template: z.string(),
+      status: z.string(),
+      starts_on: z.string().nullable(),
+      ends_on: z.string().nullable(),
+    }),
+    result: TeamEventResult.openapi({
+      description:
+        '`champion`, `runner_up` (perdió la final o la gran final), `semifinal` (perdió una semifinal, el 3.er puesto o la final del lower), ' +
+        '`quarterfinal`, `groups` (no pasó de grupos o del suizo), `eliminated` (otra eliminación), `in_progress` (sigue en carrera) o ' +
+        '`registered` (inscripciones abiertas)',
+    }),
+    place: z.number().int().nullable().openapi({ description: '1, 2, 3 (4 si perdió el 3.er puesto) o 5 (cuartos). null en el resto' }),
+    played: z.number().int(),
+    won: z.number().int(),
+    lost: z.number().int(),
+  })
+  .openapi('TeamEvent');
+export const TeamEventQuery = listQuery(['starts_on'], { sort: 'starts_on', order: 'desc' });
+export const TeamEventList = Envelope(TeamEvent).openapi('TeamEventList');
+
+export const MyTeam = z
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    tag: z.string().nullable(),
+    logo_url: z.string().nullable(),
+    my_role: z.enum(['leader', 'player', 'sub', 'coach']).openapi({ description: '`leader` si es el capitán; si no, su estado en el roster' }),
+  })
+  .openapi('MyTeam');
+
+export const TeamConfig = z
+  .object({ max_members: z.number().int().min(2).max(30).openapi({ description: 'Máximo de miembros de un equipo oficial' }) })
+  .openapi('TeamConfig');
 
 export const CaptainBody = z.object({ player_id: z.uuid() }).openapi('CaptainBody');
 
@@ -115,11 +204,16 @@ export const TeamRequestBody = z
   })
   .openapi('TeamRequestBody');
 
+export const TeamRequestForm = TeamRequestBody.extend({
+  logo: ImageFile(`Logo opcional. ${LOGO_HELP}`).optional(),
+}).openapi('TeamRequestForm');
+
 export const TeamRequest = z
   .object({
     name: z.string(),
     tag: z.string().nullable(),
     status: z.enum(['pending', 'approved', 'rejected']),
+    logo_url: z.string().nullable().openapi({ description: 'Logo propuesto (pasa al equipo al aprobar)' }),
   })
   .openapi('TeamRequest');
 

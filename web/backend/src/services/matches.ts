@@ -7,7 +7,7 @@ import { stageLabel, type StageInfo } from './stages';
 export const MATCH_LIST =
   'id, kind, status, event_id, event_name, stage, phase, grp, round, pos, bye, best_of, map, starts_at, played_at, score1, score2, winner_side, ' +
   'side1_name, side2_name, team1_id, team1_name, team1_tag, team2_id, team2_name, team2_tag, end_reason, demo_status, parent_match_id, last_round, ' +
-  'cancel_reason, review, review_max_rounds';
+  'cancel_reason, review, review_max_rounds, team1_logo_url, team2_logo_url';
 
 export type MatchRow = StageInfo & {
   id: string; kind: string; status: string; event_id: string | null; event_name: string | null; pos: number | null; bye: boolean;
@@ -16,9 +16,11 @@ export type MatchRow = StageInfo & {
   team1_tag: string | null; team2_id: string | null; team2_name: string | null; team2_tag: string | null; end_reason: string | null;
   demo_status: string; parent_match_id: string | null; last_round: number | null;
   cancel_reason: string | null; review: string | null; review_max_rounds: number | null;
+  team1_logo_url: string | null; team2_logo_url: string | null;
 };
 
-const team = (id: string | null, name: string | null, tag: string | null) => (id ? { id, name: name ?? '', tag } : null);
+const team = (id: string | null, name: string | null, tag: string | null, logo_url: string | null) =>
+  id ? { id, name: name ?? '', tag, logo_url } : null;
 
 export function toSummary(m: MatchRow): z.infer<typeof MatchSummary> {
   const last = new Map<string, number>();
@@ -29,8 +31,8 @@ export function toSummary(m: MatchRow): z.infer<typeof MatchSummary> {
     status: m.status as 'upcoming' | 'live' | 'finished' | 'cancelled',
     label: m.event_id ? stageLabel(m, last) : null,
     event: m.event_id ? { id: m.event_id, name: m.event_name ?? '' } : null,
-    side1: { name: m.team1_name ?? m.side1_name, team: team(m.team1_id, m.team1_name, m.team1_tag), score: m.score1 },
-    side2: { name: m.team2_name ?? m.side2_name, team: team(m.team2_id, m.team2_name, m.team2_tag), score: m.score2 },
+    side1: { name: m.team1_name ?? m.side1_name, team: team(m.team1_id, m.team1_name, m.team1_tag, m.team1_logo_url), score: m.score1 },
+    side2: { name: m.team2_name ?? m.side2_name, team: team(m.team2_id, m.team2_name, m.team2_tag, m.team2_logo_url), score: m.score2 },
     winner_side: m.winner_side,
     best_of: m.best_of,
     map: m.map,

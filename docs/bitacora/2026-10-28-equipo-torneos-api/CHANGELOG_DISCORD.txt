@@ -1,0 +1,16 @@
+CMLeague X.Y.Z --  Changelog
+
+Equipos
+- Tu equipo puede tener logo: lo subes al pedir el equipo o después, desde Mi equipo.
+- El capitán puede marcar a cada jugador como activo, suplente o coach, y elegir con qué rol invita a alguien.
+- Las invitaciones y los pedidos para entrar pueden llevar un mensaje.
+- Cada equipo puede indicar si busca activos, suplentes o coach, y en Buscar equipo puedes filtrar por eso.
+- La tarjeta de roles muestra el puesto que cada jugador eligió en su perfil (IGL, AWPer, Entry...).
+- En la página del equipo ves los torneos que jugó y hasta dónde llegó, y desde cuándo existe.
+
+Torneos
+- Cada torneo tiene un modo de juego (5vs5, 2vs2...) y el organizador decide cuántos suplentes puede inscribir cada equipo (hasta 4).
+- Al inscribirte eliges quiénes juegan y quiénes van de suplentes. El coach no se inscribe.
+- Los torneos pueden tener fecha de cierre de inscripciones y banner propio.
+- Te llega un aviso cuando tu capitán te inscribe en un torneo, te pasa a suplente o te saca.
+- En la lista de torneos ves el formato, la fase en la que está y cuánto falta, y en el torneo, qué mapa de la serie se está jugando.

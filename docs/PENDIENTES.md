@@ -351,6 +351,19 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
 - **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
 
+### 1.22 Equipo y Torneos en la API (replanteo `33`): falta staging y el frontend
+
+- **Hecho el 2026-10-28 (local) y commiteado en `feat/backend-api-fase-1` (sin push):** replanteo `33`, API y pruebas (45 SQL, 353 unitarias y 150 de integración). Bitácora: [`2026-10-28-equipo-torneos-api`](bitacora/2026-10-28-equipo-torneos-api/).
+- **Contrato para el frontend:** [`contrato-frontend-equipo-torneos.md`](../contrato-frontend-equipo-torneos.md). Rompe la inscripción a torneos (`{ active, subs }`) y saca `players_min`/`players_max`.
+- **Falta:**
+  - Cargar los replanteos `31`, `32` y `33` en la Supabase de **staging** (hoy tiene del `01` al `30`) y redesplegar la API del VPS antes del ensayo de Equipo y Torneos.
+  - Que el frontend adopte la inscripción nueva y los campos nuevos.
+  - Publicar `bitacora/2026-10-28-equipo-torneos-api/CHANGELOG_DISCORD.txt` cuando llegue a producción (poner la versión).
+- No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
+- **Problemas del entorno vistos al probar:**
+  - En `v34frag-backend` los `.sql` del checkout tenían CRLF y el replanteo `04` fallaba al cargar; se pasaron a LF en la copia de trabajo (sin cambios en Git).
+  - `pruebas/correr.sh` se corta en la prueba `por STEAM_0 del adicional…` de `pruebas/23_whois.sql`, que falla por su cuenta. Sin investigar.
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

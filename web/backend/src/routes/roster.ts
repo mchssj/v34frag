@@ -2,7 +2,7 @@ import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { isAdmin, requireUser } from '../lib/auth';
 import { AppError } from '../lib/errors';
-import { must, mustHave, notFound } from '../lib/db';
+import { levelOf, must, mustHave, notFound } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
@@ -13,6 +13,9 @@ import {
   InviteBody,
   InviteList,
   InviteQuery,
+  JoinRequestBody,
+  MemberRoleBody,
+  RosterEntry,
   TeamParam,
   TeamPlayerParam,
   type Invite,
@@ -20,21 +23,40 @@ import {
 
 type C = Context<AppEnv>;
 
-const INVITE = 'id, kind, status, created_at, expires_at, team:teams(id, name, tag), player:players(id, nick, photo_url)';
+const INVITE =
+  'id, kind, status, role, message, created_by, created_at, expires_at, team:teams(id, name, tag, logo_url), player:players(id, nick, photo_url)';
 type InviteRow = {
-  id: string; kind: string; status: string; created_at: string; expires_at: string;
-  team: { id: string; name: string; tag: string | null } | null;
+  id: string; kind: string; status: string; role: string; message: string | null; created_by: string | null; created_at: string;
+  expires_at: string; team: { id: string; name: string; tag: string | null; logo_url: string | null } | null;
   player: { id: string; nick: string; photo_url: string | null } | null;
 };
-const toInvite = (r: InviteRow): z.infer<typeof Invite> => ({
-  id: r.id,
-  kind: r.kind === 'request' ? 'request' : 'invite',
-  status: r.status,
-  team: r.team ?? { id: '', name: '', tag: null },
-  player: { id: r.player?.id ?? '', alias: r.player?.nick ?? '', photo_url: r.player?.photo_url ?? null },
-  created_at: r.created_at,
-  expires_at: r.expires_at,
-});
+
+/** Arma las invitaciones con el ELO del jugador y quién invitó (dos consultas para toda la página). */
+async function toInvites(c: C, rows: InviteRow[]): Promise<z.infer<typeof Invite>[]> {
+  const players = [...new Set(rows.map((r) => r.player?.id).filter((x): x is string => !!x))];
+  const inviters = [...new Set(rows.filter((r) => r.kind === 'invite' && r.created_by).map((r) => r.created_by!))];
+  const [elos, by] = await Promise.all([
+    players.length ? c.var.sb.from('player_overview').select('id, elo').in('id', players).then(mustHave) : [],
+    inviters.length ? c.var.sb.from('players').select('id, nick, user_id').in('user_id', inviters).then(mustHave) : [],
+  ]);
+  const eloOf = new Map(elos.map((e) => [e.id, e.elo]));
+  const byUser = new Map(by.map((p) => [p.user_id, { player_id: p.id, alias: p.nick }]));
+  return rows.map((r) => {
+    const elo = eloOf.get(r.player?.id ?? '') ?? null;
+    return {
+      id: r.id,
+      kind: r.kind === 'request' ? 'request' : 'invite',
+      status: r.status,
+      team: r.team ?? { id: '', name: '', tag: null, logo_url: null },
+      player: { id: r.player?.id ?? '', alias: r.player?.nick ?? '', photo_url: r.player?.photo_url ?? null, elo, level: levelOf(elo) },
+      role: r.role as 'player' | 'sub' | 'coach',
+      message: r.message,
+      invited_by: r.kind === 'invite' && r.created_by ? (byUser.get(r.created_by) ?? null) : null,
+      created_at: r.created_at,
+      expires_at: r.expires_at,
+    };
+  });
+}
 
 /** Abiertas y sin vencer (una vencida queda "open" hasta que la base la marca en la próxima acción). */
 const openOnly = <Q extends { eq: (c: 'status', v: string) => Q; gt: (c: 'expires_at', v: string) => Q }>(q: Q) =>
@@ -61,14 +83,17 @@ const myInvites = createRoute({
 const joinRequest = createRoute({
   method: 'post', path: '/api/v1/teams/{id}/join-requests', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
   summary: 'Pedir entrar a un equipo',
-  description: 'Hace falta tener el SteamID vinculado. El capitán acepta o rechaza; vence a los 7 días.',
-  request: { params: TeamParam },
-  responses: { 201: { description: 'Pedido creado', ...json(Created) }, ...errorResponses(400, 401) },
+  description:
+    'Hace falta tener el SteamID vinculado. El capitán acepta o rechaza; vence a los 7 días. Con `message` opcional (hasta 200 caracteres). ' +
+    'Al aceptarlo, el jugador entra como `player` y el capitán le cambia el estado después. `409 ROSTER_FULL` si el equipo está lleno.',
+  request: { params: TeamParam, body: { required: false, ...json(JoinRequestBody) } },
+  responses: { 201: { description: 'Pedido creado', ...json(Created) }, ...errorResponses(400, 401, 409) },
 });
 const acceptInvite = createRoute({
   method: 'post', path: '/api/v1/team-invites/{id}/accept', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Aceptar una invitación', request: { params: IdParam },
-  responses: { ...ok, ...errorResponses(400, 401, 403, 404) },
+  summary: 'Aceptar una invitación', description: 'Entra con el estado de la invitación (`role`). `409 ROSTER_FULL` si el equipo se llenó.',
+  request: { params: IdParam },
+  responses: { ...ok, ...errorResponses(400, 401, 403, 404, 409) },
 });
 const rejectInvite = createRoute({
   method: 'post', path: '/api/v1/team-invites/{id}/reject', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
@@ -99,9 +124,11 @@ const pending = createRoute({
 const invite = createRoute({
   method: 'post', path: '/api/v1/teams/{id}/invites', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
   summary: 'Invitar a un jugador',
-  description: `Por \`player_id\` o por \`alias\`. El jugador necesita cuenta y SteamID vinculado, y el equipo no puede estar lleno.`,
+  description:
+    'Por `player_id` o por `alias`, con el estado con el que entra (`role`, por defecto `player`) y un mensaje opcional. ' +
+    'El jugador necesita cuenta y SteamID vinculado. `409 ROSTER_FULL` si el equipo está lleno (el máximo lo fija el admin).',
   request: { params: TeamParam, body: { required: true, ...json(InviteBody) } },
-  responses: { 201: { description: 'Invitación creada', ...json(Created) }, ...errorResponses(400, 401, 403) },
+  responses: { 201: { description: 'Invitación creada', ...json(Created) }, ...errorResponses(400, 401, 403, 409) },
 });
 const cancelInvite = createRoute({
   method: 'delete', path: '/api/v1/team-invites/{id}', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
@@ -110,8 +137,9 @@ const cancelInvite = createRoute({
 });
 const acceptRequest = createRoute({
   method: 'post', path: '/api/v1/join-requests/{id}/accept', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Aceptar un pedido para entrar', request: { params: IdParam },
-  responses: { ...ok, ...errorResponses(400, 401, 403, 404) },
+  summary: 'Aceptar un pedido para entrar', description: 'Entra como `player`. `409 ROSTER_FULL` si el equipo se llenó.',
+  request: { params: IdParam },
+  responses: { ...ok, ...errorResponses(400, 401, 403, 404, 409) },
 });
 const rejectRequest = createRoute({
   method: 'post', path: '/api/v1/join-requests/{id}/reject', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
@@ -123,6 +151,15 @@ const kick = createRoute({
   summary: 'Sacar a un jugador del equipo', description: 'Capitán o admin. Al capitán no se lo puede sacar.',
   request: { params: TeamPlayerParam },
   responses: { ...ok, ...errorResponses(400, 401, 403) },
+});
+const memberRole = createRoute({
+  method: 'patch', path: '/api/v1/teams/{id}/members/{playerId}', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Cambiar el estado de un jugador',
+  description:
+    'Capitán o admin: `player` (activo), `sub` (suplente) o `coach`, sin topes por estado (solo el máximo de miembros). ' +
+    'Al jugador le llega el aviso `team_role_changed`. `404 NOT_A_MEMBER` si no está en el plantel.',
+  request: { params: TeamPlayerParam, body: { required: true, ...json(MemberRoleBody) } },
+  responses: { 200: { description: 'Jugador actualizado', ...json(RosterEntry) }, ...errorResponses(400, 401, 403, 404) },
 });
 const captain = createRoute({
   method: 'post', path: '/api/v1/teams/{id}/captain', tags: ['Plantel'], security: bearer, middleware: [requireUser] as const,
@@ -142,10 +179,11 @@ export const roster = createRouter()
     if (p.kind) q = q.eq('kind', p.kind);
     if (p.team) q = q.eq('team_id', p.team);
     const { rows, total } = await runList<InviteRow, typeof q>(q, p, {});
-    return c.json(envelope(rows.map(toInvite), total, p), 200);
+    return c.json(envelope(await toInvites(c, rows), total, p), 200);
   })
   .openapi(joinRequest, async (c) => {
-    const id = mustHave(await c.var.sb.rpc('team_request_join', { p_team: c.req.valid('param').id }));
+    const message = (c.req.valid('json') as { message?: string } | undefined)?.message;
+    const id = mustHave(await c.var.sb.rpc('team_request_join', { p_team: c.req.valid('param').id, p_message: message }));
     return c.json({ id }, 201);
   })
   .openapi(acceptInvite, async (c) => {
@@ -182,11 +220,13 @@ export const roster = createRouter()
     let q = openOnly(sb.from('team_invites').select(INVITE, { count: 'exact' }).eq('team_id', id));
     if (p.kind) q = q.eq('kind', p.kind);
     const { rows, total } = await runList<InviteRow, typeof q>(q, p, {});
-    return c.json(envelope(rows.map(toInvite), total, p), 200);
+    return c.json(envelope(await toInvites(c, rows), total, p), 200);
   })
   .openapi(invite, async (c) => {
-    const { player_id, alias } = c.req.valid('json');
-    const id = mustHave(await c.var.sb.rpc('team_invite', { p_team: c.req.valid('param').id, p_player: player_id, p_alias: alias }));
+    const { player_id, alias, role, message } = c.req.valid('json');
+    const id = mustHave(
+      await c.var.sb.rpc('team_invite', { p_team: c.req.valid('param').id, p_player: player_id, p_alias: alias, p_role: role, p_message: message }),
+    );
     return c.json({ id }, 201);
   })
   .openapi(cancelInvite, async (c) => {
@@ -211,6 +251,21 @@ export const roster = createRouter()
     const { id, playerId } = c.req.valid('param');
     must(await c.var.sb.rpc('team_kick', { p_team: id, p_player: playerId }));
     return c.body(null, 204);
+  })
+  .openapi(memberRole, async (c) => {
+    const { id, playerId } = c.req.valid('param');
+    if (!must(await c.var.sb.from('teams').select('id').eq('id', id).maybeSingle())) throw notFound('ese equipo');
+    must(await c.var.sb.rpc('team_set_member_role', { p_team: id, p_player: playerId, p_role: c.req.valid('json').role }));
+    const r = mustHave(
+      await c.var.sb
+        .from('team_members_view')
+        .select('player_id, alias, photo_url, has_steam, elo, role, game_role, is_captain, joined_at, left_at')
+        .eq('team_id', id)
+        .eq('player_id', playerId)
+        .eq('active', true)
+        .single(),
+    );
+    return c.json({ ...r, player_id: r.player_id!, alias: r.alias ?? '', has_steam: !!r.has_steam, role: r.role ?? 'player', is_captain: !!r.is_captain, level: levelOf(r.elo) }, 200);
   })
   .openapi(captain, async (c) => {
     const { id } = c.req.valid('param');

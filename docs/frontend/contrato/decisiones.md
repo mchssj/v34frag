@@ -153,3 +153,9 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-28 | VIP: extender | El período nuevo empieza donde termina el vigente; a un lifetime no se le da un temporal | Propuesta, aprobada con el plan |
 | 2026-10-28 | VIP: qué es público | Solo si es VIP hoy (`vip: true/false`); las fechas y las notas, el dueño y los admins | Propuesta, aprobada con el plan |
 | 2026-10-28 | VIP en producción antes del corte | La tabla, `is_vip()`, dar y quitar y las vistas, en la migración `20261028120000_vip.sql`; los avisos, en el replanteo `32` | Daniel |
+| 2026-10-28 | Tamaño del plantel | Hasta 10 miembros por defecto, configurable por el admin (2 a 30); sin topes por estado (activo, suplente, coach) | Daniel |
+| 2026-10-28 | Activos en torneos | Los del modo de juego del torneo (`game_modes`: 1v1, 2v2, 3v3, 5v5; 5v5 por defecto); suplentes de 0 a 4 según el organizador | Daniel |
+| 2026-10-28 | Quién se inscribe | El capitán elige los activos entre los miembros; el coach nunca se inscribe (si juega, lo decide el organizador fuera de la plataforma) | Daniel |
+| 2026-10-28 | Roles de juego | IGL, AWPer, etc. son el `game_role` del perfil de cada jugador y se pueden repetir; no hay roles por equipo | Daniel |
+| 2026-10-28 | Logo y banner | El frontend recorta (cuadrado y 4:1); la API valida tipo, peso y medidas; errores `INVALID_FILE` y `FILE_TOO_LARGE` | Daniel |
+| 2026-10-28 | Aviso a los inscritos | `event_lineup` a cada jugador inscrito, cambiado o sacado (no al capitán) | Daniel |
