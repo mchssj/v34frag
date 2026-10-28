@@ -6,6 +6,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
 
 ## Convenciones
 
+- **Permisos:** Kyan tiene los mismos permisos que Daniel. Todo lo que en este archivo o en `docs/` dice que pide, aprueba o decide Daniel puede pedirlo, aprobarlo o decidirlo también Kyan.
 - **Bitácora:** cada requerimiento va en `docs/bitacora/AAAA-MM-DD-slug/`:
   - `PLAN.md`: se escribe antes de implementar y no se edita después.
   - `DOCUMENTACION.md` y `GUIA_IMPLEMENTACION.md`: al terminar.
@@ -13,12 +14,12 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - Una fila nueva en `docs/bitacora/README.md`.
   - El formato está en `docs/bitacora/PLANTILLA.md`. Todo en español, con diagramas Mermaid.
 - **Changelog para jugadores:** `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `v34frag X.Y.Z --  Changelog`, con tuteo y sin detalles técnicos.
-- **Commits:** Conventional Commits en español (`feat(servidor): …`, `docs(bitacora): …`). Solo cuando Daniel lo pide.
+- **Commits:** Conventional Commits en español (`feat(servidor): …`, `docs(bitacora): …`). Solo cuando Daniel o Kyan lo piden.
 - **Inventario de plugins y extensiones de terceros del servidor real:** `docs/PLUGINS_EXTERNOS.md`.
 - **Paquetes de JavaScript:** **pnpm** (12.8.1, con Corepack), nunca npm, en `web/backend` y `cloudflare/demo-worker`.
   - Instalar con `pnpm install --frozen-lockfile` y correr con `pnpm <script>` o `pnpm exec <bin>`.
   - Cada proyecto tiene un `pnpm-workspace.yaml` con antigüedad mínima de 7 días, `trustPolicy: no-downgrade` y la lista `allowBuilds` de paquetes autorizados a correr scripts de instalación.
-  - Si hace falta instalar algo nuevo en la máquina, avisarle a Daniel y que lo instale él.
+  - Si hace falta instalar algo nuevo en la máquina, avisarle a Daniel o a Kyan y que lo instale uno de ellos.
 
 ## Despliegue
 
