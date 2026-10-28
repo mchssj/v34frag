@@ -123,6 +123,8 @@ Todo con sesión (`401` sin ella).
 | `alias_changed` | Usuario | `alias` | "Un admin cambió tu alias a {alias}" | `/profile` |
 | `role_changed` | Usuario | `role` | "Ahora eres {organizador / admin / usuario}" | — |
 | `password_changed` | Usuario (obligatoria) | `at` | "Se cambió la contraseña de tu cuenta. Si no fuiste tú, avísale a un admin" | `/profile/account` |
+| `vip_granted` | Usuario (desde el 2026-10-28) | `until` (ISO, o `null` si es lifetime), `lifetime` | "Ya eres VIP hasta el {until}" o "Ya eres VIP lifetime" | `/profile` |
+| `vip_revoked` | Usuario (desde el 2026-10-28) | `reason` | "Un admin te quitó el VIP: {reason}" | `/profile` |
 
 #### Novedades (`news`, apagada por defecto)
 | `type` | `data` | Texto sugerido | Link |

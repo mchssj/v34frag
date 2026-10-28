@@ -1,6 +1,6 @@
 {
   // Código que corre en Cloudflare Workers. node.ts, las pruebas y los scripts usan tsconfig.node.json
-  // (los tipos de Workers y los de Node definen los mismos globales y no se pueden mezclar). udp-node.ts también es solo de Node.
+  // (los tipos de Workers y los de Node definen los mismos globales y no se pueden mezclar). udp-node.ts y src/jobs/ también son solo de Node.
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],
@@ -17,5 +17,5 @@
     "noEmit": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/node.ts", "src/lib/udp-node.ts"]
+  "exclude": ["src/node.ts", "src/lib/udp-node.ts", "src/jobs/**"]
 }

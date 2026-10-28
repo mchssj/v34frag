@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
+import { VipStatus } from './vip';
 
 const optText = (max: number) =>
   z
@@ -83,6 +84,7 @@ export const AdminUser = z
     alias_changed_at: z.string().nullable(),
     player_id: z.uuid().nullable(),
     steam_id: z.string().nullable(),
+    vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
   })
   .openapi('AdminUser');
 
@@ -161,7 +163,7 @@ export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedL
 
 export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
-  role: z.enum(['user', 'organizer', 'admin']).optional(),
+  role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),
   has_player: boolParam('Con o sin jugador vinculado'),
   has_steam: boolParam('Con o sin SteamID vinculado'),
 });

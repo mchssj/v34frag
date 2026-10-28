@@ -28,3 +28,6 @@ SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 # Secretos (no van en este archivo):
 #   en desarrollo: .dev.vars (lo genera scripts/dev-vars.py desde el .env de la raíz)
 #   en producción: pnpm exec wrangler secret put PTERO_PANEL_API_KEY / DEMO_WORKER_TOKEN / ADMIN_KEY
+#   y una key por servidor de otra cuenta del panel: PTERO_KEY_<panel_server_id> (RBK: PTERO_KEY_edbee7d6)
+#   (si el servidor está en otro panel, game_servers.panel_url: ahí solo se usa su PTERO_KEY_<id>; sin key, la demo
+#   va por SFTP desde el VPS, ver docs/bitacora/2026-10-28-demos-servidores-externos)

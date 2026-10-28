@@ -30,7 +30,7 @@ pnpm dev:node                    # API en http://localhost:8787 (documentación 
 |---|---|
 | Correos de Auth (confirmación del registro) | http://127.0.0.1:54324 (Inbucket: los correos no salen de la máquina) |
 | Ver y editar la base | http://127.0.0.1:54323 (Supabase Studio) |
-| Hacer admin a una cuenta | En Studio, SQL: `update profiles set role = 'admin' where tag = '<alias>';`. Organizadores: `PUT /api/v1/admin/users/{id}/role` |
+| Hacer admin a una cuenta | En Studio, SQL: `update profiles set role = 'admin' where tag = '<alias>';`. Organizadores y moderadores: `PUT /api/v1/admin/users/{id}/role` |
 | Borrar todo y empezar de nuevo | `pnpm db:reset` |
 
 - **Datos:** la base local arranca vacía. Las cuentas, equipos, torneos y PCW se crean con la API. Las partidas jugadas, stats y ELO llegan del servidor de juego. Para probar pantallas con datos de partidas se cargan a mano en Studio (`matches` y `match_player_stats`); si hace falta un script de datos de prueba, pedirlo.
@@ -59,7 +59,7 @@ sequenceDiagram
   - **Se deja el comportamiento por defecto de Supabase** (decisión de Daniel, 2026-10-16). La defensa si una cuenta se ve comprometida es cerrar sesión (`POST /auth/logout`), que revoca la sesión entera.
 - **Qué hace el frontend:** guardar siempre el último `refresh_token` que llegó y no depender de que el anterior se rechace ni de que se acepte. Con varias pestañas, que una sola renueve y comparta el resultado (evita renovaciones duplicadas y carreras).
 - Las rutas públicas aceptan el token si viene: con sesión, la respuesta puede traer más datos (por ejemplo, los datos personales de un perfil privado que el usuario puede ver, o si el usuario es capitán de un equipo).
-- `user.role` es `user`, `organizer` o `admin`. Las pantallas de admin se muestran solo a `admin`; "Crear torneo" y la gestión de torneos, a `organizer` y `admin` (en un torneo concreto, `viewer.can_manage` dice si puede gestionarlo). La API lo vuelve a verificar.
+- `user.role` es `user`, `organizer`, `moderator` o `admin`. Todos juegan. Las pantallas de admin se muestran solo a `admin`; "Crear torneo" y la gestión de torneos, a `organizer` y `admin` (en un torneo concreto, `viewer.can_manage` dice si puede gestionarlo); los baneos (Administración › Baneos y el botón "Banear"), a `moderator` y `admin` (desde el 2026-10-26). La API lo vuelve a verificar.
 
 ### Errores
 

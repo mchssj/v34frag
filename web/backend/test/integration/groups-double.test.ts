@@ -60,12 +60,12 @@ describe('grupos de doble eliminación + playoffs', () => {
     // 8 equipos en 2 grupos de 4, clasifican 2 por grupo, con 3.er puesto.
     const created = await req('POST', '/api/v1/events', {
       token: org.token,
-      body: { name: `GD ${rnd()}`, template: 'groups_double', config: { advance: 2, playoffs: { third_place: true } }, players_max: 5 },
+      body: { name: `GD ${rnd()}`, template: 'groups_double', config: { advance: 2, playoffs: { third_place: true } } },
     });
     expect(created.status).toBe(201);
     const ev = created.body.id as string;
     const teams = await Promise.all(Array.from({ length: 8 }, () => team()));
-    for (const t of teams) expect((await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { players: t.players } })).status).toBe(204);
+    for (const t of teams) expect((await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { active: t.players } })).status).toBe(204);
 
     // Sorteo: solo el organizador; trae los 8 y queda registrado.
     expect((await req('POST', `/api/v1/events/${ev}/draw`, { token: teams[0]!.cap.token })).status).toBe(403);

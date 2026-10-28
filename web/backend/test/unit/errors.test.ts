@@ -31,6 +31,21 @@ describe('fromPostgrest', () => {
     expect(fromPostgrest({ code, message })).toMatchObject({ status, message });
   });
 
+  it.each([
+    ['V3401', 404, 'NOT_A_MEMBER'],
+    ['V3402', 409, 'ROSTER_FULL'],
+    ['V3403', 400, 'COACH_NOT_ALLOWED'],
+    ['V3404', 409, 'REGISTRATION_CLOSED'],
+  ])('%s (código propio del replanteo 33) → %i %s con el mensaje de la función', (code, status, appCode) => {
+    expect(fromPostgrest({ code, message: 'Mensaje para el usuario' })).toMatchObject({ status, code: appCode, message: 'Mensaje para el usuario' });
+  });
+
+  it('V3405 → 400 PLAYER_NOT_LINKED con los alias del detail', () => {
+    const e = fromPostgrest({ code: 'V3405', message: 'No tienen el SteamID vinculado: A, B', details: '["A", "B"]' });
+    expect(e).toMatchObject({ status: 400, code: 'PLAYER_NOT_LINKED', details: { aliases: ['A', 'B'] } });
+    expect(fromPostgrest({ code: 'V3405', message: 'x', details: 'no es JSON' }).details).toEqual({ aliases: [] });
+  });
+
   it('P0001 conserva el mensaje de la función SQL (es para el usuario)', () => {
     const e = fromPostgrest({ code: 'P0001', message: 'El tag debe tener entre 2 y 24 caracteres' });
     expect(e).toMatchObject({ status: 400, code: 'BUSINESS_RULE', message: 'El tag debe tener entre 2 y 24 caracteres' });

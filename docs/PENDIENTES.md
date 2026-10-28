@@ -363,6 +363,29 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **La web vieja no se toca** (Daniel, 2026-10-25): hasta el corte su panel puede desvincular más fichas al editarlas; la `15` también las levanta si el reclamo sigue aprobado. Opcional, con OK de Daniel: vincular las 10 en producción antes del corte.
 - **Bitácora:** [`2026-10-25-vinculos-perdidos`](bitacora/2026-10-25-vinculos-perdidos/)
 
+### 1.21 Demos de RBK a R2: verificar con el primer mix de RBK
+
+- **Desplegado el 2026-10-26:**
+  - Worker `v34frag-demos` versión `1475d128`, con el secreto `PTERO_KEY_edbee7d6` (la key del panel de RBK, `SERVER1_PANEL_API_KEY` en el `.env`).
+  - En producción, `game_servers.panel_server_id = 'edbee7d6'` para RBK.
+  - En RBK (`SERVER1_*`), `csstv_demo "1"`, con la copia `csstv_reporter.cfg.bak_20261026`. Se aplica en el próximo cambio de mapa.
+- RBK ya tenía `+tv_enable 1 +tv_port 27063` en el arranque del panel. Nuestro servidor no cambia.
+- **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
+- **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
+
+### 1.22 Equipo y Torneos en la API (replanteo `33`): falta staging y el frontend
+
+- **Hecho el 2026-10-28 (local) y commiteado en `feat/backend-api-fase-1` (sin push):** replanteo `33`, API y pruebas (45 SQL, 353 unitarias y 150 de integración). Bitácora: [`2026-10-28-equipo-torneos-api`](bitacora/2026-10-28-equipo-torneos-api/).
+- **Contrato para el frontend:** [`contrato-frontend-equipo-torneos.md`](../contrato-frontend-equipo-torneos.md). Rompe la inscripción a torneos (`{ active, subs }`) y saca `players_min`/`players_max`.
+- **Falta:**
+  - Cargar los replanteos `31`, `32` y `33` en la Supabase de **staging** (hoy tiene del `01` al `30`) y redesplegar la API del VPS antes del ensayo de Equipo y Torneos.
+  - Que el frontend adopte la inscripción nueva y los campos nuevos.
+  - Publicar `bitacora/2026-10-28-equipo-torneos-api/CHANGELOG_DISCORD.txt` cuando llegue a producción (poner la versión).
+- No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
+- **Problemas del entorno vistos al probar:**
+  - En `v34frag-backend` los `.sql` del checkout tenían CRLF y el replanteo `04` fallaba al cargar; se pasaron a LF en la copia de trabajo (sin cambios en Git).
+  - `pruebas/correr.sh` se corta en la prueba `por STEAM_0 del adicional…` de `pruebas/23_whois.sql`, que falla por su cuenta. Sin investigar.
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
@@ -490,10 +513,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
     - el select de Mixes desde `GET /maps?mixes=true` y la foto del marcador buscando el mapa del mix entre las `versions`. Cambia el `queryFn` de `features/maps/queries.ts` y `mapImage`;
     - el selector del pool al crear o editar un torneo y al publicar una PCW.
   - **Plugin, en pausa por el orden de trabajo:** para la advertencia "a este servidor le faltan N mapas" en `GET /api/v1/admin/servers`, el reporter tiene que informar los `.bsp` de `maps/` (por ejemplo, al validar la licencia o al cargar un mapa). Hoy no lo hace.
-- **Pedidos del frontend de Mixes** (2026-10-24, bitácora [`2026-10-24-frontend-mixes`](bitacora/2026-10-24-frontend-mixes/GUIA_IMPLEMENTACION.md)):
-  - `match_id` en el `404` de `GET /api/v1/mixes/live/{uid}` (o un endpoint que lo resuelva), para pasar de la sala en vivo a la sala final.
-  - `level` (y `elo`) en `PlayerLine` y `LivePlayerLine`, para la insignia de nivel de cada jugador en la sala.
-  - `review` en `MixItem`, para el chip "ELO pendiente" de un interrumpido en el listado.
+- ~~**Pedidos del frontend de Mixes**~~ (2026-10-24, bitácora [`2026-10-24-frontend-mixes`](bitacora/2026-10-24-frontend-mixes/GUIA_IMPLEMENTACION.md)): **hechos el 2026-10-25** (`677425d`), solo en local y sin migración: `match_id` en el `404` de `GET /api/v1/mixes/live/{uid}`, `level` y `elo` en `PlayerLine` y `LivePlayerLine`, y `review` en `MixItem`. Ver [`2026-10-25-api-pedidos-mixes`](bitacora/2026-10-25-api-pedidos-mixes/DOCUMENTACION.md). Falta usarlos en el frontend.
 - **Pedidos del frontend de Ranking** (2026-10-24, bitácora [`2026-10-24-frontend-ranking`](bitacora/2026-10-24-frontend-ranking/GUIA_IMPLEMENTACION.md)):
   - ~~Orden de los sin puesto en `GET /api/v1/seasons/{id}/standings` y en la vista previa del cierre~~: **corregido el 2026-10-24** (`5f786eb`, rama `feat/backend-api-fase-1`, con push): `runList` acepta `elo:desc`.
   - ~~(Opcional) `teams`, `rating`, `kd` y el filtro `level` en esa respuesta~~: **hecho el 2026-10-25**, solo en local (replanteo `30`): rating y K/D de los mixes de la temporada (guardados en la foto del cierre), equipos actuales, filtros `level` y `team` y orden por `rating` y `kd`. Ver [`2026-10-25-ranking-temporada-columnas`](bitacora/2026-10-25-ranking-temporada-columnas/DOCUMENTACION.md). Falta mostrar las columnas en la tabla de la temporada del frontend.

@@ -25,6 +25,8 @@ if os.path.exists(out_path):
 
 vals = {
     'PTERO_PANEL_API_KEY': env.get('PTERO_PANEL_API_KEY', ''),
+    # Key del panel de RBK (otra cuenta): el Worker la usa para su servidor (docs/bitacora/2026-10-26-demos-rbk).
+    'PTERO_KEY_edbee7d6': env.get('SERVER1_PANEL_API_KEY', ''),
     'ADMIN_KEY': old.get('ADMIN_KEY') or old.get('PROBE_KEY') or secrets.token_urlsafe(24),
     'DEMO_WORKER_TOKEN': env.get('DEMO_WORKER_TOKEN', ''),
 }

@@ -82,7 +82,7 @@ beforeAll(async () => {
   // Torneo: la final la gana el equipo 0 (ficha 0 inscrita); la base marca el campeón sola.
   await insert('teams', teamIds.map((id, i) => ({ id, name: `MprT${i}${sfx}`, tag: `M${i}`, kind: 'official' })));
   await insert('team_members', [{ team_id: teamIds[0], player_id: playerIds[0] }, { team_id: teamIds[1], player_id: playerIds[3] }]);
-  await insert('events', [{ id: eventId, name: `Copa ${sfx}`, template: 'single', players_min: 1, players_max: 10 }]);
+  await insert('events', [{ id: eventId, name: `Copa ${sfx}`, template: 'single', game_mode: '1v1' }]);
   await insert('tournament_registrations', teamIds.map((team_id) => ({ event_id: eventId, team_id })));
   await insert('tournament_registration_players', [
     { event_id: eventId, team_id: teamIds[0], player_id: playerIds[0] },

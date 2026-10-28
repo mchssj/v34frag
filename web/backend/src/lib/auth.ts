@@ -60,13 +60,24 @@ async function authenticate(c: Context<AppEnv>, token: string) {
   c.set('sb', userClient(cfg, token));
 }
 
-/** Si el usuario es admin (lee profiles.role con su token). */
-export async function isAdmin(c: Context<AppEnv>): Promise<boolean> {
+/** Rol del usuario (lee profiles.role con su token), o null sin sesión. */
+async function userRole(c: Context<AppEnv>): Promise<string | null> {
   const user = currentUser(c);
-  if (!user) return false;
+  if (!user) return null;
   const { data, error } = await c.var.sb.from('profiles').select('role').eq('id', user.id).maybeSingle();
   if (error) throw fromPostgrest(error);
-  return data?.role === 'admin';
+  return data?.role ?? null;
+}
+
+/** Si el usuario es admin. */
+export async function isAdmin(c: Context<AppEnv>): Promise<boolean> {
+  return (await userRole(c)) === 'admin';
+}
+
+/** Si el usuario es moderador o admin (plan docs/bitacora/2026-10-25-baneos-web). */
+export async function isModerator(c: Context<AppEnv>): Promise<boolean> {
+  const role = await userRole(c);
+  return role === 'moderator' || role === 'admin';
 }
 
 /** Exige requireUser antes. Lee profiles.role con el token del usuario (la RLS deja leer el propio). */
@@ -74,5 +85,12 @@ export const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
   const user = c.var.user;
   if (!user) throw new Error('requireAdmin se usó sin requireUser antes');
   if (!(await isAdmin(c))) throw new AppError(403, 'FORBIDDEN', 'Solo un administrador puede hacer esto.');
+  await next();
+};
+
+/** Exige requireUser antes. Moderadores y admins. */
+export const requireModerator: MiddlewareHandler<AppEnv> = async (c, next) => {
+  if (!c.var.user) throw new Error('requireModerator se usó sin requireUser antes');
+  if (!(await isModerator(c))) throw new AppError(403, 'FORBIDDEN', 'Solo moderadores y admins pueden hacer esto.');
   await next();
 };

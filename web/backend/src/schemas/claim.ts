@@ -1,6 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
-import { PlayerStats } from './players';
+import { ActiveBan, PlayerStats } from './players';
 
 // Perfiles sin reclamar, !claim y varios SteamID por ficha (plan docs/bitacora/2026-10-16-claim-steamid).
 
@@ -37,6 +37,7 @@ export const SteamProfile = z
     claimed: z.boolean().openapi({ description: '`true`: ese SteamID ya es de una ficha (redirigir a `player_id`)' }),
     player_id: z.uuid().nullable(),
     profile: UnclaimedSummary.extend({ stats: PlayerStats.nullable() }).nullable().openapi({ description: 'Solo si no está reclamado' }),
+    ban: ActiveBan.nullable().openapi({ description: 'Baneo activo del SteamID. Solo si no está reclamado (si no, va en la ficha)' }),
   })
   .openapi('SteamProfile');
 

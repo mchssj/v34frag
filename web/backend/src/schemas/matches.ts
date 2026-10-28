@@ -1,6 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { dateParam, Envelope, listQuery } from '../lib/list';
-import { Clutches } from './common';
+import { Clutches, ReviewStatus } from './common';
 import { LiveGameRef } from './live';
 import { TeamRef } from './players';
 
@@ -11,7 +11,7 @@ export const MatchKind = z.enum(['mix', 'pcw', 'official']);
 export const MatchStatus = z.enum(['upcoming', 'live', 'finished', 'cancelled']);
 
 /** Revisión de un mix interrumpido por una caída: pendiente, ELO aplicado o descartado. */
-export const ReviewStatus = z.enum(['pending', 'applied', 'discarded']);
+export { ReviewStatus };
 
 export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'played_at', order: 'desc' }).extend({
   kind: MatchKind.optional().openapi({ description: '`official` (torneo), `pcw` o `mix`. Sin filtro: todas' }),
@@ -83,6 +83,8 @@ export const PlayerLine = z
     side: z.number().int().nullable(),
     kills: num, deaths: num, assists: num, headshots: num, damage: num, rounds: num, rating: num,
     elo_delta: num,
+    elo: z.number().int().nullable().openapi({ description: 'ELO actual (no el de esa partida); null sin ELO (bots, NOSTEAM)' }),
+    level: z.number().int().min(1).max(10).nullable().openapi({ description: 'Nivel del ELO actual, para la insignia' }),
     // (replanteo 29) estadísticas estilo HLTV: totales; los cocientes los calcula el frontend.
     k2: num, k3: num, k4: num, k5: num,
     first_kills: num.openapi({ description: 'Duelos de entrada ganados (primera kill de la ronda)' }),

@@ -11,3 +11,5 @@ trustPolicy: no-downgrade
 allowBuilds:
   esbuild: true    # binario nativo, lo usan wrangler y tsx
   workerd: true    # runtime local de Cloudflare Workers (wrangler dev)
+  ssh2: false        # opcional: compila un módulo nativo para cifrar más rápido; sin él usa JavaScript puro
+  cpu-features: false  # opcional, lo pide ssh2 para elegir el cifrado
