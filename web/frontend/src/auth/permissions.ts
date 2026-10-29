@@ -8,6 +8,7 @@ export const ADMIN_SECTIONS = [
   "players",
   "teams",
   "servers",
+  "matchmaking",
   "users",
 ] as const
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]
