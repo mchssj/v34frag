@@ -5,31 +5,65 @@
 .avf>.avf-img{position:absolute;inset:12.5%;width:75%;height:75%;object-fit:cover;border-radius:8%}
 .avf>.avf-marco{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 
-/* Fondo de perfil y de mini perfil */
-.perfil-fondo{background-size:cover;background-position:center}
-
 /* Temas: redefinen los tokens de shadcn del frontend nuevo (web/frontend/src/index.css) dentro del perfil.
    No tocan --accent: en shadcn es el fondo del hover, no el color de marca. */
 .tema-terro{--primary:#e0a33a;--primary-foreground:#1b1407;--ring:#e0a33a;--card:#1b1610;--muted:#241d14;--border:#3b2f20}
 .tema-anti{--primary:#4f9bff;--primary-foreground:#07111f;--ring:#4f9bff;--card:#0f1520;--muted:#152030;--border:#22344d}
 .tema-toxico{--primary:#9dff3a;--primary-foreground:#0c1404;--ring:#9dff3a;--card:#11160c;--muted:#182010;--border:#2c3a1c}
-.tema-oro{--primary:#f2c040;--primary-foreground:#1b1407;--ring:#f2c040;--card:#17130a;--muted:#211b0e;--border:#4a3a14}
-.tema-oro{box-shadow:inset 0 0 0 1px #f2c04033,0 0 40px #f2c04014}
+.tema-hielo{--primary:#7fe3ff;--primary-foreground:#04161c;--ring:#7fe3ff;--card:#0e171b;--muted:#142228;--border:#24414b}
+.tema-carmesi{--primary:#ff3b4e;--primary-foreground:#1f0508;--ring:#ff3b4e;--card:#1a0e10;--muted:#241316;--border:#4a1f25}
+.tema-camuflaje{--primary:#a3b06a;--primary-foreground:#141708;--ring:#a3b06a;--card:#15170f;--muted:#1e2216;--border:#3a4128}
+.tema-atardecer{--primary:#ff8a4a;--primary-foreground:#1f0c04;--ring:#ff8a4a;--card:#1a110f;--muted:#261814;--border:#4d2a20}
+.tema-grafito{--primary:#e6e6e6;--primary-foreground:#111;--ring:#e6e6e6;--card:#141414;--muted:#1f1f1f;--border:#3a3a3a}
 
-/* Efectos de nombre */
-.nombre-brillo{background:linear-gradient(100deg,currentColor 40%,#fff 50%,currentColor 60%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-brillo 2.6s linear infinite}
-.nombre-arcoiris{background:linear-gradient(90deg,#ff4d6d,#ffb13b,#ffe14d,#48d597,#4f9bff,#b26bff,#ff4d6d) 0 0/300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-arcoiris 4s linear infinite}
+/* Temas VIP: además del color, un borde con brillo. */
+.tema-oro{--primary:#f2c040;--primary-foreground:#1b1407;--ring:#f2c040;--card:#17130a;--muted:#211b0e;--border:#4a3a14;box-shadow:inset 0 0 0 1px #f2c04033,0 0 40px #f2c04014}
+.tema-obsidiana{--primary:#c58bff;--primary-foreground:#14061f;--ring:#c58bff;--card:#0b0910;--muted:#15111d;--border:#2d2340;box-shadow:inset 0 0 0 1px #c58bff33,0 0 40px #7a3cff1f}
+.tema-diamante{--primary:#b9f3ff;--primary-foreground:#04161c;--ring:#b9f3ff;--card:#0c141c;--muted:#132230;--border:#2f5a73;box-shadow:inset 0 0 0 1px #b9f3ff40,0 0 40px #3a8cff26}
+.tema-synthwave{--primary:#ff5fa2;--primary-foreground:#1a0412;--ring:#ff5fa2;--card:#140a1f;--muted:#1f0f2e;--border:#4d1f5a;box-shadow:inset 0 0 0 1px #ff5fa240,0 0 40px #b02aff26}
+.tema-holo{--primary:#7af0ff;--primary-foreground:#061218;--ring:#7af0ff;--card:#0f1117;--muted:#171a24;--border:#2b3142;animation:cos-holo-borde 6s linear infinite}
+.tema-esmeralda{--primary:#3ddc97;--primary-foreground:#04170e;--ring:#3ddc97;--card:#0a1410;--muted:#10201a;--border:#1f4a36;box-shadow:inset 0 0 0 1px #3ddc9740,0 0 40px #3ddc9726}
+.tema-rubi{--primary:#ff4d7a;--primary-foreground:#1f0510;--ring:#ff4d7a;--card:#170a0f;--muted:#231018;--border:#4d1a2c;box-shadow:inset 0 0 0 1px #ff4d7a40,0 0 40px #ff4d7a26}
+.tema-aurora{--primary:#7dffc4;--primary-foreground:#06160f;--ring:#7dffc4;--card:#0b1214;--muted:#121c20;--border:#24393f;animation:cos-aurora-borde 7s linear infinite}
+
+/* Efectos de nombre. Los que usan ::before y ::after necesitan data-nombre con el mismo texto. */
+.nombre-brillo{background:linear-gradient(100deg,currentColor 40%,#fff 50%,currentColor 60%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-mover-250 2.6s linear infinite}
 .nombre-glitch{position:relative;display:inline-block;animation:cos-glitch 2.4s steps(1) infinite}
 .nombre-glitch::before,.nombre-glitch::after{content:attr(data-nombre);position:absolute;inset:0;pointer-events:none}
-.nombre-glitch::before{color:#ff2a6d;transform:translate(-2px,0);clip-path:inset(0 0 55% 0);opacity:.85;animation:cos-glitch-a 2.4s steps(1) infinite}
-.nombre-glitch::after{color:#2ee6ff;transform:translate(2px,0);clip-path:inset(55% 0 0 0);opacity:.85;animation:cos-glitch-b 2.4s steps(1) infinite}
+.nombre-glitch::before{color:#ff2a6d;clip-path:inset(0 0 55% 0);opacity:0;animation:cos-glitch-a 2.4s steps(1) infinite}
+.nombre-glitch::after{color:#2ee6ff;clip-path:inset(55% 0 0 0);opacity:0;animation:cos-glitch-b 2.4s steps(1) infinite}
+.nombre-neon{color:#fff;text-shadow:0 0 4px currentColor,0 0 10px var(--neon,#ff3fa0),0 0 22px var(--neon,#ff3fa0);-webkit-text-fill-color:#fff;animation:cos-neon 3s ease-in-out infinite}
+.nombre-retro{text-shadow:.04em .04em 0 #ff5fa2,.08em .08em 0 #7a5cff,.12em .12em 0 #2ee6ff}
+.nombre-contorno{-webkit-text-fill-color:transparent;-webkit-text-stroke:1.5px currentColor;paint-order:stroke}
+.nombre-sombra{text-shadow:.03em .03em 0 #000,.06em .06em 0 #0008,.09em .09em 0 #0006,.12em .12em 0 #0004,.15em .15em 0 #0002}
+.nombre-hielo{background:linear-gradient(180deg,#fff 0%,#bfefff 50%,#6fc7ea 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 4px #7fe3ff88)}
+.nombre-pixel{font-family:Consolas,Courier New,monospace;letter-spacing:.05em;text-shadow:.06em 0 0 #ff5fa2,-.06em 0 0 #2ee6ff;text-transform:uppercase}
 
-@keyframes cos-brillo{to{background-position:-250% 0}}
-@keyframes cos-arcoiris{to{background-position:-300% 0}}
+/* Efectos de nombre VIP */
+.nombre-arcoiris{background:linear-gradient(90deg,#ff4d6d,#ffb13b,#ffe14d,#48d597,#4f9bff,#b26bff,#ff4d6d) 0 0/300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-mover-300 4s linear infinite}
+.nombre-oro{background:linear-gradient(100deg,#a8741a 0%,#f7d76a 30%,#fff6cf 45%,#e8b53a 60%,#a8741a 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #f2c04066);animation:cos-mover-250 3s linear infinite}
+.nombre-fuego{background:linear-gradient(0deg,#ff2a00,#ff8a00 40%,#ffe14d 80%,#fff) 0 0/100% 300%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #ff5a1f99);animation:cos-fuego 1.2s ease-in-out infinite alternate}
+.nombre-holografico{background:linear-gradient(110deg,#7af0ff,#c58bff,#ff8ad0,#ffe9a8,#7af0ff) 0 0/300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-mover-300 5s linear infinite,cos-holo 5s linear infinite}
+.nombre-galaxia{position:relative;display:inline-block;background:radial-gradient(circle at 20% 30%,#fff 0 1px,transparent 2px),radial-gradient(circle at 70% 60%,#fff 0 1px,transparent 2px),radial-gradient(circle at 45% 80%,#fff 0 1px,transparent 2px),linear-gradient(90deg,#9b7bff,#ff8ad0,#6fd3ff,#9b7bff);background-size:40px 40px,55px 55px,35px 35px,300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #7a5cff88);animation:cos-galaxia 8s linear infinite}
+.nombre-plasma{color:#e6d4ff;-webkit-text-fill-color:#f3ebff;text-shadow:0 0 4px #b26bff,0 0 12px #7a3cff,0 0 24px #7a3cff;animation:cos-plasma 1.4s steps(1) infinite}
+.nombre-esmeralda{background:linear-gradient(100deg,#0f7a4f 0%,#3ddc97 35%,#d6ffe9 48%,#3ddc97 60%,#0f7a4f 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #3ddc9766);animation:cos-mover-250 3s linear infinite}
+.nombre-cromo{background:linear-gradient(180deg,#fff 0%,#c9ced6 45%,#5d6470 50%,#e9ecf0 55%,#9aa1ab 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #0009)}
+.nombre-cromo{position:relative;display:inline-block}
+.nombre-cromo::after{content:attr(data-nombre);position:absolute;inset:0;background:linear-gradient(100deg,transparent 40%,#fff 50%,transparent 60%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-mover-250 2.4s linear infinite}
+
+@keyframes cos-mover-250{to{background-position:-250% 0}}
+@keyframes cos-mover-300{to{background-position:-300% 0}}
 @keyframes cos-glitch{0%,88%,100%{transform:none}90%{transform:translate(1px,-1px)}94%{transform:translate(-1px,1px)}}
-@keyframes cos-glitch-a{0%,86%,100%{transform:translate(0,0);opacity:0}88%{transform:translate(-3px,0);opacity:.85}92%{transform:translate(2px,0)}}
-@keyframes cos-glitch-b{0%,86%,100%{transform:translate(0,0);opacity:0}89%{transform:translate(3px,0);opacity:.85}93%{transform:translate(-2px,0)}}
+@keyframes cos-glitch-a{0%,86%,100%{transform:translate(0,0);opacity:0}88%{transform:translate(-3px,0);opacity:.85}92%{transform:translate(2px,0);opacity:.85}}
+@keyframes cos-glitch-b{0%,86%,100%{transform:translate(0,0);opacity:0}89%{transform:translate(3px,0);opacity:.85}93%{transform:translate(-2px,0);opacity:.85}}
+@keyframes cos-neon{0%,100%{opacity:1}45%{opacity:1}47%{opacity:.55}49%{opacity:1}52%{opacity:.7}54%{opacity:1}}
+@keyframes cos-fuego{from{background-position:0 0}to{background-position:0 100%}}
+@keyframes cos-holo{to{filter:hue-rotate(360deg)}}
+@keyframes cos-galaxia{to{background-position:40px 40px,-55px 55px,35px -35px,-300% 0}}
+@keyframes cos-plasma{0%,100%{text-shadow:0 0 4px #b26bff,0 0 12px #7a3cff,0 0 24px #7a3cff}20%{text-shadow:0 0 6px #e6d4ff,0 0 18px #b26bff,0 0 30px #7a3cff}40%{text-shadow:0 0 3px #b26bff,0 0 8px #7a3cff}70%{text-shadow:0 0 8px #e6d4ff,0 0 20px #b26bff,0 0 34px #5b3cff}}
+@keyframes cos-aurora-borde{0%{box-shadow:inset 0 0 0 1px #7dffc466,0 0 40px #7dffc426}50%{box-shadow:inset 0 0 0 1px #b26bff66,0 0 40px #b26bff26}100%{box-shadow:inset 0 0 0 1px #7dffc466,0 0 40px #7dffc426}}
+@keyframes cos-holo-borde{0%{box-shadow:inset 0 0 0 1px #7af0ff66,0 0 40px #7af0ff26}33%{box-shadow:inset 0 0 0 1px #c58bff66,0 0 40px #c58bff26}66%{box-shadow:inset 0 0 0 1px #ff8ad066,0 0 40px #ff8ad026}100%{box-shadow:inset 0 0 0 1px #7af0ff66,0 0 40px #7af0ff26}}
 
 @media (prefers-reduced-motion:reduce){
-  .nombre-brillo,.nombre-arcoiris,.nombre-glitch,.nombre-glitch::before,.nombre-glitch::after{animation:none}
+  [class*="nombre-"],[class*="nombre-"]::before,[class*="nombre-"]::after,.tema-holo,.tema-aurora{animation:none}
 }

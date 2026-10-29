@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <filter id="sp" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence baseFrequency=".9" numOctaves="1" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+  </defs>
+  <g filter="url(#sp)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="22" y="22" width="212" height="212" rx="18" stroke="#2ee6ff" stroke-width="12"/>
+    <rect x="22" y="22" width="212" height="212" rx="18" stroke="#ff2a9a" stroke-width="5" stroke-dasharray="60 30"/>
+  </g>
+  <g fill="#2ee6ff">
+    <path d="M60 232v14a3 3 0 0 0 6 0v-14Z"/><path d="M150 232v20a3 3 0 0 0 6 0v-20Z"/><path d="M200 232v10a3 3 0 0 0 6 0v-10Z"/>
+    <path d="M232 90h10a3 3 0 0 1 0 6h-10Z"/>
+  </g>
+  <g fill="#ff2a9a">
+    <path d="M100 236v16a3 3 0 0 0 6 0v-16Z"><animate attributeName="d" values="M100 236v4a3 3 0 0 0 6 0v-4Z;M100 236v18a3 3 0 0 0 6 0v-18Z;M100 236v18a3 3 0 0 0 6 0v-18Z" dur="3s" repeatCount="indefinite"/></path>
+  </g>
+  <g transform="translate(206 26) rotate(-12)">
+    <rect x="-30" y="-14" width="60" height="26" rx="6" fill="#ffe14d" stroke="#14141a" stroke-width="3"/>
+    <text y="6" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="17" fill="#14141a">v34!</text>
+  </g>
+  <g fill="#ff2a9a" opacity=".8"><circle cx="16" cy="40" r="2"/><circle cx="10" cy="52" r="1.5"/><circle cx="20" cy="60" r="1"/><circle cx="244" cy="190" r="2"/><circle cx="250" cy="176" r="1.5"/></g>
+</svg>

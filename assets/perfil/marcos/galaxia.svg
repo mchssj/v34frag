@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <radialGradient id="neb" cx=".5" cy=".5" r=".6"><stop offset=".55" stop-color="#3a1c71" stop-opacity="0"/><stop offset=".75" stop-color="#7a3cff"/><stop offset=".9" stop-color="#ff5fa2"/><stop offset="1" stop-color="#2ee6ff" stop-opacity="0"/></radialGradient>
+    <filter id="b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+    <mask id="m"><rect width="256" height="256" fill="#fff"/><rect x="34" y="34" width="188" height="188" rx="10" fill="#000"/></mask>
+  </defs>
+  <g mask="url(#m)">
+    <rect x="0" y="0" width="256" height="256" fill="#0a0618"/>
+    <g filter="url(#b)">
+      <circle cx="128" cy="128" r="150" fill="url(#neb)"/>
+      <ellipse cx="128" cy="128" rx="140" ry="60" fill="#ff5fa2" opacity=".35">
+        <animateTransform attributeName="transform" type="rotate" values="0 128 128;360 128 128" dur="14s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="128" cy="128" rx="130" ry="50" fill="#2ee6ff" opacity=".3">
+        <animateTransform attributeName="transform" type="rotate" values="360 128 128;0 128 128" dur="18s" repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+    <g fill="#fff">
+      <g>
+        <circle cx="20" cy="30" r="1.5"/><circle cx="60" cy="14" r="1"/><circle cx="110" cy="22" r="1.5"/><circle cx="170" cy="12" r="1"/><circle cx="230" cy="26" r="1.5"/>
+        <circle cx="244" cy="90" r="1"/><circle cx="236" cy="160" r="1.5"/><circle cx="246" cy="210" r="1"/><circle cx="200" cy="240" r="1.5"/><circle cx="140" cy="246" r="1"/>
+        <circle cx="80" cy="238" r="1.5"/><circle cx="20" cy="226" r="1"/><circle cx="12" cy="170" r="1.5"/><circle cx="22" cy="110" r="1"/>
+        <animateTransform attributeName="transform" type="rotate" values="0 128 128;360 128 128" dur="60s" repeatCount="indefinite"/>
+      </g>
+      <path d="M200 20l2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/></path>
+      <path d="M40 220l2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"><animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite"/></path>
+    </g>
+  </g>
+  <rect x="32" y="32" width="192" height="192" rx="10" fill="none" stroke="#c58bff" stroke-width="2"/>
+</svg>
