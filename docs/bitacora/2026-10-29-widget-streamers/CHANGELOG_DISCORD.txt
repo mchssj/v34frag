@@ -1,0 +1,7 @@
+v34frag --  Changelog
+
+Widget para stream
+Si haces stream, ahora puedes mostrar tu nivel y tu ELO en OBS o Streamlabs.
+Entra a tu perfil en la web y toca "Widget para stream". Elige el diseño (mini, compacto o completo) y si quieres ver los resultados de hoy o de las últimas 24 horas.
+Copia la URL y agrégala en OBS como fuente de Navegador. El fondo es transparente y se actualiza solo cada minuto.
+Muestra cuánto te falta para el siguiente nivel, las victorias y derrotas del día y el ELO que ganaste o perdiste. El diseño completo suma tu K/D, tu rating y tus últimos 5 mixes.

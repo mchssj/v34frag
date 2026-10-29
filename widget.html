@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Widget CM League</title>
+<!-- Widget para OBS (fuente de navegador). Parámetros: id (players.id), d (mini | compacto | completo), v (hoy | 24h), bg=1 (fondo para verlo en el navegador), demo=1 (datos de ejemplo, sin id).
+     Bitácora: docs/bitacora/2026-10-29-widget-streamers/ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="niveles.js"></script>
+<style>
+:root{--card:rgba(11,11,15,.84);--line:rgba(255,255,255,.1);--text:#f4f4f7;--mute:#a4a4b0;--accent:#f0449b;--win:#48d597;--loss:#f0449b;--draw:#9aa0a6}
+html,body{margin:0;background:transparent;color:var(--text);font:13px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+body.bg{background:#3a3f4a;padding:16px}
+.w{display:inline-flex;flex-direction:column;gap:8px;box-sizing:border-box;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;text-shadow:0 1px 2px #0008}
+.row{display:flex;align-items:center;gap:10px}
+.lvl{--c:#9aa0a6;display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;border:3px solid var(--c);color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);font-size:14px;font-weight:800}
+.big .lvl{width:40px;height:40px;font-size:18px}
+.nick{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px}
+.tag{color:var(--mute);font-weight:600;margin-right:4px}
+.elo{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.elo small{font-size:11px;color:var(--mute);font-weight:600;margin-left:3px}
+.sub{color:var(--mute);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c,var(--accent));border-radius:3px;transition:width .6s}
+.bar-t{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-bottom:3px}
+.up{color:var(--win)}.dn{color:var(--loss)}
+.stats{display:flex;gap:14px}
+.stats div{display:flex;flex-direction:column}
+.stats b{font-size:15px;font-variant-numeric:tabular-nums}
+.last{display:flex;gap:4px}
+.last span{width:20px;height:20px;border-radius:4px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#0b0b0f;text-shadow:none}
+.last .V{background:var(--win)}.last .D{background:var(--loss)}.last .E{background:var(--draw)}
+.msg{color:var(--mute);font-size:12px}
+.mini{padding:6px 12px 6px 8px}
+.compacto{width:340px}
+.completo{width:400px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+var q=new URLSearchParams(location.search),id=q.get('id'),d=q.get('d')||'compacto',v=q.get('v')==='24h'?'24h':'hoy';
+if(['mini','compacto','completo'].indexOf(d)<0)d='compacto';
+if(q.get('bg')==='1')document.body.className='bg';
+var app=document.getElementById('app'),sb=supabase.createClient(CFG.url,CFG.key),last=null;
+
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function signed(n){return(n>0?'+':'')+n}
+function badge(elo){var l=lvlOf(elo),b=el('span','lvl',String(l[0]));b.style.setProperty('--c',l[2]);return b}
+function desde(){var t=new Date();if(v==='24h')return new Date(t-864e5);t.setHours(0,0,0,0);return t}
+function msg(t){app.textContent='';var w=el('div','w mini');w.appendChild(el('span','msg',t));app.appendChild(w)}
+
+function render(j){
+  var w=el('div','w '+d),top=el('div','row'+(d==='mini'?'':' big')),l=lvlOf(j.elo),nx=LV[l[0]];
+  top.appendChild(badge(j.elo));
+  var who=el('div');
+  if(d!=='mini'){var n=el('div','nick');if(j.team_tag)n.appendChild(el('span','tag',j.team_tag));n.appendChild(document.createTextNode(j.nick));who.appendChild(n)}
+  var e=el('div','elo',String(j.elo));e.appendChild(el('small',0,'ELO'));who.appendChild(e);top.appendChild(who);
+  w.appendChild(top);
+  if(d!=='mini'){
+    var h=j.hoy,box=el('div'),t=el('div','bar-t'),bar=el('div','bar'),fill=el('i');
+    t.appendChild(el('span',0,nx?'Nivel '+l[0]+' → '+nx[0]:'Nivel 10'));
+    t.appendChild(el('span',0,nx?'faltan '+(nx[1]-j.elo)+' ELO':'máximo'));
+    fill.style.width=(nx?Math.max(0,Math.min(100,(j.elo-l[1])/(nx[1]-l[1])*100)):100)+'%';
+    bar.style.setProperty('--c',l[2]);bar.appendChild(fill);box.appendChild(t);box.appendChild(bar);w.appendChild(box);
+    var s=el('div','stats');
+    function stat(label,val,cls){var x=el('div');x.appendChild(el('span','sub',label));x.appendChild(el('b',cls,val));s.appendChild(x)}
+    stat(v==='hoy'?'Hoy':'24 h',h.v+'V - '+h.d+'D'+(h.e?' - '+h.e+'E':''));
+    stat('ELO '+(v==='hoy'?'hoy':'24 h'),signed(h.elo),h.elo>0?'up':h.elo<0?'dn':null);
+    if(d==='completo'){
+      stat('K/D '+(v==='hoy'?'hoy':'24 h'),h.deaths?(h.kills/h.deaths).toFixed(2):h.kills?String(h.kills):'-');
+      stat('Rating',j.rating==null?'-':(+j.rating).toFixed(2));
+      stat('Pico',String(j.peak_elo));
+    }
+    w.appendChild(s);
+    if(d==='completo'&&j.ultimos.length){
+      var r=el('div','row'),u=el('div','last');r.appendChild(el('span','sub','Últimos'));
+      j.ultimos.forEach(function(m){var c=el('span',m.r,m.r);c.title=m.elo==null?'sin ELO':signed(m.elo)+' ELO';u.appendChild(c)});
+      r.appendChild(u);w.appendChild(r);
+    }
+  }
+  app.textContent='';app.appendChild(w);
+}
+
+// demo=1: datos de ejemplo, para ver el diseño sin depender de la base.
+var DEMO={nick:'Jugador',team_tag:'CML',elo:1187,peak_elo:1210,matches:23,kd:1.12,rating:1.07,hoy:{v:3,d:1,e:1,elo:41,kills:84,deaths:66},
+  ultimos:[{r:'V',elo:24},{r:'V',elo:19},{r:'E',elo:6},{r:'D',elo:-27},{r:'V',elo:28}]};
+if(q.get('demo')==='1'){render(DEMO);return}
+
+async function tick(){
+  try{
+    var res=await sb.rpc('widget_player',{p_player:id,p_desde:desde().toISOString()});
+    if(res.error)throw res.error;
+    if(!res.data){last=null;return msg('Jugador no encontrado')}
+    last=res.data;render(last);
+  }catch(err){if(!last)msg('Sin conexión, reintentando…')}
+}
+
+if(!id||!/^[0-9a-f-]{36}$/i.test(id))return msg('Falta el jugador en la URL');
+tick();setInterval(tick,60000);
+})();
+</script>
+</body>
+</html>

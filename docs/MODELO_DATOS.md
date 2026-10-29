@@ -239,6 +239,12 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | Migración `20261011220000` | `csstv_steam64` y `elo_apply_match` aceptan SteamID64 de cuentas nuevas (`765612` + 11 dígitos), además de `7656119` + 10. |
 | Migración `20261011200000` | `elo_apply_match` cuenta a los jugadores sin SteamID64 como μ 25 / σ 8.33 en la fuerza de su equipo, sin darles ELO. |
 
+## Widget para streamers (migración `20261029120000_widget_streamers.sql`)
+
+| Objeto | Detalle |
+|---|---|
+| `widget_player(p_player uuid, p_desde timestamptz)` | Nueva. `stable`, `security invoker`, ejecutable por `anon`. JSON con `nick`, `team_tag`, `elo`, `peak_elo`, `matches`, `kd`, `rating`, `hoy` (V/D/E, ±ELO, kills y deaths de los mixes terminados desde `p_desde`) y `ultimos` (los últimos 5 mixes). `null` si el jugador no existe. Lo usa `widget.html`. [Bitácora](bitacora/2026-10-29-widget-streamers/DOCUMENTACION.md) |
+
 ## Pendiente de confirmar
 
 - En qué tablas está **habilitado** RLS (las políticas no se aplican si RLS está deshabilitado).

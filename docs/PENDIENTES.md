@@ -48,6 +48,17 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
+### 1.5 Widget para streamers (OBS)
+
+- **Qué falta:**
+  1. Correr `supabase/migrations/20261029120000_widget_streamers.sql` en el SQL Editor.
+  2. Subir **juntos** `index.html`, `niveles.js` y `widget.html` a la web. `index.html` sin `niveles.js` rompe los niveles y el perfil.
+  3. Probarlo en OBS.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Al hacer el corte al backend nuevo:** portar `widget_player` al replanteo usando `elo_key()` (varios SteamID por ficha) y excluir `mix_deletions`.
+- Sin commit, en `kyan/pruebas`.
+- **Bitácora:** [`2026-10-29-widget-streamers`](bitacora/2026-10-29-widget-streamers/). Pasos en la guía; changelog para Discord en la carpeta.
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real

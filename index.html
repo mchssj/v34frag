@@ -531,7 +531,14 @@ var dark=d?d==='dark':!matchMedia('(prefers-color-scheme: light)').matches;r.set
 <input id="pcwd-name" maxlength="24" placeholder="Nombre de tu equipo (opcional)" />
 <b>Tu roster</b><div id="pcwd-roster" class="fm" style="padding:0"></div>
 <div class="dlg-foot"><span id="pcwd-msg" class="msg" style="padding:0"></span><button id="pcwd-go" class="pri" type="button">Confirmar y aceptar</button><button id="pcwd-cl" type="button">Cancelar</button></div></div></dialog>
+<dialog id="wdl"><div class="fm"><b>Widget para stream</b>
+<div class="g2"><select id="wd-d" aria-label="Diseño"><option value="mini">Mini</option><option value="compacto" selected>Compacto</option><option value="completo">Completo</option></select><select id="wd-v" aria-label="Período"><option value="hoy">Resultados de hoy</option><option value="24h">Últimas 24 horas</option></select></div>
+<iframe id="wd-prev" title="Vista previa del widget" style="width:100%;height:150px;border:1px solid var(--line);border-radius:6px"></iframe>
+<input id="wd-url" readonly aria-label="URL del widget" onclick="this.select()" />
+<span class="msg" style="padding:0">En OBS: Fuentes → + → <b>Navegador</b> → pegá la URL. Tamaño: <span id="wd-size"></span>. Se actualiza solo cada minuto.</span>
+<div class="dlg-foot"><span id="wd-msg" class="msg" style="padding:0"></span><button id="wd-copy" class="pri" type="button">Copiar URL</button><button id="wd-cl" type="button">Cerrar</button></div></div></dialog>
 <script src="config.js"></script>
+<script src="niveles.js"></script>
 <script>
 (function(){
 function showToast(message, type = 'success'){
@@ -1012,11 +1019,9 @@ function mdate(m){return m.played_at||m.starts_at}
 function mixList(all){return matches.filter(function(m){return m.kind==='mix'&&(m.status==='finished'||all&&m.status==='cancelled')}).sort(function(a,b){return new Date(mdate(b)||0)-new Date(mdate(a)||0)})}
 function statsOf(mid){return mstats.filter(function(s){return s.match_id===mid})}
 function statNick(s){var p=s.player_id?byId(players,s.player_id):null;return p?p.nick:(s.nick||'?')}
-// Niveles de FACEIT: [nivel, ELO mínimo, color]. El ELO sale de player_elo (por SteamID); sin mixes, 1000.
-var LV=[[1,0,'#9aa0a6'],[2,501,'#1ca82a'],[3,751,'#1ca82a'],[4,901,'#e0a800'],[5,1051,'#e0a800'],[6,1201,'#e0a800'],[7,1351,'#e0a800'],[8,1531,'#ff6309'],[9,1751,'#ff6309'],[10,2001,'#e5361f']];
+// Niveles de FACEIT (LV y lvlOf) en niveles.js. El ELO sale de player_elo (por SteamID); sin mixes, 1000.
 function eloRow(p){return p&&p.steam_id?eloBySteam[p.steam_id]||null:null}
 function eloOf(p){var e=eloRow(p);return e?e.elo:eloCfg.start_elo}
-function lvlOf(elo){for(var i=LV.length-1;i>0;i--)if(elo>=LV[i][1])return LV[i];return LV[0]}
 function lvlBadge(elo,big){var l=lvlOf(elo),b=el('span','lvl'+(big?' lg':''),String(l[0]));b.style.setProperty('--c',l[2]);b.title='Nivel '+l[0]+' · '+elo+' ELO';return b}
 function eloDelta(d){return d==null?'-':el('span',d>0?'eu':d<0?'ed':null,(d>0?'+':'')+d)}
 function mvpOf(mid){var b=null;statsOf(mid).forEach(function(s){if(s.rating!=null&&(!b||+s.rating>+b.rating))b=s});return b}
@@ -1304,6 +1309,7 @@ function ppDraw(p,d,t){
  sb2.appendChild(ppBar('Rating',p.rating,2,fm(p.rating,2)));sb2.appendChild(ppBar('K/D',p.kd,2,fm(p.kd,2)));sb2.appendChild(ppBar('Headshot %',p.hs,100,p.hs==null?'-':fm(p.hs,1)+'%'));sb2.appendChild(ppBar('ADR',p.adr,120,fm(p.adr,1)));
  var tot=(p.wins||0)+(p.losses||0);if(tot>0)sb2.appendChild(ppBar('Win rate',(p.wins||0)/tot*100,100,Math.round((p.wins||0)/tot*100)+'%'));
  sb2.appendChild(el('div','pp-cap','Mapas jugados: '+(p.maps!=null?p.maps:'-')));
+ var wb=btn('Widget para stream',function(){openWidget(p)});wb.style.marginTop='10px';sb2.appendChild(wb);
  var rc=$('pp-recent');rc.textContent='';var ml=ppAll(p,t);
  if(!ml.length)rc.appendChild(none(t?'Todavía no hay partidas.':'El jugador no tiene equipo ni mixes.'));
  ml.slice(0,6).forEach(function(x){var m=x.m,tt=x.t,f=m.status==='finished',w=winOf(m),r=el('div','pp-m'+(f&&w?(w===tt.id?' w':' l'):'')),L=el('div');
@@ -1512,6 +1518,14 @@ $('pcw-post').onclick=async function(){if(!me)return;var ids=Object.keys(pcwSt.i
   pcwSt={ids:{},guests:[]};['pcw-name','pcw-maps','pcw-note','pcw-when'].forEach(function(i){$(i).value=''});say('pcw-msg','');showToast('¡Anuncio publicado!');await load()}
  catch(e){say('pcw-msg',(e&&e.message)||'Error')}};
 $('pcwd-cl').onclick=function(){$('pcwdlg').close()};
+// Widget para OBS (widget.html): arma la URL con el diseño y el período elegidos.
+var wdP=null,WD_SIZE={mini:'160 × 60',compacto:'350 × 150',completo:'410 × 180'};
+function wdUrl(bg){var u=new URL('widget.html',location.href);u.hash='';u.search='';u.searchParams.set('id',wdP.id);u.searchParams.set('d',$('wd-d').value);if($('wd-v').value!=='hoy')u.searchParams.set('v',$('wd-v').value);if(bg)u.searchParams.set('bg','1');return u.href}
+function wdSync(){$('wd-url').value=wdUrl();$('wd-prev').src=wdUrl(true);$('wd-size').textContent=WD_SIZE[$('wd-d').value];say('wd-msg','')}
+function openWidget(p){wdP=p;wdSync();$('wdl').showModal()}
+$('wd-d').onchange=wdSync;$('wd-v').onchange=wdSync;
+$('wd-copy').onclick=async function(){try{await navigator.clipboard.writeText($('wd-url').value);say('wd-msg','¡Copiada!')}catch(e){$('wd-url').select();say('wd-msg','Copiala con Ctrl+C')}};
+$('wd-cl').onclick=function(){$('wdl').close();$('wd-prev').src='about:blank'};
 $('pcwd-go').onclick=async function(){var p=accPost;if(!p)return;var ids=Object.keys(accSt.ids),gs=accSt.guests;
  if(ids.length+gs.length<1){$('pcwd-msg').textContent='Armá tu roster: elegí jugadores de la lista o escribí sus tags.';return}
  if(!confirm('¿Aceptar la práctica con ese roster?'))return;
