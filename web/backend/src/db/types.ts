@@ -1390,13 +1390,13 @@ isOneToOne: false
                   ]
                 },"season_config": {
                   Row: {
-                    "duration_days": number,"id": number,"min_matches": number,"reset_floor": number,"reset_pct": number,"tiers": NonNullable<Json>,"top_n": number,"updated_at": string,"updated_by": string | null
+                    "duration_days": number,"id": number,"min_matches": number,"reset_all": boolean,"reset_floor": number,"reset_pct": number,"tiers": NonNullable<Json>,"top_n": number,"updated_at": string,"updated_by": string | null
                   }
                   Insert: {
-                    "duration_days"?: number,"id"?: number,"min_matches"?: number,"reset_floor"?: number,"reset_pct"?: number,"tiers"?: NonNullable<Json>,"top_n"?: number,"updated_at"?: string,"updated_by"?: string | null
+                    "duration_days"?: number,"id"?: number,"min_matches"?: number,"reset_all"?: boolean,"reset_floor"?: number,"reset_pct"?: number,"tiers"?: NonNullable<Json>,"top_n"?: number,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "duration_days"?: number,"id"?: number,"min_matches"?: number,"reset_floor"?: number,"reset_pct"?: number,"tiers"?: NonNullable<Json>,"top_n"?: number,"updated_at"?: string,"updated_by"?: string | null
+                    "duration_days"?: number,"id"?: number,"min_matches"?: number,"reset_all"?: boolean,"reset_floor"?: number,"reset_pct"?: number,"tiers"?: NonNullable<Json>,"top_n"?: number,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     
@@ -1482,13 +1482,13 @@ isOneToOne: false
                   ]
                 },"seasons": {
                   Row: {
-                    "closed_at": string | null,"closed_by": string | null,"created_at": string,"created_by": string | null,"ends_at": string,"id": string,"min_matches": number,"name": string,"number": number,"reset_floor": number,"reset_pct": number,"starts_at": string,"status": string,"tiers": NonNullable<Json>,"top_n": number
+                    "closed_at": string | null,"closed_by": string | null,"created_at": string,"created_by": string | null,"ends_at": string,"id": string,"min_matches": number,"name": string,"number": number,"reset_all": boolean,"reset_floor": number,"reset_pct": number,"starts_at": string,"status": string,"tiers": NonNullable<Json>,"top_n": number
                   }
                   Insert: {
-                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at": string,"id"?: string,"min_matches": number,"name": string,"number": number,"reset_floor": number,"reset_pct": number,"starts_at"?: string,"status"?: string,"tiers": NonNullable<Json>,"top_n": number
+                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at": string,"id"?: string,"min_matches": number,"name": string,"number": number,"reset_all"?: boolean,"reset_floor": number,"reset_pct": number,"starts_at"?: string,"status"?: string,"tiers": NonNullable<Json>,"top_n": number
                   }
                   Update: {
-                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string,"id"?: string,"min_matches"?: number,"name"?: string,"number"?: number,"reset_floor"?: number,"reset_pct"?: number,"starts_at"?: string,"status"?: string,"tiers"?: NonNullable<Json>,"top_n"?: number
+                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string,"id"?: string,"min_matches"?: number,"name"?: string,"number"?: number,"reset_all"?: boolean,"reset_floor"?: number,"reset_pct"?: number,"starts_at"?: string,"status"?: string,"tiers"?: NonNullable<Json>,"top_n"?: number
                   }
                   Relationships: [
                     
@@ -3289,7 +3289,7 @@ isOneToOne: false
                   ]
                 },"season_list": {
                   Row: {
-                    "champion_id": string | null,"champion_nick": string | null,"closed_at": string | null,"ends_at": string | null,"id": string | null,"medals": number | null,"min_matches": number | null,"name": string | null,"number": number | null,"reset_floor": number | null,"reset_pct": number | null,"starts_at": string | null,"status": string | null,"tiers": Json | null,"top_n": number | null
+                    "champion_id": string | null,"champion_nick": string | null,"closed_at": string | null,"ends_at": string | null,"id": string | null,"medals": number | null,"min_matches": number | null,"name": string | null,"number": number | null,"reset_all": boolean | null,"reset_floor": number | null,"reset_pct": number | null,"starts_at": string | null,"status": string | null,"tiers": Json | null,"top_n": number | null
                   }
                   Relationships: [
                     {
@@ -4210,12 +4210,12 @@ isOneToOne: false
             }[]
                            },
 "season_preview":
-{ Args: { "p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: {
+{ Args: { "p_min_matches": number,"p_reset_all"?: boolean,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: {
               "eligible": boolean,"elo": number,"elo_after": number,"icon": string,"matches": number,"nick": string,"player_id": string,"rank": number,"reset": boolean,"search": string,"tier": string
             }[]
                            },
 "season_preview_summary":
-{ Args: { "p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: Json
+{ Args: { "p_min_matches": number,"p_reset_all"?: boolean,"p_reset_floor": number,"p_reset_pct": number,"p_top_n": number }; Returns: Json
                            },
 "season_rank":
 { Args: { "p_from": string,"p_min_matches": number,"p_until": string }; Returns: {
@@ -4224,6 +4224,8 @@ isOneToOne: false
                            },
 "season_reset_elo":
 { Args: { "p_elo": number,"p_floor": number,"p_pct": number }; Returns: number
+                           } |
+{ Args: { "p_all": boolean,"p_elo": number,"p_floor": number,"p_pct": number }; Returns: number
                            },
 "season_start":
 { Args: { "p_ends_at"?: string,"p_name"?: string }; Returns: string
@@ -4237,7 +4239,7 @@ isOneToOne: false
 { Args: { "p": Json }; Returns: boolean
                            },
 "season_update":
-{ Args: { "p_ends_at"?: string,"p_id": string,"p_min_matches"?: number,"p_name"?: string,"p_reset_floor"?: number,"p_reset_pct"?: number,"p_tiers"?: Json,"p_top_n"?: number }; Returns: undefined
+{ Args: { "p_ends_at"?: string,"p_id": string,"p_min_matches"?: number,"p_name"?: string,"p_reset_all"?: boolean,"p_reset_floor"?: number,"p_reset_pct"?: number,"p_tiers"?: Json,"p_top_n"?: number }; Returns: undefined
                            },
 "set_claim_config":
 { Args: { "p_max_steam_ids": number }; Returns: number
@@ -4261,7 +4263,7 @@ isOneToOne: false
 { Args: { "p_official": number,"p_pcw": number }; Returns: undefined
                            },
 "set_season_config":
-{ Args: { "p_duration_days": number,"p_min_matches": number,"p_reset_floor": number,"p_reset_pct": number,"p_tiers": Json,"p_top_n": number }; Returns: undefined
+{ Args: { "p_duration_days": number,"p_min_matches": number,"p_reset_all"?: boolean,"p_reset_floor": number,"p_reset_pct": number,"p_tiers": Json,"p_top_n": number }; Returns: undefined
                            },
 "set_team_captain":
 { Args: { "p_team": string,"p_user": string }; Returns: undefined

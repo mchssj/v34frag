@@ -125,6 +125,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **La `15` necesita la migración de ajustes de ELO** (`supabase/migrations/20261015210000_elo_ajustes.sql`, punto 1.6) aplicada antes: si no está, aborta.
 - **La `23` (`!whois`) necesita las migraciones de producción `20261019180000_whois.sql` y `20261020120000_whois_menu.sql`** (puntos 1.10 y 1.11) aplicadas antes. En el corte, `csstv_claim "1"` en los dos servidores.
 - **La `25` (ajustes de ELO desde el admin)** va después de la `24`.
+- **La `37` (reinicio total de una temporada)** va después de la `36`. La API que lee `reset_all` necesita la `37` aplicada (punto 1.29).
 - **Verificar antes y después del corte que `elo_config` tenga su fila (`id = 1`):** `select * from elo_config;` tiene que devolver una fila. Sin ella, `start_elo` llega en `null` y fallan los ajustes de ELO desde el admin (`500 INTERNAL`, `23502` en `player_elo.elo`) y el ELO al terminar cada mix. Producción la tiene desde la migración `20261011230000_elo_config.sql`. Pero una base armada con `supabase/schema/public.sql` (solo esquema) más las migraciones posteriores a `BASE` queda sin ella: le pasó a staging el 2026-10-29. Si falta: `insert into public.elo_config(id) values (1) on conflict (id) do nothing;` (valores por defecto: base 30, bonus 5 y 10, mínimo 100, inicial 1000, participación de 35 a 90 %). Las otras tablas de configuración (`claim_config`, `clip_config`, `pcw_config`, `ranking_config`, `season_config` y `team_config`) sí tenían su fila en staging, pero conviene revisarlas igual. Detalle en [`2026-10-28-despliegue-vps-ovh`](bitacora/2026-10-28-despliegue-vps-ovh/GUIA_IMPLEMENTACION.md).
 - **La `27` (mixes, perfil y ranking de la web nueva)** va después de la `26`. **Aborta si hay nicks repetidos** en `players` (sin distinguir mayúsculas): revisarlo antes con la consulta de su guía y renombrar las fichas sin cuenta que choquen. Después del corte, cargar el puerto de SourceTV (`tv_port`) del **servidor real y de RBK** en Admin › Servidores, para "Ver en TV". Pasos en [`2026-10-24-api-mixes-perfil-ranking`](bitacora/2026-10-24-api-mixes-perfil-ranking/GUIA_IMPLEMENTACION.md).
 - **La `24` (temporadas)** va después de la `23`. Después del corte, abrir la primera temporada (BETA) con inicio antes del primer mix, con el SQL de [`2026-10-24-frontend-ranking`](bitacora/2026-10-24-frontend-ranking/pruebas/temporada_beta_local.sql) (no desde el admin, que la abre en `now()`); el cierre automático necesita el VPS (punto 6).
@@ -462,6 +463,17 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   3. Exponer `days_active` en la API (`/admin/vips`, `/admin/users/{id}/vip`, `/me/profile`) y en el frontend, cuando Daniel lo pida.
 - **Bitácora:** [`2026-10-29-vip-dias`](bitacora/2026-10-29-vip-dias/)
 
+### 1.29 Reinicio total de una temporada (replanteo `37`): falta staging y el corte
+
+- **Qué es:** opción "Reiniciar también a los que están debajo del piso" en Administración › Temporadas (activa y próxima). Con ella, al cerrar la temporada los de debajo del piso también se acercan al piso con el mismo porcentaje; con 0 %, todos quedan en el piso (reinicio total). Columna `reset_all` en `season_config` y `seasons`.
+- **Hecho el 2026-10-29 (local), sin commit (`feat/frontend-fase-1`):** replanteo `37` con su inversa y 23 pruebas SQL, API (`reset_all` en temporadas, configuración, `PATCH` y vista previa), contrato y frontend (un checkbox en la tarjeta del reinicio). En el backend, 392 pruebas unitarias y las 9 de integración de temporadas; en el frontend, 342.
+- **Falta:**
+  1. Cargar la `37` en staging y redesplegar la API y el frontend del VPS. Sin la `37`, la API nueva falla en temporadas (lee `reset_all`).
+  2. En el corte, la `37` va después de la `36` (punto 1.5).
+  3. Probarlo en el navegador contra staging: marcar la opción, guardar y ver la vista previa del cierre.
+- No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
+- **Bitácora:** [`2026-10-29-temporada-reinicio-total`](bitacora/2026-10-29-temporada-reinicio-total/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
@@ -606,6 +618,8 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 ### 7.0 Prueba del replanteo `23` desactualizada
 
 `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/23_whois.sql` espera `player_nick = 'Ficha23'`, pero desde la `09` el nick de una ficha vinculada a un usuario es su alias (`Alias23`). Por eso `correr.sh` se corta en la `23` y no llega a probar de la `24` en adelante. Hay que cambiar el valor esperado (encontrado el 2026-10-23; no se tocó, porque es de otro requerimiento). La `27` (2026-10-24) se probó con el mismo ciclo de `correr.sh`, a mano.
+
+Además, `pruebas/24_temporadas.sql` falla en "la fecha de fin tiene que ser futura" sobre la base local de hoy, con o sin la `37` (visto el 2026-10-29; sin investigar). La `37` se probó con su propio ciclo a mano: aplicar, prueba, segunda aplicación que aborta, inversa con la estructura idéntica y volver a aplicar. Las pruebas de la `30`, `34` y `35` pasan con la `37` aplicada.
 
 ### 7.2 Ensayo del corte con la copia de producción del 2026-10-25 (02:02 UTC)
 
