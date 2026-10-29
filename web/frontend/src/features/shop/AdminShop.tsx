@@ -39,12 +39,18 @@ export function AdminShop({ shop }: { shop: ShopDemo }) {
     ["vip_multiplier", "Multiplicador VIP", "0.1"],
     ["weekly_count", "Ofertas por semana", "1"],
     ["weekly_discount", "Descuento de las ofertas (%)", "1"],
+    ["vip_per_mix", "Monedas VIP por mix", "1"],
+    ["vip_per_win", "Monedas VIP extra por victoria", "1"],
   ]
 
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4 rounded-xl border bg-card p-5">
-        <h2 className="text-sm font-bold">Puntos</h2>
+        <h2 className="text-sm font-bold">Puntos y monedas VIP</h2>
+        <p className="text-xs text-muted-foreground">
+          Las monedas VIP se ganan solo en los mixes jugados siendo VIP y compran los artículos VIP. Si se
+          vence el VIP, quedan congeladas.
+        </p>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3">
           {fields.map(([k, label, step]) => (
             <div key={k} className="flex flex-col gap-1.5">
@@ -79,6 +85,7 @@ export function AdminShop({ shop }: { shop: ShopDemo }) {
               <TableRow>
                 <TableHead>Cuenta</TableHead>
                 <TableHead>Saldo</TableHead>
+                <TableHead>Monedas VIP</TableHead>
                 <TableHead>Ganados / regalos / gastados</TableHead>
                 <TableHead>Mixes</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -91,6 +98,9 @@ export function AdminShop({ shop }: { shop: ShopDemo }) {
                     {a.alias} {a.vip && <VipBadge />}
                   </TableCell>
                   <TableCell className="font-bold text-primary">{a.balance.toLocaleString("es")}</TableCell>
+                  <TableCell className="font-bold text-[#e8b53a]">
+                    {a.vip_balance.toLocaleString("es")}
+                  </TableCell>
                   <TableCell>
                     {a.earned} / {a.granted} / {a.spent}
                   </TableCell>
@@ -116,6 +126,16 @@ export function AdminShop({ shop }: { shop: ShopDemo }) {
                         }}
                       >
                         −100
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          shop.adminAccount(a.user_id, { vip_balance: a.vip_balance + 100 })
+                          toast.success(`+100 monedas VIP para ${a.alias} (motivo: premio de evento).`)
+                        }}
+                      >
+                        +100 VIP
                       </Button>
                       <Button
                         size="sm"
@@ -165,7 +185,7 @@ export function AdminShop({ shop }: { shop: ShopDemo }) {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Colección</TableHead>
                 <TableHead>Para</TableHead>
-                <TableHead>Precio</TableHead>
+                <TableHead>Precio (puntos o monedas VIP)</TableHead>
                 <TableHead>Activo</TableHead>
               </TableRow>
             </TableHeader>
@@ -177,18 +197,24 @@ export function AdminShop({ shop }: { shop: ShopDemo }) {
                   <TableCell>{COLLECTIONS[i.collection] ?? i.collection}</TableCell>
                   <TableCell>{i.vip_only ? <VipBadge /> : "Todos"}</TableCell>
                   <TableCell>
+                    {/* Lo normal, en puntos (admin_shop_item_update); lo VIP, en monedas VIP
+                        (admin_shop_item_vip_price). El premio VIP no tiene precio. */}
                     <Input
                       type="number"
                       className="h-8 w-24"
-                      disabled={i.vip_only}
-                      placeholder={i.vip_only ? "VIP" : "Sin venta"}
-                      defaultValue={i.price ?? ""}
+                      disabled={i.vip_reward}
+                      placeholder={i.vip_reward ? "Con el VIP" : "Sin venta"}
+                      aria-label={i.vip_only ? "Precio en monedas VIP" : "Precio en puntos"}
+                      defaultValue={(i.vip_only ? i.vip_price : i.price) ?? ""}
                       onBlur={(e) => {
                         const v = e.target.value.trim()
                         const price = v ? Number(v) : null
-                        if (price === i.price) return
-                        shop.updateItem(i.id, { price })
-                        toast.success(`«${i.name}» ${price == null ? "salió de la venta" : `ahora cuesta ${price}`}.`)
+                        if (price === (i.vip_only ? i.vip_price : i.price)) return
+                        shop.updateItem(i.id, i.vip_only ? { vip_price: price } : { price })
+                        const unit = i.vip_only ? " monedas VIP" : " puntos"
+                        toast.success(
+                          `«${i.name}» ${price == null ? "salió de la venta" : `ahora cuesta ${price}${unit}`}.`,
+                        )
                       }}
                     />
                   </TableCell>

@@ -16,7 +16,18 @@ export type LobbyStatus =
   | "finished"
   | "cancelled"
 
-export type MmPlayer = {
+/** Lo equipado en la tienda (player_cosmetics_public), ya resuelto: sin lo VIP vencido. Ausente = nada. */
+export type MmCosmetics = {
+  /** Fondo de miniperfil, detrás de la tarjeta del grupo. */
+  background_url?: string | null
+  /** Marco del avatar (SVG de 256 × 256, el avatar va en el 75 % central). */
+  frame_url?: string | null
+  /** Clase del efecto de nombre de cosmeticos.css. */
+  name_class?: string | null
+  vip?: boolean
+}
+
+export type MmPlayer = MmCosmetics & {
   player_id: string
   nick: string
   level: number
@@ -156,7 +167,7 @@ export type MmQueue = {
   elo_window: number | null
 }
 
-export type MmPartyMember = {
+export type MmPartyMember = MmCosmetics & {
   player_id: string
   nick: string
   level: number
@@ -195,7 +206,7 @@ export type MmMode = {
 export type InvitePref = "private" | "public"
 
 /** La ficha del que mira: la tarjeta del medio y el ELO de arriba. */
-export type MmMe = {
+export type MmMe = MmCosmetics & {
   nick: string
   country: Country | null
   photo_url: string | null

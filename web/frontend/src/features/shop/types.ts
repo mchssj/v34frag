@@ -1,6 +1,6 @@
 // Tipos de la tienda, con los nombres de la base (supabase/migrations/20261029180000_tienda.sql en kyan/pruebas).
 
-export type ItemKind = "frame" | "sticker" | "theme" | "name"
+export type ItemKind = "frame" | "sticker" | "theme" | "name" | "background"
 
 export interface ShopItem {
   id: string
@@ -10,9 +10,13 @@ export interface ShopItem {
   file: string | null
   css_class: string | null
   vip_only: boolean
+  /** Viene con el VIP sin comprarlo (el Marco Oro VIP). */
+  vip_reward: boolean
   animated: boolean
   collection: string
   price: number | null
+  /** Precio en monedas VIP (solo artículos VIP). */
+  vip_price: number | null
   active: boolean
 }
 
@@ -26,6 +30,7 @@ export interface Equipped {
   frame: string | null
   theme: string | null
   name: string | null
+  background: string | null
   stickers: string[]
 }
 
@@ -35,16 +40,26 @@ export interface PointsConfig {
   vip_multiplier: number
   weekly_count: number
   weekly_discount: number
+  /** Monedas VIP por mix jugado siendo VIP, y extra por victoria. */
+  vip_per_mix: number
+  vip_per_win: number
 }
 
-export interface Points {
+export interface Balance {
   earned: number
   granted: number
   spent: number
   balance: number
   mixes: number
-  vip: boolean
 }
+
+export interface Points extends Balance {
+  vip: boolean
+  /** Monedas VIP: congeladas si la cuenta no es VIP hoy. */
+  vip_coins: Balance
+}
+
+export type Currency = "points" | "vip"
 
 export interface HistoryRow {
   kind: "mix" | "grant" | "purchase"
@@ -52,6 +67,7 @@ export interface HistoryRow {
   points: number
   label: string
   vip: boolean
+  currency: Currency
 }
 
 export interface AdminAccount {
@@ -64,6 +80,7 @@ export interface AdminAccount {
   spent: number
   mixes: number
   items: number
+  vip_balance: number
 }
 
 export const KINDS: Record<ItemKind, string> = {
@@ -71,6 +88,7 @@ export const KINDS: Record<ItemKind, string> = {
   sticker: "Stickers",
   theme: "Temas",
   name: "Nombres",
+  background: "Fondos",
 }
 
 export const COLLECTIONS: Record<string, string> = {
@@ -81,7 +99,8 @@ export const COLLECTIONS: Record<string, string> = {
   mapas: "Mapas de CS:S",
   arsenal: "Arsenal",
   series2: "Series míticas 2",
+  vip: "VIP",
 }
 
-// Los archivos de los marcos y stickers están en public/cosmetics/.
+// Los archivos de los marcos, stickers y fondos están en public/cosmetics/.
 export const COSMETICS_BASE = "/cosmetics/"

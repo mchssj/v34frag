@@ -1,19 +1,25 @@
 import { cn } from "cn"
+import type { ReactNode } from "react"
+
+import { LevelBadge } from "@/components/brand/LevelBadge"
 
 import "./cosmeticos.css"
 import { COSMETICS_BASE, type ShopItem } from "./types"
 
-// Piezas para dibujar los cosméticos: avatar con marco, nombre con efecto y stickers.
+// Piezas para dibujar los cosméticos: avatar con marco, nombre con efecto, stickers y fondo de miniperfil.
 
 export function FramedAvatar({
   src,
   alias,
   frame,
+  frameSrc,
   size,
 }: {
   src?: string | null
   alias: string
   frame?: ShopItem | null
+  /** URL del marco, para quien ya lo tiene resuelto (el matchmaking). Gana sobre frame. */
+  frameSrc?: string | null
   size: number
 }) {
   const initials = alias.replace(/^v34\|/, "").slice(0, 2).toUpperCase()
@@ -27,7 +33,8 @@ export function FramedAvatar({
       {initials}
     </div>
   )
-  if (!frame?.file)
+  const marco = frameSrc ?? (frame?.file ? COSMETICS_BASE + frame.file : null)
+  if (!marco)
     return (
       <div
         className="relative shrink-0"
@@ -52,7 +59,7 @@ export function FramedAvatar({
       {inner}
       <img
         className="avf-marco"
-        src={COSMETICS_BASE + frame.file}
+        src={marco}
         alt=""
         loading="lazy"
       />
@@ -66,7 +73,7 @@ export function NameFx({
   className,
 }: {
   text: string
-  effect?: ShopItem | null
+  effect?: Pick<ShopItem, "css_class"> | null
   className?: string
 }) {
   return (
@@ -112,5 +119,60 @@ export function VipBadge({ className }: { className?: string }) {
     >
       VIP
     </span>
+  )
+}
+
+/** El fondo de miniperfil detrás de una tarjeta. La tarjeta tiene que tener `isolate` y `overflow-hidden`. */
+export function CardBackground({ src }: { src?: string | null }) {
+  if (!src) return null
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+      <img src={src} alt="" className="size-full object-cover" />
+      {/* Oscurece abajo, donde van el nick y el nivel, para que se lean con cualquier fondo. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+    </div>
+  )
+}
+
+/** La tarjeta chica del jugador (miniperfil): fondo, avatar con marco, nombre con efecto y nivel. */
+export function MiniCard({
+  alias,
+  frame,
+  name,
+  background,
+  level,
+  sub,
+  avatar = 104,
+  className,
+}: {
+  alias: string
+  frame?: ShopItem | null
+  name?: ShopItem | null
+  background?: ShopItem | null
+  level: number
+  sub?: ReactNode
+  avatar?: number
+  className?: string
+}) {
+  const bg = background?.file ? COSMETICS_BASE + background.file : null
+  return (
+    <div
+      className={cn(
+        "relative isolate flex h-[124px] w-full max-w-[340px] items-center gap-3 overflow-hidden rounded-xl border p-2 pr-4",
+        bg ? "border-white/15 text-white" : "bg-card",
+        className,
+      )}
+    >
+      <CardBackground src={bg} />
+      <FramedAvatar alias={alias} frame={frame} size={avatar} />
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <NameFx text={alias} effect={name} className="truncate text-lg font-black" />
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold">
+          <LevelBadge level={level} size={20} className="rounded-full" />
+          Nivel {level}
+        </span>
+        {sub && <span className="text-[11px] opacity-75">{sub}</span>}
+      </div>
+    </div>
   )
 }

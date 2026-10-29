@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { FramedAvatar, NameFx, Stickers, VipBadge } from "./cosmetics"
+import { FramedAvatar, MiniCard, NameFx, Stickers, VipBadge } from "./cosmetics"
 import { nextMonday, type ShopDemo } from "./demo"
 import {
   COLLECTIONS,
@@ -33,6 +33,17 @@ import {
 } from "./types"
 
 const fmt = (n: number) => `${n.toLocaleString("es")} pts`
+const fmtVip = (n: number) => `${n.toLocaleString("es")} monedas VIP`
+
+// Lo que cuesta comprarlo hoy: lo normal en puntos, lo VIP en monedas VIP (shop_buy).
+function priceOf(c: CatalogItem, shop: ShopDemo) {
+  const vip = c.vip_only
+  return {
+    price: vip ? c.vip_price : c.price,
+    balance: vip ? shop.points.vip_coins.balance : shop.points.balance,
+    fmt: vip ? fmtVip : fmt,
+  }
+}
 type Show = "all" | "buy" | "mine" | "vip" | "free"
 type Sort = "sort" | "cheap" | "exp" | "name"
 
@@ -69,8 +80,16 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
       if (c.kind !== kind || (col && c.collection !== col)) return false
       if (qq && !`${c.name} ${c.description ?? ""} ${COLLECTIONS[c.collection] ?? ""}`.toLowerCase().includes(qq))
         return false
-      if (show === "buy")
-        return !c.vip_only && !shop.owned.includes(c.id) && c.price != null && shop.points.balance >= c.price
+      if (show === "buy") {
+        const p = priceOf(c, shop)
+        return (
+          !c.vip_reward &&
+          (!c.vip_only || shop.vip) &&
+          !shop.owned.includes(c.id) &&
+          p.price != null &&
+          p.balance >= p.price
+        )
+      }
       if (show === "mine") return shop.canUse(c)
       if (show === "vip") return c.vip_only
       if (show === "free") return !c.vip_only
@@ -83,7 +102,8 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
   }, [shop, kind, col, q, show, sort])
 
   const weekly = shop.catalog.filter((c) => c.weekly)
-  const vipCount = shop.items.filter((i) => i.vip_only).length
+  const vipCount = shop.items.filter((i) => i.vip_only && !i.vip_reward).length
+  const coins = shop.points.vip_coins
 
   function equip(i: ShopItem, on: boolean) {
     const err = shop.equip(i.id, on)
@@ -143,6 +163,15 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
                 size={48}
                 items={prev.stickers.map((s) => shop.byId[s]).filter(Boolean)}
               />
+              <MiniCard
+                className="mt-3"
+                alias={alias}
+                level={7}
+                frame={prev.frame ? shop.byId[prev.frame] : null}
+                name={prev.name ? shop.byId[prev.name] : null}
+                background={prev.background ? shop.byId[prev.background] : null}
+                sub="Tu miniperfil: así te ven en el lobby"
+              />
             </div>
           </div>
           <div className="flex flex-col gap-2 p-5">
@@ -152,9 +181,29 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
               {shop.points.granted ? ` · regalos ${fmt(shop.points.granted)}` : ""} ·
               gastaste {fmt(shop.points.spent)}
             </p>
+            <div
+              className={cn(
+                "rounded-lg border border-[#e8b53a]/40 bg-[#f7d76a]/10 px-3 py-2",
+                !shop.vip && "opacity-70",
+              )}
+            >
+              <div className="text-lg font-black text-[#e8b53a]">{fmtVip(coins.balance)}</div>
+              <p className="text-[11px] text-muted-foreground">
+                {shop.vip
+                  ? `Ganaste ${fmtVip(coins.earned)} en ${coins.mixes} mixes siendo VIP`
+                  : "Congeladas: vuelven a funcionar cuando seas VIP otra vez"}
+                {coins.granted ? ` · regalos ${coins.granted}` : ""}
+                {coins.spent ? ` · gastaste ${coins.spent}` : ""}
+              </p>
+            </div>
             <p className="text-xs text-muted-foreground">
               Ganás {shop.config.per_mix} puntos por cada mix terminado y {shop.config.per_win} más
-              si ganás. Los VIP ganan ×{String(shop.config.vip_multiplier).replace(".", ",")}.
+              si ganás
+              {shop.config.vip_multiplier > 1
+                ? ` (×${String(shop.config.vip_multiplier).replace(".", ",")} siendo VIP)`
+                : ""}
+              . Siendo VIP, además ganás {shop.config.vip_per_mix} monedas VIP por mix y{" "}
+              {shop.config.vip_per_win} más si ganás.
             </p>
             <div className="mt-auto flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => setHistOpen(true)}>
@@ -174,16 +223,16 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
             <>
               <b className="text-[#e8b53a]">Sos VIP</b>
               <span className="text-muted-foreground">
-                Tenés los {vipCount} artículos VIP sin gastar puntos y ganás ×
-                {String(shop.config.vip_multiplier).replace(".", ",")} puntos por mix.
+                Tenés el Marco Oro VIP y ganás monedas VIP en cada mix para comprar los {vipCount}{" "}
+                artículos VIP.
               </span>
             </>
           ) : (
             <>
               <b className="text-[#e8b53a]">Hacete VIP</b>
               <span className="text-muted-foreground">
-                {vipCount} artículos animados (Series míticas, Arsenal y más) sin gastar puntos, ×
-                {String(shop.config.vip_multiplier).replace(".", ",")} puntos por mix y clips extra.
+                El Marco Oro VIP al instante y monedas VIP en cada mix para comprar {vipCount}{" "}
+                artículos animados (Series míticas, Arsenal, fondos y más).
               </span>
             </>
           )}
@@ -314,9 +363,18 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
           <DialogHeader>
             <DialogTitle>¿Comprar «{buying?.name}»?</DialogTitle>
             <DialogDescription>
-              Cuesta {buying?.price != null && fmt(buying.price)}
-              {buying?.weekly ? " (oferta de la semana)" : ""}. Te quedan{" "}
-              {buying?.price != null && fmt(shop.points.balance - buying.price)}.
+              {buying &&
+                (() => {
+                  const p = priceOf(buying, shop)
+                  if (p.price == null) return null
+                  return (
+                    <>
+                      Cuesta {p.fmt(p.price)}
+                      {buying.weekly && !buying.vip_only ? " (oferta de la semana)" : ""}. Te quedan{" "}
+                      {p.fmt(p.balance - p.price)}.
+                    </>
+                  )
+                })()}
             </DialogDescription>
           </DialogHeader>
           {buying && <Vis i={buying} shop={shop} alias={alias} />}
@@ -332,8 +390,10 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
       <Dialog open={histOpen} onOpenChange={setHistOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Historial de puntos</DialogTitle>
-            <DialogDescription>Mixes, regalos y compras, lo más nuevo primero.</DialogDescription>
+            <DialogTitle>Historial de puntos y monedas VIP</DialogTitle>
+            <DialogDescription>
+              Mixes, regalos y compras, lo más nuevo primero. Las monedas VIP salen en dorado.
+            </DialogDescription>
           </DialogHeader>
           <ul className="max-h-[50vh] divide-y overflow-y-auto text-sm">
             {shop.history.map((h, k) => (
@@ -344,11 +404,19 @@ export function ShopPage({ shop, alias }: { shop: ShopDemo; alias: string }) {
                 <span className="min-w-0 flex-1 truncate">
                   {h.kind === "mix" ? "Mix: " : h.kind === "grant" ? "Regalo: " : "Compra: "}
                   {h.label}
-                  {h.vip ? " (×VIP)" : ""}
                 </span>
-                <b className={h.points >= 0 ? "text-emerald-500" : "text-destructive"}>
+                <b
+                  className={
+                    h.currency === "vip"
+                      ? "text-[#e8b53a]"
+                      : h.points >= 0
+                        ? "text-emerald-500"
+                        : "text-destructive"
+                  }
+                >
                   {h.points > 0 ? "+" : ""}
                   {h.points}
+                  {h.currency === "vip" ? " VIP" : ""}
                 </b>
               </li>
             ))}
@@ -382,6 +450,17 @@ function Vis({ i, shop, alias }: { i: ShopItem; shop: ShopDemo; alias: string })
       {i.kind === "name" && (
         <NameFx text={alias} effect={i} className="text-2xl font-black text-primary" />
       )}
+      {i.kind === "background" && (
+        <MiniCard
+          className="h-full max-w-none rounded-none border-0"
+          avatar={72}
+          alias={alias}
+          level={7}
+          frame={shop.visible.frame ? shop.byId[shop.visible.frame] : null}
+          name={shop.visible.name ? shop.byId[shop.visible.name] : null}
+          background={i}
+        />
+      )}
       {shop.loading && null}
     </div>
   )
@@ -410,7 +489,9 @@ function ItemCard({
   const usable = shop.canUse(c)
   const eq =
     c.kind === "sticker" ? shop.visible.stickers.includes(c.id) : shop.visible[c.kind] === c.id
-  const short = c.price != null && shop.points.balance < c.price
+  const p = priceOf(c, shop)
+  const short = p.price != null && p.balance < p.price
+  const vipLocked = c.vip_only && !shop.vip
   return (
     <div
       onClick={onTry}
@@ -436,25 +517,40 @@ function ItemCard({
           {COLLECTIONS[c.collection] ?? c.collection}
         </span>
         <div className="mt-auto flex flex-col gap-2 pt-2">
-          {c.vip_only ? (
+          {c.vip_reward ? (
             <span className="text-sm font-bold text-[#e8b53a]">
-              {usable ? "Incluido con tu VIP" : "Solo VIP"}
+              {usable ? "Incluido con tu VIP" : "Viene con el VIP"}
             </span>
           ) : owned ? (
-            <span className="text-sm font-bold text-emerald-500">✓ Lo tenés</span>
-          ) : c.price == null ? (
+            <span className="text-sm font-bold text-emerald-500">
+              ✓ Lo tenés
+              {vipLocked && (
+                <span className="block text-[11px] font-normal text-muted-foreground">
+                  Congelado: se usa siendo VIP
+                </span>
+              )}
+            </span>
+          ) : p.price == null ? (
             <span className="text-sm text-muted-foreground">No está a la venta</span>
           ) : (
             <span className="text-sm">
-              {c.weekly && c.base_price !== c.price && (
+              {!c.vip_only && c.weekly && c.base_price !== c.price && (
                 <s className="mr-1 text-muted-foreground">{fmt(c.base_price!)}</s>
               )}
-              <b className="text-primary">{fmt(c.price)}</b>
-              {short && (
-                <span className="block text-[11px] text-muted-foreground">
-                  Te faltan {fmt(c.price - shop.points.balance)} (≈{" "}
-                  {Math.ceil((c.price - shop.points.balance) / perMix)} mixes)
-                </span>
+              <b className={c.vip_only ? "text-[#e8b53a]" : "text-primary"}>{p.fmt(p.price)}</b>
+              {vipLocked ? (
+                <span className="block text-[11px] text-muted-foreground">Se compra siendo VIP</span>
+              ) : (
+                short && (
+                  <span className="block text-[11px] text-muted-foreground">
+                    Te faltan {p.fmt(p.price - p.balance)} (≈{" "}
+                    {Math.ceil(
+                      (p.price - p.balance) /
+                        (c.vip_only ? Math.max(1, shop.config.vip_per_mix) : perMix),
+                    )}{" "}
+                    mixes)
+                  </span>
+                )
               )}
             </span>
           )}
@@ -464,9 +560,10 @@ function ItemCard({
                 {eq ? "Sacar" : "Equipar"}
               </Button>
             ) : (
-              !c.vip_only &&
-              c.price != null && (
-                <Button size="sm" disabled={short} onClick={onBuy}>
+              !owned &&
+              !c.vip_reward &&
+              p.price != null && (
+                <Button size="sm" disabled={short || vipLocked} onClick={onBuy}>
                   Comprar
                 </Button>
               )

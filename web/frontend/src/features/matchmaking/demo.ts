@@ -16,6 +16,7 @@ import type {
   MmEvent,
   MmInvite,
   MmClip,
+  MmCosmetics,
   MmLobby,
   MmMatch,
   MmParty,
@@ -44,10 +45,27 @@ const BOTS: [string, number, number][] = [
 
 /** Los que se pueden buscar para invitar al dúo. */
 const FRIENDS: MmPlayerHit[] = [
-  { player_id: "p-maxi", nick: "maxi", level: 8, elo: 1750 },
+  {
+    player_id: "p-maxi",
+    nick: "maxi",
+    level: 8,
+    elo: 1750,
+    background_url: "/cosmetics/fondos/serie-luna-roja.svg",
+    frame_url: "/cosmetics/marcos/serie-ninja.svg",
+    name_class: "nombre-chakra",
+    vip: true,
+  },
   { player_id: "p-colo", nick: "colo", level: 6, elo: 1480 },
   { player_id: "p-juanchi", nick: "juanchi", level: 7, elo: 1600 },
-  { player_id: "p-nico", nick: "nico.dlr", level: 10, elo: 2310 },
+  {
+    player_id: "p-nico",
+    nick: "nico.dlr",
+    level: 10,
+    elo: 2310,
+    background_url: "/cosmetics/fondos/arma-oro.svg",
+    frame_url: "/cosmetics/marcos/pais-br.svg",
+    name_class: "nombre-pais-br",
+  },
 ]
 
 /** Los 9 mapas más jugados: el veto del 5v5 al empezar (plan, decisión "Mapas del 5v5"). */
@@ -63,13 +81,22 @@ export const DEMO_POOL = [
   "de_mirage",
 ]
 
-const ME = { player_id: "me", nick: "tu.nick", level: 8, elo: 1610 }
+/** Lo equipado en la tienda, como lo devolvería la API (rutas de public/cosmetics). */
+const COS = "/cosmetics/"
+const ME_COS: MmCosmetics = {
+  background_url: COS + "fondos/neon.svg",
+  frame_url: COS + "marcos/fuego.svg",
+  name_class: "nombre-fuego",
+  vip: true,
+}
+const ME = { player_id: "me", nick: "tu.nick", level: 8, elo: 1610, ...ME_COS }
 const ME_CARD = {
   nick: ME.nick,
   country: "Argentina" as const,
   photo_url: null,
   elo: ME.elo,
   level: ME.level,
+  ...ME_COS,
   recent: ["W", "W", "L", "W", "L"] as ("W" | "L")[],
 }
 
@@ -321,6 +348,7 @@ export function createDemoSource({
   ): MmPlayer => ({
     ...p,
     photo_url: null,
+    ...COS_OF[p.nick],
     country: COUNTRY_OF[p.nick] ?? "Argentina",
     elo_trend: trend(p.nick),
     recent: recentOf(p.nick, p.elo),
@@ -1194,6 +1222,20 @@ export function demoStats(days: number, now: number): MmStatsDay[] {
     }
   }
   return out
+}
+
+/** Algunos rivales con cosméticos, para ver cómo quedan en la sala. */
+const COS_OF: Record<string, MmCosmetics> = {
+  "kz.flick": {
+    frame_url: COS + "marcos/arma-awp.svg",
+    name_class: "nombre-arma-awp",
+    vip: true,
+  },
+  nacho: {
+    frame_url: COS + "marcos/pais-ar.svg",
+    name_class: "nombre-pais-ar",
+  },
+  rata: { frame_url: COS + "marcos/c4.svg" },
 }
 
 const COUNTRY_OF: Record<string, MmPlayer["country"]> = {

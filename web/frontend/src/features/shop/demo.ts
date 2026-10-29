@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type {
   AdminAccount,
+  Balance,
   CatalogItem,
+  Currency,
   Equipped,
   HistoryRow,
   Points,
@@ -15,6 +17,7 @@ import { COSMETICS_BASE } from "./types"
 // shop_weekly y points_of de 20261029180000_tienda.sql). Sin API ni sesión.
 
 type CatalogFile = { items: Omit<ShopItem, "price" | "active">[] }
+type Override = { price?: number | null; vip_price?: number | null; active?: boolean }
 
 // Precios iniciales: los de generar_catalogo_sql.py.
 function basePrice(i: Omit<ShopItem, "price" | "active">): number | null {
@@ -23,6 +26,7 @@ function basePrice(i: Omit<ShopItem, "price" | "active">): number | null {
   if (i.kind === "sticker") return cs ? 150 : 200
   if (i.kind === "name") return cs ? (i.animated ? 600 : 500) : 400
   if (i.kind === "theme") return cs ? 700 : 600
+  if (i.kind === "background") return cs ? 1000 : 800
   if (cs) return i.animated ? 1200 : 900
   return i.collection.startsWith("paises") ? 1000 : 900
 }
@@ -30,32 +34,38 @@ function basePrice(i: Omit<ShopItem, "price" | "active">): number | null {
 const START_CONFIG: PointsConfig = {
   per_mix: 10,
   per_win: 5,
-  vip_multiplier: 1.5,
+  vip_multiplier: 1,
   weekly_count: 6,
   weekly_discount: 25,
+  vip_per_mix: 10,
+  vip_per_win: 5,
 }
 
-const START_OWNED = ["marco-fuego", "sticker-gg", "tema-pais-ar", "nombre-brillo"]
+const START_OWNED = ["marco-fuego", "sticker-gg", "tema-pais-ar", "nombre-brillo", "fondo-neon"]
 const START_EQUIPPED: Equipped = {
   frame: "marco-fuego",
   theme: "tema-pais-ar",
   name: "nombre-brillo",
+  background: "fondo-neon",
   stickers: ["sticker-gg"],
 }
 const MAPS = ["de_dust2", "de_inferno", "de_nuke", "de_train", "cs_office"]
 
+// 110 mixes; los 40 más nuevos, jugados siendo VIP (el VIP se venció: las monedas quedan congeladas).
 function startHistory(): HistoryRow[] {
   const now = Date.now()
   return Array.from({ length: 110 }, (_, k) => {
     const won = k % 3 !== 1
-    return {
+    const row = {
       kind: "mix" as const,
       at: new Date(now - (k + 1) * 9 * 3600_000).toISOString(),
-      points: won ? 15 : 10,
       label: MAPS[k % MAPS.length] + (won ? " · victoria" : ""),
-      vip: false,
+      vip: k < 40,
     }
-  })
+    const rows: HistoryRow[] = [{ ...row, points: won ? 15 : 10, currency: "points" }]
+    if (row.vip) rows.push({ ...row, points: won ? 15 : 10, currency: "vip" })
+    return rows
+  }).flat()
 }
 
 const ACCOUNTS: AdminAccount[] = [
@@ -75,6 +85,7 @@ const ACCOUNTS: AdminAccount[] = [
   balance: earned as number,
   mixes: mixes as number,
   items: 0,
+  vip_balance: vip ? Math.round((earned as number) * 0.4) : 0,
 }))
 
 // La semana ISO, como semilla de las ofertas (shop_weekly mezcla con md5(id || semana)).
@@ -103,15 +114,12 @@ export type ShopDemo = ReturnType<typeof useShopDemo>
 
 export function useShopDemo() {
   const [raw, setRaw] = useState<CatalogFile["items"] | null>(null)
-  const [overrides, setOverrides] = useState<
-    Record<string, { price?: number | null; active?: boolean }>
-  >({})
+  const [overrides, setOverrides] = useState<Record<string, Override>>({})
   const [config, setConfig] = useState<PointsConfig>(START_CONFIG)
   const [vip, setVip] = useState(false)
   const [owned, setOwned] = useState<string[]>(START_OWNED)
   const [equipped, setEquipped] = useState<Equipped>(START_EQUIPPED)
   const [history, setHistory] = useState<HistoryRow[]>(startHistory)
-  const [granted, setGranted] = useState(0)
   const [accounts, setAccounts] = useState<AdminAccount[]>(ACCOUNTS)
   const [cover, setCover] = useState<string | null>(null)
 
@@ -134,6 +142,8 @@ export function useShopDemo() {
           overrides[i.id]?.price !== undefined
             ? (overrides[i.id].price ?? null)
             : basePrice(i),
+        vip_price:
+          overrides[i.id]?.vip_price !== undefined ? (overrides[i.id].vip_price ?? null) : i.vip_price,
         active: overrides[i.id]?.active ?? true,
       })),
     [raw, overrides],
@@ -174,23 +184,27 @@ export function useShopDemo() {
     [catalog],
   )
 
-  const earned = history
-    .filter((h) => h.kind === "mix")
-    .reduce((s, h) => s + h.points, 0)
-  const spent = -history
-    .filter((h) => h.kind === "purchase")
-    .reduce((s, h) => s + h.points, 0)
-  const points: Points = {
-    earned,
-    granted,
-    spent,
-    balance: earned + granted - spent,
-    mixes: history.filter((h) => h.kind === "mix").length,
-    vip,
+  // points_of y vip_coins_of: cada moneda por separado.
+  function balanceOf(currency: Currency): Balance {
+    const rows = history.filter((h) => h.currency === currency)
+    const sum = (kind: HistoryRow["kind"]) =>
+      rows.filter((h) => h.kind === kind).reduce((s, h) => s + h.points, 0)
+    const earned = sum("mix")
+    const granted = sum("grant")
+    const spent = -sum("purchase") || 0
+    return {
+      earned,
+      granted,
+      spent,
+      balance: earned + granted - spent,
+      mixes: rows.filter((h) => h.kind === "mix").length,
+    }
   }
+  const points: Points = { ...balanceOf("points"), vip, vip_coins: balanceOf("vip") }
 
+  // can_use_item: el premio VIP mientras sea VIP; lo demás si lo tiene, y lo VIP solo siendo VIP.
   const canUse = useCallback(
-    (i: ShopItem) => owned.includes(i.id) || (i.vip_only && vip),
+    (i: ShopItem) => (i.vip_reward ? vip : owned.includes(i.id) && (!i.vip_only || vip)),
     [owned, vip],
   )
   // Lo que se ve: sin lo VIP si la cuenta dejó de ser VIP (como player_cosmetics_public).
@@ -200,6 +214,7 @@ export function useShopDemo() {
       frame: ok(equipped.frame),
       theme: ok(equipped.theme),
       name: ok(equipped.name),
+      background: ok(equipped.background),
       stickers: equipped.stickers.filter((s) => ok(s)),
     }
   }, [equipped, byId, canUse])
@@ -209,14 +224,17 @@ export function useShopDemo() {
     const i = byId[id]
     const c = catalogById[id]
     if (!i || !c) return "Ese artículo no está en la tienda"
-    if (i.vip_only) return "Es un artículo VIP: no se compra, se usa mientras seas VIP"
-    if (c.price == null) return "Ese artículo no está a la venta"
+    if (i.vip_reward) return "Ese artículo viene con el VIP: no se compra"
     if (owned.includes(id)) return "Ya lo tenés"
-    if (points.balance < c.price)
-      return `Te faltan ${c.price - points.balance} puntos`
+    if (i.vip_only && !vip) return "Los artículos VIP se compran siendo VIP"
+    const currency: Currency = i.vip_only ? "vip" : "points"
+    const price = i.vip_only ? i.vip_price : c.price
+    if (price == null) return "Ese artículo no está a la venta"
+    const bal = i.vip_only ? points.vip_coins.balance : points.balance
+    if (bal < price) return `Te faltan ${price - bal} ${i.vip_only ? "monedas VIP" : "puntos"}`
     setOwned((o) => [...o, id])
     setHistory((h) => [
-      { kind: "purchase", at: new Date().toISOString(), points: -c.price!, label: i.name, vip: false },
+      { kind: "purchase", at: new Date().toISOString(), points: -price, label: i.name, vip: false, currency },
       ...h,
     ])
     return null
@@ -240,28 +258,29 @@ export function useShopDemo() {
     const p = Math.round(
       (config.per_mix + (won ? config.per_win : 0)) * (vip ? config.vip_multiplier : 1),
     )
+    const coins = vip ? config.vip_per_mix + (won ? config.vip_per_win : 0) : 0
+    const row = {
+      kind: "mix" as const,
+      at: new Date().toISOString(),
+      label: MAPS[Math.floor(Math.random() * MAPS.length)] + (won ? " · victoria" : ""),
+      vip,
+    }
     setHistory((h) => [
-      {
-        kind: "mix",
-        at: new Date().toISOString(),
-        points: p,
-        label: MAPS[Math.floor(Math.random() * MAPS.length)] + (won ? " · victoria" : ""),
-        vip,
-      },
+      ...(coins ? [{ ...row, points: coins, currency: "vip" as const }] : []),
+      { ...row, points: p, currency: "points" as const },
       ...h,
     ])
-    return p
+    return { points: p, coins }
   }
 
-  function grant(amount: number, reason: string) {
-    setGranted((g) => g + amount)
+  function grant(amount: number, reason: string, currency: Currency = "points") {
     setHistory((h) => [
-      { kind: "grant", at: new Date().toISOString(), points: amount, label: reason, vip: false },
+      { kind: "grant", at: new Date().toISOString(), points: amount, label: reason, vip: false, currency },
       ...h,
     ])
   }
 
-  function updateItem(id: string, patch: { price?: number | null; active?: boolean }) {
+  function updateItem(id: string, patch: Override) {
     setOverrides((o) => ({ ...o, [id]: { ...o[id], ...patch } }))
   }
 
@@ -283,7 +302,6 @@ export function useShopDemo() {
     setOwned(START_OWNED)
     setEquipped(START_EQUIPPED)
     setHistory(startHistory())
-    setGranted(0)
     setAccounts(ACCOUNTS)
     setCover(null)
   }

@@ -20,6 +20,10 @@ export const Route = createFileRoute("/demo/tienda")({
 })
 
 const ALIAS = "v34|Pepon"
+
+function mixText(how: string, r: { points: number; coins: number }) {
+  return `Mix ${how}: +${r.points} puntos` + (r.coins ? ` y +${r.coins} monedas VIP.` : ".")
+}
 const VIEWS = { shop: "Tienda", profile: "Mi perfil", admin: "Administración" } as const
 
 function DemoTienda() {
@@ -34,14 +38,14 @@ function DemoTienda() {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => toast.success(`Mix ganado: +${shop.playMix(true)} puntos.`)}
+          onClick={() => toast.success(mixText("ganado", shop.playMix(true)))}
         >
           Ganar un mix
         </Button>
         <Button
           size="sm"
           variant="outline"
-          onClick={() => toast.success(`Mix perdido: +${shop.playMix(false)} puntos.`)}
+          onClick={() => toast.success(mixText("perdido", shop.playMix(false)))}
         >
           Perder un mix
         </Button>
@@ -54,6 +58,16 @@ function DemoTienda() {
           }}
         >
           Regalo de 500
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            shop.grant(300, "Premio VIP del admin", "vip")
+            toast.success("+300 monedas VIP de regalo.")
+          }}
+        >
+          Regalo de 300 VIP
         </Button>
         <span className="inline-flex items-center gap-1.5">
           <Switch id="demo-vip" size="sm" checked={shop.vip} onCheckedChange={shop.setVip} />

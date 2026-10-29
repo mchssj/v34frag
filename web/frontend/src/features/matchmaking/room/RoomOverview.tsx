@@ -15,6 +15,7 @@ import { CountryFlag } from "@/components/brand/CountryFlag"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { FramedAvatar, NameFx, VipBadge } from "@/features/shop/cosmetics"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Dialog,
@@ -99,15 +100,30 @@ function PlayerCard({
       )}
     >
       <div className="flex items-center gap-2.5">
-        <Avatar className="size-11 rounded-lg">
-          {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
-          <AvatarFallback className="rounded-lg text-sm font-semibold">
-            {p.nick.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {p.frame_url ? (
+          // El marco ocupa un 12,5 % por lado: el avatar queda del mismo tamaño que sin marco.
+          <FramedAvatar
+            src={p.photo_url}
+            alias={p.nick}
+            frameSrc={p.frame_url}
+            size={58}
+          />
+        ) : (
+          <Avatar className="size-11 rounded-lg">
+            {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
+            <AvatarFallback className="rounded-lg text-sm font-semibold">
+              {p.nick.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
         <span className="flex min-w-0 items-center gap-1.5 font-semibold">
           {p.country && <CountryFlag country={p.country} />}
-          <span className="truncate">{p.nick}</span>
+          <NameFx
+            text={p.nick}
+            effect={{ css_class: p.name_class ?? null }}
+            className="truncate"
+          />
+          {p.vip && <VipBadge />}
           {p.is_me && (
             <span className="text-xs text-muted-foreground">(vos)</span>
           )}

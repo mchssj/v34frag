@@ -14,18 +14,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  CardBackground,
+  FramedAvatar,
+  NameFx,
+  VipBadge,
+} from "@/features/shop/cosmetics"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtClock, secondsLeft } from "./labels"
 import { LeavePartyButton, PartyMenu, usePartyNotices } from "./PartyMenu"
 import { playerSearchOptions, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
-import type { Country, MmState } from "./types"
+import type { Country, MmCosmetics, MmState } from "./types"
 import { useNow } from "./useNow"
 
 // "Mi grupo" (plan, sección 7): una tarjeta por lugar del equipo. En el medio, el jugador; al lado,
 // el grupo; después, los lugares que el grupo puede llenar (se invita) y los que llena la cola.
 
-type Card = {
+type Card = MmCosmetics & {
   player_id: string
   nick: string
   country: Country | null
@@ -152,12 +158,16 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
   return (
     <div
       className={cn(
-        "relative flex size-full flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border p-3",
-        card.is_me
-          ? "border-foreground/15 bg-[radial-gradient(120%_80%_at_50%_0%,color-mix(in_oklch,var(--foreground)_14%,transparent),transparent_70%),linear-gradient(to_bottom,color-mix(in_oklch,var(--foreground)_6%,var(--card)),var(--card))]"
-          : "bg-card"
+        "relative isolate flex size-full flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border p-3",
+        card.background_url
+          ? "border-white/15 text-white"
+          : card.is_me
+            ? "border-foreground/15 bg-[radial-gradient(120%_80%_at_50%_0%,color-mix(in_oklch,var(--foreground)_14%,transparent),transparent_70%),linear-gradient(to_bottom,color-mix(in_oklch,var(--foreground)_6%,var(--card)),var(--card))]"
+            : "bg-card"
       )}
     >
+      {/* Fondo de miniperfil de la tienda, detrás de todo. */}
+      <CardBackground src={card.background_url} />
       {menu}
       {card.is_leader && (
         <CrownIcon
@@ -165,17 +175,38 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
           className="absolute top-2.5 right-2.5 size-4 text-sidebar-primary"
         />
       )}
-      <Avatar className="size-16 ring-2 ring-foreground/10">
-        {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
-        <AvatarFallback className="text-base font-semibold">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
+      {card.frame_url ? (
+        <FramedAvatar
+          src={card.photo_url}
+          alias={card.nick}
+          frameSrc={card.frame_url}
+          size={88}
+        />
+      ) : (
+        <Avatar className="size-16 ring-2 ring-foreground/10">
+          {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
+          <AvatarFallback className="text-base font-semibold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      )}
       <span className="flex max-w-full items-center gap-1.5 text-sm font-semibold">
         {card.country && <CountryFlag country={card.country} />}
-        <span className="truncate">{card.nick}</span>
+        <NameFx
+          text={card.nick}
+          effect={{ css_class: card.name_class ?? null }}
+          className="truncate"
+        />
+        {card.vip && <VipBadge />}
       </span>
-      <span className="inline-flex items-center gap-1.5 rounded-md border bg-background/40 px-2 py-1 font-mono text-xs font-semibold tabular-nums">
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs font-semibold tabular-nums",
+          card.background_url
+            ? "border-white/20 bg-black/40"
+            : "bg-background/40"
+        )}
+      >
         <LevelBadge level={card.level} size={20} className="rounded-full" />
         {card.elo.toLocaleString("es-AR")}
       </span>

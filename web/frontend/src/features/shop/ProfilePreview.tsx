@@ -5,7 +5,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 
-import { FramedAvatar, NameFx, Stickers, VipBadge } from "./cosmetics"
+import { FramedAvatar, MiniCard, NameFx, Stickers, VipBadge } from "./cosmetics"
 import type { ShopDemo } from "./demo"
 import { KINDS } from "./types"
 
@@ -80,6 +80,22 @@ export function ProfilePreview({ shop, alias }: { shop: ShopDemo; alias: string 
       </section>
 
       <section className="flex flex-col gap-3 rounded-xl border bg-card p-5">
+        <h2 className="text-sm font-bold">Miniperfil</h2>
+        <p className="text-xs text-muted-foreground">
+          La tarjeta chica que ven los demás en el lobby del matchmaking y al pasar el mouse por tu nick.
+          El fondo se cambia en la tienda, en la pestaña Fondos.
+        </p>
+        <MiniCard
+          alias={alias}
+          level={7}
+          frame={e.frame ? shop.byId[e.frame] : null}
+          name={e.name ? shop.byId[e.name] : null}
+          background={e.background ? shop.byId[e.background] : null}
+          sub="Entry fragger · Argentina · ELO 1420"
+        />
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-xl border bg-card p-5">
         <h2 className="text-sm font-bold">Mi perfil · Portada y personalización</h2>
         <p className="text-xs text-muted-foreground">
           Se recorta a 1200 × 300 px y se muestra arriba de tu perfil. Un admin la puede quitar si no
@@ -107,7 +123,7 @@ export function ProfilePreview({ shop, alias }: { shop: ShopDemo; alias: string 
           )}
         </div>
         <ul className="grid gap-1 text-sm sm:grid-cols-2">
-          {(["frame", "theme", "name"] as const).map((k) => (
+          {(["frame", "theme", "name", "background"] as const).map((k) => (
             <li key={k}>
               <span className="text-muted-foreground">{KINDS[k].replace(/s$/, "")}: </span>
               {e[k] ? shop.byId[e[k]!]?.name : "nada"}
