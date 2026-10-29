@@ -7,8 +7,13 @@
 
 ## Cambios respecto del plan
 
-- Se sumó la fila **Mejor en**, que no estaba en el plan.
 - **Colores:** si se abre un link, cada jugador toma el color que le toca por su orden en el link. Después, al sacar o sumar jugadores, cada uno se queda con su color.
+
+## Cambio pedido por Kyan (2026-10-29)
+
+- La primera versión era una tabla nueva con trofeos y otro gráfico.
+- Kyan pidió que fuera igual al comparador que ya existe, solo con más tarjetas de jugador.
+- Se rehízo con las mismas piezas: tarjetas, filas de stats, gráfico y "mixes juntos". El detalle está en `DOCUMENTACION.md`.
 
 ## Notas
 

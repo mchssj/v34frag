@@ -4,39 +4,46 @@ Prototipo de Kyan para que lo terminen Daniel (backend) y Esteban (frontend). Es
 
 ## Qué hace
 
-- **Cuántos:** sin VIP se comparan hasta 2 jugadores, como en el comparador actual. Con VIP, hasta 5.
-- **Agregar y sacar:** los jugadores se suman con **Agregar jugador**, un buscador por alias. Cada uno aparece como chip y se saca con la X.
-- **Tabla:** tiene una fila por métrica y una columna por jugador. Las métricas son ELO, ELO máximo, Rating, K/D, HS %, ADR, % de victorias y mixes.
-  - El mejor de cada fila lleva un trofeo.
-  - Cada valor tiene una barra con el color del jugador.
-  - La última fila dice en cuántas métricas es el mejor cada uno.
-- **Gráfico:** muestra el ELO de los últimos 30 mixes, con una línea por jugador y el nick al final de cada línea. Al pasar el mouse aparece una línea vertical con los valores de todos en ese mix.
+Es **el mismo comparador de `/players/compare`** (`features/ranking/Compare.tsx`), con tarjetas de jugador que se pueden sumar y sacar. Kyan lo pidió así el 2026-10-29: una primera versión con una tabla distinta no se parecía al actual.
+
+| Parte | Como el actual | Lo que cambia |
+|---|---|---|
+| Tarjetas de jugador | Avatar, nick, equipo, insignia de nivel y ELO, con la raya de color arriba | Tienen una X para sacar al jugador y hay una tarjeta punteada **Agregar jugador** con el buscador por alias |
+| Stats | ELO, Rating, K/D, HS %, ADR, % Victorias y Mixes, con el ganador en blanco y su barra de color | Con 2 jugadores son las filas de dos lados de siempre. Con 3 a 5, una columna por jugador con su valor y su barra |
+| Gráfico | ELO de los últimos 30 mixes, tres valores en el eje, el punto final y la leyenda arriba | Una línea por jugador |
+| Mixes juntos | "Mixes jugados juntos" y "Como rivales" | Con 3 o más, una línea por cada jugador contra el primero ("Con X: …") |
+
+- **Límites:** sin VIP se comparan 2. La tarjeta de agregar muestra la corona y "Con VIP, hasta 5". Con VIP se comparan hasta 5.
 - **URL:** los jugadores van en la URL (`?p=fako99,daook,…`).
-- **Sin VIP:** si el link trae más de 2 jugadores, se comparan los primeros 2 y aparece un aviso.
+- **Link de más:** si el link trae más jugadores de los que permite el VIP, se comparan los primeros y aparece un aviso.
 
 ## Colores
 
-Los 5 colores son los primeros de la paleta categórica de la skill de dataviz: azul, naranja, aqua, amarillo y magenta, con un tono para claro y otro para oscuro. Se validaron con su script en los dos modos:
+Los dos primeros son los del comparador actual: `--primary` (naranja) y `--chart-2` (gris). Los otros tres salen de la paleta categórica de la skill de dataviz: azul, aqua y violeta. Se eligieron con su validador para que se distingan con los dos primeros, también con daltonismo, en claro y en oscuro.
 
-- Pasan las pruebas de separación para daltonismo.
-- En modo claro, aqua, amarillo y magenta quedan por debajo de 3:1 de contraste contra el fondo. Por eso el color nunca va solo: siempre va con el nick al lado, y la tabla es la vista accesible.
+El validador marca dos cosas que vienen del comparador actual y no se tocaron:
+
+- El gris no tiene color.
+- El naranja en oscuro es más claro que la banda recomendada.
+
+Por eso cada color va siempre con el nick, en la tarjeta, en la leyenda y en la columna.
 
 El color **sigue al jugador**: si sacás a uno, los demás no cambian de color, y el que entra toma el color libre más bajo.
 
 ## Archivos (en `web/frontend/src/`)
 
-- `features/compare5/demo.ts`: los jugadores del buscador más ADR, victorias, ELO máximo e historial.
-- `features/compare5/MultiCompare.tsx`
+- `features/compare5/demo.ts`: los jugadores del buscador más ADR, victorias, ELO máximo, historial y `together()` (mixes juntos por par).
+- `features/compare5/MultiCompare.tsx`: tarjetas, stats, gráfico y "mixes juntos". Reusa `PlayerAvatar` y `barPct` del ranking.
 - `routes/demo.comparador.tsx`
 
 ## Lo que falta para la versión real
 
-- **Daniel:** que `GET /api/v1/players/compare` acepte hasta 5 jugadores (hoy recibe `a` y `b`), con el VIP chequeado del lado del servidor.
-- **Esteban:** reemplazar `/players/compare` por este comparador, o sumarle los jugadores.
+- **Daniel:** que `GET /api/v1/players/compare` acepte hasta 5 jugadores (hoy recibe `a` y `b`) y devuelva `together` de cada uno contra el primero, con el VIP chequeado del lado del servidor.
+- **Esteban:** pasar estos cambios a `features/ranking/Compare.tsx`. La estructura es la misma, así que alcanza con generalizar `CompareView` y `EloCompareChart` de 2 jugadores a N.
 
 ## Pruebas (2026-10-29)
 
-- Con "Comparar el top 5" se ven los 5 jugadores, cada uno con su color, y los trofeos repartidos (3, 0, 3, 1 y 1 de 8).
-- El tooltip del gráfico muestra los 5 valores ordenados.
+- Con 2 jugadores (lo que abre la demo) se ve igual que el comparador actual.
+- Con **Comparar el top 5** se ven las 5 tarjetas, las 5 columnas de stats, las 5 líneas y 4 líneas de "Con X".
 - No hubo errores en la consola.
 - No se revisó en modo claro.
