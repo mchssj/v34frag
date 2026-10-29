@@ -140,7 +140,7 @@ const approve = createRoute({
   method: 'post', path: '/api/v1/admin/steam-requests/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Aprobar un pedido de SteamID',
   description:
-    '`add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha); falla si comparte partidas con otro SteamID de la ficha. ' +
+    '`add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de esa ficha** (un solo ELO por ficha; los demás no cambian); falla si comparte partidas con otro SteamID de la ficha. ' +
     '`remove`: lo saca de la ficha como `DELETE /api/v1/admin/steam/{steamid}`; falla si es el único SteamID de la ficha.',
   request: { params: RequestIdParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
@@ -171,7 +171,7 @@ const removeSteam = createRoute({
   method: 'delete', path: '/api/v1/admin/steam/{steamid}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Quitar un SteamID de su ficha',
   description:
-    'Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO. ' +
+    'Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO de la ficha y el del SteamID que queda libre (los demás no cambian).' +
     'Si el jugador había pedido desvincularlo, el pedido queda aprobado.',
   request: { params: SteamParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
