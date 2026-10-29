@@ -24,6 +24,7 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
+import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
 import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
@@ -120,6 +121,11 @@ const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
 const DemoTiendaRoute = DemoTiendaRouteImport.update({
   id: '/demo/tienda',
   path: '/demo/tienda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoWidgetRoute = DemoWidgetRouteImport.update({
+  id: '/demo/widget',
+  path: '/demo/widget',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
@@ -257,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/demo/matchmaking'
     | '/demo/tienda'
+    | '/demo/widget'
     | '/admin/events'
     | '/admin/matchmaking'
     | '/admin/players'
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/demo/matchmaking'
     | '/demo/tienda'
+    | '/demo/widget'
     | '/admin/events'
     | '/admin/matchmaking'
     | '/admin/players'
@@ -457,6 +468,7 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/demo/matchmaking'
     | '/demo/tienda'
+    | '/demo/widget'
     | '/_app/admin/events'
     | '/_app/admin/matchmaking'
     | '/_app/admin/players'
@@ -490,6 +502,7 @@ export interface RootRouteChildren {
   WelcomeRoute: typeof WelcomeRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
+  DemoWidgetRoute: typeof DemoWidgetRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -597,6 +610,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/tienda'
       fullPath: '/demo/tienda'
       preLoaderRoute: typeof DemoTiendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/widget': {
+      id: '/demo/widget'
+      path: '/demo/widget'
+      fullPath: '/demo/widget'
+      preLoaderRoute: typeof DemoWidgetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/admin/events': {
@@ -879,6 +899,7 @@ const rootRouteChildren: RootRouteChildren = {
   WelcomeRoute: WelcomeRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoTiendaRoute: DemoTiendaRoute,
+  DemoWidgetRoute: DemoWidgetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
