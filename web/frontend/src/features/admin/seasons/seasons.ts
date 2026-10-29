@@ -50,6 +50,16 @@ export function resetTitle(floor: number, all = false): string {
     : `Reinicio desde el nivel ${level}`
 }
 
+/** Las reglas del reinicio en una frase, para confirmar el cierre. */
+export function resetRule(pct: number, floor: number, all: boolean): string {
+  if (all && pct === 0)
+    return `Reinicio total: todos quedan en ${floor} de ELO.`
+  if (all)
+    return `Reinicio de todos: conservan el ${pct} % de su distancia a ${floor}, por encima o por debajo.`
+  if (pct === 100) return "Sin reinicio: nadie cambia de ELO."
+  return `Reinicio: los de más de ${floor} de ELO conservan el ${pct} % de lo que tienen por encima. El resto no cambia.`
+}
+
 /** El cierre es a las 06:00 de Argentina (09:00 UTC) del día elegido. */
 export const endsIso = (date: string) => `${date}T09:00:00.000Z`
 

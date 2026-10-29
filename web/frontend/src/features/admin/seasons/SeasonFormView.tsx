@@ -30,12 +30,15 @@ export function SeasonFormView({
   value,
   onChange,
   seasonNumber,
+  resetNotice,
 }: {
   mode: "active" | "next"
   value: SeasonForm
   onChange: (f: SeasonForm) => void
   /** Número de la temporada, para la vista de la medalla. */
   seasonNumber: number
+  /** A qué cierre se aplica el reinicio (va arriba de la tarjeta). */
+  resetNotice?: ReactNode
 }) {
   const id = useId()
   const f = value
@@ -216,6 +219,7 @@ export function SeasonFormView({
         pct={f.reset_pct}
         floor={f.reset_floor}
         all={f.reset_all}
+        notice={resetNotice}
         onPct={(v) => set({ reset_pct: v })}
         onFloor={(v) => set({ reset_floor: v })}
         onAll={(v) => set({ reset_all: v })}
@@ -256,6 +260,7 @@ function ResetCard({
   pct,
   floor,
   all,
+  notice,
   onPct,
   onFloor,
   onAll,
@@ -264,6 +269,7 @@ function ResetCard({
   floor: number
   /** También los de debajo del piso (con 0 %, reinicio total). */
   all: boolean
+  notice?: ReactNode
   onPct: (v: number) => void
   onFloor: (v: number) => void
   onAll: (v: boolean) => void
@@ -294,6 +300,11 @@ function ResetCard({
 
   return (
     <Card className="min-w-0 flex-[1_1_360px] gap-3.5">
+      {notice && (
+        <p className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-[13px] leading-relaxed">
+          {notice}
+        </p>
+      )}
       <div className="flex flex-col gap-1">
         <h2 className="text-[17px] font-bold">{resetTitle(floor, all)}</h2>
         <span className="text-[13px] leading-relaxed text-muted-foreground">

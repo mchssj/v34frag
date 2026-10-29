@@ -9,6 +9,7 @@ import {
   fromSeason,
   removeTier,
   resetElo,
+  resetRule,
   resetTitle,
   seasonPatch,
   setTierEnd,
@@ -56,6 +57,19 @@ describe("Temporadas", () => {
     expect(resetElo(2540, 0, 1000, true)).toBe(1000)
     expect(resetElo(400, 0, 1000, true)).toBe(1000)
     expect(resetTitle(2001, true)).toBe("Reinicio de todos")
+  })
+
+  it("las reglas del reinicio en una frase, para confirmar el cierre", () => {
+    expect(resetRule(0, 1000, true)).toBe(
+      "Reinicio total: todos quedan en 1000 de ELO."
+    )
+    expect(resetRule(10, 2001, true)).toMatch(
+      /^Reinicio de todos: conservan el 10 %/
+    )
+    expect(resetRule(10, 2001, false)).toMatch(/^Reinicio: los de más de 2001/)
+    expect(resetRule(100, 2001, false)).toBe(
+      "Sin reinicio: nadie cambia de ELO."
+    )
   })
 
   it("el título del reinicio dice desde qué nivel, según el piso", () => {

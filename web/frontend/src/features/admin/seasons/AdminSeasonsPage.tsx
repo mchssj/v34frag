@@ -27,6 +27,7 @@ import {
   formError,
   fromConfig,
   fromSeason,
+  resetRule,
   seasonPatch,
   toConfig,
   type SeasonForm,
@@ -141,6 +142,7 @@ function SeasonsBody({
             value={activeForm}
             onChange={setActive}
             seasonNumber={season.number}
+            resetNotice={`Se aplica al terminar la temporada ${season.number} (esta).`}
           />
         </>
       )}
@@ -160,6 +162,17 @@ function SeasonsBody({
             value={nextForm}
             onChange={setNext}
             seasonNumber={(season?.number ?? 0) + 1}
+            resetNotice={
+              season ? (
+                <>
+                  Se aplica al terminar la temporada {season.number + 1}, no la
+                  actual. Para el cierre de la temporada {season.number}, cambia
+                  el reinicio en <strong>Temporada activa</strong>.
+                </>
+              ) : (
+                "Se aplica al terminar la temporada 1."
+              )
+            }
           />
         </>
       )}
@@ -329,9 +342,16 @@ function ActiveHero({ season }: { season: Season }) {
               {s.medals} reciben medalla (top {season.top_n}).
             </li>
             <li>
-              {season.reset_all
-                ? `${s.reset} se reinician: todos se acercan a ${season.reset_floor} de ELO.`
-                : `${s.reset} con más de ${season.reset_floor} de ELO se reinician: en promedio bajan ${s.avg_drop} de ELO.`}
+              <strong className="text-foreground">
+                {resetRule(
+                  season.reset_pct,
+                  season.reset_floor,
+                  season.reset_all
+                )}
+              </strong>{" "}
+              Cambia el ELO de {s.reset}{" "}
+              {s.reset === 1 ? "jugador" : "jugadores"}. Si no es lo que
+              quieres, cancela y cambia el reinicio en "Temporada activa".
             </li>
             <li>
               Se abre la temporada {season.number + 1} con los valores de

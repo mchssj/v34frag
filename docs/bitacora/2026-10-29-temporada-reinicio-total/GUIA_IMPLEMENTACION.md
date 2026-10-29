@@ -60,3 +60,27 @@ sequenceDiagram
 
 - Base: `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/37_reinicio_total.sql`. El ELO de un cierre que ya se hizo con `reset_all` queda como está; un `elo_recompute_all` lo rehace sin la opción.
 - La API y el frontend de antes funcionan sin la columna, así que se revierten con el commit anterior.
+
+## Primer uso en staging: el reinicio quedó en la temporada equivocada (2026-10-29)
+
+Daniel puso "0 %, piso 1000 y reiniciar a todos" en **Próxima temporada** y terminó la temporada 2. Cada temporada se cierra con sus propias reglas (las de **Temporada activa**), así que la 2 se cerró con 10 % sobre 2001. Nadie pasaba de 2001 (el máximo era 1245), así que nadie cambió. Los valores quedaron en la temporada 3, para su propio cierre.
+
+**Arreglo en staging**, con un ensayo previo en una transacción con `rollback`. En el ensayo, `elo_recompute_all` sin cambios dejó todo igual (0 diferencias):
+
+```sql
+begin;
+update seasons set reset_pct = 0, reset_floor = 1000, reset_all = true where number = 2;
+update season_standings st set elo_after = season_reset_elo(st.elo, 0, 1000, true)
+  from seasons s where s.id = st.season_id and s.number = 2;
+select elo_recompute_all();   -- no crea avisos (replanteo 28)
+commit;
+```
+
+Resultado: los 20 jugadores en 1000 (también por la API pública) y la foto de la temporada 2 con `elo_after = 1000`. La temporada 3 y la configuración quedaron como las dejó Daniel (0 %, 1000, todos).
+
+**Cambios en el frontend para que no vuelva a pasar:**
+
+- La tarjeta del reinicio dice a qué cierre se aplica. En "Temporada activa": "Se aplica al terminar la temporada N (esta)". En "Próxima temporada": "Se aplica al terminar la temporada N+1, no la actual…".
+- El diálogo de "Terminar temporada" muestra en negrita las reglas exactas del cierre (`resetRule`; por ejemplo, "Reinicio total: todos quedan en 1000 de ELO.") y cuántos cambian, y dice que se cambian en "Temporada activa".
+- `pnpm typecheck` y `pnpm lint` sin errores; las 48 pruebas de `src/features/admin` pasan, con una nueva de `resetRule`.
+- Revisado en el navegador contra la base local, con una cuenta y una temporada temporales que se borraron después.
