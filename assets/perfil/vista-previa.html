@@ -22,6 +22,7 @@ h1{font-size:22px;margin:0 0 4px}h3{font-size:15px;margin:28px 0 12px}.sub{color
 .stats{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.stats div{background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px}.stats b{color:var(--primary)}
 .stk{display:flex;gap:6px;margin-left:auto}.stk img{width:52px;height:52px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button small{opacity:.7;margin-left:4px}
 .tabs button.on{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
 .item{border:1px solid var(--border);border-radius:12px;background:var(--card);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s}
@@ -52,7 +53,7 @@ h1{font-size:22px;margin:0 0 4px}h3{font-size:15px;margin:28px 0 12px}.sub{color
 <body>
 <div class="wrap">
   <h1>Cosméticos del perfil</h1>
-  <p class="sub">Vista previa con jugadores de ejemplo (datos falsos con la forma de <code>GET /api/v1/players</code>). Elegí un jugador y tocá un artículo para equiparlo. Hay 5 artículos para todos y 5 VIP por tipo. Los VIP salen del campo <code>vip</code> de la API; no hay precios porque el backend todavía no tiene tienda. La foto y la portada las sube cada jugador.</p>
+  <p class="sub">Vista previa con jugadores de ejemplo (datos falsos con la forma de <code>GET /api/v1/players</code>). Elegí un jugador y tocá un artículo para equiparlo. Hay 148 artículos en tres colecciones (Counter-Strike, Sudamérica y series), con la misma cantidad para todos que VIP en cada tipo. Los VIP salen del campo <code>vip</code> de la API; no hay precios porque el backend todavía no tiene tienda. La foto y la portada las sube cada jugador.</p>
 
   <div class="top"><label for="sel-j">Ver como</label><select id="sel-j"></select></div>
 
@@ -66,6 +67,7 @@ h1{font-size:22px;margin:0 0 4px}h3{font-size:15px;margin:28px 0 12px}.sub{color
   </div>
 
   <div class="tabs" id="tabs"></div>
+  <div class="tabs" id="cols"></div>
   <div class="grid" id="grid"></div>
 
   <h3>Mini perfiles</h3>
@@ -77,7 +79,7 @@ h1{font-size:22px;margin:0 0 4px}h3{font-size:15px;margin:28px 0 12px}.sub{color
 <script>
 var KINDS={frame:'Marcos',sticker:'Stickers',theme:'Temas',name:'Nombre'};
 var COLORES=['#f0449b','#4f9bff','#e0a33a','#48d597','#b26bff','#ff6b4a','#2ee6ff','#9696a3'];
-var items=[],porId={},jug=[],cur=null,tab='frame';
+var items=[],porId={},jug=[],cur=null,tab='frame',col='',COLS={};
 function $(i){return document.getElementById(i)}
 function art(id){return id?porId[id]:null}
 function avatar(j,i){if(j.photo_url)return j.photo_url;var c=COLORES[i%COLORES.length],ini=j.alias.replace(/^v34\|/,'').slice(0,2).toUpperCase();
@@ -106,8 +108,10 @@ function estado(a){
 }
 function tienda(){
   $('tabs').innerHTML='';Object.keys(KINDS).forEach(function(k){var b=document.createElement('button');b.textContent=KINDS[k];if(k===tab)b.className='on';b.onclick=function(){tab=k;tienda()};$('tabs').appendChild(b)});
+  $('cols').innerHTML='';[''].concat(Object.keys(COLS)).forEach(function(k){var b=document.createElement('button'),n=items.filter(function(a){return a.kind===tab&&(!k||a.collection===k)}).length;
+    b.innerHTML=(k?COLS[k]:'Todas')+'<small>'+n+'</small>';if(k===col)b.className='on';b.onclick=function(){col=k;tienda()};$('cols').appendChild(b)});
   var g=$('grid');g.innerHTML='';
-  items.filter(function(a){return a.kind===tab}).forEach(function(a){
+  items.filter(function(a){return a.kind===tab&&(!col||a.collection===col)}).forEach(function(a){
     var it=document.createElement('div');it.className='item'+(equipado(a)?' on':'')+(puede(a)?'':' lock');it.appendChild(vis(a));
     var inf=document.createElement('div');inf.className='inf';
     inf.innerHTML='<b></b><small></small><div class="precio">'+estado(a)+'</div>';
@@ -150,7 +154,7 @@ function ranking(){
 function todo(){perfil();tienda();minis();ranking()}
 function elegir(i){cur=jug[i];$('sel-j').value=i;todo()}
 Promise.all([fetch('catalogo.json').then(function(r){return r.json()}),fetch('datos-falsos.json').then(function(r){return r.json()})]).then(function(r){
-  items=r[0].items;items.forEach(function(a){porId[a.id]=a});
+  items=r[0].items;COLS=r[0].collections||{};items.forEach(function(a){porId[a.id]=a});
   jug=r[1].items;jug.forEach(function(j,i){j.av=avatar(j,i);j.cover=portada(j,i);var o=document.createElement('option');o.value=i;o.textContent=j.alias+(j.vip?' (VIP)':'');$('sel-j').appendChild(o)});
   $('sel-j').onchange=function(){elegir(+this.value)};elegir(0);
 }).catch(function(){$('grid').textContent='No se pudo leer el catálogo: abrí esta página con un servidor (ver la documentación).'});

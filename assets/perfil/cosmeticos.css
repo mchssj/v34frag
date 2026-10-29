@@ -51,6 +51,55 @@
 .nombre-cromo{position:relative;display:inline-block}
 .nombre-cromo::after{content:attr(data-nombre);position:absolute;inset:0;background:linear-gradient(100deg,transparent 40%,#fff 50%,transparent 60%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-mover-250 2.4s linear infinite}
 
+/* Temas de países (para todos) */
+.tema-pais-ar{--primary:#74acdf;--primary-foreground:#06121c;--ring:#74acdf;--card:#0f1720;--muted:#16212d;--border:#2c4a66}
+.tema-pais-br{--primary:#ffdf00;--primary-foreground:#0b1a10;--ring:#ffdf00;--card:#0b1a10;--muted:#10241a;--border:#1f5a33}
+.tema-pais-uy{--primary:#5b8fe8;--primary-foreground:#060f22;--ring:#5b8fe8;--card:#0e1424;--muted:#141d33;--border:#2a3f73}
+.tema-pais-cl{--primary:#ff4a3d;--primary-foreground:#1f0705;--ring:#ff4a3d;--card:#13111a;--muted:#1b1826;--border:#1f3a7a}
+.tema-pais-pe{--primary:#ff3341;--primary-foreground:#1f0508;--ring:#ff3341;--card:#1a0c0e;--muted:#251214;--border:#4a1a1f}
+.tema-pais-co{--primary:#fcd116;--primary-foreground:#141004;--ring:#fcd116;--card:#10131f;--muted:#161b2c;--border:#233a7a}
+.tema-pais-ve{--primary:#ffcc00;--primary-foreground:#141004;--ring:#ffcc00;--card:#0d1230;--muted:#141a3d;--border:#3a2a6a}
+.tema-pais-ec{--primary:#ffd100;--primary-foreground:#141004;--ring:#ffd100;--card:#111a2a;--muted:#17233a;--border:#5a1a22}
+.tema-pais-bo{--primary:#3fbf5f;--primary-foreground:#04160a;--ring:#3fbf5f;--card:#0f170f;--muted:#162116;--border:#5a4a10}
+.tema-pais-py{--primary:#4a79e0;--primary-foreground:#050f22;--ring:#4a79e0;--card:#160f12;--muted:#21161a;--border:#5a1a22}
+
+/* Temas de series (VIP): borde con brillo que respira. Homenajes originales, sin logos ni personajes. */
+.tema-serie-ninja{--primary:#ff7a1a;--primary-foreground:#1f0c02;--ring:#ff7a1a;--card:#1a120c;--muted:#24180f;--border:#4d2a12;--glow:#ff7a1a;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-guerrero{--primary:#ffd43a;--primary-foreground:#1b1407;--ring:#ffd43a;--card:#1a160a;--muted:#241e0e;--border:#5a4612;--glow:#ffd43a;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-alien{--primary:#3dff6e;--primary-foreground:#03160a;--ring:#3dff6e;--card:#0c1610;--muted:#122016;--border:#1f4a2a;--glow:#3dff6e;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-portal{--primary:#97ce4c;--primary-foreground:#0c1604;--ring:#97ce4c;--card:#0f160b;--muted:#162010;--border:#33521e;--glow:#97ce4c;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-navaja{--primary:#c9a35a;--primary-foreground:#1c1405;--ring:#c9a35a;--card:#171411;--muted:#211c17;--border:#4a3d28;--glow:#c9a35a;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-laboratorio{--primary:#c8e04a;--primary-foreground:#121604;--ring:#c8e04a;--card:#0f1a0e;--muted:#152414;--border:#3c5222;--glow:#c8e04a;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-reves{--primary:#ff2a3d;--primary-foreground:#1f0508;--ring:#ff2a3d;--card:#160608;--muted:#210a0d;--border:#5a141c;--glow:#ff2a3d;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-reinos{--primary:#b9c2cc;--primary-foreground:#101215;--ring:#b9c2cc;--card:#121418;--muted:#1a1d22;--border:#3a4048;--glow:#b9c2cc;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-atraco{--primary:#ff3b4f;--primary-foreground:#1f0508;--ring:#ff3b4f;--card:#1a0a0d;--muted:#251014;--border:#5a1622;--glow:#ff3b4f;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-juego{--primary:#ff2f86;--primary-foreground:#1f0512;--ring:#ff2f86;--card:#0b1f1f;--muted:#102a2a;--border:#1f5a55;--glow:#ff2f86;animation:cos-glow 3s ease-in-out infinite}
+.tema-serie-reves{animation:cos-glow-titila 2.6s steps(1) infinite}
+
+/* Nombres de países (para todos): franjas de la bandera */
+.nombre-pais-ar{background:linear-gradient(180deg,#74acdf 0% 33%,#fff 33% 67%,#74acdf 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-br{background:linear-gradient(180deg,#009c3b 0% 33%,#ffdf00 33% 67%,#3a6fd8 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-uy{background:linear-gradient(180deg,#fff 0% 20%,#5b8fe8 20% 40%,#fff 40% 60%,#5b8fe8 60% 80%,#fff 80% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-cl{background:linear-gradient(90deg,#4a7fe0 0 28%,transparent 28%) 0 0/100% 50% no-repeat,linear-gradient(180deg,#fff 0% 50%,#ff4a3d 50% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-pe{background:linear-gradient(90deg,#ff3341 0% 33%,#fff 33% 67%,#ff3341 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-co{background:linear-gradient(180deg,#fcd116 0% 25%,#fcd116 25% 50%,#4a6fe0 50% 75%,#ff3b4a 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-ve{background:linear-gradient(180deg,#ffcc00 0% 33%,#4a6fe0 33% 67%,#ff3b4a 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-ec{background:linear-gradient(180deg,#ffd100 0% 25%,#ffd100 25% 50%,#4a7fe0 50% 75%,#ff4d5e 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-bo{background:linear-gradient(180deg,#ff4a3d 0% 33%,#f9e300 33% 67%,#3fbf5f 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.nombre-pais-py{background:linear-gradient(180deg,#ff4a3d 0% 33%,#fff 33% 67%,#4a79e0 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+
+/* Nombres de series (VIP) */
+.nombre-chakra{background:linear-gradient(100deg,#1f6bff,#7fd8ff 30%,#fff 45%,#7fd8ff 60%,#1f6bff) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #3fa9ff99);animation:cos-mover-250 1.6s linear infinite}
+.nombre-ki{color:#fff6c2;-webkit-text-fill-color:#fff6c2;text-shadow:0 0 4px #ffd43a,0 0 12px #ffb000,0 0 22px #ff9a00;animation:cos-ki .35s ease-in-out infinite alternate}
+.nombre-mutante{color:#c8ffd6;-webkit-text-fill-color:#c8ffd6;text-shadow:0 0 4px #3dff6e,0 0 14px #1fbf4a;animation:cos-mutante 1.8s ease-in-out infinite}
+.nombre-portal{background:linear-gradient(180deg,#3e8e22,#97ce4c 25%,#e4ffb8 50%,#97ce4c 75%,#3e8e22) 0 0/100% 300%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px #97ce4c88);animation:cos-portal 1.6s linear infinite}
+.nombre-whisky{font-family:Georgia,Times New Roman,serif;letter-spacing:.04em;background:linear-gradient(100deg,#7a4a12 0%,#c98a2e 30%,#ffe2a8 45%,#c98a2e 60%,#7a4a12 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000);animation:cos-mover-250 4s linear infinite}
+.nombre-cristal{background:linear-gradient(120deg,#2f8fd8 0%,#7fd8ff 25%,#e8fbff 40%,#7fd8ff 55%,#2f8fd8 75%,#bff0ff 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #7fd8ff99);animation:cos-mover-250 2.2s linear infinite}
+.nombre-ochentoso{-webkit-text-fill-color:transparent;-webkit-text-stroke:1.5px #ff2a3d;letter-spacing:.06em;text-transform:uppercase;font-family:Georgia,Times New Roman,serif;filter:drop-shadow(0 0 4px #ff2a3d) drop-shadow(0 0 10px #a00010);animation:cos-titila 3s steps(1) infinite}
+.nombre-acero{background:repeating-linear-gradient(110deg,#5d6470 0 3px,#c9ced6 3px 5px,#8a929c 5px 8px,#eef0f3 8px 9px) 0 0/40px 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000);animation:cos-acero 3s linear infinite}
+.nombre-billete{background:linear-gradient(100deg,#2e5a22 0%,#6fae5a 30%,#d8ffc8 45%,#6fae5a 60%,#2e5a22 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #6fae5a88);animation:cos-mover-250 2s linear infinite}
+.nombre-luz-roja{-webkit-text-fill-color:currentColor;animation:cos-luz-roja 2.4s steps(1) infinite}
+
 @keyframes cos-mover-250{to{background-position:-250% 0}}
 @keyframes cos-mover-300{to{background-position:-300% 0}}
 @keyframes cos-glitch{0%,88%,100%{transform:none}90%{transform:translate(1px,-1px)}94%{transform:translate(-1px,1px)}}
@@ -64,6 +113,15 @@
 @keyframes cos-aurora-borde{0%{box-shadow:inset 0 0 0 1px #7dffc466,0 0 40px #7dffc426}50%{box-shadow:inset 0 0 0 1px #b26bff66,0 0 40px #b26bff26}100%{box-shadow:inset 0 0 0 1px #7dffc466,0 0 40px #7dffc426}}
 @keyframes cos-holo-borde{0%{box-shadow:inset 0 0 0 1px #7af0ff66,0 0 40px #7af0ff26}33%{box-shadow:inset 0 0 0 1px #c58bff66,0 0 40px #c58bff26}66%{box-shadow:inset 0 0 0 1px #ff8ad066,0 0 40px #ff8ad026}100%{box-shadow:inset 0 0 0 1px #7af0ff66,0 0 40px #7af0ff26}}
 
+@keyframes cos-glow{0%,100%{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--glow) 40%,transparent),0 0 30px color-mix(in srgb,var(--glow) 12%,transparent)}50%{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--glow) 70%,transparent),0 0 46px color-mix(in srgb,var(--glow) 30%,transparent)}}
+@keyframes cos-glow-titila{0%,100%{box-shadow:inset 0 0 0 1px #ff2a3d80,0 0 40px #ff2a3d33}47%{box-shadow:inset 0 0 0 1px #ff2a3d20,0 0 10px #ff2a3d10}50%{box-shadow:inset 0 0 0 1px #ff2a3d80,0 0 40px #ff2a3d33}53%{box-shadow:none}56%{box-shadow:inset 0 0 0 1px #ff2a3d80,0 0 40px #ff2a3d33}}
+@keyframes cos-ki{from{text-shadow:0 0 4px #ffd43a,0 0 10px #ffb000,0 0 18px #ff9a00}to{text-shadow:0 0 6px #fff,0 0 16px #ffd43a,0 0 30px #ff9a00}}
+@keyframes cos-mutante{0%,100%{text-shadow:0 0 4px #3dff6e,0 0 10px #1fbf4a}50%{text-shadow:0 0 8px #3dff6e,0 0 24px #3dff6e}}
+@keyframes cos-portal{to{background-position:0 -300%}}
+@keyframes cos-titila{0%,100%{opacity:1}46%{opacity:.4}48%{opacity:1}52%{opacity:.2}54%{opacity:1}}
+@keyframes cos-acero{to{background-position:40px 0}}
+@keyframes cos-luz-roja{0%,49%{color:#ff2f4a;text-shadow:0 0 8px #ff2f4a}50%,100%{color:#3dff8e;text-shadow:0 0 8px #3dff8e}}
+
 @media (prefers-reduced-motion:reduce){
-  [class*="nombre-"],[class*="nombre-"]::before,[class*="nombre-"]::after,.tema-holo,.tema-aurora{animation:none}
+  [class*="nombre-"],[class*="nombre-"]::before,[class*="nombre-"]::after,.tema-holo,.tema-aurora,[class*="tema-serie-"]{animation:none}
 }

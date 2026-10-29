@@ -1,11 +1,16 @@
 {
-  "version": 4,
-  "note": "Catálogo de cosméticos del perfil: para todos y VIP en cada tipo. vip_only: solo se equipa si la API dice vip=true (PlayerSummary.vip, o vip.active en GET /me/profile). price: null porque el backend no tiene moneda ni tienda todavía. No hay fondos: la foto de perfil y la portada las sube cada jugador.",
+  "version": 5,
+  "note": "Catálogo de cosméticos del perfil: para todos y VIP en cada tipo. vip_only: solo se equipa si la API dice vip=true (PlayerSummary.vip, o vip.active en GET /me/profile). price: null porque el backend no tiene moneda ni tienda todavía. No hay fondos: la foto de perfil y la portada las sube cada jugador. collection agrupa los artículos para la tienda. La colección series son homenajes originales: sin logos, personajes ni nombres registrados.",
   "kinds": {
     "frame": "Marco de avatar (256 x 256, el avatar va en el 75 % central)",
     "sticker": "Sticker (128 x 128)",
     "theme": "Tema de perfil (clase de cosmeticos.css)",
     "name": "Efecto de nombre (clase de cosmeticos.css)"
+  },
+  "collections": {
+    "cs": "Counter-Strike",
+    "paises": "Sudamérica",
+    "series": "Series míticas (VIP)"
   },
   "items": [
     {
@@ -17,7 +22,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-trazadoras",
@@ -28,7 +34,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-c4",
@@ -39,7 +46,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-circuito",
@@ -50,7 +58,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-fuego",
@@ -61,7 +70,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-camuflaje",
@@ -72,7 +82,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-hielo",
@@ -83,7 +94,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-balas",
@@ -94,7 +106,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-pixel",
@@ -105,7 +118,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-grafiti",
@@ -116,7 +130,128 @@
       "css_class": null,
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "marco-pais-ar",
+      "kind": "frame",
+      "name": "Argentina",
+      "description": "Los colores de Argentina alrededor del avatar.",
+      "file": "marcos/pais-ar.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-br",
+      "kind": "frame",
+      "name": "Brasil",
+      "description": "Los colores de Brasil alrededor del avatar.",
+      "file": "marcos/pais-br.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-uy",
+      "kind": "frame",
+      "name": "Uruguay",
+      "description": "Los colores de Uruguay alrededor del avatar.",
+      "file": "marcos/pais-uy.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-cl",
+      "kind": "frame",
+      "name": "Chile",
+      "description": "Los colores de Chile alrededor del avatar.",
+      "file": "marcos/pais-cl.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-pe",
+      "kind": "frame",
+      "name": "Perú",
+      "description": "Los colores de Perú alrededor del avatar.",
+      "file": "marcos/pais-pe.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-co",
+      "kind": "frame",
+      "name": "Colombia",
+      "description": "Los colores de Colombia alrededor del avatar.",
+      "file": "marcos/pais-co.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-ve",
+      "kind": "frame",
+      "name": "Venezuela",
+      "description": "Los colores de Venezuela alrededor del avatar.",
+      "file": "marcos/pais-ve.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-ec",
+      "kind": "frame",
+      "name": "Ecuador",
+      "description": "Los colores de Ecuador alrededor del avatar.",
+      "file": "marcos/pais-ec.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-bo",
+      "kind": "frame",
+      "name": "Bolivia",
+      "description": "Los colores de Bolivia alrededor del avatar.",
+      "file": "marcos/pais-bo.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "marco-pais-py",
+      "kind": "frame",
+      "name": "Paraguay",
+      "description": "Los colores de Paraguay alrededor del avatar.",
+      "file": "marcos/pais-py.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises"
     },
     {
       "id": "marco-kevlar",
@@ -127,7 +262,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-neon",
@@ -138,7 +274,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-oro-vip",
@@ -149,7 +286,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-diamante",
@@ -160,7 +298,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-plasma",
@@ -171,7 +310,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-galaxia",
@@ -182,7 +322,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-holografico",
@@ -193,7 +334,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-laser",
@@ -204,7 +346,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-glitch",
@@ -215,7 +358,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "marco-alas",
@@ -226,7 +370,128 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "marco-serie-ninja",
+      "kind": "frame",
+      "name": "Shinobi",
+      "description": "Espiral, cinta y shurikens que giran.",
+      "file": "marcos/serie-ninja.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-guerrero",
+      "kind": "frame",
+      "name": "Súper guerrero",
+      "description": "Aura dorada que arde y rayos que chispean.",
+      "file": "marcos/serie-guerrero.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-alien",
+      "kind": "frame",
+      "name": "Reloj alien",
+      "description": "Panel verde con el dial que transforma.",
+      "file": "marcos/serie-alien.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-portal",
+      "kind": "frame",
+      "name": "Portal",
+      "description": "Un portal verde a otra dimensión que no para de girar.",
+      "file": "marcos/serie-portal.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-navaja",
+      "kind": "frame",
+      "name": "Gorra y navaja",
+      "description": "Marco art déco de 1919 con una navaja en la visera.",
+      "file": "marcos/serie-navaja.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-laboratorio",
+      "kind": "frame",
+      "name": "Laboratorio",
+      "description": "Cristales azules, burbujas y la tabla periódica de CS:S.",
+      "file": "marcos/serie-laboratorio.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-reves",
+      "kind": "frame",
+      "name": "Mundo del revés",
+      "description": "Luces de colores que titilan y esporas en el aire.",
+      "file": "marcos/serie-reves.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-reinos",
+      "kind": "frame",
+      "name": "Reinos",
+      "description": "Acero, espadas, una corona y nieve que cae.",
+      "file": "marcos/serie-reinos.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-atraco",
+      "kind": "frame",
+      "name": "Atraco",
+      "description": "Mono rojo, lingote de oro y billetes volando.",
+      "file": "marcos/serie-atraco.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "marco-serie-juego",
+      "kind": "frame",
+      "name": "Juego mortal",
+      "description": "Círculo, triángulo y cuadrado. Jugador N°034.",
+      "file": "marcos/serie-juego.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
     },
     {
       "id": "sticker-gg",
@@ -237,7 +502,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-nice-shot",
@@ -248,7 +514,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-rush-b",
@@ -259,7 +526,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-1hp",
@@ -270,7 +538,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-clutch",
@@ -281,7 +550,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-nt",
@@ -292,7 +562,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-eco",
@@ -303,7 +574,8 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-afk",
@@ -314,7 +586,128 @@
       "css_class": null,
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "sticker-pais-ar",
+      "kind": "sticker",
+      "name": "CHE",
+      "description": "CHE con la bandera de Argentina.",
+      "file": "stickers/pais-ar.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-br",
+      "kind": "sticker",
+      "name": "BORA!",
+      "description": "BORA! con la bandera de Brasil.",
+      "file": "stickers/pais-br.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-uy",
+      "kind": "sticker",
+      "name": "GARRA",
+      "description": "GARRA con la bandera de Uruguay.",
+      "file": "stickers/pais-uy.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-cl",
+      "kind": "sticker",
+      "name": "¿CACHAI?",
+      "description": "¿CACHAI? con la bandera de Chile.",
+      "file": "stickers/pais-cl.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-pe",
+      "kind": "sticker",
+      "name": "CAUSA",
+      "description": "CAUSA con la bandera de Perú.",
+      "file": "stickers/pais-pe.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-co",
+      "kind": "sticker",
+      "name": "PARCE",
+      "description": "PARCE con la bandera de Colombia.",
+      "file": "stickers/pais-co.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-ve",
+      "kind": "sticker",
+      "name": "CHAMO",
+      "description": "CHAMO con la bandera de Venezuela.",
+      "file": "stickers/pais-ve.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-ec",
+      "kind": "sticker",
+      "name": "PANA",
+      "description": "PANA con la bandera de Ecuador.",
+      "file": "stickers/pais-ec.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-bo",
+      "kind": "sticker",
+      "name": "JALLALLA",
+      "description": "JALLALLA con la bandera de Bolivia.",
+      "file": "stickers/pais-bo.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "sticker-pais-py",
+      "kind": "sticker",
+      "name": "JAHA",
+      "description": "JAHA con la bandera de Paraguay.",
+      "file": "stickers/pais-py.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
     },
     {
       "id": "sticker-ace",
@@ -325,7 +718,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-mvp",
@@ -336,7 +730,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-headshot",
@@ -347,7 +742,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-one-tap",
@@ -358,7 +754,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-defused",
@@ -369,7 +766,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-1v5",
@@ -380,7 +778,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-wallbang",
@@ -391,7 +790,8 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "sticker-ninja",
@@ -402,7 +802,128 @@
       "css_class": null,
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "sticker-serie-ninja",
+      "kind": "sticker",
+      "name": "JUTSU!",
+      "description": "Una nube de humo y un shuriken girando.",
+      "file": "stickers/serie-ninja.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-guerrero",
+      "kind": "sticker",
+      "name": "+9000",
+      "description": "El medidor de poder explotó.",
+      "file": "stickers/serie-guerrero.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-alien",
+      "kind": "sticker",
+      "name": "ALIEN",
+      "description": "El dial verde listo para transformarte.",
+      "file": "stickers/serie-alien.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-portal",
+      "kind": "sticker",
+      "name": "PORTAL",
+      "description": "Un portal girando: ¿a qué dimensión vas?",
+      "file": "stickers/serie-portal.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-navaja",
+      "kind": "sticker",
+      "name": "NAVAJA",
+      "description": "La gorra de la banda, con filo.",
+      "file": "stickers/serie-navaja.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-laboratorio",
+      "kind": "sticker",
+      "name": "COCINANDO",
+      "description": "Elementos Cs y Ss: la química del server.",
+      "file": "stickers/serie-laboratorio.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-reves",
+      "kind": "sticker",
+      "name": "CORRE",
+      "description": "Las luces te avisan: corré.",
+      "file": "stickers/serie-reves.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-reinos",
+      "kind": "sticker",
+      "name": "EL TRONO",
+      "description": "La corona del que manda en el server.",
+      "file": "stickers/serie-reinos.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-atraco",
+      "kind": "sticker",
+      "name": "ATRACO",
+      "description": "Fajos de billetes que llueven.",
+      "file": "stickers/serie-atraco.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "sticker-serie-juego",
+      "kind": "sticker",
+      "name": "ELIMINADO",
+      "description": "Las tres figuras se encienden por turno.",
+      "file": "stickers/serie-juego.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
     },
     {
       "id": "tema-terro",
@@ -413,7 +934,8 @@
       "css_class": "tema-terro",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-anti",
@@ -424,7 +946,8 @@
       "css_class": "tema-anti",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-toxico",
@@ -435,7 +958,8 @@
       "css_class": "tema-toxico",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-hielo",
@@ -446,7 +970,8 @@
       "css_class": "tema-hielo",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-carmesi",
@@ -457,7 +982,8 @@
       "css_class": "tema-carmesi",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-camuflaje",
@@ -468,7 +994,8 @@
       "css_class": "tema-camuflaje",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-atardecer",
@@ -479,7 +1006,8 @@
       "css_class": "tema-atardecer",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-grafito",
@@ -490,7 +1018,128 @@
       "css_class": "tema-grafito",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "tema-pais-ar",
+      "kind": "theme",
+      "name": "Argentina",
+      "description": "Los colores de Argentina en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-ar",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-br",
+      "kind": "theme",
+      "name": "Brasil",
+      "description": "Los colores de Brasil en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-br",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-uy",
+      "kind": "theme",
+      "name": "Uruguay",
+      "description": "Los colores de Uruguay en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-uy",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-cl",
+      "kind": "theme",
+      "name": "Chile",
+      "description": "Los colores de Chile en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-cl",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-pe",
+      "kind": "theme",
+      "name": "Perú",
+      "description": "Los colores de Perú en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-pe",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-co",
+      "kind": "theme",
+      "name": "Colombia",
+      "description": "Los colores de Colombia en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-co",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-ve",
+      "kind": "theme",
+      "name": "Venezuela",
+      "description": "Los colores de Venezuela en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-ve",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-ec",
+      "kind": "theme",
+      "name": "Ecuador",
+      "description": "Los colores de Ecuador en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-ec",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-bo",
+      "kind": "theme",
+      "name": "Bolivia",
+      "description": "Los colores de Bolivia en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-bo",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "tema-pais-py",
+      "kind": "theme",
+      "name": "Paraguay",
+      "description": "Los colores de Paraguay en todo el perfil.",
+      "file": null,
+      "css_class": "tema-pais-py",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
     },
     {
       "id": "tema-oro",
@@ -501,7 +1150,8 @@
       "css_class": "tema-oro",
       "vip_only": true,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-obsidiana",
@@ -512,7 +1162,8 @@
       "css_class": "tema-obsidiana",
       "vip_only": true,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-diamante",
@@ -523,7 +1174,8 @@
       "css_class": "tema-diamante",
       "vip_only": true,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-synthwave",
@@ -534,7 +1186,8 @@
       "css_class": "tema-synthwave",
       "vip_only": true,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-holo",
@@ -545,7 +1198,8 @@
       "css_class": "tema-holo",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-esmeralda",
@@ -556,7 +1210,8 @@
       "css_class": "tema-esmeralda",
       "vip_only": true,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-rubi",
@@ -567,7 +1222,8 @@
       "css_class": "tema-rubi",
       "vip_only": true,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "tema-aurora",
@@ -578,7 +1234,128 @@
       "css_class": "tema-aurora",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "tema-serie-ninja",
+      "kind": "theme",
+      "name": "Shinobi",
+      "description": "Los colores de Shinobi con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-ninja",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-guerrero",
+      "kind": "theme",
+      "name": "Súper guerrero",
+      "description": "Los colores de Súper guerrero con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-guerrero",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-alien",
+      "kind": "theme",
+      "name": "Reloj alien",
+      "description": "Los colores de Reloj alien con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-alien",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-portal",
+      "kind": "theme",
+      "name": "Portal",
+      "description": "Los colores de Portal con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-portal",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-navaja",
+      "kind": "theme",
+      "name": "Gorra y navaja",
+      "description": "Los colores de Gorra y navaja con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-navaja",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-laboratorio",
+      "kind": "theme",
+      "name": "Laboratorio",
+      "description": "Los colores de Laboratorio con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-laboratorio",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-reves",
+      "kind": "theme",
+      "name": "Mundo del revés",
+      "description": "Los colores de Mundo del revés con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-reves",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-reinos",
+      "kind": "theme",
+      "name": "Reinos",
+      "description": "Los colores de Reinos con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-reinos",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-atraco",
+      "kind": "theme",
+      "name": "Atraco",
+      "description": "Los colores de Atraco con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-atraco",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "tema-serie-juego",
+      "kind": "theme",
+      "name": "Juego mortal",
+      "description": "Los colores de Juego mortal con un borde que brilla.",
+      "file": null,
+      "css_class": "tema-serie-juego",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
     },
     {
       "id": "nombre-brillo",
@@ -589,7 +1366,8 @@
       "css_class": "nombre-brillo",
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-glitch",
@@ -600,7 +1378,8 @@
       "css_class": "nombre-glitch",
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-neon",
@@ -611,7 +1390,8 @@
       "css_class": "nombre-neon",
       "vip_only": false,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-retro",
@@ -622,7 +1402,8 @@
       "css_class": "nombre-retro",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-contorno",
@@ -633,7 +1414,8 @@
       "css_class": "nombre-contorno",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-sombra",
@@ -644,7 +1426,8 @@
       "css_class": "nombre-sombra",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-hielo",
@@ -655,7 +1438,8 @@
       "css_class": "nombre-hielo",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-pixel",
@@ -666,7 +1450,128 @@
       "css_class": "nombre-pixel",
       "vip_only": false,
       "animated": false,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "nombre-pais-ar",
+      "kind": "name",
+      "name": "Argentina",
+      "description": "Tu nombre con las franjas de la bandera de Argentina.",
+      "file": null,
+      "css_class": "nombre-pais-ar",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-br",
+      "kind": "name",
+      "name": "Brasil",
+      "description": "Tu nombre con las franjas de la bandera de Brasil.",
+      "file": null,
+      "css_class": "nombre-pais-br",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-uy",
+      "kind": "name",
+      "name": "Uruguay",
+      "description": "Tu nombre con las franjas de la bandera de Uruguay.",
+      "file": null,
+      "css_class": "nombre-pais-uy",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-cl",
+      "kind": "name",
+      "name": "Chile",
+      "description": "Tu nombre con las franjas de la bandera de Chile.",
+      "file": null,
+      "css_class": "nombre-pais-cl",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-pe",
+      "kind": "name",
+      "name": "Perú",
+      "description": "Tu nombre con las franjas de la bandera de Perú.",
+      "file": null,
+      "css_class": "nombre-pais-pe",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-co",
+      "kind": "name",
+      "name": "Colombia",
+      "description": "Tu nombre con las franjas de la bandera de Colombia.",
+      "file": null,
+      "css_class": "nombre-pais-co",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-ve",
+      "kind": "name",
+      "name": "Venezuela",
+      "description": "Tu nombre con las franjas de la bandera de Venezuela.",
+      "file": null,
+      "css_class": "nombre-pais-ve",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-ec",
+      "kind": "name",
+      "name": "Ecuador",
+      "description": "Tu nombre con las franjas de la bandera de Ecuador.",
+      "file": null,
+      "css_class": "nombre-pais-ec",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-bo",
+      "kind": "name",
+      "name": "Bolivia",
+      "description": "Tu nombre con las franjas de la bandera de Bolivia.",
+      "file": null,
+      "css_class": "nombre-pais-bo",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
+    },
+    {
+      "id": "nombre-pais-py",
+      "kind": "name",
+      "name": "Paraguay",
+      "description": "Tu nombre con las franjas de la bandera de Paraguay.",
+      "file": null,
+      "css_class": "nombre-pais-py",
+      "vip_only": false,
+      "animated": false,
+      "price": null,
+      "collection": "paises"
     },
     {
       "id": "nombre-arcoiris",
@@ -677,7 +1582,8 @@
       "css_class": "nombre-arcoiris",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-oro",
@@ -688,7 +1594,8 @@
       "css_class": "nombre-oro",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-fuego",
@@ -699,7 +1606,8 @@
       "css_class": "nombre-fuego",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-holografico",
@@ -710,7 +1618,8 @@
       "css_class": "nombre-holografico",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-galaxia",
@@ -721,7 +1630,8 @@
       "css_class": "nombre-galaxia",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-plasma",
@@ -732,7 +1642,8 @@
       "css_class": "nombre-plasma",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-esmeralda",
@@ -743,7 +1654,8 @@
       "css_class": "nombre-esmeralda",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
     },
     {
       "id": "nombre-cromo",
@@ -754,7 +1666,128 @@
       "css_class": "nombre-cromo",
       "vip_only": true,
       "animated": true,
-      "price": null
+      "price": null,
+      "collection": "cs"
+    },
+    {
+      "id": "nombre-chakra",
+      "kind": "name",
+      "name": "Chakra",
+      "description": "Energía azul que corre por las letras.",
+      "file": null,
+      "css_class": "nombre-chakra",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-ki",
+      "kind": "name",
+      "name": "Ki",
+      "description": "Aura dorada que tiembla de poder.",
+      "file": null,
+      "css_class": "nombre-ki",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-mutante",
+      "kind": "name",
+      "name": "Mutante",
+      "description": "Brillo verde que late.",
+      "file": null,
+      "css_class": "nombre-mutante",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-portal",
+      "kind": "name",
+      "name": "Portal",
+      "description": "Verde interdimensional que fluye.",
+      "file": null,
+      "css_class": "nombre-portal",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-whisky",
+      "kind": "name",
+      "name": "Whisky 1919",
+      "description": "Letra de época color ámbar.",
+      "file": null,
+      "css_class": "nombre-whisky",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-cristal",
+      "kind": "name",
+      "name": "Cristal azul",
+      "description": "Azul cristalino que destella.",
+      "file": null,
+      "css_class": "nombre-cristal",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-ochentoso",
+      "kind": "name",
+      "name": "Ochentoso",
+      "description": "Letras rojas de los 80 que titilan.",
+      "file": null,
+      "css_class": "nombre-ochentoso",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-acero",
+      "kind": "name",
+      "name": "Acero antiguo",
+      "description": "Acero forjado con vetas que se mueven.",
+      "file": null,
+      "css_class": "nombre-acero",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-billete",
+      "kind": "name",
+      "name": "Billete",
+      "description": "Verde billete recién impreso.",
+      "file": null,
+      "css_class": "nombre-billete",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
+    },
+    {
+      "id": "nombre-luz-roja",
+      "kind": "name",
+      "name": "Luz roja, luz verde",
+      "description": "Cambia de rojo a verde: no te muevas.",
+      "file": null,
+      "css_class": "nombre-luz-roja",
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series"
     }
   ]
 }

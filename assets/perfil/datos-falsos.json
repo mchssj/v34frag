@@ -29,13 +29,13 @@
         "game_role": "Entry fragger"
       },
       "cosmetics": {
-        "frame": "marco-oro-vip",
-        "theme": "tema-oro",
-        "name": "nombre-arcoiris",
+        "frame": "marco-serie-guerrero",
+        "theme": "tema-serie-guerrero",
+        "name": "nombre-ki",
         "stickers": [
           "sticker-ace",
-          "sticker-mvp",
-          "sticker-headshot"
+          "sticker-serie-guerrero",
+          "sticker-pais-ar"
         ]
       },
       "cover_url": null
@@ -68,13 +68,13 @@
         "game_role": "IGL"
       },
       "cosmetics": {
-        "frame": "marco-galaxia",
-        "theme": "tema-synthwave",
-        "name": "nombre-plasma",
+        "frame": "marco-serie-portal",
+        "theme": "tema-serie-portal",
+        "name": "nombre-portal",
         "stickers": [
-          "sticker-1v5",
-          "sticker-wallbang",
-          "sticker-ninja"
+          "sticker-serie-portal",
+          "sticker-serie-laboratorio",
+          "sticker-mvp"
         ]
       },
       "cover_url": null
@@ -107,12 +107,12 @@
         "game_role": "AWPer"
       },
       "cosmetics": {
-        "frame": "marco-hielo",
-        "theme": "tema-terro",
-        "name": "nombre-neon",
+        "frame": "marco-pais-uy",
+        "theme": "tema-pais-uy",
+        "name": "nombre-pais-uy",
         "stickers": [
-          "sticker-nice-shot",
-          "sticker-clutch"
+          "sticker-pais-uy",
+          "sticker-gg"
         ]
       },
       "cover_url": null
@@ -169,11 +169,12 @@
         "game_role": "Support"
       },
       "cosmetics": {
-        "frame": "marco-pixel",
-        "theme": "tema-toxico",
-        "name": "nombre-pixel",
+        "frame": "marco-pais-br",
+        "theme": "tema-pais-br",
+        "name": "nombre-pais-br",
         "stickers": [
-          "sticker-1hp"
+          "sticker-pais-br",
+          "sticker-rush-b"
         ]
       },
       "cover_url": null
@@ -206,11 +207,11 @@
         "game_role": "Support"
       },
       "cosmetics": {
-        "frame": "marco-fuego",
-        "theme": "tema-atardecer",
+        "frame": "marco-pais-cl",
+        "theme": "tema-pais-cl",
         "name": "nombre-sombra",
         "stickers": [
-          "sticker-clutch"
+          "sticker-pais-cl"
         ]
       },
       "cover_url": null
