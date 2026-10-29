@@ -52,6 +52,28 @@ Pendiente: flow tiene que cambiar de mapa (carga el plugin) y tener jugadores en
 - **`/healthz`** en el relay, para `desplegar.sh hud`.
 - **Prueba de punta a punta** con flow en el VPS en lugar del servidor local.
 
+## Incidentes durante las pruebas
+
+**2026-10-29, flow se congeló con el HUD prendido y 9 bots.** Con los logs que pasó kyan (`L20261029.log` y `csstv_perf_20261029.log`, hora del servidor UTC−3):
+
+- 15:13–15:33: el HUD mandando y un jugador; 3000/3000 ticks, sin ticks tarde.
+- 15:33:49: `bot_quota 9`. De 15:34 a 15:38 el servidor procesó 200–800 de ~3000 ticks (ticks de hasta 1,2 s).
+- 15:38: cambio de mapa y otra vez `bot_quota 9`. De 15:39 a 15:41, con 9 bots y el HUD (1,6 paquetes/s), 2999/3000 ticks.
+- No hubo reinicio: el log de `csstv_perf` sigue sin cortes hasta las 15:50.
+
+Conclusión: **el HUD no fue**. El congelamiento empezó 11 s después de agregar los bots y se curó con el cambio de mapa: es lo que hace CS:S al generar en el momento el `.nav` de un mapa custom que no lo tiene (`de_dust2_ob`). Falta confirmar con kyan si existe `cstrike/maps/de_dust2_ob.nav`; si no, generarlo una vez con el servidor vacío (`nav_generate`). Mientras tanto se puso `csstv_hud 0` por consola en flow.
+
+## Cómo apagar el HUD de un servidor (por ejemplo, si laguea)
+
+| Qué | Cómo | Efecto en el servidor de juego |
+|---|---|---|
+| Al instante | En la consola del servidor (o en el juego como admin: `sm_rcon csstv_hud 0`): `csstv_hud 0` | Deja de armar y mandar paquetes en el acto. **Vuelve a `1` en el próximo cambio de mapa**, porque el plugin ejecuta `csstv_hud.cfg` en cada mapa |
+| Que quede apagado | En `cfg/sourcemod/csstv_hud.cfg`: `csstv_hud "0"`. En flow, desde la raíz del repo: `python -I docs/bitacora/2026-10-29-hud-relay-vps/pruebas/flow_hud.py off` (con el `paramiko` de cualquier entorno virtual) | Desde el próximo cambio de mapa. Junto con lo anterior, queda apagado ya y para siempre |
+| Sacar el plugin | `sm plugins unload csstv_hud` (no cancela partidas: es un plugin aparte) y borrar `addons/sourcemod/plugins/csstv_hud.smx` | Si no se borra el `.smx`, vuelve a cargar en el próximo mapa |
+| Desde la web | Administración › Servidores y ELO › el servidor › HUD para streamers › Apagado › Guardar HUD | **No alivia al servidor**: el relay deja de atenderlo (en 30 s), pero el plugin sigue mandando. Sirve para cortar el HUD a los streamers |
+
+En flow no tenemos consola: lo inmediato lo hace alguien de flow o un admin dentro del juego.
+
 ## Cómo revertir
 
 - flow: `flow_hud.py off` (vuelve a `csstv_hud "0"`); el plugin puede quedar.
