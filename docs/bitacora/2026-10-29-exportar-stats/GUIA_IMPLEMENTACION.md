@@ -12,6 +12,11 @@ No necesita la API ni la base: los datos están en memoria.
 - **Cuadrado:** quedó sin gráfico de ELO. Con 6 stats no entraba, así que las stats ocupan el alto que queda.
 - **Historia:** además de lo que decía el plan, muestra los 3 mapas más jugados.
 
+- **Foto de perfil (pedida por Kyan el 2026-10-29):**
+  - Es una opción nueva para mostrar la foto al lado del nombre.
+  - Prendida, la insignia de nivel va chica en la esquina de la foto.
+  - `ExportStats` suma `avatar_url`.
+
 ## Archivos nuevos
 
 En `repo-mm-ejemplo/web/frontend/src/` (rama `kyan/ejemplo-matchmaking`, **sin commit**):
