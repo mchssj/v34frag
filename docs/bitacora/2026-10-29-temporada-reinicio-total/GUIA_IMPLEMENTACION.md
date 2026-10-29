@@ -2,8 +2,9 @@
 
 ## Estado
 
-- **Implementado y probado en local el 2026-10-29**, sin commit, en la rama `feat/frontend-fase-1`.
-- **Falta:** cargar la `37` en staging, redesplegar la API y el frontend del VPS, probarlo en el navegador contra staging y, en el corte, aplicar la `37` en producción después de la `36` (`docs/PENDIENTES.md`, puntos 1.5 y 1.29).
+- **Implementado y probado en local el 2026-10-29**, commiteado en `feat/frontend-fase-1` (`e529dce`).
+- **Desplegado contra staging el 2026-10-29:** la `37` en la base de staging y la API y el frontend `e529dceeb4ab` en el VPS (ver "Desplegar en staging").
+- **Falta:** probarlo en el navegador contra staging y, en el corte, aplicar la `37` en producción después de la `36` (`docs/PENDIENTES.md`, puntos 1.5 y 1.29). Producción no se tocó: no tiene los replanteos `01` a `36`, y la `37` abortaría.
 - No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
 
 ## Cambios respecto del plan
@@ -42,6 +43,14 @@ sequenceDiagram
 4. **Captura:** con Playwright, en 1440 px, en claro y en oscuro, con una cuenta admin creada solo para eso en el Auth **local** (`captura37@test.local`), que se borró después. Las capturas están en `pruebas/`. No se apretó "Guardar".
 
 ## Desplegar en staging
+
+**Hecho el 2026-10-29**, a pedido de Daniel:
+
+- respaldo del esquema `public` de staging con `pg_dump --schema-only` (en el scratchpad de la sesión, fuera del repo);
+- la `37` aplicada con `psql`: las 2 temporadas y la configuración quedaron con `reset_all = false`;
+- `deploy/vps/desplegar.sh api` y `deploy/vps/desplegar.sh web`: los dos en `e529dceeb4ab`, con pruebas y build;
+- comprobado: `/api/health` con `e529dceeb4ab` y `GET /api/v1/seasons` con `reset_all` en cada temporada. La web da `401` por la contraseña de Caddy del ensayo, como antes.
+- Falta el paso 3 (probarlo en el navegador).
 
 1. Correr `supabase/replanteo/37_reinicio_total.sql` en la base de staging. Aborta si ya se aplicó.
 2. Redesplegar la API del VPS (`deploy/`) y el frontend. La API nueva lee `reset_all`: **sin la `37`, `/api/v1/seasons` da 500**.

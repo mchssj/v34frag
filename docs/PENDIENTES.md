@@ -463,12 +463,12 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   3. Exponer `days_active` en la API (`/admin/vips`, `/admin/users/{id}/vip`, `/me/profile`) y en el frontend, cuando Daniel lo pida.
 - **Bitácora:** [`2026-10-29-vip-dias`](bitacora/2026-10-29-vip-dias/)
 
-### 1.29 Reinicio total de una temporada (replanteo `37`): falta staging y el corte
+### 1.29 Reinicio total de una temporada (replanteo `37`): desplegado en staging, falta el corte
 
 - **Qué es:** opción "Reiniciar también a los que están debajo del piso" en Administración › Temporadas (activa y próxima). Con ella, al cerrar la temporada los de debajo del piso también se acercan al piso con el mismo porcentaje; con 0 %, todos quedan en el piso (reinicio total). Columna `reset_all` en `season_config` y `seasons`.
-- **Hecho el 2026-10-29 (local), sin commit (`feat/frontend-fase-1`):** replanteo `37` con su inversa y 23 pruebas SQL, API (`reset_all` en temporadas, configuración, `PATCH` y vista previa), contrato y frontend (un checkbox en la tarjeta del reinicio). En el backend, 392 pruebas unitarias y las 9 de integración de temporadas; en el frontend, 342.
+- **Hecho el 2026-10-29 y commiteado en `feat/frontend-fase-1` (`e529dce`):** replanteo `37` con su inversa y 23 pruebas SQL, API (`reset_all` en temporadas, configuración, `PATCH` y vista previa), contrato y frontend (un checkbox en la tarjeta del reinicio). En el backend, 392 pruebas unitarias y las 9 de integración de temporadas; en el frontend, 342.
 - **Falta:**
-  1. Cargar la `37` en staging y redesplegar la API y el frontend del VPS. Sin la `37`, la API nueva falla en temporadas (lee `reset_all`).
+  1. ~~Cargar la `37` en staging y redesplegar la API y el frontend del VPS~~: **hecho el 2026-10-29** (staging tiene del `01` al `37`; API y web `e529dceeb4ab`). Sin la `37`, esta API falla en temporadas (lee `reset_all`).
   2. En el corte, la `37` va después de la `36` (punto 1.5).
   3. Probarlo en el navegador contra staging: marcar la opción, guardar y ver la vista previa del cierre.
 - No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
