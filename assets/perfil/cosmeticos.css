@@ -100,6 +100,96 @@
 .nombre-billete{background:linear-gradient(100deg,#2e5a22 0%,#6fae5a 30%,#d8ffc8 45%,#6fae5a 60%,#2e5a22 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #6fae5a88);animation:cos-mover-250 2s linear infinite}
 .nombre-luz-roja{-webkit-text-fill-color:currentColor;animation:cos-luz-roja 2.4s steps(1) infinite}
 
+/* --- inicio: generado por generar_kits.py --- */
+/* Latinoamérica y España (para todos) */
+.tema-pais-mx{--primary:#2fbf6a;--primary-foreground:#04160c;--ring:#2fbf6a;--card:#0d1a12;--muted:#0d1a12;--border:#2fbf6a55}
+.nombre-pais-mx{background:linear-gradient(90deg,#2fbf6a 0% 33%,#fff 33% 67%,#ff3b4a 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-cr{--primary:#ff3b4a;--primary-foreground:#1f0508;--ring:#ff3b4a;--card:#0e1324;--muted:#0e1324;--border:#ff3b4a55}
+.nombre-pais-cr{background:linear-gradient(180deg,#4a6fe0 0% 17%,#fff 17% 33%,#ff3b4a 33% 50%,#ff3b4a 50% 67%,#fff 67% 83%,#4a6fe0 83% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-cu{--primary:#4a6fe0;--primary-foreground:#050f22;--ring:#4a6fe0;--card:#0e1324;--muted:#0e1324;--border:#4a6fe055}
+.nombre-pais-cu{background:linear-gradient(180deg,#4a6fe0 0% 20%,#fff 20% 40%,#4a6fe0 40% 60%,#fff 60% 80%,#4a6fe0 80% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-do{--primary:#4a6fe0;--primary-foreground:#050f22;--ring:#4a6fe0;--card:#120f1c;--muted:#120f1c;--border:#4a6fe055}
+.nombre-pais-do{background:linear-gradient(90deg,#4a6fe0 0% 33%,#fff 33% 67%,#ff3b4a 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-pr{--primary:#ff3b3b;--primary-foreground:#1f0505;--ring:#ff3b3b;--card:#140f1c;--muted:#140f1c;--border:#ff3b3b55}
+.nombre-pais-pr{background:linear-gradient(180deg,#ff3b3b 0% 20%,#fff 20% 40%,#ff3b3b 40% 60%,#fff 60% 80%,#ff3b3b 80% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-pa{--primary:#4a7fe0;--primary-foreground:#050f22;--ring:#4a7fe0;--card:#160f14;--muted:#160f14;--border:#4a7fe055}
+.nombre-pais-pa{background:linear-gradient(90deg,#fff 0% 25%,#ff3b4a 25% 50%,#4a7fe0 50% 75%,#fff 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-gt{--primary:#5aaee8;--primary-foreground:#04121c;--ring:#5aaee8;--card:#0e1620;--muted:#0e1620;--border:#5aaee855}
+.nombre-pais-gt{background:linear-gradient(90deg,#5aaee8 0% 33%,#fff 33% 67%,#5aaee8 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-hn{--primary:#3a9ae8;--primary-foreground:#04121c;--ring:#3a9ae8;--card:#0e1620;--muted:#0e1620;--border:#3a9ae855}
+.nombre-pais-hn{background:linear-gradient(180deg,#3a9ae8 0% 33%,#fff 33% 67%,#3a9ae8 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-sv{--primary:#4a7fe0;--primary-foreground:#050f22;--ring:#4a7fe0;--card:#0e1424;--muted:#0e1424;--border:#4a7fe055}
+.nombre-pais-sv{background:linear-gradient(180deg,#4a7fe0 0% 33%,#fff 33% 67%,#4a7fe0 67% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+.tema-pais-es{--primary:#f1bf00;--primary-foreground:#1a1400;--ring:#f1bf00;--card:#1a0e0e;--muted:#1a0e0e;--border:#f1bf0055}
+.nombre-pais-es{background:linear-gradient(180deg,#ff3b3b 0% 25%,#f1bf00 25% 50%,#f1bf00 50% 75%,#ff3b3b 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px #0008)}
+
+/* Mapas de CS:S (para todos) */
+.tema-mapa-dust2{--primary:#f2d39b;--primary-foreground:#111;--ring:#f2d39b;--card:#15141a;--muted:#1e1d24;--border:#c8a16566}
+.nombre-mapa-dust2{background:linear-gradient(180deg,#f2d39b 0%,#f2d39b 45%,#c8a165 55%,#c8a165 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-inferno{--primary:#ffc49a;--primary-foreground:#111;--ring:#ffc49a;--card:#15141a;--muted:#1e1d24;--border:#a8502e66}
+.nombre-mapa-inferno{background:linear-gradient(180deg,#ffc49a 0%,#ffc49a 45%,#a8502e 55%,#a8502e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-nuke{--primary:#f2c230;--primary-foreground:#111;--ring:#f2c230;--card:#15141a;--muted:#1e1d24;--border:#5e6a7466}
+.nombre-mapa-nuke{background:linear-gradient(180deg,#f2c230 0%,#f2c230 45%,#5e6a74 55%,#5e6a74 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-train{--primary:#c9d2c0;--primary-foreground:#111;--ring:#c9d2c0;--card:#15141a;--muted:#1e1d24;--border:#4e5a5266}
+.nombre-mapa-train{background:linear-gradient(180deg,#c9d2c0 0%,#c9d2c0 45%,#4e5a52 55%,#4e5a52 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-office{--primary:#e8f2fa;--primary-foreground:#111;--ring:#e8f2fa;--card:#15141a;--muted:#1e1d24;--border:#8ea3b466}
+.nombre-mapa-office{background:linear-gradient(180deg,#e8f2fa 0%,#e8f2fa 45%,#8ea3b4 55%,#8ea3b4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-aztec{--primary:#c8e09a;--primary-foreground:#111;--ring:#c8e09a;--card:#15141a;--muted:#1e1d24;--border:#4f6f3a66}
+.nombre-mapa-aztec{background:linear-gradient(180deg,#c8e09a 0%,#c8e09a 45%,#4f6f3a 55%,#4f6f3a 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-cbble{--primary:#e0d8c6;--primary-foreground:#111;--ring:#e0d8c6;--card:#15141a;--muted:#1e1d24;--border:#7c766b66}
+.nombre-mapa-cbble{background:linear-gradient(180deg,#e0d8c6 0%,#e0d8c6 45%,#7c766b 55%,#7c766b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-italy{--primary:#ffe0b0;--primary-foreground:#111;--ring:#ffe0b0;--card:#15141a;--muted:#1e1d24;--border:#c98b4f66}
+.nombre-mapa-italy{background:linear-gradient(180deg,#ffe0b0 0%,#ffe0b0 45%,#c98b4f 55%,#c98b4f 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-piranesi{--primary:#efe0c0;--primary-foreground:#111;--ring:#efe0c0;--card:#15141a;--muted:#1e1d24;--border:#9a846666}
+.nombre-mapa-piranesi{background:linear-gradient(180deg,#efe0c0 0%,#efe0c0 45%,#9a8466 55%,#9a8466 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-mapa-prodigy{--primary:#a8e04a;--primary-foreground:#111;--ring:#a8e04a;--card:#15141a;--muted:#1e1d24;--border:#4a556066}
+.nombre-mapa-prodigy{background:linear-gradient(180deg,#a8e04a 0%,#a8e04a 45%,#4a5560 55%,#4a5560 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+
+/* Arsenal (VIP): acabados propios, sin nombres de skins de Valve */
+.tema-arma-ak{--primary:#ff6a1a;--primary-foreground:#111;--ring:#ff6a1a;--card:#141317;--muted:#1d1b22;--border:#ff6a1a55;--glow:#ff6a1a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-ak{background:linear-gradient(100deg,#ff4a00 0%,#ffd04a 30%,#ffffff 45%,#ffd04a 60%,#ff4a00 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ffd04a88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-m4{--primary:#8fd0ff;--primary-foreground:#111;--ring:#8fd0ff;--card:#141317;--muted:#1d1b22;--border:#8fd0ff55;--glow:#8fd0ff;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-m4{background:linear-gradient(100deg,#cfeaff 0%,#ffffff 30%,#ffffff 45%,#ffffff 60%,#cfeaff 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ffffff88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-awp{--primary:#6a8cff;--primary-foreground:#111;--ring:#6a8cff;--card:#141317;--muted:#1d1b22;--border:#6a8cff55;--glow:#6a8cff;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-awp{background:linear-gradient(100deg,#4a7aff 0%,#e0f0ff 30%,#ffffff 45%,#e0f0ff 60%,#4a7aff 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #e0f0ff88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-deagle{--primary:#f2c040;--primary-foreground:#111;--ring:#f2c040;--card:#141317;--muted:#1d1b22;--border:#f2c04055;--glow:#f2c040;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-deagle{background:linear-gradient(100deg,#f2c040 0%,#fff3c0 30%,#ffffff 45%,#fff3c0 60%,#f2c040 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #fff3c088);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-scout{--primary:#8ac04a;--primary-foreground:#111;--ring:#8ac04a;--card:#141317;--muted:#1d1b22;--border:#8ac04a55;--glow:#8ac04a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-scout{background:linear-gradient(100deg,#4a7a2a 0%,#c8e08a 30%,#ffffff 45%,#c8e08a 60%,#4a7a2a 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #c8e08a88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-usp{--primary:#9a8aff;--primary-foreground:#111;--ring:#9a8aff;--card:#141317;--muted:#1d1b22;--border:#9a8aff55;--glow:#9a8aff;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-usp{background:linear-gradient(100deg,#4a3aa0 0%,#c0b0ff 30%,#ffffff 45%,#c0b0ff 60%,#4a3aa0 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #c0b0ff88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-glock{--primary:#ff5a95;--primary-foreground:#111;--ring:#ff5a95;--card:#141317;--muted:#1d1b22;--border:#ff5a9555;--glow:#ff5a95;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-glock{background:linear-gradient(100deg,#ffd0e0 0%,#ffffff 30%,#ffffff 45%,#ffffff 60%,#ffd0e0 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ffffff88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-mp5{--primary:#00ffd0;--primary-foreground:#111;--ring:#00ffd0;--card:#141317;--muted:#1d1b22;--border:#00ffd055;--glow:#00ffd0;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-mp5{background:linear-gradient(100deg,#00ffd0 0%,#ff00c8 30%,#ffffff 45%,#ff00c8 60%,#00ffd0 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ff00c888);animation:cos-mover-250 2.4s linear infinite,cos-holo 4s linear infinite}
+.tema-arma-cuchillo{--primary:#d0d0e0;--primary-foreground:#111;--ring:#d0d0e0;--card:#141317;--muted:#1d1b22;--border:#d0d0e055;--glow:#d0d0e0;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-cuchillo{background:linear-gradient(100deg,#c8c8d8 0%,#ffffff 30%,#ffffff 45%,#ffffff 60%,#c8c8d8 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ffffff88);animation:cos-mover-250 2.4s linear infinite}
+.tema-arma-he{--primary:#ffd23a;--primary-foreground:#111;--ring:#ffd23a;--card:#141317;--muted:#1d1b22;--border:#ffd23a55;--glow:#ffd23a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-arma-he{background:linear-gradient(100deg,#ffd23a 0%,#3aff8a 30%,#ffffff 45%,#3aff8a 60%,#ffd23a 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #3aff8a88);animation:cos-mover-250 2.4s linear infinite,cos-holo 4s linear infinite}
+
+/* Series míticas 2 (VIP): homenajes originales, sin logos ni personajes */
+.tema-serie-dona{--primary:#ff7ab8;--primary-foreground:#111;--ring:#ff7ab8;--card:#141317;--muted:#1d1b22;--border:#ff7ab855;--glow:#ff7ab8;animation:cos-glow 3s ease-in-out infinite}
+.nombre-dona{background:linear-gradient(100deg,#ff4a9a 0%,#ff9ad0 30%,#fff0f8 45%,#ff9ad0 60%,#ff4a9a 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ff9ad088);animation:cos-mover-250 2.6s linear infinite}
+.tema-serie-zombi{--primary:#7fa86a;--primary-foreground:#111;--ring:#7fa86a;--card:#141317;--muted:#1d1b22;--border:#7fa86a55;--glow:#7fa86a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-zombi{color:#b8d89a;-webkit-text-fill-color:#b8d89a;text-shadow:0 0 4px #5a8a3a,0 0 12px #2a4a1a;animation:cos-mutante 2.4s ease-in-out infinite}
+.tema-serie-barril{--primary:#ffd23a;--primary-foreground:#111;--ring:#ffd23a;--card:#141317;--muted:#1d1b22;--border:#ffd23a55;--glow:#ffd23a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-barril{background:repeating-linear-gradient(90deg,#a0662e 0 6px,#7a4a1e 6px 8px);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.tema-serie-fuga{--primary:#ff7a1a;--primary-foreground:#111;--ring:#ff7a1a;--card:#141317;--muted:#1d1b22;--border:#ff7a1a55;--glow:#ff7a1a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-fuga{font-family:Georgia,Times New Roman,serif;color:#2a4a8a;-webkit-text-fill-color:#3a5ab0;text-shadow:0 0 1px #9ab0e0,0 0 6px #3a5ab088;letter-spacing:.05em}
+.tema-serie-radiacion{--primary:#ffd400;--primary-foreground:#111;--ring:#ffd400;--card:#141317;--muted:#1d1b22;--border:#ffd40055;--glow:#ffd400;animation:cos-glow 3s ease-in-out infinite}
+.nombre-radiacion{color:#e8ff9a;-webkit-text-fill-color:#e8ff9a;text-shadow:0 0 4px #b8ff3a,0 0 14px #6aff00;animation:cos-mutante 1.2s ease-in-out infinite}
+.tema-serie-vikingo{--primary:#9aa3ad;--primary-foreground:#111;--ring:#9aa3ad;--card:#141317;--muted:#1d1b22;--border:#9aa3ad55;--glow:#9aa3ad;animation:cos-glow 3s ease-in-out infinite}
+.nombre-vikingo{font-family:Georgia,Times New Roman,serif;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(100deg,#6a5030 0%,#e0c080 30%,#fff4d8 45%,#e0c080 60%,#6a5030 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #e0c08088);animation:cos-mover-250 3.5s linear infinite}
+.tema-serie-elementos{--primary:#ff4a2a;--primary-foreground:#111;--ring:#ff4a2a;--card:#141317;--muted:#1d1b22;--border:#ff4a2a55;--glow:#ff4a2a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-elementos{background:linear-gradient(90deg,#3aa0ff,#5aa03a,#ff4a2a,#e8f0ff,#3aa0ff) 0 0/300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cos-mover-300 4s linear infinite}
+.tema-serie-robot{--primary:#b8c2cc;--primary-foreground:#111;--ring:#b8c2cc;--card:#141317;--muted:#1d1b22;--border:#b8c2cc55;--glow:#b8c2cc;animation:cos-glow 3s ease-in-out infinite}
+.nombre-robot{font-family:Consolas,Courier New,monospace;color:#7ae8ff;-webkit-text-fill-color:#7ae8ff;text-shadow:0 0 6px #3ad0ff;animation:cos-neon 2.4s ease-in-out infinite}
+.tema-serie-fondo-mar{--primary:#ff9a2a;--primary-foreground:#111;--ring:#ff9a2a;--card:#141317;--muted:#1d1b22;--border:#ff9a2a55;--glow:#ff9a2a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-fondo-mar{background:linear-gradient(100deg,#1a8ab8 0%,#6ad8ff 30%,#ffffff 45%,#6ad8ff 60%,#1a8ab8 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #6ad8ff88);animation:cos-mover-250 2.2s linear infinite}
+.tema-serie-isla{--primary:#e8d08a;--primary-foreground:#111;--ring:#e8d08a;--card:#141317;--muted:#1d1b22;--border:#e8d08a55;--glow:#e8d08a;animation:cos-glow 3s ease-in-out infinite}
+.nombre-isla{background:linear-gradient(100deg,#ff8a2a 0%,#ffd23a 30%,#3aff8a 45%,#ffd23a 60%,#ff8a2a 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 5px #ffd23a88);animation:cos-mover-250 3s linear infinite}
+/* --- fin: generado por generar_kits.py --- */
+
 @keyframes cos-mover-250{to{background-position:-250% 0}}
 @keyframes cos-mover-300{to{background-position:-300% 0}}
 @keyframes cos-glitch{0%,88%,100%{transform:none}90%{transform:translate(1px,-1px)}94%{transform:translate(-1px,1px)}}

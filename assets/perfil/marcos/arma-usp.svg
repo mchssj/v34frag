@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs><mask id="m"><rect width="256" height="256" fill="#fff"/><rect x="34" y="34" width="188" height="188" rx="8" fill="#000"/></mask><linearGradient id="br" x1="0" y1="0" x2="1" y2="1"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="sk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a0a1f"/><stop offset=".5" stop-color="#4a3aa0"/><stop offset="1" stop-color="#c0b0ff"/></linearGradient></defs>
+  <rect x="16" y="16" width="224" height="224" rx="16" fill="none" stroke="#111" stroke-width="22"/>
+  <rect x="16" y="16" width="224" height="224" rx="16" fill="none" stroke="url(#sk)" stroke-width="16"/>
+  <rect x="16" y="16" width="224" height="224" rx="16" fill="none" stroke="#c0b0ff" stroke-width="4" mask="url(#m)"><animate attributeName="stroke-opacity" values=".1;.9;.1" dur="1.6s" repeatCount="indefinite"/></rect>
+  <rect x="31" y="31" width="194" height="194" rx="9" fill="none" stroke="#111" stroke-width="3"/>
+  <rect x="-256" y="0" width="256" height="256" fill="url(#br)" mask="url(#m)"><animate attributeName="x" values="-256;256;256" keyTimes="0;.45;1" dur="3s" repeatCount="indefinite"/></rect>
+  <g transform="translate(128 230)"><rect x="-66" y="-17" width="132" height="34" rx="8" fill="#111" stroke="url(#sk)" stroke-width="2.5"/>
+    <g transform="scale(1.45)" fill="url(#sk)" stroke="#111" stroke-width="1"><path d="M-22-9L10-9L10-7L36-7L36-2L10-2L10-3L-6-3L-8 0L-10 0L-14 13L-24 13L-20-1Z"/></g></g>
+  <g transform="translate(128 20)"><rect x="-38" y="-10" width="76" height="20" rx="5" fill="#111" stroke="url(#sk)" stroke-width="2"/>
+    <text y="6" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="14" letter-spacing="1" fill="#4a3aa0">MEDIANOCHE</text></g>
+</svg>

@@ -68,13 +68,13 @@
         "game_role": "IGL"
       },
       "cosmetics": {
-        "frame": "marco-serie-portal",
+        "frame": "marco-arma-awp",
         "theme": "tema-serie-portal",
-        "name": "nombre-portal",
+        "name": "nombre-arma-awp",
         "stickers": [
+          "sticker-arma-awp",
           "sticker-serie-portal",
-          "sticker-serie-laboratorio",
-          "sticker-mvp"
+          "sticker-serie-dona"
         ]
       },
       "cover_url": null
@@ -138,12 +138,12 @@
         "game_role": "Lurker"
       },
       "cosmetics": {
-        "frame": "marco-grafiti",
-        "theme": "tema-carmesi",
-        "name": "nombre-retro",
+        "frame": "marco-mapa-dust2",
+        "theme": "tema-mapa-dust2",
+        "name": "nombre-mapa-dust2",
         "stickers": [
-          "sticker-rush-b",
-          "sticker-1hp"
+          "sticker-mapa-dust2",
+          "sticker-pais-mx"
         ]
       },
       "cover_url": null
@@ -237,13 +237,12 @@
         "game_role": "Ancla"
       },
       "cosmetics": {
-        "frame": "marco-camuflaje",
-        "theme": "tema-camuflaje",
+        "frame": "marco-mapa-nuke",
+        "theme": "tema-mapa-nuke",
         "name": "nombre-brillo",
         "stickers": [
-          "sticker-eco",
-          "sticker-nt",
-          "sticker-afk"
+          "sticker-mapa-nuke",
+          "sticker-pais-es"
         ]
       },
       "cover_url": null
