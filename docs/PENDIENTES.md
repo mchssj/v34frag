@@ -83,7 +83,7 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-fondo-miniperfil`](bitacora/2026-10-29-fondo-miniperfil/) y [`2026-10-29-vip-progresion`](bitacora/2026-10-29-vip-progresion/).
 
-### 1.8 Prototipos VIP: exportar stats y buscador avanzado (sin commit)
+### 1.8 Prototipos VIP: exportar stats y buscador avanzado
 
 - **Qué es:** dos prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
   - `/demo/exportar`: tarjeta de stats en PNG o PDF.
@@ -98,7 +98,7 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-exportar-stats`](bitacora/2026-10-29-exportar-stats/) y [`2026-10-29-buscador-avanzado`](bitacora/2026-10-29-buscador-avanzado/).
 
-### 1.9 Prototipos VIP: ELO, recálculo, comparador y widget para la bio (sin commit)
+### 1.9 Prototipos VIP: ELO, recálculo, comparador y widget para la bio
 
 - **Qué es:** cuatro prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
   - `/demo/elo`: el desglose de la fórmula de ELO.
@@ -116,6 +116,25 @@ Ordenado por urgencia.
   - **Esteban:** llevar los cuatro al perfil y al ranking.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-desglose-elo`](bitacora/2026-10-29-desglose-elo/), [`2026-10-29-proximo-recalculo`](bitacora/2026-10-29-proximo-recalculo/), [`2026-10-29-comparador-5`](bitacora/2026-10-29-comparador-5/) y [`2026-10-29-widget-bio`](bitacora/2026-10-29-widget-bio/).
+
+### 1.10 Prototipos VIP: ranking, favoritas, créditos y stats de torneo
+
+- **Qué es:** cuatro prototipos más en el frontend nuevo (`kyan/ejemplo-matchmaking`), con lo que quedaba de la lista VIP fuera del perfil:
+  - `/demo/ranking-vip`: borde y medalla VIP, verificado y Top VIP del mes.
+  - `/demo/favoritas`
+  - `/demo/creditos`
+  - `/demo/torneo-stats`
+- **Quedaron afuera, a propósito:**
+  - Firma o banner, galería, pestañas extra y el regalo de bienvenida, porque **son del perfil y los está haciendo Esteban**.
+  - Los puntos VIP canjeables, porque ya están en la progresión VIP (1.7).
+- **Qué falta:**
+  - **Daniel:**
+    - Las rutas que pide cada bitácora, con el chequeo de VIP.
+    - Confirmar si el plugin manda las entradas y los clutches.
+  - **Esteban:** llevarlos a la web.
+  - Confirmar los roles de "Hecho por" en los créditos.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-ranking-vip`](bitacora/2026-10-29-ranking-vip/), [`2026-10-29-partidas-favoritas`](bitacora/2026-10-29-partidas-favoritas/), [`2026-10-29-creditos`](bitacora/2026-10-29-creditos/) y [`2026-10-29-stats-torneo`](bitacora/2026-10-29-stats-torneo/).
 
 ## 2. Investigaciones abiertas
 
