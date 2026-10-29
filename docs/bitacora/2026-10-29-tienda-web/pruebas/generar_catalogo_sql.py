@@ -40,7 +40,9 @@ def q(v):
 
 
 filas = []
-for n, i in enumerate(CAT["items"]):
+# Los fondos (kind background) van en 20261029200000_fondo_miniperfil.sql (generar_fondos.py) y el Marco Oro VIP
+# en 20261029210000_vip_progresion.sql (generar_vip.py).
+for n, i in enumerate(x for x in CAT["items"] if x["kind"] != "background" and not x.get("vip_reward")):
     filas.append("  (" + ", ".join(q(x) for x in [i["id"], i["kind"], i["name"], i["description"], i["file"], i["css_class"],
                                                     i["vip_only"], i["animated"], i["collection"], precio(i), (n + 1) * 10]) + ")")
 bloque = ("insert into public.shop_items (id, kind, name, description, file, css_class, vip_only, animated, collection, price, sort) values\n"

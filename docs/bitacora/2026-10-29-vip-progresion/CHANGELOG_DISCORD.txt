@@ -1,0 +1,8 @@
+v34frag --  Changelog
+
+El VIP ahora también se gana jugando.
+Al hacerte VIP desbloqueas al instante el Marco Oro VIP, con corona y brillo.
+Además, cada mix que juegas siendo VIP te da monedas VIP: 10 por jugar y 5 más si ganas.
+Con las monedas VIP compras los artículos VIP de la Tienda: Series míticas, Arsenal, fondos exclusivos y más.
+Los puntos normales los sigues ganando como siempre, así que puedes seguir comprando todo lo demás.
+Si se te vence el VIP no pierdes nada: tus monedas y lo que compraste quedan guardados hasta que vuelvas a ser VIP.

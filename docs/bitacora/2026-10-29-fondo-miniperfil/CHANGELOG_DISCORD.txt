@@ -1,0 +1,8 @@
+v34frag --  Changelog
+
+¡Llegaron los fondos de miniperfil!
+Ahora puedes ponerle un fondo animado a tu tarjeta. Es lo que ven los demás en el lobby del matchmaking cuando arman grupo contigo.
+Hay 24 para elegir: humo, radar, lluvia de casquillos, neón, tormenta, mapas de CS:S, la Cruz del Sur, carnaval y más.
+Los VIP tienen 12 fondos exclusivos: luna roja, portal verde, bóveda de oro, escamas de dragón y otros.
+En el lobby y en la sala de la partida ahora también se ven tu marco, el efecto de tu nombre y tu insignia VIP.
+Búscalos en la Tienda, en la pestaña Fondos. Puedes probártelos antes de comprarlos.

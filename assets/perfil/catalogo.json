@@ -1,11 +1,12 @@
 {
-  "version": 6,
-  "note": "Catálogo de cosméticos del perfil: para todos y VIP en cada tipo. vip_only: solo se equipa si la API dice vip=true (PlayerSummary.vip, o vip.active en GET /me/profile). price: null porque el backend no tiene moneda ni tienda todavía. No hay fondos: la foto de perfil y la portada las sube cada jugador. collection agrupa los artículos para la tienda. La colección series son homenajes originales: sin logos, personajes ni nombres registrados.",
+  "version": 8,
+  "note": "Catálogo de cosméticos del perfil. vip_only: artículo VIP, se compra con monedas VIP (vip_price) siendo VIP y se usa mientras la cuenta sea VIP. vip_reward: viene con el VIP, sin comprarlo (el Marco Oro VIP). price: puntos normales; lo pone la base (shop_items). collection agrupa los artículos para la tienda. Las colecciones de series son homenajes originales: sin logos, personajes ni nombres registrados.",
   "kinds": {
     "frame": "Marco de avatar (256 x 256, el avatar va en el 75 % central)",
     "sticker": "Sticker (128 x 128)",
     "theme": "Tema de perfil (clase de cosmeticos.css)",
-    "name": "Efecto de nombre (clase de cosmeticos.css)"
+    "name": "Efecto de nombre (clase de cosmeticos.css)",
+    "background": "Fondo de miniperfil (400 x 400, se recorta para llenar la tarjeta)"
   },
   "collections": {
     "cs": "Counter-Strike",
@@ -14,9 +15,24 @@
     "paises2": "Latinoamérica y España",
     "mapas": "Mapas de CS:S",
     "arsenal": "Arsenal (VIP)",
-    "series2": "Series míticas 2 (VIP)"
+    "series2": "Series míticas 2 (VIP)",
+    "vip": "VIP"
   },
   "items": [
+    {
+      "id": "marco-vip-oro",
+      "kind": "frame",
+      "name": "Oro VIP",
+      "description": "Viene con el VIP: marco de oro con corona.",
+      "file": "marcos/vip-oro.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "vip",
+      "vip_reward": true,
+      "vip_price": null
+    },
     {
       "id": "marco-mira",
       "kind": "frame",
@@ -27,7 +43,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-trazadoras",
@@ -39,7 +57,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-c4",
@@ -51,7 +71,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-circuito",
@@ -63,7 +85,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-fuego",
@@ -75,7 +99,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-camuflaje",
@@ -87,7 +113,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-hielo",
@@ -99,7 +127,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-balas",
@@ -111,7 +141,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pixel",
@@ -123,7 +155,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-grafiti",
@@ -135,7 +169,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-ar",
@@ -147,7 +183,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-br",
@@ -159,7 +197,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-uy",
@@ -171,7 +211,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-cl",
@@ -183,7 +225,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-pe",
@@ -195,7 +239,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-co",
@@ -207,7 +253,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-ve",
@@ -219,7 +267,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-ec",
@@ -231,7 +281,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-bo",
@@ -243,7 +295,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-py",
@@ -255,7 +309,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-mx",
@@ -267,7 +323,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-cr",
@@ -279,7 +337,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-cu",
@@ -291,7 +351,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-do",
@@ -303,7 +365,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-pr",
@@ -315,7 +379,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-pa",
@@ -327,7 +393,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-gt",
@@ -339,7 +407,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-hn",
@@ -351,7 +421,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-sv",
@@ -363,7 +435,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-pais-es",
@@ -375,7 +449,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-dust2",
@@ -387,7 +463,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-inferno",
@@ -399,7 +477,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-nuke",
@@ -411,7 +491,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-train",
@@ -423,7 +505,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-office",
@@ -435,7 +519,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-aztec",
@@ -447,7 +533,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-cbble",
@@ -459,7 +547,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-italy",
@@ -471,7 +561,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-piranesi",
@@ -483,7 +575,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-mapa-prodigy",
@@ -495,7 +589,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "marco-kevlar",
@@ -507,7 +603,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-neon",
@@ -519,7 +617,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-oro-vip",
@@ -531,7 +631,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-diamante",
@@ -543,7 +645,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-plasma",
@@ -555,7 +659,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-galaxia",
@@ -567,7 +673,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-holografico",
@@ -579,7 +687,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-laser",
@@ -591,7 +701,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-glitch",
@@ -603,7 +715,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-alas",
@@ -615,7 +729,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-ninja",
@@ -627,7 +743,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-guerrero",
@@ -639,7 +757,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-alien",
@@ -651,7 +771,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-portal",
@@ -663,7 +785,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-navaja",
@@ -675,7 +799,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-laboratorio",
@@ -687,7 +813,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-reves",
@@ -699,7 +827,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-reinos",
@@ -711,7 +841,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-atraco",
@@ -723,7 +855,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-juego",
@@ -735,7 +869,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-ak",
@@ -747,7 +883,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-m4",
@@ -759,7 +897,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-awp",
@@ -771,7 +911,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-deagle",
@@ -783,7 +925,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-scout",
@@ -795,7 +939,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-usp",
@@ -807,7 +953,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-glock",
@@ -819,7 +967,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-mp5",
@@ -831,7 +981,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-cuchillo",
@@ -843,7 +995,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-arma-he",
@@ -855,7 +1009,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-dona",
@@ -867,7 +1023,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-zombi",
@@ -879,7 +1037,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-barril",
@@ -891,7 +1051,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-fuga",
@@ -903,7 +1065,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-radiacion",
@@ -915,7 +1079,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-vikingo",
@@ -927,7 +1093,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-elementos",
@@ -939,7 +1107,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-robot",
@@ -951,7 +1121,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-fondo-mar",
@@ -963,7 +1135,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "marco-serie-isla",
@@ -975,7 +1149,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
     },
     {
       "id": "sticker-gg",
@@ -987,7 +1163,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-nice-shot",
@@ -999,7 +1177,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-rush-b",
@@ -1011,7 +1191,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-1hp",
@@ -1023,7 +1205,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-clutch",
@@ -1035,7 +1219,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-nt",
@@ -1047,7 +1233,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-eco",
@@ -1059,7 +1247,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-afk",
@@ -1071,7 +1261,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-ar",
@@ -1083,7 +1275,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-br",
@@ -1095,7 +1289,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-uy",
@@ -1107,7 +1303,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-cl",
@@ -1119,7 +1317,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-pe",
@@ -1131,7 +1331,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-co",
@@ -1143,7 +1345,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-ve",
@@ -1155,7 +1359,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-ec",
@@ -1167,7 +1373,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-bo",
@@ -1179,7 +1387,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-py",
@@ -1191,7 +1401,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-mx",
@@ -1203,7 +1415,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-cr",
@@ -1215,7 +1429,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-cu",
@@ -1227,7 +1443,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-do",
@@ -1239,7 +1457,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-pr",
@@ -1251,7 +1471,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-pa",
@@ -1263,7 +1485,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-gt",
@@ -1275,7 +1499,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-hn",
@@ -1287,7 +1513,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-sv",
@@ -1299,7 +1527,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-pais-es",
@@ -1311,7 +1541,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-dust2",
@@ -1323,7 +1555,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-inferno",
@@ -1335,7 +1569,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-nuke",
@@ -1347,7 +1583,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-train",
@@ -1359,7 +1597,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-office",
@@ -1371,7 +1611,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-aztec",
@@ -1383,7 +1625,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-cbble",
@@ -1395,7 +1639,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-italy",
@@ -1407,7 +1653,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-piranesi",
@@ -1419,7 +1667,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-mapa-prodigy",
@@ -1431,7 +1681,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "sticker-ace",
@@ -1443,7 +1695,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-mvp",
@@ -1455,7 +1709,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-headshot",
@@ -1467,7 +1723,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-one-tap",
@@ -1479,7 +1737,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-defused",
@@ -1491,7 +1751,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-1v5",
@@ -1503,7 +1765,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-wallbang",
@@ -1515,7 +1779,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-ninja",
@@ -1527,7 +1793,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-ninja",
@@ -1539,7 +1807,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-guerrero",
@@ -1551,7 +1821,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-alien",
@@ -1563,7 +1835,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-portal",
@@ -1575,7 +1849,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-navaja",
@@ -1587,7 +1863,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-laboratorio",
@@ -1599,7 +1877,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-reves",
@@ -1611,7 +1891,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-reinos",
@@ -1623,7 +1905,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-atraco",
@@ -1635,7 +1919,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-juego",
@@ -1647,7 +1933,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-ak",
@@ -1659,7 +1947,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-m4",
@@ -1671,7 +1961,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-awp",
@@ -1683,7 +1975,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-deagle",
@@ -1695,7 +1989,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-scout",
@@ -1707,7 +2003,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-usp",
@@ -1719,7 +2017,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-glock",
@@ -1731,7 +2031,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-mp5",
@@ -1743,7 +2045,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-cuchillo",
@@ -1755,7 +2059,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-arma-he",
@@ -1767,7 +2073,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-dona",
@@ -1779,7 +2087,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-zombi",
@@ -1791,7 +2101,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-barril",
@@ -1803,7 +2115,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-fuga",
@@ -1815,7 +2129,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-radiacion",
@@ -1827,7 +2143,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-vikingo",
@@ -1839,7 +2157,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-elementos",
@@ -1851,7 +2171,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-robot",
@@ -1863,7 +2185,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-fondo-mar",
@@ -1875,7 +2199,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "sticker-serie-isla",
@@ -1887,7 +2213,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 200
     },
     {
       "id": "tema-terro",
@@ -1899,7 +2227,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-anti",
@@ -1911,7 +2241,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-toxico",
@@ -1923,7 +2255,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-hielo",
@@ -1935,7 +2269,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-carmesi",
@@ -1947,7 +2283,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-camuflaje",
@@ -1959,7 +2297,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-atardecer",
@@ -1971,7 +2311,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-grafito",
@@ -1983,7 +2325,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-ar",
@@ -1995,7 +2339,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-br",
@@ -2007,7 +2353,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-uy",
@@ -2019,7 +2367,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-cl",
@@ -2031,7 +2381,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-pe",
@@ -2043,7 +2395,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-co",
@@ -2055,7 +2409,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-ve",
@@ -2067,7 +2423,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-ec",
@@ -2079,7 +2437,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-bo",
@@ -2091,7 +2451,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-py",
@@ -2103,7 +2465,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-mx",
@@ -2115,7 +2479,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-cr",
@@ -2127,7 +2493,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-cu",
@@ -2139,7 +2507,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-do",
@@ -2151,7 +2521,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-pr",
@@ -2163,7 +2535,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-pa",
@@ -2175,7 +2549,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-gt",
@@ -2187,7 +2563,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-hn",
@@ -2199,7 +2577,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-sv",
@@ -2211,7 +2591,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-pais-es",
@@ -2223,7 +2605,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-dust2",
@@ -2235,7 +2619,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-inferno",
@@ -2247,7 +2633,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-nuke",
@@ -2259,7 +2647,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-train",
@@ -2271,7 +2661,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-office",
@@ -2283,7 +2675,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-aztec",
@@ -2295,7 +2689,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-cbble",
@@ -2307,7 +2703,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-italy",
@@ -2319,7 +2717,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-piranesi",
@@ -2331,7 +2731,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-mapa-prodigy",
@@ -2343,7 +2745,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "tema-oro",
@@ -2355,7 +2759,9 @@
       "vip_only": true,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-obsidiana",
@@ -2367,7 +2773,9 @@
       "vip_only": true,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-diamante",
@@ -2379,7 +2787,9 @@
       "vip_only": true,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-synthwave",
@@ -2391,7 +2801,9 @@
       "vip_only": true,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-holo",
@@ -2403,7 +2815,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-esmeralda",
@@ -2415,7 +2829,9 @@
       "vip_only": true,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-rubi",
@@ -2427,7 +2843,9 @@
       "vip_only": true,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-aurora",
@@ -2439,7 +2857,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-ninja",
@@ -2451,7 +2871,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-guerrero",
@@ -2463,7 +2885,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-alien",
@@ -2475,7 +2899,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-portal",
@@ -2487,7 +2913,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-navaja",
@@ -2499,7 +2927,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-laboratorio",
@@ -2511,7 +2941,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-reves",
@@ -2523,7 +2955,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-reinos",
@@ -2535,7 +2969,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-atraco",
@@ -2547,7 +2983,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-juego",
@@ -2559,7 +2997,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-ak",
@@ -2571,7 +3011,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-m4",
@@ -2583,7 +3025,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-awp",
@@ -2595,7 +3039,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-deagle",
@@ -2607,7 +3053,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-scout",
@@ -2619,7 +3067,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-usp",
@@ -2631,7 +3081,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-glock",
@@ -2643,7 +3095,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-mp5",
@@ -2655,7 +3109,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-cuchillo",
@@ -2667,7 +3123,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-arma-he",
@@ -2679,7 +3137,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-dona",
@@ -2691,7 +3151,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-zombi",
@@ -2703,7 +3165,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-barril",
@@ -2715,7 +3179,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-fuga",
@@ -2727,7 +3193,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-radiacion",
@@ -2739,7 +3207,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-vikingo",
@@ -2751,7 +3221,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-elementos",
@@ -2763,7 +3235,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-robot",
@@ -2775,7 +3249,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-fondo-mar",
@@ -2787,7 +3263,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "tema-serie-isla",
@@ -2799,7 +3277,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 600
     },
     {
       "id": "nombre-brillo",
@@ -2811,7 +3291,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-glitch",
@@ -2823,7 +3305,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-neon",
@@ -2835,7 +3319,9 @@
       "vip_only": false,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-retro",
@@ -2847,7 +3333,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-contorno",
@@ -2859,7 +3347,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-sombra",
@@ -2871,7 +3361,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-hielo",
@@ -2883,7 +3375,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pixel",
@@ -2895,7 +3389,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-ar",
@@ -2907,7 +3403,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-br",
@@ -2919,7 +3417,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-uy",
@@ -2931,7 +3431,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-cl",
@@ -2943,7 +3445,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-pe",
@@ -2955,7 +3459,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-co",
@@ -2967,7 +3473,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-ve",
@@ -2979,7 +3487,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-ec",
@@ -2991,7 +3501,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-bo",
@@ -3003,7 +3515,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-py",
@@ -3015,7 +3529,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises"
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-mx",
@@ -3027,7 +3543,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-cr",
@@ -3039,7 +3557,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-cu",
@@ -3051,7 +3571,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-do",
@@ -3063,7 +3585,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-pr",
@@ -3075,7 +3599,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-pa",
@@ -3087,7 +3613,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-gt",
@@ -3099,7 +3627,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-hn",
@@ -3111,7 +3641,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-sv",
@@ -3123,7 +3655,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-pais-es",
@@ -3135,7 +3669,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "paises2"
+      "collection": "paises2",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-dust2",
@@ -3147,7 +3683,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-inferno",
@@ -3159,7 +3697,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-nuke",
@@ -3171,7 +3711,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-train",
@@ -3183,7 +3725,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-office",
@@ -3195,7 +3739,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-aztec",
@@ -3207,7 +3753,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-cbble",
@@ -3219,7 +3767,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-italy",
@@ -3231,7 +3781,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-piranesi",
@@ -3243,7 +3795,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-mapa-prodigy",
@@ -3255,7 +3809,9 @@
       "vip_only": false,
       "animated": false,
       "price": null,
-      "collection": "mapas"
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
     },
     {
       "id": "nombre-arcoiris",
@@ -3267,7 +3823,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-oro",
@@ -3279,7 +3837,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-fuego",
@@ -3291,7 +3851,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-holografico",
@@ -3303,7 +3865,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-galaxia",
@@ -3315,7 +3879,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-plasma",
@@ -3327,7 +3893,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-esmeralda",
@@ -3339,7 +3907,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-cromo",
@@ -3351,7 +3921,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "cs"
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-chakra",
@@ -3363,7 +3935,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-ki",
@@ -3375,7 +3949,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-mutante",
@@ -3387,7 +3963,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-portal",
@@ -3399,7 +3977,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-whisky",
@@ -3411,7 +3991,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-cristal",
@@ -3423,7 +4005,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-ochentoso",
@@ -3435,7 +4019,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-acero",
@@ -3447,7 +4033,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-billete",
@@ -3459,7 +4047,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-luz-roja",
@@ -3471,7 +4061,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series"
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-ak",
@@ -3483,7 +4075,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-m4",
@@ -3495,7 +4089,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-awp",
@@ -3507,7 +4103,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-deagle",
@@ -3519,7 +4117,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-scout",
@@ -3531,7 +4131,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-usp",
@@ -3543,7 +4145,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-glock",
@@ -3555,7 +4159,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-mp5",
@@ -3567,7 +4173,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-cuchillo",
@@ -3579,7 +4187,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-arma-he",
@@ -3591,7 +4201,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "arsenal"
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-dona",
@@ -3603,7 +4215,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-zombi",
@@ -3615,7 +4229,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-barril",
@@ -3627,7 +4243,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-fuga",
@@ -3639,7 +4257,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-radiacion",
@@ -3651,7 +4271,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-vikingo",
@@ -3663,7 +4285,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-elementos",
@@ -3675,7 +4299,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-robot",
@@ -3687,7 +4313,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-fondo-mar",
@@ -3699,7 +4327,9 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
     },
     {
       "id": "nombre-isla",
@@ -3711,7 +4341,345 @@
       "vip_only": true,
       "animated": true,
       "price": null,
-      "collection": "series2"
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 500
+    },
+    {
+      "id": "fondo-humo",
+      "kind": "background",
+      "name": "Granada de humo",
+      "description": "Humo que cruza la tarjeta de lado a lado.",
+      "file": "fondos/humo.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-radar",
+      "kind": "background",
+      "name": "Radar",
+      "description": "El radar barre y marca enemigos.",
+      "file": "fondos/radar.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-casquillos",
+      "kind": "background",
+      "name": "Lluvia de casquillos",
+      "description": "Vainas de bronce que caen girando.",
+      "file": "fondos/casquillos.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-neon",
+      "kind": "background",
+      "name": "Neón",
+      "description": "Sol retro y cuadrícula que avanza.",
+      "file": "fondos/neon.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-tormenta",
+      "kind": "background",
+      "name": "Tormenta",
+      "description": "Lluvia y relámpagos de noche.",
+      "file": "fondos/tormenta.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-consola",
+      "kind": "background",
+      "name": "Consola",
+      "description": "Columnas de código que bajan.",
+      "file": "fondos/consola.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "cs",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-mapa-dust2",
+      "kind": "background",
+      "name": "Atardecer en el desierto",
+      "description": "Dunas, sol bajo y arena con viento.",
+      "file": "fondos/mapa-dust2.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-mapa-inferno",
+      "kind": "background",
+      "name": "Brasas del pueblo",
+      "description": "Muros de ladrillo, arcos y brasas que suben.",
+      "file": "fondos/mapa-inferno.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-mapa-nuke",
+      "kind": "background",
+      "name": "Planta nuclear",
+      "description": "Símbolo que gira y franjas de peligro.",
+      "file": "fondos/mapa-nuke.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-mapa-office",
+      "kind": "background",
+      "name": "Oficina nevada",
+      "description": "Edificios de noche con nieve que cae.",
+      "file": "fondos/mapa-office.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "mapas",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-pais-cruz-del-sur",
+      "kind": "background",
+      "name": "Cruz del Sur",
+      "description": "El cielo del sur con sus estrellas.",
+      "file": "fondos/pais-cruz-del-sur.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-pais-carnaval",
+      "kind": "background",
+      "name": "Carnaval",
+      "description": "Papelitos y serpentinas de colores.",
+      "file": "fondos/pais-carnaval.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null,
+      "collection": "paises",
+      "vip_reward": false,
+      "vip_price": null
+    },
+    {
+      "id": "fondo-serie-luna-roja",
+      "kind": "background",
+      "name": "Luna roja",
+      "description": "Hojas que vuelan bajo una luna enorme.",
+      "file": "fondos/serie-luna-roja.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-aura",
+      "kind": "background",
+      "name": "Aura dorada",
+      "description": "Energía dorada que sube sin parar.",
+      "file": "fondos/serie-aura.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-portal",
+      "kind": "background",
+      "name": "Portal verde",
+      "description": "Un portal en espiral que gira.",
+      "file": "fondos/serie-portal.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-cristal",
+      "kind": "background",
+      "name": "Cristales del desierto",
+      "description": "Cristales azules que brillan de noche.",
+      "file": "fondos/serie-cristal.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-niebla",
+      "kind": "background",
+      "name": "Ciudad de humo",
+      "description": "Fábricas, chimeneas y niebla de época.",
+      "file": "fondos/serie-niebla.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-reves",
+      "kind": "background",
+      "name": "Del otro lado",
+      "description": "Cielo rojo, relámpagos y esporas flotando.",
+      "file": "fondos/serie-reves.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-alien",
+      "kind": "background",
+      "name": "Energía alien",
+      "description": "Celdas verdes que se encienden en onda.",
+      "file": "fondos/serie-alien.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-billetes",
+      "kind": "background",
+      "name": "El gran golpe",
+      "description": "Lluvia de billetes y caretas.",
+      "file": "fondos/serie-billetes.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-serie-abismo",
+      "kind": "background",
+      "name": "Abismo",
+      "description": "Medusas de colores y burbujas en lo profundo.",
+      "file": "fondos/serie-abismo.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "series2",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-arma-trazadoras",
+      "kind": "background",
+      "name": "Fuego cruzado",
+      "description": "Trazadoras que cruzan en diagonal.",
+      "file": "fondos/arma-trazadoras.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-arma-oro",
+      "kind": "background",
+      "name": "Bóveda de oro",
+      "description": "Lingotes con un brillo que pasa.",
+      "file": "fondos/arma-oro.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
+    },
+    {
+      "id": "fondo-arma-dragon",
+      "kind": "background",
+      "name": "Escamas de dragón",
+      "description": "Escamas rojas y un ojo que parpadea.",
+      "file": "fondos/arma-dragon.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null,
+      "collection": "arsenal",
+      "vip_reward": false,
+      "vip_price": 1000
     }
   ]
 }

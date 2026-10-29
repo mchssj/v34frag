@@ -69,6 +69,20 @@ Ordenado por urgencia.
 - **Al hacer el corte:** el replanteo `34_tienda.sql` parte de esta migración, con `elo_key()`, `mix_deletions` y los avisos con `notify()`.
 - **Bitácora:** [`2026-10-29-tienda-web`](bitacora/2026-10-29-tienda-web/). Pasos en la guía; changelog para Discord en la carpeta.
 
+### 1.7 Fondo de miniperfil y progresión VIP (sin commit)
+
+- **Qué es:**
+  - **Fondos:** 24 fondos animados, del tipo nuevo `background`.
+  - **Matchmaking:** el lobby y la sala muestran marco, efecto de nombre e insignia VIP.
+  - **VIP:** ser VIP da solo el Marco Oro VIP. Lo demás se compra con monedas VIP, que se ganan en mixes jugados siendo VIP y son configurables. Si se vence el VIP, el saldo y lo comprado quedan congelados.
+- **Dónde se ve:** solo en los demos del frontend nuevo, en `/demo/tienda` y `/demo/matchmaking` (`kyan/ejemplo-matchmaking`).
+- **Qué falta:**
+  1. Probar y correr `20261029200000_fondo_miniperfil.sql` y `20261029210000_vip_progresion.sql`, después de las dos de 1.6. **No se probaron en ningún Postgres.**
+  2. **No correr `20261029210000_vip_progresion.sql` con la tienda de `index.html` publicada:** esa tienda todavía trata lo VIP como gratis.
+  3. Rutas de la API para monedas VIP y cosméticos del matchmaking (`MmCosmetics`).
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-fondo-miniperfil`](bitacora/2026-10-29-fondo-miniperfil/) y [`2026-10-29-vip-progresion`](bitacora/2026-10-29-vip-progresion/).
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real
