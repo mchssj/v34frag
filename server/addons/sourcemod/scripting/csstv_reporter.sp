@@ -35,7 +35,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.5.0"
+#define PLUGIN_VERSION "2.6.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -144,6 +144,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
 #include "csstv/tips.inc"
+#include "csstv/ips.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -191,6 +192,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_score", Cmd_Score, "Muestra el marcador.");
 
 	CreateTimer(1.0, Timer_AbandonCheck, _, TIMER_REPEAT);
+	Ips_Init();
 
 	HookEventEx("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEventEx("round_end", Event_RoundEnd);
@@ -249,6 +251,12 @@ public void OnMapEnd()
 	Pause_Clear();
 }
 
+public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
+{
+	Ips_OnConnect(client);
+	return true;
+}
+
 public void OnClientPutInServer(int client)
 {
 	g_bReady[client] = false;
@@ -264,6 +272,7 @@ public void OnClientPostAdminCheck(int client)
 {
 	Recon_OnJoin(client);
 	Match_OnClientJoin(client);
+	Ips_OnJoin(client);
 }
 
 public void OnClientDisconnect(int client)

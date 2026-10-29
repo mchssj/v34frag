@@ -15,6 +15,7 @@ export type PlayerDetail = Schemas["PlayerDetail"]
 export type Medal = Schemas["Medal"]
 export type SteamRequest = Schemas["AdminSteamRequest"]
 export type SteamUnlinked = Schemas["SteamUnlinked"]
+export type PlayerIp = Schemas["PlayerIp"]
 // `force` (guardar igual con una palabra bloqueada) tiene default en la API: acá es opcional.
 export type PlayerPatch = Omit<Schemas["AdminPlayerPatch"], "force"> & {
   force?: boolean
@@ -29,6 +30,7 @@ export const adminPlayerKeys = {
   list: (q: string, f: FichaFilter, page: number) =>
     ["admin", "players", "list", q, f, page] as const,
   medals: (id: string) => ["player", id, "medals"] as const,
+  ips: (id: string) => ["admin", "players", "ips", id] as const,
   requests: (pendingOnly: boolean) =>
     ["admin", "players", "steam-requests", pendingOnly] as const,
   steamConfig: ["admin", "players", "steam-config"] as const,
@@ -71,6 +73,20 @@ export function medalsOptions(id: string) {
       unwrap(
         api.GET("/api/v1/players/{id}/medals", {
           params: { path: { id }, query: { per: 50 } },
+          signal,
+        })
+      ),
+  })
+}
+
+/** IPs desde las que entró la ficha (solo admin; las registra el reporter al entrar al servidor). */
+export function playerIpsOptions(id: string) {
+  return queryOptions({
+    queryKey: adminPlayerKeys.ips(id),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/players/{id}/ips", {
+          params: { path: { id } },
           signal,
         })
       ),

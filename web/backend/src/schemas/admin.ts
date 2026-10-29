@@ -69,6 +69,21 @@ export const SteamUnlinked = z
   .object({ steam_id: z.string(), last_nick: z.string().nullable(), matches: z.number().int(), last_played: z.string().nullable() })
   .openapi('SteamUnlinked');
 
+// IPs de una ficha (replanteo 38, plan docs/bitacora/2026-10-29-ips-jugadores). Solo admin.
+export const PlayerIp = z
+  .object({
+    ip: z.string(),
+    steam_id: z.string().openapi({ description: 'SteamID64 de la ficha desde el que entró' }),
+    first_seen_at: z.string(),
+    last_seen_at: z.string(),
+    times: z.number().int().openapi({ description: 'Veces que entró al servidor con ese SteamID desde esa IP' }),
+    last_nick: z.string().nullable().openapi({ description: 'Nick con el que entró la última vez' }),
+    others: z.array(z.object({ id: z.uuid(), alias: z.string() })).openapi({ description: 'Otras fichas que entraron desde la misma IP' }),
+    others_unlinked: z.number().int().openapi({ description: 'SteamID sin ficha que entraron desde la misma IP' }),
+  })
+  .openapi('PlayerIp');
+export const PlayerIpList = z.object({ items: z.array(PlayerIp) }).openapi('PlayerIpList');
+
 export const SteamLinkBody = z
   .object({
     steam_id: z.string().trim().min(1).max(120).openapi({ description: 'SteamID64, STEAM_0:X:Y o link del perfil' }),

@@ -26,7 +26,7 @@ import { SearchBox } from "@/features/ranking/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { ConfirmDialog } from "../dialogs"
 import { isBlockedName } from "../errors"
-import { fmtDate } from "../format"
+import { fmtDate, fmtDateTime } from "../format"
 import {
   Chip,
   EmptyState,
@@ -44,6 +44,7 @@ import {
   freeAccountsOptions,
   medalsOptions,
   playerDetailOptions,
+  playerIpsOptions,
   playersListOptions,
   useAddMedal,
   useCreatePlayer,
@@ -224,6 +225,7 @@ export function FichasTab({
             id={selection.id}
             onClose={close}
             onGoUnlinked={onGoUnlinked}
+            onOpen={(id) => setSel({ kind: "edit", id })}
           />
         ) : (
           <PickHint
@@ -359,10 +361,13 @@ function FichaPanel({
   id,
   onClose,
   onGoUnlinked,
+  onOpen,
 }: {
   id: string
   onClose: () => void
   onGoUnlinked: () => void
+  /** Abre otra ficha en el panel (las que comparten una IP). */
+  onOpen: (id: string) => void
 }) {
   const detail = useQuery(playerDetailOptions(id))
   if (detail.isError)
@@ -376,6 +381,7 @@ function FichaPanel({
       p={detail.data}
       onClose={onClose}
       onGoUnlinked={onGoUnlinked}
+      onOpen={onOpen}
     />
   )
 }
@@ -391,10 +397,12 @@ function FichaForm({
   p,
   onClose,
   onGoUnlinked,
+  onOpen,
 }: {
   p: PlayerDetail
   onClose: () => void
   onGoUnlinked: () => void
+  onOpen: (id: string) => void
 }) {
   const uid = useId()
   const initial: Draft = {
@@ -583,6 +591,7 @@ function FichaForm({
       </PanelSection>
 
       <SteamIds p={p} onGoUnlinked={onGoUnlinked} />
+      <Ips p={p} onOpen={onOpen} />
       <Medals playerId={p.id} />
 
       <PanelSection title="Borrar">
@@ -811,6 +820,94 @@ function SteamIds({
           })
         }
       />
+    </PanelSection>
+  )
+}
+
+const IPS_SHOWN = 5
+
+/** IPs desde las que entró al servidor, con las otras fichas que usaron la misma (multicuentas). Solo admin. */
+function Ips({ p, onOpen }: { p: PlayerDetail; onOpen: (id: string) => void }) {
+  const ips = useQuery(playerIpsOptions(p.id))
+  const [all, setAll] = useState(false)
+  const items = ips.data?.items ?? []
+  const shown = all ? items : items.slice(0, IPS_SHOWN)
+  const several = p.steam_ids.length > 1
+
+  return (
+    <PanelSection
+      title={ips.data ? `IPs (${items.length})` : "IPs"}
+      aside={
+        items.length > IPS_SHOWN && (
+          <Button variant="link" size="sm" onClick={() => setAll(!all)}>
+            {all ? "Ver menos" : `Ver todas (${items.length})`}
+          </Button>
+        )
+      }
+    >
+      <span className="text-xs text-muted-foreground">
+        Se guardan al entrar al servidor. Solo las ven los admins.
+      </span>
+      {ips.isError ? (
+        <QueryError error={ips.error} onRetry={() => void ips.refetch()} />
+      ) : ips.isPending ? (
+        <Skeleton className="h-16 rounded-lg" />
+      ) : items.length === 0 ? (
+        <span className="text-[13px] text-muted-foreground">
+          Todavía no hay IPs registradas.
+        </span>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {shown.map((x) => (
+            <li
+              key={`${x.steam_id}-${x.ip}`}
+              className="flex flex-col gap-1.5 rounded-lg border px-3 py-2.5"
+            >
+              <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                <span className="font-mono text-[13px] font-semibold">
+                  {x.ip}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {x.times} {x.times === 1 ? "vez" : "veces"} · última el{" "}
+                  {fmtDateTime(x.last_seen_at)}
+                </span>
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Desde el {fmtDate(x.first_seen_at)}
+                {x.last_nick ? ` · como ${x.last_nick}` : ""}
+                {several ? (
+                  <>
+                    {" · "}
+                    <span className="font-mono">{x.steam_id}</span>
+                  </>
+                ) : null}
+              </span>
+              {(x.others.length > 0 || x.others_unlinked > 0) && (
+                <span className="flex flex-wrap items-center gap-1.5 text-xs">
+                  <Chip tone="warn">También la usaron</Chip>
+                  {x.others.map((o) => (
+                    <Button
+                      key={o.id}
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0 text-xs"
+                      onClick={() => onOpen(o.id)}
+                    >
+                      {o.alias}
+                    </Button>
+                  ))}
+                  {x.others_unlinked > 0 && (
+                    <span className="text-muted-foreground">
+                      {x.others.length > 0 ? "y " : ""}
+                      {x.others_unlinked} SteamID sin ficha
+                    </span>
+                  )}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </PanelSection>
   )
 }

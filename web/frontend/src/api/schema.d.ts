@@ -5237,6 +5237,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/players/{id}/ips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * IPs de un jugador
+         * @description Las IPs desde las que entró al servidor con cualquiera de sus SteamID (las registra el reporter 2.6.0 al entrar), la más reciente primero, con las otras fichas que usaron la misma IP. Dato personal: solo admin.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description IPs */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerIpList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/steam/unlinked": {
         parameters: {
             query?: never;
@@ -15266,6 +15343,28 @@ export interface components {
              * @default 🏆
              */
             icon: string;
+        };
+        PlayerIpList: {
+            items: components["schemas"]["PlayerIp"][];
+        };
+        PlayerIp: {
+            ip: string;
+            /** @description SteamID64 de la ficha desde el que entró */
+            steam_id: string;
+            first_seen_at: string;
+            last_seen_at: string;
+            /** @description Veces que entró al servidor con ese SteamID desde esa IP */
+            times: number;
+            /** @description Nick con el que entró la última vez */
+            last_nick: string | null;
+            /** @description Otras fichas que entraron desde la misma IP */
+            others: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            }[];
+            /** @description SteamID sin ficha que entraron desde la misma IP */
+            others_unlinked: number;
         };
         SteamUnlinkedList: {
             items: components["schemas"]["SteamUnlinked"][];
