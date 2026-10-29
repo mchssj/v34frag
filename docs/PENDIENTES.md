@@ -280,7 +280,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 ### 1.15 HUD de observer (`csstv_hud` 1.0.0): subido solo al servidor real, sin probar
 
 - **2026-10-29: el relay pasa al VPS** (relay 2.0.0, plan [`2026-10-29-hud-relay-vps`](bitacora/2026-10-29-hud-relay-vps/GUIA_IMPLEMENTACION.md)): un relay para todos los servidores, administrado desde la web. Desplegado en el VPS contra staging (`hud.cmleague.lat`). **flow** ya tiene `csstv_hud` 1.1.0 (no lo tenía) apuntando al relay, en el puerto `27501`, como prueba autorizada por Daniel. Falta:
-  - confirmar la prueba con flow (cambio de mapa y jugadores) y, si se quiere, apagarlo con `flow_hud.py off`;
+  - ~~confirmar la prueba con flow~~: **funcionó el 2026-10-29** (paquetes con la clave correcta, el HUD y el panel con datos, y la sesión en staging). Queda **prendido en flow** por decisión de Daniel (por consola está en `csstv_hud 0` desde el congelamiento del 2026-10-29, que fue por los bots y no por el HUD: ver la guía, "Incidentes"; volver a `csstv_hud 1`). Falta que kyan confirme si existe `maps/de_dust2_ob.nav` y, si no, generarlo. Cómo apagarlo si laguea: `GUIA_IMPLEMENTACION.md`, "Cómo apagar el HUD de un servidor";
   - ~~el frontend~~: hecho el 2026-10-29 ([`2026-10-29-frontend-hud`](bitacora/2026-10-29-frontend-hud/GUIA_IMPLEMENTACION.md)); falta desplegarlo con `desplegar.sh web`;
   - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real, RBK y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
 
