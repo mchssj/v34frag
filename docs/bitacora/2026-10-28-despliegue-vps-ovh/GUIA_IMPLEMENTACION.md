@@ -84,7 +84,11 @@ Se cargó con `psql` desde la PC, en el mismo orden que `web/backend/scripts/db-
   - `/api/v1/seasons`, `/matches` y `/players` dan 200, y `/servers` da 401 (pide sesión).
   - `cmleague-season.service` corre sin error (no hay temporada abierta).
 - **Conexión:** Session pooler de `us-east-1`. El usuario es `postgres.<ref>`: con `STAGING_PG_USER=postgres` solo, el pooler responde `ENOIDENTIFIER`. El `<ref>` sale de `STAGING_SUPABASE_URL`.
-- **Datos que trae el esquema:** 8 mapas en `map_pool` y las filas de configuración.
+- **Datos que trae el esquema:** 8 mapas en `map_pool` y las filas de configuración, **menos la de `elo_config`**.
+  - Esa fila la crea la migración `20261011230000_elo_config.sql`, que es anterior a `BASE`, y `public.sql` no trae datos.
+  - Se notó el 2026-10-29: un ajuste de ELO desde Administración › Servidores › Ajustes manuales dio `500 INTERNAL` (`23502`: `null` en `player_elo.elo`, porque `start_elo` llegaba vacío). También habría fallado el ELO al terminar cada mix.
+  - Daniel la cargó en staging con `insert into public.elo_config(id) values (1) on conflict (id) do nothing;` y el ajuste funcionó.
+  - **En el corte a producción, verificar que la fila exista** (punto 1.5 de `docs/PENDIENTES.md`).
 
 ### Datos de prueba (2026-10-28)
 
