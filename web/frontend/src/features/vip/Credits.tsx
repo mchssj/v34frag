@@ -1,10 +1,10 @@
 import { cn } from "cn"
 import { HeartIcon } from "lucide-react"
 
+import { PlayerAvatar } from "@/features/ranking/parts"
 import { VipBadge } from "@/features/shop/cosmetics"
 
 import { RANK_PLAYERS } from "./demo"
-import { VipAvatar } from "./VipName"
 
 // Página de créditos con los VIP (docs/bitacora/2026-10-29-creditos en kyan/pruebas). Los VIP aparecen por
 // cuántos meses llevan; el que no quiere aparecer lo apaga en su configuración.
@@ -106,7 +106,11 @@ function Supporter({
         mine && "border-primary"
       )}
     >
-      <VipAvatar alias={nick} photo={null} vip className="size-9" />
+      <PlayerAvatar
+        alias={nick}
+        photo={null}
+        className="size-9 ring-2 ring-amber-400 ring-offset-2 ring-offset-background"
+      />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-semibold">{nick}</span>
         <span className="text-xs text-muted-foreground">
