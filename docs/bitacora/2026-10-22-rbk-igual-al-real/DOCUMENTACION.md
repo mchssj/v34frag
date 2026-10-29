@@ -41,6 +41,7 @@ Lo carga `addons/metamod/metaplugins.ini` (`addons/stripper/bin/stripper_mm`). `
 | Pausa del medio tiempo | **3 s** (5 s hasta el 2026-10-24, ver [`2026-10-24-medio-tiempo-3s`](../2026-10-24-medio-tiempo-3s/)) | `csstv_reporter.cfg` |
 | `sv_pure` | 2 | `server.cfg` y `game.cfg` |
 | `phys_timescale` | 1.7 | `server.cfg` |
+| Tasas de red | `sv_minupdaterate 100`, `sv_maxupdaterate 101`, `sv_mincmdrate 100`, `sv_maxcmdrate 101` (desde el 2026-10-27, ver [`2026-10-27-tasas-coherentes`](../2026-10-27-tasas-coherentes/)) | `server.cfg` |
 | `fps_max` | 600 | `csstv_perf`, que lo sostiene aunque el plugin del hosting lo baje a 150 |
 
 ## Lo que sigue siendo distinto (a propósito)
