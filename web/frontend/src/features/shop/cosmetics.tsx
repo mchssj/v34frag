@@ -109,16 +109,15 @@ export function Stickers({
   )
 }
 
+/** La medalla VIP de CM League (nuevas/perfil/vip.svg). Toma la altura del texto de al lado. */
 export function VipBadge({ className }: { className?: string }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md bg-gradient-to-r from-[#f7d76a] to-[#c8952a] px-1.5 py-px text-[10px] font-black tracking-[1px] text-[#1b1407]",
-        className,
-      )}
-    >
-      VIP
-    </span>
+    <img
+      src={COSMETICS_BASE + "insignias/vip.svg"}
+      alt="VIP"
+      title="VIP"
+      className={cn("inline-block h-[1.6em] w-auto shrink-0 drop-shadow", className)}
+    />
   )
 }
 
