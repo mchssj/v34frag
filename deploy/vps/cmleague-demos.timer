@@ -1,0 +1,11 @@
+# Cada 10 minutos, 5 minutos después del Worker de demos (que corre en :00, :10, …): así toma las que el Worker
+# acaba de pasar a SFTP. Una vuelta no arranca si la anterior sigue corriendo (Type=oneshot).
+[Unit]
+Description=CMLeague: demos por SFTP cada 10 minutos
+
+[Timer]
+OnCalendar=*:5/10
+Persistent=true
+
+[Install]
+WantedBy=timers.target

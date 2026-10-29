@@ -1,0 +1,49 @@
+# CMLeague: Caddy con los dominios (plan docs/bitacora/2026-10-28-despliegue-vps-ovh, secciones 2 y 4).
+# Se instala con `preparar.sh --dominios` cuando el DNS de Namecheap ya apunta al VPS: Caddy pide los certificados solo.
+
+(comun) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+	log {
+		output file /var/log/caddy/{args[0]}.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+	}
+}
+
+cmleague.lat {
+	import comun web
+	# Usuario y contraseña durante el ensayo; vacío después del corte.
+	import /etc/caddy/acceso-web.caddy
+	root * /srv/cmleague/web/current
+	# Los archivos de Vite llevan hash en el nombre: caché de un año. El resto (index.html) se revalida siempre.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	@resto not path /assets/*
+	header @resto Cache-Control "no-cache"
+	try_files {path} /index.html
+	file_server
+}
+
+www.cmleague.lat {
+	redir https://cmleague.lat{uri} permanent
+}
+
+api.cmleague.lat {
+	import comun api
+	# Caddy reemplaza X-Forwarded-For con la IP real del cliente (no confía en la que manda): CLIENT_IP_HEADER=x-forwarded-for.
+	reverse_proxy 127.0.0.1:8787
+}
+
+# Relay del HUD: cuando se mude al VPS (plan, 4.3), con token o con usuario y contraseña.
+# hud.cmleague.lat {
+# 	import comun hud
+# 	reverse_proxy 127.0.0.1:8090
+# }

@@ -1,0 +1,9 @@
+<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a1a1a">
+  <h2 style="margin:0 0 16px">Confirma tu nuevo correo</h2>
+  <p>Pediste cambiar el correo de tu cuenta de CMLeague de <strong>{{ .Email }}</strong> a <strong>{{ .NewEmail }}</strong>. Para confirmarlo:</p>
+  <p style="margin:24px 0">
+    <a href="{{ .ConfirmationURL }}" style="background:#e4572e;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:6px;display:inline-block;font-weight:bold">Confirmar el cambio</a>
+  </p>
+  <p style="font-size:13px;color:#555">Si el botón no funciona, copia este enlace en el navegador:<br><a href="{{ .ConfirmationURL }}" style="color:#555;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+  <p style="font-size:13px;color:#555">Si no pediste este cambio, ignora este correo: tu cuenta sigue con el correo de siempre.</p>
+</div>

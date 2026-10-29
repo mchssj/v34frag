@@ -10,6 +10,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "dev:node": "tsx watch src/node.ts",
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build-check.mjs",
+    "start": "node --enable-source-maps dist/server.mjs",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run --project unit",
     "test:int": "vitest run --project integration",
@@ -39,6 +42,7 @@
     "@types/node": "24.19.0",
     "@types/ssh2": "1.15.6",
     "@vitest/coverage-v8": "5.0.2",
+    "esbuild": "0.28.2",
     "supabase": "2.118.0",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
