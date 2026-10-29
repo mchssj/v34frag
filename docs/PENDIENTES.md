@@ -83,6 +83,21 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-fondo-miniperfil`](bitacora/2026-10-29-fondo-miniperfil/) y [`2026-10-29-vip-progresion`](bitacora/2026-10-29-vip-progresion/).
 
+### 1.8 Prototipos VIP: exportar stats y buscador avanzado (sin commit)
+
+- **Qué es:** dos prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
+  - `/demo/exportar`: tarjeta de stats en PNG o PDF.
+  - `/demo/buscador`: filtros avanzados de jugadores y partidas.
+- **Qué falta:**
+  - **Daniel:**
+    - La ruta de stats por período.
+    - Los filtros nuevos en `ranking/players` y `mixes`, con chequeo de VIP.
+    - Que `levelBounds` acepte cualquier rango de niveles.
+  - **Esteban:** llevar los dos prototipos al perfil, a `/players` y al listado de mixes.
+- **Niveles:** usan los mismos pisos que el backend. `features/search/levels.test.ts` avisa si se desincronizan.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-exportar-stats`](bitacora/2026-10-29-exportar-stats/) y [`2026-10-29-buscador-avanzado`](bitacora/2026-10-29-buscador-avanzado/).
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real
