@@ -60,6 +60,7 @@ Por jugador: `steamid`, `name`, `team`, `rounds`, `kills`, `deaths`, `assists`, 
 | Fair play, reclutador, supporter, caster, staff, eventos y aniversario | No salen del juego: votos, referidos o carga manual del admin | 🌐 |
 | Pionero (jugó el primer mix de la plataforma) | Jugadores de la primera partida guardada (la de `started_at` más viejo). Se otorga una sola vez | ✅ |
 | Beta tester | Lista cargada a mano por un admin | 🌐 |
+| Premium y VIP (VIP es el nivel máximo, Premium el anterior) | Estado de la cuenta en la web (suscripción o rango pago). Cada jugador muestra solo la más alta que tenga | 🌐 |
 
 ### Equipos
 
