@@ -22,6 +22,8 @@ import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
+import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
@@ -112,6 +114,16 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => AuthRoute,
+} as any)
+const DemoBuscadorRoute = DemoBuscadorRouteImport.update({
+  id: '/demo/buscador',
+  path: '/demo/buscador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoExportarRoute = DemoExportarRouteImport.update({
+  id: '/demo/exportar',
+  path: '/demo/exportar',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   id: '/demo/matchmaking',
@@ -261,6 +273,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/exportar': typeof DemoExportarRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/widget': typeof DemoWidgetRoute
@@ -300,6 +314,8 @@ export interface FileRoutesByTo {
   '/play': typeof AppPlayRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/exportar': typeof DemoExportarRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/widget': typeof DemoWidgetRoute
@@ -343,6 +359,8 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/exportar': typeof DemoExportarRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/widget': typeof DemoWidgetRoute
@@ -385,6 +403,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/login'
     | '/register'
+    | '/demo/buscador'
+    | '/demo/exportar'
     | '/demo/matchmaking'
     | '/demo/tienda'
     | '/demo/widget'
@@ -424,6 +444,8 @@ export interface FileRouteTypes {
     | '/play'
     | '/login'
     | '/register'
+    | '/demo/buscador'
+    | '/demo/exportar'
     | '/demo/matchmaking'
     | '/demo/tienda'
     | '/demo/widget'
@@ -466,6 +488,8 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/buscador'
+    | '/demo/exportar'
     | '/demo/matchmaking'
     | '/demo/tienda'
     | '/demo/widget'
@@ -500,6 +524,8 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  DemoBuscadorRoute: typeof DemoBuscadorRoute
+  DemoExportarRoute: typeof DemoExportarRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoWidgetRoute: typeof DemoWidgetRoute
@@ -597,6 +623,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/register'
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/demo/buscador': {
+      id: '/demo/buscador'
+      path: '/demo/buscador'
+      fullPath: '/demo/buscador'
+      preLoaderRoute: typeof DemoBuscadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/exportar': {
+      id: '/demo/exportar'
+      path: '/demo/exportar'
+      fullPath: '/demo/exportar'
+      preLoaderRoute: typeof DemoExportarRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/demo/matchmaking': {
       id: '/demo/matchmaking'
@@ -897,6 +937,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  DemoBuscadorRoute: DemoBuscadorRoute,
+  DemoExportarRoute: DemoExportarRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoWidgetRoute: DemoWidgetRoute,
