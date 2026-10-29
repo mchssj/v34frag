@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <g stroke="#fff" stroke-width="10" stroke-linejoin="round" fill="#fff">
+    <ellipse cx="60" cy="60" rx="42" ry="34"/><path d="M96 50l20-6-6 18Z"/><rect x="34" y="84" width="12" height="16"/><rect x="72" y="84" width="12" height="16"/>
+  </g>
+  <ellipse cx="60" cy="60" rx="42" ry="34" fill="#ff9ac2" stroke="#7a1f48" stroke-width="3"/>
+  <path d="M96 50l20-6-6 18Z" fill="#ff9ac2" stroke="#7a1f48" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="34" y="84" width="12" height="16" rx="3" fill="#ff9ac2" stroke="#7a1f48" stroke-width="3"/>
+  <rect x="72" y="84" width="12" height="16" rx="3" fill="#ff9ac2" stroke="#7a1f48" stroke-width="3"/>
+  <rect x="48" y="28" width="26" height="5" rx="2" fill="#7a1f48"/>
+  <circle cx="86" cy="52" r="3" fill="#7a1f48"/>
+  <circle cx="16" cy="40" r="10" fill="#f2c230" stroke="#7a5414" stroke-width="2.5"/><text x="16" y="44" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="11" fill="#7a5414">$</text>
+  <g transform="rotate(-6 64 112)">
+    <rect x="28" y="100" width="72" height="24" rx="7" fill="#48d597" stroke="#fff" stroke-width="4"/>
+    <text x="64" y="118" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="18" letter-spacing="2" fill="#0c2a1c">ECO</text>
+  </g>
+</svg>

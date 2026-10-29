@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect x="14" y="30" width="100" height="64" rx="10" fill="#fff" stroke="#fff" stroke-width="10"/>
+  <rect x="14" y="30" width="100" height="64" rx="10" fill="#2a2a33" stroke="#9696a3" stroke-width="3"/>
+  <path d="M30 94h68l10 18H20Z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M30 94h68l10 18H20Z" fill="#3b3b4a" stroke="#9696a3" stroke-width="3" stroke-linejoin="round"/>
+  <text x="64" y="72" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="30" letter-spacing="3" fill="#9696a3">AFK</text>
+  <g font-family="Arial Black, sans-serif" font-weight="900" fill="#4f9bff">
+    <text x="96" y="26" font-size="14">z</text><text x="106" y="16" font-size="18">z</text><text x="116" y="8" font-size="10">z</text>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <pattern id="cam" width="80" height="80" patternUnits="userSpaceOnUse">
+      <rect width="80" height="80" fill="#55603a"/>
+      <path d="M0 10c14-8 24 6 36 0s20 10 18 22-20 8-30 14S2 40 0 30Z" fill="#3b4428"/>
+      <path d="M44 44c12-6 26 2 30 12s-8 20-20 18-24-4-22-14 4-12 12-16Z" fill="#7a6d48"/>
+      <path d="M50 0c10 4 22 0 26 8s-10 14-20 10-14-10-6-18Z" fill="#2a2f1c"/>
+      <path d="M4 56c8-4 18 0 18 10s-12 14-18 8Z" fill="#2a2f1c"/>
+    </pattern>
+  </defs>
+  <path fill-rule="evenodd" fill="url(#cam)" d="M14 14h228v228H14zM32 32v192h192V32z"/>
+  <rect x="14" y="14" width="228" height="228" rx="4" fill="none" stroke="#1e2214" stroke-width="3"/>
+  <rect x="32" y="32" width="192" height="192" rx="3" fill="none" stroke="#1e2214" stroke-width="3"/>
+  <g stroke="#1e2214" stroke-width="2" fill="#8a7d52">
+    <rect x="104" y="6" width="48" height="16" rx="3"/>
+    <rect x="104" y="234" width="48" height="16" rx="3"/>
+  </g>
+  <text x="128" y="18" text-anchor="middle" font-family="Consolas, Courier New, monospace" font-size="10" font-weight="700" fill="#1e2214">V34-07</text>
+</svg>

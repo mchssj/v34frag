@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <pattern id="hex" width="18" height="31.2" patternUnits="userSpaceOnUse">
+      <path d="M9 0l9 5.2v10.4l-9 5.2-9-5.2V5.2ZM0 20.8v10.4M18 20.8v10.4" fill="none" stroke="#5c6672" stroke-width="1.6"/>
+    </pattern>
+    <linearGradient id="pl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b434d"/><stop offset=".5" stop-color="#262c33"/><stop offset="1" stop-color="#1a1e23"/></linearGradient>
+    <linearGradient id="sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9fd0ff" stop-opacity="0"/><stop offset=".5" stop-color="#9fd0ff" stop-opacity=".45"/><stop offset="1" stop-color="#9fd0ff" stop-opacity="0"/></linearGradient>
+    <clipPath id="c"><path fill-rule="evenodd" clip-rule="evenodd" d="M14 14h228v228H14zM32 32v192h192V32z"/></clipPath>
+  </defs>
+  <path fill-rule="evenodd" fill="url(#pl)" d="M14 14h228v228H14zM32 32v192h192V32z"/>
+  <path fill-rule="evenodd" fill="url(#hex)" d="M14 14h228v228H14zM32 32v192h192V32z" opacity=".9"/>
+  <g clip-path="url(#c)">
+    <rect x="-80" y="0" width="70" height="256" fill="url(#sh)">
+      <animate attributeName="x" values="-80;260" dur="3.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <rect x="14" y="14" width="228" height="228" rx="6" fill="none" stroke="#0e1114" stroke-width="3"/>
+  <rect x="32" y="32" width="192" height="192" rx="4" fill="none" stroke="#7d8996" stroke-width="2"/>
+  <g fill="#8f9aa6" stroke="#1a1e23" stroke-width="1.5">
+    <circle cx="23" cy="23" r="4"/><circle cx="233" cy="23" r="4"/><circle cx="23" cy="233" r="4"/><circle cx="233" cy="233" r="4"/>
+  </g>
+  <g transform="translate(128 236)">
+    <rect x="-34" y="-9" width="68" height="18" rx="3" fill="#1a1e23" stroke="#7d8996" stroke-width="1.5"/>
+    <text y="5" text-anchor="middle" font-family="Consolas, Courier New, monospace" font-size="11" font-weight="700" letter-spacing="2" fill="#9fd0ff">ARMOR</text>
+  </g>
+</svg>

@@ -18,10 +18,14 @@ import { Route as AppHallOfFameRouteImport } from './routes/_app/hall-of-fame'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
+import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
+import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
+import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
 import { Route as AppAdminServersRouteImport } from './routes/_app/admin.servers'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app/admin.teams'
@@ -88,6 +92,11 @@ const AppPcwRoute = AppPcwRouteImport.update({
   path: '/pcw',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPlayRoute = AppPlayRouteImport.update({
+  id: '/play',
+  path: '/play',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -103,9 +112,24 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AuthRoute,
 } as any)
+const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
+  id: '/demo/matchmaking',
+  path: '/demo/matchmaking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoTiendaRoute = DemoTiendaRouteImport.update({
+  id: '/demo/tienda',
+  path: '/demo/tienda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
   id: '/events',
   path: '/events',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminMatchmakingRoute = AppAdminMatchmakingRouteImport.update({
+  id: '/matchmaking',
+  path: '/matchmaking',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminPlayersRoute = AppAdminPlayersRouteImport.update({
@@ -227,10 +251,14 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
+  '/play': typeof AppPlayRoute
   '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/tienda': typeof DemoTiendaRoute
   '/admin/events': typeof AppAdminEventsRoute
+  '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/servers': typeof AppAdminServersRoute
   '/admin/teams': typeof AppAdminTeamsRoute
@@ -262,9 +290,13 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
+  '/play': typeof AppPlayRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/tienda': typeof DemoTiendaRoute
   '/admin/events': typeof AppAdminEventsRoute
+  '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/servers': typeof AppAdminServersRoute
   '/admin/teams': typeof AppAdminTeamsRoute
@@ -299,10 +331,14 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
+  '/_app/play': typeof AppPlayRoute
   '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/tienda': typeof DemoTiendaRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
+  '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
   '/_app/admin/servers': typeof AppAdminServersRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
@@ -336,10 +372,14 @@ export interface FileRouteTypes {
     | '/home'
     | '/myteam'
     | '/pcw'
+    | '/play'
     | '/profile'
     | '/login'
     | '/register'
+    | '/demo/matchmaking'
+    | '/demo/tienda'
     | '/admin/events'
+    | '/admin/matchmaking'
     | '/admin/players'
     | '/admin/servers'
     | '/admin/teams'
@@ -371,9 +411,13 @@ export interface FileRouteTypes {
     | '/home'
     | '/myteam'
     | '/pcw'
+    | '/play'
     | '/login'
     | '/register'
+    | '/demo/matchmaking'
+    | '/demo/tienda'
     | '/admin/events'
+    | '/admin/matchmaking'
     | '/admin/players'
     | '/admin/servers'
     | '/admin/teams'
@@ -407,10 +451,14 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/myteam'
     | '/_app/pcw'
+    | '/_app/play'
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/matchmaking'
+    | '/demo/tienda'
     | '/_app/admin/events'
+    | '/_app/admin/matchmaking'
     | '/_app/admin/players'
     | '/_app/admin/servers'
     | '/_app/admin/teams'
@@ -440,6 +488,8 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  DemoMatchmakingRoute: typeof DemoMatchmakingRoute
+  DemoTiendaRoute: typeof DemoTiendaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -507,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPcwRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/play': {
+      id: '/_app/play'
+      path: '/play'
+      fullPath: '/play'
+      preLoaderRoute: typeof AppPlayRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -528,11 +585,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/demo/matchmaking': {
+      id: '/demo/matchmaking'
+      path: '/demo/matchmaking'
+      fullPath: '/demo/matchmaking'
+      preLoaderRoute: typeof DemoMatchmakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/tienda': {
+      id: '/demo/tienda'
+      path: '/demo/tienda'
+      fullPath: '/demo/tienda'
+      preLoaderRoute: typeof DemoTiendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/admin/events': {
       id: '/_app/admin/events'
       path: '/events'
       fullPath: '/admin/events'
       preLoaderRoute: typeof AppAdminEventsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/matchmaking': {
+      id: '/_app/admin/matchmaking'
+      path: '/matchmaking'
+      fullPath: '/admin/matchmaking'
+      preLoaderRoute: typeof AppAdminMatchmakingRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/players': {
@@ -694,6 +772,7 @@ declare module '@tanstack/react-router' {
 
 interface AppAdminRouteChildren {
   AppAdminEventsRoute: typeof AppAdminEventsRoute
+  AppAdminMatchmakingRoute: typeof AppAdminMatchmakingRoute
   AppAdminPlayersRoute: typeof AppAdminPlayersRoute
   AppAdminServersRoute: typeof AppAdminServersRoute
   AppAdminTeamsRoute: typeof AppAdminTeamsRoute
@@ -702,6 +781,7 @@ interface AppAdminRouteChildren {
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminEventsRoute: AppAdminEventsRoute,
+  AppAdminMatchmakingRoute: AppAdminMatchmakingRoute,
   AppAdminPlayersRoute: AppAdminPlayersRoute,
   AppAdminServersRoute: AppAdminServersRoute,
   AppAdminTeamsRoute: AppAdminTeamsRoute,
@@ -738,6 +818,7 @@ interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
+  AppPlayRoute: typeof AppPlayRoute
   AppProfileRoute: typeof AppProfileRouteWithChildren
   AppEventsIdRoute: typeof AppEventsIdRoute
   AppMatchIdRoute: typeof AppMatchIdRoute
@@ -760,6 +841,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHomeRoute: AppHomeRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
+  AppPlayRoute: AppPlayRoute,
   AppProfileRoute: AppProfileRouteWithChildren,
   AppEventsIdRoute: AppEventsIdRoute,
   AppMatchIdRoute: AppMatchIdRoute,
@@ -795,6 +877,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  DemoMatchmakingRoute: DemoMatchmakingRoute,
+  DemoTiendaRoute: DemoTiendaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
