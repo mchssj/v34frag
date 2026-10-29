@@ -282,6 +282,37 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"connect_attempts": {
+                  Row: {
+                    "count": number,"hour": string,"ip": unknown,"server_id": string
+                  }
+                  Insert: {
+                    "count": number,"hour": string,"ip": unknown,"server_id": string
+                  }
+                  Update: {
+                    "count"?: number,"hour"?: string,"ip"?: unknown,"server_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "connect_attempts_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "connect_attempts_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "connect_attempts_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"demo_workers": {
                   Row: {
                     "active": boolean,"created_at": string,"id": string,"last_seen_at": string | null,"name": string,"token_hash": string
@@ -1176,6 +1207,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"player_connections": {
+                  Row: {
+                    "at": string,"id": number,"ip": unknown,"nick": string | null,"server_id": string | null,"steam_id": string
+                  }
+                  Insert: {
+                    "at"?: string,"id"?: never,"ip": unknown,"nick"?: string | null,"server_id"?: string | null,"steam_id": string
+                  }
+                  Update: {
+                    "at"?: string,"id"?: never,"ip"?: unknown,"nick"?: string | null,"server_id"?: string | null,"steam_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "player_connections_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_connections_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_connections_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"player_elo": {
                   Row: {
                     "elo": number,"matches": number,"mu": number,"peak_elo": number,"sigma": number,"steam_id": string,"updated_at": string
@@ -1242,6 +1304,37 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "vip_status"
       referencedColumns: ["player_id"]
+    }
+                  ]
+                },"player_ips": {
+                  Row: {
+                    "first_seen_at": string,"ip": unknown,"last_nick": string | null,"last_seen_at": string,"last_server_id": string | null,"steam_id": string,"times": number
+                  }
+                  Insert: {
+                    "first_seen_at"?: string,"ip": unknown,"last_nick"?: string | null,"last_seen_at"?: string,"last_server_id"?: string | null,"steam_id": string,"times"?: number
+                  }
+                  Update: {
+                    "first_seen_at"?: string,"ip"?: unknown,"last_nick"?: string | null,"last_seen_at"?: string,"last_server_id"?: string | null,"steam_id"?: string,"times"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "player_ips_last_server_id_fkey"
+      columns: ["last_server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_ips_last_server_id_fkey"
+      columns: ["last_server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_ips_last_server_id_fkey"
+      columns: ["last_server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
     }
                   ]
                 },"player_medals": {
@@ -3612,6 +3705,11 @@ isOneToOne: false
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string
                            },
+"admin_player_ips":
+{ Args: { "p_player": string }; Returns: {
+              "first_seen_at": string,"ip": string,"last_nick": string,"last_seen_at": string,"others": Json,"others_unlinked": number,"steam_id": string,"times": number
+            }[]
+                           },
 "admin_regenerate_hud_key":
 { Args: { "p_server": string }; Returns: string
                            },
@@ -3810,8 +3908,14 @@ isOneToOne: false
 "csstv_clips_save":
 { Args: { "p": Json,"p_match": string }; Returns: undefined
                            },
+"csstv_connections":
+{ Args: { "p_attempts"?: Json,"p_seen"?: Json,"p_token": string }; Returns: Json
+                           },
 "csstv_ingest":
 { Args: { "p": Json,"p_server": string }; Returns: string
+                           },
+"csstv_ip":
+{ Args: { "p": string }; Returns: unknown
                            },
 "csstv_jint":
 { Args: { "j": Json,"k": string,"p_max"?: number }; Returns: number

@@ -18,6 +18,7 @@
 | Torneos | Lo mismo que el organizador, sobre todos los torneos | Disponible |
 | Jugadores | Alta, edición y baja (`/api/v1/admin/players`). El nick solo se edita en jugadores sin cuenta (en los vinculados manda el alias). Vincular una cuenta es `PATCH` con `user_id`. La baja falla con mensaje si tiene partidas | Disponible |
 | Foto y medallas | `POST /api/v1/admin/players/{id}/photo` (mismas reglas que el avatar), `POST …/{id}/medals`, `DELETE /api/v1/admin/medals/{id}` | Disponible |
+| IPs de una ficha | `GET /api/v1/admin/players/{id}/ips`: `items` con `ip`, `steam_id` (de la ficha), `first_seen_at`, `last_seen_at`, `times`, `last_nick`, `others` (otras fichas que entraron desde esa IP: `id` y `alias`) y `others_unlinked` (SteamID sin ficha). La más reciente primero. Las registra el reporter 2.6.0 al entrar al servidor. Dato personal: solo admin, nunca en vistas públicas. Replanteo `38` | Disponible (2026-10-29) |
 | SteamID sin vincular | `GET /api/v1/admin/steam/unlinked`, `POST /api/v1/admin/steam/link` (suma el SteamID a la ficha: principal si no tiene, adicional si ya tiene; hasta 4; `player_id: null` lo quita) | Disponible |
 | SteamID de las fichas | Ver "SteamID y `!claim` (admin)" abajo | Disponible |
 | Usuarios y alias | `GET /api/v1/admin/users?q=` (alias, rol, jugador). `PUT /api/v1/admin/users/{id}/alias`: si choca con una palabra bloqueada, ofrecer "Guardar igual" (`force: true`) | Disponible |

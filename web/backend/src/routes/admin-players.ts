@@ -24,6 +24,7 @@ import {
   BlockedWordQuery,
   IdParam,
   MedalBody,
+  PlayerIpList,
   SteamLinkBody,
   SteamUnlinkedList,
   SteamUnlinkedQuery,
@@ -97,6 +98,16 @@ const deleteMedal = createRoute({
   method: 'delete', path: '/api/v1/admin/medals/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Quitar una medalla', request: { params: IdParam },
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
+});
+
+const playerIps = createRoute({
+  method: 'get', path: '/api/v1/admin/players/{id}/ips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'IPs de un jugador',
+  description:
+    'Las IPs desde las que entró al servidor con cualquiera de sus SteamID (las registra el reporter 2.6.0 al entrar), ' +
+    'la más reciente primero, con las otras fichas que usaron la misma IP. Dato personal: solo admin.',
+  request: { params: IdParam },
+  responses: { 200: { description: 'IPs', ...json(PlayerIpList) }, ...errorResponses(400, 401, 403, 404) },
 });
 
 // ---------- SteamID ----------
@@ -222,6 +233,28 @@ export const adminPlayers = createRouter()
     const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', c.req.valid('param').id).select('id'));
     if (!gone.length) throw notFound('esa medalla');
     return c.body(null, 204);
+  })
+  .openapi(playerIps, async (c) => {
+    const { id } = c.req.valid('param');
+    const player = must(await c.var.sb.from('players').select('id').eq('id', id).maybeSingle());
+    if (!player) throw notFound('ese jugador');
+    c.header('Cache-Control', 'no-store');
+    const rows = mustHave(await c.var.sb.rpc('admin_player_ips', { p_player: id }));
+    return c.json(
+      {
+        items: rows.map((r) => ({
+          ip: r.ip,
+          steam_id: r.steam_id,
+          first_seen_at: r.first_seen_at,
+          last_seen_at: r.last_seen_at,
+          times: r.times,
+          last_nick: r.last_nick,
+          others: Array.isArray(r.others) ? (r.others as { id: string; alias: string }[]) : [],
+          others_unlinked: r.others_unlinked ?? 0,
+        })),
+      },
+      200,
+    );
   })
   .openapi(unlinked, async (c) => {
     const p = c.req.valid('query');
