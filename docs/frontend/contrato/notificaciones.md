@@ -91,6 +91,7 @@ Todo con sesión (`401` sin ella).
 | `match_result` | Roster de los dos | `match` + `score1`, `score2`, `winner`, `walkover`, `corrected` | "Resultado: {team1} {score1}-{score2} {team2}" ("corregido" o "W.O.") | `/match/{match_id}` |
 | `event_progress` | Roster | `event`, `team`, `result` (`champion` o `runner_up`) | "¡{team.name} es campeón de {event.name}!" | `/events/{event.id}` |
 | `event_cancelled` | Roster inscrito | `event` | "Se canceló {event.name}" | — |
+| `match_soon` | Roster de los dos (desde el 2026-10-29) | `match` | "{team1} vs {team2} empieza en menos de 1 hora ({starts_at})" | `/match/{match_id}` |
 
 #### PCW (`pcw`)
 | `type` | Le llega a | `data` | Texto sugerido | Link |
@@ -98,6 +99,8 @@ Todo con sesión (`401` sin ella).
 | `pcw_accepted` | Quien publicó y su roster | `match` + `rival` | "{rival.name} aceptó tu PCW" | `/match/{match_id}` |
 | `pcw_cancelled` | Los dos rosters | `match` | "Se canceló la PCW {team1} vs {team2}" | — |
 | `pcw_result` | Los dos rosters | como `match_result` | "Resultado de la PCW: …" | `/match/{match_id}` |
+| `pcw_soon` | Los dos rosters (desde el 2026-10-29) | `match` | "Tu PCW {team1} vs {team2} empieza en menos de 1 hora ({starts_at})" | `/match/{match_id}` |
+| `pcw_expired` | Quien publicó el anuncio (desde el 2026-10-29) | `post_id`, `starts_at`, `best_of`, `maps` | "Nadie aceptó tu PCW del {starts_at}. Publica otra" | `/pcw` |
 
 #### Mixes y ELO (`elo`)
 | `type` | Le llega a | `data` | Texto sugerido | Link |
@@ -114,6 +117,7 @@ Todo con sesión (`401` sin ella).
 | `season_ranked` | Jugador | `season`, `min_matches` | "Ya tienes puesto en la temporada {season.name}" | `/ranking` |
 | `season_closed` | Los que jugaron la temporada | `season`, `rank`, `eligible`, `elo`, `elo_after`, `medal` (`name`, `icon` o null) | "Cerró {season.name}: terminaste {rank}.º" + medalla; si `elo_after` ≠ `elo`, "empiezas la próxima con {elo_after}" | Perfil |
 | `medal_granted` | Jugador | `title`, `icon` | "Nueva medalla: {title}" | Perfil |
+| `season_ending` | Quien jugó en la temporada al menos la mitad de `min_matches` (desde el 2026-10-29) | `season`, `ends_at`, `position` (o `null` si todavía no entra al ranking), `matches`, `min_matches` | Con puesto: "{season.name} termina en menos de 24 horas: vas {position}.º". Sin puesto: "… te faltan {min_matches − matches} mixes para entrar al ranking" | `/ranking` |
 
 #### Cuenta (`account`)
 | `type` | Le llega a | `data` | Texto sugerido | Link |
@@ -125,6 +129,7 @@ Todo con sesión (`401` sin ella).
 | `password_changed` | Usuario (obligatoria) | `at` | "Se cambió la contraseña de tu cuenta. Si no fuiste tú, avísale a un admin" | `/profile/account` |
 | `vip_granted` | Usuario (desde el 2026-10-28) | `until` (ISO, o `null` si es lifetime), `lifetime` | "Ya eres VIP hasta el {until}" o "Ya eres VIP lifetime" | `/profile` |
 | `vip_revoked` | Usuario (desde el 2026-10-28) | `reason` | "Un admin te quitó el VIP: {reason}" | `/profile` |
+| `vip_expiring` | Usuario (desde el 2026-10-29) | `ends_at` | "Tu VIP vence el {ends_at}" | `/profile` |
 
 #### Novedades (`news`, apagada por defecto)
 | `type` | `data` | Texto sugerido | Link |
@@ -132,7 +137,7 @@ Todo con sesión (`401` sin ella).
 | `event_new` | `event`, `starts_on` | "Nuevo torneo: {event.name}" | `/events/{event.id}` |
 | `season_started` | `season`, `ends_at` | "Empezó la temporada {season.name}" | `/ranking` |
 
-#### Administración (`admin`, solo admins)
+#### Administración (`admin`, solo admins; `match_no_result` también al organizador)
 | `type` | `data` | Texto sugerido | Link |
 |---|---|---|---|
 | `admin_steam_request` | `kind`, `player` | "Pedido de {kind} un SteamID de {player.alias}" | Admin → Jugadores |
@@ -140,7 +145,18 @@ Todo con sesión (`401` sin ella).
 | `admin_mix_review` | `match_id`, `map` | "Mix interrumpido en {map}: falta decidir el ELO" | `/match/{match_id}` |
 | `admin_demo_failed` | `match_id`, `map` | "No se pudo subir la demo del mix en {map}" | Admin → Demos |
 | `admin_season_delayed` | `season_id` | "El cierre de la temporada espera a que termine un mix en vivo" | Admin → Temporadas |
+| `match_no_result` | `match` (desde el 2026-10-29). Les llega a los admins y al organizador del torneo | "{team1} vs {team2} ({event.name}) sigue sin resultado: era a las {starts_at}" | `/match/{match_id}` |
 
-### Segunda etapa (todavía no)
+### Avisos programados (segunda etapa, desde el 2026-10-29)
 
-Necesitan una tarea programada: partida de torneo o PCW en 1 hora, PCW vencida sin rival, temporada por terminar y partida de torneo sin resultado después de su horario.
+`match_soon`, `pcw_soon`, `pcw_expired`, `season_ending`, `match_no_result` y `vip_expiring` no salen de una acción sino del paso del tiempo: los crea una tarea que corre cada 10 minutos (plan [`2026-10-29-notificaciones-programadas`](../../bitacora/2026-10-29-notificaciones-programadas/PLAN.md)). Llegan como las demás, por `GET /api/v1/notifications`, y respetan las preferencias. Cada uno se manda una sola vez; una partida reprogramada vuelve a avisar con la hora nueva.
+
+| `type` | Cuándo |
+|---|---|
+| `match_soon`, `pcw_soon` | La partida de torneo o la PCW empieza en menos de 1 hora |
+| `pcw_expired` | Pasó el horario de un anuncio de PCW que nadie aceptó (hasta 7 días después) |
+| `season_ending` | La temporada termina en menos de 24 horas |
+| `match_no_result` | Pasaron 3 horas del horario de una partida de torneo y sigue sin resultado (hasta 7 días después) |
+| `vip_expiring` | El VIP vence en menos de 3 días y no hay otro período que lo continúe |
+
+**Organizador:** hoy la categoría Administración solo se muestra a los admins. `match_no_result` también le llega al organizador del torneo, así que su campana tiene que mostrarla.

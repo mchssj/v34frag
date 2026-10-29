@@ -3,7 +3,7 @@
 # Se corre desde la PC de Daniel (Git Bash) y, más adelante, desde el pipeline de GitHub. Entra como `deploy`.
 #
 # Uso: deploy/vps/desplegar.sh <api|web> [--sin-pruebas]
-#   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs y demos-sftp.mjs; reinicia cmleague-api y chequea
+#   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, demos-sftp.mjs y notify-tick.mjs; reinicia cmleague-api y chequea
 #        /api/health con el commit. Si el chequeo falla, vuelve sola a la versión anterior.
 #   web: pruebas y build de web/frontend (VITE_API_URL, por defecto https://api.cmleague.lat); sube dist/.
 #        No reinicia nada: Caddy sirve web/current.
@@ -128,7 +128,7 @@ if [[ "$parte" == api ]]; then
   BUILD_SHA="$sha" pnpm build
   pnpm build:check
   local_dir="$RAIZ/web/backend/dist"
-  archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map)
+  archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map)
 else
   cd "$RAIZ/web/frontend"
   api_url="${VITE_API_URL:-https://api.cmleague.lat}"
