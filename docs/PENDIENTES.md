@@ -64,6 +64,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 | Notificaciones, primera etapa (2026-10-25): replanteo `28` con su inversa y sus pruebas, `web/backend` (`routes/notifications.ts`, `schemas/notifications.ts`, preferencias en `/me/profile`, tipos y pruebas), contrato del frontend (`notificaciones.md`) y la bitácora `2026-10-25-notificaciones/` | Sin commit (2026-10-25), en la rama `feat/backend-api-fase-1` |
 | Estadísticas de partida estilo HLTV, backend (2026-10-25): replanteo `29` con su inversa y sus pruebas, `web/backend` (campos nuevos en `PlayerLine`, `LivePlayerLine` y `PlayerStatsDetail`, `clutchesOf`, tipos y pruebas), contrato del frontend (`partidas.md` 8h) y la bitácora `2026-10-25-stats-partida/` | Sin commit (2026-10-25), en la rama `feat/backend-api-fase-1`. Falta el frontend |
 | Catálogo de mapas con pool propio por torneo y por PCW, y columnas del Histórico en el ranking de una temporada (2026-10-25): replanteo `30` con su inversa y sus pruebas, `web/backend` (`pcw-play.ts`, `events.ts`, `matches.ts`, `seasons.ts`, `ranking.ts`, `lib/db.ts`, `lib/uploads.ts`, esquemas, tipos y pruebas), `web/frontend/src/api/schema.d.ts`, contrato del frontend y las bitácoras `2026-10-25-maestra-mapas/`, `2026-10-25-pool-mapas-torneos-pcw/` y `2026-10-25-ranking-temporada-columnas/` | Sin commit (2026-10-25), en la rama `feat/frontend-fase-1`. Falta el frontend |
+| ELO por ficha al sumar o quitar un SteamID (2026-10-28): replanteo `34` con su inversa y sus pruebas, descripciones en `web/backend` (`claim.ts`, `admin-players.ts`) y la prueba de integración del cambio de principal, contrato `admin.md`, textos de Administración › Jugadores y `schema.d.ts` en `web/frontend`, y la bitácora `2026-10-28-elo-por-ficha/` | Sin commit |
 
 Mensajes de commit en formato Conventional Commits (`feat(servidor): …`, `docs(bitacora): …`), en español, como los anteriores.
 
@@ -363,7 +364,50 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **La web vieja no se toca** (Daniel, 2026-10-25): hasta el corte su panel puede desvincular más fichas al editarlas; la `15` también las levanta si el reclamo sigue aprobado. Opcional, con OK de Daniel: vincular las 10 en producción antes del corte.
 - **Bitácora:** [`2026-10-25-vinculos-perdidos`](bitacora/2026-10-25-vinculos-perdidos/)
 
-### 1.21 Demos de RBK a R2: verificar con el primer mix de RBK
+### 1.21 Tasas de red coherentes: verificar en los dos servidores
+
+- **Aplicado el 2026-10-27** en el `cfg/server.cfg` del servidor real (`SFTP_CSS_*`) y de RBK (`SERVER1_*`): `sv_minupdaterate 100`, `sv_maxupdaterate 101`, `sv_mincmdrate 100` y `sv_maxcmdrate 101` (antes 101 / 100 / 101 / 100). Verificado releyendo el archivo de cada uno.
+- Entra en el próximo cambio de mapa; no se recargó nada.
+- **Falta:** después del cambio de mapa, ver en la consola de cada servidor que las cuatro cvars dan 100, 101, 100 y 101.
+- **Bitácora:** [`2026-10-27-tasas-coherentes`](bitacora/2026-10-27-tasas-coherentes/)
+
+### 1.22 Servidor de flow (CMLeague #3): pasarle el paquete
+
+- **Armado el 2026-10-27** en `flow/` (raíz del repo, fuera de git): SourceMod 1.10, Metamod, Stripper, los plugins del #1 más los que solo tiene RBK, los cfgs de partida, `LEEME.txt` y el reporter 2.5.0 **licenciado** (UUID `7b01c85b-bc3e-4aa3-9ab5-3c2044157034`, md5 `0697263ae530ab2cf4ae2a3e7ce92281`). Sin Accelerator, sin los plugins de Extreme Host y sin mapas.
+- **Instalado por flow** (verificado por SFTP el 2026-10-28: `csstv_reporter.smx` de 116417 bytes, el licenciado). Falta verificar que `game_servers.last_seen_at` de flow se actualice.
+- **Acceso a flow por SFTP** (`SERVER2_*` del `.env`, verificado el 2026-10-28), sin panel ni consola: cada despliegue del plugin a los servidores incluye subirle a flow su build licenciado por SFTP. Lo que necesite la consola o la línea de arranque se le pide a flow.
+- **Encontrado al armarlo:** el #1 ya no tiene `Anti_Wallhack_Lite`, `soft_detector` (con su extensión), `SendFileExploitFixV3.3`, `clientmod_emulator`, `convar_detector`, `spectatorswitch` ni `csstv_hud` (no están en `disabled/` y no hay registro). RBK sí. `CLAUDE.md` pide `Anti_Wallhack_Lite` en todos: falta averiguar quién los sacó y volver a dejar el #1 igual.
+- **Bitácora:** [`2026-10-27-servidor-flow`](bitacora/2026-10-27-servidor-flow/)
+
+### 1.23 VIP: migración aplicada en producción; falta cargar los VIP
+
+- **Qué es:** saber en la base quién es VIP y hasta cuándo (sin fecha de fin = lifetime), antes del corte. Migración `supabase/migrations/20261028120000_vip.sql` (en `feat/backend-api-fase-1`, sin commit): tabla `vip_memberships`, `is_vip()`, `admin_vip_grant` y `admin_vip_revoke` (solo admins; Kyan es admin) y las vistas `vip_status` y `vip_public`. No toca nada de la web vieja.
+- **Probada en local (2026-10-28):** 45 pruebas sobre el esquema de producción ([`pruebas/vip_produccion.sql`](bitacora/2026-10-28-vip-fase-0/pruebas/vip_produccion.sql)), re-ejecutable; con el replanteo encima, 49 pruebas de la `32`.
+- **Aplicada en producción el 2026-10-28** (la corrió Daniel en el SQL Editor).
+- **API hecha en local (2026-10-28)**, sin commit: `GET /api/v1/admin/vips`, `GET` y `POST /api/v1/admin/users/{id}/vip`, `POST /api/v1/admin/users/{id}/vip/revoke` y `vip` en `/me/profile`, la ficha, `GET /players`, el ranking, el comparador y `GET /admin/users`. Sale con la web nueva.
+- **Falta:**
+  1. ~~Aplicarla en producción~~ (hecho el 2026-10-28).
+  2. Comprobar: `select count(*) from vip_memberships;` da 0 y `select is_vip('<uuid de una cuenta>');` da `false`.
+  3. Cargar los VIP de Kyan, todos lifetime, con [`pruebas/carga_inicial_vip.sql`](bitacora/2026-10-28-vip-fase-0/pruebas/carga_inicial_vip.sql) en el SQL Editor (ahí no hay sesión de admin, así que `admin_vip_grant` rechaza; el script hace un `insert` con `source = 'import'`). Busca por el nick de la ficha, como los links de la web vieja:
+     - **Ahora:** `romanxz` (romanzera) y `shoxmeister` (cypee-thor).
+     - **Cuando creen su cuenta y vinculen su SteamID:** `instt` (uriel) y `sandeerz`. El VIP es de la cuenta: sin cuenta no se puede dar.
+  4. Volcar el esquema con `supabase/schema/volcar.sh 20261028120000`, para que la base local parta de producción con la tabla.
+- **En el corte:** el replanteo `32` suma los avisos (`vip_granted` y `vip_revoked`). Después del corte no volver a correr la migración: les saca los avisos a dar y quitar.
+- **Bitácora:** [`2026-10-28-vip-fase-0`](bitacora/2026-10-28-vip-fase-0/)
+
+### 1.24 Clips VIP y reprocesar: aplicar la migración en producción
+
+- **Qué es:** los VIP no cuentan en el top de 5 clips del mix y suman sus 3 mejores jugadas aparte (VIP que tenían cuando se jugó el mix). Un admin puede mandar a grabar de nuevo un clip con errores: sale en Discord recién con su "Bien".
+- **Hecho en local (2026-10-28)**, sin commit: migración `supabase/migrations/20261028180000_clips_vip_reprocesar.sql`, la `26` y la `28` del replanteo, la API y `render/procesar.py`.
+- **Falta:**
+  1. Comprobar `select per_match, per_player from clip_config;` en producción (`per_match` tiene que ser 5).
+  2. Aplicar la migración en el SQL Editor.
+  3. Bajar `render/procesar.py` al portátil (nombre " (reproceso N)" en Drive).
+  4. Publicar el changelog: `bitacora/2026-10-28-clips-vip-y-reprocesar/CHANGELOG_DISCORD.txt`.
+- **Reprocesar antes de la web nueva:** desde el SQL Editor, con las consultas de la guía. La web vieja no lo tiene.
+- **Bitácora:** [`2026-10-28-clips-vip-y-reprocesar`](bitacora/2026-10-28-clips-vip-y-reprocesar/)
+
+### 1.25 Demos de RBK a R2: verificar con el primer mix de RBK
 
 - **Desplegado el 2026-10-26:**
   - Worker `v34frag-demos` versión `1475d128`, con el secreto `PTERO_KEY_edbee7d6` (la key del panel de RBK, `SERVER1_PANEL_API_KEY` en el `.env`).
@@ -373,7 +417,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
 - **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
 
-### 1.22 Equipo y Torneos en la API (replanteo `33`): falta staging y el frontend
+### 1.26 Equipo y Torneos en la API (replanteo `33`): falta staging y el frontend
 
 - **Hecho el 2026-10-28 (local) y commiteado en `feat/backend-api-fase-1` (sin push):** replanteo `33`, API y pruebas (45 SQL, 353 unitarias y 150 de integración). Bitácora: [`2026-10-28-equipo-torneos-api`](bitacora/2026-10-28-equipo-torneos-api/).
 - **Contrato para el frontend:** [`contrato-frontend-equipo-torneos.md`](../contrato-frontend-equipo-torneos.md). Rompe la inscripción a torneos (`{ active, subs }`) y saca `players_min`/`players_max`.
@@ -385,6 +429,21 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Problemas del entorno vistos al probar:**
   - En `v34frag-backend` los `.sql` del checkout tenían CRLF y el replanteo `04` fallaba al cargar; se pasaron a LF en la copia de trabajo (sin cambios en Git).
   - `pruebas/correr.sh` se corta en la prueba `por STEAM_0 del adicional…` de `pruebas/23_whois.sql`, que falla por su cuenta. Sin investigar.
+
+### 1.27 Demos y clips de los servidores externos (flow por SFTP): falta desplegar
+
+- **Qué es:** el Worker de demos prueba primero la API del panel de cada servidor; si no tiene key o el panel no deja entrar, la demo pasa a una tarea de SFTP en el VPS que la sube a R2. Así flow, que no tiene API key, tiene demos y clips con video.
+- **Hecho el 2026-10-28 y commiteado** (`6b770cc` en `feat/backend-api-fase-1`, mezclado en `feat/frontend-fase-1` con `411bca8`): migración `20261028200000_demos_servidores_externos.sql`, el Worker y la tarea (`src/jobs/demos-sftp.ts`). Sin commit: `deploy/vps/` (unidades `cmleague-demos.*`, `demos.env.example`, `demos-sftp.json.example`), `build.mjs`, `build-check.mjs`, `desplegar.sh` y `preparar.sh`.
+- **Falta, en este orden:**
+  1. Aplicar la migración en el SQL Editor y cargar `panel_server_id = 'f337a7d9'` y `panel_url` de flow (RBK ya tiene `edbee7d6`).
+  2. Desplegar el Worker desde un árbol que tenga `6b770cc` (no hace falta secreto nuevo).
+  3. VPS: `demos.env` y `demos-sftp.json` en `/etc/cmleague/`, desplegar la API (sube `demos-sftp.mjs`) y `systemctl enable --now cmleague-demos.timer`.
+  4. flow: **`csstv_demo "1"` ya está subido por SFTP (2026-10-28, respaldo en `csstv_reporter.cfg.bak`)** y se toma en el próximo cambio de mapa. Falta SourceTV: pedirle a flow `+tv_enable 1 +tv_port <puerto>` en su arranque y cargar ese `tv_port` en Admin › Servidores. Mientras los pasos 1 a 3 no estén hechos, las demos se acumulan en `csstv_demos/` de flow (`csstv_demo_keep "50"`).
+  5. Ver el primer mix de flow llegar a R2 y sus clips grabarse.
+- **Estado al 2026-10-29 02:10 UTC:** la migración, el Worker y el timer del VPS ya están andando. SourceTV de flow graba (`flow-20261028T222354-0bbb.dem`, 50,7 MB, partida `cfd14dcb-…`, `pending` con `demo_via = sftp`). **Bloqueo:** el host de flow (`panel-mvzg.com`, `190.104.34.3`) no contesta en ningún puerto a la IP del VPS (`148.113.148.184`), aunque desde la PC de Daniel conecta. Error de la tarea: `SFTP: Timed out while waiting for handshake`. Hay que pedirle a flow que habilite esa IP en su firewall (al menos el puerto 2022). Los servidores de ExtremeHost (#1 y RBK) sí responden desde el VPS.
+- **Mientras tanto, a mano:** la demo de esa partida la bajó Daniel desde el panel de flow y la subió a R2 (`demos/2026/10/flow-20261028T222354-0bbb.dem`, 50.707.873 bytes, igual que en flow). Después se marcó con `demo_mark('uploaded')` (`uploaded` a las 03:01 UTC; sus 15 clips quedaron en la cola del bot). Antes de eso, el VPS ya le había gastado los intentos (`demo_attempts` 7), pero `demo_mark` acepta `uploaded` también sobre `missing`. La demo sigue en `csstv_demos/` de flow porque no se borró a mano. Hacia las 02:35 UTC flow tampoco respondía desde la PC de Daniel (puertos 2022, 443 y 8080): falta preguntarle si bloqueó esa IP.
+- **Resuelto el 2026-10-29:** flow habilitó la IP del VPS. Desde entonces el VPS subió solo las demos de tuscan (41,6 MB), mirage (9,0 MB) y mirage (55,8 MB). El SFTP de flow baja a unos 52-60 KB/s: una demo de 50 MB tarda unos 15 minutos. Con `TimeoutStartSec=900`, systemd cortaba la corrida a mitad de una demo, así que se subió a `3600` en `deploy/vps/cmleague-demos.service` y en el VPS (05:00 UTC, sin commit). Falta preguntarle a flow si su SFTP tiene un límite de velocidad.
+- **Bitácora:** [`2026-10-28-demos-servidores-externos`](bitacora/2026-10-28-demos-servidores-externos/)
 
 ## 2. Investigaciones abiertas
 
@@ -401,7 +460,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Siguiente, de a uno y con visto bueno:**
   1. ~~Datos de al menos un mix~~: hecho.
   2. ~~`fps_max 600`~~: hecho con `csstv_perf` 1.1.0. Medido el 2026-10-19 en dos mixes: los ticks que llegan tarde de verdad bajaron de 0,75 % a 0,12 %. El "30 % a destiempo" del primer análisis era el redondeo del reloj (7,8 ms), no algo real. Lo que queda son jugadores puntuales (jordipolla con choke entrante de 24 a 55 % todo el mix: sus FPS). Detalle en la guía.
-  3. Tasas coherentes (66/101): baja prioridad, las tasas no muestran problema.
+  3. ~~Tasas coherentes~~: aplicadas el 2026-10-27 en el real y en RBK con los mínimos en 100 y los máximos en 101 (punto 1.21).
   4. **Anti-wallhack apagados y humo más denso: aplicado el 2026-10-22 en los dos servidores**, se carga en el próximo cambio de mapa.
      - Los logs del 18 al 22/10 siguen limpios: 99,97 % de ticks y 0 % de pérdida. La causa más probable de que los jugadores "aparezcan y desaparezcan" son los anti-wallhack, que ocultan a los rivales (`SetTransmit`).
      - Cambios: `kacr_eyes_antiwall "0"` en el real y en RBK, `Anti_Wallhack_Lite.smx` a `disabled/` (solo en el real) y `clientmod_smoke_type 2` en el real y en RBK.
