@@ -193,6 +193,9 @@ describe('!claim', () => {
     const dates = (await call('GET', '/api/v1/me/claim-code', undefined, u.token)).body.steam_ids as { steam_id: string; added_at: string }[];
     expect(dates.map((s) => s.steam_id)).toEqual([steam(3), steam(13)]);
     for (const s of dates) expect(Date.now() - new Date(s.added_at).getTime()).toBeLessThan(60_000);
+    // Aprobar recalcula solo la ficha, con la probabilidad guardada de cada mix: se deja exacto para comparar abajo.
+    const exact = await admin().rpc('elo_recompute_all');
+    if (exact.error) throw exact.error;
     const merged = (await call('GET', `/api/v1/players/${pid}`, undefined, u.token)).body;
     expect(merged).toMatchObject({ steam_id: steam(3), elo_matches: 2 });
     expect((await call('POST', `/api/v1/me/steam/${steam(13)}/primary`)).status).toBe(401);

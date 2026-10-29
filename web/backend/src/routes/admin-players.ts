@@ -110,7 +110,7 @@ const unlinked = createRoute({
 const steamLink = createRoute({
   method: 'post', path: '/api/v1/admin/steam/link', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Vincular un SteamID',
-  description: 'Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO. `player_id: null` lo quita de su ficha.',
+  description: 'Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO de esa ficha (los demás no cambian).`player_id: null` lo quita de su ficha.',
   request: { body: { required: true, ...json(SteamLinkBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
 });

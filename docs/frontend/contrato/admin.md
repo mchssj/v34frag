@@ -7,7 +7,9 @@
 | Pantalla | Endpoints | Estado |
 |---|---|---|
 | Formatos de PCW | `PUT /api/v1/admin/pcw/formats` | Disponible |
-| Organizadores | `PUT /api/v1/admin/users/{id}/role` (`user` u `organizer`); la lista sale de `GET /api/v1/admin/users` | Disponible |
+| Roles | `PUT /api/v1/admin/users/{id}/role` (`user`, `organizer` o `moderator`; desde el 2026-10-26 también `moderator`); la lista sale de `GET /api/v1/admin/users` (filtro `role`). Todos los roles juegan; el admin además organiza y modera. El rol admin se da en la base | Disponible |
+| Baneos | Ver "Baneos (moderadores y admins)" abajo | Disponible |
+| VIP | Ver "VIP (admin)" abajo | Disponible (2026-10-28) |
 | Catálogo de mapas | `GET /api/v1/maps?include_inactive=true` y `PUT /api/v1/admin/maps`: la lista completa en orden, con versiones, `active` (disponible; `false` = retirado), `mixes` (sale en el select de Mixes) y `veto_default` (pool por defecto del veto). **No borra:** tiene que traer todos los mapas que existen (si falta uno, `400`). Al menos 2 en el pool por defecto, y un retirado no puede estar en él. `mixes` y `veto_default` que no vienen quedan como estaban (en un mapa nuevo, como `active`) | Disponible |
 | Foto de un mapa | `POST /api/v1/admin/maps/{name}/image` (`multipart/form-data`, campo `file`, JPG/PNG/WebP de hasta 2 MB; reemplaza a la anterior) y `DELETE` de la misma ruta para quitarla. Devuelven el mapa. Es el fondo del marcador de la sala del mix y vale para todas sus versiones | Disponible |
 | Resultado de una PCW | `POST /api/v1/admin/pcw/matches/{id}/result` (`{ maps }`) | Disponible |
@@ -26,6 +28,33 @@
 | ELO | Ver "ELO (admin)" abajo | Disponible |
 | Clips | Ver "Clips (admin)" abajo | Disponible |
 | Demos | Ver "Demos (admin)" abajo | Disponible |
+
+### Baneos (moderadores y admins)
+
+Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-web/PLAN.md). Un baneo vale en **todos los servidores** (también RBK), se aplica al conectarse y, a quien ya está jugando (aunque sea un mix), lo echa la sincronización de cada 3 minutos y de cada cambio de mapa, o al momento si un moderador o admin escribe `!syncbans` en el servidor (conviene decirlo en el formulario de "Banear") y no avisa por Discord ni por notificación. Los servidores lo aplican cuando tengan el plugin `csstv_bans` (después del corte).
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Lista | `GET /api/v1/bans` (la pública; moderadores y admins ven también el SteamID de los baneos con ficha y buscan por él) | Filtros `status` (`active`, `expired`, `lifted`), `source` (`web`, `server`, `import`), `server` y `q`. `sort`: **`created_at` desc** (también `expires_at`) |
+| Banear | `POST /api/v1/admin/bans` con `player_id` **o** `steam_id`, `reason` (hasta 200) y `expires_at` **o** `permanent: true` | Una ficha vale para todos sus SteamID (también los que sume después); necesita SteamID. Un SteamID con ficha banea la ficha. **Permanente, solo un admin:** al moderador no se le muestra la opción. Reemplaza al baneo activo que tuviera (queda levantado con `lifted.replaced_by`); un moderador no puede reemplazar uno permanente (`403`) |
+| Cambiar | `PATCH /api/v1/admin/bans/{id}` con `reason`, `expires_at` o `permanent: true` | Solo un baneo activo. Un moderador cambia cualquiera que no sea permanente y no puede volverlo permanente |
+| Levantar | `POST /api/v1/admin/bans/{id}/lift` con `reason` | No se borra: queda como `lifted`, con quién y por qué. Uno permanente, solo un admin |
+
+Los errores de permiso llegan como `403` con el mensaje para mostrar ("Solo un admin puede banear de forma permanente"); los de datos, como `400`.
+
+### VIP (admin)
+
+Plan: [`docs/bitacora/2026-10-28-vip-fase-0/`](../../bitacora/2026-10-28-vip-fase-0/PLAN.md). El VIP es de la **cuenta** (no de la ficha). Se cobra por fuera de la web: el admin lo carga a mano. Cada vez que se da es un período; nada se borra, se quita. **Vence solo** al pasar la fecha.
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Lista (Administración › VIP) | `GET /api/v1/admin/vips` | Cada cuenta que fue VIP: `user` (`id`, `alias`), `player` (`id`, `photo_url`, o `null`), `status` (`lifetime`, `active`, `revoked` o `expired`), `active`, `lifetime`, `until` (fin del VIP vigente; `null` si es lifetime o no está activo), `since` y `last_change`. Filtros `status`, `q` (alias) y `expiring` (temporales activos que vencen en los próximos N días, de 1 a 90: con `7`, la marca "vence pronto" para saber a quién cobrarle). `sort`: **`until` asc** (también `since`, `alias`, `last_change`); los lifetime y los inactivos, al final |
+| Historial de una cuenta | `GET /api/v1/admin/users/{id}/vip` | `vip` (`active`, `lifetime`, `until`, `since`, o `null` si nunca fue VIP) y `periods` (del más nuevo al más viejo): `starts_at`, `ends_at` (`null` = lifetime), `source` (`manual` o `import`), `note`, `granted_by` (`id`, `alias`) y `revoked` (`at`, `reason`, `by`, o `null`) |
+| Dar o extender | `POST /api/v1/admin/users/{id}/vip` con **una** de `months` (1, 3, 6 o 12), `until` (ISO 8601) o `lifetime: true`, y `note` (opcional, hasta 200) | Si ya es VIP, el período nuevo **empieza donde termina el actual** (el que paga antes no pierde días): mostrar cómo queda ("VIP hasta el AAAA-MM-DD") antes de confirmar. Con `until`, la fecha tiene que pasar el fin actual. A un lifetime no se le ofrecen duraciones. Responde como el historial |
+| Quitar | `POST /api/v1/admin/users/{id}/vip/revoke` con `reason` (obligatorio, hasta 200) | Quita los períodos vigentes y los futuros, también un lifetime. Responde como el historial |
+
+- **En Administración › Usuarios** cada fila trae `vip` (el mismo objeto que en el historial, o `null`): mostrar el estado y los botones "Dar VIP", "Extender" y "Quitar VIP".
+- **Errores:** sin duración o con más de una, `400` (`VALIDATION_ERROR`); un temporal a un lifetime ("Ya es VIP lifetime"), una fecha que no pasa el fin actual o quitar sin VIP vigente ("No tiene VIP vigente"), `400` (`BUSINESS_RULE`) con el mensaje para mostrar; cuenta que no existe, `404`.
 
 ### Servidores (admin)
 
@@ -80,7 +109,19 @@ Escala y topes de las jugadas destacadas (sección [8g](partidas.md)).
 | `priorities` | 1 a 99 por tipo (`ace`, `clutch_5`, `clutch_4`, `4k`, `clutch_3`, `3k`, `clutch_2`, `clutch_1`) | 1 es lo más valioso. Empates: primero la jugada de una ronda ganada, después la ronda más tardía. De fábrica: ace 1, 1v5 y 1v4 2, 4k 3, 1v3 4, 3k 5, 1v2 6, 1v1 7 |
 | `per_player` | 1 a 10 | Clips por jugador en cada partida (por ficha: sus SteamID suman juntos) |
 | `per_match` | 1 a 50 | Clips por partida |
+| `vip_per_match` | 0 a 10 | Clips de cada VIP por partida, aparte del top (desde el 2026-10-28; 0 los apaga). Etiqueta: "Clips por VIP" |
 | `split_gap_seconds`, `pre_seconds`, `post_seconds` | 1 a 60, 0 a 15, 0 a 15 | Para el video (fase C, todavía no existe): cortar el clip si pasan más de esos segundos entre dos kills, y márgenes antes y después. Se pueden mostrar como "Video (próximamente)" |
+
+#### Reprocesar un clip (desde el 2026-10-28)
+
+Plan: [`docs/bitacora/2026-10-28-clips-vip-y-reprocesar/`](../../bitacora/2026-10-28-clips-vip-y-reprocesar/PLAN.md). Cuando un video sale con errores, el admin lo manda a grabar de nuevo; el video nuevo sube a Drive y **no sale en Discord hasta que el admin lo marca "Bien"** (si ya había salido, se publica otra vez).
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Reprocesar | `POST /api/v1/admin/clips/{id}/reprocess` | Solo un clip de la lista ya grabado (o fallido) y con la demo todavía en R2 (90 días). Responde el clip (`review: "pending"`, `video.status: "pending"`). El video viejo se borra de R2 y de Drive. Errores con el mensaje para mostrar (`400`, `BUSINESS_RULE`): "Esa jugada todavía no se grabó: ya está en la cola", "Esa jugada se está grabando ahora: espera a que termine", "La demo de ese mix ya no está: no se puede volver a grabar" |
+| Para revisar | `GET /api/v1/admin/clips/review` | **Administración › Clips › "Para revisar"**: `clip` (el clip completo), `match` (`id`, `map`, `played_at`), `reprocess_count` y `reprocessed_at`. Del más viejo al más nuevo. Con `clip.video.status: "done"`, el video nuevo está en `clip.video.embed_url` (Drive) o `url`: mostrarlo ahí mismo con "Bien" y "Reprocesar otra vez"; si no, "Grabándose" |
+| Bien | `POST /api/v1/admin/clips/{id}/approve` | Solo un reprocesado con el video listo ("El video nuevo todavía no está listo" si no). Responde el clip (`review: "approved"`) |
+
 
 ### Ajustes manuales de ELO (admin, desde el 2026-10-21)
 
@@ -162,14 +203,14 @@ Configuración, abrir la temporada 1, cambiar la activa, vista previa del cierre
 | Endpoint | Qué hace |
 |---|---|
 | `GET /api/v1/admin/steam-requests` | Pedidos de SteamID: `kind` (`add`: adicional con `!claim`; `remove`: el jugador pide desvincularlo), SteamID, nick que usó, ficha, cuenta, servidor, `matches`, `player_steam_count`, `shares_match` y `note` (el motivo del jugador, en `remove`). Filtros `status`, `kind` y `q` |
-| `POST /api/v1/admin/steam-requests/{id}/approve` | Aprobar. **`add`:** lo suma a la ficha, le pasa el historial y **recalcula el ELO de todos**; falla (`400`) si comparte partidas con otro SteamID de la ficha (`shares_match: true`: no mostrar el botón). **`remove`:** lo saca de la ficha (como `DELETE /api/v1/admin/steam/{steamid}`); falla si es el único SteamID de la ficha |
+| `POST /api/v1/admin/steam-requests/{id}/approve` | Aprobar. **`add`:** lo suma a la ficha, le pasa el historial y **recalcula el ELO de esa ficha**; falla (`400`) si comparte partidas con otro SteamID de la ficha (`shares_match: true`: no mostrar el botón). **`remove`:** lo saca de la ficha (como `DELETE /api/v1/admin/steam/{steamid}`); falla si es el único SteamID de la ficha |
 | `POST /api/v1/admin/steam-requests/{id}/reject` | Rechazar. Body `{ reason }` (`reason` opcional; lo ve el jugador) |
 | `GET /api/v1/admin/claims` | Registro de cada `!claim`, aceptado o no, y de los reclamos del sistema viejo |
 | `GET` / `PUT /api/v1/admin/steam/config` | `max_steam_ids`: tope de SteamID por ficha que se pueden pedir con `!claim` (de 1 a 4, por defecto 3) |
 | `DELETE /api/v1/admin/steam/{steamid}` | Quitar un SteamID de su ficha: sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si el jugador había pedido desvincularlo, el pedido queda aprobado |
 | `POST /api/v1/admin/steam/{steamid}/primary` | Hacer principal un SteamID adicional (sin el límite de 24 horas del jugador) |
 
-- Aprobar o quitar un SteamID de una ficha con varios **recalculan el ELO de todos** (pueden mover un poco los cambios de ELO de otros jugadores). Avisarlo en la confirmación. Cambiar el principal **no** recalcula: el ELO de la ficha queda igual.
+- Aprobar o quitar un SteamID de una ficha con varios **recalculan el ELO de esa ficha** (y el del SteamID que queda libre): los demás no cambian (desde el 2026-10-28, bitácora `docs/bitacora/2026-10-28-elo-por-ficha/`). Avisarlo en la confirmación. Cada mix viejo usa la probabilidad que quedó guardada, así que la ficha puede quedar unos puntos lejos del cálculo exacto. Un recálculo general posterior (un mix que llega tarde a una temporada cerrada o deshacer un "fijar") lo deja exacto, y ahí sí puede mover un poco a otros. Cambiar el principal **no** recalcula: el ELO de la ficha queda igual.
 - Un pedido que el jugador canceló llega con `status: cancelled` (desde el 2026-10-19): mostrarlo como "Cancelado por el jugador", sin botones (aprobarlo o rechazarlo da `400`).
 - En la bandeja, un pedido `remove` se muestra como "Quiere desvincular" con su `note`; uno `add`, como "SteamID adicional".
 - Los pedidos pendientes **reservan** el SteamID y vencen a los 30 días.
