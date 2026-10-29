@@ -1,0 +1,2 @@
+# bash en el servidor: siempre LF
+*.sh text eol=lf
