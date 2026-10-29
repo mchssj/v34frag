@@ -11,6 +11,7 @@ Todo lo necesario para rehacer el VPS de CMLeague (OVH, Ubuntu 26.04) desde cero
 | `Caddyfile.ip` | Caddy por IP, antes de tener el DNS | `/etc/caddy/Caddyfile` |
 | `cmleague-api.service` | La API | `/etc/systemd/system/` |
 | `cmleague-season.service` y `.timer` | Cierre de temporadas cada 10 minutos | `/etc/systemd/system/` |
+| `cmleague-notify.service` y `.timer` | Notificaciones programadas cada 10 minutos (usa `season.env`) | `/etc/systemd/system/` |
 | `cmleague-hud.service` | Relay del HUD (apagado) | `/etc/systemd/system/` |
 | `cmleague-demos.service` y `.timer` | Demos por SFTP a R2 cada 10 minutos (apagado hasta completar sus variables) | `/etc/systemd/system/` |
 | `sudoers-deploy` | Lo único que `deploy` puede hacer con `sudo` | `/etc/sudoers.d/cmleague-deploy` |

@@ -33,8 +33,8 @@ paso "3.1 Comprobaciones previas"
 id "$ADMIN" >/dev/null 2>&1 || falla "no existe el usuario $ADMIN"
 grep -qE '^(ssh-ed25519|ssh-rsa|ecdsa-sha2-)' "/home/$ADMIN/.ssh/authorized_keys" 2>/dev/null \
   || falla "$ADMIN no tiene ninguna llave SSH: sin llave, apagar las contraseñas deja el servidor sin acceso"
-for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-hud.service \
-         cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
+for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-notify.service \
+         cmleague-notify.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
          demos.env.example demos-sftp.json.example; do
   [[ -f "$DIR/$f" ]] || falla "falta $f al lado del script"
 done
@@ -211,13 +211,13 @@ ls -la "$ETC"
 
 # --- 3.12 Servicios -------------------------------------------------------------------------------------------------
 paso "3.12 Servicios de systemd"
-for u in cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-hud.service \
-         cmleague-demos.service cmleague-demos.timer; do
+for u in cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-notify.service cmleague-notify.timer \
+         cmleague-hud.service cmleague-demos.service cmleague-demos.timer; do
   install -m 644 "$DIR/$u" "/etc/systemd/system/$u"
 done
 systemctl daemon-reload
-systemctl enable cmleague-api.service cmleague-season.timer >/dev/null 2>&1
-systemctl start cmleague-season.timer
+systemctl enable cmleague-api.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
+systemctl start cmleague-season.timer cmleague-notify.timer
 # cmleague-hud queda instalado y apagado hasta que el relay se mude (plan, 4.3).
 # cmleague-demos.timer también queda apagado: se prende a mano después de completar demos.env y demos-sftp.json
 # (systemctl enable --now cmleague-demos.timer; ver docs/bitacora/2026-10-28-demos-servidores-externos).
@@ -255,6 +255,7 @@ ok "Swap activo"                         "swapon --show=NAME --noheadings | grep
 ok "Node 24"                             "node --version | grep -q '^v24\.'"
 ok "Caddy corriendo"                     "systemctl is-active caddy"
 ok "Timer de temporadas"                 "systemctl is-active cmleague-season.timer"
+ok "Timer de notificaciones"             "systemctl is-active cmleague-notify.timer"
 ok "sudoers de deploy"                   "test -f /etc/sudoers.d/$APP-deploy"
 echo "  Node $(node --version), $(caddy version | cut -d' ' -f1)"
 if [[ -f /var/run/reboot-required ]]; then

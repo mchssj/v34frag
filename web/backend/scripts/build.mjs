@@ -1,6 +1,7 @@
-// Build para el VPS: pnpm build. Deja en dist/ tres archivos con todas sus dependencias adentro (en el servidor solo
-// hace falta Node 24): server.mjs (la API, desde src/node.ts), season-tick.mjs (el cron de temporadas) y demos-sftp.mjs
-// (las demos por SFTP, plan docs/bitacora/2026-10-28-demos-servidores-externos).
+// Build para el VPS: pnpm build. Deja en dist/ cuatro archivos con todas sus dependencias adentro (en el servidor solo
+// hace falta Node 24): server.mjs (la API, desde src/node.ts), season-tick.mjs (el cron de temporadas), demos-sftp.mjs
+// (las demos por SFTP, plan docs/bitacora/2026-10-28-demos-servidores-externos) y notify-tick.mjs (las notificaciones
+// programadas, plan docs/bitacora/2026-10-29-notificaciones-programadas).
 // BUILD_SHA: el commit que va a mostrar /api/health (lo pone deploy/vps/desplegar.sh; sin él, "dev").
 import { build } from 'esbuild';
 import { rmSync } from 'node:fs';
@@ -9,7 +10,12 @@ const sha = process.env.BUILD_SHA || 'dev';
 rmSync('dist', { recursive: true, force: true });
 
 await build({
-  entryPoints: { server: 'src/node.ts', 'season-tick': 'scripts/season-tick.mts', 'demos-sftp': 'scripts/demos-sftp.mts' },
+  entryPoints: {
+    server: 'src/node.ts',
+    'season-tick': 'scripts/season-tick.mts',
+    'demos-sftp': 'scripts/demos-sftp.mts',
+    'notify-tick': 'scripts/notify-tick.mts',
+  },
   outdir: 'dist',
   outExtension: { '.js': '.mjs' },
   bundle: true,

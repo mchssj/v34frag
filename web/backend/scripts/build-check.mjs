@@ -1,6 +1,7 @@
 // Prueba del build: pnpm build:check (después de pnpm build). Arranca dist/server.mjs como en el VPS, con variables
 // de mentira, y pide /api/health. No habla con ninguna Supabase. Sale con 1 si no responde bien.
-// También corre dist/demos-sftp.mjs sin variables: tiene que cargar (con ssh2 adentro) y quejarse de que faltan.
+// También corre dist/demos-sftp.mjs (con ssh2 adentro) y dist/notify-tick.mjs sin variables: tienen que cargar y
+// quejarse de que faltan.
 // En Linux además comprueba el cierre ordenado con SIGTERM; en Windows no hay señales (kill corta el proceso).
 import { spawn } from 'node:child_process';
 
@@ -52,3 +53,13 @@ const codeDemos = await new Promise((r) => demos.once('exit', r));
 const demosOk = codeDemos === 1 && salida.includes('demos:sftp: faltan');
 console.log(`build:check: demos-sftp.mjs ${demosOk ? 'carga' : 'FALLA'}: ${salida.trim().split('\n')[0]}`);
 if (!demosOk) process.exitCode = 1;
+
+// notify-tick.mjs: lo mismo, sin variables sale con 1 y avisa que faltan.
+const notify = spawn(process.execPath, ['dist/notify-tick.mjs'], { env: { PATH: process.env.PATH }, stdio: ['ignore', 'pipe', 'pipe'] });
+let salidaNotify = '';
+notify.stdout.on('data', (c) => (salidaNotify += c));
+notify.stderr.on('data', (c) => (salidaNotify += c));
+const codeNotify = await new Promise((r) => notify.once('exit', r));
+const notifyOk = codeNotify === 1 && salidaNotify.includes('notify:tick: faltan');
+console.log(`build:check: notify-tick.mjs ${notifyOk ? 'carga' : 'FALLA'}: ${salidaNotify.trim().split('\n')[0]}`);
+if (!notifyOk) process.exitCode = 1;

@@ -25,6 +25,7 @@
     "smoke": "node scripts/smoke.mjs",
     "season:tick": "tsx scripts/season-tick.mts",
     "demos:sftp": "tsx scripts/demos-sftp.mts",
+    "notify:tick": "tsx scripts/notify-tick.mts",
     "test:coverage": "vitest run --coverage",
     "test:coverage:unit": "vitest run --project unit --coverage"
   },
