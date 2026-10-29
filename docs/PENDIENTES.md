@@ -98,6 +98,25 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-exportar-stats`](bitacora/2026-10-29-exportar-stats/) y [`2026-10-29-buscador-avanzado`](bitacora/2026-10-29-buscador-avanzado/).
 
+### 1.9 Prototipos VIP: ELO, recálculo, comparador y widget para la bio (sin commit)
+
+- **Qué es:** cuatro prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
+  - `/demo/elo`: el desglose de la fórmula de ELO.
+  - `/demo/recalculo`: la vista previa del cierre de temporada.
+  - `/demo/comparador`: hasta 5 jugadores.
+  - `/demo/bio`: panel de Twitch, firma y tarjeta del link.
+- **Cuidado:** `features/elo/formula.ts` y `features/season/preview.ts` copian las reglas de `elo_apply_match` y de `24_temporadas.sql`. Si cambian en la base, hay que cambiarlas ahí. Los tests ayudan a darse cuenta.
+- **Qué falta:**
+  - **Daniel:**
+    - El desglose por mix.
+    - Tu fila de `season_live_standings` con los vecinos.
+    - `players/compare` con 5 jugadores.
+    - Para el widget de la bio: la imagen dinámica `card.png`, Open Graph en el perfil y la página del iframe.
+    - El chequeo de VIP en todo eso.
+  - **Esteban:** llevar los cuatro al perfil y al ranking.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-desglose-elo`](bitacora/2026-10-29-desglose-elo/), [`2026-10-29-proximo-recalculo`](bitacora/2026-10-29-proximo-recalculo/), [`2026-10-29-comparador-5`](bitacora/2026-10-29-comparador-5/) y [`2026-10-29-widget-bio`](bitacora/2026-10-29-widget-bio/).
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real
