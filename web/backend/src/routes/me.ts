@@ -16,6 +16,7 @@ import {
   THEME_FX,
 } from '../schemas/profile';
 import { profileOf, roleOf } from '../services/account';
+import { streamersOf } from '../services/hud';
 import { vipStatusOf } from '../services/vip';
 import { notificationPrefsOf } from '../schemas/notifications';
 
@@ -49,12 +50,13 @@ const themeFxOf = (prefs: unknown) => {
 /** Lo mismo que mostraba rProfileView() en la web. */
 async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
   const { sb, user, config } = c.var;
-  const [account, details, player, prefs, vip] = await Promise.all([
+  const [account, details, player, prefs, vip, streamer] = await Promise.all([
     profileOf(config, user.token, user.id),
     sb.from('profile_details').select(DETAILS).eq('user_id', user.id).maybeSingle().then(must),
     sb.from('players').select('id, nick, photo_url, steam_id').eq('user_id', user.id).limit(1).maybeSingle().then(must),
     sb.from('user_preferences').select('preferences').eq('user_id', user.id).maybeSingle().then(must),
     vipStatusOf(sb, [user.id]),
+    streamersOf(sb, [user.id]).then((m) => m.get(user.id)),
   ]);
 
   // Equipos oficiales (no PCW) donde juega hoy el jugador vinculado, más los que capitanea o de los que es dueño.
@@ -89,6 +91,9 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     matches_played,
     preferences: { theme_fx: themeFxOf(prefs?.preferences), notifications: notificationPrefsOf(prefs?.preferences) },
     vip: vip.get(user.id) ?? null,
+    streamer: streamer?.active
+      ? { since: streamer.granted_at!, has_link: !!streamer.has_link, link_created_at: streamer.token_created_at }
+      : null,
   };
 }
 

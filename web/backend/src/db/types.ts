@@ -404,16 +404,145 @@ isOneToOne: false
                   ]
                 },"game_servers": {
                   Row: {
-                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"mode": string | null,"name": string,"panel_server_id": string | null,"panel_url": string | null,"plugin_version": string | null,"region": string | null,"token_hash": string,"tv_port": number | null
+                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"hud_enabled": boolean,"hud_key": string | null,"hud_port": number | null,"hud_seen_at": string | null,"id": string,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"mode": string | null,"name": string,"panel_server_id": string | null,"panel_url": string | null,"plugin_version": string | null,"region": string | null,"token_hash": string,"tv_port": number | null
                   }
                   Insert: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mode"?: string | null,"name": string,"panel_server_id"?: string | null,"panel_url"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"token_hash": string,"tv_port"?: number | null
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"hud_enabled"?: boolean,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mode"?: string | null,"name": string,"panel_server_id"?: string | null,"panel_url"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"token_hash": string,"tv_port"?: number | null
                   }
                   Update: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mode"?: string | null,"name"?: string,"panel_server_id"?: string | null,"panel_url"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"token_hash"?: string,"tv_port"?: number | null
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"hud_enabled"?: boolean,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mode"?: string | null,"name"?: string,"panel_server_id"?: string | null,"panel_url"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"token_hash"?: string,"tv_port"?: number | null
                   }
                   Relationships: [
                     
+                  ]
+                },"hud_relays": {
+                  Row: {
+                    "active": boolean,"created_at": string,"id": string,"last_seen_at": string | null,"name": string,"token_hash": string
+                  }
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"last_seen_at"?: string | null,"name": string,"token_hash": string
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"last_seen_at"?: string | null,"name"?: string,"token_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"hud_sessions": {
+                  Row: {
+                    "seen_at": string,"server_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "seen_at"?: string,"server_id": string,"user_id": string
+                  }
+                  Update: {
+                    "seen_at"?: string,"server_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hud_sessions_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_sessions_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_sessions_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_sessions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_sessions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_sessions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"hud_streamers": {
+                  Row: {
+                    "granted_at": string,"granted_by": string | null,"revoked_at": string | null,"revoked_by": string | null,"token_created_at": string | null,"token_hash": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "granted_at"?: string,"granted_by"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"token_created_at"?: string | null,"token_hash"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "granted_at"?: string,"granted_by"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"token_created_at"?: string | null,"token_hash"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hud_streamers_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"ingest_chunks": {
                   Row: {
@@ -937,6 +1066,19 @@ isOneToOne: false
                   }
                   Update: {
                     "deleted_at"?: string,"deleted_by"?: string | null,"deltas"?: NonNullable<Json>,"elo_mode"?: string,"id"?: never,"map"?: string | null,"match_id"?: string,"played_at"?: string | null,"score1"?: number | null,"score2"?: number | null,"server_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"notification_sent": {
+                  Row: {
+                    "kind": string,"ref": string,"sent_at": string
+                  }
+                  Insert: {
+                    "kind": string,"ref": string,"sent_at"?: string
+                  }
+                  Update: {
+                    "kind"?: string,"ref"?: string,"sent_at"?: string
                   }
                   Relationships: [
                     
@@ -1971,13 +2113,13 @@ isOneToOne: false
                   ]
                 },"admin_server_list": {
                   Row: {
-                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"mode": string | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"search": string | null,"tv_port": number | null
+                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"hud_enabled": boolean | null,"hud_key": string | null,"hud_port": number | null,"hud_seen_at": string | null,"hud_streaming": Json | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"mode": string | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"search": string | null,"tv_port": number | null
                   }
                   Insert: {
-                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"hud_enabled"?: boolean | null,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"hud_streaming"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
                          }
                         Update: {
-                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"hud_enabled"?: boolean | null,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"hud_streaming"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
                          }
                         Relationships: [
                     
@@ -2058,7 +2200,7 @@ isOneToOne: false
                   ]
                 },"admin_user_list": {
                   Row: {
-                    "alias": string | null,"alias_changed_at": string | null,"has_player": boolean | null,"has_steam": boolean | null,"id": string | null,"player_id": string | null,"role": string | null,"search": string | null,"steam_id": string | null
+                    "alias": string | null,"alias_changed_at": string | null,"has_player": boolean | null,"has_steam": boolean | null,"id": string | null,"is_streamer": boolean | null,"player_id": string | null,"role": string | null,"search": string | null,"steam_id": string | null
                   }
                   Relationships: [
                     
@@ -2304,6 +2446,31 @@ isOneToOne: false
                          }
                         Relationships: [
                     
+                  ]
+                },"hud_streamer_list": {
+                  Row: {
+                    "active": boolean | null,"alias": string | null,"granted_at": string | null,"granted_by_alias": string | null,"has_link": boolean | null,"revoked_at": string | null,"token_created_at": string | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hud_streamers_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hud_streamers_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"live_match_list": {
                   Row: {
@@ -3439,14 +3606,26 @@ isOneToOne: false
 "admin_demo_retry":
 { Args: { "p_match": string }; Returns: undefined
                            },
+"admin_grant_streamer":
+{ Args: { "p_user": string }; Returns: undefined
+                           },
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string
+                           },
+"admin_regenerate_hud_key":
+{ Args: { "p_server": string }; Returns: string
                            },
 "admin_remove_steam":
 { Args: { "p_steam": string }; Returns: undefined
                            },
+"admin_revoke_streamer":
+{ Args: { "p_user": string }; Returns: undefined
+                           },
 "admin_set_primary_steam":
 { Args: { "p_steam": string }; Returns: undefined
+                           },
+"admin_set_server_hud":
+{ Args: { "p_enabled": boolean,"p_port": number,"p_server": string }; Returns: undefined
                            },
 "admin_users":
 { Args: { "p_q"?: string }; Returns: {
@@ -3701,6 +3880,9 @@ isOneToOne: false
               "adjustment_id": number,"elo_after": number,"elo_before": number,"nick": string,"player_id": string
             }[]
                            },
+"elo_after_attach":
+{ Args: { "p_steam": string }; Returns: undefined
+                           },
 "elo_apply_adjustment":
 { Args: { "p_delta": number,"p_steam_id": string }; Returns: undefined
                            },
@@ -3728,11 +3910,17 @@ isOneToOne: false
 "elo_recompute_all":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"elo_recompute_player":
+{ Args: { "p_from"?: (string)[],"p_key": string }; Returns: number
+                           },
 "elo_remove_adjustment":
 { Args: { "p_id": number }; Returns: undefined
                            },
 "elo_season_event":
 { Args: { "p_close": boolean,"p_season": string }; Returns: undefined
+                           },
+"elo_season_event_key":
+{ Args: { "p_close": boolean,"p_key": string,"p_season": string }; Returns: undefined
                            },
 "elo_set_config":
 { Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct"?: number,"p_min_pct"?: number,"p_recompute"?: boolean,"p_start_elo": number }; Returns: number
@@ -3824,6 +4012,18 @@ isOneToOne: false
                            },
 "event_unroute":
 { Args: { "p_match": string }; Returns: undefined
+                           },
+"hud_new_key":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"hud_relay_config":
+{ Args: { "p_seen"?: Json,"p_sessions"?: Json,"p_token": string }; Returns: Json
+                           },
+"hud_streamer_new_token":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"hud_streaming":
+{ Args: { "p_server": string }; Returns: Json
                            },
 "ingest_server_chunk":
 { Args: { "p_data": string,"p_part": number,"p_token": string,"p_total": number,"p_uid": string }; Returns: string
@@ -3941,6 +4141,9 @@ isOneToOne: false
                            },
 "notify_admin_ids":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
+"notify_due":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "notify_season_delayed":
 { Args: { "p_season": string }; Returns: undefined
@@ -4080,6 +4283,9 @@ isOneToOne: false
                            },
 "steam_detach":
 { Args: { "p_steam": string }; Returns: boolean
+                           },
+"steam_detach_elo":
+{ Args: { "p_steam": string }; Returns: undefined
                            },
 "steam_group":
 { Args: { "p_s64": string }; Returns: (string)[]

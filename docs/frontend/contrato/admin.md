@@ -10,6 +10,7 @@
 | Roles | `PUT /api/v1/admin/users/{id}/role` (`user`, `organizer` o `moderator`; desde el 2026-10-26 también `moderator`); la lista sale de `GET /api/v1/admin/users` (filtro `role`). Todos los roles juegan; el admin además organiza y modera. El rol admin se da en la base | Disponible |
 | Baneos | Ver "Baneos (moderadores y admins)" abajo | Disponible |
 | VIP | Ver "VIP (admin)" abajo | Disponible (2026-10-28) |
+| HUD y streamers | Ver "HUD del relay y streamers (admin)" abajo | Disponible (2026-10-29) |
 | Catálogo de mapas | `GET /api/v1/maps?include_inactive=true` y `PUT /api/v1/admin/maps`: la lista completa en orden, con versiones, `active` (disponible; `false` = retirado), `mixes` (sale en el select de Mixes) y `veto_default` (pool por defecto del veto). **No borra:** tiene que traer todos los mapas que existen (si falta uno, `400`). Al menos 2 en el pool por defecto, y un retirado no puede estar en él. `mixes` y `veto_default` que no vienen quedan como estaban (en un mapa nuevo, como `active`) | Disponible |
 | Foto de un mapa | `POST /api/v1/admin/maps/{name}/image` (`multipart/form-data`, campo `file`, JPG/PNG/WebP de hasta 2 MB; reemplaza a la anterior) y `DELETE` de la misma ruta para quitarla. Devuelven el mapa. Es el fondo del marcador de la sala del mix y vale para todas sus versiones | Disponible |
 | Resultado de una PCW | `POST /api/v1/admin/pcw/matches/{id}/result` (`{ maps }`) | Disponible |
@@ -75,6 +76,34 @@ Plan: [`docs/bitacora/2026-10-28-vip-fase-0/`](../../bitacora/2026-10-28-vip-fas
 - **Modo y región:** se muestran en el estado público de los servidores (sección [8e](partidas.md)). El modo es un selector con la lista fija; la región, un campo de texto.
 - **Puerto de SourceTV (`tv_port`):** el `tv_port` del servidor (por ejemplo 27020). Con él, los mixes en vivo muestran "Ver en TV" (`steam://connect/{host}:{tv_port}`, el host sale de `connect_address`). Campo numérico opcional.
 - Nombre repetido: `409 CONFLICT`.
+- **`hud`** (desde el 2026-10-29): el HUD de ese servidor. Ver la sección siguiente.
+
+### HUD del relay y streamers (admin)
+
+Plan: [`docs/bitacora/2026-10-29-hud-relay-vps/`](../../bitacora/2026-10-29-hud-relay-vps/PLAN.md). El relay del HUD corre en el VPS y atiende a todos los servidores a la vez, cada uno por su propio puerto UDP. El admin elige qué servidores mandan HUD y quién puede transmitir. El relay lee esta configuración cada 30 segundos: los cambios no necesitan reiniciar nada.
+
+Cada servidor de `GET /api/v1/admin/servers` trae `hud`:
+
+| Campo | Qué es |
+|---|---|
+| `port` | Puerto UDP del relay para ese servidor (27500 a 27519, sin repetir), o `null` si no tiene HUD |
+| `enabled` | El relay lo atiende |
+| `key` | Su clave (`csstv_hud_key`). Se ve siempre (es del admin): mostrarla con "Copiar" |
+| `can_enable` | Tiene la SourceTV (`connect_address` y `tv_port`). **Sin ella el interruptor va deshabilitado**, con el aviso "Carga el puerto de SourceTV para activar el HUD" |
+| `last_packet_at` y `receiving` | Último paquete que recibió el relay; `receiving` si fue en el último minuto ("Recibiendo" en verde; si no, "Sin señal") |
+| `streaming` | Streamers (`id`, `alias`) con el HUD abierto en ese servidor ahora |
+| `cfg` | Las líneas de `cfg/sourcemod/csstv_hud.cfg` para ese servidor, listas para copiar (`null` sin puerto). Avisar que hay que subirlas al servidor y que valen desde el próximo cambio de mapa |
+
+| Acción | Endpoint | Reglas |
+|---|---|---|
+| Puerto e interruptor | `PUT /api/v1/admin/servers/{id}/hud` con `{ port, enabled }` | Al poner el puerto se genera la clave. `port: null` saca el HUD (y borra la clave). Puerto usado por otro servidor: `409` con "El puerto … ya lo usa el servidor …". Activarlo sin SourceTV: `400 BUSINESS_RULE`. Devuelve el servidor |
+| Clave nueva | `POST /api/v1/admin/servers/{id}/hud/key` | Pedir confirmación: hasta que se suba al `.cfg`, el relay descarta los paquetes de ese servidor. Devuelve el servidor |
+| Streamers | `GET /api/v1/admin/streamers` | Cada fila: `user` (`id`, `alias`), `active` (`false`: se la quitaron), `granted_at`, `granted_by` (alias), `revoked_at`, `has_link` y `link_created_at`. Filtros `active` y `q` (alias). `sort`: **`alias` asc** (también `granted_at`) |
+| Dar la marca | `POST /api/v1/admin/users/{id}/streamer` | Si ya la tiene, no cambia nada. Si se la habían quitado, vuelve sin link. Avisa a la cuenta. Devuelve la fila de streamer |
+| Quitar la marca | `POST /api/v1/admin/users/{id}/streamer/revoke` | Su link deja de andar en 30 segundos. Sin la marca: `400 BUSINESS_RULE`. Avisa a la cuenta |
+
+- **En Administración › Usuarios** cada fila trae `streamer` (`true` o `false`) y hay filtro `streamer`: mostrar "Dar streamer" o "Quitar streamer", como el VIP.
+- Si se le saca la SourceTV a un servidor (`PATCH` con `tv_port: null`), su HUD se apaga solo.
 
 ### ELO (admin)
 

@@ -240,16 +240,23 @@ export const adminPlayers = createRouter()
   })
   .openapi(users, async (c) => {
     const p = c.req.valid('query');
-    let q = c.var.sb.from('admin_user_list').select('id, alias, role, alias_changed_at, player_id, steam_id', { count: 'exact' });
+    let q = c.var.sb.from('admin_user_list').select('id, alias, role, alias_changed_at, player_id, steam_id, is_streamer', { count: 'exact' });
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.role) q = q.eq('role', p.role);
     if (p.has_player !== undefined) q = q.eq('has_player', p.has_player);
     if (p.has_steam !== undefined) q = q.eq('has_steam', p.has_steam);
-    type Row = { id: string; alias: string | null; role: string; alias_changed_at: string | null; player_id: string | null; steam_id: string | null };
+    if (p.streamer !== undefined) q = q.eq('is_streamer', p.streamer);
+    type Row = {
+      id: string; alias: string | null; role: string; alias_changed_at: string | null; player_id: string | null; steam_id: string | null;
+      is_streamer: boolean | null;
+    };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
     const vip = await vipStatusOf(c.var.sb, rows.map((u) => u.id));
-    return c.json(envelope(rows.map((u) => ({ ...u, alias: u.alias ?? '', vip: vip.get(u.id) ?? null })), total, p), 200);
+    return c.json(
+      envelope(rows.map(({ is_streamer, ...u }) => ({ ...u, alias: u.alias ?? '', vip: vip.get(u.id) ?? null, streamer: !!is_streamer })), total, p),
+      200,
+    );
   })
   .openapi(userAlias, async (c) => {
     const { alias, force } = c.req.valid('json');
