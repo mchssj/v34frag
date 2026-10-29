@@ -42,3 +42,19 @@ function extend(p: SearchPlayer, i: number): ComparePlayer {
 export const COMPARE_PLAYERS = PLAYERS.slice(0, 80).map(extend)
 export const byNick = (nick: string) =>
   COMPARE_PLAYERS.find((p) => p.nick.toLowerCase() === nick.toLowerCase())
+
+/** Mixes juntos y como rivales de dos jugadores (lo que devuelve `together` en la API), con semilla por par. */
+export function together(a: string, b: string) {
+  let h = 0
+  for (const ch of [a, b].sort().join("|")) h = (h * 31 + ch.charCodeAt(0)) | 0
+  const r = seeded(h)
+  const same = 3 + Math.floor(r() * 12)
+  const against = 5 + Math.floor(r() * 25)
+  return {
+    same_team: { matches: same, wins: Math.floor(same * (0.3 + r() * 0.5)) },
+    against: {
+      matches: against,
+      a_wins: Math.floor(against * (0.3 + r() * 0.4)),
+    },
+  }
+}

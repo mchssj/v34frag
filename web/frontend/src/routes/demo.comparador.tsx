@@ -39,7 +39,10 @@ function DemoComparador() {
   const [vip, setVip] = useState(true)
   // El color de cada jugador se guarda acá: sacar a uno no le cambia el color a los demás.
   const [picked, setPicked] = useState<Picked[]>(() =>
-    parse(p).map((nick, slot) => ({ nick, slot }))
+    (p ? parse(p) : TOP5.slice(0, 2).map((x) => x.nick)).map((nick, slot) => ({
+      nick,
+      slot,
+    }))
   )
 
   const change = (next: Picked[]) => {
@@ -82,14 +85,9 @@ function DemoComparador() {
           Reiniciar
         </Button>
       </div>
-      <section className="flex flex-col gap-1">
-        <h1 className="font-heading text-xl font-semibold">
-          Comparar jugadores
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Hasta 5 a la vez. El link guarda la comparación.
-        </p>
-      </section>
+      <h1 className="text-2xl font-semibold tracking-[-0.4px]">
+        Comparar jugadores
+      </h1>
       <MultiCompare picked={picked} onChange={change} vip={vip} />
     </div>
   )
