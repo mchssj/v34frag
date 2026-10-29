@@ -42,8 +42,31 @@ api.cmleague.lat {
 	reverse_proxy 127.0.0.1:8787
 }
 
-# Relay del HUD: cuando se mude al VPS (plan, 4.3), con token o con usuario y contraseña.
-# hud.cmleague.lat {
-# 	import comun hud
-# 	reverse_proxy 127.0.0.1:8090
-# }
+# Relay del HUD (plan docs/bitacora/2026-10-29-hud-relay-vps): cada streamer entra con su token en la ruta
+# (/s/<token>/hud); sin token válido el relay responde 404. Sin `comun`: la compresión puede retener los eventos (SSE)
+# del HUD, y el Referer tiene que ir vacío para que el token no salga a Google Fonts.
+hud.cmleague.lat {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	# Los tokens van en la ruta: el log guarda solo el código y la duración, sin la URL.
+	log {
+		output file /var/log/caddy/hud.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+		format filter {
+			wrap json
+			fields {
+				request>uri delete
+				request>headers>Referer delete
+			}
+		}
+	}
+	reverse_proxy 127.0.0.1:8090 {
+		flush_interval -1
+	}
+}

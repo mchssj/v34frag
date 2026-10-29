@@ -263,6 +263,7 @@ describe("HTTP con token", () => {
       initial: (viewer) => [{ event: "control", data: { viewer } }],
       onControl: (viewer, body) => calls.push({ viewer, body }),
       status: (viewer) => ({ viewer }),
+      health: () => ({ status: "ok" }),
       font: () => null,
     });
     await http.listen(0);
@@ -274,6 +275,7 @@ describe("HTTP con token", () => {
       assert.match(await page.text(), /src="hud\.js"/);
       assert.equal((await fetch(`${base}/s/hud_otro/hud`)).status, 404);
       assert.equal((await fetch(`${base}/hud`)).status, 404, "en el modo VPS no hay nada sin token");
+      assert.deepEqual(await (await fetch(`${base}/healthz`)).json(), { status: "ok" });
       const redirect = await fetch(`${base}/s/hud_uno`, { redirect: "manual" });
       assert.equal(redirect.status, 302);
       assert.equal(redirect.headers.get("location"), "/s/hud_uno/hud");

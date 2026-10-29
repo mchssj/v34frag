@@ -22,6 +22,8 @@ export interface HttpHandlers {
    */
   viewer(token: string | null): string | null;
   initial(viewer: string): { event: string; data: unknown }[];
+  /** /healthz, sin token: para el chequeo del despliegue. Nada que identifique a nadie. */
+  health(): unknown;
   onControl(viewer: string, body: unknown): void;
   status(viewer: string): unknown;
   /** Una fuente de los íconos, o null si no se encontró. */
@@ -83,6 +85,7 @@ export class HttpServer {
 
   private route(req: IncomingMessage, res: ServerResponse): void {
     const url = new URL(req.url ?? "/", "http://relay");
+    if (req.method === "GET" && url.pathname === "/healthz") return json(res, 200, this.handlers.health());
     const m = /^\/s\/([^/]+)(\/.*)?$/.exec(url.pathname);
     // /s/<token> sin barra: las rutas relativas de la página saldrían de /s/. Se manda a /s/<token>/hud.
     if (m && m[2] === undefined) {

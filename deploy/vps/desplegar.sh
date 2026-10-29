@@ -2,12 +2,13 @@
 # CMLeague: sube una versión al VPS (plan docs/bitacora/2026-10-28-despliegue-vps-ovh, sección 5).
 # Se corre desde la PC de Daniel (Git Bash) y, más adelante, desde el pipeline de GitHub. Entra como `deploy`.
 #
-# Uso: deploy/vps/desplegar.sh <api|web> [--sin-pruebas]
+# Uso: deploy/vps/desplegar.sh <api|web|hud> [--sin-pruebas]
 #   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, demos-sftp.mjs y notify-tick.mjs; reinicia cmleague-api y chequea
 #        /api/health con el commit. Si el chequeo falla, vuelve sola a la versión anterior.
 #   web: pruebas y build de web/frontend (VITE_API_URL, por defecto https://api.cmleague.lat); sube dist/.
 #        No reinicia nada: Caddy sirve web/current.
-#   hud: todavía no (plan, sección 4.3).
+#   hud: pruebas y build de hud/relay (relay.mjs y public/); reinicia cmleague-hud y chequea /healthz con el commit.
+#        Si el servicio todavía está apagado (falta hud.json), solo sube la versión. Plan docs/bitacora/2026-10-29-hud-relay-vps.
 #
 # Variables (del entorno o del .env de la raíz): VPS_HOST (obligatoria), VPS_DEPLOY_USER (por defecto deploy),
 # VITE_API_URL, SSH (por defecto el OpenSSH de Windows si existe, que es el que tiene la llave del VPS).
@@ -28,9 +29,8 @@ paso() { printf '\n== %s\n' "$*"; }
 falla() { printf '\n[!!] %s\n' "$*" >&2; exit 1; }
 
 case "$parte" in
-  api | web) ;;
-  hud) falla "El relay del HUD todavía no se despliega en el VPS (plan, sección 4.3)." ;;
-  *) falla "Uso: $0 <api|web> [--sin-pruebas]" ;;
+  api | web | hud) ;;
+  *) falla "Uso: $0 <api|web|hud> [--sin-pruebas]" ;;
 esac
 
 # Solo las variables que hacen falta, sin cargar el resto del .env.
@@ -79,6 +79,20 @@ chequear() {
     done
     echo "/api/health no respondió bien: ${r:-sin respuesta}"
     return 1
+  elif [ "$parte" = hud ]; then
+    # Apagado hasta completar /etc/cmleague/hud.json: prenderlo lo dejaría reiniciándose en bucle.
+    if [ "$(systemctl is-enabled cmleague-hud 2>/dev/null)" != enabled ]; then
+      echo "cmleague-hud está apagado: la versión queda subida (se prende con systemctl enable --now cmleague-hud)."
+      return 0
+    fi
+    sudo systemctl restart cmleague-hud
+    for i in $(seq 1 20); do
+      r=$(curl -s -m 3 http://127.0.0.1:8090/healthz || true)
+      case "$r" in *"\"build\":\"$sha\""*) echo "/healthz: $r"; return 0;; esac
+      sleep 1
+    done
+    echo "/healthz no respondió bien: ${r:-sin respuesta}"
+    return 1
   else
     [ -s "$base/current/index.html" ] && echo "index.html en su lugar." && return 0
     echo "Falta index.html."
@@ -92,8 +106,9 @@ if ! chequear; then
     echo "== FALLA: vuelta a $(basename "$anterior")"
     apuntar "$anterior"
     [ "$parte" = api ] && sudo systemctl restart cmleague-api
+    [ "$parte" = hud ] && sudo systemctl restart cmleague-hud
   fi
-  [ "$parte" = api ] && echo "Logs (desde ubuntu): sudo journalctl -u cmleague-api -n 50"
+  [ "$parte" = web ] || echo "Logs (desde ubuntu): sudo journalctl -u cmleague-$parte -n 50"
   exit 1
 fi
 
@@ -108,9 +123,9 @@ ls -1t
 # Versión: el commit. Con cambios sin commit se marca, para que /api/health no diga un commit que no es.
 cd "$RAIZ"
 sha="$(git rev-parse --short=12 HEAD)"
-if [[ -n "$(git status --porcelain -- "web/backend" "web/frontend")" ]]; then
+if [[ -n "$(git status --porcelain -- "web/backend" "web/frontend" "hud/relay")" ]]; then
   sha="$sha-local$(date -u +%m%d%H%M)"
-  echo "Aviso: web/ tiene cambios sin commit; la versión se llama $sha."
+  echo "Aviso: hay cambios sin commit en web/ o hud/; la versión se llama $sha."
 fi
 
 paso "Conexión con $USUARIO@VPS"
@@ -129,6 +144,17 @@ if [[ "$parte" == api ]]; then
   pnpm build:check
   local_dir="$RAIZ/web/backend/dist"
   archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map)
+elif [[ "$parte" == hud ]]; then
+  cd "$RAIZ/hud/relay"
+  if (( pruebas )); then
+    paso "Pruebas del relay"
+    pnpm typecheck
+    pnpm test
+  fi
+  paso "Build del relay ($sha)"
+  BUILD_SHA="$sha" pnpm build:node
+  local_dir="$RAIZ/hud/relay/dist-node"
+  archivos=(relay.mjs relay.mjs.map public)
 else
   cd "$RAIZ/web/frontend"
   api_url="${VITE_API_URL:-https://api.cmleague.lat}"
