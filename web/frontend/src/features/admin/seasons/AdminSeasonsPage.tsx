@@ -61,7 +61,7 @@ export function AdminSeasonsPage({
     <section className="flex flex-col gap-5">
       <AdminHeader
         title="Temporadas"
-        subtitle="Cada temporada termina con una foto del ranking, medallas para el top y un reinicio de los nivel 10. Al cerrarse se abre la siguiente sola."
+        subtitle="Cada temporada termina con una foto del ranking, medallas para el top y un reinicio del ELO más alto. Al cerrarse se abre la siguiente sola."
       />
       {current.isPending || config.isPending ? (
         <Skeleton className="h-96 rounded-xl" />
@@ -328,8 +328,8 @@ function ActiveHero({ season }: { season: Season }) {
               {s.medals} reciben medalla (top {season.top_n}).
             </li>
             <li>
-              {s.reset} nivel 10 se reinician: en promedio bajan {s.avg_drop} de
-              ELO.
+              {s.reset} con más de {season.reset_floor} de ELO se reinician: en
+              promedio bajan {s.avg_drop} de ELO.
             </li>
             <li>
               Se abre la temporada {season.number + 1} con los valores de

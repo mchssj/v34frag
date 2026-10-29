@@ -1,3 +1,4 @@
+import { LEVEL_FLOORS } from "@/features/player/labels"
 import type { Season, SeasonConfig, SeasonTier } from "./queries"
 
 // Reglas de la sección Temporadas que no dependen de React (contrato temporadas.md, 8f).
@@ -22,9 +23,18 @@ export const LIMITS = {
   reset_floor: [0, 10000],
 } as const
 
-/** Reinicio de un nivel 10: conserva el porcentaje de lo que tiene sobre el piso. */
+/** Reinicio: quien está sobre el piso conserva el porcentaje de lo que tiene por encima. */
 export function resetElo(elo: number, pct: number, floor: number): number {
   return elo > floor ? floor + Math.round(((elo - floor) * pct) / 100) : elo
+}
+
+/** Título del reinicio según el piso: el nivel del primer ELO que se reinicia (piso + 1). */
+export function resetTitle(floor: number): string {
+  if (floor < 0) return "Reinicio del ELO"
+  const level = LEVEL_FLOORS.filter((f) => f <= floor + 1).length
+  return level === 10
+    ? "Reinicio de los nivel 10"
+    : `Reinicio desde el nivel ${level}`
 }
 
 /** El cierre es a las 06:00 de Argentina (09:00 UTC) del día elegido. */

@@ -455,8 +455,8 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
         <Paging search={search} total={list.data?.total} onChange={onChange} />
         <p className="border-t px-4 py-3 text-xs text-muted-foreground">
           Sin puesto: jugaron menos de {season.min_matches} mixes en la
-          temporada. Al cerrar, los nivel 10 se reinician al {season.reset_pct}{" "}
-          % sobre {season.reset_floor}.
+          temporada. Al cerrar, quienes tengan más de {season.reset_floor} de
+          ELO se reinician al {season.reset_pct} % de lo que tengan por encima.
         </p>
       </div>
     </>

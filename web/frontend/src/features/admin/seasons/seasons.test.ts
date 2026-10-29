@@ -9,6 +9,7 @@ import {
   fromSeason,
   removeTier,
   resetElo,
+  resetTitle,
   seasonPatch,
   setTierEnd,
   tierName,
@@ -45,6 +46,15 @@ describe("Temporadas", () => {
     expect(resetElo(2010, 10, 2001)).toBe(2002)
     expect(resetElo(1990, 10, 2001)).toBe(1990)
     expect(resetElo(2540, 0, 2001)).toBe(2001)
+  })
+
+  it("el título del reinicio dice desde qué nivel, según el piso", () => {
+    expect(resetTitle(2001)).toBe("Reinicio de los nivel 10")
+    expect(resetTitle(2000)).toBe("Reinicio de los nivel 10")
+    expect(resetTitle(1800)).toBe("Reinicio desde el nivel 9")
+    expect(resetTitle(1750)).toBe("Reinicio desde el nivel 9")
+    expect(resetTitle(0)).toBe("Reinicio desde el nivel 1")
+    expect(resetTitle(-1)).toBe("Reinicio del ELO")
   })
 
   it("el cierre es a las 06:00 de Argentina del día elegido", () => {

@@ -13,6 +13,7 @@ import {
   addTier,
   removeTier,
   resetElo,
+  resetTitle,
   setTierEnd,
   tierName,
   tiersError,
@@ -247,7 +248,7 @@ function Field({
   )
 }
 
-/** Reinicio de los nivel 10, con la prueba en el navegador (contrato: sin consultar a la API). */
+/** Reinicio del ELO, con la prueba en el navegador (contrato: sin consultar a la API). */
 function ResetCard({
   pct,
   floor,
@@ -281,10 +282,11 @@ function ResetCard({
   return (
     <Card className="min-w-0 flex-[1_1_360px] gap-3.5">
       <div className="flex flex-col gap-1">
-        <h2 className="text-[17px] font-bold">Reinicio de los nivel 10</h2>
+        <h2 className="text-[17px] font-bold">{resetTitle(floor)}</h2>
         <span className="text-[13px] leading-relaxed text-muted-foreground">
-          Al cerrar, quien esté sobre el piso conserva este porcentaje de lo que
-          tiene por encima. Debajo del piso no cambia.
+          Al cerrar, quien tenga más de{" "}
+          {floor >= 0 ? `${floor} de ELO (el piso)` : "el piso"} conserva este
+          porcentaje de lo que tiene por encima. Debajo del piso no cambia.
         </span>
       </div>
       <div className="flex flex-col gap-2">
