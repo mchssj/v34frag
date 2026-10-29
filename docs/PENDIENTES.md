@@ -475,16 +475,15 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
 - **Bitácora:** [`2026-10-29-temporada-reinicio-total`](bitacora/2026-10-29-temporada-reinicio-total/)
 
-### 1.30 IPs de los jugadores (reporter 2.6.0): falta desplegar
+### 1.30 IPs de los jugadores (reporter 2.6.0): desplegado, falta verificar
 
 - **Qué es:** el reporter guarda la IP de cada entrada al servidor (con el SteamID validado) y cuenta los intentos de conexión por IP (también los que no validan el SteamID), en lotes cada 60 segundos. Solo los admins las ven, en Administración › Jugadores, con las otras fichas que usaron la misma IP.
-- **Hecho el 2026-10-29 (local), sin commit:** migración de producción `supabase/migrations/20261029180000_ips_jugadores.sql` (20 pruebas), replanteo `38` (6 pruebas, con su inversa), reporter 2.6.0 (probado en el servidor local contra la Supabase local), API (3 de integración) y frontend.
-- **Falta, en este orden y con el OK de Daniel:**
-  1. La migración en **producción** (SQL Editor) y en staging.
-  2. El reporter 2.6.0 en **el real, RBK y flow en la misma tanda** (genérico al real; licenciado con `server/build_licenciado.sh` a RBK y flow). Se carga en el próximo cambio de mapa.
-  3. La `38` en staging y la API y la web en el VPS. En el corte, la `38` va después de la `37` (punto 1.5).
-  4. Verificar con el primer jugador que entre: sin `IPs: no se pudieron registrar` en el log y filas en `player_ips`.
-  5. Publicar `bitacora/2026-10-29-ips-jugadores/CHANGELOG_DISCORD.txt`.
+- **Hecho y commiteado el 2026-10-29 (`85f7fc2`):** migración de producción `supabase/migrations/20261029180000_ips_jugadores.sql` (20 pruebas), replanteo `38` (6 pruebas, con su inversa), reporter 2.6.0 (probado en el servidor local contra la Supabase local), API (3 de integración) y frontend.
+- **Desplegado el 2026-10-29:** la migración en producción y en staging, la `38` en staging, la API y la web `85f7fc23653b` en el VPS, y el reporter 2.6.0 con `csstv_ips "1"` en **el real, RBK y flow** (genérico al real y licenciado a RBK y flow). El plugin se carga en el próximo cambio de mapa de cada servidor.
+- **Falta:**
+  1. En el corte, la `38` va después de la `37` (punto 1.5).
+  2. Verificar con el primer jugador que entre: sin `IPs: no se pudieron registrar` en el log y filas en `player_ips`.
+  3. Publicar `bitacora/2026-10-29-ips-jugadores/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
 
 ## 2. Investigaciones abiertas
