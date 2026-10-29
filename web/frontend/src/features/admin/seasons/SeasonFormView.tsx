@@ -3,6 +3,7 @@ import { XIcon } from "lucide-react"
 import { useId, useState, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -214,8 +215,10 @@ export function SeasonFormView({
       <ResetCard
         pct={f.reset_pct}
         floor={f.reset_floor}
+        all={f.reset_all}
         onPct={(v) => set({ reset_pct: v })}
         onFloor={(v) => set({ reset_floor: v })}
+        onAll={(v) => set({ reset_all: v })}
       />
     </div>
   )
@@ -252,13 +255,18 @@ function Field({
 function ResetCard({
   pct,
   floor,
+  all,
   onPct,
   onFloor,
+  onAll,
 }: {
   pct: number
   floor: number
+  /** También los de debajo del piso (con 0 %, reinicio total). */
+  all: boolean
   onPct: (v: number) => void
   onFloor: (v: number) => void
+  onAll: (v: boolean) => void
 }) {
   const id = useId()
   const [probe, setProbe] = useState("2540")
@@ -269,24 +277,40 @@ function ResetCard({
   const found = isNumber ? null : players.data?.items[0]
   const elo = isNumber ? Number(raw) : (found?.elo ?? null)
   const ok = pct >= 0 && floor >= 0
-  const after = elo === null || !ok ? null : resetElo(elo, pct, floor)
+  const after = elo === null || !ok ? null : resetElo(elo, pct, floor, all)
+  const who = found ? `${found.alias}, con su ELO de hoy. ` : ""
   const note =
     elo === null
       ? raw && !isNumber && !players.isFetching
         ? "Ningún jugador con ese nombre."
         : ""
-      : after === elo
-        ? "Está debajo del piso: no cambia."
-        : `${found ? `${found.alias}, con su ELO de hoy. ` : ""}Pierde ${elo - (after ?? elo)} de ELO.`
+      : after === null || after === elo
+        ? elo <= floor && !all
+          ? "Está debajo del piso: no cambia."
+          : `${who}No cambia.`
+        : after > elo
+          ? `${who}Gana ${after - elo} de ELO.`
+          : `${who}Pierde ${elo - after} de ELO.`
 
   return (
     <Card className="min-w-0 flex-[1_1_360px] gap-3.5">
       <div className="flex flex-col gap-1">
-        <h2 className="text-[17px] font-bold">{resetTitle(floor)}</h2>
+        <h2 className="text-[17px] font-bold">{resetTitle(floor, all)}</h2>
         <span className="text-[13px] leading-relaxed text-muted-foreground">
-          Al cerrar, quien tenga más de{" "}
-          {floor >= 0 ? `${floor} de ELO (el piso)` : "el piso"} conserva este
-          porcentaje de lo que tiene por encima. Debajo del piso no cambia.
+          {all ? (
+            <>
+              Al cerrar, todos se acercan al piso
+              {floor >= 0 ? ` (${floor} de ELO)` : ""}: conservan este
+              porcentaje de su distancia al piso, por encima o por debajo.
+            </>
+          ) : (
+            <>
+              Al cerrar, quien tenga más de{" "}
+              {floor >= 0 ? `${floor} de ELO (el piso)` : "el piso"} conserva
+              este porcentaje de lo que tiene por encima. Debajo del piso no
+              cambia.
+            </>
+          )}
         </span>
       </div>
       <div className="flex flex-col gap-2">
@@ -317,6 +341,15 @@ function ResetCard({
           className="w-24 font-mono"
         />
       </div>
+      <div className="flex flex-col gap-1">
+        <Label className="font-normal">
+          <Checkbox checked={all} onCheckedChange={(v) => onAll(v === true)} />
+          Reiniciar también a los que están debajo del piso
+        </Label>
+        <span className="pl-6 text-xs text-muted-foreground">
+          Con 0 % todos quedan en el piso: reinicio total.
+        </span>
+      </div>
       <div className="flex flex-col gap-2 rounded-lg bg-muted p-3.5">
         <Label
           htmlFor={`${id}-p`}
@@ -339,14 +372,16 @@ function ResetCard({
       </div>
       {ok && (
         <ul className="grid grid-cols-2 gap-1.5">
-          {[2540, 2200, 2010, 1990].map((e) => (
-            <li
-              key={e}
-              className="rounded-md border px-2 py-1.5 font-mono text-[13px]"
-            >
-              {e} → {resetElo(e, pct, floor)}
-            </li>
-          ))}
+          {(all ? [2540, 2200, 1990, 1200] : [2540, 2200, 2010, 1990]).map(
+            (e) => (
+              <li
+                key={e}
+                className="rounded-md border px-2 py-1.5 font-mono text-[13px]"
+              >
+                {e} → {resetElo(e, pct, floor, all)}
+              </li>
+            )
+          )}
         </ul>
       )}
     </Card>

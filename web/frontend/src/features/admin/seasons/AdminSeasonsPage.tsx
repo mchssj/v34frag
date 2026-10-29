@@ -223,6 +223,7 @@ function ActiveHero({ season }: { season: Season }) {
         min_matches: season.min_matches,
         reset_pct: season.reset_pct,
         reset_floor: season.reset_floor,
+        reset_all: season.reset_all,
       },
       undefined,
       "",
@@ -328,8 +329,9 @@ function ActiveHero({ season }: { season: Season }) {
               {s.medals} reciben medalla (top {season.top_n}).
             </li>
             <li>
-              {s.reset} con más de {season.reset_floor} de ELO se reinician: en
-              promedio bajan {s.avg_drop} de ELO.
+              {season.reset_all
+                ? `${s.reset} se reinician: todos se acercan a ${season.reset_floor} de ELO.`
+                : `${s.reset} con más de ${season.reset_floor} de ELO se reinician: en promedio bajan ${s.avg_drop} de ELO.`}
             </li>
             <li>
               Se abre la temporada {season.number + 1} con los valores de

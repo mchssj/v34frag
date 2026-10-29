@@ -12,6 +12,8 @@ export type SeasonForm = {
   min_matches: number
   reset_pct: number
   reset_floor: number
+  /** El reinicio incluye a los que están debajo del piso. */
+  reset_all: boolean
   tiers: SeasonTier[]
 }
 
@@ -23,13 +25,24 @@ export const LIMITS = {
   reset_floor: [0, 10000],
 } as const
 
-/** Reinicio: quien está sobre el piso conserva el porcentaje de lo que tiene por encima. */
-export function resetElo(elo: number, pct: number, floor: number): number {
-  return elo > floor ? floor + Math.round(((elo - floor) * pct) / 100) : elo
+/**
+ * Reinicio: quien está sobre el piso conserva el porcentaje de lo que tiene por encima.
+ * Con `all`, los de debajo del piso también (suben hacia el piso); con 0 %, todos quedan en el piso.
+ */
+export function resetElo(
+  elo: number,
+  pct: number,
+  floor: number,
+  all = false
+): number {
+  return elo > floor || all
+    ? floor + Math.round(((elo - floor) * pct) / 100)
+    : elo
 }
 
 /** Título del reinicio según el piso: el nivel del primer ELO que se reinicia (piso + 1). */
-export function resetTitle(floor: number): string {
+export function resetTitle(floor: number, all = false): string {
+  if (all) return "Reinicio de todos"
   if (floor < 0) return "Reinicio del ELO"
   const level = LEVEL_FLOORS.filter((f) => f <= floor + 1).length
   return level === 10
@@ -59,6 +72,7 @@ export function fromSeason(s: Season): SeasonForm {
     min_matches: s.min_matches,
     reset_pct: s.reset_pct,
     reset_floor: s.reset_floor,
+    reset_all: s.reset_all,
     tiers: s.tiers.map((t) => ({ ...t })),
   }
 }
@@ -72,6 +86,7 @@ export function fromConfig(c: SeasonConfig): SeasonForm {
     min_matches: c.min_matches,
     reset_pct: c.reset_pct,
     reset_floor: c.reset_floor,
+    reset_all: c.reset_all ?? false,
     tiers: c.tiers.map((t) => ({ ...t })),
   }
 }
@@ -158,6 +173,7 @@ export function seasonPatch(s: Season, f: SeasonForm) {
     ...(f.reset_floor !== base.reset_floor
       ? { reset_floor: f.reset_floor }
       : {}),
+    ...(f.reset_all !== base.reset_all ? { reset_all: f.reset_all } : {}),
     ...(JSON.stringify(f.tiers) !== JSON.stringify(base.tiers)
       ? { tiers: f.tiers }
       : {}),
@@ -171,6 +187,7 @@ export function toConfig(f: SeasonForm): SeasonConfig {
     min_matches: f.min_matches,
     reset_pct: f.reset_pct,
     reset_floor: f.reset_floor,
+    reset_all: f.reset_all,
     tiers: f.tiers,
   }
 }

@@ -49,6 +49,7 @@ export function HistoryTab() {
           <span className="text-xs text-muted-foreground">
             Top {s.top_n} · mínimo {s.min_matches} · reinicio {s.reset_pct} %
             sobre {s.reset_floor}
+            {s.reset_all && " (todos)"}
           </span>
           <Link
             to="/ranking"

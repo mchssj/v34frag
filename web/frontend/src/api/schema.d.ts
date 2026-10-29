@@ -9790,7 +9790,7 @@ export interface paths {
         put?: never;
         /**
          * Terminar la temporada
-         * @description Cierra la temporada ya: foto del ranking, medallas al top N, reinicio del nivel 10 y apertura de la siguiente. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend). No se deshace.
+         * @description Cierra la temporada ya: foto del ranking, medallas al top N, reinicio (del nivel 10, o de todos con `reset_all`) y apertura de la siguiente. Pide `confirm: "estoy seguro"` (doble confirmación en el frontend). No se deshace.
          */
         post: {
             parameters: {
@@ -9890,6 +9890,8 @@ export interface paths {
                     reset_pct?: number | null;
                     /** @description Piso del reinicio */
                     reset_floor?: number | null;
+                    /** @description `true`: el reinicio incluye a los que están debajo del piso */
+                    reset_all?: "true" | "false";
                     /** @description Busca en el alias */
                     q?: string;
                     /** @description `true` solo los que se reinician (nivel 10) */
@@ -16055,6 +16057,8 @@ export interface components {
             reset_pct: number;
             /** @description Piso del reinicio (el inicio del nivel 10) */
             reset_floor: number;
+            /** @description El reinicio incluye a los que están debajo del piso: suben hacia el piso con el mismo porcentaje. Con `reset_pct` 0, todos quedan en el piso (reinicio total) */
+            reset_all: boolean;
             tiers: components["schemas"]["SeasonTier"][];
             /** @description Puesto 1 de la foto final; `null` mientras está activa */
             champion: {
@@ -16166,6 +16170,11 @@ export interface components {
             reset_pct: number;
             /** @description Piso del reinicio (el inicio del nivel 10) */
             reset_floor: number;
+            /**
+             * @description El reinicio incluye a los que están debajo del piso: suben hacia el piso con el mismo porcentaje. Con `reset_pct` 0, todos quedan en el piso (reinicio total)
+             * @default false
+             */
+            reset_all: boolean;
             /** @description Tramos de medallas, en orden */
             tiers: components["schemas"]["SeasonTier"][];
         };
@@ -16193,6 +16202,8 @@ export interface components {
             reset_pct?: number;
             /** @description Piso del reinicio (el inicio del nivel 10) */
             reset_floor?: number;
+            /** @description El reinicio incluye a los que están debajo del piso: suben hacia el piso con el mismo porcentaje. Con `reset_pct` 0, todos quedan en el piso (reinicio total) */
+            reset_all?: boolean;
             /** @description Tramos de medallas, en orden */
             tiers?: components["schemas"]["SeasonTier"][];
         };
@@ -16227,9 +16238,9 @@ export interface components {
                 /** @description Llegan al mínimo de mixes */
                 eligible: number;
                 medals: number;
-                /** @description Nivel 10 que se reinician */
+                /** @description Jugadores que se reinician */
                 reset: number;
-                /** @description Cuánto bajan en promedio los que se reinician */
+                /** @description Cuánto bajan en promedio los que se reinician (con `reset_all` puede ser negativo: los de debajo del piso suben) */
                 avg_drop: number;
                 max_drop: number;
             };
@@ -16250,7 +16261,7 @@ export interface components {
                 icon: string;
             } | null;
             elo_after: number;
-            /** @description Se reinicia (está sobre el piso) */
+            /** @description El reinicio le cambia el ELO (está sobre el piso o, con `reset_all`, no está en el piso) */
             reset: boolean;
         };
         MatchList: {

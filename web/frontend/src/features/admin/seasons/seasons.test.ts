@@ -34,6 +34,7 @@ const season: Season = {
   min_matches: 20,
   reset_pct: 10,
   reset_floor: 2001,
+  reset_all: false,
   tiers: TIERS,
   champion: null,
   medals: 0,
@@ -46,6 +47,15 @@ describe("Temporadas", () => {
     expect(resetElo(2010, 10, 2001)).toBe(2002)
     expect(resetElo(1990, 10, 2001)).toBe(1990)
     expect(resetElo(2540, 0, 2001)).toBe(2001)
+  })
+
+  it("reiniciar también a los de debajo del piso: suben hacia el piso; con 0 %, todos al piso", () => {
+    expect(resetElo(2540, 10, 2001, true)).toBe(2055)
+    expect(resetElo(1001, 10, 2001, true)).toBe(1901)
+    expect(resetElo(2001, 10, 2001, true)).toBe(2001)
+    expect(resetElo(2540, 0, 1000, true)).toBe(1000)
+    expect(resetElo(400, 0, 1000, true)).toBe(1000)
+    expect(resetTitle(2001, true)).toBe("Reinicio de todos")
   })
 
   it("el título del reinicio dice desde qué nivel, según el piso", () => {
@@ -90,6 +100,9 @@ describe("Temporadas", () => {
     expect(
       seasonPatch(season, { ...f, reset_pct: 20, ends: "2099-11-10" })
     ).toEqual({ reset_pct: 20, ends_at: "2099-11-10T09:00:00.000Z" })
+    expect(seasonPatch(season, { ...f, reset_all: true })).toEqual({
+      reset_all: true,
+    })
   })
 
   it("no deja guardar valores fuera de rango ni una fecha pasada", () => {

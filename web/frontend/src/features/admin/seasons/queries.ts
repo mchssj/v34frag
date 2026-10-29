@@ -47,6 +47,7 @@ export type PreviewParams = {
   min_matches: number
   reset_pct: number
   reset_floor: number
+  reset_all: boolean
 }
 export type PreviewFilter = "medal" | "reset" | undefined
 
@@ -64,6 +65,7 @@ export function seasonPreviewOptions(
           params: {
             query: {
               ...p,
+              reset_all: p.reset_all ? "true" : "false",
               page,
               per: 25,
               ...(filter ? { [filter]: "true" as const } : {}),

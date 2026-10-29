@@ -34,13 +34,25 @@ export function PreviewTab({ form }: { form: SeasonForm }) {
   const [page, setPage] = useState(1)
   // Se compara como texto: un objeto nuevo en cada render reiniciaría el retardo.
   const key = useDebouncedValue(
-    [form.top_n, form.min_matches, form.reset_pct, form.reset_floor].join(","),
+    [
+      form.top_n,
+      form.min_matches,
+      form.reset_pct,
+      form.reset_floor,
+      form.reset_all ? 1 : 0,
+    ].join(","),
     400
   )
-  const [top_n, min_matches, reset_pct, reset_floor] = key
+  const [top_n, min_matches, reset_pct, reset_floor, all] = key
     .split(",")
     .map(Number)
-  const params = { top_n, min_matches, reset_pct, reset_floor }
+  const params = {
+    top_n,
+    min_matches,
+    reset_pct,
+    reset_floor,
+    reset_all: all === 1,
+  }
   const valid =
     ok(params.top_n, LIMITS.top_n) &&
     ok(params.min_matches, LIMITS.min_matches) &&
@@ -161,7 +173,8 @@ export function PreviewTab({ form }: { form: SeasonForm }) {
                       <TableCell
                         className={cn(
                           "font-mono",
-                          r.reset && "text-destructive"
+                          r.elo_after < r.elo && "text-destructive",
+                          r.elo_after > r.elo && "text-win"
                         )}
                       >
                         {r.reset ? `${r.elo} → ${r.elo_after}` : r.elo}

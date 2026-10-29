@@ -41,9 +41,17 @@ const params = {
   reset_pct: int(0, 100, 'Porcentaje de lo que tenía sobre el piso que conserva un nivel 10 al reiniciar (0 = vuelve al piso)'),
   reset_floor: int(0, 10000, 'Piso del reinicio (el inicio del nivel 10)'),
 };
+const resetAll = z
+  .boolean()
+  .openapi({ description: 'El reinicio incluye a los que están debajo del piso: suben hacia el piso con el mismo porcentaje. Con `reset_pct` 0, todos quedan en el piso (reinicio total)' });
 
 export const SeasonConfig = z
-  .object({ duration_days: int(1, 365, 'Duración por defecto de la próxima temporada, en días'), ...params, tiers: SeasonTiers })
+  .object({
+    duration_days: int(1, 365, 'Duración por defecto de la próxima temporada, en días'),
+    ...params,
+    reset_all: resetAll.default(false),
+    tiers: SeasonTiers,
+  })
   .openapi('SeasonConfig');
 export const SeasonConfigRead = SeasonConfig.extend({ updated_at: z.string().nullable() }).openapi('SeasonConfigRead');
 
@@ -59,6 +67,7 @@ export const Season = z
     ends_at: z.string().openapi({ description: 'Fin planeado (06:00 de Argentina por defecto). El cron la cierra al llegar' }),
     closed_at: z.string().nullable(),
     ...params,
+    reset_all: resetAll,
     tiers: z.array(SeasonTier),
     champion: PlayerRef.nullable().openapi({ description: 'Puesto 1 de la foto final; `null` mientras está activa' }),
     medals: z.number().int(),
@@ -120,6 +129,7 @@ export const SeasonPatch = z
     min_matches: params.min_matches.optional(),
     reset_pct: params.reset_pct.optional(),
     reset_floor: params.reset_floor.optional(),
+    reset_all: resetAll.optional(),
     tiers: SeasonTiers.optional(),
   })
   .openapi('SeasonPatch');
@@ -142,6 +152,7 @@ export const PreviewQuery = listQuery(['rank', 'elo', 'alias'], { sort: 'rank', 
   min_matches: qint(1, 1000, 'Mínimo de mixes'),
   reset_pct: qint(0, 100, 'Porcentaje que conserva'),
   reset_floor: qint(0, 10000, 'Piso del reinicio'),
+  reset_all: boolParam('`true`: el reinicio incluye a los que están debajo del piso'),
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
   reset: boolParam('`true` solo los que se reinician (nivel 10)'),
   medal: boolParam('`true` solo los que reciben medalla'),
@@ -155,7 +166,7 @@ export const PreviewRow = z
     matches: z.number().int(),
     medal: Medal,
     elo_after: z.number().int(),
-    reset: z.boolean().openapi({ description: 'Se reinicia (está sobre el piso)' }),
+    reset: z.boolean().openapi({ description: 'El reinicio le cambia el ELO (está sobre el piso o, con `reset_all`, no está en el piso)' }),
   })
   .openapi('SeasonPreviewRow');
 export const SeasonPreview = Envelope(PreviewRow)
@@ -164,8 +175,8 @@ export const SeasonPreview = Envelope(PreviewRow)
       players: z.number().int(),
       eligible: z.number().int().openapi({ description: 'Llegan al mínimo de mixes' }),
       medals: z.number().int(),
-      reset: z.number().int().openapi({ description: 'Nivel 10 que se reinician' }),
-      avg_drop: z.number().openapi({ description: 'Cuánto bajan en promedio los que se reinician' }),
+      reset: z.number().int().openapi({ description: 'Jugadores que se reinician' }),
+      avg_drop: z.number().openapi({ description: 'Cuánto bajan en promedio los que se reinician (con `reset_all` puede ser negativo: los de debajo del piso suben)' }),
       max_drop: z.number().int(),
     }),
   })
