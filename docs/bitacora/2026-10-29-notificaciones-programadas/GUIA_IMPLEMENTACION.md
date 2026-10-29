@@ -22,7 +22,10 @@ Implementado y probado en local el 2026-10-29, en la rama `feat/frontend-fase-1`
 | `docs/frontend/contrato/notificaciones.md` y `README.md` | Los seis tipos y la fila de novedades |
 | `docs/PENDIENTES.md` y `docs/bitacora/README.md` | Estado |
 
-## Despliegue (pendiente)
+## Despliegue
+
+**2026-10-29, en el VPS contra staging:** la `35` se cargó en staging (junto con la `31` a la `36`, ver [`2026-10-29-hud-relay-vps`](../2026-10-29-hud-relay-vps/GUIA_IMPLEMENTACION.md)), la API `91498a41bca2` subió `notify-tick.mjs` y `cmleague-notify.timer` quedó prendido. Primera corrida a las 17:30 UTC, sin error. Falta producción:
+
 
 1. **Base (en el corte, después de la `28`, la `32` y la `33`):** aplicar `supabase/replanteo/35_notificaciones_programadas.sql`.
 2. **VPS, cuando la base de producción tenga la `35`:**

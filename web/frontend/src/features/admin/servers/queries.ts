@@ -91,6 +91,45 @@ export function useRotateServerToken() {
   })
 }
 
+/** HUD de un servidor: puerto del relay (null lo saca) y si está activo. La base valida puerto y SourceTV. */
+export function useSetServerHud() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      port,
+      enabled,
+    }: {
+      id: string
+      port: number | null
+      enabled: boolean
+    }) =>
+      unwrap(
+        api.PUT("/api/v1/admin/servers/{id}/hud", {
+          params: { path: { id } },
+          body: { port, enabled },
+        })
+      ),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: adminServerKeys.servers }),
+  })
+}
+
+/** Clave nueva del HUD: hay que subirla al csstv_hud.cfg del servidor. */
+export function useNewHudKey() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.POST("/api/v1/admin/servers/{id}/hud/key", {
+          params: { path: { id } },
+        })
+      ),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: adminServerKeys.servers }),
+  })
+}
+
 export function useDeleteServer() {
   const qc = useQueryClient()
   return useMutation({

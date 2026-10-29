@@ -5420,6 +5420,8 @@ export interface paths {
                     has_player?: "true" | "false";
                     /** @description Con o sin SteamID vinculado */
                     has_steam?: "true" | "false";
+                    /** @description Con o sin la marca de streamer del HUD */
+                    streamer?: "true" | "false";
                 };
                 header?: never;
                 path?: never;
@@ -8765,6 +8767,454 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/servers/{id}/hud": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * HUD de un servidor
+         * @description Puerto del relay (27500 a 27519, único) y si está activo. Al poner el puerto se genera la clave; `port: null` saca el HUD. Activarlo necesita la SourceTV del servidor (`connect_address` y `tv_port`): si falta, `BUSINESS_RULE`. Puerto usado por otro servidor: `409`. El relay lo toma en 30 segundos. Devuelve el servidor, con las líneas del cfg en `hud.cfg`.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ServerHudBody"];
+                };
+            };
+            responses: {
+                /** @description Servidor */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminServer"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/servers/{id}/hud/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clave nueva del HUD
+         * @description Hay que copiarla al `csstv_hud.cfg` de ese servidor: hasta entonces el relay descarta sus paquetes. Sin puerto: `BUSINESS_RULE`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Servidor */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminServer"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/streamers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Streamers
+         * @description Las cuentas con la marca de streamer, también las que la perdieron (`active=false`).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `alias`, `granted_at` */
+                    sort?: "alias" | "granted_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el alias */
+                    q?: string;
+                    /** @description Solo las activas (`true`) o solo las quitadas (`false`) */
+                    active?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Streamers */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StreamerList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/streamer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dar la marca de streamer
+         * @description Si ya la tiene, no cambia nada. Si se la habían quitado, vuelve sin link: tiene que generar uno. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Streamer */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Streamer"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/streamer/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar la marca de streamer
+         * @description Su link deja de andar en 30 segundos. Si no la tiene: `BUSINESS_RULE`. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Streamer */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Streamer"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/hud-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generar mi link del HUD
+         * @description Solo streamers (`403` si no). Devuelve los links de OBS y del panel **una sola vez**: la base guarda el hash. Generar otro invalida el anterior en 30 segundos.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Links */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["HudLink"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -13707,6 +14157,7 @@ export interface components {
             matches_played: number;
             preferences: components["schemas"]["Preferences"];
             vip: components["schemas"]["VipStatus"];
+            streamer: components["schemas"]["MyStreamer"];
         };
         ProfileDetails: {
             avatar_url: string | null;
@@ -13750,6 +14201,12 @@ export interface components {
             until: string | null;
             /** @description Inicio del primer período (también si después se revocó o venció) */
             since: string;
+        } | null;
+        /** @description La marca de streamer del HUD, o `null` si no la tiene (link en `POST /me/hud-link`) */
+        MyStreamer: {
+            since: string;
+            has_link: boolean;
+            link_created_at: string | null;
         } | null;
         ProfilePatch: {
             /**
@@ -14853,6 +15310,8 @@ export interface components {
             player_id: string | null;
             steam_id: string | null;
             vip: components["schemas"]["VipStatus"];
+            /** @description Tiene la marca de streamer del HUD */
+            streamer: boolean;
         };
         AdminAliasBody: {
             alias: string;
@@ -15018,6 +15477,30 @@ export interface components {
             matches: number;
             last_match_at: string | null;
             created_at: string;
+            hud: components["schemas"]["ServerHud"];
+        };
+        /** @description HUD del relay en el VPS (se configura con `PUT …/hud`) */
+        ServerHud: {
+            /** @description Puerto UDP del relay para este servidor (27500 a 27519). `null`: sin HUD */
+            port: number | null;
+            /** @description El relay atiende este servidor. Necesita `port` y la SourceTV (`connect_address` y `tv_port`) */
+            enabled: boolean;
+            /** @description Clave del HUD de este servidor (`csstv_hud_key`) */
+            key: string | null;
+            /** @description Tiene la SourceTV cargada: sin ella no se puede activar */
+            can_enable: boolean;
+            /** @description Último paquete que recibió el relay */
+            last_packet_at: string | null;
+            /** @description El relay recibió un paquete en el último minuto */
+            receiving: boolean;
+            /** @description Streamers con el HUD abierto en este servidor ahora */
+            streaming: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            }[];
+            /** @description Las líneas de `cfg/sourcemod/csstv_hud.cfg` para ese servidor. `null` sin puerto */
+            cfg: string | null;
         };
         AdminServerToken: {
             /** Format: uuid */
@@ -15504,6 +15987,44 @@ export interface components {
         };
         VipRevoke: {
             reason: string;
+        };
+        ServerHudBody: {
+            /** @description `null` saca el HUD del servidor (y borra la clave) */
+            port: number | null;
+            enabled: boolean;
+        };
+        StreamerList: {
+            items: components["schemas"]["Streamer"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        Streamer: {
+            user: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            };
+            /** @description `false`: se la quitaron */
+            active: boolean;
+            granted_at: string;
+            /** @description Alias del admin que la dio */
+            granted_by: string | null;
+            revoked_at: string | null;
+            /** @description Ya generó su link de OBS */
+            has_link: boolean;
+            link_created_at: string | null;
+        };
+        HudLink: {
+            /** @description Para la fuente Navegador de OBS (1920×1080). **Se muestra una sola vez** */
+            hud_url: string;
+            /** @description Panel del streamer: servidor, jugador enfocado y qué se muestra */
+            control_url: string;
+            created_at: string;
         };
         SeasonList: {
             items: components["schemas"]["Season"][];

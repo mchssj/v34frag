@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ConfirmDialog, SecretDialog } from "../dialogs"
+import { HudSection, hudChip } from "./HudSection"
 import {
   ago,
   compareVersions,
@@ -304,6 +305,9 @@ function ServerRow({
       </Cell>
       <Cell label="Licencia" className="flex-[1_1_170px]">
         <Chip tone={lic.tone}>{lic.text}</Chip>
+      </Cell>
+      <Cell label="HUD" className="flex-[1_1_120px]">
+        <Chip tone={hudChip(s.hud).tone}>{hudChip(s.hud).text}</Chip>
       </Cell>
       <Cell label="Plugin" className="flex-[1_1_110px]">
         <span
@@ -640,6 +644,8 @@ function ServerForm({
           )}
         </PanelSection>
       )}
+
+      {server && <HudSection server={server} />}
 
       {server && (
         <>

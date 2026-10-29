@@ -10,12 +10,13 @@ import { Button } from "@/components/ui/button"
 import { timeAgo } from "@/features/shell/notifications/model"
 import { myProfileOptions } from "../queries"
 import { SectionCard } from "../ui"
+import { HudCard } from "./HudCard"
 import { PasswordCard } from "./PasswordCard"
 
 const day = (iso: string | null | undefined) =>
   iso ? format(parseISO(iso), "d MMM yyyy", { locale: es }) : "—"
 
-/** Contraseña, datos de la cuenta y cerrar sesión. */
+/** HUD para OBS (si es streamer), contraseña, datos de la cuenta y cerrar sesión. */
 export function AccountSection() {
   const user = useMe().data
   const profile = useQuery(myProfileOptions).data
@@ -45,6 +46,7 @@ export function AccountSection() {
 
   return (
     <>
+      {profile?.streamer && <HudCard streamer={profile.streamer} />}
       <PasswordCard />
       <SectionCard className="px-5 py-2">
         <dl>

@@ -62,6 +62,8 @@ const TYPES: [string, Notification["category"]][] = [
   ["alias_changed", "account"],
   ["role_changed", "account"],
   ["password_changed", "account"],
+  ["streamer_granted", "account"],
+  ["streamer_revoked", "account"],
   ["event_new", "news"],
   ["season_started", "news"],
   ["admin_steam_request", "admin"],

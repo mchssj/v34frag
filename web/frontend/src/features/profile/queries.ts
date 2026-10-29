@@ -8,6 +8,8 @@ import { api, unwrap, type Schemas } from "@/api/client"
 import { authKeys, missingSession } from "@/auth/queries"
 import { tokenStore, toSession } from "@/auth/tokenStore"
 
+export type MyProfile = Schemas["MyProfile"]
+
 export const profileKeys = {
   mine: ["profile", "mine"] as const,
 }
@@ -85,5 +87,15 @@ export function useChangeAlias() {
       void queryClient.invalidateQueries({ queryKey: profileKeys.mine })
       void queryClient.invalidateQueries({ queryKey: authKeys.me })
     },
+  })
+}
+
+/** Link del HUD para OBS (solo streamers). Se ve una sola vez: el anterior deja de andar. */
+export function useNewHudLink() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST("/api/v1/me/hud-link")),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: profileKeys.mine }),
   })
 }

@@ -10,6 +10,7 @@ import { requestBlock } from "./players/SteamTabs"
 import { adjustValueError, adjustedElo } from "./servers/AdjustmentsTab"
 import { parseElo } from "./servers/EloRulesTab"
 import { leadingSide } from "./servers/ReviewTab"
+import { hudChip, parseHudPort } from "./servers/HudSection"
 import { serverWarnings } from "./servers/ServersTab"
 import type { AdminServer } from "./servers/queries"
 import { banExpiry } from "./bans/BanDialog"
@@ -36,6 +37,16 @@ const server = (o: Partial<AdminServer> = {}): AdminServer => ({
   matches: 10,
   last_match_at: null,
   created_at: "2026-10-01T00:00:00Z",
+  hud: {
+    port: null,
+    enabled: false,
+    key: null,
+    can_enable: false,
+    last_packet_at: null,
+    receiving: false,
+    streaming: [],
+    cfg: null,
+  },
   ...o,
 })
 
@@ -227,5 +238,31 @@ describe("Baneos", () => {
     expect(canEditBan(perm, true)).toBe(true)
     expect(canEditBan(b({}), false)).toBe(true)
     expect(canEditBan(b({ status: "expired" }), true)).toBe(false)
+  })
+})
+
+describe("HUD de un servidor", () => {
+  const hud = (o: Partial<AdminServer["hud"]>) => ({ ...server().hud, ...o })
+
+  it("el chip dice si tiene HUD, si está prendido y si llegan paquetes", () => {
+    expect(hudChip(hud({}))).toEqual({ text: "Sin HUD", tone: "neutral" })
+    expect(hudChip(hud({ port: 27502 }))).toEqual({
+      text: "Apagado · 27502",
+      tone: "neutral",
+    })
+    expect(hudChip(hud({ port: 27501, enabled: true }))).toEqual({
+      text: "Activo · sin señal",
+      tone: "warn",
+    })
+    expect(
+      hudChip(hud({ port: 27501, enabled: true, receiving: true }))
+    ).toEqual({ text: "Recibiendo", tone: "win" })
+  })
+
+  it("el puerto va del 27500 al 27519; vacío saca el HUD", () => {
+    expect(parseHudPort("27501")).toEqual({ port: 27501 })
+    expect(parseHudPort(" ")).toEqual({ port: null })
+    expect(parseHudPort("27520")).toHaveProperty("error")
+    expect(parseHudPort("2750a")).toHaveProperty("error")
   })
 })

@@ -31,7 +31,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - Los mismos plugins y extensiones. Sin el anti-wallhack de KACR (`kacr_eyes_antiwall "0"`), con `Anti_Wallhack_Lite` y con `csstv_perf` (sostiene `fps_max 600`).
   - Los mismos `cfg/csstv/warmup.cfg`, `live.cfg` y `end.cfg`, y el mismo `mapcycle.txt`.
   - Los mismos valores en `csstv_reporter.cfg` (prórroga MR3 con 12000, medio tiempo de 3 s) y en `server.cfg` (`sv_pure 2`, `phys_timescale 1.7`, `clientmod_smoke_type 2`, `sv_minupdaterate`/`sv_mincmdrate 100` y `sv_maxupdaterate`/`sv_maxcmdrate 101`).
-  - Solo cambia lo propio de cada servidor: token, tag y licencia del reporter, `csstv_demo`, `hostname`, `tv_title`, contraseñas, admins, `csstv_calladmin_server` y `_address`, y FastDL.
+  - Solo cambia lo propio de cada servidor: token, tag y licencia del reporter, `csstv_demo`, `hostname`, `tv_title`, contraseñas, admins, `csstv_calladmin_server` y `_address`, FastDL, y `csstv_hud_port` y `csstv_hud_key` (los da Administración › Servidores; desde el 2026-10-29, [`2026-10-29-hud-relay-vps`](docs/bitacora/2026-10-29-hud-relay-vps/)).
   - Todo cambio de configuración en un servidor se hace en todos en la misma tanda. Un servidor nuevo se arma copiando la configuración del real (script de referencia: `docs/bitacora/2026-10-22-rbk-igual-al-real/pruebas/rbk_igual.py`) y se compara con `comparar.py` antes de darlo por listo.
 
 ## Cuidados

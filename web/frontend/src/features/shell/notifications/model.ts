@@ -439,6 +439,19 @@ export function describe(n: Notification, me?: string | null): Described {
         body: "Si no fuiste tú, avísale a un admin.",
         link: { to: "/profile/account" },
       }
+    case "streamer_granted":
+      return {
+        kind: "account",
+        title: "Ya puedes transmitir con el HUD",
+        body: "Genera tu link para OBS en Mi perfil › Cuenta.",
+        link: { to: "/profile/account" },
+      }
+    case "streamer_revoked":
+      return {
+        kind: "account",
+        title: "Un admin te quitó el acceso al HUD",
+        body: "Tu link de OBS dejó de andar.",
+      }
 
     // ---------- novedades ----------
     case "event_new":

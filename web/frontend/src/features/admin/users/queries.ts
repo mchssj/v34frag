@@ -7,15 +7,16 @@ import {
 
 import { api, unwrap, type Schemas } from "@/api/client"
 
-// Administración › Usuarios: cuentas (alias, rol y VIP) y palabras bloqueadas.
+// Administración › Usuarios: cuentas (alias, rol, VIP y la marca de streamer del HUD) y palabras bloqueadas.
 
 export type AdminUser = Schemas["AdminUser"]
 export type BlockedHit = Schemas["BlockedHit"]
 export type VipGrant = Schemas["VipGrant"]
+export type Streamer = Schemas["Streamer"]
 export type SettableRole = "user" | "organizer" | "moderator"
 
 export type AccountFilter =
-  "all" | "admin" | "moderator" | "organizer" | "noplayer"
+  "all" | "admin" | "moderator" | "organizer" | "streamer" | "noplayer"
 
 export const USERS_PER = 25
 
@@ -23,6 +24,7 @@ export const adminUserKeys = {
   list: (q: string, f: AccountFilter, page: number) =>
     ["admin", "users", "list", q, f, page] as const,
   vip: (id: string) => ["admin", "users", "vip", id] as const,
+  streamer: (alias: string) => ["admin", "users", "streamer", alias] as const,
   words: ["admin", "words", "list"] as const,
   hits: ["admin", "words", "hits"] as const,
 }
@@ -42,6 +44,7 @@ export function usersOptions(q: string, f: AccountFilter, page: number) {
                 ? { role: f }
                 : {}),
               ...(f === "noplayer" ? { has_player: "false" as const } : {}),
+              ...(f === "streamer" ? { streamer: "true" as const } : {}),
             },
           },
           signal,
@@ -181,3 +184,37 @@ export function useDeleteWord() {
     onSuccess: () => touchedWords(qc),
   })
 }
+
+/** La marca de streamer de una cuenta (también si se la quitaron), o null si nunca la tuvo. */
+export function streamerOptions(id: string, alias: string) {
+  return queryOptions({
+    queryKey: adminUserKeys.streamer(alias),
+    queryFn: async ({ signal }) => {
+      const res = await unwrap(
+        api.GET("/api/v1/admin/streamers", {
+          params: { query: { q: alias, per: 100 } },
+          signal,
+        })
+      )
+      return res.items.find((s) => s.user.id === id) ?? null
+    },
+  })
+}
+
+function useStreamerMutation(
+  id: string,
+  path:
+    | "/api/v1/admin/users/{id}/streamer"
+    | "/api/v1/admin/users/{id}/streamer/revoke"
+) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST(path, { params: { path: { id } } })),
+    onSuccess: () => touchedUsers(qc),
+  })
+}
+
+export const useGrantStreamer = (id: string) =>
+  useStreamerMutation(id, "/api/v1/admin/users/{id}/streamer")
+export const useRevokeStreamer = (id: string) =>
+  useStreamerMutation(id, "/api/v1/admin/users/{id}/streamer/revoke")
