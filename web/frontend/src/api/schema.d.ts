@@ -1061,7 +1061,7 @@ export interface paths {
         };
         /**
          * Pedir un equipo nuevo
-         * @description Una solicitud por usuario: enviarla de nuevo la reemplaza y vuelve a quedar pendiente. Hace falta tener el SteamID vinculado (quien la pide queda como dueño, capitán y primer jugador). La aprueba un admin.
+         * @description Una solicitud por usuario: enviarla de nuevo la reemplaza y vuelve a quedar pendiente. Hace falta tener el SteamID vinculado (quien la pide queda como dueño, capitán y primer jugador). La aprueba un admin. JSON con `name` y `tag`, o `multipart/form-data` con `name`, `tag` y `logo` opcional (JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).). Sin `logo` se conserva el que ya tenía la solicitud. Al aprobarla, el logo pasa al equipo.
          */
         put: {
             parameters: {
@@ -1070,9 +1070,10 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["TeamRequestBody"];
+                    "multipart/form-data": components["schemas"]["TeamRequestForm"];
                 };
             };
             responses: {
@@ -1096,6 +1097,15 @@ export interface paths {
                 };
                 /** @description Sin sesión o sesión vencida */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1796,7 +1806,7 @@ export interface paths {
         put?: never;
         /**
          * Aprobar un pedido de SteamID
-         * @description `add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha); falla si comparte partidas con otro SteamID de la ficha. `remove`: lo saca de la ficha como `DELETE /api/v1/admin/steam/{steamid}`; falla si es el único SteamID de la ficha.
+         * @description `add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de esa ficha** (un solo ELO por ficha; los demás no cambian); falla si comparte partidas con otro SteamID de la ficha. `remove`: lo saca de la ficha como `DELETE /api/v1/admin/steam/{steamid}`; falla si es el único SteamID de la ficha.
          */
         post: {
             parameters: {
@@ -2122,7 +2132,7 @@ export interface paths {
         post?: never;
         /**
          * Quitar un SteamID de su ficha
-         * @description Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO. Si el jugador había pedido desvincularlo, el pedido queda aprobado.
+         * @description Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO de la ficha y el del SteamID que queda libre (los demás no cambian).Si el jugador había pedido desvincularlo, el pedido queda aprobado.
          */
         delete: {
             parameters: {
@@ -3148,8 +3158,10 @@ export interface paths {
                     kind?: "official" | "pcw";
                     /** @description Busca en el nombre y la sigla, sin distinguir mayúsculas ni tildes */
                     q?: string;
-                    /** @description `true`: equipos oficiales con lugar (menos de 10 jugadores) */
+                    /** @description `true`: equipos oficiales con lugar (menos miembros que el máximo que fija el admin) */
                     has_space?: "true" | "false";
+                    /** @description Equipos que buscan alguno de estos puestos (`player`, `sub`, `coach`, separados por coma) */
+                    looking_for?: string;
                 };
                 header?: never;
                 path?: never;
@@ -3259,7 +3271,70 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Editar mi equipo
+         * @description El capitán o un admin. Por ahora, qué busca el equipo (`looking_for`). El nombre y la sigla los cambia un admin.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TeamPatch"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/v1/teams/{id}/members": {
@@ -3271,7 +3346,7 @@ export interface paths {
         };
         /**
          * Plantel y ex integrantes
-         * @description Con `active=true`, el plantel actual (el capitán marcado); con `active=false`, los ex integrantes. Sin sesión.
+         * @description Con `active=true`, el plantel actual (el capitán marcado); con `active=false`, los ex integrantes. `game_role` es el puesto que cada jugador eligió en su perfil (para la tarjeta "Roles de equipo"). Sin sesión.
          */
         get: {
             parameters: {
@@ -3312,6 +3387,280 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teams/{id}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Subir el logo
+         * @description `multipart/form-data`, campo `file`. El capitán o un admin. Reemplaza al anterior. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": components["schemas"]["LogoUpload"];
+                };
+            };
+            responses: {
+                /** @description Logo guardado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LogoResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Quitar el logo
+         * @description El capitán o un admin. El escudo vuelve a mostrar la sigla.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teams/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Torneos del equipo
+         * @description Los torneos en los que está o estuvo inscrito (sin los cancelados), del más reciente al más viejo, con hasta dónde llegó. `total` cuenta también los que tienen las inscripciones abiertas (`record.events_played` en el detalle cuenta solo los en curso o terminados). Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `starts_on` */
+                    sort?: "starts_on";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Torneos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamEventList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis equipos
+         * @description Equipos oficiales donde está hoy, con su rol: `leader` si es el capitán; si no, su estado en el roster.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Equipos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyTeam"][];
                     };
                 };
                 /** @description Sin sesión o sesión vencida */
@@ -3483,7 +3832,7 @@ export interface paths {
         put?: never;
         /**
          * Pedir entrar a un equipo
-         * @description Hace falta tener el SteamID vinculado. El capitán acepta o rechaza; vence a los 7 días.
+         * @description Hace falta tener el SteamID vinculado. El capitán acepta o rechaza; vence a los 7 días. Con `message` opcional (hasta 200 caracteres). Al aceptarlo, el jugador entra como `player` y el capitán le cambia el estado después. `409 ROSTER_FULL` si el equipo está lleno.
          */
         post: {
             parameters: {
@@ -3494,7 +3843,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["JoinRequestBody"];
+                };
+            };
             responses: {
                 /** @description Pedido creado */
                 201: {
@@ -3523,6 +3876,15 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -3540,7 +3902,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Aceptar una invitación */
+        /**
+         * Aceptar una invitación
+         * @description Entra con el estado de la invitación (`role`). `409 ROSTER_FULL` si el equipo se llenó.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -3588,6 +3953,15 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3903,7 +4277,7 @@ export interface paths {
         put?: never;
         /**
          * Invitar a un jugador
-         * @description Por `player_id` o por `alias`. El jugador necesita cuenta y SteamID vinculado, y el equipo no puede estar lleno.
+         * @description Por `player_id` o por `alias`, con el estado con el que entra (`role`, por defecto `player`) y un mensaje opcional. El jugador necesita cuenta y SteamID vinculado. `409 ROSTER_FULL` si el equipo está lleno (el máximo lo fija el admin).
          */
         post: {
             parameters: {
@@ -3949,6 +4323,15 @@ export interface paths {
                 };
                 /** @description Sin permiso */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4045,7 +4428,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Aceptar un pedido para entrar */
+        /**
+         * Aceptar un pedido para entrar
+         * @description Entra como `player`. `409 ROSTER_FULL` si el equipo se llenó.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -4093,6 +4479,15 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4244,7 +4639,73 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Cambiar el estado de un jugador
+         * @description Capitán o admin: `player` (activo), `sub` (suplente) o `coach`, sin topes por estado (solo el máximo de miembros). Al jugador le llega el aviso `team_role_changed`. `404 NOT_A_MEMBER` si no está en el plantel.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    playerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MemberRoleBody"];
+                };
+            };
+            responses: {
+                /** @description Jugador actualizado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RosterEntry"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/v1/teams/{id}/captain": {
@@ -4864,7 +5325,7 @@ export interface paths {
         put?: never;
         /**
          * Vincular un SteamID
-         * @description Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO. `player_id: null` lo quita de su ficha.
+         * @description Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO de esa ficha (los demás no cambian).`player_id: null` lo quita de su ficha.
          */
         post: {
             parameters: {
@@ -4954,7 +5415,7 @@ export interface paths {
                     order?: "asc" | "desc";
                     /** @description Busca en el alias */
                     q?: string;
-                    role?: "user" | "organizer" | "admin";
+                    role?: "user" | "organizer" | "moderator" | "admin";
                     /** @description Con o sin jugador vinculado */
                     has_player?: "true" | "false";
                     /** @description Con o sin SteamID vinculado */
@@ -5951,6 +6412,114 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teams/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Máximo de miembros de un equipo */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamConfig"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Cambiar el máximo de miembros
+         * @description Entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva (`409 ROSTER_FULL` al invitar o aceptar).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TeamConfig"];
+                };
+            };
+            responses: {
+                /** @description Guardada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamConfig"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7516,6 +8085,695 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Baneos
+         * @description Lista pública de los baneos de todos los servidores (también los vencidos y levantados). Sin sesión. El SteamID de un baneo con ficha solo lo ven moderadores y admins.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at`, `expires_at` */
+                    sort?: "created_at" | "expires_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Activos, vencidos o levantados */
+                    status?: "active" | "expired" | "lifted";
+                    source?: "web" | "server" | "import";
+                    /** @description Busca en el nick y el motivo, y en el SteamID de los baneos sin ficha (moderadores y admins: en todos) */
+                    q?: string;
+                    /** @description Solo los puestos en este servidor */
+                    server?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Baneos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BanList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/bans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Baneos de un jugador
+         * @description Los de la ficha y los de cualquiera de sus SteamID. Sin sesión. `{id}` acepta el id o el nick.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at`, `expires_at` */
+                    sort?: "created_at" | "expires_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Activos, vencidos o levantados */
+                    status?: "active" | "expired" | "lifted";
+                    source?: "web" | "server" | "import";
+                };
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Baneos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BanList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Banear
+         * @description Una ficha (vale para todos sus SteamID, también los que sume después) o un SteamID sin ficha, en todos los servidores. Moderadores y admins; `permanent` solo un admin. Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, el servidor lo frena siempre; a quien ya está jugando (aunque sea un mix) lo echa en la sincronización, cada 3 minutos y al empezar cada mapa, o al momento con `!syncbans` en el servidor.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BanCreate"];
+                };
+            };
+            responses: {
+                /** @description Baneado */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Ban"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar un baneo
+         * @description El motivo o el vencimiento de un baneo activo. Uno permanente, o volverlo permanente, solo un admin.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BanPatch"];
+                };
+            };
+            responses: {
+                /** @description Cambiado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Ban"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/bans/{id}/lift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Levantar un baneo
+         * @description Con motivo. No se borra: queda en la lista como levantado. Uno permanente, solo un admin.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BanLift"];
+                };
+            };
+            responses: {
+                /** @description Levantado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Ban"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/vips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * VIP
+         * @description Las cuentas que fueron VIP alguna vez, con su estado. Por defecto, primero las que vencen antes (los lifetime y los que no están activos, al final). `expiring` deja los temporales activos que vencen en los próximos N días.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `until`, `since`, `alias`, `last_change` */
+                    sort?: "until" | "since" | "alias" | "last_change";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    status?: "lifetime" | "active" | "revoked" | "expired";
+                    /** @description Busca en el alias */
+                    q?: string;
+                    /** @description Solo los temporales activos que vencen en los próximos N días (de 1 a 90) */
+                    expiring?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description VIP */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminVipList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/vip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * VIP de un usuario
+         * @description Su estado y todos sus períodos: quién lo dio, la nota y, si se quitó, cuándo, quién y por qué.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description VIP del usuario */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminUserVip"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Dar o extender el VIP
+         * @description Una duración: `months` (1, 3, 6 o 12), `until` (fecha de fin) o `lifetime`. Si ya es VIP, el período nuevo empieza donde termina el actual. A un lifetime no se le da un temporal (`BUSINESS_RULE`). Vence solo. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VipGrant"];
+                };
+            };
+            responses: {
+                /** @description VIP del usuario */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminUserVip"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/vip/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar el VIP
+         * @description Revoca los períodos vigentes y los futuros, también un lifetime, con motivo. Sin VIP vigente: `BUSINESS_RULE`. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VipRevoke"];
+                };
+            };
+            responses: {
+                /** @description VIP del usuario */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminUserVip"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -9102,6 +10360,235 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/v1/admin/clips/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clips para revisar
+         * @description Los reprocesados que esperan el "Bien", del más viejo al más nuevo. `clip.video.status` dice si el video nuevo ya está (`done`, con `embed_url` de Drive para mirarlo) o todavía se graba.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `reprocessed_at` */
+                    sort?: "reprocessed_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Para revisar */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReviewList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/{id}/reprocess": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reprocesar un clip
+         * @description El video actual se borra (de R2 y de Drive) y el bot lo vuelve a grabar y lo sube a Drive. No sale en Discord hasta el "Bien" (`/approve`); si ya había salido, se publica otra vez. Solo un clip de la lista, ya grabado (o fallido) y con la demo todavía en R2 (si no, `BUSINESS_RULE` con el motivo).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description En la cola */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Clip"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar un clip reprocesado
+         * @description El video nuevo quedó bien: sale en Discord y se muestra a todos. Solo un reprocesado con el video listo (si no, `BUSINESS_RULE`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Aprobado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Clip"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mixes": {
         parameters: {
             query?: never;
@@ -9317,7 +10804,7 @@ export interface paths {
         };
         /**
          * Detalle de un mix en vivo
-         * @description Marcador, rondas y stats parciales de cada jugador. 404 cuando el mix terminó: su resultado está en `GET /api/v1/matches?kind=mix`. Responde con `ETag`: con `If-None-Match` contesta `304` si no llegó una foto nueva.
+         * @description Marcador, rondas y stats parciales de cada jugador. 404 cuando el mix terminó o un admin lo cerró: si la partida ya está guardada, el error trae `details.match_id` para pasar a `GET /api/v1/matches/{id}`. Responde con `ETag`: con `If-None-Match` contesta `304` si no llegó una foto nueva.
          */
         get: {
             parameters: {
@@ -9706,7 +11193,7 @@ export interface paths {
         };
         /**
          * Torneos
-         * @description Por defecto, el que empieza más tarde primero. Sin sesión.
+         * @description Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle).
          */
         get: {
             parameters: {
@@ -9726,6 +11213,8 @@ export interface paths {
                     template?: "single" | "double" | "groups" | "swiss" | "groups_double";
                     /** @description Torneos de un organizador (id de usuario) */
                     organizer?: string;
+                    /** @description Modo de juego (`5v5`, `2v2`…) */
+                    game_mode?: string;
                     /** @description Empiezan desde esta fecha */
                     from?: string;
                     /** @description Empiezan hasta esta fecha */
@@ -9837,7 +11326,7 @@ export interface paths {
         };
         /**
          * Torneo
-         * @description Configuración, estado, campeón y empate pendiente. Inscritos, partidas y tablas van en sus listados. Con `ETag` (`304` si no cambió).
+         * @description Configuración, estado, campeón, empate pendiente y la partida en vivo (`live_match`). Inscritos, partidas y tablas van en sus listados. Con `ETag` (`304` si no cambió).
          */
         get: {
             parameters: {
@@ -10267,7 +11756,7 @@ export interface paths {
         get?: never;
         /**
          * Inscribir un equipo o cambiar sus inscritos
-         * @description El capitán, mientras el torneo está en inscripciones (o el organizador, también después de generar). Los jugadores tienen que ser del plantel, tener SteamID y no estar inscritos con otro equipo en el mismo torneo; entre `players_min` y `players_max`.
+         * @description El capitán, mientras el torneo está en inscripciones y antes del cierre (o el organizador, también después). `active`: exactamente `players_per_team` del torneo; `subs`: hasta `subs_max`. Tienen que ser del plantel, tener SteamID y no estar inscritos con otro equipo en el mismo torneo. El coach no se inscribe (`400 COACH_NOT_ALLOWED`). Sin SteamID: `400 PLAYER_NOT_LINKED` con los alias en `details.aliases`. Pasado `registration_closes_at`: `409 REGISTRATION_CLOSED`. A cada jugador que entra, cambia de activo a suplente o sale le llega el aviso `event_lineup`.
          */
         put: {
             parameters: {
@@ -10319,12 +11808,21 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
             };
         };
         post?: never;
         /**
          * Dar de baja un equipo
-         * @description El capitán o el organizador, antes de generar el fixture.
+         * @description El capitán (antes del cierre de inscripciones: si no, `409 REGISTRATION_CLOSED`) o el organizador, antes de generar el fixture.
          */
         delete: {
             parameters: {
@@ -10365,6 +11863,15 @@ export interface paths {
                 };
                 /** @description Sin permiso */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -10724,6 +12231,314 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/banner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Subir el banner
+         * @description `multipart/form-data`, campo `file`. El organizador del torneo o un admin. Reemplaza al anterior. JPEG, PNG o WebP de hasta 4 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": components["schemas"]["BannerUpload"];
+                };
+            };
+            responses: {
+                /** @description Banner guardado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BannerResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Quitar el banner
+         * @description El organizador del torneo o un admin. Vuelve el patrón por defecto.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/game-modes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Modos de juego
+         * @description Los habilitados para crear torneos, del más chico al más grande. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Modos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GameMode"][];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/game-modes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Modos de juego (todos)
+         * @description Habilitados y deshabilitados.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Modos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GameMode"][];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Habilitar o deshabilitar un modo
+         * @description Un torneo que ya usa el modo lo conserva; los nuevos no lo pueden elegir. Tiene que quedar al menos uno habilitado.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GameModeBody"];
+                };
+            };
+            responses: {
+                /** @description Modos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GameMode"][];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -11657,8 +13472,8 @@ export interface paths {
         };
         get?: never;
         /**
-         * Nombrar o quitar un organizador
-         * @description `user` u `organizer`. El rol admin se da en la base.
+         * Cambiar el rol de una cuenta
+         * @description `user`, `organizer` o `moderator` (banea desde la web). El rol admin se da en la base.
          */
         put: {
             parameters: {
@@ -11827,10 +13642,10 @@ export interface components {
             email: string | null;
             tag: string | null;
             /**
-             * @description `organizer` crea y gestiona sus torneos; `admin`, todo
+             * @description Todos juegan. `organizer` crea y gestiona sus torneos; `moderator` banea; `admin`, todo
              * @enum {string}
              */
-            role: "user" | "organizer" | "admin";
+            role: "user" | "organizer" | "moderator" | "admin";
             /** @description Fecha de registro de la cuenta */
             created_at: string | null;
             /** @description Último cambio de contraseña; null si no la cambió desde que se guarda la fecha (2026-10-19) */
@@ -11891,6 +13706,7 @@ export interface components {
             /** @description Partidas terminadas que jugó en el servidor (mixes, PCW y torneos) */
             matches_played: number;
             preferences: components["schemas"]["Preferences"];
+            vip: components["schemas"]["VipStatus"];
         };
         ProfileDetails: {
             avatar_url: string | null;
@@ -11924,6 +13740,17 @@ export interface components {
             news: boolean;
             admin: boolean;
         };
+        /** @description `null` si nunca fue VIP */
+        VipStatus: {
+            /** @description Es VIP hoy */
+            active: boolean;
+            /** @description VIP sin fecha de fin */
+            lifetime: boolean;
+            /** @description Hasta cuándo, si está activo y no es lifetime */
+            until: string | null;
+            /** @description Inicio del primer período (también si después se revocó o venció) */
+            since: string;
+        } | null;
         ProfilePatch: {
             /**
              * @description Alias: el nombre en la web. Único sin distinguir mayúsculas, 2 a 24 caracteres
@@ -12083,6 +13910,8 @@ export interface components {
             tag: string | null;
             /** @enum {string} */
             status: "pending" | "approved" | "rejected";
+            /** @description Logo propuesto (pasa al equipo al aprobar) */
+            logo_url: string | null;
         } | null;
         TeamRequestBody: {
             /** @example Titanes */
@@ -12092,6 +13921,13 @@ export interface components {
              * @example TIT
              */
             tag: string;
+        };
+        TeamRequestForm: components["schemas"]["TeamRequestBody"] & {
+            /**
+             * Format: binary
+             * @description Logo opcional. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
+             */
+            logo?: string;
         };
         UnclaimedList: {
             items: components["schemas"]["UnclaimedSummary"][];
@@ -12127,6 +13963,7 @@ export interface components {
             profile: components["schemas"]["UnclaimedSummary"] & ({
                 stats: components["schemas"]["PlayerStats"];
             } | null);
+            ban: components["schemas"]["ActiveBan"];
         };
         PlayerStats: {
             maps: number | null;
@@ -12141,6 +13978,15 @@ export interface components {
             adr: number | null;
             wins: number | null;
             losses: number | null;
+        } | null;
+        /** @description Baneo activo del SteamID. Solo si no está reclamado (si no, va en la ficha) */
+        ActiveBan: {
+            /** Format: uuid */
+            id: string;
+            reason: string;
+            created_at: string;
+            /** @description `null`: permanente */
+            expires_at: string | null;
         } | null;
         PlayerMatchList: {
             items: components["schemas"]["PlayerMatch"][];
@@ -12377,6 +14223,7 @@ export interface components {
                 id: string;
                 alias: string;
                 photo_url: string | null;
+                vip: boolean;
             };
             level: number | null;
             elo: number;
@@ -12399,6 +14246,8 @@ export interface components {
             id: string;
             name: string;
             tag: string | null;
+            /** @description Logo del equipo (null: sin logo, se muestra la sigla). Viene en los listados y el detalle de equipos, el ranking de equipos, las inscripciones y el campeón de un torneo, los lados de una partida y las invitaciones; en el resto puede faltar */
+            logo_url?: string | null;
         };
         Compare: {
             a: components["schemas"]["ComparePlayer"];
@@ -12422,6 +14271,7 @@ export interface components {
                 id: string;
                 alias: string;
                 photo_url: string | null;
+                vip: boolean;
             };
             teams: components["schemas"]["TeamRef"][];
             game_role: string | null;
@@ -12471,6 +14321,8 @@ export interface components {
             losses: number | null;
             /** @description Equipos oficiales donde está hoy (puede ser más de uno) */
             teams: components["schemas"]["TeamRef"][];
+            /** @description Es VIP hoy (solo el estado; las fechas, en Mi perfil y en el admin) */
+            vip: boolean;
         };
         /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
         PlayerDetail: components["schemas"]["PlayerSummary"] & {
@@ -12489,6 +14341,7 @@ export interface components {
             details: components["schemas"]["PublicDetails"];
             /** @description true si los datos personales están ocultos por privacidad */
             private: boolean;
+            ban: components["schemas"]["ActiveBan"] & unknown;
         };
         /** @description null si no jugó partidas terminadas */
         PlayerStatsDetail: components["schemas"]["PlayerStats"] & ({
@@ -12650,15 +14503,19 @@ export interface components {
             /** @enum {string} */
             kind: "official" | "pcw";
             captain: components["schemas"]["PlayerRef"];
-            /** @description Jugadores activos (máximo 10 en un equipo oficial) */
+            /** @description Miembros actuales (activos, suplentes y coach) */
             members: number;
-            /** @description 10 en los oficiales; null en los bandos de PCW */
+            /** @description Máximo de miembros de un equipo oficial (lo fija el admin; 10 por defecto); null en los bandos de PCW */
             max_members: number | null;
             /**
              * Format: uuid
              * @description Bandos de PCW: equipo oficial con el que juega (suma al ranking)
              */
             plays_as: string | null;
+            /** @description Logo; null: se muestra la sigla */
+            logo_url: string | null;
+            /** @description Qué busca el equipo. Vacío si no busca o si el plantel está lleno */
+            looking_for: ("player" | "sub" | "coach")[];
         };
         /** @description null si el capitán no tiene jugador vinculado */
         PlayerRef: {
@@ -12668,6 +14525,8 @@ export interface components {
         } | null;
         /** @description El plantel y los ex integrantes van en /teams/{id}/members; las partidas, en /matches?team={id} */
         TeamDetail: components["schemas"]["TeamSummary"] & {
+            /** @description Fecha de aprobación de la solicitud. En los equipos anteriores, el ingreso más antiguo del plantel */
+            founded_at: string | null;
             record: components["schemas"]["TeamRecord"];
             /** @description Qué puede hacer quien consulta (null sin sesión) */
             viewer: {
@@ -12690,6 +14549,8 @@ export interface components {
                 lost: number;
                 points: number;
             };
+            /** @description Torneos en curso o terminados en los que estuvo inscrito */
+            events_played: number;
         } | null;
         MemberList: {
             items: components["schemas"]["RosterEntry"][];
@@ -12711,9 +14572,68 @@ export interface components {
             level: number | null;
             /** @description `player`, `sub` o `coach` */
             role: string;
+            /** @description Puesto que el jugador eligió en su perfil (`AWPer`, `Rifler`, `IGL`, `Support`, `Entry fragger`, `Lurker` u `Otro`). Se puede repetir en un equipo. null si no eligió o si su perfil es privado */
+            game_role: string | null;
             is_captain: boolean;
             joined_at: string | null;
             left_at: string | null;
+        };
+        TeamPatch: {
+            /** @description Qué busca el equipo; `[]`: no busca */
+            looking_for: ("player" | "sub" | "coach")[];
+        };
+        LogoResult: {
+            logo_url: string;
+        };
+        LogoUpload: {
+            /**
+             * Format: binary
+             * @description JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
+             */
+            file: string;
+        };
+        TeamEventList: {
+            items: components["schemas"]["TeamEvent"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        TeamEvent: {
+            event: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                template: string;
+                status: string;
+                starts_on: string | null;
+                ends_on: string | null;
+            };
+            /**
+             * @description `champion`, `runner_up` (perdió la final o la gran final), `semifinal` (perdió una semifinal, el 3.er puesto o la final del lower), `quarterfinal`, `groups` (no pasó de grupos o del suizo), `eliminated` (otra eliminación), `in_progress` (sigue en carrera) o `registered` (inscripciones abiertas)
+             * @enum {string}
+             */
+            result: "champion" | "runner_up" | "semifinal" | "quarterfinal" | "groups" | "eliminated" | "in_progress" | "registered";
+            /** @description 1, 2, 3 (4 si perdió el 3.er puesto) o 5 (cuartos). null en el resto */
+            place: number | null;
+            played: number;
+            won: number;
+            lost: number;
+        };
+        MyTeam: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            tag: string | null;
+            logo_url: string | null;
+            /**
+             * @description `leader` si es el capitán; si no, su estado en el roster
+             * @enum {string}
+             */
+            my_role: "leader" | "player" | "sub" | "coach";
         };
         Ranking: {
             items: components["schemas"]["RankingItem"][];
@@ -12772,7 +14692,22 @@ export interface components {
                 id: string;
                 alias: string;
                 photo_url: string | null;
+                elo: number | null;
+                level: number | null;
             };
+            /**
+             * @description Estado con el que entra al aceptar. Un pedido entra como `player`
+             * @enum {string}
+             */
+            role: "player" | "sub" | "coach";
+            /** @description Mensaje de quien invita o pide entrar */
+            message: string | null;
+            /** @description Quién invitó (capitán o admin). null en los pedidos o si quien invitó no tiene ficha */
+            invited_by: {
+                /** Format: uuid */
+                player_id: string;
+                alias: string;
+            } | null;
             created_at: string;
             expires_at: string;
         };
@@ -12780,10 +14715,29 @@ export interface components {
             /** Format: uuid */
             id: string;
         };
+        JoinRequestBody: {
+            /** @description Mensaje opcional para el capitán, hasta 200 caracteres */
+            message?: string;
+        };
         InviteBody: {
             /** Format: uuid */
             player_id?: string;
             alias?: string;
+            /**
+             * @description Estado con el que entra al aceptar (por defecto `player`)
+             * @default player
+             * @enum {string}
+             */
+            role: "player" | "sub" | "coach";
+            /** @description Mensaje opcional, hasta 200 caracteres */
+            message?: string;
+        };
+        MemberRoleBody: {
+            /**
+             * @description `player` (activo), `sub` (suplente) o `coach`
+             * @enum {string}
+             */
+            role: "player" | "sub" | "coach";
         };
         CaptainBody: {
             /** Format: uuid */
@@ -12898,6 +14852,7 @@ export interface components {
             /** Format: uuid */
             player_id: string | null;
             steam_id: string | null;
+            vip: components["schemas"]["VipStatus"];
         };
         AdminAliasBody: {
             alias: string;
@@ -13010,6 +14965,10 @@ export interface components {
             name: string;
             tag: string | null;
             status: string;
+        };
+        TeamConfig: {
+            /** @description Máximo de miembros de un equipo oficial */
+            max_members: number;
         };
         RankingConfig: {
             /** @description Puntos por partida de torneo ganada */
@@ -13357,6 +15316,194 @@ export interface components {
             set_elo: number | null;
             reason: string;
             applied_at: string;
+        };
+        BanList: {
+            items: components["schemas"]["Ban"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        Ban: {
+            /** Format: uuid */
+            id: string;
+            /** @description Ficha alcanzada: la baneada o, si se baneó un SteamID sin ficha, la que lo tenga hoy. `null`: SteamID sin ficha */
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description Alias de la ficha o último nick conocido del SteamID */
+            nick: string | null;
+            /** @description SteamID baneado. Sin ficha es público (como los perfiles sin reclamar); con ficha, solo para moderadores y admins */
+            steam_id: string | null;
+            reason: string;
+            created_at: string;
+            /** @description `null`: permanente */
+            expires_at: string | null;
+            permanent: boolean;
+            /** @enum {string} */
+            status: "active" | "expired" | "lifted";
+            /**
+             * @description `web`, `server` (`!ban` del juego) o `import` (los `banned_user.cfg` viejos)
+             * @enum {string}
+             */
+            source: "web" | "server" | "import";
+            /** @description Servidor donde se puso con `!ban` */
+            server: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+            /** @description Cuenta de la web (`id`) o admin del juego (solo `alias`, el nombre que tenía) */
+            created_by: {
+                /** Format: uuid */
+                id: string | null;
+                alias: string | null;
+            } | null;
+            /** @description Si se levantó: cuándo, por qué y quién */
+            lifted: {
+                at: string;
+                reason: string | null;
+                by: {
+                    /** Format: uuid */
+                    id: string | null;
+                    alias: string | null;
+                } | null;
+                /**
+                 * Format: uuid
+                 * @description Baneo nuevo que lo reemplazó
+                 */
+                replaced_by: string | null;
+            } | null;
+        };
+        BanCreate: {
+            /**
+             * Format: uuid
+             * @description Ficha a banear (todos sus SteamID). Necesita SteamID
+             */
+            player_id?: string;
+            /** @description SteamID64 sin ficha. Si tiene ficha, se banea la ficha */
+            steam_id?: string;
+            /** @description Se muestra en la lista pública y al echarlo del servidor */
+            reason: string;
+            /**
+             * Format: date-time
+             * @description Vencimiento, futuro
+             */
+            expires_at?: string;
+            /**
+             * @description Sin vencimiento. Solo un admin
+             * @enum {boolean}
+             */
+            permanent?: true;
+        };
+        BanPatch: {
+            reason?: string;
+            /**
+             * Format: date-time
+             * @description Nuevo vencimiento, futuro
+             */
+            expires_at?: string;
+            /**
+             * @description Sin vencimiento. Solo un admin
+             * @enum {boolean}
+             */
+            permanent?: true;
+        };
+        BanLift: {
+            /** @description Por qué se levanta */
+            reason: string;
+        };
+        AdminVipList: {
+            items: components["schemas"]["AdminVip"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminVip: {
+            user: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            };
+            /** @description Ficha de la cuenta, si tiene */
+            player: {
+                /** Format: uuid */
+                id: string;
+                photo_url: string | null;
+            } | null;
+            /**
+             * @description `lifetime`, `active`, `revoked` (el último período se quitó) o `expired`
+             * @enum {string}
+             */
+            status: "lifetime" | "active" | "revoked" | "expired";
+            active: boolean;
+            lifetime: boolean;
+            /** @description Fin del VIP vigente; `null` si es lifetime o no está activo */
+            until: string | null;
+            since: string;
+            /** @description Último período cargado o quitado */
+            last_change: string;
+        };
+        AdminUserVip: {
+            vip: components["schemas"]["VipStatus"];
+            /** @description Del más nuevo al más viejo */
+            periods: components["schemas"]["VipPeriod"][];
+        };
+        VipPeriod: {
+            /** Format: uuid */
+            id: string;
+            starts_at: string;
+            /** @description `null`: lifetime */
+            ends_at: string | null;
+            /**
+             * @description `manual` (desde el admin) o `import` (carga inicial)
+             * @enum {string}
+             */
+            source: "manual" | "import";
+            note: string | null;
+            granted_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            created_at: string;
+            revoked: {
+                at: string;
+                reason: string | null;
+                by: {
+                    /** Format: uuid */
+                    id: string;
+                    alias: string;
+                } | null;
+            } | null;
+        };
+        VipGrant: {
+            /** @description 1, 3, 6 o 12. Si ya es VIP, se suman desde donde termina el actual */
+            months?: 1 | 3 | 6 | 12;
+            /**
+             * Format: date-time
+             * @description Fecha de fin. Si ya es VIP, tiene que pasar el fin actual
+             */
+            until?: string;
+            /**
+             * @description Sin fecha de fin
+             * @enum {boolean}
+             */
+            lifetime?: true;
+            /** @description Por ejemplo, "pagó 3 meses" */
+            note?: string;
+        };
+        VipRevoke: {
+            reason: string;
         };
         SeasonList: {
             items: components["schemas"]["Season"][];
@@ -13721,6 +15868,10 @@ export interface components {
             rounds: number | null;
             rating: number | null;
             elo_delta: number | null;
+            /** @description ELO actual (no el de esa partida); null sin ELO (bots, NOSTEAM) */
+            elo: number | null;
+            /** @description Nivel del ELO actual, para la insignia */
+            level: number | null;
             k2: number | null;
             k3: number | null;
             k4: number | null;
@@ -13889,6 +16040,13 @@ export interface components {
             /** @description Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate */
             demo_seconds: number | null;
             video: components["schemas"]["ClipVideo"];
+            /** @description Entró por ser de un VIP (cuando se jugó el mix): va después del top */
+            vip: boolean;
+            /**
+             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `null` si nunca se reprocesó
+             * @enum {string|null}
+             */
+            review: "pending" | "approved" | null;
         };
         ClipVideo: {
             /**
@@ -13924,6 +16082,8 @@ export interface components {
             pre_seconds: number;
             /** @description Para el video (fase C): segundos después de la última kill */
             post_seconds: number;
+            /** @description Clips de cada VIP en cada partida, aparte del top (0 los apaga) */
+            vip_per_match: number;
         };
         ClipPriorities: {
             /** @description Prioridad de `ace` (1 es lo más valioso) */
@@ -13974,6 +16134,31 @@ export interface components {
             pre_seconds?: number;
             /** @description Para el video (fase C): segundos después de la última kill */
             post_seconds?: number;
+            /** @description Clips de cada VIP en cada partida, aparte del top (0 los apaga) */
+            vip_per_match?: number;
+        };
+        ClipReviewList: {
+            items: components["schemas"]["ClipReview"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        ClipReview: {
+            clip: components["schemas"]["Clip"];
+            match: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                played_at: string | null;
+            };
+            /** @description Cuántas veces se reprocesó */
+            reprocess_count: number;
+            /** @description La última vez que se reprocesó */
+            reprocessed_at: string;
         };
         /** @description Con el orden por defecto (`started_at` desc) los mixes en vivo van primero */
         MixList: {
@@ -14020,6 +16205,11 @@ export interface components {
             /** @description `none`, `pending`, `uploaded`, `missing` o `expired` */
             demo_status: string;
             cancel_reason: string | null;
+            /**
+             * @description Solo en un mix interrumpido por una caída: `pending` (falta que un admin decida el ELO), `applied` o `discarded`. null en el resto y en vivo
+             * @enum {string|null}
+             */
+            review: "pending" | "applied" | "discarded" | null;
             tv: components["schemas"]["TvRef"];
         };
         LiveSide: {
@@ -14128,6 +16318,10 @@ export interface components {
             damage: number | null;
             rounds: number | null;
             rating: number | null;
+            /** @description ELO actual; null sin ELO (bots, NOSTEAM) */
+            elo: number | null;
+            /** @description Nivel del ELO actual, para la insignia */
+            level: number | null;
             k2: number | null;
             k3: number | null;
             k4: number | null;
@@ -14199,13 +16393,33 @@ export interface components {
                 user_id: string;
                 alias: string | null;
             } | null;
+            /** @description Modo de juego (`5v5`, `2v2`…; ver GET /game-modes) */
+            game_mode: string;
+            /** @description Activos que inscribe cada equipo (los del modo) */
+            players_per_team: number;
+            /** @description Suplentes que puede inscribir cada equipo (0 a 4) */
+            subs_max: number;
+            /** @description BO de las partidas comunes (`bo` o `bo_group` según la plantilla) */
+            bo: 1 | 3 | 5 | null;
+            /** @description BO de la final (`bo_final`, `bo_grand_final` o `playoffs.bo_final`) */
+            bo_final: 1 | 3 | 5 | null;
+            /** @description Fase de la partida en vivo o de la próxima ("Semifinal"). null si el torneo no está en curso */
+            current_stage: string | null;
+            /** @description Partidas terminadas y armadas hasta ahora (sin libres). null antes de generar el fixture. `total` crece a medida que se arman las rondas siguientes */
+            progress: {
+                played: number;
+                total: number;
+            } | null;
+            /** @description Banner; null: patrón por defecto */
+            banner_url: string | null;
+            /** @description Cierre de inscripciones. null: hasta que se genera el fixture */
+            registration_closes_at: string | null;
         };
         /** @description Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings */
         EventDetail: components["schemas"]["EventSummary"] & {
             rules: string | null;
             min_teams: number | null;
-            players_min: number;
-            players_max: number;
+            live_match: components["schemas"]["LiveMatch"];
             /** @description Configuración completa (con los valores por defecto) */
             config: {
                 [key: string]: unknown;
@@ -14229,6 +16443,19 @@ export interface components {
                 can_manage: boolean;
             } | null;
         };
+        /** @description La primera partida en vivo del torneo; null si no hay ninguna */
+        LiveMatch: {
+            /** Format: uuid */
+            id: string;
+            /** @description Fase ("Semifinal") */
+            label: string | null;
+            /** @description Mapa que se está jugando (null si todavía no se sabe) */
+            map: string | null;
+            /** @description Número del mapa en la serie (los ya jugados + 1) */
+            map_index: number;
+            /** @description BO de la serie */
+            maps_total: number;
+        } | null;
         RegistrationList: {
             items: components["schemas"]["Registration"][];
             /** @description Total con los filtros aplicados */
@@ -14245,10 +16472,16 @@ export interface components {
             seed: number;
             /** @description Suizo: fase en la que empieza */
             start_stage: number;
+            /** @description Primero los activos y después los suplentes, cada grupo por alias */
             players: {
                 /** Format: uuid */
                 player_id: string;
                 alias: string;
+                /**
+                 * @description `active` o `sub` (suplente)
+                 * @enum {string}
+                 */
+                role: "active" | "sub";
             }[];
         };
         EventMatchList: {
@@ -14312,8 +16545,13 @@ export interface components {
             state: "active" | "qualified" | "eliminated" | null;
         };
         RegistrationBody: {
-            /** @description Jugadores del plantel con SteamID (entre players_min y players_max) */
-            players: string[];
+            /** @description Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID */
+            active: string[];
+            /**
+             * @description Suplentes: hasta `subs_max` del torneo. El coach no se inscribe
+             * @default []
+             */
+            subs: string[];
             /** @description Suizo: fase en la que empieza (solo el organizador) */
             start_stage?: number;
         };
@@ -14325,8 +16563,15 @@ export interface components {
              */
             template: "single" | "double" | "groups" | "swiss" | "groups_double";
             config?: components["schemas"]["EventConfig"];
-            players_min?: number;
-            players_max?: number;
+            /** @description Modo de juego habilitado (GET /game-modes). Por defecto `5v5` */
+            game_mode?: string;
+            /** @description Suplentes por equipo, de 0 a 4 (por defecto 0) */
+            subs_max?: number;
+            /**
+             * Format: date-time
+             * @description Cierre de inscripciones (fecha y hora). Después, solo el organizador o un admin cambian las inscripciones. null: hasta generar el fixture
+             */
+            registration_closes_at?: string | null;
             /** Format: date */
             starts_on?: string | null;
             /** Format: date */
@@ -14378,8 +16623,15 @@ export interface components {
              */
             template?: "single" | "double" | "groups" | "swiss" | "groups_double";
             config?: components["schemas"]["EventConfig"];
-            players_min?: number;
-            players_max?: number;
+            /** @description Modo de juego habilitado (GET /game-modes). Por defecto `5v5` */
+            game_mode?: string;
+            /** @description Suplentes por equipo, de 0 a 4 (por defecto 0) */
+            subs_max?: number;
+            /**
+             * Format: date-time
+             * @description Cierre de inscripciones (fecha y hora). Después, solo el organizador o un admin cambian las inscripciones. null: hasta generar el fixture
+             */
+            registration_closes_at?: string | null;
             /** Format: date */
             starts_on?: string | null;
             /** Format: date */
@@ -14398,6 +16650,30 @@ export interface components {
             /** @description La siembra sorteada, del 1 en adelante */
             seeds: components["schemas"]["TeamRef"][];
             drawn_at: string;
+        };
+        BannerResult: {
+            banner_url: string;
+        };
+        BannerUpload: {
+            /**
+             * Format: binary
+             * @description JPEG, PNG o WebP de hasta 4 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).
+             */
+            file: string;
+        };
+        GameMode: {
+            /** @example 5v5 */
+            code: string;
+            /** @example 5 vs 5 */
+            name: string;
+            players_per_team: number;
+            /** @description Habilitado para torneos nuevos */
+            active: boolean;
+        };
+        /** @description Habilitar o deshabilitar un modo. Tiene que quedar al menos uno habilitado */
+        GameModeBody: {
+            code: string;
+            active: boolean;
         };
         /** @description Orden de los equipos empatados, del mejor al peor */
         TieBody: {
@@ -14584,7 +16860,7 @@ export interface components {
         };
         RoleChange: {
             /** @enum {string} */
-            role: "user" | "organizer";
+            role: "user" | "organizer" | "moderator";
         };
         ServersStatus: {
             servers: components["schemas"]["ServerStatusItem"][];

@@ -1,11 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { z } from "zod"
 
-import { Placeholder } from "@/features/shell/Placeholder"
+import {
+  AdminServersPage,
+  SERVER_TABS,
+} from "@/features/admin/servers/AdminServersPage"
 
 export const Route = createFileRoute("/_app/admin/servers")({
-  component: AdminServersPage,
+  validateSearch: z.object({
+    tab: z.enum(SERVER_TABS).optional().catch(undefined),
+  }),
+  component: AdminServersRoute,
 })
 
-function AdminServersPage() {
-  return <Placeholder title="Servidores y ELO" />
+function AdminServersRoute() {
+  const { tab } = Route.useSearch()
+  const navigate = Route.useNavigate()
+  return (
+    <AdminServersPage
+      tab={tab ?? "servers"}
+      onTab={(t) =>
+        void navigate({ search: { tab: t === "servers" ? undefined : t } })
+      }
+    />
+  )
 }

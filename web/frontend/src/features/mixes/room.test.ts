@@ -112,8 +112,8 @@ describe("roomFromLive", () => {
     seq: 16,
     rounds: [],
     players: [
-      { ...zeta, game_nick: "Zeta" },
-      { ...vasco, game_nick: "Vasco", rating: 1.9 },
+      { ...zeta, game_nick: "Zeta", elo: 1500, level: 6 },
+      { ...vasco, game_nick: "Vasco", rating: 1.9, elo: 1400, level: 5 },
     ],
   }
 

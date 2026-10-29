@@ -58,6 +58,7 @@ const base: MixItem = {
     rating: 1.42,
   },
   demo_status: "uploaded",
+  review: null,
   cancel_reason: null,
   tv: null,
 }

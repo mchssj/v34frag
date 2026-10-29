@@ -21,8 +21,13 @@ import { Route as AppPcwRouteImport } from './routes/_app/pcw'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
+import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
+import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
+import { Route as AppAdminRankingRouteImport } from './routes/_app/admin.ranking'
+import { Route as AppAdminSeasonsRouteImport } from './routes/_app/admin.seasons'
 import { Route as AppAdminServersRouteImport } from './routes/_app/admin.servers'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app/admin.teams'
 import { Route as AppAdminUsersRouteImport } from './routes/_app/admin.users'
@@ -103,14 +108,39 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AuthRoute,
 } as any)
+const AppAdminBansRoute = AppAdminBansRouteImport.update({
+  id: '/bans',
+  path: '/bans',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminClipsRoute = AppAdminClipsRouteImport.update({
+  id: '/clips',
+  path: '/clips',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
   id: '/events',
   path: '/events',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminMapsRoute = AppAdminMapsRouteImport.update({
+  id: '/maps',
+  path: '/maps',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminPlayersRoute = AppAdminPlayersRouteImport.update({
   id: '/players',
   path: '/players',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminRankingRoute = AppAdminRankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminSeasonsRoute = AppAdminSeasonsRouteImport.update({
+  id: '/seasons',
+  path: '/seasons',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminServersRoute = AppAdminServersRouteImport.update({
@@ -230,8 +260,13 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/admin/bans': typeof AppAdminBansRoute
+  '/admin/clips': typeof AppAdminClipsRoute
   '/admin/events': typeof AppAdminEventsRoute
+  '/admin/maps': typeof AppAdminMapsRoute
   '/admin/players': typeof AppAdminPlayersRoute
+  '/admin/ranking': typeof AppAdminRankingRoute
+  '/admin/seasons': typeof AppAdminSeasonsRoute
   '/admin/servers': typeof AppAdminServersRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/users': typeof AppAdminUsersRoute
@@ -264,8 +299,13 @@ export interface FileRoutesByTo {
   '/pcw': typeof AppPcwRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/admin/bans': typeof AppAdminBansRoute
+  '/admin/clips': typeof AppAdminClipsRoute
   '/admin/events': typeof AppAdminEventsRoute
+  '/admin/maps': typeof AppAdminMapsRoute
   '/admin/players': typeof AppAdminPlayersRoute
+  '/admin/ranking': typeof AppAdminRankingRoute
+  '/admin/seasons': typeof AppAdminSeasonsRoute
   '/admin/servers': typeof AppAdminServersRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/users': typeof AppAdminUsersRoute
@@ -302,8 +342,13 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/_app/admin/bans': typeof AppAdminBansRoute
+  '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
+  '/_app/admin/maps': typeof AppAdminMapsRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
+  '/_app/admin/ranking': typeof AppAdminRankingRoute
+  '/_app/admin/seasons': typeof AppAdminSeasonsRoute
   '/_app/admin/servers': typeof AppAdminServersRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/users': typeof AppAdminUsersRoute
@@ -339,8 +384,13 @@ export interface FileRouteTypes {
     | '/profile'
     | '/login'
     | '/register'
+    | '/admin/bans'
+    | '/admin/clips'
     | '/admin/events'
+    | '/admin/maps'
     | '/admin/players'
+    | '/admin/ranking'
+    | '/admin/seasons'
     | '/admin/servers'
     | '/admin/teams'
     | '/admin/users'
@@ -373,8 +423,13 @@ export interface FileRouteTypes {
     | '/pcw'
     | '/login'
     | '/register'
+    | '/admin/bans'
+    | '/admin/clips'
     | '/admin/events'
+    | '/admin/maps'
     | '/admin/players'
+    | '/admin/ranking'
+    | '/admin/seasons'
     | '/admin/servers'
     | '/admin/teams'
     | '/admin/users'
@@ -410,8 +465,13 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
+    | '/_app/admin/bans'
+    | '/_app/admin/clips'
     | '/_app/admin/events'
+    | '/_app/admin/maps'
     | '/_app/admin/players'
+    | '/_app/admin/ranking'
+    | '/_app/admin/seasons'
     | '/_app/admin/servers'
     | '/_app/admin/teams'
     | '/_app/admin/users'
@@ -528,6 +588,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_app/admin/bans': {
+      id: '/_app/admin/bans'
+      path: '/bans'
+      fullPath: '/admin/bans'
+      preLoaderRoute: typeof AppAdminBansRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/clips': {
+      id: '/_app/admin/clips'
+      path: '/clips'
+      fullPath: '/admin/clips'
+      preLoaderRoute: typeof AppAdminClipsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/events': {
       id: '/_app/admin/events'
       path: '/events'
@@ -535,11 +609,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminEventsRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/maps': {
+      id: '/_app/admin/maps'
+      path: '/maps'
+      fullPath: '/admin/maps'
+      preLoaderRoute: typeof AppAdminMapsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/players': {
       id: '/_app/admin/players'
       path: '/players'
       fullPath: '/admin/players'
       preLoaderRoute: typeof AppAdminPlayersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/ranking': {
+      id: '/_app/admin/ranking'
+      path: '/ranking'
+      fullPath: '/admin/ranking'
+      preLoaderRoute: typeof AppAdminRankingRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/seasons': {
+      id: '/_app/admin/seasons'
+      path: '/seasons'
+      fullPath: '/admin/seasons'
+      preLoaderRoute: typeof AppAdminSeasonsRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/servers': {
@@ -693,16 +788,26 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppAdminRouteChildren {
+  AppAdminBansRoute: typeof AppAdminBansRoute
+  AppAdminClipsRoute: typeof AppAdminClipsRoute
   AppAdminEventsRoute: typeof AppAdminEventsRoute
+  AppAdminMapsRoute: typeof AppAdminMapsRoute
   AppAdminPlayersRoute: typeof AppAdminPlayersRoute
+  AppAdminRankingRoute: typeof AppAdminRankingRoute
+  AppAdminSeasonsRoute: typeof AppAdminSeasonsRoute
   AppAdminServersRoute: typeof AppAdminServersRoute
   AppAdminTeamsRoute: typeof AppAdminTeamsRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminBansRoute: AppAdminBansRoute,
+  AppAdminClipsRoute: AppAdminClipsRoute,
   AppAdminEventsRoute: AppAdminEventsRoute,
+  AppAdminMapsRoute: AppAdminMapsRoute,
   AppAdminPlayersRoute: AppAdminPlayersRoute,
+  AppAdminRankingRoute: AppAdminRankingRoute,
+  AppAdminSeasonsRoute: AppAdminSeasonsRoute,
   AppAdminServersRoute: AppAdminServersRoute,
   AppAdminTeamsRoute: AppAdminTeamsRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,

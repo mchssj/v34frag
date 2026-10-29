@@ -23,6 +23,7 @@ export function AvatarPicker({
   size,
   title = "Foto de perfil",
   hint = "Arrastra una imagen. JPEG, PNG o WebP · máximo 1 MB. Se recorta a 256×256.",
+  upload: uploadProp,
 }: {
   url: string | null | undefined
   /** Inicial del alias cuando no hay foto. */
@@ -30,9 +31,12 @@ export function AvatarPicker({
   size: "md" | "lg"
   title?: string
   hint?: string
+  /** Otra subida (la foto de una ficha desde Administración). Sin ella, el avatar propio. */
+  upload?: { mutateAsync: (blob: Blob) => Promise<unknown>; isPending: boolean }
 }) {
   const input = useRef<HTMLInputElement>(null)
-  const upload = useUploadAvatar()
+  const own = useUploadAvatar()
+  const upload = uploadProp ?? own
   const [error, setError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
 

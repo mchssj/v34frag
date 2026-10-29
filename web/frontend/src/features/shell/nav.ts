@@ -1,9 +1,14 @@
 import {
   AwardIcon,
+  BanIcon,
+  CalendarRangeIcon,
+  ChartColumnIcon,
+  ClapperboardIcon,
   CrosshairIcon,
   GavelIcon,
   HouseIcon,
   ListOrderedIcon,
+  MapIcon,
   ServerIcon,
   ShieldAlertIcon,
   ShieldIcon,
@@ -20,7 +25,8 @@ import type { FileRouteTypes } from "@/routeTree.gen"
 export type AppPath = FileRouteTypes["to"]
 
 /** Contadores de los badges del sidebar (salen de la API; en 0 no se muestran). */
-export type BadgeKey = "live" | "pcw" | "adminTeams"
+export type BadgeKey =
+  "live" | "pcw" | "adminTeams" | "adminBans" | "adminClips"
 
 export type NavItem = {
   key: string
@@ -106,11 +112,48 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         admin: "servers",
       },
       {
+        key: "admin-seasons",
+        label: "Temporadas",
+        to: "/admin/seasons",
+        icon: CalendarRangeIcon,
+        admin: "seasons",
+      },
+      {
+        key: "admin-clips",
+        label: "Clips",
+        to: "/admin/clips",
+        icon: ClapperboardIcon,
+        admin: "clips",
+        badge: "adminClips",
+      },
+      {
+        key: "admin-ranking",
+        label: "Ranking de equipos",
+        to: "/admin/ranking",
+        icon: ChartColumnIcon,
+        admin: "ranking",
+      },
+      {
+        key: "admin-maps",
+        label: "Mapas",
+        to: "/admin/maps",
+        icon: MapIcon,
+        admin: "maps",
+      },
+      {
         key: "admin-users",
-        label: "Usuarios y moderación",
+        label: "Usuarios",
         to: "/admin/users",
         icon: ShieldAlertIcon,
         admin: "users",
+      },
+      {
+        key: "admin-bans",
+        label: "Baneos",
+        to: "/admin/bans",
+        icon: BanIcon,
+        admin: "bans",
+        badge: "adminBans",
       },
     ],
   },
@@ -124,7 +167,12 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
   players: "Jugadores",
   teams: "Equipos",
   servers: "Servidores y ELO",
-  users: "Usuarios y moderación",
+  seasons: "Temporadas",
+  clips: "Clips",
+  ranking: "Ranking de equipos",
+  maps: "Mapas",
+  users: "Usuarios",
+  bans: "Baneos",
 }
 
 /** Secciones de Mi perfil en los breadcrumbs (la principal, Perfil, queda como "Mi perfil"). */

@@ -56,9 +56,14 @@ describe("breadcrumbsFor", () => {
       "Administración",
       "Torneos y resultados",
     ])
-    expect(labels("/admin/users")).toEqual([
+    expect(labels("/admin/users")).toEqual(["Administración", "Usuarios"])
+    expect(labels("/admin/bans")).toEqual(["Administración", "Baneos"])
+    expect(labels("/admin/maps")).toEqual(["Administración", "Mapas"])
+    expect(labels("/admin/seasons")).toEqual(["Administración", "Temporadas"])
+    expect(labels("/admin/clips")).toEqual(["Administración", "Clips"])
+    expect(labels("/admin/ranking")).toEqual([
       "Administración",
-      "Usuarios y moderación",
+      "Ranking de equipos",
     ])
   })
 
@@ -111,5 +116,12 @@ describe("breadcrumbs de Mi perfil", () => {
     expect(link.map((c) => c.label)).toEqual(["Mi perfil", "Vinculación"])
     expect(link[0].to).toBe("/profile")
     expect(activeNavKey("/profile/account")).toBe("profile")
+  })
+})
+
+describe("Baneos en el sidebar", () => {
+  it("es una sección propia, marcada en /admin/bans", () => {
+    expect(activeNavKey("/admin/bans")).toBe("admin-bans")
+    expect(activeNavKey("/admin/users")).toBe("admin-users")
   })
 })
