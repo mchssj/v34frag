@@ -117,16 +117,16 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-desglose-elo`](bitacora/2026-10-29-desglose-elo/), [`2026-10-29-proximo-recalculo`](bitacora/2026-10-29-proximo-recalculo/), [`2026-10-29-comparador-5`](bitacora/2026-10-29-comparador-5/) y [`2026-10-29-widget-bio`](bitacora/2026-10-29-widget-bio/).
 
-### 1.10 Prototipos VIP: ranking, favoritas, créditos y stats de torneo
+### 1.10 Prototipos VIP: favoritas, créditos y stats de torneo
 
-- **Qué es:** cuatro prototipos más en el frontend nuevo (`kyan/ejemplo-matchmaking`), con lo que quedaba de la lista VIP fuera del perfil:
-  - `/demo/ranking-vip`: borde y medalla VIP, verificado y Top VIP del mes.
+- **Qué es:** tres prototipos más en el frontend nuevo (`kyan/ejemplo-matchmaking`), con lo que quedaba de la lista VIP fuera del perfil:
   - `/demo/favoritas`
   - `/demo/creditos`
   - `/demo/torneo-stats`
 - **Quedaron afuera, a propósito:**
   - Firma o banner, galería, pestañas extra y el regalo de bienvenida, porque **son del perfil y los está haciendo Esteban**.
   - Los puntos VIP canjeables, porque ya están en la progresión VIP (1.7).
+  - El ícono y borde VIP en el ranking, el verificado y el Top VIP del mes: se hizo un prototipo (`/demo/ranking-vip`) y Kyan lo descartó el 2026-10-29.
 - **Qué falta:**
   - **Daniel:**
     - Las rutas que pide cada bitácora, con el chequeo de VIP.
@@ -134,7 +134,23 @@ Ordenado por urgencia.
   - **Esteban:** llevarlos a la web.
   - Confirmar los roles de "Hecho por" en los créditos.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Bitácora:** [`2026-10-29-ranking-vip`](bitacora/2026-10-29-ranking-vip/), [`2026-10-29-partidas-favoritas`](bitacora/2026-10-29-partidas-favoritas/), [`2026-10-29-creditos`](bitacora/2026-10-29-creditos/) y [`2026-10-29-stats-torneo`](bitacora/2026-10-29-stats-torneo/).
+- **Bitácora:** [`2026-10-29-partidas-favoritas`](bitacora/2026-10-29-partidas-favoritas/), [`2026-10-29-creditos`](bitacora/2026-10-29-creditos/) y [`2026-10-29-stats-torneo`](bitacora/2026-10-29-stats-torneo/).
+
+### 1.11 Misiones semanales (prototipo)
+
+- **Qué es:** misiones semanales de juego, web y comunidad en `/demo/misiones` del frontend nuevo (`kyan/ejemplo-matchmaking`):
+  - Un popout en la barra de arriba.
+  - Una página con la semana y el historial.
+  - La vista de admin con el catálogo y las próximas 8 semanas.
+  - Cada semana salen 6 para todos y 3 VIP, al azar. Una que salió no vuelve hasta dentro de 2 semanas.
+- **Datos:** usan los mismos datos del servidor que las medallas. 12 de las 58 misiones esperan:
+  - 9, el plugin nuevo (schema 2, ver `MEDALLAS_DATOS_REPORTER.md`).
+  - 3, otros sistemas (grupos del matchmaking y referidos).
+- **Qué falta:**
+  - **Daniel:** las tablas `missions`, `mission_weeks` y `mission_progress`, sumar el progreso con cada mix y cada evento, el cron del lunes 06:00 y las rutas con el chequeo de VIP.
+  - **Esteban:** el popout, la página y el admin.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK. El plugin nuevo, cuando se haga, sí va a los dos servidores.
+- **Bitácora:** [`2026-10-29-misiones-semanales`](bitacora/2026-10-29-misiones-semanales/).
 
 ## 2. Investigaciones abiertas
 

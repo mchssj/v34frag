@@ -135,6 +135,21 @@ Para que no se piense en medallas que después no se pueden otorgar:
 4. **Medallas que no salen del juego:** votos de fair play al final del mix, un sistema de referidos (reclutador), una marca de supporter y la carga manual por un admin para eventos, caster y staff.
 5. **Fórmula del MVP del mix** y la regla de prestigio.
 
+## También lo usan las misiones semanales
+
+Las misiones semanales (`docs/bitacora/2026-10-29-misiones-semanales/`) usan los mismos datos. Cada métrica de `features/missions/catalog.ts` dice si sale del plugin 1.8, del plugin nuevo (schema 2), de la web o de un sistema que falta.
+
+Hay 9 misiones que esperan los datos nuevos de este documento:
+
+- Kills por arma (AWP, Deagle y cuchillo).
+- Clutchs (dos misiones).
+- Rondas sobrevividas.
+- Pistolas ganadas.
+- Ecos ganados.
+- Bombas explotadas.
+
+Entran solas a la rotación cuando el plugin los mande. **Pedir esos datos en la próxima versión del plugin destraba las medallas y las misiones a la vez.**
+
 ## Preguntas abiertas para Daniel
 
 1. ¿Cómo se asocia una partida a equipos registrados (para las medallas de equipo)?
