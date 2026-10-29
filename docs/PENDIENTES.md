@@ -279,6 +279,11 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 ### 1.15 HUD de observer (`csstv_hud` 1.0.0): subido solo al servidor real, sin probar
 
+- **2026-10-29: el relay pasa al VPS** (relay 2.0.0, plan [`2026-10-29-hud-relay-vps`](bitacora/2026-10-29-hud-relay-vps/GUIA_IMPLEMENTACION.md)): un relay para todos los servidores, administrado desde la web. Desplegado en el VPS contra staging (`hud.cmleague.lat`). **flow** ya tiene `csstv_hud` 1.1.0 (no lo tenía) apuntando al relay, en el puerto `27501`, como prueba autorizada por Daniel. Falta:
+  - confirmar la prueba con flow (cambio de mapa y jugadores) y, si se quiere, apagarlo con `flow_hud.py off`;
+  - ~~el frontend~~: hecho el 2026-10-29 ([`2026-10-29-frontend-hud`](bitacora/2026-10-29-frontend-hud/GUIA_IMPLEMENTACION.md)); falta desplegarlo con `desplegar.sh web`;
+  - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real, RBK y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
+
 - **2026-10-25:** ya no está en el servidor real (lo sacó kyan, según Daniel). Sigue en RBK con `csstv_hud "0"`.
 
 - **Excepción pedida por Daniel el 2026-10-22:** sin pruebas en el servidor local y **solo al servidor real**. Desde el 2026-10-23 RBK también lo tiene (1.1.0), con `csstv_hud "0"`.
@@ -389,6 +394,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   1. ~~Aplicarla en producción~~ (hecho el 2026-10-28).
   2. Comprobar: `select count(*) from vip_memberships;` da 0 y `select is_vip('<uuid de una cuenta>');` da `false`.
   3. Cargar los VIP de Kyan, todos lifetime, con [`pruebas/carga_inicial_vip.sql`](bitacora/2026-10-28-vip-fase-0/pruebas/carga_inicial_vip.sql) en el SQL Editor (ahí no hay sesión de admin, así que `admin_vip_grant` rechaza; el script hace un `insert` con `source = 'import'`). Busca por el nick de la ficha, como los links de la web vieja:
+     - **Actualizado el 2026-10-29:** los cuatro van en la misma lista con su fecha de compra (`starts_at` a la medianoche de Colombia de ese día) y lo que pagaron en la nota. Una ficha sin cuenta se salta con un aviso `PENDIENTE` en lugar de abortar, y a quien ya se cargó solo le corrige la fecha: se corre el mismo archivo entero cada vez. Probado en local con rollback (dos corridas).
      - **Ahora:** `romanxz` (romanzera) y `shoxmeister` (cypee-thor).
      - **Cuando creen su cuenta y vinculen su SteamID:** `instt` (uriel) y `sandeerz`. El VIP es de la cuenta: sin cuenta no se puede dar.
   4. Volcar el esquema con `supabase/schema/volcar.sh 20261028120000`, para que la base local parta de producción con la tabla.
@@ -417,12 +423,12 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
 - **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
 
-### 1.26 Equipo y Torneos en la API (replanteo `33`): falta staging y el frontend
+### 1.26 Equipo y Torneos en la API (replanteo `33`): falta el frontend
 
 - **Hecho el 2026-10-28 (local) y commiteado en `feat/backend-api-fase-1` (sin push):** replanteo `33`, API y pruebas (45 SQL, 353 unitarias y 150 de integración). Bitácora: [`2026-10-28-equipo-torneos-api`](bitacora/2026-10-28-equipo-torneos-api/).
 - **Contrato para el frontend:** [`contrato-frontend-equipo-torneos.md`](../contrato-frontend-equipo-torneos.md). Rompe la inscripción a torneos (`{ active, subs }`) y saca `players_min`/`players_max`.
 - **Falta:**
-  - Cargar los replanteos `31`, `32` y `33` en la Supabase de **staging** (hoy tiene del `01` al `30`) y redesplegar la API del VPS antes del ensayo de Equipo y Torneos.
+  - ~~Cargar los replanteos `31`, `32` y `33` en staging y redesplegar la API del VPS~~: **hecho el 2026-10-29** (staging tiene del `01` al `36` y las migraciones hasta `20261028200000`; API `91498a41bca2`). Ver [`2026-10-29-hud-relay-vps`](bitacora/2026-10-29-hud-relay-vps/GUIA_IMPLEMENTACION.md).
   - Que el frontend adopte la inscripción nueva y los campos nuevos.
   - Publicar `bitacora/2026-10-28-equipo-torneos-api/CHANGELOG_DISCORD.txt` cuando llegue a producción (poner la versión).
 - No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
@@ -444,6 +450,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Mientras tanto, a mano:** la demo de esa partida la bajó Daniel desde el panel de flow y la subió a R2 (`demos/2026/10/flow-20261028T222354-0bbb.dem`, 50.707.873 bytes, igual que en flow). Después se marcó con `demo_mark('uploaded')` (`uploaded` a las 03:01 UTC; sus 15 clips quedaron en la cola del bot). Antes de eso, el VPS ya le había gastado los intentos (`demo_attempts` 7), pero `demo_mark` acepta `uploaded` también sobre `missing`. La demo sigue en `csstv_demos/` de flow porque no se borró a mano. Hacia las 02:35 UTC flow tampoco respondía desde la PC de Daniel (puertos 2022, 443 y 8080): falta preguntarle si bloqueó esa IP.
 - **Resuelto el 2026-10-29:** flow habilitó la IP del VPS. Desde entonces el VPS subió solo las demos de tuscan (41,6 MB), mirage (9,0 MB) y mirage (55,8 MB). El SFTP de flow baja a unos 52-60 KB/s: una demo de 50 MB tarda unos 15 minutos. Con `TimeoutStartSec=900`, systemd cortaba la corrida a mitad de una demo, así que se subió a `3600` en `deploy/vps/cmleague-demos.service` y en el VPS (05:00 UTC, sin commit). Falta preguntarle a flow si su SFTP tiene un límite de velocidad.
 - **Bitácora:** [`2026-10-28-demos-servidores-externos`](bitacora/2026-10-28-demos-servidores-externos/)
+
+### 1.28 Días como VIP: aplicar la migración en producción
+
+- **Qué es:** `active_since` y `days_active` en la vista `vip_status`: cuántos días lleva cada cuenta como VIP sin cortes (lifetime incluido), en fechas de Colombia. Migración `supabase/migrations/20261029120000_vip_dias.sql`, sin commit. Solo redefine la vista: no toca `admin_vip_grant` ni `admin_vip_revoke`, así que se puede correr también después del corte.
+- **Probada en local (2026-10-29):** 7 pruebas ([`pruebas/vip_dias.sql`](bitacora/2026-10-29-vip-dias/pruebas/vip_dias.sql)) y las 45 de la fase 0 siguen en verde.
+- **Falta:**
+  1. Aplicarla en producción (SQL Editor). No va a los servidores (real, RBK y flow): no toca el plugin.
+  2. ~~Fechas reales de la carga inicial~~: hecho el 2026-10-29. Daniel pasó las fechas de compra (uriel, cypee-thor y roman el 2026-10-26; sandeerz el 2026-10-27) y [`carga_inicial_vip.sql`](bitacora/2026-10-28-vip-fase-0/pruebas/carga_inicial_vip.sql) ahora carga cada uno desde ese día (o le corrige la fecha si ya estaba cargado). Ver el punto 1.23.
+  3. Exponer `days_active` en la API (`/admin/vips`, `/admin/users/{id}/vip`, `/me/profile`) y en el frontend, cuando Daniel lo pida.
+- **Bitácora:** [`2026-10-29-vip-dias`](bitacora/2026-10-29-vip-dias/)
 
 ## 2. Investigaciones abiertas
 
@@ -578,7 +594,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
   - ~~(Opcional) `teams`, `rating`, `kd` y el filtro `level` en esa respuesta~~: **hecho el 2026-10-25**, solo en local (replanteo `30`): rating y K/D de los mixes de la temporada (guardados en la foto del cierre), equipos actuales, filtros `level` y `team` y orden por `rating` y `kd`. Ver [`2026-10-25-ranking-temporada-columnas`](bitacora/2026-10-25-ranking-temporada-columnas/DOCUMENTACION.md). Falta mostrar las columnas en la tabla de la temporada del frontend.
 - **Pedidos del frontend de Perfil público** (2026-10-24, bitácora [`2026-10-24-frontend-perfil-publico`](bitacora/2026-10-24-frontend-perfil-publico/GUIA_IMPLEMENTACION.md)):
   - ~~`is_captain` en `GET /api/v1/players/{id}/teams`~~: **hecho el 2026-10-24** (`5f786eb`, con push). Sin migración: la vista ya lo tenía.
-- **Notificaciones, segunda etapa: hecha en local el 2026-10-29, sin desplegar** (bitácora [`2026-10-29-notificaciones-programadas`](bitacora/2026-10-29-notificaciones-programadas/GUIA_IMPLEMENTACION.md)): replanteo `35` con `notify_due()` y el timer `cmleague-notify` (partida de torneo o PCW en 1 hora, PCW vencida sin rival, temporada por terminar 24 horas antes, partida de torneo sin resultado a las 3 horas y VIP que vence en 3 días). Falta: aplicar la `35` en el corte (después de la `28`), y recién entonces `desplegar.sh api` e instalar y prender `cmleague-notify.timer` en el VPS (antes fallaría con `PGRST202`); y en el frontend, los textos de los seis tipos y mostrarle `match_no_result` al organizador. La primera etapa (replanteo `28`) está hecha en local, sin desplegar.
+- **Notificaciones, segunda etapa: hecha en local el 2026-10-29, sin desplegar** (bitácora [`2026-10-29-notificaciones-programadas`](bitacora/2026-10-29-notificaciones-programadas/GUIA_IMPLEMENTACION.md)): replanteo `35` con `notify_due()` y el timer `cmleague-notify` (partida de torneo o PCW en 1 hora, PCW vencida sin rival, temporada por terminar 24 horas antes, partida de torneo sin resultado a las 3 horas y VIP que vence en 3 días). En el VPS ya corre contra staging desde el 2026-10-29 (`cmleague-notify.timer`, con la `35` en staging). Falta: aplicar la `35` en producción en el corte (después de la `28`); y en el frontend, los textos de los seis tipos y mostrarle `match_no_result` al organizador. La primera etapa (replanteo `28`) está hecha en local, sin desplegar.
 - **Estadísticas de partida: frontend** (2026-10-25, bitácora [`2026-10-25-stats-partida`](bitacora/2026-10-25-stats-partida/PLAN.md), sección 4): el backend (replanteo `29`) está hecho en local; faltan las pestañas en la sala del mix y la tarjeta "Estilo de juego" del perfil público.
 - **Estadísticas de partida: lo que necesita el plugin, en pausa** (decidido por Daniel el 2026-10-25): precisión, KAST, RWS, rondas sobrevividas, trades, clutches perdidos, kills por minuto, MVP por ronda y Swing. No se planifica por el riesgo de lag en el servidor; si se retoma, medir antes con `csstv_perf`.
 - **Dependencias de desarrollo con avisos de seguridad** (`npm audit`: `sharp` y `miniflare` vía wrangler, y `source-map-js`): no corren en producción. Se corrigen al pasar wrangler a 4.151 o superior, en `web/backend` y en `cloudflare/demo-worker`.
