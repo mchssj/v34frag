@@ -1,21 +1,24 @@
-// Relay del HUD de observer (docs/bitacora/2026-10-22-hud-observer): recibe los paquetes UDP de csstv_hud,
-// los retrasa igual que la SourceTV y se los pasa al HUD de OBS.
+// Relay del HUD de observer (docs/bitacora/2026-10-22-hud-observer y 2026-10-29-hud-relay-vps): recibe los paquetes
+// UDP de csstv_hud, los retrasa igual que la SourceTV y se los pasa al HUD de OBS.
+// Dos modos (config.ts): local, en la PC del streamer con un túnel de playit.gg, y VPS, para todos los servidores.
 
 import { createSocket } from "node:dgram";
 import { readSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { isSea } from "node:sea";
-import { configPath, loadConfig } from "./config.ts";
-import { loadControl, mergeControl, saveControl } from "./control.ts";
-import { DelayQueue } from "./delay.ts";
+import { Channel } from "./channel.ts";
+import { type Config, configPath, loadConfig } from "./config.ts";
+import { ControlStore, loadControl, mergeControl, saveControl } from "./control.ts";
 import { findFont, loadFont } from "./font.ts";
-import { parsePacket } from "./protocol.ts";
+import { Hub, type Socket } from "./hub.ts";
+import { fetchRemote } from "./remote.ts";
 import { HttpServer } from "./server.ts";
-import { GameModel } from "./state.ts";
 
-const VERSION = "1.2.0";
+const VERSION = "2.0.0";
 const RELEASE_MS = 50;
 const STATUS_MS = 10000;
+const REMOTE_MS = 30000;
+const SUMMARY_MS = 60000;
 
 function log(msg: string): void {
   const t = new Date().toLocaleTimeString("es-AR", { hour12: false });
@@ -36,47 +39,110 @@ function fail(msg: string): never {
   process.exit(1);
 }
 
+function loadFonts(config: Config) {
+  const killfeedPath = findFont(config.gameDir, "killfeed");
+  return { path: killfeedPath, fonts: { killfeed: loadFont(killfeedPath), cs: loadFont(findFont(config.gameDir, "cs")) } };
+}
+
 async function main(): Promise<void> {
   console.log(`CMLeague HUD relay ${VERSION}\n`);
   const cfgPath = configPath(isSea());
-  const loaded = loadConfig(cfgPath);
+  const loaded = loadConfig(cfgPath, !process.env.HUD_RELAY_CONFIG);
   if (!loaded.ok) fail(loaded.message);
   const config = loaded.config;
+  if (config.remote) await runVps(config, cfgPath);
+  else await runLocal(config, cfgPath);
+}
 
+// ---------- VPS ----------
+
+async function runVps(config: Config, cfgPath: string): Promise<void> {
+  const remote = config.remote!;
+  const stateDir = process.env.STATE_DIRECTORY || dirname(cfgPath);
+  const { path: fontPath, fonts } = loadFonts(config);
+
+  const hub = new Hub({
+    bind: (port, onMessage) =>
+      new Promise<Socket>((resolve, reject) => {
+        const udp = createSocket("udp4");
+        udp.once("error", reject);
+        udp.on("message", (msg) => onMessage(msg.toString("utf8")));
+        udp.bind(port, "0.0.0.0", () => {
+          udp.off("error", reject);
+          udp.on("error", (e) => log(`Error en el puerto UDP ${port}: ${e.message}`));
+          resolve({ close: () => udp.close() });
+        });
+      }),
+    fetchRemote: (sessions, seen) => fetchRemote(remote, sessions, seen),
+    controls: new ControlStore(join(stateDir, "control.json")),
+    delay: config.delay,
+    log,
+  });
+
+  const http = new HttpServer({
+    viewer: (token) => hub.viewer(token),
+    initial: (viewer) => hub.initial(viewer),
+    onControl: (viewer, body) => hub.onControl(viewer, body),
+    status: (viewer) => hub.status(viewer, { version: VERSION, killfeedIcons: fonts.killfeed !== null, kitIcon: fonts.cs !== null }),
+    font: (name) => fonts[name],
+  });
+  hub.http = http;
+
+  try {
+    await http.listen(config.httpPort);
+  } catch (e) {
+    fail(`No se pudo abrir el puerto ${config.httpPort}: ${(e as Error).message}`);
+  }
+  log(`Modo VPS. HTTP en 127.0.0.1:${config.httpPort} (lo publica Caddy). Configuración desde ${remote.apiUrl}.`);
+  log(fonts.killfeed ? `Íconos: ${fontPath}` : `Sin la fuente de ClientMod: el HUD muestra los nombres de las armas (revisá "gameDir").`);
+
+  const refresh = async () => {
+    try {
+      await hub.refresh();
+    } catch (e) {
+      log(`No se pudo leer la configuración de la base (sigue con la anterior): ${(e as Error).message}`);
+    }
+  };
+  await refresh();
+  setInterval(() => void refresh(), REMOTE_MS);
+  setInterval(() => hub.tick(), RELEASE_MS);
+  setInterval(() => log(hub.summary(SUMMARY_MS / 1000)), SUMMARY_MS);
+
+  // systemd manda SIGTERM al reiniciar: se cierran los puertos y las conexiones de los HUD.
+  process.once("SIGTERM", () => {
+    hub.close();
+    http.close();
+    process.exit(0);
+  });
+}
+
+// ---------- Local (PC del streamer) ----------
+
+async function runLocal(config: Config, cfgPath: string): Promise<void> {
   const controlPath = join(dirname(cfgPath), "relay-control.json");
   let control = loadControl(controlPath);
-
-  const fontPath = findFont(config.gameDir, "killfeed");
-  const fonts = { killfeed: loadFont(fontPath), cs: loadFont(findFont(config.gameDir, "cs")) };
-
-  const queue = new DelayQueue();
-  const model = new GameModel();
-  let tvDelay = 0;
-  let received = 0;
-  let receivedWindow = 0;
-  let badKey = 0;
-  let badFormat = 0;
-  let lastPacketAt = 0;
-
-  const delaySeconds = (): number => config.delay ?? tvDelay;
+  const { path: fontPath, fonts } = loadFonts(config);
+  const channel = new Channel(config.key, config.delay);
 
   const http: HttpServer = new HttpServer({
+    viewer: (token) => (token === null ? "local" : null),
     initial: () => [
-      { event: "state", data: model.snapshot() },
+      { event: "state", data: channel.snapshot() },
       { event: "control", data: control },
     ],
-    onControl: (body) => {
+    onControl: (_viewer, body) => {
       control = mergeControl(control, body);
       saveControl(controlPath, control);
       http.broadcast("control", control);
     },
     status: () => ({
+      mode: "local",
       version: VERSION,
-      received,
-      lastPacketMsAgo: lastPacketAt ? Date.now() - lastPacketAt : null,
-      delaySeconds: delaySeconds(),
-      queued: queue.size,
-      clients: http.clientCount,
+      received: channel.received,
+      lastPacketMsAgo: channel.lastPacketAt ? Date.now() - channel.lastPacketAt : null,
+      delaySeconds: channel.delaySeconds(),
+      queued: channel.queued,
+      hudOpen: http.connections().filter((c) => c.page === "hud").length,
       killfeedIcons: fonts.killfeed !== null,
       kitIcon: fonts.cs !== null,
     }),
@@ -84,22 +150,7 @@ async function main(): Promise<void> {
   });
 
   const udp = createSocket("udp4");
-  udp.on("message", (msg) => {
-    const now = Date.now();
-    const result = parsePacket(msg.toString("utf8"), config.key);
-    if (!result.ok) {
-      if (result.reason === "key") badKey++;
-      else badFormat++;
-      return;
-    }
-    const packet = result.packet;
-    if (packet.type === "F") tvDelay = packet.tvDelay;
-    if (queue.push(packet, now, delaySeconds())) {
-      received++;
-      receivedWindow++;
-      lastPacketAt = now;
-    }
-  });
+  udp.on("message", (msg) => channel.handle(msg.toString("utf8"), Date.now()));
   udp.on("error", (e) => fail(`Error en el puerto UDP ${config.udpPort}: ${e.message}`));
 
   // Solo 127.0.0.1: los paquetes llegan por el agente de playit, que corre en esta misma PC.
@@ -121,25 +172,24 @@ async function main(): Promise<void> {
   log(config.delay === null ? "Retraso: el tv_delay del servidor." : `Retraso fijo: ${config.delay} s (relay.json).`);
 
   setInterval(() => {
-    const out = queue.release(Date.now());
-    if (out.length === 0) return;
-    const now = Date.now();
-    for (const p of out) model.apply(p, now);
-    http.broadcast("state", model.snapshot());
+    if (channel.release(Date.now())) http.broadcast("state", channel.snapshot());
   }, RELEASE_MS);
 
   let lastLine = "";
   setInterval(() => {
     let line: string;
-    if (lastPacketAt === 0) line = "Todavía no llegó ningún paquete. ¿Está abierto playit y cargado el host en el servidor?";
-    else if (Date.now() - lastPacketAt > 15000) line = `Sin paquetes hace ${Math.round((Date.now() - lastPacketAt) / 1000)} s (sin jugadores en el servidor o se cortó el túnel).`;
-    else
-      line = `Recibiendo: ${(receivedWindow / (STATUS_MS / 1000)).toFixed(1)} paquetes/s · retraso ${delaySeconds()} s · ${model.snapshot().players.length} jugadores · HUD abiertos: ${http.clientCount}`;
-    if (badKey) line += ` · ${badKey} con clave incorrecta (revisá "key" en relay.json)`;
-    if (badFormat) line += ` · ${badFormat} con formato inválido`;
-    receivedWindow = 0;
-    badKey = 0;
-    badFormat = 0;
+    const last = channel.lastPacketAt;
+    if (last === 0) line = "Todavía no llegó ningún paquete. ¿Está abierto playit y cargado el host en el servidor?";
+    else if (Date.now() - last > 15000) line = `Sin paquetes hace ${Math.round((Date.now() - last) / 1000)} s (sin jugadores en el servidor o se cortó el túnel).`;
+    else {
+      const huds = http.connections().filter((c) => c.page === "hud").length;
+      line = `Recibiendo: ${(channel.receivedWindow / (STATUS_MS / 1000)).toFixed(1)} paquetes/s · retraso ${channel.delaySeconds()} s · ${channel.snapshot().players.length} jugadores · HUD abiertos: ${huds}`;
+    }
+    if (channel.badKey) line += ` · ${channel.badKey} con clave incorrecta (revisá "key" en relay.json)`;
+    if (channel.badFormat) line += ` · ${channel.badFormat} con formato inválido`;
+    channel.receivedWindow = 0;
+    channel.badKey = 0;
+    channel.badFormat = 0;
     if (line !== lastLine || line.startsWith("Recibiendo")) log(line);
     lastLine = line;
   }, STATUS_MS);

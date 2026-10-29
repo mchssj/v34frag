@@ -35,11 +35,14 @@ export function weaponName(cls) {
   return WEAPONS[cls] ?? cls.toUpperCase();
 }
 
-/** Se conecta a /events y vuelve a conectar solo si el relay se reinicia. */
-export function connect({ onState, onControl, onStatus }) {
+/**
+ * Se conecta a events (relativo: sirve en / y en /s/<token>/) y vuelve a conectar solo si el relay se reinicia.
+ * page: "hud" o "control" (el relay cuenta los HUD abiertos para saber quién transmite).
+ */
+export function connect({ page, onState, onControl, onStatus }) {
   let es;
   const open = () => {
-    es = new EventSource("/events");
+    es = new EventSource(`events?page=${page}`);
     es.addEventListener("open", () => onStatus?.(true));
     es.addEventListener("error", () => onStatus?.(false));
     es.addEventListener("state", (e) => onState?.(JSON.parse(e.data)));
