@@ -25,11 +25,15 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoBioRouteImport } from './routes/demo.bio'
 import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
 import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
+import { Route as DemoCreditosRouteImport } from './routes/demo.creditos'
 import { Route as DemoEloRouteImport } from './routes/demo.elo'
 import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
+import { Route as DemoFavoritasRouteImport } from './routes/demo.favoritas'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
+import { Route as DemoRankingVipRouteImport } from './routes/demo.ranking-vip'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
+import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
 import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
@@ -134,6 +138,11 @@ const DemoComparadorRoute = DemoComparadorRouteImport.update({
   path: '/demo/comparador',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoCreditosRoute = DemoCreditosRouteImport.update({
+  id: '/demo/creditos',
+  path: '/demo/creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoEloRoute = DemoEloRouteImport.update({
   id: '/demo/elo',
   path: '/demo/elo',
@@ -144,9 +153,19 @@ const DemoExportarRoute = DemoExportarRouteImport.update({
   path: '/demo/exportar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoFavoritasRoute = DemoFavoritasRouteImport.update({
+  id: '/demo/favoritas',
+  path: '/demo/favoritas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   id: '/demo/matchmaking',
   path: '/demo/matchmaking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRankingVipRoute = DemoRankingVipRouteImport.update({
+  id: '/demo/ranking-vip',
+  path: '/demo/ranking-vip',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
@@ -157,6 +176,11 @@ const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
 const DemoTiendaRoute = DemoTiendaRouteImport.update({
   id: '/demo/tienda',
   path: '/demo/tienda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoTorneoStatsRoute = DemoTorneoStatsRouteImport.update({
+  id: '/demo/torneo-stats',
+  path: '/demo/torneo-stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoWidgetRoute = DemoWidgetRouteImport.update({
@@ -300,11 +324,15 @@ export interface FileRoutesByFullPath {
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/creditos': typeof DemoCreditosRoute
   '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/ranking-vip': typeof DemoRankingVipRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -345,11 +373,15 @@ export interface FileRoutesByTo {
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/creditos': typeof DemoCreditosRoute
   '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/ranking-vip': typeof DemoRankingVipRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -394,11 +426,15 @@ export interface FileRoutesById {
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/creditos': typeof DemoCreditosRoute
   '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/ranking-vip': typeof DemoRankingVipRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -442,11 +478,15 @@ export interface FileRouteTypes {
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
+    | '/demo/creditos'
     | '/demo/elo'
     | '/demo/exportar'
+    | '/demo/favoritas'
     | '/demo/matchmaking'
+    | '/demo/ranking-vip'
     | '/demo/recalculo'
     | '/demo/tienda'
+    | '/demo/torneo-stats'
     | '/demo/widget'
     | '/admin/events'
     | '/admin/matchmaking'
@@ -487,11 +527,15 @@ export interface FileRouteTypes {
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
+    | '/demo/creditos'
     | '/demo/elo'
     | '/demo/exportar'
+    | '/demo/favoritas'
     | '/demo/matchmaking'
+    | '/demo/ranking-vip'
     | '/demo/recalculo'
     | '/demo/tienda'
+    | '/demo/torneo-stats'
     | '/demo/widget'
     | '/admin/events'
     | '/admin/matchmaking'
@@ -535,11 +579,15 @@ export interface FileRouteTypes {
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
+    | '/demo/creditos'
     | '/demo/elo'
     | '/demo/exportar'
+    | '/demo/favoritas'
     | '/demo/matchmaking'
+    | '/demo/ranking-vip'
     | '/demo/recalculo'
     | '/demo/tienda'
+    | '/demo/torneo-stats'
     | '/demo/widget'
     | '/_app/admin/events'
     | '/_app/admin/matchmaking'
@@ -575,11 +623,15 @@ export interface RootRouteChildren {
   DemoBioRoute: typeof DemoBioRoute
   DemoBuscadorRoute: typeof DemoBuscadorRoute
   DemoComparadorRoute: typeof DemoComparadorRoute
+  DemoCreditosRoute: typeof DemoCreditosRoute
   DemoEloRoute: typeof DemoEloRoute
   DemoExportarRoute: typeof DemoExportarRoute
+  DemoFavoritasRoute: typeof DemoFavoritasRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
+  DemoRankingVipRoute: typeof DemoRankingVipRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
+  DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
   DemoWidgetRoute: typeof DemoWidgetRoute
 }
 
@@ -697,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoComparadorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/creditos': {
+      id: '/demo/creditos'
+      path: '/demo/creditos'
+      fullPath: '/demo/creditos'
+      preLoaderRoute: typeof DemoCreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/elo': {
       id: '/demo/elo'
       path: '/demo/elo'
@@ -711,11 +770,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoExportarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/favoritas': {
+      id: '/demo/favoritas'
+      path: '/demo/favoritas'
+      fullPath: '/demo/favoritas'
+      preLoaderRoute: typeof DemoFavoritasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/matchmaking': {
       id: '/demo/matchmaking'
       path: '/demo/matchmaking'
       fullPath: '/demo/matchmaking'
       preLoaderRoute: typeof DemoMatchmakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/ranking-vip': {
+      id: '/demo/ranking-vip'
+      path: '/demo/ranking-vip'
+      fullPath: '/demo/ranking-vip'
+      preLoaderRoute: typeof DemoRankingVipRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/recalculo': {
@@ -730,6 +803,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/tienda'
       fullPath: '/demo/tienda'
       preLoaderRoute: typeof DemoTiendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/torneo-stats': {
+      id: '/demo/torneo-stats'
+      path: '/demo/torneo-stats'
+      fullPath: '/demo/torneo-stats'
+      preLoaderRoute: typeof DemoTorneoStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/widget': {
@@ -1020,11 +1100,15 @@ const rootRouteChildren: RootRouteChildren = {
   DemoBioRoute: DemoBioRoute,
   DemoBuscadorRoute: DemoBuscadorRoute,
   DemoComparadorRoute: DemoComparadorRoute,
+  DemoCreditosRoute: DemoCreditosRoute,
   DemoEloRoute: DemoEloRoute,
   DemoExportarRoute: DemoExportarRoute,
+  DemoFavoritasRoute: DemoFavoritasRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
+  DemoRankingVipRoute: DemoRankingVipRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
+  DemoTorneoStatsRoute: DemoTorneoStatsRoute,
   DemoWidgetRoute: DemoWidgetRoute,
 }
 export const routeTree = rootRouteImport
