@@ -30,7 +30,7 @@ import { Route as DemoEloRouteImport } from './routes/demo.elo'
 import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
 import { Route as DemoFavoritasRouteImport } from './routes/demo.favoritas'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
-import { Route as DemoRankingVipRouteImport } from './routes/demo.ranking-vip'
+import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
@@ -163,9 +163,9 @@ const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   path: '/demo/matchmaking',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoRankingVipRoute = DemoRankingVipRouteImport.update({
-  id: '/demo/ranking-vip',
-  path: '/demo/ranking-vip',
+const DemoMisionesRoute = DemoMisionesRouteImport.update({
+  id: '/demo/misiones',
+  path: '/demo/misiones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
@@ -329,7 +329,7 @@ export interface FileRoutesByFullPath {
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
-  '/demo/ranking-vip': typeof DemoRankingVipRoute
+  '/demo/misiones': typeof DemoMisionesRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -378,7 +378,7 @@ export interface FileRoutesByTo {
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
-  '/demo/ranking-vip': typeof DemoRankingVipRoute
+  '/demo/misiones': typeof DemoMisionesRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -431,7 +431,7 @@ export interface FileRoutesById {
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
-  '/demo/ranking-vip': typeof DemoRankingVipRoute
+  '/demo/misiones': typeof DemoMisionesRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -483,7 +483,7 @@ export interface FileRouteTypes {
     | '/demo/exportar'
     | '/demo/favoritas'
     | '/demo/matchmaking'
-    | '/demo/ranking-vip'
+    | '/demo/misiones'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -532,7 +532,7 @@ export interface FileRouteTypes {
     | '/demo/exportar'
     | '/demo/favoritas'
     | '/demo/matchmaking'
-    | '/demo/ranking-vip'
+    | '/demo/misiones'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -584,7 +584,7 @@ export interface FileRouteTypes {
     | '/demo/exportar'
     | '/demo/favoritas'
     | '/demo/matchmaking'
-    | '/demo/ranking-vip'
+    | '/demo/misiones'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -628,7 +628,7 @@ export interface RootRouteChildren {
   DemoExportarRoute: typeof DemoExportarRoute
   DemoFavoritasRoute: typeof DemoFavoritasRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
-  DemoRankingVipRoute: typeof DemoRankingVipRoute
+  DemoMisionesRoute: typeof DemoMisionesRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
@@ -784,11 +784,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoMatchmakingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/ranking-vip': {
-      id: '/demo/ranking-vip'
-      path: '/demo/ranking-vip'
-      fullPath: '/demo/ranking-vip'
-      preLoaderRoute: typeof DemoRankingVipRouteImport
+    '/demo/misiones': {
+      id: '/demo/misiones'
+      path: '/demo/misiones'
+      fullPath: '/demo/misiones'
+      preLoaderRoute: typeof DemoMisionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/recalculo': {
@@ -1105,7 +1105,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoExportarRoute: DemoExportarRoute,
   DemoFavoritasRoute: DemoFavoritasRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
-  DemoRankingVipRoute: DemoRankingVipRoute,
+  DemoMisionesRoute: DemoMisionesRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoTorneoStatsRoute: DemoTorneoStatsRoute,
