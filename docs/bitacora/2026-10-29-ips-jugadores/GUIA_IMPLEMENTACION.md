@@ -2,8 +2,9 @@
 
 ## Estado
 
-- **Implementado y probado en local el 2026-10-29**, sin commit, en `feat/frontend-fase-1`.
-- **Falta desplegar.** Nada de esto está en producción, en staging ni en los servidores todavía. Se hace con el OK de Daniel, en este orden:
+- **Implementado y probado en local el 2026-10-29**, commiteado en `feat/frontend-fase-1` (`85f7fc2`).
+- **Desplegado el 2026-10-29 en todo**, a pedido de Daniel (ver "Despliegue"). Falta verificarlo con el primer jugador que entre a cada servidor y publicar el changelog.
+- El orden que se siguió:
   1. La migración `20261029180000_ips_jugadores.sql` en **producción** (SQL Editor) y en **staging**.
   2. El reporter 2.6.0 en **los tres servidores en la misma tanda**: el genérico al real (`SFTP_CSS_*`) y el licenciado a RBK (`SERVER1_*`) y a flow (`SERVER2_*`), con `server/build_licenciado.sh`. Se carga en el próximo cambio de mapa: no recargar con una partida en curso.
   3. El replanteo `38` en staging, y la API y la web en el VPS (`deploy/vps/desplegar.sh api` y `web`). En el corte, la `38` va después de la `37`.
@@ -52,6 +53,21 @@ flowchart LR
    - la ficha con la IP compartida.
    - En `src/db/types.ts` se dejó afuera, otra vez, el cambio de `vip_status` de la migración `vip_dias` (otro requerimiento, sin commit).
 5. **Frontend**: `pnpm gen:api`, typecheck, lint y **343** pruebas. Captura en 1440 px, en claro y en oscuro, con datos inventados en la base local, una cuenta admin temporal y el link a la otra ficha probado. Después se borró todo.
+
+## Despliegue (2026-10-29)
+
+1. **Producción** (`PG_*`, Session pooler): primero una lectura (`csstv_auth` y `csstv_steam64` existen; `player_ips` todavía no). Después la migración con `psql` y `notify pgrst, 'reload schema'`. Se comprobó por la API pública, con la URL y la clave del plugin y un token falso: `{"ok": false, "error": "Token de servidor inválido o revocado"}`.
+2. **Staging:** la migración y el replanteo `38`.
+3. **VPS:** `desplegar.sh api` y `desplegar.sh web`, los dos en `85f7fc23653b`.
+4. **Servidores**, con [`pruebas/desplegar_ips.py`](pruebas/desplegar_ips.py) (`paramiko` en un entorno virtual del scratchpad):
+   - Builds licenciados: `server/build_licenciado.sh be0fd76c-6bdc-477e-a843-6efc309b5ca9 rbk` y `… 7b01c85b-bc3e-4aa3-9ab5-3c2044157034 flow`.
+   - Primero `inspect`: los tres tenían la 2.5.0 (el real con el md5 `494f6c54` del repo; RBK `5d8a5379`; flow `0697263a`).
+   - Después `apply`. En cada servidor:
+     - la 2.5.0 pasó a `plugins/disabled/csstv_reporter_2.5.0.smx` (en el real y en RBK se borró `disabled/csstv_reporter_2.3.1.smx`, para dejar 3);
+     - se subió la 2.6.0, con el md5 verificado: real `8aabf843`, RBK `854b84f9`, flow `d0200467`;
+     - se agregó `csstv_ips "1"` al `csstv_reporter.cfg`, verificado.
+   - El cfg y el `.smx` anteriores quedaron respaldados en el scratchpad de la sesión, fuera del repo (el cfg tiene el token).
+   - No se recargó nada: se carga en el próximo cambio de mapa de cada servidor.
 
 ## Verificar después de desplegar
 
