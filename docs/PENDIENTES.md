@@ -59,6 +59,16 @@ Ordenado por urgencia.
 - Sin commit, en `kyan/pruebas`.
 - **Bitácora:** [`2026-10-29-widget-streamers`](bitacora/2026-10-29-widget-streamers/). Pasos en la guía; changelog para Discord en la carpeta.
 
+### 1.6 Tienda de cosméticos en la web
+
+- **Qué falta:**
+  1. Correr `supabase/migrations/20261028120000_vip.sql` (VIP del backend; si ya se corrió, es re-ejecutable) y después `supabase/migrations/20261029180000_tienda.sql` en el SQL Editor. **No se probaron en ningún Postgres**: conviene correrlas antes en un proyecto de prueba o en la base local del backend.
+  2. Publicar **juntos** `index.html` y la carpeta `assets/perfil/`.
+  3. Probar comprar, equipar, la portada y Admin → Tienda (puntos, regalos y VIP).
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Al hacer el corte:** el replanteo `34_tienda.sql` parte de esta migración, con `elo_key()`, `mix_deletions` y los avisos con `notify()`.
+- **Bitácora:** [`2026-10-29-tienda-web`](bitacora/2026-10-29-tienda-web/). Pasos en la guía; changelog para Discord en la carpeta.
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real

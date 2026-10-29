@@ -183,6 +183,40 @@ main>div,main>aside{min-width:0}
 .dlg-foot{position:sticky;bottom:0;background:var(--panel);display:grid;gap:6px;padding:10px 0 2px;border-top:1px solid var(--line)}
 </style>
 <link rel="stylesheet" href="csstv-theme.css">
+<link rel="stylesheet" href="assets/perfil/cosmeticos.css">
+<style>
+/* Tienda y cosméticos (docs/bitacora/2026-10-29-tienda-web/) */
+.cos-tema{--accent:var(--primary);--panel:var(--card);--panel2:var(--muted);--line:var(--border)}
+#pp-body.cos-tema{box-shadow:none;animation:none}
+.vip-tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:5px;background:linear-gradient(90deg,#f7d76a,#c8952a);color:#1b1407;font-size:10px;font-weight:900;letter-spacing:1px;vertical-align:middle}
+.cos-stk{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.cos-stk img{display:block}
+.avf>.av,.avf>img.av{border-radius:8%;font-size:calc(var(--avf,128px)*.28)}
+.pp-cover{grid-column:1/-1;height:200px;background:var(--panel2) center/cover no-repeat;border-bottom:1px solid var(--line)}
+.pp-photo.pp-framed{background:var(--panel2);padding:10px}.pp-photo.pp-framed .avf img.avf-img{max-height:none}
+.pp-head .cos-stk{margin:0}
+.shop-top{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:0}
+.shop-prev{display:flex;gap:16px;align-items:center;padding:18px;background:var(--panel2);border-right:1px solid var(--line);min-height:170px}
+.shop-prev-n{font-size:24px;font-weight:900;color:var(--accent)}.shop-prev-s{color:var(--mute);font-size:12px}
+.shop-bal{padding:18px;display:flex;flex-direction:column;gap:8px}.shop-big{font-size:30px;font-weight:900;color:var(--accent)}.shop-bal small{color:var(--mute)}
+.shop-how{color:var(--mute);font-size:12px;margin:0}.shop-warn{color:var(--live);font-size:12px;margin:0}
+.shop-vip{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:linear-gradient(90deg,rgba(247,215,106,.12),transparent)}
+.shop-vip b{color:#e8b53a}.shop-vip span{color:var(--mute);font-size:12px}
+.shop-bar{padding:12px 14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.shop-cols,.shop-row{display:flex;gap:6px;flex-wrap:wrap}.shop-cols button{font-size:11px;padding:5px 10px}.shop-cols button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.shop-row input{flex:1;min-width:160px}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;padding:14px}
+.shop-item{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:border-color .15s,transform .15s}
+.shop-item:hover{border-color:var(--accent);transform:translateY(-2px)}.shop-item.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}.shop-item.lock{opacity:.6}
+.shop-vis{height:150px;display:grid;place-items:center;background:var(--panel2)}.shop-st{width:96px;height:96px}.shop-nm{font-size:22px;font-weight:900;color:var(--accent)}
+.shop-tema{width:80%;padding:12px;border-radius:10px;background:var(--card);border:1px solid var(--border)}.shop-tema b{color:var(--primary)}.shop-tema small{display:block;color:var(--mute)}.shop-tema i{display:block;height:8px;border-radius:4px;background:var(--primary);margin-top:8px}
+.shop-inf{padding:10px 12px;display:flex;flex-direction:column;gap:4px;flex:1}.shop-t{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.shop-inf small{color:var(--mute);min-height:32px}
+.shop-chip,.shop-col{font-size:10px;padding:1px 6px;border-radius:5px;background:var(--panel2);color:var(--mute);font-weight:700;align-self:flex-start}
+.shop-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px}.shop-pr{font-size:13px}.shop-pr b{color:var(--accent)}.shop-pr s{color:var(--mute)}.shop-pr.ok{color:var(--win);font-weight:700}.shop-pr.vip{color:#e8b53a;font-weight:700}
+.shop-falta{font-size:11px;color:var(--mute)}.shop-acts button:disabled{opacity:.45;cursor:not-allowed}.shop-acts{display:flex;gap:6px;flex-wrap:wrap}.shop-acts button{padding:6px 10px}.shop-neg{color:var(--live)}
+.cover-prev{height:150px;border-radius:10px;border:1px dashed var(--line);background:var(--panel2) center/cover no-repeat;display:grid;place-items:center;color:var(--mute)}
+.g5{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+@media(max-width:860px){.shop-top{grid-template-columns:1fr}.shop-prev{border-right:0;border-bottom:1px solid var(--line)}.pp-cover{height:120px}}
+</style>
 </head>
 <body>
 <div id="toast-container"></div>
@@ -201,6 +235,7 @@ main>div,main>aside{min-width:0}
 <a href="#" data-v="ranking">Ranking</a>
 <a href="#" data-v="teams">Equipos</a>
 <a href="#" data-v="players">Jugadores</a>
+<a href="#" data-v="shop">Tienda</a>
 <a href="#" data-v="profile" id="nav-profile" hidden>Mi Perfil</a>
 <div class="dd ad" hidden>
 <button id="adm-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="adm-list">Admin ▾</button>
@@ -210,6 +245,7 @@ main>div,main>aside{min-width:0}
 <a href="#" data-v="tadm">Equipos</a>
 <a href="#" data-v="vadm">Verificaciones</a>
 <a href="#" data-v="sadm">Servidores</a>
+<a href="#" data-v="shadm">Tienda</a>
 </div></div>
 </nav>
 <div class="hr"><span id="ses" style="color: var(--mute); font-size: 11px;"></span><button id="th" type="button">Tema</button><button id="lg" type="button">Ingresar</button></div>
@@ -296,6 +332,23 @@ main>div,main>aside{min-width:0}
 
 
 
+<main id="shop" class="one" hidden>
+<div>
+<section><div class="shop-top" id="shop-top"></div><div class="shop-vip" id="shop-vip"></div></section>
+<section id="shop-hist-w" hidden><h2>Historial de puntos</h2><div id="shop-hist" class="scroll"></div></section>
+<section id="shop-week-w" hidden><h2 id="shop-week-h">Ofertas de la semana</h2><div id="shop-week" class="shop-grid"></div></section>
+<section><h2>Tienda</h2><div class="shop-bar" id="shop-bar"></div><div id="shop-grid" class="shop-grid"></div></section>
+</div>
+</main>
+
+<main id="shadm" class="one" hidden>
+<div>
+<section><h2>Puntos</h2><div id="sa-cfg" class="fm"></div></section>
+<section><h2>Cuentas: saldo, regalos, portada y VIP</h2><div id="sa-users" class="scroll"></div></section>
+<section><h2>Catálogo: precios y artículos activos</h2><div id="sa-items" class="scroll"></div></section>
+</div>
+</main>
+
 <main id="profile" class="one" hidden>
 <div>
 <section><h2>Mi perfil</h2><div class="fm">
@@ -308,6 +361,13 @@ main>div,main>aside{min-width:0}
 <label for="prof-faceit">FACEIT (nickname o link)</label><input id="prof-faceit" type="text" maxlength="120" />
 <label for="prof-discord">Discord</label><input id="prof-discord" type="text" maxlength="40" />
 <button id="prof-save" class="pri" type="button">Guardar cambios</button> <span id="prof-msg" class="msg" style="padding: 0;"></span>
+</div></section>
+<section><h2>Portada y personalización</h2><div class="fm" id="cover-box">
+<div class="cover-prev" id="cover-prev">Sin portada</div>
+<input id="cover-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-label="Portada" />
+<div class="msg" style="padding:0">Se recorta a 1200 × 300 px. Se muestra arriba de tu perfil. Un admin la puede quitar si no respeta las reglas.</div>
+<div class="shop-acts"><button id="cover-save" class="pri" type="button" hidden>Guardar portada</button><button id="cover-del" type="button" hidden>Quitar portada</button><button id="cover-shop" type="button">Ir a la tienda</button></div>
+<b>Lo que tenés puesto</b><div id="cos-mine"></div>
 </div></section>
 <section><h2>Tu cuenta (automático)</h2><div id="prof-auto" class="fm"></div></section>
 <section><h2>Datos del jugador (los edita un administrador)</h2><div id="prof-admin" class="fm"></div></section>
@@ -637,12 +697,12 @@ function champOf(t,M){var f=t.format;
  return null}
 
 
-var V=['home','matches','results','mixes','events','pcw','palmares','ranking','teams','players','match-detail','player-profile','profile','cadm','padm','tadm','vadm','sadm'];
+var V=['home','matches','results','mixes','events','pcw','palmares','ranking','teams','players','shop','match-detail','player-profile','profile','cadm','padm','tadm','vadm','sadm','shadm'];
 var nav=document.querySelectorAll('nav a[data-v]');
 
 function closeMenus(){var l=$('adm-list'),b=$('adm-btn');if(l)l.hidden=true;if(b)b.setAttribute('aria-expanded','false');var n=$('mainnav'),m=$('menu-btn');if(n)n.classList.remove('open');if(m)m.setAttribute('aria-expanded','false')}
 function show(v, pushState, hashVal){
-    var isA=['cadm','padm','tadm','vadm','sadm'].indexOf(v)>-1;if($('adm-btn'))$('adm-btn').classList.toggle('on',isA);
+    var isA=['cadm','padm','tadm','vadm','sadm','shadm'].indexOf(v)>-1;if($('adm-btn'))$('adm-btn').classList.toggle('on',isA);
     V.forEach(function(x){$(x).hidden=x!==v});
     nav.forEach(function(a){a.classList.toggle('on',a.dataset.v===v)});
     if(v==='profile') rProfileView();
@@ -1096,7 +1156,7 @@ function rViews(){
  var nm=function(p){var e=eloRow(p);return e?e.matches:0};
  var ps=players.slice().sort(function(a,b){return eloOf(b)-eloOf(a)||nm(b)-nm(a)||String(a.nick).localeCompare(String(b.nick),'es',{sensitivity:'base'})});
  if(shown('players'))pager($('vp'),'pub-players',ps,function(p){
-  var t=teams.filter(function(x){return(x.members||[]).indexOf(p.id)>-1})[0],w=el('div','pl');w.style.padding='0';w.appendChild(av(p));w.appendChild(el('b',0,p.nick));
+  var t=teams.filter(function(x){return(x.members||[]).indexOf(p.id)>-1})[0],w=el('div','pl');w.style.padding='0';var cs=cosOf(p);w.appendChild(cs?withFrame(av(p),cs.frame,48):av(p));var nb=el('b');nb.appendChild(nameFx(p.nick,cs&&cs.name));if(isVipP(p))nb.appendChild(vipTag());w.appendChild(nb);
   var vB=btn('Ver',function(){openProfile(p)});
   return [w,lvlBadge(eloOf(p)),eloOf(p),t?t.name:'-',fm(p.rating,2),fm(p.kd,2),vB]},{head:['Jugador','Nivel','ELO','Equipo','Rating','K/D','Acción'],text:function(p){var t=teams.filter(function(x){return(x.members||[]).indexOf(p.id)>-1})[0];return p.nick+' '+(t?t.name+' '+(t.tag||''):'')},per:15,ph:'Buscar jugador o equipo...',empty:'Sin jugadores.'});}
 
@@ -1231,7 +1291,7 @@ async function rProfileView(){
  $('prof-email').value=meEmail;$('prof-tag').value=userProfiles[me]||'';
  var r=await sb.from('profile_details').select('*').eq('user_id',me).maybeSingle();profDet=r.data||{};var d=profDet;
  $('prof-real').value=d.real_name||'';$('prof-country').value=d.country||'';$('prof-role').value=d.game_role||'';$('prof-steam').value=d.steam||'';$('prof-faceit').value=d.faceit||'';$('prof-discord').value=d.discord||'';
- profAvatarBlob=null;$('prof-file').value='';avBox($('prof-av'),d.avatar_url,userProfiles[me]||meEmail);
+ profAvatarBlob=null;$('prof-file').value='';avBox($('prof-av'),d.avatar_url,userProfiles[me]||meEmail);coverBlob=null;$('cover-file').value='';rCoverBox();
  var pl=myPlayer(),tm=(pl?teams.filter(function(t){return(t.members||[]).indexOf(pl.id)!==-1})[0]:null)||teams.filter(function(t){return t.captain_id===me||t.owner_id===me})[0];
  var played=tm?matches.filter(function(m){return m.status==='finished'&&!m.bye&&!isOrph(m)&&(m.team1===tm.id||m.team2===tm.id)}).length:0;
  var A=$('prof-auto');A.textContent='';var joined=d.joined_at||meCreated;
@@ -1272,12 +1332,15 @@ function ppSub(m){if(m.kind==='mix')return'Mix · '+(m.map||'mapa sin dato');var
 function socLink(box,label,val,f){if(!val)return;var u=f(val),n;if(u){n=el('a',0,label);n.href=u;n.target='_blank';n.rel='noopener noreferrer'}else n=el('span',0,label+': '+val);box.appendChild(n)}
 function ppBar(label,v,max,txt){var b=el('div','pp-stat'),t=el('div','t');t.appendChild(el('span',0,label));t.appendChild(el('b',0,txt));b.appendChild(t);
  var tr=el('div','pp-bar'),i=el('i');i.style.width=(v==null?0:Math.max(0,Math.min(100,v/max*100)))+'%';tr.appendChild(i);b.appendChild(tr);return b}
-function ppHero(p,d,t,blk){var h=$('pp-hero');h.textContent='';var ph=el('div','pp-photo'),img=p.photo_url||(d&&d.avatar_url);
- if(img){var im=el('img');im.src=img;im.alt=p.nick;ph.appendChild(im)}else ph.appendChild(el('div','ph',(p.nick||'?')[0].toUpperCase()));h.appendChild(ph);
+function ppHero(p,d,t,blk){var h=$('pp-hero');h.textContent='';var ph=el('div','pp-photo'),img=p.photo_url||(d&&d.avatar_url),cs=blk?null:cosOf(p),tc=cs?themeClass(cs.theme):'';
+ h.className='pp-hero'+(tc?' '+tc+' cos-tema':'');$('pp-body').className=tc?tc+' cos-tema':'';
+ if(d&&d.cover_url&&!blk){var cv=el('div','pp-cover');cv.style.backgroundImage='url("'+String(d.cover_url).replace(/"/g,'%22')+'")';h.appendChild(cv)}
+ if(cs&&cosItem(cs.frame)){ph.classList.add('pp-framed');var fi=img?el('img','av'):el('div','av',(p.nick||'?')[0].toUpperCase());if(img){fi.src=img;fi.alt=p.nick}ph.appendChild(withFrame(fi,cs.frame,190))}
+ else if(img){var im=el('img');im.src=img;im.alt=p.nick;ph.appendChild(im)}else ph.appendChild(el('div','ph',(p.nick||'?')[0].toUpperCase()));h.appendChild(ph);
  var inf=el('div','pp-info'),hd=el('div','pp-head'),L=el('div'),nm=el('h2','pp-name');
  if(d&&d.country&&FLAG[d.country]){var fl=el('img');fl.src='https://flagcdn.com/24x18/'+FLAG[d.country]+'.png';fl.alt=d.country;fl.width=24;fl.height=18;fl.onerror=function(){fl.remove()};nm.appendChild(fl)}
- nm.appendChild(document.createTextNode(p.nick));L.appendChild(nm);if(d&&d.real_name)L.appendChild(el('div','pp-real',d.real_name));hd.appendChild(L);
- var soc=el('div','pp-soc');if(d){socLink(soc,'Steam',d.steam,steamLink);socLink(soc,'FACEIT',d.faceit,faceitLink);if(d.discord)soc.appendChild(el('span',0,'Discord: '+d.discord))}hd.appendChild(soc);inf.appendChild(hd);
+ nm.appendChild(nameFx(p.nick,cs&&cs.name));if(isVipP(p))nm.appendChild(vipTag());L.appendChild(nm);if(d&&d.real_name)L.appendChild(el('div','pp-real',d.real_name));hd.appendChild(L);
+ var soc=el('div','pp-soc');if(d){socLink(soc,'Steam',d.steam,steamLink);socLink(soc,'FACEIT',d.faceit,faceitLink);if(d.discord)soc.appendChild(el('span',0,'Discord: '+d.discord))}hd.appendChild(soc);if(cs&&cs.stickers&&cs.stickers.length)hd.appendChild(stickerImgs(cs.stickers,56));inf.appendChild(hd);
  function row(k,v){var r=el('div','pp-row');r.appendChild(el('span',0,k));var s2=el('span');if(v&&v.nodeType)s2.appendChild(v);else s2.textContent=v;r.appendChild(s2);inf.appendChild(r)}
  row('Equipo actual',t?t.name+(t.tag?' ['+t.tag+']':''):'Libre');
  if(blk){inf.appendChild(el('p','msg',blk));h.appendChild(inf);return}
@@ -1538,7 +1601,8 @@ function render(){
  if(shown('home'))rHome();
  if(shown('matches')||shown('results')||shown('mixes')||shown('ranking')||shown('players')||shown('events'))rViews();
  if(shown('pcw'))rPcw();
- if(admin){if(shown('padm')||shown('vadm'))rPA();if(shown('tadm'))rTA();if(shown('cadm')){rC();rEM();rPend()}if(shown('sadm'))rSrv()}
+ if(shown('shop'))rShop();
+ if(admin){if(shown('padm')||shown('vadm'))rPA();if(shown('tadm'))rTA();if(shown('cadm')){rC();rEM();rPend()}if(shown('sadm'))rSrv();if(shown('shadm'))rShopAdm()}
  var md=byId(matches,selMatchId);if(md&&shown('match-detail')){rStats(md);if(md.kind!=='mix'){rVeto(md);rResult(md)}}}
 
 var seenErr={};
@@ -1546,6 +1610,181 @@ async function soft(p,label){var r=await p;if(r.error){console.error(label,r.err
 var loadP=null,loadAgain=false;
 function load(){if(loadP){loadAgain=true;return loadP}
  loadP=(async function(){try{await loadImpl();while(loadAgain){loadAgain=false;await loadImpl()}}finally{loadP=null}})();return loadP}
+/* ---------- Tienda de cosméticos (docs/bitacora/2026-10-29-tienda-web/) ---------- */
+var COS='assets/perfil/',SK={frame:'Marcos',sticker:'Stickers',theme:'Temas',name:'Nombres'},SCOL={cs:'Counter-Strike',paises:'Sudamérica',series:'Series míticas (VIP)',paises2:'Latinoamérica y España',mapas:'Mapas de CS:S',arsenal:'Arsenal (VIP)',series2:'Series míticas 2 (VIP)'},
+ shopItems=[],shopAll={},shopCat=[],shopCatById={},cosByPlayer={},vipByPlayer={},pointsCfg=null,myPts=null,myItems={},myCos=null,
+ shopState='loading',shopErr='',shopF={kind:'frame',col:'',q:'',show:'all',sort:'sort'},shopTry=null,shopHist=null;
+async function loadShop(){
+ try{var R=await Promise.all([
+   sb.from('shop_items').select('*').order('sort'),
+   sb.from('shop_catalog').select('*').order('sort'),
+   sb.from('player_cosmetics_public').select('*'),
+   sb.from('vip_public').select('player_id'),
+   sb.from('points_config').select('*').eq('id',1).maybeSingle(),
+   me?sb.rpc('my_points'):Promise.resolve({data:null}),
+   me?sb.from('user_items').select('*').eq('user_id',me):Promise.resolve({data:[]}),
+   me?sb.from('user_cosmetics').select('*').eq('user_id',me).maybeSingle():Promise.resolve({data:null})]);
+  var bad=R.filter(function(r){return r.error})[0];
+  if(bad){shopState='off';shopErr=bad.error.message;console.warn('tienda',bad.error)}
+  else{shopState='ok';shopErr='';
+   shopItems=R[0].data||[];shopAll={};shopItems.forEach(function(i){shopAll[i.id]=i});
+   shopCat=R[1].data||[];shopCatById={};shopCat.forEach(function(i){shopCatById[i.id]=i});
+   cosByPlayer={};(R[2].data||[]).forEach(function(c){cosByPlayer[c.player_id]=c});
+   vipByPlayer={};(R[3].data||[]).forEach(function(v){if(v.player_id)vipByPlayer[v.player_id]=true});
+   pointsCfg=R[4].data;myPts=(R[5].data||[])[0]||null;
+   myItems={};(R[6].data||[]).forEach(function(x){myItems[x.item_id]=x});
+   myCos=R[7].data||{frame:null,theme:null,name:null,stickers:[]};if(!myCos.stickers)myCos.stickers=[]}
+ }catch(e){shopState='off';shopErr=e&&e.message||String(e)}
+ if(shown('shop'))rShop();if(shown('players'))rViews();if(admin&&shown('shadm'))rShopAdm();
+ if(shown('player-profile'))rProfile();if(shown('profile'))rCoverBox()}
+
+// Cosméticos de una ficha y su dibujo (avatar con marco, nombre con efecto y stickers).
+function cosItem(id){return id?shopAll[id]||null:null}
+function cosOf(p){return p&&cosByPlayer[p.id]||null}
+function isVipP(p){return !!(p&&vipByPlayer[p.id])}
+function withFrame(node,frameId,size){var f=cosItem(frameId);if(!f||f.kind!=='frame')return node;var w=el('div','avf');w.style.setProperty('--avf',size+'px');
+ node.classList.add('avf-img');w.appendChild(node);var m=el('img','avf-marco');m.src=COS+f.file;m.alt='';m.loading='lazy';w.appendChild(m);return w}
+function nameFx(text,nameId){var s=el('span',0,text),n=cosItem(nameId);if(n&&n.kind==='name'){s.className=n.css_class;s.setAttribute('data-nombre',text)}return s}
+function stickerImgs(ids,size){var d=el('div','cos-stk');(ids||[]).forEach(function(id){var s=cosItem(id);if(!s)return;var i=el('img');i.src=COS+s.file;i.alt=s.name;i.title=s.name;i.loading='lazy';i.style.width=i.style.height=size+'px';d.appendChild(i)});return d}
+function themeClass(id){var t=cosItem(id);return t&&t.kind==='theme'?t.css_class:''}
+function vipTag(){var v=el('span','vip-tag','VIP');v.title='Cuenta VIP';return v}
+
+// Lo que se ve en la vista previa: lo equipado, con el artículo que se está probando encima.
+function previewCos(){var c={frame:myCos&&myCos.frame,theme:myCos&&myCos.theme,name:myCos&&myCos.name,stickers:(myCos&&myCos.stickers||[]).slice()};
+ if(shopTry){var t=cosItem(shopTry);if(t){if(t.kind==='sticker'){if(c.stickers.indexOf(t.id)<0){c.stickers.push(t.id);if(c.stickers.length>3)c.stickers.shift()}}else c[t.kind]=t.id}}return c}
+function myName(){var pl=myPlayer();return pl?pl.nick:(userProfiles[me]||'Tu nombre')}
+function myAv(){var pl=myPlayer(),u=pl&&pl.photo_url||(profDet&&profDet.avatar_url);if(u){var i=el('img','av');i.src=u;i.alt='';return i}return el('div','av',(myName()||'?')[0].toUpperCase())}
+function owns(i){return !!myItems[i.id]}
+function canUse(i){return owns(i)||(i.vip_only&&myPts&&myPts.vip)}
+function equipped(i){if(!myCos)return false;return i.kind==='sticker'?(myCos.stickers||[]).indexOf(i.id)>=0:myCos[i.kind]===i.id}
+function perMix(){if(!pointsCfg)return 10;return Math.max(1,Math.round(pointsCfg.per_mix*(myPts&&myPts.vip?Number(pointsCfg.vip_multiplier):1)))}
+function pts(n){return Number(n||0).toLocaleString('es')+' pts'}
+
+async function shopBuy(i){if(!me){$('lg').click();return}var c=shopCatById[i.id];if(!c)return;
+ if(!confirm('¿Comprar «'+i.name+'» por '+pts(c.price)+'?'+(c.weekly?' (oferta de la semana)':'')))return;
+ try{var r=await ok(sb.rpc('shop_buy',{p_item:i.id}));showToast('¡Compraste '+i.name+'! Te quedan '+pts(r.balance)+'.');shopTry=null;await loadShop();
+  if(confirm('¿Te lo ponés ahora?'))shopEquip(i,true)}catch(e){showToast(e&&e.message||String(e),'error')}}
+async function shopEquip(i,on){if(!me){$('lg').click();return}var d={};
+ if(i.kind==='sticker'){var s=(myCos.stickers||[]).filter(function(x){return x!==i.id});if(on){s.push(i.id);if(s.length>3){showToast('Ya tenés 3 stickers puestos: se sacó «'+((cosItem(s[0])||{}).name||s[0])+'».');s.shift()}}d.stickers=s}
+ else d[i.kind]=on?i.id:null;
+ try{await ok(sb.rpc('set_my_cosmetics',{p_data:d}));showToast(on?'Te pusiste «'+i.name+'».':'Te sacaste «'+i.name+'».');shopTry=null;await loadShop()}catch(e){showToast(e&&e.message||String(e),'error')}}
+
+function shopVis(i,size){var v=el('div','shop-vis');
+ if(i.kind==='frame')v.appendChild(withFrame(me?myAv():el('div','av','?'),i.id,size||118));
+ else if(i.kind==='sticker'){var im=el('img','shop-st');im.src=COS+i.file;im.alt='';im.loading='lazy';v.appendChild(im)}
+ else if(i.kind==='theme'){var d=el('div','shop-tema '+i.css_class);d.appendChild(el('b',0,'Perfil'));d.appendChild(el('small',0,'Así se ve el color'));d.appendChild(el('i'));v.appendChild(d)}
+ else{var n=nameFx(me?myName():'Tu nombre',i.id);n.classList.add('shop-nm');v.appendChild(n)}
+ return v}
+function shopCard(i){var c=shopCatById[i.id]||{},o=owns(i),u=canUse(i),eq=equipped(i),card=el('div','shop-item'+(eq?' on':'')+(i.vip_only&&!u?' lock':''));
+ card.appendChild(shopVis(i));var inf=el('div','shop-inf');var t=el('div','shop-t');t.appendChild(el('b',0,i.name));
+ if(i.vip_only)t.appendChild(vipTag());if(i.animated)t.appendChild(el('span','shop-chip','Animado'));inf.appendChild(t);
+ inf.appendChild(el('small',0,i.description||''));inf.appendChild(el('span','shop-col',SCOL[i.collection]||i.collection));
+ var f=el('div','shop-foot');
+ if(i.vip_only){f.appendChild(el('span','shop-pr vip',u?'Incluido con tu VIP':'Solo VIP'))}
+ else if(o){f.appendChild(el('span','shop-pr ok','✓ Lo tenés'))}
+ else if(c.price==null){f.appendChild(el('span','shop-pr','No está a la venta'))}
+ else{var pr=el('span','shop-pr');if(c.weekly&&c.base_price!==c.price){pr.appendChild(el('s',0,pts(c.base_price)));pr.appendChild(document.createTextNode(' '))}pr.appendChild(el('b',0,pts(c.price)));f.appendChild(pr);
+  if(me&&myPts&&myPts.balance<c.price){var fal=c.price-myPts.balance;f.appendChild(el('span','shop-falta','Te faltan '+pts(fal)+' (≈ '+Math.ceil(fal/perMix())+' mixes)'))}}
+ var acts=el('div','shop-acts');
+ if(u){acts.appendChild(btn(eq?'Sacar':'Equipar',function(e){e.stopPropagation();shopEquip(i,!eq)}));if(!eq)acts.lastChild.className='pri'}
+ else if(!i.vip_only&&c.price!=null){var b=btn('Comprar',function(e){e.stopPropagation();shopBuy(i)});b.className='pri';if(me&&myPts&&myPts.balance<c.price)b.disabled=true;acts.appendChild(b)}
+ acts.appendChild(btn(shopTry===i.id?'Probando':'Probar',function(e){e.stopPropagation();shopTry=shopTry===i.id?null:i.id;rShop();scrollTo({top:0,behavior:'smooth'})}));
+ f.appendChild(acts);inf.appendChild(f);card.appendChild(inf);
+ card.onclick=function(){shopTry=shopTry===i.id?null:i.id;rShop();scrollTo({top:0,behavior:'smooth'})};return card}
+
+function rShopTop(){var T=$('shop-top');T.textContent='';$('shop-vip').hidden=shopState!=='ok';
+ if(shopState==='loading'){T.appendChild(none('Cargando la tienda...'));return}
+ if(shopState==='off'){T.appendChild(none('La tienda todavía no está disponible. ('+shopErr+')'));return}
+ var c=previewCos(),pv=el('div','shop-prev'+(themeClass(c.theme)?' '+themeClass(c.theme)+' cos-tema':''));
+ pv.appendChild(withFrame(me?myAv():el('div','av','?'),c.frame,132));
+ var pt=el('div');var nm=el('div','shop-prev-n');nm.appendChild(nameFx(me?myName():'Tu nombre',c.name));if(me&&myPts&&myPts.vip)nm.appendChild(vipTag());pt.appendChild(nm);
+ pt.appendChild(el('div','shop-prev-s',shopTry?'Probando: '+(cosItem(shopTry)||{}).name+' · tocalo de nuevo para sacarlo':'Así te ves con lo que tenés puesto'));
+ pt.appendChild(stickerImgs(c.stickers,44));pv.appendChild(pt);T.appendChild(pv);
+ var bx=el('div','shop-bal');
+ if(!me){bx.appendChild(el('b',0,'Ganá puntos jugando'));bx.appendChild(el('p',0,'Iniciá sesión para ver tus puntos, comprar y equiparte cosas.'));var lb=btn('Ingresar',function(){$('lg').click()});lb.className='pri';bx.appendChild(lb)}
+ else{var big=el('div','shop-big',pts(myPts?myPts.balance:0));bx.appendChild(big);
+  bx.appendChild(el('small',0,'Ganaste '+pts(myPts?myPts.earned:0)+' en '+(myPts?myPts.mixes:0)+' mixes'+(myPts&&myPts.granted?' · regalos '+pts(myPts.granted):'')+' · gastaste '+pts(myPts?myPts.spent:0)));
+  if(!myPlayer())bx.appendChild(el('p','shop-warn','Tu cuenta no tiene una ficha de jugador vinculada, así que tus mixes no suman puntos. Reclamá tu perfil en Jugadores.'));
+  var hb=btn(shopHist?'Ocultar historial':'Ver historial',function(){if(shopHist){shopHist=null;rShop()}else rShopHist()});var pb=btn('Mi perfil y portada',function(){show('profile',true)});var ab=el('div','shop-acts');ab.appendChild(hb);ab.appendChild(pb);bx.appendChild(ab)}
+ if(pointsCfg)bx.appendChild(el('p','shop-how','Ganás '+pointsCfg.per_mix+' puntos por cada mix terminado y '+pointsCfg.per_win+' más si ganás. Los VIP ganan ×'+String(pointsCfg.vip_multiplier).replace('.',',')+'.'));
+ T.appendChild(bx);
+ var vb=$('shop-vip');vb.textContent='';var nv=shopItems.filter(function(i){return i.vip_only}).length;
+ if(me&&myPts&&myPts.vip){vb.className='shop-vip on';vb.appendChild(el('b',0,'Sos VIP ✓'));vb.appendChild(el('span',0,'Tenés los '+nv+' artículos VIP sin gastar puntos, y ganás ×'+String(pointsCfg?pointsCfg.vip_multiplier:1.5).replace('.',',')+' puntos por mix.'))}
+ else{vb.className='shop-vip';vb.appendChild(el('b',0,'Hacete VIP'));vb.appendChild(el('span',0,nv+' artículos animados (Series míticas, Arsenal y más) sin gastar puntos, ×'+String(pointsCfg?pointsCfg.vip_multiplier:1.5).replace('.',',')+' puntos por mix y clips extra. Pedíselo a un admin en Discord.'))}}
+
+async function rShopHist(){try{var r=await ok(sb.rpc('my_points_history',{p_limit:100}));shopHist=r||[];rShop()}catch(e){showToast(e&&e.message||String(e),'error')}}
+
+function rShop(){if(!$('shop'))return;rShopTop();var W=$('shop-week'),G=$('shop-grid'),B=$('shop-bar'),H=$('shop-hist');
+ $('shop-hist-w').hidden=!shopHist;if(shopHist){H.textContent='';H.appendChild(shopHist.length?tbl(['Fecha','Qué','Puntos'],shopHist.map(function(h){var p=el('b',h.points>=0?'w':'shop-neg',(h.points>0?'+':'')+h.points);return[h.at?dt(h.at):'-',(h.kind==='mix'?'Mix: ':h.kind==='grant'?'Regalo: ':'Compra: ')+h.label+(h.vip?' (×VIP)':''),p]})):none('Todavía no tenés movimientos.'))}
+ W.textContent='';G.textContent='';if(shopState!=='ok'){$('shop-week-w').hidden=true;return}
+ var wk=shopCat.filter(function(c){return c.weekly}).map(function(c){return shopAll[c.id]}).filter(Boolean);$('shop-week-w').hidden=!wk.length;
+ if(wk.length){var fin=shopCat.filter(function(c){return c.weekly})[0].weekly_ends;$('shop-week-h').textContent='Ofertas de la semana · −'+(pointsCfg?pointsCfg.weekly_discount:25)+'% hasta el '+dtd(fin);wk.forEach(function(i){W.appendChild(shopCard(i))})}
+ if(!B.children.length){var tabs=el('div','pp-tabs shop-tabs');tabs.id='shop-tabs';B.appendChild(tabs);var cols=el('div','shop-cols');cols.id='shop-cols';B.appendChild(cols);
+  var row=el('div','shop-row'),q=el('input');q.type='search';q.placeholder='Buscar artículo...';q.setAttribute('aria-label','Buscar artículo');q.oninput=function(){shopF.q=q.value;rShop()};row.appendChild(q);
+  var s1=el('select');s1.setAttribute('aria-label','Mostrar');[['all','Todo'],['buy','Puedo comprar'],['mine','Lo mío'],['vip','Solo VIP'],['free','Para todos']].forEach(function(x){var o=el('option',0,x[1]);o.value=x[0];s1.appendChild(o)});s1.onchange=function(){shopF.show=s1.value;rShop()};row.appendChild(s1);
+  var s2=el('select');s2.setAttribute('aria-label','Ordenar');[['sort','Destacados'],['cheap','Más baratos'],['exp','Más caros'],['name','Nombre']].forEach(function(x){var o=el('option',0,x[1]);o.value=x[0];s2.appendChild(o)});s2.onchange=function(){shopF.sort=s2.value;rShop()};row.appendChild(s2);B.appendChild(row)}
+ var tb=$('shop-tabs');tb.textContent='';Object.keys(SK).forEach(function(k){var n=shopCat.filter(function(c){return c.kind===k}).length,b=btn(SK[k]+' ('+n+')',function(){shopF.kind=k;shopF.col='';rShop()});if(k===shopF.kind)b.className='on';tb.appendChild(b)});
+ var cb=$('shop-cols');cb.textContent='';[''].concat(Object.keys(SCOL)).forEach(function(k){var n=shopCat.filter(function(c){return c.kind===shopF.kind&&(!k||c.collection===k)}).length;if(k&&!n)return;var b=btn((k?SCOL[k]:'Todas')+' · '+n,function(){shopF.col=k;rShop()});if(k===shopF.col)b.className='on';cb.appendChild(b)});
+ var qq=norm(shopF.q),L=shopCat.filter(function(c){var i=shopAll[c.id];if(!i||c.kind!==shopF.kind||(shopF.col&&c.collection!==shopF.col))return false;
+  if(qq&&norm(i.name+' '+(i.description||'')+' '+(SCOL[i.collection]||'')).indexOf(qq)<0)return false;
+  if(shopF.show==='buy')return !i.vip_only&&!owns(i)&&c.price!=null&&myPts&&myPts.balance>=c.price;
+  if(shopF.show==='mine')return canUse(i);if(shopF.show==='vip')return i.vip_only;if(shopF.show==='free')return !i.vip_only;return true});
+ var P=function(c){return c.price==null?1e9:c.price};
+ if(shopF.sort==='cheap')L.sort(function(a,b){return P(a)-P(b)});else if(shopF.sort==='exp')L.sort(function(a,b){return(b.price||0)-(a.price||0)});else if(shopF.sort==='name')L.sort(function(a,b){return a.name.localeCompare(b.name,'es')});
+ if(!L.length)G.appendChild(none(shopF.show==='buy'&&me?'Con tu saldo todavía no te alcanza para nada de acá: ¡jugá unos mixes!':'Nada coincide con el filtro.'));
+ L.forEach(function(c){G.appendChild(shopCard(shopAll[c.id]))})}
+
+// Portada en Mi perfil: 1200 × 300, JPG, menos de 1 MB (límite del bucket avatars).
+var coverBlob=null;
+function prepCover(file){return new Promise(function(res,rej){
+ if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type)){rej(new Error('La portada tiene que ser JPG, PNG, WebP o GIF.'));return}
+ if(file.size>8*1024*1024){rej(new Error('La imagen pesa más de 8 MB.'));return}
+ var im=new Image(),u=URL.createObjectURL(file);
+ im.onload=function(){var W=1200,H=300,c=document.createElement('canvas'),x=c.getContext('2d'),w=im.width,h=im.height,r=Math.max(W/w,H/h),sw=W/r,sh=H/r;c.width=W;c.height=H;
+  x.drawImage(im,(w-sw)/2,(h-sh)/2,sw,sh,0,0,W,H);URL.revokeObjectURL(u);
+  (function tryQ(q){c.toBlob(function(b){if(!b){rej(new Error('No se pudo procesar la imagen.'));return}if(b.size>1000000&&q>0.5)tryQ(q-0.1);else res(b)},'image/jpeg',q)})(0.85)};
+ im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('No se pudo leer la imagen.'))};im.src=u})}
+function rCoverBox(){var B=$('cover-box');if(!B||!me)return;var u=coverBlob?URL.createObjectURL(coverBlob):profDet&&profDet.cover_url;
+ var pv=$('cover-prev');pv.style.backgroundImage=u?'url("'+u+'")':'';pv.textContent=u?'':'Sin portada';
+ $('cover-del').hidden=!(profDet&&profDet.cover_url);$('cover-save').hidden=!coverBlob;
+ var E=$('cos-mine');E.textContent='';if(shopState!=='ok'){E.appendChild(none('La tienda todavía no está disponible.'));return}
+ var c=myCos||{};var row=el('div','shop-prev'+(themeClass(c.theme)?' '+themeClass(c.theme)+' cos-tema':''));row.appendChild(withFrame(myAv(),c.frame,96));var t=el('div');var n=el('div','shop-prev-n');n.appendChild(nameFx(myName(),c.name));t.appendChild(n);
+ var eqs=['frame','theme','name'].map(function(k){var i=cosItem(c[k]);return SK[k].replace(/s$/,'')+': '+(i?i.name:'nada')}).join(' · ');t.appendChild(el('div','shop-prev-s',eqs));t.appendChild(stickerImgs(c.stickers,36));row.appendChild(t);E.appendChild(row)}
+$('cover-file').onchange=async function(){var f=this.files&&this.files[0];if(!f)return;try{coverBlob=await prepCover(f);rCoverBox()}catch(e){coverBlob=null;showToast(e&&e.message||'Imagen no válida','error')}};
+$('cover-save').onclick=async function(){if(!me||!coverBlob)return;try{var path=me+'/cover-'+Date.now()+'.jpg';await ok(sb.storage.from('avatars').upload(path,coverBlob,{contentType:'image/jpeg'}));
+ var url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;await ok(sb.from('profile_details').upsert({user_id:me,cover_url:url,updated_at:new Date().toISOString()}));
+ coverBlob=null;$('cover-file').value='';pdCache={};showToast('¡Portada actualizada!');await rProfileView()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}};
+$('cover-del').onclick=async function(){if(!me||!confirm('¿Quitar tu portada?'))return;try{await ok(sb.from('profile_details').upsert({user_id:me,cover_url:null,updated_at:new Date().toISOString()}));pdCache={};showToast('Portada quitada.');await rProfileView()}catch(e){showToast('Error: '+(e&&e.message||e),'error')}};
+$('cover-shop').onclick=function(){show('shop',true)};
+
+// Admin → Tienda: puntos, catálogo y cuentas (saldo, regalos, portada y VIP).
+var shopAdmRows=null;
+async function rShopAdm(force){var C=$('sa-cfg');if(!C)return;
+ if(shopState!=='ok'){C.textContent='';C.appendChild(none(shopState==='loading'?'Cargando...':'Falta aplicar la migración de la tienda ('+shopErr+').'));return}
+ if(!C.children.length){var g=el('div','g5');[['sa-mix','Puntos por mix'],['sa-win','Extra por victoria'],['sa-vip','Multiplicador VIP'],['sa-wc','Ofertas por semana'],['sa-wd','Descuento de las ofertas (%)']].forEach(function(x){var d=el('div');var l=el('label',0,x[1]);l.htmlFor=x[0];var i=el('input');i.id=x[0];i.type='number';i.step=x[0]==='sa-vip'?'0.1':'1';d.appendChild(l);d.appendChild(i);g.appendChild(d)});C.appendChild(g);
+  var sv=btn('Guardar',async function(){if(!confirm('Esto cambia el saldo de todos (los puntos ganados se calculan con estos valores). ¿Seguir?'))return;
+   try{await ok(sb.rpc('set_points_config',{p_per_mix:+$('sa-mix').value,p_per_win:+$('sa-win').value,p_vip_multiplier:+$('sa-vip').value,p_weekly_count:+$('sa-wc').value,p_weekly_discount:+$('sa-wd').value}));showToast('Puntos guardados.');loadShop()}catch(e){showToast(e&&e.message||String(e),'error')}});sv.className='pri';C.appendChild(sv)}
+ if(pointsCfg){$('sa-mix').value=pointsCfg.per_mix;$('sa-win').value=pointsCfg.per_win;$('sa-vip').value=pointsCfg.vip_multiplier;$('sa-wc').value=pointsCfg.weekly_count;$('sa-wd').value=pointsCfg.weekly_discount}
+ pager($('sa-items'),'sa-items',shopItems,function(i){var pr=el('input');pr.type='number';pr.min='1';pr.value=i.price==null?'':i.price;pr.placeholder=i.vip_only?'VIP':'Sin venta';pr.disabled=i.vip_only;pr.style.width='90px';
+   var ac=el('input');ac.type='checkbox';ac.checked=i.active;ac.setAttribute('aria-label','Activo');
+   var sv=btn('Guardar',async function(){try{var v=pr.value.trim();await ok(sb.rpc('admin_shop_item_update',{p_item:i.id,p_price:v?+v:null,p_active:ac.checked,p_no_price:!v&&!i.vip_only}));showToast('«'+i.name+'» guardado.');loadShop()}catch(e){showToast(e&&e.message||String(e),'error')}});
+   return[i.name,SK[i.kind],SCOL[i.collection]||i.collection,i.vip_only?'VIP':'Todos',pr,ac,sv]},{head:['Artículo','Tipo','Colección','Para','Precio','Activo',''],text:function(i){return i.id+' '+i.name+' '+(SCOL[i.collection]||'')},per:15,ph:'Buscar artículo...',empty:'Sin artículos.'});
+ if(force||shopAdmRows===null){shopAdmRows=[];try{shopAdmRows=await ok(sb.rpc('admin_points_overview'))||[]}catch(e){showToast(e&&e.message||String(e),'error')}}
+ pager($('sa-users'),'sa-users',shopAdmRows,function(u){var nm=el('span');nm.appendChild(el('b',0,u.alias||u.nick||'(sin alias)'));if(u.vip)nm.appendChild(vipTag());if(u.nick&&u.nick!==u.alias)nm.appendChild(el('div','pp-cap','Ficha: '+u.nick));
+   var acts=el('div','shop-acts');
+   acts.appendChild(btn('± Puntos',async function(){var a=prompt('Puntos para '+(u.alias||u.nick)+' (negativo para restar):');if(!a)return;var r=prompt('Motivo (obligatorio):');if(!r)return;try{await ok(sb.rpc('admin_points_grant',{p_user:u.user_id,p_amount:parseInt(a,10),p_reason:r}));showToast('Puntos cargados.');rShopAdm(true)}catch(e){showToast(e&&e.message||String(e),'error')}}));
+   acts.appendChild(btn('Regalar',async function(){var id=prompt('Id del artículo a regalar (está en la tabla de arriba, por ejemplo marco-fuego):');if(!id)return;var n=prompt('Nota (opcional):')||null;try{await ok(sb.rpc('admin_item_grant',{p_user:u.user_id,p_item:id.trim(),p_note:n}));showToast('Artículo regalado.');rShopAdm(true)}catch(e){showToast(e&&e.message||String(e),'error')}}));
+   acts.appendChild(btn('Quitar',async function(){var id=prompt('Id del artículo a quitar:');if(!id)return;var r=prompt('Motivo (obligatorio):');if(!r)return;try{await ok(sb.rpc('admin_item_revoke',{p_user:u.user_id,p_item:id.trim(),p_reason:r}));showToast('Artículo quitado.');rShopAdm(true);loadShop()}catch(e){showToast(e&&e.message||String(e),'error')}}));
+   if(u.cover_url){var cv=btn('Quitar portada',async function(){var r=prompt('Motivo (obligatorio):');if(!r)return;try{await ok(sb.rpc('admin_cover_clear',{p_user:u.user_id,p_reason:r}));showToast('Portada quitada.');pdCache={};rShopAdm(true)}catch(e){showToast(e&&e.message||String(e),'error')}});acts.appendChild(cv)}
+   acts.appendChild(btn(u.vip?'Quitar VIP':'Dar VIP',async function(){try{
+     if(u.vip){var r=prompt('Motivo para quitar el VIP (obligatorio):');if(!r)return;await ok(sb.rpc('admin_vip_revoke',{p_user:u.user_id,p_reason:r}))}
+     else{var d=prompt('Duración: 1, 3, 6 o 12 meses, o "lifetime":','1');if(!d)return;d=d.trim().toLowerCase();var n=prompt('Nota (opcional):')||null;
+      await ok(sb.rpc('admin_vip_grant',d==='lifetime'?{p_user:u.user_id,p_lifetime:true,p_note:n}:{p_user:u.user_id,p_months:parseInt(d,10),p_note:n}))}
+     showToast('VIP actualizado.');rShopAdm(true);loadShop()}catch(e){showToast(e&&e.message||String(e),'error')}}));
+   var cvl=u.cover_url?el('a',0,'Ver'):el('span','pp-cap','—');if(u.cover_url){cvl.href=u.cover_url;cvl.target='_blank';cvl.rel='noopener noreferrer'}
+   return[nm,el('b',0,pts(u.balance)),u.earned+' / '+u.granted+' / '+u.spent,u.mixes,u.items,cvl,acts]},{head:['Cuenta','Saldo','Ganados / regalos / gastados','Mixes','Artículos','Portada','Acciones'],text:function(u){return(u.alias||'')+' '+(u.nick||'')},per:15,ph:'Buscar cuenta o jugador...',empty:'Sin cuentas.'})}
+/* ---------- fin de la tienda ---------- */
+
 async function loadImpl(){try{
  var R=await Promise.all([
   ok(sb.from('teams').select('*')),
@@ -1574,7 +1813,7 @@ async function loadImpl(){try{
  userProfiles={};if(R[11].data)R[11].data.forEach(function(pr){userProfiles[pr.id]=pr.tag});
  reqs=(R[12]||[]).map(function(x){x.id=x.user_id;return x});mine=R[13];
  say('tm',!me?'Iniciá sesión.':!mine?'':mine.status==='approved'?'Aprobado.':mine.status==='rejected'?'Rechazado.':'Pendiente.');
- handleRoute();
+ handleRoute();loadShop();
 }catch(e){showToast('Error al cargar datos: '+e.message,'error')}}
 
 async function setS(s){
@@ -1590,7 +1829,7 @@ async function setS(s){
  $('lg').textContent=me?'Salir':'Ingresar';
  $('nav-profile').hidden=!me;
  document.querySelectorAll('.ad').forEach(function(a){a.hidden=!admin});
- if(!admin&&(!$('padm').hidden||!$('tadm').hidden||!$('cadm').hidden||!$('vadm').hidden||!$('sadm').hidden))show('home');load()
+ if(!admin&&(!$('padm').hidden||!$('tadm').hidden||!$('cadm').hidden||!$('vadm').hidden||!$('sadm').hidden||!$('shadm').hidden))show('home');load()
 }
 
 if(CFG.url.indexOf('TU_')===0){say('ses','Falta configurar Supabase');return}
