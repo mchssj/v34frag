@@ -20,7 +20,7 @@ export const FORMATS: Record<
   wide: { label: "Horizontal", size: [1600, 900] },
 }
 
-interface Palette {
+export interface Palette {
   bg: [string, string]
   fg: string
   muted: string
@@ -120,11 +120,11 @@ export interface CardOptions {
   showAvatar: boolean
 }
 
-const SANS = '"Inter Variable", Inter, system-ui, sans-serif'
-const MONO = '"Geist Mono Variable", ui-monospace, monospace'
+export const SANS = '"Inter Variable", Inter, system-ui, sans-serif'
+export const MONO = '"Geist Mono Variable", ui-monospace, monospace'
 
 const images = new Map<string, Promise<HTMLImageElement>>()
-function loadImage(src: string) {
+export function loadImage(src: string) {
   let p = images.get(src)
   if (!p) {
     p = new Promise((resolve, reject) => {
@@ -150,14 +150,14 @@ export async function prepareCard(theme: CardTheme) {
   ])
 }
 
-function levelColors(level: number, p: Palette): [string, string] {
+export function levelColors(level: number, p: Palette): [string, string] {
   if (level >= 10) return [p.accent, "#0a0a0a"]
   if (level >= 8) return ["#f54900", "#fff"]
   if (level >= 4) return [p.fg, p.bg[0]]
   return [p.muted, p.bg[0]]
 }
 
-function roundRect(
+export function roundRect(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -170,7 +170,7 @@ function roundRect(
 }
 
 /** Achica la fuente hasta que el texto entra en `max` px. */
-function fitFont(
+export function fitFont(
   ctx: CanvasRenderingContext2D,
   text: string,
   weight: number,

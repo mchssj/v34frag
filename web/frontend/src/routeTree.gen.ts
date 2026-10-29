@@ -22,9 +22,13 @@ import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoBioRouteImport } from './routes/demo.bio'
 import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
+import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
+import { Route as DemoEloRouteImport } from './routes/demo.elo'
 import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
+import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
@@ -115,9 +119,24 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AuthRoute,
 } as any)
+const DemoBioRoute = DemoBioRouteImport.update({
+  id: '/demo/bio',
+  path: '/demo/bio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoBuscadorRoute = DemoBuscadorRouteImport.update({
   id: '/demo/buscador',
   path: '/demo/buscador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoComparadorRoute = DemoComparadorRouteImport.update({
+  id: '/demo/comparador',
+  path: '/demo/comparador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoEloRoute = DemoEloRouteImport.update({
+  id: '/demo/elo',
+  path: '/demo/elo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoExportarRoute = DemoExportarRouteImport.update({
@@ -128,6 +147,11 @@ const DemoExportarRoute = DemoExportarRouteImport.update({
 const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   id: '/demo/matchmaking',
   path: '/demo/matchmaking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
+  id: '/demo/recalculo',
+  path: '/demo/recalculo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTiendaRoute = DemoTiendaRouteImport.update({
@@ -273,9 +297,13 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
@@ -314,9 +342,13 @@ export interface FileRoutesByTo {
   '/play': typeof AppPlayRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
@@ -359,9 +391,13 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
@@ -403,9 +439,13 @@ export interface FileRouteTypes {
     | '/profile'
     | '/login'
     | '/register'
+    | '/demo/bio'
     | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/elo'
     | '/demo/exportar'
     | '/demo/matchmaking'
+    | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/widget'
     | '/admin/events'
@@ -444,9 +484,13 @@ export interface FileRouteTypes {
     | '/play'
     | '/login'
     | '/register'
+    | '/demo/bio'
     | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/elo'
     | '/demo/exportar'
     | '/demo/matchmaking'
+    | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/widget'
     | '/admin/events'
@@ -488,9 +532,13 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/bio'
     | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/elo'
     | '/demo/exportar'
     | '/demo/matchmaking'
+    | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/widget'
     | '/_app/admin/events'
@@ -524,9 +572,13 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  DemoBioRoute: typeof DemoBioRoute
   DemoBuscadorRoute: typeof DemoBuscadorRoute
+  DemoComparadorRoute: typeof DemoComparadorRoute
+  DemoEloRoute: typeof DemoEloRoute
   DemoExportarRoute: typeof DemoExportarRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
+  DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoWidgetRoute: typeof DemoWidgetRoute
 }
@@ -624,11 +676,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/demo/bio': {
+      id: '/demo/bio'
+      path: '/demo/bio'
+      fullPath: '/demo/bio'
+      preLoaderRoute: typeof DemoBioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/buscador': {
       id: '/demo/buscador'
       path: '/demo/buscador'
       fullPath: '/demo/buscador'
       preLoaderRoute: typeof DemoBuscadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/comparador': {
+      id: '/demo/comparador'
+      path: '/demo/comparador'
+      fullPath: '/demo/comparador'
+      preLoaderRoute: typeof DemoComparadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/elo': {
+      id: '/demo/elo'
+      path: '/demo/elo'
+      fullPath: '/demo/elo'
+      preLoaderRoute: typeof DemoEloRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/exportar': {
@@ -643,6 +716,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/matchmaking'
       fullPath: '/demo/matchmaking'
       preLoaderRoute: typeof DemoMatchmakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/recalculo': {
+      id: '/demo/recalculo'
+      path: '/demo/recalculo'
+      fullPath: '/demo/recalculo'
+      preLoaderRoute: typeof DemoRecalculoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tienda': {
@@ -937,9 +1017,13 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  DemoBioRoute: DemoBioRoute,
   DemoBuscadorRoute: DemoBuscadorRoute,
+  DemoComparadorRoute: DemoComparadorRoute,
+  DemoEloRoute: DemoEloRoute,
   DemoExportarRoute: DemoExportarRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
+  DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoWidgetRoute: DemoWidgetRoute,
 }
