@@ -1,6 +1,8 @@
-# Relay del HUD de observer (hud/relay). Instalado y APAGADO hasta que el relay se mude al VPS
-# (plan docs/bitacora/2026-10-28-despliegue-vps-ovh, sección 4.3). Antes de prenderlo hay que adaptar el relay:
-# udpHost, ruta de relay.json (hoy lo busca en la carpeta actual) y los íconos sin gameDir.
+# Relay del HUD en modo VPS (hud/relay 2.0.0, plan docs/bitacora/2026-10-29-hud-relay-vps): un puerto UDP por servidor
+# (27500 a 27519, abiertos en ufw) y HTTP en 127.0.0.1:8090, publicado por Caddy en hud.cmleague.lat.
+# La configuración (servidores, claves y streamers) sale de la base; acá solo /etc/cmleague/hud.json con el token del
+# relay. Lo que elige cada streamer en /control se guarda en /var/lib/cmleague-hud (StateDirectory).
+# Se prende a mano después de completar hud.json: systemctl enable --now cmleague-hud.
 [Unit]
 Description=CMLeague: relay del HUD
 After=network-online.target
@@ -12,6 +14,9 @@ Type=simple
 User=cmleague
 Group=cmleague
 WorkingDirectory=/etc/cmleague
+Environment=HUD_RELAY_CONFIG=/etc/cmleague/hud.json
+StateDirectory=cmleague-hud
+StateDirectoryMode=0700
 ExecStart=/usr/bin/node --enable-source-maps /srv/cmleague/hud/current/relay.mjs
 Restart=always
 RestartSec=2

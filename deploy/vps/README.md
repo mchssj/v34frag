@@ -5,18 +5,19 @@ Todo lo necesario para rehacer el VPS de CMLeague (OVH, Ubuntu 26.04) desde cero
 | Archivo | Qué es | Dónde termina en el VPS |
 |---|---|---|
 | `preparar.sh` | Prepara el servidor (una vez; se puede repetir) | Se corre desde una copia en `/tmp` |
-| `desplegar.sh` | Sube una versión de la API o del frontend, con vuelta atrás | Se corre desde la PC |
+| `desplegar.sh` | Sube una versión de la API, del frontend o del relay del HUD, con vuelta atrás | Se corre desde la PC |
 | `agregar-acceso.sh` | Suma una llave SSH o un usuario nuevo | Ídem |
-| `Caddyfile` | Caddy con `cmleague.lat`, `www`, `api` (y `hud`, comentado) | `/etc/caddy/Caddyfile` (con `--dominios`) |
+| `Caddyfile` | Caddy con `cmleague.lat`, `www`, `api` y `hud` (sin compresión y sin Referer, para el token del streamer) | `/etc/caddy/Caddyfile` (con `--dominios`) |
 | `Caddyfile.ip` | Caddy por IP, antes de tener el DNS | `/etc/caddy/Caddyfile` |
 | `cmleague-api.service` | La API | `/etc/systemd/system/` |
 | `cmleague-season.service` y `.timer` | Cierre de temporadas cada 10 minutos | `/etc/systemd/system/` |
 | `cmleague-notify.service` y `.timer` | Notificaciones programadas cada 10 minutos (usa `season.env`) | `/etc/systemd/system/` |
-| `cmleague-hud.service` | Relay del HUD (apagado) | `/etc/systemd/system/` |
+| `cmleague-hud.service` | Relay del HUD en modo VPS (apagado hasta completar `hud.json` y copiar las fuentes; UDP 27500 a 27519) | `/etc/systemd/system/` |
 | `cmleague-demos.service` y `.timer` | Demos por SFTP a R2 cada 10 minutos (apagado hasta completar sus variables) | `/etc/systemd/system/` |
 | `sudoers-deploy` | Lo único que `deploy` puede hacer con `sudo` | `/etc/sudoers.d/cmleague-deploy` |
 | `api.env.example`, `season.env.example` | Variables, sin valores | `/etc/cmleague/api.env` y `season.env` (root, 600) |
 | `demos.env.example`, `demos-sftp.json.example` | Variables y credenciales de SFTP de las demos, sin valores (los ids y las huellas sí) | `/etc/cmleague/demos.env` y `demos-sftp.json` (root, 600) |
+| `hud.json.example` | Configuración del relay del HUD: URL de Supabase, clave anon y token del relay (`hud_relays`), sin valores | `/etc/cmleague/hud.json` (root:cmleague, 640: lo lee el relay) |
 
 ## Preparar el servidor
 
@@ -46,6 +47,7 @@ Desde la raíz del repo, en Git Bash:
 deploy/vps/desplegar.sh api        # pruebas, build, subida, restart y /api/health; si falla, vuelve a la anterior
 deploy/vps/desplegar.sh web        # pruebas, build con VITE_API_URL (por defecto https://api.cmleague.lat) y subida
 deploy/vps/desplegar.sh web --sin-pruebas
+deploy/vps/desplegar.sh hud        # pruebas, build de Node, subida, restart y /healthz (si el servicio está apagado, solo sube)
 ```
 
 - Entra como `deploy` con el SSH de Windows y abre solo dos conexiones (el `limit` de `ufw` corta la séptima en 30 s).

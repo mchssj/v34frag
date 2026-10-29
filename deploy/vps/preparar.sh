@@ -35,7 +35,7 @@ grep -qE '^(ssh-ed25519|ssh-rsa|ecdsa-sha2-)' "/home/$ADMIN/.ssh/authorized_keys
   || falla "$ADMIN no tiene ninguna llave SSH: sin llave, apagar las contraseñas deja el servidor sin acceso"
 for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-notify.service \
          cmleague-notify.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
-         demos.env.example demos-sftp.json.example; do
+         demos.env.example demos-sftp.json.example hud.json.example; do
   [[ -f "$DIR/$f" ]] || falla "falta $f al lado del script"
 done
 echo "OK: $PRETTY_NAME, $ADMIN con llave"
@@ -108,7 +108,8 @@ ufw limit 22/tcp comment 'SSH' >/dev/null
 ufw allow 80/tcp comment 'HTTP (certificados y redireccion)' >/dev/null
 ufw allow 443/tcp comment 'HTTPS' >/dev/null
 ufw allow 443/udp comment 'HTTP/3' >/dev/null
-# 27500/udp (relay del HUD) se abre recién cuando el relay se mude al VPS (plan, 4.3).
+# Relay del HUD: un puerto UDP por servidor de juego (docs/bitacora/2026-10-29-hud-relay-vps).
+ufw allow 27500:27519/udp comment 'Relay del HUD' >/dev/null
 ufw --force enable >/dev/null
 ufw status verbose
 
@@ -207,6 +208,10 @@ install -d -m 750 -o root -g "$APP" "$ETC"
 # Demos por SFTP: las variables y las credenciales de cada servidor (las lee systemd como root; ver cmleague-demos.service).
 [[ -f "$ETC/demos.env" ]] || install -m 600 -o root -g root "$DIR/demos.env.example" "$ETC/demos.env"
 [[ -f "$ETC/demos-sftp.json" ]] || install -m 600 -o root -g root "$DIR/demos-sftp.json.example" "$ETC/demos-sftp.json"
+# Relay del HUD: lo lee el propio relay (usuario $APP), no systemd.
+[[ -f "$ETC/hud.json" ]] || install -m 640 -o root -g "$APP" "$DIR/hud.json.example" "$ETC/hud.json"
+# Fuentes de los íconos del HUD (de ClientMod, fuera del repo): se copian a mano a cstrike/resource/.
+install -d -m 755 -o root -g root "$SRV/hud/fonts" "$SRV/hud/fonts/cstrike" "$SRV/hud/fonts/cstrike/resource"
 ls -la "$ETC"
 
 # --- 3.12 Servicios -------------------------------------------------------------------------------------------------
@@ -218,7 +223,8 @@ done
 systemctl daemon-reload
 systemctl enable cmleague-api.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
 systemctl start cmleague-season.timer cmleague-notify.timer
-# cmleague-hud queda instalado y apagado hasta que el relay se mude (plan, 4.3).
+# cmleague-hud queda instalado y apagado: se prende a mano después de completar hud.json (token del relay) y copiar
+# las fuentes (systemctl enable --now cmleague-hud; ver docs/bitacora/2026-10-29-hud-relay-vps).
 # cmleague-demos.timer también queda apagado: se prende a mano después de completar demos.env y demos-sftp.json
 # (systemctl enable --now cmleague-demos.timer; ver docs/bitacora/2026-10-28-demos-servidores-externos).
 

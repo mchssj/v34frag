@@ -1,0 +1,8 @@
+{
+  "apiUrl": "",
+  "anonKey": "",
+  "relayToken": "",
+  "httpPort": 8090,
+  "delay": null,
+  "gameDir": "/srv/cmleague/hud/fonts"
+}

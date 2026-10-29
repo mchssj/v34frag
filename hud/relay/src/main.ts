@@ -15,6 +15,8 @@ import { fetchRemote } from "./remote.ts";
 import { HttpServer } from "./server.ts";
 
 const VERSION = "2.0.0";
+// El commit del build del VPS (scripts/build-node.mjs); con Node desde src/, "dev".
+const BUILD = process.env.BUILD_SHA || "dev";
 const RELEASE_MS = 50;
 const STATUS_MS = 10000;
 const REMOTE_MS = 30000;
@@ -82,6 +84,7 @@ async function runVps(config: Config, cfgPath: string): Promise<void> {
   const http = new HttpServer({
     viewer: (token) => hub.viewer(token),
     initial: (viewer) => hub.initial(viewer),
+    health: () => ({ status: "ok", version: VERSION, build: BUILD, loaded: hub.loaded }),
     onControl: (viewer, body) => hub.onControl(viewer, body),
     status: (viewer) => hub.status(viewer, { version: VERSION, killfeedIcons: fonts.killfeed !== null, kitIcon: fonts.cs !== null }),
     font: (name) => fonts[name],
@@ -126,6 +129,7 @@ async function runLocal(config: Config, cfgPath: string): Promise<void> {
 
   const http: HttpServer = new HttpServer({
     viewer: (token) => (token === null ? "local" : null),
+    health: () => ({ status: "ok", version: VERSION, build: BUILD }),
     initial: () => [
       { event: "state", data: channel.snapshot() },
       { event: "control", data: control },
