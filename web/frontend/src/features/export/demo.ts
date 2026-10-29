@@ -7,6 +7,8 @@ export interface ExportStats {
   nick: string
   team_tag: string | null
   country: string
+  /** Foto de perfil (`avatar_url` de la API). `null` si no subió ninguna. */
+  avatar_url: string | null
   elo: number
   peak_elo: number
   matches: number
@@ -27,6 +29,22 @@ export const PERIOD_LABEL: Record<ExportPeriod, string> = {
   "30d": "Últimos 30 días",
   all: "Histórico",
 }
+
+// Foto de ejemplo: un dibujo en SVG, para no depender de una imagen de afuera.
+const DEMO_AVATAR =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1e1b4b"/></linearGradient></defs>
+<rect width="256" height="256" fill="url(#g)"/>
+<circle cx="128" cy="104" r="50" fill="#f1c7a3"/>
+<path d="M76 98c0-34 24-52 52-52s52 18 52 52c-8-14-26-20-52-20s-44 6-52 20z" fill="#2b1a10"/>
+<rect x="82" y="92" width="92" height="22" rx="11" fill="#111"/>
+<rect x="92" y="96" width="30" height="14" rx="7" fill="#ff6900"/><rect x="134" y="96" width="30" height="14" rx="7" fill="#ff6900"/>
+<path d="M40 256c6-58 44-90 88-90s82 32 88 90z" fill="#ff6900"/>
+<path d="M104 170l24 30 24-30" fill="none" stroke="#0a0a0a" stroke-width="8"/>
+</svg>`
+  )
 
 // Generador con semilla (mulberry32): la misma serie cada vez que se abre la página.
 function seeded(seed: number) {
@@ -56,6 +74,7 @@ function stats(
     | "nick"
     | "team_tag"
     | "country"
+    | "avatar_url"
     | "elo"
     | "peak_elo"
     | "matches"
@@ -67,6 +86,7 @@ function stats(
     nick: "Pepon",
     team_tag: "v34",
     country: "AR",
+    avatar_url: DEMO_AVATAR,
     elo: elo_history.at(-1)!,
     peak_elo: Math.max(...elo_history),
     matches: n,

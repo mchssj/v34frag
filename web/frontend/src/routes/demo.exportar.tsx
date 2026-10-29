@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router"
 import { DownloadIcon, FileTextIcon, LockIcon, Share2Icon } from "lucide-react"
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -103,9 +103,17 @@ function DemoExportar() {
   const [period, setPeriod] = useState<ExportPeriod>("season")
   const [theme, setTheme] = useState<CardTheme>("cm")
   const [keys, setKeys] = useState<StatKey[]>(DEFAULT_KEYS)
+  const [showAvatar, setShowAvatar] = useState(true)
+  // Solo del demo: `undefined` usa la foto de ejemplo, `null` simula un jugador sin foto.
+  const [photo, setPhoto] = useState<string | null | undefined>(undefined)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
 
-  const stats = DEMO_STATS[period]
+  const base = DEMO_STATS[period]
+  const stats = useMemo(
+    () => (photo === undefined ? base : { ...base, avatar_url: photo }),
+    [base, photo]
+  )
   const watermark = !vip
   useEffect(() => {
     if (canvas.current)
@@ -116,8 +124,19 @@ function DemoExportar() {
         theme,
         keys,
         watermark,
+        showAvatar,
       })
-  }, [stats, period, format, theme, keys, watermark])
+  }, [stats, period, format, theme, keys, watermark, showAvatar])
+
+  const pickPhoto = (file: File | undefined) => {
+    if (!file) return
+    if (!file.type.startsWith("image/")) return toast.error("Elegí una imagen.")
+    setPhoto((old) => {
+      if (old) URL.revokeObjectURL(old)
+      return URL.createObjectURL(file)
+    })
+    setShowAvatar(true)
+  }
 
   const pickTheme = (t: CardTheme) => {
     if (THEMES[t].vip && !vip)
@@ -188,12 +207,41 @@ function DemoExportar() {
         </span>
         <Button
           size="sm"
+          variant="outline"
+          onClick={() => fileInput.current?.click()}
+        >
+          Probar con mi foto
+        </Button>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            pickPhoto(e.target.files?.[0])
+            e.target.value = ""
+          }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setPhoto(null)
+            setShowAvatar(true)
+          }}
+        >
+          Jugador sin foto
+        </Button>
+        <Button
+          size="sm"
           variant="ghost"
           onClick={() => {
             setFormat("square")
             setPeriod("season")
             setTheme("cm")
             setKeys(DEFAULT_KEYS)
+            setShowAvatar(true)
+            setPhoto(undefined)
           }}
         >
           Reiniciar
@@ -230,6 +278,24 @@ function DemoExportar() {
               value={period}
               onChange={setPeriod}
             />
+          </Field>
+          <Field label="Foto de perfil">
+            <span className="flex items-center gap-2">
+              <Switch
+                id="show-avatar"
+                size="sm"
+                checked={showAvatar}
+                onCheckedChange={setShowAvatar}
+              />
+              <Label htmlFor="show-avatar" className="text-sm font-normal">
+                Mostrar mi foto al lado del nombre
+              </Label>
+            </span>
+            {showAvatar && !stats.avatar_url && (
+              <span className="text-xs text-muted-foreground">
+                No tenés foto de perfil: va la inicial de tu nick.
+              </span>
+            )}
           </Field>
           <Field label="Estilo">
             <Segmented

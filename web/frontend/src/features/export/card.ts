@@ -116,6 +116,8 @@ export interface CardOptions {
   keys: StatKey[]
   /** Sin VIP: marca de agua encima. */
   watermark: boolean
+  /** Foto de perfil al lado del nombre (`stats.avatar_url`; sin foto, la inicial del nick). */
+  showAvatar: boolean
 }
 
 const SANS = '"Inter Variable", Inter, system-ui, sans-serif'
@@ -127,6 +129,9 @@ function loadImage(src: string) {
   if (!p) {
     p = new Promise((resolve, reject) => {
       const img = new Image()
+      // Las fotos vienen de otro dominio (el storage): sin CORS el canvas queda "manchado" y
+      // toBlob falla, así que el storage tiene que responder Access-Control-Allow-Origin.
+      if (/^https?:/.test(src)) img.crossOrigin = "anonymous"
       img.onload = () => resolve(img)
       img.onerror = reject
       img.src = src
@@ -321,19 +326,70 @@ function drawPlayer(
   y: number,
   w: number,
   u: number,
-  p: Palette
+  p: Palette,
+  /** `undefined`: sin foto (la insignia grande); `null`: foto pedida pero no hay, va la inicial. */
+  avatar: HTMLImageElement | null | undefined
 ) {
   const level = levelOf(s.elo, LEVEL_FLOORS)
   const badge = 132 * u
   const [bg, fg] = levelColors(level, p)
-  ctx.fillStyle = bg
-  roundRect(ctx, x, y, badge, badge, 30 * u)
-  ctx.fill()
-  ctx.fillStyle = fg
-  ctx.textAlign = "center"
-  ctx.textBaseline = "middle"
-  ctx.font = `700 ${64 * u}px ${MONO}`
-  ctx.fillText(String(level), x + badge / 2, y + badge / 2 + 4 * u)
+  const drawBadge = (bx: number, by: number, size: number, r: number) => {
+    ctx.fillStyle = bg
+    roundRect(ctx, bx, by, size, size, r)
+    ctx.fill()
+    ctx.fillStyle = fg
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    ctx.font = `700 ${size * 0.48}px ${MONO}`
+    ctx.fillText(String(level), bx + size / 2, by + size / 2 + size * 0.03)
+  }
+  if (avatar === undefined) {
+    drawBadge(x, y, badge, 30 * u)
+  } else {
+    // Foto redonda con aro del color del tema y la insignia de nivel chica en la esquina.
+    const cx = x + badge / 2
+    const cy = y + badge / 2
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(cx, cy, badge / 2, 0, Math.PI * 2)
+    ctx.clip()
+    if (avatar) {
+      // Recorte tipo "cover": llena el círculo sin deformar la foto.
+      const side = Math.min(
+        avatar.naturalWidth || avatar.width,
+        avatar.naturalHeight || avatar.height
+      )
+      const sx = ((avatar.naturalWidth || avatar.width) - side) / 2
+      const sy = ((avatar.naturalHeight || avatar.height) - side) / 2
+      ctx.drawImage(avatar, sx, sy, side, side, x, y, badge, badge)
+    } else {
+      ctx.fillStyle = p.tile
+      ctx.fillRect(x, y, badge, badge)
+      ctx.fillStyle = p.fg
+      ctx.textAlign = "center"
+      ctx.textBaseline = "middle"
+      ctx.font = `800 ${64 * u}px ${SANS}`
+      ctx.fillText(s.nick.slice(0, 1).toUpperCase(), cx, cy + 4 * u)
+    }
+    ctx.restore()
+    ctx.beginPath()
+    ctx.arc(cx, cy, badge / 2, 0, Math.PI * 2)
+    ctx.strokeStyle = p.accent
+    ctx.lineWidth = 6 * u
+    ctx.stroke()
+    const mini = 54 * u
+    ctx.fillStyle = p.bg[0]
+    roundRect(
+      ctx,
+      x + badge - mini + 4 * u,
+      y + badge - mini + 4 * u,
+      mini + 8 * u,
+      mini + 8 * u,
+      16 * u
+    )
+    ctx.fill()
+    drawBadge(x + badge - mini + 8 * u, y + badge - mini + 8 * u, mini, 13 * u)
+  }
 
   const tx = x + badge + 36 * u
   const tw = w - badge - 36 * u
@@ -384,6 +440,12 @@ export async function drawCard(canvas: HTMLCanvasElement, o: CardOptions) {
   await prepareCard(o.theme)
   // Todo lo que sigue es sincrónico, así dos dibujos seguidos no se mezclan en el mismo canvas.
   const logo = await loadImage(THEMES[o.theme].palette.logo)
+  // Si la foto no carga (borrada, sin CORS), va la inicial en lugar de romper la tarjeta.
+  const avatar = !o.showAvatar
+    ? undefined
+    : o.stats.avatar_url
+      ? await loadImage(o.stats.avatar_url).catch(() => null)
+      : null
   const [W, H] = FORMATS[o.format].size
   canvas.width = W
   canvas.height = H
@@ -425,7 +487,7 @@ export async function drawCard(canvas: HTMLCanvasElement, o: CardOptions) {
   if (wide) {
     const colW = W * 0.54 - pad
     let y = top
-    y += drawPlayer(ctx, o.stats, pad, y, colW, u, p) + 48 * u
+    y += drawPlayer(ctx, o.stats, pad, y, colW, u, p, avatar) + 48 * u
     drawStats(ctx, o, pad, y, colW, 3, u, p)
     const cx = pad + colW + 48 * u
     drawChart(
@@ -441,7 +503,7 @@ export async function drawCard(canvas: HTMLCanvasElement, o: CardOptions) {
   } else {
     const w = W - 2 * pad
     let y = top
-    y += drawPlayer(ctx, o.stats, pad, y, w, u, p) + 56 * u
+    y += drawPlayer(ctx, o.stats, pad, y, w, u, p, avatar) + 56 * u
     if (o.format === "square") {
       // En el cuadrado no entra el gráfico: las stats ocupan todo el alto que queda.
       const rows = Math.max(1, Math.ceil(o.keys.length / 3))
