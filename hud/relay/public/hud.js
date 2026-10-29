@@ -1,5 +1,5 @@
 // HUD para OBS. Recibe del relay el estado ya retrasado y lo dibuja; el reloj corre solo entre paquetes.
-import { DEFUSER, EQUIP, ICON, TEAM_CT, TEAM_T, clock, connect, el, weaponGlyph, weaponName } from "/common.js";
+import { DEFUSER, EQUIP, ICON, TEAM_CT, TEAM_T, clock, connect, el, weaponGlyph, weaponName } from "./common.js";
 
 const KILL_MS = 5000;
 const BANNER_MS = 5000;
@@ -21,8 +21,8 @@ function loadFont(family, url, onLoad) {
     })
     .catch(() => {});
 }
-loadFont("cmkill", "/font/killfeed.ttf", () => (icons = true));
-loadFont("csicons", "/font/cs.ttf", () => (kitIcon = true));
+loadFont("cmkill", "font/killfeed.ttf", () => (icons = true));
+loadFont("csicons", "font/cs.ttf", () => (kitIcon = true));
 
 const icon = (glyph, cls = "") => el("span", { class: `icon ${cls}` }, glyph);
 
@@ -240,6 +240,7 @@ function render() {
 }
 
 connect({
+  page: "hud",
   onState: (s) => {
     state = s;
     render();

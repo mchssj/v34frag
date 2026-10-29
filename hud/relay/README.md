@@ -67,6 +67,18 @@ csstv_hud_status
 
 La clave está en el `.env` de la raíz (`HUD_RELAY_KEY`) y en el cfg del servidor. `csstv_hud 0` apaga el envío al instante.
 
+## Modo VPS (desde la 2.0.0)
+
+Plan: [`docs/bitacora/2026-10-29-hud-relay-vps/`](../../docs/bitacora/2026-10-29-hud-relay-vps/PLAN.md). Un solo relay en el VPS atiende a todos los servidores: cada uno manda a su propio puerto UDP (del 27500 al 27519) con su propia clave. Todo se administra desde la web (Administración › Servidores y Usuarios) y el relay lo lee de la base cada 30 segundos, sin reiniciar.
+
+- Se activa si `relay.json` (en el VPS, `HUD_RELAY_CONFIG=/etc/cmleague/hud.json`) trae `apiUrl` (la URL de Supabase), `anonKey` y `relayToken` (el token de `hud_relays`, ver el final de `supabase/replanteo/36_hud_relay.sql`). `key` y `udpPort` no se usan: salen de la base.
+- Cada streamer entra con su link: `https://hud.cmleague.lat/s/<token>/hud` (OBS) y `/s/<token>/control`, donde elige el servidor. Sin un token válido todo responde 404.
+- Lo que elige cada streamer en `/control` se guarda en `$STATE_DIRECTORY/control.json`.
+- El relay le informa a la base quién tiene el HUD abierto en cada servidor y cuándo llegó el último paquete (la web lo muestra en Administración › Servidores).
+- Las fuentes de los íconos se buscan en `gameDir` (`<gameDir>/cstrike/resource/`), copiadas a mano al VPS.
+
+Para probarlo en local contra la Supabase local: `HUD_RELAY_CONFIG=<ruta>/hud.json STATE_DIRECTORY=<carpeta> node src/main.ts` y `pnpm simular 2 127.0.0.1:<hud_port> <hud_key>`.
+
 ## Desarrollo
 
 Node 24 corre el TypeScript directo. No hay dependencias de producción: el HUD recibe los datos por *Server-Sent Events* (`/events`) y la página de control los cambia con `POST /api/control` (solo JSON).
@@ -85,9 +97,11 @@ pnpm build:exe     # dist/relay.exe (Node + relay + HUD en un solo archivo)
 | Paquetes del plugin | `src/protocol.ts` (el formato está también al principio de `csstv_hud.sp`) |
 | Retraso | `src/delay.ts` |
 | Estado que ve el HUD | `src/state.ts` |
-| HTTP y SSE (solo en `127.0.0.1`) | `src/server.ts` |
+| HTTP y SSE (solo en `127.0.0.1`; en el VPS, debajo de `/s/<token>/`) | `src/server.ts` |
+| Un canal por servidor (clave, cola y estado) | `src/channel.ts` |
+| Modo VPS: puertos, streamers y servidor elegido | `src/hub.ts` y `src/remote.ts` (configuración de la base) |
 | Fuentes de los íconos (de la instalación del streamer, nunca en el repo ni en el `.exe`) | `src/font.ts` |
-| Nombres, jugador enfocado y lo que se muestra | `src/control.ts` (se guarda en `relay-control.json`) |
+| Servidor elegido, nombres, jugador enfocado y lo que se muestra | `src/control.ts` (se guarda en `relay-control.json`; en el VPS, uno por streamer en `control.json`) |
 | HUD y página de control | `public/` |
 
 `relay.exe` pesa unos 90 MB, porque lleva Node adentro. No se versiona (`dist/`): se arma con `pnpm build:exe` y se le pasa al streamer por Drive o similar.

@@ -1,11 +1,14 @@
 // Simula una partida y le manda al relay los mismos paquetes que csstv_hud, para ver el HUD sin servidor.
 // Uso: pnpm simular [segundos de tv_delay, por defecto 3] [host:puerto, por defecto 127.0.0.1:<udpPort de relay.json>]
+//                   [clave, por defecto la de relay.json; en el modo VPS, la del servidor (hud_key)]
 
 import { createSocket } from "node:dgram";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const config = JSON.parse(readFileSync(join(process.cwd(), "relay.json"), "utf8")) as { key: string; udpPort: number };
+const config = (process.argv[4] && process.argv[3]
+  ? { key: process.argv[4], udpPort: 0 }
+  : JSON.parse(readFileSync(join(process.cwd(), "relay.json"), "utf8"))) as { key: string; udpPort: number };
 const tvDelay = Number(process.argv[2] ?? 3);
 const [host = "127.0.0.1", port = String(config.udpPort)] = (process.argv[3] ?? "").split(":").filter(Boolean);
 
