@@ -130,6 +130,8 @@ Todo con sesión (`401` sin ella).
 | `vip_granted` | Usuario (desde el 2026-10-28) | `until` (ISO, o `null` si es lifetime), `lifetime` | "Ya eres VIP hasta el {until}" o "Ya eres VIP lifetime" | `/profile` |
 | `vip_revoked` | Usuario (desde el 2026-10-28) | `reason` | "Un admin te quitó el VIP: {reason}" | `/profile` |
 | `vip_expiring` | Usuario (desde el 2026-10-29) | `ends_at` | "Tu VIP vence el {ends_at}" | `/profile` |
+| `streamer_granted` | Usuario (desde el 2026-10-29) | — | "Ya puedes transmitir con el HUD: genera tu link en Mi perfil" | `/profile` |
+| `streamer_revoked` | Usuario (desde el 2026-10-29) | — | "Un admin te quitó el acceso al HUD" | — |
 
 #### Novedades (`news`, apagada por defecto)
 | `type` | `data` | Texto sugerido | Link |

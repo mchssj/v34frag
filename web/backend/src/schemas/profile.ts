@@ -1,6 +1,7 @@
 import { z } from '@hono/zod-openapi';
 import { AuthUser, Tag } from './auth';
 import { NotificationPrefs, NotificationPrefsPatch } from './notifications';
+import { MyStreamer } from './hud';
 import { VipStatus } from './vip';
 
 // Las mismas listas y reglas que el formulario "Mi perfil" de index.html.
@@ -124,6 +125,7 @@ export const MyProfile = z
     matches_played: z.number().int().openapi({ description: 'Partidas terminadas que jugó en el servidor (mixes, PCW y torneos)' }),
     preferences: Preferences.openapi({ description: 'Preferencias de la cuenta: siempre con todas sus claves (`null` si no eligió)' }),
     vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
+    streamer: MyStreamer.nullable().openapi({ description: 'La marca de streamer del HUD, o `null` si no la tiene (link en `POST /me/hud-link`)' }),
   })
   .openapi('MyProfile');
 

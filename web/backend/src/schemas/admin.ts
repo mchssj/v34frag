@@ -85,6 +85,7 @@ export const AdminUser = z
     player_id: z.uuid().nullable(),
     steam_id: z.string().nullable(),
     vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
+    streamer: z.boolean().openapi({ description: 'Tiene la marca de streamer del HUD' }),
   })
   .openapi('AdminUser');
 
@@ -166,6 +167,7 @@ export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', orde
   role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),
   has_player: boolParam('Con o sin jugador vinculado'),
   has_steam: boolParam('Con o sin SteamID vinculado'),
+  streamer: boolParam('Con o sin la marca de streamer del HUD'),
 });
 export const AdminUserList = Envelope(AdminUser).openapi('AdminUserList');
 
