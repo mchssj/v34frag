@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 220" width="600" height="220" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#3a1428" stroke-width="1"/></pattern>
+    <filter id="glow" x="-10%" y="-50%" width="120%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="600" height="220" fill="#100810"/>
+  <rect width="600" height="220" fill="url(#g)"/>
+  <path d="M0 120H140L160 120L175 70L195 175L215 40L232 150L248 120H360L375 95L390 140L402 120H600" fill="none" stroke="#3a1428" stroke-width="3"/>
+  <path d="M0 120H140L160 120L175 70L195 175L215 40L232 150L248 120H360L375 95L390 140L402 120H600" fill="none" stroke="#f0449b" stroke-width="3" stroke-linejoin="round" filter="url(#glow)" pathLength="100" stroke-dasharray="30 70">
+    <animate attributeName="stroke-dashoffset" values="30;-70" dur="2s" repeatCount="indefinite"/>
+  </path>
+  <text x="580" y="200" text-anchor="end" font-family="Consolas, Courier New, monospace" font-size="16" fill="#f0449b" opacity=".7">100 HP</text>
+</svg>

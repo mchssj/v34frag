@@ -1,0 +1,311 @@
+{
+  "version": 2,
+  "note": "Catálogo de cosméticos del perfil. vip_only: solo se equipa si la API dice vip=true (PlayerSummary.vip, o vip.active en GET /me/profile). price: null porque el backend no tiene moneda ni tienda todavía.",
+  "kinds": {
+    "frame": "Marco de avatar (256 x 256, el avatar va en el 75 % central)",
+    "background": "Fondo de perfil (1920 x 1080)",
+    "mini": "Fondo de mini perfil (600 x 220)",
+    "sticker": "Sticker (128 x 128)",
+    "theme": "Tema de perfil (clase de cosmeticos.css)",
+    "name": "Efecto de nombre (clase de cosmeticos.css)"
+  },
+  "items": [
+    {
+      "id": "marco-mira",
+      "kind": "frame",
+      "name": "Mira",
+      "description": "Esquinas tácticas y mira que respira.",
+      "file": "marcos/mira.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "marco-trazadoras",
+      "kind": "frame",
+      "name": "Trazadoras",
+      "description": "Balas trazadoras que dan la vuelta al avatar.",
+      "file": "marcos/trazadoras.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "marco-humo",
+      "kind": "frame",
+      "name": "Humo",
+      "description": "Una granada de humo que nunca se disipa.",
+      "file": "marcos/humo.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "marco-flashbang",
+      "kind": "frame",
+      "name": "Flashbang",
+      "description": "Destellos blancos. Date vuelta.",
+      "file": "marcos/flashbang.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "marco-c4",
+      "kind": "frame",
+      "name": "C4",
+      "description": "Cinta de peligro, cables y la cuenta regresiva.",
+      "file": "marcos/c4.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "marco-neon",
+      "kind": "frame",
+      "name": "Neón",
+      "description": "Degradado rosa, violeta y cian que gira sin parar.",
+      "file": "marcos/neon.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "marco-oro-vip",
+      "kind": "frame",
+      "name": "Oro VIP",
+      "description": "Corona, laureles y destello dorado.",
+      "file": "marcos/oro-vip.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "fondo-desierto",
+      "kind": "background",
+      "name": "Desierto al atardecer",
+      "description": "Muros de adobe, cajas y polvo al viento.",
+      "file": "fondos/desierto.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "fondo-casquillos",
+      "kind": "background",
+      "name": "Casquillos",
+      "description": "Lluvia de casquillos de bronce.",
+      "file": "fondos/casquillos.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "fondo-radar",
+      "kind": "background",
+      "name": "Radar",
+      "description": "Barrido de radar con enemigos a la vista.",
+      "file": "fondos/radar.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "fondo-neon",
+      "kind": "background",
+      "name": "Neón nocturno",
+      "description": "Sol retro, ciudad y grilla en movimiento.",
+      "file": "fondos/neon-nocturno.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "mini-pulso",
+      "kind": "mini",
+      "name": "Pulso",
+      "description": "Electrocardiograma a 100 HP.",
+      "file": "mini/pulso.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "mini-humo",
+      "kind": "mini",
+      "name": "Humo",
+      "description": "Humo gris que se mueve lento.",
+      "file": "mini/humo.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "mini-aurora",
+      "kind": "mini",
+      "name": "Aurora",
+      "description": "Luces rosas, violetas y turquesa.",
+      "file": "mini/aurora.svg",
+      "css_class": null,
+      "vip_only": true,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "sticker-gg",
+      "kind": "sticker",
+      "name": "GG",
+      "description": "Buena partida.",
+      "file": "stickers/gg.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "sticker-nice-shot",
+      "kind": "sticker",
+      "name": "NICE SHOT",
+      "description": "Para el tiro de la ronda.",
+      "file": "stickers/nice-shot.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "sticker-rush-b",
+      "kind": "sticker",
+      "name": "RUSH B",
+      "description": "Sin estrategia, sin miedo.",
+      "file": "stickers/rush-b.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "sticker-1hp",
+      "kind": "sticker",
+      "name": "1 HP",
+      "description": "Vivo de milagro.",
+      "file": "stickers/1hp.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "sticker-clutch",
+      "kind": "sticker",
+      "name": "CLUTCH",
+      "description": "Último en pie, ronda ganada.",
+      "file": "stickers/clutch.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "sticker-ace",
+      "kind": "sticker",
+      "name": "ACE",
+      "description": "Cinco de cinco.",
+      "file": "stickers/ace.svg",
+      "css_class": null,
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "tema-terro",
+      "kind": "theme",
+      "name": "Terrorista",
+      "description": "Ocre y arena.",
+      "file": null,
+      "css_class": "tema-terro",
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "tema-anti",
+      "kind": "theme",
+      "name": "Antiterrorista",
+      "description": "Azul táctico.",
+      "file": null,
+      "css_class": "tema-anti",
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "tema-toxico",
+      "kind": "theme",
+      "name": "Tóxico",
+      "description": "Verde radiactivo.",
+      "file": null,
+      "css_class": "tema-toxico",
+      "vip_only": false,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "tema-oro",
+      "kind": "theme",
+      "name": "Oro VIP",
+      "description": "Dorado con resplandor.",
+      "file": null,
+      "css_class": "tema-oro",
+      "vip_only": true,
+      "animated": false,
+      "price": null
+    },
+    {
+      "id": "nombre-brillo",
+      "kind": "name",
+      "name": "Brillo",
+      "description": "Un destello recorre tu nombre.",
+      "file": null,
+      "css_class": "nombre-brillo",
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "nombre-glitch",
+      "kind": "name",
+      "name": "Glitch",
+      "description": "Tu nombre falla cada tanto, a propósito.",
+      "file": null,
+      "css_class": "nombre-glitch",
+      "vip_only": false,
+      "animated": true,
+      "price": null
+    },
+    {
+      "id": "nombre-arcoiris",
+      "kind": "name",
+      "name": "Arcoíris",
+      "description": "Todos los colores, en movimiento.",
+      "file": null,
+      "css_class": "nombre-arcoiris",
+      "vip_only": true,
+      "animated": true,
+      "price": null
+    }
+  ]
+}

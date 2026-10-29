@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 220" width="600" height="220" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="smoke" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".008 .02" numOctaves="3" seed="4">
+        <animate attributeName="baseFrequency" values=".008 .02;.011 .026;.008 .02" dur="16s" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feColorMatrix values="0 0 0 0 .78  0 0 0 0 .8  0 0 0 0 .84  0 0 0 .9 -.25"/>
+    </filter>
+  </defs>
+  <rect width="600" height="220" fill="#16171c"/>
+  <rect width="600" height="220" filter="url(#smoke)"/>
+</svg>

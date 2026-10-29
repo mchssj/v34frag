@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend-mm-ejemplo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "C:/Users/Agus/Documents/repo-mm-ejemplo/web/frontend", "dev", "--port", "5173", "--strictPort"],
+      "port": 5173
+    },
+    {
+      "name": "web-estatica",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8099", "--bind", "127.0.0.1"],
+      "port": 8099
+    }
+  ]
+}

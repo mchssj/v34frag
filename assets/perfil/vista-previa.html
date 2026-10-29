@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cosméticos del perfil</title>
+<link rel="stylesheet" href="cosmeticos.css">
+<style>
+/* Tokens del tema oscuro del frontend nuevo (web/frontend/src/index.css, .dark), aproximados a hex. */
+:root{--background:#0a0a0a;--foreground:#fafafa;--card:#171717;--muted:#262626;--muted-foreground:#a1a1a1;--border:#ffffff1a;--primary:#ff6900;--primary-foreground:#0a0a0a;--ring:#737373;--win:#3fbf74;--radius:10px;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--background);color:var(--foreground);font:14px/1.5 Inter,Segoe UI,system-ui,sans-serif}
+button,select{font:inherit;color:var(--foreground);background:var(--muted);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;cursor:pointer}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}h3{font-size:15px;margin:28px 0 12px}.sub{color:var(--muted-foreground);margin:0 0 16px}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.top select{min-width:180px}
+.perfil{position:relative;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card);margin-bottom:22px}
+.perfil .fondo{height:220px;background:linear-gradient(120deg,var(--muted),var(--card)) center/cover}
+.perfil .fila{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;padding:0 22px 20px;margin-top:-80px;position:relative}
+.nom{font-size:26px;font-weight:900;color:var(--primary)}
+.rol{color:var(--muted-foreground);font-size:13px}
+.stats{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.stats div{background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px}.stats b{color:var(--primary)}
+.stk{display:flex;gap:6px;margin-left:auto}.stk img{width:52px;height:52px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button.on{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.item{border:1px solid var(--border);border-radius:12px;background:var(--card);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s}
+.item:hover{border-color:var(--primary);transform:translateY(-2px)}.item.on{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary)}
+.item.lock{opacity:.5;cursor:not-allowed}
+.item .vis{height:150px;display:grid;place-items:center;background:var(--muted) center/cover}
+.item .vis img.st{width:96px;height:96px}
+.item .inf{padding:10px 12px}.item b{display:block;font-size:14px}.item small{color:var(--muted-foreground);display:block;min-height:34px}
+.precio{display:flex;gap:6px;align-items:center;margin-top:6px;font-weight:800;font-size:12px}
+.estado{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--muted);color:var(--muted-foreground)}
+.estado.eq{background:var(--primary);color:var(--primary-foreground)}
+.vip{background:linear-gradient(90deg,#f7d76a,#c8952a);color:#1b1407;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:900;letter-spacing:1px}
+.tema-demo{width:80%;padding:12px;border-radius:10px;background:var(--card);border:1px solid var(--border)}
+.tema-demo i{display:block;height:8px;border-radius:4px;background:var(--primary);margin-top:8px}
+.minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.mini{position:relative;height:110px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--muted) center/cover;cursor:pointer;display:flex;align-items:center;gap:12px;padding:0 14px}
+.mini::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#000a,#0003)}
+.mini>*{position:relative}.mini .n{font-size:17px;font-weight:900;color:var(--primary)}.mini .d{font-size:12px;color:#ddd}
+.mini .stk{margin-left:auto;gap:2px}.mini .stk img{width:30px;height:30px}
+.scroll{overflow-x:auto}
+.rank{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border)}
+.rank td,.rank th{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.rank th{font-size:11px;text-transform:uppercase;color:var(--muted-foreground)}
+.rank .who{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--primary)}
+@media(max-width:600px){.perfil .fila{margin-top:-60px}.stk{margin-left:0}.rank .hide{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cosméticos del perfil</h1>
+  <p class="sub">Vista previa con jugadores de ejemplo (datos falsos con la forma de <code>GET /api/v1/players</code>). Elegí un jugador y tocá un artículo para equiparlo. Los VIP salen del campo <code>vip</code> de la API; no hay precios porque el backend todavía no tiene tienda.</p>
+
+  <div class="top"><label for="sel-j">Ver como</label><select id="sel-j"></select></div>
+
+  <div class="perfil" id="perfil">
+    <div class="fondo" id="p-fondo"></div>
+    <div class="fila">
+      <div class="avf" style="--avf:150px"><img class="avf-img" id="p-av" alt=""><img class="avf-marco" id="p-marco" alt="" hidden></div>
+      <div><div class="nom" id="p-nom"></div><div class="rol" id="p-rol"></div><div class="stats" id="p-stats"></div></div>
+      <div class="stk" id="p-stk"></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="grid" id="grid"></div>
+
+  <h3>Mini perfiles</h3>
+  <div class="minis" id="minis"></div>
+
+  <h3>Ranking</h3>
+  <div class="scroll"><table class="rank"><thead><tr><th>#</th><th>Jugador</th><th>ELO</th><th class="hide">Nivel</th><th class="hide">K/D</th><th class="hide">Rating</th></tr></thead><tbody id="rank"></tbody></table></div>
+</div>
+<script>
+var KINDS={frame:'Marcos',background:'Fondos',mini:'Mini perfil',sticker:'Stickers',theme:'Temas',name:'Nombre'};
+var COLORES=['#f0449b','#4f9bff','#e0a33a','#48d597','#b26bff','#ff6b4a','#2ee6ff','#9696a3'];
+var items=[],porId={},jug=[],cur=null,tab='frame';
+function $(i){return document.getElementById(i)}
+function art(id){return id?porId[id]:null}
+function avatar(j,i){if(j.photo_url)return j.photo_url;var c=COLORES[i%COLORES.length],ini=j.alias.replace(/^v34\|/,'').slice(0,2).toUpperCase();
+  return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c+'"/><stop offset="1" stop-color="#14141a"/></linearGradient></defs><rect width="100" height="100" fill="url(#a)"/><text x="50" y="62" text-anchor="middle" font-family="Segoe UI,Arial" font-size="34" font-weight="900" fill="#fff">'+ini+'</text></svg>')}
+function avf(av,frame,tam){var d=document.createElement('div'),m=art(frame);d.className='avf';d.style.setProperty('--avf',tam+'px');
+  d.innerHTML='<img class="avf-img" alt="" src="'+av+'">'+(m?'<img class="avf-marco" alt="" src="'+m.file+'">':'');return d}
+function nombre(alias,nameId,cls){var s=document.createElement('span'),n=art(nameId);s.className=cls+(n?' '+n.css_class:'');s.textContent=alias;s.setAttribute('data-nombre',alias);return s}
+/* Única regla que viene del backend: vip_only se equipa solo con vip=true. */
+function puede(a){return !a.vip_only||cur.vip}
+function equipado(a){var e=cur.cosmetics;return a.kind==='sticker'?e.stickers.indexOf(a.id)>=0:e[a.kind]===a.id}
+function vis(a){
+  var v=document.createElement('div');v.className='vis';
+  if(a.kind==='frame')v.appendChild(avf(cur.av,a.id,130));
+  else if(a.kind==='background'||a.kind==='mini')v.style.backgroundImage='url('+a.file+')';
+  else if(a.kind==='sticker')v.innerHTML='<img class="st" alt="" src="'+a.file+'">';
+  else if(a.kind==='theme')v.innerHTML='<div class="tema-demo '+a.css_class+'"><b style="color:var(--primary)">Perfil</b><small>Así se ve el color</small><i></i></div>';
+  else{var s=nombre(cur.alias,a.id,'');s.style.cssText='font-size:24px;font-weight:900;color:var(--primary)';v.appendChild(s)}
+  return v;
+}
+function estado(a){
+  if(equipado(a))return '<span class="estado eq">Equipado</span>'+(a.vip_only?'<span class="vip">VIP</span>':'');
+  if(a.vip_only)return '<span class="vip">VIP</span>'+(cur.vip?'':'<span class="estado">Solo VIP</span>');
+  return '<span class="estado">Precio a definir</span>';
+}
+function tienda(){
+  $('tabs').innerHTML='';Object.keys(KINDS).forEach(function(k){var b=document.createElement('button');b.textContent=KINDS[k];if(k===tab)b.className='on';b.onclick=function(){tab=k;tienda()};$('tabs').appendChild(b)});
+  var g=$('grid');g.innerHTML='';
+  items.filter(function(a){return a.kind===tab}).forEach(function(a){
+    var it=document.createElement('div');it.className='item'+(equipado(a)?' on':'')+(puede(a)?'':' lock');it.appendChild(vis(a));
+    var inf=document.createElement('div');inf.className='inf';
+    inf.innerHTML='<b></b><small></small><div class="precio">'+estado(a)+'</div>';
+    inf.querySelector('b').textContent=a.name;inf.querySelector('small').textContent=a.description;
+    it.appendChild(inf);it.onclick=function(){tocar(a)};g.appendChild(it);
+  });
+}
+function tocar(a){
+  if(!puede(a))return;var e=cur.cosmetics;
+  if(a.kind==='sticker'){var i=e.stickers.indexOf(a.id);if(i>=0)e.stickers.splice(i,1);else{e.stickers.push(a.id);if(e.stickers.length>3)e.stickers.shift()}}
+  else e[a.kind]=e[a.kind]===a.id?null:a.id;
+  todo();
+}
+function perfil(){
+  var e=cur.cosmetics,m=art(e.frame),f=art(e.background)||art(e.mini),t=art(e.theme),d=cur.details;
+  $('p-av').src=cur.av;var pm=$('p-marco');if(m){pm.src=m.file;pm.hidden=false}else pm.hidden=true;
+  $('p-fondo').style.backgroundImage=f?'url('+f.file+')':'';
+  $('perfil').className='perfil'+(t?' '+t.css_class:'');
+  var pn=$('p-nom');pn.textContent='';pn.appendChild(nombre(cur.alias,e.name,''));
+  $('p-rol').textContent=[d&&d.game_role,d&&d.country,cur.teams.map(function(x){return x.tag||x.name}).join(', '),cur.vip?'VIP':null].filter(Boolean).join(' · ')||'Sin cuenta';
+  $('p-stats').innerHTML='<div>ELO <b>'+(cur.elo==null?'—':cur.elo)+'</b></div><div>Nivel <b>'+(cur.level==null?'—':cur.level)+'</b></div><div>K/D <b>'+cur.kd.toFixed(2)+'</b></div><div>Rating <b>'+cur.rating.toFixed(2)+'</b></div><div>G/P <b>'+cur.wins+'/'+cur.losses+'</b></div>';
+  $('p-stk').innerHTML='';e.stickers.forEach(function(id){var s=art(id),i=document.createElement('img');i.src=s.file;i.alt=s.name;i.title=s.name;$('p-stk').appendChild(i)});
+}
+function minis(){
+  var c=$('minis');c.innerHTML='';
+  jug.forEach(function(j,i){var e=j.cosmetics,mi=art(e.mini),t=art(e.theme),d=document.createElement('div');
+    d.className='mini'+(t?' '+t.css_class:'');if(mi)d.style.backgroundImage='url('+mi.file+')';
+    d.appendChild(avf(j.av,e.frame,72));
+    var tx=document.createElement('div');tx.appendChild(nombre(j.alias,e.name,'n'));var dd=document.createElement('div');dd.className='d';dd.textContent='ELO '+(j.elo==null?'—':j.elo)+(j.details&&j.details.game_role?' · '+j.details.game_role:'');tx.appendChild(dd);d.appendChild(tx);
+    var st=document.createElement('div');st.className='stk';e.stickers.forEach(function(id){var im=document.createElement('img');im.src=art(id).file;im.alt='';st.appendChild(im)});d.appendChild(st);
+    d.onclick=function(){elegir(i);scrollTo({top:0,behavior:'smooth'})};c.appendChild(d)});
+}
+function ranking(){
+  var tb=$('rank');tb.innerHTML='';
+  jug.slice().sort(function(a,b){return (b.elo||0)-(a.elo||0)}).forEach(function(j,i){var tr=document.createElement('tr'),t=art(j.cosmetics.theme);
+    if(t)tr.className=t.css_class;
+    tr.innerHTML='<td>'+(i+1)+'</td><td></td><td><b>'+(j.elo==null?'—':j.elo)+'</b></td><td class="hide">'+(j.level==null?'—':j.level)+'</td><td class="hide">'+j.kd.toFixed(2)+'</td><td class="hide">'+j.rating.toFixed(2)+'</td>';
+    var w=document.createElement('div');w.className='who';w.appendChild(avf(j.av,j.cosmetics.frame,44));w.appendChild(nombre(j.alias,j.cosmetics.name,''));tr.children[1].appendChild(w);tb.appendChild(tr)});
+}
+function todo(){perfil();tienda();minis();ranking()}
+function elegir(i){cur=jug[i];$('sel-j').value=i;todo()}
+Promise.all([fetch('catalogo.json').then(function(r){return r.json()}),fetch('datos-falsos.json').then(function(r){return r.json()})]).then(function(r){
+  items=r[0].items;items.forEach(function(a){porId[a.id]=a});
+  jug=r[1].items;jug.forEach(function(j,i){j.av=avatar(j,i);var o=document.createElement('option');o.value=i;o.textContent=j.alias+(j.vip?' (VIP)':'');$('sel-j').appendChild(o)});
+  $('sel-j').onchange=function(){elegir(+this.value)};elegir(0);
+}).catch(function(){$('grid').textContent='No se pudo leer el catálogo: abrí esta página con un servidor (ver la documentación).'});
+</script>
+</body>
+</html>

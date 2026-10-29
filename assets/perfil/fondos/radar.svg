@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="bg" cx=".7" cy=".5" r=".8"><stop offset="0" stop-color="#0c2a24"/><stop offset="1" stop-color="#050b0a"/></radialGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0H0V60" fill="none" stroke="#1d5a4b" stroke-width="1" opacity=".5"/></pattern>
+    <linearGradient id="sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3dffb8" stop-opacity="0"/><stop offset="1" stop-color="#3dffb8" stop-opacity=".45"/></linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+  <g transform="translate(1320 540)">
+    <g fill="none" stroke="#2dbb8a" opacity=".6">
+      <circle r="120"/><circle r="240"/><circle r="360"/><circle r="480" stroke-width="2"/>
+      <path d="M-500 0H500M0 -500V500" stroke-dasharray="6 10"/>
+    </g>
+    <g>
+      <path d="M0 0L480 0A480 480 0 0 0 415.7 -240Z" fill="url(#sw)"/>
+      <path d="M0 0L480 0" stroke="#7dffd0" stroke-width="3"/>
+      <animateTransform attributeName="transform" type="rotate" values="0;360" dur="5s" repeatCount="indefinite"/>
+    </g>
+    <g fill="#ff4d6d">
+      <circle cx="210" cy="-160" r="9"><animate attributeName="opacity" values="0;1;0;0" keyTimes="0;.08;.6;1" dur="5s" begin="4.5s" repeatCount="indefinite"/></circle>
+      <circle cx="-300" cy="120" r="9"><animate attributeName="opacity" values="0;1;0;0" keyTimes="0;.08;.6;1" dur="5s" begin="2s" repeatCount="indefinite"/></circle>
+      <circle cx="80" cy="330" r="9"><animate attributeName="opacity" values="0;1;0;0" keyTimes="0;.08;.6;1" dur="5s" begin="1.2s" repeatCount="indefinite"/></circle>
+    </g>
+    <g fill="#5ab0ff"><circle cx="-120" cy="-60" r="8"/><circle cx="-60" cy="-100" r="8"/><circle cx="-150" cy="20" r="8"/></g>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" fill="#3dffb8" opacity=".55" font-size="22">
+    <text x="80" y="110">BOMBSITE A ▸ DESPEJADO</text>
+    <text x="80" y="150">BOMBSITE B ▸ 2 ENEMIGOS<animate attributeName="opacity" values="1;.2;1" dur="1.2s" repeatCount="indefinite"/></text>
+    <text x="80" y="1000">v34frag // radar táctico</text>
+  </g>
+</svg>
