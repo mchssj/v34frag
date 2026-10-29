@@ -1,0 +1,39 @@
+# Demos por SFTP (plan docs/bitacora/2026-10-28-demos-servidores-externos). Lo lanza cmleague-demos.timer.
+# Toma la cola de SFTP del Worker de demos (las que no pudo bajar por la API del panel) y las sube a R2.
+[Unit]
+Description=CMLeague: demos por SFTP a R2
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/srv/cmleague/api/current/demos-sftp.mjs
+
+[Service]
+Type=oneshot
+User=cmleague
+Group=cmleague
+WorkingDirectory=/srv/cmleague/api/current
+EnvironmentFile=/etc/cmleague/demos.env
+# Las credenciales de SFTP de cada servidor: systemd copia el archivo (root, 600) a una carpeta que solo ve este
+# servicio mientras corre. %d es esa carpeta. Así el usuario cmleague no puede leer /etc/cmleague/demos-sftp.json.
+LoadCredential=sftp-servers.json:/etc/cmleague/demos-sftp.json
+Environment=SFTP_SERVERS_FILE=%d/sftp-servers.json
+ExecStart=/usr/bin/node --enable-source-maps /srv/cmleague/api/current/demos-sftp.mjs
+# Hasta 10 demos por vuelta, de decenas de MB cada una. El SFTP de flow baja a unos 60 KB/s (~14 min una demo de
+# 50 MB): con 900 s systemd cortaba la vuelta a mitad de una demo y la siguiente empezaba de cero.
+TimeoutStartSec=3600
+MemoryMax=256M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadOnlyPaths=/srv/cmleague
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native

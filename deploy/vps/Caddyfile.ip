@@ -1,0 +1,12 @@
+# CMLeague: Caddy mientras el DNS no apunta al VPS. Solo HTTP por la IP.
+# /api/* llega a la API para poder probarla antes de tener dominio.
+
+:80 {
+	header -Server
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8787
+	}
+	handle {
+		respond "CMLeague: en construccion" 200
+	}
+}
