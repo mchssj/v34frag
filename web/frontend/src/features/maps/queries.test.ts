@@ -43,6 +43,11 @@ describe("catálogo de mapas", () => {
       "https://img/inferno.webp"
     )
     expect(mapImage(maps, "de_aztec")).toBe("https://img/aztec.webp")
+    // Así lo guarda la base: sin el prefijo.
+    expect(mapImage(maps, "nuke")).toBe("https://img/nuke.webp")
+    expect(mapImage(maps, "inferno_classic")).toBe(
+      "https://img/inferno.webp"
+    )
     expect(mapImage(maps, "de_dust2")).toBeNull()
     expect(mapImage(maps, "de_train")).toBeNull()
     expect(mapImage(maps, null)).toBeNull()
