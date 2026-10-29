@@ -71,6 +71,7 @@ La migración se volvió a correr sobre la misma base sin errores (es re-ejecuta
 - El K/D del período se muestra en `completo` como "K/D hoy" o "K/D 24 h". Sin muertes, muestra las kills en vez de dividir por 0.
 - Los tamaños de OBS del plan (220 × 60, 360 × 110 y 420 × 200) eran estimados. Medidos en el navegador, el compacto mide 340 × 141 y se cortaba, así que el generador recomienda **160 × 60, 350 × 150 y 410 × 180**.
 - `widget.html?demo=1` dibuja datos de ejemplo sin consultar la base. Sirve para ver los diseños y acomodarlos en OBS antes de tener mixes.
+- **Demo en el frontend nuevo** (2026-10-29, `repo-mm-ejemplo`, rama `kyan/ejemplo-matchmaking`): ruta `/demo/widget` (`src/routes/demo.widget.tsx`, `src/features/widget/StreamWidget.tsx` y `demo.ts`). Usa datos en memoria y solo existe en `pnpm dev`. Sirve para simular mixes, ver el nivel 10, cambiar entre hoy y 24 h, y ver el fondo de stream o el transparente. Los tamaños de OBS ahí son 170 × 64, 360 × 150 y 420 × 190, porque la tipografía del frontend nuevo es un poco más grande. Para que el widget real funcione en el frontend nuevo, falta un endpoint público en la API (equivalente a `widget_player`, con `elo_key()`) y la ruta `/widget` sin el layout de la app. Queda para el equipo de backend.
 - `widget_player` también devuelve `matches` (total de mixes con ELO). El widget todavía no lo usa.
 - Se agregó la configuración `web-estatica-8101` a `.claude/launch.json` para poder probar mientras otra sesión usaba el 8099.
 

@@ -2,6 +2,15 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "backend-mm-ejemplo",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": [
+        "-lc",
+        "cd /c/Users/Agus/Documents/repo-mm-ejemplo/web/backend && pnpm dev:node"
+      ],
+      "port": 8788
+    },
+    {
       "name": "frontend-mm-ejemplo",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
