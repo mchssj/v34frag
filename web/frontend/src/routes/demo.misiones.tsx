@@ -9,6 +9,7 @@ import { AdminMissions } from "@/features/missions/AdminMissions"
 import type { Metric } from "@/features/missions/catalog"
 import { useMissionsDemo } from "@/features/missions/demo"
 import { MissionsPage, MissionsPopout } from "@/features/missions/MissionsUi"
+import { mapLabel } from "@/features/matchmaking/labels"
 
 // Ejemplo de las misiones semanales sin API ni sesión (docs/bitacora/2026-10-29-misiones-semanales en
 // kyan/pruebas). Solo en `pnpm dev`: en el build de producción la ruta no existe.
@@ -41,7 +42,7 @@ function DemoMisiones() {
   const play = (won: boolean) => {
     const r = d.playMix(won)
     toast.success(
-      `Mix ${won ? "ganado" : "perdido"} en ${r.map}: ${r.kills} kills, rating ${r.rating.toFixed(2)}.`
+      `Mix ${won ? "ganado" : "perdido"} en ${mapLabel(r.map)}: ${r.kills} kills, rating ${r.rating.toFixed(2)}.`
     )
   }
 

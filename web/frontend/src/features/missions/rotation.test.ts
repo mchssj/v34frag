@@ -7,6 +7,7 @@ import {
   METRICS,
   MISSIONS,
   SLOTS,
+  titleOf,
   type Mission,
 } from "./catalog"
 import {
@@ -131,5 +132,16 @@ describe("rotación de misiones semanales", () => {
     expect(weekIndex(EPOCH - 1)).toBe(-1)
     expect(weekIndex(Date.UTC(2026, 10, 2, 8, 59))).toBe(0)
     expect(weekIndex(Date.UTC(2026, 10, 2, 9))).toBe(1)
+  })
+})
+
+describe("textos de las misiones", () => {
+  it("los mapas se muestran sin prefijo", () => {
+    const withMap = [...MISSIONS, ...FIRST_STEPS].filter((m) => m.map)
+    expect(withMap.length).toBeGreaterThan(0)
+    for (const m of withMap) expect(titleOf(m)).not.toMatch(/\b[a-z]{2,4}_/)
+    expect(titleOf(MISSIONS.find((m) => m.map === "de_dust2")!)).toBe(
+      "Jugá 3 mixes en Dust2"
+    )
   })
 })

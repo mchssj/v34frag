@@ -1,3 +1,5 @@
+import { mapLabel } from "@/features/matchmaking/labels"
+
 // Catálogo de misiones (docs/bitacora/2026-10-29-misiones-semanales en kyan/pruebas).
 //
 // Hay dos listas:
@@ -525,7 +527,8 @@ const WEAPON_LABEL: Record<string, string> = {
 export const titleOf = (x: Mission) =>
   x.title
     .replace("{n}", x.target.toLocaleString("es-AR"))
-    .replace("{map}", x.map ?? "")
+    // El mapa se guarda como lo manda el plugin (de_dust2) y se muestra sin prefijo (Dust2).
+    .replace("{map}", x.map ? mapLabel(x.map) : "")
     .replace("{weapon}", WEAPON_LABEL[x.weapon ?? ""] ?? x.weapon ?? "")
 
 export const rewardOf = (x: Mission) =>
