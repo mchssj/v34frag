@@ -7,7 +7,6 @@ import {
   fmt2,
   fmtPct,
   roleCountry,
-  teamTag,
   teamTrend,
 } from "./labels"
 import {
@@ -31,12 +30,6 @@ describe("labels", () => {
     expect(fmt2(null)).toBe("—")
     expect(fmtPct(66.6)).toBe("67%")
     expect(fmtPct(null)).toBe("—")
-  })
-
-  it("sigla del equipo, o las iniciales si no tiene", () => {
-    expect(teamTag({ tag: "GTK", name: "GO TO KNOW" })).toBe("GTK")
-    expect(teamTag({ tag: "", name: "los extraditables" })).toBe("LE")
-    expect(teamTag({ tag: null, name: "New Team Five Sur" })).toBe("NTF")
   })
 
   it("tendencia de equipos contra hace 30 días", () => {

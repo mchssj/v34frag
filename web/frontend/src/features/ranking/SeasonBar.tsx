@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
 
+import { cn } from "cn"
+import { ChevronDownIcon, CheckIcon, HistoryIcon } from "lucide-react"
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { countdown, fmtLongDate } from "./labels"
 import type { Season } from "./queries"
 import { HISTORIC } from "./search"
@@ -25,27 +27,7 @@ export function SeasonBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border bg-card px-4 py-3">
-      <label className="flex items-center gap-2 text-xs text-muted-foreground">
-        Temporada
-        <Select value={season?.id ?? HISTORIC} onValueChange={onSelect}>
-          <SelectTrigger
-            size="sm"
-            aria-label="Temporada"
-            className="h-8 text-[13px] font-medium text-foreground"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {seasons.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-                {s.status === "active" ? " · en curso" : ""}
-              </SelectItem>
-            ))}
-            <SelectItem value={HISTORIC}>Histórico</SelectItem>
-          </SelectContent>
-        </Select>
-      </label>
+      <SeasonPicker seasons={seasons} season={season} onSelect={onSelect} />
       {!season ? (
         <span className="text-xs text-muted-foreground">
           Todas las partidas jugadas en el servidor, sin temporadas.
@@ -104,5 +86,88 @@ function Countdown({ endsAt }: { endsAt: string }) {
         "Cerrando…"
       )}
     </span>
+  )
+}
+
+const segment =
+  "inline-flex h-7 items-center gap-1.5 rounded-[calc(var(--radius)-4px)] px-3 text-[13px] font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+const pressed = "bg-background font-semibold text-foreground shadow-sm"
+
+/**
+ * Control segmentado: la temporada en curso, las anteriores en un menú y el Histórico aparte (una
+ * vista de todas las partidas, no una temporada más).
+ */
+function SeasonPicker({
+  seasons,
+  season,
+  onSelect,
+}: {
+  seasons: Season[]
+  season: Season | null
+  onSelect: (value: string) => void
+}) {
+  const active = seasons.find((s) => s.status === "active")
+  const closed = seasons.filter((s) => s.status !== "active")
+  const pastPicked = season && season.status !== "active" ? season : null
+
+  return (
+    <div
+      role="group"
+      aria-label="Temporada"
+      className="inline-flex max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-muted p-[3px]"
+    >
+      {active && (
+        <button
+          type="button"
+          aria-pressed={season?.id === active.id}
+          onClick={() => onSelect(active.id)}
+          className={cn(segment, season?.id === active.id && pressed)}
+        >
+          <span className="size-1.5 rounded-full bg-win" aria-hidden />
+          {active.name}
+        </button>
+      )}
+      {closed.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={
+              pastPicked
+                ? `Temporada anterior: ${pastPicked.name}`
+                : "Temporadas anteriores"
+            }
+            className={cn(segment, pastPicked && pressed)}
+          >
+            {pastPicked ? pastPicked.name : "Anteriores"}
+            <ChevronDownIcon className="size-3.5" aria-hidden />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {closed.map((s) => (
+              <DropdownMenuItem
+                key={s.id}
+                onSelect={() => onSelect(s.id)}
+                className="justify-between gap-6"
+              >
+                {s.name}
+                {s.id === pastPicked?.id && (
+                  <CheckIcon className="size-4 text-primary" aria-hidden />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      <button
+        type="button"
+        aria-pressed={!season}
+        onClick={() => onSelect(HISTORIC)}
+        className={cn(segment, !season && pressed)}
+      >
+        <HistoryIcon
+          className={cn("size-3.5", !season && "text-primary")}
+          aria-hidden
+        />
+        Histórico
+      </button>
+    </div>
   )
 }

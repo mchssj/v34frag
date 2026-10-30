@@ -16,11 +16,11 @@ import {
   MineChip,
   Podium,
   RankingHeader,
-  TagBox,
   coverLink,
   useMine,
   type PodiumItem,
 } from "./parts"
+import { TeamCrest } from "@/features/teams/ui"
 import { ListState, Paging, RowLink } from "./PlayersRanking"
 import {
   teamPodiumOptions,
@@ -56,9 +56,7 @@ export function TeamsRanking({
         ? `${r.won}G · ${r.lost}P · Sin partidas`
         : `${r.won}G · ${r.lost}P · ${fmtPct(r.win_rate)} victorias`,
     value: r.points,
-    badge: (
-      <TagBox team={r.team} className="size-[46px] rounded-lg text-[13px]" />
-    ),
+    badge: <TeamCrest team={r.team} size="sm" />,
     link: (
       <Link to="/teams/$id" params={{ id: r.team.id }} className={coverLink}>
         {r.team.name}
@@ -173,7 +171,7 @@ function TeamRow({
       </TableCell>
       <TableCell>
         <span className="flex items-center gap-2.5">
-          <TagBox team={r.team} />
+          <TeamCrest team={r.team} size="row" />
           <span className="font-medium">{r.team.name}</span>
           {mine && <MineChip />}
         </span>

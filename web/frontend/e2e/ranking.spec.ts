@@ -22,8 +22,10 @@ test("jugadores: temporada activa por defecto, Histórico, nivel, orden y perfil
   await expect(page.getByText(/^\d+\/\d+$/)).toHaveCount(0)
 
   // Histórico: el ranking general del handoff.
-  await page.getByRole("combobox", { name: "Temporada" }).click()
-  await page.getByRole("option", { name: "Histórico" }).click()
+  await page
+    .getByRole("group", { name: "Temporada" })
+    .getByRole("button", { name: "Histórico" })
+    .click()
   await expect(page).toHaveURL(/season=all/)
   await expect(page).not.toHaveURL(/eligible/)
   await expect(
@@ -44,6 +46,35 @@ test("jugadores: temporada activa por defecto, Histórico, nivel, orden y perfil
   const alias = await row.getAttribute("aria-label")
   await row.click()
   await expect(page).toHaveURL(new RegExp(`/player/${alias}$`))
+})
+
+test("los filtros no mueven el scroll; cambiar de página vuelve al inicio de la lista", async ({
+  page,
+}) => {
+  await page.goto("/ranking?season=all")
+  const filter = page.getByRole("button", { name: "Nivel 1–6" })
+  await expect(filter).toBeVisible()
+  await filter.evaluate((el) =>
+    window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 80)
+  )
+  const before = await page.evaluate(() => window.scrollY)
+  expect(before).toBeGreaterThan(100)
+  await filter.click()
+  await expect(page).toHaveURL(/level=1-6/)
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(before)
+
+  // Desde el pie, la página 2 muestra la lista desde arriba.
+  await page.goto("/ranking?season=all")
+  const next = page.getByRole("button", { name: "Página siguiente" })
+  await next.scrollIntoViewIfNeeded()
+  await next.click()
+  await expect(page).toHaveURL(/page=2/)
+  const top = await page
+    .locator("table")
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().top)
+  expect(top).toBeGreaterThanOrEqual(0)
+  expect(top).toBeLessThan(200)
 })
 
 test("equipos: PCW cambia el subtítulo y la leyenda", async ({ page }) => {

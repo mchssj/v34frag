@@ -1,6 +1,9 @@
 import { useState, type PointerEvent } from "react"
 
+import { ChartLineIcon } from "lucide-react"
+
 import type { Schemas } from "@/api/client"
+import { GhostChart } from "@/components/illustrations"
 import { fmtDay } from "./labels"
 
 type Point = Schemas["EloPoint"]
@@ -27,9 +30,25 @@ export function EloChart({
   const [hover, setHover] = useState<number | null>(null)
   if (points.length < 2)
     return (
-      <p className="grid min-h-[200px] place-items-center text-[13px] text-muted-foreground">
-        Todavía no hay mixes para el gráfico.
-      </p>
+      <div className="relative min-h-[200px] flex-1 overflow-hidden rounded-[10px]">
+        <GhostChart className="absolute inset-0" />
+        <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,var(--card)_22%,transparent_70%)] px-4">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <span className="grid size-11 place-items-center rounded-xl bg-primary/14 text-primary">
+              <ChartLineIcon className="size-[22px]" aria-hidden />
+            </span>
+            <span className="text-[15px] font-semibold">
+              {points.length === 1
+                ? "La curva aparece con el segundo mix"
+                : "Todavía no hay mixes para el gráfico"}
+            </span>
+            <span className="max-w-[320px] text-[13px] text-pretty text-muted-foreground">
+              Cada mix suma un punto al gráfico. La línea punteada marca el piso
+              de su nivel.
+            </span>
+          </div>
+        </div>
+      </div>
     )
 
   const values = points.map((p) => p.elo_after)

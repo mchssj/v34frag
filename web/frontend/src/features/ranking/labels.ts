@@ -22,20 +22,6 @@ export function fmtPct(v: number | null | undefined): string {
   return v === null || v === undefined ? "—" : `${Math.round(v)}%`
 }
 
-/** Sigla del equipo; los que no tienen, las iniciales del nombre. */
-export function teamTag(t: { tag: string | null; name: string }): string {
-  if (t.tag?.trim()) return t.tag.trim()
-  return (
-    t.name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 3)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase() || "?"
-  )
-}
-
 export type Trend = {
   text: string
   tone: "up" | "down" | "flat"

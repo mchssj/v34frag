@@ -20,7 +20,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { myProfileOptions } from "@/features/profile/queries"
-import { teamTag } from "./labels"
 
 // Piezas que comparten las tablas de jugadores, de equipos y el comparador.
 
@@ -49,26 +48,6 @@ export function PlayerAvatar({
         {alias.slice(0, 1).toUpperCase()}
       </AvatarFallback>
     </Avatar>
-  )
-}
-
-/** Sigla del equipo en un cuadro (los equipos no tienen logo, contrato 7). */
-export function TagBox({
-  team,
-  className,
-}: {
-  team: { tag: string | null; name: string }
-  className?: string
-}) {
-  return (
-    <span
-      className={cn(
-        "grid size-7 shrink-0 place-items-center rounded-md bg-muted font-mono text-[10px] font-semibold",
-        className
-      )}
-    >
-      {teamTag(team)}
-    </span>
   )
 }
 
