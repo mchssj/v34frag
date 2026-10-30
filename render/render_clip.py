@@ -41,6 +41,7 @@ import leer_demo  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
 SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
+END_MARGIN_SECONDS = 0.1  # lo que se deja sin grabar al final de la demo (ver segments)
 
 
 def log(msg):
@@ -58,9 +59,13 @@ def load_config(path):
     return cfg
 
 
-def segments(ticks, tick_interval, cfg):
+def segments(ticks, tick_interval, cfg, last_tick=None):
     """Tramos [inicio, fin] en ticks de la demo: pre antes de la primera kill, post después de la última,
-    y un corte cuando entre dos kills pasan más de split_gap_seconds."""
+    y un corte cuando entre dos kills pasan más de split_gap_seconds.
+
+    last_tick: el último tick de la demo (playback_ticks de la cabecera). La grabación termina con la última ronda,
+    así que una jugada de esa ronda no tiene sus segundos de después: el tramo se corta un poco antes del final
+    (END_MARGIN_SECONDS). Sin eso, al acabarse la demo se grababa el menú del juego (de_cbble, 2026-10-29)."""
     per_sec = 1 / tick_interval
     pre, post, gap = (round(cfg[k] * per_sec) for k in ("pre_seconds", "post_seconds", "split_gap_seconds"))
     groups = [[ticks[0]]]
@@ -69,7 +74,9 @@ def segments(ticks, tick_interval, cfg):
             groups.append([t])
         else:
             groups[-1].append(t)
-    return [(max(g[0] - pre, 0), g[-1] + post) for g in groups]
+    end = last_tick - round(END_MARGIN_SECONDS * per_sec) if last_tick else None
+    out = [(max(g[0] - pre, 0), g[-1] + post) for g in groups]
+    return [(t0, t1 if end is None else max(min(t1, end), t0 + 1)) for t0, t1 in out]
 
 
 # ---- Windows: elevación, ventanas, mouse y teclado ----
@@ -624,7 +631,7 @@ def main():
         ticks = [k["tick"] for k in rs[a.round]["kills"] if k["attacker"] == a.player and not k["suicide"]]
         if not ticks:
             raise SystemExit(f"{a.player} no tiene kills en la ronda {a.round}")
-    segs = segments(ticks, d.tick_interval, cfg)
+    segs = segments(ticks, d.tick_interval, cfg, d.header["playback_ticks"])
     log(f"{d.header['map']}, {a.player}: kills en {ticks}, tramos {segs} (tick {d.tick_interval:.5f} s)")
 
     # 2. Grabar.

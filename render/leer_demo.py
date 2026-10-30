@@ -170,7 +170,7 @@ class Demo:
         userid = struct.unpack_from("<i", raw, 32)[0]
         guid = raw[36:69].split(b"\0")[0].decode("ascii", "replace")
         fake, hltv = raw[108] != 0, raw[109] != 0
-        if hltv:
+        if hltv or guid == "STEAM_ID_PENDING":  # el que se está conectando: llega otra vez con su SteamID
             return
         sid = guid if not fake else f"BOT:{name}"
         self.players[userid] = {"name": name, "steamid": sid, "bot": fake}
@@ -254,7 +254,10 @@ class Demo:
             elif t == SVC_UPDATESTRINGTABLE:
                 tb = self.tables[br.read(5)]
                 count = br.read(16) if br.bit() else 1
-                length = br.read(20)
+                # En este protocolo el largo de una actualización va en 16 bits (en el svc_CreateStringTable son 20).
+                # Con 20 se perdía el resto del paquete: los que entraban o se reconectaban durante la partida
+                # quedaban sin nombre ni lugar, y la cámara seguía a otro (mix de flow en de_cbble, 2026-10-29).
+                length = br.read(16)
                 end = br.pos + length
                 self.safe_update(tb, Bits(br.data, br.pos, end), count, tick)
                 br.pos = end
@@ -361,7 +364,9 @@ class Demo:
                 n = struct.unpack_from("<i", raw, off)[0]
                 off += 4
                 try:
-                    self.messages(raw[off:off + n], tick)
+                    # Los ticks de los signon no son de la grabación (en la demo de flow del 2026-10-29, 234850 en una
+                    # de 232332 ticks): lo que traen es el estado del principio.
+                    self.messages(raw[off:off + n], 0 if cmd == DEM_SIGNON else tick)
                 except (EOFError, ValueError, IndexError) as e:
                     self.errors.append(f"tick {tick}: {e}")
                 off += n
