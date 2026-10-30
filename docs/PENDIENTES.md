@@ -155,6 +155,26 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK. El plugin nuevo, cuando se haga, sí va a los dos servidores.
 - **Bitácora:** [`2026-10-29-misiones-semanales`](bitacora/2026-10-29-misiones-semanales/).
 
+### 1.12 Página Hacete VIP y configs de los jugadores (prototipos)
+
+- **Qué es:**
+  - `/demo/vip`: los planes (precios de ejemplo), la tabla de beneficios con y sin VIP, el estado de tu VIP y qué pasa con cada beneficio cuando se vence. Los candados de todos los demos VIP llevan ahí.
+  - `/demo/configs`: la pestaña Config del perfil. Cualquiera sube su carpeta `cfg` (`.rar`, `.zip` o la carpeta) y solo los VIP ven el contenido y descargan.
+- **La revisión de las configs:**
+  - Solo se aceptan `.cfg`, `.vdf`, `.scr`, `.rc` y `.txt`. Un comprimido con un `.exe` se rechaza entero.
+  - Las contraseñas (`rcon_password`…) se sacan antes de publicar.
+  - Los scripts dejan la config en revisión, y así no se puede descargar.
+- **Qué falta:**
+  - **Kyan:**
+    - Los precios, si Premium y VIP son dos niveles, los días de gracia y lo propuesto de la tabla de vencimiento.
+    - Qué scripts están prohibidos.
+  - **Daniel:**
+    - El medio de pago, la tabla de suscripciones, la función única "¿es VIP?" y el alta manual.
+    - Para las configs: storage, revisión en el servidor (que abra los `.rar`), rutas y cola de moderación.
+  - **Esteban:** la página `/vip`, "Mi suscripción" en la cuenta y la pestaña Config del perfil.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-hacete-vip`](bitacora/2026-10-29-hacete-vip/) y [`2026-10-29-configs-jugadores`](bitacora/2026-10-29-configs-jugadores/).
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real
