@@ -2,7 +2,9 @@
 
 ## Qué hace
 
-Cada vez que alguien entra a un servidor de CMLeague, el reporter (2.6.0) anota su SteamID, su IP y su nick. También cuenta cada intento de conexión por IP, aunque nunca llegue a validar el SteamID: eso sirve para ver un ataque. Cada 60 segundos manda lo que juntó a la base, en uno o varios pedidos chicos.
+Cada vez que alguien entra a un servidor de CMLeague, el reporter anota su SteamID, su IP y su nick. También cuenta cada intento de conexión por IP, aunque nunca llegue a validar el SteamID: eso sirve para ver un ataque. Cada 60 segundos manda lo que juntó a la base, en uno o varios pedidos chicos.
+
+Desde la 2.6.1, si hay un pico de intentos manda sin esperar los 60 segundos, y los intentos pendientes también se guardan en disco: si el servidor se cae, se mandan al volver a arrancar.
 
 La IP queda atada al **SteamID** (no a la ficha). Un SteamID puede tener todas las IPs que quiera; el tope de SteamID por ficha no cambia. La ficha ve sus IPs a través de sus SteamID.
 
@@ -11,7 +13,7 @@ Es un dato personal: **solo lo ven los admins**, en Administración › Jugadore
 ```mermaid
 sequenceDiagram
   participant J as Jugador
-  participant P as Reporter 2.6.0
+  participant P as Reporter 2.6.1
   participant DB as Supabase
   participant W as Admin (web nueva)
   J->>P: conecta (OnClientConnect)
@@ -43,14 +45,16 @@ sequenceDiagram
   - El SteamID se pasa a SteamID64 con `csstv_steam64`: STEAM_0 y STEAM_1 son el mismo.
   - Se descartan los bots, los SteamID rotos y las IPs inválidas o con máscara.
   - El nick se corta en 64 caracteres.
-- `p_attempts`: hasta 256 `{"ip", "n"}`. Se suman en la fila de esa hora, con un tope de 100 000 por entrada.
+- `p_attempts`: hasta 256 `{"ip", "n", "t"}`. Se suman en la fila de la hora de `t` (el primer intento, unix), si es de las últimas 48 horas; si no, en la hora actual (migración `20261029200000_ips_intentos_hora.sql`). Tope de 100 000 por entrada.
 - Responde `{"ok": true, "seen": n, "attempts": n}`.
 
-## El plugin (`csstv_reporter` 2.6.0, `csstv/ips.inc`)
+## El plugin (`csstv_reporter` 2.6.1, `csstv/ips.inc`)
 
 | Qué | Cómo |
 |---|---|
-| Intentos | `OnClientConnect`, sin bots ni SourceTV. Un `StringMap` IP → cantidad, con un tope de 256 IPs a la vez |
+| Intentos | `OnClientConnect`, sin bots ni SourceTV. Un `StringMap` IP → {cantidad, primer intento}, con un tope de 1024 IPs a la vez (256 en la 2.6.0) |
+| Pico (2.6.1) | Con 30 intentos desde el último envío, o 10 de una sola IP, manda en el momento. Como mucho un envío adelantado cada 5 segundos |
+| Disco (2.6.1) | `data/csstv/ips_intentos.txt`: una línea por IP (`ip intentos primer_intento`) con los intentos pendientes. Se reescribe cada 5 segundos si cambió algo y se borra cuando queda vacío. No es un log: como mucho 1024 líneas (unos 40 KB). Al arrancar se suma lo que tenga (sin lo de más de 48 horas) y se manda a los 15 segundos. Las entradas con SteamID no van a disco |
 | Entradas | `OnClientPostAdminCheck`, con `GetClientAuthId(AuthId_Steam2, validado)`. Nick saneado con `Claim_SafeNick`. Tope de 64 a la vez |
 | Envío | Cada 60 segundos, pedidos de menos de 1900 bytes (como el resto del plugin), hasta 8 por vuelta. Lo que no entra queda para la siguiente |
 | Si falla | Se descarta y queda en el log de errores de SourceMod (`IPs: no se pudieron registrar…`) |
@@ -84,10 +88,10 @@ select g.name, a.ip, sum(a.count) from connect_attempts a join game_servers g on
 
 | Qué | Archivo / ubicación |
 |---|---|
-| Migración de producción | `supabase/migrations/20261029180000_ips_jugadores.sql` |
+| Migraciones de producción | `supabase/migrations/20261029180000_ips_jugadores.sql` y `20261029200000_ips_intentos_hora.sql` (la hora de `t`) |
 | Pruebas de la migración | `docs/bitacora/2026-10-29-ips-jugadores/pruebas/ips_jugadores.sql` |
 | Replanteo | `supabase/replanteo/38_ips_jugadores.sql`, con su inversa y su prueba en `docs/bitacora/2026-10-14-replanteo-modelo-datos/` |
-| Plugin | `server/addons/sourcemod/scripting/csstv/ips.inc` y `csstv_reporter.sp` (2.6.0); `server/addons/sourcemod/plugins/csstv_reporter.smx` |
+| Plugin | `server/addons/sourcemod/scripting/csstv/ips.inc` y `csstv_reporter.sp` (2.6.1); `server/addons/sourcemod/plugins/csstv_reporter.smx` |
 | API | `web/backend/src/routes/admin-players.ts`, `web/backend/src/schemas/admin.ts`, `web/backend/test/integration/ips.test.ts` |
 | Frontend | `web/frontend/src/features/admin/players/FichasTab.tsx` (`Ips`) y `queries.ts` |
 | Contrato | `docs/frontend/contrato/admin.md` |

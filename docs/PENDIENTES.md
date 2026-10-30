@@ -484,6 +484,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   1. En el corte, la `38` va después de la `37` (punto 1.5).
   2. Verificar con el primer jugador que entre: sin `IPs: no se pudieron registrar` en el log y filas en `player_ips`.
   3. Publicar `bitacora/2026-10-29-ips-jugadores/CHANGELOG_DISCORD.txt`.
+  4. **Reporter 2.6.1** (pico y copia a disco de los intentos): desplegado el 2026-10-29. La migración `20261029200000_ips_intentos_hora.sql` está en producción y en staging, y el plugin en **el real, RBK y flow**. Falta verificar en cada uno, después de su cambio de mapa, que el log diga 2.6.1 y que no aparezca `IPs: no se pudieron registrar`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
 
 ## 2. Investigaciones abiertas

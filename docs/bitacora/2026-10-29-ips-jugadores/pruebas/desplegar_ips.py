@@ -1,8 +1,8 @@
 """Uso: python -I desplegar_ips.py inspect|apply <carpeta de respaldo local>
 
-Sube csstv_reporter 2.6.0 a los tres servidores en la misma tanda: el genérico al real (SFTP_CSS_*) y el licenciado
+Sube csstv_reporter 2.6.1 (antes 2.6.0, desde 2.5.0) a los tres servidores en la misma tanda: el genérico al real (SFTP_CSS_*) y el licenciado
 a RBK (SERVER1_*) y a flow (SERVER2_*), y agrega csstv_ips "1" a su csstv_reporter.cfg. Con "inspect" solo mira y
-aborta si algo no es lo esperado. La versión anterior pasa a plugins/disabled/csstv_reporter_2.5.0.smx y quedan como
+aborta si algo no es lo esperado. La versión anterior pasa a plugins/disabled/csstv_reporter_<anterior>.smx y quedan como
 mucho 3 anteriores. El cfg original se guarda solo en la carpeta de respaldo local (tiene el token del servidor).
 Necesita paramiko (en un entorno virtual aparte). No recarga el plugin: se carga en el próximo cambio de mapa.
 Adaptado de docs/bitacora/2026-10-22-clips-automaticos/pruebas/desplegar_clips.py.
@@ -30,7 +30,7 @@ CREDS = {
     "rbk": ("SERVER1_FTP_HOST", "SERVER1_FTP_PORT", "SERVER1_FTP_USER", "SERVER1_FTP_PASSWORD"),
     "flow": ("SERVER2_FTP_HOST", "SERVER2_FTP_PORT", "SERVER2_FTP_USER", "SERVER2_FTP_PASSWORD"),
 }
-OLD_VERSION, NEW_VERSION, MAX_OLD = "2.5.0", "2.6.0", 3
+OLD_VERSION, NEW_VERSION, MAX_OLD = "2.6.0", "2.6.1", 3
 IPS_LINES = ['// 1 = guarda la IP de cada entrada al servidor y cuenta los intentos de conexión (solo los ven los admins)',
              'csstv_ips "1"']
 
