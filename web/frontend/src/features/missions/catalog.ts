@@ -1,11 +1,16 @@
-// Catálogo de misiones semanales (docs/bitacora/2026-10-29-misiones-semanales en kyan/pruebas).
+// Catálogo de misiones (docs/bitacora/2026-10-29-misiones-semanales en kyan/pruebas).
+//
+// Hay dos listas:
+//   - MISSIONS: las semanales, de juego y comunidad. Rotan al azar cada lunes.
+//   - FIRST_STEPS: "Primeros pasos", las de la web (votar un clip, subir un clip, entrar 3 días…). Se hacen
+//     una sola vez desde que te registrás: no rotan, no se reinician y pagan una vez.
 //
 // Para cambiar las misiones se edita este archivo y nada más:
-//   - MISSIONS: una fila por misión. `active: false` la saca de la rotación sin borrarla.
-//   - REWARDS: lo que paga cada dificultad (puntos de la tienda o monedas VIP).
-//   - SLOTS: cuántas salen por semana de cada dificultad.
-//   - AREA_MAX: tope por área dentro de la misma semana.
-//   - COOLDOWN_WEEKS: semanas que tiene que esperar una misión para volver a salir.
+//   - Una fila por misión. `active: false` la apaga sin borrarla.
+//   - REWARDS: lo que paga cada dificultad (puntos de la tienda o monedas VIP). WEEK_BONUS: el bonus semanal.
+//   - SLOTS: cuántas semanales salen de cada dificultad.
+//   - COOLDOWN_WEEKS: semanas que tiene que esperar una semanal para volver a salir.
+//   - READY_SOURCES: qué fuentes de datos ya existen.
 // En la versión real esto vive en la tabla `missions` y se edita desde Admin → Misiones.
 
 export type Area = "juego" | "web" | "comunidad"
@@ -19,7 +24,7 @@ export type Difficulty = "facil" | "media" | "dificil"
  *     contadores por ronda y bombas explotadas.
  *   - `web`: un evento de la web que se registra junto con las misiones.
  *   - `sistema`: necesita un sistema que todavía no existe (referidos, grupos del matchmaking).
- * Una misión cuya métrica no está lista queda en el catálogo pero no entra en la rotación (`isReady`).
+ * Una misión cuya métrica no está lista queda en el catálogo pero no se muestra (`isReady`).
  */
 export type MetricSource = "plugin" | "plugin_v2" | "web" | "sistema"
 
@@ -70,7 +75,7 @@ export const METRICS = {
     label: "Bombas explotadas (bombs_exploded)",
     source: "plugin_v2",
   },
-  // Web: eventos que se registran con las misiones.
+  // Web: eventos que se registran con las misiones. Son las de Primeros pasos.
   login_days: { label: "Días distintos que entraste a la web", source: "web" },
   clips_uploaded: { label: "Clips subidos", source: "web" },
   clips_voted: { label: "Clips votados", source: "web" },
@@ -95,13 +100,15 @@ export type Metric = keyof typeof METRICS
 
 export interface Mission {
   id: string
-  /** Texto que ve el jugador. `{n}` se reemplaza por el objetivo y `{map}` por el mapa. */
+  /** Texto que ve el jugador. `{n}` es el objetivo, `{map}` el mapa y `{weapon}` el arma. */
   title: string
   area: Area
   metric: Metric
   target: number
   difficulty: Difficulty
   vip: boolean
+  /** true: Primeros pasos (una sola vez por cuenta). false: semanal. */
+  once: boolean
   /** Para `map_mixes`. */
   map?: string
   /** Para `weapon_kills`: el nombre del arma en `player_death` (awp, deagle, knife…). */
@@ -113,43 +120,50 @@ export const REWARDS: Record<"normal" | "vip", Record<Difficulty, number>> = {
   normal: { facil: 30, media: 60, dificil: 120 }, // puntos de la tienda
   vip: { facil: 20, media: 40, dificil: 80 }, // monedas VIP
 }
-/** Bonus por completar todas las misiones para todos de la semana (puntos). */
+/** Bonus por completar todas las semanales para todos (puntos). */
 export const WEEK_BONUS = 150
 
 export const SLOTS: Record<"normal" | "vip", Record<Difficulty, number>> = {
   normal: { facil: 2, media: 3, dificil: 1 },
   vip: { facil: 1, media: 1, dificil: 1 },
 }
-export const AREA_MAX: Record<Area, number> = { juego: 4, web: 3, comunidad: 2 }
 export const COOLDOWN_WEEKS = 2
 
-const m = (
-  id: string,
-  title: string,
-  area: Area,
-  metric: Metric,
-  target: number,
-  difficulty: Difficulty,
-  extra: Partial<Pick<Mission, "vip" | "map" | "weapon" | "active">> = {}
-): Mission => ({
-  id,
-  title,
-  area,
-  metric,
-  target,
-  difficulty,
-  vip: false,
-  active: true,
-  ...extra,
-})
+type Extra = Partial<Pick<Mission, "vip" | "map" | "weapon" | "active">>
+const make =
+  (once: boolean) =>
+  (
+    id: string,
+    title: string,
+    area: Area,
+    metric: Metric,
+    target: number,
+    difficulty: Difficulty,
+    extra: Extra = {}
+  ): Mission => ({
+    id,
+    title,
+    area,
+    metric,
+    target,
+    difficulty,
+    vip: false,
+    once,
+    active: true,
+    ...extra,
+  })
+const w = make(false)
+const o = make(true)
+const VIP = { vip: true }
 
+/** Semanales: de juego y comunidad. */
 export const MISSIONS: Mission[] = [
   // ---------- Para todos · fáciles ----------
-  m("f-jugar-3", "Jugá {n} mixes", "juego", "mixes_played", 3, "facil"),
-  m("f-ganar-1", "Ganá {n} mix", "juego", "mixes_won", 1, "facil"),
-  m("f-kills-40", "Hacé {n} kills", "juego", "kills", 40, "facil"),
-  m("f-asist-10", "Dá {n} asistencias", "juego", "assists", 10, "facil"),
-  m(
+  w("f-jugar-3", "Jugá {n} mixes", "juego", "mixes_played", 3, "facil"),
+  w("f-ganar-1", "Ganá {n} mix", "juego", "mixes_won", 1, "facil"),
+  w("f-kills-40", "Hacé {n} kills", "juego", "kills", 40, "facil"),
+  w("f-asist-10", "Dá {n} asistencias", "juego", "assists", 10, "facil"),
+  w(
     "f-entero-2",
     "Jugá {n} mixes enteros, sin irte antes",
     "juego",
@@ -157,41 +171,22 @@ export const MISSIONS: Mission[] = [
     2,
     "facil"
   ),
-  m(
-    "f-login-3",
-    "Entrá a la web {n} días distintos",
-    "web",
-    "login_days",
-    3,
-    "facil"
-  ),
-  m("f-votar-5", "Votá {n} clips", "web", "clips_voted", 5, "facil"),
-  m(
-    "f-comparar-2",
-    "Comparate con {n} jugadores",
-    "web",
-    "compares",
+  w("f-plantar-3", "Plantá {n} bombas", "juego", "plants", 3, "facil"),
+  w("f-hs-15", "Hacé {n} headshots", "juego", "headshots", 15, "facil"),
+  w("f-dmg-1500", "Hacé {n} de daño", "juego", "damage", 1500, "facil"),
+  w("f-entradas-3", "Ganá {n} entradas", "juego", "first_kills", 3, "facil"),
+  w("f-nuke-1", "Jugá {n} mix en {map}", "juego", "map_mixes", 1, "facil", {
+    map: "de_nuke",
+  }),
+  w(
+    "f-mapas-2",
+    "Jugá en {n} mapas distintos",
+    "juego",
+    "maps_distinct",
     2,
     "facil"
   ),
-  m(
-    "f-equipar-1",
-    "Equipá un cosmético",
-    "web",
-    "cosmetics_equipped",
-    1,
-    "facil"
-  ),
-  m("f-demo-1", "Mirá una demo de un mix", "web", "demos_watched", 1, "facil"),
-  m(
-    "f-buscar-2",
-    "Buscá jugadores o partidas con filtros {n} veces",
-    "web",
-    "searches",
-    2,
-    "facil"
-  ),
-  m(
+  w(
     "f-grupo-1",
     "Jugá {n} mix con alguien de tu grupo",
     "comunidad",
@@ -199,8 +194,7 @@ export const MISSIONS: Mission[] = [
     1,
     "facil"
   ),
-  m("f-plantar-3", "Plantá {n} bombas", "juego", "plants", 3, "facil"),
-  m(
+  w(
     "f-sobrevivir-15",
     "Sobreviví {n} rondas",
     "juego",
@@ -210,12 +204,12 @@ export const MISSIONS: Mission[] = [
   ),
 
   // ---------- Para todos · medias ----------
-  m("m-ganar-3", "Ganá {n} mixes", "juego", "mixes_won", 3, "media"),
-  m("m-jugar-6", "Jugá {n} mixes", "juego", "mixes_played", 6, "media"),
-  m("m-hs-40", "Hacé {n} headshots", "juego", "headshots", 40, "media"),
-  m("m-dmg-4000", "Hacé {n} de daño", "juego", "damage", 4000, "media"),
-  m("m-entradas-8", "Ganá {n} entradas", "juego", "first_kills", 8, "media"),
-  m(
+  w("m-ganar-3", "Ganá {n} mixes", "juego", "mixes_won", 3, "media"),
+  w("m-jugar-6", "Jugá {n} mixes", "juego", "mixes_played", 6, "media"),
+  w("m-hs-40", "Hacé {n} headshots", "juego", "headshots", 40, "media"),
+  w("m-dmg-4000", "Hacé {n} de daño", "juego", "damage", 4000, "media"),
+  w("m-entradas-8", "Ganá {n} entradas", "juego", "first_kills", 8, "media"),
+  w(
     "m-triple-3",
     "Hacé {n} rondas de 3 kills o más",
     "juego",
@@ -223,10 +217,10 @@ export const MISSIONS: Mission[] = [
     3,
     "media"
   ),
-  m("m-dust2-3", "Jugá {n} mixes en {map}", "juego", "map_mixes", 3, "media", {
+  w("m-dust2-3", "Jugá {n} mixes en {map}", "juego", "map_mixes", 3, "media", {
     map: "de_dust2",
   }),
-  m(
+  w(
     "m-inferno-3",
     "Jugá {n} mixes en {map}",
     "juego",
@@ -235,7 +229,7 @@ export const MISSIONS: Mission[] = [
     "media",
     { map: "de_inferno" }
   ),
-  m(
+  w(
     "m-mapas-4",
     "Jugá en {n} mapas distintos",
     "juego",
@@ -243,9 +237,8 @@ export const MISSIONS: Mission[] = [
     4,
     "media"
   ),
-  m("m-clip-1", "Subí {n} clip", "web", "clips_uploaded", 1, "media"),
-  m("m-demo-2", "Mirá {n} demos", "web", "demos_watched", 2, "media"),
-  m(
+  w("m-defuse-2", "Desactivá {n} bombas", "juego", "defuses", 2, "media"),
+  w(
     "m-grupo-3",
     "Jugá {n} mixes con alguien de tu grupo",
     "comunidad",
@@ -253,16 +246,7 @@ export const MISSIONS: Mission[] = [
     3,
     "media"
   ),
-  m(
-    "m-evento-1",
-    "Anotate en un evento",
-    "comunidad",
-    "event_signups",
-    1,
-    "media"
-  ),
-  m("m-defuse-2", "Desactivá {n} bombas", "juego", "defuses", 2, "media"),
-  m(
+  w(
     "m-pistola-3",
     "Ganá {n} rondas de pistola",
     "juego",
@@ -270,7 +254,7 @@ export const MISSIONS: Mission[] = [
     3,
     "media"
   ),
-  m(
+  w(
     "m-awp-10",
     "Hacé {n} kills con {weapon}",
     "juego",
@@ -279,7 +263,7 @@ export const MISSIONS: Mission[] = [
     "media",
     { weapon: "awp" }
   ),
-  m(
+  w(
     "m-deagle-8",
     "Hacé {n} kills con {weapon}",
     "juego",
@@ -290,8 +274,8 @@ export const MISSIONS: Mission[] = [
   ),
 
   // ---------- Para todos · difíciles ----------
-  m("d-ganar-6", "Ganá {n} mixes", "juego", "mixes_won", 6, "dificil"),
-  m(
+  w("d-ganar-6", "Ganá {n} mixes", "juego", "mixes_won", 6, "dificil"),
+  w(
     "d-racha-3",
     "Ganá {n} mixes seguidos",
     "juego",
@@ -299,7 +283,7 @@ export const MISSIONS: Mission[] = [
     3,
     "dificil"
   ),
-  m(
+  w(
     "d-rating-3",
     "Terminá {n} mixes con rating de 1,20 o más",
     "juego",
@@ -307,8 +291,8 @@ export const MISSIONS: Mission[] = [
     3,
     "dificil"
   ),
-  m("d-kills-150", "Hacé {n} kills", "juego", "kills", 150, "dificil"),
-  m(
+  w("d-kills-150", "Hacé {n} kills", "juego", "kills", 150, "dificil"),
+  w(
     "d-entradas-20",
     "Ganá {n} entradas",
     "juego",
@@ -316,8 +300,8 @@ export const MISSIONS: Mission[] = [
     20,
     "dificil"
   ),
-  m("d-pcw-1", "Jugá un PCW", "comunidad", "pcw_played", 1, "dificil"),
-  m(
+  w("d-pcw-1", "Jugá un PCW", "comunidad", "pcw_played", 1, "dificil"),
+  w(
     "d-invitar-1",
     "Invitá a un amigo que juegue su primer mix",
     "comunidad",
@@ -325,132 +309,198 @@ export const MISSIONS: Mission[] = [
     1,
     "dificil"
   ),
-  m("d-clutch-2", "Ganá {n} clutchs", "juego", "clutches", 2, "dificil"),
-  m("d-eco-1", "Ganá una ronda eco", "juego", "eco_won", 1, "dificil"),
+  w("d-clutch-2", "Ganá {n} clutchs", "juego", "clutches", 2, "dificil"),
+  w("d-eco-1", "Ganá una ronda eco", "juego", "eco_won", 1, "dificil"),
 
   // ---------- VIP · fáciles ----------
-  m("vf-jugar-4", "Jugá {n} mixes", "juego", "mixes_played", 4, "facil", {
-    vip: true,
+  w("vf-jugar-4", "Jugá {n} mixes", "juego", "mixes_played", 4, "facil", VIP),
+  w("vf-hs-20", "Hacé {n} headshots", "juego", "headshots", 20, "facil", VIP),
+  w("vf-kills-60", "Hacé {n} kills", "juego", "kills", 60, "facil", VIP),
+  w("vf-asist-15", "Dá {n} asistencias", "juego", "assists", 15, "facil", VIP),
+  w("vf-train-2", "Jugá {n} mixes en {map}", "juego", "map_mixes", 2, "facil", {
+    ...VIP,
+    map: "de_train",
   }),
-  m("vf-hs-20", "Hacé {n} headshots", "juego", "headshots", 20, "facil", {
-    vip: true,
-  }),
-  m(
-    "vf-exportar-1",
-    "Exportá tu tarjeta de stats",
-    "web",
-    "stats_exported",
-    1,
-    "facil",
-    { vip: true }
-  ),
-  m(
-    "vf-buscar-3",
-    "Usá el buscador con filtros {n} veces",
-    "web",
-    "searches",
+  w(
+    "vf-entero-3",
+    "Jugá {n} mixes enteros, sin irte antes",
+    "juego",
+    "full_mixes",
     3,
     "facil",
-    { vip: true }
-  ),
-  m(
-    "vf-login-5",
-    "Entrá a la web {n} días distintos",
-    "web",
-    "login_days",
-    5,
-    "facil",
-    { vip: true }
+    VIP
   ),
 
   // ---------- VIP · medias ----------
-  m("vm-ganar-4", "Ganá {n} mixes", "juego", "mixes_won", 4, "media", {
-    vip: true,
-  }),
-  m(
+  w("vm-ganar-4", "Ganá {n} mixes", "juego", "mixes_won", 4, "media", VIP),
+  w(
     "vm-triple-5",
     "Hacé {n} rondas de 3 kills o más",
     "juego",
     "triple_kills",
     5,
     "media",
-    { vip: true }
+    VIP
   ),
-  m(
+  w(
     "vm-tuscan-3",
     "Jugá {n} mixes en {map}",
     "juego",
     "map_mixes",
     3,
     "media",
-    { vip: true, map: "de_tuscan" }
+    { ...VIP, map: "de_tuscan" }
   ),
-  m(
-    "vm-comprar-1",
-    "Comprá algo en la tienda",
-    "web",
-    "shop_purchases",
-    1,
+  w(
+    "vm-entradas-12",
+    "Ganá {n} entradas",
+    "juego",
+    "first_kills",
+    12,
     "media",
-    { vip: true }
+    VIP
   ),
-  m("vm-clips-2", "Subí {n} clips", "web", "clips_uploaded", 2, "media", {
-    vip: true,
-  }),
-  m(
+  w("vm-hs-60", "Hacé {n} headshots", "juego", "headshots", 60, "media", VIP),
+  w(
     "vm-bombas-3",
     "Hacé explotar {n} bombas",
     "juego",
     "bombs_exploded",
     3,
     "media",
-    { vip: true }
+    VIP
   ),
 
   // ---------- VIP · difíciles ----------
-  m("vd-ace-1", "Hacé un ace", "juego", "aces", 1, "dificil", { vip: true }),
-  m(
+  w("vd-ace-1", "Hacé un ace", "juego", "aces", 1, "dificil", VIP),
+  w(
     "vd-racha-4",
     "Ganá {n} mixes seguidos",
     "juego",
     "win_streak",
     4,
     "dificil",
-    { vip: true }
+    VIP
   ),
-  m(
+  w(
     "vd-rating-5",
     "Terminá {n} mixes con rating de 1,20 o más",
     "juego",
     "good_rating_mixes",
     5,
     "dificil",
-    { vip: true }
+    VIP
   ),
-  m("vd-dmg-10000", "Hacé {n} de daño", "juego", "damage", 10000, "dificil", {
-    vip: true,
-  }),
-  m("vd-pcw-2", "Jugá {n} PCW", "comunidad", "pcw_played", 2, "dificil", {
-    vip: true,
-  }),
-  m("vd-clutch-3", "Ganá {n} clutchs", "juego", "clutches", 3, "dificil", {
-    vip: true,
-  }),
-  m(
+  w(
+    "vd-dmg-10000",
+    "Hacé {n} de daño",
+    "juego",
+    "damage",
+    10000,
+    "dificil",
+    VIP
+  ),
+  w("vd-pcw-2", "Jugá {n} PCW", "comunidad", "pcw_played", 2, "dificil", VIP),
+  w("vd-clutch-3", "Ganá {n} clutchs", "juego", "clutches", 3, "dificil", VIP),
+  w(
     "vd-cuchillo-1",
     "Hacé una kill con {weapon}",
     "juego",
     "weapon_kills",
     1,
     "dificil",
-    { vip: true, weapon: "knife" }
+    { ...VIP, weapon: "knife" }
+  ),
+]
+
+/** Primeros pasos: las de la web, una sola vez desde que te registrás. */
+export const FIRST_STEPS: Mission[] = [
+  o(
+    "p-login-3",
+    "Entrá a la web {n} días distintos",
+    "web",
+    "login_days",
+    3,
+    "facil"
+  ),
+  o("p-votar-1", "Votá un clip", "web", "clips_voted", 1, "facil"),
+  o("p-votar-10", "Votá {n} clips", "web", "clips_voted", 10, "media"),
+  o("p-clip-1", "Subí tu primer clip", "web", "clips_uploaded", 1, "media"),
+  o("p-demo-1", "Mirá la demo de un mix", "web", "demos_watched", 1, "facil"),
+  o(
+    "p-comparar-1",
+    "Comparate con otro jugador",
+    "web",
+    "compares",
+    1,
+    "facil"
+  ),
+  o(
+    "p-buscar-1",
+    "Buscá jugadores o partidas con filtros",
+    "web",
+    "searches",
+    1,
+    "facil"
+  ),
+  o(
+    "p-equipar-1",
+    "Equipá tu primer cosmético",
+    "web",
+    "cosmetics_equipped",
+    1,
+    "facil"
+  ),
+  o(
+    "p-comprar-1",
+    "Comprá algo en la tienda",
+    "web",
+    "shop_purchases",
+    1,
+    "media"
+  ),
+  o(
+    "p-evento-1",
+    "Anotate en tu primer evento",
+    "comunidad",
+    "event_signups",
+    1,
+    "media"
+  ),
+  o(
+    "p-login-15",
+    "Entrá a la web {n} días distintos",
+    "web",
+    "login_days",
+    15,
+    "dificil"
+  ),
+  // VIP
+  o(
+    "pv-exportar-1",
+    "Exportá tu tarjeta de stats",
+    "web",
+    "stats_exported",
+    1,
+    "facil",
+    VIP
+  ),
+  o("pv-clips-3", "Subí {n} clips", "web", "clips_uploaded", 3, "media", VIP),
+  o(
+    "pv-login-30",
+    "Entrá a la web {n} días distintos",
+    "web",
+    "login_days",
+    30,
+    "dificil",
+    VIP
   ),
 ]
 
 /** Fuentes de datos que ya existen. Cuando salga el plugin con schema 2, se suma "plugin_v2" acá. */
 export const READY_SOURCES: MetricSource[] = ["plugin", "web"]
 
-/** La misión entra en la rotación: está activa y su métrica ya se puede medir. */
+/** La misión se puede mostrar: está activa y su métrica ya se puede medir. */
 export const isReady = (x: Mission, ready: MetricSource[] = READY_SOURCES) =>
   x.active && ready.includes(METRICS[x.metric].source)
 

@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from "react"
 
 import {
+  FIRST_STEPS,
+  isReady,
   MISSIONS,
   rewardOf,
   WEEK_BONUS,
@@ -11,6 +13,7 @@ import { rotation, weekStart } from "./rotation"
 
 // Progreso simulado para /demo/misiones (docs/bitacora/2026-10-29-misiones-semanales en kyan/pruebas). En
 // la versión real el progreso lo suma la API con cada mix (las stats del plugin) y con cada evento de la web.
+// Las semanales se reinician cada lunes; las de Primeros pasos cuentan desde que te registrás y no se reinician.
 
 const MAPS = [
   "de_dust2",
@@ -58,6 +61,9 @@ export function useMissionsDemo() {
   const [week, setWeek] = useState(0)
   const [vip, setVip] = useState(true)
   const [s, setS] = useState<WeekState>(EMPTY)
+  // Primeros pasos: el progreso y lo reclamado de toda la cuenta.
+  const [life, setLife] = useState<Record<string, number>>({})
+  const [claimedOnce, setClaimedOnce] = useState<string[]>([])
   const [wallet, setWallet] = useState({ points: 420, coins: 60 })
   const [history, setHistory] = useState<PastWeek[]>([])
 
@@ -65,25 +71,27 @@ export function useMissionsDemo() {
     () => rotation(MISSIONS, week, week)[0]!.missions,
     [week]
   )
+  const firstSteps = useMemo(() => FIRST_STEPS.filter((m) => isReady(m)), [])
   const valueOf = useCallback(
-    (m: Mission) => Math.min(m.target, s.progress[progressKey(m)] ?? 0),
-    [s]
+    (m: Mission) =>
+      Math.min(m.target, (m.once ? life : s.progress)[progressKey(m)] ?? 0),
+    [s, life]
   )
   const done = (m: Mission) => valueOf(m) >= m.target
+  const isClaimed = (m: Mission) =>
+    (m.once ? claimedOnce : s.claimed).includes(m.id)
   const normal = missions.filter((m) => !m.vip)
   const vipMissions = missions.filter((m) => m.vip)
-  const claimable = missions.filter(
-    (m) => done(m) && !s.claimed.includes(m.id) && (vip || !m.vip)
+  const claimable = [...missions, ...firstSteps].filter(
+    (m) => done(m) && !isClaimed(m) && (vip || !m.vip)
   )
   const allNormalDone = normal.every(done)
 
-  const add = (metric: Metric | string, n = 1) =>
-    setS((x) => ({
-      ...x,
-      progress: { ...x.progress, [metric]: (x.progress[metric] ?? 0) + n },
-    }))
+  /** Un evento de la web: suma a Primeros pasos. */
+  const add = (metric: Metric) =>
+    setLife((l) => ({ ...l, [metric]: (l[metric] ?? 0) + 1 }))
 
-  /** Un mix con stats al azar, como las que manda el plugin. */
+  /** Un mix con stats al azar, como las que manda el plugin. Suma a las semanales. */
   const playMix = (won: boolean) => {
     const kills = rand(10, 30)
     const map = MAPS[rand(0, MAPS.length - 1)]!
@@ -113,11 +121,17 @@ export function useMissionsDemo() {
     })
     return { map, kills, rating }
   }
+  const playPcw = () =>
+    setS((x) => ({
+      ...x,
+      progress: { ...x.progress, pcw_played: (x.progress.pcw_played ?? 0) + 1 },
+    }))
 
   const claim = (m: Mission) => {
-    if (!done(m) || s.claimed.includes(m.id) || (m.vip && !vip)) return 0
+    if (!done(m) || isClaimed(m) || (m.vip && !vip)) return 0
     const r = rewardOf(m)
-    setS((x) => ({ ...x, claimed: [...x.claimed, m.id] }))
+    if (m.once) setClaimedOnce((c) => [...c, m.id])
+    else setS((x) => ({ ...x, claimed: [...x.claimed, m.id] }))
     setWallet((w) =>
       m.vip ? { ...w, coins: w.coins + r } : { ...w, points: w.points + r }
     )
@@ -148,12 +162,15 @@ export function useMissionsDemo() {
       ...h,
     ])
     setWeek((w) => w + 1)
+    // Solo se reinician las semanales.
     setS(EMPTY)
   }
 
   const reset = () => {
     setWeek(0)
     setS(EMPTY)
+    setLife({})
+    setClaimedOnce([])
     setHistory([])
     setWallet({ points: 420, coins: 60 })
   }
@@ -167,9 +184,10 @@ export function useMissionsDemo() {
     missions,
     normal,
     vipMissions,
+    firstSteps,
     valueOf,
     done,
-    claimed: s.claimed,
+    isClaimed,
     bonusClaimed: s.bonus,
     allNormalDone,
     claimable,
@@ -177,6 +195,7 @@ export function useMissionsDemo() {
     history,
     add,
     playMix,
+    playPcw,
     claim,
     claimBonus,
     nextWeek,

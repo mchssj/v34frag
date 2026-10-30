@@ -18,6 +18,7 @@ import {
   AREA_LABEL,
   COOLDOWN_WEEKS,
   DIFFICULTY_LABEL,
+  FIRST_STEPS,
   isReady,
   METRICS,
   MISSIONS,
@@ -51,7 +52,10 @@ const head = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
 const AHEAD = 8
 
 export function AdminMissions({ fromWeek }: { fromWeek: number }) {
-  const [catalog, setCatalog] = useState<Mission[]>(MISSIONS)
+  const [catalog, setCatalog] = useState<Mission[]>(() => [
+    ...MISSIONS,
+    ...FIRST_STEPS,
+  ])
   const [v2, setV2] = useState(false)
   const [focus, setFocus] = useState<string | null>(null)
   const ready: MetricSource[] = v2
@@ -73,7 +77,7 @@ export function AdminMissions({ fromWeek }: { fromWeek: number }) {
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Alcanza el catálogo</h2>
+        <h2 className="text-base font-semibold">Alcanzan las semanales</h2>
         <p className="text-xs text-muted-foreground">
           Con {COOLDOWN_WEEKS} semanas de espera, cada dificultad necesita por
           lo menos {COOLDOWN_WEEKS + 1} veces las que salen por semana.
@@ -83,6 +87,7 @@ export function AdminMissions({ fromWeek }: { fromWeek: number }) {
             (["facil", "media", "dificil"] as const).map((diff) => {
               const have = catalog.filter(
                 (m) =>
+                  !m.once &&
                   isReady(m, ready) &&
                   m.vip === (g === "vip") &&
                   m.difficulty === diff
@@ -169,7 +174,8 @@ export function AdminMissions({ fromWeek }: { fromWeek: number }) {
           <p className="text-xs text-muted-foreground">
             Los cambios se ven arriba al instante. Las que esperan datos del
             plugin nuevo o de otro sistema quedan guardadas y entran solas
-            cuando los datos existan.
+            cuando los datos existan. Las de Primeros pasos (las de la web) no
+            rotan: se hacen una sola vez por cuenta.
           </p>
         </div>
         <div className="overflow-x-auto rounded-xl border bg-card">
@@ -208,6 +214,11 @@ export function AdminMissions({ fromWeek }: { fromWeek: number }) {
                         {m.vip && (
                           <span className="rounded bg-amber-400/15 px-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
                             VIP
+                          </span>
+                        )}
+                        {m.once && (
+                          <span className="rounded bg-primary/15 px-1 text-[10px] font-semibold text-primary">
+                            Una vez
                           </span>
                         )}
                         {titleOf(m)}

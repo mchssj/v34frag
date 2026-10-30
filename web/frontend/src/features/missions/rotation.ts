@@ -1,10 +1,8 @@
 import {
-  AREA_MAX,
   COOLDOWN_WEEKS,
   isReady,
   READY_SOURCES,
   SLOTS,
-  type Area,
   type Difficulty,
   type MetricSource,
   type Mission,
@@ -12,7 +10,7 @@ import {
 
 // Rotación de las misiones semanales (docs/bitacora/2026-10-29-misiones-semanales en kyan/pruebas).
 // Cada semana se eligen al azar, con una semilla por semana para que siempre den lo mismo, y una misión que
-// salió no vuelve a salir en las COOLDOWN_WEEKS semanas siguientes.
+// salió no vuelve a salir en las COOLDOWN_WEEKS semanas siguientes. Las de Primeros pasos (`once`) no rotan.
 //
 // En la versión real el cron del lunes corre `pickWeek` una vez y guarda el resultado en `mission_weeks`:
 // así, si después se edita el catálogo, las semanas pasadas no cambian.
@@ -44,6 +42,10 @@ function shuffle<T>(xs: T[], seed: number) {
   return a
 }
 
+/** Dos misiones miden lo mismo (misma métrica, y mismo mapa o arma si los tienen). */
+export const sameStat = (a: Mission, b: Mission) =>
+  a.metric === b.metric && a.map === b.map && a.weapon === b.weapon
+
 export interface Week {
   week: number
   missions: Mission[]
@@ -53,8 +55,8 @@ export interface Week {
 
 /**
  * Las misiones de la semana `w`. `recent[0]` son los ids de la semana anterior, `recent[1]` los de dos
- * semanas antes, y así. Primero respeta la espera y el tope por área; si no alcanza, afloja el tope por
- * área, y recién después la espera (empezando por las que salieron hace más tiempo).
+ * semanas antes, y así. Primero respeta la espera y que no se repita la misma stat en la semana; si no
+ * alcanza, deja repetir la stat, y recién después afloja la espera (empezando por las más viejas).
  */
 export function pickWeek(
   w: number,
@@ -66,60 +68,47 @@ export function pickWeek(
   const picked: Mission[] = []
   const blocked = (m: Mission, weeks: number) =>
     recent.slice(0, weeks).some((ids) => ids.includes(m.id))
+  const repeatsStat = (m: Mission) => picked.some((p) => sameStat(p, m))
 
   for (const group of ["normal", "vip"] as const) {
-    const areaCount: Record<Area, number> = { juego: 0, web: 0, comunidad: 0 }
-    // De la más difícil a la más fácil: las difíciles tienen menos opciones y casi todas son de juego, así
-    // que eligen primero y las fáciles completan las áreas que faltan.
+    const label = group === "vip" ? "VIP " : ""
+    // De la más difícil a la más fácil: las difíciles tienen menos opciones, así que eligen primero.
     for (const diff of ["dificil", "media", "facil"] as Difficulty[]) {
       const need = SLOTS[group][diff]
       const pool = shuffle(
         catalog.filter(
           (m) =>
+            !m.once &&
             isReady(m, ready) &&
             m.vip === (group === "vip") &&
             m.difficulty === diff
         ),
         w * 7919 + (group === "vip" ? 104729 : 0) + diff.length
       )
-      const take = (ok: (m: Mission) => boolean) => {
-        for (const m of pool) {
-          if (
-            picked.filter((p) => p.vip === m.vip && p.difficulty === diff)
-              .length >= need
-          )
-            return
-          if (picked.includes(m) || !ok(m)) continue
-          picked.push(m)
-          areaCount[m.area]++
-        }
-      }
-      take(
-        (m) =>
-          !blocked(m, COOLDOWN_WEEKS) && areaCount[m.area] < AREA_MAX[m.area]
-      )
       const have = () =>
         picked.filter(
           (p) => p.vip === (group === "vip") && p.difficulty === diff
         ).length
-      if (have() < need) {
-        take((m) => !blocked(m, COOLDOWN_WEEKS))
-        if (have() < need) {
-          for (let k = COOLDOWN_WEEKS - 1; k >= 0 && have() < need; k--)
-            take((m) => !blocked(m, k))
-          if (have() < need)
-            warnings.push(
-              `Faltan ${need - have()} misiones ${group === "vip" ? "VIP " : ""}${diff}: el catálogo no alcanza.`
-            )
-          else
-            warnings.push(
-              `Se repitió una misión ${group === "vip" ? "VIP " : ""}${diff} antes de las ${COOLDOWN_WEEKS} semanas.`
-            )
-        } else
-          warnings.push(
-            `Se pasó el tope por área en las ${group === "vip" ? "VIP " : ""}${diff}.`
-          )
+      const take = (ok: (m: Mission) => boolean) => {
+        for (const m of pool) {
+          if (have() >= need) return
+          if (!picked.includes(m) && ok(m)) picked.push(m)
+        }
       }
+      take((m) => !blocked(m, COOLDOWN_WEEKS) && !repeatsStat(m))
+      if (have() >= need) continue
+      take((m) => !blocked(m, COOLDOWN_WEEKS))
+      if (have() >= need) {
+        warnings.push(`Se repitió una stat en las ${label}${diff}.`)
+        continue
+      }
+      for (let k = COOLDOWN_WEEKS - 1; k >= 0 && have() < need; k--)
+        take((m) => !blocked(m, k))
+      warnings.push(
+        have() < need
+          ? `Faltan ${need - have()} misiones ${label}${diff}: el catálogo no alcanza.`
+          : `Se repitió una misión ${label}${diff} antes de las ${COOLDOWN_WEEKS} semanas.`
+      )
     }
   }
   return { week: w, missions: picked, warnings }

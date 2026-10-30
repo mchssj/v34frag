@@ -5,11 +5,12 @@ import {
   Gamepad2Icon,
   GiftIcon,
   GlobeIcon,
+  FootprintsIcon,
   LockIcon,
   TargetIcon,
   UsersIcon,
 } from "lucide-react"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -79,7 +80,7 @@ export function MissionRow({
   const Icon = AREA_ICON[m.area]
   const value = d.valueOf(m)
   const done = value >= m.target
-  const claimed = d.claimed.includes(m.id)
+  const claimed = d.isClaimed(m)
   const locked = m.vip && !d.vip
   const claim = () => {
     const r = d.claim(m)
@@ -213,6 +214,38 @@ function VipHeader({ d }: { d: MissionsDemo }) {
   )
 }
 
+/** Cuántas de Primeros pasos completó (sin contar las VIP si no es VIP). */
+function firstStepsCount(d: MissionsDemo) {
+  const shown = d.firstSteps.filter((m) => d.vip || !m.vip)
+  return { done: shown.filter(d.done).length, total: shown.length }
+}
+
+/** Primeros pasos: las de la web, una sola vez. Las completas y reclamadas van al final. */
+function FirstStepsList({
+  d,
+  compact,
+}: {
+  d: MissionsDemo
+  compact?: boolean
+}) {
+  const order = [...d.firstSteps].sort(
+    (a, b) =>
+      Number(d.isClaimed(a)) - Number(d.isClaimed(b)) ||
+      Number(a.vip) - Number(b.vip)
+  )
+  return (
+    <ul
+      className={
+        compact ? "divide-y" : "grid gap-3 md:grid-cols-2 lg:grid-cols-3"
+      }
+    >
+      {order.map((m) => (
+        <MissionRow key={m.id} m={m} d={d} compact={compact} />
+      ))}
+    </ul>
+  )
+}
+
 /** El botón de la barra de arriba con el popout. */
 export function MissionsPopout({
   d,
@@ -222,6 +255,14 @@ export function MissionsPopout({
   onOpenPage: () => void
 }) {
   const n = d.claimable.length
+  const [tab, setTab] = useState<"week" | "first">("week")
+  const first = firstStepsCount(d)
+  const firstClaimable = d.claimable.filter((m) => m.once).length
+  const tabClass = (on: boolean) =>
+    cn(
+      "inline-flex h-7 items-center gap-1.5 rounded-[calc(var(--radius)-4px)] px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground",
+      on && "bg-background text-foreground shadow-[0_1px_2px_rgb(0_0_0/.1)]"
+    )
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -240,25 +281,58 @@ export function MissionsPopout({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[380px] p-0">
-        <div className="flex items-baseline justify-between border-b px-4 py-3">
-          <span className="text-sm font-semibold">Misiones semanales</span>
+        <div className="flex flex-col gap-2 border-b px-4 py-3">
+          <span className="inline-flex gap-0.5 self-start rounded-lg bg-muted p-[3px]">
+            <button
+              type="button"
+              aria-pressed={tab === "week"}
+              className={tabClass(tab === "week")}
+              onClick={() => setTab("week")}
+            >
+              <TargetIcon aria-hidden className="size-3.5" />
+              Esta semana
+            </button>
+            <button
+              type="button"
+              aria-pressed={tab === "first"}
+              className={tabClass(tab === "first")}
+              onClick={() => setTab("first")}
+            >
+              <FootprintsIcon aria-hidden className="size-3.5" />
+              Primeros pasos {first.done}/{first.total}
+              {firstClaimable > 0 && (
+                <span
+                  className="size-1.5 rounded-full bg-primary"
+                  aria-label="Hay para reclamar"
+                />
+              )}
+            </button>
+          </span>
           <span className="text-xs text-muted-foreground">
-            Se renuevan en {timeLeft(d.week, d.now)}
+            {tab === "week"
+              ? `Se renuevan en ${timeLeft(d.week, d.now)}`
+              : "Se hacen una sola vez, desde que te registraste. No se reinician."}
           </span>
         </div>
         <div className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto px-4 py-3">
-          <BonusBar d={d} />
-          <ul className="divide-y">
-            {d.normal.map((m) => (
-              <MissionRow key={m.id} m={m} d={d} compact />
-            ))}
-          </ul>
-          <VipHeader d={d} />
-          <ul className="divide-y">
-            {d.vipMissions.map((m) => (
-              <MissionRow key={m.id} m={m} d={d} compact />
-            ))}
-          </ul>
+          {tab === "week" ? (
+            <>
+              <BonusBar d={d} />
+              <ul className="divide-y">
+                {d.normal.map((m) => (
+                  <MissionRow key={m.id} m={m} d={d} compact />
+                ))}
+              </ul>
+              <VipHeader d={d} />
+              <ul className="divide-y">
+                {d.vipMissions.map((m) => (
+                  <MissionRow key={m.id} m={m} d={d} compact />
+                ))}
+              </ul>
+            </>
+          ) : (
+            <FirstStepsList d={d} compact />
+          )}
         </div>
         <div className="border-t px-4 py-2.5">
           <Button
@@ -342,6 +416,23 @@ export function MissionsPage({ d }: { d: MissionsDemo }) {
             los cosméticos VIP.
           </p>
         )}
+      </Section>
+
+      <Section
+        title={
+          <span className="flex items-center gap-1.5">
+            <FootprintsIcon aria-hidden className="size-4 text-primary" />
+            Primeros pasos
+          </span>
+        }
+        right={
+          <span className="text-xs text-muted-foreground">
+            {firstStepsCount(d).done} de {firstStepsCount(d).total} · una sola
+            vez, no se reinician
+          </span>
+        }
+      >
+        <FirstStepsList d={d} />
       </Section>
 
       <Section title="Semanas anteriores">

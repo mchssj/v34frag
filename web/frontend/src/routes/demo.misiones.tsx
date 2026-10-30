@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { AdminMissions } from "@/features/missions/AdminMissions"
+import type { Metric } from "@/features/missions/catalog"
 import { useMissionsDemo } from "@/features/missions/demo"
 import { MissionsPage, MissionsPopout } from "@/features/missions/MissionsUi"
 
@@ -20,8 +21,8 @@ export const Route = createFileRoute("/demo/misiones")({
 
 const VIEWS = { page: "Página de misiones", admin: "Admin → Misiones" } as const
 
-// Acciones de la web que suman a las misiones (en la versión real, eventos de la API).
-const WEB_ACTIONS: { label: string; metric: string }[] = [
+// Acciones de la web que suman a Primeros pasos (en la versión real, eventos de la API).
+const WEB_ACTIONS: { label: string; metric: Metric }[] = [
   { label: "Entrar a la web otro día", metric: "login_days" },
   { label: "Votar un clip", metric: "clips_voted" },
   { label: "Subir un clip", metric: "clips_uploaded" },
@@ -32,7 +33,6 @@ const WEB_ACTIONS: { label: string; metric: string }[] = [
   { label: "Equipar un cosmético", metric: "cosmetics_equipped" },
   { label: "Exportar stats", metric: "stats_exported" },
   { label: "Anotarse a un evento", metric: "event_signups" },
-  { label: "Jugar un PCW", metric: "pcw_played" },
 ]
 
 function DemoMisiones() {
@@ -57,6 +57,9 @@ function DemoMisiones() {
           </Button>
           <Button size="sm" variant="outline" onClick={() => play(false)}>
             Perder un mix
+          </Button>
+          <Button size="sm" variant="outline" onClick={d.playPcw}>
+            Jugar un PCW
           </Button>
           <Button size="sm" variant="outline" onClick={d.nextWeek}>
             Pasar a la semana siguiente
@@ -90,7 +93,9 @@ function DemoMisiones() {
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">En la web:</span>
+          <span className="text-xs text-muted-foreground">
+            En la web (suman a Primeros pasos):
+          </span>
           {WEB_ACTIONS.map((a) => (
             <Button
               key={a.metric}

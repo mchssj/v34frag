@@ -1,19 +1,26 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  AREA_MAX,
   COOLDOWN_WEEKS,
+  FIRST_STEPS,
   isReady,
   METRICS,
   MISSIONS,
   SLOTS,
   type Mission,
 } from "./catalog"
-import { EPOCH, minimumPool, pickWeek, rotation, weekIndex } from "./rotation"
+import {
+  EPOCH,
+  minimumPool,
+  pickWeek,
+  rotation,
+  sameStat,
+  weekIndex,
+} from "./rotation"
 
 const WEEKS = 26 // medio año
 
-describe("rotación de misiones", () => {
+describe("rotación de misiones semanales", () => {
   const weeks = rotation(MISSIONS, WEEKS - 1)
 
   it("cada semana tiene 6 para todos y 3 VIP, con las dificultades del plan", () => {
@@ -38,18 +45,30 @@ describe("rotación de misiones", () => {
     })
   })
 
-  it("respeta el tope por área", () => {
+  it("en una semana no se repite la misma stat (ganá 1 y ganá 3, por ejemplo)", () => {
     for (const w of weeks)
-      for (const vip of [false, true]) {
-        const group = w.missions.filter((m) => m.vip === vip)
-        for (const area of Object.keys(AREA_MAX) as (keyof typeof AREA_MAX)[])
-          expect(
-            group.filter((m) => m.area === area).length
-          ).toBeLessThanOrEqual(AREA_MAX[area])
-      }
+      w.missions.forEach((a, i) =>
+        w.missions
+          .slice(i + 1)
+          .forEach((b) => expect(sameStat(a, b)).toBe(false))
+      )
   })
 
-  it("en 2 meses sale la mayoría de las misiones que se pueden medir", () => {
+  it("las de Primeros pasos nunca entran en la rotación", () => {
+    const once = new Set(FIRST_STEPS.map((m) => m.id))
+    expect(MISSIONS.every((m) => !m.once)).toBe(true)
+    expect(FIRST_STEPS.every((m) => m.once)).toBe(true)
+    for (const w of rotation([...MISSIONS, ...FIRST_STEPS], WEEKS - 1))
+      expect(w.missions.filter((m) => once.has(m.id))).toEqual([])
+  })
+
+  it("las de la web son todas de Primeros pasos", () => {
+    expect(MISSIONS.filter((m) => METRICS[m.metric].source === "web")).toEqual(
+      []
+    )
+  })
+
+  it("en 2 meses sale la mayoría de las semanales que se pueden medir", () => {
     const seen = new Set(
       weeks.slice(0, 9).flatMap((w) => w.missions.map((m) => m.id))
     )
@@ -61,7 +80,7 @@ describe("rotación de misiones", () => {
   it("no salen misiones con datos que el plugin todavía no manda", () => {
     for (const w of weeks)
       for (const m of w.missions)
-        expect(["plugin", "web"]).toContain(METRICS[m.metric].source)
+        expect(METRICS[m.metric].source).toBe("plugin")
   })
 
   it("con el plugin nuevo entran las misiones de schema 2 y sigue respetando la espera", () => {
@@ -100,7 +119,7 @@ describe("rotación de misiones", () => {
 
   it("si el catálogo no alcanza, avisa en lugar de romperse", () => {
     const few: Mission[] = MISSIONS.filter(
-      (m) => m.vip && m.difficulty === "dificil"
+      (m) => m.vip && m.difficulty === "dificil" && isReady(m)
     ).slice(0, 1)
     const w = pickWeek(1, few, [[few[0]!.id]])
     expect(w.missions).toHaveLength(1)
