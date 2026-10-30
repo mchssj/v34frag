@@ -1,5 +1,4 @@
 import {
-  keepPreviousData,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -8,7 +7,6 @@ import {
 import { api, unwrap, type Schemas } from "@/api/client"
 import { errorFromResponse, isApiError, networkError } from "@/api/errors"
 import { shellKeys } from "@/features/shell/queries"
-import { toMixesQuery, type MixesSearch } from "./search"
 
 export type MixItem = Schemas["MixItem"]
 export type MixStats = Schemas["MixStats"]
@@ -20,26 +18,25 @@ export const MIXES_REFRESH_MS = 20_000
 
 export const mixKeys = {
   all: ["mixes"] as const,
-  list: (s: MixesSearch) => ["mixes", "list", toMixesQuery(s)] as const,
+  liveList: ["mixes", "live-list"] as const,
   stats: ["mixes", "stats"] as const,
   live: (uid: string) => ["mixes", "live", uid] as const,
 }
 
-export function mixesListOptions(search: MixesSearch) {
-  return queryOptions({
-    queryKey: mixKeys.list(search),
-    queryFn: ({ signal }) =>
-      unwrap(
+/** Mixes en juego, para el bloque "En vivo" de Partidas (/matches no los trae). */
+export const liveMixesOptions = queryOptions({
+  queryKey: mixKeys.liveList,
+  queryFn: async ({ signal }) =>
+    (
+      await unwrap(
         api.GET("/api/v1/mixes", {
-          params: { query: toMixesQuery(search) },
+          params: { query: { status: "live", per: 20 } },
           signal,
         })
-      ),
-    // Al cambiar de página o de filtro, la tabla anterior queda hasta que llega la nueva.
-    placeholderData: keepPreviousData,
-    refetchInterval: MIXES_REFRESH_MS,
-  })
-}
+      )
+    ).items,
+  refetchInterval: MIXES_REFRESH_MS,
+})
 
 export const mixStatsOptions = queryOptions({
   queryKey: mixKeys.stats,

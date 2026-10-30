@@ -72,11 +72,14 @@ export async function expectHome(page: Page, alias: string) {
   await expect(page.getByText(`Hola, ${alias}`)).toBeVisible()
 }
 
-/** Cerrar sesión: Mi perfil → Cuenta. */
+/** Cerrar sesión: menú de cuenta del pie del sidebar y confirmación. */
 export async function logout(page: Page) {
-  await page.getByRole("link", { name: /^Mi perfil/ }).click()
-  await page.getByRole("link", { name: "Cuenta" }).click()
-  await page.getByRole("button", { name: "Cerrar sesión" }).click()
+  await page.getByRole("button", { name: /^Menú de cuenta/ }).click()
+  await page.getByRole("menuitem", { name: "Cerrar sesión" }).click()
+  await page
+    .getByRole("dialog", { name: "¿Cerrar sesión?" })
+    .getByRole("button", { name: "Cerrar sesión" })
+    .click()
 }
 
 /** Sube el zoom del encuadre del avatar con el teclado y comprueba que cambió. */

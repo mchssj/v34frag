@@ -20,14 +20,16 @@ import {
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/queries"
 import { activeNavKey, NAV_GROUPS, type BadgeKey } from "./nav"
-import { useBadgeCounts, useCrumbData, useShellIdentity } from "./queries"
+import { AccountMenu } from "./AccountMenu"
+import { useBadgeCounts } from "./queries"
 
 const itemClass =
   "gap-2.5 px-2 rounded-lg data-active:font-semibold [&_svg]:size-4"
 
 export function AppSidebar({ user }: { user: AuthUser }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const active = activeNavKey(pathname, useCrumbData(pathname))
+  const myNick = useQuery(myProfileOptions).data?.player?.nick
+  const active = activeNavKey(pathname, myNick)
   const counts = useBadgeCounts(user)
   const { isMobile, setOpenMobile } = useSidebar()
   // En el teléfono el menú es un panel: se cierra al navegar.
@@ -102,7 +104,7 @@ export function AppSidebar({ user }: { user: AuthUser }) {
       </SidebarContent>
 
       <SidebarFooter className={cn("p-0 pt-2", isMobile && "px-2 pb-2")}>
-        <UserButton
+        <AccountMenu
           user={user}
           active={active === "profile"}
           onNavigate={closeMobile}
@@ -141,72 +143,5 @@ function NavBadge({ kind, count }: { kind: BadgeKey; count?: number }) {
       )}
       {count}
     </SidebarMenuBadge>
-  )
-}
-
-function roleLabel(
-  role: AuthUser["role"],
-  team?: { name: string; is_captain: boolean }
-) {
-  if (role === "admin") return "Admin"
-  if (role === "organizer") return "Organizador"
-  if (role === "moderator") return "Moderador"
-  if (team) return `${team.is_captain ? "Capitán" : "Miembro"} de ${team.name}`
-  return "Jugador"
-}
-
-/** Pie: avatar, alias, rol y nivel. Lleva a Mi perfil. */
-function UserButton({
-  user,
-  active,
-  onNavigate,
-}: {
-  user: AuthUser
-  active: boolean
-  onNavigate: () => void
-}) {
-  const { team, level } = useShellIdentity()
-  const avatar = useQuery(myProfileOptions).data?.details.avatar_url
-  const alias = user.tag ?? "Jugador"
-  return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          asChild
-          isActive={active}
-          tooltip="Mi perfil"
-          className="gap-2.5 rounded-lg"
-        >
-          <Link
-            to="/profile"
-            onClick={onNavigate}
-            aria-label={`Mi perfil, ${alias}`}
-          >
-            <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted text-[13px] font-semibold">
-              {avatar ? (
-                <img src={avatar} alt="" className="size-full object-cover" />
-              ) : (
-                alias.slice(0, 1).toUpperCase()
-              )}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col leading-[1.25]">
-              <span className="truncate text-sm font-semibold">{alias}</span>
-              <span className="truncate text-xs text-muted-foreground">
-                {roleLabel(user.role, team)}
-              </span>
-            </span>
-            {level !== null && (
-              <span
-                aria-label={`Nivel ${level}`}
-                className="grid h-[22px] min-w-[22px] shrink-0 place-items-center rounded-md bg-foreground px-1 font-mono text-[11px] font-semibold text-background"
-              >
-                {level}
-              </span>
-            )}
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
   )
 }

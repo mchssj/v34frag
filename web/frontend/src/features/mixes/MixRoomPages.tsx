@@ -137,7 +137,9 @@ function RoomMessage({
           </Button>
         )}
         <Button asChild>
-          <Link to="/mixes">Ver mixes</Link>
+          <Link to="/matches" search={{ kind: "mix" }}>
+            Ver mixes
+          </Link>
         </Button>
       </div>
     </section>

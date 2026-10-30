@@ -1,5 +1,6 @@
 import { cn } from "cn"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { useRef } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -11,6 +12,8 @@ import {
 } from "@/components/ui/select"
 
 // Pie de los listados paginados (Mixes, Ranking): "Mostrando a–b de n", tamaño de página y páginas.
+// Va al pie de la tarjeta de la lista: al cambiar de página, si el inicio de la tarjeta quedó arriba
+// de la pantalla, vuelve a él (las rutas no suben el scroll al cambiar la búsqueda).
 
 /** Números de página a mostrar: todas si son pocas; si no, la primera, la última y las vecinas. */
 export function pageList(page: number, pages: number): (number | "…")[] {
@@ -48,9 +51,19 @@ export function ListPagination({
   const from = total ? (current - 1) * per + 1 : 0
   const to = Math.min(total, current * per)
   const box = "size-7 min-w-7 px-0 text-xs"
+  const root = useRef<HTMLDivElement>(null)
+  const go = (p: number) => {
+    onPage(p)
+    const list = root.current?.parentElement
+    if (list && list.getBoundingClientRect().top < 0)
+      list.scrollIntoView({ block: "start" })
+  }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 text-[13px] text-muted-foreground">
+    <div
+      ref={root}
+      className="flex flex-wrap items-center gap-2 px-4 py-2.5 text-[13px] text-muted-foreground"
+    >
       <span>
         Mostrando {from}–{to} de {total}
       </span>
@@ -79,7 +92,7 @@ export function ListPagination({
           className={box}
           aria-label="Página anterior"
           disabled={current <= 1}
-          onClick={() => onPage(current - 1)}
+          onClick={() => go(current - 1)}
         >
           <ChevronLeftIcon aria-hidden className="size-3.5" />
         </Button>
@@ -98,7 +111,7 @@ export function ListPagination({
                 "text-foreground",
                 p === current && "border-foreground bg-accent"
               )}
-              onClick={() => onPage(p)}
+              onClick={() => go(p)}
             >
               {p}
             </Button>
@@ -109,7 +122,7 @@ export function ListPagination({
           className={box}
           aria-label="Página siguiente"
           disabled={current >= pages}
-          onClick={() => onPage(current + 1)}
+          onClick={() => go(current + 1)}
         >
           <ChevronRightIcon aria-hidden className="size-3.5" />
         </Button>

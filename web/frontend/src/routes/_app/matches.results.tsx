@@ -1,11 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { Placeholder } from "@/features/shell/Placeholder"
-
+// "Resultados" quedó dentro de Partidas: un link viejo lleva ahí.
 export const Route = createFileRoute("/_app/matches/results")({
-  component: ResultsPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/matches", replace: true })
+  },
 })
-
-function ResultsPage() {
-  return <Placeholder title="Resultados" />
-}

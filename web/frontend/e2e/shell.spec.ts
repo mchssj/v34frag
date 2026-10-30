@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test"
 
-import { USER_STATE } from "./helpers"
+import { API, USER_STATE } from "./helpers"
 
 // Shell de la app con sesión. Usa la sesión compartida: no gasta logins.
 test.use({ storageState: USER_STATE })
@@ -37,6 +37,51 @@ test("el shell marca la página activa y los breadcrumbs siguen la navegación",
   await expect(crumbs(page)).toContainText("Zeta")
 })
 
+test("el menú de cuenta: perfil público, cuenta, tema y cerrar sesión", async ({
+  page,
+}) => {
+  // La cuenta compartida no tiene jugador: se simula vinculada a una ficha real.
+  const { items } = await (
+    await page.request.get(`${API}/api/v1/players?limit=1`)
+  ).json()
+  const { id, alias } = items[0] as { id: string; alias: string }
+  await page.route("**/api/v1/me/profile", async (route) => {
+    const profile = await (await route.fetch()).json()
+    await route.fulfill({
+      json: {
+        ...profile,
+        player: { id, nick: alias, photo_url: null, steam_id: null },
+      },
+    })
+  })
+  await page.goto("/home")
+  const account = sidebar(page).getByRole("button", {
+    name: /^Menú de cuenta/,
+  })
+  await account.click()
+  await page.getByRole("menuitem", { name: "Ver perfil público" }).click()
+  await expect(page).toHaveURL(new RegExp(`/player/${alias}$`))
+  // En la ficha propia el pie queda marcado, y desde ahí se edita.
+  await expect(account).toHaveAttribute("data-active", "true")
+  await page.getByRole("link", { name: "Editar perfil" }).click()
+  await expect(page).toHaveURL(/\/profile$/)
+
+  // El tema se cambia sin cerrar el menú.
+  await account.click()
+  await page.getByRole("menuitemradio", { name: "Oscuro" }).click()
+  await expect(page.locator("html")).toHaveClass(/dark/)
+  await page.getByRole("menuitem", { name: "Cuenta" }).click()
+  await expect(page).toHaveURL(/\/profile\/account$/)
+
+  // Cerrar sesión pide confirmación; Cancelar no sale.
+  await account.click()
+  await page.getByRole("menuitem", { name: "Cerrar sesión" }).click()
+  const confirm = page.getByRole("dialog", { name: "¿Cerrar sesión?" })
+  await confirm.getByRole("button", { name: "Cancelar" }).click()
+  await expect(confirm).toBeHidden()
+  await expect(page).toHaveURL(/\/profile\/account$/)
+})
+
 test("el sidebar se colapsa y recuerda el estado al recargar", async ({
   page,
 }) => {
@@ -66,6 +111,19 @@ test("⌘K busca páginas y navega con el teclado", async ({ page }) => {
   await page.keyboard.press("Enter")
   await expect(page).toHaveURL(/\/hall-of-fame$/)
   await expect(dialog).toBeHidden()
+
+  // Cerrar sesión también está en ⌘K, con la misma confirmación.
+  await page.keyboard.press("Control+k")
+  await expect(dialog).toBeVisible()
+  await page.keyboard.type("cerrar")
+  await expect(
+    dialog.getByRole("option", { name: "Cerrar sesión" })
+  ).toBeVisible()
+  await page.keyboard.press("Enter")
+  const confirm = page.getByRole("dialog", { name: "¿Cerrar sesión?" })
+  await expect(confirm).toBeVisible()
+  await confirm.getByRole("button", { name: "Cancelar" }).click()
+  await expect(page).toHaveURL(/\/hall-of-fame$/)
 })
 
 test("el tema se cambia desde la topbar", async ({ page }) => {

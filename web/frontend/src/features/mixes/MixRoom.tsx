@@ -27,6 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { crestText } from "@/features/teams/model"
 import { MapBackdrop } from "./MapBackdrop"
 import {
   cancelReasonLabel,
@@ -81,7 +82,8 @@ export function MixRoom({
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          to="/mixes"
+          to="/matches"
+          search={{ kind: "mix" }}
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
             "h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
@@ -209,7 +211,7 @@ function Scoreboard({ room }: { room: Room }) {
     <div className="grid grid-cols-1 items-center gap-3.5 px-4 pt-5 pb-5 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-5 sm:px-6 sm:pt-6">
       <div className="order-2 flex min-w-0 flex-row-reverse items-center justify-end gap-3.5 sm:order-none sm:flex-row">
         <SideName side={room.side1} align="end" />
-        <SideTag tag="A" side={room.side1} />
+        <SideTag side={room.side1} />
       </div>
       <div className="order-1 flex min-w-[140px] flex-col items-center gap-1.5 sm:order-none">
         <span
@@ -234,7 +236,7 @@ function Scoreboard({ room }: { room: Room }) {
         </span>
       </div>
       <div className="order-3 flex min-w-0 items-center gap-3.5 sm:order-none">
-        <SideTag tag="B" side={room.side2} />
+        <SideTag side={room.side2} />
         <SideName side={room.side2} align="start" />
       </div>
     </div>
@@ -261,18 +263,20 @@ function SideName({ side, align }: { side: RoomSide; align: "start" | "end" }) {
   )
 }
 
-function SideTag({ tag, side }: { tag: string; side: RoomSide }) {
+/** Escudo del bando, como el de Mi equipo: las iniciales del nombre (o la sigla). El ganador lleva el borde naranja. */
+function SideTag({ side }: { side: RoomSide }) {
   return (
     <span
+      aria-hidden
       className={cn(
-        "grid size-14 flex-none place-items-center rounded-tile bg-muted font-mono text-sm font-bold",
-        // Con foto del mapa: cuadro translúcido sobre la imagen.
-        "in-data-photo:border in-data-photo:border-white/20 in-data-photo:bg-white/14 in-data-photo:backdrop-blur-md",
+        "grid size-14 flex-none place-items-center rounded-tile bg-foreground font-mono text-[15px] font-bold text-background",
+        // Con foto del mapa: claro sobre la imagen, en los dos temas.
+        "in-data-photo:border in-data-photo:border-white/20 in-data-photo:bg-white in-data-photo:text-neutral-950",
         side.result === "win" &&
-          "shadow-[inset_0_0_0_2px_var(--primary)] in-data-photo:border-transparent"
+          "shadow-[0_0_0_2px_var(--primary),0_4px_0_var(--primary)]"
       )}
     >
-      {tag}
+      {crestText({ name: side.name, tag: null })}
     </span>
   )
 }

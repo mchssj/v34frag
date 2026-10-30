@@ -62,7 +62,7 @@ export function DeleteMixDialog({
       onSuccess: (res) => {
         toast.success(TOASTS[res.elo_mode])
         setOpen(false)
-        void navigate({ to: "/mixes" })
+        void navigate({ to: "/matches", search: { kind: "mix" } })
       },
     })
   }

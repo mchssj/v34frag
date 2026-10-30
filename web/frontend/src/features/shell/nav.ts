@@ -12,7 +12,6 @@ import {
   ServerIcon,
   ShieldAlertIcon,
   ShieldIcon,
-  ShuffleIcon,
   SwordsIcon,
   TrophyIcon,
   UserCogIcon,
@@ -50,7 +49,6 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         icon: SwordsIcon,
         badge: "live",
       },
-      { key: "mixes", label: "Mixes", to: "/mixes", icon: ShuffleIcon },
       { key: "events", label: "Torneos", to: "/events", icon: TrophyIcon },
       {
         key: "pcw",
@@ -200,21 +198,26 @@ const seg = (pathname: string, i: number) =>
 
 /**
  * Ítem del sidebar que corresponde a la ruta. Las fichas de jugador y equipo marcan Ranking; una
- * partida marca Mixes o Partidas según su tipo (null mientras no se sabe).
+ * partida (de cualquier tipo) y la sala de un mix marcan Partidas. La ficha propia (`myNick`)
+ * marca el menú de la cuenta, que lleva ahí.
  */
 export function activeNavKey(
   pathname: string,
-  data: CrumbData = {}
+  myNick?: string | null
 ): string | null {
   const first = seg(pathname, 1)
+  if (
+    first === "player" &&
+    myNick &&
+    seg(pathname, 2).toLowerCase() === myNick.toLowerCase()
+  )
+    return "profile"
   if (first === "admin") {
     const section = adminSectionOf(pathname)
     return section ? `admin-${section}` : null
   }
-  if (first === "match") {
-    if (!data.match) return null
-    return data.match.kind === "mix" ? "mixes" : "matches"
-  }
+  // Mixes, PCW y torneos están en Partidas, también la sala de un mix en vivo.
+  if (first === "match" || first === "mixes") return "matches"
   if (["player", "players", "teams"].includes(first)) return "ranking"
   if (first === "profile") return "profile"
   return ITEMS.find((i) => i.to === `/${first}`)?.key ?? null
@@ -260,18 +263,14 @@ export function breadcrumbsFor(
           ]
         : [{ label: "Torneos" }]
     case "matches":
-      return second === "results"
-        ? [{ label: "Partidas", to: "/matches" }, { label: "Resultados" }]
-        : [{ label: "Partidas" }]
+      return [{ label: "Partidas" }]
     case "mixes":
-      return second === "live"
-        ? [{ label: "Mixes", to: "/mixes" }, { label: "En vivo" }]
-        : [{ label: "Mixes" }]
+      return [{ label: "Partidas", to: "/matches" }, { label: "Mix en vivo" }]
     case "match": {
       const m = data.match
       if (m?.kind === "mix")
         return [
-          { label: "Mixes", to: "/mixes" },
+          { label: "Partidas", to: "/matches" },
           { label: m.map ? `Mix · ${m.map}` : "Mix" },
         ]
       return [

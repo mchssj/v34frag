@@ -29,6 +29,9 @@ const TONE: Record<DemoTone, string> = {
 /** Punto y texto del estado de la demo (listado). */
 export function DemoStatus({ status }: { status: string }) {
   const d = demoStatus(status)
+  // Sin demo: solo la raya, sin el punto (no hay estado que marcar).
+  if (d.label === "—")
+    return <span className="text-xs text-muted-foreground">—</span>
   return (
     <span
       className={cn(

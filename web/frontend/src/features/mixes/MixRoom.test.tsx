@@ -371,7 +371,10 @@ describe("DeleteMixDialog", () => {
       elo: "revert",
       confirm: "estoy seguro",
     })
-    expect(navigate).toHaveBeenCalledWith({ to: "/mixes" })
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/matches",
+      search: { kind: "mix" },
+    })
   })
 
   it("en un cancelado no hay elección; un error de la API se muestra sin cerrar", async () => {

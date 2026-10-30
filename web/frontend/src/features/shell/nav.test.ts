@@ -18,7 +18,7 @@ const official = {
 describe("activeNavKey", () => {
   it("marca el ítem de la ruta, también en sus subrutas", () => {
     expect(activeNavKey("/home")).toBe("home")
-    expect(activeNavKey("/matches/results")).toBe("matches")
+    expect(activeNavKey("/matches")).toBe("matches")
     expect(activeNavKey("/events/abc")).toBe("events")
     expect(activeNavKey("/hall-of-fame")).toBe("hall-of-fame")
     expect(activeNavKey("/profile")).toBe("profile")
@@ -31,14 +31,15 @@ describe("activeNavKey", () => {
     expect(activeNavKey("/ranking/teams")).toBe("ranking")
   })
 
-  it("una partida marca Mixes o Partidas según su tipo, y nada mientras carga", () => {
-    expect(activeNavKey("/match/1", { match: mix })).toBe("mixes")
-    expect(activeNavKey("/match/1", { match: official })).toBe("matches")
-    expect(activeNavKey("/match/1")).toBeNull()
+  it("la ficha propia marca Mi perfil; la de otro, Ranking", () => {
+    expect(activeNavKey("/player/zeta", "Zeta")).toBe("profile")
+    expect(activeNavKey("/player/Otro", "Zeta")).toBe("ranking")
+    expect(activeNavKey("/player/Zeta", null)).toBe("ranking")
   })
 
-  it("la sala de un mix en vivo marca Mixes", () => {
-    expect(activeNavKey("/mixes/live/abc")).toBe("mixes")
+  it("cualquier partida y la sala de un mix en vivo marcan Partidas", () => {
+    expect(activeNavKey("/match/1")).toBe("matches")
+    expect(activeNavKey("/mixes/live/abc")).toBe("matches")
   })
 
   it("Administración por sección", () => {
@@ -85,23 +86,23 @@ describe("breadcrumbsFor", () => {
       "Partidas",
       "FUR vs AND",
     ])
+    // Los mixes cuelgan de Partidas, también la sala en vivo.
     expect(labels("/match/1", { match: mix })).toEqual([
-      "Mixes",
+      "Partidas",
       "Mix · de_dust2",
     ])
-    expect(labels("/mixes")).toEqual(["Mixes"])
-    expect(labels("/mixes/live/abc")).toEqual(["Mixes", "En vivo"])
+    expect(labels("/matches")).toEqual(["Partidas"])
+    expect(labels("/mixes/live/abc")).toEqual(["Partidas", "Mix en vivo"])
   })
 
   it("subpáginas y páginas simples", () => {
-    expect(labels("/matches/results")).toEqual(["Partidas", "Resultados"])
     expect(labels("/players/compare")).toEqual(["Ranking", "Comparar"])
     expect(labels("/profile")).toEqual(["Mi perfil"])
     expect(labels("/home")).toEqual(["Para ti"])
   })
 
   it("los previos llevan link y el último no", () => {
-    const crumbs = breadcrumbsFor("/matches/results")
+    const crumbs = breadcrumbsFor("/mixes/live/abc")
     expect(crumbs[0].to).toBe("/matches")
     expect(crumbs[1].to).toBeUndefined()
   })
