@@ -173,6 +173,28 @@ describe("control", () => {
     assert.deepEqual([c.teamCT, c.teamT], ["B", "A"]);
     assert.equal(mergeControl(c, { teamT: "x".repeat(50) }).teamT.length, 32);
   });
+
+  it("guarda la serie y descarta lo inválido", () => {
+    const c = mergeControl(DEFAULT_CONTROL, {
+      series: { bo: 3, maps: [{ map: " de_mirage ", pick: "t", win: "ct" }, { map: "de/../x;", pick: "nadie", win: "decider" }] },
+    });
+    assert.equal(c.series.bo, 3);
+    assert.equal(c.series.maps.length, 5);
+    assert.deepEqual(c.series.maps[0], { map: "de_mirage", pick: "t", win: "ct" });
+    assert.deepEqual(c.series.maps[1], { map: "de..x", pick: "", win: "" });
+    assert.equal(mergeControl(c, { series: { bo: 2 } }).series.bo, 3);
+    // Un cambio de un renglón no toca los otros, y pasar a BO1 no borra los mapas.
+    const d = mergeControl(c, { series: { bo: 1, maps: [{}, { map: "de_nuke" }] } });
+    assert.equal(d.series.maps[0]!.map, "de_mirage");
+    assert.equal(d.series.maps[1]!.map, "de_nuke");
+    assert.equal(DEFAULT_CONTROL.series.maps[0]!.map, "");
+  });
+
+  it("al intercambiar, los picks y los ganadores siguen al equipo", () => {
+    const c = mergeControl(DEFAULT_CONTROL, { series: { bo: 3, maps: [{ pick: "ct", win: "t" }, { pick: "decider" }] } });
+    const s = mergeControl(c, { swap: true }).series;
+    assert.deepEqual([s.maps[0]!.pick, s.maps[0]!.win, s.maps[1]!.pick], ["t", "ct", "decider"]);
+  });
 });
 
 describe("fuentes de los íconos", () => {

@@ -7,7 +7,15 @@ const TOGGLES = [
   ["showPlayers", "Jugadores"],
   ["showFocus", "Jugador enfocado"],
   ["showKills", "Kills"],
+  ["showSeries", "Serie"],
 ];
+
+// Sugerencias para el mapa: el mapcycle.txt de los servidores (es el mismo en todos). Se puede escribir otro.
+const MAPCYCLE = [
+  "de_cache", "de_cbble", "de_dust2_ob", "de_inferno", "de_inferno_classic", "de_mirage_rc1", "de_nuke_old_blue_ep",
+  "de_season", "de_tuscan", "de_strike_mirage",
+];
+document.getElementById("mapcycle").replaceChildren(...MAPCYCLE.map((m) => el("option", { value: m })));
 
 let state = null;
 let control = null;
@@ -36,12 +44,69 @@ function renderPlayers() {
   );
 }
 
+// Serie: el pick y el ganador van por lado (ct/t); el relay los da vuelta al intercambiar.
+const sendRow = (i, change) => send({ series: { maps: Array.from({ length: i + 1 }, (_, n) => (n === i ? change : {})) } });
+
+function sideOptions(value, withDecider) {
+  const opt = (v, label) => el("option", value === v ? { value: v, selected: "" } : { value: v }, label);
+  return [opt("", "—"), opt("ct", control.teamCT || "CT"), opt("t", control.teamT || "T"), withDecider ? opt("decider", "Decider") : null].filter(Boolean);
+}
+
+function renderSeries() {
+  const { bo, maps } = control.series;
+  $("bo").replaceChildren(
+    ...[1, 3, 5].map((n) =>
+      el("button", {
+        class: bo === n ? "on" : "",
+        onclick: () => {
+          // El último mapa de la serie es el decider si nadie lo eligió.
+          const last = n > 1 && !maps[n - 1].pick ? { pick: "decider" } : {};
+          send({ series: { bo: n, maps: Array.from({ length: n }, (_, i) => (i === n - 1 ? last : {})) } });
+        },
+      }, `BO${n}`),
+    ),
+  );
+  const won = (side) => maps.slice(0, bo).filter((m) => m.win === side).length;
+  $("series-score").textContent = bo > 1 ? `Serie: ${control.teamCT || "CT"} ${won("ct")} – ${won("t")} ${control.teamT || "T"}` : "";
+  // No pisar lo que el streamer está editando: la tabla se redibuja cuando sale de ella.
+  if ($("maps").contains(document.activeElement)) return;
+  const current = (state?.map ?? "").toLowerCase();
+  const rows = maps.slice(0, bo).map((m, i) => {
+    const now = m.map !== "" && m.map.toLowerCase() === current;
+    const input = el("input", { type: "text", list: "mapcycle", maxlength: "64", placeholder: "de_…" });
+    input.value = m.map;
+    let timer;
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => sendRow(i, { map: input.value }), 300);
+    });
+    input.addEventListener("change", () => {
+      clearTimeout(timer);
+      if (input.value.trim() !== m.map) sendRow(i, { map: input.value });
+    });
+    const select = (key, withDecider) =>
+      el("select", { onchange: (e) => sendRow(i, { [key]: e.target.value }) }, ...sideOptions(m[key], withDecider));
+    return el(
+      "tr",
+      { class: now ? "now" : "" },
+      el("td", { class: "n" }, `Mapa ${i + 1}${now ? " · en juego" : ""}`),
+      el("td", {}, input),
+      el("td", {}, select("pick", true)),
+      el("td", {}, select("win", false)),
+    );
+  });
+  $("maps").replaceChildren(...rows);
+}
+
+$("maps").addEventListener("focusout", () => setTimeout(() => !$("maps").contains(document.activeElement) && renderSeries()));
+
 function renderControl() {
   // No pisar lo que el streamer está escribiendo.
   for (const id of ["teamCT", "teamT"]) if (document.activeElement !== $(id)) $(id).value = control[id];
   $("toggles").replaceChildren(
     ...TOGGLES.map(([k, label]) => el("button", { class: control[k] ? "on" : "", onclick: () => send({ [k]: !control[k] }) }, label)),
   );
+  renderSeries();
   renderPlayers();
 }
 
@@ -56,7 +121,7 @@ $("swap").addEventListener("click", () => send({ swap: true }));
 $("nofocus").addEventListener("click", () => send({ focus: null }));
 
 document.addEventListener("keydown", (e) => {
-  if (e.target instanceof HTMLInputElement) return;
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
   if (e.key === "Escape") return void send({ focus: null });
   if (!/^[0-9]$/.test(e.key)) return;
   const uid = order[e.key === "0" ? 9 : Number(e.key) - 1];
@@ -143,8 +208,10 @@ setInterval(refreshStatus, 2000);
 connect({
   page: "control",
   onState: (s) => {
+    const mapChanged = s?.map !== state?.map;
     state = s;
     if (control) renderPlayers();
+    if (control && mapChanged) renderSeries();
   },
   onControl: (c) => {
     control = c;

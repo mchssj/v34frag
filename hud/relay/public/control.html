@@ -35,6 +35,17 @@
     .hint.warn { color: var(--t); }
     .connect { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
     .connect code { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; font-size: 14px; }
+    .fmt { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .fmt .lbl { color: var(--muted); font-size: 13px; margin-right: 4px; }
+    table.maps { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+    table.maps th { text-align: left; font-size: 12px; font-weight: 500; color: var(--muted); padding: 0 6px 0 0; }
+    table.maps td { padding: 0 6px 0 0; }
+    table.maps td.n { width: 72px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+    table.maps tr.now td.n { color: var(--ok); font-weight: 600; }
+    table.maps tr.now input { border-color: var(--ok); }
+    select { width: 100%; padding: 8px 10px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; font-size: 15px; }
+    table.maps input[type=text] { font-size: 14px; }
+    .series-score { font-size: 14px; }
     @media (max-width: 560px) { .players, .teams { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -57,6 +68,18 @@
         <div><label for="teamT">Juega de T</label><input type="text" id="teamT" class="t" maxlength="32"></div>
       </div>
       <div class="hint">En el medio tiempo los equipos cambian de lado: tocá “Intercambiar”.</div>
+    </section>
+
+    <h2>Serie</h2>
+    <section>
+      <div class="fmt"><span class="lbl">Formato</span><span class="toggles" id="bo"></span></div>
+      <table class="maps">
+        <thead><tr><th></th><th>Mapa</th><th>Pick de</th><th>Ganó</th></tr></thead>
+        <tbody id="maps"></tbody>
+      </table>
+      <div class="series-score" id="series-score"></div>
+      <div class="hint">El HUD busca en la lista el mapa que corre en el servidor y muestra quién lo pickeó. “Ganó” suma las rayitas sobre el nombre de cada equipo.</div>
+      <datalist id="mapcycle"></datalist>
     </section>
 
     <h2>Jugador enfocado</h2>

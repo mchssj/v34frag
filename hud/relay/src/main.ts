@@ -14,7 +14,7 @@ import { Hub, type Socket } from "./hub.ts";
 import { fetchRemote } from "./remote.ts";
 import { HttpServer } from "./server.ts";
 
-const VERSION = "2.0.0";
+const VERSION = "2.2.0";
 // El commit del build del VPS (scripts/build-node.mjs); con Node desde src/, "dev".
 const BUILD = process.env.BUILD_SHA || "dev";
 const RELEASE_MS = 50;
