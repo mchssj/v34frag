@@ -41,7 +41,7 @@ import leer_demo  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
 SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
-END_MARGIN_SECONDS = 0.1  # lo que se deja sin grabar al final de la demo (ver segments)
+END_HOLD_SECONDS = 1.5  # cuánto se congela el último cuadro de un tramo que llega al final de la demo (ver segments)
 
 
 def log(msg):
@@ -64,8 +64,9 @@ def segments(ticks, tick_interval, cfg, last_tick=None):
     y un corte cuando entre dos kills pasan más de split_gap_seconds.
 
     last_tick: el último tick de la demo (playback_ticks de la cabecera). La grabación termina con la última ronda,
-    así que una jugada de esa ronda no tiene sus segundos de después: el tramo se corta un poco antes del final
-    (END_MARGIN_SECONDS). Sin eso, al acabarse la demo se grababa el menú del juego (de_cbble, 2026-10-29)."""
+    en el tick de la última kill, así que una jugada de esa ronda no tiene sus segundos de después: el tramo llega
+    hasta el último tick y encode congela ese cuadro (END_HOLD_SECONDS). Sin el tope, al acabarse la demo se grababa
+    el menú del juego, y con un margen de 0,1 s no se veía la última kill (de_cbble, 2026-10-29)."""
     per_sec = 1 / tick_interval
     pre, post, gap = (round(cfg[k] * per_sec) for k in ("pre_seconds", "post_seconds", "split_gap_seconds"))
     groups = [[ticks[0]]]
@@ -74,7 +75,7 @@ def segments(ticks, tick_interval, cfg, last_tick=None):
             groups.append([t])
         else:
             groups[-1].append(t)
-    end = last_tick - round(END_MARGIN_SECONDS * per_sec) if last_tick else None
+    end = last_tick or None
     out = [(max(g[0] - pre, 0), g[-1] + post) for g in groups]
     return [(t0, t1 if end is None else max(min(t1, end), t0 + 1)) for t0, t1 in out]
 
@@ -359,9 +360,10 @@ def count_frames(prefix):
     return len(glob.glob(prefix + "*.tga"))
 
 
-def ffmpeg_segment(cfg, prefix, frames, out, skip=0):
+def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
     """Un tramo: los TGA y el WAV de startmovie a H.264 y AAC. skip: cuadros del principio que se descartan (los
-    primeros cuadros después de un salto salen sin el arma: la cámara todavía no está en primera persona)."""
+    primeros cuadros después de un salto salen sin el arma: la cámara todavía no está en primera persona). hold:
+    cuadros que se repite el último al final (el tramo llega al final de la demo), con silencio."""
     tgas = sorted(glob.glob(prefix + "*.tga"))
     first = tgas[0][len(prefix):-4]
     pattern = f"{prefix}%0{len(first)}d.tga"
@@ -371,9 +373,13 @@ def ffmpeg_segment(cfg, prefix, frames, out, skip=0):
     has_audio = os.path.exists(wav) and os.path.getsize(wav) > 1000
     if has_audio:
         cmd += ["-ss", f"{skip / cfg['fps']:.3f}", "-i", wav]
-    cmd += ["-frames:v", str(frames), "-vf", f"scale={cfg['width']}:{cfg['height']}", "-c:v", "libx264",
+    vf = f"scale={cfg['width']}:{cfg['height']}"
+    if hold:
+        # Se cortan los cuadros del tramo antes de repetir el último: el cuadro congelado es el del último tick.
+        vf = f"trim=end_frame={frames},{vf},tpad=stop_mode=clone:stop={hold}"
+    cmd += ["-frames:v", str(frames + hold), "-vf", vf, "-c:v", "libx264",
             "-crf", str(cfg["crf"]), "-preset", cfg["preset"], "-pix_fmt", "yuv420p"]
-    cmd += ["-c:a", "aac", "-b:a", "128k", "-shortest"] if has_audio else ["-an"]
+    cmd += ["-c:a", "aac", "-b:a", "128k"] + (["-af", "apad"] if hold else []) + ["-shortest"] if has_audio else ["-an"]
     subprocess.run(cmd + [out], check=True)
 
 
@@ -555,14 +561,21 @@ def frames_mb(prefixes):
     return sum(os.path.getsize(f) for p in prefixes for f in glob.glob(p + "*")) / 1e6
 
 
-def encode(cfg, prefixes, segs, tick_interval, out):
-    """Los tramos de una jugada a un .mp4 (uno por tramo, unidos con concat sin recodificar). Borra los cuadros."""
+def hold_frames(cfg, seg, last_tick):
+    """Cuadros congelados al final de un tramo que llega al último tick de la demo (0 si no llega)."""
+    return round(END_HOLD_SECONDS * cfg["fps"]) if last_tick and seg[1] >= last_tick else 0
+
+
+def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None):
+    """Los tramos de una jugada a un .mp4 (uno por tramo, unidos con concat sin recodificar). Borra los cuadros.
+    last_tick: el último tick de la demo; el tramo que llega a él termina con el último cuadro congelado."""
     parts = []
     base = os.path.splitext(out)[0]
     try:
         for i, (prefix, seg) in enumerate(zip(prefixes, segs)):
             part = f"{base}.tramo{i}.mp4"
-            ffmpeg_segment(cfg, prefix, segment_frames(seg, tick_interval, cfg), part, skip=lead_frames(cfg))
+            ffmpeg_segment(cfg, prefix, segment_frames(seg, tick_interval, cfg), part, skip=lead_frames(cfg),
+                           hold=hold_frames(cfg, seg, last_tick))
             parts.append(part)
         if len(parts) == 1:
             subprocess.run([cfg["ffmpeg"], "-y", "-loglevel", "error", "-i", parts[0], "-c", "copy",
@@ -647,7 +660,7 @@ def main():
     name = a.name or f"{demo_name}_{a.player.split()[0]}_{ticks[0]}_{cfg['height']}p"
     mb = frames_mb(prefixes)
     out = os.path.join(cfg["out_dir"], name + ".mp4")
-    encode(cfg, prefixes, segs, d.tick_interval, out)
+    encode(cfg, prefixes, segs, d.tick_interval, out, d.header["playback_ticks"])
     times["ffmpeg_s"] = round(time.time() - t_ff, 1)
 
     info = {

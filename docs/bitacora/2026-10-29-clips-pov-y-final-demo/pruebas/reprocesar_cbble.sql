@@ -20,3 +20,12 @@ select l.id, l.round, l.video_status, c.video_error, c.video_reprocess_count
 -- select clip_review_ok('6781a006-0547-470a-9f4a-3cb48b38ddce');
 -- select clip_review_ok('1b273a32-eb34-4bc7-9638-9c630de89114');
 -- Si quedaron mal: otra vez el paso 1.
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Segundo reproceso del 3k de la ronda 29 (2026-10-30): el primero tenía la cámara bien, pero cortaba 0,1 s antes
+-- del final de la demo y no se veía la última kill. Con el render que llega al último tick y congela 1,5 s.
+-- Correrlo recién cuando el portátil tenga ese render. En Drive sale como "... ronda 29 (reproceso 2).mp4".
+select clip_reprocess('1b273a32-eb34-4bc7-9638-9c630de89114');
+
+-- El de la ronda 18 quedó bien: se aprueba sin volver a grabarlo (en Drive queda sin la ronda en el nombre).
+select clip_review_ok('6781a006-0547-470a-9f4a-3cb48b38ddce');
