@@ -20,7 +20,10 @@ function AdminUsersRoute() {
     <AdminUsersPage
       tab={tab ?? "accounts"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "accounts" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "accounts" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

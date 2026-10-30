@@ -18,6 +18,8 @@ function TeamRankingPage() {
         void navigate({
           search: (prev) => ({ ...prev, ...patch }),
           replace: true,
+          // Es estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

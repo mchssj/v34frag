@@ -20,7 +20,10 @@ function AdminSeasonsPageRoute() {
     <AdminSeasonsPage
       tab={tab ?? "active"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "active" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "active" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

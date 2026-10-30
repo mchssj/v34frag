@@ -14,7 +14,9 @@ function ComparePage() {
   return (
     <Compare
       search={search}
-      onChange={(next) => void navigate({ search: next, replace: true })}
+      onChange={(next) =>
+        void navigate({ search: next, replace: true, resetScroll: false })
+      }
     />
   )
 }

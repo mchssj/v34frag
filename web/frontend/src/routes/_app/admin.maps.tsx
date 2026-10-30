@@ -19,10 +19,16 @@ function AdminMapsRoute() {
       filter={filter}
       selected={map}
       onFilter={(f) =>
-        void navigate({ search: (prev) => ({ ...prev, filter: f }) })
+        void navigate({
+          search: (prev) => ({ ...prev, filter: f }),
+          resetScroll: false,
+        })
       }
       onSelect={(m) =>
-        void navigate({ search: (prev) => ({ ...prev, map: m }) })
+        void navigate({
+          search: (prev) => ({ ...prev, map: m }),
+          resetScroll: false,
+        })
       }
     />
   )

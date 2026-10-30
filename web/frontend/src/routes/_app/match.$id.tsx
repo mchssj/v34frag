@@ -21,6 +21,8 @@ function MatchPage() {
         void navigate({
           search: { stats: t === "general" ? undefined : t },
           replace: true,
+          // Es estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

@@ -20,7 +20,10 @@ function AdminServersRoute() {
     <AdminServersPage
       tab={tab ?? "servers"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "servers" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "servers" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

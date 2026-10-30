@@ -22,6 +22,8 @@ function PlayerPage() {
         void navigate({
           search: (prev) => ({ ...prev, ...patch }),
           replace: true,
+          // Pestañas, filtros, página y rango son estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

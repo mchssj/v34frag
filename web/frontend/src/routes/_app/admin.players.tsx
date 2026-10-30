@@ -20,7 +20,10 @@ function AdminPlayersRoute() {
     <AdminPlayersPage
       tab={tab ?? "fichas"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "fichas" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "fichas" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

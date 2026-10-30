@@ -17,7 +17,10 @@ function AdminBansRoute() {
     <AdminBansPage
       search={search}
       onSearch={(patch) =>
-        void navigate({ search: (prev) => ({ ...prev, ...patch }) })
+        void navigate({
+          search: (prev) => ({ ...prev, ...patch }),
+          resetScroll: false,
+        })
       }
     />
   )
