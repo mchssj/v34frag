@@ -41,6 +41,7 @@ import leer_demo  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
 SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
+SEEK_SLACK_SECONDS = 2.0  # cuánto puede pasarse el salto (después del lead) sin darlo por pasado de largo
 END_HOLD_SECONDS = 1.5  # cuánto se congela el último cuadro de un tramo que llega al final de la demo (ver segments)
 
 
@@ -472,6 +473,7 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
 
     lead = lead_frames(cfg)
     lead_ticks = round(cfg.get("lead_seconds", 0.5) / d.tick_interval)
+    slack_ticks = round(SEEK_SLACK_SECONDS / d.tick_interval)
     # Después de cada tramo la demo sigue corriendo hasta que llega el demo_pause (en la prueba del 2026-10-23,
     # entre 5 y 10 s de demo): un tramo que empieza antes de eso es, para el juego, un salto hacia atrás.
     passes = plan_passes(jobs, lead_ticks, round(cfg.get("gap_seconds", 15) / d.tick_interval))
@@ -502,7 +504,10 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
                 prefix = os.path.join(frames_dir, name)
                 # Se salta un poco antes (j0) y esos cuadros se descartan en FFmpeg.
                 goto = ["demo_pause", f"demo_gototick {j0}"] + spec + ["hideconsole", "gameui_hide"]
-                after = next((k for k in all_kills if k["tick"] >= j0), None)
+                # La kill que delata que se pasó de largo: la primera desde j0 + lead + SEEK_SLACK_SECONDS. Pasarse
+                # un poco es normal y solo recorta el principio del tramo; una kill de otro jugador apenas después
+                # del salto hacía fallar los tres intentos (nuke, 2026-10-30: una kill 1,5 s después de j0).
+                after = next((k for k in all_kills if k["tick"] >= j0 + lead_ticks + slack_ticks), None)
                 for attempt in range(1, SEEK_TRIES + 1):
                     game.step(goto)
                     # El salto avanza la demo a toda velocidad y tarda: mientras tanto, la consola escribe cada kill
