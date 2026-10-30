@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { THEMES, toBlob, type CardTheme } from "@/features/export/card"
+import { vipToast } from "@/features/vip/upsell"
 
 import { BIO_FORMATS, drawBio, type BioData, type BioFormat } from "./draw"
 
@@ -64,14 +65,14 @@ function Preview({
   }, [data, format, theme, vip])
 
   const copy = (v: string) => {
-    if (!vip) return toast.error("El widget para la bio es un beneficio VIP.")
+    if (!vip) return vipToast("El widget para la bio es un beneficio VIP.")
     navigator.clipboard.writeText(v).then(
       () => toast.success("Copiado."),
       () => toast.error("Copialo con Ctrl+C.")
     )
   }
   const download = async () => {
-    if (!vip) return toast.error("El widget para la bio es un beneficio VIP.")
+    if (!vip) return vipToast("El widget para la bio es un beneficio VIP.")
     save(
       await toBlob(canvas.current!, "image/png"),
       `cmleague-${data.nick.toLowerCase()}-${format}.png`

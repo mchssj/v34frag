@@ -34,6 +34,7 @@ import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
+import { Route as DemoVipRouteImport } from './routes/demo.vip'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
 import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
@@ -181,6 +182,11 @@ const DemoTiendaRoute = DemoTiendaRouteImport.update({
 const DemoTorneoStatsRoute = DemoTorneoStatsRouteImport.update({
   id: '/demo/torneo-stats',
   path: '/demo/torneo-stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoVipRoute = DemoVipRouteImport.update({
+  id: '/demo/vip',
+  path: '/demo/vip',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoWidgetRoute = DemoWidgetRouteImport.update({
@@ -333,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -382,6 +389,7 @@ export interface FileRoutesByTo {
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/events': typeof AppAdminEventsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -435,6 +443,7 @@ export interface FileRoutesById {
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -487,6 +496,7 @@ export interface FileRouteTypes {
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
+    | '/demo/vip'
     | '/demo/widget'
     | '/admin/events'
     | '/admin/matchmaking'
@@ -536,6 +546,7 @@ export interface FileRouteTypes {
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
+    | '/demo/vip'
     | '/demo/widget'
     | '/admin/events'
     | '/admin/matchmaking'
@@ -588,6 +599,7 @@ export interface FileRouteTypes {
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
+    | '/demo/vip'
     | '/demo/widget'
     | '/_app/admin/events'
     | '/_app/admin/matchmaking'
@@ -632,6 +644,7 @@ export interface RootRouteChildren {
   DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
+  DemoVipRoute: typeof DemoVipRoute
   DemoWidgetRoute: typeof DemoWidgetRoute
 }
 
@@ -810,6 +823,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/torneo-stats'
       fullPath: '/demo/torneo-stats'
       preLoaderRoute: typeof DemoTorneoStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/vip': {
+      id: '/demo/vip'
+      path: '/demo/vip'
+      fullPath: '/demo/vip'
+      preLoaderRoute: typeof DemoVipRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/widget': {
@@ -1109,6 +1129,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoTorneoStatsRoute: DemoTorneoStatsRoute,
+  DemoVipRoute: DemoVipRoute,
   DemoWidgetRoute: DemoWidgetRoute,
 }
 export const routeTree = rootRouteImport

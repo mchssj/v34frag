@@ -1,7 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router"
 import { LockIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -10,6 +9,7 @@ import { BioWidget, THEMES } from "@/features/bio/BioWidget"
 import type { BioData } from "@/features/bio/draw"
 import type { CardTheme } from "@/features/export/card"
 import { DEMO_STATS } from "@/features/export/demo"
+import { vipToast } from "@/features/vip/upsell"
 
 // Ejemplo del widget para la bio de Twitch y Twitter para VIP sin API ni sesión
 // (docs/bitacora/2026-10-29-widget-bio en kyan/pruebas). Solo en `pnpm dev`.
@@ -35,7 +35,7 @@ function DemoBio() {
   )
   const pick = (t: CardTheme) => {
     if (THEMES[t].vip && !vip)
-      return toast.error("El tema dorado es solo para VIP.")
+      return vipToast("El tema dorado es solo para VIP.")
     setTheme(t)
   }
 

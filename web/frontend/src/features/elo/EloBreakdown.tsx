@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { HaceteVipButton } from "@/features/vip/upsell"
 
 import { DEMO_MIXES_RAW, START_ELO, type DemoMix } from "./demo"
 import {
@@ -312,6 +313,7 @@ export function EloBreakdown({ vip }: { vip: boolean }) {
                 probabilidad, rating y rondas jugadas.
               </p>
               <LockIcon aria-hidden className="size-4 text-muted-foreground" />
+              <HaceteVipButton className="mt-1" />
             </div>
           </div>
         )}

@@ -33,6 +33,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { SearchBox } from "@/features/ranking/SearchBox"
+import { HaceteVipButton } from "@/features/vip/upsell"
 
 import {
   DEMO_COUNTRIES,
@@ -799,6 +800,7 @@ export function AdvancedSearch({
                   Buscá por nivel, ELO, K/D, mapa, país, con quién jugaste y
                   mucho más. Buscar por texto y ordenar sigue siendo gratis.
                 </p>
+                <HaceteVipButton className="mt-1" />
               </div>
             </div>
           )}

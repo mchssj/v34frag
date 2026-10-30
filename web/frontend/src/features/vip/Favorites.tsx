@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { SearchMatch } from "@/features/search/demo"
+import { vipToast } from "@/features/vip/upsell"
 
 import { MATCHES } from "./demo"
 
@@ -65,7 +66,7 @@ export function Favorites({ vip }: { vip: boolean }) {
 
   const toggle = (m: SearchMatch) => {
     if (!vip)
-      return toast.error("Marcar partidas como favoritas es un beneficio VIP.")
+      return vipToast("Marcar partidas como favoritas es un beneficio VIP.")
     // Con la función de setState: dos clics seguidos no se pisan.
     setFavs((prev) => {
       const next = prev.includes(m.id)
@@ -90,9 +91,7 @@ export function Favorites({ vip }: { vip: boolean }) {
               type="button"
               aria-pressed={only === v}
               onClick={() =>
-                v && !vip
-                  ? toast.error("Las favoritas son para VIP.")
-                  : setOnly(v)
+                v && !vip ? vipToast("Las favoritas son para VIP.") : setOnly(v)
               }
               className={cn(
                 "inline-flex h-[30px] items-center gap-1.5 rounded-[calc(var(--radius)-4px)] px-3.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground",

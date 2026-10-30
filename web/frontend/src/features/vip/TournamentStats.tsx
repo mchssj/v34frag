@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { PlayerAvatar } from "@/features/ranking/parts"
+import { HaceteVipButton } from "@/features/vip/upsell"
 
 import { RANK_PLAYERS, seeded } from "./demo"
 
@@ -287,6 +288,7 @@ export function TournamentStats({
                 MVP, premios y la tabla completa de cada jugador: entradas,
                 clutches y multikills.
               </p>
+              <HaceteVipButton className="mt-1" />
             </div>
           </div>
         )}

@@ -6,6 +6,7 @@ import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Slider } from "@/components/ui/slider"
 import { levelOf } from "@/features/matchmaking/room/roomData"
 import { LEVEL_FLOORS } from "@/features/player/labels"
+import { HaceteVipButton } from "@/features/vip/upsell"
 
 import { AVG, ME, SEASON, STANDINGS } from "./demo"
 import {
@@ -303,6 +304,7 @@ export function RecalcPreview({
                 ELO después del cierre.
               </p>
               <LockIcon aria-hidden className="size-4 text-muted-foreground" />
+              <HaceteVipButton className="mt-1" />
             </div>
           </div>
         )}

@@ -24,6 +24,7 @@ import {
   type ExportPeriod,
 } from "@/features/export/demo"
 import { jpegToPdf } from "@/features/export/pdf"
+import { vipToast } from "@/features/vip/upsell"
 
 // Ejemplo de "Exportá tus stats" para VIP sin API ni sesión (docs/bitacora/2026-10-29-exportar-stats en
 // kyan/pruebas). Solo en `pnpm dev`: en el build de producción la ruta no existe.
@@ -140,7 +141,7 @@ function DemoExportar() {
 
   const pickTheme = (t: CardTheme) => {
     if (THEMES[t].vip && !vip)
-      return toast.error("El tema dorado es solo para VIP.")
+      return vipToast("El tema dorado es solo para VIP.")
     setTheme(t)
   }
   const toggleKey = (k: StatKey, on: boolean) => {
@@ -161,7 +162,7 @@ function DemoExportar() {
   const name = `cmleague-${stats.nick.toLowerCase()}-${period}-${format}`
   const png = () => toBlob(canvas.current!, "image/png")
   const needVip = () => {
-    if (!vip) toast.error("Descargar tus stats es un beneficio VIP.")
+    if (!vip) vipToast("Descargar tus stats es un beneficio VIP.")
     return !vip
   }
   const downloadPng = async () => {
