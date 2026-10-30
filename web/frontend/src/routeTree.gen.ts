@@ -25,6 +25,7 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoBioRouteImport } from './routes/demo.bio'
 import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
 import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
+import { Route as DemoConfigsRouteImport } from './routes/demo.configs'
 import { Route as DemoCreditosRouteImport } from './routes/demo.creditos'
 import { Route as DemoEloRouteImport } from './routes/demo.elo'
 import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
@@ -142,6 +143,11 @@ const DemoBuscadorRoute = DemoBuscadorRouteImport.update({
 const DemoComparadorRoute = DemoComparadorRouteImport.update({
   id: '/demo/comparador',
   path: '/demo/comparador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoConfigsRoute = DemoConfigsRouteImport.update({
+  id: '/demo/configs',
+  path: '/demo/configs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoCreditosRoute = DemoCreditosRouteImport.update({
@@ -360,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
   '/demo/creditos': typeof DemoCreditosRoute
   '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
@@ -415,6 +422,7 @@ export interface FileRoutesByTo {
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
   '/demo/creditos': typeof DemoCreditosRoute
   '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
@@ -474,6 +482,7 @@ export interface FileRoutesById {
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
   '/demo/creditos': typeof DemoCreditosRoute
   '/demo/elo': typeof DemoEloRoute
   '/demo/exportar': typeof DemoExportarRoute
@@ -532,6 +541,7 @@ export interface FileRouteTypes {
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
+    | '/demo/configs'
     | '/demo/creditos'
     | '/demo/elo'
     | '/demo/exportar'
@@ -587,6 +597,7 @@ export interface FileRouteTypes {
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
+    | '/demo/configs'
     | '/demo/creditos'
     | '/demo/elo'
     | '/demo/exportar'
@@ -645,6 +656,7 @@ export interface FileRouteTypes {
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
+    | '/demo/configs'
     | '/demo/creditos'
     | '/demo/elo'
     | '/demo/exportar'
@@ -695,6 +707,7 @@ export interface RootRouteChildren {
   DemoBioRoute: typeof DemoBioRoute
   DemoBuscadorRoute: typeof DemoBuscadorRoute
   DemoComparadorRoute: typeof DemoComparadorRoute
+  DemoConfigsRoute: typeof DemoConfigsRoute
   DemoCreditosRoute: typeof DemoCreditosRoute
   DemoEloRoute: typeof DemoEloRoute
   DemoExportarRoute: typeof DemoExportarRoute
@@ -820,6 +833,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/comparador'
       fullPath: '/demo/comparador'
       preLoaderRoute: typeof DemoComparadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/configs': {
+      id: '/demo/configs'
+      path: '/demo/configs'
+      fullPath: '/demo/configs'
+      preLoaderRoute: typeof DemoConfigsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/creditos': {
@@ -1225,6 +1245,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoBioRoute: DemoBioRoute,
   DemoBuscadorRoute: DemoBuscadorRoute,
   DemoComparadorRoute: DemoComparadorRoute,
+  DemoConfigsRoute: DemoConfigsRoute,
   DemoCreditosRoute: DemoCreditosRoute,
   DemoEloRoute: DemoEloRoute,
   DemoExportarRoute: DemoExportarRoute,
