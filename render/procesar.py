@@ -284,8 +284,10 @@ def process_match(cfg, api, r2, drive, job):
         c = j["clip"]
         out = os.path.join(cfg["out_dir"], f"{c['id']}.mp4")
         try:
-            render_clip.encode(cfg, prefixes[j["key"]], j["segs"], d.tick_interval, out)
-            seconds = round(sum(render_clip.segment_frames(s, d.tick_interval, cfg) for s in j["segs"]) / cfg["fps"], 2)
+            last = d.header["playback_ticks"]
+            render_clip.encode(cfg, prefixes[j["key"]], j["segs"], d.tick_interval, out, last)
+            seconds = round(sum(render_clip.segment_frames(s, d.tick_interval, cfg) + render_clip.hold_frames(cfg, s, last)
+                                for s in j["segs"]) / cfg["fps"], 2)
             size = os.path.getsize(out)
             key = f"clips/{m['id']}/{c['id']}-{time.strftime('%Y%m%d%H%M%S')}.mp4"
             st, body = r2.put(key, open(out, "rb").read(), "video/mp4")
@@ -296,7 +298,7 @@ def process_match(cfg, api, r2, drive, job):
                 raise RuntimeError(f"R2 HEAD {st}: {got} de {size} bytes")
             # Un reprocesado (docs/bitacora/2026-10-28-clips-vip-y-reprocesar) lleva la marca, para encontrarlo en Drive.
             again = f" (reproceso {c['reprocess']})" if c.get("review") == "pending" and c.get("reprocess") else ""
-            drive_id = drive.upload(out, f"{m['played_at'][:10]} {m['map']} {c['type']} {j['player']}{again}.mp4",
+            drive_id = drive.upload(out, f"{m['played_at'][:10]} {m['map']} {c['type']} {j['player']} ronda {c['round']}{again}.mp4",
                                     m["played_at"][:10]) if drive else None
             ok = api.rpc("clip_render_done", p_clip=c["id"], p_key=key, p_bytes=size, p_seconds=seconds,
                          p_drive_id=drive_id)

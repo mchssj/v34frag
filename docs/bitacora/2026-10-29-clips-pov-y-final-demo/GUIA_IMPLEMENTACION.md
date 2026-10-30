@@ -14,7 +14,8 @@ No toca la base, la API ni los servidores de juego.
 | Archivo | Cambio |
 |---|---|
 | `render/leer_demo.py` | Largo de `svc_UpdateStringTable` en 16 bits, tick 0 en los signon y sin `STEAM_ID_PENDING` |
-| `render/render_clip.py` | `END_MARGIN_SECONDS` y `segments(..., last_tick)` |
+| `render/render_clip.py` | `segments(..., last_tick)`, `hold_frames`, `encode(..., last_tick)` y `ffmpeg_segment(..., hold)` con `END_HOLD_SECONDS` |
+| `render/procesar.py` | También el cuadro congelado en la duración y la ronda en el nombre de Drive |
 | `render/procesar.py` | `build_job` pasa `d.header["playback_ticks"]` |
 | `docs/bitacora/2026-10-29-clips-pov-y-final-demo/` | Plan, documentación, esta guía y `pruebas/` |
 
@@ -43,7 +44,16 @@ Con la demo `flow-20261029T201550-b630.dem` (50 MB, bajada del Worker de demos):
 
 `segments` también se probó con valores sueltos: sin `last_tick` da lo mismo que antes, y con una kill en el último tick el tramo termina en el margen.
 
-**Sin probar en el juego:** la grabación de punta a punta se hace en el portátil. Confirmarlo con el reproceso.
+**Cuadro congelado:** probado con FFmpeg sobre cuadros y audio sintéticos. Un tramo de 90 cuadros con 90 congelados da 3 s de video y de audio. Los cuadros 89 a 179, decodificados sin comprimir, son idénticos al cuadro 89 de los TGA.
+
+**Sin probar en el juego:** la grabación de punta a punta se hace en el portátil.
+- El primer reproceso (con 0,1 s de margen) arregló la cámara, pero cortó la última kill del 3k de la ronda 29.
+- Falta confirmar con un segundo reproceso que el último tick ya no muestra el menú.
+
+## En qué se apartó del plan
+
+- **Final de la demo:** el plan cortaba 0,1 s antes. Después del primer reproceso (sin la última kill), el tramo llega hasta el último tick y se congela 1,5 s.
+- **Ronda en el nombre de Drive:** pedido por Daniel después del primer reproceso.
 
 ## Cómo revertir
 

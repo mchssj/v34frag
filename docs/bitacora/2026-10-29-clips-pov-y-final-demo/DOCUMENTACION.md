@@ -30,7 +30,15 @@ Además, el tick de los paquetes de signon no es de la grabación (en esta demo,
 
 El plugin corta la grabación de SourceTV cuando termina el mix. En este caso, en el mismo tick de la última kill (232332). El tramo de la jugada pedía 2 s después de esa kill, que no existen en la demo: al acabarse, el juego mostraba el menú y se grababa eso.
 
-Ahora `render_clip.segments` recibe el último tick de la demo (`playback_ticks` de la cabecera) y no deja que un tramo termine después de ese tick menos `END_MARGIN_SECONDS` (0,1 s). Una jugada de la última ronda queda más corta, sin los segundos de después.
+Ahora `render_clip.segments` recibe el último tick de la demo (`playback_ticks` de la cabecera) y no deja que un tramo termine después de ese tick. Como no hay nada después, `render_clip.encode` congela el último cuadro durante `END_HOLD_SECONDS` (1,5 s), con silencio: la jugada no termina de golpe y la última kill queda a la vista.
+
+Al principio el corte se hizo 0,1 s antes del final de la demo. En el reproceso del 3k de la ronda 29 no se llegó a ver la última kill, porque estaba justo en el último tick. Por eso ahora el tramo llega hasta ese tick y se congela.
+
+El arreglo de fondo sería que el plugin siga grabando unos segundos después de terminar el mix (`FinishMatch` llama a `Demo_Stop` en el acto). Queda anotado en `PENDIENTES.md`.
+
+### Nombre en Drive
+
+El archivo lleva la ronda: `2026-10-29 cbble 3k New™ always ronda 29 (reproceso 2).mp4`. Es la ronda del plugin, la misma de la web.
 
 ## Alcance
 
@@ -43,7 +51,8 @@ Ahora `render_clip.segments` recibe el último tick de la demo (`playback_ticks`
 | Qué | Archivo |
 |---|---|
 | Largo de la actualización, tick de los signon y `STEAM_ID_PENDING` | `render/leer_demo.py` |
-| Corte al final de la demo (`segments`, `END_MARGIN_SECONDS`) | `render/render_clip.py` |
+| Corte al final de la demo y cuadro congelado (`segments`, `hold_frames`, `encode`, `END_HOLD_SECONDS`) | `render/render_clip.py` |
+| Ronda en el nombre de Drive | `render/procesar.py` (`process_match`) |
 | Último tick al armar las jugadas | `render/procesar.py` (`build_job`) |
 | Análisis de las jugadas | `pruebas/analizar_jugadas.py` |
 | Reproceso de los dos clips | `pruebas/reprocesar_cbble.sql` |
