@@ -1,0 +1,13 @@
+v34frag 1.0.0 --  Changelog
+
+Llegó el 2v2
+
+Partidas de 2 contra 2, como el Wingman de CS2, en una sola parte del mapa y con un solo sitio.
+
+- Elegí equipo y escribí !ready. Con los 4 listos arranca una ronda de cuchillo.
+- Quien gana el cuchillo elige lado con !stay o !switch.
+- Gana el primero en llegar a 9 rondas. Después de la ronda 8 se cambia de lado, y 8-8 es empate.
+- Tenés 2 pausas por equipo: !pause y !unpause.
+- Las paredes rojas marcan hasta dónde se juega: no se pueden cruzar.
+- Al morir, solo mirás y escuchás a tu equipo.
+- Hay ranking propio: mirá tu puesto con !rank y el ranking con !top.

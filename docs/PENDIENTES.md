@@ -189,6 +189,15 @@ Ordenado por urgencia.
 - **VIP, se hace al finalizar:** hoy el plugin reconoce a un VIP por el flag `o` de SourceMod, que se carga a mano en `admins_simple.ini`. Falta sincronizar esa lista con el VIP de la web, que todavía es un prototipo (ver 1.7 y 1.12).
 - **Bitácora:** [`2026-10-30-plugin-retake`](bitacora/2026-10-30-plugin-retake/). Changelog para Discord en la carpeta.
 
+### 1.15 Plugin 2v2 (`v34_wingman`)
+
+- **Estado:** probado con bots en `cssds` y subido a RBK el 2026-10-30, inactivo. **RBK no tiene `de_dust2_ob`**, el único mapa con puntos, así que ahí todavía no se puede jugar. No está en `aurav34` ni en `FLOW_SERVER`: fue una decisión de Kyan.
+- **Qué falta:**
+  - Subir `de_dust2_ob` a RBK o cargar los puntos de otro mapa.
+  - Cargar sitio, 2 spawns y zonas de `de_inferno` (sitio A). `de_dust2_ob` ya está cargado (3 zonas) y en el repo.
+  - Probar con jugadores: antes que nada la compra fuera de la zona, porque los bots no compran por comando y en `de_dust2_ob` el spawn cae dentro de la zona. También el bloqueo de zonas, la cámara en primera persona, la voz por equipo y `!admin`.
+- **Bitácora:** [`2026-10-30-plugin-2v2`](bitacora/2026-10-30-plugin-2v2/). Changelog para Discord en la carpeta.
+
 ### 1.14 Spam de grafitis
 
 - `decalfrequency` pasó de `0.1` a `60` en `aurav34` y RBK el 2026-10-30, con respaldo en `cfg/server.cfg.bak_decal`.
