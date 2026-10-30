@@ -3,6 +3,8 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { api, unwrap } from "@/api/client"
 import type { AuthUser } from "@/auth/queries"
 import { canAccessAdminSection } from "@/auth/permissions"
+import { activeBanCountOptions } from "@/features/admin/bans/queries"
+import { clipReviewCountOptions } from "@/features/admin/clips/queries"
 import {
   myProfileOptions,
   playerDetailOptions,
@@ -61,7 +63,15 @@ export function useBadgeCounts(
     ...adminTeamRequestsOptions,
     enabled: canAccessAdminSection(user.role, "teams"),
   }).data
-  return { live, pcw, adminTeams }
+  const adminBans = useQuery({
+    ...activeBanCountOptions,
+    enabled: canAccessAdminSection(user.role, "bans"),
+  }).data
+  const adminClips = useQuery({
+    ...clipReviewCountOptions,
+    enabled: canAccessAdminSection(user.role, "clips"),
+  }).data
+  return { live, pcw, adminTeams, adminBans, adminClips }
 }
 
 /** Lo que muestra el pie del sidebar: equipo (capitán o miembro) y nivel del jugador vinculado. */

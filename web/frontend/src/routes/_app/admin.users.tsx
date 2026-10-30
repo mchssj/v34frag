@@ -1,11 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { z } from "zod"
 
-import { Placeholder } from "@/features/shell/Placeholder"
+import {
+  AdminUsersPage,
+  USER_TABS,
+} from "@/features/admin/users/AdminUsersPage"
 
 export const Route = createFileRoute("/_app/admin/users")({
-  component: AdminUsersPage,
+  validateSearch: z.object({
+    tab: z.enum(USER_TABS).optional().catch(undefined),
+  }),
+  component: AdminUsersRoute,
 })
 
-function AdminUsersPage() {
-  return <Placeholder title="Usuarios y moderación" />
+function AdminUsersRoute() {
+  const { tab } = Route.useSearch()
+  const navigate = Route.useNavigate()
+  return (
+    <AdminUsersPage
+      tab={tab ?? "accounts"}
+      onTab={(t) =>
+        void navigate({ search: { tab: t === "accounts" ? undefined : t } })
+      }
+    />
+  )
 }

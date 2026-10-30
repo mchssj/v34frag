@@ -83,7 +83,7 @@ describe('temporadas', () => {
     const cfg = { duration_days: 30, top_n: 20, min_matches: 20, reset_pct: 10, reset_floor: 2001, tiers: got.tiers };
     const res = await call('PUT', '/api/v1/admin/seasons/config', cfg);
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ ...cfg, updated_at: expect.any(String) });
+    expect(await res.json()).toMatchObject({ ...cfg, reset_all: false, updated_at: expect.any(String) });
   });
 
   it('abrir: un admin, una sola activa, fin a las 06:00 de Argentina', async () => {
@@ -141,6 +141,9 @@ describe('temporadas', () => {
     expect(body.items[0]).toMatchObject({ rank: 1, elo: before, elo_after: 2001, reset: true, medal: { name: 'Campeón' } });
     expect(body.items[2]).toMatchObject({ rank: 3, reset: false, medal: { name: 'Tercer puesto' } });
     expect(body.summary.reset).toBeGreaterThanOrEqual(2);
+    // Reinicio total (replanteo 37): el que está debajo del piso también queda en el piso.
+    const all = await (await call('GET', `/api/v1/admin/seasons/preview?top_n=3&min_matches=1&reset_pct=0&reset_floor=2001&reset_all=true&q=${seed}`)).json();
+    expect(all.items[2]).toMatchObject({ rank: 3, reset: true, elo_after: 2001 });
     expect(await eloOf(steam[0]!)).toBe(before);
   });
 

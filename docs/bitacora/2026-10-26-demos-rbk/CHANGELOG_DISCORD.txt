@@ -1,0 +1,6 @@
+CMLeague --  Changelog
+
+Demos en el servidor #2
+- Los mixes del servidor #2 ahora también graban la demo, igual que los del #1.
+- La descargas desde la partida en la web, unos minutos después de que termina.
+- Las demos de los mixes que ya se jugaron en el #2 no existen: se graban desde ahora.

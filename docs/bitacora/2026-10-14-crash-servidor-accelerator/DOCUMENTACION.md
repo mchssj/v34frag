@@ -60,6 +60,8 @@ flowchart LR
 "MinidumpPresubmit"  "no"
 ```
 
+**En el servidor real (Linux), desde el 2026-10-27, la URL es `http://`:** el curl de Accelerator 2.5.0 en Linux no tiene HTTPS (`Protocol https not supported or disabled in libcurl`), y el volcado se borra aunque falle la subida. Hasta ese día, ningún crash del #1 dejaba su volcado. El Worker contesta igual por http. Ver [`2026-10-27-watchdog-congelamiento`](../2026-10-27-watchdog-congelamiento/DOCUMENTACION.md).
+
 Qué se sube:
 - El volcado (`.dmp`): hilos, registros, la pila y la lista de módulos cargados.
 - Los metadatos (`.txt`): mapa, línea de arranque, rutas y versiones de SourceMod, Accelerator y el juego. En Windows no incluye la consola, porque la firma de `GetSpew` no coincide con la v34. En Linux puede incluir lo último de la consola (chat y comandos) si el motor exporta `GetSpew`.

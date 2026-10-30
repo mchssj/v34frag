@@ -1,0 +1,32 @@
+# Cierre automático de las temporadas (plan docs/bitacora/2026-10-20-temporadas). Lo lanza cmleague-season.timer.
+[Unit]
+Description=CMLeague: cierre de temporadas vencidas
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/srv/cmleague/api/current/season-tick.mjs
+
+[Service]
+Type=oneshot
+User=cmleague
+Group=cmleague
+WorkingDirectory=/srv/cmleague/api/current
+EnvironmentFile=/etc/cmleague/season.env
+ExecStart=/usr/bin/node --enable-source-maps /srv/cmleague/api/current/season-tick.mjs
+TimeoutStartSec=120
+MemoryMax=256M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadOnlyPaths=/srv/cmleague
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native

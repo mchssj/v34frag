@@ -44,6 +44,7 @@ export const EventListQuery = listQuery(['starts_on', 'name', 'status'], { sort:
   status: EventStatus.optional(),
   template: Template.optional(),
   organizer: z.uuid().optional().openapi({ description: 'Torneos de un organizador (id de usuario)' }),
+  game_mode: z.string().max(5).optional().openapi({ description: 'Modo de juego (`5v5`, `2v2`…)' }),
   from: dateParam('Empiezan desde esta fecha'),
   to: dateParam('Empiezan hasta esta fecha'),
 });
@@ -61,6 +62,18 @@ export const EventSummary = z
     max_teams: z.number().int().nullable(),
     champion: TeamRef.nullable(),
     organizer: z.object({ user_id: z.uuid(), alias: z.string().nullable() }).nullable(),
+    game_mode: z.string().openapi({ description: 'Modo de juego (`5v5`, `2v2`…; ver GET /game-modes)' }),
+    players_per_team: z.number().int().openapi({ description: 'Activos que inscribe cada equipo (los del modo)' }),
+    subs_max: z.number().int().openapi({ description: 'Suplentes que puede inscribir cada equipo (0 a 4)' }),
+    bo: Bo.nullable().openapi({ description: 'BO de las partidas comunes (`bo` o `bo_group` según la plantilla)' }),
+    bo_final: Bo.nullable().openapi({ description: 'BO de la final (`bo_final`, `bo_grand_final` o `playoffs.bo_final`)' }),
+    current_stage: z.string().nullable().openapi({ description: 'Fase de la partida en vivo o de la próxima ("Semifinal"). null si el torneo no está en curso' }),
+    progress: z
+      .object({ played: z.number().int(), total: z.number().int() })
+      .nullable()
+      .openapi({ description: 'Partidas terminadas y armadas hasta ahora (sin libres). null antes de generar el fixture. `total` crece a medida que se arman las rondas siguientes' }),
+    banner_url: z.string().nullable().openapi({ description: 'Banner; null: patrón por defecto' }),
+    registration_closes_at: z.string().nullable().openapi({ description: 'Cierre de inscripciones. null: hasta que se genera el fixture' }),
   })
   .openapi('EventSummary');
 
@@ -71,7 +84,9 @@ export const Registration = z
     team: TeamRef,
     seed: z.number().int().openapi({ description: 'Posición en la siembra (1 = cabeza de serie)' }),
     start_stage: z.number().int().openapi({ description: 'Suizo: fase en la que empieza' }),
-    players: z.array(z.object({ player_id: z.uuid(), alias: z.string() })),
+    players: z
+      .array(z.object({ player_id: z.uuid(), alias: z.string(), role: z.enum(['active', 'sub']).openapi({ description: '`active` o `sub` (suplente)' }) }))
+      .openapi({ description: 'Primero los activos y después los suplentes, cada grupo por alias' }),
   })
   .openapi('Registration');
 
@@ -128,11 +143,20 @@ export const StandingQuery = listQuery(['place'], { sort: 'place', order: 'asc' 
 });
 export const StandingList = Envelope(Standing).openapi('StandingList');
 
+export const LiveMatch = z
+  .object({
+    id: z.uuid(),
+    label: z.string().nullable().openapi({ description: 'Fase ("Semifinal")' }),
+    map: z.string().nullable().openapi({ description: 'Mapa que se está jugando (null si todavía no se sabe)' }),
+    map_index: z.number().int().openapi({ description: 'Número del mapa en la serie (los ya jugados + 1)' }),
+    maps_total: z.number().int().openapi({ description: 'BO de la serie' }),
+  })
+  .openapi('LiveMatch');
+
 export const EventDetail = EventSummary.extend({
   rules: z.string().nullable(),
   min_teams: z.number().int().nullable(),
-  players_min: z.number().int(),
-  players_max: z.number().int(),
+  live_match: LiveMatch.nullable().openapi({ description: 'La primera partida en vivo del torneo; null si no hay ninguna' }),
   config: z.record(z.string(), z.unknown()).openapi({ description: 'Configuración completa (con los valores por defecto)' }),
   tie_pending: z.object({ grp: z.number().int() }).nullable().openapi({ description: 'Empate de grupo que tiene que resolver el organizador' }),
   draw: z
@@ -150,8 +174,13 @@ export const EventCreate = z
     name: z.string().trim().min(2).max(80),
     template: Template,
     config: EventConfig.optional(),
-    players_min: z.number().int().min(1).max(10).optional(),
-    players_max: z.number().int().min(1).max(10).optional(),
+    game_mode: z.string().max(5).optional().openapi({ description: 'Modo de juego habilitado (GET /game-modes). Por defecto `5v5`' }),
+    subs_max: z.number().int().min(0).max(4).optional().openapi({ description: 'Suplentes por equipo, de 0 a 4 (por defecto 0)' }),
+    registration_closes_at: z.iso
+      .datetime({ offset: true })
+      .nullable()
+      .optional()
+      .openapi({ description: 'Cierre de inscripciones (fecha y hora). Después, solo el organizador o un admin cambian las inscripciones. null: hasta generar el fixture' }),
     starts_on: z.iso.date().nullable().optional(),
     ends_on: z.iso.date().nullable().optional(),
     prize: z.string().trim().max(200).nullable().optional(),
@@ -168,7 +197,8 @@ export const EventPatch = EventCreate.partial()
 
 export const RegistrationBody = z
   .object({
-    players: z.array(z.uuid()).min(1).max(10).openapi({ description: 'Jugadores del plantel con SteamID (entre players_min y players_max)' }),
+    active: z.array(z.uuid()).min(1).max(5).openapi({ description: 'Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID' }),
+    subs: z.array(z.uuid()).max(4).default([]).openapi({ description: 'Suplentes: hasta `subs_max` del torneo. El coach no se inscribe' }),
     start_stage: z.number().int().min(1).max(3).optional().openapi({ description: 'Suizo: fase en la que empieza (solo el organizador)' }),
   })
   .openapi('RegistrationBody');
@@ -187,3 +217,27 @@ export const TieBody = z
 
 export const EventParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 export const EventTeamParam = EventParam.extend({ teamId: z.uuid().openapi({ param: { name: 'teamId', in: 'path' } }) });
+
+export const BANNER_HELP = 'JPEG, PNG o WebP de hasta 4 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).';
+export const BannerUpload = z
+  .object({
+    file: z
+      .custom<File>((v) => typeof File !== 'undefined' && v instanceof File, { message: 'Falta el archivo (campo "file").' })
+      .openapi({ type: 'string', format: 'binary', description: BANNER_HELP }),
+  })
+  .openapi('BannerUpload');
+export const BannerResult = z.object({ banner_url: z.string() }).openapi('BannerResult');
+
+// ---------- modos de juego ----------
+
+export const GameMode = z
+  .object({
+    code: z.string().openapi({ example: '5v5' }),
+    name: z.string().openapi({ example: '5 vs 5' }),
+    players_per_team: z.number().int(),
+    active: z.boolean().openapi({ description: 'Habilitado para torneos nuevos' }),
+  })
+  .openapi('GameMode');
+export const GameModeBody = z
+  .object({ code: z.string().max(5), active: z.boolean() })
+  .openapi('GameModeBody', { description: 'Habilitar o deshabilitar un modo. Tiene que quedar al menos uno habilitado' });

@@ -1,6 +1,7 @@
-// Archivos del HUD: dentro del .exe van como assets de la SEA; con Node, se leen de public/.
+// Archivos del HUD: dentro del .exe van como assets de la SEA; con Node, se leen de public/ (al lado de relay.mjs en
+// el build del VPS, o en hud/relay/public/ al correr desde src/).
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getAsset, isSea } from "node:sea";
 
@@ -13,7 +14,8 @@ const TYPES: Record<string, string> = {
   js: "text/javascript; charset=utf-8",
 };
 
-const PUBLIC = join(import.meta.dirname ?? ".", "..", "public");
+const HERE = import.meta.dirname ?? ".";
+const PUBLIC = existsSync(join(HERE, "public")) ? join(HERE, "public") : join(HERE, "..", "public");
 
 export function readAsset(name: AssetName): { body: string; type: string } {
   const body = isSea() ? (getAsset(name, "utf8") as string) : readFileSync(join(PUBLIC, name), "utf8");

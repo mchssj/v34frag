@@ -53,3 +53,6 @@ export const confirmField = (action: string) =>
 export const Clutches = z
   .object({ '1': z.number().int(), '2': z.number().int(), '3': z.number().int(), '4': z.number().int(), '5': z.number().int() })
   .openapi('Clutches', { description: 'Clutches ganados: la clave es la cantidad de rivales (1v1 a 1v5). Solo los ganados' });
+
+/** Revisión del ELO de un mix interrumpido por una caída. */
+export const ReviewStatus = z.enum(['pending', 'applied', 'discarded']);

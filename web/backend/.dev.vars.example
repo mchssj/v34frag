@@ -15,3 +15,5 @@ CLIENT_IP_HEADER=
 # DEMO_BASE_URL=https://<worker-de-demos>.workers.dev
 # URL pública del Worker de clips (sin barra final). Sin ella la API no arma video.url (queda el de Drive).
 # CLIPS_BASE_URL=https://cmleague-clips.cmleague.workers.dev
+# Dirección del relay del HUD: links de OBS de los streamers y csstv_hud_host del cfg. Sin ella, POST /me/hud-link da 501.
+# HUD_BASE_URL=https://hud.cmleague.lat

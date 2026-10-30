@@ -48,6 +48,12 @@ export const Clip = z
     tickrate: z.number().int().nullable().openapi({ description: 'Ticks por segundo de la partida. `null` en partidas viejas' }),
     demo_seconds: z.number().nullable().openapi({ description: 'Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate' }),
     video: ClipVideo,
+    vip: z.boolean().openapi({ description: 'Entró por ser de un VIP (cuando se jugó el mix): va después del top' }),
+    review: z.enum(['pending', 'approved']).nullable().openapi({
+      description:
+        'Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), ' +
+        '`approved` si se aprobó, `null` si nunca se reprocesó',
+    }),
   })
   .openapi('Clip');
 
@@ -72,6 +78,7 @@ export const ClipConfigValues = z
     split_gap_seconds: int(1, 60, 'Para el video (fase C): más segundos que esto entre dos kills parte el clip en tramos'),
     pre_seconds: int(0, 15, 'Para el video (fase C): segundos antes de la primera kill'),
     post_seconds: int(0, 15, 'Para el video (fase C): segundos después de la última kill'),
+    vip_per_match: int(0, 10, 'Clips de cada VIP en cada partida, aparte del top (0 los apaga)'),
   })
   .openapi('ClipConfigValues');
 
@@ -91,7 +98,22 @@ export const ClipConfigPatch = z
     split_gap_seconds: ClipConfigValues.shape.split_gap_seconds.optional(),
     pre_seconds: ClipConfigValues.shape.pre_seconds.optional(),
     post_seconds: ClipConfigValues.shape.post_seconds.optional(),
+    vip_per_match: ClipConfigValues.shape.vip_per_match.optional(),
   })
   .strict()
   .refine((v) => Object.keys(v).length > 0, 'Mandá al menos un valor')
   .openapi('ClipConfigPatch', { description: 'Solo lo que cambia. Se aplica al listado de todas las partidas al instante: los datos no se tocan' });
+
+// Reprocesar un clip (plan docs/bitacora/2026-10-28-clips-vip-y-reprocesar).
+export const ClipParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
+
+export const ClipReview = z
+  .object({
+    clip: Clip,
+    match: z.object({ id: z.uuid(), map: z.string().nullable(), played_at: z.string().nullable() }),
+    reprocess_count: z.number().int().openapi({ description: 'Cuántas veces se reprocesó' }),
+    reprocessed_at: z.string().openapi({ description: 'La última vez que se reprocesó' }),
+  })
+  .openapi('ClipReview');
+export const ClipReviewList = Envelope(ClipReview).openapi('ClipReviewList');
+export const ClipReviewQuery = listQuery(['reprocessed_at'], { sort: 'reprocessed_at', order: 'asc' });

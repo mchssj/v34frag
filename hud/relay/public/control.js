@@ -1,5 +1,6 @@
-// Página de control del streamer: nombres de los equipos, jugador enfocado y qué partes del HUD se ven.
-import { TEAM_CT, TEAM_T, connect, el, weaponName } from "/common.js";
+// Página de control del streamer: servidor (en el VPS), nombres de los equipos, jugador enfocado y qué partes del HUD
+// se ven. Todo con rutas relativas: sirve en / (modo local) y en /s/<token>/ (VPS).
+import { TEAM_CT, TEAM_T, connect, el, weaponName } from "./common.js";
 
 const TOGGLES = [
   ["showScore", "Marcador"],
@@ -15,7 +16,7 @@ let order = []; // uid por tecla: 1-5 CT, 6-9 y 0 T
 const $ = (id) => document.getElementById(id);
 
 async function send(change) {
-  await fetch("/api/control", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(change) });
+  await fetch("api/control", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(change) });
 }
 
 function renderPlayers() {
@@ -62,25 +63,85 @@ document.addEventListener("keydown", (e) => {
   if (uid) send({ focus: uid });
 });
 
+const receiving = (ago) =>
+  ago === null
+    ? el("b", { class: "bad" }, "todavía no llegó ningún paquete del servidor")
+    : ago > 15000
+      ? el("b", { class: "bad" }, `sin paquetes hace ${Math.round(ago / 1000)} s`)
+      : el("b", { class: "ok" }, "recibiendo datos del servidor");
+
+/** Modo VPS: un botón por servidor con HUD activo, quién más lo transmite y el connect de su SourceTV. */
+function renderServers(s) {
+  $("server-section").hidden = false;
+  if (!s.servers.length) {
+    $("servers").replaceChildren(el("div", { class: "hint" }, "Ningún servidor tiene el HUD activo. Pedile a un admin que lo active."));
+    return;
+  }
+  const chosen = s.servers.find((x) => x.id === s.selected);
+  $("servers").replaceChildren(
+    el(
+      "div",
+      { class: "toggles" },
+      ...s.servers.map((x) =>
+        el(
+          "button",
+          { class: x.id === s.selected ? "on" : "", onclick: () => send({ server: x.id }) },
+          `${x.receiving ? "● " : "○ "}${x.name}`,
+        ),
+      ),
+    ),
+    chosen?.streaming.length ? el("div", { class: "hint warn" }, `También lo está transmitiendo: ${chosen.streaming.join(", ")}.`) : null,
+    chosen?.tvAddress
+      ? el(
+          "div",
+          { class: "connect" },
+          el("code", {}, `connect ${chosen.tvAddress}`),
+          el("button", { onclick: (e) => copy(`connect ${chosen.tvAddress}`, e.currentTarget) }, "Copiar"),
+        )
+      : null,
+    chosen ? null : el("div", { class: "hint" }, "Elegí el servidor que vas a transmitir."),
+  );
+}
+
+async function copy(text, button) {
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Copiado";
+    setTimeout(() => (button.textContent = "Copiar"), 1500);
+  } catch {
+    // Sin permiso del portapapeles: el texto queda a la vista para copiarlo a mano.
+  }
+}
+
 let connected = false;
 async function refreshStatus() {
   const box = $("status");
   if (!connected) {
-    box.innerHTML = '<b class="bad">Sin conexión con el relay.</b> ¿Está abierto relay.exe?';
+    box.replaceChildren(el("b", { class: "bad" }, "Sin conexión con el relay."), " ¿Está abierto el relay?");
     return;
   }
   try {
-    const s = await (await fetch("/api/status")).json();
-    const ago = s.lastPacketMsAgo;
-    const recv = ago === null ? '<b class="bad">todavía no llegó ningún paquete del servidor</b>' : ago > 15000 ? `<b class="bad">sin paquetes hace ${Math.round(ago / 1000)} s</b>` : '<b class="ok">recibiendo datos del servidor</b>';
-    box.innerHTML = `Relay ${s.version} · ${recv} · retraso ${s.delaySeconds} s · HUD abiertos: ${s.clients - 1}`;
+    const s = await (await fetch("api/status")).json();
+    if (s.mode === "vps") {
+      renderServers(s);
+      const chosen = s.servers.find((x) => x.id === s.selected);
+      box.replaceChildren(
+        `Relay ${s.version} · ${s.alias} · `,
+        chosen ? receiving(chosen.lastPacketMsAgo) : el("b", { class: "bad" }, "sin servidor elegido"),
+        chosen ? ` · retraso ${s.delaySeconds} s` : "",
+        ` · tus HUD abiertos: ${s.hudOpen}`,
+      );
+    } else {
+      box.replaceChildren(`Relay ${s.version} · `, receiving(s.lastPacketMsAgo), ` · retraso ${s.delaySeconds} s · HUD abiertos: ${s.hudOpen}`);
+    }
   } catch {
-    box.innerHTML = '<b class="bad">Sin conexión con el relay.</b>';
+    box.replaceChildren(el("b", { class: "bad" }, "Sin conexión con el relay."));
   }
 }
 setInterval(refreshStatus, 2000);
 
 connect({
+  page: "control",
   onState: (s) => {
     state = s;
     if (control) renderPlayers();
@@ -88,6 +149,7 @@ connect({
   onControl: (c) => {
     control = c;
     renderControl();
+    refreshStatus();
   },
   onStatus: (ok) => {
     connected = ok;

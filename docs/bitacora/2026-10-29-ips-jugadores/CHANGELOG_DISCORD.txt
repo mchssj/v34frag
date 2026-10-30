@@ -1,0 +1,7 @@
+CMLeague 2.6.0 --  Changelog
+
+Seguridad de los servidores
+- Desde ahora, cuando entras a un servidor de CMLeague, se guarda la IP desde la que te conectas junto con tu SteamID.
+- Sirve para detectar ataques a los servidores y cuentas duplicadas.
+- Solo la ven los administradores. No aparece en tu perfil, en el ranking ni en ninguna parte pública de la web.
+- No cambia nada en cómo juegas: puedes conectarte desde donde quieras.

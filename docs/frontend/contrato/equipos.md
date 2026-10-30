@@ -2,6 +2,8 @@
 
 > Parte del contrato para el frontend. Índice, estado y novedades: [`README.md`](README.md). Las decisiones de todos los módulos están en [`decisiones.md`](decisiones.md).
 
+> **2026-10-28:** el tope de 10 pasó a ser configurable por el admin, el capitán cambia el estado de cada miembro, y hay logo, `looking_for`, `founded_at`, `game_role` en el roster, historial de torneos y `GET /me/teams`. El detalle está en [`contrato-frontend-equipo-torneos.md`](../../../contrato-frontend-equipo-torneos.md); donde esta sección diga otra cosa, manda ese archivo.
+
 ## 6. Equipos y plantel (disponible)
 
 ### Reglas

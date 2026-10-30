@@ -1,0 +1,5 @@
+{
+  "55f80fed": { "host": "", "port": 2022, "username": "", "password": "", "fingerprint": "SHA256:wCs9fwFD2eKPndyKDYEEgkBJcvXnL0gj2sVY8V0t8UA" },
+  "edbee7d6": { "host": "", "port": 2022, "username": "", "password": "", "fingerprint": "SHA256:wCs9fwFD2eKPndyKDYEEgkBJcvXnL0gj2sVY8V0t8UA" },
+  "f337a7d9": { "host": "", "port": 2022, "username": "", "password": "", "fingerprint": "SHA256:G7N6Iwdwc29aBXxCB72YXw3sT4UaI1egu0Xb5elc9tU" }
+}

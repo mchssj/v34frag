@@ -34,16 +34,23 @@ export function mixMapNames(maps: MapEntry[] | undefined): string[] {
     .map((m) => m.name)
 }
 
-/** Foto del mapa jugado: lo busca entre las versiones de cada mapa, sin distinguir mayúsculas. */
+// La base guarda el mapa de la partida sin el prefijo (ingest_match: "de_mirage_rc1" -> "mirage_rc1")
+// y el catálogo lo tiene completo, así que se comparan sin él.
+const mapKey = (name: string) => name.toLowerCase().replace(/^(de|cs)_/, "")
+
+/**
+ * Foto del mapa jugado: lo busca entre las versiones de cada mapa, sin distinguir mayúsculas
+ * ni el prefijo de_/cs_.
+ */
 export function mapImage(
   maps: MapEntry[] | undefined,
   name: string | null | undefined
 ): string | null {
   if (!name) return null
-  const key = name.toLowerCase()
+  const key = mapKey(name)
   return (
     maps?.find((m) =>
-      [m.name, ...m.versions].some((v) => v.toLowerCase() === key)
+      [m.name, ...m.versions].some((v) => mapKey(v) === key)
     )?.image_url ?? null
   )
 }

@@ -1,9 +1,13 @@
 import { createRoute } from '@hono/zod-openapi';
+import { bodyLimit } from 'hono/body-limit';
 import { optionalUser, requireUser } from '../lib/auth';
 import { must, mustHave } from '../lib/db';
+import { AppError, fromPostgrest } from '../lib/errors';
 import { createRouter } from '../lib/router';
+import { LOGO_MAX_BYTES, LOGO_SHAPE } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
-import { AliasAvailability, AliasBody, AliasParam, AliasResult, TeamRequest, TeamRequestBody } from '../schemas/teams';
+import { AliasAvailability, AliasBody, AliasParam, AliasResult, LOGO_HELP, TeamRequest, TeamRequestBody, TeamRequestForm } from '../schemas/teams';
+import { dropPhoto, removePhoto, savePhoto } from '../services/photos';
 
 export const ALIAS_WAIT_DAYS = 15;
 const nextChange = (changedAt: string | null) =>
@@ -53,11 +57,27 @@ const putTeamRequest = createRoute({
   summary: 'Pedir un equipo nuevo',
   description:
     'Una solicitud por usuario: enviarla de nuevo la reemplaza y vuelve a quedar pendiente. Hace falta tener el ' +
-    'SteamID vinculado (quien la pide queda como dueño, capitán y primer jugador). La aprueba un admin.',
+    'SteamID vinculado (quien la pide queda como dueño, capitán y primer jugador). La aprueba un admin. ' +
+    `JSON con \`name\` y \`tag\`, o \`multipart/form-data\` con \`name\`, \`tag\` y \`logo\` opcional (${LOGO_HELP}). ` +
+    'Sin `logo` se conserva el que ya tenía la solicitud. Al aprobarla, el logo pasa al equipo.',
   security: bearer,
-  middleware: [requireUser] as const,
-  request: { body: { required: true, ...json(TeamRequestBody) } },
-  responses: { 200: { description: 'Solicitud pendiente', ...json(TeamRequest) }, ...errorResponses(400, 401) },
+  middleware: [
+    requireUser,
+    bodyLimit({
+      maxSize: LOGO_MAX_BYTES + 16 * 1024,
+      onError: () => {
+        throw new AppError(413, 'FILE_TOO_LARGE', `La imagen pesa más de ${LOGO_MAX_BYTES / 1024} KB.`);
+      },
+    }),
+  ] as const,
+  request: {
+    // required: false para que cada validador corra solo con su Content-Type (con true corren los dos).
+    body: {
+      required: false,
+      content: { 'application/json': { schema: TeamRequestBody }, 'multipart/form-data': { schema: TeamRequestForm } },
+    },
+  },
+  responses: { 200: { description: 'Solicitud pendiente', ...json(TeamRequest) }, ...errorResponses(400, 401, 413) },
 });
 
 export const account = createRouter()
@@ -77,14 +97,27 @@ export const account = createRouter()
   })
   .openapi(getTeamRequest, async (c) => {
     const { sb, user } = c.var;
-    const r = must(await sb.from('team_requests').select('name, tag, status').eq('user_id', user.id).maybeSingle());
+    const r = must(await sb.from('team_requests').select('name, tag, status, logo_url').eq('user_id', user.id).maybeSingle());
     return c.json(r ? { ...r, status: r.status as 'pending' | 'approved' | 'rejected' } : null, 200);
   })
   .openapi(putTeamRequest, async (c) => {
     const { sb, user } = c.var;
-    const { name, tag } = c.req.valid('json');
-    const r = mustHave(
-      await sb.from('team_requests').upsert({ user_id: user.id, name, tag, status: 'pending' }).select('name, tag, status').single(),
-    );
-    return c.json({ ...r, status: r.status as 'pending' | 'approved' | 'rejected' }, 200);
+    const form = (c.req.header('content-type') ?? '').startsWith('multipart/form-data');
+    // El tipo de `form` no trae el archivo opcional: se declara a mano.
+    const { name, tag, logo } = form ? (c.req.valid('form') as { name: string; tag: string; logo?: File }) : { ...c.req.valid('json'), logo: undefined };
+    if (!name || !tag) throw new AppError(400, 'VALIDATION_ERROR', 'Falta el nombre o la sigla del equipo (JSON o multipart/form-data).');
+    const prev = logo ? must(await sb.from('team_requests').select('logo_url, status').eq('user_id', user.id).maybeSingle()) : null;
+    const up = logo ? await savePhoto(c, `team-requests/${user.id}`, logo, LOGO_MAX_BYTES, LOGO_SHAPE) : null;
+    const r = await sb
+      .from('team_requests')
+      .upsert({ user_id: user.id, name, tag, status: 'pending', ...(up ? { logo_url: up.url } : {}) })
+      .select('name, tag, status, logo_url')
+      .single();
+    if (r.error) {
+      if (up) await dropPhoto(c, up.path);
+      throw fromPostgrest(r.error);
+    }
+    // El logo de una solicitud ya aprobada es el del equipo: ese no se borra.
+    if (up && prev?.status !== 'approved') removePhoto(c, prev?.logo_url);
+    return c.json({ ...r.data, status: r.data.status as 'pending' | 'approved' | 'rejected' }, 200);
   });

@@ -379,16 +379,18 @@ end $$;
 create trigger notify_elo_adjustments after insert or delete on public.elo_adjustments
   for each row execute function public.tg_notify_elo_adjustments();
 
+-- Un clip reprocesado (migración 20261028180000_clips_vip_reprocesar.sql) avisa cuando el admin lo aprueba, no al grabarse.
 create function public.tg_notify_match_clips() returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  if new.video_status = 'done' and old.video_status is distinct from 'done' then
+  if (new.video_status = 'done' and old.video_status is distinct from 'done' and new.video_review is distinct from 'pending')
+     or (new.video_review = 'approved' and old.video_review is distinct from 'approved') then
     perform notify(users_of_steam(array[new.player_steamid]), 'clip_ready',
                    jsonb_build_object('clip_id', new.id, 'match_id', new.match_id, 'round', new.round,
                                       'kills', cardinality(new.kill_ticks), 'clutch_vs', new.clutch_vs));
   end if;
   return null;
 end $$;
-create trigger notify_match_clips after update of video_status on public.match_clips
+create trigger notify_match_clips after update of video_status, video_review on public.match_clips
   for each row execute function public.tg_notify_match_clips();
 
 -- ---------- Temporadas y medallas ----------

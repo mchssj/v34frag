@@ -29,16 +29,17 @@ stateDiagram-v2
 | Mínimo para el ranking | **20 mixes** jugados en la temporada | Cuentan los mixes terminados que le movieron el ELO (los interrumpidos que aprobó un admin también). Con menos, el jugador aparece sin puesto (`rank: null`) |
 | Puesto | ELO | Desempate: más mixes en la temporada; después, quien llegó antes a ese ELO |
 | Reinicio | **10 %** sobre **2001** | Solo nivel 10. Conserva el porcentaje de lo que tenía sobre el piso. Debajo del piso no cambia |
+| Reinicio de todos (`reset_all`) | **No** | Con `reset_all`, los de debajo del piso también: suben hacia el piso con el mismo porcentaje. Con 0 %, todos quedan en el piso (reinicio total). Desde el 2026-10-29, replanteo `37` |
 | ELO pico | De la temporada | Al empezar cada temporada, `peak_elo` arranca en el ELO actual |
 
 **Fórmula del reinicio** (para calcularla en el navegador, sin pedirla a la API):
 
 ```
-si elo > piso:  nuevo = piso + redondear((elo − piso) × porcentaje / 100)
-si no:          nuevo = elo
+si elo > piso o reset_all:  nuevo = piso + redondear((elo − piso) × porcentaje / 100)
+si no:                      nuevo = elo
 ```
 
-`redondear` es al entero más cercano, y las mitades se alejan del cero (como `Math.round` para valores positivos). Ejemplos con 10 % y piso 2001: 2540 → 2055, 2200 → 2021, 2010 → 2002, 1990 → 1990. Con 0 %, todos los nivel 10 vuelven a 2001.
+`redondear` es al entero más cercano, y las mitades se alejan del cero (como `Math.round` para valores positivos). Ejemplos con 10 % y piso 2001: 2540 → 2055, 2200 → 2021, 2010 → 2002, 1990 → 1990. Con 0 %, todos los nivel 10 vuelven a 2001. Con `reset_all` y 10 % sobre 2001: 1001 → 1901; con `reset_all`, 0 % y piso 1000, todos quedan en 1000.
 
 **Medallas por tramo** (por defecto; el admin las edita):
 
@@ -74,10 +75,10 @@ si no:          nuevo = elo
 
 | Endpoint | Qué hace |
 |---|---|
-| `GET`/`PUT /api/v1/admin/seasons/config` | Valores con los que se abre la **próxima** temporada: `duration_days` (1 a 365), `top_n` (1 a 500), `min_matches` (1 a 1000), `reset_pct` (0 a 100), `reset_floor` (0 a 10000) y `tiers` |
+| `GET`/`PUT /api/v1/admin/seasons/config` | Valores con los que se abre la **próxima** temporada: `duration_days` (1 a 365), `top_n` (1 a 500), `min_matches` (1 a 1000), `reset_pct` (0 a 100), `reset_floor` (0 a 10000), `reset_all` (booleano; si no llega en el `PUT`, `false`) y `tiers` |
 | `POST /api/v1/admin/seasons` | Abre la temporada 1 (o la siguiente, si no hay ninguna activa). Body opcional: `name` y `ends_at` (futura). `409` si ya hay una activa. Después, cada cierre abre la siguiente solo |
-| `PATCH /api/v1/admin/seasons/{id}` | Cambia la **activa**: `name`, `ends_at` (futura), `top_n`, `min_matches`, `reset_pct`, `reset_floor` y `tiers`. Lo que no llega no cambia. Una cerrada da `400` |
-| `GET /api/v1/admin/seasons/preview` | **Vista previa del cierre** con `top_n`, `min_matches`, `reset_pct` y `reset_floor` en la query (obligatorios): quién recibe cada medalla y cómo queda cada uno. Cada fila: `rank`, `player` (`id`, `alias`), `eligible`, `elo`, `matches`, `medal`, `elo_after` y `reset` (se reinicia). Filtros `q`, `reset` y `medal`; `sort`: **`rank` asc**, `elo`, `alias`. Suma `summary`: `players`, `eligible`, `medals`, `reset`, `avg_drop` y `max_drop`. No guarda nada |
+| `PATCH /api/v1/admin/seasons/{id}` | Cambia la **activa**: `name`, `ends_at` (futura), `top_n`, `min_matches`, `reset_pct`, `reset_floor`, `reset_all` y `tiers`. Lo que no llega no cambia. Una cerrada da `400` |
+| `GET /api/v1/admin/seasons/preview` | **Vista previa del cierre** con `top_n`, `min_matches`, `reset_pct` y `reset_floor` en la query (obligatorios) y `reset_all` (opcional, `true` o `false`): quién recibe cada medalla y cómo queda cada uno. Cada fila: `rank`, `player` (`id`, `alias`), `eligible`, `elo`, `matches`, `medal`, `elo_after` y `reset` (el reinicio le cambia el ELO). Filtros `q`, `reset` y `medal`; `sort`: **`rank` asc**, `elo`, `alias`. Suma `summary`: `players`, `eligible`, `medals`, `reset`, `avg_drop` y `max_drop`. No guarda nada |
 | `POST /api/v1/admin/seasons/{id}/close` | **Terminar temporada** ya. Body: `{ confirm }`. Responde `season_id`, `next_season_id`, `medals`, `reset` (cuántos se reiniciaron) y `closed_at`. No se deshace |
 
 **Prueba interactiva del porcentaje (pedido de Daniel):** en la configuración, elegir un jugador (o escribir un ELO) y mover el porcentaje con un control deslizante; se ve en el momento "2540 → 2055". Se calcula en el navegador con la fórmula de arriba, sin una consulta por cada movimiento. Al lado, la vista previa del cierre con los valores del formulario (esa sí consulta la API, con un pequeño retardo).

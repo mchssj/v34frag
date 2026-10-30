@@ -1,0 +1,10 @@
+CMLeague --  Changelog
+
+Clips para los VIP
+- Si eres VIP, tus jugadas ya no compiten por los 5 mejores clips del mix: tus 3 mejores jugadas de cada mix tienen su clip aparte.
+- Los clips de los VIP salen en Discord junto a los del top.
+- Cuenta desde que eres VIP: los mixes que jugaste antes no cambian.
+- Los demás no pierden nada: el top de 5 de cada mix queda para quienes no son VIP.
+
+Clips revisados
+- Si un clip sale con errores, los admins pueden mandarlo a grabar de nuevo. El clip corregido sale en Discord apenas lo revisan.

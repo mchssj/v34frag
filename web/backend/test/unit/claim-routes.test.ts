@@ -44,6 +44,7 @@ describe('!claim: valores por defecto', () => {
     expect(body).toEqual({
       steam_id: S, claimed: false, player_id: null,
       profile: { steam_id: S, last_nick: null, nicks: [], matches: 0, first_played: null, last_played: null, elo: null, peak_elo: null, elo_matches: 0, level: null, stats: null },
+      ban: null,
     });
   });
 

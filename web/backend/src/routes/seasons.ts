@@ -33,14 +33,14 @@ import {
 
 type C = Context<AppEnv>;
 type Tier = z.infer<typeof SeasonTier>;
-const SEASON = 'id, number, name, status, starts_at, ends_at, closed_at, top_n, min_matches, reset_pct, reset_floor, tiers, champion_id, champion_nick, medals';
+const SEASON = 'id, number, name, status, starts_at, ends_at, closed_at, top_n, min_matches, reset_pct, reset_floor, reset_all, tiers, champion_id, champion_nick, medals';
 const STANDING = 'player_id, nick, photo_url, rank, eligible, elo, peak_elo, matches, wins, losses, elo_after, tier, icon, teams, rating, kd';
-const CONFIG = 'duration_days, top_n, min_matches, reset_pct, reset_floor, tiers, updated_at';
+const CONFIG = 'duration_days, top_n, min_matches, reset_pct, reset_floor, reset_all, tiers, updated_at';
 
 type SeasonRow = {
   id: string | null; number: number | null; name: string | null; status: string | null; starts_at: string | null;
   ends_at: string | null; closed_at: string | null; top_n: number | null; min_matches: number | null; reset_pct: number | null;
-  reset_floor: number | null; tiers: unknown; champion_id: string | null; champion_nick: string | null; medals: number | null;
+  reset_floor: number | null; reset_all: boolean | null; tiers: unknown; champion_id: string | null; champion_nick: string | null; medals: number | null;
 };
 /** Tramos como los guarda la base: el último puede venir sin `to`. */
 const toTiers = (t: unknown): Tier[] => ((t ?? []) as Tier[]).map((x) => ({ ...x, to: x.to ?? null }));
@@ -57,6 +57,7 @@ const toSeason = (r: SeasonRow): z.infer<typeof Season> => ({
   min_matches: r.min_matches!,
   reset_pct: r.reset_pct!,
   reset_floor: r.reset_floor!,
+  reset_all: !!r.reset_all,
   tiers: toTiers(r.tiers),
   champion: r.champion_id ? { id: r.champion_id, alias: r.champion_nick ?? '' } : null,
   medals: r.medals ?? 0,
@@ -160,7 +161,7 @@ const close = createRoute({
   method: 'post', path: '/api/v1/admin/seasons/{id}/close', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Terminar la temporada',
   description:
-    'Cierra la temporada ya: foto del ranking, medallas al top N, reinicio del nivel 10 y apertura de la siguiente. ' +
+    'Cierra la temporada ya: foto del ranking, medallas al top N, reinicio (del nivel 10, o de todos con `reset_all`) y apertura de la siguiente. ' +
     'Pide `confirm: "estoy seguro"` (doble confirmación en el frontend). No se deshace.',
   request: { params: SeasonIdParam, body: { required: true, ...json(SeasonCloseBody) } },
   responses: { 200: { description: 'Cerrada', ...json(SeasonClosed) }, ...errorResponses(400, 401, 403, 404) },
@@ -242,7 +243,7 @@ export const seasons = createRouter()
     must(
       await c.var.sb.rpc('set_season_config', {
         p_duration_days: b.duration_days, p_top_n: b.top_n, p_min_matches: b.min_matches,
-        p_reset_pct: b.reset_pct, p_reset_floor: b.reset_floor, p_tiers: b.tiers,
+        p_reset_pct: b.reset_pct, p_reset_floor: b.reset_floor, p_reset_all: b.reset_all, p_tiers: b.tiers,
       }),
     );
     return c.json(await readConfig(c), 200);
@@ -259,7 +260,7 @@ export const seasons = createRouter()
     must(
       await c.var.sb.rpc('season_update', {
         p_id: id, p_name: b.name, p_ends_at: b.ends_at, p_top_n: b.top_n, p_min_matches: b.min_matches,
-        p_reset_pct: b.reset_pct, p_reset_floor: b.reset_floor, p_tiers: b.tiers,
+        p_reset_pct: b.reset_pct, p_reset_floor: b.reset_floor, p_reset_all: b.reset_all, p_tiers: b.tiers,
       }),
     );
     return c.json(await readSeason(c, id), 200);
@@ -272,7 +273,9 @@ export const seasons = createRouter()
   })
   .openapi(preview, async (c) => {
     const p = c.req.valid('query');
-    const args = { p_top_n: p.top_n, p_min_matches: p.min_matches, p_reset_pct: p.reset_pct, p_reset_floor: p.reset_floor };
+    const args = {
+      p_top_n: p.top_n, p_min_matches: p.min_matches, p_reset_pct: p.reset_pct, p_reset_floor: p.reset_floor, p_reset_all: p.reset_all ?? false,
+    };
     let q = c.var.sb.rpc('season_preview', args, { count: 'exact' });
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);

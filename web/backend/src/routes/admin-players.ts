@@ -24,6 +24,7 @@ import {
   BlockedWordQuery,
   IdParam,
   MedalBody,
+  PlayerIpList,
   SteamLinkBody,
   SteamUnlinkedList,
   SteamUnlinkedQuery,
@@ -31,6 +32,7 @@ import {
 import { bearer, errorResponses, json } from '../schemas/common';
 import { AvatarResult, AvatarUpload } from '../schemas/profile';
 import { Medal } from '../schemas/players';
+import { vipStatusOf } from '../services/vip';
 
 type C = Context<AppEnv>;
 const PLAYER = 'id, nick, user_id, steam_id, photo_url, privacy, bio, achievements, team_history';
@@ -98,6 +100,16 @@ const deleteMedal = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
 
+const playerIps = createRoute({
+  method: 'get', path: '/api/v1/admin/players/{id}/ips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'IPs de un jugador',
+  description:
+    'Las IPs desde las que entró al servidor con cualquiera de sus SteamID (las registra el reporter 2.6.0 al entrar), ' +
+    'la más reciente primero, con las otras fichas que usaron la misma IP. Dato personal: solo admin.',
+  request: { params: IdParam },
+  responses: { 200: { description: 'IPs', ...json(PlayerIpList) }, ...errorResponses(400, 401, 403, 404) },
+});
+
 // ---------- SteamID ----------
 
 const unlinked = createRoute({
@@ -109,7 +121,7 @@ const unlinked = createRoute({
 const steamLink = createRoute({
   method: 'post', path: '/api/v1/admin/steam/link', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Vincular un SteamID',
-  description: 'Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO. `player_id: null` lo quita de su ficha.',
+  description: 'Suma el SteamID a la ficha (principal si no tiene, adicional si ya tiene; hasta 4) y le pasa todas sus partidas. Si une historiales, recalcula el ELO de esa ficha (los demás no cambian).`player_id: null` lo quita de su ficha.',
   request: { body: { required: true, ...json(SteamLinkBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
 });
@@ -222,6 +234,28 @@ export const adminPlayers = createRouter()
     if (!gone.length) throw notFound('esa medalla');
     return c.body(null, 204);
   })
+  .openapi(playerIps, async (c) => {
+    const { id } = c.req.valid('param');
+    const player = must(await c.var.sb.from('players').select('id').eq('id', id).maybeSingle());
+    if (!player) throw notFound('ese jugador');
+    c.header('Cache-Control', 'no-store');
+    const rows = mustHave(await c.var.sb.rpc('admin_player_ips', { p_player: id }));
+    return c.json(
+      {
+        items: rows.map((r) => ({
+          ip: r.ip,
+          steam_id: r.steam_id,
+          first_seen_at: r.first_seen_at,
+          last_seen_at: r.last_seen_at,
+          times: r.times,
+          last_nick: r.last_nick,
+          others: Array.isArray(r.others) ? (r.others as { id: string; alias: string }[]) : [],
+          others_unlinked: r.others_unlinked ?? 0,
+        })),
+      },
+      200,
+    );
+  })
   .openapi(unlinked, async (c) => {
     const p = c.req.valid('query');
     let q = c.var.sb.from('steam_unlinked').select('steam_id, last_nick, matches, last_played', { count: 'exact' });
@@ -239,15 +273,23 @@ export const adminPlayers = createRouter()
   })
   .openapi(users, async (c) => {
     const p = c.req.valid('query');
-    let q = c.var.sb.from('admin_user_list').select('id, alias, role, alias_changed_at, player_id, steam_id', { count: 'exact' });
+    let q = c.var.sb.from('admin_user_list').select('id, alias, role, alias_changed_at, player_id, steam_id, is_streamer', { count: 'exact' });
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.role) q = q.eq('role', p.role);
     if (p.has_player !== undefined) q = q.eq('has_player', p.has_player);
     if (p.has_steam !== undefined) q = q.eq('has_steam', p.has_steam);
-    type Row = { id: string; alias: string | null; role: string; alias_changed_at: string | null; player_id: string | null; steam_id: string | null };
+    if (p.streamer !== undefined) q = q.eq('is_streamer', p.streamer);
+    type Row = {
+      id: string; alias: string | null; role: string; alias_changed_at: string | null; player_id: string | null; steam_id: string | null;
+      is_streamer: boolean | null;
+    };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    return c.json(envelope(rows.map((u) => ({ ...u, alias: u.alias ?? '' })), total, p), 200);
+    const vip = await vipStatusOf(c.var.sb, rows.map((u) => u.id));
+    return c.json(
+      envelope(rows.map(({ is_streamer, ...u }) => ({ ...u, alias: u.alias ?? '', vip: vip.get(u.id) ?? null, streamer: !!is_streamer })), total, p),
+      200,
+    );
   })
   .openapi(userAlias, async (c) => {
     const { alias, force } = c.req.valid('json');

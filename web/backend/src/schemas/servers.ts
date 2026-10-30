@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
+import { ServerHud } from './hud';
 
 // Admin de servidores de juego (plan docs/bitacora/2026-10-16-api-admin-servidores).
 // Los formatos son los mismos `check` de game_servers.
@@ -78,6 +79,7 @@ export const AdminServer = z
     matches: z.number().int().openapi({ description: 'Partidas jugadas o asignadas en el servidor' }),
     last_match_at: z.string().nullable(),
     created_at: z.string(),
+    hud: ServerHud.openapi({ description: 'HUD del relay en el VPS (se configura con `PUT …/hud`)' }),
   })
   .openapi('AdminServer');
 

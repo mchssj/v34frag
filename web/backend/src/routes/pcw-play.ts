@@ -201,8 +201,8 @@ const servers = createRoute({
 
 const setRole = createRoute({
   method: 'put', path: '/api/v1/admin/users/{id}/role', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Nombrar o quitar un organizador', description: '`user` u `organizer`. El rol admin se da en la base.',
-  request: { params: PostParam, body: { required: true, ...json(z.object({ role: z.enum(['user', 'organizer']) }).openapi('RoleChange')) } },
+  summary: 'Cambiar el rol de una cuenta', description: '`user`, `organizer` o `moderator` (banea desde la web). El rol admin se da en la base.',
+  request: { params: PostParam, body: { required: true, ...json(z.object({ role: z.enum(['user', 'organizer', 'moderator']) }).openapi('RoleChange')) } },
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 

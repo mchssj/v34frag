@@ -2,6 +2,8 @@
 
 > Parte del contrato para el frontend. Índice, estado y novedades: [`README.md`](README.md). Las decisiones de todos los módulos están en [`decisiones.md`](decisiones.md).
 
+> **2026-10-28 (rompe):** `players_min` y `players_max` ya no existen. Cada torneo tiene un modo de juego (`game_mode`, con sus `players_per_team`) y `subs_max`, y la inscripción es `{ active, subs }` sin el coach. Suma banner, cierre de inscripciones, BO y fase actual en el listado, y `live_match`. El detalle está en [`contrato-frontend-equipo-torneos.md`](../../../contrato-frontend-equipo-torneos.md); donde esta sección diga otra cosa, manda ese archivo.
+
 ## 8b. Torneos (disponible)
 
 ### Quién

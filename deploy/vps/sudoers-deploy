@@ -1,0 +1,2 @@
+# CMLeague: lo único que el usuario deploy puede hacer con sudo (deploy/vps/preparar.sh, plan sección 3.13).
+deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart cmleague-api, /usr/bin/systemctl restart cmleague-hud, /usr/bin/systemctl reload caddy

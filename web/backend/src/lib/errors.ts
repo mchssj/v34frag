@@ -20,6 +20,11 @@ export type ErrorCode =
   | 'FILE_TOO_LARGE'
   | 'CONFIG_INVALID'
   | 'NOT_AVAILABLE'
+  | 'NOT_A_MEMBER'
+  | 'ROSTER_FULL'
+  | 'COACH_NOT_ALLOWED'
+  | 'REGISTRATION_CLOSED'
+  | 'PLAYER_NOT_LINKED'
   | 'INTERNAL';
 
 export class AppError extends Error {
@@ -69,9 +74,30 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
       return new AppError(400, 'VALIDATION_ERROR', 'Algún dato no cumple las reglas de la base.');
     case 'P0001': // raise exception de una función SQL: el mensaje es para el usuario
       return new AppError(400, 'BUSINESS_RULE', err.message);
+    // Códigos propios de las funciones SQL (replanteo 33): el mensaje también es para el usuario.
+    case 'V3401':
+      return new AppError(404, 'NOT_A_MEMBER', err.message);
+    case 'V3402':
+      return new AppError(409, 'ROSTER_FULL', err.message);
+    case 'V3403':
+      return new AppError(400, 'COACH_NOT_ALLOWED', err.message);
+    case 'V3404':
+      return new AppError(409, 'REGISTRATION_CLOSED', err.message);
+    case 'V3405':
+      return new AppError(400, 'PLAYER_NOT_LINKED', err.message, { aliases: jsonList(err.details) });
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);
+}
+
+/** Lista de textos que una función SQL manda en el detail del error (JSON). */
+function jsonList(details: string | null | undefined): string[] {
+  try {
+    const v: unknown = JSON.parse(details ?? '[]');
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 // Mensajes que genera Postgres por su cuenta (en inglés); los demás vienen de un raise y son para el usuario.

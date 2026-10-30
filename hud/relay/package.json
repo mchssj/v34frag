@@ -12,7 +12,8 @@
     "simular": "node scripts/simular.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test \"test/**/*.test.ts\"",
-    "build:exe": "node scripts/build-exe.mjs"
+    "build:exe": "node scripts/build-exe.mjs",
+    "build:node": "node scripts/build-node.mjs"
   },
   "devDependencies": {
     "@types/node": "24.19.0",

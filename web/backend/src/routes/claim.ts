@@ -26,6 +26,7 @@ import {
 } from '../schemas/claim';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { MapStatsQuery, PlayerMapStatsList, PlayerMatchList, PlayerMatchQuery } from '../schemas/players';
+import { activeBan } from '../services/bans';
 
 // Perfiles sin reclamar, !claim y varios SteamID por ficha (plan docs/bitacora/2026-10-16-claim-steamid).
 // El !claim en sí lo hace el plugin contra claim_with_code; acá están el código, el estado y lo del admin.
@@ -139,7 +140,7 @@ const approve = createRoute({
   method: 'post', path: '/api/v1/admin/steam-requests/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Aprobar un pedido de SteamID',
   description:
-    '`add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de todos** (un solo ELO por ficha); falla si comparte partidas con otro SteamID de la ficha. ' +
+    '`add`: lo suma a la ficha, le pasa su historial y **recalcula el ELO de esa ficha** (un solo ELO por ficha; los demás no cambian); falla si comparte partidas con otro SteamID de la ficha. ' +
     '`remove`: lo saca de la ficha como `DELETE /api/v1/admin/steam/{steamid}`; falla si es el único SteamID de la ficha.',
   request: { params: RequestIdParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
@@ -170,7 +171,7 @@ const removeSteam = createRoute({
   method: 'delete', path: '/api/v1/admin/steam/{steamid}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Quitar un SteamID de su ficha',
   description:
-    'Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO. ' +
+    'Sus partidas vuelven a quedar sin ficha. Si era el principal, el adicional más viejo pasa a serlo. Si la ficha tenía varios, recalcula el ELO de la ficha y el del SteamID que queda libre (los demás no cambian).' +
     'Si el jugador había pedido desvincularlo, el pedido queda aprobado.',
   request: { params: SteamParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
@@ -208,13 +209,14 @@ export const claim = createRouter()
     const { steamid } = c.req.valid('param');
     const sb = c.var.sb;
     const owner = must(await sb.from('player_steam_all').select('player_id').eq('steam_id', steamid).maybeSingle());
-    if (owner?.player_id) return c.json({ steam_id: steamid, claimed: true, player_id: owner.player_id, profile: null }, 200);
-    const [row, stats] = await Promise.all([
+    if (owner?.player_id) return c.json({ steam_id: steamid, claimed: true, player_id: owner.player_id, profile: null, ban: null }, 200);
+    const [row, stats, ban] = await Promise.all([
       sb.from('steam_profile_list').select(UNCLAIMED).eq('steam_id', steamid).maybeSingle().then(must),
       sb.from('steam_profile_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses').eq('steam_id', steamid).maybeSingle().then(must),
+      activeBan(sb, { steam: steamid }),
     ]);
     if (!row) throw notFound('un perfil con ese SteamID');
-    return c.json({ steam_id: steamid, claimed: false, player_id: null, profile: { ...toUnclaimed(row), stats: stats ?? null } }, 200);
+    return c.json({ steam_id: steamid, claimed: false, player_id: null, profile: { ...toUnclaimed(row), stats: stats ?? null }, ban }, 200);
   })
   .openapi(steamMatches, async (c) => {
     const { steamid } = c.req.valid('param');

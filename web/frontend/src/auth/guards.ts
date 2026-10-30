@@ -5,6 +5,7 @@ import {
   adminSectionOf,
   canAccessAdminSection,
   canSeeAdmin,
+  homeAdminSection,
 } from "./permissions"
 import { meQueryOptions, type AuthUser } from "./queries"
 import { safeRedirect } from "./redirect"
@@ -73,8 +74,8 @@ export async function redirectIfSignedIn({
 }
 
 /**
- * Administración: el admin entra a todas las secciones y el organizador solo a Torneos (si pide
- * otra, vuelve ahí). El resto de los usuarios va al inicio.
+ * Administración: el admin entra a todas las secciones, el organizador solo a Torneos y el
+ * moderador solo a Usuarios (los baneos); si piden otra, vuelven a la suya. El resto va al inicio.
  */
 export function requireAdminSection({
   context,
@@ -86,5 +87,8 @@ export function requireAdminSection({
   const { role } = context.user
   const section = adminSectionOf(location.pathname)
   if (section && canAccessAdminSection(role, section)) return
-  throw redirect({ to: canSeeAdmin(role) ? "/admin/events" : "/home" })
+  if (!canSeeAdmin(role)) throw redirect({ to: "/home" })
+  throw redirect({
+    to: homeAdminSection(role) === "bans" ? "/admin/bans" : "/admin/events",
+  })
 }

@@ -145,11 +145,19 @@ describe("requireAdminSection", () => {
   it("el admin entra a todas las secciones", () => {
     expect(target(at("admin", "/admin/players"))).toBe("pasa")
     expect(target(at("admin", "/admin/users"))).toBe("pasa")
+    expect(target(at("admin", "/admin/bans"))).toBe("pasa")
   })
 
   it("el organizador solo entra a Torneos; si pide otra sección, vuelve ahí", () => {
     expect(target(at("organizer", "/admin/events"))).toBe("pasa")
     expect(target(at("organizer", "/admin/servers"))).toBe("/admin/events")
+  })
+
+  it("el moderador solo entra a Baneos; si pide otra sección, vuelve ahí", () => {
+    expect(target(at("moderator", "/admin/bans"))).toBe("pasa")
+    expect(target(at("moderator", "/admin/users"))).toBe("/admin/bans")
+    expect(target(at("moderator", "/admin/players"))).toBe("/admin/bans")
+    expect(target(at("moderator", "/admin"))).toBe("/admin/bans")
   })
 
   it("un usuario común vuelve al inicio", () => {

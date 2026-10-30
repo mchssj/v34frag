@@ -28,6 +28,11 @@ const EnvSchema = z.object({
     .url()
     .transform((s) => s.replace(/\/+$/, ''))
     .optional(),
+  // Dirección pública del relay del HUD (https://hud.cmleague.lat): links de OBS de los streamers y csstv_hud_host del cfg.
+  HUD_BASE_URL: z
+    .url()
+    .transform((s) => s.replace(/\/+$/, ''))
+    .optional(),
   // La API no la usa: la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
   // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),

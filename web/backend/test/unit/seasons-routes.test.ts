@@ -86,7 +86,7 @@ describe('temporadas: respuestas', () => {
   it('la activa, sin campeón', async () => {
     postgrest((url) => (url.pathname.endsWith('/season_list') ? Response.json(ROW) : undefined));
     const body = await json(await call('GET', '/api/v1/seasons/current'));
-    expect(body).toMatchObject({ id: SEASON, status: 'active', champion: null, tiers: TIERS, ends_at: ROW.ends_at });
+    expect(body).toMatchObject({ id: SEASON, status: 'active', champion: null, tiers: TIERS, ends_at: ROW.ends_at, reset_all: false });
   });
 
   it('ranking de una temporada que no existe: 404', async () => {
@@ -154,8 +154,30 @@ describe('temporadas: respuestas', () => {
     ]);
     expect(body.summary).toEqual({ players: 10, eligible: 4, medals: 4, reset: 1, avg_drop: 539, max_drop: 539 });
     const rpc = calls.find((x) => x.url.pathname.endsWith('/rpc/season_preview'))!;
-    expect(rpc.body).toEqual({ p_top_n: 20, p_min_matches: 5, p_reset_pct: 0, p_reset_floor: 2001 });
+    expect(rpc.body).toEqual({ p_top_n: 20, p_min_matches: 5, p_reset_pct: 0, p_reset_floor: 2001, p_reset_all: false });
     expect(rpc.url.searchParams.get('tier')).toBe('not.is.null');
+  });
+
+  it('reinicio total: en la vista previa, la configuración y la activa', async () => {
+    postgrest((url) => {
+      if (url.pathname.endsWith('/season_config')) return Response.json({ ...CONFIG, reset_all: true, updated_at: null });
+      if (url.pathname.endsWith('/season_list')) return Response.json({ ...ROW, reset_all: true });
+      if (url.pathname.endsWith('/rpc/season_preview_summary'))
+        return Response.json({ players: 0, eligible: 0, medals: 0, reset: 0, avg_drop: 0, max_drop: 0 });
+      return undefined;
+    });
+    expect((await call('GET', '/api/v1/admin/seasons/preview?top_n=20&min_matches=5&reset_pct=0&reset_floor=1000&reset_all=true')).status).toBe(200);
+    expect(calls.find((x) => x.url.pathname.endsWith('/rpc/season_preview_summary'))!.body).toMatchObject({ p_reset_all: true });
+
+    calls.length = 0;
+    const cfg = await json(await call('PUT', '/api/v1/admin/seasons/config', CONFIG));
+    expect(calls.find((x) => x.url.pathname.endsWith('/rpc/set_season_config'))!.body).toMatchObject({ p_reset_all: false });
+    expect(cfg.reset_all).toBe(true);
+
+    calls.length = 0;
+    const season = await json(await call('PATCH', `/api/v1/admin/seasons/${SEASON}`, { reset_all: true }));
+    expect(calls.find((x) => x.url.pathname.endsWith('/rpc/season_update'))!.body).toMatchObject({ p_id: SEASON, p_reset_all: true });
+    expect(season.reset_all).toBe(true);
   });
 
   it('medallas de un jugador: las manuales sin temporada', async () => {

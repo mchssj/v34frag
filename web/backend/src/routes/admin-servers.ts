@@ -9,14 +9,16 @@ import type { AppEnv } from '../lib/types';
 import { IdParam } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { AdminServer, AdminServerList, AdminServerQuery, type SERVER_MODES, ServerCreate, ServerPatch, ServerToken } from '../schemas/servers';
+import { hudHost, toServerHud } from '../services/hud';
 
 // Admin de servidores de juego: alta, token, licencia, IP permitida, revocar, borrar, dirección, id del panel, modo y
 // región (planes docs/bitacora/2026-10-16-api-admin-servidores y 2026-10-19-api-servidores-ping-modo-region), y puerto de SourceTV
-// (2026-10-24-api-mixes-perfil-ranking). Todo con el token del admin: manda la RLS.
+// (2026-10-24-api-mixes-perfil-ranking), y el HUD de cada servidor (2026-10-29-hud-relay-vps, rutas en hud.ts). Todo con el
+// token del admin: manda la RLS.
 
 type C = Context<AppEnv>;
 const COLUMNS =
-  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, tv_port, matches, last_match_at, created_at';
+  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, tv_port, matches, last_match_at, created_at, hud_port, hud_enabled, hud_key, hud_seen_at, hud_streaming';
 
 /** Nombre corto para `server/build_licenciado.sh`: minúsculas, sin tildes, letras, números y guiones. */
 export function shortName(name: string): string {
@@ -54,7 +56,7 @@ function sameName<T>(fn: () => T): T {
   }
 }
 
-async function getServer(c: C, id: string) {
+export async function getServer(c: C, id: string) {
   const s = must(await c.var.sb.from('admin_server_list').select(COLUMNS).eq('id', id).maybeSingle());
   if (!s) throw notFound('ese servidor');
   return s;
@@ -112,9 +114,9 @@ export const adminServers = createRouter()
     if (p.mode) q = q.eq('mode', p.mode);
     type Row = Awaited<ReturnType<typeof getServer>>;
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    return c.json(envelope(rows.map(toServer), total, p), 200);
+    return c.json(envelope(rows.map((r) => toServer(c, r)), total, p), 200);
   })
-  .openapi(detail, async (c) => c.json(toServer(await getServer(c, c.req.valid('param').id)), 200))
+  .openapi(detail, async (c) => c.json(toServer(c, await getServer(c, c.req.valid('param').id)), 200))
   .openapi(create, async (c) => {
     const b = c.req.valid('json');
     // El nombre repetido lo rechaza la base con su propio mensaje (409).
@@ -140,7 +142,7 @@ export const adminServers = createRouter()
     const res = await c.var.sb.from('game_servers').update(set).eq('id', id).select('id');
     const rows = sameName(() => must(res));
     if (!rows?.length) throw notFound('ese servidor');
-    return c.json(toServer(await getServer(c, id)), 200);
+    return c.json(toServer(c, await getServer(c, id)), 200);
   })
   .openapi(rotate, async (c) => {
     const { id } = c.req.valid('param');
@@ -155,7 +157,7 @@ export const adminServers = createRouter()
   });
 
 type ServerRow = Awaited<ReturnType<typeof getServer>>;
-function toServer(s: ServerRow) {
+export function toServer(c: C, s: ServerRow) {
   return {
     id: s.id!,
     name: s.name ?? '',
@@ -175,5 +177,6 @@ function toServer(s: ServerRow) {
     matches: s.matches ?? 0,
     last_match_at: s.last_match_at ?? null,
     created_at: s.created_at ?? '',
+    hud: toServerHud(s, hudHost(c.var.config.HUD_BASE_URL)),
   };
 }

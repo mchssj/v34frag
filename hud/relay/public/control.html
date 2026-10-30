@@ -32,6 +32,9 @@
     .players button.dead { opacity: 0.5; }
     .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
     .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .hint.warn { color: var(--t); }
+    .connect { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+    .connect code { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; font-size: 14px; }
     @media (max-width: 560px) { .players, .teams { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -39,6 +42,12 @@
   <main>
     <h1>CMLeague HUD · control</h1>
     <div class="status" id="status">Conectando con el relay…</div>
+
+    <div id="server-section" hidden>
+      <h2>Servidor</h2>
+      <section id="servers"></section>
+      <div class="hint">● recibiendo datos · ○ sin datos. Conectate a la SourceTV con el connect de abajo.</div>
+    </div>
 
     <h2>Equipos</h2>
     <section>
@@ -60,6 +69,6 @@
     <h2>Qué se muestra</h2>
     <section class="toggles" id="toggles"></section>
   </main>
-  <script type="module" src="/control.js"></script>
+  <script type="module" src="control.js"></script>
 </body>
 </html>

@@ -16,3 +16,6 @@ web/backend/supabase/.temp/
 
 # Copia local de los datos de producción (ensayo del ELO). Vive fuera del repo; esto es por si acaso.
 web/backend/.prod-copy/
+
+# Paquete para el servidor de flow: lleva el token, el webhook y binarios de terceros (docs/bitacora/2026-10-27-servidor-flow)
+flow/

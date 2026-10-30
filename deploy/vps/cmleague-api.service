@@ -1,0 +1,40 @@
+# API de CMLeague (web/backend, Node 24). Plan docs/bitacora/2026-10-28-despliegue-vps-ovh, sección 3.12.
+[Unit]
+Description=CMLeague API
+After=network-online.target
+Wants=network-online.target
+# No arranca hasta el primer despliegue.
+ConditionPathExists=/srv/cmleague/api/current/server.mjs
+
+[Service]
+Type=simple
+User=cmleague
+Group=cmleague
+WorkingDirectory=/srv/cmleague/api/current
+EnvironmentFile=/etc/cmleague/api.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --enable-source-maps /srv/cmleague/api/current/server.mjs
+Restart=always
+RestartSec=2
+# Al reiniciar, hasta 20 s para terminar los pedidos en curso.
+TimeoutStopSec=20
+MemoryMax=768M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadOnlyPaths=/srv/cmleague
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

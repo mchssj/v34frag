@@ -1,13 +1,22 @@
-import { createRoute, type z } from '@hono/zod-openapi';
-import { currentUser, optionalUser, requireUser } from '../lib/auth';
+import { createRoute, z } from '@hono/zod-openapi';
+import type { Context } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
+import { currentUser, optionalUser, requireAdmin, requireUser } from '../lib/auth';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { notModified } from '../lib/etag';
-import { AppError } from '../lib/errors';
+import { AppError, fromPostgrest } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
+import type { AppEnv } from '../lib/types';
+import { BANNER_MAX_BYTES, BANNER_SHAPE } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
 import {
+  BANNER_HELP,
+  BannerResult,
+  BannerUpload,
   DrawResult,
+  GameMode,
+  GameModeBody,
   EventCreate,
   EventDetail,
   EventList,
@@ -28,18 +37,29 @@ import {
 } from '../schemas/events';
 import { Created } from '../schemas/teams';
 import { MATCH_LIST, toSummary, type MatchRow } from '../services/matches';
+import { dropPhoto, removePhoto, savePhoto } from '../services/photos';
 
-const LIST = 'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, teams';
-const EXTRA = 'id, rules, min_teams, players_min, players_max, config, tie_pending, drawn_at, drawn_by, map_pool';
+type C = Context<AppEnv>;
+
+const LIST =
+  'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, ' +
+  'champion_logo_url, teams, game_mode, players_per_team, subs_max, bo, bo_final, progress_played, progress_total, current_match_id, banner_url, ' +
+  'registration_closes_at';
+const EXTRA = 'id, rules, min_teams, config, tie_pending, drawn_at, drawn_by, map_pool';
 const done = { 204: { description: 'Hecho' } } as const;
 
 type EventRow = {
   id: string; name: string; template: string; status: string; starts_on: string | null; ends_on: string | null; prize: string | null;
   max_teams: number | null; organizer_id: string | null; organizer_alias: string | null; champion_id: string | null;
-  champion_name: string | null; champion_tag: string | null; teams: number;
+  champion_name: string | null; champion_tag: string | null; champion_logo_url: string | null; teams: number; game_mode: string;
+  players_per_team: number | null; subs_max: number; bo: number | null; bo_final: number | null; progress_played: number | null;
+  progress_total: number | null; current_match_id: string | null; banner_url: string | null; registration_closes_at: string | null;
 };
 
-const summary = (e: EventRow): z.infer<typeof EventSummary> => ({
+type BoValue = 1 | 3 | 5;
+const bo = (n: number | null): BoValue | null => (n === 1 || n === 3 || n === 5 ? n : null);
+
+const summary = (e: EventRow, stage: string | null = null): z.infer<typeof EventSummary> => ({
   id: e.id,
   name: e.name,
   template: e.template as z.infer<typeof EventSummary>['template'],
@@ -49,15 +69,65 @@ const summary = (e: EventRow): z.infer<typeof EventSummary> => ({
   prize: e.prize,
   teams: e.teams ?? 0,
   max_teams: e.max_teams,
-  champion: e.champion_id ? { id: e.champion_id, name: e.champion_name ?? '', tag: e.champion_tag } : null,
+  champion: e.champion_id ? { id: e.champion_id, name: e.champion_name ?? '', tag: e.champion_tag, logo_url: e.champion_logo_url } : null,
   organizer: e.organizer_id ? { user_id: e.organizer_id, alias: e.organizer_alias } : null,
+  game_mode: e.game_mode,
+  players_per_team: e.players_per_team ?? 5,
+  subs_max: e.subs_max ?? 0,
+  bo: bo(e.bo),
+  bo_final: bo(e.bo_final),
+  current_stage: stage,
+  progress: e.progress_total === null ? null : { played: e.progress_played ?? 0, total: e.progress_total },
+  banner_url: e.banner_url,
+  registration_closes_at: e.registration_closes_at,
 });
+
+/** Fase de la partida actual de cada torneo en curso (una consulta para toda la página). */
+async function currentStages(c: C, rows: EventRow[]): Promise<Map<string, string | null>> {
+  const ids = rows.map((e) => e.current_match_id).filter((x): x is string => !!x);
+  if (!ids.length) return new Map();
+  const ms = mustHave(await c.var.sb.from('match_list').select(MATCH_LIST).in('id', ids)) as unknown as MatchRow[];
+  const label = new Map(ms.map((m) => [m.id, toSummary(m).label]));
+  return new Map(rows.map((e) => [e.id, e.current_match_id ? (label.get(e.current_match_id) ?? null) : null]));
+}
+
+/** La primera partida en vivo del torneo, con el mapa que se está jugando. */
+async function liveMatch(c: C, eventId: string): Promise<z.infer<typeof EventDetail>['live_match']> {
+  const m = must(
+    await c.var.sb
+      .from('match_list')
+      .select(MATCH_LIST)
+      .eq('event_id', eventId)
+      .eq('status', 'live')
+      .eq('bye', false)
+      .order('phase', { ascending: true, nullsFirst: false })
+      .order('stage_order', { ascending: true, nullsFirst: false })
+      .order('round', { ascending: true, nullsFirst: false })
+      .order('grp', { ascending: true, nullsFirst: false })
+      .order('pos', { ascending: true, nullsFirst: false })
+      .limit(1)
+      .maybeSingle(),
+  ) as unknown as MatchRow | null;
+  if (!m) return null;
+  // En una serie, el mapa en juego es el del mix vinculado con !match que está en vivo.
+  const game = m.best_of > 1
+    ? must(await c.var.sb.from('matches').select('map').eq('parent_match_id', m.id).eq('status', 'live').limit(1).maybeSingle())
+    : null;
+  return {
+    id: m.id,
+    label: toSummary(m).label,
+    map: game?.map ?? m.map,
+    map_index: Math.min((m.score1 ?? 0) + (m.score2 ?? 0) + 1, m.best_of),
+    maps_total: m.best_of,
+  };
+}
 
 // ---------- rutas públicas ----------
 
 const list = createRoute({
   method: 'get', path: '/api/v1/events', tags: ['Torneos'], middleware: [optionalUser] as const,
-  summary: 'Torneos', description: 'Por defecto, el que empieza más tarde primero. Sin sesión.',
+  summary: 'Torneos',
+  description: 'Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle).',
   request: { query: EventListQuery },
   responses: { 200: { description: 'Torneos', ...json(EventList) }, ...errorResponses(400, 401) },
 });
@@ -65,7 +135,9 @@ const list = createRoute({
 const detail = createRoute({
   method: 'get', path: '/api/v1/events/{id}', tags: ['Torneos'], middleware: [optionalUser] as const,
   summary: 'Torneo',
-  description: 'Configuración, estado, campeón y empate pendiente. Inscritos, partidas y tablas van en sus listados. Con `ETag` (`304` si no cambió).',
+  description:
+    'Configuración, estado, campeón, empate pendiente y la partida en vivo (`live_match`). Inscritos, partidas y tablas van en sus listados. ' +
+    'Con `ETag` (`304` si no cambió).',
   request: { params: EventParam },
   responses: { 200: { description: 'Torneo', ...json(EventDetail) }, 304: { description: 'Sin cambios' }, ...errorResponses(400, 401, 404) },
 });
@@ -101,17 +173,21 @@ const register = createRoute({
   method: 'put', path: '/api/v1/events/{id}/registrations/{teamId}', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
   summary: 'Inscribir un equipo o cambiar sus inscritos',
   description:
-    'El capitán, mientras el torneo está en inscripciones (o el organizador, también después de generar). Los jugadores tienen que ser del ' +
-    'plantel, tener SteamID y no estar inscritos con otro equipo en el mismo torneo; entre `players_min` y `players_max`.',
+    'El capitán, mientras el torneo está en inscripciones y antes del cierre (o el organizador, también después). `active`: exactamente ' +
+    '`players_per_team` del torneo; `subs`: hasta `subs_max`. Tienen que ser del plantel, tener SteamID y no estar inscritos con otro ' +
+    'equipo en el mismo torneo. El coach no se inscribe (`400 COACH_NOT_ALLOWED`). Sin SteamID: `400 PLAYER_NOT_LINKED` con los alias en ' +
+    '`details.aliases`. Pasado `registration_closes_at`: `409 REGISTRATION_CLOSED`. A cada jugador que entra, cambia de activo a suplente o ' +
+    'sale le llega el aviso `event_lineup`.',
   request: { params: EventTeamParam, body: { required: true, ...json(RegistrationBody) } },
-  responses: { ...done, ...errorResponses(400, 401, 403) },
+  responses: { ...done, ...errorResponses(400, 401, 403, 409) },
 });
 
 const unregister = createRoute({
   method: 'delete', path: '/api/v1/events/{id}/registrations/{teamId}', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Dar de baja un equipo', description: 'El capitán o el organizador, antes de generar el fixture.',
+  summary: 'Dar de baja un equipo',
+  description: 'El capitán (antes del cierre de inscripciones: si no, `409 REGISTRATION_CLOSED`) o el organizador, antes de generar el fixture.',
   request: { params: EventTeamParam },
-  responses: { ...done, ...errorResponses(400, 401, 403) },
+  responses: { ...done, ...errorResponses(400, 401, 403, 409) },
 });
 
 // ---------- organizador o admin ----------
@@ -184,6 +260,49 @@ const ties = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 
+const bannerLimit = bodyLimit({
+  maxSize: BANNER_MAX_BYTES + 16 * 1024,
+  onError: () => {
+    throw new AppError(413, 'FILE_TOO_LARGE', `La imagen pesa más de ${BANNER_MAX_BYTES / 1024} KB.`);
+  },
+});
+
+const putBanner = createRoute({
+  method: 'put', path: '/api/v1/events/{id}/banner', tags: ['Torneos'], security: bearer, middleware: [requireUser, bannerLimit] as const,
+  summary: 'Subir el banner', description: `\`multipart/form-data\`, campo \`file\`. El organizador del torneo o un admin. Reemplaza al anterior. ${BANNER_HELP}`,
+  request: { params: EventParam, body: { required: true, content: { 'multipart/form-data': { schema: BannerUpload } } } },
+  responses: { 200: { description: 'Banner guardado', ...json(BannerResult) }, ...errorResponses(400, 401, 403, 404, 413) },
+});
+
+const deleteBanner = createRoute({
+  method: 'delete', path: '/api/v1/events/{id}/banner', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Quitar el banner', description: 'El organizador del torneo o un admin. Vuelve el patrón por defecto.',
+  request: { params: EventParam },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404) },
+});
+
+const gameModes = createRoute({
+  method: 'get', path: '/api/v1/game-modes', tags: ['Torneos'], middleware: [optionalUser] as const,
+  summary: 'Modos de juego', description: 'Los habilitados para crear torneos, del más chico al más grande. Sin sesión.',
+  responses: { 200: { description: 'Modos', ...json(z.array(GameMode)) }, ...errorResponses(401) },
+});
+
+const adminGameModes = createRoute({
+  method: 'get', path: '/api/v1/admin/game-modes', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Modos de juego (todos)', description: 'Habilitados y deshabilitados.',
+  responses: { 200: { description: 'Modos', ...json(z.array(GameMode)) }, ...errorResponses(401, 403) },
+});
+
+const putGameMode = createRoute({
+  method: 'put', path: '/api/v1/admin/game-modes', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Habilitar o deshabilitar un modo',
+  description: 'Un torneo que ya usa el modo lo conserva; los nuevos no lo pueden elegir. Tiene que quedar al menos uno habilitado.',
+  request: { body: { required: true, ...json(GameModeBody) } },
+  responses: { 200: { description: 'Modos', ...json(z.array(GameMode)) }, ...errorResponses(400, 401, 403) },
+});
+
+const GAME_MODE = 'code, name, players_per_team, active';
+
 export const events = createRouter()
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
@@ -191,12 +310,14 @@ export const events = createRouter()
     if (p.status) q = q.eq('status', p.status);
     if (p.template) q = q.eq('template', p.template);
     if (p.organizer) q = q.eq('organizer_id', p.organizer);
+    if (p.game_mode) q = q.eq('game_mode', p.game_mode);
     if (p.from) q = q.gte('starts_on', p.from.slice(0, 10));
     if (p.to) q = q.lte('starts_on', p.to.slice(0, 10));
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     const { rows, total } = await runList<EventRow, typeof q>(q, p, {});
-    return c.json(envelope(rows.map(summary), total, p), 200);
+    const stages = await currentStages(c, rows);
+    return c.json(envelope(rows.map((e) => summary(e, stages.get(e.id) ?? null)), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');
@@ -208,12 +329,13 @@ export const events = createRouter()
     if (!e || !extra) throw notFound('ese torneo');
     const user = currentUser(c);
     const viewer = user ? { can_manage: !!must(await sb.rpc('can_manage_event', { p_event: id })) } : null;
+    const row = e as unknown as EventRow;
+    const [stages, live] = await Promise.all([currentStages(c, [row]), liveMatch(c, id)]);
     const body = {
-      ...summary(e as unknown as EventRow),
+      ...summary(row, stages.get(id) ?? null),
       rules: extra.rules,
       min_teams: extra.min_teams,
-      players_min: extra.players_min,
-      players_max: extra.players_max,
+      live_match: live,
       config: (extra.config ?? {}) as Record<string, unknown>,
       tie_pending: (extra.tie_pending as { grp: number } | null) ?? null,
       map_pool: extra.map_pool,
@@ -234,23 +356,29 @@ export const events = createRouter()
   .openapi(registrations, async (c) => {
     const { id } = c.req.valid('param');
     const p = c.req.valid('query');
-    let q = c.var.sb.from('event_registrations_view').select('team_id, name, tag, seed, start_stage', { count: 'exact' }).eq('event_id', id);
+    let q = c.var.sb.from('event_registrations_view').select('team_id, name, tag, logo_url, seed, start_stage', { count: 'exact' }).eq('event_id', id);
     if (p.start_stage) q = q.eq('start_stage', p.start_stage);
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
-    type Row = { team_id: string; name: string; tag: string | null; seed: number; start_stage: number };
+    type Row = { team_id: string; name: string; tag: string | null; logo_url: string | null; seed: number; start_stage: number };
     const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'team_id');
     const players = rows.length
-      ? mustHave(await c.var.sb.from('tournament_registration_players').select('team_id, player:players(id, nick)').eq('event_id', id).in('team_id', rows.map((r) => r.team_id)))
+      ? mustHave(
+          await c.var.sb
+            .from('tournament_registration_players')
+            .select('team_id, role, player:players(id, nick)')
+            .eq('event_id', id)
+            .in('team_id', rows.map((r) => r.team_id)),
+        )
       : [];
     const items = rows.map((r) => ({
-      team: { id: r.team_id, name: r.name, tag: r.tag },
+      team: { id: r.team_id, name: r.name, tag: r.tag, logo_url: r.logo_url },
       seed: r.seed,
       start_stage: r.start_stage,
       players: players
         .filter((x) => x.team_id === r.team_id && x.player)
-        .map((x) => ({ player_id: x.player!.id, alias: x.player!.nick }))
-        .sort((a, b) => a.alias.localeCompare(b.alias)),
+        .map((x) => ({ player_id: x.player!.id, alias: x.player!.nick, role: x.role === 'sub' ? ('sub' as const) : ('active' as const) }))
+        .sort((a, b) => (a.role === b.role ? a.alias.localeCompare(b.alias) : a.role === 'active' ? -1 : 1)),
     }));
     return c.json(envelope(items, total, p), 200);
   })
@@ -302,8 +430,8 @@ export const events = createRouter()
   })
   .openapi(register, async (c) => {
     const { id, teamId } = c.req.valid('param');
-    const { players, start_stage } = c.req.valid('json');
-    must(await c.var.sb.rpc('event_register', { p_event: id, p_team: teamId, p_players: players, p_start_stage: start_stage }));
+    const { active, subs, start_stage } = c.req.valid('json');
+    must(await c.var.sb.rpc('event_register', { p_event: id, p_team: teamId, p_active: active, p_subs: subs, p_start_stage: start_stage }));
     return c.body(null, 204);
   })
   .openapi(unregister, async (c) => {
@@ -365,6 +493,43 @@ export const events = createRouter()
   .openapi(reset, async (c) => {
     must(await c.var.sb.rpc('event_reset', { p_event: c.req.valid('param').id }));
     return c.body(null, 204);
+  })
+  .openapi(putBanner, async (c) => {
+    const { id } = c.req.valid('param');
+    const sb = c.var.sb;
+    const ev = must(await sb.from('events').select('banner_url').eq('id', id).maybeSingle());
+    if (!ev) throw notFound('ese torneo');
+    if (!must(await sb.rpc('can_manage_event', { p_event: id }))) {
+      throw new AppError(403, 'FORBIDDEN', 'Solo el organizador del torneo o un admin cambia el banner.');
+    }
+    const { url, path } = await savePhoto(c, `events/${id}`, c.req.valid('form').file, BANNER_MAX_BYTES, BANNER_SHAPE);
+    const saved = await sb.from('events').update({ banner_url: url }).eq('id', id).select('id');
+    if (saved.error || !saved.data.length) {
+      await dropPhoto(c, path);
+      throw saved.error ? fromPostgrest(saved.error) : new AppError(403, 'FORBIDDEN', 'Solo el organizador del torneo o un admin cambia el banner.');
+    }
+    removePhoto(c, ev.banner_url);
+    return c.json({ banner_url: url }, 200);
+  })
+  .openapi(deleteBanner, async (c) => {
+    const { id } = c.req.valid('param');
+    const ev = must(await c.var.sb.from('events').select('banner_url').eq('id', id).maybeSingle());
+    if (!ev) throw notFound('ese torneo');
+    const rows = mustHave(await c.var.sb.from('events').update({ banner_url: null }).eq('id', id).select('id'));
+    if (!rows.length) throw new AppError(403, 'FORBIDDEN', 'Solo el organizador del torneo o un admin cambia el banner.');
+    removePhoto(c, ev.banner_url);
+    return c.body(null, 204);
+  })
+  .openapi(gameModes, async (c) => {
+    return c.json(mustHave(await c.var.sb.from('game_modes').select(GAME_MODE).eq('active', true).order('sort')), 200);
+  })
+  .openapi(adminGameModes, async (c) => {
+    return c.json(mustHave(await c.var.sb.from('game_modes').select(GAME_MODE).order('sort')), 200);
+  })
+  .openapi(putGameMode, async (c) => {
+    const { code, active } = c.req.valid('json');
+    must(await c.var.sb.rpc('set_game_mode_active', { p_code: code, p_active: active }));
+    return c.json(mustHave(await c.var.sb.from('game_modes').select(GAME_MODE).order('sort')), 200);
   })
   .openapi(ties, async (c) => {
     const { grp, order } = c.req.valid('json');

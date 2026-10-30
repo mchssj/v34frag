@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
+import { VipStatus } from './vip';
 
 const optText = (max: number) =>
   z
@@ -68,6 +69,21 @@ export const SteamUnlinked = z
   .object({ steam_id: z.string(), last_nick: z.string().nullable(), matches: z.number().int(), last_played: z.string().nullable() })
   .openapi('SteamUnlinked');
 
+// IPs de una ficha (replanteo 38, plan docs/bitacora/2026-10-29-ips-jugadores). Solo admin.
+export const PlayerIp = z
+  .object({
+    ip: z.string(),
+    steam_id: z.string().openapi({ description: 'SteamID64 de la ficha desde el que entró' }),
+    first_seen_at: z.string(),
+    last_seen_at: z.string(),
+    times: z.number().int().openapi({ description: 'Veces que entró al servidor con ese SteamID desde esa IP' }),
+    last_nick: z.string().nullable().openapi({ description: 'Nick con el que entró la última vez' }),
+    others: z.array(z.object({ id: z.uuid(), alias: z.string() })).openapi({ description: 'Otras fichas que entraron desde la misma IP' }),
+    others_unlinked: z.number().int().openapi({ description: 'SteamID sin ficha que entraron desde la misma IP' }),
+  })
+  .openapi('PlayerIp');
+export const PlayerIpList = z.object({ items: z.array(PlayerIp) }).openapi('PlayerIpList');
+
 export const SteamLinkBody = z
   .object({
     steam_id: z.string().trim().min(1).max(120).openapi({ description: 'SteamID64, STEAM_0:X:Y o link del perfil' }),
@@ -83,6 +99,8 @@ export const AdminUser = z
     alias_changed_at: z.string().nullable(),
     player_id: z.uuid().nullable(),
     steam_id: z.string().nullable(),
+    vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
+    streamer: z.boolean().openapi({ description: 'Tiene la marca de streamer del HUD' }),
   })
   .openapi('AdminUser');
 
@@ -161,9 +179,10 @@ export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedL
 
 export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
-  role: z.enum(['user', 'organizer', 'admin']).optional(),
+  role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),
   has_player: boolParam('Con o sin jugador vinculado'),
   has_steam: boolParam('Con o sin SteamID vinculado'),
+  streamer: boolParam('Con o sin la marca de streamer del HUD'),
 });
 export const AdminUserList = Envelope(AdminUser).openapi('AdminUserList');
 

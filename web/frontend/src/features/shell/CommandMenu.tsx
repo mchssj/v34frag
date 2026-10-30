@@ -59,7 +59,12 @@ export function CommandMenu({
     ...NAV_GROUPS.flatMap((g) =>
       g.items
         .filter((i) => !i.admin || canAccessAdminSection(user.role, i.admin))
-        .map((i) => ({ label: i.label, to: i.to, icon: i.icon, hint: g.label }))
+        .map((i) => ({
+          label: i.label,
+          to: i.to,
+          icon: i.icon,
+          hint: g.label,
+        }))
     ),
     ...EXTRA_PAGES,
   ]

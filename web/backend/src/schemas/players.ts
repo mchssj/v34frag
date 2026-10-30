@@ -5,7 +5,16 @@ import { Clutches } from './common';
 const num = z.number().nullable();
 
 export const TeamRef = z
-  .object({ id: z.uuid(), name: z.string(), tag: z.string().nullable() })
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    tag: z.string().nullable(),
+    logo_url: z.string().nullable().optional().openapi({
+      description:
+        'Logo del equipo (null: sin logo, se muestra la sigla). Viene en los listados y el detalle de equipos, el ranking de equipos, ' +
+        'las inscripciones y el campeón de un torneo, los lados de una partida y las invitaciones; en el resto puede faltar',
+    }),
+  })
   .openapi('TeamRef');
 
 export const PlayerListQuery = listQuery(['elo', 'alias', 'elo_matches', 'rating', 'kd', 'wins'], { sort: 'elo', order: 'desc' }).extend({
@@ -33,6 +42,7 @@ export const PlayerSummary = z
     wins: num,
     losses: num,
     teams: z.array(TeamRef).openapi({ description: 'Equipos oficiales donde está hoy (puede ser más de uno)' }),
+    vip: z.boolean().openapi({ description: 'Es VIP hoy (solo el estado; las fechas, en Mi perfil y en el admin)' }),
   })
   .openapi('PlayerSummary');
 
@@ -103,6 +113,16 @@ export const PublicDetails = z
   })
   .openapi('PublicDetails');
 
+// Baneo activo (plan docs/bitacora/2026-10-25-baneos-web). El resto de los baneos está en schemas/bans.ts.
+export const ActiveBan = z
+  .object({
+    id: z.uuid(),
+    reason: z.string(),
+    created_at: z.string(),
+    expires_at: z.string().nullable().openapi({ description: '`null`: permanente' }),
+  })
+  .openapi('ActiveBan', { description: 'Baneo activo en los servidores' });
+
 export const PlayerDetail = PlayerSummary.extend({
   steam_id: z.string().nullable().openapi({ description: 'SteamID principal. Solo para el dueño y los admins: para los demás, null' }),
   steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío' }),
@@ -114,6 +134,7 @@ export const PlayerDetail = PlayerSummary.extend({
   stats: PlayerStatsDetail.nullable().openapi({ description: 'null si no jugó partidas terminadas' }),
   details: PublicDetails.nullable().openapi({ description: 'Datos personales. null si no tiene cuenta o si su perfil es privado' }),
   private: z.boolean().openapi({ description: 'true si los datos personales están ocultos por privacidad' }),
+  ban: ActiveBan.nullable().openapi({ description: 'Baneo activo en los servidores; null si no está baneado. Historial: /players/{id}/bans' }),
 }).openapi('PlayerDetail', {
   description: 'Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches',
 });
@@ -218,7 +239,7 @@ export const RankingPlayerQuery = listQuery(['position', 'rating', 'kd', 'matche
 export const RankingPlayer = z
   .object({
     position: z.number().int().openapi({ description: 'Posición global por ELO (no cambia al filtrar; empatados comparten posición)' }),
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable() }),
+    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean() }),
     level: z.number().int().min(1).max(10).nullable(),
     elo: z.number().int(),
     teams: z.array(TeamRef),
@@ -239,7 +260,7 @@ export const CompareQuery = z.object({
 });
 export const ComparePlayer = z
   .object({
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable() }),
+    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean() }),
     teams: z.array(TeamRef),
     game_role: z.string().nullable(),
     level: z.number().int().min(1).max(10).nullable(),

@@ -38,7 +38,7 @@ const rows = (data: unknown[]) => Response.json(data);
 const one = (data: unknown | null) => Response.json(data === null ? [] : [data]);
 
 // Perfil base: cuenta, detalles, jugador y equipo por membresía, 3 partidas.
-function profileWorld(over: { player?: unknown | null; memberOf?: string[]; teams?: unknown[]; prefs?: unknown } = {}): Handler {
+function profileWorld(over: { player?: unknown | null; memberOf?: string[]; teams?: unknown[]; prefs?: unknown; vip?: unknown[]; streamer?: unknown[] } = {}): Handler {
   return (url, method) => {
     const p = url.pathname;
     if (p.endsWith('/profiles')) return one({ role: 'user', tag: 'Yo' });
@@ -51,6 +51,8 @@ function profileWorld(over: { player?: unknown | null; memberOf?: string[]; team
     if (p.endsWith('/rpc/set_my_tag')) return new Response(null, { status: 204 });
     if (p.endsWith('/user_preferences')) return one(over.prefs === undefined ? null : { preferences: over.prefs });
     if (p.endsWith('/rpc/set_my_preferences')) return Response.json({});
+    if (p.endsWith('/vip_status')) return rows(over.vip ?? []);
+    if (p.endsWith('/hud_streamer_list')) return rows(over.streamer ?? []);
     return undefined;
   };
 }
@@ -86,6 +88,33 @@ describe('GET /api/v1/me/profile', () => {
     expect(members).toContain(`player_id=eq.${PLAYER}`);
     expect(members).toContain('left_at=is.null');
     expect(calls.find((c) => c.url.includes('/rest/v1/player_matches'))!.url).toContain(`player_id=eq.${PLAYER}`);
+  });
+
+  it('vip: null si nunca fue VIP; el estado de vip_status de la cuenta', async () => {
+    postgrest(profileWorld());
+    expect((await json(await call('GET', '/api/v1/me/profile'))).vip).toBeNull();
+    const calls = postgrest(profileWorld({
+      vip: [{ user_id: USER, alias: 'Yo', player_id: PLAYER, photo_url: null, status: 'active', active: true, lifetime: false,
+              until: '2026-12-01T00:00:00Z', since: '2026-10-01T00:00:00Z', last_change: '2026-10-01T00:00:00Z' }],
+    }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).vip).toEqual({
+      active: true, lifetime: false, until: '2026-12-01T00:00:00Z', since: '2026-10-01T00:00:00Z',
+    });
+    expect(calls.find((c) => c.url.includes('/rest/v1/vip_status'))!.url).toContain(`user_id=in.(${USER})`);
+  });
+
+  it('streamer: null sin la marca o si se la quitaron; con la marca, desde cuándo y si tiene link', async () => {
+    postgrest(profileWorld());
+    expect((await json(await call('GET', '/api/v1/me/profile'))).streamer).toBeNull();
+    const marca = { user_id: USER, alias: 'Yo', granted_at: '2026-10-29T00:00:00Z', granted_by_alias: 'Admin', revoked_at: null,
+                    active: true, has_link: true, token_created_at: '2026-10-29T01:00:00Z' };
+    postgrest(profileWorld({ streamer: [{ ...marca, active: false, revoked_at: '2026-10-29T02:00:00Z' }] }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).streamer).toBeNull();
+    const calls = postgrest(profileWorld({ streamer: [marca] }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).streamer).toEqual({
+      since: '2026-10-29T00:00:00Z', has_link: true, link_created_at: '2026-10-29T01:00:00Z',
+    });
+    expect(calls.find((c) => c.url.includes('/rest/v1/hud_streamer_list'))!.url).toContain(`user_id=in.(${USER})`);
   });
 
   it('puede estar en varios equipos; marca de cuál es capitán', async () => {

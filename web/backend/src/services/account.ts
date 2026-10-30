@@ -4,8 +4,8 @@ import { fromPostgrest } from '../lib/errors';
 import { userClient } from '../lib/supabase';
 import type { AuthUserT } from '../schemas/auth';
 
-export const roleOf = (r: string | null | undefined): 'user' | 'organizer' | 'admin' =>
-  r === 'admin' || r === 'organizer' ? r : 'user';
+export const roleOf = (r: string | null | undefined): 'user' | 'organizer' | 'moderator' | 'admin' =>
+  r === 'admin' || r === 'organizer' || r === 'moderator' ? r : 'user';
 
 // Rol, tag y último cambio de contraseña de la cuenta (la RLS de profiles deja leer solo la propia).
 export async function profileOf(cfg: Config, token: string, id: string) {

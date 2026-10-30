@@ -1,6 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
-import { confirmField } from './common';
+import { confirmField, ReviewStatus } from './common';
 
 const num = z.number().nullable();
 
@@ -57,6 +57,8 @@ export const LivePlayerLine = z
     steam_id: z.string().nullable().openapi({ description: 'Solo si no tiene ficha: enlaza al perfil sin reclamar' }),
     side: z.number().int().nullable(),
     kills: num, deaths: num, assists: num, headshots: num, damage: num, rounds: num, rating: num,
+    elo: z.number().int().nullable().openapi({ description: 'ELO actual; null sin ELO (bots, NOSTEAM)' }),
+    level: z.number().int().min(1).max(10).nullable().openapi({ description: 'Nivel del ELO actual, para la insignia' }),
     // (replanteo 29) de la foto parcial; los clutches llegan con el resultado.
     k2: num, k3: num, k4: num, k5: num, first_kills: num, first_deaths: num, plants: num, defuses: num,
   })
@@ -140,6 +142,9 @@ export const MixItem = z
     mvp: MixMvp.nullable().openapi({ description: 'El de mejor rating (parcial en vivo)' }),
     demo_status: z.string().openapi({ description: '`none`, `pending`, `uploaded`, `missing` o `expired`' }),
     cancel_reason: z.string().nullable(),
+    review: ReviewStatus.nullable().openapi({
+      description: 'Solo en un mix interrumpido por una caída: `pending` (falta que un admin decida el ELO), `applied` o `discarded`. null en el resto y en vivo',
+    }),
     tv: TvRef.nullable().openapi({ description: 'Solo en vivo' }),
   })
   .openapi('MixItem');

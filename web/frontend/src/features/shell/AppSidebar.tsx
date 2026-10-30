@@ -116,6 +116,8 @@ const BADGE_LABEL: Record<BadgeKey, (n: number) => string> = {
   live: (n) => `${n} en vivo`,
   pcw: (n) => `${n} solicitudes abiertas`,
   adminTeams: (n) => `${n} pendientes`,
+  adminBans: (n) => `${n} baneos activos`,
+  adminClips: (n) => `${n} clips para revisar`,
 }
 
 /** Badge de un ítem. En 0 (o mientras carga) no se muestra. */
@@ -128,7 +130,10 @@ function NavBadge({ kind, count }: { kind: BadgeKey; count?: number }) {
         "text-[11px] font-semibold",
         kind === "live" && "gap-1 text-destructive",
         kind === "pcw" && "font-mono font-normal text-muted-foreground",
-        kind === "adminTeams" && "rounded-md bg-muted px-1.5 font-mono"
+        (kind === "adminTeams" || kind === "adminClips") &&
+          "rounded-md bg-muted px-1.5 font-mono",
+        kind === "adminBans" &&
+          "rounded-md bg-destructive/15 px-1.5 font-mono text-destructive"
       )}
     >
       {kind === "live" && (
@@ -145,6 +150,7 @@ function roleLabel(
 ) {
   if (role === "admin") return "Admin"
   if (role === "organizer") return "Organizador"
+  if (role === "moderator") return "Moderador"
   if (team) return `${team.is_captain ? "Capitán" : "Miembro"} de ${team.name}`
   return "Jugador"
 }
