@@ -38,6 +38,13 @@ pnpm exec vitest run src/features/missions
 - **Leyenda:** hay una leyenda chica arriba de la sección "Para todos" y en el popout.
 - **Sin depender del color:** el nombre de la dificultad sigue estando como texto oculto para lectores de pantalla y como `title` al pasar el mouse. El premio también la delata, porque cada dificultad paga distinto.
 
+## Cambio pedido por Kyan: mapas sin prefijo
+
+- **Qué cambió:** las misiones muestran el mapa sin `de_`: "Jugá 3 mixes en Dust2". Se usa `mapLabel` de `features/matchmaking/labels.ts`, el mismo del matchmaking.
+- **Qué no cambia:** el catálogo sigue guardando el nombre que manda el plugin (`de_dust2`), porque es con lo que se cuenta el progreso.
+- **Nombre para mostrar:** en la versión real conviene pasarle a `mapLabel` el nombre que tiene cada mapa en el catálogo de mapas, porque `de_cbble` se ve "Cbble" sin él y "Cobblestone" con él.
+- **Test:** hay uno nuevo que falla si algún título de misión muestra un prefijo.
+
 ## Notas
 
 - No toca el plugin: no hay nada que subir al servidor real ni a RBK.
