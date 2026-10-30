@@ -23,6 +23,15 @@ pnpm exec vitest run src/features/missions
   - Hubo que sumar dos fáciles de web (mirar una demo y buscar con filtros), porque con la espera de 2 semanas se quedaban sin misiones que no fueran de juego.
 - **Orden de elección:** de la más difícil a la más fácil. Al revés, las fáciles y medias llenaban el tope de juego y la difícil no tenía lugar.
 
+## Cambio pedido por Kyan: las de la web, una sola vez
+
+- **Qué pidió:** que las misiones de la web (votar un clip, entrar a la web 3 días distintos, subir un clip y ese tipo) se hagan **una sola vez desde que te registrás**, y no cada semana.
+- **Primeros pasos:** las de la web pasaron a una lista aparte, `FIRST_STEPS`, con 14 misiones (11 para todos y 3 VIP). No rotan, no se reinician y se reclaman una vez. En el popout tienen su propia pestaña, y en la página su propia sección.
+- **Semanales:** quedaron solo las de juego y comunidad.
+  - Se sacó el tope por área, porque ahora casi todas son de juego. En su lugar va la regla de no repetir la misma stat en una semana (por ejemplo, "Ganá 1 mix" y "Ganá 3 mixes").
+  - Para que alcance con la espera de 2 semanas se sumaron fáciles de juego: headshots, daño, entradas, un mix en de_nuke y 2 mapas distintos. También se sumaron VIP de juego: kills, asistencias, de_train, mixes enteros, entradas y headshots.
+- **Totales:** quedaron 55 semanales (43 que ya pueden salir y 12 que esperan) y 14 de Primeros pasos.
+
 ## Notas
 
 - No toca el plugin: no hay nada que subir al servidor real ni a RBK.

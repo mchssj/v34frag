@@ -136,18 +136,21 @@ Ordenado por urgencia.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-partidas-favoritas`](bitacora/2026-10-29-partidas-favoritas/), [`2026-10-29-creditos`](bitacora/2026-10-29-creditos/) y [`2026-10-29-stats-torneo`](bitacora/2026-10-29-stats-torneo/).
 
-### 1.11 Misiones semanales (prototipo)
+### 1.11 Misiones semanales y Primeros pasos (prototipo)
 
-- **Qué es:** misiones semanales de juego, web y comunidad en `/demo/misiones` del frontend nuevo (`kyan/ejemplo-matchmaking`):
-  - Un popout en la barra de arriba.
-  - Una página con la semana y el historial.
-  - La vista de admin con el catálogo y las próximas 8 semanas.
-  - Cada semana salen 6 para todos y 3 VIP, al azar. Una que salió no vuelve hasta dentro de 2 semanas.
-- **Datos:** usan los mismos datos del servidor que las medallas. 12 de las 58 misiones esperan:
+- **Qué es:** `/demo/misiones` del frontend nuevo (`kyan/ejemplo-matchmaking`). Tiene un popout en la barra de arriba (pestañas "Esta semana" y "Primeros pasos"), una página y la vista de admin.
+- **Semanales:** de juego y comunidad.
+  - Cada semana salen 6 para todos y 3 VIP, al azar.
+  - Una que salió no vuelve hasta dentro de 2 semanas, y en una semana no se repite la misma stat.
+- **Primeros pasos:** las de la web (votar o subir clips, entrar a la web, comparar, tienda…). Se hacen una sola vez desde que te registrás.
+- **Datos:** usan los mismos datos del servidor que las medallas. 12 de las 55 semanales esperan:
   - 9, el plugin nuevo (schema 2, ver `MEDALLAS_DATOS_REPORTER.md`).
   - 3, otros sistemas (grupos del matchmaking y referidos).
 - **Qué falta:**
-  - **Daniel:** las tablas `missions`, `mission_weeks` y `mission_progress`, sumar el progreso con cada mix y cada evento, el cron del lunes 06:00 y las rutas con el chequeo de VIP.
+  - **Daniel:**
+    - Las tablas `missions`, `mission_weeks` y `mission_progress` (con `week` en null para Primeros pasos).
+    - Sumar el progreso con cada mix y cada evento.
+    - El cron del lunes 06:00 y las rutas, con chequeo de VIP.
   - **Esteban:** el popout, la página y el admin.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK. El plugin nuevo, cuando se haga, sí va a los dos servidores.
 - **Bitácora:** [`2026-10-29-misiones-semanales`](bitacora/2026-10-29-misiones-semanales/).
