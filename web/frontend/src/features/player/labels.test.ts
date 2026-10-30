@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest"
 
 import {
   adjustmentLabel,
+  bestSeasonId,
+  mapCards,
+  stintLength,
   faceitUrl,
   ladderState,
   legacyTeams,
@@ -14,7 +17,13 @@ import {
   stintRole,
   tilePct,
 } from "./labels"
-import type { EloAdjustment, PlayerMatch } from "./queries"
+import type { MapEntry } from "@/features/maps/queries"
+import type {
+  EloAdjustment,
+  MapStat,
+  PlayerMatch,
+  PlayerSeason,
+} from "./queries"
 import { playerSearchSchema, toMatchesQuery } from "./search"
 
 const match = (o: Partial<PlayerMatch> = {}): PlayerMatch => ({
@@ -168,5 +177,97 @@ describe("otros", () => {
       kind: "mix",
       result: "won",
     })
+  })
+})
+
+describe("pestañas del perfil", () => {
+  const entry = (name: string, o: Partial<MapEntry> = {}): MapEntry => ({
+    name,
+    versions: [name],
+    active: true,
+    position: 1,
+    mixes: true,
+    veto_default: true,
+    image_url: null,
+    ...o,
+  })
+  const stat = (map: string, maps: number): MapStat => ({
+    map,
+    maps,
+    rating: 1,
+    kd: 1,
+    adr: 80,
+    wins: 1,
+    losses: 0,
+  })
+
+  it("Mapas: los jugados primero, después el resto del catálogo activo", () => {
+    const catalog = [
+      entry("de_dust2", { position: 1 }),
+      entry("de_inferno", {
+        position: 2,
+        versions: ["de_inferno", "de_inferno_classic"],
+      }),
+      entry("de_nuke", { position: 3, image_url: "https://img/nuke.webp" }),
+      entry("de_aztec", { position: 4, active: false }),
+      entry("de_train", { position: 5, active: false }),
+    ]
+    const cards = mapCards(catalog, [
+      stat("nuke", 5),
+      stat("inferno_classic", 2),
+      stat("aztec", 1),
+      stat("mapa_raro", 1),
+    ])
+    expect(cards.map((c) => [c.name, c.stat?.maps ?? 0, c.retired])).toEqual([
+      ["nuke", 5, false],
+      ["inferno_classic", 2, false],
+      // Retirado: solo porque lo jugó.
+      ["aztec", 1, true],
+      // No está en el catálogo: sin foto.
+      ["mapa_raro", 1, false],
+      // Sin partidas: el del catálogo, sin de_ (como los guarda la base).
+      ["dust2", 0, false],
+    ])
+    expect(cards[0].image).toBe("https://img/nuke.webp")
+    // Sin partidas: el catálogo activo completo, en cero.
+    expect(mapCards(catalog, []).map((c) => c.name)).toEqual([
+      "dust2",
+      "inferno",
+      "nuke",
+    ])
+  })
+
+  it("Equipos: cuánto estuvo, hasta hoy si sigue", () => {
+    const now = new Date("2026-10-30T12:00:00Z")
+    expect(stintLength("2026-07-30T12:00:00Z", null, now)).toBe("3 meses")
+    expect(
+      stintLength("2026-02-01T00:00:00Z", "2026-06-01T00:00:00Z", now)
+    ).toBe("4 meses")
+    expect(stintLength(null, null, now)).toBeNull()
+  })
+
+  it("Temporadas: la mejor es el mejor puesto clasificado, si hay más de una", () => {
+    const season = (
+      id: string,
+      rank: number | null,
+      eligible = true
+    ): PlayerSeason => ({
+      rank,
+      eligible,
+      elo: 1000,
+      level: 4,
+      peak_elo: 1000,
+      matches: 10,
+      wins: 5,
+      losses: 5,
+      elo_after: 1000,
+      medal: null,
+      season: { id, number: 1, name: id },
+    })
+    expect(bestSeasonId([season("a", 12), season("b", 3)])).toBe("b")
+    // Sin clasificar no cuenta, aunque tenga mejor puesto.
+    expect(bestSeasonId([season("a", 12), season("b", 1, false)])).toBe("a")
+    expect(bestSeasonId([season("a", 3)])).toBeNull()
+    expect(bestSeasonId([season("a", null), season("b", null)])).toBeNull()
   })
 })

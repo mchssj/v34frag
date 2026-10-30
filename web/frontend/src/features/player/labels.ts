@@ -1,8 +1,19 @@
-import { format, formatDistanceToNow, parseISO } from "date-fns"
+import {
+  format,
+  formatDistanceStrict,
+  formatDistanceToNow,
+  parseISO,
+} from "date-fns"
 import { es } from "date-fns/locale"
 
+import { mapEntryOf, type MapEntry } from "@/features/maps/queries"
 import { FACEIT_LINK, STEAM_LINK } from "@/features/profile/schemas"
-import type { EloAdjustment, PlayerMatch } from "./queries"
+import type {
+  EloAdjustment,
+  MapStat,
+  PlayerMatch,
+  PlayerSeason,
+} from "./queries"
 
 // Textos y cálculos del perfil público (handoff_perfil_publico y contrato 5).
 
@@ -121,6 +132,75 @@ export function stintPeriod(
   if (joined) return `desde ${fmtMonth(joined)}`
   if (left) return `hasta ${fmtMonth(left)}`
   return "—"
+}
+
+/** "jul 2026" */
+export const fmtMonthShort = (iso: string) =>
+  format(parseISO(iso), "MMM yyyy", { locale: es }).replace(".", "")
+
+/** Cuánto estuvo en un equipo ("3 meses", "12 días"); hasta hoy si sigue. Sin alta, null. */
+export function stintLength(
+  joined: string | null,
+  left: string | null,
+  now = new Date()
+): string | null {
+  if (!joined) return null
+  return formatDistanceStrict(left ? parseISO(left) : now, parseISO(joined), {
+    locale: es,
+  })
+}
+
+export type MapCard = {
+  key: string
+  /** El jugado (cada versión tiene su tarjeta); sin partidas, el del catálogo sin de_/cs_, como
+   * los guarda la base. */
+  name: string
+  image: string | null
+  stat: MapStat | null
+  retired: boolean
+}
+
+/**
+ * Pestaña Mapas: primero los jugados (en el orden de la API, por mapas jugados) y después los
+ * mapas activos del catálogo que no jugó, en el orden del catálogo y sin estadísticas. Un mapa
+ * retirado aparece solo si lo jugó.
+ */
+export function mapCards(
+  catalog: MapEntry[] | undefined,
+  stats: MapStat[]
+): MapCard[] {
+  const used = new Set<string>()
+  const played = stats.map((s) => {
+    const entry = mapEntryOf(catalog, s.map)
+    if (entry) used.add(entry.name)
+    return {
+      key: s.map,
+      name: s.map,
+      image: entry?.image_url ?? null,
+      stat: s,
+      retired: entry ? !entry.active : false,
+    }
+  })
+  const rest = (catalog ?? [])
+    .filter((m) => m.active && !used.has(m.name))
+    .sort((a, b) => a.position - b.position)
+    .map((m) => ({
+      key: m.name,
+      name: m.name.replace(/^(de|cs)_/i, ""),
+      image: m.image_url,
+      stat: null,
+      retired: false,
+    }))
+  return [...played, ...rest]
+}
+
+/** La mejor temporada (el mejor puesto con clasificación), solo si jugó más de una. */
+export function bestSeasonId(seasons: PlayerSeason[]): string | null {
+  if (seasons.length < 2) return null
+  const ranked = seasons.filter((s) => s.eligible && s.rank !== null)
+  if (!ranked.length) return null
+  return ranked.reduce((a, b) => ((b.rank ?? 0) < (a.rank ?? 0) ? b : a)).season
+    .id
 }
 
 /** Equipos escritos a mano en la web vieja: una línea por equipo → "A · B · C". */

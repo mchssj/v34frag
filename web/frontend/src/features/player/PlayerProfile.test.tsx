@@ -250,6 +250,13 @@ function api(
     http.get(`${API}/api/v1/players/Zeta/seasons`, () =>
       HttpResponse.json(page([]))
     ),
+    // El historial llega sin logo: se completa con el detalle de cada equipo.
+    http.get(`${API}/api/v1/teams/:id`, ({ params }) =>
+      HttpResponse.json({
+        id: params.id,
+        logo_url: params.id === "t1" ? "https://img.test/furia.png" : null,
+      })
+    ),
     http.get(`${API}/api/v1/players/Zeta/titles`, () =>
       HttpResponse.json(
         page([
@@ -380,30 +387,45 @@ describe("Perfil público", () => {
     ).toBeInTheDocument()
   })
 
-  it("equipos: líder, período y lo escrito en la web vieja", async () => {
+  it("equipos: actuales con su rol y líder, anteriores y lo escrito en la web vieja", async () => {
     api()
     renderProfile({ tab: "equipos" })
-    expect(await screen.findByText("Activo · líder")).toBeInTheDocument()
-    expect(screen.getByText("desde marzo de 2026")).toBeInTheDocument()
-    expect(screen.getByText("Suplente")).toBeInTheDocument()
-    expect(screen.getAllByText("Actual")).toHaveLength(1)
+    // El actual: tarjeta con "Activo" (su rol) y "Líder"; el anterior, en la lista de abajo.
+    expect(await screen.findByText("Líder")).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: /Actuales/ })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: /Anteriores/ })
+    ).toBeInTheDocument()
+    expect(screen.getByText("Activo")).toBeInTheDocument()
+    expect(screen.getByText(/^Desde mar 2026 · /)).toBeInTheDocument()
+    // El historial no trae el logo: llega con el detalle del equipo y reemplaza a la sigla.
+    await waitFor(() =>
+      expect(
+        document.querySelector('img[src="https://img.test/furia.png"]')
+      ).not.toBeNull()
+    )
+    expect(screen.queryByText("FUR")).not.toBeInTheDocument()
     expect(screen.getByText("ARVUM · SOVIET")).toBeInTheDocument()
-    expect(screen.getByText(/altas y bajas de los rosters/)).toBeInTheDocument()
   })
 
   it("temporadas vacías y bio con palmarés", async () => {
     api()
     const { unmount } = renderProfile({ tab: "temporadas" })
     expect(
-      await screen.findByText("Todavía no terminó ninguna temporada.")
+      await screen.findByText("Todavía no terminó ninguna temporada")
     ).toBeInTheDocument()
     unmount()
     renderProfile({ tab: "bio" })
-    expect(
-      await screen.findByText("Campeón · Copa Invierno 2025")
-    ).toBeInTheDocument()
+    const palmares = await screen.findByRole("region", { name: "Palmarés" })
+    expect(within(palmares).getByText("Campeón")).toBeInTheDocument()
+    expect(within(palmares).getByText("Copa Invierno 2025")).toBeInTheDocument()
     expect(screen.getByText("IGL desde 2024.")).toBeInTheDocument()
-    expect(screen.getByText("Campeón Liga Apertura 2025")).toBeInTheDocument()
+    // Los logros los escribe un admin, no el jugador: el perfil ya no los muestra.
+    expect(
+      screen.queryByText("Campeón Liga Apertura 2025")
+    ).not.toBeInTheDocument()
   })
 
   it("partidas: filtros y clic en una fila", async () => {

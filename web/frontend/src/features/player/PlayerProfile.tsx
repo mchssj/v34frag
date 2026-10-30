@@ -1,21 +1,23 @@
+import { SiDiscord, SiFaceit, SiSteam } from "@icons-pack/react-simple-icons"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   BadgeCheckIcon,
   CalendarIcon,
+  ArrowUpRightIcon,
+  CopyIcon,
   CrosshairIcon,
-  ExternalLinkIcon,
-  Gamepad2Icon,
   GitCompareIcon,
   LockIcon,
-  MessageCircleIcon,
   ShieldIcon,
 } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { NoLevelBadge } from "@/components/illustrations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -224,24 +226,16 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
               {steam && (
                 <SocialLink
                   href={steam}
-                  icon={<Gamepad2Icon aria-hidden className="size-3" />}
+                  icon={<SiSteam aria-hidden size={14} />}
                 >
                   Steam
                 </SocialLink>
               )}
-              {d?.discord && (
-                <span
-                  title="Discord"
-                  className="inline-flex h-[26px] items-center gap-1.5 rounded-lg border px-2.5 text-xs"
-                >
-                  <MessageCircleIcon aria-hidden className="size-3" />
-                  {d.discord}
-                </span>
-              )}
+              {d?.discord && <DiscordChip user={d.discord} />}
               {faceit && (
                 <SocialLink
                   href={faceit}
-                  icon={<ExternalLinkIcon aria-hidden className="size-3" />}
+                  icon={<SiFaceit aria-hidden size={14} />}
                 >
                   FACEIT
                 </SocialLink>
@@ -293,11 +287,36 @@ function SocialLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex h-[26px] items-center gap-1.5 rounded-lg border bg-background px-2.5 text-xs hover:bg-muted"
+      className="inline-flex h-7 items-center gap-1.5 rounded-lg border bg-background px-2.5 text-xs font-medium hover:bg-muted"
     >
       {icon}
       {children}
+      <ArrowUpRightIcon aria-hidden className="size-3 opacity-55" />
     </a>
+  )
+}
+
+/** Discord no tiene un perfil público con link: el chip copia el usuario. */
+function DiscordChip({ user }: { user: string }) {
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(user)
+      toast.success("Usuario de Discord copiado")
+    } catch {
+      toast.error("No se pudo copiar el usuario")
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => void copy()}
+      aria-label={`Copiar el usuario de Discord ${user}`}
+      className="inline-flex h-7 items-center gap-1.5 rounded-lg border bg-background px-2.5 text-xs font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      <SiDiscord aria-hidden size={14} />
+      {user}
+      <CopyIcon aria-hidden className="size-3 opacity-55" />
+    </button>
   )
 }
 
@@ -316,9 +335,30 @@ function LevelCard({ p }: { p: PlayerDetail }) {
     <div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
       <span className="text-sm font-semibold">Nivel</span>
       {level === null || p.elo === null ? (
-        <p className="text-[13px] text-muted-foreground">
-          Todavía no jugó mixes en el servidor.
-        </p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3.5 py-2 text-center">
+          <NoLevelBadge />
+          <span className="flex gap-1" aria-hidden>
+            {Array.from({ length: 10 }, (_, i) => (
+              <span key={i} className="h-1.5 w-[22px] rounded-full bg-muted" />
+            ))}
+          </span>
+          <span className="flex flex-col items-center gap-1">
+            <span className="text-sm font-semibold">Sin nivel todavía</span>
+            <span className="max-w-[260px] text-[13px] text-pretty text-muted-foreground">
+              Todavía no jugó mixes en el servidor.
+            </span>
+          </span>
+          <Link
+            to="/matches"
+            search={{ kind: "mix" }}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-8 px-3 text-[13px]"
+            )}
+          >
+            Ver mixes
+          </Link>
+        </div>
       ) : (
         <>
           <div className="flex items-center gap-3.5">

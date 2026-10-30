@@ -39,18 +39,25 @@ export function mixMapNames(maps: MapEntry[] | undefined): string[] {
 const mapKey = (name: string) => name.toLowerCase().replace(/^(de|cs)_/, "")
 
 /**
- * Foto del mapa jugado: lo busca entre las versiones de cada mapa, sin distinguir mayúsculas
- * ni el prefijo de_/cs_.
+ * Mapa del catálogo de un mapa jugado: lo busca entre las versiones de cada mapa, sin distinguir
+ * mayúsculas ni el prefijo de_/cs_.
  */
+export function mapEntryOf(
+  maps: MapEntry[] | undefined,
+  name: string | null | undefined
+): MapEntry | null {
+  if (!name) return null
+  const key = mapKey(name)
+  return (
+    maps?.find((m) => [m.name, ...m.versions].some((v) => mapKey(v) === key)) ??
+    null
+  )
+}
+
+/** Foto del mapa jugado (la del mapa del catálogo, para todas sus versiones). */
 export function mapImage(
   maps: MapEntry[] | undefined,
   name: string | null | undefined
 ): string | null {
-  if (!name) return null
-  const key = mapKey(name)
-  return (
-    maps?.find((m) =>
-      [m.name, ...m.versions].some((v) => mapKey(v) === key)
-    )?.image_url ?? null
-  )
+  return mapEntryOf(maps, name)?.image_url ?? null
 }
