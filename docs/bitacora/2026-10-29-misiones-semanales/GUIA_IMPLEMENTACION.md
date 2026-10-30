@@ -32,6 +32,12 @@ pnpm exec vitest run src/features/missions
   - Para que alcance con la espera de 2 semanas se sumaron fáciles de juego: headshots, daño, entradas, un mix en de_nuke y 2 mapas distintos. También se sumaron VIP de juego: kills, asistencias, de_train, mixes enteros, entradas y headshots.
 - **Totales:** quedaron 55 semanales (43 que ya pueden salir y 12 que esperan) y 14 de Primeros pasos.
 
+## Cambio pedido por Kyan: la dificultad como borde
+
+- **Qué cambió:** las misiones ya no dicen "Fácil", "Media" o "Difícil". En su lugar tienen un borde izquierdo del color de la dificultad, como un semáforo: verde fácil, amarillo media y rojo difícil (`DIFF_COLOR` en `MissionsUi.tsx`).
+- **Leyenda:** hay una leyenda chica arriba de la sección "Para todos" y en el popout.
+- **Sin depender del color:** el nombre de la dificultad sigue estando como texto oculto para lectores de pantalla y como `title` al pasar el mouse. El premio también la delata, porque cada dificultad paga distinto.
+
 ## Notas
 
 - No toca el plugin: no hay nada que subir al servidor real ni a RBK.
