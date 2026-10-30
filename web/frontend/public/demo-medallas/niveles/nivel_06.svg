@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <title>CM League - Nivel 6</title>
+  <desc>CM League. Ícono de nivel: barra de carga de 10 segmentos y número (texto vivo, Montserrat Black).</desc>
+  <defs>
+    <!-- color del nivel: cambiá estos dos valores para otra paleta -->
+    <linearGradient id="color-nivel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE173"/><stop offset="1" stop-color="#FFC800"/>
+    </linearGradient>
+  </defs>
+  <g id="barra-de-carga"><path id="barra-1" d="M127.81 8.27 A112 112 0 0 1 179.35 25.02 L167.69 43.68 A90 90 0 0 0 126.28 30.22 Z" fill="url(#color-nivel)"/><path id="barra-2" d="M191.99 34.20 A112 112 0 0 1 223.84 78.04 L203.45 86.29 A90 90 0 0 0 177.85 51.06 Z" fill="url(#color-nivel)"/><path id="barra-3" d="M228.67 92.90 A112 112 0 0 1 228.67 147.10 L207.33 141.77 A90 90 0 0 0 207.33 98.23 Z" fill="url(#color-nivel)"/><path id="barra-4" d="M223.84 161.96 A112 112 0 0 1 191.99 205.80 L177.85 188.94 A90 90 0 0 0 203.45 153.71 Z" fill="url(#color-nivel)"/><path id="barra-5" d="M179.35 214.98 A112 112 0 0 1 127.81 231.73 L126.28 209.78 A90 90 0 0 0 167.69 196.32 Z" fill="url(#color-nivel)"/><path id="barra-6" d="M112.19 231.73 A112 112 0 0 1 60.65 214.98 L72.31 196.32 A90 90 0 0 0 113.72 209.78 Z" fill="url(#color-nivel)"/><path id="barra-7" d="M48.01 205.80 A112 112 0 0 1 16.16 161.96 L36.55 153.71 A90 90 0 0 0 62.15 188.94 Z" fill="#2A2C33"/><path id="barra-8" d="M11.33 147.10 A112 112 0 0 1 11.33 92.90 L32.67 98.23 A90 90 0 0 0 32.67 141.77 Z" fill="#2A2C33"/><path id="barra-9" d="M16.16 78.04 A112 112 0 0 1 48.01 34.20 L62.15 51.06 A90 90 0 0 0 36.55 86.29 Z" fill="#2A2C33"/><path id="barra-10" d="M60.65 25.02 A112 112 0 0 1 112.19 8.27 L113.72 30.22 A90 90 0 0 0 72.31 43.68 Z" fill="#2A2C33"/></g>
+  <text id="numero-nivel" x="120" y="157" font-family="Montserrat, Arial, sans-serif" font-size="104" font-weight="900" letter-spacing="-4" text-anchor="middle" fill="#FFFFFF">6</text>
+</svg>

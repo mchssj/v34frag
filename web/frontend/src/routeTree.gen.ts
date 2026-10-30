@@ -31,6 +31,7 @@ import { Route as DemoEloRouteImport } from './routes/demo.elo'
 import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
 import { Route as DemoFavoritasRouteImport } from './routes/demo.favoritas'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
+import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
@@ -173,6 +174,11 @@ const DemoFavoritasRoute = DemoFavoritasRouteImport.update({
 const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   id: '/demo/matchmaking',
   path: '/demo/matchmaking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoMedallasRoute = DemoMedallasRouteImport.update({
+  id: '/demo/medallas',
+  path: '/demo/medallas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoMisionesRoute = DemoMisionesRouteImport.update({
@@ -372,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
@@ -488,6 +496,7 @@ export interface FileRoutesById {
   '/demo/exportar': typeof DemoExportarRoute
   '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
@@ -547,6 +556,7 @@ export interface FileRouteTypes {
     | '/demo/exportar'
     | '/demo/favoritas'
     | '/demo/matchmaking'
+    | '/demo/medallas'
     | '/demo/misiones'
     | '/demo/recalculo'
     | '/demo/tienda'
@@ -603,6 +613,7 @@ export interface FileRouteTypes {
     | '/demo/exportar'
     | '/demo/favoritas'
     | '/demo/matchmaking'
+    | '/demo/medallas'
     | '/demo/misiones'
     | '/demo/recalculo'
     | '/demo/tienda'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/demo/exportar'
     | '/demo/favoritas'
     | '/demo/matchmaking'
+    | '/demo/medallas'
     | '/demo/misiones'
     | '/demo/recalculo'
     | '/demo/tienda'
@@ -713,6 +725,7 @@ export interface RootRouteChildren {
   DemoExportarRoute: typeof DemoExportarRoute
   DemoFavoritasRoute: typeof DemoFavoritasRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
+  DemoMedallasRoute: typeof DemoMedallasRoute
   DemoMisionesRoute: typeof DemoMisionesRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
@@ -875,6 +888,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/matchmaking'
       fullPath: '/demo/matchmaking'
       preLoaderRoute: typeof DemoMatchmakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/medallas': {
+      id: '/demo/medallas'
+      path: '/demo/medallas'
+      fullPath: '/demo/medallas'
+      preLoaderRoute: typeof DemoMedallasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/misiones': {
@@ -1251,6 +1271,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoExportarRoute: DemoExportarRoute,
   DemoFavoritasRoute: DemoFavoritasRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
+  DemoMedallasRoute: DemoMedallasRoute,
   DemoMisionesRoute: DemoMisionesRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
