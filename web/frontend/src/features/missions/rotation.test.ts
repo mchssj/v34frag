@@ -6,8 +6,10 @@ import {
   isReady,
   METRICS,
   MISSIONS,
+  REWARDS,
   SLOTS,
   titleOf,
+  WEEK_BONUS,
   type Mission,
 } from "./catalog"
 import {
@@ -143,5 +145,27 @@ describe("textos de las misiones", () => {
     expect(titleOf(MISSIONS.find((m) => m.map === "de_dust2")!)).toBe(
       "Jugá 3 mixes en Dust2"
     )
+  })
+})
+
+describe("economía de las misiones", () => {
+  // Lo que paga un mix en la tienda (START_CONFIG de features/shop/demo.ts): 10 y 5 más si ganás.
+  const PER_MIX = 10
+  const PER_WIN = 5
+
+  it("la semana completa no paga más que unos 12 mixes ganados", () => {
+    const week = (["facil", "media", "dificil"] as const).reduce(
+      (t, d) => t + SLOTS.normal[d] * REWARDS.normal[d],
+      WEEK_BONUS
+    )
+    expect(week).toBeLessThanOrEqual(12 * (PER_MIX + PER_WIN))
+  })
+
+  it("las VIP de la semana no pagan más monedas que 6 mixes ganados", () => {
+    const vip = (["facil", "media", "dificil"] as const).reduce(
+      (t, d) => t + SLOTS.vip[d] * REWARDS.vip[d],
+      0
+    )
+    expect(vip).toBeLessThanOrEqual(6 * (PER_MIX + PER_WIN))
   })
 })

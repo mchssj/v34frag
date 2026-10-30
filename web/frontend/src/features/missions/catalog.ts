@@ -118,12 +118,16 @@ export interface Mission {
   active: boolean
 }
 
+// En la escala de lo que paga un mix (10 puntos y 5 más si ganás; las monedas VIP, lo mismo), para que las
+// misiones sumen sin tapar lo que se gana jugando: completar toda la semana da 170 puntos, más o menos lo
+// que dan 12 mixes. Con los valores de antes (30, 60 y 120, y 150 de bonus) daba 510, siete veces lo de
+// jugar 6 mixes, y un marco de 900 salía en menos de dos semanas solo con misiones.
 export const REWARDS: Record<"normal" | "vip", Record<Difficulty, number>> = {
-  normal: { facil: 30, media: 60, dificil: 120 }, // puntos de la tienda
-  vip: { facil: 20, media: 40, dificil: 80 }, // monedas VIP
+  normal: { facil: 10, media: 20, dificil: 40 }, // puntos de la tienda
+  vip: { facil: 10, media: 20, dificil: 40 }, // monedas VIP
 }
 /** Bonus por completar todas las semanales para todos (puntos). */
-export const WEEK_BONUS = 150
+export const WEEK_BONUS = 50
 
 export const SLOTS: Record<"normal" | "vip", Record<Difficulty, number>> = {
   normal: { facil: 2, media: 3, dificil: 1 },
