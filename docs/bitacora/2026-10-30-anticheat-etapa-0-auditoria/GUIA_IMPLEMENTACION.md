@@ -27,7 +27,7 @@ Hay que responderlas antes de empezar la etapa 0b o la 1.
 
 | # | Pregunta | Quién | Recomendación |
 |---|---|---|---|
-| 1 | ¿Se sigue con el agente, sabiendo que ClientMod ya trae EAC? | Kyan y Daniel | Sí, pero primero la prueba de captura y la consulta a ClientMod |
+| 1 | ¿Se sigue con el agente, sabiendo que ClientMod ya trae EAC? | Respondida por Kyan el 2026-10-30 | Sí, e independiente de EAC. La captura ya se probó en pantalla completa |
 | 2 | ¿La API se construye sobre `web/backend` y espera al corte, o va antes con RPC directas? | Daniel | Sobre `web/backend` |
 | 3 | ¿Qué pasa con quien juega sin el agente en la v1? | Kyan y Daniel | Mostrarlo en el panel y en el mix, sin sancionar |
 | 4 | ¿Quién responde legalmente y qué retención se usa? | Kyan y Daniel | Consultar a un abogado antes de la etapa 3; 30 días como punto de partida a revisar |

@@ -19,9 +19,9 @@ Auditoría del 2026-10-30 para el brief `v34FRAGNATION_brief_para_Claude.md`. No
 
 ## Conclusiones principales
 
-1. **ClientMod ya trae Easy Anti-Cheat, y el repo no lo menciona.** Hay que saber qué protege antes de decidir cuánto de FRAG hace falta (sección 5).
+1. **ClientMod trae archivos de Easy Anti-Cheat, y el repo no lo menciona.** Corrección del 2026-10-30: Kyan decidió que FRAG sea independiente de EAC, así que esto ya no condiciona el diseño (sección 5).
 2. **`main` no es la base real.** El trabajo vivo está en `feat/backend-api-fase-1` y `feat/frontend-fase-1`, y el backend nuevo todavía no está desplegado (sección 1).
-3. **La captura es el mayor riesgo técnico.** Sin hooks ni inyección, capturar un juego DirectX 9 en pantalla completa puede dar imágenes negras. Conviene probarlo antes de construir el backend (sección 7).
+3. **La captura era el mayor riesgo técnico.** Corrección del 2026-10-30: se probó y funciona en pantalla completa exclusiva, sin hooks, en una PC. Falta medir si provoca tirones ([resultados](../2026-10-30-anticheat-captura/DOCUMENTACION.md)).
 4. **Ya hubo una etapa 0 con otro enfoque:** `origin/feat/anticheat-etapa-0` (mchssj, 2026-10-20) propone telemetría en el servidor, no un agente en la PC del jugador (sección 1).
 5. **Un agente sin bloqueo no frena a nadie:** en la v1 quien hace trampa puede no abrirlo. Sirve como evidencia solo si la comunidad define qué pasa con quien juega sin él (sección 7).
 
@@ -143,6 +143,8 @@ Volcado con base `20261014120000` **[repo]**:
 
 **Easy Anti-Cheat dentro de ClientMod [local]:**
 
+> Corrección del 2026-10-30: estas medidas son de `D:`, que es un respaldo. La instalación real es `C:\CSSv34_ClientMod`: `CMLauncher.exe` y `Settings.json` son idénticos, y su `ClientModEAC.exe` es más nuevo (2026-10-17). **FRAG es independiente de EAC, por decisión de Kyan:** lo que sigue en este bloque sobre preguntarle a ClientMod por una integración o medir su convivencia queda descartado.
+
 | Archivo en `D:\CSSv34_ClientMod` | Dato medido |
 |---|---|
 | `ClientModEAC.exe` | Firma válida de **EasyAntiCheat Oy**; el encabezado PE declara versión de sistema 10.0 |
@@ -178,12 +180,10 @@ Volcado con base `20261014120000` **[repo]**:
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
-| **Captura negra en pantalla completa exclusiva.** Sin hooks, GDI y `PrintWindow` suelen fallar con DirectX 9 **[sin verificar]** | Alto: anula la función principal | Prueba de factibilidad antes de todo, con EAC activo y en 4:3 estirado, como se juega (`mat_aspectratio_mode 1.33` **[local]**) |
-| Graphics Capture puede mostrar un borde amarillo o pedir permiso **[sin verificar]** | Medio | Medirlo en la misma prueba |
-| EAC interfiere con el agente | Alto | La misma prueba; consultar a ClientMod |
+| **Captura en pantalla completa exclusiva.** Corrección: funciona en una PC con Desktop Duplication y `BitBlt` de la pantalla **[local]** | Tirones sin medir; imagen congelada con `BitBlt` de la ventana | No usar ese método; medir tirones en las pruebas de campo |
 | El backend no está desplegado y depende del corte | Alto para el calendario | Decisión pendiente (ver `GUIA_IMPLEMENTACION.md`) |
 | Antivirus y SmartScreen tratan al agente como espía: captura pantalla y lista procesos | Alto para la adopción | Certificado de firma, instalador claro, código abierto como opción |
-| Costo de almacenamiento. Estimación: 15 capturas por hora × 10 jugadores × 200–400 KB = 30–60 MB por hora de partida (tamaño supuesto, sin medir) | Medio | Retención corta, compresión, medir en la beta |
+| Costo de almacenamiento. Estimación: 15 capturas por hora × 10 jugadores × unos 143 KB (medido en una PC) = unos 21 MB por hora de partida | Medio | Retención corta, compresión, medir en la beta |
 | En esta PC no hay `cl`, `cmake`, `msbuild` ni `spcomp` en el PATH | Bloquea compilar | Lo instala Kyan o Daniel, según `CLAUDE.md` |
 | Servidores externos: la regla de despliegue obliga a llevar el Bridge a RBK en la misma tanda | Medio | Definirlo por escrito, o declararlo excepción como el retake |
 

@@ -206,8 +206,10 @@ Ordenado por urgencia.
 ### 1.16 Anticheat v34FRAGNATION
 
 - **Estado:** auditoría de la etapa 0 entregada el 2026-10-30. Nada implementado ni desplegado, ni en el servidor real ni en RBK.
-- **Qué falta:** las 7 decisiones de la guía y, antes que nada, probar la captura de pantalla sin hooks con el EAC que trae ClientMod.
-- **Bitácora:** [`2026-10-30-anticheat-etapa-0-auditoria`](bitacora/2026-10-30-anticheat-etapa-0-auditoria/).
+- **Decidido por Kyan:** FRAG es independiente del EAC de ClientMod, y las pruebas de campo van al final.
+- **Captura:** funciona en pantalla completa exclusiva sin hooks, probada en una PC.
+- **Qué falta:** las 6 decisiones abiertas de la guía y, al final, las pruebas de campo: tirones, Alt+Tab, modos ventana y sin bordes, otras PC.
+- **Bitácora:** [`2026-10-30-anticheat-etapa-0-auditoria`](bitacora/2026-10-30-anticheat-etapa-0-auditoria/) y [`2026-10-30-anticheat-captura`](bitacora/2026-10-30-anticheat-captura/).
 
 ## 2. Investigaciones abiertas
 
