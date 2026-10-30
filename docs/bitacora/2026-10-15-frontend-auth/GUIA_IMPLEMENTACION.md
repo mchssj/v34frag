@@ -143,6 +143,15 @@ También se verificó por HTTP: CORS desde `localhost:5173` (con `Retry-After` y
     - **Base local:** la migración `20261024180000_clips_forzados`, el replanteo 26 (cambió para las jugadas forzadas) y los replanteos 27 a 30, en orden, sin errores. La copia del backend (`csapi5`) se volvió a exportar desde `HEAD`, con el mismo `.dev.vars`.
     - **Tipos regenerados:** suman `review` en `MixItem` y `elo` y `level` en las líneas de jugador. Hubo que completar esos campos en los datos de prueba de `mixes/MixesList.test.tsx` y `mixes/room.test.ts`, y `win_rate`, `trend` y `form` en `teams/model.test.ts`.
     - **Verificación:** typecheck y lint limpios, 312 pruebas unitarias y 62 de 63 e2e en verde. La que falla, `ranking.spec.ts` (jugadores), necesita la temporada BETA abierta de la copia de producción, y la base local no tiene temporadas. No la rompe la integración.
+20. **Integración del 2026-10-30: commits propios y rebase sobre el remoto.** Daniel subió 71 commits a `origin/feat/frontend-fase-1`: HUD (relay y versión 2), notificaciones programadas, IPs de los jugadores, reinicio total de temporada, administración y el arreglo del scroll.
+    - **Commits:** el trabajo sin commit (Equipo y Torneos, ajustes visuales, perfil público, Partidas unificadas, menú de cuenta y la bitácora) quedó en 6 commits por tema. Después hubo `git rebase origin/feat/frontend-fase-1`. Los dos merges locales (`738f6ba`, `ea24396`) no traían nada que faltara en el remoto (comprobado archivo por archivo).
+    - **Conflictos:**
+      - las rutas con `resetScroll: false`: Daniel hizo el mismo arreglo, y quedó su versión;
+      - `mixes.index.tsx`: quedó el redirect a Partidas;
+      - el índice de la bitácora: las filas de los dos, por fecha.
+    - **Respaldo:** rama `backup/frontend-pre-rebase-2026-10-30` y la base en `~/.v34frag/local-antes-merge-2026-10-30.dump`.
+    - **Base local:** las migraciones `20261029180000_ips_jugadores` y `20261029200000_ips_intentos_hora` y los replanteos 35 a 38, en orden, sin errores. La copia del backend (`csapi5`) se volvió a exportar desde `HEAD`, con el mismo `.dev.vars`.
+    - **Verificación:** typecheck y lint limpios, 378 pruebas unitarias y 74 de 75 e2e en verde. La que falla es la misma `ranking.spec.ts` (jugadores), por la temporada.
 
 ## Pendientes para el backend
 
