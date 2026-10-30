@@ -42,6 +42,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
 SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
 SEEK_SLACK_SECONDS = 2.0  # cuánto puede pasarse el salto (después del lead) sin darlo por pasado de largo
+CONSOLE_MAX = 250  # largo máximo de una línea de la consola, con su marca (el juego corta en unos 255: console_lines)
 END_HOLD_SECONDS = 1.5  # cuánto se congela el último cuadro de un tramo que llega al final de la demo (ver segments)
 
 
@@ -174,6 +175,46 @@ def console_command(hwnd, text):
         user32.PostMessageW(hwnd, WM_CHAR, ord(ch), 1)
         time.sleep(0.005)
     post_key(hwnd, 0x1C, 0x0D)  # Enter
+
+
+def console_line(commands, n):
+    """El texto que escribe console_command para un paso: los comandos y la marca "echo CML_PASO_n"."""
+    return "; " + "; ".join(commands + [f"echo CML_PASO_{n}"])
+
+
+def console_lines(commands, n):
+    """Los comandos de un paso repartidos en líneas de la consola de hasta CONSOLE_MAX caracteres (n: el número de
+    la marca de la primera). Un paso que cabe va en una sola línea, como siempre.
+
+    La consola corta la línea en unos 255 caracteres y la marca del final se perdía (dust2, 2026-10-30: «New™ CH1LI»
+    no se puede escribir y la cámara llega a él desde «GO TO KNOW musul    ^'-'^»; el paso medía 259). Cada línea
+    lleva hideconsole (console_command abre la consola con su tecla, que la cierra si ya está abierta). Van siempre en
+    la misma línea:
+    - spec_player y sus spec_next: si la línea se reenvía, la cámara vuelve al mismo jugador;
+    - startmovie y demo_resume: con la demo en pausa, startmovie grabaría cuadros quietos hasta la línea siguiente;
+    - demo_pause y demo_gototick."""
+    if len(console_line(commands, n)) <= CONSOLE_MAX:
+        return [commands]
+    groups = []
+    for c in commands:
+        prev = groups[-1][-1] if groups else ""
+        if ((c.startswith("spec_next") and prev.startswith(("spec_player", "spec_next")))
+                or (c == "demo_resume" and prev.startswith("startmovie"))
+                or (c.startswith("demo_gototick") and prev == "demo_pause")):
+            groups[-1].append(c)
+        else:
+            groups.append([c])
+    fix = lambda cmds: cmds if "hideconsole" in cmds else ["hideconsole"] + cmds  # noqa: E731
+    lines = [[]]
+    for g in groups:
+        if lines[-1] and len(console_line(fix(lines[-1] + g), n + len(lines) - 1)) > CONSOLE_MAX:
+            lines.append([])
+        lines[-1] += g
+    lines = [fix(line) for line in lines]
+    for k, line in enumerate(lines):
+        if len(console_line(line, n + k)) > CONSOLE_MAX:
+            raise RuntimeError(f"no cabe en una línea de la consola: {console_line(line, n + k)!r}")
+    return lines
 
 
 class Game:
@@ -318,14 +359,15 @@ class Game:
 
     def step(self, commands, timeout=60):
         """Escribe el paso en la consola y espera su marca en el log. Si no llegó en 5 s, lo vuelve a escribir
-        (pasa si la consola no llegó a abrirse)."""
-        self.n += 1
+        (pasa si la consola no llegó a abrirse). Un paso que no cabe en una línea va en varias (console_lines), cada
+        una con su marca; step_pos queda al principio del paso completo."""
         self.step_pos = os.path.getsize(self.logfile)
-        marker = f"CML_PASO_{self.n}"
-        text = "; ".join(commands + [f"echo {marker}"])
-        send = lambda: console_command(self.hwnd, text)  # noqa: E731
-        send()
-        self.wait_log(marker, timeout, retry=send)
+        for line in console_lines(commands, self.n + 1):
+            self.n += 1
+            text = console_line(line, self.n)[2:]  # console_command le pone el "; " del principio
+            send = lambda t=text: console_command(self.hwnd, t)  # noqa: E731
+            send()
+            self.wait_log(f"CML_PASO_{self.n}", timeout, retry=send)
 
     def log_text(self, since):
         return open(self.logfile, "rb").read()[since:].decode("utf-8", "replace")
