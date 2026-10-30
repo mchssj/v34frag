@@ -203,6 +203,12 @@ Ordenado por urgencia.
 - `decalfrequency` pasó de `0.1` a `60` en `aurav34` y RBK el 2026-10-30, con respaldo en `cfg/server.cfg.bak_decal`.
 - **Falta `FLOW_SERVER` (`panel-mvzg.com`):** el `.env` no tiene `SERVER2_PANEL_API_KEY` y el SFTP cerró la conexión. Poner `decalfrequency 60` en su `server.cfg`.
 
+### 1.16 Anticheat v34FRAGNATION
+
+- **Estado:** auditoría de la etapa 0 entregada el 2026-10-30. Nada implementado ni desplegado, ni en el servidor real ni en RBK.
+- **Qué falta:** las 7 decisiones de la guía y, antes que nada, probar la captura de pantalla sin hooks con el EAC que trae ClientMod.
+- **Bitácora:** [`2026-10-30-anticheat-etapa-0-auditoria`](bitacora/2026-10-30-anticheat-etapa-0-auditoria/).
+
 ## 2. Investigaciones abiertas
 
 ### 2.1 Crashes del servidor real
