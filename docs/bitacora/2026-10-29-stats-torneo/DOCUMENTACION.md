@@ -25,7 +25,7 @@ Es un torneo de ejemplo ("Copa CM League · Octubre") con 20 jugadores en 4 equi
 
 - **Daniel:**
   - Una ruta con las stats de cada jugador en el torneo, sumando todos sus mapas.
-  - **Entradas y clutches:** hay que confirmar si el plugin ya los manda. Los multikills (`k3`, `k4`, `k5`) sí van en `match_player_stats`.
+  - **Entradas y clutches:** las entradas ya las manda el plugin 1.8 (`first_kills`), igual que los multikills (`k3`, `k4`, `k5`). Los clutches no: llegan con el schema 2 (`MEDALLAS_DATOS_REPORTER.md`). Hasta entonces, la columna Clutches y el premio "Más clutches" no se muestran.
   - **Chequeo de VIP:** la ruta tiene que hacerlo del lado del servidor y no devolver nada sin VIP hasta las 24 h desde el cierre de la final.
 - **Esteban:** la pestaña en `/events/$id`.
 - **Reloj:** la hora de corte tiene que salir del servidor. El componente recibe `now` para no depender del reloj de la PC del jugador.

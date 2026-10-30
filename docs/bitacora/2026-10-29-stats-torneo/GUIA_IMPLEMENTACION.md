@@ -4,6 +4,10 @@
 
 Levantar el frontend nuevo con la configuración `frontend-mm-ejemplo` (puerto 5173) y abrir `http://localhost:5173/demo/torneo-stats`.
 
+## Corrección (2026-10-29)
+
+El plan decía que había que ver si el plugin manda las entradas y los clutches. Las entradas ya están en el schema 1 (`first_kills`). Los clutches son del schema 2, el mismo pedido que las medallas y las misiones.
+
 ## Notas
 
 - **Plan:** se escribió junto con el prototipo.

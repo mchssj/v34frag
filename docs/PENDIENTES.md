@@ -2,7 +2,7 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-14**.
 
-Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+Si retomas el proyecto en una sesión nueva, empieza por acá. Lo que le toca a cada uno de los prototipos VIP y las misiones del 2026-10-29 está juntado en [`RESUMEN_PROTOTIPOS_VIP.md`](RESUMEN_PROTOTIPOS_VIP.md). El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
 ## Estado del repositorio
 
@@ -130,7 +130,7 @@ Ordenado por urgencia.
 - **Qué falta:**
   - **Daniel:**
     - Las rutas que pide cada bitácora, con el chequeo de VIP.
-    - Confirmar si el plugin manda las entradas y los clutches.
+    - Los clutches de las stats del torneo llegan con el plugin nuevo (schema 2); las entradas ya están.
   - **Esteban:** llevarlos a la web.
   - Confirmar los roles de "Hecho por" en los créditos.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
