@@ -34,6 +34,13 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - Daniel, 2026-10-15.
 - ~~**PCW "como equipo"**~~: hecho en la `10` (2026-10-15).
 - **[`docs/frontend/contrato/`](frontend/contrato/README.md)** (antes `contract.md`, partido por módulos el 2026-10-19): contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza el archivo de su módulo, las novedades del índice y `decisiones.md`.
+- **Pedidos del frontend al backend sin resolver** (Esteban, 2026-10-30), en la "Segunda tanda" de [`contrato-backend-equipo-torneos.md`](../contrato-backend-equipo-torneos.md). Mientras tanto, el frontend los muestra deshabilitados con "Próximamente":
+  - **E9:** cancelar la solicitud de equipo nuevo;
+  - **E10:** disolver un equipo;
+  - **E11:** nombre y sigla editables por el líder;
+  - **E12:** biografía editable por el jugador (`PATCH /me/profile` con `bio`). Hoy solo la cambia un admin.
+  - **E13:** `logo_url` en el historial de equipos y los títulos de un jugador. Hoy el frontend pide el detalle de cada equipo para mostrar el logo.
+  - **E14 a E18** (tercera tanda, Partidas unificadas): varios estados en `status`, `mine=true`, contadores por tipo, `mvp` en los mixes y búsqueda por nick en `GET /matches`.
 
 ## Estado del repositorio
 

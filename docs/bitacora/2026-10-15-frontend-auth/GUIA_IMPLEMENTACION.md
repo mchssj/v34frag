@@ -136,6 +136,13 @@ También se verificó por HTTP: CORS desde `localhost:5173` (con `Retry-After` y
     - **Cambio del contrato que rompe:** se borraron `POST /admin/elo/recompute` y `/simulate`. El frontend no los usa.
     - **`CLIPS_BASE_URL`:** variable nueva y opcional del backend; no hace falta en local.
     - **Verificación:** typecheck, lint, 186 pruebas unitarias y 40 e2e en verde.
+19. **Integración del 2026-10-26: avance rápido y merge, sin rebase.** Daniel subió 27 commits a `origin/feat/frontend-fase-1` (Mixes, Ranking, perfil público, notificaciones, ajustes de los módulos y merges del backend), y él integra el backend con merges.
+    - **Avance rápido** de la rama local a `1cc9912`, sin reescribir nada. El trabajo sin commit (Equipo y Torneos) pasó por un stash. Solo chocaron el índice de la bitácora y `web/frontend/CLAUDE.md` (se conservó todo); `_app.tsx` se fusionó solo.
+    - **Backend:** `git merge origin/feat/backend-api-fase-1` (`417ba50`, 2 commits: pedidos del frontend de Mixes y catálogo de mapas). No se hizo rebase porque habría reescrito los commits que Daniel ya subió y obligado a un force push (decisión de Esteban). Conflictos: `docs/PENDIENTES.md` (quedó la versión del backend, que marca hechos los pedidos de Mixes) y el índice de la bitácora (las dos filas).
+    - **Respaldo:** rama `backup/frontend-pre-rebase-2026-10-26` y la base en `~/.v34frag/local-antes-merge-2026-10-26.dump`.
+    - **Base local:** la migración `20261024180000_clips_forzados`, el replanteo 26 (cambió para las jugadas forzadas) y los replanteos 27 a 30, en orden, sin errores. La copia del backend (`csapi5`) se volvió a exportar desde `HEAD`, con el mismo `.dev.vars`.
+    - **Tipos regenerados:** suman `review` en `MixItem` y `elo` y `level` en las líneas de jugador. Hubo que completar esos campos en los datos de prueba de `mixes/MixesList.test.tsx` y `mixes/room.test.ts`, y `win_rate`, `trend` y `form` en `teams/model.test.ts`.
+    - **Verificación:** typecheck y lint limpios, 312 pruebas unitarias y 62 de 63 e2e en verde. La que falla, `ranking.spec.ts` (jugadores), necesita la temporada BETA abierta de la copia de producción, y la base local no tiene temporadas. No la rompe la integración.
 
 ## Pendientes para el backend
 

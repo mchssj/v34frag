@@ -222,3 +222,109 @@ O, como alternativa, `map_index` dentro de `MatchSummary` cuando `status = live`
 | T4 | Suma "Mapa n de n" al botón "Ver partida en vivo" |
 
 Detalle de cómo están hoy las dos vistas: bitácoras `docs/bitacora/2026-10-24-equipo/` y `docs/bitacora/2026-10-25-torneos/`.
+
+---
+
+## Segunda tanda (2026-10-30)
+
+Pedidos que salieron después de conectar la API nueva (respuesta en `contrato-frontend-equipo-torneos.md`). Mismas convenciones de arriba. Detalle: bitácora `docs/bitacora/2026-10-29-reclutar-y-salir-del-equipo/`.
+
+| # | Pedido | Prioridad | Qué destraba |
+|---|---|---|---|
+| E9 | Cancelar la solicitud de equipo nuevo | **Para cerrar** | El botón "Cancelar solicitud", hoy deshabilitado con "Próximamente" |
+| E10 | Disolver equipo por el líder | **Para cerrar** | Que un líder sin a quién cederle el liderazgo pueda salir del equipo |
+| E11 | Nombre y sigla editables por el líder | Mejora | Los campos de "Editar equipo", hoy de solo lectura |
+
+### E9. Cancelar la solicitud de equipo nuevo
+
+**Hoy:** `GET`/`PUT /me/team-request` existen, pero no hay forma de retirar una solicitud pendiente. En "Sin equipo" la tarjeta de la solicitud tiene "Editar" y "Cancelar"; este último está deshabilitado.
+
+**Pedimos:**
+- `DELETE /api/v1/me/team-request` → `204`. Solo si está `pending`; si no, `409 CONFLICT` con el mensaje. Borra el logo que se haya subido con la solicitud.
+- En `TeamRequest`, sumar `created_at` y, si fue rechazada, `reject_reason: string | null`, para mostrar "Enviada hace 2 días" y por qué se rechazó.
+
+### E10. Disolver equipo por el líder
+
+**Hoy:** el líder tiene que ceder el liderazgo antes de salir (`POST /teams/{id}/leave` lo exige), y eso está bien. Pero si es el **único miembro**, o **nadie más tiene SteamID**, no hay a quién cedérselo y no puede salir. El único borrado es el del admin (`DELETE /admin/teams/{id}`), que falla si el equipo tiene partidas o inscripciones.
+
+**Pedimos:** `POST /api/v1/teams/{id}/dissolve` (capitán o admin) → `204`.
+- El equipo queda **archivado**, no borrado: sale del listado, de Buscar equipo y del ranking actual, pero conserva su historial, partidas, títulos y la vista pública (con un aviso "Equipo disuelto").
+- Los miembros quedan como ex integrantes; reciben una notificación.
+- Falla con `409` si el equipo está inscripto en un torneo en inscripciones o en curso (que primero lo dé de baja).
+- Opcional: permitirlo solo cuando no hay a quién ceder, si prefieren que un equipo con miembros elegibles no se pueda disolver sin pasar el liderazgo.
+
+### E11. Nombre y sigla editables por el líder
+
+**Hoy:** `PATCH /teams/{id}` solo acepta `looking_for`; el nombre y la sigla los cambia un admin. En el panel "Editar equipo" se muestran bloqueados con ese aviso.
+
+**Pedimos:** que `PATCH /teams/{id}` acepte también `name` y `tag` del capitán, con las mismas reglas que la solicitud (nombre de 2 a 40, sigla de 1 a 6), y además:
+- **Un cambio cada 30 días** (`409` con la fecha en que se puede volver a cambiar, por ejemplo en `details.next_change_at`). Sumar `name_changed_at` al detalle del equipo para mostrarlo antes de intentarlo.
+- **Únicos:** que el nombre y la sigla no repitan los de otro equipo activo (`409`).
+- **El filtro de palabras** que ya usa el backend.
+- **Bloqueado** mientras el equipo esté en un torneo en curso, para que no cambie de nombre en medio de la llave (`409`).
+
+### E12. Biografía editable por el jugador (perfil público)
+
+No es de Equipo ni de Torneos, pero salió al rehacer el perfil público y va en la misma tanda.
+
+**Hoy:** `bio` (y `achievements`) de la ficha solo los cambia un admin (`PATCH /admin/players/{id}`). El jugador no tiene dónde escribir su biografía, y en su perfil público el botón "Escribir biografía" se muestra deshabilitado con "Próximamente". `achievements` ya no se muestra en el perfil: el palmarés sale de los títulos de torneo y las medallas.
+
+**Pedimos:** que `PATCH /api/v1/me/profile` acepte `bio` (con el mismo límite de largo que usa el admin, saltos de línea y el filtro de palabras) y la guarde en la ficha vinculada. Sin jugador vinculado, `409`.
+
+### E13. Logo del equipo en el historial y los títulos de un jugador
+
+**Hoy:** `GET /players/{id}/teams` y `GET /players/{id}/titles` devuelven el equipo (`TeamRef`) sin `logo_url`. En el perfil público el escudo mostraría la sigla aunque el equipo tenga logo. Mientras tanto, el frontend pide el detalle de cada equipo (`GET /teams/{id}`) para sacar el logo: una consulta más por equipo.
+
+**Pedimos:** sumar `logo_url` al equipo en esas dos respuestas, como ya viene en los listados de equipos.
+
+### Qué hace el frontend cuando llegue cada uno
+
+| # | Cambio en el frontend |
+|---|---|
+| E9 | Activa "Cancelar solicitud" (con confirmación) y muestra la fecha y el motivo |
+| E10 | Activa "Disolver equipo" en el diálogo de salir del líder, con confirmación |
+| E11 | Activa los campos de nombre y sigla en "Editar equipo" con "Guardar" y el aviso de cuándo se puede volver a cambiar |
+| E12 | Activa "Escribir biografía" en el perfil propio y suma el campo en Mi perfil |
+| E13 | Deja de pedir el detalle de cada equipo para el logo (`useTeamLogos` no pide nada cuando el campo llega) |
+
+## Tercera tanda (2026-10-30): Partidas unificadas
+
+En el frontend, "Partidas" y "Mixes" pasan a ser un solo listado ([artifact](https://claude.ai/artifact/QBYaxMcgkQyUy1zSvatuCZ)). La tabla sale de `GET /api/v1/matches`; `GET /api/v1/mixes` se sigue usando solo para los mixes en vivo. Las partidas programadas no van en ese listado (se ven en Torneos y en PCW). Para que los filtros funcionen sin resolverlos en el frontend, pedimos:
+
+### E14. Varios estados en `status`
+
+**Hoy:** `status` acepta un solo valor, y sin él vienen también las programadas.
+
+**Pedimos:** que acepte una lista separada por comas (`status=finished,cancelled`). El listado pide las jugadas y las canceladas, y con "Ocultar canceladas", solo `finished`.
+
+### E15. `mine=true` en `/matches`
+
+**Hoy:** "Solo donde jugué" se podría resolver con `player=<id de la ficha>`, pero eso obliga al frontend a mandar el id.
+
+**Pedimos:** `mine=true`, como en `/mixes`: usa la sesión, pide estar logueado y, sin ficha vinculada, devuelve la lista vacía.
+
+### E16. Contadores por tipo
+
+**Pedimos:** que la respuesta de `/matches` traiga `counts: { all, mix, pcw, official }`, calculados con los mismos filtros de la consulta salvo `kind`. Son los números de los chips Todas, Mix, PCW y Torneo.
+
+### E17. MVP en las filas de mix
+
+**Hoy:** `MatchSummary` no trae el MVP; `MixItem` sí (`mvp`).
+
+**Pedimos:** el mismo `mvp` (alias y rating, `null` si no hay) en las filas de `/matches` con `kind = mix`.
+
+### E18. Buscar por nick en `/matches`
+
+**Hoy:** `q` busca en equipos, bandos y torneo.
+
+**Pedimos:** que también busque en los nombres de los jugadores (alias y nombre en el juego), como el `q` de `/mixes`.
+
+### Qué hace el frontend cuando llegue cada uno
+
+| # | Cambio en el frontend |
+|---|---|
+| E14 | Muestra las canceladas y activa "Ocultar canceladas" (hasta entonces, la tabla muestra solo las jugadas) |
+| E15 | Activa "Solo donde jugué" |
+| E16 | Pone el número en cada chip de tipo |
+| E17 | Muestra el MVP en la columna Detalle de los mixes |
+| E18 | La búsqueda encuentra partidas por el nick de un jugador |

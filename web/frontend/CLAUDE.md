@@ -56,7 +56,7 @@ src/
   assets/     imagen del hero (AVIF y WebP)
   components/ ui/ (shadcn), brand/ (Brand: isotipo, wordmark y lockup de CM League; ThemeToggle de la app, ThemeSwitch de la landing, CountryFlag, LevelBadge, ListPagination, LiveDot, SectionHeading), theme-provider
   config/     site.ts: datos fijos que la API todavía no expone (servidores, Discord, IP del !claim)
-  features/   componentes por dominio (admin/, auth/, auth/register/, landing/, maps/, mixes/, onboarding/, player/, profile/, public/, ranking/, shell/, theme-fx/)
+  features/   componentes por dominio (admin/, auth/, auth/register/, events/, landing/, maps/, matches/, mixes/, onboarding/, player/, profile/, public/, ranking/, shell/, teams/, theme-fx/)
   lib/        env.ts (VITE_API_URL validada), image.ts (recorte del avatar), useMediaQuery.ts
   routes/     una ruta por archivo; _auth = páginas sin sesión, _app = con sesión, _admin = rol admin
   test/       setup y utilidades de prueba
