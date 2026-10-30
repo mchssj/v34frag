@@ -19,12 +19,50 @@ Hay dos tipos de misiones:
 
 | | Cuántas | Premio |
 |---|---|---|
-| Semanales para todos | 2 fáciles, 3 medias y 1 difícil | 30, 60 y 120 puntos |
-| Bonus por completar las 6 semanales | — | 150 puntos |
-| Semanales VIP | 1 de cada dificultad | 20, 40 y 80 monedas VIP |
+| Semanales para todos | 2 fáciles, 3 medias y 1 difícil | 10, 20 y 40 puntos |
+| Bonus por completar las 6 semanales | — | 50 puntos |
+| Semanales VIP | 1 de cada dificultad | 10, 20 y 40 monedas VIP |
 | Primeros pasos | 11 para todos y 3 VIP | La misma tabla por dificultad |
 
-Los puntos son los de la tienda (un mix da 10 o 15). Las monedas VIP son las de la progresión VIP.
+Los puntos son los de la tienda y las monedas VIP las de la progresión VIP. Un mix da 10 de cada uno, y 5 más si ganás.
+
+### Por qué esos valores
+
+Las recompensas están en la misma escala que un mix, para que las misiones sumen sin tapar lo que se gana jugando:
+
+| | Por semana |
+|---|---|
+| Jugar 6 mixes y ganar la mitad | 75 puntos |
+| Completar las 6 semanales y el bonus | 170 puntos, lo que dan unos 12 mixes ganados (para completarlas hay que jugar varios) |
+| Completar las 3 VIP | 70 monedas VIP |
+| Primeros pasos, una sola vez | 180 puntos y 70 monedas VIP |
+
+Con los valores del plan (30, 60 y 120 puntos, 150 de bonus y 20, 40 y 80 monedas VIP), la semana daba 510 puntos, siete veces lo que da jugar 6 mixes, y un marco de 900 salía en menos de dos semanas solo con misiones.
+
+Dos tests (`economía de las misiones`) fallan si la semana completa paga más que 12 mixes ganados o si las VIP pagan más que 6.
+
+## Reglas para que no se puedan farmear
+
+Son para la versión real. Las tiene que aplicar la API al sumar el progreso; el prototipo no las simula.
+
+| Métrica | Qué cuenta | Qué no cuenta |
+|---|---|---|
+| Todas las de juego | Mixes terminados en los que el jugador tuvo peso de ELO mayor a 0 (35 % de las rondas o más, la misma regla de `elo_weight`) | Mixes cancelados, borrados (`mix_deletions`), con bots o de práctica |
+| `mixes_won`, `win_streak` | Ganados con peso de ELO mayor a 0 | Empates, que cortan la racha pero no la cuentan |
+| `pcw_played` | PCW entre equipos registrados | PCW contra el propio equipo |
+| `login_days` | Un día por fecha de Argentina (corte a las 00:00), con la sesión iniciada | Más de un login en el mismo día |
+| `clips_voted` | Clips distintos, de otros jugadores | Votar dos veces el mismo clip, o un clip propio |
+| `clips_uploaded` | Clips aprobados por moderación | Clips rechazados o borrados |
+| `demos_watched` | Demos distintas | Abrir la misma demo varias veces |
+| `compares`, `searches` | Una vez por combinación distinta en el día | Repetir la misma búsqueda o comparación |
+| `shop_purchases`, `cosmetics_equipped` | Compras y equipados reales | Equipar y desequipar el mismo cosmético; las compras devueltas |
+| `event_signups` | Inscripciones confirmadas a eventos distintos | Anotarse y desanotarse del mismo evento |
+
+**Además:**
+
+- **Reclamar:** cada misión se reclama una vez, y la API lo controla con `claimed_at`, no la web.
+- **Pagos:** lo pagado queda en el mismo registro de la tienda, con el motivo "Misión: …", para poder auditarlo.
+- **Admin:** un admin puede anular el progreso de una misión o el pago de un jugador que hizo trampa.
 
 ## La rotación de las semanales
 
@@ -93,7 +131,7 @@ La vista **Admin → Misiones** del demo muestra:
 |---|---|
 | `features/missions/catalog.ts` | Métricas con su fuente, semanales, Primeros pasos, recompensas y reglas |
 | `features/missions/rotation.ts` | `pickWeek`, `rotation`, `sameStat`, `weekIndex` y `minimumPool` |
-| `features/missions/rotation.test.ts` | 12 tests, que se detallan en Pruebas |
+| `features/missions/rotation.test.ts` | 15 tests, que se detallan en Pruebas |
 | `features/missions/demo.ts` | Progreso simulado. Las semanales se reinician con la semana; Primeros pasos tiene su propio progreso y su propia lista de reclamadas, que no se reinician |
 | `features/missions/MissionsUi.tsx` | El popout con las dos pestañas, la fila de misión, el bonus y la página |
 | `features/missions/AdminMissions.tsx` | La vista de admin |
@@ -120,7 +158,7 @@ La vista **Admin → Misiones** del demo muestra:
 
 ## Pruebas (2026-10-29)
 
-- **Los 12 tests pasan:**
+- **Los 15 tests pasan:**
   - Cantidades por semana.
   - Espera de 2 semanas en medio año de rotación.
   - Que no se repita la misma stat en una semana.
@@ -130,6 +168,8 @@ La vista **Admin → Misiones** del demo muestra:
   - Que la misma semilla dé el mismo resultado.
   - El mínimo del catálogo y el aviso si no alcanza.
   - El corte del lunes a las 06:00.
+  - Que los mapas se muestren sin prefijo.
+  - Que la semana y las VIP no paguen más que unos 12 y 6 mixes ganados.
 - **En el navegador:**
   - Con 1 clip votado, 1 subido y 3 días de login se reclamaron 3 de Primeros pasos, por +120 puntos.
   - Al pasar de semana siguieron reclamadas y el progreso se mantuvo: 2 de 10 clips votados y 3 de 15 días.

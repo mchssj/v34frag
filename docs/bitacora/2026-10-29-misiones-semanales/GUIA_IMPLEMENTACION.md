@@ -45,6 +45,16 @@ pnpm exec vitest run src/features/missions
 - **Nombre para mostrar:** en la versión real conviene pasarle a `mapLabel` el nombre que tiene cada mapa en el catálogo de mapas, porque `de_cbble` se ve "Cbble" sin él y "Cobblestone" con él.
 - **Test:** hay uno nuevo que falla si algún título de misión muestra un prefijo.
 
+## Cambio pedido por Kyan: recompensas en la escala de un mix
+
+- **Antes:** con los valores del plan, la semana pagaba 510 puntos, siete veces lo de jugar 6 mixes.
+- **Ahora:**
+  - Las misiones para todos pagan 10, 20 y 40 puntos, y el bonus semanal es de 50.
+  - Las VIP pagan lo mismo en monedas VIP, porque las monedas se ganan al mismo ritmo que los puntos.
+  - La semana completa da 170 puntos y 70 monedas VIP. Primeros pasos da 180 puntos y 70 monedas una sola vez.
+- **Tests:** dos nuevos fallan si se vuelve a desproporcionar.
+- **Reglas anti-abuso:** se sumó una sección a `DOCUMENTACION.md` con qué cuenta y qué no en cada métrica (mixes cancelados, clips distintos, un login por día…).
+
 ## Notas
 
 - No toca el plugin: no hay nada que subir al servidor real ni a RBK.
