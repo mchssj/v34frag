@@ -270,6 +270,8 @@ public void Rank_OnDefuse(Event event, const char[] name, bool dontBroadcast)
 
 public Action Cmd_Rank(int client, int args)
 {
+	if (!g_bActive)
+		return Plugin_Continue;   // el servidor también puede tener cargado el otro modo
 	if (client <= 0 || !IsClientInGame(client))
 		return Plugin_Handled;
 	if (g_hDb == null || !g_bRankLoaded[client])
@@ -331,6 +333,8 @@ public int Rank_PanelHandler(Menu menu, MenuAction action, int client, int key)
 
 public Action Cmd_Top(int client, int args)
 {
+	if (!g_bActive)
+		return Plugin_Continue;   // el servidor también puede tener cargado el otro modo
 	if (g_hDb == null)
 	{
 		ReplyToCommand(client, "[2v2] El ranking no está disponible.");

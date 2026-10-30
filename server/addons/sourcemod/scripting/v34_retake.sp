@@ -238,6 +238,16 @@ bool Mode_MixInProgress()
 	return StrContains(out, "estado: calentamiento") == -1 && StrContains(out, "estado: terminada") == -1;
 }
 
+/** Si v34_wingman está cargado y prendido: los dos modos no pueden correr a la vez. Llamar desde un timer. */
+bool Mode_WingmanIsOn()
+{
+	if (!CommandExists("sm_2v2"))
+		return false;
+	char out[256];
+	ServerCommandEx(out, sizeof(out), "sm_2v2");
+	return StrContains(out, "prendido") != -1;
+}
+
 public Action Cmd_Retake(int client, int args)
 {
 	char arg[8];
@@ -284,6 +294,14 @@ public Action Timer_TurnOn(Handle timer, int userid)
 			Chat(client, "%s Hay un mix en curso: terminalo o cancelalo antes de prender el modo.", RETAKE_PREFIX);
 		else
 			PrintToServer("[Retake] Hay un mix en curso: terminalo o cancelalo antes de prender el modo.");
+		return Plugin_Stop;
+	}
+	if (Mode_WingmanIsOn())
+	{
+		if (client > 0)
+			Chat(client, "%s El 2v2 está prendido: apagalo con !2v2 0 antes de prender el retake.", RETAKE_PREFIX);
+		else
+			PrintToServer("[Retake] El 2v2 está prendido: apagalo con sm_2v2 0 antes de prender el retake.");
 		return Plugin_Stop;
 	}
 	Mode_On();
@@ -358,6 +376,8 @@ public Action Timer_KeepOn(Handle timer)
 	g_bKeepOn = false;
 	if (Mode_MixInProgress())
 		LogMessage("Hay un mix en curso: el modo no se prende solo.");
+	else if (Mode_WingmanIsOn())
+		LogMessage("El 2v2 está prendido: el retake no se prende solo.");
 	else if (Spawns_Ready())
 		Mode_On();
 	else

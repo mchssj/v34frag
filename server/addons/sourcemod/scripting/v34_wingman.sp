@@ -226,6 +226,16 @@ bool Mode_MixInProgress()
 	return StrContains(out, "estado: calentamiento") == -1 && StrContains(out, "estado: terminada") == -1;
 }
 
+/** Si v34_retake está cargado y prendido: los dos modos no pueden correr a la vez. Llamar desde un timer. */
+bool Mode_RetakeIsOn()
+{
+	if (!CommandExists("sm_retake"))
+		return false;
+	char out[256];
+	ServerCommandEx(out, sizeof(out), "sm_retake");
+	return StrContains(out, "prendido") != -1;
+}
+
 public Action Cmd_Mode(int client, int args)
 {
 	char arg[8];
@@ -271,6 +281,14 @@ public Action Timer_TurnOn(Handle timer, int userid)
 			Chat(client, "%s Hay un mix en curso: terminalo o cancelalo antes de prender el modo.", WM_PREFIX);
 		else
 			PrintToServer("[2v2] Hay un mix en curso: terminalo o cancelalo antes de prender el modo.");
+		return Plugin_Stop;
+	}
+	if (Mode_RetakeIsOn())
+	{
+		if (client > 0)
+			Chat(client, "%s El retake está prendido: apagalo con !retake 0 antes de prender el 2v2.", WM_PREFIX);
+		else
+			PrintToServer("[2v2] El retake está prendido: apagalo con sm_retake 0 antes de prender el 2v2.");
 		return Plugin_Stop;
 	}
 	if (!Map_Ready())
