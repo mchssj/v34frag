@@ -27,6 +27,8 @@ Por la API del panel (`SERVER1_*`), comprobando que los archivos quedaron idént
 
 **Pendiente en RBK:** ese servidor no tiene `de_dust2_ob.bsp`. Hay que subir el mapa o cargar los puntos de otro mapa. `sm_2v2_autostart` queda en 0.
 
+También subido a `aurav34` (`SFTP_CSS_*`) el mismo día, con una versión posterior: los dos modos no se prenden a la vez y `!rank` y `!top` responden solo en el modo prendido. Esa versión también cambió `v34_retake`, que se resubió, y RBK sigue con la anterior.
+
 Es una excepción a dos reglas de `CLAUDE.md`, por decisión de Kyan: no se desplegó a los demás servidores en la misma tanda, y RBK lleva un `.smx` sin build licenciado, porque este plugin no tiene licencia.
 
 ## Pruebas

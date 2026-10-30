@@ -1,6 +1,6 @@
-v34frag 1.0.0 --  Changelog
+v34frag 1.1.0 --  Changelog
 
-Llegó el 2v2
+Nuevo modo: 2v2
 
 Partidas de 2 contra 2, como el Wingman de CS2, en una sola parte del mapa y con un solo sitio.
 
@@ -11,3 +11,7 @@ Partidas de 2 contra 2, como el Wingman de CS2, en una sola parte del mapa y con
 - Las paredes rojas marcan hasta dónde se juega: no se pueden cruzar.
 - Al morir, solo mirás y escuchás a tu equipo.
 - Hay ranking propio: mirá tu puesto con !rank y el ranking con !top.
+
+Mejoras en el retake
+
+- Tu !rank y tu !top son los del modo que se está jugando.

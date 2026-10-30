@@ -191,7 +191,7 @@ Ordenado por urgencia.
 
 ### 1.15 Plugin 2v2 (`v34_wingman`)
 
-- **Estado:** probado con bots en `cssds` y subido a RBK el 2026-10-30, inactivo. **RBK no tiene `de_dust2_ob`**, el único mapa con puntos, así que ahí todavía no se puede jugar. No está en `aurav34` ni en `FLOW_SERVER`: fue una decisión de Kyan.
+- **Estado:** probado con bots en `cssds` y subido el 2026-10-30, inactivo, a `aurav34` y a RBK. En `aurav34` se prende con `sm_2v2 1`; el retake se tiene que apagar antes y, por su autostart, vuelve en cada cambio de mapa. **RBK no tiene `de_dust2_ob`**, y Kyan dijo que probablemente dejen de pagar ese servidor. No está en `FLOW_SERVER`.
 - **Qué falta:**
   - Subir `de_dust2_ob` a RBK o cargar los puntos de otro mapa.
   - Cargar sitio, 2 spawns y zonas de `de_inferno` (sitio A). `de_dust2_ob` ya está cargado (3 zonas) y en el repo.
