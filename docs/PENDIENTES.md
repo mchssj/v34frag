@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-14**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-30**.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. Lo que le toca a cada uno de los prototipos VIP y las misiones del 2026-10-29 está juntado en [`RESUMEN_PROTOTIPOS_VIP.md`](RESUMEN_PROTOTIPOS_VIP.md). El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -174,6 +174,25 @@ Ordenado por urgencia.
   - **Esteban:** la página `/vip`, "Mi suscripción" en la cuenta y la pestaña Config del perfil.
 - No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
 - **Bitácora:** [`2026-10-29-hacete-vip`](bitacora/2026-10-29-hacete-vip/) y [`2026-10-29-configs-jugadores`](bitacora/2026-10-29-configs-jugadores/).
+
+### 1.13 Plugin de retake (`v34_retake`, sin licencia)
+
+- **Estado:** subido el 2026-10-30 a `aurav34` (`45.235.98.57:27062`, `SFTP_CSS_*`), que queda como servidor solo de retake, con `sm_retake_autostart "1"`. Solo tiene spawns de `de_dust2_ob`. **No está en RBK ni en `FLOW_SERVER`**: fue una decisión de Kyan. Sin commit.
+- **Qué falta:**
+  - Cargar spawns de otros mapas: sin eso la votación de la ronda 25 no tiene opciones.
+  - Confirmar con jugadores: `!guns` guardado, `!top` y `!rank`, menú de modelos, barra de desactivar, votación con votos reales, VIP y AFK.
+  - Revisar el sorteo de AWP con un solo anotado, que en la prueba dio 50 % en vez de 30 % (22 sorteos).
+  - Decidir si `csstv_reporter` se saca de `aurav34`. Hoy `rtv` escrito en el chat todavía lo atiende.
+  - Revisar los otros `csstv_*` de ese servidor y la convivencia con el reporter 1.8.0.
+  - Borrar `cfg/server.cfg.bak_pw` si no hace falta: tiene la contraseña vieja.
+- **Pruebas:** los plugins del servidor se prueban en `C:\Users\Agus\Downloads\cssds`, el ambiente de Agus, antes de ir a producción.
+- **VIP, se hace al finalizar:** hoy el plugin reconoce a un VIP por el flag `o` de SourceMod, que se carga a mano en `admins_simple.ini`. Falta sincronizar esa lista con el VIP de la web, que todavía es un prototipo (ver 1.7 y 1.12).
+- **Bitácora:** [`2026-10-30-plugin-retake`](bitacora/2026-10-30-plugin-retake/). Changelog para Discord en la carpeta.
+
+### 1.14 Spam de grafitis
+
+- `decalfrequency` pasó de `0.1` a `60` en `aurav34` y RBK el 2026-10-30, con respaldo en `cfg/server.cfg.bak_decal`.
+- **Falta `FLOW_SERVER` (`panel-mvzg.com`):** el `.env` no tiene `SERVER2_PANEL_API_KEY` y el SFTP cerró la conexión. Poner `decalfrequency 60` en su `server.cfg`.
 
 ## 2. Investigaciones abiertas
 

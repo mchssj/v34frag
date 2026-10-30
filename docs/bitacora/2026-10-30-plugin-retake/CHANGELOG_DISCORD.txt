@@ -1,0 +1,14 @@
+v34frag 1.0.0 --  Changelog
+
+Llegó el modo RETAKE
+
+Cada ronda arranca con la bomba plantada: si sos T, la defendés; si sos CT, entrás a desactivarla.
+
+- Las primeras 5 rondas son de pistola y después full buy.
+- Escribí !guns para elegir tus armas y anotarte para la AWP.
+- Si los T ganan 3 rondas seguidas, se mezclan los equipos. Si ganan los CT, rotan.
+- Si no quedan T vivos y te alcanza el tiempo para desactivar, la bomba se desactiva al instante.
+- Al terminar la ronda ves cuánto daño hiciste y recibiste.
+- Hay ranking: tus puntos suben según a quién matás. Mirá tu puesto con !rank y el ranking con !top.
+- La partida dura 30 rondas, y en la 25 se vota el próximo mapa.
+- Los equipos son de hasta 5 jugadores. Si están llenos, esperás tu turno como espectador.
