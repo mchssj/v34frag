@@ -179,7 +179,7 @@ def build_job(d, rounds, clip, offset, seg_cfg):
     # La cámara lo sigue por el SteamID: render_clip.spec_target escribe el nombre si se puede y, si no (caracteres no
     # latinos, comillas o ";"), llega a él con spec_next desde otro jugador vivo.
     return {"key": clip["id"][:8], "player": name, "steamid": sid,
-            "segs": render_clip.segments(events, d.tick_interval, seg_cfg), "clip": clip}
+            "segs": render_clip.segments(events, d.tick_interval, seg_cfg, d.header["playback_ticks"]), "clip": clip}
 
 
 # ---- Demo ----
