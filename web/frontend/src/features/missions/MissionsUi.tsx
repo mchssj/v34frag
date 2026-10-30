@@ -39,11 +39,30 @@ const AREA_ICON: Record<Area, typeof GlobeIcon> = {
   web: GlobeIcon,
   comunidad: UsersIcon,
 }
-const DIFF_CLASS = {
-  facil: "text-win",
-  media: "text-amber-500 dark:text-amber-400",
-  dificil: "text-primary",
+// La dificultad no se escribe: va en el borde izquierdo de la misión. Verde, amarillo y rojo, como un
+// semáforo. Para lectores de pantalla y al pasar el mouse, el nombre va como texto oculto y `title`.
+export const DIFF_COLOR = {
+  facil: { border: "border-l-emerald-500", dot: "bg-emerald-500" },
+  media: { border: "border-l-amber-400", dot: "bg-amber-400" },
+  dificil: { border: "border-l-rose-500", dot: "bg-rose-500" },
 } as const
+
+/** Leyenda de los colores de dificultad. */
+export function DifficultyLegend() {
+  return (
+    <span className="flex items-center gap-3 text-xs text-muted-foreground">
+      {(Object.keys(DIFF_COLOR) as (keyof typeof DIFF_COLOR)[]).map((k) => (
+        <span key={k} className="inline-flex items-center gap-1.5">
+          <span
+            aria-hidden
+            className={cn("h-3 w-1 rounded-full", DIFF_COLOR[k].dot)}
+          />
+          {DIFFICULTY_LABEL[k]}
+        </span>
+      ))}
+    </span>
+  )
+}
 
 export function timeLeft(week: number, now: number) {
   const ms = Math.max(0, weekEnd(week) - now)
@@ -88,12 +107,19 @@ export function MissionRow({
   }
   return (
     <li
+      title={`Dificultad: ${DIFFICULTY_LABEL[m.difficulty]}`}
       className={cn(
         "flex items-center gap-3",
-        compact ? "py-2.5" : "rounded-xl border bg-card p-3.5",
+        DIFF_COLOR[m.difficulty].border,
+        compact
+          ? "border-l-[3px] py-2.5 pl-2.5"
+          : "rounded-xl border border-l-4 bg-card p-3.5",
         claimed && "opacity-60"
       )}
     >
+      <span className="sr-only">
+        Dificultad {DIFFICULTY_LABEL[m.difficulty]}.
+      </span>
       <span
         className={cn(
           "grid size-8 shrink-0 place-items-center rounded-lg bg-muted",
@@ -127,16 +153,6 @@ export function MissionRow({
             {value.toLocaleString("es-AR")}/{m.target.toLocaleString("es-AR")}
           </span>
         </span>
-        {!compact && (
-          <span
-            className={cn(
-              "text-[11px] font-semibold",
-              DIFF_CLASS[m.difficulty]
-            )}
-          >
-            {DIFFICULTY_LABEL[m.difficulty]}
-          </span>
-        )}
       </span>
       {locked ? (
         <LockIcon
@@ -308,10 +324,11 @@ export function MissionsPopout({
               )}
             </button>
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
             {tab === "week"
               ? `Se renuevan en ${timeLeft(d.week, d.now)}`
-              : "Se hacen una sola vez, desde que te registraste. No se reinician."}
+              : "Una sola vez, desde que te registraste."}
+            <DifficultyLegend />
           </span>
         </div>
         <div className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto px-4 py-3">
@@ -387,14 +404,7 @@ export function MissionsPage({ d }: { d: MissionsDemo }) {
         </span>
       </div>
 
-      <Section
-        title="Para todos"
-        right={
-          <span className="text-xs text-muted-foreground">
-            2 fáciles, 3 medias y 1 difícil
-          </span>
-        }
-      >
+      <Section title="Para todos" right={<DifficultyLegend />}>
         <BonusBar d={d} />
         <ul className="grid gap-3 md:grid-cols-2">
           {d.normal.map((m) => (
