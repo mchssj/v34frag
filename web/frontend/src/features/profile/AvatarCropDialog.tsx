@@ -15,19 +15,26 @@ import {
 } from "@/components/ui/dialog"
 
 /**
- * Encuadre de la foto antes de subirla: arrastrar y zoom (mouse, rueda, pellizco o flechas)
- * dentro del círculo. Devuelve el área elegida en píxeles de la imagen original.
+ * Encuadre de una imagen antes de subirla: arrastrar y zoom (mouse, rueda, pellizco o flechas).
+ * Por defecto, la foto de perfil en un círculo; el logo del equipo usa el cuadrado. Devuelve el área
+ * elegida en píxeles de la imagen original.
  */
 export function AvatarCropDialog({
   src,
   busy,
   onCancel,
   onConfirm,
+  shape = "round",
+  title = "Encuadra tu foto",
+  confirmLabel = "Guardar foto",
 }: {
   src: string
   busy: boolean
   onCancel: () => void
   onConfirm: (area: Area) => void
+  shape?: "round" | "rect"
+  title?: string
+  confirmLabel?: string
 }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -38,7 +45,7 @@ export function AvatarCropDialog({
       <DialogContent className="gap-4 leading-design sm:max-w-[420px]">
         <div className="flex flex-col gap-1">
           <DialogTitle className="text-base leading-[normal] font-semibold">
-            Encuadra tu foto
+            {title}
           </DialogTitle>
           <DialogDescription>
             Arrástrala y usa el zoom para que quede como quieres.
@@ -50,7 +57,7 @@ export function AvatarCropDialog({
             crop={crop}
             zoom={zoom}
             aspect={1}
-            cropShape="round"
+            cropShape={shape}
             // La imagen cubre el marco y el círculo lo ocupa entero.
             objectFit="cover"
             showGrid={false}
@@ -83,7 +90,7 @@ export function AvatarCropDialog({
             disabled={busy}
             onClick={() => area.current && onConfirm(area.current)}
           >
-            Guardar foto
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

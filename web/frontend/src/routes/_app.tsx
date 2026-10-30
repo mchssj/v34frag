@@ -55,7 +55,8 @@ function AppLayout() {
         <Topbar onSearch={() => setSearchOpen(true)} />
         <NowBar />
         <div className="flex flex-1 justify-center p-6">
-          <div className="w-full max-w-[1320px] min-w-0">
+          {/* Columna flex: una vista puede ocupar todo el alto con flex-1 (p. ej. "Sin equipo"). */}
+          <div className="flex w-full max-w-[1320px] min-w-0 flex-col">
             <Outlet />
           </div>
         </div>

@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { Placeholder } from "@/features/shell/Placeholder"
+import { TeamView } from "@/features/teams/TeamView"
 
 export const Route = createFileRoute("/_app/teams/$id")({
   component: TeamPage,
 })
 
+/** Vista pública de un equipo: el mismo layout que Mi equipo, en solo lectura. */
 function TeamPage() {
   const { id } = Route.useParams()
-  return <Placeholder title={`Equipo ${id}`} />
+  return <TeamView key={id} teamId={id} mode="public" />
 }

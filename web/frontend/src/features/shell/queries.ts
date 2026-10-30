@@ -14,6 +14,8 @@ import {
   liveMatchesOptions,
   sideName,
 } from "@/features/public/queries"
+import { eventDetailOptions } from "@/features/events/queries"
+import { teamDetailOptions } from "@/features/teams/queries"
 import type { BadgeKey, CrumbData } from "./nav"
 
 const MINUTE = 60_000
@@ -22,8 +24,6 @@ export const shellKeys = {
   pcwOpen: ["shell", "pcw-open"] as const,
   adminTeams: ["shell", "admin-team-requests"] as const,
   match: (id: string) => ["match", id] as const,
-  team: (id: string) => ["team", id] as const,
-  event: (id: string) => ["event", id] as const,
 }
 
 const pcwOpenOptions = queryOptions({
@@ -117,22 +117,11 @@ export function useFeaturedLive() {
 export function useCrumbData(pathname: string): CrumbData {
   const [, first, id] = pathname.split("/")
   const team = useQuery({
-    queryKey: shellKeys.team(id ?? ""),
-    queryFn: ({ signal }) =>
-      unwrap(
-        api.GET("/api/v1/teams/{id}", { params: { path: { id: id! } }, signal })
-      ),
+    ...teamDetailOptions(id ?? ""),
     enabled: first === "teams" && !!id,
   }).data
   const event = useQuery({
-    queryKey: shellKeys.event(id ?? ""),
-    queryFn: ({ signal }) =>
-      unwrap(
-        api.GET("/api/v1/events/{id}", {
-          params: { path: { id: id! } },
-          signal,
-        })
-      ),
+    ...eventDetailOptions(id ?? ""),
     enabled: first === "events" && !!id,
   }).data
   const match = useQuery({

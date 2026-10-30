@@ -30,7 +30,8 @@ function RootLayout() {
       <Outlet />
       {/* Toasts de la plataforma: abajo a la derecha, 2,6 s (handoff del layout). */}
       <Toaster position="bottom-right" duration={2600} />
-      {import.meta.env.DEV && (
+      {/* Devtools solo para personas: en las e2e (navegador automatizado) tapan botones. */}
+      {import.meta.env.DEV && !navigator.webdriver && (
         <>
           <TanStackRouterDevtools position="bottom-right" />
           <ReactQueryDevtools buttonPosition="bottom-left" />
