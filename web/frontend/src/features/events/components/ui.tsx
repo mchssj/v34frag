@@ -2,7 +2,7 @@ import { cn } from "cn"
 import type { ReactNode } from "react"
 
 import { TeamCrest } from "@/features/teams/components/ui"
-import { STATUS_CHIP, STATUS_LABEL, type EventStatus } from "./model"
+import { STATUS_CHIP, STATUS_LABEL, type EventStatus } from "../lib/model"
 
 export function StatusChip({
   status,

@@ -17,12 +17,9 @@ import {
   sidesOf,
   type BracketColumn,
   type BracketSection,
-} from "./model"
-import {
-  eventMatchesOptions,
-  type EventDetail,
-  type EventMatch,
-} from "./queries"
+} from "../lib/model"
+import { eventMatchesOptions } from "../api/queries"
+import type { EventDetail, EventMatch } from "../types"
 import { EmptyBox, TagBox } from "./ui"
 
 const ZOOM = { min: 0.5, max: 1.5, step: 0.1, fit: 0.85 }

@@ -11,12 +11,9 @@ import {
   qualifies,
   standingTables,
   type StandingTable,
-} from "./model"
-import {
-  eventStandingsOptions,
-  type EventDetail,
-  type Standing,
-} from "./queries"
+} from "../lib/model"
+import { eventStandingsOptions } from "../api/queries"
+import type { EventDetail, Standing } from "../types"
 import { EmptyBox } from "./ui"
 
 type Col = {

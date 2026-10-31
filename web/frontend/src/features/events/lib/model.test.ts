@@ -19,7 +19,7 @@ import {
   DEFAULT_RULES,
   type MyTeamRef,
 } from "./model"
-import type { EventMatch, Standing } from "./queries"
+import type { EventMatch, Standing } from "../types"
 
 const team = (n: number) => ({ id: `t${n}`, name: `Equipo ${n}`, tag: `E${n}` })
 

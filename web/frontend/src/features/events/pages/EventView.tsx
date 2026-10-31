@@ -16,8 +16,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { myTeamsOptions } from "@/features/teams/api/queries"
-import { BracketTab } from "./BracketTab"
-import { MatchesTab } from "./MatchesTab"
+import { BracketTab } from "../components/BracketTab"
+import { MatchesTab } from "../components/MatchesTab"
 import {
   boText,
   closesAt,
@@ -29,16 +29,16 @@ import {
   TEMPLATE_LABEL,
   type Cta,
   type MyTeamRef,
-} from "./model"
+} from "../lib/model"
+import { eventDetailOptions, eventRegistrationsOptions } from "../api/queries"
+import type { EventDetail } from "../types"
 import {
-  eventDetailOptions,
-  eventRegistrationsOptions,
-  type EventDetail,
-} from "./queries"
-import { CancelRegistrationDialog, RegisterDialog } from "./RegisterDialog"
-import { StandingsTab } from "./StandingsTab"
-import { SummaryTab } from "./SummaryTab"
-import { EmptyBox, EventBanner, StatusChip } from "./ui"
+  CancelRegistrationDialog,
+  RegisterDialog,
+} from "../components/RegisterDialog"
+import { StandingsTab } from "../components/StandingsTab"
+import { SummaryTab } from "../components/SummaryTab"
+import { EmptyBox, EventBanner, StatusChip } from "../components/ui"
 
 export type EventTab = "bracket" | "standings" | "matches"
 

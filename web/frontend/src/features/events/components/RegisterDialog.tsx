@@ -17,13 +17,9 @@ import { STATUS_LABEL, statusOf } from "@/features/teams/lib/model"
 import { teamMembersOptions } from "@/features/teams/api/queries"
 import type { RosterEntry } from "@/features/teams/types"
 import { Initial } from "@/features/teams/components/ui"
-import { modeText, type MyTeamRef } from "./model"
-import {
-  useRegisterTeam,
-  useUnregisterTeam,
-  type EventDetail,
-  type Registration,
-} from "./queries"
+import { modeText, type MyTeamRef } from "../lib/model"
+import { useRegisterTeam, useUnregisterTeam } from "../api/queries"
+import type { EventDetail, Registration } from "../types"
 
 const ORDER = { player: 0, sub: 1, coach: 2 }
 

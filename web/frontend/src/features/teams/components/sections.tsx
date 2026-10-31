@@ -13,7 +13,7 @@ import { formatNumber } from "@/features/public/api/queries"
 import { timeAgo } from "@/features/shell/notifications/model"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { dateRange } from "@/features/events/model"
+import { dateRange } from "@/features/events/lib/model"
 import {
   RESULT_LABEL,
   resultFor,

@@ -7,7 +7,7 @@ import type {
   EventSummary,
   LiveMatch,
   Standing,
-} from "./queries"
+} from "../types"
 
 export type EventStatus = EventSummary["status"]
 export type Template = EventSummary["template"]

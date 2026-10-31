@@ -11,9 +11,10 @@ import {
   progressRatio,
   sortEvents,
   TEMPLATE_LABEL,
-} from "./model"
-import { eventListOptions, type EventSummary } from "./queries"
-import { EmptyBox, EventBanner, StatusChip } from "./ui"
+} from "../lib/model"
+import { eventListOptions } from "../api/queries"
+import type { EventSummary } from "../types"
+import { EmptyBox, EventBanner, StatusChip } from "../components/ui"
 
 export type ListFilter = "registration" | "in_progress" | "finished"
 

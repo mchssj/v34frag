@@ -14,8 +14,9 @@ import {
   prizeText,
   rulesOf,
   STATUS_LABEL,
-} from "./model"
-import { eventRegistrationsOptions, type EventDetail } from "./queries"
+} from "../lib/model"
+import { eventRegistrationsOptions } from "../api/queries"
+import type { EventDetail } from "../types"
 import { Card, TagBox } from "./ui"
 
 /** Resumen: información, reglas y equipos inscriptos. */

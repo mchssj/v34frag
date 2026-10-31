@@ -5,8 +5,9 @@ import { es } from "date-fns/locale"
 import { cn } from "cn"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { MATCH_STATUS, scoreText, sidesOf } from "./model"
-import { eventMatchesOptions, type EventMatch } from "./queries"
+import { MATCH_STATUS, scoreText, sidesOf } from "../lib/model"
+import { eventMatchesOptions } from "../api/queries"
+import type { EventMatch } from "../types"
 import { EmptyBox } from "./ui"
 
 function whenText(m: EventMatch) {
