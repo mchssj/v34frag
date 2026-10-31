@@ -3,6 +3,7 @@ import { BanIcon, TvIcon } from "lucide-react"
 import type { MouseEvent } from "react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import {
   Tooltip,
@@ -48,9 +49,11 @@ export function DemoStatus({ status }: { status: string }) {
 /** Chip "EN VIVO" (fondo destructive, Geist Mono 10px, con punto que late). */
 export function LiveChip({ className }: { className?: string }) {
   return (
-    <span
+    <Badge
+      variant="live"
+      shape="soft"
       className={cn(
-        "inline-flex h-5 w-fit items-center gap-[5px] rounded-[calc(var(--radius)-4px)] bg-destructive px-[7px] font-mono text-[10px] font-semibold tracking-[.6px] text-white",
+        "gap-[5px] px-[7px] font-mono text-[10px] font-semibold tracking-[.6px]",
         className
       )}
     >
@@ -59,7 +62,7 @@ export function LiveChip({ className }: { className?: string }) {
         className="size-1.5 animate-live rounded-full bg-current"
       />
       EN VIVO
-    </span>
+    </Badge>
   )
 }
 
@@ -67,13 +70,10 @@ export function LiveChip({ className }: { className?: string }) {
 export function CancelChip({ reason }: { reason: string | null }) {
   const label = cancelReasonLabel(reason)
   return (
-    <span
-      title={label}
-      className="inline-flex h-[22px] items-center gap-1 rounded-[calc(var(--radius)-4px)] border px-2 text-xs font-medium whitespace-nowrap text-muted-foreground"
-    >
+    <Badge variant="neutral" shape="soft" size="md" title={label}>
       <BanIcon aria-hidden className="size-3" />
       Cancelada · {label}
-    </span>
+    </Badge>
   )
 }
 

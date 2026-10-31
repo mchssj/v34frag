@@ -2,6 +2,7 @@ import { cn } from "cn"
 import { useState, type ReactNode } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import type { BadgeVariant } from "@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
@@ -10,10 +11,10 @@ import {
 import { crestText, type RosterStatus } from "../lib/model"
 
 /** Colores del chip de estado en el roster: Activo verde, Suplente gris, Coach naranja. */
-export const STATUS_CHIP: Record<RosterStatus, string> = {
-  player: "bg-win/15 text-win",
-  sub: "bg-muted text-muted-foreground",
-  coach: "bg-primary/15 text-primary",
+export const STATUS_CHIP: Record<RosterStatus, BadgeVariant> = {
+  player: "win",
+  sub: "muted",
+  coach: "primary",
 }
 
 /**

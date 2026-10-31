@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { CrownIcon, SearchIcon, UsersIcon } from "lucide-react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { STATUS_LABEL } from "@/features/teams/lib/model"
 import { useTeamLogos } from "@/features/teams/api/queries"
@@ -180,16 +181,16 @@ function PastTeam({ s }: { s: TeamStint }) {
 function StintChip({ role, current }: { role: string; current: boolean }) {
   const status = role === "sub" || role === "coach" ? role : "player"
   return (
-    <span
-      className={cn(
-        "inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-full px-2 text-[11px] font-semibold",
-        current ? STATUS_CHIP[status] : "bg-muted text-muted-foreground"
-      )}
+    <Badge
+      variant={current ? STATUS_CHIP[status] : "muted"}
+      shape="pill"
+      size="md"
+      className="gap-1.5 text-[11px] font-semibold"
     >
       {current && status === "player" && (
         <span className="size-1.5 rounded-full bg-current" aria-hidden />
       )}
       {current ? STATUS_LABEL[status] : "Ex integrante"}
-    </span>
+    </Badge>
   )
 }

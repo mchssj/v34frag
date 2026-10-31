@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { useState, type ReactNode } from "react"
 
+import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Table,
@@ -186,16 +187,10 @@ function Notice({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 }
 
 const STATUS_CHIP = {
-  live: { label: "EN VIVO", className: "bg-destructive text-white" },
-  finished: {
-    label: "FINAL",
-    className: "bg-secondary text-secondary-foreground",
-  },
-  cancelled: {
-    label: "CANCELADO",
-    className: "bg-muted text-muted-foreground",
-  },
-} as const
+  live: { label: "EN VIVO", variant: "live" },
+  finished: { label: "FINAL", variant: "soft" },
+  cancelled: { label: "CANCELADO", variant: "muted" },
+} as const satisfies Record<string, { label: string; variant: BadgeVariant }>
 
 function Scoreboard({ room }: { room: Room }) {
   const chip = STATUS_CHIP[room.status]
@@ -214,11 +209,11 @@ function Scoreboard({ room }: { room: Room }) {
         <SideTag side={room.side1} />
       </div>
       <div className="order-1 flex min-w-[140px] flex-col items-center gap-1.5 sm:order-none">
-        <span
-          className={cn(
-            "inline-flex h-[22px] items-center gap-1.5 rounded-[calc(var(--radius)-4px)] px-2 text-[11px] font-semibold tracking-[.3px]",
-            chip.className
-          )}
+        <Badge
+          variant={chip.variant}
+          shape="soft"
+          size="md"
+          className="gap-1.5 text-[11px] font-semibold tracking-[.3px]"
         >
           {room.status === "live" && (
             <span
@@ -227,7 +222,7 @@ function Scoreboard({ room }: { room: Room }) {
             />
           )}
           {chip.label}
-        </span>
+        </Badge>
         <span className="font-mono text-[40px] leading-none font-bold tracking-[-2px] whitespace-nowrap tabular-nums in-data-photo:[text-shadow:0_2px_14px_rgb(0_0_0/.55)]">
           {room.side1.score} : {room.side2.score}
         </span>

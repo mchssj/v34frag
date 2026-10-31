@@ -1,6 +1,7 @@
 import { differenceInMinutes, format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 
+import type { BadgeVariant } from "@/components/ui/badge"
 import type {
   EventDetail,
   EventMatch,
@@ -29,11 +30,12 @@ export const STATUS_LABEL: Record<EventStatus, string> = {
 }
 
 /** Colores del chip de estado del handoff. */
-export const STATUS_CHIP: Record<EventStatus, string> = {
-  in_progress: "bg-primary text-primary-foreground",
-  registration: "bg-foreground text-background",
-  finished: "bg-secondary text-secondary-foreground",
-  cancelled: "border bg-background text-muted-foreground",
+// Variante del Badge de cada estado.
+export const STATUS_CHIP: Record<EventStatus, BadgeVariant> = {
+  in_progress: "solid",
+  registration: "strong",
+  finished: "soft",
+  cancelled: "neutral",
 }
 
 /** Orden del listado: Inscripciones → En curso → Finalizado (y los cancelados al final). */

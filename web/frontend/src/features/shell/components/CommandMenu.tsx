@@ -132,7 +132,7 @@ export function CommandMenu({
               placeholder="Escribe un nick, equipo, torneo o página…"
               className="pr-12"
             />
-            <Kbd className="absolute top-1/2 right-3 h-auto -translate-y-1/2 rounded px-1.5 font-mono text-[11px]">
+            <Kbd className="absolute top-1/2 right-3 h-auto -translate-y-1/2 rounded px-1.5 font-mono text-[11px] font-normal">
               ESC
             </Kbd>
           </div>

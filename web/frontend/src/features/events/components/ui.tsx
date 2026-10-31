@@ -2,6 +2,7 @@ import { cn } from "cn"
 import type { ReactNode } from "react"
 
 import { TeamCrest } from "@/features/teams/components/ui"
+import { Badge } from "@/components/ui/badge"
 import { STATUS_CHIP, STATUS_LABEL, type EventStatus } from "../lib/model"
 
 export function StatusChip({
@@ -12,15 +13,14 @@ export function StatusChip({
   className?: string
 }) {
   return (
-    <span
-      className={cn(
-        "inline-flex h-[22px] shrink-0 items-center rounded-[calc(var(--radius)-4px)] px-2 text-xs font-medium",
-        STATUS_CHIP[status],
-        className
-      )}
+    <Badge
+      variant={STATUS_CHIP[status]}
+      shape="soft"
+      size="md"
+      className={cn(status === "cancelled" && "bg-background", className)}
     >
       {STATUS_LABEL[status]}
-    </span>
+    </Badge>
   )
 }
 

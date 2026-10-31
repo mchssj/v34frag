@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -53,9 +54,14 @@ export function PlayerAvatar({
 
 export function MineChip() {
   return (
-    <span className="inline-flex h-[18px] items-center rounded-[4px] bg-primary/15 px-1.5 text-[10px] font-bold tracking-[.03em] text-primary">
+    <Badge
+      variant="primary"
+      shape="tag"
+      size="xs"
+      className="font-bold tracking-[.03em]"
+    >
       TU EQUIPO
-    </span>
+    </Badge>
   )
 }
 

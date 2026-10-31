@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router"
-import { cn } from "cn"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { CheckIcon, CrownIcon, EllipsisIcon, UserMinusIcon } from "lucide-react"
@@ -7,6 +6,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -155,17 +155,17 @@ function RosterRow({
         </span>
       </span>
       <span className="flex shrink-0 justify-end sm:w-[84px]">
-        <span
-          className={cn(
-            "inline-flex h-[22px] items-center gap-1.5 rounded-full px-2 text-[11px] font-medium",
-            STATUS_CHIP[status]
-          )}
+        <Badge
+          variant={STATUS_CHIP[status]}
+          shape="pill"
+          size="md"
+          className="gap-1.5 text-[11px]"
         >
           {status === "player" && (
             <span className="size-1.5 rounded-full bg-current" aria-hidden />
           )}
           {STATUS_LABEL[status]}
-        </span>
+        </Badge>
       </span>
       {isLeader && (
         <RowMenu

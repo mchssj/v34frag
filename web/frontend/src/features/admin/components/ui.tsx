@@ -2,6 +2,7 @@ import { cn } from "cn"
 import type { ReactNode } from "react"
 
 import { errorMessage, isRetryable } from "@/api/errors"
+import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Tone } from "../lib/format"
 
@@ -122,14 +123,14 @@ export function FilterChips<V extends string | undefined>({
   )
 }
 
-const TONES: Record<Tone, string> = {
-  neutral: "border text-muted-foreground",
-  warn: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  danger: "bg-destructive/15 text-destructive",
-  primary: "bg-primary/15 text-primary",
-  win: "bg-win/15 text-foreground",
-  strong: "bg-foreground text-background",
-  vip: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300",
+const TONES: Record<Tone, BadgeVariant> = {
+  neutral: "neutral",
+  warn: "warn",
+  danger: "danger",
+  primary: "primary",
+  win: "winSoft",
+  strong: "strong",
+  vip: "vip",
 }
 
 export function Chip({
@@ -142,15 +143,9 @@ export function Chip({
   children: ReactNode
 }) {
   return (
-    <span
-      className={cn(
-        "inline-flex h-[22px] w-fit items-center rounded-full px-2 text-xs font-medium whitespace-nowrap",
-        TONES[tone],
-        className
-      )}
-    >
+    <Badge variant={TONES[tone]} shape="pill" size="md" className={className}>
       {children}
-    </span>
+    </Badge>
   )
 }
 

@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -264,6 +265,12 @@ function Row({
 }
 
 const ROW_BUTTON = "h-[30px] px-2.5 text-xs"
+// Chips de la fila de un SteamID (Principal, en revisión, pendiente).
+const ROW_BADGE = {
+  shape: "pill",
+  size: "sm",
+  className: "px-[7px] [&>svg]:size-[11px]!",
+} as const
 
 function AccountRow({
   row,
@@ -310,19 +317,26 @@ function AccountRow({
         <span className="flex flex-wrap items-center gap-2">
           <code className="font-mono text-sm font-medium">{row.steamId}</code>
           {linked && row.primary && (
-            <Badge className="bg-win/15 text-win">
+            <Badge variant="win" {...ROW_BADGE}>
               <StarIcon className="size-[11px]" aria-hidden />
               Principal
             </Badge>
           )}
           {linked && row.unlinkPending && (
-            <Badge className="bg-sidebar-primary/15 text-sidebar-primary">
+            <Badge
+              variant="primary"
+              {...ROW_BADGE}
+              className={cn(
+                ROW_BADGE.className,
+                "bg-sidebar-primary/15 text-sidebar-primary"
+              )}
+            >
               <ClockIcon className="size-[11px]" aria-hidden />
               Desvinculación en revisión
             </Badge>
           )}
           {!linked && (
-            <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400">
+            <Badge variant="warn" {...ROW_BADGE}>
               <ClockIcon className="size-[11px]" aria-hidden />
               Pendiente de aprobación
             </Badge>
@@ -453,25 +467,6 @@ function UnlinkConfirm({
         </Button>
       </span>
     </div>
-  )
-}
-
-function Badge({
-  className,
-  children,
-}: {
-  className: string
-  children: ReactNode
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-5 items-center gap-1 rounded-full px-[7px] text-[11px] font-medium",
-        className
-      )}
-    >
-      {children}
-    </span>
   )
 }
 
