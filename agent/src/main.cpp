@@ -2,6 +2,7 @@
 // Opciones: --install --uninstall --silent --portable --render <pantalla> <png>
 // Solo en la versión de pruebas (AC_TEST): --api --data-dir --no-browser --auto-link --beat --capture-title --capture-no-foreground --capture-every
 #include "core.h"
+#include <algorithm>
 #include <objbase.h>
 #include <shellapi.h>
 #include <tlhelp32.h>
@@ -202,7 +203,8 @@ static void Worker() {
             wasSession = false;
             Update([](UiState& s) { s.linked = true; s.online = false; s.session = false; s.screen = Screen::Offline; });
         }
-        if (Sleep_(g_beatMs)) return;
+        // En sesión, más seguido: las capturas que pide el staff llegan por el latido.
+        if (Sleep_(wasSession ? std::min<DWORD>(g_beatMs, 10000) : g_beatMs)) return;
     }
 }
 
