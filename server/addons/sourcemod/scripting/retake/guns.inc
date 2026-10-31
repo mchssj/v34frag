@@ -121,7 +121,7 @@ public int Guns_MainHandler(Menu menu, MenuAction action, int client, int item)
 {
 	if (action == MenuAction_Select)
 	{
-		char info[4];
+		char info[8];
 		menu.GetItem(item, info, sizeof(info));
 		if (StrEqual(info, "awp"))
 		{
