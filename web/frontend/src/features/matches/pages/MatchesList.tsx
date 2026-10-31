@@ -51,14 +51,15 @@ import { liveMixesOptions, mixStatsOptions } from "@/features/mixes/api/queries"
 import type { MixItem } from "@/features/mixes/types"
 import { Soon } from "@/features/teams/components/ui"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { matchesListOptions, type MatchSummary } from "./queries"
+import { matchesListOptions } from "../api/queries"
+import type { MatchSummary } from "../types"
 import {
   DEFAULT_PER,
   KINDS,
   PER_OPTIONS,
   type MatchesSearch,
   type MatchKind,
-} from "./search"
+} from "../lib/search"
 
 // Listado /matches: mixes, PCW y torneos juntos (bitácora 2026-10-30-partidas-unificadas). Los
 // filtros, la página y el tamaño viven en la URL. Los mixes en juego salen de /mixes, porque

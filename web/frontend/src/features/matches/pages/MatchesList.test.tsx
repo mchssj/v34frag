@@ -16,8 +16,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import type { MixItem } from "@/features/mixes/types"
 import { renderWithQuery } from "@/test/render"
 import { MatchesList } from "./MatchesList"
-import type { MatchSummary } from "./queries"
-import type { MatchesSearch } from "./search"
+import type { MatchSummary } from "../types"
+import type { MatchesSearch } from "../lib/search"
 
 const navigate = vi.hoisted(() => vi.fn())
 vi.mock("@tanstack/react-router", async (orig) => ({

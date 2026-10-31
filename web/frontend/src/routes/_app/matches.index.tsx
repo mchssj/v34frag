@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { MatchesList } from "@/features/matches/MatchesList"
-import { matchesSearchSchema } from "@/features/matches/search"
+import { MatchesList } from "@/features/matches/pages/MatchesList"
+import { matchesSearchSchema } from "@/features/matches/lib/search"
 
 export const Route = createFileRoute("/_app/matches/")({
   validateSearch: matchesSearchSchema,

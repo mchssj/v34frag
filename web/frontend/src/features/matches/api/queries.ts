@@ -2,17 +2,8 @@ import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
 import { MIXES_REFRESH_MS } from "@/features/mixes/api/queries"
-import { toMatchesQuery, type MatchesSearch } from "./search"
-
-// El `allOf` nulable de `side.team` queda como `TeamRef & Record<string, never>` en los esquemas
-// generados (igual que en Torneos): acá vuelve a ser `TeamRef | null`.
-type Side = Omit<Schemas["MatchSide"], "team"> & {
-  team: Schemas["TeamRef"] | null
-}
-export type MatchSummary = Omit<Schemas["MatchSummary"], "side1" | "side2"> & {
-  side1: Side
-  side2: Side
-}
+import { toMatchesQuery, type MatchesSearch } from "../lib/search"
+import type { MatchSummary } from "../types"
 type MatchPage = Omit<Schemas["MatchList"], "items"> & { items: MatchSummary[] }
 
 export const matchKeys = {
