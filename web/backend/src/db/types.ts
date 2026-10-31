@@ -52,16 +52,54 @@ isOneToOne: false
                   ]
                 },"ac_devices": {
                   Row: {
-                    "access_expires_at": string,"access_hash": string,"agent_version": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"name": string,"refresh_hash": string,"revoked_at": string | null,"user_id": string
+                    "access_expires_at": string,"access_hash": string,"agent_version": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"name": string,"public_key": string | null,"refresh_hash": string,"revoked_at": string | null,"user_id": string
                   }
                   Insert: {
-                    "access_expires_at": string,"access_hash": string,"agent_version"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"name": string,"refresh_hash": string,"revoked_at"?: string | null,"user_id": string
+                    "access_expires_at": string,"access_hash": string,"agent_version"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"name": string,"public_key"?: string | null,"refresh_hash": string,"revoked_at"?: string | null,"user_id": string
                   }
                   Update: {
-                    "access_expires_at"?: string,"access_hash"?: string,"agent_version"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"name"?: string,"refresh_hash"?: string,"revoked_at"?: string | null,"user_id"?: string
+                    "access_expires_at"?: string,"access_hash"?: string,"agent_version"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"name"?: string,"public_key"?: string | null,"refresh_hash"?: string,"revoked_at"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"ac_evidence": {
+                  Row: {
+                    "entry": string,"entry_hash": string,"id": number,"item_sha": string,"kind": string,"prev_hash": string,"raw": string | null,"received_at": string,"ref_id": string | null,"seq": number,"session_id": string,"signature": string
+                  }
+                  Insert: {
+                    "entry": string,"entry_hash": string,"id"?: never,"item_sha": string,"kind": string,"prev_hash": string,"raw"?: string | null,"received_at"?: string,"ref_id"?: string | null,"seq": number,"session_id": string,"signature": string
+                  }
+                  Update: {
+                    "entry"?: string,"entry_hash"?: string,"id"?: never,"item_sha"?: string,"kind"?: string,"prev_hash"?: string,"raw"?: string | null,"received_at"?: string,"ref_id"?: string | null,"seq"?: number,"session_id"?: string,"signature"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_evidence_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "ac_sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ac_integrity_logs": {
+                  Row: {
+                    "checked_by": string | null,"created_at": string,"detail": NonNullable<Json>,"id": number,"result": string,"session_id": string
+                  }
+                  Insert: {
+                    "checked_by"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: never,"result": string,"session_id": string
+                  }
+                  Update: {
+                    "checked_by"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: never,"result"?: string,"session_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_integrity_logs_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "ac_sessions"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"ac_link_requests": {
                   Row: {
@@ -153,13 +191,13 @@ isOneToOne: true
                   ]
                 },"ac_sessions": {
                   Row: {
-                    "device_id": string,"end_reason": string | null,"ended_at": string | null,"id": string,"last_contact_at": string,"match_uid": string | null,"player_id": string,"server_id": string,"started_at": string,"status": string,"steam_id": string,"user_id": string
+                    "device_id": string,"end_reason": string | null,"ended_at": string | null,"held": boolean,"id": string,"last_contact_at": string,"match_uid": string | null,"player_id": string,"server_id": string,"started_at": string,"status": string,"steam_id": string,"user_id": string
                   }
                   Insert: {
-                    "device_id": string,"end_reason"?: string | null,"ended_at"?: string | null,"id"?: string,"last_contact_at"?: string,"match_uid"?: string | null,"player_id": string,"server_id": string,"started_at"?: string,"status"?: string,"steam_id": string,"user_id": string
+                    "device_id": string,"end_reason"?: string | null,"ended_at"?: string | null,"held"?: boolean,"id"?: string,"last_contact_at"?: string,"match_uid"?: string | null,"player_id": string,"server_id": string,"started_at"?: string,"status"?: string,"steam_id": string,"user_id": string
                   }
                   Update: {
-                    "device_id"?: string,"end_reason"?: string | null,"ended_at"?: string | null,"id"?: string,"last_contact_at"?: string,"match_uid"?: string | null,"player_id"?: string,"server_id"?: string,"started_at"?: string,"status"?: string,"steam_id"?: string,"user_id"?: string
+                    "device_id"?: string,"end_reason"?: string | null,"ended_at"?: string | null,"held"?: boolean,"id"?: string,"last_contact_at"?: string,"match_uid"?: string | null,"player_id"?: string,"server_id"?: string,"started_at"?: string,"status"?: string,"steam_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -3905,7 +3943,16 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "ac_admin_request_capture":
+            "ac_admin_chain":
+{ Args: { "p_session": string }; Returns: Json
+                           },
+"ac_admin_hold":
+{ Args: { "p_held": boolean,"p_session": string }; Returns: undefined
+                           },
+"ac_admin_record_integrity":
+{ Args: { "p_detail": Json,"p_result": string,"p_session": string }; Returns: undefined
+                           },
+"ac_admin_request_capture":
 { Args: { "p_reason": string,"p_session": string }; Returns: string
                            },
 "ac_admin_session_evidence":
@@ -3929,11 +3976,20 @@ isOneToOne: false
 "ac_capture_result":
 { Args: { "p_access": string,"p_request": string,"p_result": string,"p_secret": string }; Returns: boolean
                            },
+"ac_device_key":
+{ Args: { "p_access": string,"p_secret": string }; Returns: string
+                           },
 "ac_device_of":
 { Args: { "p_access": string,"p_secret": string }; Returns: string
                            },
 "ac_device_revoke":
 { Args: { "p_device": string }; Returns: undefined
+                           },
+"ac_device_set_key":
+{ Args: { "p_access": string,"p_key": string,"p_secret": string }; Returns: boolean
+                           },
+"ac_evidence_append":
+{ Args: { "p_access": string,"p_entry": string,"p_entry_hash": string,"p_item_sha": string,"p_kind": string,"p_prev": string,"p_raw"?: string,"p_ref"?: string,"p_secret": string,"p_seq": number,"p_session": string,"p_signature": string }; Returns: boolean
                            },
 "ac_hash":
 { Args: { "p": string }; Returns: string
@@ -3943,6 +3999,9 @@ isOneToOne: false
                            },
 "ac_ingest_processes":
 { Args: { "p_access": string,"p_events": Json,"p_secret": string,"p_session": string }; Returns: Json
+                           },
+"ac_integrity_reject":
+{ Args: { "p_access": string,"p_problem": string,"p_secret": string,"p_session": string }; Returns: undefined
                            },
 "ac_link_approve":
 { Args: { "p_user_code": string }; Returns: Json
@@ -3958,6 +4017,15 @@ isOneToOne: false
                            },
 "ac_require_api":
 { Args: { "p_secret": string }; Returns: undefined
+                           },
+"ac_retention_delete":
+{ Args: { "p_session": string }; Returns: boolean
+                           },
+"ac_retention_due":
+{ Args: { "p_limit"?: number }; Returns: Json
+                           },
+"ac_retention_paths":
+{ Args: { "p_session": string }; Returns: Json
                            },
 "ac_screenshot_register":
 { Args: { "p_access": string,"p_client_id": string,"p_height": number,"p_kind": string,"p_method": string,"p_request"?: string,"p_secret": string,"p_session": string,"p_sha256": string,"p_size": number,"p_taken": string,"p_width": number }; Returns: Json

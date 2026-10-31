@@ -6,11 +6,11 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 
 ## Anticheat FRAG (rama `kyan/anticheat-backend`, sin merge)
 
-- **Estado:** base, API, aplicación CMLeague Anticheat, procesos, capturas y Bridge hechos y probados en local el 2026-10-30, con los replanteos `39` y `40`. Página de vinculación y panel en la rama `kyan/anticheat-web`. Nada desplegado.
+- **Estado:** base, API, aplicación CMLeague Anticheat, procesos, capturas, Bridge, cadena firmada y borrado a 30 días, hechos y probados en local el 2026-10-30, con los replanteos `39`, `40` y `41`. Página de vinculación y panel en la rama `kyan/anticheat-web`. Nada desplegado.
 - **Servidores:** ni en el servidor real ni en RBK. RBK queda afuera por ahora como excepción escrita a la regla de despliegue, por decisión de Kyan.
-- **No distribuir todavía. Falta:** revisión legal, cron que borre a los 30 días (la aplicación ya lo promete), pruebas de campo (tirones, Alt+Tab, otros modos, Windows 11), cargar el Bridge en `cssds`, firma de la aplicación, y cadena de hashes y manifiestos (etapa 5).
+- **No distribuir todavía. Falta:** revisión legal, pruebas de campo (tirones, Alt+Tab, expulsión con un jugador real, otros modos, Windows 11), firma de la aplicación, instalar el cron `anticheat:tick` y elegir almacenamiento inmutable.
 - **Avisar a Daniel:** `pnpm db:reset` falla en Windows con `core.autocrlf=true`. Hace falta `*.sql text eol=lf` en `.gitattributes`.
-- **Bitácora:** [`2026-10-30-anticheat-backend`](bitacora/2026-10-30-anticheat-backend/), [`2026-10-30-anticheat-agente`](bitacora/2026-10-30-anticheat-agente/) y [`2026-10-30-anticheat-evidencia`](bitacora/2026-10-30-anticheat-evidencia/). La auditoría y la prueba de captura están en la rama `kyan/pruebas`.
+- **Bitácora:** [`2026-10-30-anticheat-backend`](bitacora/2026-10-30-anticheat-backend/), [`2026-10-30-anticheat-agente`](bitacora/2026-10-30-anticheat-agente/) [`2026-10-30-anticheat-evidencia`](bitacora/2026-10-30-anticheat-evidencia/) y [`2026-10-30-anticheat-integridad`](bitacora/2026-10-30-anticheat-integridad/). La auditoría y la prueba de captura están en la rama `kyan/pruebas`.
 
 ## Orden de trabajo (decidido por Daniel el 2026-10-15)
 

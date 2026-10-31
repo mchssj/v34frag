@@ -121,3 +121,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-10-30 | [Backend del anticheat FRAG](2026-10-30-anticheat-backend/) | Base y API probadas en local (2026-10-30), en `kyan/anticheat-backend`; nada desplegado; **falta** agente, Bridge, web, capturas y panel |
 | 2026-10-30 | [CMLeague Anticheat: la aplicación](2026-10-30-anticheat-agente/) | Aplicación mínima probada contra la API local (2026-10-30), en `kyan/anticheat-backend`; sin firmar ni distribuir |
 | 2026-10-30 | [Procesos, capturas y Bridge del anticheat](2026-10-30-anticheat-evidencia/) | Probado en local (2026-10-30), en `kyan/anticheat-backend`; **no distribuir:** falta revisión legal, borrado a los 30 días, pruebas de campo y firma |
+| 2026-10-30 | [Integridad y retención del anticheat](2026-10-30-anticheat-integridad/) | Cadena firmada, verificación y borrado a 30 días probados en local (2026-10-30), en `kyan/anticheat-backend`; nada desplegado |

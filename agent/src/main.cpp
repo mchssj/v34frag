@@ -80,6 +80,7 @@ void AcNotice(const wchar_t* text) {
 
 static void Forget() {
     EvidenceUpdate(L"", 0, 0, {});
+    EvidenceForget();
     DeleteSecret(L"access");
     DeleteSecret(L"refresh");
     Update([](UiState& s) { s.linked = s.online = s.session = false; s.screen = Screen::Unlinked; s.userCode.clear(); });

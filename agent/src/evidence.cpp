@@ -36,6 +36,7 @@ EvidenceOptions g_opt;
 HANDLE g_quit = nullptr;
 std::mt19937 g_rng{std::random_device{}()};
 int g_seq = 0;
+bool g_keySent = false;
 
 std::wstring Iso(const FILETIME& f) {
     SYSTEMTIME t;
@@ -228,6 +229,102 @@ void Field(std::string& j, const char* k, const std::wstring& v) {
     j += "\":\"" + JsonEscape(v) + "\"";
 }
 
+// ---------- firma y cadena ----------
+// Clave P-256 propia del equipo, cifrada con DPAPI. Prueba qué equipo firmó y que nada cambió después, no que sea verdad:
+// el equipo es del jugador.
+std::string B64(const BYTE* b, DWORD n) {
+    DWORD len = 0;
+    CryptBinaryToStringA(b, n, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, nullptr, &len);
+    std::string s(len, '\0');
+    CryptBinaryToStringA(b, n, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, s.data(), &len);
+    s.resize(len);
+    return s;
+}
+
+std::string LoadOrCreateKey() {
+    std::string blob = LoadSecret(L"devicekey");
+    if (!blob.empty()) return blob;
+    BCRYPT_ALG_HANDLE alg = nullptr;
+    BCRYPT_KEY_HANDLE key = nullptr;
+    if (BCryptOpenAlgorithmProvider(&alg, BCRYPT_ECDSA_P256_ALGORITHM, nullptr, 0) != 0) return {};
+    if (BCryptGenerateKeyPair(alg, &key, 256, 0) == 0 && BCryptFinalizeKeyPair(key, 0) == 0) {
+        ULONG n = 0;
+        BCryptExportKey(key, nullptr, BCRYPT_ECCPRIVATE_BLOB, nullptr, 0, &n, 0);
+        blob.resize(n);
+        if (BCryptExportKey(key, nullptr, BCRYPT_ECCPRIVATE_BLOB, (PUCHAR)blob.data(), n, &n, 0) == 0) SaveSecret(L"devicekey", blob);
+        else blob.clear();
+    }
+    if (key) BCryptDestroyKey(key);
+    BCryptCloseAlgorithmProvider(alg, 0);
+    return blob;
+}
+
+// Formato "raw": 04 + X + Y.
+std::string PublicKeyB64() {
+    std::string blob = LoadOrCreateKey();
+    if (blob.size() < sizeof(BCRYPT_ECCKEY_BLOB) + 64) return {};
+    std::string raw(1, '\x04');
+    raw.append(blob, sizeof(BCRYPT_ECCKEY_BLOB), 64);
+    return B64((const BYTE*)raw.data(), (DWORD)raw.size());
+}
+
+std::string Sign(const std::string& text) {
+    std::string blob = LoadOrCreateKey();
+    if (blob.empty()) return {};
+    std::wstring wide = Sha256([&, off = (size_t)0](BYTE* b, DWORD n) mutable {
+        DWORD c = (DWORD)std::min<size_t>(n, text.size() - off);
+        memcpy(b, text.data() + off, c);
+        off += c;
+        return c;
+    });
+    BYTE hash[32];
+    for (int i = 0; i < 32; i++) hash[i] = (BYTE)wcstoul(wide.substr((size_t)i * 2, 2).c_str(), nullptr, 16);
+    BCRYPT_ALG_HANDLE alg = nullptr;
+    BCRYPT_KEY_HANDLE key = nullptr;
+    std::string out;
+    if (BCryptOpenAlgorithmProvider(&alg, BCRYPT_ECDSA_P256_ALGORITHM, nullptr, 0) != 0) return {};
+    if (BCryptImportKeyPair(alg, nullptr, BCRYPT_ECCPRIVATE_BLOB, &key, (PUCHAR)blob.data(), (ULONG)blob.size(), 0) == 0) {
+        BYTE sig[64];
+        ULONG n = 0;
+        if (BCryptSignHash(key, nullptr, hash, 32, sig, 64, &n, 0) == 0) out = B64(sig, n);  // r + s, como lo verifica WebCrypto
+        BCryptDestroyKey(key);
+    }
+    BCryptCloseAlgorithmProvider(alg, 0);
+    return out;
+}
+
+std::wstring ShaOf(const void* data, size_t size) {
+    const BYTE* p = (const BYTE*)data;
+    return Sha256([=, off = (size_t)0](BYTE* b, DWORD n) mutable {
+        DWORD c = (DWORD)std::min<size_t>(n, size - off);
+        memcpy(b, p + off, c);
+        off += c;
+        return c;
+    });
+}
+
+// Agrega una entrada a la cadena de la sesión y deja al lado del archivo lo que hay que enviar. El estado va a disco: sobrevive un reinicio.
+void ChainItem(const std::wstring& session, const wchar_t* kind, const std::wstring& itemSha, const std::wstring& id) {
+    std::wstring state = Spool() + L"\\" + session + L".chain";
+    std::string saved = ReadAll(state);
+    int seq = 0;
+    std::string prev(64, '0');
+    if (saved.size() > 65) {
+        size_t sp = saved.find(' ');
+        seq = atoi(saved.c_str());
+        prev = saved.substr(sp + 1, 64);
+    }
+    seq++;
+    std::string entry = "v1|" + JsonEscape(session) + "|" + std::to_string(seq) + "|" + JsonEscape(kind) + "|" + JsonEscape(itemSha) + "|" + prev + "|" + JsonEscape(NowIso());
+    std::string sig = Sign(entry);
+    if (sig.empty()) { Log(L"no se pudo firmar la evidencia"); return; }
+    std::wstring entryHash = ShaOf(entry.data(), entry.size());
+    std::string next = std::to_string(seq) + " " + JsonEscape(entryHash);
+    WriteFileAll(state, next.data(), next.size());
+    std::string hdr = entry + "\n" + sig;
+    WriteFileAll(Spool() + L"\\" + id + L".hdr", hdr.data(), hdr.size());
+}
+
 void QueueProcesses(const std::wstring& session, const std::vector<std::pair<const wchar_t*, Proc>>& evs) {
     const std::wstring now = NowIso();
     for (size_t i = 0; i < evs.size(); i += 400) {
@@ -248,7 +345,9 @@ void QueueProcesses(const std::wstring& session, const std::vector<std::pair<con
             body += "}";
         }
         body += "]}";
-        WriteFileAll(Spool() + L"\\" + NewId() + L".proc", body.data(), body.size());
+        std::wstring file = NewId();
+        ChainItem(session, L"processes", ShaOf(body.data(), body.size()), file);
+        WriteFileAll(Spool() + L"\\" + file + L".proc", body.data(), body.size());
     }
 }
 
@@ -374,6 +473,7 @@ void QueueShot(const std::wstring& session, const std::wstring& request, const S
     std::wstring q = L"/api/v1/anticheat/screenshots?session_id=" + session + L"&client_id=" + id + L"&sha256=" + sha + L"&width=" + std::to_wstring(s.w) +
                      L"&height=" + std::to_wstring(s.h) + L"&method=" + s.method + L"&kind=" + (request.empty() ? L"auto" : L"manual") + L"&taken_at=" + NowIso();
     if (!request.empty()) q += L"&request_id=" + request;
+    ChainItem(session, L"screenshot", sha, id);
     WriteFileAll(Spool() + L"\\" + id + L".jpg", s.jpeg.data(), s.jpeg.size());
     WriteFileAll(Spool() + L"\\" + id + L".meta", q.data(), q.size() * sizeof(wchar_t));
 }
@@ -395,6 +495,12 @@ void Flush() {
     }
     std::wstring token = Widen(LoadSecret(L"access"));
     if (token.empty()) return;
+    // La clave se registra una vez por vinculación, antes de enviar lo primero que firma.
+    if (!g_keySent) {
+        auto k = HttpSend(g_api, L"/api/v1/anticheat/key", "{\"public_key\":\"" + PublicKeyB64() + "\"}", L"application/json", token);
+        if (k.status == 204) g_keySent = true;
+        else { if (k.status != 401 && k.status != 403) Log(L"clave del equipo: la API respondió " + std::to_wstring(k.status)); return; }
+    }
     int sentProc = 0;
     for (const auto& n : names) {
         if (WaitForSingleObject(g_quit, 0) == WAIT_OBJECT_0) return;
@@ -404,13 +510,18 @@ void Flush() {
         if (!proc && !meta) continue;
         HttpResult r;
         std::wstring jpg;
+        std::wstring base = full.substr(0, full.size() - 5);
+        std::string hdr = ReadAll(base + L".hdr");
+        std::wstring extra;
+        size_t nl = hdr.find('\n');
+        if (nl != std::string::npos) extra = L"X-AC-Entry: " + Widen(hdr.substr(0, nl)) + L"\r\nX-AC-Sig: " + Widen(hdr.substr(nl + 1)) + L"\r\n";
         if (proc) {
-            r = HttpSend(g_api, L"/api/v1/anticheat/processes", ReadAll(full), L"application/json", token);
+            r = HttpSend(g_api, L"/api/v1/anticheat/processes", ReadAll(full), L"application/json", token, extra);
         } else {
             std::string raw = ReadAll(full);
             std::wstring q((const wchar_t*)raw.data(), raw.size() / sizeof(wchar_t));
             jpg = full.substr(0, full.size() - 5) + L".jpg";
-            r = HttpSend(g_api, q.c_str(), ReadAll(jpg), L"image/jpeg", token);
+            r = HttpSend(g_api, q.c_str(), ReadAll(jpg), L"image/jpeg", token, extra);
         }
         // 401 y 403: el token venció y el latido lo renueva. No se pierde lo pendiente.
         if (r.status == 0 || r.status == 401 || r.status == 403 || r.status == 429 || r.status >= 500) {
@@ -421,6 +532,7 @@ void Flush() {
         else if (proc) sentProc++;
         else Log(L"captura subida");
         DeleteFileW(full.c_str());
+        DeleteFileW((base + L".hdr").c_str());
         if (!jpg.empty()) DeleteFileW(jpg.c_str());
     }
     if (sentProc) Log(L"procesos enviados");
@@ -517,6 +629,18 @@ void EvidenceUpdate(const std::wstring& session, int minS, int maxS, const std::
     if (minS > 0) g_min = g_opt.everySeconds ? g_opt.everySeconds : minS;
     if (maxS > 0) g_max = g_opt.everySeconds ? g_opt.everySeconds : maxS;
     g_requests.insert(g_requests.end(), requests.begin(), requests.end());
+}
+
+void EvidenceForget() {
+    std::wstring dir = DataDir() + L"\\spool";
+    WIN32_FIND_DATAW fd;
+    HANDLE h = FindFirstFileW((dir + L"\\*").c_str(), &fd);
+    if (h != INVALID_HANDLE_VALUE) {
+        do { if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) DeleteFileW((dir + L"\\" + fd.cFileName).c_str()); } while (FindNextFileW(h, &fd));
+        FindClose(h);
+    }
+    DeleteSecret(L"devicekey");
+    g_keySent = false;
 }
 
 void EvidenceStop() {

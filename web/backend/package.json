@@ -26,6 +26,8 @@
     "season:tick": "tsx scripts/season-tick.mts",
     "demos:sftp": "tsx scripts/demos-sftp.mts",
     "notify:tick": "tsx scripts/notify-tick.mts",
+    "anticheat:tick": "tsx scripts/anticheat-tick.mts",
+    "ac:demo": "tsx scripts/anticheat-demo.mts",
     "test:coverage": "vitest run --coverage",
     "test:coverage:unit": "vitest run --project unit --coverage"
   },

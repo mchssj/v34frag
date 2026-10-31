@@ -8,6 +8,7 @@ import { serve } from '@hono/node-server';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { createApp } from '../../src/app';
+import { runRetention } from '../../src/jobs/anticheat-retention';
 import { admin, createUser, local, localEnv } from './local';
 
 // Anticheat FRAG contra la Supabase local (replanteo 39).
@@ -246,6 +247,42 @@ describe.skipIf(!existsSync(exe))('aplicación real', () => {
       await until(/sesión cerrada/);
       await until(/monitoreo detenido/);
       await new Promise((ok) => setTimeout(ok, 3000));
+
+      // Integridad: todo firmado y encadenado por la aplicación real. Una alteración después se detecta y queda registrada.
+      const verify = async () => {
+        const r = await app.request(`/api/v1/admin/anticheat/sessions/${session}/verify`, { method: 'POST', headers: bearer(adminToken) }, envIp);
+        expect(r.status).toBe(200);
+        return await r.json() as { result: string; checked: number; problems: { problem: string }[]; origin: string };
+      };
+      expect((await app.request(`/api/v1/admin/anticheat/sessions/${session}/verify`, { method: 'POST', headers: bearer(owner.token) }, envIp)).status).toBe(403);
+      const clean = await verify();
+      expect(clean.problems).toEqual([]);
+      expect(clean).toMatchObject({ result: 'verified', origin: 'not_verifiable' });
+      expect(clean.checked).toBeGreaterThan(1);
+
+      const a = admin();
+      const one = (await a.from('ac_process_events').select('id, name').eq('session_id', session).limit(1).single()).data!;
+      check(await a.from('ac_process_events').update({ name: 'alterado.exe' }).eq('id', one.id));
+      expect((await verify()).problems.map((p) => p.problem)).toContain('process_modified');
+      check(await a.from('ac_process_events').update({ name: one.name }).eq('id', one.id));
+      expect((await verify()).result).toBe('verified');
+
+      const sh = (await a.from('ac_screenshots').select('storage_path').eq('session_id', session).not('stored_at', 'is', null).limit(1).single()).data!;
+      const original = (await a.storage.from('ac-evidence').download(sh.storage_path as string)).data!;
+      check(await a.storage.from('ac-evidence').update(sh.storage_path as string, new Blob([new Uint8Array([0xff, 0xd8, 0xff, 9])], { type: 'image/jpeg' })));
+      const tampered = await verify();
+      expect(tampered.result).toBe('failed');
+      expect(tampered.problems.map((p) => p.problem)).toContain('file_modified');
+      check(await a.storage.from('ac-evidence').update(sh.storage_path as string, original));
+
+      const entry = (await a.from('ac_evidence').select('id, seq').eq('session_id', session).order('seq', { ascending: false }).limit(1).single()).data!;
+      const firstRow = (await a.from('ac_evidence').select('id, seq, entry').eq('session_id', session).eq('seq', 1).single()).data!;
+      check(await a.from('ac_evidence').update({ entry: (firstRow.entry as string) + 'x' }).eq('id', firstRow.id));
+      expect((await verify()).result).toBe('failed');
+      check(await a.from('ac_evidence').update({ entry: firstRow.entry }).eq('id', firstRow.id));
+      expect(entry.seq).toBeGreaterThan(0);
+      const logged = await a.from('ac_integrity_logs').select('result').eq('session_id', session);
+      expect((logged.data ?? []).map((l) => l.result)).toEqual(expect.arrayContaining(['verified', 'failed']));
       const after = (await admin().from('ac_screenshots').select('id', { count: 'exact', head: true }).eq('session_id', session)).count;
       await new Promise((ok) => setTimeout(ok, 5000));
       expect((await admin().from('ac_screenshots').select('id', { count: 'exact', head: true }).eq('session_id', session)).count).toBe(after);
@@ -307,6 +344,21 @@ describe('ingesta de evidencia', () => {
     const other = await enroll(owner.token);
     expect((await upload({ ...base, client_id: `d${seed}` }, JPEG, other.access_token)).status).toBe(400);
 
+    // Firma: una entrada que no firmó el equipo se rechaza y queda registrada.
+    const raw = crypto.getRandomValues(new Uint8Array(0));
+    expect(raw.length).toBe(0);
+    const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']) as CryptoKeyPair;
+    const pub = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey))));
+    expect((await post('/api/v1/anticheat/key', { public_key: pub }, { 'X-Agent-Token': d.access_token })).status).toBe(204);
+    expect((await post('/api/v1/anticheat/key', { public_key: btoa('otra-clave-distinta-del-equipo') }, { 'X-Agent-Token': d.access_token })).status).toBe(409);
+    const line = `v1|${session}|1|screenshot|${base.sha256}|${'0'.repeat(64)}|${taken}`;
+    const forged = btoa(String.fromCharCode(...new Uint8Array(64)));
+    const signedUpload = (sig: string) => app.request(`/api/v1/anticheat/screenshots?${new URLSearchParams(base)}`, { method: 'POST', headers: { 'X-Agent-Token': d.access_token, 'X-AC-Entry': line, 'X-AC-Sig': sig }, body: JPEG.slice().buffer }, envKey());
+    expect((await signedUpload(forged)).status).toBe(400);
+    expect(((await admin().from('ac_integrity_logs').select('result').eq('session_id', session)).data ?? []).map((l) => l.result)).toContain('failed');
+    const good = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pair.privateKey, new TextEncoder().encode(line)))));
+    expect((await signedUpload(good)).status).toBe(201);
+
     const ev = { client_id: `p${seed}`, kind: 'inventory', pid: 1, name: 'a.exe', observed_at: taken };
     const send = (events: unknown[], access = d.access_token) => post('/api/v1/anticheat/processes', { session_id: session, events }, { 'X-Agent-Token': access });
     expect(await (await send([ev])).json()).toEqual({ accepted: 1, rejected: 0 });
@@ -330,6 +382,38 @@ describe('ingesta de evidencia', () => {
     expect((await get(`/api/v1/admin/anticheat/sessions/${id}`)).status).toBe(401);
     expect((await get(`/api/v1/admin/anticheat/sessions/${id}`, owner.token)).status).toBe(403);
     expect((await get(`/api/v1/admin/anticheat/sessions/${id}`, adminToken)).status).toBe(404);
+  });
+});
+
+describe('retención', () => {
+  it('borra lo vencido con sus archivos, y respeta lo abierto y lo conservado', async () => {
+    const a = admin();
+    const d = await enroll(owner.token);
+    const device = d.device_id;
+    const old = new Date(Date.now() - 31 * 864e5).toISOString();
+    const mk = async (status: string, held: boolean, steamId: string) => {
+      const id = crypto.randomUUID();
+      check(await a.from('ac_sessions').insert({ id, device_id: device, user_id: owner.id, player_id: player, steam_id: steamId, server_id: server, status, held, started_at: old }));
+      return id;
+    };
+    const expired = await mk('closed', false, steam);
+    const kept = await mk('closed', true, steam);
+    const open = await mk('open', false, otherSteam);
+    const path = `${expired}/x.jpg`;
+    check(await a.storage.from('ac-evidence').upload(path, new Blob(['x'], { type: 'image/jpeg' })));
+    check(await a.from('ac_screenshots').insert({ session_id: expired, client_id: 'x', kind: 'auto', method: 'bitblt_screen', storage_path: path, sha256: 'a'.repeat(64), size_bytes: 1, width: 1, height: 1, taken_at: old }));
+
+    const anonDue = await anon().rpc('ac_retention_due' as never);
+    expect(anonDue.error).not.toBeNull();
+    await runRetention({
+      rpc: (fn, args) => a.rpc(fn, args) as never,
+      removeFiles: (paths) => a.storage.from('ac-evidence').remove(paths),
+    });
+    const ids = ((await a.from('ac_sessions').select('id').in('id', [expired, kept, open])).data ?? []).map((r) => r.id as string);
+    expect(ids).not.toContain(expired);
+    expect(ids).toEqual(expect.arrayContaining([kept, open]));
+    expect((await a.storage.from('ac-evidence').list(expired)).data ?? []).toEqual([]);
+    await a.from('ac_sessions').delete().in('id', [kept, open]);
   });
 });
 

@@ -9,11 +9,10 @@ Implementado y probado en local el 2026-10-30, sin jugadores reales. **No distri
 | Falta | Por qué |
 |---|---|
 | **Revisión legal** | Capturas y procesos de personas identificadas, varios países y posibles menores |
-| **Borrado a los 30 días** | **La aplicación promete 30 días y todavía no hay tarea que borre.** Falta el cron de filas y archivos |
 | Pruebas de campo | Tirones al capturar, Alt+Tab, superposiciones, modos ventana y sin bordes, Windows 11, otras placas |
 | Certificado de firma | Sin él, SmartScreen y los antivirus lo van a advertir |
-| Bridge en `cssds` | Solo se compiló. **No se cargó en ningún servidor** |
-| Etapa 5 | Cadena de hashes, manifiestos firmados y retención inmutable: no están hechos |
+
+> Borrado a 30 días, etapa 5 y carga del Bridge en `cssds`: resueltos en [`2026-10-30-anticheat-integridad`](../2026-10-30-anticheat-integridad/).
 
 ## Despliegue (pendiente, con el corte)
 
@@ -34,7 +33,7 @@ Implementado y probado en local el 2026-10-30, sin jugadores reales. **No distri
 | Hash incorrecto, no JPEG, fecha fuera de sesión, otro equipo, reintentos | Pasa |
 | Permisos: público, jugador, admin | Pasa |
 | Instalar y desinstalar | Pasa, sin dejar rastro (versión anterior; el proceso no cambió) |
-| Bridge | **Solo compila** con spcomp 1.8, y no con el de 1.10 |
+| Bridge | Compila con spcomp 1.8, no con el de 1.10. Cargado en `cssds` el 2026-10-30, sin jugadores (ver `2026-10-30-anticheat-integridad`) |
 | Captura en el juego | **No se probó con esta aplicación.** Los mismos métodos funcionaron con el capturador de prueba |
 
 ## En qué se apartó del plan

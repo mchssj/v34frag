@@ -81,7 +81,7 @@ HttpResult HttpPost(const std::wstring& base, const wchar_t* path, const std::st
     return HttpSend(base, path, json, L"application/json", agentToken);
 }
 
-HttpResult HttpSend(const std::wstring& base, const wchar_t* path, const std::string& json, const wchar_t* contentType, const std::wstring& agentToken) {
+HttpResult HttpSend(const std::wstring& base, const wchar_t* path, const std::string& json, const wchar_t* contentType, const std::wstring& agentToken, const std::wstring& extraHeaders) {
     HttpResult res;
     URL_COMPONENTS u{};
     u.dwStructSize = sizeof(u);
@@ -99,6 +99,7 @@ HttpResult HttpSend(const std::wstring& base, const wchar_t* path, const std::st
     if (req) {
         std::wstring headers = std::wstring(L"Content-Type: ") + contentType + L"\r\n";
         if (!agentToken.empty()) headers += L"X-Agent-Token: " + agentToken + L"\r\n";
+        headers += extraHeaders;
         if (WinHttpSendRequest(req, headers.c_str(), (DWORD)-1, (LPVOID)json.data(), (DWORD)json.size(), (DWORD)json.size(), 0) &&
             WinHttpReceiveResponse(req, nullptr)) {
             DWORD status = 0, len = sizeof(status);

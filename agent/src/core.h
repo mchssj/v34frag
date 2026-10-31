@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 
-#define AC_VERSION L"0.2.0"
+#define AC_VERSION L"0.3.0"
 #define AC_NAME L"CMLeague Anticheat"
 
 enum class Screen { Consent, Unlinked, Linking, Ready, Session, Offline };
@@ -38,7 +38,7 @@ bool UiEncodeJpeg(const BYTE* bgra, int w, int h, int stride, int quality, std::
 
 // ---------- net.cpp ----------
 struct HttpResult { int status = 0; std::string body; };
-HttpResult HttpSend(const std::wstring& base, const wchar_t* path, const std::string& body, const wchar_t* contentType, const std::wstring& agentToken = L"");
+HttpResult HttpSend(const std::wstring& base, const wchar_t* path, const std::string& body, const wchar_t* contentType, const std::wstring& agentToken = L"", const std::wstring& extraHeaders = L"");
 HttpResult HttpPost(const std::wstring& base, const wchar_t* path, const std::string& json, const std::wstring& agentToken = L"");
 std::vector<std::string> JsonStrings(const std::string& body, const char* key);
 int JsonInt(const std::string& body, const char* key);
@@ -70,6 +70,7 @@ struct EvidenceOptions {
 void EvidenceStart(const std::wstring& api, const EvidenceOptions& opt);
 void EvidenceUpdate(const std::wstring& session, int minS, int maxS, const std::vector<std::wstring>& requests);
 void EvidenceStop();
+void EvidenceForget();  // Desvinculado: lo pendiente, la cadena y la clave ya no sirven
 
 // ---------- main.cpp ----------
 void AcNotice(const wchar_t* text);
