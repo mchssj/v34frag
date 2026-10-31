@@ -55,3 +55,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-10-30 | [Anticheat v34FRAGNATION: auditoría, etapa 0](2026-10-30-anticheat-etapa-0-auditoria/) | Auditoría entregada para revisión (2026-10-30); nada implementado ni desplegado; **faltan** las decisiones de la guía |
 | 2026-10-30 | [Anticheat v34FRAGNATION: prueba de captura](2026-10-30-anticheat-captura/) | Funciona en pantalla completa exclusiva sin hooks, probada en una PC (2026-10-30); **faltan** las pruebas de campo: tirones, Alt+Tab y otros modos |
 | 2026-10-30 | [Plugin 2v2 (Wingman)](2026-10-30-plugin-2v2/) | Probado con bots en `cssds` y subido a RBK, inactivo (2026-10-30); **falta** el mapa `de_dust2_ob` en RBK, los puntos de `de_inferno` y probar con jugadores, sobre todo la compra fuera de la zona |
+| 2026-10-31 | [Plugin de deathmatch](2026-10-31-plugin-deathmatch/) | Probado con bots en `cssds` y subido a ethereal (2026-10-31); **falta** probar con un jugador |

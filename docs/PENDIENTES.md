@@ -198,10 +198,16 @@ Ordenado por urgencia.
   - Probar con jugadores: antes que nada la compra fuera de la zona, porque los bots no compran por comando y en `de_dust2_ob` el spawn cae dentro de la zona. También el bloqueo de zonas, la cámara en primera persona, la voz por equipo y `!admin`.
 - **Bitácora:** [`2026-10-30-plugin-2v2`](bitacora/2026-10-30-plugin-2v2/). Changelog para Discord en la carpeta.
 
+### 1.16 Plugin de deathmatch (`v34_dm`)
+
+- **Estado:** probado con bots en `cssds` y subido a ethereal (`FLOW_SERVER`, SFTP `190.104.34.3:2022`) el 2026-10-31. Solo funciona en `$2000$`, al que se llega porque un admin cambia el mapa.
+- **Qué falta:** probar con un jugador, y que se confirme con el reporter 1.8.0 de ese servidor.
+- **Bitácora:** [`2026-10-31-plugin-deathmatch`](bitacora/2026-10-31-plugin-deathmatch/). Changelog para Discord en la carpeta.
+
 ### 1.14 Spam de grafitis
 
 - `decalfrequency` pasó de `0.1` a `60` en `aurav34` y RBK el 2026-10-30, con respaldo en `cfg/server.cfg.bak_decal`.
-- **Falta `FLOW_SERVER` (`panel-mvzg.com`):** el `.env` no tiene `SERVER2_PANEL_API_KEY` y el SFTP cerró la conexión. Poner `decalfrequency 60` en su `server.cfg`.
+- `FLOW_SERVER` (ethereal) ya lo tenía en `60`, comprobado el 2026-10-31.
 
 ### 1.16 Anticheat v34FRAGNATION
 

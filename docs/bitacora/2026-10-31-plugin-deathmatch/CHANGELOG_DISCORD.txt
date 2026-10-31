@@ -1,0 +1,11 @@
+v34frag 1.3.0 --  Changelog
+
+Nuevo modo: Deathmatch
+
+T contra CT en $2000$, sin rondas: morís, reaparecés al segundo y seguís jugando. Lo activa un admin cambiando al mapa.
+
+- Elegí tus armas con !guns: AK-47, M4A1, Galil, FAMAS, SG 552, AUG, AWP o Scout, con Deagle, USP o Glock.
+- Con !hs, tus tiros solo cuentan si son a la cabeza. Un admin también puede activarlo para todos.
+- Al matar recuperás vida y se recarga tu arma.
+- Al aparecer tenés un momento de protección, que termina si disparás.
+- Hay ranking propio: mirá tu puesto con !rank y el ranking con !top.
