@@ -131,15 +131,15 @@ void Row(Graphics& g, REAL y, const wchar_t* name, const wchar_t* value, const C
 }
 
 void DrawConsent(Graphics& g) {
-    Text(g, L"Antes de empezar", 24, 76, kWidth - 48.f, 34, 24, kText, FontStyleBold);
-    Text(g, L"Esta aplicación vincula tu PC con tu cuenta de CMLeague mientras juegas en nuestros servidores.", 24, 114, kWidth - 48.f, 60, 14, kMuted);
-    FillRound(g, kCard, 24, 172, kWidth - 48.f, 112, 12);
-    Text(g, L"Qué envía esta versión", 40, 182, kWidth - 80.f, 24, 14, kText, FontStyleBold);
-    Text(g, L"• El nombre de tu PC y la versión de la aplicación\n• Tu dirección IP, para confirmar que eres tú\n• Cuándo está abierta, y si tienes sesión activa", 40, 208, kWidth - 80.f, 70, 13.5f, kMuted);
-    FillRound(g, kCard, 24, 294, kWidth - 48.f, 136, 12);
-    Text(g, L"Qué no hace", 40, 304, kWidth - 80.f, 24, 14, kText, FontStyleBold);
-    Text(g, L"• No captura tu pantalla ni lista tus programas\n• No lee la memoria de otros programas\n• No registra lo que escribes\n• No se abre sola con Windows", 40, 330, kWidth - 80.f, 92, 13.5f, kMuted);
-    Text(g, L"Si una versión futura recopila más, te lo pedirá antes.", 24, 444, kWidth - 48.f, 40, 13, kMuted);
+    Text(g, L"Antes de empezar", 24, 66, kWidth - 48.f, 34, 24, kText, FontStyleBold);
+    Text(g, L"Recopila esto solo mientras juegas en un servidor de CMLeague. Lo revisa el staff: la aplicación no sanciona.", 24, 102, kWidth - 48.f, 44, 14, kMuted);
+    FillRound(g, kCard, 24, 150, kWidth - 48.f, 166, 12);
+    Text(g, L"Qué recopila", 40, 158, kWidth - 80.f, 24, 14, kText, FontStyleBold);
+    Text(g, L"• Capturas del juego, solo con el juego al frente\n• Programas abiertos: nombre, ruta, hash y firma\n• Capturas que pida el staff, con aviso\n• Tu IP, para confirmar que eres tú\n• Nombre de tu PC y versión de la aplicación", 40, 182, kWidth - 80.f, 130, 13.5f, kMuted);
+    FillRound(g, kCard, 24, 324, kWidth - 48.f, 122, 12);
+    Text(g, L"Qué no hace", 40, 332, kWidth - 80.f, 24, 14, kText, FontStyleBold);
+    Text(g, L"• No captura fuera del juego ni fuera de la sesión\n• No lee la memoria de otros programas\n• No registra lo que escribes ni abre tus archivos\n• No se abre sola con Windows", 40, 356, kWidth - 80.f, 88, 13.5f, kMuted);
+    Text(g, L"Se guarda 30 días. Sin aceptar no podrás jugar los mixes.", 24, 456, kWidth - 48.f, 32, 13, kMuted);
 }
 
 void DrawMain(Graphics& g, const UiState& s) {
@@ -160,7 +160,7 @@ void DrawMain(Graphics& g, const UiState& s) {
         Row(g, 352, L"ClientMod", s.gameOpen ? L"Abierto" : L"Cerrado", s.gameOpen ? kOk : kGrey);
         Row(g, 386, L"Sesión", s.session ? L"Activa" : L"Sin sesión", s.session ? kOk : kGrey);
     }
-    const wchar_t* foot = s.detail.empty() ? L"Esta versión no captura tu pantalla ni lista tus programas." : s.detail.c_str();
+    const wchar_t* foot = s.detail.empty() ? s.session ? L"Durante la sesión se capturan el juego y la lista de programas." : L"No recopila nada hasta que tengas una sesión activa." : s.detail.c_str();
     Text(g, foot, 24, 440, kWidth - 48.f, 44, 13, kMuted, FontStyleRegular, StringAlignmentCenter);
 }
 
@@ -230,6 +230,41 @@ bool UiRenderPng(const UiState& s, const wchar_t* path) {
     }
     CLSID id;
     return PngClsid(&id) && back.Save(path, &id) == Ok;
+}
+
+bool UiEncodeJpeg(const BYTE* bgra, int w, int h, int stride, int quality, std::vector<BYTE>& out) {
+    UINT n = 0, size = 0;
+    GetImageEncodersSize(&n, &size);
+    std::vector<BYTE> buf(size);
+    auto* e = (ImageCodecInfo*)buf.data();
+    GetImageEncoders(n, size, e);
+    CLSID id{};
+    bool found = false;
+    for (UINT i = 0; i < n; i++)
+        if (wcscmp(e[i].MimeType, L"image/jpeg") == 0) { id = e[i].Clsid; found = true; }
+    if (!found) return false;
+    Bitmap b(w, h, stride, PixelFormat32bppRGB, const_cast<BYTE*>(bgra));
+    EncoderParameters p{};
+    ULONG q = (ULONG)quality;
+    p.Count = 1;
+    p.Parameter[0].Guid = EncoderQuality;
+    p.Parameter[0].NumberOfValues = 1;
+    p.Parameter[0].Type = EncoderParameterValueTypeLong;
+    p.Parameter[0].Value = &q;
+    IStream* st = nullptr;
+    if (FAILED(CreateStreamOnHGlobal(nullptr, TRUE, &st))) return false;
+    bool ok = b.Save(st, &id, &p) == Ok;
+    if (ok) {
+        STATSTG stat{};
+        st->Stat(&stat, STATFLAG_NONAME);
+        out.resize((size_t)stat.cbSize.QuadPart);
+        LARGE_INTEGER zero{};
+        st->Seek(zero, STREAM_SEEK_SET, nullptr);
+        ULONG read = 0;
+        ok = SUCCEEDED(st->Read(out.data(), (ULONG)out.size(), &read)) && read == out.size() && !out.empty();
+    }
+    st->Release();
+    return ok;
 }
 
 HICON UiMakeIcon(int size) {

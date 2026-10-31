@@ -62,11 +62,11 @@ std::string LoadSecret(const wchar_t* name) {
 
 void DeleteSecret(const wchar_t* name) { DeleteFileW((DataDir() + L"\\" + name + L".bin").c_str()); }
 
-bool ConsentGiven() { return GetFileAttributesW((DataDir() + L"\\consent-1.txt").c_str()) != INVALID_FILE_ATTRIBUTES; }
+bool ConsentGiven() { return GetFileAttributesW((DataDir() + L"\\consent-2.txt").c_str()) != INVALID_FILE_ATTRIBUTES; }
 
 void SaveConsent() {
-    std::ofstream(DataDir() + L"\\consent-1.txt") << "version=1\n";
-    Log(L"consentimiento aceptado, versión 1");
+    std::ofstream(DataDir() + L"\\consent-2.txt") << "version=2\n";
+    Log(L"consentimiento aceptado, versión 2");
 }
 
 static std::wstring ShortcutPath() { return KnownFolder(FOLDERID_Programs) + L"\\CMLeague Anticheat.lnk"; }

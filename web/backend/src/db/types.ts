@@ -18,15 +18,34 @@ export type Database = {
                   Relationships: [
                     
                   ]
-                },"ac_config": {
+                },"ac_capture_requests": {
                   Row: {
-                    "api_secret_hash": string | null,"id": number,"open_until": string | null,"retention_days": number,"updated_at": string
+                    "created_at": string,"id": string,"reason": string,"requested_by": string | null,"resolved_at": string | null,"session_id": string,"status": string
                   }
                   Insert: {
-                    "api_secret_hash"?: string | null,"id"?: number,"open_until"?: string | null,"retention_days"?: number,"updated_at"?: string
+                    "created_at"?: string,"id"?: string,"reason": string,"requested_by"?: string | null,"resolved_at"?: string | null,"session_id": string,"status"?: string
                   }
                   Update: {
-                    "api_secret_hash"?: string | null,"id"?: number,"open_until"?: string | null,"retention_days"?: number,"updated_at"?: string
+                    "created_at"?: string,"id"?: string,"reason"?: string,"requested_by"?: string | null,"resolved_at"?: string | null,"session_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_capture_requests_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "ac_sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ac_config": {
+                  Row: {
+                    "api_secret_hash": string | null,"capture_max_s": number,"capture_min_s": number,"id": number,"open_until": string | null,"retention_days": number,"updated_at": string
+                  }
+                  Insert: {
+                    "api_secret_hash"?: string | null,"capture_max_s"?: number,"capture_min_s"?: number,"id"?: number,"open_until"?: string | null,"retention_days"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "api_secret_hash"?: string | null,"capture_max_s"?: number,"capture_min_s"?: number,"id"?: number,"open_until"?: string | null,"retention_days"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -56,6 +75,50 @@ export type Database = {
                   }
                   Relationships: [
                     
+                  ]
+                },"ac_process_events": {
+                  Row: {
+                    "client_id": string,"id": number,"kind": string,"name": string,"note": string | null,"observed_at": string,"path": string | null,"pid": number,"publisher": string | null,"received_at": string,"session_id": string,"sha256": string | null,"signature": string | null,"started_at": string | null
+                  }
+                  Insert: {
+                    "client_id": string,"id"?: never,"kind": string,"name": string,"note"?: string | null,"observed_at": string,"path"?: string | null,"pid": number,"publisher"?: string | null,"received_at"?: string,"session_id": string,"sha256"?: string | null,"signature"?: string | null,"started_at"?: string | null
+                  }
+                  Update: {
+                    "client_id"?: string,"id"?: never,"kind"?: string,"name"?: string,"note"?: string | null,"observed_at"?: string,"path"?: string | null,"pid"?: number,"publisher"?: string | null,"received_at"?: string,"session_id"?: string,"sha256"?: string | null,"signature"?: string | null,"started_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_process_events_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "ac_sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ac_screenshots": {
+                  Row: {
+                    "client_id": string,"created_at": string,"height": number,"id": string,"kind": string,"method": string,"request_id": string | null,"session_id": string,"sha256": string,"size_bytes": number,"storage_path": string,"stored_at": string | null,"taken_at": string,"width": number
+                  }
+                  Insert: {
+                    "client_id": string,"created_at"?: string,"height": number,"id"?: string,"kind": string,"method": string,"request_id"?: string | null,"session_id": string,"sha256": string,"size_bytes": number,"storage_path": string,"stored_at"?: string | null,"taken_at": string,"width": number
+                  }
+                  Update: {
+                    "client_id"?: string,"created_at"?: string,"height"?: number,"id"?: string,"kind"?: string,"method"?: string,"request_id"?: string | null,"session_id"?: string,"sha256"?: string,"size_bytes"?: number,"storage_path"?: string,"stored_at"?: string | null,"taken_at"?: string,"width"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_screenshots_request_id_fkey"
+      columns: ["request_id"]
+isOneToOne: false
+      referencedRelation: "ac_capture_requests"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_screenshots_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "ac_sessions"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"ac_server_policy": {
                   Row: {
@@ -3842,7 +3905,13 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "ac_admin_sessions":
+            "ac_admin_request_capture":
+{ Args: { "p_reason": string,"p_session": string }; Returns: string
+                           },
+"ac_admin_session_evidence":
+{ Args: { "p_session": string }; Returns: Json
+                           },
+"ac_admin_sessions":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_status"?: string }; Returns: Json
                            },
 "ac_agent_unlink":
@@ -3857,6 +3926,12 @@ isOneToOne: false
 "ac_can_review":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"ac_capture_result":
+{ Args: { "p_access": string,"p_request": string,"p_result": string,"p_secret": string }; Returns: boolean
+                           },
+"ac_device_of":
+{ Args: { "p_access": string,"p_secret": string }; Returns: string
+                           },
 "ac_device_revoke":
 { Args: { "p_device": string }; Returns: undefined
                            },
@@ -3865,6 +3940,9 @@ isOneToOne: false
                            },
 "ac_heartbeat":
 { Args: { "p_access": string,"p_ip": string,"p_secret": string,"p_version": string }; Returns: Json
+                           },
+"ac_ingest_processes":
+{ Args: { "p_access": string,"p_events": Json,"p_secret": string,"p_session": string }; Returns: Json
                            },
 "ac_link_approve":
 { Args: { "p_user_code": string }; Returns: Json
@@ -3880,6 +3958,15 @@ isOneToOne: false
                            },
 "ac_require_api":
 { Args: { "p_secret": string }; Returns: undefined
+                           },
+"ac_screenshot_register":
+{ Args: { "p_access": string,"p_client_id": string,"p_height": number,"p_kind": string,"p_method": string,"p_request"?: string,"p_secret": string,"p_session": string,"p_sha256": string,"p_size": number,"p_taken": string,"p_width": number }; Returns: Json
+                           },
+"ac_screenshot_stored":
+{ Args: { "p_access": string,"p_id": string,"p_secret": string }; Returns: boolean
+                           },
+"ac_session_accepts":
+{ Args: { "p_at": string,"p_device": string,"p_session": string }; Returns: boolean
                            },
 "ac_set_open":
 { Args: { "p_minutes": number }; Returns: string

@@ -56,7 +56,32 @@ bool JsonIsNull(const std::string& body, const char* key) {
     return p == std::string::npos || body.compare(p, 4, "null") == 0;
 }
 
+int JsonInt(const std::string& body, const char* key) {
+    size_t p = ValueAt(body, key);
+    return p == std::string::npos ? 0 : atoi(body.c_str() + p);
+}
+
+std::vector<std::string> JsonStrings(const std::string& body, const char* key) {
+    std::vector<std::string> out;
+    size_t p = ValueAt(body, key);
+    if (p == std::string::npos || body[p] != '[') return out;
+    size_t end = body.find(']', p);
+    while (end != std::string::npos) {
+        size_t a = body.find('"', p);
+        if (a == std::string::npos || a > end) break;
+        size_t b = body.find('"', a + 1);
+        if (b == std::string::npos) break;
+        out.push_back(body.substr(a + 1, b - a - 1));
+        p = b + 1;
+    }
+    return out;
+}
+
 HttpResult HttpPost(const std::wstring& base, const wchar_t* path, const std::string& json, const std::wstring& agentToken) {
+    return HttpSend(base, path, json, L"application/json", agentToken);
+}
+
+HttpResult HttpSend(const std::wstring& base, const wchar_t* path, const std::string& json, const wchar_t* contentType, const std::wstring& agentToken) {
     HttpResult res;
     URL_COMPONENTS u{};
     u.dwStructSize = sizeof(u);
@@ -68,11 +93,11 @@ HttpResult HttpPost(const std::wstring& base, const wchar_t* path, const std::st
 
     HINTERNET ses = WinHttpOpen((std::wstring(L"CMLeagueAC/") + AC_VERSION).c_str(), WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, nullptr, nullptr, 0);
     if (!ses) return res;
-    WinHttpSetTimeouts(ses, 5000, 5000, 10000, 10000);
+    WinHttpSetTimeouts(ses, 5000, 5000, 30000, 30000);
     HINTERNET con = WinHttpConnect(ses, host, u.nPort, 0);
     HINTERNET req = con ? WinHttpOpenRequest(con, L"POST", path, nullptr, nullptr, nullptr, tls ? WINHTTP_FLAG_SECURE : 0) : nullptr;
     if (req) {
-        std::wstring headers = L"Content-Type: application/json\r\n";
+        std::wstring headers = std::wstring(L"Content-Type: ") + contentType + L"\r\n";
         if (!agentToken.empty()) headers += L"X-Agent-Token: " + agentToken + L"\r\n";
         if (WinHttpSendRequest(req, headers.c_str(), (DWORD)-1, (LPVOID)json.data(), (DWORD)json.size(), (DWORD)json.size(), 0) &&
             WinHttpReceiveResponse(req, nullptr)) {

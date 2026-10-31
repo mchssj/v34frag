@@ -1,6 +1,6 @@
 // CMLeague Anticheat: ventana, bandeja y trabajo en segundo plano (vincular, latido cada 30 s, detectar ClientMod).
-// Opciones: --install --uninstall --silent --portable --api <url> --data-dir <carpeta> --no-browser --render <pantalla> <png>
-// Solo para pruebas: --auto-link --beat <segundos>
+// Opciones: --install --uninstall --silent --portable --render <pantalla> <png>
+// Solo en la versión de pruebas (AC_TEST): --api --data-dir --no-browser --auto-link --beat --capture-title --capture-no-foreground --capture-every
 #include "core.h"
 #include <objbase.h>
 #include <shellapi.h>
@@ -28,6 +28,7 @@ static UiState g_state;
 static std::wstring g_api = L"https://api.cmleague.lat", g_verifyUrl;
 static bool g_noBrowser = false;
 static DWORD g_beatMs = 30000;
+static EvidenceOptions g_evidence;
 static HANDLE g_wake, g_quit;
 static bool g_wantLink = false, g_cancelLink = false, g_wantUnlink = false;
 static int g_hover = BtnNone;
@@ -67,7 +68,18 @@ static bool GameOpen() {
     return found;
 }
 
+void AcNotice(const wchar_t* text) {
+    std::wstring t = text;
+    Update([&](UiState& s) { s.detail = t; });
+    NOTIFYICONDATAW n = g_tray;
+    n.uFlags = NIF_INFO;
+    wcscpy_s(n.szInfoTitle, AC_NAME);
+    wcsncpy_s(n.szInfo, text, _TRUNCATE);
+    Shell_NotifyIconW(NIM_MODIFY, &n);
+}
+
 static void Forget() {
+    EvidenceUpdate(L"", 0, 0, {});
     DeleteSecret(L"access");
     DeleteSecret(L"refresh");
     Update([](UiState& s) { s.linked = s.online = s.session = false; s.screen = Screen::Unlinked; s.userCode.clear(); });
@@ -172,16 +184,22 @@ static void Worker() {
         }
         if (r.status == 200) {
             bool session = !JsonIsNull(r.body, "session");
+            std::vector<std::wstring> requests;
+            for (const auto& q : JsonStrings(r.body, "requests")) requests.push_back(Widen(q));
+            EvidenceUpdate(session ? Widen(JsonStr(r.body, "id")) : L"", JsonInt(r.body, "capture_min_s"), JsonInt(r.body, "capture_max_s"), requests);
             if (session != wasSession) {
-                // Al cerrarse la sesión se deja de recopilar. En esta etapa todavía no se recopila nada.
+                // Al cerrarse la sesión se deja de recopilar: EvidenceUpdate ya recibió la sesión vacía.
                 Log(session ? L"sesión abierta" : L"sesión cerrada");
                 wasSession = session;
             }
-            Update([&](UiState& s) { s.linked = true; s.online = true; s.session = session; s.detail.clear(); s.screen = session ? Screen::Session : Screen::Ready; });
+            Update([&](UiState& s) { s.linked = true; s.online = true; s.session = session; if (!session) s.detail.clear(); s.screen = session ? Screen::Session : Screen::Ready; });
         } else {
             if (wasSession) Log(L"sin contacto durante la sesión");
             Log(L"latido fallido: " + std::to_wstring(r.status));
-            Update([](UiState& s) { s.linked = true; s.online = false; s.screen = Screen::Offline; });
+            // Sin contacto no se sabe si la sesión sigue: se deja de recopilar hasta confirmarla.
+            EvidenceUpdate(L"", 0, 0, {});
+            wasSession = false;
+            Update([](UiState& s) { s.linked = true; s.online = false; s.session = false; s.screen = Screen::Offline; });
         }
         if (Sleep_(g_beatMs)) return;
     }
@@ -319,11 +337,16 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
         else if (a == L"--uninstall") uninstall = true;
         else if (a == L"--silent") silent = true;
         else if (a == L"--portable") portable = true;
+#ifdef AC_TEST
         else if (a == L"--no-browser") g_noBrowser = true;
-        else if (a == L"--auto-link") g_wantLink = true;  // Solo para pruebas
-        else if (a == L"--beat" && i + 1 < argc) g_beatMs = (DWORD)_wtoi(argv[++i]) * 1000;  // Solo para pruebas
+        else if (a == L"--auto-link") g_wantLink = true;
+        else if (a == L"--beat" && i + 1 < argc) g_beatMs = (DWORD)_wtoi(argv[++i]) * 1000;
         else if (a == L"--api" && i + 1 < argc) g_api = argv[++i];
         else if (a == L"--data-dir" && i + 1 < argc) SetDataDir(argv[++i]);
+        else if (a == L"--capture-title" && i + 1 < argc) { g_evidence.gameTitle = argv[++i]; g_evidence.minWidth = 100; }
+        else if (a == L"--capture-no-foreground") g_evidence.ignoreForeground = true;
+        else if (a == L"--capture-every" && i + 1 < argc) g_evidence.everySeconds = _wtoi(argv[++i]);
+#endif
         else if (a == L"--render" && i + 2 < argc) {
             bool ok = RenderDemo(argv[i + 1], argv[i + 2]);
             UiShutdown();
@@ -393,6 +416,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
 
     ShowMain();
     Log(L"inicio");
+    EvidenceStart(g_api, g_evidence);
     std::thread worker(Worker);
 
     MSG msg;
@@ -403,6 +427,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
 
     SetEvent(g_quit);
     worker.join();
+    EvidenceStop();
     Log(L"salida");
     Shell_NotifyIconW(NIM_DELETE, &g_tray);
     DestroyIcon(iconBig);

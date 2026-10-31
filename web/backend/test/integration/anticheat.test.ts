@@ -8,7 +8,7 @@ import { serve } from '@hono/node-server';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { createApp } from '../../src/app';
-import { admin, createUser, localEnv } from './local';
+import { admin, createUser, local, localEnv } from './local';
 
 // Anticheat FRAG contra la Supabase local (replanteo 39).
 const SECRET = `secreto-${crypto.randomUUID()}`;
@@ -131,7 +131,7 @@ describe('Bridge y obligatoriedad', () => {
 
     expect((await beat(d.access_token, '10.99.99.99')).status).toBe(200);
     expect(await bridge()).toMatchObject({ linked: false, reason: 'ip_mismatch', action: 'kick' });
-    expect(await (await beat(d.access_token)).json()).toEqual({ session: null });
+    expect(await (await beat(d.access_token)).json()).toMatchObject({ session: null });
   });
 
   it('un admin abre los mixes: nadie es expulsado; al cerrarlos, vuelve', async () => {
@@ -159,20 +159,20 @@ describe('Bridge y obligatoriedad', () => {
     await beat(d.access_token);
     expect(await bridge()).toMatchObject({ linked: true });
     check(await anon().rpc('ac_bridge_end', { p_token: token, p_steam: steam }));
-    expect(await (await beat(d.access_token)).json()).toEqual({ session: null });
+    expect(await (await beat(d.access_token)).json()).toMatchObject({ session: null });
   });
 });
 
 // El ejecutable real contra la API local. Se salta si no se compiló (agent/build.bat).
-const exe = fileURLToPath(new URL('../../../../agent/build/CMLeagueAC.exe', import.meta.url));
+const exe = fileURLToPath(new URL('../../../../agent/build/CMLeagueAC_test.exe', import.meta.url));
 describe.skipIf(!existsSync(exe))('aplicación real', () => {
-  it('vincula, abre sesión, la cierra, avisa sin conexión y desvincula', { timeout: 90_000 }, async () => {
-    const envIp = localEnv({ AC_API_SECRET: SECRET });
+  it('vincula, recopila solo en la sesión, sube evidencia verificable y deja de recopilar al cerrarla', { timeout: 120_000 }, async () => {
+    const envIp = localEnv({ AC_API_SECRET: SECRET, SUPABASE_SERVICE_KEY: local().SERVICE_ROLE_KEY });
     let server = serve({ fetch: (r) => app.fetch(r, envIp), port: 0, hostname: '127.0.0.1' });
     await new Promise((ok) => server.once('listening', ok));
     const port = (server.address() as AddressInfo).port;
     const dir = mkdtempSync(join(tmpdir(), 'cmleagueac-'));
-    writeFileSync(join(dir, 'consent-1.txt'), 'version=1\n');
+    writeFileSync(join(dir, 'consent-2.txt'), 'version=2\n');
     const log = () => { try { return readFileSync(join(dir, 'agent.log'), 'utf8'); } catch { return ''; } };
     const until = async (re: RegExp, ms = 15_000) => {
       const end = Date.now() + ms;
@@ -183,7 +183,9 @@ describe.skipIf(!existsSync(exe))('aplicación real', () => {
         await new Promise((ok) => setTimeout(ok, 200));
       }
     };
-    const proc = spawn(exe, ['--portable', '--no-browser', '--auto-link', '--beat', '1', '--api', `http://127.0.0.1:${port}`, '--data-dir', dir]);
+    const stored: string[] = [];
+    const proc = spawn(exe, ['--portable', '--no-browser', '--auto-link', '--beat', '1', '--api', `http://127.0.0.1:${port}`, '--data-dir', dir,
+      '--capture-title', 'CMLeague Anticheat', '--capture-no-foreground', '--capture-every', '2']);
     try {
       const code = (await until(/código ([A-Z2-9]{8})/))[1]!;
       expect((await post('/api/v1/me/anticheat/approve', { user_code: code }, bearer(owner.token))).status).toBe(200);
@@ -194,10 +196,61 @@ describe.skipIf(!existsSync(exe))('aplicación real', () => {
 
       // Sin CLIENT_IP_HEADER la API ve la IP como "unknown".
       await new Promise((ok) => setTimeout(ok, 1500));
-      expect(await bridge({ p_ip: 'unknown' })).toMatchObject({ linked: true, action: 'allow' });
+      // Antes de la sesión no hay nada recopilado.
+      expect(log()).not.toMatch(/inventario inicial|captura/);
+      const opened = await bridge({ p_ip: 'unknown' });
+      expect(opened).toMatchObject({ linked: true, action: 'allow' });
+      const session = opened.session_id as string;
       await until(/sesión abierta/);
+      await until(/inventario inicial: \d+ procesos/);
+      await until(/procesos enviados/, 30_000);
+      await until(/captura subida/, 30_000);
+
+      // Solicitud manual: queda registrada y llega a la aplicación.
+      expect((await post(`/api/v1/admin/anticheat/sessions/${session}/capture`, { reason: 'prueba' }, bearer(owner.token))).status).toBe(403);
+      expect((await app.request(`/api/v1/admin/anticheat/sessions/${session}/capture`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...bearer(adminToken) }, body: JSON.stringify({ reason: 'prueba' }) }, envIp)).status).toBe(201);
+      await until(/captura solicitada: tomada/);
+
+      const readEvidence = async () => {
+        const r = await app.request(`/api/v1/admin/anticheat/sessions/${session}`, { headers: bearer(adminToken) }, envIp);
+        expect(r.status).toBe(200);
+        return await r.json() as {
+          screenshots: { sha256: string; url: string | null; kind: string; method: string; stored_at: string | null }[];
+          processes: { kind: string; name: string; path: string | null }[]; requests: { status: string }[];
+        };
+      };
+      let ev = await readEvidence();
+      for (let i = 0; i < 40 && !ev.requests.some((q) => q.status === 'done'); i++) {
+        await new Promise((ok) => setTimeout(ok, 500));
+        ev = await readEvidence();
+      }
+      expect(ev.requests.map((q) => q.status)).toContain('done');
+      expect(ev.screenshots.some((s) => s.kind === 'manual')).toBe(true);
+      expect(ev.processes.filter((p) => p.kind === 'inventory').length).toBeGreaterThan(5);
+      // Ve su propio proceso, y ninguna ruta lleva el nombre de la carpeta del usuario.
+      expect(ev.processes.some((p) => /cmleagueac/i.test(p.name))).toBe(true);
+      const home = process.env.USERPROFILE;
+      if (home) expect(ev.processes.some((p) => p.path?.toLowerCase().startsWith(home.toLowerCase()))).toBe(false);
+
+      // El archivo guardado es un JPEG con el hash declarado, y sin la URL firmada no se baja.
+      const shot = ev.screenshots.find((s) => s.url)!;
+      stored.push(...ev.screenshots.filter((s) => s.url).map((s) => s.url!.split('/ac-evidence/')[1]!.split('?')[0]!));
+      const img = new Uint8Array(await (await fetch(shot.url!)).arrayBuffer());
+      expect([img[0], img[1], img[2]]).toEqual([0xff, 0xd8, 0xff]);
+      const sha = [...new Uint8Array(await crypto.subtle.digest('SHA-256', img))].map((b) => b.toString(16).padStart(2, '0')).join('');
+      expect(sha).toBe(shot.sha256);
+      expect((await fetch(shot.url!.split('?')[0]!)).status).toBeGreaterThanOrEqual(400);
+
+      // Al cerrar la sesión se deja de recopilar.
       check(await anon().rpc('ac_bridge_end', { p_token: token, p_steam: steam }));
       await until(/sesión cerrada/);
+      await until(/monitoreo detenido/);
+      await new Promise((ok) => setTimeout(ok, 3000));
+      const after = (await admin().from('ac_screenshots').select('id', { count: 'exact', head: true }).eq('session_id', session)).count;
+      await new Promise((ok) => setTimeout(ok, 5000));
+      expect((await admin().from('ac_screenshots').select('id', { count: 'exact', head: true }).eq('session_id', session)).count).toBe(after);
+      const all = await readEvidence();
+      stored.splice(0, stored.length, ...all.screenshots.filter((s) => s.url).map((s) => s.url!.split('/ac-evidence/')[1]!.split('?')[0]!));
 
       await new Promise<void>((ok) => { server.close(() => ok()); (server as unknown as { closeAllConnections?: () => void }).closeAllConnections?.(); });
       await until(/latido fallido: 0/);
@@ -209,6 +262,7 @@ describe.skipIf(!existsSync(exe))('aplicación real', () => {
       expect((log().match(/latido fallido/g) ?? []).length).toBeLessThanOrEqual(before + 1);
     } finally {
       proc.kill();
+      if (stored.length) await admin().storage.from('ac-evidence').remove(stored);
       await new Promise<void>((ok) => { server.close(() => ok()); (server as unknown as { closeAllConnections?: () => void }).closeAllConnections?.(); });
       rmSync(dir, { recursive: true, force: true });
     }
@@ -219,6 +273,63 @@ describe.skipIf(!existsSync(exe))('aplicación real', () => {
     expect((await post('/api/v1/anticheat/unlink', {}, { 'X-Agent-Token': d.access_token })).status).toBe(204);
     expect((await beat(d.access_token)).status).toBe(401);
     expect((await post('/api/v1/anticheat/unlink', {}, { 'X-Agent-Token': d.access_token })).status).toBe(401);
+  });
+});
+
+describe('ingesta de evidencia', () => {
+  const envKey = () => localEnv({ AC_API_SECRET: SECRET, SUPABASE_SERVICE_KEY: local().SERVICE_ROLE_KEY });
+  const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+  const shaOf = async (b: Uint8Array) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b.slice().buffer))].map((x) => x.toString(16).padStart(2, '0')).join('');
+  const upload = (q: Record<string, string>, body: Uint8Array, access?: string) =>
+    app.request(`/api/v1/anticheat/screenshots?${new URLSearchParams(q)}`, { method: 'POST', headers: access ? { 'X-Agent-Token': access } : {}, body: body.slice().buffer }, envKey());
+
+  it('rechaza lo que no corresponde y no duplica al reintentar', async () => {
+    const d = await enroll(owner.token);
+    await beat(d.access_token);
+    const session = (await bridge()).session_id as string;
+    const taken = new Date().toISOString();
+    const base = { session_id: session, client_id: `c${seed}`, sha256: await shaOf(JPEG), width: '10', height: '10', method: 'bitblt_screen', kind: 'auto', taken_at: taken };
+
+    expect((await upload(base, JPEG)).status).toBe(401);
+    expect((await upload(base, JPEG, 'token-malo')).status).toBe(403);
+    expect((await upload({ ...base, sha256: 'a'.repeat(64) }, JPEG, d.access_token)).status).toBe(400);
+    expect((await upload(base, new Uint8Array([1, 2, 3, 4]), d.access_token)).status).toBe(400);
+    expect((await upload({ ...base, taken_at: '2020-01-01T00:00:00Z' }, JPEG, d.access_token)).status).toBe(400);
+
+    const first = await upload(base, JPEG, d.access_token);
+    expect(first.status).toBe(201);
+    const a = await first.json() as { id: string; already_stored: boolean };
+    expect(a.already_stored).toBe(false);
+    const again = await (await upload(base, JPEG, d.access_token)).json() as { id: string; already_stored: boolean };
+    expect(again).toEqual({ id: a.id, already_stored: true });
+
+    // Otro equipo no sube a esta sesión.
+    const other = await enroll(owner.token);
+    expect((await upload({ ...base, client_id: `d${seed}` }, JPEG, other.access_token)).status).toBe(400);
+
+    const ev = { client_id: `p${seed}`, kind: 'inventory', pid: 1, name: 'a.exe', observed_at: taken };
+    const send = (events: unknown[], access = d.access_token) => post('/api/v1/anticheat/processes', { session_id: session, events }, { 'X-Agent-Token': access });
+    expect(await (await send([ev])).json()).toEqual({ accepted: 1, rejected: 0 });
+    expect(await (await send([ev])).json()).toEqual({ accepted: 1, rejected: 0 });
+    expect(await (await send([{ ...ev, client_id: `q${seed}`, observed_at: '2020-01-01T00:00:00Z' }])).json()).toEqual({ accepted: 0, rejected: 1 });
+    expect(await (await send([{ ...ev, client_id: `r${seed}` }], other.access_token)).json()).toEqual({ accepted: 0, rejected: 1 });
+    expect((await admin().from('ac_process_events').select('id', { count: 'exact', head: true }).eq('session_id', session).like('client_id', `%${seed}`)).count).toBe(1);
+
+    const r = await admin().from('ac_screenshots').select('storage_path').eq('id', a.id).single();
+    await admin().storage.from('ac-evidence').remove([r.data!.storage_path as string]);
+    check(await anon().rpc('ac_bridge_end', { p_token: token, p_steam: steam }));
+  });
+
+  it('el jugador y el público no leen procesos ni capturas', async () => {
+    for (const t of ['ac_process_events', 'ac_screenshots', 'ac_capture_requests']) {
+      const u = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, { global: { headers: bearer(owner.token) } });
+      expect((await u.from(t).select('*').limit(1)).error, t).not.toBeNull();
+      expect((await anon().from(t).select('*').limit(1)).error, t).not.toBeNull();
+    }
+    const id = crypto.randomUUID();
+    expect((await get(`/api/v1/admin/anticheat/sessions/${id}`)).status).toBe(401);
+    expect((await get(`/api/v1/admin/anticheat/sessions/${id}`, owner.token)).status).toBe(403);
+    expect((await get(`/api/v1/admin/anticheat/sessions/${id}`, adminToken)).status).toBe(404);
   });
 });
 
