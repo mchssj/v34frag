@@ -5,6 +5,7 @@ import { useId, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -55,15 +56,15 @@ export function SeasonFormView({
         >
           {mode === "active" ? (
             <>
-              <Field id={`${id}-n`} label="Nombre">
+              <FormField id={`${id}-n`} label="Nombre">
                 <Input
                   id={`${id}-n`}
                   value={f.name}
                   maxLength={40}
                   onChange={(e) => set({ name: e.target.value })}
                 />
-              </Field>
-              <Field
+              </FormField>
+              <FormField
                 id={`${id}-e`}
                 label="Termina el"
                 help="A las 06:00 de Argentina. Si hay un mix en vivo, espera a que termine."
@@ -74,10 +75,10 @@ export function SeasonFormView({
                   value={f.ends}
                   onChange={(e) => set({ ends: e.target.value })}
                 />
-              </Field>
+              </FormField>
             </>
           ) : (
-            <Field id={`${id}-d`} label="Duración" suffix="días">
+            <FormField id={`${id}-d`} label="Duración" suffix="días">
               <Input
                 id={`${id}-d`}
                 type="number"
@@ -87,9 +88,9 @@ export function SeasonFormView({
                 onChange={(e) => set({ days: num(e.target.value) })}
                 className="w-24 font-mono"
               />
-            </Field>
+            </FormField>
           )}
-          <Field id={`${id}-t`} label="Top con medalla" suffix="puestos">
+          <FormField id={`${id}-t`} label="Top con medalla" suffix="puestos">
             <Input
               id={`${id}-t`}
               type="number"
@@ -99,8 +100,8 @@ export function SeasonFormView({
               onChange={(e) => set({ top_n: num(e.target.value) })}
               className="w-24 font-mono"
             />
-          </Field>
-          <Field
+          </FormField>
+          <FormField
             id={`${id}-m`}
             label="Mínimo para el ranking"
             suffix="mixes en la temporada"
@@ -114,7 +115,7 @@ export function SeasonFormView({
               onChange={(e) => set({ min_matches: num(e.target.value) })}
               className="w-24 font-mono"
             />
-          </Field>
+          </FormField>
         </Card>
 
         <Card variant="outline" className="flex flex-col gap-3 p-4">
@@ -232,7 +233,7 @@ export function SeasonFormView({
   )
 }
 
-function Field({
+function FormField({
   id,
   label,
   help,
@@ -246,16 +247,18 @@ function Field({
   children: ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+    <Field>
+      <FieldLabel htmlFor={id} className="text-sm leading-none">
+        {label}
+      </FieldLabel>
       <span className="flex items-center gap-2">
         {children}
         {suffix && (
           <span className="text-sm text-muted-foreground">{suffix}</span>
         )}
       </span>
-      {help && <span className="text-xs text-muted-foreground">{help}</span>}
-    </div>
+      {help && <FieldDescription>{help}</FieldDescription>}
+    </Field>
   )
 }
 

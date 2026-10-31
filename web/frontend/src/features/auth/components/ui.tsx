@@ -9,6 +9,7 @@ import {
 } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
 // Piezas comunes de Login, Registro y Bienvenida, con las medidas del handoff.
@@ -75,10 +76,8 @@ export function AuthField<T extends FieldValues>({
         const invalid = showError && fieldState.invalid
         const errorId = `${field.name}-error`
         return (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={field.name} className="text-[13px] font-medium">
-              {label}
-            </label>
+          <Field>
+            <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
             <Input
               {...field}
               {...inputProps}
@@ -95,11 +94,9 @@ export function AuthField<T extends FieldValues>({
             />
             {children}
             {invalid && (
-              <p id={errorId} className="text-xs text-destructive">
-                {fieldState.error?.message}
-              </p>
+              <FieldError id={errorId}>{fieldState.error?.message}</FieldError>
             )}
-          </div>
+          </Field>
         )
       }}
     />

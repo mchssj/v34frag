@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { errorMessage, isApiError } from "@/api/errors"
 import { useMe } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { ErrorAlert } from "@/features/auth/components/ui"
 import {
@@ -108,7 +109,7 @@ export function PasswordCard() {
       {open && (
         <form onSubmit={(e) => void save(e)} noValidate>
           <div className="flex max-w-[420px] flex-col gap-4 border-t p-5">
-            <Field
+            <PasswordField
               id="password-current"
               label="Contraseña actual"
               value={values.current}
@@ -124,8 +125,8 @@ export function PasswordCard() {
                   {f.current.error}
                 </Hint>
               )}
-            </Field>
-            <Field
+            </PasswordField>
+            <PasswordField
               id="password-next"
               label="Contraseña nueva"
               value={values.next}
@@ -154,8 +155,8 @@ export function PasswordCard() {
               <Hint id="password-next-hint" tone={f.next.tone}>
                 {f.next.message}
               </Hint>
-            </Field>
-            <Field
+            </PasswordField>
+            <PasswordField
               id="password-confirm"
               label="Repite la contraseña nueva"
               value={values.confirm}
@@ -171,7 +172,7 @@ export function PasswordCard() {
                   {f.confirm.message}
                 </Hint>
               )}
-            </Field>
+            </PasswordField>
             <p className="flex items-start gap-2.5 text-[13px]">
               <InfoIcon
                 className="mt-px size-4 shrink-0 text-muted-foreground"
@@ -215,7 +216,7 @@ export function PasswordCard() {
   )
 }
 
-function Field({
+function PasswordField({
   id,
   label,
   value,
@@ -240,10 +241,8 @@ function Field({
 }) {
   const Eye = show ? EyeOffIcon : EyeIcon
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[13px] font-medium">
-        {label}
-      </label>
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <span className="relative">
         <Input
           id={id}
@@ -267,7 +266,7 @@ function Field({
         </button>
       </span>
       {children}
-    </div>
+    </Field>
   )
 }
 
@@ -281,8 +280,8 @@ function Hint({
   children: ReactNode
 }) {
   return (
-    <span id={id} className={cn("text-xs", TEXT[tone])}>
+    <FieldDescription id={id} className={TEXT[tone]}>
       {children}
-    </span>
+    </FieldDescription>
   )
 }

@@ -3,6 +3,7 @@ import { Controller, type Control } from "react-hook-form"
 
 import { BrandTile, type Brand } from "@/components/brand/BrandTile"
 import { Card } from "@/components/ui/card"
+import { FieldDescription } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { AuthField } from "@/features/auth/components/ui"
 import type { SocialsInput, SocialsValues } from "../lib/schemas"
@@ -59,11 +60,7 @@ export function ContactFields({
 }
 
 function Help({ id, children }: { id?: string; children: ReactNode }) {
-  return (
-    <p id={id} className="text-xs text-muted-foreground">
-      {children}
-    </p>
-  )
+  return <FieldDescription id={id}>{children}</FieldDescription>
 }
 
 function InlineRow({ row, control }: { row: Row; control: ContactControl }) {

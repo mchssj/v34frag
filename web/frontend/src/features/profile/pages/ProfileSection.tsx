@@ -16,6 +16,7 @@ import { errorMessage, isApiError } from "@/api/errors"
 import { useMe } from "@/auth/queries"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { Button } from "@/components/ui/button"
+import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -297,10 +298,8 @@ function SelectField({
   withFlags?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[13px] font-medium">
-        {label}
-      </label>
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <Controller
         control={control}
         name={name}
@@ -334,6 +333,6 @@ function SelectField({
           </Select>
         )}
       />
-    </div>
+    </Field>
   )
 }

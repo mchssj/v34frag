@@ -5,8 +5,13 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Card } from "@/components/ui/card"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   AdminHeader,
@@ -183,11 +188,16 @@ function PointsField({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex flex-1 flex-col gap-0.5">
-        <Label htmlFor={id}>{label}</Label>
-        <span className="text-xs text-muted-foreground">{help}</span>
-      </span>
+    <Field
+      orientation="horizontal"
+      className="gap-3 has-[>[data-slot=field-content]]:items-center"
+    >
+      <FieldContent className="leading-normal">
+        <FieldLabel htmlFor={id} className="text-sm leading-none">
+          {label}
+        </FieldLabel>
+        <FieldDescription>{help}</FieldDescription>
+      </FieldContent>
       <Input
         id={id}
         type="number"
@@ -197,6 +207,6 @@ function PointsField({
         onChange={(e) => onChange(e.target.value)}
         className="w-24 text-center font-mono"
       />
-    </div>
+    </Field>
   )
 }
