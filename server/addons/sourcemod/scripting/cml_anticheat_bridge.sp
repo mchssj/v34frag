@@ -46,6 +46,10 @@ public void OnPluginStart()
 	g_cvToken = CreateConVar("cml_ac_server_token", "", "Token del servidor, el mismo de csstv_server_token.", FCVAR_PROTECTED | FCVAR_DONTRECORD);
 	g_cvMix   = CreateConVar("cml_ac_mix", "0", "1 mientras se juega un mix. Lo ponen live.cfg, end.cfg y warmup.cfg.", _, true, 0.0, true, 1.0);
 	g_cvMix.AddChangeHook(OnMixChanged);
+#if defined BRIDGE_DEBUG
+	CreateConVar("cml_ac_debug_steam", "", "Solo pruebas: SteamID64 que se informa.");
+	CreateConVar("cml_ac_debug_ip", "", "Solo pruebas: IP que se informa.");
+#endif
 	AutoExecConfig(true, "cml_anticheat");
 
 	RegAdminCmd("sm_ac_open", Cmd_Open, ADMFLAG_RCON, "sm_ac_open <minutos>: abre los mixes en este servidor si el anticheat tiene problemas. 0 los cierra.");
@@ -87,7 +91,7 @@ public void OnMixChanged(ConVar cv, const char[] oldValue, const char[] newValue
 public Action Timer_CheckAll(Handle timer)
 {
 	for (int i = 1; i <= MaxClients; i++)
-		if (IsRealPlayer(i) && IsClientAuthorized(i))
+		if (IsRealPlayer(i))
 			Check(i);
 	return Plugin_Continue;
 }
@@ -118,8 +122,22 @@ bool Check(int client)
 		return false;
 
 	char id[32], ip[64], token[128], body[512];
+	// Sin SteamID válido no hay cómo reconocerlo: en un mix cuenta como no verificado, no como aprobado.
+#if defined BRIDGE_DEBUG
+	// Compilación de pruebas (BRIDGE_DEBUG=): un servidor LAN no da SteamID. Nunca se despliega.
+	GetConVarString(FindConVar("cml_ac_debug_steam"), id, sizeof(id));
+	if (!id[0] || !GetClientIP(client, ip, sizeof(ip)))
+#else
 	if (!GetClientAuthId(client, AuthId_SteamID64, id, sizeof(id)) || !GetClientIP(client, ip, sizeof(ip)))
+#endif
+	{
+		if (g_cvMix.BoolValue)
+			Enforce(client, "sin SteamID válido");
 		return false;
+	}
+#if defined BRIDGE_DEBUG
+	GetConVarString(FindConVar("cml_ac_debug_ip"), ip, sizeof(ip));
+#endif
 	g_cvToken.GetString(token, sizeof(token));
 	Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_steam\":\"%s\",\"p_ip\":\"%s\",\"p_in_mix\":%s}", token, id, ip, g_cvMix.BoolValue ? "true" : "false");
 	Post("ac_bridge_player", body, OnPlayerResponse, GetClientUserId(client));
@@ -172,6 +190,11 @@ public void OnPlayerResponse(bool success, const char[] error, System2HTTPReques
 		g_bWarned[client] = false;
 		return;
 	}
+	Enforce(client, "sin sesión del anticheat");
+}
+
+void Enforce(int client, const char[] why)
+{
 	if (MixesOpen())
 		return;
 	if (!g_bWarned[client])
@@ -181,7 +204,7 @@ public void OnPlayerResponse(bool success, const char[] error, System2HTTPReques
 		CreateTimer(KICK_GRACE, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		return;
 	}
-	LogMessage("%L expulsado del mix: sin sesión del anticheat.", client);
+	LogMessage("%L expulsado del mix: %s.", client, why);
 	KickClient(client, "Para jugar mixes necesitas CMLeague Anticheat abierto y vinculado (cmleague.lat)");
 }
 
