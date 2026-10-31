@@ -48,7 +48,11 @@ export function LoginForm({
     setFormError(null)
     try {
       const user = await login.mutateAsync(values)
-      if (await needsWelcome(queryClient, user.id)) {
+      // Quien viene de la aplicación del anticheat vuelve a su código: la bienvenida puede esperar.
+      if (
+        !redirectTo.startsWith("/anticheat/") &&
+        (await needsWelcome(queryClient, user.id))
+      ) {
         await navigate({ to: "/welcome", replace: true })
       } else {
         await navigate({ href: redirectTo, replace: true })

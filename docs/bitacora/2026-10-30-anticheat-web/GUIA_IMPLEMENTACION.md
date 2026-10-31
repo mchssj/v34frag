@@ -35,3 +35,8 @@ Ninguno.
 ## Cómo revertir
 
 Hacer `git revert` del commit.
+
+## Agregado después
+
+- Botones de integridad y de conservar por caso abierto en el panel. "Verificar" probado en el navegador con datos sin firmar: da "Evidencia incompleta".
+- Quien inicia sesión viniendo de `/anticheat/` vuelve a su código, sin pasar por la bienvenida. Sin probar en el navegador.

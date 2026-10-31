@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/table"
 import {
   evidenceOptions,
+  holdSession,
   openMixes,
   requestCapture,
   sessionsOptions,
+  verifySession,
   type AcSession,
 } from "@/features/anticheat/queries"
 import { fmtDate } from "../format"
@@ -49,6 +51,65 @@ const SIGNATURE: Record<string, string> = {
   unsigned: "Sin firma",
   invalid: "Firma inválida",
   unknown: "No verificable",
+}
+
+const INTEGRITY = {
+  verified: { label: "Integridad verificada", tone: "win" },
+  failed: { label: "Integridad fallida", tone: "danger" },
+  incomplete: { label: "Evidencia incompleta", tone: "warn" },
+} as const
+
+function Integrity({ session }: { session: AcSession }) {
+  const verify = useMutation({ mutationFn: () => verifySession(session.id) })
+  const hold = useMutation({ mutationFn: (held: boolean) => holdSession(session.id, held) })
+  const result = verify.data
+  return (
+    <PanelSection title="Integridad">
+      <p className="text-xs text-muted-foreground">
+        Comprueba que nada cambió desde el envío. El origen sigue sin ser
+        verificable: la aplicación corre en el equipo del jugador.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={verify.isPending} onClick={() => verify.mutate()}>
+          Verificar
+        </Button>
+        <Button variant="outline" size="sm" disabled={hold.isPending} onClick={() => hold.mutate(true)}>
+          Conservar por caso abierto
+        </Button>
+        <Button variant="ghost" size="sm" disabled={hold.isPending} onClick={() => hold.mutate(false)}>
+          Quitar
+        </Button>
+      </div>
+      {hold.isSuccess && (
+        <p className="text-xs text-muted-foreground">
+          {hold.variables ? "No vence a los 30 días." : "Vence a los 30 días."}
+        </p>
+      )}
+      {result && (
+        <div className="text-sm">
+          <span className="inline-flex items-center gap-2 font-medium">
+            <Dot tone={INTEGRITY[result.result].tone} />
+            {INTEGRITY[result.result].label} · {result.checked} entradas
+          </span>
+          {result.problems.length > 0 && (
+            <ul className="mt-1 text-xs text-muted-foreground">
+              {result.problems.map((p, i) => (
+                <li key={i}>
+                  {p.seq === null ? "" : `Entrada ${p.seq}: `}
+                  <code>{p.problem}</code>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {(verify.isError || hold.isError) && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage(verify.error ?? hold.error)}</AlertDescription>
+        </Alert>
+      )}
+    </PanelSection>
+  )
 }
 
 export function AdminAnticheatPage() {
@@ -162,6 +223,8 @@ function Evidence({ session }: { session: AcSession }) {
           {session.match_uid ? ` · Partida ${session.match_uid}` : ""}
         </p>
       </PanelSection>
+
+      <Integrity session={session} />
 
       {session.status === "open" && (
         <PanelSection title="Pedir una captura">

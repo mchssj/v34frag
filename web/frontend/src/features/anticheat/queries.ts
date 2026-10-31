@@ -105,6 +105,23 @@ export const requestCapture = (id: string, reason: string) =>
     body: JSON.stringify({ reason }),
   })
 
+export type AcIntegrity = {
+  result: "verified" | "failed" | "incomplete"
+  checked: number
+  problems: { seq: number | null; problem: string }[]
+}
+
+export const verifySession = (id: string) =>
+  call<AcIntegrity>(`/api/v1/admin/anticheat/sessions/${id}/verify`, {
+    method: "POST",
+  })
+
+export const holdSession = (id: string, held: boolean) =>
+  call<undefined>(`/api/v1/admin/anticheat/sessions/${id}/hold`, {
+    method: "POST",
+    body: JSON.stringify({ held }),
+  })
+
 export const openMixes = (minutes: number) =>
   call<{ open_until: string | null }>("/api/v1/admin/anticheat/open", {
     method: "POST",
