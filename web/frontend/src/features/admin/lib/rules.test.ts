@@ -7,12 +7,15 @@ import {
   homeAdminSection,
 } from "@/auth/permissions"
 import { requestBlock } from "../players/components/SteamTabs"
-import { adjustValueError, adjustedElo } from "../servers/AdjustmentsTab"
-import { parseElo } from "../servers/EloRulesTab"
-import { leadingSide } from "../servers/ReviewTab"
-import { hudChip, parseHudPort } from "../servers/HudSection"
-import { serverWarnings } from "../servers/ServersTab"
-import type { AdminServer } from "../servers/queries"
+import {
+  adjustValueError,
+  adjustedElo,
+} from "../servers/components/AdjustmentsTab"
+import { parseElo } from "../servers/components/EloRulesTab"
+import { leadingSide } from "../servers/components/ReviewTab"
+import { hudChip, parseHudPort } from "../servers/components/HudSection"
+import { serverWarnings } from "../servers/components/ServersTab"
+import type { AdminServer } from "../servers/types"
 import { banExpiry } from "../bans/components/BanDialog"
 import { banOrigin, banSteps, canEditBan } from "../bans/lib/bans"
 import type { Ban } from "../bans/types"

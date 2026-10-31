@@ -13,7 +13,7 @@ import {
 
 import { renderWithQuery } from "@/test/render"
 import { HudSection } from "./HudSection"
-import type { AdminServer } from "./queries"
+import type { AdminServer } from "../types"
 
 const API = "http://api.test"
 const server = setupServer()

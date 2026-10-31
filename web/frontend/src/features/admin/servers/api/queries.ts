@@ -5,21 +5,15 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
-import { CONFIRM_TEXT } from "../lib/format"
-
-// Administración › Servidores y ELO (contrato admin.md: Servidores, Demos, ELO, ajustes e interrumpidos).
-
-export type AdminServer = Schemas["AdminServer"]
-export type ServerToken = Schemas["AdminServerToken"]
-export type ServerCreate = Schemas["AdminServerCreate"]
-export type ServerPatch = Schemas["AdminServerPatch"]
-export type AdminDemo = Schemas["AdminDemo"]
-export type DemoStatus = AdminDemo["demo_status"]
-export type DemoWorker = Schemas["DemoWorker"]
-export type EloValues = Schemas["EloValues"]
-export type EloAdjustment = Schemas["EloAdminAdjustment"]
-export type PlayerSummary = Schemas["PlayerSummary"]
+import { api, unwrap } from "@/api/client"
+import { CONFIRM_TEXT } from "../../lib/format"
+import type {
+  ServerCreate,
+  ServerPatch,
+  DemoStatus,
+  EloValues,
+  AdjustInput,
+} from "../types"
 
 export const adminServerKeys = {
   all: ["admin", "servers"] as const,
@@ -292,10 +286,6 @@ export function playerSearchOptions(q: string) {
     placeholderData: keepPreviousData,
   })
 }
-
-export type AdjustInput =
-  | { player_ids: string[]; delta: number; reason: string }
-  | { player_ids: string[]; set_elo: number; reason: string }
 
 export function useAdjustElo() {
   const qc = useQueryClient()

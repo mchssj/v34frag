@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog, SecretDialog } from "../components/dialogs"
+import { ConfirmDialog, SecretDialog } from "../../components/dialogs"
 import { HudSection, hudChip } from "./HudSection"
 import {
   ago,
@@ -25,7 +25,7 @@ import {
   endOfDayIso,
   latestVersion,
   licenseLabel,
-} from "../lib/format"
+} from "../../lib/format"
 import {
   Chip,
   Dot,
@@ -36,17 +36,15 @@ import {
   QueryError,
   SplitLayout,
   warnText,
-} from "../components/ui"
+} from "../../components/ui"
 import {
   serversOptions,
   useCreateServer,
   useDeleteServer,
   useRotateServerToken,
   useUpdateServer,
-  type AdminServer,
-  type ServerCreate,
-  type ServerToken,
-} from "./queries"
+} from "../api/queries"
+import type { AdminServer, ServerCreate, ServerToken } from "../types"
 
 export const MODES = {
   mix: "Mix",

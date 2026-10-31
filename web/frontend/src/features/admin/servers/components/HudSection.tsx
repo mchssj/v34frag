@@ -7,10 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ConfirmDialog } from "../components/dialogs"
-import { ago } from "../lib/format"
-import { Chip, PanelSection } from "../components/ui"
-import { useNewHudKey, useSetServerHud, type AdminServer } from "./queries"
+import { ConfirmDialog } from "../../components/dialogs"
+import { ago } from "../../lib/format"
+import { Chip, PanelSection } from "../../components/ui"
+import { useNewHudKey, useSetServerHud } from "../api/queries"
+import type { AdminServer } from "../types"
 
 // HUD del relay en el VPS (bitácora 2026-10-29-frontend-hud): puerto, interruptor, clave y las líneas del cfg de cada
 // servidor. El relay lee los cambios de la base cada 30 segundos.

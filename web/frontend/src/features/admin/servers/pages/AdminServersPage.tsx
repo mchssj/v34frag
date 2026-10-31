@@ -3,18 +3,18 @@ import { PlusIcon } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { AdminHeader, AdminTabs, StatTile } from "../components/ui"
-import { AdjustmentsTab } from "./AdjustmentsTab"
-import { DemosTab } from "./DemosTab"
-import { EloRulesTab } from "./EloRulesTab"
+import { AdminHeader, AdminTabs, StatTile } from "../../components/ui"
+import { AdjustmentsTab } from "../components/AdjustmentsTab"
+import { DemosTab } from "../components/DemosTab"
+import { EloRulesTab } from "../components/EloRulesTab"
 import {
   demoSummaryOptions,
   pendingMixesOptions,
   serversOptions,
   staleMixesOptions,
-} from "./queries"
-import { ReviewTab } from "./ReviewTab"
-import { ServersTab } from "./ServersTab"
+} from "../api/queries"
+import { ReviewTab } from "../components/ReviewTab"
+import { ServersTab } from "../components/ServersTab"
 
 export const SERVER_TABS = [
   "servers",

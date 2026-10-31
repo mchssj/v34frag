@@ -24,15 +24,15 @@ import {
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../components/dialogs"
-import { fmtDateTime, signed } from "../lib/format"
+import { ConfirmDialog } from "../../components/dialogs"
+import { fmtDateTime, signed } from "../../lib/format"
 import {
   EmptyState,
   Pager,
   QueryError,
   TableBox,
   headCell,
-} from "../components/ui"
+} from "../../components/ui"
 import {
   ADJ_PER,
   adjustmentsOptions,
@@ -40,9 +40,8 @@ import {
   playerSearchOptions,
   useAdjustElo,
   useUndoAdjustment,
-  type EloAdjustment,
-  type PlayerSummary,
-} from "./queries"
+} from "../api/queries"
+import type { EloAdjustment, PlayerSummary } from "../types"
 
 type Mode = "delta" | "set"
 const MAX_PLAYERS = 10

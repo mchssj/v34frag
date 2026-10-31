@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ConfirmDialog, SecretDialog } from "../components/dialogs"
+import { ConfirmDialog, SecretDialog } from "../../components/dialogs"
 import {
   ago,
   fmtBytes,
@@ -24,7 +24,7 @@ import {
   fmtDateTime,
   olderThan,
   type Tone,
-} from "../lib/format"
+} from "../../lib/format"
 import {
   Card,
   Chip,
@@ -35,7 +35,7 @@ import {
   QueryError,
   TableBox,
   headCell,
-} from "../components/ui"
+} from "../../components/ui"
 import {
   DEMOS_PER,
   demoSummaryOptions,
@@ -44,10 +44,8 @@ import {
   useRotateWorkerToken,
   useUpdateWorker,
   workersOptions,
-  type AdminDemo,
-  type DemoStatus,
-  type DemoWorker,
-} from "./queries"
+} from "../api/queries"
+import type { AdminDemo, DemoStatus, DemoWorker } from "../types"
 
 const STATUS: Record<DemoStatus, { label: string; tone: Tone }> = {
   pending: { label: "Pendiente", tone: "neutral" },

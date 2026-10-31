@@ -6,9 +6,9 @@ import { toast } from "sonner"
 import type { Schemas } from "@/api/client"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog } from "../components/dialogs"
-import { ago, fmtDateTime } from "../lib/format"
-import { EmptyState, QueryError, warnText } from "../components/ui"
+import { ConfirmDialog } from "../../components/dialogs"
+import { ago, fmtDateTime } from "../../lib/format"
+import { EmptyState, QueryError, warnText } from "../../components/ui"
 import {
   pendingMixOptions,
   pendingMixesOptions,
@@ -16,7 +16,7 @@ import {
   useApplyMixElo,
   useCloseStaleMix,
   useDiscardMix,
-} from "./queries"
+} from "../api/queries"
 
 type Side = { name: string | null; score: number | null }
 /** Lo que usa la tarjeta de un mix interrumpido (sale del listado de partidas). */
