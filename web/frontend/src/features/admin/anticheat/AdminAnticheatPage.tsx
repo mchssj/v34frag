@@ -255,7 +255,19 @@ function Evidence({ session }: { session: AcSession }) {
         </PanelSection>
       )}
 
-      <PanelSection title={`Capturas (${screenshots.length})`}>
+      <PanelSection
+        title={`Capturas (${screenshots.length})`}
+        aside={
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={evidence.isFetching}
+            onClick={() => void evidence.refetch()}
+          >
+            Actualizar
+          </Button>
+        }
+      >
         {screenshots.length === 0 ? (
           <EmptyState>Sin capturas.</EmptyState>
         ) : (

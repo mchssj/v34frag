@@ -94,8 +94,12 @@ export const evidenceOptions = (id: string) =>
   queryOptions({
     queryKey: ["admin", "anticheat", "evidence", id],
     queryFn: () => call<AcEvidence>(`/api/v1/admin/anticheat/sessions/${id}`),
-    // Cada lectura queda registrada: no se consulta sola. Las URL de las capturas duran 5 minutos.
+    // Cada lectura queda registrada: solo se consulta sola mientras hay una captura pedida sin resolver.
     refetchOnWindowFocus: false,
+    refetchInterval: (query) =>
+      query.state.data?.requests.some((r) => r.status === "pending")
+        ? 5_000
+        : false,
     staleTime: 240_000,
   })
 
