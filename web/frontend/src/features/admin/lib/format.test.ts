@@ -4,7 +4,6 @@ import {
   compareVersions,
   daysUntil,
   fmtBytes,
-  isConfirmText,
   latestVersion,
   licenseLabel,
   signed,
@@ -13,11 +12,6 @@ import {
 const NOW = new Date("2026-10-28T12:00:00Z")
 
 describe("format de Administración", () => {
-  it("la doble confirmación acepta mayúsculas y espacios en los bordes", () => {
-    expect(isConfirmText("  Estoy Seguro ")).toBe(true)
-    expect(isConfirmText("estoy")).toBe(false)
-  })
-
   it("bytes en MB y GB, con coma decimal en los GB", () => {
     expect(fmtBytes(148 * 1024 * 1024)).toBe("148 MB")
     expect(fmtBytes(184.2 * 1024 ** 3)).toBe("184,2 GB")

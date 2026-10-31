@@ -5,6 +5,7 @@ import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog, SecretDialog } from "../../components/dialogs"
+import { SecretDialog } from "../../components/dialogs"
 import { HudSection } from "./HudSection"
 import { hudChip } from "../lib/hud"
 import {

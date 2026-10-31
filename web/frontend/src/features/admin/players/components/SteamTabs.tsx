@@ -4,6 +4,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -17,7 +18,6 @@ import {
 } from "@/components/ui/table"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../../components/dialogs"
 import { fmtDate, fmtDateTime, type Tone } from "../../lib/format"
 import {
   Chip,

@@ -5,6 +5,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,9 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ConfirmDialog, SecretDialog } from "../../components/dialogs"
+import { SecretDialog } from "../../components/dialogs"
 import {
   ago,
+  CONFIRM_TEXT,
   fmtBytes,
   fmtDate,
   fmtDateTime,
@@ -357,7 +359,7 @@ function Workers() {
         title="¿Generar un token nuevo para el Worker?"
         description="El Worker deja de subir demos hasta que cargues el token nuevo en Cloudflare."
         confirmLabel="Generar token"
-        typed
+        typed={CONFIRM_TEXT}
         pending={rotate.isPending}
         error={rotate.error}
         onConfirm={() =>

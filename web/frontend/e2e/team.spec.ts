@@ -232,7 +232,7 @@ test.describe("capitán, con la API de equipos simulada", () => {
       page.getByRole("menuitem", { name: /Ceder liderazgo/ })
     ).toHaveAttribute("aria-disabled", "true")
     await page.getByRole("menuitem", { name: "Expulsar del equipo" }).click()
-    const kick = page.getByRole("dialog", { name: "Expulsar a nacho" })
+    const kick = page.getByRole("alertdialog", { name: "Expulsar a nacho" })
     await kick.getByRole("button", { name: "Expulsar" }).click()
     await expect(kick).toBeHidden()
     expect(calls).toContainEqual(
@@ -246,7 +246,7 @@ test.describe("capitán, con la API de equipos simulada", () => {
     await page.getByRole("button", { name: "Opciones de kova" }).click()
     await page.getByRole("menuitem", { name: /Ceder liderazgo/ }).click()
     await page
-      .getByRole("dialog", { name: "Ceder liderazgo a kova" })
+      .getByRole("alertdialog", { name: "Ceder liderazgo a kova" })
       .getByRole("button", { name: "Ceder liderazgo" })
       .click()
     await expect(

@@ -86,7 +86,7 @@ describe("marca de streamer", () => {
     expect(screen.getByText("No")).toBeInTheDocument()
     await u.click(screen.getByRole("button", { name: "Dar streamer" }))
     expect(calls).not.toHaveBeenCalledWith("grant")
-    const dialog = await screen.findByRole("dialog")
+    const dialog = await screen.findByRole("alertdialog")
     await u.click(within(dialog).getByRole("button", { name: "Dar streamer" }))
     await waitFor(() => expect(calls).toHaveBeenCalledWith("grant"))
   })
@@ -97,7 +97,7 @@ describe("marca de streamer", () => {
       <StreamerSection u={user({ streamer: true })} />
     )
     await u.click(screen.getByRole("button", { name: "Quitar streamer" }))
-    const dialog = await screen.findByRole("dialog")
+    const dialog = await screen.findByRole("alertdialog")
     expect(
       within(dialog).getByText(/deja de andar en 30 segundos/)
     ).toBeInTheDocument()

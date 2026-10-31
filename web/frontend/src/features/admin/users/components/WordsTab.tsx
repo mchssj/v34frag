@@ -5,12 +5,12 @@ import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog } from "../../components/dialogs"
 import { Chip, EmptyState, QueryError } from "../../components/ui"
 import {
   hitsOptions,

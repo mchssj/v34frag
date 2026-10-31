@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { ROLE_LABEL } from "@/auth/roles"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/table"
 import { playerDetailOptions } from "../../players/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
-import { ConfirmDialog } from "../../components/dialogs"
 import { isBlockedName } from "../../lib/errors"
 import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../../lib/format"
 import {

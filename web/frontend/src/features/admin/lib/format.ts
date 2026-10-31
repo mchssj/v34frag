@@ -6,10 +6,6 @@ import { es } from "date-fns/locale"
 /** Texto que piden las dobles confirmaciones (contrato, admin.md). */
 export const CONFIRM_TEXT = "estoy seguro"
 
-/** Sin distinguir mayúsculas ni espacios en los bordes, como la API. */
-export const isConfirmText = (s: string) =>
-  s.trim().toLowerCase() === CONFIRM_TEXT
-
 /** "4 nov 2026". */
 export function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "—"

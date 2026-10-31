@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { toast } from "sonner"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
-import { ConfirmDialog } from "../../components/dialogs"
 import { fmtDate } from "../../lib/format"
 import { Chip, PanelSection } from "../../components/ui"
 import {

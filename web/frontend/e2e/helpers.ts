@@ -77,7 +77,7 @@ export async function logout(page: Page) {
   await page.getByRole("button", { name: /^Menú de cuenta/ }).click()
   await page.getByRole("menuitem", { name: "Cerrar sesión" }).click()
   await page
-    .getByRole("dialog", { name: "¿Cerrar sesión?" })
+    .getByRole("alertdialog", { name: "¿Cerrar sesión?" })
     .getByRole("button", { name: "Cerrar sesión" })
     .click()
 }

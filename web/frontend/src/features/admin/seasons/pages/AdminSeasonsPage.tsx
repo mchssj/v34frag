@@ -4,13 +4,13 @@ import { useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { currentSeasonOptions } from "@/features/ranking/api/queries"
-import { ConfirmDialog } from "../../components/dialogs"
 import { CONFIRM_TEXT, fmtDate } from "../../lib/format"
 import {
   AdminHeader,
@@ -322,7 +322,7 @@ function ActiveHero({ season }: { season: Season }) {
           description="No se puede deshacer."
           confirmLabel="Terminar temporada"
           danger
-          typed
+          typed={CONFIRM_TEXT}
           pending={close.isPending}
           error={close.error}
           onConfirm={() =>

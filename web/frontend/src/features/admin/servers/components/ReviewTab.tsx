@@ -4,11 +4,11 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import type { Schemas } from "@/api/client"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog } from "../../components/dialogs"
-import { ago, fmtDateTime } from "../../lib/format"
+import { ago, CONFIRM_TEXT, fmtDateTime } from "../../lib/format"
 import { EmptyState, QueryError, warnText } from "../../components/ui"
 import {
   pendingMixOptions,
@@ -205,7 +205,7 @@ function PendingCard({ match: m }: { match: MatchSummary }) {
             </>
           }
           confirmLabel="Aplicar ELO"
-          typed
+          typed={CONFIRM_TEXT}
           pending={apply.isPending}
           error={apply.error}
           onConfirm={() =>

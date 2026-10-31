@@ -6,15 +6,9 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -98,7 +92,7 @@ export function Roster({
         </p>
       )}
       {confirm && (
-        <ConfirmDialog
+        <RosterConfirm
           teamId={teamId}
           teamName={teamName}
           confirm={confirm}
@@ -270,7 +264,7 @@ function RowMenu({
   )
 }
 
-function ConfirmDialog({
+function RosterConfirm({
   teamId,
   teamName,
   confirm,
@@ -302,43 +296,23 @@ function ConfirmDialog({
   }
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="gap-4 sm:max-w-[420px]">
-        <div className="flex flex-col gap-1.5">
-          <DialogTitle className="text-base font-semibold">
-            {kind === "captain"
-              ? `Ceder liderazgo a ${nick}`
-              : `Expulsar a ${nick}`}
-          </DialogTitle>
-          <DialogDescription className="text-pretty">
-            {kind === "captain"
-              ? `${nick} pasa a ser el líder: invita jugadores, gestiona el roster y los roles, e inscribe al equipo en torneos. Tú sigues en el roster con tu estado actual.`
-              : "Sale del roster y queda como ex integrante en el historial del equipo. Solo puede volver con una invitación nueva."}
-          </DialogDescription>
-        </div>
-        {mutation.error != null && (
-          <p role="alert" className="text-sm text-destructive">
-            {errorMessage(mutation.error)}
-          </p>
-        )}
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button
-            variant={kind === "captain" ? "default" : "destructive"}
-            className={
-              kind === "kick"
-                ? "bg-destructive text-white hover:bg-destructive/90"
-                : undefined
-            }
-            disabled={mutation.isPending}
-            onClick={() => void run()}
-          >
-            {kind === "captain" ? "Ceder liderazgo" : "Expulsar"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      className="data-[size=default]:sm:max-w-[420px]"
+      title={
+        kind === "captain" ? `Ceder liderazgo a ${nick}` : `Expulsar a ${nick}`
+      }
+      description={
+        kind === "captain"
+          ? `${nick} pasa a ser el líder: invita jugadores, gestiona el roster y los roles, e inscribe al equipo en torneos. Tú sigues en el roster con tu estado actual.`
+          : "Sale del roster y queda como ex integrante en el historial del equipo. Solo puede volver con una invitación nueva."
+      }
+      confirmLabel={kind === "captain" ? "Ceder liderazgo" : "Expulsar"}
+      danger={kind === "kick"}
+      pending={mutation.isPending}
+      error={mutation.error}
+      onConfirm={() => void run()}
+    />
   )
 }

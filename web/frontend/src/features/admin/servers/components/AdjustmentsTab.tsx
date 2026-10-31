@@ -5,6 +5,7 @@ import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -25,8 +26,7 @@ import {
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../../components/dialogs"
-import { fmtDateTime, signed } from "../../lib/format"
+import { CONFIRM_TEXT, fmtDateTime, signed } from "../../lib/format"
 import {
   EmptyState,
   Pager,
@@ -436,7 +436,7 @@ function History() {
         }
         confirmLabel="Deshacer ajuste"
         danger
-        typed
+        typed={CONFIRM_TEXT}
         pending={undo.isPending}
         error={undo.error}
         onConfirm={() =>

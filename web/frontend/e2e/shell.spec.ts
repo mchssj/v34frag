@@ -76,7 +76,7 @@ test("el menú de cuenta: perfil público, cuenta, tema y cerrar sesión", async
   // Cerrar sesión pide confirmación; Cancelar no sale.
   await account.click()
   await page.getByRole("menuitem", { name: "Cerrar sesión" }).click()
-  const confirm = page.getByRole("dialog", { name: "¿Cerrar sesión?" })
+  const confirm = page.getByRole("alertdialog", { name: "¿Cerrar sesión?" })
   await confirm.getByRole("button", { name: "Cancelar" }).click()
   await expect(confirm).toBeHidden()
   await expect(page).toHaveURL(/\/profile\/account$/)
@@ -120,7 +120,7 @@ test("⌘K busca páginas y navega con el teclado", async ({ page }) => {
     dialog.getByRole("option", { name: "Cerrar sesión" })
   ).toBeVisible()
   await page.keyboard.press("Enter")
-  const confirm = page.getByRole("dialog", { name: "¿Cerrar sesión?" })
+  const confirm = page.getByRole("alertdialog", { name: "¿Cerrar sesión?" })
   await expect(confirm).toBeVisible()
   await confirm.getByRole("button", { name: "Cancelar" }).click()
   await expect(page).toHaveURL(/\/hall-of-fame$/)

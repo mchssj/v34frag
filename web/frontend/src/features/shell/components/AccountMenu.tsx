@@ -11,16 +11,9 @@ import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 import { useState } from "react"
 
 import { useLogout, type AuthUser } from "@/auth/queries"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme, type Theme } from "@/components/theme-provider"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,30 +191,17 @@ export function LogoutDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-4 sm:max-w-[400px]">
-        <div className="flex flex-col gap-1.5">
-          <DialogTitle className="text-base font-semibold">
-            ¿Cerrar sesión?
-          </DialogTitle>
-          <DialogDescription className="text-pretty">
-            Vas a tener que entrar de nuevo con tu correo y contraseña en este
-            dispositivo.
-          </DialogDescription>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            className="bg-destructive text-white hover:bg-destructive/90"
-            disabled={logout.isPending}
-            onClick={() => void run()}
-          >
-            Cerrar sesión
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      className="data-[size=default]:sm:max-w-[400px]"
+      title="¿Cerrar sesión?"
+      description="Vas a tener que entrar de nuevo con tu correo y contraseña en este dispositivo."
+      confirmLabel="Cerrar sesión"
+      danger
+      pending={logout.isPending}
+      error={logout.error}
+      onConfirm={() => void run()}
+    />
   )
 }
