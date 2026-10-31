@@ -5,7 +5,169 @@ export type Database = {
   
   "public": {
           Tables: {
-            "bans": {
+            "ac_admin_actions": {
+                  Row: {
+                    "action": string,"actor": string | null,"created_at": string,"detail": NonNullable<Json>,"id": number
+                  }
+                  Insert: {
+                    "action": string,"actor"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: never
+                  }
+                  Update: {
+                    "action"?: string,"actor"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: never
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ac_config": {
+                  Row: {
+                    "api_secret_hash": string | null,"id": number,"open_until": string | null,"retention_days": number,"updated_at": string
+                  }
+                  Insert: {
+                    "api_secret_hash"?: string | null,"id"?: number,"open_until"?: string | null,"retention_days"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "api_secret_hash"?: string | null,"id"?: number,"open_until"?: string | null,"retention_days"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ac_devices": {
+                  Row: {
+                    "access_expires_at": string,"access_hash": string,"agent_version": string | null,"created_at": string,"id": string,"last_ip": string | null,"last_seen_at": string | null,"name": string,"refresh_hash": string,"revoked_at": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "access_expires_at": string,"access_hash": string,"agent_version"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"name": string,"refresh_hash": string,"revoked_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "access_expires_at"?: string,"access_hash"?: string,"agent_version"?: string | null,"created_at"?: string,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"name"?: string,"refresh_hash"?: string,"revoked_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ac_link_requests": {
+                  Row: {
+                    "agent_version": string | null,"approved_at": string | null,"approved_by": string | null,"claimed_at": string | null,"created_at": string,"device_code_hash": string,"device_name": string,"expires_at": string,"id": string,"user_code": string
+                  }
+                  Insert: {
+                    "agent_version"?: string | null,"approved_at"?: string | null,"approved_by"?: string | null,"claimed_at"?: string | null,"created_at"?: string,"device_code_hash": string,"device_name": string,"expires_at": string,"id"?: string,"user_code": string
+                  }
+                  Update: {
+                    "agent_version"?: string | null,"approved_at"?: string | null,"approved_by"?: string | null,"claimed_at"?: string | null,"created_at"?: string,"device_code_hash"?: string,"device_name"?: string,"expires_at"?: string,"id"?: string,"user_code"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ac_server_policy": {
+                  Row: {
+                    "enforce_mixes": boolean,"protected": boolean,"server_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "enforce_mixes"?: boolean,"protected"?: boolean,"server_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "enforce_mixes"?: boolean,"protected"?: boolean,"server_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_server_policy_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: true
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_server_policy_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: true
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_server_policy_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: true
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ac_sessions": {
+                  Row: {
+                    "device_id": string,"end_reason": string | null,"ended_at": string | null,"id": string,"last_contact_at": string,"match_uid": string | null,"player_id": string,"server_id": string,"started_at": string,"status": string,"steam_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "device_id": string,"end_reason"?: string | null,"ended_at"?: string | null,"id"?: string,"last_contact_at"?: string,"match_uid"?: string | null,"player_id": string,"server_id": string,"started_at"?: string,"status"?: string,"steam_id": string,"user_id": string
+                  }
+                  Update: {
+                    "device_id"?: string,"end_reason"?: string | null,"ended_at"?: string | null,"id"?: string,"last_contact_at"?: string,"match_uid"?: string | null,"player_id"?: string,"server_id"?: string,"started_at"?: string,"status"?: string,"steam_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ac_sessions_device_id_fkey"
+      columns: ["device_id"]
+isOneToOne: false
+      referencedRelation: "ac_devices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "ac_sessions_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "admin_server_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_sessions_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ac_sessions_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"bans": {
                   Row: {
                     "created_at": string,"created_by": string | null,"created_by_name": string | null,"created_by_steam": string | null,"expires_at": string | null,"id": string,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_name": string | null,"lifted_by_steam": string | null,"nick": string | null,"player_id": string | null,"reason": string,"replaced_by": string | null,"server_id": string | null,"source": string,"steam_id": string,"updated_at": string,"updated_by": string | null
                   }
@@ -3680,7 +3842,55 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "accept_pcw":
+            "ac_admin_sessions":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_status"?: string }; Returns: Json
+                           },
+"ac_bridge_end":
+{ Args: { "p_reason"?: string,"p_steam": string,"p_token": string }; Returns: boolean
+                           },
+"ac_bridge_player":
+{ Args: { "p_in_mix"?: boolean,"p_ip": string,"p_match_uid"?: string,"p_steam": string,"p_token": string }; Returns: Json
+                           },
+"ac_can_review":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"ac_device_revoke":
+{ Args: { "p_device": string }; Returns: undefined
+                           },
+"ac_hash":
+{ Args: { "p": string }; Returns: string
+                           },
+"ac_heartbeat":
+{ Args: { "p_access": string,"p_ip": string,"p_secret": string,"p_version": string }; Returns: Json
+                           },
+"ac_link_approve":
+{ Args: { "p_user_code": string }; Returns: Json
+                           },
+"ac_link_claim":
+{ Args: { "p_device_code": string,"p_secret": string }; Returns: Json
+                           },
+"ac_link_start":
+{ Args: { "p_device_name": string,"p_secret": string,"p_version": string }; Returns: Json
+                           },
+"ac_public_status":
+{ Args: { "p_player": string }; Returns: Json
+                           },
+"ac_require_api":
+{ Args: { "p_secret": string }; Returns: undefined
+                           },
+"ac_set_open":
+{ Args: { "p_minutes": number }; Returns: string
+                           },
+"ac_token":
+{ Args: { "p_prefix": string }; Returns: string
+                           },
+"ac_token_refresh":
+{ Args: { "p_refresh": string,"p_secret": string }; Returns: Json
+                           },
+"ac_user_code":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"accept_pcw":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[],"p_post": string,"p_team"?: string }; Returns: string
                            },
 "admin_create_demo_worker":

@@ -10,6 +10,7 @@ import type { UdpExchange } from './lib/a2s';
 import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
+import { anticheat } from './routes/anticheat';
 import { adminDemos } from './routes/admin-demos';
 import { adminPlayers } from './routes/admin-players';
 import { adminServers } from './routes/admin-servers';
@@ -77,6 +78,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', notifications);
   app.route('/', pcw);
   app.route('/', account);
+  app.route('/', anticheat);
   app.route('/', claim); // antes que players: /players/unclaimed no es un {id}
   app.route('/', ranking); // antes que players: /players/compare no es un {id}
   app.route('/', players);

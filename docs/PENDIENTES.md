@@ -4,6 +4,12 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Anticheat FRAG (rama `kyan/anticheat-backend`, sin merge)
+
+- **Estado:** base y API hechas y probadas en local el 2026-10-30, con el replanteo `39`. Nada desplegado, ni en el servidor real ni en RBK (RBK queda afuera por ahora, como excepción escrita, por decisión de Kyan).
+- **Qué falta:** agente, Bridge, página `/anticheat/vincular`, procesos, capturas, panel, revisión legal y pruebas de campo.
+- **Bitácora:** [`2026-10-30-anticheat-backend`](bitacora/2026-10-30-anticheat-backend/). La auditoría y la prueba de captura están en la rama `kyan/pruebas`.
+
 ## Orden de trabajo (decidido por Daniel el 2026-10-15)
 
 **Primero todo lo de la web** (base del replanteo, backend, frontend nuevo y plan del VPS). **Los plugins quedan para el final.**

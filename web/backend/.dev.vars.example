@@ -9,6 +9,8 @@ FRONTEND_URL=http://localhost:5173
 GIT_SHA=dev
 # Header con la IP real del cliente. Vacío en local; en el VPS detrás de Caddy: x-forwarded-for.
 CLIENT_IP_HEADER=
+# Secreto del anticheat (32 caracteres o más); su sha256 va en ac_config.api_secret_hash. Sin él, el agente da 501.
+# AC_API_SECRET=
 # Opcional en esta etapa:
 # SUPABASE_SERVICE_KEY=
 # URL pública del Worker de demos (sin barra final). Sin ella la API no arma demo_url.

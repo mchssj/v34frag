@@ -14,6 +14,9 @@ export const RATE_RULES = {
   auth: { name: 'auth', limit: 10, windowSec: 60, binding: 'RL_AUTH' },
   // Cambio de contraseña: 5 intentos por minuto por cuenta (frena a quien prueba claves con una sesión robada).
   password: { name: 'password', limit: 5, windowSec: 60, binding: 'RL_PASSWORD' },
+  // Anticheat: empezar una vinculación, y consultar o renovar (el agente consulta cada 5 segundos).
+  acLink: { name: 'ac_link', limit: 10, windowSec: 60, binding: 'RL_AC_LINK' },
+  acClaim: { name: 'ac_claim', limit: 60, windowSec: 60, binding: 'RL_AC_CLAIM' },
 } as const satisfies Record<string, RateRule>;
 
 export type RateResult = { ok: boolean; retryAfter: number };

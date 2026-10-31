@@ -33,6 +33,8 @@ const EnvSchema = z.object({
     .url()
     .transform((s) => s.replace(/\/+$/, ''))
     .optional(),
+  // Secreto del anticheat: la base lo pide para que solo la API informe la IP del agente (replanteo 39). Sin él, el agente da 501.
+  AC_API_SECRET: z.string().min(32).optional(),
   // La API no la usa: la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
   // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),
