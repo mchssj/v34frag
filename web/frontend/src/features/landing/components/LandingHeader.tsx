@@ -25,7 +25,7 @@ import { ThemeFxContextMenu } from "@/features/theme-fx/ThemeFxContextMenu"
 import { ThemeFxDialog } from "@/features/theme-fx/ThemeFxDialog"
 import { useThemeFx } from "@/features/theme-fx/useThemeFx"
 import { useMediaQuery } from "@/lib/useMediaQuery"
-import { scrollToSection, scrollToTop, type SectionId } from "./scroll"
+import { scrollToSection, scrollToTop, type SectionId } from "../lib/scroll"
 
 const LINKS: { label: string; id: SectionId }[] = [
   { label: "Cómo funciona", id: "como-funciona" },

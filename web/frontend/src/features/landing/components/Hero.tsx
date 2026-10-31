@@ -10,7 +10,7 @@ import {
   formatNumber,
   serverStatusOptions,
 } from "@/features/public/api/queries"
-import { scrollToSection } from "./scroll"
+import { scrollToSection } from "../lib/scroll"
 
 const heroImage = `image-set(url("${heroAvif}") type("image/avif"), url("${heroWebp}") type("image/webp"))`
 
