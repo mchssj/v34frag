@@ -8,7 +8,7 @@ import {
   ContextMenuRadioItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-import { THEME_FX_OPTIONS, useThemeFxPref, type ThemeFxPref } from "./pref"
+import { THEME_FX_OPTIONS, useThemeFxPref, type ThemeFxPref } from "../lib/pref"
 
 /**
  * Menú "Efectos de tema" sobre el selector: clic derecho, o pulsación larga en táctil (la

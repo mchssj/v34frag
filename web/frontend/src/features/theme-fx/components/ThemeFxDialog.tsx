@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useMediaQuery } from "@/lib/useMediaQuery"
-import type { ThemeFxPref } from "./pref"
+import type { ThemeFxPref } from "../lib/pref"
 
 /** Atajo con ícono, como una tecla. */
 function Hint({

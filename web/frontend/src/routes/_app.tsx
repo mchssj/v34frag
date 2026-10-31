@@ -13,7 +13,7 @@ import { AppSidebar } from "@/features/shell/components/AppSidebar"
 import { CommandMenu } from "@/features/shell/components/CommandMenu"
 import { NowBar } from "@/features/shell/components/NowBar"
 import { Topbar } from "@/features/shell/components/Topbar"
-import { useSyncThemeFx } from "@/features/theme-fx/useSyncThemeFx"
+import { useSyncThemeFx } from "@/features/theme-fx/lib/useSyncThemeFx"
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: requireAuth,

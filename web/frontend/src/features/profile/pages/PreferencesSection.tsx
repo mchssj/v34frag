@@ -3,7 +3,7 @@ import { toast } from "sonner"
 
 import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme } from "@/components/theme-provider"
-import { THEME_FX_OPTIONS, useThemeFxPref } from "@/features/theme-fx/pref"
+import { THEME_FX_OPTIONS, useThemeFxPref } from "@/features/theme-fx/lib/pref"
 import { errorMessage } from "@/api/errors"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useUpdateProfile } from "../api/queries"

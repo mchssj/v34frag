@@ -20,10 +20,10 @@ import {
   THEME_FX_OPTIONS,
   useThemeFxPref,
   type ThemeFxPref,
-} from "@/features/theme-fx/pref"
-import { ThemeFxContextMenu } from "@/features/theme-fx/ThemeFxContextMenu"
-import { ThemeFxDialog } from "@/features/theme-fx/ThemeFxDialog"
-import { useThemeFx } from "@/features/theme-fx/useThemeFx"
+} from "@/features/theme-fx/lib/pref"
+import { ThemeFxContextMenu } from "@/features/theme-fx/components/ThemeFxContextMenu"
+import { ThemeFxDialog } from "@/features/theme-fx/components/ThemeFxDialog"
+import { useThemeFx } from "@/features/theme-fx/lib/useThemeFx"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { scrollToSection, scrollToTop, type SectionId } from "../lib/scroll"
 
