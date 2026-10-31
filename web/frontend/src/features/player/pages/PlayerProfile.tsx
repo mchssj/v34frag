@@ -22,6 +22,7 @@ import { NoLevelBadge } from "@/components/illustrations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
@@ -535,12 +536,11 @@ function StatTiles({ p }: { p: PlayerDetail }) {
           <span className="font-mono text-[22px] font-semibold tracking-[-0.5px] tabular-nums">
             {t.value ?? "—"}
           </span>
-          <span className="h-1 overflow-hidden rounded-full bg-muted">
-            <span
-              className="block h-full bg-foreground"
-              style={{ width: `${t.pct}%` }}
-            />
-          </span>
+          <Progress
+            value={t.pct}
+            aria-hidden
+            indicatorClassName="bg-foreground"
+          />
           <span className="text-[11px] text-muted-foreground">{t.note}</span>
         </div>
       ))}

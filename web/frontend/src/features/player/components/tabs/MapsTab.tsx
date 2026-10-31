@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { MapIcon } from "lucide-react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { Progress } from "@/components/ui/progress"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapCards, type MapCard } from "../../lib/labels"
 import { mapStatsOptions } from "../../api/queries"
@@ -91,12 +92,12 @@ function MapTile({ map }: { map: MapCard }) {
           Sin partidas
         </span>
       )}
-      <div className="mt-auto h-[3px] bg-muted">
-        <div
-          className={cn("h-full", wr >= 50 ? "bg-win" : "bg-muted-foreground")}
-          style={{ width: `${wr}%` }}
-        />
-      </div>
+      <Progress
+        value={wr}
+        aria-label={`${wr}% de victorias`}
+        className="mt-auto h-[3px] rounded-none"
+        indicatorClassName={wr >= 50 ? "bg-win" : "bg-muted-foreground"}
+      />
     </div>
   )
 }

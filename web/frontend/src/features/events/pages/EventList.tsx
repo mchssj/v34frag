@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { Segmented } from "@/components/brand/Segmented"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   boText,
@@ -135,12 +136,11 @@ function EventCard({ event }: { event: EventSummary }) {
             <span className="text-muted-foreground">{foot.label}</span>
             <span className="truncate font-medium">{foot.value}</span>
           </div>
-          <div className="h-1 overflow-hidden rounded-[2px] bg-muted">
-            <div
-              className="h-full bg-primary"
-              style={{ width: `${Math.round(foot.ratio * 100)}%` }}
-            />
-          </div>
+          <Progress
+            value={Math.round(foot.ratio * 100)}
+            aria-label={foot.label}
+            className="rounded-[2px]"
+          />
         </div>
       </div>
     </Link>

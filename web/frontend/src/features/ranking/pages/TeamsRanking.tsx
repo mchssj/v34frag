@@ -25,6 +25,7 @@ import { ListState, Paging, RowLink } from "./PlayersRanking"
 import { teamPodiumOptions, teamRankingOptions } from "../api/queries"
 import type { RankingTeam } from "../types"
 import { SearchBox } from "@/components/brand/SearchBox"
+import { Progress } from "@/components/ui/progress"
 import type { TeamRankingSearch } from "../lib/search"
 
 // Ranking → Equipos (/ranking/teams): puntos por partida ganada, con o sin PCW (contrato 7).
@@ -217,12 +218,12 @@ function TeamRow({
       </TableCell>
       <TableCell>
         <span className="flex items-center justify-center gap-2">
-          <span className="h-1 w-14 overflow-hidden rounded-full bg-muted">
-            <span
-              className="block h-full bg-foreground"
-              style={{ width: `${r.win_rate ?? 0}%` }}
-            />
-          </span>
+          <Progress
+            value={r.win_rate ?? 0}
+            aria-hidden
+            className="w-14"
+            indicatorClassName="bg-foreground"
+          />
           <span className="w-[34px] font-mono text-xs font-medium tabular-nums">
             {fmtPct(r.win_rate)}
           </span>

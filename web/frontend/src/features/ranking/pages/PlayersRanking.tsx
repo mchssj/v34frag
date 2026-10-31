@@ -45,6 +45,7 @@ import {
 } from "../api/queries"
 import type { RankingPlayer, Season, SeasonStanding } from "../types"
 import { SearchBox } from "@/components/brand/SearchBox"
+import { Progress as UiProgress } from "@/components/ui/progress"
 import { SeasonBar } from "../components/SeasonBar"
 import {
   DEFAULT_PER,
@@ -536,12 +537,12 @@ function Progress({ matches, min }: { matches: number; min: number }) {
     <Tooltip>
       <TooltipTrigger asChild>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-1 w-10 overflow-hidden rounded-full bg-muted">
-            <span
-              className="block h-full bg-muted-foreground"
-              style={{ width: `${Math.min(100, (matches / min) * 100)}%` }}
-            />
-          </span>
+          <UiProgress
+            value={Math.min(100, (matches / min) * 100)}
+            aria-hidden
+            className="w-10"
+            indicatorClassName="bg-muted-foreground"
+          />
           <span className="font-mono text-xs tabular-nums">
             {matches}/{min}
           </span>

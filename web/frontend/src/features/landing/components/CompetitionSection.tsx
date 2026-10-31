@@ -14,6 +14,7 @@ import { ArrowRightIcon } from "lucide-react"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { SectionHeading } from "@/components/brand/SectionHeading"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import {
   nextEventOptions,
   topPlayersOptions,
@@ -107,16 +108,11 @@ function NextTournament() {
             </div>
           ))}
         </dl>
-        <div
-          className="h-1.5 overflow-hidden rounded-[3px] bg-muted"
-          role="progressbar"
+        <Progress
+          value={fill}
           aria-label="Cupo de equipos"
-          aria-valuenow={fill}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="h-full bg-primary" style={{ width: `${fill}%` }} />
-        </div>
+          className="h-1.5 rounded-[3px]"
+        />
         <Button asChild size="md" className="mt-auto text-sm font-semibold">
           <Link to="/register" search={{}}>
             Regístrate para inscribir a tu equipo

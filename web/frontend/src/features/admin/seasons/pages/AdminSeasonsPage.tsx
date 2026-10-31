@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { currentSeasonOptions } from "@/features/ranking/api/queries"
 import { ConfirmDialog } from "../../components/dialogs"
@@ -276,19 +277,12 @@ function ActiveHero({ season }: { season: Season }) {
             Activa
           </Badge>
         </div>
-        <div
-          role="progressbar"
+        <Progress
+          value={pct}
           aria-label="Avance de la temporada"
-          aria-valuenow={pct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          className="h-2 overflow-hidden rounded-full bg-muted"
-        >
-          <div
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
+          className="h-2"
+          indicatorClassName="rounded-full"
+        />
         <span className="text-[13px] text-muted-foreground">
           Empezó el {fmtDate(season.starts_at)} · termina el{" "}
           {fmtDate(season.ends_at)} a las 06:00 (Argentina)
