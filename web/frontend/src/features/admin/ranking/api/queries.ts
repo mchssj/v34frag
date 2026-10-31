@@ -4,12 +4,9 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { rankingKeys } from "@/features/ranking/api/queries"
-
-// Administración › Ranking de equipos: puntos por partida ganada (contrato equipos.md, sección 7).
-
-export type RankingConfig = Schemas["RankingConfig"]
+import type { RankingConfig } from "../types"
 
 export const rankingConfigOptions = queryOptions({
   queryKey: ["admin", "ranking", "config"] as const,

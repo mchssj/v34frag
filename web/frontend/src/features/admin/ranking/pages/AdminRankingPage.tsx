@@ -13,13 +13,13 @@ import {
   EmptyState,
   QueryError,
   SaveBar,
-} from "../components/ui"
+} from "../../components/ui"
 import {
   rankingConfigOptions,
   rankingTopOptions,
   useSaveRankingConfig,
-  type RankingConfig,
-} from "./queries"
+} from "../api/queries"
+import type { RankingConfig } from "../types"
 
 export const MAX_POINTS = 1000
 
