@@ -1,138 +1,27 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { screen, within } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
-import { setupServer } from "msw/node"
-import type { AnchorHTMLAttributes, ReactNode } from "react"
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { renderWithQuery } from "@/test/render"
-import { Compare } from "./Compare"
+import {
+  API,
+  beta,
+  common,
+  page,
+  ranked,
+  server,
+  standing,
+  setupApi,
+} from "../test/fixtures"
+import { navigate } from "../test/router"
 import { PlayersRanking } from "./PlayersRanking"
-import { TeamsRanking } from "./TeamsRanking"
 
-const navigate = vi.hoisted(() => vi.fn())
-vi.mock("@tanstack/react-router", async (orig) => ({
-  ...(await orig<typeof import("@tanstack/react-router")>()),
-  useNavigate: () => navigate,
-  Link: ({
-    to,
-    children,
-    params,
-    ...rest
-  }: { to: string; params?: unknown; children: ReactNode } & Omit<
-    AnchorHTMLAttributes<HTMLAnchorElement>,
-    "href"
-  >) => {
-    void params
-    return (
-      <a href={to} {...rest}>
-        {children}
-      </a>
-    )
-  },
-}))
+vi.mock("@tanstack/react-router", async (orig) =>
+  (await import("../test/router")).mockRouter(orig)
+)
 
-const API = "http://api.test"
-const server = setupServer()
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }))
-afterEach(() => {
-  server.resetHandlers()
-  vi.clearAllMocks()
-})
-afterAll(() => server.close())
-
-const page = <T,>(items: T[]) => ({
-  items,
-  total: items.length,
-  page: 1,
-  per: 25,
-  sort: "x",
-  order: "asc",
-})
-
-const beta = {
-  id: "s1",
-  number: 1,
-  name: "BETA",
-  status: "active",
-  starts_at: "2026-10-13T00:00:00Z",
-  ends_at: "2099-11-23T09:00:00Z",
-  closed_at: null,
-  top_n: 20,
-  min_matches: 20,
-  reset_pct: 10,
-  reset_floor: 2001,
-  tiers: [],
-  champion: null,
-  medals: 0,
-}
-
-const standing = (alias: string, o: Record<string, unknown> = {}) => ({
-  rank: 1,
-  player: { id: alias, alias, photo_url: null },
-  eligible: true,
-  elo: 1100,
-  level: 5,
-  peak_elo: 1120,
-  matches: 22,
-  wins: 12,
-  losses: 10,
-  elo_after: 1100,
-  medal: { name: "Campeón", icon: "🏆" },
-  teams: [],
-  rating: 1.21,
-  kd: 1.15,
-  ...o,
-})
-
-const ranked = (alias: string, o: Record<string, unknown> = {}) => ({
-  position: 1,
-  player: { id: alias, alias, photo_url: null },
-  level: 5,
-  elo: 1182,
-  teams: [{ id: "t1", name: "GO TO KNOW", tag: "GTK" }],
-  rating: 1.67,
-  kd: 2.01,
-  matches: 13,
-  elo_matches: 13,
-  country: "Argentina",
-  game_role: "AWPer",
-  elo_trend: [1000, 1050, 1182],
-  ...o,
-})
-
-const profile = {
-  user: {},
-  details: {},
-  player: { id: "me", nick: "Zeta", photo_url: null, steam_id: null },
-  teams: [
-    {
-      id: "t1",
-      name: "GO TO KNOW",
-      tag: "GTK",
-      is_captain: true,
-      is_member: true,
-    },
-    { id: "t2", name: "Brava", tag: "BRV", is_captain: false, is_member: true },
-  ],
-  matches_played: 0,
-  preferences: {},
-}
-
-function common() {
-  server.use(
-    http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile)),
-    http.get(`${API}/api/v1/seasons`, () => HttpResponse.json(page([beta])))
-  )
-}
+setupApi()
 
 function renderPlayers(search = {}) {
   const onChange = vi.fn()
@@ -344,130 +233,5 @@ describe("Ranking → Jugadores", () => {
       to: "/player/$nick",
       params: { nick: "musul" },
     })
-  })
-})
-
-describe("Ranking → Equipos", () => {
-  const team = (name: string, id: string, o: Record<string, unknown> = {}) => ({
-    position: 1,
-    team: { id, name, tag: name.slice(0, 3).toUpperCase() },
-    played: 10,
-    won: 7,
-    lost: 3,
-    points: 210,
-    win_rate: 70,
-    trend: 2,
-    form: ["W", "L", "W", "W", "W"],
-    ...o,
-  })
-
-  it("marca todos los equipos del usuario y arma la leyenda con los puntos de la API", async () => {
-    server.use(
-      http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile)),
-      http.get(`${API}/api/v1/ranking/teams`, ({ request }) => {
-        const pcw = new URL(request.url).searchParams.get("pcw") === "1"
-        return HttpResponse.json({
-          ...page([
-            team("GO TO KNOW", "t1"),
-            team("Brava", "t2", { trend: null }),
-            team("Kraken", "t9", { trend: -1 }),
-          ]),
-          pcw,
-          points_per_win: { official: 30, pcw: 5 },
-        })
-      })
-    )
-    renderWithQuery(
-      <TooltipProvider>
-        <TeamsRanking search={{ pcw: true }} onChange={vi.fn()} />
-      </TooltipProvider>
-    )
-
-    expect(await screen.findAllByText("TU EQUIPO")).toHaveLength(2)
-    expect(
-      screen.getByText(
-        "Puntos por partida ganada en torneos y en PCW jugadas como equipo oficial."
-      )
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        "30 pts por partida de torneo ganada · 5 pts por PCW ganada como equipo oficial"
-      )
-    ).toBeInTheDocument()
-    expect(screen.getByText("Hace 30 días: 3.º")).toBeInTheDocument()
-    expect(screen.getByText("Sin partidas hace 30 días")).toBeInTheDocument()
-  })
-})
-
-describe("Comparador", () => {
-  const side = (alias: string, elo: number) => ({
-    player: { id: alias, alias, photo_url: null },
-    teams: [],
-    game_role: "IGL",
-    level: 5,
-    elo,
-    rating: 1.2,
-    kd: 1.1,
-    hs: 50,
-    adr: 80,
-    win_rate: 55,
-    matches: 20,
-    elo_matches: 20,
-    elo_history: [1000, elo],
-  })
-
-  it("sin B pide elegir un jugador, con A por defecto el usuario", async () => {
-    server.use(
-      http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile))
-    )
-    renderWithQuery(<Compare search={{}} onChange={vi.fn()} />)
-    expect(
-      await screen.findByText("Elige un jugador para comparar con Zeta.")
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("combobox", { name: "Jugador A" })
-    ).toHaveTextContent("Zeta")
-  })
-
-  it("muestra filas, gráfico y los mixes juntos y como rivales", async () => {
-    server.use(
-      http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile)),
-      http.get(`${API}/api/v1/players/compare`, () =>
-        HttpResponse.json({
-          a: side("Zeta", 1200),
-          b: side("kova", 1100),
-          together: {
-            same_team: { matches: 7, wins: 4 },
-            against: { matches: 3, a_wins: 2 },
-          },
-        })
-      )
-    )
-    renderWithQuery(<Compare search={{ b: "kova" }} onChange={vi.fn()} />)
-    expect(
-      await screen.findByRole("img", { name: /ELO de Zeta y kova/ })
-    ).toBeInTheDocument()
-    expect(screen.getByText(/Mixes jugados juntos:/)).toHaveTextContent(
-      "Mixes jugados juntos: 7 · ganaron 4"
-    )
-    expect(screen.getByText(/Como rivales:/)).toHaveTextContent(
-      "Como rivales: 3 · Zeta ganó 2"
-    )
-  })
-
-  it("un jugador que no existe", async () => {
-    server.use(
-      http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile)),
-      http.get(`${API}/api/v1/players/compare`, () =>
-        HttpResponse.json(
-          { error: { code: "NOT_FOUND", message: "No existe" } },
-          { status: 404 }
-        )
-      )
-    )
-    renderWithQuery(<Compare search={{ b: "nadie" }} onChange={vi.fn()} />)
-    await waitFor(() =>
-      expect(screen.getByText("Ese jugador no existe.")).toBeInTheDocument()
-    )
   })
 })
