@@ -1,7 +1,8 @@
 # Demo local del anticheat con un solo clic. No toca produccion: la base, la API y la web son locales.
 # Se detiene si la base no es local. Al terminar, Enter cierra la sesion y deja los servidores abiertos.
 param([string]$Email = '', [switch]$SinPausa)
-$ErrorActionPreference = 'Stop'
+# PowerShell 5 toma como error lo que un programa escribe en stderr: los fallos reales se comprueban abajo.
+$ErrorActionPreference = 'Continue'
 
 $agent = $PSScriptRoot
 $backend = (Resolve-Path "$agent\..\web\backend").Path
