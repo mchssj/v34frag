@@ -4,7 +4,7 @@ import { z } from "zod"
 import {
   AdminClipsPage,
   CLIP_TABS,
-} from "@/features/admin/clips/AdminClipsPage"
+} from "@/features/admin/clips/pages/AdminClipsPage"
 
 export const Route = createFileRoute("/_app/admin/clips")({
   validateSearch: z.object({

@@ -7,8 +7,8 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { fmtDate } from "../lib/format"
-import { Card, Chip, QueryError, SaveBar } from "../components/ui"
+import { fmtDate } from "../../lib/format"
+import { Card, Chip, QueryError, SaveBar } from "../../components/ui"
 import {
   CAPS,
   CLIP_TYPES,
@@ -18,12 +18,9 @@ import {
   clipLabel,
   clipPatch,
   pickClips,
-} from "./clips"
-import {
-  clipConfigOptions,
-  useSaveClipConfig,
-  type ClipConfig,
-} from "./queries"
+} from "../lib/clips"
+import { clipConfigOptions, useSaveClipConfig } from "../api/queries"
+import type { ClipConfig } from "../types"
 
 const num = (v: string) => (v === "" ? -1 : Number(v))
 

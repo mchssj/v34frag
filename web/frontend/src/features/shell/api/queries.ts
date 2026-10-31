@@ -4,7 +4,7 @@ import { api, unwrap } from "@/api/client"
 import type { AuthUser } from "@/auth/queries"
 import { canAccessAdminSection } from "@/auth/permissions"
 import { activeBanCountOptions } from "@/features/admin/bans/api/queries"
-import { clipReviewCountOptions } from "@/features/admin/clips/queries"
+import { clipReviewCountOptions } from "@/features/admin/clips/api/queries"
 import {
   myProfileOptions,
   playerDetailOptions,

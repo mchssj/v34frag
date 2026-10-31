@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { AdminHeader, AdminTabs } from "../components/ui"
-import { clipReviewOptions } from "./queries"
-import { ReviewTab } from "./ReviewTab"
-import { RulesTab } from "./RulesTab"
+import { AdminHeader, AdminTabs } from "../../components/ui"
+import { clipReviewOptions } from "../api/queries"
+import { ReviewTab } from "../components/ReviewTab"
+import { RulesTab } from "../components/RulesTab"
 
 export const CLIP_TABS = ["review", "rules"] as const
 export type ClipTab = (typeof CLIP_TABS)[number]

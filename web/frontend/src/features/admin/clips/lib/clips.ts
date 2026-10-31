@@ -1,4 +1,4 @@
-import type { ClipConfig, ClipConfigPatch, ClipType } from "./queries"
+import type { ClipConfig, ClipConfigPatch, ClipType } from "../types"
 
 // Reglas de la sección Clips que no dependen de React.
 

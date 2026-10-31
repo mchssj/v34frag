@@ -7,7 +7,7 @@ import {
   clipPatch,
   pickClips,
 } from "./clips"
-import type { ClipConfig } from "./queries"
+import type { ClipConfig } from "../types"
 
 const cfg: ClipConfig = {
   priorities: { ...FACTORY_PRIORITIES },
