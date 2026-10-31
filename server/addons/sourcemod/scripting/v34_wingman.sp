@@ -431,6 +431,9 @@ public Action Cmd_JoinTeam(int client, const char[] command, int argc)
 	g_bReady[client] = false;
 	ChangeClientTeam(client, want);
 	FakeClientCommandEx(client, "joinclass %d", want == TEAM_T ? GetRandomInt(1, 4) : GetRandomInt(5, 8));
+	// En el calentamiento no se espera a la próxima ronda: puede no llegar si no hay nadie más.
+	if (g_iState == State_Warmup)
+		CreateTimer(RESPAWN_DELAY, Timer_Respawn, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Stop;
 }
 
@@ -996,6 +999,13 @@ public Action Timer_Second(Handle timer)
 	if (g_iState == State_Warmup || g_iState == State_Ended)
 	{
 		g_iAbandonSince = 0;
+		return Plugin_Continue;
+	}
+	// Se fueron todos: no tiene sentido esperar a un reemplazo, y la ronda no termina sola.
+	if (Teams_Count(TEAM_T) == 0 && Teams_Count(TEAM_CT) == 0)
+	{
+		LogMessage("No queda nadie: la partida se cancela.");
+		Match_ToWarmup();
 		return Plugin_Continue;
 	}
 	if (Teams_Count(TEAM_T) >= TEAM_SIZE && Teams_Count(TEAM_CT) >= TEAM_SIZE)

@@ -19,6 +19,9 @@
 #include <sdktools>
 #include <cstrike>
 #include <clientprefs>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.0.0"
 #define RETAKE_PREFIX "{#verde}[Retake]{#blanco}"
@@ -33,6 +36,9 @@
 #define KEEP_ON_DELAY 5.0
 #define ROUND_TIME "2"
 #define ROUND_END_DELAY 5.0
+#define WELCOME_DELAY 15.0
+#define CLUTCH_MIN_ENEMIES 2
+#define STUCK_CHECK 2.0
 #define SHUFFLE_TRIES 20
 #define DEFUSE_TIME_KIT 5.0
 #define DEFUSE_TIME_NO_KIT 10.0
@@ -64,6 +70,8 @@ ConVar g_cvTRatio;
 ConVar g_cvMinPlayers;
 ConVar g_cvMaxPerTeam;
 ConVar g_cvKitPistol;
+ConVar g_cvKitForce;
+ConVar g_cvForceChance;
 ConVar g_cvKitFullbuy;
 ConVar g_cvPistolRounds;
 ConVar g_cvTStreak;
@@ -72,6 +80,7 @@ ConVar g_cvVoteRound;
 ConVar g_cvAfkRounds;
 #if defined RETAKE_DEBUG
 ConVar g_cvDebugBotAwp;
+ConVar g_cvDebugBotForce;
 #endif
 
 bool g_bActive;
@@ -80,6 +89,10 @@ bool g_bRoundOn;                // la ronda en curso la preparó el plugin
 bool g_bWaiting;                // faltan jugadores
 bool g_bFreezing;               // todos congelados mientras se planta
 bool g_bPistol;
+bool g_bForce;
+int g_iScoutWinner;
+int g_iClutcher[2];
+int g_iClutchVs[2];
 int g_iRound;
 int g_iSite;
 int g_iBombPoint;
@@ -111,6 +124,7 @@ char g_sManagedSaved[sizeof(g_sManaged)][32];
 #include "retake/spawns.inc"
 #include "retake/guns.inc"
 #include "retake/vote.inc"
+#include "retake/menu.inc"
 #include "retake/rank.inc"
 
 public void OnPluginStart()
@@ -123,6 +137,8 @@ public void OnPluginStart()
 	g_cvTRatio       = CreateConVar("sm_retake_t_ratio", "0.4", "Parte de los jugadores que juega de T.", _, true, 0.1, true, 0.9);
 	g_cvMinPlayers   = CreateConVar("sm_retake_min_players", "2", "Jugadores mínimos para jugar.", _, true, 2.0, true, 32.0);
 	g_cvMaxPerTeam   = CreateConVar("sm_retake_max_per_team", "5", "Jugadores máximos por equipo. Los que sobran esperan como espectadores y rotan.", _, true, 1.0, true, 16.0);
+	g_cvForceChance  = CreateConVar("sm_retake_force_chance", "20", "Probabilidad (%) de que una ronda después de las de pistola sea force en vez de full buy.", _, true, 0.0, true, 100.0);
+	g_cvKitForce     = CreateConVar("sm_retake_kit_force", "65", "Probabilidad (%) de kit de cada CT en ronda force.", _, true, 0.0, true, 100.0);
 	g_cvKitPistol    = CreateConVar("sm_retake_kit_pistol", "50", "Probabilidad (%) de kit de cada CT en ronda de pistola.", _, true, 0.0, true, 100.0);
 	g_cvKitFullbuy   = CreateConVar("sm_retake_kit_fullbuy", "85", "Probabilidad (%) de kit de cada CT en ronda de full buy.", _, true, 0.0, true, 100.0);
 	g_cvPistolRounds = CreateConVar("sm_retake_pistol_rounds", "5", "Rondas de pistola al empezar.", _, true, 0.0, true, 30.0);
@@ -132,18 +148,21 @@ public void OnPluginStart()
 	g_cvAfkRounds    = CreateConVar("sm_retake_afk_rounds", "2", "Rondas seguidas sin moverse para pasar a espectador (0 = nunca).", _, true, 0.0, true, 30.0);
 	CreateConVar("v34_retake_version", PLUGIN_VERSION, "Versión de v34 Retake.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
 
+	CreateTimer(STUCK_CHECK, Timer_CheckStuck, _, TIMER_REPEAT);
 	g_hSiteText = CreateHudSynchronizer();
 	CreateTimer(1.0, Timer_ZeroMoney, _, TIMER_REPEAT);
 	RegAdminCmd("sm_retake", Cmd_Retake, ADMFLAG_GENERIC, "Prende o apaga el modo. Uso: sm_retake <1|0>");
 	Spawns_Init();
 	Guns_Init();
 	Rank_Init();
+	Menu_Init();
 	AutoExecConfig(true, "v34_retake");
 
 	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("round_end", Event_RoundEnd);
 	HookEvent("bomb_planted", Event_BombPlanted, EventHookMode_PostNoCopy);
 	HookEvent("player_hurt", Event_PlayerHurt);
+	HookEvent("player_death", Event_ClutchDeath);
 	HookEvent("bomb_begindefuse", Event_BeginDefuse, EventHookMode_PostNoCopy);
 	HookEvent("player_death", Event_DefuseDeath, EventHookMode_PostNoCopy);
 	HookEvent("player_team", Event_PlayerTeamPre, EventHookMode_Pre);
@@ -161,9 +180,11 @@ public void OnPluginStart()
 
 #if defined RETAKE_DEBUG
 	g_cvDebugBotAwp = CreateConVar("retake_debug_bot_awp", "0", "Los bots se anotan para la AWP.");
+	g_cvDebugBotForce = CreateConVar("retake_debug_bot_force", "0", "Opción de force de los bots (0 rifle, 1 MP5, 2 solo Deagle).");
 	RegServerCmd("retake_debug_gen", Cmd_DebugGen);
 	RegServerCmd("retake_debug_fake", Cmd_DebugFake);
 	RegServerCmd("retake_debug_vip", Cmd_DebugVip);
+	RegServerCmd("retake_debug_allqueue", Cmd_DebugAllQueue);
 	RegServerCmd("retake_debug_next", Cmd_DebugNext);
 	RegServerCmd("retake_debug_step", Cmd_DebugStep);
 	RegServerCmd("retake_debug_queue", Cmd_DebugQueue);
@@ -202,6 +223,16 @@ public void OnClientPutInServer(int client)
 	g_iAfkRounds[client] = 0;
 	g_bMoved[client] = false;
 	Guns_Reset(client);
+	if (!IsFakeClient(client))
+		CreateTimer(WELCOME_DELAY, Timer_Welcome, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_Welcome(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (g_bActive && client > 0)
+		Chat(client, "%s Bienvenido al retake: {#verde}!guns{#blanco} armas, {#verde}!rank{#blanco} tu puesto, {#verde}!top{#blanco} ranking.", RETAKE_PREFIX);
+	return Plugin_Stop;
 }
 
 public void OnClientDisconnect(int client)
@@ -441,7 +472,10 @@ public Action Cmd_JoinTeam(int client, const char[] command, int argc)
 	g_iAfkRounds[client] = 0;
 	if (team != TEAM_SPEC)
 		ChangeClientTeam(client, TEAM_SPEC);
-	Chat(client, "%s Entrás cuando termine la ronda, si hay lugar.", RETAKE_PREFIX);
+	if (Teams_CountPlayers() < g_cvMinPlayers.IntValue)
+		Chat(client, "%s Faltan jugadores: hacen falta %d. Empieza apenas entren.", RETAKE_PREFIX, g_cvMinPlayers.IntValue);
+	else
+		Chat(client, "%s Entrás cuando termine la ronda, si hay lugar.", RETAKE_PREFIX);
 	Guns_ShowFirstTime(client);
 	return Plugin_Stop;
 }
@@ -808,32 +842,34 @@ void Round_Equip(int client, int side)
 	GivePlayerItem(client, "weapon_knife");
 	SetEntProp(client, Prop_Send, "m_iAccount", 0);
 	SetEntProp(client, Prop_Send, "m_ArmorValue", 100);
-	SetEntProp(client, Prop_Send, "m_bHasHelmet", g_bPistol ? 0 : 1);
+	SetEntProp(client, Prop_Send, "m_bHasHelmet", g_bPistol || g_bForce ? 0 : 1);
 	if (!g_bPistol)
-	{
 		GivePlayerItem(client, "weapon_flashbang");
+	if (!g_bPistol && !g_bForce)
 		GivePlayerItem(client, "weapon_smokegrenade");
-	}
-	Guns_GivePistol(client, side);
+	if (g_bForce)
+		Guns_GiveForce(client, side, client == g_iScoutWinner);
+	else
+		Guns_GivePistol(client, side);
 	if (side == SIDE_CT)
 	{
-		int chance = g_bPistol ? g_cvKitPistol.IntValue : g_cvKitFullbuy.IntValue;
+		int chance = g_bPistol ? g_cvKitPistol.IntValue : (g_bForce ? g_cvKitForce.IntValue : g_cvKitFullbuy.IntValue);
 		SetEntProp(client, Prop_Send, "m_bHasDefuser", GetRandomInt(1, 100) <= chance ? 1 : 0);
 	}
 }
 
-/** Sortea la AWP entre los anotados del lado. Devuelve el ganador o 0. */
-int Round_DrawAwp(int[] list, int count)
+/** Sortea la AWP (full buy) o la Scout (force) entre los CT anotados. Devuelve el ganador o 0. */
+int Round_DrawSniper(int[] list, int count, bool scout)
 {
 	int[] pool = new int[count];
 	int n;
 	for (int i = 0; i < count; i++)
 	{
+		bool wants = scout ? g_bWantsScout[list[i]] : g_bWantsAwp[list[i]];
 #if defined RETAKE_DEBUG
-		if (g_bWantsAwp[list[i]] || (IsFakeClient(list[i]) && g_cvDebugBotAwp.BoolValue))
-#else
-		if (g_bWantsAwp[list[i]])
+		wants = wants || (IsFakeClient(list[i]) && g_cvDebugBotAwp.BoolValue);
 #endif
+		if (wants)
 			pool[n++] = list[i];
 	}
 	if (n == 0)
@@ -846,7 +882,7 @@ int Round_DrawAwp(int[] list, int count)
 
 void Round_GivePrimaries(int[] list, int count, int side)
 {
-	int awp = Round_DrawAwp(list, count);
+	int awp = side == SIDE_CT ? Round_DrawSniper(list, count, false) : 0;   // en los T desarma el modo
 	for (int i = 0; i < count; i++)
 	{
 		g_bGotAwp[list[i]] = list[i] == awp;
@@ -920,6 +956,8 @@ void Round_Prepare()
 	Round_PickSite();
 	g_iBombPoint = GetRandomInt(0, g_aBombs[g_iSite].Length - 1);
 	g_bPistol = g_iRound <= g_cvPistolRounds.IntValue;
+	g_bForce = !g_bPistol && GetRandomInt(1, 100) <= g_cvForceChance.IntValue;
+	Clutch_Reset();
 	g_bFreezing = true;
 	g_bDefuseWarned = false;
 	Round_ClearFloor();
@@ -934,6 +972,11 @@ void Round_Prepare()
 			g_iHitsTo[i][j] = 0;
 		}
 	}
+	g_iScoutWinner = g_bForce ? Round_DrawSniper(cts, nCt, true) : 0;
+#if defined RETAKE_DEBUG
+	if (g_bForce)
+		LogMessage("RETAKE_DBG scout ronda=%d ganador=%d", g_iRound, g_iScoutWinner);
+#endif
 	for (int side = 0; side < 2; side++)
 	{
 		int count = side == SIDE_T ? nT : nCt;
@@ -947,7 +990,9 @@ void Round_Prepare()
 			Guns_ShowFirstTime(client);
 		}
 	}
-	if (!g_bPistol)
+	for (int i = 1; i <= MaxClients; i++)
+		g_bGotAwp[i] = false;
+	if (!g_bPistol && !g_bForce)
 	{
 		Round_GivePrimaries(ts, nT, SIDE_T);
 		Round_GivePrimaries(cts, nCt, SIDE_CT);
@@ -960,7 +1005,7 @@ void Round_Prepare()
 
 	char site[2], kind[16];
 	strcopy(site, sizeof(site), g_iSite == SITE_A ? "A" : "B");
-	strcopy(kind, sizeof(kind), g_bPistol ? "pistola" : "full buy");
+	strcopy(kind, sizeof(kind), g_bPistol ? "pistola" : (g_bForce ? "force" : "full buy"));
 	ChatAll("%s {#blanco}Sitio {#amarillo}%s{#blanco}, {#verde}%s{#blanco}, ronda {#amarillo}%d", RETAKE_PREFIX, site, kind, g_iRound);
 	Round_Banner(site, kind);
 #if defined RETAKE_DEBUG
@@ -993,9 +1038,48 @@ void Round_Banner(const char[] site, const char[] kind)
 			PrintHintText(i, "SITIO %s | %s | RONDA %d", site, upper, g_iRound);
 			continue;
 		}
-		Guns_Describe(i, team == TEAM_T ? SIDE_T : SIDE_CT, g_bPistol, g_bGotAwp[i], weapons, sizeof(weapons));
+		Guns_Describe(i, team == TEAM_T ? SIDE_T : SIDE_CT, g_bPistol, g_bForce, g_bGotAwp[i], i == g_iScoutWinner, weapons, sizeof(weapons));
 		PrintHintText(i, "SITIO %s | %s | RONDA %d\n%s", site, upper, g_iRound, weapons);
 	}
+}
+
+/**
+ * La cola se revisa al terminar la ronda, pero con un equipo vacío la ronda puede no terminar nunca
+ * (por ejemplo, si se fueron todos): quien entra quedaría esperando para siempre.
+ */
+public Action Timer_CheckStuck(Handle timer)
+{
+	if (!g_bActive)
+		return Plugin_Continue;
+	int t, ct, queued;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsClientSourceTV(i))
+			continue;
+		int team = GetClientTeam(i);
+		if (team == TEAM_T)
+			t++;
+		else if (team == TEAM_CT)
+			ct++;
+		else if (g_bQueued[i])
+			queued++;
+	}
+	if (t + ct + queued == 0)
+	{
+		if (g_iRound > 0)
+		{
+			LogMessage("No queda nadie: la partida vuelve a empezar en la ronda 1.");
+			Mode_ResetMatch();
+			g_iSiteStreak = 0;
+		}
+		return Plugin_Continue;
+	}
+	if (queued == 0 || (t > 0 && ct > 0) || g_bWaiting || t + ct + queued < g_cvMinPlayers.IntValue)
+		return Plugin_Continue;
+	LogMessage("Había gente esperando con un equipo vacío: se arman los equipos.");
+	Teams_Arrange(Arrange_Keep);
+	ServerCommand("mp_restartgame 1");
+	return Plugin_Continue;
 }
 
 public Action Timer_WaitPlayers(Handle timer)
@@ -1120,6 +1204,55 @@ public void Frame_CheckDefuse(any data)
 #endif
 }
 
+// ---------------------------------------------------------------------------
+// Clutch
+// ---------------------------------------------------------------------------
+
+void Clutch_Reset()
+{
+	g_iClutcher[SIDE_T] = g_iClutcher[SIDE_CT] = 0;
+	g_iClutchVs[SIDE_T] = g_iClutchVs[SIDE_CT] = 0;
+}
+
+/** Si un equipo queda con un solo vivo contra 2 o más, ese jugador está en clutch. */
+public void Event_ClutchDeath(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!g_bActive || !g_bRoundOn)
+		return;
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	int last[2], alive[2];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (i == victim || !IsClientInGame(i) || !IsPlayerAlive(i) || GetClientTeam(i) < TEAM_T)
+			continue;
+		int side = GetClientTeam(i) == TEAM_T ? SIDE_T : SIDE_CT;
+		alive[side]++;
+		last[side] = i;
+	}
+	for (int side = 0; side < 2; side++)
+	{
+		if (alive[side] == 1 && alive[1 - side] >= CLUTCH_MIN_ENEMIES && g_iClutcher[side] == 0)
+		{
+			g_iClutcher[side] = last[side];
+			g_iClutchVs[side] = alive[1 - side];
+		}
+	}
+}
+
+void Clutch_Announce(int winner)
+{
+	if (winner != TEAM_T && winner != TEAM_CT)
+		return;
+	int side = winner == TEAM_T ? SIDE_T : SIDE_CT;
+	int client = g_iClutcher[side];
+	if (client == 0 || !IsClientInGame(client) || !IsPlayerAlive(client) || GetClientTeam(client) != winner)
+		return;
+	ChatAll("%s {#amarillo}%N{#blanco} ganó un {#verde}1v%d{#blanco}.", RETAKE_PREFIX, client, g_iClutchVs[side]);
+#if defined RETAKE_DEBUG
+	LogMessage("RETAKE_DBG clutch ronda=%d lado=%d contra=%d", g_iRound, side, g_iClutchVs[side]);
+#endif
+}
+
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!g_bActive)
@@ -1192,6 +1325,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	Round_Unfreeze();
 	g_iPlanter = 0;
 	int winner = event.GetInt("winner");
+	Clutch_Announce(winner);
 	Round_DamageReport();
 	Rank_SaveAll();
 	Round_CheckAfk();
@@ -1317,7 +1451,7 @@ void Round_DebugLog()
 		cls = "-";
 		if (primary != -1)
 			GetEdictClassname(primary, cls, sizeof(cls));
-		LogMessage("RETAKE_DBG jugador ronda=%d sitio=%d tipo=%s id=%d equipo=%d primaria=%s kit=%d casco=%d planta=%d", g_iRound, g_iSite, g_bPistol ? "pistola" : "fullbuy", i, GetClientTeam(i), cls,
+		LogMessage("RETAKE_DBG jugador ronda=%d sitio=%d tipo=%s id=%d equipo=%d primaria=%s kit=%d casco=%d planta=%d", g_iRound, g_iSite, g_bPistol ? "pistola" : (g_bForce ? "force" : "fullbuy"), i, GetClientTeam(i), cls,
 			GetEntProp(i, Prop_Send, "m_bHasDefuser"), GetEntProp(i, Prop_Send, "m_bHasHelmet"), i == g_iPlanter ? 1 : 0);
 	}
 }
@@ -1441,6 +1575,20 @@ public Action Cmd_DebugQueue(int args)
 			ct++;
 	}
 	PrintToServer("equipos T=%d CT=%d ronda=%d", t, ct, g_iRound);
+	return Plugin_Handled;
+}
+
+/** Todos a la cola con los equipos vacíos: lo mismo que entrar a un servidor del que se fueron todos. */
+public Action Cmd_DebugAllQueue(int args)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && GetClientTeam(i) >= TEAM_T)
+		{
+			ChangeClientTeam(i, TEAM_SPEC);
+			Teams_Enqueue(i, false);
+		}
+	}
 	return Plugin_Handled;
 }
 
