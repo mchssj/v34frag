@@ -50,3 +50,7 @@ Implementado y probado en local el 2026-10-30, sin jugadores reales. **No distri
 ## Cómo revertir
 
 Antes del corte, no aplicar la `40`. Después, vaciar `ac-evidence` y correr su inversa. Sacar `cml_anticheat_bridge.smx` en el próximo cambio de mapa. En el código, `git revert`.
+
+## Agregado después
+
+- El monitor de procesos pasó de 10 a 1 segundo: con 10 no vio ninguno de 4 scripts de Python de 2 segundos, y con 1 vio los 4, con inicio y cierre. Medido en una PC: 3,75 % de un núcleo durante la sesión. Lo que dure menos de 1 segundo se puede escapar. La línea de comandos sigue sin guardarse, así que un script figura como `python.exe`.

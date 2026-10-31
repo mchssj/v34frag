@@ -568,7 +568,7 @@ void Loop() {
                 for (auto& [k, p] : known) { Enrich(p); evs.push_back({L"inventory", p}); }
                 QueueProcesses(session, evs);
                 Log(L"inventario inicial: " + std::to_wstring(evs.size()) + L" procesos");
-                nextScan = GetTickCount64() + 10000;
+                nextScan = GetTickCount64() + 1000;
                 nextShot = schedule(mn, mx);
             } else {
                 Log(L"monitoreo detenido");
@@ -578,7 +578,7 @@ void Loop() {
         if (!session.empty()) {
             // Reconciliación: al comparar el estado completo no se pierden eventos.
             if (now >= nextScan) {
-                nextScan = now + 10000;
+                nextScan = now + 1000;
                 auto cur = Snapshot();
                 std::vector<std::pair<const wchar_t*, Proc>> evs;
                 for (auto& [k, p] : cur) {

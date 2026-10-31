@@ -7,7 +7,7 @@ Durante una sesión, la aplicación envía el inventario de procesos, sus cambio
 ```mermaid
 flowchart TD
   A{¿Sesión abierta?} -->|No| B[No recopila]
-  A -->|Sí| C[Procesos cada 10 s]
+  A -->|Sí| C[Procesos cada 1 s]
   A -->|Sí| D{¿Juego al frente?}
   D -->|Sí| E[Captura]
   D -->|No| F[Registra y no captura]
