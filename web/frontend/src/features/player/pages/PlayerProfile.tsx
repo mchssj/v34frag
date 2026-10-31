@@ -37,7 +37,7 @@ import {
 import { eloHistoryOptions, playerOptions } from "../api/queries"
 import type { PlayerDetail } from "../types"
 import { RANGES, type PlayerSearch, type Tab } from "../lib/search"
-import { PlayerTabs } from "../components/tabs"
+import { PlayerTabs } from "../components/PlayerTabs"
 
 // Perfil público /player/{nick} (handoff_perfil_publico). Cada sección pide lo suyo a la API.
 

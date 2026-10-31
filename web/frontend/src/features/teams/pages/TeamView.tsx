@@ -61,15 +61,13 @@ import type { RosterEntry, TeamDetail } from "../types"
 import { Roster } from "../components/Roster"
 import { LookingForTags, RecruitSheet } from "../components/Recruit"
 import { EditableCrest, EditTeamSheet } from "../components/TeamLogo"
-import {
-  JoinRequests,
-  RecentForm,
-  Showcase,
-  StarPlayer,
-  TeamKpis,
-  TeamRoles,
-  TournamentHistory,
-} from "../components/sections"
+import { TournamentHistory } from "../components/TournamentHistory"
+import { Showcase } from "../components/Showcase"
+import { JoinRequests } from "../components/JoinRequests"
+import { RecentForm } from "../components/RecentForm"
+import { StarPlayer } from "../components/StarPlayer"
+import { TeamRoles } from "../components/TeamRoles"
+import { TeamKpis } from "../components/TeamKpis"
 import { Eyebrow, Initial, Soon, TeamCrest } from "../components/ui"
 
 /** Desde cuándo existe el equipo (`founded_at`: la aprobación o, en los viejos, el primer ingreso). */
