@@ -5,6 +5,7 @@ import { type KeyboardEvent, type ReactNode } from "react"
 import { errorMessage, isRetryable } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { ListPagination } from "@/components/brand/ListPagination"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -128,7 +129,7 @@ export function Matches({
           value={search.kind}
           onPick={(kind) => onChange({ kind, page: undefined })}
         />
-        <Separator orientation="vertical" className="h-5" />
+        <Separator orientation="vertical" className="h-5 data-vertical:self-center" />
         <Chips
           label="Resultado"
           options={RESULTS}
@@ -215,9 +216,14 @@ export function Matches({
                     {m.played_at ? fmtDay(m.played_at) : "—"}
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex h-5 items-center rounded-[4px] bg-secondary px-1.5 text-[11px] font-medium">
+                    <Badge
+                      variant="soft"
+                      shape="tag"
+                      size="sm"
+                      className="text-inherit"
+                    >
                       {KIND_LABEL[m.kind]}
-                    </span>
+                    </Badge>
                   </TableCell>
                   <TableCell className="font-mono">{m.map ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">

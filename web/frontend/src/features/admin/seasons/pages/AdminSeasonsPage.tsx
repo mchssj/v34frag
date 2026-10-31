@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { currentSeasonOptions } from "@/features/ranking/api/queries"
@@ -270,10 +271,10 @@ function ActiveHero({ season }: { season: Season }) {
           <h2 className="text-xl font-bold">
             Temporada {season.number} · {season.name}
           </h2>
-          <span className="inline-flex h-[22px] items-center gap-1.5 rounded-full bg-win/15 px-2 text-xs font-medium">
+          <Badge variant="winSoft" shape="pill" size="md" className="gap-1.5">
             <span aria-hidden className="size-1.5 rounded-full bg-win" />
             Activa
-          </span>
+          </Badge>
         </div>
         <div
           role="progressbar"

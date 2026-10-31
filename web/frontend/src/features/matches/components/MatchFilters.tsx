@@ -87,7 +87,7 @@ export function Filters({
           </button>
         ))}
       </div>
-      <Separator orientation="vertical" className="mx-1 h-5" />
+      <Separator orientation="vertical" className="mx-1 h-5 data-vertical:self-center" />
       <InputGroup className="max-w-[300px] min-w-[200px] flex-1">
         <InputGroupAddon>
           <SearchIcon aria-hidden className="size-3.5" />

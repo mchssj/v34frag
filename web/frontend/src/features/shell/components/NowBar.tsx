@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { ArrowRightIcon, PlugZapIcon } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { sideName } from "@/features/public/lib/format"
 import { useFeaturedLive } from "../api/queries"
@@ -28,13 +29,17 @@ export function NowBar() {
 
   return (
     <div className="flex flex-wrap items-center gap-3 border-b bg-[color-mix(in_oklch,var(--primary)_7%,var(--background))] py-2 pr-3 pl-4 text-[13px]">
-      <span className="inline-flex h-[22px] items-center gap-1.5 rounded-md bg-destructive px-2 text-[11px] font-semibold text-white">
+      <Badge
+        variant="live"
+        size="md"
+        className="gap-1.5 rounded-md text-[11px] font-semibold"
+      >
         <span
           aria-hidden
           className="size-1.5 animate-live rounded-full bg-current"
         />
         EN VIVO
-      </span>
+      </Badge>
       <span className="font-semibold">
         {sideName(m.side1)} vs {sideName(m.side2)}
       </span>

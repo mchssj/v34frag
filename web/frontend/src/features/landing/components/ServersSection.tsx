@@ -268,7 +268,7 @@ export function ServersSection() {
                     servidores en línea
                   </span>
                 </span>
-                <Separator orientation="vertical" className="h-9" />
+                <Separator orientation="vertical" className="h-9 data-vertical:self-center" />
                 <span className="flex flex-col gap-0.5">
                   <span className="font-mono text-2xl font-bold tracking-[-1px] text-win">
                     {formatNumber(totals.players)}

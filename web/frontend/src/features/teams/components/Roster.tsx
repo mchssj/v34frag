@@ -140,11 +140,16 @@ function RosterRow({
         <span className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-semibold">{member.alias}</span>
           {member.is_captain && (
-            <span className="inline-flex h-[18px] shrink-0 items-center gap-1 rounded-full bg-primary/15 px-1.5 text-[11px] font-medium text-primary">
+            <Badge
+              variant="primary"
+              shape="pill"
+              size="xs"
+              className="gap-1 text-[11px]"
+            >
               <CrownIcon className="size-3" aria-hidden />
               {/* Bajo 400px, solo la corona: el texto le quitaba lugar al nombre. */}
               <span className="sr-only min-[400px]:not-sr-only">Líder</span>
-            </span>
+            </Badge>
           )}
         </span>
         {/* El puesto que eligió en su perfil (IGL, AWPer…) y desde cuándo está. */}

@@ -1,4 +1,5 @@
 import { type MatchKind } from "../lib/search"
+import { Badge } from "@/components/ui/badge"
 
 export const KIND_LABEL: Record<MatchKind, string> = {
   mix: "Mix",
@@ -10,8 +11,8 @@ export const KIND_LABEL: Record<MatchKind, string> = {
 
 export function KindBadge({ kind }: { kind: MatchKind }) {
   return (
-    <span className="inline-flex h-5 w-fit items-center rounded-[4px] bg-secondary px-1.5 text-[11px] font-medium">
+    <Badge variant="soft" shape="tag" size="sm" className="text-inherit">
       {KIND_LABEL[kind]}
-    </span>
+    </Badge>
   )
 }

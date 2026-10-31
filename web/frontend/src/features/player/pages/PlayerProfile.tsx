@@ -19,6 +19,7 @@ import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { NoLevelBadge } from "@/components/illustrations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
@@ -149,19 +150,27 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
               </span>
             )}
             {p.has_steam && (
-              <span
+              <Badge
+                variant="soft"
+                shape="soft"
+                size="md"
+                className="text-inherit"
                 title="Tiene al menos un SteamID vinculado"
-                className="inline-flex h-[22px] items-center gap-1 rounded-[calc(var(--radius)-4px)] bg-secondary px-2 text-xs font-medium"
               >
                 <BadgeCheckIcon aria-hidden className="size-3 text-win" />
                 Verificado
-              </span>
+              </Badge>
             )}
             {owner && p.privacy === "private" && (
-              <span className="inline-flex h-[22px] items-center gap-1 rounded-[calc(var(--radius)-4px)] bg-secondary px-2 text-xs font-medium">
+              <Badge
+                variant="soft"
+                shape="soft"
+                size="md"
+                className="text-inherit"
+              >
                 <LockIcon aria-hidden className="size-3" />
                 Perfil privado · solo tú y los admins ven tus datos
-              </span>
+              </Badge>
             )}
           </div>
           {p.private ? (

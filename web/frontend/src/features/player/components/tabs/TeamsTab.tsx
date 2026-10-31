@@ -131,10 +131,15 @@ function CurrentTeam({ s }: { s: TeamStint }) {
             {s.team.name}
           </Link>
           {s.is_captain && (
-            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-primary/15 px-1.5 text-[11px] font-semibold text-primary">
+            <Badge
+              variant="primary"
+              shape="pill"
+              size="sm"
+              className="font-semibold"
+            >
               <CrownIcon className="size-3" aria-hidden />
               Líder
-            </span>
+            </Badge>
           )}
         </span>
         <span className="text-xs text-muted-foreground">

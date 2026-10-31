@@ -3,6 +3,7 @@ import { cn } from "cn"
 import { MedalIcon } from "lucide-react"
 import { type ReactNode } from "react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { Badge } from "@/components/ui/badge"
 import { bestSeasonId } from "../../lib/labels"
 import { seasonsOptions } from "../../api/queries"
 import type { PlayerSeason } from "../../types"
@@ -114,9 +115,14 @@ function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
               </span>
             </>
           ) : (
-            <span className="inline-flex h-[22px] items-center rounded-full bg-muted px-2 text-[11px] font-semibold text-muted-foreground">
+            <Badge
+              variant="muted"
+              shape="pill"
+              size="md"
+              className="text-[11px] font-semibold"
+            >
               No clasificó
-            </span>
+            </Badge>
           )}
         </span>
       </div>

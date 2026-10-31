@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { cn } from "cn"
 import { ChevronDownIcon, CheckIcon, HistoryIcon } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,10 +35,15 @@ export function SeasonBar({
         </span>
       ) : season.status === "active" ? (
         <>
-          <span className="inline-flex h-[22px] items-center gap-1.5 rounded-full bg-win/15 px-2 font-mono text-[11px] font-semibold tracking-[.04em] text-win">
+          <Badge
+            variant="win"
+            shape="pill"
+            size="md"
+            className="gap-1.5 font-mono text-[11px] font-semibold tracking-[.04em]"
+          >
             <span aria-hidden className="size-1.5 rounded-full bg-current" />
             EN CURSO
-          </span>
+          </Badge>
           <Countdown endsAt={season.ends_at} />
           <span className="text-xs text-muted-foreground md:ml-auto">
             Top {season.top_n} con medalla · mínimo {season.min_matches} mixes
@@ -46,9 +52,14 @@ export function SeasonBar({
         </>
       ) : (
         <>
-          <span className="inline-flex h-[22px] items-center rounded-full bg-muted px-2 font-mono text-[11px] font-semibold tracking-[.04em] text-muted-foreground">
+          <Badge
+            variant="muted"
+            shape="pill"
+            size="md"
+            className="font-mono text-[11px] font-semibold tracking-[.04em]"
+          >
             CERRADA
-          </span>
+          </Badge>
           {season.closed_at && (
             <span className="text-xs text-muted-foreground">
               Cerró el {fmtLongDate(season.closed_at)}

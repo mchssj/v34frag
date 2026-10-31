@@ -148,12 +148,15 @@ function GameAccountsCard({
           title="Cuentas de juego"
           description="Los SteamID64 con los que juegas en el servidor. Las partidas de todos suman a tu ficha."
         />
-        <span
-          className="inline-flex h-[22px] shrink-0 items-center rounded-full bg-muted px-2 font-mono text-xs font-medium text-muted-foreground"
+        <Badge
+          variant="muted"
+          shape="pill"
+          size="md"
+          className="font-mono"
           aria-label={`${g.linked} de ${g.max} cuentas vinculadas`}
         >
           {g.linked}/{g.max}
-        </span>
+        </Badge>
       </div>
 
       {g.empty ? (

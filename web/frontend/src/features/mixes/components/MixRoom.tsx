@@ -526,17 +526,25 @@ function PlayerRow({
             <span className="font-medium">{p.nick}</span>
           )}
           {showMvp && p.mvp && (
-            <span className="inline-flex h-[18px] items-center rounded-[4px] bg-primary px-[5px] text-[10px] font-bold text-primary-foreground">
+            <Badge
+              variant="solid"
+              shape="tag"
+              size="xs"
+              className="px-[5px] font-bold"
+            >
               MVP
-            </span>
+            </Badge>
           )}
           {p.guest && (
-            <span
+            <Badge
+              variant="neutral"
+              shape="tag"
+              size="xs"
+              className="border-dashed font-semibold"
               title="Jugó sin cuenta vinculada. Se muestra con su nombre en el juego; su ELO se calcula por SteamID."
-              className="inline-flex h-[18px] items-center rounded-[4px] border border-dashed px-1.5 text-[10px] font-semibold text-muted-foreground"
             >
               INVITADO
-            </span>
+            </Badge>
           )}
         </span>
         {rounds && (
