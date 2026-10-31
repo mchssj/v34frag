@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import { pageList } from "@/components/brand/ListPagination"
 import { matchesSearchSchema, toMatchesQuery } from "./search"
 
 describe("matchesSearchSchema", () => {
@@ -42,18 +41,5 @@ describe("toMatchesQuery", () => {
 
   it("una búsqueda de solo espacios no se manda", () => {
     expect(toMatchesQuery({ q: "   " })).not.toHaveProperty("q")
-  })
-})
-
-describe("pageList", () => {
-  it("todas las páginas si son pocas", () => {
-    expect(pageList(1, 1)).toEqual([1])
-    expect(pageList(3, 5)).toEqual([1, 2, 3, 4, 5])
-  })
-
-  it("la primera, la última y las vecinas si son muchas", () => {
-    expect(pageList(1, 20)).toEqual([1, 2, "…", 20])
-    expect(pageList(10, 20)).toEqual([1, "…", 9, 10, 11, "…", 20])
-    expect(pageList(20, 20)).toEqual([1, "…", 19, 20])
   })
 })

@@ -1,25 +1,21 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { FilterXIcon, SwordsIcon, TriangleAlertIcon } from "lucide-react"
-import { type KeyboardEvent, type ReactNode } from "react"
 import { errorMessage } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { KindBadge } from "@/components/brand/KindBadge"
-import { ListPagination } from "@/components/brand/ListPagination"
 import { RetryButton } from "@/components/brand/QueryState"
+import { DataTable } from "@/components/data-table/DataTable"
+import { DataTablePagination } from "@/components/data-table/DataTablePagination"
+import { urlPaging } from "@/components/data-table/url"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { fmtDay, matchTitle, resultOf, scoreOf } from "../../lib/labels"
 import { playerMatchesOptions } from "../../api/queries"
 import type { PlayerMatch } from "../../types"
@@ -41,30 +37,74 @@ const RESULTS = [
   { value: "lost", label: "Derrotas" },
 ] as const
 
-const MATCH_HEAD = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
-
-/** Cabecera de la tabla de partidas; el cuerpo lo pone quien la usa. */
-function MatchTable({ children }: { children: ReactNode }) {
-  return (
-    <Table className="min-w-[700px] text-[13px]">
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className={cn(MATCH_HEAD, "pl-4")}>Fecha</TableHead>
-          <TableHead className={MATCH_HEAD}>Tipo</TableHead>
-          <TableHead className={MATCH_HEAD}>Mapa</TableHead>
-          <TableHead className={MATCH_HEAD}>Nombre en el juego</TableHead>
-          <TableHead className={MATCH_HEAD}>Resultado</TableHead>
-          <TableHead className={MATCH_HEAD}>K-D</TableHead>
-          <TableHead className={MATCH_HEAD}>Rating</TableHead>
-          <TableHead className={cn(MATCH_HEAD, "pr-4 text-right")}>
-            ELO
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>{children}</TableBody>
-    </Table>
-  )
-}
+const COLUMNS: DataColumn<PlayerMatch>[] = [
+  {
+    id: "date",
+    header: "Fecha",
+    headClassName: "pl-4",
+    cellClassName: "pl-4",
+    cell: ({ row }) =>
+      row.original.played_at ? fmtDay(row.original.played_at) : "—",
+  },
+  {
+    id: "kind",
+    header: "Tipo",
+    cell: ({ row }) => <KindBadge kind={row.original.kind} />,
+  },
+  {
+    id: "map",
+    header: "Mapa",
+    cellClassName: "font-mono",
+    cell: ({ row }) => row.original.map ?? "—",
+  },
+  {
+    id: "game_nick",
+    header: "Nombre en el juego",
+    cellClassName: "text-muted-foreground",
+    cell: ({ row }) => row.original.game_nick ?? "—",
+  },
+  {
+    id: "result",
+    header: "Resultado",
+    cell: ({ row }) => {
+      const r = resultOf(row.original.won)
+      return (
+        <span
+          className={cn(
+            "font-mono font-semibold tabular-nums",
+            r === "V"
+              ? "text-win"
+              : r === "D"
+                ? "text-destructive"
+                : "text-muted-foreground"
+          )}
+        >
+          {r} {scoreOf(row.original) ?? ""}
+        </span>
+      )
+    },
+  },
+  {
+    id: "kd",
+    header: "K-D",
+    cellClassName: "font-mono tabular-nums",
+    cell: ({ row }) => `${row.original.kills ?? 0}-${row.original.deaths ?? 0}`,
+  },
+  {
+    id: "rating",
+    header: "Rating",
+    cellClassName: "font-mono font-semibold tabular-nums",
+    cell: ({ row }) => row.original.rating?.toFixed(2) ?? "—",
+  },
+  {
+    id: "elo",
+    header: "ELO",
+    headClassName: "pr-4 text-right",
+    cellClassName:
+      "pr-4 text-right font-mono text-xs font-semibold tabular-nums",
+    cell: ({ row }) => <Delta v={row.original.elo_delta} />,
+  },
+]
 
 export function Matches({
   nick,
@@ -80,9 +120,13 @@ export function Matches({
   const all = useQuery(playerMatchesOptions(nick, {})).data?.total
   const filtered = !!(search.kind || search.result)
   const open = useOpenMatch()
-  const onKey = (m: PlayerMatch) => (e: KeyboardEvent) => {
-    if (e.key === "Enter") open(m)
-  }
+  const table = useServerTable({
+    columns: COLUMNS,
+    data: q.data?.items,
+    total: q.data?.total,
+    getRowId: (m) => m.match_id,
+    ...urlPaging(search, onChange, DEFAULT_PER),
+  })
 
   return (
     <Card variant="outline" className="overflow-hidden">
@@ -108,123 +152,67 @@ export function Matches({
       </div>
       {/* Alto de 8 filas haya las que haya: la tarjeta no salta al filtrar. */}
       <div className="flex min-h-[396px] flex-col">
-        {q.isPending ? (
-          <MatchTable>
-            {Array.from({ length: 8 }, (_, i) => (
-              <TableRow key={i} className="hover:bg-transparent">
-                <TableCell colSpan={8} className="px-4 py-2.5">
-                  <Skeleton className="h-6 w-full" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </MatchTable>
-        ) : q.isError ? (
-          <EmptyState
-            icon={TriangleAlertIcon}
-            title="No se pudieron cargar las partidas"
-            action={<RetryButton error={q.error} onRetry={q.refetch} />}
-          >
-            {errorMessage(q.error)}
-          </EmptyState>
-        ) : !q.data.items.length ? (
-          filtered ? (
+        <DataTable
+          table={table}
+          query={q}
+          className="min-w-[700px] text-[13px]"
+          stateAs="block"
+          skeletonCellClassName="px-4 py-2.5"
+          skeletonClassName="h-6 w-full"
+          error={
             <EmptyState
-              icon={FilterXIcon}
-              title="Ninguna partida con esos filtros"
-              action={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    onChange({
-                      kind: undefined,
-                      result: undefined,
-                      page: undefined,
-                    })
-                  }
-                >
-                  Quitar filtros
-                </Button>
-              }
+              icon={TriangleAlertIcon}
+              title="No se pudieron cargar las partidas"
+              action={<RetryButton error={q.error} onRetry={q.refetch} />}
             >
-              {all
-                ? `Tiene ${all} ${all === 1 ? "partida" : "partidas"}, pero ninguna con esos filtros.`
-                : "Prueba con otro tipo o resultado."}
+              {errorMessage(q.error)}
             </EmptyState>
-          ) : (
-            <EmptyState icon={SwordsIcon} title="Todavía no jugó partidas">
-              Aparecen acá al jugar un mix, un PCW o un partido de torneo en el
-              servidor.
-            </EmptyState>
-          )
-        ) : (
-          <MatchTable>
-            {q.data.items.map((m) => {
-              const r = resultOf(m.won)
-              return (
-                <TableRow
-                  key={m.match_id}
-                  role="link"
-                  tabIndex={0}
-                  aria-label={matchTitle(m).title}
-                  onClick={() => open(m)}
-                  onKeyDown={onKey(m)}
-                  className="h-11 cursor-pointer hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                >
-                  <TableCell className="pl-4">
-                    {m.played_at ? fmtDay(m.played_at) : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <KindBadge kind={m.kind} />
-                  </TableCell>
-                  <TableCell className="font-mono">{m.map ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {m.game_nick ?? "—"}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={cn(
-                        "font-mono font-semibold tabular-nums",
-                        r === "V"
-                          ? "text-win"
-                          : r === "D"
-                            ? "text-destructive"
-                            : "text-muted-foreground"
-                      )}
-                    >
-                      {r} {scoreOf(m) ?? ""}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-mono tabular-nums">
-                    {m.kills ?? 0}-{m.deaths ?? 0}
-                  </TableCell>
-                  <TableCell className="font-mono font-semibold tabular-nums">
-                    {m.rating?.toFixed(2) ?? "—"}
-                  </TableCell>
-                  <TableCell className="pr-4 text-right font-mono text-xs font-semibold tabular-nums">
-                    <Delta v={m.elo_delta} />
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </MatchTable>
-        )}
+          }
+          empty={
+            filtered ? (
+              <EmptyState
+                icon={FilterXIcon}
+                title="Ninguna partida con esos filtros"
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      onChange({
+                        kind: undefined,
+                        result: undefined,
+                        page: undefined,
+                      })
+                    }
+                  >
+                    Quitar filtros
+                  </Button>
+                }
+              >
+                {all
+                  ? `Tiene ${all} ${all === 1 ? "partida" : "partidas"}, pero ninguna con esos filtros.`
+                  : "Prueba con otro tipo o resultado."}
+              </EmptyState>
+            ) : (
+              <EmptyState icon={SwordsIcon} title="Todavía no jugó partidas">
+                Aparecen acá al jugar un mix, un PCW o un partido de torneo en
+                el servidor.
+              </EmptyState>
+            )
+          }
+          rowClassName={() => "h-11"}
+          rowLink={(m) => ({
+            label: matchTitle(m).title,
+            onOpen: () => open(m),
+          })}
+        />
       </div>
       {!!q.data?.total && (
         <div className="border-t">
-          <ListPagination
-            total={q.data.total}
-            page={search.page ?? 1}
-            per={search.per ?? DEFAULT_PER}
+          <DataTablePagination
+            table={table}
             perOptions={PER_OPTIONS}
             perLabel="Partidas por página"
-            onPage={(p) => onChange({ page: p === 1 ? undefined : p })}
-            onPer={(n) =>
-              onChange({
-                per: n === DEFAULT_PER ? undefined : (n as 50 | 100),
-                page: undefined,
-              })
-            }
           />
         </div>
       )}

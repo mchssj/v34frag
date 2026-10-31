@@ -3,14 +3,12 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { cn } from "cn"
 
 import { Switch } from "@/components/ui/switch"
+import { DataTable } from "@/components/data-table/DataTable"
+import { urlPaging } from "@/components/data-table/url"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { fmtPct, teamTrend } from "../lib/labels"
 import {
   MineChip,
@@ -21,13 +19,13 @@ import {
   type PodiumItem,
 } from "../components/parts"
 import { TeamCrest } from "@/components/brand/TeamCrest"
-import { ListState, Paging, RowLink } from "./PlayersRanking"
+import { RankingPagination } from "./PlayersRanking"
 import { teamPodiumOptions, teamRankingOptions } from "../api/queries"
 import type { RankingTeam } from "../types"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import type { TeamRankingSearch } from "../lib/search"
+import { DEFAULT_PER, type TeamRankingSearch } from "../lib/search"
 
 // Ranking → Equipos (/ranking/teams): puntos por partida ganada, con o sin PCW (contrato 7).
 
@@ -46,6 +44,13 @@ export function TeamsRanking({
   const mine = useMine()
   const navigate = useNavigate()
   const ppw = list.data?.points_per_win
+  const table = useServerTable({
+    columns: COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    getRowId: (r) => r.team.id,
+    ...urlPaging(search, onChange, DEFAULT_PER),
+  })
 
   const items: PodiumItem[] = (podium.data ?? []).map((r) => ({
     key: r.team.id,
@@ -62,8 +67,6 @@ export function TeamsRanking({
       </Link>
     ),
   }))
-
-  const head = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
 
   return (
     <section className="flex flex-col gap-5">
@@ -100,45 +103,19 @@ export function TeamsRanking({
             {list.data ? `${list.data.total} equipos oficiales` : ""}
           </span>
         </div>
-        <Table className="min-w-[780px] text-sm">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className={cn(head, "w-14 pl-4")}>#</TableHead>
-              <TableHead className={head}>Equipo</TableHead>
-              <TableHead className={cn(head, "text-center")}>
-                Tendencia
-              </TableHead>
-              <TableHead className={cn(head, "text-center")}>Forma</TableHead>
-              <TableHead className={cn(head, "text-center")}>PJ</TableHead>
-              <TableHead className={cn(head, "text-center")}>G</TableHead>
-              <TableHead className={cn(head, "text-center")}>P</TableHead>
-              <TableHead className={cn(head, "text-center")}>% Vict.</TableHead>
-              <TableHead className={cn(head, "pr-4 text-right")}>Pts</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <ListState
-              query={list}
-              cols={9}
-              empty="No hay equipos con ese nombre."
-            >
-              {list.data?.items.map((r) => (
-                <TeamRow
-                  key={r.team.id}
-                  r={r}
-                  mine={mine.teamIds.has(r.team.id)}
-                  onOpen={() =>
-                    void navigate({
-                      to: "/teams/$id",
-                      params: { id: r.team.id },
-                    })
-                  }
-                />
-              ))}
-            </ListState>
-          </TableBody>
-        </Table>
-        <Paging search={search} total={list.data?.total} onChange={onChange} />
+        <DataTable
+          table={table}
+          query={list}
+          className="min-w-[780px] text-sm"
+          empty="No hay equipos con ese nombre."
+          rowLink={(r) => ({
+            label: r.team.name,
+            me: mine.teamIds.has(r.team.id),
+            onOpen: () =>
+              void navigate({ to: "/teams/$id", params: { id: r.team.id } }),
+          })}
+        />
+        <RankingPagination table={table} />
         {ppw && (
           <p className="border-t px-4 py-3 text-xs text-muted-foreground">
             {ppw.official} pts por partida de torneo ganada
@@ -156,29 +133,29 @@ const TONE = {
   flat: "text-muted-foreground",
 }
 
-function TeamRow({
-  r,
-  mine,
-  onOpen,
-}: {
-  r: RankingTeam
-  mine: boolean
-  onOpen: () => void
-}) {
-  const trend = teamTrend(r.trend, r.position)
-  return (
-    <RowLink label={r.team.name} me={mine} onOpen={onOpen}>
-      <TableCell className="pl-4 font-mono text-[13px] font-semibold">
-        {r.position}
-      </TableCell>
-      <TableCell>
-        <span className="flex items-center gap-2.5">
-          <TeamCrest team={r.team} size="row" />
-          <span className="font-medium">{r.team.name}</span>
-          {mine && <MineChip />}
-        </span>
-      </TableCell>
-      <TableCell className="text-center">
+const center = "text-center font-mono tabular-nums"
+
+const COLUMNS: DataColumn<RankingTeam>[] = [
+  {
+    id: "position",
+    header: "#",
+    headClassName: "w-14 pl-4",
+    cellClassName: "pl-4 font-mono text-[13px] font-semibold",
+    cell: ({ row }) => row.original.position,
+  },
+  {
+    id: "team",
+    header: "Equipo",
+    cell: ({ row }) => <TeamCell team={row.original.team} />,
+  },
+  {
+    id: "trend",
+    header: "Tendencia",
+    headClassName: "text-center",
+    cellClassName: "text-center",
+    cell: ({ row }) => {
+      const trend = teamTrend(row.original.trend, row.original.position)
+      return (
         <span
           title={trend.title}
           className={cn("font-mono text-xs font-semibold", TONE[trend.tone])}
@@ -186,56 +163,90 @@ function TeamRow({
           <span aria-hidden>{trend.text}</span>
           <span className="sr-only">{trend.title}</span>
         </span>
-      </TableCell>
-      <TableCell className="text-center">
-        {r.form.length ? (
-          <span
-            aria-label="Últimos 5 resultados"
-            className="inline-flex gap-[3px]"
-          >
-            {r.form.map((f, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "grid size-[18px] place-items-center rounded-[4px] font-mono text-[10px] font-bold",
-                  f === "W"
-                    ? "bg-win/18 text-win"
-                    : "bg-destructive/15 text-destructive"
-                )}
-              >
-                {f === "W" ? "V" : "D"}
-              </span>
-            ))}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {r.played}
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {r.won}
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {r.lost}
-      </TableCell>
-      <TableCell>
-        <span className="flex items-center justify-center gap-2">
-          <Progress
-            value={r.win_rate ?? 0}
-            aria-hidden
-            className="w-14"
-            indicatorClassName="bg-foreground"
-          />
-          <span className="w-[34px] font-mono text-xs font-medium tabular-nums">
-            {fmtPct(r.win_rate)}
-          </span>
+      )
+    },
+  },
+  {
+    id: "form",
+    header: "Forma",
+    headClassName: "text-center",
+    cellClassName: "text-center",
+    cell: ({ row }) =>
+      row.original.form.length ? (
+        <span
+          aria-label="Últimos 5 resultados"
+          className="inline-flex gap-[3px]"
+        >
+          {row.original.form.map((f, i) => (
+            <span
+              key={i}
+              className={cn(
+                "grid size-[18px] place-items-center rounded-[4px] font-mono text-[10px] font-bold",
+                f === "W"
+                  ? "bg-win/18 text-win"
+                  : "bg-destructive/15 text-destructive"
+              )}
+            >
+              {f === "W" ? "V" : "D"}
+            </span>
+          ))}
         </span>
-      </TableCell>
-      <TableCell className="pr-4 text-right font-mono text-[15px] font-semibold tabular-nums">
-        {r.points}
-      </TableCell>
-    </RowLink>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+  {
+    accessorKey: "played",
+    header: "PJ",
+    headClassName: "text-center",
+    cellClassName: center,
+  },
+  {
+    accessorKey: "won",
+    header: "G",
+    headClassName: "text-center",
+    cellClassName: center,
+  },
+  {
+    accessorKey: "lost",
+    header: "P",
+    headClassName: "text-center",
+    cellClassName: center,
+  },
+  {
+    id: "win_rate",
+    header: "% Vict.",
+    headClassName: "text-center",
+    cell: ({ row }) => (
+      <span className="flex items-center justify-center gap-2">
+        <Progress
+          value={row.original.win_rate ?? 0}
+          aria-hidden
+          className="w-14"
+          indicatorClassName="bg-foreground"
+        />
+        <span className="w-[34px] font-mono text-xs font-medium tabular-nums">
+          {fmtPct(row.original.win_rate)}
+        </span>
+      </span>
+    ),
+  },
+  {
+    accessorKey: "points",
+    header: "Pts",
+    headClassName: "pr-4 text-right",
+    cellClassName:
+      "pr-4 text-right font-mono text-[15px] font-semibold tabular-nums",
+  },
+]
+
+function TeamCell({ team }: { team: RankingTeam["team"] }) {
+  const mine = useMine().teamIds.has(team.id)
+  return (
+    <span className="flex items-center gap-2.5">
+      <TeamCrest team={team} size="row" />
+      <span className="font-medium">{team.name}</span>
+      {mine && <MineChip />}
+    </span>
   )
 }

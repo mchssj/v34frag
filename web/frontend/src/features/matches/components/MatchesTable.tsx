@@ -7,22 +7,18 @@ import {
   SwordsIcon,
   TriangleAlertIcon,
 } from "lucide-react"
-import { type KeyboardEvent, type ReactNode } from "react"
 import { errorMessage } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { KindBadge } from "@/components/brand/KindBadge"
-import { ListPagination } from "@/components/brand/ListPagination"
 import { RetryButton } from "@/components/brand/QueryState"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { DataTable } from "@/components/data-table/DataTable"
+import { DataTablePagination } from "@/components/data-table/DataTablePagination"
+import { urlPaging } from "@/components/data-table/url"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { cancelReasonLabel, fmtDay, fmtTime } from "@/features/mixes/lib/labels"
 import { CancelChip, DemoStatus } from "@/features/mixes/components/parts"
 import { matchesListOptions } from "../api/queries"
@@ -33,6 +29,113 @@ import type { Patch } from "./MatchFilters"
 const sideName = (s: MatchSummary["side1"], n: 1 | 2) =>
   s.name ?? s.team?.name ?? `Bando ${n}`
 
+const cancelledOf = (m: MatchSummary) => m.status === "cancelled"
+
+/** "win" o "loss" del bando; null si la partida no tiene ganador (o se canceló). */
+const resultOf = (m: MatchSummary, side: 1 | 2) =>
+  cancelledOf(m) || m.winner_side === null
+    ? null
+    : m.winner_side === side
+      ? "win"
+      : "loss"
+
+const COLUMNS: DataColumn<MatchSummary>[] = [
+  {
+    id: "date",
+    header: "Fecha",
+    headClassName: "pl-4",
+    cellClassName: "py-2 pl-4",
+    cell: ({ row }) => {
+      const at = row.original.played_at ?? row.original.starts_at
+      return at ? (
+        <span className="flex flex-col leading-tight">
+          <span>{fmtDay(at)}</span>
+          <span className="text-xs text-muted-foreground">{fmtTime(at)}</span>
+        </span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      )
+    },
+  },
+  {
+    id: "kind",
+    header: "Tipo",
+    cell: ({ row }) => <KindBadge kind={row.original.kind} />,
+  },
+  {
+    id: "map",
+    header: "Mapa",
+    cellClassName: "font-mono text-[13px] font-medium",
+    cell: ({ row }) => {
+      const m = row.original
+      // En una serie el mapa no es uno solo: se muestra el formato. "?" es un mapa sin definir.
+      return m.best_of > 1
+        ? `BO${m.best_of}`
+        : m.map && m.map.replace(/[?,\s]/g, "")
+          ? m.map
+          : "—"
+    },
+  },
+  {
+    id: "side1",
+    header: "Bando 1",
+    headClassName: "text-right",
+    cellClassName: (m) =>
+      cn("text-right", resultOf(m, 1) === "win" && "font-semibold"),
+    cell: ({ row }) => sideName(row.original.side1, 1),
+  },
+  {
+    id: "result",
+    header: "Resultado",
+    headClassName: "text-center",
+    cellClassName: "text-center",
+    cell: ({ row }) => {
+      const m = row.original
+      return cancelledOf(m) ? (
+        <CancelChip reason={m.cancel_reason} />
+      ) : (
+        <span className="font-mono text-sm tabular-nums">
+          <Score value={m.side1.score} result={resultOf(m, 1)} />
+          <span className="text-muted-foreground"> : </span>
+          <Score value={m.side2.score} result={resultOf(m, 2)} />
+        </span>
+      )
+    },
+  },
+  {
+    id: "side2",
+    header: "Bando 2",
+    cellClassName: (m) => cn(resultOf(m, 2) === "win" && "font-semibold"),
+    cell: ({ row }) => sideName(row.original.side2, 2),
+  },
+  {
+    id: "detail",
+    header: "Detalle",
+    cellClassName: "max-w-[240px] truncate text-[13px] text-muted-foreground",
+    cell: ({ row }) => {
+      const m = row.original
+      return cancelledOf(m)
+        ? cancelReasonLabel(m.cancel_reason)
+        : m.kind === "official"
+          ? [m.event?.name ?? "Torneo", m.label].filter(Boolean).join(" · ")
+          : // El MVP del mix llega con el pedido E17.
+            ""
+    },
+  },
+  {
+    id: "demo",
+    header: "Demo / TV",
+    cell: ({ row }) => <DemoStatus status={row.original.demo_status} />,
+  },
+  {
+    id: "open",
+    header: () => <span className="sr-only">Abrir</span>,
+    headClassName: "pr-4",
+    cellClassName: "pr-4 text-right text-muted-foreground",
+    cell: () => <ChevronRightIcon aria-hidden className="ml-auto size-4" />,
+  },
+]
+
 export function MatchesTable({
   search,
   onChange,
@@ -42,88 +145,58 @@ export function MatchesTable({
 }) {
   const list = useQuery(matchesListOptions(search))
   const navigate = useNavigate()
-  const head = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
+  const table = useServerTable({
+    columns: COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    getRowId: (m) => m.id,
+    ...urlPaging(search, onChange, DEFAULT_PER),
+  })
 
   return (
     <>
       {/* Alto de 8 filas haya las que haya: la tarjeta no salta al filtrar. */}
       <div className="flex min-h-[420px] flex-col">
-        {list.isPending ? (
-          <TableShell head={head}>
-            {Array.from({ length: 8 }, (_, i) => (
-              <TableRow key={i} className="hover:bg-transparent">
-                <TableCell colSpan={9} className="px-4 py-2.5">
-                  <Skeleton className="h-7 w-full" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableShell>
-        ) : list.isError ? (
-          <EmptyState
-            icon={TriangleAlertIcon}
-            title="No se pudieron cargar las partidas"
-            action={<RetryButton error={list.error} onRetry={list.refetch} />}
-          >
-            {errorMessage(list.error)}
-          </EmptyState>
-        ) : list.data.items.length === 0 ? (
-          <NoMatches search={search} onChange={onChange} />
-        ) : (
-          <TableShell head={head}>
-            {list.data.items.map((m) => (
-              <MatchRow
-                key={m.id}
-                m={m}
-                onOpen={() =>
-                  void navigate({ to: "/match/$id", params: { id: m.id } })
-                }
-              />
-            ))}
-          </TableShell>
-        )}
+        <DataTable
+          table={table}
+          query={list}
+          className="min-w-[900px] text-sm"
+          stateAs="block"
+          skeletonCellClassName="px-4 py-2.5"
+          error={
+            <EmptyState
+              icon={TriangleAlertIcon}
+              title="No se pudieron cargar las partidas"
+              action={<RetryButton error={list.error} onRetry={list.refetch} />}
+            >
+              {errorMessage(list.error)}
+            </EmptyState>
+          }
+          empty={<NoMatches search={search} onChange={onChange} />}
+          rowClassName={(m) =>
+            cn("h-12", cancelledOf(m) && "text-muted-foreground")
+          }
+          rowLink={(m) => {
+            const a = sideName(m.side1, 1)
+            const b = sideName(m.side2, 2)
+            return {
+              label: `${a} contra ${b}${m.map && m.best_of === 1 ? ` en ${m.map}` : ""}`,
+              onOpen: () =>
+                void navigate({ to: "/match/$id", params: { id: m.id } }),
+            }
+          }}
+        />
       </div>
       {!!list.data?.total && (
         <div className="border-t">
-          <ListPagination
-            total={list.data.total}
-            page={search.page ?? 1}
-            per={search.per ?? DEFAULT_PER}
+          <DataTablePagination
+            table={table}
             perOptions={PER_OPTIONS}
             perLabel="Partidas por página"
-            onPage={(p) => onChange({ page: p === 1 ? undefined : p })}
-            onPer={(n) =>
-              onChange({
-                per: n === DEFAULT_PER ? undefined : (n as 10 | 25),
-                page: undefined,
-              })
-            }
           />
         </div>
       )}
     </>
-  )
-}
-
-function TableShell({ head, children }: { head: string; children: ReactNode }) {
-  return (
-    <Table className="min-w-[900px] text-sm">
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className={cn(head, "pl-4")}>Fecha</TableHead>
-          <TableHead className={head}>Tipo</TableHead>
-          <TableHead className={head}>Mapa</TableHead>
-          <TableHead className={cn(head, "text-right")}>Bando 1</TableHead>
-          <TableHead className={cn(head, "text-center")}>Resultado</TableHead>
-          <TableHead className={head}>Bando 2</TableHead>
-          <TableHead className={head}>Detalle</TableHead>
-          <TableHead className={head}>Demo / TV</TableHead>
-          <TableHead className={cn(head, "pr-4")}>
-            <span className="sr-only">Abrir</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>{children}</TableBody>
-    </Table>
   )
 }
 
@@ -196,92 +269,6 @@ function NoMatches({
       Aparecen acá cuando se juega un mix, un PCW o un partido de torneo en el
       servidor.
     </EmptyState>
-  )
-}
-
-function MatchRow({ m, onOpen }: { m: MatchSummary; onOpen: () => void }) {
-  const cancelled = m.status === "cancelled"
-  const at = m.played_at ?? m.starts_at
-  const won = (side: 1 | 2) =>
-    !cancelled && m.winner_side === side
-      ? "win"
-      : !cancelled && m.winner_side !== null
-        ? "loss"
-        : null
-  const onKey = (e: KeyboardEvent) => {
-    if (e.key === "Enter") onOpen()
-  }
-  const a = sideName(m.side1, 1)
-  const b = sideName(m.side2, 2)
-  // En una serie el mapa no es uno solo: se muestra el formato. "?" es un mapa sin definir.
-  const map =
-    m.best_of > 1
-      ? `BO${m.best_of}`
-      : m.map && m.map.replace(/[?,\s]/g, "")
-        ? m.map
-        : "—"
-  const detail = cancelled
-    ? cancelReasonLabel(m.cancel_reason)
-    : m.kind === "official"
-      ? [m.event?.name ?? "Torneo", m.label].filter(Boolean).join(" · ")
-      : // El MVP del mix llega con el pedido E17.
-        null
-
-  return (
-    <TableRow
-      role="link"
-      tabIndex={0}
-      aria-label={`${a} contra ${b}${m.map && m.best_of === 1 ? ` en ${m.map}` : ""}`}
-      onClick={onOpen}
-      onKeyDown={onKey}
-      className={cn(
-        "h-12 cursor-pointer hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
-        cancelled && "text-muted-foreground"
-      )}
-    >
-      <TableCell className="py-2 pl-4">
-        {at ? (
-          <span className="flex flex-col leading-tight">
-            <span>{fmtDay(at)}</span>
-            <span className="text-xs text-muted-foreground">{fmtTime(at)}</span>
-          </span>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <KindBadge kind={m.kind} />
-      </TableCell>
-      <TableCell className="font-mono text-[13px] font-medium">{map}</TableCell>
-      <TableCell
-        className={cn("text-right", won(1) === "win" && "font-semibold")}
-      >
-        {a}
-      </TableCell>
-      <TableCell className="text-center">
-        {cancelled ? (
-          <CancelChip reason={m.cancel_reason} />
-        ) : (
-          <span className="font-mono text-sm tabular-nums">
-            <Score value={m.side1.score} result={won(1)} />
-            <span className="text-muted-foreground"> : </span>
-            <Score value={m.side2.score} result={won(2)} />
-          </span>
-        )}
-      </TableCell>
-      <TableCell className={cn(won(2) === "win" && "font-semibold")}>
-        {b}
-      </TableCell>
-      <TableCell className="max-w-[240px] truncate text-[13px] text-muted-foreground">
-        {detail ?? ""}
-      </TableCell>
-      <TableCell>
-        <DemoStatus status={m.demo_status} />
-      </TableCell>
-      <TableCell className="pr-4 text-right text-muted-foreground">
-        <ChevronRightIcon aria-hidden className="ml-auto size-4" />
-      </TableCell>
-    </TableRow>
   )
 }
 

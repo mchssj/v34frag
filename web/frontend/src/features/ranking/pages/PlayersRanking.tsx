@@ -1,22 +1,21 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { cn } from "cn"
-import type { KeyboardEvent, ReactNode } from "react"
+import { useMemo, type ComponentProps } from "react"
+import type { RowData } from "@tanstack/react-table"
 
 import { FilterChips } from "@/components/brand/FilterChips"
 import { LevelBadge } from "@/components/brand/LevelBadge"
-import { ListPagination } from "@/components/brand/ListPagination"
 import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
-import { QueryErrorMessage } from "@/components/brand/QueryState"
-import { Skeleton } from "@/components/ui/skeleton"
+import { DataTable } from "@/components/data-table/DataTable"
+import { DataTablePagination } from "@/components/data-table/DataTablePagination"
+import { SortHeader } from "@/components/data-table/SortHeader"
+import { urlPaging, urlSorting } from "@/components/data-table/url"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useServerTable,
+  type DataColumn,
+  type DataTableInstance,
+} from "@/components/data-table/useServerTable"
 import { Toggle } from "@/components/ui/toggle"
 import {
   Tooltip,
@@ -27,7 +26,6 @@ import { fmt2, roleCountry } from "../lib/labels"
 import {
   Podium,
   RankingHeader,
-  SortHead,
   Sparkline,
   TeamsCell,
   coverLink,
@@ -46,6 +44,7 @@ import type { RankingPlayer, Season, SeasonStanding } from "../types"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { Card } from "@/components/ui/card"
 import { Progress as UiProgress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import { SeasonBar } from "../components/SeasonBar"
 import {
   DEFAULT_PER,
@@ -124,20 +123,92 @@ const LEVELS = [
   { value: "1-6", label: "Nivel 1–6" },
 ] as const
 
+const HISTORIC_COLUMNS: DataColumn<RankingPlayer>[] = [
+  {
+    id: "position",
+    header: "#",
+    headClassName: "w-14 pl-4",
+    cellClassName:
+      "pl-4 font-mono text-[13px] font-semibold text-muted-foreground",
+    cell: ({ row }) => row.original.position,
+  },
+  {
+    id: "player",
+    header: "Jugador",
+    cell: ({ row }) => {
+      const p = row.original
+      const sub = roleCountry(p.game_role, p.country)
+      return (
+        <span className="flex items-center gap-2.5">
+          <PlayerAvatar
+            size="row"
+            alias={p.player.alias}
+            photo={p.player.photo_url}
+          />
+          <span className="flex flex-col leading-tight">
+            <span className="font-medium">{p.player.alias}</span>
+            {sub && (
+              <span className="text-xs text-muted-foreground">{sub}</span>
+            )}
+          </span>
+        </span>
+      )
+    },
+  },
+  levelColumn(),
+  {
+    accessorKey: "elo",
+    enableSorting: true,
+    header: ({ column }) => <SortHeader column={column} label="ELO" />,
+    headClassName: "text-right",
+    cellClassName: "text-right font-mono font-semibold tabular-nums",
+  },
+  teamsColumn(),
+  {
+    accessorKey: "rating",
+    enableSorting: true,
+    header: ({ column }) => <SortHeader column={column} label="Rating" />,
+    headClassName: "text-center",
+    cellClassName: "text-center font-mono tabular-nums",
+    cell: ({ row }) => fmt2(row.original.rating),
+  },
+  {
+    accessorKey: "kd",
+    enableSorting: true,
+    header: ({ column }) => <SortHeader column={column} label="K/D" />,
+    headClassName: "text-center",
+    cellClassName: "text-center font-mono tabular-nums",
+    cell: ({ row }) => fmt2(row.original.kd),
+  },
+  {
+    accessorKey: "matches",
+    enableSorting: true,
+    header: ({ column }) => <SortHeader column={column} label="Partidas" />,
+    headClassName: "text-right",
+    cellClassName: "text-right font-mono text-muted-foreground tabular-nums",
+  },
+  {
+    id: "trend",
+    header: "Últimos 30",
+    headClassName: "pr-4 text-right",
+    cellClassName: "pr-4 text-right",
+    cell: ({ row }) => <Sparkline values={row.original.elo_trend} />,
+  },
+]
+
 function HistoricView({ search, onChange }: Props) {
   const podium = useQuery(playerPodiumOptions)
   const list = useQuery(playerRankingOptions(search))
   const mine = useMine()
   const navigate = useNavigate()
-  const sort = search.sort === "elo" ? undefined : search.sort
-  const order = search.order ?? "desc"
-
-  const sortBy = (key: "rating" | "kd" | "matches" | undefined) => {
-    if (!key || (sort === key && order === "asc"))
-      onChange({ sort: undefined, order: undefined, page: undefined })
-    else if (sort === key) onChange({ order: "asc", page: undefined })
-    else onChange({ sort: key, order: undefined, page: undefined })
-  }
+  const table = useServerTable({
+    columns: HISTORIC_COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    getRowId: (p) => p.player.id,
+    ...urlPaging(search, onChange, DEFAULT_PER),
+    ...urlSorting(search, onChange, "elo"),
+  })
 
   const items: PodiumItem[] = (podium.data ?? []).map((p) => ({
     key: p.player.id,
@@ -154,8 +225,6 @@ function HistoricView({ search, onChange }: Props) {
     ),
     link: <PlayerLink alias={p.player.alias} cover />,
   }))
-
-  const head = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
 
   return (
     <>
@@ -176,130 +245,24 @@ function HistoricView({ search, onChange }: Props) {
             {list.data ? `${list.data.total} jugadores` : ""}
           </span>
         </div>
-        <Table className="min-w-[900px] text-sm">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className={cn(head, "w-14 pl-4")}>#</TableHead>
-              <TableHead className={head}>Jugador</TableHead>
-              <TableHead className={cn(head, "text-center")}>Nivel</TableHead>
-              <TableHead className={cn(head, "text-right")}>
-                <SortHead
-                  label="ELO"
-                  active={!sort}
-                  order="desc"
-                  onClick={() => sortBy(undefined)}
-                />
-              </TableHead>
-              <TableHead className={head}>Equipo</TableHead>
-              <TableHead className={cn(head, "text-center")}>
-                <SortHead
-                  label="Rating"
-                  active={sort === "rating"}
-                  order={order}
-                  onClick={() => sortBy("rating")}
-                />
-              </TableHead>
-              <TableHead className={cn(head, "text-center")}>
-                <SortHead
-                  label="K/D"
-                  active={sort === "kd"}
-                  order={order}
-                  onClick={() => sortBy("kd")}
-                />
-              </TableHead>
-              <TableHead className={cn(head, "text-right")}>
-                <SortHead
-                  label="Partidas"
-                  active={sort === "matches"}
-                  order={order}
-                  onClick={() => sortBy("matches")}
-                />
-              </TableHead>
-              <TableHead className={cn(head, "pr-4 text-right")}>
-                Últimos 30
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <ListState
-              query={list}
-              cols={9}
-              empty="No hay jugadores con esos filtros."
-            >
-              {list.data?.items.map((p) => (
-                <HistoricRow
-                  key={p.player.id}
-                  p={p}
-                  me={p.player.id === mine.playerId}
-                  onOpen={() =>
-                    void navigate({
-                      to: "/player/$nick",
-                      params: { nick: p.player.alias },
-                    })
-                  }
-                />
-              ))}
-            </ListState>
-          </TableBody>
-        </Table>
-        <Paging search={search} total={list.data?.total} onChange={onChange} />
+        <DataTable
+          table={table}
+          query={list}
+          className="min-w-[900px] text-sm"
+          empty="No hay jugadores con esos filtros."
+          rowLink={(p) => ({
+            label: p.player.alias,
+            me: p.player.id === mine.playerId,
+            onOpen: () =>
+              void navigate({
+                to: "/player/$nick",
+                params: { nick: p.player.alias },
+              }),
+          })}
+        />
+        <RankingPagination table={table} />
       </Card>
     </>
-  )
-}
-
-function HistoricRow({
-  p,
-  me,
-  onOpen,
-}: {
-  p: RankingPlayer
-  me: boolean
-  onOpen: () => void
-}) {
-  const sub = roleCountry(p.game_role, p.country)
-  return (
-    <RowLink label={p.player.alias} me={me} onOpen={onOpen}>
-      <TableCell className="pl-4 font-mono text-[13px] font-semibold text-muted-foreground">
-        {p.position}
-      </TableCell>
-      <TableCell>
-        <span className="flex items-center gap-2.5">
-          <PlayerAvatar
-            size="row"
-            alias={p.player.alias}
-            photo={p.player.photo_url}
-          />
-          <span className="flex flex-col leading-tight">
-            <span className="font-medium">{p.player.alias}</span>
-            {sub && (
-              <span className="text-xs text-muted-foreground">{sub}</span>
-            )}
-          </span>
-        </span>
-      </TableCell>
-      <TableCell className="text-center">
-        <LevelCell level={p.level} />
-      </TableCell>
-      <TableCell className="text-right font-mono font-semibold tabular-nums">
-        {p.elo}
-      </TableCell>
-      <TableCell>
-        <TeamsCell teams={p.teams} />
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {fmt2(p.rating)}
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {fmt2(p.kd)}
-      </TableCell>
-      <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-        {p.matches}
-      </TableCell>
-      <TableCell className="pr-4 text-right">
-        <Sparkline values={p.elo_trend} />
-      </TableCell>
-    </RowLink>
   )
 }
 
@@ -317,21 +280,141 @@ function LevelFilter({ search, onChange }: Props) {
 
 // ---------- Temporada ----------
 
+function seasonColumns(
+  active: boolean,
+  min: number
+): DataColumn<SeasonStanding>[] {
+  return [
+    {
+      id: "rank",
+      header: "#",
+      headClassName: "w-14 pl-4",
+      cellClassName:
+        "pl-4 font-mono text-[13px] font-semibold text-muted-foreground",
+      cell: ({ row }) => row.original.rank ?? "—",
+    },
+    {
+      id: "player",
+      header: "Jugador",
+      cell: ({ row }) => (
+        <span className="flex items-center gap-2.5">
+          <PlayerAvatar
+            size="row"
+            alias={row.original.player.alias}
+            photo={row.original.player.photo_url}
+          />
+          <span className="font-medium text-foreground">
+            {row.original.player.alias}
+          </span>
+        </span>
+      ),
+    },
+    levelColumn(),
+    {
+      accessorKey: "elo",
+      enableSorting: true,
+      header: ({ column }) => <SortHeader column={column} label="ELO" />,
+      headClassName: "text-right",
+      cellClassName: "text-right font-mono tabular-nums",
+      cell: ({ row }) => (
+        <span className="flex flex-col items-end leading-tight">
+          <span className="font-semibold text-foreground">
+            {row.original.elo}
+          </span>
+          <span className="text-[11px] text-muted-foreground">
+            máx. {row.original.peak_elo}
+          </span>
+        </span>
+      ),
+    },
+    teamsColumn(),
+    {
+      accessorKey: "rating",
+      enableSorting: true,
+      header: ({ column }) => <SortHeader column={column} label="Rating" />,
+      headClassName: "text-center",
+      cellClassName:
+        "text-center font-mono font-semibold text-foreground tabular-nums",
+      cell: ({ row }) => fmt2(row.original.rating),
+    },
+    {
+      accessorKey: "kd",
+      enableSorting: true,
+      header: ({ column }) => <SortHeader column={column} label="K/D" />,
+      headClassName: "text-center",
+      cellClassName: "text-center font-mono tabular-nums",
+      cell: ({ row }) => fmt2(row.original.kd),
+    },
+    {
+      accessorKey: "matches",
+      enableSorting: true,
+      header: ({ column }) => <SortHeader column={column} label="Mixes" />,
+      headClassName: "text-center",
+      cellClassName: "text-center",
+      cell: ({ row }) =>
+        row.original.eligible ? (
+          <span className="font-mono tabular-nums">{row.original.matches}</span>
+        ) : (
+          <Progress matches={row.original.matches} min={min} />
+        ),
+    },
+    {
+      id: "record",
+      header: "V–D",
+      headClassName: "text-center",
+      cellClassName: "text-center font-mono tabular-nums",
+      cell: ({ row }) => `${row.original.wins}–${row.original.losses}`,
+    },
+    {
+      id: "medal",
+      header: active ? "Medalla si cierra hoy" : "Medalla",
+      cell: ({ row }) =>
+        row.original.medal ? (
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <span aria-hidden className="text-sm leading-none">
+              {row.original.medal.icon}
+            </span>
+            {row.original.medal.name}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "after",
+      header: active ? "Al cerrar" : "Después del cierre",
+      headClassName: "pr-4 text-right",
+      cellClassName: "pr-4 text-right",
+      cell: ({ row }) =>
+        row.original.elo_after !== row.original.elo ? (
+          <span className="font-mono text-xs font-medium tabular-nums">
+            {row.original.elo_after}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Sin cambio</span>
+        ),
+    },
+  ]
+}
+
 function SeasonView({ season, search, onChange }: Props & { season: Season }) {
   const podium = useQuery(standingsPodiumOptions(season.id))
   const list = useQuery(standingsOptions(season.id, search))
   const mine = useMine()
   const navigate = useNavigate()
   const active = season.status === "active"
-  const sort = search.sort
-  const order = search.order ?? "desc"
-
-  const sortBy = (key: NonNullable<PlayerRankingSearch["sort"]>) => {
-    if (sort === key && order === "asc")
-      onChange({ sort: undefined, order: undefined, page: undefined })
-    else if (sort === key) onChange({ order: "asc", page: undefined })
-    else onChange({ sort: key, order: undefined, page: undefined })
-  }
+  const columns = useMemo(
+    () => seasonColumns(active, season.min_matches),
+    [active, season.min_matches]
+  )
+  const table = useServerTable({
+    columns,
+    data: list.data?.items,
+    total: list.data?.total,
+    getRowId: (r) => r.player.id,
+    ...urlPaging(search, onChange, DEFAULT_PER),
+    ...urlSorting(search, onChange),
+  })
 
   const items: PodiumItem[] = (podium.data ?? []).map((r) => ({
     key: r.player.id,
@@ -348,8 +431,6 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
     ),
     link: <PlayerLink alias={r.player.alias} cover />,
   }))
-
-  const head = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
 
   return (
     <>
@@ -379,78 +460,23 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
             {list.data ? `${list.data.total} jugadores` : ""}
           </span>
         </div>
-        <Table className="min-w-[1040px] text-sm">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className={cn(head, "w-14 pl-4")}>#</TableHead>
-              <TableHead className={head}>Jugador</TableHead>
-              <TableHead className={cn(head, "text-center")}>Nivel</TableHead>
-              <TableHead className={cn(head, "text-right")}>
-                <SortHead
-                  label="ELO"
-                  active={sort === "elo"}
-                  order={order}
-                  onClick={() => sortBy("elo")}
-                />
-              </TableHead>
-              <TableHead className={head}>Equipo</TableHead>
-              <TableHead className={cn(head, "text-center")}>
-                <SortHead
-                  label="Rating"
-                  active={sort === "rating"}
-                  order={order}
-                  onClick={() => sortBy("rating")}
-                />
-              </TableHead>
-              <TableHead className={cn(head, "text-center")}>
-                <SortHead
-                  label="K/D"
-                  active={sort === "kd"}
-                  order={order}
-                  onClick={() => sortBy("kd")}
-                />
-              </TableHead>
-              <TableHead className={cn(head, "text-center")}>
-                <SortHead
-                  label="Mixes"
-                  active={sort === "matches"}
-                  order={order}
-                  onClick={() => sortBy("matches")}
-                />
-              </TableHead>
-              <TableHead className={cn(head, "text-center")}>V–D</TableHead>
-              <TableHead className={head}>
-                {active ? "Medalla si cierra hoy" : "Medalla"}
-              </TableHead>
-              <TableHead className={cn(head, "pr-4 text-right")}>
-                {active ? "Al cerrar" : "Después del cierre"}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <ListState
-              query={list}
-              cols={11}
-              empty="No hay jugadores con esos filtros."
-            >
-              {list.data?.items.map((r) => (
-                <StandingRow
-                  key={r.player.id}
-                  r={r}
-                  min={season.min_matches}
-                  me={r.player.id === mine.playerId}
-                  onOpen={() =>
-                    void navigate({
-                      to: "/player/$nick",
-                      params: { nick: r.player.alias },
-                    })
-                  }
-                />
-              ))}
-            </ListState>
-          </TableBody>
-        </Table>
-        <Paging search={search} total={list.data?.total} onChange={onChange} />
+        <DataTable
+          table={table}
+          query={list}
+          className="min-w-[1040px] text-sm"
+          empty="No hay jugadores con esos filtros."
+          rowClassName={(r) => cn(!r.eligible && "text-muted-foreground")}
+          rowLink={(r) => ({
+            label: r.player.alias,
+            me: r.player.id === mine.playerId,
+            onOpen: () =>
+              void navigate({
+                to: "/player/$nick",
+                params: { nick: r.player.alias },
+              }),
+          })}
+        />
+        <RankingPagination table={table} />
         <p className="border-t px-4 py-3 text-xs text-muted-foreground">
           Sin puesto: jugaron menos de {season.min_matches} mixes en la
           temporada. Al cerrar, quienes tengan más de {season.reset_floor} de
@@ -458,93 +484,6 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
         </p>
       </Card>
     </>
-  )
-}
-
-function StandingRow({
-  r,
-  min,
-  me,
-  onOpen,
-}: {
-  r: SeasonStanding
-  min: number
-  me: boolean
-  onOpen: () => void
-}) {
-  const out = !r.eligible
-  return (
-    <RowLink
-      label={r.player.alias}
-      me={me}
-      onOpen={onOpen}
-      className={cn(out && "text-muted-foreground")}
-    >
-      <TableCell className="pl-4 font-mono text-[13px] font-semibold text-muted-foreground">
-        {r.rank ?? "—"}
-      </TableCell>
-      <TableCell>
-        <span className="flex items-center gap-2.5">
-          <PlayerAvatar
-            size="row"
-            alias={r.player.alias}
-            photo={r.player.photo_url}
-          />
-          <span className="font-medium text-foreground">{r.player.alias}</span>
-        </span>
-      </TableCell>
-      <TableCell className="text-center">
-        <LevelCell level={r.level} />
-      </TableCell>
-      <TableCell className="text-right font-mono tabular-nums">
-        <span className="flex flex-col items-end leading-tight">
-          <span className="font-semibold text-foreground">{r.elo}</span>
-          <span className="text-[11px] text-muted-foreground">
-            máx. {r.peak_elo}
-          </span>
-        </span>
-      </TableCell>
-      <TableCell>
-        <TeamsCell teams={r.teams} />
-      </TableCell>
-      <TableCell className="text-center font-mono font-semibold text-foreground tabular-nums">
-        {fmt2(r.rating)}
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {fmt2(r.kd)}
-      </TableCell>
-      <TableCell className="text-center">
-        {out ? (
-          <Progress matches={r.matches} min={min} />
-        ) : (
-          <span className="font-mono tabular-nums">{r.matches}</span>
-        )}
-      </TableCell>
-      <TableCell className="text-center font-mono tabular-nums">
-        {r.wins}–{r.losses}
-      </TableCell>
-      <TableCell>
-        {r.medal ? (
-          <span className="inline-flex items-center gap-1.5 text-xs">
-            <span aria-hidden className="text-sm leading-none">
-              {r.medal.icon}
-            </span>
-            {r.medal.name}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-      </TableCell>
-      <TableCell className="pr-4 text-right">
-        {r.elo_after !== r.elo ? (
-          <span className="font-mono text-xs font-medium tabular-nums">
-            {r.elo_after}
-          </span>
-        ) : (
-          <span className="text-xs text-muted-foreground">Sin cambio</span>
-        )}
-      </TableCell>
-    </RowLink>
   )
 }
 
@@ -593,112 +532,37 @@ function LevelCell({ level }: { level: number | null }) {
   )
 }
 
-export function RowLink({
-  label,
-  me,
-  onOpen,
-  className,
-  children,
-}: {
-  label: string
-  me: boolean
-  onOpen: () => void
-  className?: string
-  children: ReactNode
-}) {
-  const onKey = (e: KeyboardEvent) => {
-    if (e.key === "Enter") onOpen()
+function levelColumn<T extends { level: number | null }>(): DataColumn<T> {
+  return {
+    id: "level",
+    header: "Nivel",
+    headClassName: "text-center",
+    cellClassName: "text-center",
+    cell: ({ row }) => <LevelCell level={row.original.level} />,
   }
-  return (
-    <TableRow
-      role="link"
-      tabIndex={0}
-      aria-label={label}
-      aria-current={me ? "true" : undefined}
-      onClick={onOpen}
-      onKeyDown={onKey}
-      className={cn(
-        "cursor-pointer hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
-        me && "bg-primary/6 hover:bg-primary/10",
-        className
-      )}
-    >
-      {children}
-    </TableRow>
-  )
 }
 
-/** Skeleton, error con reintento o vacío; si no, las filas. */
-export function ListState({
-  query,
-  cols,
-  empty,
-  children,
-}: {
-  query: {
-    isPending: boolean
-    isError: boolean
-    error: unknown
-    data?: { items: unknown[] }
-    refetch: () => unknown
+function teamsColumn<
+  T extends { teams: ComponentProps<typeof TeamsCell>["teams"] },
+>(): DataColumn<T> {
+  return {
+    id: "teams",
+    header: "Equipo",
+    cell: ({ row }) => <TeamsCell teams={row.original.teams} />,
   }
-  cols: number
-  empty: string
-  children: ReactNode
-}) {
-  if (query.isPending)
-    return Array.from({ length: 8 }, (_, i) => (
-      <TableRow key={i} className="hover:bg-transparent">
-        <TableCell colSpan={cols} className="px-4 py-3">
-          <Skeleton className="h-7 w-full" />
-        </TableCell>
-      </TableRow>
-    ))
-  if (query.isError)
-    return (
-      <TableRow className="hover:bg-transparent">
-        <TableCell colSpan={cols} className="px-4 py-10 text-center">
-          <QueryErrorMessage error={query.error} onRetry={query.refetch} />
-        </TableCell>
-      </TableRow>
-    )
-  if (!query.data?.items.length)
-    return (
-      <TableRow className="hover:bg-transparent">
-        <TableCell
-          colSpan={cols}
-          className="px-4 py-10 text-center text-[13px] text-muted-foreground"
-        >
-          {empty}
-        </TableCell>
-      </TableRow>
-    )
-  return children
 }
 
-export function Paging({
-  search,
-  total,
-  onChange,
+/** Pie de las tablas del ranking: tamaño de página y páginas. */
+export function RankingPagination<T extends RowData>({
+  table,
 }: {
-  search: { page?: number; per?: 25 | 50 | 100 }
-  total: number | undefined
-  onChange: (patch: { page?: number; per?: 25 | 50 | 100 }) => void
+  table: DataTableInstance<T>
 }) {
   return (
-    <ListPagination
-      total={total ?? 0}
-      page={search.page ?? 1}
-      per={search.per ?? DEFAULT_PER}
+    <DataTablePagination
+      table={table}
       perOptions={PER_OPTIONS}
       perLabel="Filas por página"
-      onPage={(p) => onChange({ page: p === 1 ? undefined : p })}
-      onPer={(n) =>
-        onChange({
-          per: n === DEFAULT_PER ? undefined : (n as 50 | 100),
-          page: undefined,
-        })
-      }
     />
   )
 }

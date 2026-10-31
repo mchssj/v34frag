@@ -1,14 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CrownIcon,
-  GitCompareIcon,
-  ShieldIcon,
-  UserIcon,
-} from "lucide-react"
+import { CrownIcon, GitCompareIcon, ShieldIcon, UserIcon } from "lucide-react"
 import type { ReactNode } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -112,35 +105,6 @@ export function Sparkline({ values }: { values: number[] }) {
       />
       <circle cx={lx} cy={ly} r="2" fill="currentColor" />
     </svg>
-  )
-}
-
-/** Cabecera de una columna que ordena: clic alterna desc → asc → orden por defecto. */
-export function SortHead({
-  label,
-  active,
-  order,
-  onClick,
-}: {
-  label: string
-  active: boolean
-  order: "asc" | "desc"
-  onClick: () => void
-}) {
-  const Icon = order === "asc" ? ArrowUpIcon : ArrowDownIcon
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`Ordenar por ${label}`}
-      className={cn(
-        "inline-flex items-center gap-[3px] rounded-sm hover:text-foreground",
-        active && "text-foreground"
-      )}
-    >
-      {label}
-      {active && <Icon aria-hidden className="size-3" />}
-    </button>
   )
 }
 
