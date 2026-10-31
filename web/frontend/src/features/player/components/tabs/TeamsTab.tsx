@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { CrownIcon, SearchIcon, UsersIcon } from "lucide-react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { QueryState } from "@/components/brand/QueryState"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -11,7 +12,6 @@ import { STATUS_CHIP, TeamCrest } from "@/features/teams/components/ui"
 import { fmtMonthShort, legacyTeams, stintLength } from "../../lib/labels"
 import { teamsOptions } from "../../api/queries"
 import type { TeamStint } from "../../types"
-import { Loaded } from "./shared"
 
 // ---------- Equipos ----------
 
@@ -36,7 +36,7 @@ export function Teams({
       variant="outline"
       className="flex min-h-[396px] flex-col gap-3 px-5 py-4"
     >
-      <Loaded q={q}>
+      <QueryState q={q}>
         {(items) => {
           if (!items.length)
             return (
@@ -93,7 +93,7 @@ export function Teams({
             </>
           )
         }}
-      </Loaded>
+      </QueryState>
       {old && (
         <div className="mt-auto flex flex-col gap-1 border-t border-dashed pt-3">
           <span className="text-xs text-muted-foreground">

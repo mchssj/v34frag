@@ -4,8 +4,9 @@ import { cn } from "cn"
 import { ArrowLeftIcon, ChevronsUpDownIcon } from "lucide-react"
 import { useState } from "react"
 
-import { errorMessage, isApiError, isRetryable } from "@/api/errors"
+import { isApiError } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { QueryErrorMessage } from "@/components/brand/QueryState"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -182,21 +183,15 @@ function CompareBody({ a, b }: { a: string; b: string }) {
   if (q.isError)
     return (
       <div className="rounded-xl border px-4 py-10 text-center">
-        <p className="text-sm text-muted-foreground">
-          {isApiError(q.error, "NOT_FOUND")
-            ? "Ese jugador no existe."
-            : errorMessage(q.error)}
-        </p>
-        {isRetryable(q.error) && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => void q.refetch()}
-          >
-            Reintentar
-          </Button>
-        )}
+        <QueryErrorMessage
+          error={q.error}
+          onRetry={q.refetch}
+          message={
+            isApiError(q.error, "NOT_FOUND")
+              ? "Ese jugador no existe."
+              : undefined
+          }
+        />
       </div>
     )
   return <CompareView data={q.data} />

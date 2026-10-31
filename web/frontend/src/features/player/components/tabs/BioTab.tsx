@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import { type ReactNode } from "react"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { QueryState } from "@/components/brand/QueryState"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
@@ -22,7 +23,6 @@ import { Soon, TeamCrest } from "@/features/teams/components/ui"
 import { fmtAgo, fmtLong, fmtMonthShort } from "../../lib/labels"
 import { medalsOptions, titlesOptions } from "../../api/queries"
 import type { PlayerDetail, Title } from "../../types"
-import { Loaded } from "./shared"
 
 // ---------- Bio y torneos ----------
 
@@ -134,9 +134,9 @@ function Palmares({ nick }: { nick: string }) {
   const medals = useQuery(medalsOptions(nick))
   const withLogo = useTeamLogos((titles.data ?? []).map((t) => t.team))
   return (
-    <Loaded q={titles}>
+    <QueryState q={titles}>
       {(won) => (
-        <Loaded q={medals}>
+        <QueryState q={medals}>
           {(given) => {
             const empty = !won.length && !given.length
             const summary = [
@@ -233,9 +233,9 @@ function Palmares({ nick }: { nick: string }) {
               </Card>
             )
           }}
-        </Loaded>
+        </QueryState>
       )}
-    </Loaded>
+    </QueryState>
   )
 }
 

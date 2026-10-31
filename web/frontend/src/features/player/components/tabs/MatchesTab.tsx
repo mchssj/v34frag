@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { FilterXIcon, SwordsIcon, TriangleAlertIcon } from "lucide-react"
 import { type KeyboardEvent, type ReactNode } from "react"
-import { errorMessage, isRetryable } from "@/api/errors"
+import { errorMessage } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { ListPagination } from "@/components/brand/ListPagination"
+import { RetryButton } from "@/components/brand/QueryState"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -127,17 +128,7 @@ export function Matches({
           <EmptyState
             icon={TriangleAlertIcon}
             title="No se pudieron cargar las partidas"
-            action={
-              isRetryable(q.error) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void q.refetch()}
-                >
-                  Reintentar
-                </Button>
-              )
-            }
+            action={<RetryButton error={q.error} onRetry={q.refetch} />}
           >
             {errorMessage(q.error)}
           </EmptyState>

@@ -3,19 +3,19 @@ import { cn } from "cn"
 import { MedalIcon } from "lucide-react"
 import { type ReactNode } from "react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { QueryState } from "@/components/brand/QueryState"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { bestSeasonId } from "../../lib/labels"
 import { seasonsOptions } from "../../api/queries"
 import type { PlayerSeason } from "../../types"
-import { Loaded } from "./shared"
 
 // ---------- Temporadas ----------
 
 export function Seasons({ nick }: { nick: string }) {
   const q = useQuery(seasonsOptions(nick))
   return (
-    <Loaded q={q}>
+    <QueryState q={q}>
       {(items) => {
         if (!items.length)
           return (
@@ -68,7 +68,7 @@ export function Seasons({ nick }: { nick: string }) {
           </div>
         )
       }}
-    </Loaded>
+    </QueryState>
   )
 }
 

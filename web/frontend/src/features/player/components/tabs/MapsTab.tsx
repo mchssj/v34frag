@@ -2,12 +2,12 @@ import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { MapIcon } from "lucide-react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { QueryState } from "@/components/brand/QueryState"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapCards, type MapCard } from "../../lib/labels"
 import { mapStatsOptions } from "../../api/queries"
-import { Loaded } from "./shared"
 
 // ---------- Mapas ----------
 
@@ -15,7 +15,7 @@ export function Maps({ nick }: { nick: string }) {
   const q = useQuery(mapStatsOptions(nick))
   const catalog = useQuery(mapsOptions).data
   return (
-    <Loaded q={q}>
+    <QueryState q={q}>
       {(items) => {
         const cards = mapCards(catalog, items)
         if (!cards.length)
@@ -34,7 +34,7 @@ export function Maps({ nick }: { nick: string }) {
           </div>
         )
       }}
-    </Loaded>
+    </QueryState>
   )
 }
 

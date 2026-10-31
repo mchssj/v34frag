@@ -8,9 +8,10 @@ import {
   TriangleAlertIcon,
 } from "lucide-react"
 import { type KeyboardEvent, type ReactNode } from "react"
-import { errorMessage, isRetryable } from "@/api/errors"
+import { errorMessage } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { ListPagination } from "@/components/brand/ListPagination"
+import { RetryButton } from "@/components/brand/QueryState"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -61,17 +62,7 @@ export function MatchesTable({
           <EmptyState
             icon={TriangleAlertIcon}
             title="No se pudieron cargar las partidas"
-            action={
-              isRetryable(list.error) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void list.refetch()}
-                >
-                  Reintentar
-                </Button>
-              )
-            }
+            action={<RetryButton error={list.error} onRetry={list.refetch} />}
           >
             {errorMessage(list.error)}
           </EmptyState>

@@ -1,7 +1,8 @@
 import { cn } from "cn"
 import type { ReactNode } from "react"
 
-import { errorMessage, isRetryable } from "@/api/errors"
+import { errorMessage } from "@/api/errors"
+import { RetryButton } from "@/components/brand/QueryState"
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty } from "@/components/ui/empty"
@@ -238,11 +239,7 @@ export function QueryError({
       className="flex flex-wrap items-center gap-3 rounded-xl border p-4 text-sm"
     >
       <span className="flex-1 text-destructive">{errorMessage(error)}</span>
-      {isRetryable(error) && (
-        <Button variant="outline" size="sm" onClick={onRetry}>
-          Reintentar
-        </Button>
-      )}
+      <RetryButton error={error} onRetry={onRetry} />
     </div>
   )
 }

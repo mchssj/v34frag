@@ -3,11 +3,10 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { cn } from "cn"
 import type { KeyboardEvent, ReactNode } from "react"
 
-import { errorMessage, isRetryable } from "@/api/errors"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { ListPagination } from "@/components/brand/ListPagination"
-import { Button } from "@/components/ui/button"
+import { QueryErrorMessage } from "@/components/brand/QueryState"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -649,19 +648,7 @@ export function ListState({
     return (
       <TableRow className="hover:bg-transparent">
         <TableCell colSpan={cols} className="px-4 py-10 text-center">
-          <p className="text-sm text-muted-foreground">
-            {errorMessage(query.error)}
-          </p>
-          {isRetryable(query.error) && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => void query.refetch()}
-            >
-              Reintentar
-            </Button>
-          )}
+          <QueryErrorMessage error={query.error} onRetry={query.refetch} />
         </TableCell>
       </TableRow>
     )

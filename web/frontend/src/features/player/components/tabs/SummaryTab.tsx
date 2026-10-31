@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
+import { QueryState } from "@/components/brand/QueryState"
 import { Card } from "@/components/ui/card"
 import { KeyPlays } from "../KeyPlays"
 import { adjustmentLabel, fmtDay, matchTitle, resultOf } from "../../lib/labels"
@@ -9,7 +10,7 @@ import {
   recentMatchesOptions,
 } from "../../api/queries"
 import type { PlayerDetail } from "../../types"
-import { Loaded, Delta, RESULT_CHIP, useOpenMatch } from "./shared"
+import { Delta, RESULT_CHIP, useOpenMatch } from "./shared"
 
 // ---------- Resumen ----------
 
@@ -40,7 +41,7 @@ export function Summary({
             Ver todas
           </button>
         </div>
-        <Loaded q={recent}>
+        <QueryState q={recent}>
           {(items) =>
             items.length === 0 ? (
               <p className="px-4 py-8 text-center text-[13px] text-muted-foreground">
@@ -85,12 +86,12 @@ export function Summary({
               })
             )
           }
-        </Loaded>
+        </QueryState>
       </Card>
       <div className="flex flex-col gap-4">
         <Card variant="outline" className="flex flex-col gap-3 p-4">
           <span className="text-sm font-semibold">Logros</span>
-          <Loaded q={medals}>
+          <QueryState q={medals}>
             {(items) =>
               items.length === 0 ? (
                 <span className="text-[13px] text-muted-foreground">
@@ -118,7 +119,7 @@ export function Summary({
                 ))
               )
             }
-          </Loaded>
+          </QueryState>
         </Card>
         {/* Solo si el admin le hizo algún ajuste (contrato 5). */}
         {adjustments.data && adjustments.data.length > 0 && (
