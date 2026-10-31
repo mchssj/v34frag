@@ -27,6 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { InviteDialog } from "./InviteDialog"
 import {
   describe,
@@ -183,25 +184,26 @@ export function NotificationsMenu() {
               Marcar todo como leído
             </Button>
           </div>
-          <div
-            role="tablist"
-            aria-label="Filtro"
-            className="flex gap-1 px-3 pb-2"
-          >
-            {TABS.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                role="tab"
-                aria-selected={tab === t.value}
-                onClick={() => setTab(t.value)}
-                className="inline-flex h-[26px] items-center gap-1.5 rounded-md border border-transparent px-2.5 text-xs text-muted-foreground hover:text-foreground aria-selected:border-border aria-selected:bg-background aria-selected:text-foreground"
-              >
-                {t.label}
-                <span className="font-mono text-[11px]">{counts[t.value]}</span>
-              </button>
-            ))}
-          </div>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+            <TabsList
+              variant="line"
+              aria-label="Filtro"
+              className="h-auto gap-1 px-3 pt-0 pb-2 group-data-horizontal/tabs:h-auto"
+            >
+              {TABS.map((t) => (
+                <TabsTrigger
+                  key={t.value}
+                  value={t.value}
+                  className="h-[26px] flex-none gap-1.5 rounded-md border border-transparent px-2.5 text-xs font-normal text-muted-foreground after:hidden hover:text-foreground data-active:border-border data-active:text-foreground group-data-[variant=line]/tabs-list:data-active:bg-background dark:group-data-[variant=line]/tabs-list:data-active:border-border dark:group-data-[variant=line]/tabs-list:data-active:bg-background"
+                >
+                  {t.label}
+                  <span className="font-mono text-[11px]">
+                    {counts[t.value]}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           {list.isPending ? (
             <p className="border-t px-4 py-10 text-center text-sm text-muted-foreground">
               Cargando…

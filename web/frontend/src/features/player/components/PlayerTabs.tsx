@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { cn } from "cn"
 
 import { useEffect, useRef, useState } from "react"
 
 import { useMine } from "@/features/ranking/components/parts"
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   mapStatsOptions,
   playerMatchesOptions,
@@ -91,30 +91,26 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
   const counts = useTabCounts(nick)
   const owner = useMine().playerId === player.id
   const { ref: rowRef, more } = useTabRow(tab)
+  // "contents": la barra y el panel siguen siendo hijos de la sección (con su gap).
   return (
-    <>
+    <Tabs
+      value={tab}
+      onValueChange={(t) => onTab(t as Tab)}
+      className="contents"
+    >
       {/* Fija bajo la topbar (52px) al bajar, con fondo translúcido. */}
       <div className="sticky top-[52px] z-[5] -mt-px bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div
+        <TabsList
           ref={rowRef}
-          role="tablist"
+          variant="line"
           aria-label="Secciones del perfil"
-          className="flex [scrollbar-width:none] gap-1 overflow-x-auto border-b"
+          className="flex h-auto w-full [scrollbar-width:none] justify-start gap-1 overflow-x-auto rounded-none border-b p-0 group-data-horizontal/tabs:h-auto"
         >
           {TABS.map((t) => (
-            <button
+            <TabsTrigger
               key={t}
-              type="button"
-              role="tab"
-              id={`tab-${t}`}
-              aria-selected={tab === t}
-              aria-controls="player-tab"
-              onClick={() => onTab(t)}
-              className={cn(
-                "group/tab flex h-[38px] shrink-0 items-center gap-1.5 px-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
-                tab === t &&
-                  "text-foreground shadow-[inset_0_-2px_0_var(--foreground)]"
-              )}
+              value={t}
+              className="group/tab h-[38px] flex-none gap-1.5 rounded-none border-0 px-2.5 text-muted-foreground after:hidden hover:text-foreground data-active:text-foreground group-data-[variant=line]/tabs-list:data-active:shadow-[inset_0_-2px_0_var(--foreground)] dark:data-active:border-transparent dark:data-active:bg-transparent"
             >
               {LABELS[t]}
               {counts[t] !== undefined && (
@@ -122,9 +118,9 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
                   {counts[t]}
                 </span>
               )}
-            </button>
+            </TabsTrigger>
           ))}
-        </div>
+        </TabsList>
         {more && (
           <span
             aria-hidden
@@ -134,12 +130,7 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
       </div>
       {/* Alto de una pantalla: con una pestaña corta (o cargando) el navegador no recorta el
           scroll y las pestañas quedan donde estaban. */}
-      <div
-        role="tabpanel"
-        id="player-tab"
-        aria-labelledby={`tab-${tab}`}
-        className="min-h-svh"
-      >
+      <TabsContent value={tab} className="min-h-svh text-[length:inherit]">
         {tab === "resumen" && (
           <Summary
             nick={nick}
@@ -156,7 +147,7 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
         )}
         {tab === "temporadas" && <Seasons nick={nick} />}
         {tab === "bio" && <Bio nick={nick} player={player} owner={owner} />}
-      </div>
-    </>
+      </TabsContent>
+    </Tabs>
   )
 }

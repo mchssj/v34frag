@@ -78,7 +78,7 @@ export function Segmented<T extends string | number>({
           variant="segment"
           aria-label={o.ariaLabel}
           className={cn(
-            "font-medium whitespace-nowrap",
+            "min-w-0 font-medium whitespace-nowrap",
             SIZES[size].item,
             itemClassName
           )}

@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { errorMessage, isRetryable } from "@/api/errors"
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import type { Tone } from "../lib/format"
 
@@ -47,27 +48,20 @@ export function AdminTabs<K extends string>({
   onChange: (k: K) => void
   label: string
 }) {
+  // Tabs de shadcn con el subrayado de Administración (primary, abajo). El contenido lo pone cada
+  // página según `value`.
   return (
-    <div
-      role="tablist"
-      aria-label={label}
-      className="flex gap-1 overflow-x-auto border-b"
-    >
-      {tabs.map((t) => {
-        const on = t.key === value
-        return (
-          <button
+    <Tabs value={value} onValueChange={(k) => onChange(k as K)}>
+      <TabsList
+        variant="line"
+        aria-label={label}
+        className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b p-0 group-data-horizontal/tabs:h-auto"
+      >
+        {tabs.map((t) => (
+          <TabsTrigger
             key={t.key}
-            type="button"
-            role="tab"
-            aria-selected={on}
-            onClick={() => onChange(t.key)}
-            className={cn(
-              "inline-flex h-11 items-center gap-2 border-b-2 px-3.5 text-sm whitespace-nowrap transition-colors",
-              on
-                ? "border-primary font-semibold text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            value={t.key}
+            className="h-11 flex-none gap-2 rounded-none border-0 border-b-2 border-transparent px-3.5 font-normal text-muted-foreground after:hidden hover:text-foreground data-active:border-primary data-active:font-semibold data-active:text-foreground dark:data-active:border-primary dark:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-primary"
           >
             {t.label}
             {!!t.badge && (
@@ -75,10 +69,10 @@ export function AdminTabs<K extends string>({
                 {t.badge}
               </span>
             )}
-          </button>
-        )
-      })}
-    </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }
 

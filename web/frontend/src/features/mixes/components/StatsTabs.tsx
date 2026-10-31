@@ -1,5 +1,4 @@
-import { cn } from "cn"
-
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { STATS_TABS, STATS_TAB_LABEL, type StatsTab } from "../lib/stats"
 
 /** Selector de pestañas de estadísticas: uno solo, cambia las tablas de los dos bandos. */
@@ -11,28 +10,25 @@ export function StatsTabs({
   onChange: (tab: StatsTab) => void
 }) {
   return (
-    <div className="max-w-full overflow-x-auto">
-      <div
-        role="tablist"
+    <Tabs
+      value={value}
+      onValueChange={(t) => onChange(t as StatsTab)}
+      className="max-w-full overflow-x-auto"
+    >
+      <TabsList
         aria-label="Estadísticas"
-        className="inline-flex gap-0.5 rounded-lg bg-muted p-[3px]"
+        className="h-auto gap-0.5 group-data-horizontal/tabs:h-auto"
       >
         {STATS_TABS.map((t) => (
-          <button
+          <TabsTrigger
             key={t}
-            type="button"
-            role="tab"
-            aria-selected={value === t}
-            onClick={() => onChange(t)}
-            className={cn(
-              "h-7 rounded-md px-3 text-[13px] font-medium whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
-              value === t && "bg-card text-foreground shadow-xs"
-            )}
+            value={t}
+            className="h-7 flex-none rounded-md border-0 px-3 text-[13px] text-muted-foreground hover:text-foreground data-active:bg-card data-active:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-xs dark:data-active:border-transparent dark:data-active:bg-card"
           >
             {STATS_TAB_LABEL[t]}
-          </button>
+          </TabsTrigger>
         ))}
-      </div>
-    </div>
+      </TabsList>
+    </Tabs>
   )
 }

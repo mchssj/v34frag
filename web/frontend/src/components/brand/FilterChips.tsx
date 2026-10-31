@@ -55,7 +55,7 @@ export function FilterChips<V extends string | undefined | null>({
           key={o.label}
           value={key(o.value)}
           variant="pill"
-          className={cn(SIZES[size].item, itemClassName)}
+          className={cn("min-w-0", SIZES[size].item, itemClassName)}
         >
           {o.label}
           {o.count !== undefined && (
