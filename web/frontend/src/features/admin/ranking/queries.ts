@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
-import { rankingKeys } from "@/features/ranking/queries"
+import { rankingKeys } from "@/features/ranking/api/queries"
 
 // Administración › Ranking de equipos: puntos por partida ganada (contrato equipos.md, sección 7).
 

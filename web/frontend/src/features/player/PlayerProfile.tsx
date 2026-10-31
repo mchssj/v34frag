@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
-import { useMine } from "@/features/ranking/parts"
+import { useMine } from "@/features/ranking/components/parts"
 import { EloChart } from "./EloChart"
 import {
   LEVEL_FLOORS,

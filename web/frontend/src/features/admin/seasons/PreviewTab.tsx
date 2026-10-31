@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { SearchBox } from "@/features/ranking/SearchBox"
+import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import {
   EmptyState,

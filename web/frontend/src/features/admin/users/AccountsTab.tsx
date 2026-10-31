@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { playerDetailOptions } from "@/features/admin/players/queries"
-import { SearchBox } from "@/features/ranking/SearchBox"
+import { SearchBox } from "@/components/brand/SearchBox"
 import { ConfirmDialog } from "../dialogs"
 import { isBlockedName } from "../errors"
 import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../format"

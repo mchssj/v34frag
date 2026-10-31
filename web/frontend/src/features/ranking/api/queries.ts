@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { isApiError } from "@/api/errors"
 import {
   toPlayerRankingQuery,
@@ -8,14 +8,7 @@ import {
   toTeamRankingQuery,
   type PlayerRankingSearch,
   type TeamRankingSearch,
-} from "./search"
-
-export type RankingPlayer = Schemas["RankingPlayer"]
-export type RankingTeam = Schemas["RankingItem"]
-export type Season = Schemas["Season"]
-export type SeasonStanding = Schemas["SeasonStanding"]
-export type ComparePlayer = Schemas["ComparePlayer"]
-export type Compare = Schemas["Compare"]
+} from "../lib/search"
 
 export const rankingKeys = {
   all: ["ranking"] as const,

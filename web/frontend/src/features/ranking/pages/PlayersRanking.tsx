@@ -22,7 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { fmt2, roleCountry } from "./labels"
+import { fmt2, roleCountry } from "../lib/labels"
 import {
   PlayerAvatar,
   Podium,
@@ -33,7 +33,7 @@ import {
   coverLink,
   useMine,
   type PodiumItem,
-} from "./parts"
+} from "../components/parts"
 import {
   currentSeasonOptions,
   playerPodiumOptions,
@@ -41,18 +41,16 @@ import {
   seasonsOptions,
   standingsOptions,
   standingsPodiumOptions,
-  type RankingPlayer,
-  type Season,
-  type SeasonStanding,
-} from "./queries"
-import { SearchBox } from "./SearchBox"
-import { SeasonBar } from "./SeasonBar"
+} from "../api/queries"
+import type { RankingPlayer, Season, SeasonStanding } from "../types"
+import { SearchBox } from "@/components/brand/SearchBox"
+import { SeasonBar } from "../components/SeasonBar"
 import {
   DEFAULT_PER,
   HISTORIC,
   PER_OPTIONS,
   type PlayerRankingSearch,
-} from "./search"
+} from "../lib/search"
 
 // Ranking → Jugadores (/ranking): una temporada (la activa por defecto) o el Histórico por ELO.
 

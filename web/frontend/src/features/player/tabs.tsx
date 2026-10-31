@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/table"
 import { mapsOptions } from "@/features/maps/queries"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
-import { useMine } from "@/features/ranking/parts"
+import { useMine } from "@/features/ranking/components/parts"
 import { STATUS_LABEL } from "@/features/teams/model"
 import { useTeamLogos } from "@/features/teams/queries"
 import { Soon, STATUS_CHIP, TeamCrest } from "@/features/teams/ui"

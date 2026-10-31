@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { fmtPct, teamTrend } from "./labels"
+import { fmtPct, teamTrend } from "../lib/labels"
 import {
   MineChip,
   Podium,
@@ -19,16 +19,13 @@ import {
   coverLink,
   useMine,
   type PodiumItem,
-} from "./parts"
+} from "../components/parts"
 import { TeamCrest } from "@/features/teams/ui"
 import { ListState, Paging, RowLink } from "./PlayersRanking"
-import {
-  teamPodiumOptions,
-  teamRankingOptions,
-  type RankingTeam,
-} from "./queries"
-import { SearchBox } from "./SearchBox"
-import type { TeamRankingSearch } from "./search"
+import { teamPodiumOptions, teamRankingOptions } from "../api/queries"
+import type { RankingTeam } from "../types"
+import { SearchBox } from "@/components/brand/SearchBox"
+import type { TeamRankingSearch } from "../lib/search"
 
 // Ranking → Equipos (/ranking/teams): puntos por partida ganada, con o sin PCW (contrato 7).
 

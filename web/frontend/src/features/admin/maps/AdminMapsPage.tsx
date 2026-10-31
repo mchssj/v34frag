@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { mapsOptions } from "@/features/maps/queries"
-import { SearchBox } from "@/features/ranking/SearchBox"
+import { SearchBox } from "@/components/brand/SearchBox"
 import {
   AdminHeader,
   Chip,

@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { serverStatusOptions } from "@/features/public/api/queries"
-import { SearchBox } from "@/features/ranking/SearchBox"
+import { SearchBox } from "@/components/brand/SearchBox"
 import { daysUntil, fmtDate } from "../format"
 import {
   AdminHeader,

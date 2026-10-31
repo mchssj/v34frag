@@ -9,9 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { countdown, fmtLongDate } from "./labels"
-import type { Season } from "./queries"
-import { HISTORIC } from "./search"
+import { countdown, fmtLongDate } from "../lib/labels"
+import type { Season } from "../types"
+import { HISTORIC } from "../lib/search"
 
 // Franja de la temporada sobre el podio (contrato 8f): selector, estado y cuenta regresiva.
 

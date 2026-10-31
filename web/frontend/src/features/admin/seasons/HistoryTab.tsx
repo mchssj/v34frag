@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { seasonsOptions } from "@/features/ranking/queries"
+import { seasonsOptions } from "@/features/ranking/api/queries"
 import { fmtDate } from "../format"
 import { EmptyState, QueryError } from "../ui"
 
