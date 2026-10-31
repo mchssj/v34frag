@@ -10,11 +10,8 @@ import type { AuthUser } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { AuthShell, type SideCopy } from "@/features/auth/components/AuthShell"
-import {
-  ErrorAlert,
-  StepButton,
-  StepProgress,
-} from "@/features/auth/components/ui"
+import { StepButton, StepProgress } from "@/features/auth/components/ui"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import {
   myProfileOptions,
   useUpdateProfile,

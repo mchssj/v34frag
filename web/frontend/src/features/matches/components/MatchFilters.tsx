@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator"
 import { Toggle } from "@/components/ui/toggle"
 import { mapsOptions } from "@/features/maps/api/queries"
 import type { MapEntry } from "@/features/maps/types"
-import { Soon } from "@/features/teams/components/ui"
+import { Soon } from "@/components/brand/Soon"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { KINDS, type MatchesSearch } from "../lib/search"
 

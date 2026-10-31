@@ -10,7 +10,9 @@ import { loginSchema, type LoginValues } from "@/auth/schemas"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { needsWelcome } from "@/features/onboarding/api/queries"
-import { AuthField, AuthHeading, ErrorAlert } from "../components/ui"
+import { AuthHeading } from "../components/ui"
+import { AuthField } from "@/components/brand/AuthField"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { useRetryCountdown } from "../lib/useRetryCountdown"
 
 const FIELDS = ["email", "password"] as const

@@ -23,7 +23,7 @@ import {
 } from "@/lib/image"
 import { useRemoveLogo, useUploadLogo } from "../api/queries"
 import type { TeamDetail } from "../types"
-import { TeamCrest } from "./ui"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 
 /**
  * Elegir una imagen y encuadrarla en cuadrado (mismo recorte que la foto de perfil). Devuelve el

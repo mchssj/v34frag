@@ -5,10 +5,11 @@ import { useEffect, useState, type FormEvent } from "react"
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ErrorAlert } from "@/features/auth/components/ui"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { myTeamRequestOptions, useRequestTeam } from "../api/queries"
 import { useLogoPicker } from "../components/TeamLogo"
-import { GridBackdrop, TeamCrest } from "../components/ui"
+import { GridBackdrop } from "../components/ui"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 
 // Mismas reglas que el backend (TeamRequestBody): nombre de 2 a 40 y sigla de 1 a 6.
 const NAME = { min: 2, max: 40 }

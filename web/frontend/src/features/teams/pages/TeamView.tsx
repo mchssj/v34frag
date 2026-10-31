@@ -35,7 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorAlert } from "@/features/auth/components/ui"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { InviteDrawer } from "../components/InviteDrawer"
 import {
   heirsOf,
@@ -69,7 +69,9 @@ import { RecentForm } from "../components/RecentForm"
 import { StarPlayer } from "../components/StarPlayer"
 import { TeamRoles } from "../components/TeamRoles"
 import { TeamKpis } from "../components/TeamKpis"
-import { Eyebrow, Soon, TeamCrest } from "../components/ui"
+import { Eyebrow } from "../components/ui"
+import { Soon } from "@/components/brand/Soon"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 
 /** Desde cuándo existe el equipo (`founded_at`: la aprobación o, en los viejos, el primer ingreso). */
 const foundedLabel = (iso: string | null) =>

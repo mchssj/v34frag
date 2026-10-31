@@ -5,7 +5,7 @@ import { BrandTile, type Brand } from "@/components/brand/BrandTile"
 import { Card } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { AuthField } from "@/features/auth/components/ui"
+import { AuthField } from "@/components/brand/AuthField"
 import type { SocialsInput, SocialsValues } from "../lib/schemas"
 
 type Row = {

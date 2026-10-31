@@ -8,7 +8,7 @@ import { useMe } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { ErrorAlert } from "@/features/auth/components/ui"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import {
   passwordChangedText,
   passwordFeedback,

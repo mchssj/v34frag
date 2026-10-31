@@ -29,7 +29,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { crestText } from "@/features/teams/lib/model"
+import { crestText } from "@/components/brand/TeamCrest"
 import { MapBackdrop } from "./MapBackdrop"
 import {
   cancelReasonLabel,

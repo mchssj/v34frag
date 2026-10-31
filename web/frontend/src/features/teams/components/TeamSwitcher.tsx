@@ -10,8 +10,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { crestText, MY_ROLE_LABEL, type MyRole } from "../lib/model"
-import { Eyebrow, TeamCrest } from "./ui"
+import { MY_ROLE_LABEL, type MyRole } from "../lib/model"
+import { crestText } from "@/components/brand/TeamCrest"
+import { Eyebrow } from "./ui"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 
 export type MyTeam = {
   id: string

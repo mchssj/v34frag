@@ -1,7 +1,7 @@
 import { cn } from "cn"
 import type { ReactNode } from "react"
 
-import { TeamCrest } from "@/features/teams/components/ui"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Empty } from "@/components/ui/empty"

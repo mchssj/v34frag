@@ -2,7 +2,8 @@ import { cn } from "cn"
 import { useWatch, type Control } from "react-hook-form"
 
 import type { SignupValues } from "@/auth/schemas"
-import { AuthField, AuthHeading } from "../ui"
+import { AuthHeading } from "../ui"
+import { AuthField } from "@/components/brand/AuthField"
 import { passwordLabel, passwordScore } from "../../lib/register"
 
 export function AccountStep({

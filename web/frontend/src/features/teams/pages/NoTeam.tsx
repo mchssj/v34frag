@@ -31,7 +31,9 @@ import type { TeamInvite, TeamRequest } from "../types"
 import { cn } from "cn"
 
 import { STATUS_LABEL } from "../lib/model"
-import { Eyebrow, GridBackdrop, Soon, TeamCrest } from "../components/ui"
+import { Eyebrow, GridBackdrop } from "../components/ui"
+import { Soon } from "@/components/brand/Soon"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 
 /** "Vence mañana" / "Vence en N días". */
 function expiry(iso: string) {

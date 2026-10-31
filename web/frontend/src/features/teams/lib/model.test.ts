@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  crestText,
   joinState,
   rankOf,
   resultFor,
@@ -46,16 +45,6 @@ describe("rosterGroups", () => {
 
   it("un rol desconocido cuenta como activo", () => {
     expect(rosterGroups([member("x", "otro")])[0].status).toBe("player")
-  })
-})
-
-describe("crestText", () => {
-  it("usa la sigla en mayúsculas", () => {
-    expect(crestText({ name: "Furia Sur", tag: "fur" })).toBe("FUR")
-  })
-  it("sin sigla, las iniciales del nombre", () => {
-    expect(crestText({ name: "Furia Sur", tag: "" })).toBe("FS")
-    expect(crestText({ name: "OLDteam", tag: null })).toBe("OLD")
   })
 })
 

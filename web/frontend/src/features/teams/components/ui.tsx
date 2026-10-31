@@ -1,68 +1,16 @@
 import { cn } from "cn"
-import { useState, type ReactNode } from "react"
+import { type ReactNode } from "react"
 
 import type { BadgeVariant } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { crestText, type RosterStatus } from "../lib/model"
+
+import { type RosterStatus } from "../lib/model"
 
 /** Colores del chip de estado en el roster: Activo verde, Suplente gris, Coach naranja. */
 export const STATUS_CHIP: Record<RosterStatus, BadgeVariant> = {
   player: "win",
   sub: "muted",
   coach: "primary",
-}
-
-/**
- * Escudo del equipo: el logo si tiene; si no (o si no carga), la sigla o las iniciales sobre
- * `foreground`.
- */
-export function TeamCrest({
-  team,
-  size = "md",
-  className,
-}: {
-  team: { name: string; tag: string | null; logo_url?: string | null }
-  size?: "xs" | "row" | "sm" | "md" | "lg" | "xl"
-  className?: string
-}) {
-  // La URL que falló: si el equipo cambia de logo, la nueva se vuelve a intentar.
-  const [failed, setFailed] = useState<string | null>(null)
-  const logo = team.logo_url && team.logo_url !== failed ? team.logo_url : null
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "grid shrink-0 place-items-center overflow-hidden font-mono font-bold",
-        logo ? "border bg-card" : "bg-foreground text-background",
-        {
-          xs: "size-6 rounded-[5px] text-[9px]",
-          row: "size-8 rounded-md text-[10px]",
-          sm: "size-11 rounded-md text-xs",
-          md: "size-14 rounded-lg text-sm",
-          // En teléfono el escudo achica para que entre el nombre.
-          lg: "size-16 rounded-[14px] text-xl tracking-[-0.5px] shadow-[0_4px_0_var(--primary)] sm:size-[104px] sm:rounded-[18px] sm:text-3xl sm:tracking-[-1px] sm:shadow-[0_5px_0_var(--primary)]",
-          xl: "size-[120px] rounded-[20px] text-4xl tracking-[-1px] shadow-[0_5px_0_var(--primary)]",
-        }[size],
-        className
-      )}
-    >
-      {logo ? (
-        <img
-          src={logo}
-          alt=""
-          onError={() => setFailed(logo)}
-          className="size-full object-cover"
-        />
-      ) : (
-        crestText(team)
-      )}
-    </span>
-  )
 }
 
 /** Cuadrícula de fondo que se desvanece hacia los bordes ("Sin equipo", "Crear equipo"). */
@@ -130,37 +78,5 @@ export function Eyebrow({
     >
       {children}
     </span>
-  )
-}
-
-/**
- * Control que el backend todavía no permite: se ve como en el diseño, deshabilitado y con
- * "Próximamente". Un elemento deshabilitado no recibe el puntero: el tooltip va en un contenedor
- * enfocable.
- */
-export function Soon({
-  children,
-  label = "Próximamente",
-  className,
-}: {
-  children: ReactNode
-  label?: string
-  className?: string
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          tabIndex={0}
-          className={cn(
-            "inline-flex rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-            className
-          )}
-        >
-          {children}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
   )
 }

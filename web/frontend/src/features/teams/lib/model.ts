@@ -47,18 +47,6 @@ export function rosterGroups(members: RosterEntry[]): RosterGroup[] {
 
 export const statusOf = (m: RosterEntry) => asStatus(m.role)
 
-/** Lo que va en el escudo: la sigla o, si no tiene, las iniciales del nombre (hasta 3). */
-export function crestText(team: { name: string; tag: string | null }) {
-  const tag = team.tag?.trim()
-  if (tag) return tag.toUpperCase().slice(0, 4)
-  const words = team.name.trim().split(/\s+/).filter(Boolean)
-  const initials =
-    words.length > 1
-      ? words.map((w) => w[0]).join("")
-      : (words[0] ?? "?").slice(0, 3)
-  return initials.toUpperCase().slice(0, 3)
-}
-
 /** % de victorias del récord oficial, o null sin partidas jugadas. */
 export function winRate(record: TeamDetail["record"]): number | null {
   const r = record?.official

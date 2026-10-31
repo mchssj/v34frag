@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { useAliasStatus } from "@/features/auth/lib/useAliasStatus"
-import { AuthField, ErrorAlert } from "@/features/auth/components/ui"
+import { AuthField } from "@/components/brand/AuthField"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { aliasFeedback } from "../lib/alias"
 import { AvatarPicker } from "../components/AvatarPicker"
 import {

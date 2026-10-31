@@ -27,7 +27,7 @@ import {
   useJoinTeam,
 } from "../api/queries"
 import type { TeamInvite, TeamSummary } from "../types"
-import { TeamCrest } from "../components/ui"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 
 type LookingFor = TeamSummary["looking_for"][number]
 

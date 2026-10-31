@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { ErrorAlert } from "@/features/auth/components/ui"
+import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import {
   currentCode,
   expiryText,
