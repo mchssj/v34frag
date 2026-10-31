@@ -95,7 +95,7 @@ La partida sigue este orden:
 
 ## CMLeague Anticheat
 
-Es una aplicación de Windows, obligatoria en mixes, que junta evidencia para que la revise el staff, con la cuenta de `cmleague.lat`. Es independiente del EAC de ClientMod y no sanciona sola.
+Es una aplicación de Windows, obligatoria en mixes, que junta evidencia para que la revise el staff, con la cuenta de `cmleague.lat`. Es independiente del EAC de ClientMod y no sanciona sola. La [guía para el equipo](GUIA_ANTICHEAT.md) explica el uso y cómo mostrarla.
 
 | Parte | Qué hace | Dónde |
 | --- | --- | --- |
