@@ -36,8 +36,8 @@ import {
   StatTile,
   TableBox,
   headCell,
-} from "../components/ui"
-import { AddMapDialog } from "./AddMapDialog"
+} from "../../components/ui"
+import { AddMapDialog } from "../components/AddMapDialog"
 import {
   catalogStats,
   changedCount,
@@ -47,9 +47,9 @@ import {
   moveMap,
   saveError,
   type DraftMap,
-} from "./catalog"
-import { MapPanel } from "./MapPanel"
-import { useSaveCatalog } from "./queries"
+} from "../lib/catalog"
+import { MapPanel } from "../components/MapPanel"
+import { useSaveCatalog } from "../api/queries"
 
 export const MAP_FILTERS = ["mixes", "veto", "nophoto", "retired"] as const
 export type MapFilter = (typeof MAP_FILTERS)[number]

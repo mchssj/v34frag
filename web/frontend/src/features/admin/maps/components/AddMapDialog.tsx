@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { newMapError, type DraftMap } from "./catalog"
+import { newMapError, type DraftMap } from "../lib/catalog"
 
 /** Mapa nuevo: entra al borrador al final de la lista; se crea al guardar el catálogo. */
 export function AddMapDialog({

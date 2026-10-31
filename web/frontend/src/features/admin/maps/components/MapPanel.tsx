@@ -5,8 +5,8 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ConfirmDialog } from "../components/dialogs"
-import { Chip, PanelSection } from "../components/ui"
+import { ConfirmDialog } from "../../components/dialogs"
+import { Chip, PanelSection } from "../../components/ui"
 import {
   imageError,
   inDefaultPool,
@@ -15,8 +15,8 @@ import {
   setActive,
   versionError,
   type DraftMap,
-} from "./catalog"
-import { useDeleteMapImage, useUploadMapImage } from "./queries"
+} from "../lib/catalog"
+import { useDeleteMapImage, useUploadMapImage } from "../api/queries"
 
 /** Detalle de un mapa: foto (se guarda al momento), versiones y retirar (van al borrador). */
 export function MapPanel({

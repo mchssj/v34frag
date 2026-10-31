@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
 import { mapKeys } from "@/features/maps/api/queries"
-import type { DraftMap } from "./catalog"
-import { toBody } from "./catalog"
+import type { DraftMap } from "../lib/catalog"
+import { toBody } from "../lib/catalog"
 
 // Administración › Mapas: el catálogo entero (PUT) y la foto de cada mapa (contrato admin.md).
 
