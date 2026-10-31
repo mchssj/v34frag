@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { errorMessage, isRetryable } from "@/api/errors"
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+
 import type { Tone } from "../lib/format"
 
 // Piezas comunes de las pantallas de Administración (diseño aprobado el 2026-10-28).
@@ -73,48 +74,6 @@ export function AdminTabs<K extends string>({
               <span className="inline-grid h-5 min-w-5 place-items-center rounded-full bg-muted px-1.5 font-mono text-[11px] text-foreground">
                 {t.badge}
               </span>
-            )}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-export type ChipOption<V> = { value: V; label: string; count?: number }
-
-/** Filtros en píldoras: el activo va en `foreground` sólido, como en Ranking. */
-export function FilterChips<V extends string | undefined>({
-  options,
-  value,
-  onChange,
-  label,
-}: {
-  options: ChipOption<V>[]
-  value: V
-  onChange: (v: V) => void
-  label: string
-}) {
-  return (
-    <div role="group" aria-label={label} className="flex flex-wrap gap-2">
-      {options.map((o) => {
-        const on = o.value === value
-        return (
-          <button
-            key={o.label}
-            type="button"
-            aria-pressed={on}
-            onClick={() => onChange(o.value)}
-            className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] transition-colors",
-              on
-                ? "border-foreground bg-foreground font-semibold text-background"
-                : "hover:bg-muted"
-            )}
-          >
-            {o.label}
-            {o.count !== undefined && (
-              <span className="font-mono opacity-70">{o.count}</span>
             )}
           </button>
         )

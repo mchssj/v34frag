@@ -23,7 +23,6 @@ import {
   AdminHeader,
   Chip,
   EmptyState,
-  FilterChips,
   PickHint,
   QueryError,
   SaveBar,
@@ -32,6 +31,7 @@ import {
   TableBox,
   headCell,
 } from "../../components/ui"
+import { FilterChips } from "@/components/brand/FilterChips"
 import { AddMapDialog } from "../components/AddMapDialog"
 import {
   catalogStats,

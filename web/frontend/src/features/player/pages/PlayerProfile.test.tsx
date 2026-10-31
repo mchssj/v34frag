@@ -440,7 +440,7 @@ describe("Perfil público", () => {
       to: "/match/$id",
       params: { id: "m1" },
     })
-    await user.click(screen.getByRole("button", { name: "PCW" }))
+    await user.click(screen.getByRole("radio", { name: "PCW" }))
     expect(onChange).toHaveBeenCalledWith({ kind: "pcw", page: undefined })
     await user.click(screen.getByRole("tab", { name: "Mapas" }))
     expect(onChange).toHaveBeenCalledWith({

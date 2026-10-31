@@ -47,11 +47,11 @@ test.describe("sin equipo, contra la API real", () => {
     const filtered = page.waitForRequest((r) =>
       r.url().includes("looking_for=sub")
     )
-    await page.getByRole("button", { name: "Buscan suplente" }).click()
+    await page.getByRole("radio", { name: "Buscan suplente" }).click()
     await filtered
     await expect(
-      page.getByRole("button", { name: "Buscan suplente" })
-    ).toHaveAttribute("aria-pressed", "true")
+      page.getByRole("radio", { name: "Buscan suplente" })
+    ).toHaveAttribute("aria-checked", "true")
 
     await page.getByRole("button", { name: "Volver" }).click()
     await expect(page).toHaveURL(/\/myteam$/)

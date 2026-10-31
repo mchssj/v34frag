@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { cn } from "cn"
 import { SearchIcon, UserCheckIcon } from "lucide-react"
 import { useEffect, useState } from "react"
+import { FilterChips } from "@/components/brand/FilterChips"
 import {
   InputGroup,
   InputGroupAddon,
@@ -41,6 +41,11 @@ function mapNames(maps: MapEntry[] | undefined): string[] {
     .map((m) => m.name)
 }
 
+const KIND_OPTIONS = [
+  { value: undefined, label: "Todas" },
+  ...KINDS.map((k) => ({ value: k, label: KIND_LABEL[k] })),
+]
+
 export function Filters({
   search,
   onChange,
@@ -69,25 +74,17 @@ export function Filters({
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b p-3">
-      <div role="group" aria-label="Tipo" className="flex flex-wrap gap-1">
-        {[undefined, ...KINDS].map((k) => (
-          <button
-            key={k ?? "all"}
-            type="button"
-            aria-pressed={search.kind === k}
-            onClick={() => onChange({ kind: k, page: undefined })}
-            className={cn(
-              "h-7 rounded-full border px-2.5 text-xs font-medium transition-colors",
-              search.kind === k
-                ? "border-foreground bg-foreground text-background"
-                : "hover:bg-muted"
-            )}
-          >
-            {k ? KIND_LABEL[k] : "Todas"}
-          </button>
-        ))}
-      </div>
-      <Separator orientation="vertical" className="mx-1 h-5 data-vertical:self-center" />
+      <FilterChips
+        size="sm"
+        label="Tipo"
+        options={KIND_OPTIONS}
+        value={search.kind}
+        onChange={(kind) => onChange({ kind, page: undefined })}
+      />
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-5 data-vertical:self-center"
+      />
       <InputGroup className="max-w-[300px] min-w-[200px] flex-1">
         <InputGroupAddon>
           <SearchIcon aria-hidden className="size-3.5" />

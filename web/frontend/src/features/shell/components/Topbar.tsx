@@ -36,7 +36,10 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
   return (
     <header className="sticky top-0 z-10 flex h-[52px] shrink-0 items-center gap-2 rounded-t-[inherit] border-b bg-background pr-3 pl-2.5">
       <SidebarTrigger className="size-7" />
-      <Separator orientation="vertical" className="mx-1 h-4 data-vertical:self-center" />
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-4 data-vertical:self-center"
+      />
       <Breadcrumbs />
       <Button
         variant="outline"

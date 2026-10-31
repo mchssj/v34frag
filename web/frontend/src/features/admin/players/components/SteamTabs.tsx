@@ -23,13 +23,13 @@ import {
   Card,
   Chip,
   EmptyState,
-  FilterChips,
   Pager,
   QueryError,
   TableBox,
   headCell,
   warnText,
 } from "../../components/ui"
+import { FilterChips } from "@/components/brand/FilterChips"
 import {
   UNLINKED_PER,
   pickPlayerOptions,

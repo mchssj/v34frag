@@ -30,12 +30,12 @@ import {
   Chip,
   Dot,
   EmptyState,
-  FilterChips,
   Pager,
   QueryError,
   TableBox,
   headCell,
 } from "../../components/ui"
+import { FilterChips } from "@/components/brand/FilterChips"
 import {
   DEMOS_PER,
   demoSummaryOptions,

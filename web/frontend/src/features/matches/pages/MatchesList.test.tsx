@@ -257,14 +257,15 @@ describe("MatchesList", () => {
 
   it("los chips de tipo cambian la URL y vuelven a la página 1", async () => {
     answer([mix])
-    const { user, onChange } = renderList({ page: 3 })
-    const tipo = screen.getByRole("group", { name: "Tipo" })
-    await user.click(within(tipo).getByRole("button", { name: "Torneo" }))
+    // Desde PCW: tocar el activo no cambia nada (ToggleGroup), así que se parte de otro.
+    const { user, onChange } = renderList({ kind: "pcw", page: 3 })
+    const tipo = screen.getByRole("radiogroup", { name: "Tipo" })
+    await user.click(within(tipo).getByRole("radio", { name: "Torneo" }))
     expect(onChange).toHaveBeenLastCalledWith({
       kind: "official",
       page: undefined,
     })
-    await user.click(within(tipo).getByRole("button", { name: "Todas" }))
+    await user.click(within(tipo).getByRole("radio", { name: "Todas" }))
     expect(onChange).toHaveBeenLastCalledWith({
       kind: undefined,
       page: undefined,

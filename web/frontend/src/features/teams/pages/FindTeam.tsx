@@ -13,6 +13,7 @@ import { useDeferredValue, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { FilterChips } from "@/components/brand/FilterChips"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -87,28 +88,14 @@ export function FindTeam({
             className="h-9 pl-9"
           />
         </span>
-        <div
-          role="group"
-          className="flex flex-wrap gap-1.5"
-          aria-label="Filtros"
-        >
-          {FILTERS.map((f) => (
-            <button
-              key={f.label}
-              type="button"
-              aria-pressed={filter === f.id}
-              onClick={() => setFilter(f.id)}
-              className={cn(
-                "inline-flex h-8 items-center rounded-full border px-3 text-[13px] font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                filter === f.id
-                  ? "border-foreground bg-foreground text-background"
-                  : "hover:bg-muted"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <FilterChips
+          label="Filtros"
+          options={FILTERS.map((f) => ({ value: f.id, label: f.label }))}
+          value={filter}
+          onChange={setFilter}
+          className="gap-1.5"
+          itemClassName="font-medium data-[state=on]:font-medium"
+        />
       </div>
 
       {teams.isPending ? (

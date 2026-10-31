@@ -250,7 +250,7 @@ describe("Ranking → Jugadores", () => {
       expect.objectContaining({ level: "7-9", sort: "kd", order: "desc" })
     )
 
-    await user.click(screen.getByRole("button", { name: "Nivel 10" }))
+    await user.click(screen.getByRole("radio", { name: "Nivel 10" }))
     expect(onChange).toHaveBeenLastCalledWith({ level: "10", page: undefined })
     await user.click(screen.getByRole("button", { name: /Rating/ }))
     expect(onChange).toHaveBeenLastCalledWith({
@@ -323,7 +323,7 @@ describe("Ranking → Jugadores", () => {
     expect(asked).toContain("per=3")
     expect(asked.some((q) => q.includes("level=1-6"))).toBe(true)
 
-    await user.click(screen.getByRole("button", { name: "Nivel 10" }))
+    await user.click(screen.getByRole("radio", { name: "Nivel 10" }))
     expect(onChange).toHaveBeenCalledWith({ level: "10", page: undefined })
   })
 

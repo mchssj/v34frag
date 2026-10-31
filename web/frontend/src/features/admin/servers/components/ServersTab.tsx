@@ -31,13 +31,13 @@ import {
   Chip,
   Dot,
   EmptyState,
-  FilterChips,
   PanelSection,
   PickHint,
   QueryError,
   SplitLayout,
   warnText,
 } from "../../components/ui"
+import { FilterChips } from "@/components/brand/FilterChips"
 import {
   serversOptions,
   useCreateServer,

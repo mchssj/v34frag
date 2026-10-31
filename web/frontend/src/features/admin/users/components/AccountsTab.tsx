@@ -28,7 +28,6 @@ import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../../lib/format"
 import {
   Chip,
   EmptyState,
-  FilterChips,
   PanelSection,
   Pager,
   PickHint,
@@ -37,6 +36,7 @@ import {
   TableBox,
   headCell,
 } from "../../components/ui"
+import { FilterChips } from "@/components/brand/FilterChips"
 import { BanDialog } from "../../bans/components/BanDialog"
 import {
   USERS_PER,

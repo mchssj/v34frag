@@ -4,6 +4,7 @@ import { FilterXIcon, SwordsIcon, TriangleAlertIcon } from "lucide-react"
 import { type KeyboardEvent, type ReactNode } from "react"
 import { errorMessage, isRetryable } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { FilterChips } from "@/components/brand/FilterChips"
 import { ListPagination } from "@/components/brand/ListPagination"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -43,39 +44,6 @@ const RESULTS = [
   { value: "won", label: "Victorias" },
   { value: "lost", label: "Derrotas" },
 ] as const
-
-function Chips<V extends string | undefined>({
-  label,
-  options,
-  value,
-  onPick,
-}: {
-  label: string
-  options: readonly { value: V; label: string }[]
-  value: V
-  onPick: (v: V) => void
-}) {
-  return (
-    <div role="group" aria-label={label} className="flex flex-wrap gap-1">
-      {options.map((o) => (
-        <button
-          key={o.label}
-          type="button"
-          aria-pressed={value === o.value}
-          onClick={() => onPick(o.value)}
-          className={cn(
-            "h-7 rounded-full border px-2.5 text-xs font-medium transition-colors",
-            value === o.value
-              ? "border-foreground bg-foreground text-background"
-              : "hover:bg-muted"
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
-}
 
 const MATCH_HEAD = "h-auto py-2.5 text-xs font-medium text-muted-foreground"
 
@@ -123,18 +91,23 @@ export function Matches({
   return (
     <div className={cn(card, "overflow-hidden")}>
       <div className="flex flex-wrap items-center gap-3 border-b p-3">
-        <Chips
+        <FilterChips
+          size="sm"
           label="Tipo"
           options={KINDS}
           value={search.kind}
-          onPick={(kind) => onChange({ kind, page: undefined })}
+          onChange={(kind) => onChange({ kind, page: undefined })}
         />
-        <Separator orientation="vertical" className="h-5 data-vertical:self-center" />
-        <Chips
+        <Separator
+          orientation="vertical"
+          className="h-5 data-vertical:self-center"
+        />
+        <FilterChips
+          size="sm"
           label="Resultado"
           options={RESULTS}
           value={search.result}
-          onPick={(result) => onChange({ result, page: undefined })}
+          onChange={(result) => onChange({ result, page: undefined })}
         />
       </div>
       {/* Alto de 8 filas haya las que haya: la tarjeta no salta al filtrar. */}

@@ -4,6 +4,7 @@ import { cn } from "cn"
 import type { KeyboardEvent, ReactNode } from "react"
 
 import { errorMessage, isRetryable } from "@/api/errors"
+import { FilterChips } from "@/components/brand/FilterChips"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { ListPagination } from "@/components/brand/ListPagination"
 import { Button } from "@/components/ui/button"
@@ -295,27 +296,13 @@ function HistoricRow({
 
 function LevelFilter({ search, onChange }: Props) {
   return (
-    <div role="group" aria-label="Nivel" className="flex flex-wrap gap-1">
-      {LEVELS.map((l) => {
-        const on = search.level === l.value
-        return (
-          <button
-            key={l.label}
-            type="button"
-            aria-pressed={on}
-            onClick={() => onChange({ level: l.value, page: undefined })}
-            className={cn(
-              "h-7 rounded-full border px-2.5 text-xs font-medium transition-colors",
-              on
-                ? "border-foreground bg-foreground text-background"
-                : "hover:bg-muted"
-            )}
-          >
-            {l.label}
-          </button>
-        )
-      })}
-    </div>
+    <FilterChips
+      size="sm"
+      label="Nivel"
+      options={LEVELS}
+      value={search.level}
+      onChange={(level) => onChange({ level, page: undefined })}
+    />
   )
 }
 

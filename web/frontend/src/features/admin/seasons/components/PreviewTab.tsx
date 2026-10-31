@@ -15,12 +15,12 @@ import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import {
   EmptyState,
-  FilterChips,
   Pager,
   QueryError,
   TableBox,
   headCell,
 } from "../../components/ui"
+import { FilterChips } from "@/components/brand/FilterChips"
 import { seasonPreviewOptions } from "../api/queries"
 import type { PreviewFilter } from "../types"
 import { LIMITS, type SeasonForm } from "../lib/seasons"

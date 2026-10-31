@@ -13,16 +13,16 @@ test("listado: KPIs, tipos en la URL, paginación y sala de un mix", async ({
   await expect(page.getByText("Jugadores en los últimos 30 días")).toBeVisible()
   await expect(page.getByText(/^Mostrando \d+–\d+ de \d+$/)).toBeVisible()
 
-  const tipo = page.getByRole("group", { name: "Tipo" })
+  const tipo = page.getByRole("radiogroup", { name: "Tipo" })
   const rows = page.locator("tbody tr[role=link]")
 
   // Torneo: series con su formato y el torneo en Detalle.
-  await tipo.getByRole("button", { name: "Torneo" }).click()
+  await tipo.getByRole("radio", { name: "Torneo" }).click()
   await expect(page).toHaveURL(/kind=official/)
   await expect(rows.first()).toContainText("Torneo")
 
   // Mix: solo mixes.
-  await tipo.getByRole("button", { name: "Mix" }).click()
+  await tipo.getByRole("radio", { name: "Mix" }).click()
   await expect(page).toHaveURL(/kind=mix/)
   await expect(rows.first()).toContainText("Mix")
   await expect(page.locator("tbody")).not.toContainText("Torneo")
