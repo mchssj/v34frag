@@ -9,13 +9,17 @@ import { useSignup } from "@/auth/queries"
 import { signupSchema, type SignupValues } from "@/auth/schemas"
 import { CONFIRMATION_LINK_EXPIRY } from "@/config/site"
 import { mixesCopy, mixesTotalOptions } from "@/features/public/api/queries"
-import { AuthShell, type SideCopy } from "../AuthShell"
-import { ErrorAlert, StepButton, StepProgress } from "../ui"
-import { useRetryCountdown } from "../useRetryCountdown"
-import { AccountStep } from "./AccountStep"
-import { AliasStep } from "./AliasStep"
-import { CheckEmailStep } from "./CheckEmailStep"
-import { aliasReady, useAliasStatus, type AliasState } from "./useAliasStatus"
+import { AuthShell, type SideCopy } from "../components/AuthShell"
+import { ErrorAlert, StepButton, StepProgress } from "../components/ui"
+import { useRetryCountdown } from "../lib/useRetryCountdown"
+import { AccountStep } from "../components/register/AccountStep"
+import { AliasStep } from "../components/register/AliasStep"
+import { CheckEmailStep } from "../components/register/CheckEmailStep"
+import {
+  aliasReady,
+  useAliasStatus,
+  type AliasState,
+} from "../lib/useAliasStatus"
 
 type Step = 1 | 2 | 3
 const STEP_NAME: Record<Step, string> = {

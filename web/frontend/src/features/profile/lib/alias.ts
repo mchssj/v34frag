@@ -1,7 +1,7 @@
 import { differenceInCalendarDays, format, isAfter, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 
-import type { AliasState } from "@/features/auth/register/useAliasStatus"
+import type { AliasState } from "@/features/auth/lib/useAliasStatus"
 
 export type AliasFeedback = {
   message: string

@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CountryFlag } from "@/components/brand/CountryFlag"
-import { AuthHeading } from "@/features/auth/ui"
+import { AuthHeading } from "@/features/auth/components/ui"
 import { Greeting } from "./Greeting"
 import { COUNTRIES, GAME_ROLES } from "@/features/profile/lib/schemas"
 

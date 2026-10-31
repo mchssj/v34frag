@@ -1,7 +1,7 @@
 import { EyeIcon } from "lucide-react"
 import type { Control } from "react-hook-form"
 
-import { AuthHeading } from "@/features/auth/ui"
+import { AuthHeading } from "@/features/auth/components/ui"
 import {
   ContactFields,
   WELCOME_CONTACTS,

@@ -9,8 +9,12 @@ import { errorMessage } from "@/api/errors"
 import type { AuthUser } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { AuthShell, type SideCopy } from "@/features/auth/AuthShell"
-import { ErrorAlert, StepButton, StepProgress } from "@/features/auth/ui"
+import { AuthShell, type SideCopy } from "@/features/auth/components/AuthShell"
+import {
+  ErrorAlert,
+  StepButton,
+  StepProgress,
+} from "@/features/auth/components/ui"
 import {
   myProfileOptions,
   useUpdateProfile,

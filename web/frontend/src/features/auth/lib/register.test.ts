@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { maskEmail, passwordLabel, passwordScore } from "./helpers"
+import { maskEmail, passwordLabel, passwordScore } from "./register"
 import { localAliasState } from "./useAliasStatus"
 
 describe("passwordScore", () => {

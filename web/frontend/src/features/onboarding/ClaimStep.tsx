@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { errorMessage } from "@/api/errors"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Button } from "@/components/ui/button"
-import { AuthHeading, ErrorAlert } from "@/features/auth/ui"
+import { AuthHeading, ErrorAlert } from "@/features/auth/components/ui"
 import { claimServer, serverStatusOptions } from "@/features/public/api/queries"
 import {
   currentCode,

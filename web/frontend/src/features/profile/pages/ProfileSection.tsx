@@ -25,8 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
-import { useAliasStatus } from "@/features/auth/register/useAliasStatus"
-import { AuthField, ErrorAlert } from "@/features/auth/ui"
+import { useAliasStatus } from "@/features/auth/lib/useAliasStatus"
+import { AuthField, ErrorAlert } from "@/features/auth/components/ui"
 import { aliasFeedback } from "../lib/alias"
 import { AvatarPicker } from "../components/AvatarPicker"
 import {

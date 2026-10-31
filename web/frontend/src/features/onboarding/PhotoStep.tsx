@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input"
-import { AuthHeading } from "@/features/auth/ui"
+import { AuthHeading } from "@/features/auth/components/ui"
 import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
 import { Greeting } from "./Greeting"
 

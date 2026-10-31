@@ -5,7 +5,7 @@ import type { SignupValues } from "@/auth/schemas"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Input } from "@/components/ui/input"
 import { AuthHeading } from "../ui"
-import { ALIAS_LABEL, type AliasState } from "./useAliasStatus"
+import { ALIAS_LABEL, type AliasState } from "../../lib/useAliasStatus"
 
 export function AliasStep({
   control,

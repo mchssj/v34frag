@@ -3,7 +3,7 @@ import { useWatch, type Control } from "react-hook-form"
 
 import type { SignupValues } from "@/auth/schemas"
 import { AuthField, AuthHeading } from "../ui"
-import { passwordLabel, passwordScore } from "./helpers"
+import { passwordLabel, passwordScore } from "../../lib/register"
 
 export function AccountStep({
   control,

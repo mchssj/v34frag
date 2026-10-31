@@ -4,8 +4,8 @@ import { CircleAlertIcon, CircleCheckIcon } from "lucide-react"
 import { z } from "zod"
 
 import { safeRedirect } from "@/auth/redirect"
-import { AuthShell, type SideCopy } from "@/features/auth/AuthShell"
-import { LoginForm } from "@/features/auth/LoginForm"
+import { AuthShell, type SideCopy } from "@/features/auth/components/AuthShell"
+import { LoginForm } from "@/features/auth/pages/LoginForm"
 import {
   featuredLiveOptions,
   mixesCopy,

@@ -17,7 +17,7 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { ErrorAlert } from "@/features/auth/ui"
+import { ErrorAlert } from "@/features/auth/components/ui"
 import {
   currentCode,
   expiryText,

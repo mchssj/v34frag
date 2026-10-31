@@ -7,7 +7,7 @@ import { errorMessage, isApiError } from "@/api/errors"
 import { useMe } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ErrorAlert } from "@/features/auth/ui"
+import { ErrorAlert } from "@/features/auth/components/ui"
 import {
   passwordChangedText,
   passwordFeedback,

@@ -1,6 +1,6 @@
 import { LinkIcon, MailCheckIcon, TargetIcon } from "lucide-react"
 
-import { maskEmail } from "./helpers"
+import { maskEmail } from "../../lib/register"
 
 export function CheckEmailStep({
   alias,

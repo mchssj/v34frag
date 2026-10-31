@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ErrorAlert } from "@/features/auth/ui"
+import { ErrorAlert } from "@/features/auth/components/ui"
 import { InviteDrawer } from "../components/InviteDrawer"
 import {
   heirsOf,
