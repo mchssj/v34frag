@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button"
 import {
   nextEventOptions,
   topPlayersOptions,
-  type EventSummary,
-} from "@/features/public/queries"
+} from "@/features/public/api/queries"
+import type { EventSummary } from "@/features/public/types"
 
 const TEMPLATE: Record<EventSummary["template"], string> = {
   single: "Eliminación directa",

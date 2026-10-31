@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { claimServer, SERVER_MODE, type ServerStatus } from "./queries"
+import { claimServer, SERVER_MODE } from "./queries"
+import type { ServerStatus } from "../types"
 
 const server = (over: Partial<ServerStatus>): ServerStatus => ({
   id: "s",

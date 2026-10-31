@@ -6,7 +6,10 @@ import heroAvif from "@/assets/landing-bg.avif"
 import heroWebp from "@/assets/landing-bg.webp"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Button } from "@/components/ui/button"
-import { formatNumber, serverStatusOptions } from "@/features/public/queries"
+import {
+  formatNumber,
+  serverStatusOptions,
+} from "@/features/public/api/queries"
 import { scrollToSection } from "./scroll"
 
 const heroImage = `image-set(url("${heroAvif}") type("image/avif"), url("${heroWebp}") type("image/webp"))`

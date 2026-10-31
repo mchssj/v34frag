@@ -11,7 +11,7 @@ import {
   mixesCopy,
   mixesTotalOptions,
   sideName,
-} from "@/features/public/queries"
+} from "@/features/public/api/queries"
 
 const searchSchema = z.object({
   aviso: z

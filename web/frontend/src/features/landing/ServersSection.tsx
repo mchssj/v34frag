@@ -21,8 +21,8 @@ import {
   formatNumber,
   SERVER_MODE,
   serverStatusOptions,
-  type ServerStatus,
-} from "@/features/public/queries"
+} from "@/features/public/api/queries"
+import type { ServerStatus } from "@/features/public/types"
 
 const GRID =
   "grid grid-cols-[minmax(160px,1.6fr)_minmax(80px,1fr)_96px_64px_96px] gap-4"

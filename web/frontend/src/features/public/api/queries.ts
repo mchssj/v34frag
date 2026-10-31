@@ -1,12 +1,7 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
-
-// Datos públicos (sin sesión) de la landing y las tarjetas laterales del auth.
-
-export type MatchSummary = Schemas["MatchSummary"]
-export type EventSummary = Schemas["EventSummary"]
-export type PlayerSummary = Schemas["PlayerSummary"]
+import { api, unwrap } from "@/api/client"
+import type { ServerStatus } from "../types"
 
 const MINUTE = 60_000
 
@@ -104,8 +99,6 @@ export const topPlayersOptions = queryOptions({
     ).items,
   staleTime: 5 * MINUTE,
 })
-
-export type ServerStatus = Schemas["ServerStatusItem"]
 type ServerMode = NonNullable<ServerStatus["mode"]>
 
 /**
