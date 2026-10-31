@@ -20,11 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { playerDetailOptions } from "../players/api/queries"
+import { playerDetailOptions } from "../../players/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
-import { ConfirmDialog } from "../components/dialogs"
-import { isBlockedName } from "../lib/errors"
-import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../lib/format"
+import { ConfirmDialog } from "../../components/dialogs"
+import { isBlockedName } from "../../lib/errors"
+import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../../lib/format"
 import {
   Chip,
   EmptyState,
@@ -36,8 +36,8 @@ import {
   SplitLayout,
   TableBox,
   headCell,
-} from "../components/ui"
-import { BanDialog } from "../bans/components/BanDialog"
+} from "../../components/ui"
+import { BanDialog } from "../../bans/components/BanDialog"
 import {
   USERS_PER,
   usersOptions,
@@ -49,11 +49,8 @@ import {
   streamerOptions,
   useGrantStreamer,
   useRevokeStreamer,
-  type AccountFilter,
-  type AdminUser,
-  type SettableRole,
-  type VipGrant,
-} from "./queries"
+} from "../api/queries"
+import type { AccountFilter, AdminUser, SettableRole, VipGrant } from "../types"
 
 const ROLE_TONE: Record<string, Tone> = {
   admin: "strong",

@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
-import { AdminHeader, AdminTabs } from "../components/ui"
-import { AccountsTab } from "./AccountsTab"
-import { hitsOptions } from "./queries"
-import { WordsTab } from "./WordsTab"
+import { AdminHeader, AdminTabs } from "../../components/ui"
+import { AccountsTab } from "../components/AccountsTab"
+import { hitsOptions } from "../api/queries"
+import { WordsTab } from "../components/WordsTab"
 
 export const USER_TABS = ["accounts", "words"] as const
 export type UserTab = (typeof USER_TABS)[number]

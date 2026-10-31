@@ -13,7 +13,7 @@ import {
 
 import { renderWithQuery } from "@/test/render"
 import { StreamerSection } from "./AccountsTab"
-import type { AdminUser } from "./queries"
+import type { AdminUser } from "../types"
 
 const API = "http://api.test"
 const server = setupServer()

@@ -5,18 +5,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
-
-// Administración › Usuarios: cuentas (alias, rol, VIP y la marca de streamer del HUD) y palabras bloqueadas.
-
-export type AdminUser = Schemas["AdminUser"]
-export type BlockedHit = Schemas["BlockedHit"]
-export type VipGrant = Schemas["VipGrant"]
-export type Streamer = Schemas["Streamer"]
-export type SettableRole = "user" | "organizer" | "moderator"
-
-export type AccountFilter =
-  "all" | "admin" | "moderator" | "organizer" | "streamer" | "noplayer"
+import { api, unwrap } from "@/api/client"
+import type { VipGrant, SettableRole, AccountFilter } from "../types"
 
 export const USERS_PER = 25
 
