@@ -7,11 +7,16 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { currentSeasonOptions } from "@/features/ranking/api/queries"
-import { ConfirmDialog } from "../components/dialogs"
-import { CONFIRM_TEXT, fmtDate } from "../lib/format"
-import { AdminHeader, AdminTabs, QueryError, SaveBar } from "../components/ui"
-import { HistoryTab } from "./HistoryTab"
-import { PreviewTab } from "./PreviewTab"
+import { ConfirmDialog } from "../../components/dialogs"
+import { CONFIRM_TEXT, fmtDate } from "../../lib/format"
+import {
+  AdminHeader,
+  AdminTabs,
+  QueryError,
+  SaveBar,
+} from "../../components/ui"
+import { HistoryTab } from "../components/HistoryTab"
+import { PreviewTab } from "../components/PreviewTab"
 import {
   seasonConfigOptions,
   seasonCountsOptions,
@@ -20,9 +25,9 @@ import {
   useOpenSeason,
   usePatchSeason,
   useSaveSeasonConfig,
-  type Season,
-} from "./queries"
-import { SeasonFormView } from "./SeasonFormView"
+} from "../api/queries"
+import type { Season } from "../types"
+import { SeasonFormView } from "../components/SeasonFormView"
 import {
   formError,
   fromConfig,
@@ -31,7 +36,7 @@ import {
   seasonPatch,
   toConfig,
   type SeasonForm,
-} from "./seasons"
+} from "../lib/seasons"
 
 export const SEASON_TABS = ["active", "preview", "next", "history"] as const
 export type SeasonTab = (typeof SEASON_TABS)[number]

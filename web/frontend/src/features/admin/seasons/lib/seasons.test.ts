@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { Season } from "./queries"
+import type { Season } from "../types"
 import {
   addTier,
   argDay,

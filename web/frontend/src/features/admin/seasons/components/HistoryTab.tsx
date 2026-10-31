@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router"
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { seasonsOptions } from "@/features/ranking/api/queries"
-import { fmtDate } from "../lib/format"
-import { EmptyState, QueryError } from "../components/ui"
+import { fmtDate } from "../../lib/format"
+import { EmptyState, QueryError } from "../../components/ui"
 
 /** Las temporadas cerradas, de la más nueva a la más vieja, con las reglas que tuvieron. */
 export function HistoryTab() {

@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { pickPlayerOptions } from "../players/api/queries"
+import { pickPlayerOptions } from "../../players/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { Card } from "../components/ui"
+import { Card } from "../../components/ui"
 import {
   addTier,
   removeTier,
@@ -19,7 +19,7 @@ import {
   tierName,
   tiersError,
   type SeasonForm,
-} from "./seasons"
+} from "../lib/seasons"
 
 const num = (v: string) => (v === "" ? -1 : Number(v))
 const shown = (n: number) => (n < 0 ? "" : n)

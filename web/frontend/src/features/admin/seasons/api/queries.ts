@@ -5,15 +5,14 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { rankingKeys } from "@/features/ranking/api/queries"
-
-// Administración › Temporadas (contrato temporadas.md, sección 8f).
-
-export type Season = Schemas["Season"]
-export type SeasonTier = Schemas["SeasonTier"]
-export type SeasonConfig = Schemas["SeasonConfig"]
-export type SeasonPatch = Schemas["SeasonPatch"]
+import type {
+  SeasonConfig,
+  SeasonPatch,
+  PreviewParams,
+  PreviewFilter,
+} from "../types"
 
 export const seasonConfigOptions = queryOptions({
   queryKey: ["admin", "seasons", "config"] as const,
@@ -41,15 +40,6 @@ export function seasonCountsOptions(id: string) {
     },
   })
 }
-
-export type PreviewParams = {
-  top_n: number
-  min_matches: number
-  reset_pct: number
-  reset_floor: number
-  reset_all: boolean
-}
-export type PreviewFilter = "medal" | "reset" | undefined
 
 export function seasonPreviewOptions(
   p: PreviewParams,

@@ -20,9 +20,10 @@ import {
   QueryError,
   TableBox,
   headCell,
-} from "../components/ui"
-import { seasonPreviewOptions, type PreviewFilter } from "./queries"
-import { LIMITS, type SeasonForm } from "./seasons"
+} from "../../components/ui"
+import { seasonPreviewOptions } from "../api/queries"
+import type { PreviewFilter } from "../types"
+import { LIMITS, type SeasonForm } from "../lib/seasons"
 
 const ok = (v: number, [min, max]: readonly [number, number]) =>
   Number.isInteger(v) && v >= min && v <= max
