@@ -34,7 +34,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { myProfileOptions } from "@/features/profile/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 import { useShellIdentity } from "./queries"
 
 function roleLabel(

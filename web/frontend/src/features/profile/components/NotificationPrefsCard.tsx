@@ -9,8 +9,8 @@ import { getsAdminNotifications } from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
-import { myProfileOptions, useUpdateProfile } from "../queries"
-import { CardTitle, SectionCard } from "../ui"
+import { myProfileOptions, useUpdateProfile } from "../api/queries"
+import { CardTitle, SectionCard } from "./ui"
 
 type Prefs = Schemas["NotificationPrefs"]
 type Category = keyof Prefs

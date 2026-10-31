@@ -8,7 +8,7 @@ import { clipReviewCountOptions } from "@/features/admin/clips/queries"
 import {
   myProfileOptions,
   playerDetailOptions,
-} from "@/features/profile/queries"
+} from "@/features/profile/api/queries"
 import {
   liveCountOptions,
   liveMatchesOptions,

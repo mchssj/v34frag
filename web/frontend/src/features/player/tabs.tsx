@@ -42,7 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { mapsOptions } from "@/features/maps/queries"
-import { COUNTRIES } from "@/features/profile/schemas"
+import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/parts"
 import { STATUS_LABEL } from "@/features/teams/model"
 import { useTeamLogos } from "@/features/teams/queries"

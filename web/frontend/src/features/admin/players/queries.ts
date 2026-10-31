@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
-import { playerDetailOptions } from "@/features/profile/queries"
+import { playerDetailOptions } from "@/features/profile/api/queries"
 
 // Administración › Jugadores: fichas, sus SteamID y los pedidos de !claim (contrato admin.md).
 

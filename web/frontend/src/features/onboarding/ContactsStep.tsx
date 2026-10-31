@@ -5,8 +5,11 @@ import { AuthHeading } from "@/features/auth/ui"
 import {
   ContactFields,
   WELCOME_CONTACTS,
-} from "@/features/profile/ContactFields"
-import type { SocialsInput, SocialsValues } from "@/features/profile/schemas"
+} from "@/features/profile/components/ContactFields"
+import type {
+  SocialsInput,
+  SocialsValues,
+} from "@/features/profile/lib/schemas"
 import { Greeting } from "./Greeting"
 
 /** Paso "Contactos": Discord, Steam y FACEIT, todos opcionales. */

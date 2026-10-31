@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
-import { profileKeys } from "@/features/profile/queries"
+import { profileKeys } from "@/features/profile/api/queries"
 
 // Equipos: Mi equipo, vista pública, Crear y Buscar (handoff_equipo). Bitácoras 2026-10-24-equipo y
 // 2026-10-29-equipo-torneos-api-frontend.

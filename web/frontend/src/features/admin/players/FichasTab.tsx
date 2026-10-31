@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
-import { AvatarPicker } from "@/features/profile/AvatarPicker"
+import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
 import { PlayerAvatar } from "@/features/ranking/parts"
 import { SearchBox } from "@/features/ranking/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"

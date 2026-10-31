@@ -18,7 +18,7 @@ import {
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { AuthHeading } from "@/features/auth/ui"
 import { Greeting } from "./Greeting"
-import { COUNTRIES, GAME_ROLES } from "@/features/profile/schemas"
+import { COUNTRIES, GAME_ROLES } from "@/features/profile/lib/schemas"
 
 export type GameRole = (typeof GAME_ROLES)[number]
 export type Country = (typeof COUNTRIES)[number]

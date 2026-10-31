@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
-import { myProfileOptions } from "@/features/profile/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 
 export type SteamStatus = Schemas["MySteamStatus"]
 export type MyProfile = Schemas["MyProfile"]

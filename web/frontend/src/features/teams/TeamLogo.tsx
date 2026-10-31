@@ -14,7 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Spinner } from "@/components/ui/spinner"
-import { AvatarCropDialog } from "@/features/profile/AvatarCropDialog"
+import { AvatarCropDialog } from "@/features/profile/components/AvatarCropDialog"
 import {
   checkAvatarSource,
   cropLogo,

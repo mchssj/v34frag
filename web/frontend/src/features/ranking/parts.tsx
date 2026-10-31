@@ -19,7 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { myProfileOptions } from "@/features/profile/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 
 // Piezas que comparten las tablas de jugadores, de equipos y el comparador.
 

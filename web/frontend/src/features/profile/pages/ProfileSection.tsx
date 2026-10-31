@@ -27,16 +27,20 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { useAliasStatus } from "@/features/auth/register/useAliasStatus"
 import { AuthField, ErrorAlert } from "@/features/auth/ui"
-import { aliasFeedback } from "../alias"
-import { AvatarPicker } from "../AvatarPicker"
-import { myProfileOptions, useChangeAlias, useUpdateProfile } from "../queries"
+import { aliasFeedback } from "../lib/alias"
+import { AvatarPicker } from "../components/AvatarPicker"
+import {
+  myProfileOptions,
+  useChangeAlias,
+  useUpdateProfile,
+} from "../api/queries"
 import {
   COUNTRIES,
   GAME_ROLES,
   personalSchema,
   type PersonalValues,
-} from "../schemas"
-import { CardFooter, CardTitle, SectionCard } from "../ui"
+} from "../lib/schemas"
+import { CardFooter, CardTitle, SectionCard } from "../components/ui"
 
 export function ProfileSection() {
   const user = useMe().data

@@ -6,7 +6,7 @@ import {
 
 import { api, unwrap, type Schemas } from "@/api/client"
 import { errorFromResponse, networkError } from "@/api/errors"
-import { profileKeys } from "@/features/profile/queries"
+import { profileKeys } from "@/features/profile/api/queries"
 import type { Notification } from "./model"
 
 // Contrato notificaciones.md: el contador se consulta cada 30 s, al enfocar la pestaña y después de

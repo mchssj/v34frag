@@ -8,8 +8,6 @@ import { api, unwrap, type Schemas } from "@/api/client"
 import { authKeys, missingSession } from "@/auth/queries"
 import { tokenStore, toSession } from "@/auth/tokenStore"
 
-export type MyProfile = Schemas["MyProfile"]
-
 export const profileKeys = {
   mine: ["profile", "mine"] as const,
 }

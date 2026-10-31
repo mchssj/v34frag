@@ -21,7 +21,7 @@ import { NoLevelBadge } from "@/components/illustrations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { COUNTRIES } from "@/features/profile/schemas"
+import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/parts"
 import { EloChart } from "./EloChart"
 import {

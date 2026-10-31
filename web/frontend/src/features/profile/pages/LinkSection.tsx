@@ -39,15 +39,15 @@ import {
   gameAccounts,
   type GameAccountRow,
   type SteamRequest,
-} from "../accounts"
-import { ContactFields, PROFILE_CONTACTS } from "../ContactFields"
-import { myProfileOptions, profileKeys, useUpdateProfile } from "../queries"
+} from "../lib/accounts"
+import { ContactFields, PROFILE_CONTACTS } from "../components/ContactFields"
+import { myProfileOptions, profileKeys, useUpdateProfile } from "../api/queries"
 import {
   socialsSchema,
   type SocialsInput,
   type SocialsValues,
-} from "../schemas"
-import { CardFooter, CardTitle, SectionCard } from "../ui"
+} from "../lib/schemas"
+import { CardFooter, CardTitle, SectionCard } from "../components/ui"
 
 export function LinkSection() {
   const steam = useQuery(steamStatusOptions)

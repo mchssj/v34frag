@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 
-import { myProfileOptions, playerDetailOptions } from "../queries"
-import { CardTitle, SectionCard } from "../ui"
+import { myProfileOptions, playerDetailOptions } from "../api/queries"
+import { CardTitle, SectionCard } from "../components/ui"
 
 const OPTIONS = [
   {

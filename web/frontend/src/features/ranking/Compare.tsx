@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
-import { myProfileOptions } from "@/features/profile/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { barPct, compareWinner, fmt2 } from "./labels"
 import { PlayerAvatar } from "./parts"

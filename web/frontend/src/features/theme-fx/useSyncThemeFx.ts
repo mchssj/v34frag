@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
 
-import { myProfileOptions } from "@/features/profile/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 import { getThemeFxPref, setThemeFxPref } from "./pref"
 
 /**

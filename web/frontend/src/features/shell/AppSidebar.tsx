@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { myProfileOptions } from "@/features/profile/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 import { activeNavKey, NAV_GROUPS, type BadgeKey } from "./nav"
 import { AccountMenu } from "./AccountMenu"
 import { useBadgeCounts } from "./queries"

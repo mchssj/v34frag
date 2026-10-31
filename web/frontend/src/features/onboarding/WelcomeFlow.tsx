@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { AuthShell, type SideCopy } from "@/features/auth/AuthShell"
 import { ErrorAlert, StepButton, StepProgress } from "@/features/auth/ui"
-import { myProfileOptions, useUpdateProfile } from "@/features/profile/queries"
+import {
+  myProfileOptions,
+  useUpdateProfile,
+} from "@/features/profile/api/queries"
 import {
   COUNTRIES,
   GAME_ROLES,
@@ -20,7 +23,7 @@ import {
   socialsSchema,
   type SocialsInput,
   type SocialsValues,
-} from "@/features/profile/schemas"
+} from "@/features/profile/lib/schemas"
 import { ClaimStep } from "./ClaimStep"
 import { ContactsStep } from "./ContactsStep"
 import { PhotoStep } from "./PhotoStep"

@@ -11,7 +11,7 @@ import {
   type CropArea,
 } from "@/lib/image"
 import { AvatarCropDialog } from "./AvatarCropDialog"
-import { useUploadAvatar } from "./queries"
+import { useUploadAvatar } from "../api/queries"
 
 /**
  * Foto de perfil: clic o arrastrar una imagen, encuadrarla (arrastre y zoom) y se sube recortada

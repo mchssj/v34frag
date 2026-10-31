@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { profileKeys } from "@/features/profile/queries"
+import { profileKeys } from "@/features/profile/api/queries"
 import {
   claimKeys,
   markStepSaved,

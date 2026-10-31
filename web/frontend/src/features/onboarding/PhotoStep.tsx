@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input"
 import { AuthHeading } from "@/features/auth/ui"
-import { AvatarPicker } from "@/features/profile/AvatarPicker"
+import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
 import { Greeting } from "./Greeting"
 
 /** Paso "Foto y nombre": los dos opcionales. La foto se sube al elegirla. */

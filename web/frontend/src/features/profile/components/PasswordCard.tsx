@@ -8,9 +8,13 @@ import { useMe } from "@/auth/queries"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ErrorAlert } from "@/features/auth/ui"
-import { passwordChangedText, passwordFeedback, type Tone } from "../password"
-import { useChangePassword } from "../queries"
-import { CardTitle, SectionCard } from "../ui"
+import {
+  passwordChangedText,
+  passwordFeedback,
+  type Tone,
+} from "../lib/password"
+import { useChangePassword } from "../api/queries"
+import { CardTitle, SectionCard } from "./ui"
 
 const TEXT: Record<Tone, string> = {
   muted: "text-muted-foreground",

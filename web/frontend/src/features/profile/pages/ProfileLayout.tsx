@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { steamStatusOptions } from "@/features/onboarding/queries"
 import type { AppPath } from "@/features/shell/nav"
-import { myProfileOptions } from "./queries"
+import { myProfileOptions } from "../api/queries"
 
 export const PROFILE_SECTIONS: {
   to: AppPath

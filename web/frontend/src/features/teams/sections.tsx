@@ -8,7 +8,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
-import { playerDetailOptions } from "@/features/profile/queries"
+import { playerDetailOptions } from "@/features/profile/api/queries"
 import { formatNumber } from "@/features/public/queries"
 import { timeAgo } from "@/features/shell/notifications/model"
 import { LevelBadge } from "@/components/brand/LevelBadge"

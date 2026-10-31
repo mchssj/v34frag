@@ -4,7 +4,7 @@ import { Controller, type Control } from "react-hook-form"
 import { BrandTile, type Brand } from "@/components/brand/BrandTile"
 import { Input } from "@/components/ui/input"
 import { AuthField } from "@/features/auth/ui"
-import type { SocialsInput, SocialsValues } from "./schemas"
+import type { SocialsInput, SocialsValues } from "../lib/schemas"
 
 type Row = {
   brand: Brand

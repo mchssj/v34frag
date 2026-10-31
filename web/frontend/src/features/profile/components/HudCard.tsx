@@ -4,8 +4,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog, SecretDialog } from "@/features/admin/dialogs"
 import { fmtDate } from "@/features/admin/format"
-import { useNewHudLink, type MyProfile } from "../queries"
-import { CardTitle, SectionCard } from "../ui"
+import { useNewHudLink } from "../api/queries"
+import type { MyProfile } from "../types"
+import { CardTitle, SectionCard } from "./ui"
 
 type Link = { hud_url: string; control_url: string }
 

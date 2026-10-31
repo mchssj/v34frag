@@ -6,9 +6,9 @@ import { useTheme } from "@/components/theme-provider"
 import { THEME_FX_OPTIONS, useThemeFxPref } from "@/features/theme-fx/pref"
 import { errorMessage } from "@/api/errors"
 import { useMediaQuery } from "@/lib/useMediaQuery"
-import { useUpdateProfile } from "../queries"
-import { CardTitle, SectionCard, Segmented } from "../ui"
-import { NotificationPrefsCard } from "./NotificationPrefsCard"
+import { useUpdateProfile } from "../api/queries"
+import { CardTitle, SectionCard, Segmented } from "../components/ui"
+import { NotificationPrefsCard } from "../components/NotificationPrefsCard"
 
 /** Tema, efectos al cambiar de tema (handoff de efectos) y notificaciones. */
 export function PreferencesSection() {
