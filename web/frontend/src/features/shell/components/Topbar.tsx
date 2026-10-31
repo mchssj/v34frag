@@ -20,6 +20,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Kbd } from "@/components/ui/kbd"
+import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { breadcrumbsFor } from "../lib/nav"
 import { NotificationsMenu } from "../notifications/components/NotificationsMenu"
@@ -34,7 +36,7 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
   return (
     <header className="sticky top-0 z-10 flex h-[52px] shrink-0 items-center gap-2 rounded-t-[inherit] border-b bg-background pr-3 pl-2.5">
       <SidebarTrigger className="size-7" />
-      <span aria-hidden className="mx-1 h-4 w-px bg-border" />
+      <Separator orientation="vertical" className="mx-1 h-4" />
       <Breadcrumbs />
       <Button
         variant="outline"
@@ -46,9 +48,7 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
         <span className="hidden flex-1 truncate text-left sm:inline">
           Buscar…
         </span>
-        <kbd className="hidden rounded bg-muted px-1.5 font-mono text-[11px] sm:inline">
-          {SEARCH_SHORTCUT}
-        </kbd>
+        <Kbd className="hidden h-auto rounded px-1.5 font-mono text-[11px] text-inherit sm:inline-flex"></Kbd>
       </Button>
       <ThemeMenu />
       <NotificationsMenu />

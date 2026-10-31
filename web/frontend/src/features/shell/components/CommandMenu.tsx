@@ -19,6 +19,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import { Kbd } from "@/components/ui/kbd"
 import { LogoutDialog } from "./AccountMenu"
 import { NAV_GROUPS, type AppPath } from "../lib/nav"
 
@@ -131,9 +132,9 @@ export function CommandMenu({
               placeholder="Escribe un nick, equipo, torneo o página…"
               className="pr-12"
             />
-            <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">
+            <Kbd className="absolute top-1/2 right-3 h-auto -translate-y-1/2 rounded px-1.5 font-mono text-[11px]">
               ESC
-            </kbd>
+            </Kbd>
           </div>
           <CommandList className="max-h-[min(420px,60vh)]">
             <CommandEmpty>Sin resultados para “{query}”.</CommandEmpty>

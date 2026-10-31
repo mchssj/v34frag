@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { CheckIcon, LoaderCircleIcon } from "lucide-react"
+import { CheckIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { ago, fmtDate } from "../../lib/format"
 import { Chip, EmptyState, QueryError } from "../../components/ui"
 import { clipLabel } from "../lib/clips"
@@ -77,7 +78,7 @@ function ReviewCard({ r }: { r: ClipReview }) {
           />
         ) : (
           <span className="flex flex-col items-center gap-2 px-4 text-center text-[13px] text-muted-foreground">
-            <LoaderCircleIcon aria-hidden className="size-6 animate-spin" />
+            <Spinner className="size-6" />
             {video.status === "failed"
               ? "La grabación falló. Mándalo a grabar de nuevo."
               : "Grabándose. Aparece acá cuando esté listo."}

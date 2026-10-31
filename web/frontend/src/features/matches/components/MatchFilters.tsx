@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
 import { Toggle } from "@/components/ui/toggle"
 import { mapsOptions } from "@/features/maps/api/queries"
 import type { MapEntry } from "@/features/maps/types"
@@ -86,7 +87,7 @@ export function Filters({
           </button>
         ))}
       </div>
-      <span aria-hidden className="mx-1 h-5 w-px bg-border" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
       <InputGroup className="max-w-[300px] min-w-[200px] flex-1">
         <InputGroupAddon>
           <SearchIcon aria-hidden className="size-3.5" />

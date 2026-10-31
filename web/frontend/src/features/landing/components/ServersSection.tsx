@@ -10,6 +10,7 @@ import { toast } from "sonner"
 
 import { SectionHeading } from "@/components/brand/SectionHeading"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -267,7 +268,7 @@ export function ServersSection() {
                     servidores en línea
                   </span>
                 </span>
-                <span className="h-9 w-px bg-border" aria-hidden />
+                <Separator orientation="vertical" className="h-9" />
                 <span className="flex flex-col gap-0.5">
                   <span className="font-mono text-2xl font-bold tracking-[-1px] text-win">
                     {formatNumber(totals.players)}

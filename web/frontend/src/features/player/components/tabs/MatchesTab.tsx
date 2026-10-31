@@ -6,6 +6,7 @@ import { errorMessage, isRetryable } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { ListPagination } from "@/components/brand/ListPagination"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -127,7 +128,7 @@ export function Matches({
           value={search.kind}
           onPick={(kind) => onChange({ kind, page: undefined })}
         />
-        <span aria-hidden className="h-5 w-px bg-border" />
+        <Separator orientation="vertical" className="h-5" />
         <Chips
           label="Resultado"
           options={RESULTS}
