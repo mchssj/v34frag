@@ -28,18 +28,22 @@ import {
   type SocialsInput,
   type SocialsValues,
 } from "@/features/profile/lib/schemas"
-import { ClaimStep } from "./ClaimStep"
-import { ContactsStep } from "./ContactsStep"
-import { PhotoStep } from "./PhotoStep"
-import { PlayStyleStep, type Country, type GameRole } from "./PlayStyleStep"
+import { ClaimStep } from "../components/ClaimStep"
+import { ContactsStep } from "../components/ContactsStep"
+import { PhotoStep } from "../components/PhotoStep"
+import {
+  PlayStyleStep,
+  type Country,
+  type GameRole,
+} from "../components/PlayStyleStep"
 import {
   markStepSaved,
   markWelcomeSeen,
   onboardingFrom,
   steamStatusOptions,
   welcomeSteps,
-  type WelcomeStep,
-} from "./queries"
+} from "../api/queries"
+import type { WelcomeStep } from "../types"
 
 const STEP_NAME: Record<WelcomeStep, string> = {
   photo: "Foto y nombre",

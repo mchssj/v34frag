@@ -2,7 +2,7 @@ import { formatDistanceStrict } from "date-fns"
 import { es } from "date-fns/locale"
 import { useEffect, useState } from "react"
 
-import type { SteamStatus } from "./queries"
+import type { SteamStatus } from "../types"
 
 // Código de !claim: lo comparten la Bienvenida y Mi perfil → Vinculación.
 

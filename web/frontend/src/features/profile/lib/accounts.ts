@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 
 import type { Schemas } from "@/api/client"
-import type { SteamStatus } from "@/features/onboarding/queries"
+import type { SteamStatus } from "@/features/onboarding/types"
 
 // Mi perfil → Vinculación: los SteamID de la cuenta y las solicitudes de SteamID adicional.
 

@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { useOnboardingStatus } from "./queries"
+import { useOnboardingStatus } from "../api/queries"
 
 /** Aviso del Home mientras falte algún paso de la Bienvenida. No se puede cerrar. */
 export function ProfileBanner() {

@@ -6,11 +6,14 @@ import {
   type QueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { myProfileOptions } from "@/features/profile/api/queries"
-
-export type SteamStatus = Schemas["MySteamStatus"]
-export type MyProfile = Schemas["MyProfile"]
+import type {
+  SteamStatus,
+  MyProfile,
+  WelcomeStep,
+  OnboardingStatus,
+} from "../types"
 
 export const claimKeys = {
   status: ["claim", "status"] as const,
@@ -92,22 +95,7 @@ export function useCancelUnlink() {
       queryClient.invalidateQueries({ queryKey: claimKeys.status }),
   })
 }
-
-export type WelcomeStep = "photo" | "style" | "contacts" | "link"
 const ORDER: WelcomeStep[] = ["photo", "style", "contacts", "link"]
-
-export type OnboardingStatus = {
-  /** Foto o nombre real cargados, o el paso guardado (aunque sea vacío) */
-  photo: boolean
-  /** Puesto preferido (game_role) elegido */
-  style: boolean
-  /** Algún contacto cargado, o el paso guardado (aunque sea vacío) */
-  contacts: boolean
-  /** Al menos un SteamID vinculado */
-  linked: boolean
-  done: number
-  complete: boolean
-}
 
 // Provisorio hasta que /auth/me traiga el progreso por paso: Foto y Contactos son opcionales y
 // "Guardar y seguir" con todo vacío cuenta como hecho. Se recuerda por cuenta en este navegador.

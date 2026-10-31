@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { SteamStatus } from "@/features/onboarding/queries"
+import type { SteamStatus } from "@/features/onboarding/types"
 import { claimOutcome, gameAccounts, type SteamRequest } from "./accounts"
 
 const A = "76561198000000001"

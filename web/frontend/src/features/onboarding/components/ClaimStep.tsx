@@ -12,8 +12,9 @@ import {
   expiryText,
   useSecondsLeft,
   type ClaimCode,
-} from "./claim"
-import { useCreateClaimCode, type SteamStatus } from "./queries"
+} from "../lib/claim"
+import { useCreateClaimCode } from "../api/queries"
+import type { SteamStatus } from "../types"
 
 export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
   const create = useCreateClaimCode()

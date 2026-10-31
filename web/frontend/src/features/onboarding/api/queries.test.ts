@@ -9,9 +9,8 @@ import {
   needsWelcome,
   onboardingFrom,
   welcomeSteps,
-  type MyProfile,
-  type SteamStatus,
 } from "./queries"
+import type { MyProfile, SteamStatus } from "../types"
 
 type Details = Partial<{
   avatar_url: string

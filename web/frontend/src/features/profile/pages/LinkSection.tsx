@@ -23,7 +23,7 @@ import {
   expiryText,
   useSecondsLeft,
   type ClaimCode,
-} from "@/features/onboarding/claim"
+} from "@/features/onboarding/lib/claim"
 import {
   mySteamRequestsOptions,
   steamStatusOptions,
@@ -31,8 +31,8 @@ import {
   useCreateClaimCode,
   useMakePrimary,
   useRequestUnlink,
-  type SteamStatus,
-} from "@/features/onboarding/queries"
+} from "@/features/onboarding/api/queries"
+import type { SteamStatus } from "@/features/onboarding/types"
 import { timeAgo } from "@/features/shell/notifications/model"
 import {
   claimOutcome,

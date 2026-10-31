@@ -9,7 +9,7 @@ import { useLogin } from "@/auth/queries"
 import { loginSchema, type LoginValues } from "@/auth/schemas"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { needsWelcome } from "@/features/onboarding/queries"
+import { needsWelcome } from "@/features/onboarding/api/queries"
 import { AuthField, AuthHeading, ErrorAlert } from "../components/ui"
 import { useRetryCountdown } from "../lib/useRetryCountdown"
 

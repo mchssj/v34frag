@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { steamStatusOptions } from "@/features/onboarding/queries"
+import { steamStatusOptions } from "@/features/onboarding/api/queries"
 import type { AppPath } from "@/features/shell/nav"
 import { myProfileOptions } from "../api/queries"
 

@@ -22,7 +22,7 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({ children }: { children: ReactNode }) => <a href="#">{children}</a>,
 }))
 const { needsWelcome } = vi.hoisted(() => ({ needsWelcome: vi.fn() }))
-vi.mock("@/features/onboarding/queries", () => ({ needsWelcome }))
+vi.mock("@/features/onboarding/api/queries", () => ({ needsWelcome }))
 
 const API = "http://api.test"
 const server = setupServer()
