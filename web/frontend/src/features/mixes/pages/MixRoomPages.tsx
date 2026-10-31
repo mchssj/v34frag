@@ -11,11 +11,11 @@ import { mapImage, mapsOptions } from "@/features/maps/api/queries"
 import { myProfileOptions } from "@/features/profile/api/queries"
 import { Placeholder } from "@/features/shell/Placeholder"
 import { matchDetailOptions } from "@/features/shell/queries"
-import { DeleteMixDialog } from "./DeleteMixDialog"
-import { MixRoom } from "./MixRoom"
-import { liveMixOptions } from "./queries"
-import { roomFromLive, roomFromMatch } from "./room"
-import type { StatsTab } from "./stats"
+import { DeleteMixDialog } from "../components/DeleteMixDialog"
+import { MixRoom } from "../components/MixRoom"
+import { liveMixOptions } from "../api/queries"
+import { roomFromLive, roomFromMatch } from "../lib/room"
+import type { StatsTab } from "../lib/stats"
 
 type TabProps = { tab?: StatsTab; onTab?: (tab: StatsTab) => void }
 

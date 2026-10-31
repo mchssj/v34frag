@@ -4,14 +4,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { errorFromResponse, isApiError, networkError } from "@/api/errors"
 import { shellKeys } from "@/features/shell/queries"
-
-export type MixItem = Schemas["MixItem"]
-export type MixStats = Schemas["MixStats"]
-export type LiveMixDetail = Schemas["LiveMixDetail"]
-export type EloChoice = Schemas["DeleteMixBody"]["elo"]
+import type { LiveMixDetail, EloChoice } from "../types"
 
 // Sin SSE por ahora (contrato 8d): el listado y la sala en vivo se consultan cada 20 segundos.
 export const MIXES_REFRESH_MS = 20_000

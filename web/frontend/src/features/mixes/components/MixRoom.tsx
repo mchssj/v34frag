@@ -36,9 +36,9 @@ import {
   fmtDay,
   fmtTime,
   signed,
-} from "./labels"
+} from "../lib/labels"
 import { WatchTvButton } from "./parts"
-import type { Room, RoomPlayer, RoomSide, SideResult } from "./room"
+import type { Room, RoomPlayer, RoomSide, SideResult } from "../lib/room"
 import {
   bestValues,
   columnsFor,
@@ -48,7 +48,7 @@ import {
   type StatColumn,
   type StatsSort,
   type StatsTab,
-} from "./stats"
+} from "../lib/stats"
 import { StatsTabs } from "./StatsTabs"
 
 // Sala del mix (handoff_mixes, sección 4): cabecera, marcador, barra con la demo o la TV y una

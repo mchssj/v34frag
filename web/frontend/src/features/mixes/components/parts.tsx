@@ -16,7 +16,7 @@ import {
   tvUrl,
   type DemoTone,
   type Tv,
-} from "./labels"
+} from "../lib/labels"
 
 // Piezas chicas que comparten el listado y la sala del mix.
 

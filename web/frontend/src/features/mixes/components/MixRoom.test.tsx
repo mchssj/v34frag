@@ -15,8 +15,8 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { renderWithQuery } from "@/test/render"
 import { DeleteMixDialog } from "./DeleteMixDialog"
-import { MixLiveRoom, MixMatchRoom } from "./MixRoomPages"
-import { fetchLiveMix } from "./queries"
+import { MixLiveRoom, MixMatchRoom } from "../pages/MixRoomPages"
+import { fetchLiveMix } from "../api/queries"
 
 const navigate = vi.hoisted(() => vi.fn())
 const toast = vi.hoisted(() =>

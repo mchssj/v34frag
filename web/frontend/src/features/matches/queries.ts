@@ -1,7 +1,7 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
-import { MIXES_REFRESH_MS } from "@/features/mixes/queries"
+import { MIXES_REFRESH_MS } from "@/features/mixes/api/queries"
 import { toMatchesQuery, type MatchesSearch } from "./search"
 
 // El `allOf` nulable de `side.team` queda como `TeamRef & Record<string, never>` en los esquemas

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { LiveMixDetail } from "./queries"
+import type { LiveMixDetail } from "../types"
 import { roomFromLive, roomFromMatch, type MatchInput } from "./room"
 
 const line = (o: Partial<MatchInput["players"][number]> = {}) => ({

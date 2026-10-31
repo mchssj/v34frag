@@ -13,7 +13,7 @@ import {
 } from "vitest"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
-import type { MixItem } from "@/features/mixes/queries"
+import type { MixItem } from "@/features/mixes/types"
 import { renderWithQuery } from "@/test/render"
 import { MatchesList } from "./MatchesList"
 import type { MatchSummary } from "./queries"

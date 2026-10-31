@@ -16,7 +16,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { useDeleteMix, type EloChoice } from "./queries"
+import { useDeleteMix } from "../api/queries"
+import type { EloChoice } from "../types"
 
 const CONFIRM = "estoy seguro"
 

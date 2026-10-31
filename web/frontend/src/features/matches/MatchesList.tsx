@@ -41,13 +41,14 @@ import {
 import { Toggle } from "@/components/ui/toggle"
 import { mapsOptions } from "@/features/maps/api/queries"
 import type { MapEntry } from "@/features/maps/types"
-import { cancelReasonLabel, fmtDay, fmtTime } from "@/features/mixes/labels"
-import { CancelChip, DemoStatus, WatchTvButton } from "@/features/mixes/parts"
+import { cancelReasonLabel, fmtDay, fmtTime } from "@/features/mixes/lib/labels"
 import {
-  liveMixesOptions,
-  mixStatsOptions,
-  type MixItem,
-} from "@/features/mixes/queries"
+  CancelChip,
+  DemoStatus,
+  WatchTvButton,
+} from "@/features/mixes/components/parts"
+import { liveMixesOptions, mixStatsOptions } from "@/features/mixes/api/queries"
+import type { MixItem } from "@/features/mixes/types"
 import { Soon } from "@/features/teams/components/ui"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { matchesListOptions, type MatchSummary } from "./queries"

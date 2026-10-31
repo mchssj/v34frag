@@ -1,5 +1,5 @@
 import { adr, hsPercent, nickOf } from "./labels"
-import type { LiveMixDetail } from "./queries"
+import type { LiveMixDetail } from "../types"
 
 // Modelo común de la sala del mix: la terminada o cancelada sale de GET /matches/{id} y la en
 // vivo de GET /mixes/live/{uid}. Los componentes solo conocen este modelo.

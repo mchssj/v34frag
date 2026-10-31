@@ -1,6 +1,6 @@
 import { cn } from "cn"
 
-import { STATS_TABS, STATS_TAB_LABEL, type StatsTab } from "./stats"
+import { STATS_TABS, STATS_TAB_LABEL, type StatsTab } from "../lib/stats"
 
 /** Selector de pestañas de estadísticas: uno solo, cambia las tablas de los dos bandos. */
 export function StatsTabs({
