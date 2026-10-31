@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
-import type { ServerStatus } from "../types"
 
 const MINUTE = 60_000
 
@@ -99,7 +98,6 @@ export const topPlayersOptions = queryOptions({
     ).items,
   staleTime: 5 * MINUTE,
 })
-type ServerMode = NonNullable<ServerStatus["mode"]>
 
 /**
  * Estado de los servidores (A2S desde el backend). Lo comparten el pill del hero, la sección
@@ -112,42 +110,3 @@ export const serverStatusOptions = queryOptions({
   staleTime: 20_000,
   refetchInterval: 30_000,
 })
-
-export const SERVER_MODE: Record<ServerMode, string> = {
-  mix: "Mix",
-  competitive: "Competitivo",
-  public: "Público",
-  deathmatch: "Deathmatch",
-  retakes: "Retakes",
-  practice: "Práctica",
-}
-
-/** Servidor para el `connect` del `!claim`: uno de mix en línea; si no hay, cualquiera en línea. */
-export function claimServer(servers: ServerStatus[]): ServerStatus | null {
-  const reachable = servers.filter((s) => s.online && s.address)
-  return reachable.find((s) => s.mode === "mix") ?? reachable[0] ?? null
-}
-
-const numberFormat = new Intl.NumberFormat("es-AR")
-export const formatNumber = (n: number) => numberFormat.format(n)
-
-/** Copy de mixes reportados: "Más de 1.800" redondeando a centenas, o el número exacto si es chico. */
-export function mixesCopy(total: number): { title: string; subtitle: string } {
-  const amount =
-    total > 100
-      ? `Más de ${formatNumber(Math.floor((total - 1) / 100) * 100)}`
-      : formatNumber(total)
-  return {
-    title: `${amount} mixes reportados por el servidor.`,
-    subtitle: "Cada uno suma al ELO de quienes jugaron.",
-  }
-}
-
-/** Nombre de un bando: el equipo si lo hay, si no el nombre del bando. */
-// Tipo estructural: el generado para `team` es un allOf nullable difícil de usar.
-export function sideName(side: {
-  name: string | null
-  team: { name: string } | null
-}): string {
-  return side.team?.name ?? side.name ?? "Por definir"
-}

@@ -12,8 +12,8 @@ import {
 import {
   liveCountOptions,
   liveMatchesOptions,
-  sideName,
 } from "@/features/public/api/queries"
+import { sideName } from "@/features/public/lib/format"
 import { eventDetailOptions } from "@/features/events/api/queries"
 import { teamDetailOptions } from "@/features/teams/api/queries"
 import type { BadgeKey, CrumbData } from "../lib/nav"

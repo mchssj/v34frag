@@ -2,14 +2,13 @@ import { QueryClient } from "@tanstack/react-query"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { profileKeys } from "@/features/profile/api/queries"
+import { claimKeys, needsWelcome } from "./queries"
 import {
-  claimKeys,
   markStepSaved,
   markWelcomeSeen,
-  needsWelcome,
   onboardingFrom,
   welcomeSteps,
-} from "./queries"
+} from "../lib/onboarding"
 import type { MyProfile, SteamStatus } from "../types"
 
 type Details = Partial<{

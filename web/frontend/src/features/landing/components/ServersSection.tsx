@@ -17,11 +17,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { DISCORD } from "@/config/site"
-import {
-  formatNumber,
-  SERVER_MODE,
-  serverStatusOptions,
-} from "@/features/public/api/queries"
+import { serverStatusOptions } from "@/features/public/api/queries"
+import { formatNumber, SERVER_MODE } from "@/features/public/lib/format"
 import type { ServerStatus } from "@/features/public/types"
 
 const GRID =

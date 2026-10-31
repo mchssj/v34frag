@@ -36,13 +36,13 @@ import {
   type Country,
   type GameRole,
 } from "../components/PlayStyleStep"
+import { steamStatusOptions } from "../api/queries"
 import {
   markStepSaved,
   markWelcomeSeen,
   onboardingFrom,
-  steamStatusOptions,
   welcomeSteps,
-} from "../api/queries"
+} from "../lib/onboarding"
 import type { WelcomeStep } from "../types"
 
 const STEP_NAME: Record<WelcomeStep, string> = {
