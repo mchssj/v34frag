@@ -4,7 +4,7 @@ import { z } from "zod"
 import {
   AdminPlayersPage,
   PLAYER_TABS,
-} from "@/features/admin/players/AdminPlayersPage"
+} from "@/features/admin/players/pages/AdminPlayersPage"
 
 export const Route = createFileRoute("/_app/admin/players")({
   validateSearch: z.object({

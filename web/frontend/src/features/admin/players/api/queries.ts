@@ -5,25 +5,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { playerDetailOptions } from "@/features/profile/api/queries"
-
-// Administración › Jugadores: fichas, sus SteamID y los pedidos de !claim (contrato admin.md).
-
-export type PlayerSummary = Schemas["PlayerSummary"]
-export type PlayerDetail = Schemas["PlayerDetail"]
-export type Medal = Schemas["Medal"]
-export type SteamRequest = Schemas["AdminSteamRequest"]
-export type SteamUnlinked = Schemas["SteamUnlinked"]
-export type PlayerIp = Schemas["PlayerIp"]
-// `force` (guardar igual con una palabra bloqueada) tiene default en la API: acá es opcional.
-export type PlayerPatch = Omit<Schemas["AdminPlayerPatch"], "force"> & {
-  force?: boolean
-}
+import type { SteamRequest, PlayerPatch, FichaFilter } from "../types"
 
 export { playerDetailOptions }
-
-export type FichaFilter = "all" | "account" | "noaccount" | "nosteam"
 export const PLAYERS_PER = 25
 
 export const adminPlayerKeys = {

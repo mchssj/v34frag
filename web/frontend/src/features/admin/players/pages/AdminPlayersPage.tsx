@@ -3,10 +3,10 @@ import { PlusIcon } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { AdminHeader, AdminTabs } from "../components/ui"
-import { FichasTab } from "./FichasTab"
-import { steamRequestsOptions } from "./queries"
-import { SteamRequestsTab, UnlinkedTab } from "./SteamTabs"
+import { AdminHeader, AdminTabs } from "../../components/ui"
+import { FichasTab } from "../components/FichasTab"
+import { steamRequestsOptions } from "../api/queries"
+import { SteamRequestsTab, UnlinkedTab } from "../components/SteamTabs"
 
 export const PLAYER_TABS = ["fichas", "requests", "unlinked"] as const
 export type PlayerTab = (typeof PLAYER_TABS)[number]

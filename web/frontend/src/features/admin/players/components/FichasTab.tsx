@@ -24,9 +24,9 @@ import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
 import { PlayerAvatar } from "@/features/ranking/components/parts"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../components/dialogs"
-import { isBlockedName } from "../lib/errors"
-import { fmtDate, fmtDateTime } from "../lib/format"
+import { ConfirmDialog } from "../../components/dialogs"
+import { isBlockedName } from "../../lib/errors"
+import { fmtDate, fmtDateTime } from "../../lib/format"
 import {
   Chip,
   EmptyState,
@@ -38,7 +38,7 @@ import {
   SplitLayout,
   TableBox,
   headCell,
-} from "../components/ui"
+} from "../../components/ui"
 import {
   PLAYERS_PER,
   freeAccountsOptions,
@@ -54,9 +54,8 @@ import {
   useRemoveSteam,
   useUpdatePlayer,
   useUploadPlayerPhoto,
-  type FichaFilter,
-  type PlayerDetail,
-} from "./queries"
+} from "../api/queries"
+import type { FichaFilter, PlayerDetail } from "../types"
 
 type Selection = { kind: "new" } | { kind: "edit"; id: string } | null
 

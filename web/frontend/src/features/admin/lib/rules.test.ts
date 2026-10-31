@@ -6,7 +6,7 @@ import {
   canSeeAdmin,
   homeAdminSection,
 } from "@/auth/permissions"
-import { requestBlock } from "../players/SteamTabs"
+import { requestBlock } from "../players/components/SteamTabs"
 import { adjustValueError, adjustedElo } from "../servers/AdjustmentsTab"
 import { parseElo } from "../servers/EloRulesTab"
 import { leadingSide } from "../servers/ReviewTab"
@@ -16,7 +16,7 @@ import type { AdminServer } from "../servers/queries"
 import { banExpiry } from "../bans/components/BanDialog"
 import { banOrigin, banSteps, canEditBan } from "../bans/lib/bans"
 import type { Ban } from "../bans/types"
-import type { SteamRequest } from "../players/queries"
+import type { SteamRequest } from "../players/types"
 
 const server = (o: Partial<AdminServer> = {}): AdminServer => ({
   id: "s1",

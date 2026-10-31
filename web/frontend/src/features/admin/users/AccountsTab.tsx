@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { playerDetailOptions } from "@/features/admin/players/queries"
+import { playerDetailOptions } from "../players/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { ConfirmDialog } from "../components/dialogs"
 import { isBlockedName } from "../lib/errors"

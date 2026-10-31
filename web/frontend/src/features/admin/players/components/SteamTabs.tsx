@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/table"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../components/dialogs"
-import { fmtDate, fmtDateTime, type Tone } from "../lib/format"
+import { ConfirmDialog } from "../../components/dialogs"
+import { fmtDate, fmtDateTime, type Tone } from "../../lib/format"
 import {
   Card,
   Chip,
@@ -29,7 +29,7 @@ import {
   TableBox,
   headCell,
   warnText,
-} from "../components/ui"
+} from "../../components/ui"
 import {
   UNLINKED_PER,
   pickPlayerOptions,
@@ -41,9 +41,8 @@ import {
   useLinkSteam,
   useRejectSteamRequest,
   useSaveSteamConfig,
-  type SteamRequest,
-  type SteamUnlinked,
-} from "./queries"
+} from "../api/queries"
+import type { SteamRequest, SteamUnlinked } from "../types"
 
 const CLOSED: Record<string, { label: string; tone: Tone }> = {
   approved: { label: "Aprobado", tone: "win" },
