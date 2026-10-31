@@ -28,7 +28,7 @@ test("perfil de un jugador del ranking: resumen, pestañas y una partida", async
     page.getByRole("navigation", { name: "breadcrumb" })
   ).toContainText(alias)
 
-  await page.getByRole("button", { name: "10", exact: true }).click()
+  await page.getByRole("radio", { name: "10", exact: true }).click()
   await expect(page).toHaveURL(/range=10/)
 
   for (const [tab, text] of [

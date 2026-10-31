@@ -1,13 +1,14 @@
 import { TriangleAlertIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { Segmented } from "@/components/brand/Segmented"
 import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme } from "@/components/theme-provider"
 import { THEME_FX_OPTIONS, useThemeFxPref } from "@/features/theme-fx/lib/pref"
 import { errorMessage } from "@/api/errors"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useUpdateProfile } from "../api/queries"
-import { CardTitle, SectionCard, Segmented } from "../components/ui"
+import { CardTitle, SectionCard } from "../components/ui"
 import { NotificationPrefsCard } from "../components/NotificationPrefsCard"
 
 /** Tema, efectos al cambiar de tema (handoff de efectos) y notificaciones. */
@@ -40,6 +41,8 @@ export function PreferencesSection() {
             description="Apariencia de la web en este dispositivo."
           />
           <Segmented
+            size="lg"
+            className="flex-wrap"
             label="Tema"
             value={theme}
             options={THEME_MODES}
@@ -54,6 +57,8 @@ export function PreferencesSection() {
               description="Flashbang al pasar a claro, smoke al pasar a oscuro."
             />
             <Segmented
+              size="lg"
+              className="flex-wrap"
               label="Efectos al cambiar de tema"
               // Sin preferencia guardada se marca "Con sonido", sin guardarlo.
               value={fx ?? "full"}

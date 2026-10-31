@@ -1,6 +1,7 @@
 import { cn } from "cn"
 import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react"
 
+import { Segmented } from "@/components/brand/Segmented"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -39,32 +40,30 @@ export function TeamSwitcher({
     <div className="flex flex-wrap items-center gap-3">
       <Eyebrow className="text-muted-foreground">Mis equipos</Eyebrow>
       {teams.length <= 3 ? (
-        <div
-          role="radiogroup"
-          aria-label="Mis equipos"
-          className="flex h-[34px] max-w-full gap-0.5 overflow-x-auto rounded-lg border bg-muted p-[3px]"
-        >
-          {teams.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="radio"
-              aria-checked={t.id === current.id}
-              onClick={() => onSelect(t.id)}
-              className="flex items-center gap-2 rounded-[calc(var(--radius)-4px)] px-2.5 text-[13px] whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-checked:bg-background aria-checked:text-foreground aria-checked:shadow-sm"
-            >
-              <span className="font-mono text-[11px] font-semibold">
-                {crestText(t)}
-              </span>
-              <span className="font-semibold">{t.name}</span>
-              {t.role && (
-                <span className="text-[11px] text-muted-foreground">
-                  {MY_ROLE_LABEL[t.role]}
+        <Segmented
+          size="lg"
+          label="Mis equipos"
+          value={current.id}
+          options={teams.map((t) => ({
+            value: t.id,
+            label: (
+              <>
+                <span className="font-mono text-[11px] font-semibold">
+                  {crestText(t)}
                 </span>
-              )}
-            </button>
-          ))}
-        </div>
+                <span className="font-semibold">{t.name}</span>
+                {t.role && (
+                  <span className="text-[11px] text-muted-foreground">
+                    {MY_ROLE_LABEL[t.role]}
+                  </span>
+                )}
+              </>
+            ),
+          }))}
+          onChange={onSelect}
+          className="h-[34px]"
+          itemClassName="h-auto gap-2 px-2.5 font-normal"
+        />
       ) : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

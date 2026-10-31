@@ -22,7 +22,7 @@ test("contra la API real: el listado carga sin errores", async ({ page }) => {
     page.getByRole("heading", { name: "Torneos y copas" })
   ).toBeVisible()
   await expect(
-    page.getByRole("group", { name: "Filtrar por estado" })
+    page.getByRole("radiogroup", { name: "Filtrar por estado" })
   ).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -45,11 +45,11 @@ test("listado: orden por estado, pie de cada tarjeta y filtro en la URL", async 
   ])
   expect(extra).toEqual([])
 
-  await page.getByRole("button", { name: "En curso" }).click()
+  await page.getByRole("radio", { name: "En curso" }).click()
   await expect(page).toHaveURL(/\/events\?status=in_progress$/)
   await expect(cards).toHaveCount(1)
-  await expect(page.getByRole("button", { name: "En curso" })).toHaveAttribute(
-    "aria-pressed",
+  await expect(page.getByRole("radio", { name: "En curso" })).toHaveAttribute(
+    "aria-checked",
     "true"
   )
 

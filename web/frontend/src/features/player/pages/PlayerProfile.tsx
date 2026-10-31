@@ -17,6 +17,7 @@ import { toast } from "sonner"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { Segmented } from "@/components/brand/Segmented"
 import { NoLevelBadge } from "@/components/illustrations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -456,27 +457,13 @@ function EloCard({
         <span className="min-h-4 font-mono text-xs font-medium text-muted-foreground">
           {label}
         </span>
-        <div
-          role="group"
-          aria-label="Partidas del gráfico"
-          className="inline-flex h-7 gap-0.5 rounded-lg bg-muted p-0.5"
-        >
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              aria-pressed={range === r}
-              onClick={() => onRange(r)}
-              className={cn(
-                "h-6 rounded-[calc(var(--radius)-4px)] px-2 text-xs font-medium text-muted-foreground",
-                range === r &&
-                  "bg-background text-foreground shadow-[0_1px_2px_rgb(0_0_0/.1)]"
-              )}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          size="sm"
+          label="Partidas del gráfico"
+          value={range}
+          options={RANGES.map((r) => ({ value: r, label: r }))}
+          onChange={onRange}
+        />
       </div>
       {q.isPending ? (
         <Skeleton className="min-h-[200px] flex-1" />

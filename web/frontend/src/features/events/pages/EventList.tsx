@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { cn } from "cn"
 
+import { Segmented } from "@/components/brand/Segmented"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   boText,
@@ -57,27 +57,15 @@ export function EventList({
             anteriores.
           </p>
         </div>
-        <div
-          role="group"
-          aria-label="Filtrar por estado"
-          className="inline-flex h-8 max-w-full gap-0.5 overflow-x-auto rounded-[calc(var(--radius)-2px)] bg-muted p-[3px]"
-        >
-          {FILTERS.map((f) => (
-            <button
-              key={f.label}
-              type="button"
-              aria-pressed={filter === f.id}
-              onClick={() => onFilter(f.id)}
-              className={cn(
-                "h-[26px] shrink-0 rounded-[calc(var(--radius)-4px)] px-2.5 text-[13px] font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                filter === f.id &&
-                  "bg-background text-foreground shadow-[0_1px_2px_rgb(0_0_0/.08)]"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <Segmented<ListFilter | "all">
+          label="Filtrar por estado"
+          value={filter ?? "all"}
+          options={FILTERS.map((f) => ({
+            value: f.id ?? "all",
+            label: f.label,
+          }))}
+          onChange={(v) => onFilter(v === "all" ? undefined : v)}
+        />
       </div>
 
       {error ? (
