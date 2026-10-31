@@ -68,6 +68,12 @@ La plata queda en 0 durante el modo y la compra está bloqueada.
 | 1 | La recibe con `sm_retake_awp_solo_chance` % (30) |
 | 2 o más | Se sortea y uno la recibe seguro |
 
+La AWP (full buy) y la Scout (force, con "Quiero Scout") son **solo para los CT**. Los CT también pueden elegir la Scout como primaria en full buy.
+
+**Rondas force** (`sm_retake_force_chance`, 20 %, después de las de pistola): en `!guns` cada uno elige Galil o FAMAS, MP5 o Solo Deagle. Chaleco sin casco, solo flash, y `sm_retake_kit_force` (65 %) de kit.
+
+**Clutch:** quien queda solo contra 2 o más, sigue vivo y gana la ronda se anuncia a todos.
+
 ## Equipos
 
 Se juega con 40 % de T y un máximo de 5 por equipo. El tope manda sobre el porcentaje: con 10 jugadores son 5 y 5.

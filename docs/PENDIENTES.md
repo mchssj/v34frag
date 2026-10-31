@@ -182,7 +182,7 @@ Ordenado por urgencia.
   - Cargar spawns de otros mapas: sin eso la votación de la ronda 25 no tiene opciones.
   - Confirmar con jugadores: `!guns` guardado, `!top` y `!rank`, menú de modelos, barra de desactivar, votación con votos reales, VIP y AFK.
   - Revisar el sorteo de AWP con un solo anotado, que en la prueba dio 50 % en vez de 30 % (22 sorteos).
-  - Decidir si `csstv_reporter` se saca de `aurav34`. Hoy `rtv` escrito en el chat todavía lo atiende.
+  - `csstv_reporter` se movió a `plugins/disabled/` en `aurav34` el 2026-10-31. Hay que revisar que `csstv_sell`, `csstv_perf`, `csstv_password`, `csstv_calladmin` y `csstv_allchat` sigan bien sin él.
   - Revisar los otros `csstv_*` de ese servidor y la convivencia con el reporter 1.8.0.
   - Borrar `cfg/server.cfg.bak_pw` si no hace falta: tiene la contraseña vieja.
 - **Pruebas:** los plugins del servidor se prueban en `C:\Users\Agus\Downloads\cssds`, el ambiente de Agus, antes de ir a producción.

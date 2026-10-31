@@ -35,7 +35,7 @@ for line in lines:
         fines[r] = (int(d['ganador']), int(d['razon']))
 
 err = []
-kits = {'pistola': [0, 0], 'fullbuy': [0, 0]}
+kits = {'pistola': [0, 0], 'force': [0, 0], 'fullbuy': [0, 0]}
 for r in sorted(jug):
     ps = jug[r]
     tipo = ps[0]['tipo']
@@ -51,13 +51,19 @@ for r in sorted(jug):
             err.append(f'ronda {r}: equipo de full buy en pistola: {p}')
         if tipo == 'fullbuy' and (p['primaria'] == '-' or p['casco'] == '0'):
             err.append(f'ronda {r}: falta equipo de full buy: {p}')
+        validas = ('weapon_galil' if p['equipo'] == '2' else 'weapon_famas', 'weapon_mp5navy', '-')
+        if tipo == 'force' and (p['primaria'] not in validas or p['casco'] == '1'):
+            err.append(f'ronda {r}: equipo de force incorrecto: {p}')
         if p['equipo'] == '3':
             kits[tipo][1] += 1
             kits[tipo][0] += int(p['kit'])
     for lado in ('2', '3'):
         n = sum(p['primaria'] == 'weapon_awp' and p['equipo'] == lado for p in ps)
-        if n > 1 or (tipo == 'pistola' and n):
+        if n > 1 or (tipo != 'fullbuy' and n) or (lado == '2' and n):
             err.append(f'ronda {r}: {n} AWP en el equipo {lado}')
+        s = sum(p['primaria'] == 'weapon_scout' and p['equipo'] == lado for p in ps)
+        if (tipo == 'force' and s > 1) or (lado == '2' and s):
+            err.append(f'ronda {r}: {s} Scout en el equipo {lado} ({tipo})')
 
 racha, mezclas, actual = 0, [], 0
 for r in sorted(fines):

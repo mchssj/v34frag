@@ -91,6 +91,20 @@ Build de depuración, `analizar_log.py` y puntos de prueba generados con `retake
 - VIP y cola con personas, AFK con personas.
 - Convivencia con el reporter 1.8.0 y con `csstv_sell`, `csstv_perf`, `csstv_calladmin` y `csstv_allchat`.
 
+### Agregado el 2026-10-31
+
+Probado con 8 bots en 14 rondas (`de_dust2_ob`, force al 50 %). `csstv_reporter` se movió a `plugins/disabled/` en `aurav34`.
+
+| Qué | Resultado |
+|---|---|
+| Rondas force | Salen, con arma, sin casco y solo flash |
+| AWP y Scout solo CT | Ninguna en T. Máximo una por ronda en CT |
+| Sorteo de Scout en force | 4 de 4, con varios anotados |
+| Aviso de clutch | Registrado 3 veces, con el lado T |
+| Server vacío | Se destraba solo y vuelve a la ronda 1 |
+
+**Sin probar:** las opciones MP5 y Solo Deagle, y la categoría de `!admin` con un jugador, el mensaje de bienvenida y el aviso al entrar solo. Sin SteamID real tampoco se probó `retake_scout`.
+
 ## En qué se apartó del plan
 
 - **Bomba:** se usó la opción B. No hay `sm_retake_freeze`: el congelamiento dura lo que tarda en plantarse.
