@@ -8,27 +8,21 @@ import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtDate, fmtDateTime, type Tone } from "../../lib/format"
 import {
+  AdminTable,
   Chip,
   EmptyState,
-  Pager,
   QueryError,
-  TableBox,
-  headCell,
   warnText,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { Card } from "@/components/ui/card"
 import {
   UNLINKED_PER,
@@ -292,6 +286,70 @@ function MaxSteam() {
   )
 }
 
+function unlinkedColumns({
+  busy,
+  onLink,
+  onNew,
+}: {
+  busy: boolean
+  onLink: (u: SteamUnlinked) => void
+  onNew: (u: SteamUnlinked) => void
+}): DataColumn<SteamUnlinked>[] {
+  return [
+    {
+      id: "steam_id",
+      header: "SteamID",
+      headClassName: "pl-4",
+      cellClassName: "pl-4 font-mono text-[13px]",
+      cell: ({ row }) => row.original.steam_id,
+    },
+    {
+      id: "last_nick",
+      header: "Último nick",
+      cellClassName: "font-medium",
+      cell: ({ row }) => row.original.last_nick ?? "—",
+    },
+    {
+      id: "matches",
+      header: "Partidas",
+      headClassName: "text-right",
+      cellClassName: "text-right font-mono",
+      cell: ({ row }) => row.original.matches,
+    },
+    {
+      id: "last_played",
+      header: "Última vez",
+      cellClassName: "text-muted-foreground",
+      cell: ({ row }) => fmtDate(row.original.last_played),
+    },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Acciones</span>,
+      cellClassName: "pr-4 text-right whitespace-nowrap",
+      cell: ({ row }) => (
+        <>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onLink(row.original)}
+          >
+            Sumar a una ficha
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary"
+            disabled={busy}
+            onClick={() => onNew(row.original)}
+          >
+            Ficha nueva
+          </Button>
+        </>
+      ),
+    },
+  ]
+}
+
 export function UnlinkedTab({
   onOpenFicha,
 }: {
@@ -316,6 +374,20 @@ export function UnlinkedTab({
       toast.error(errorMessage(e))
     }
   }
+  // Las acciones dependen de las mutaciones en curso: las columnas se arman en cada render.
+  const table = useServerTable({
+    columns: unlinkedColumns({
+      busy: create.isPending || link.isPending,
+      onLink: setLinking,
+      onNew: (u) => void newFicha(u),
+    }),
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: UNLINKED_PER,
+    onPage: setPage,
+    getRowId: (u) => u.steam_id,
+  })
 
   return (
     <section aria-label="SteamID sin vincular" className="flex flex-col gap-3">
@@ -333,73 +405,13 @@ export function UnlinkedTab({
           setPage(1)
         }}
       />
-      {list.isError ? (
-        <QueryError error={list.error} onRetry={() => void list.refetch()} />
-      ) : list.isPending ? (
-        <Skeleton className="h-48 rounded-xl" />
-      ) : list.data.items.length === 0 ? (
-        <EmptyState>No hay SteamID sin vincular.</EmptyState>
-      ) : (
-        <TableBox>
-          <Table className="min-w-[640px]">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className={cn(headCell, "pl-4")}>SteamID</TableHead>
-                <TableHead className={headCell}>Último nick</TableHead>
-                <TableHead className={cn(headCell, "text-right")}>
-                  Partidas
-                </TableHead>
-                <TableHead className={headCell}>Última vez</TableHead>
-                <TableHead className={headCell}>
-                  <span className="sr-only">Acciones</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.data.items.map((u) => (
-                <TableRow key={u.steam_id}>
-                  <TableCell className="pl-4 font-mono text-[13px]">
-                    {u.steam_id}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {u.last_nick ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {u.matches}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {fmtDate(u.last_played)}
-                  </TableCell>
-                  <TableCell className="pr-4 text-right whitespace-nowrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setLinking(u)}
-                    >
-                      Sumar a una ficha
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary"
-                      disabled={create.isPending || link.isPending}
-                      onClick={() => void newFicha(u)}
-                    >
-                      Ficha nueva
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <Pager
-            page={page}
-            total={list.data.total}
-            per={UNLINKED_PER}
-            onPage={setPage}
-          />
-        </TableBox>
-      )}
+      <AdminTable
+        table={table}
+        query={list}
+        className="min-w-[640px]"
+        loadingClassName="h-48"
+        empty="No hay SteamID sin vincular."
+      />
       {linking && (
         <LinkDialog
           key={linking.steam_id}

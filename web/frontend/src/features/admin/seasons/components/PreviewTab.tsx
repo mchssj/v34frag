@@ -1,33 +1,66 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import {
-  EmptyState,
-  Pager,
-  QueryError,
-  TableBox,
-  headCell,
-} from "../../components/ui"
+import { AdminTable, EmptyState, QueryError } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { StatTile } from "@/components/brand/StatTile"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { seasonPreviewOptions } from "../api/queries"
-import type { PreviewFilter } from "../types"
+import type { PreviewFilter, SeasonPreviewRow } from "../types"
 import { LIMITS, type SeasonForm } from "../lib/seasons"
 
 const ok = (v: number, [min, max]: readonly [number, number]) =>
   Number.isInteger(v) && v >= min && v <= max
+
+function previewColumns(minMatches: number): DataColumn<SeasonPreviewRow>[] {
+  return [
+    {
+      id: "rank",
+      header: "Puesto",
+      headClassName: "w-20 pl-4",
+      cellClassName: "pl-4 font-mono font-semibold",
+      cell: ({ row }) => (row.original.rank ? `#${row.original.rank}` : "—"),
+    },
+    {
+      id: "player",
+      header: "Jugador",
+      cellClassName: "font-semibold",
+      cell: ({ row }) => row.original.player.alias,
+    },
+    {
+      id: "matches",
+      header: "Mixes",
+      cellClassName: (r) =>
+        cn(!r.eligible && "text-amber-700 dark:text-amber-400"),
+      cell: ({ row: { original: r } }) =>
+        r.eligible ? r.matches : `${r.matches}/${minMatches}`,
+    },
+    {
+      id: "medal",
+      header: "Medalla",
+      cell: ({ row: { original: r } }) =>
+        r.medal ? `${r.medal.icon} ${r.medal.name}` : "—",
+    },
+    {
+      id: "elo",
+      header: "ELO al cerrar",
+      cellClassName: (r) =>
+        cn(
+          "font-mono",
+          r.elo_after < r.elo && "text-destructive",
+          r.elo_after > r.elo && "text-win"
+        ),
+      cell: ({ row: { original: r } }) =>
+        r.reset ? `${r.elo} → ${r.elo_after}` : r.elo,
+    },
+  ]
+}
 
 /** "Vista previa del cierre": con las reglas del formulario de la activa (guardadas o no). */
 export function PreviewTab({ form }: { form: SeasonForm }) {
@@ -65,6 +98,16 @@ export function PreviewTab({ form }: { form: SeasonForm }) {
     enabled: valid,
   })
   const s = preview.data?.summary
+  const columns = useMemo(() => previewColumns(min_matches), [min_matches])
+  const table = useServerTable({
+    columns,
+    data: preview.data?.items,
+    total: preview.data?.total,
+    page,
+    per: 25,
+    onPage: setPage,
+    getRowId: (r) => r.player.id,
+  })
 
   return (
     <section
@@ -131,66 +174,12 @@ export function PreviewTab({ form }: { form: SeasonForm }) {
               ]}
             />
           </div>
-          {preview.isPending ? (
-            <Skeleton className="h-80 rounded-xl" />
-          ) : preview.data.items.length === 0 ? (
-            <EmptyState>Nadie con ese filtro.</EmptyState>
-          ) : (
-            <TableBox>
-              <Table className="min-w-[640px]">
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className={cn(headCell, "w-20 pl-4")}>
-                      Puesto
-                    </TableHead>
-                    <TableHead className={headCell}>Jugador</TableHead>
-                    <TableHead className={headCell}>Mixes</TableHead>
-                    <TableHead className={headCell}>Medalla</TableHead>
-                    <TableHead className={headCell}>ELO al cerrar</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {preview.data.items.map((r) => (
-                    <TableRow key={r.player.id}>
-                      <TableCell className="pl-4 font-mono font-semibold">
-                        {r.rank ? `#${r.rank}` : "—"}
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        {r.player.alias}
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          !r.eligible && "text-amber-700 dark:text-amber-400"
-                        )}
-                      >
-                        {r.eligible
-                          ? r.matches
-                          : `${r.matches}/${params.min_matches}`}
-                      </TableCell>
-                      <TableCell>
-                        {r.medal ? `${r.medal.icon} ${r.medal.name}` : "—"}
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          "font-mono",
-                          r.elo_after < r.elo && "text-destructive",
-                          r.elo_after > r.elo && "text-win"
-                        )}
-                      >
-                        {r.reset ? `${r.elo} → ${r.elo_after}` : r.elo}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <Pager
-                page={page}
-                total={preview.data.total}
-                per={25}
-                onPage={setPage}
-              />
-            </TableBox>
-          )}
+          <AdminTable
+            table={table}
+            query={preview}
+            className="min-w-[640px]"
+            empty="Nadie con ese filtro."
+          />
         </>
       )}
     </section>

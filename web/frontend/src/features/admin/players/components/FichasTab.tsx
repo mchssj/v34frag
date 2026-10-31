@@ -12,14 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
 import { SearchBox } from "@/components/brand/SearchBox"
@@ -28,17 +20,19 @@ import { isBlockedName } from "../../lib/errors"
 import { fmtDate, fmtDateTime } from "../../lib/format"
 import {
   Chip,
-  EmptyState,
   PanelSection,
-  Pager,
   PickHint,
   QueryError,
   SplitLayout,
-  TableBox,
-  headCell,
+  AdminTable,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { initialOf, PlayerAvatar } from "@/components/brand/PlayerAvatar"
+import { SelectButton } from "@/components/data-table/DataTable"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import {
   PLAYERS_PER,
   freeAccountsOptions,
@@ -55,7 +49,61 @@ import {
   useUpdatePlayer,
   useUploadPlayerPhoto,
 } from "../api/queries"
-import type { FichaFilter, PlayerDetail } from "../types"
+import type { FichaFilter, PlayerDetail, PlayerSummary } from "../types"
+
+const COLUMNS: DataColumn<PlayerSummary>[] = [
+  {
+    id: "ficha",
+    header: "Ficha",
+    headClassName: "pl-4",
+    cellClassName: "py-1.5 pl-2",
+    cell: ({ row: { original: p } }) => (
+      <SelectButton className="flex-row items-center gap-2.5 p-1.5">
+        <PlayerAvatar
+          size="row"
+          alias={p.alias}
+          photo={p.photo_url}
+          className="size-[34px]"
+        />
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <span className="truncate font-semibold">{p.alias}</span>
+          <span className="text-xs text-muted-foreground">
+            {p.has_account ? "Con cuenta" : "Sin cuenta"}
+          </span>
+        </span>
+      </SelectButton>
+    ),
+  },
+  {
+    id: "steam",
+    header: "SteamID",
+    cell: ({ row }) =>
+      row.original.has_steam ? (
+        "Vinculado"
+      ) : (
+        <Chip tone="warn">Sin SteamID</Chip>
+      ),
+  },
+  {
+    id: "elo",
+    header: "ELO",
+    headClassName: "text-right",
+    cellClassName: "text-right font-mono font-semibold",
+    cell: ({ row }) => row.original.elo ?? "—",
+  },
+  {
+    id: "matches",
+    header: "Partidas",
+    headClassName: "text-right",
+    cellClassName: "text-right font-mono",
+    cell: ({ row }) => row.original.elo_matches,
+  },
+  {
+    id: "flags",
+    header: "Avisos",
+    cell: ({ row }) => row.original.vip && <Chip tone="vip">VIP</Chip>,
+  },
+]
 
 type Selection = { kind: "new" } | { kind: "edit"; id: string } | null
 
@@ -79,6 +127,15 @@ export function FichasTab({
   )
   const list = useQuery(playersListOptions(q ?? "", filter, page))
   const selection: Selection = creating ? { kind: "new" } : sel
+  const table = useServerTable({
+    columns: COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: PLAYERS_PER,
+    onPage: setPage,
+    getRowId: (p) => p.id,
+  })
   const close = () => {
     setSel(null)
     onCreatingDone()
@@ -117,97 +174,20 @@ export function FichasTab({
               {list.data ? `${list.data.total} fichas` : ""}
             </span>
           </div>
-          {list.isError ? (
-            <QueryError
-              error={list.error}
-              onRetry={() => void list.refetch()}
-            />
-          ) : list.isPending ? (
-            <Skeleton className="h-80 rounded-xl" />
-          ) : list.data.items.length === 0 ? (
-            <EmptyState>Ninguna ficha coincide.</EmptyState>
-          ) : (
-            <TableBox>
-              <Table className="min-w-[640px]">
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className={cn(headCell, "pl-4")}>
-                      Ficha
-                    </TableHead>
-                    <TableHead className={headCell}>SteamID</TableHead>
-                    <TableHead className={cn(headCell, "text-right")}>
-                      ELO
-                    </TableHead>
-                    <TableHead className={cn(headCell, "text-right")}>
-                      Partidas
-                    </TableHead>
-                    <TableHead className={headCell}>Avisos</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {list.data.items.map((p) => {
-                    const on =
-                      selection?.kind === "edit" && selection.id === p.id
-                    return (
-                      <TableRow
-                        key={p.id}
-                        className={cn(on && "bg-primary/[0.08]")}
-                      >
-                        <TableCell className="py-1.5 pl-2">
-                          <button
-                            type="button"
-                            aria-pressed={on}
-                            onClick={() => {
-                              onCreatingDone()
-                              setSel({ kind: "edit", id: p.id })
-                            }}
-                            className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left hover:bg-muted"
-                          >
-                            <PlayerAvatar
-                              size="row"
-                              alias={p.alias}
-                              photo={p.photo_url}
-                              className="size-[34px]"
-                            />
-                            <span className="flex min-w-0 flex-col gap-0.5">
-                              <span className="truncate font-semibold">
-                                {p.alias}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {p.has_account ? "Con cuenta" : "Sin cuenta"}
-                              </span>
-                            </span>
-                          </button>
-                        </TableCell>
-                        <TableCell>
-                          {p.has_steam ? (
-                            "Vinculado"
-                          ) : (
-                            <Chip tone="warn">Sin SteamID</Chip>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-mono font-semibold">
-                          {p.elo ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {p.elo_matches}
-                        </TableCell>
-                        <TableCell>
-                          {p.vip && <Chip tone="vip">VIP</Chip>}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-              <Pager
-                page={page}
-                total={list.data.total}
-                per={PLAYERS_PER}
-                onPage={setPage}
-              />
-            </TableBox>
-          )}
+          <AdminTable
+            table={table}
+            query={list}
+            className="min-w-[640px]"
+            empty="Ninguna ficha coincide."
+            selection={{
+              isSelected: (p) =>
+                selection?.kind === "edit" && selection.id === p.id,
+              onSelect: (p) => {
+                onCreatingDone()
+                setSel({ kind: "edit", id: p.id })
+              },
+            }}
+          />
         </>
       }
       aside={

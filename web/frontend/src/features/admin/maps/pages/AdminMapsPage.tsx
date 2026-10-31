@@ -29,9 +29,9 @@ import {
   SplitLayout,
   StatTile,
   TableBox,
-  headCell,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { HEAD_CELL } from "@/components/data-table/DataTable"
 import { AddMapDialog } from "../components/AddMapDialog"
 import {
   catalogStats,
@@ -195,17 +195,17 @@ export function AdminMapsPage({
                     <Table className="min-w-[660px]">
                       <TableHeader>
                         <TableRow className="hover:bg-transparent">
-                          <TableHead className={cn(headCell, "w-20 pl-4")}>
+                          <TableHead className={cn(HEAD_CELL, "w-20 pl-4")}>
                             Orden
                           </TableHead>
-                          <TableHead className={headCell}>Mapa</TableHead>
-                          <TableHead className={cn(headCell, "text-center")}>
+                          <TableHead className={HEAD_CELL}>Mapa</TableHead>
+                          <TableHead className={cn(HEAD_CELL, "text-center")}>
                             Mixes
                           </TableHead>
-                          <TableHead className={cn(headCell, "text-center")}>
+                          <TableHead className={cn(HEAD_CELL, "text-center")}>
                             Pool por defecto
                           </TableHead>
-                          <TableHead className={headCell}>Estado</TableHead>
+                          <TableHead className={HEAD_CELL}>Estado</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

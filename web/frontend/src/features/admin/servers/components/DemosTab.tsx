@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query"
-import { cn } from "cn"
 import { TriangleAlertIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -9,14 +8,6 @@ import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { SecretDialog } from "../../components/dialogs"
 import {
   ago,
@@ -27,16 +18,12 @@ import {
   olderThan,
   type Tone,
 } from "../../lib/format"
-import {
-  Chip,
-  Dot,
-  EmptyState,
-  Pager,
-  QueryError,
-  TableBox,
-  headCell,
-} from "../../components/ui"
+import { AdminTable, Chip, Dot, QueryError } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { Card } from "@/components/ui/card"
 import {
   DEMOS_PER,
@@ -70,6 +57,26 @@ export function DemosTab() {
   const [page, setPage] = useState(1)
   const list = useQuery(demosOptions(status, page))
   const retry = useRetryDemo()
+  // El botón "Reintentar" depende de la mutación en curso: las columnas se arman en cada render.
+  const table = useServerTable({
+    columns: demoColumns({
+      retrying: (id) => retry.isPending && retry.variables === id,
+      onRetry: (id) =>
+        retry.mutate(id, {
+          onSuccess: () =>
+            toast.success(
+              "Demo en la cola: el Worker la busca en los próximos 10 minutos."
+            ),
+          onError: (e) => toast.error(errorMessage(e)),
+        }),
+    }),
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: DEMOS_PER,
+    onPage: setPage,
+    getRowId: (d) => d.match_id,
+  })
 
   const s = summary.data
   const pick = (v: DemoStatus | undefined) => {
@@ -134,63 +141,13 @@ export function DemosTab() {
               { value: "expired", label: "Vencidas", count: s?.expired },
             ]}
           />
-          {list.isError ? (
-            <QueryError
-              error={list.error}
-              onRetry={() => void list.refetch()}
-            />
-          ) : list.isPending ? (
-            <Skeleton className="h-64 rounded-xl" />
-          ) : list.data.items.length === 0 ? (
-            <EmptyState>No hay demos con ese filtro.</EmptyState>
-          ) : (
-            <TableBox>
-              <Table className="min-w-[720px]">
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className={cn(headCell, "pl-4")}>
-                      Partida
-                    </TableHead>
-                    <TableHead className={headCell}>Servidor</TableHead>
-                    <TableHead className={headCell}>Estado</TableHead>
-                    <TableHead className={cn(headCell, "text-right")}>
-                      Tamaño
-                    </TableHead>
-                    <TableHead className={headCell}>Vence</TableHead>
-                    <TableHead className={headCell}>
-                      <span className="sr-only">Acciones</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {list.data.items.map((d) => (
-                    <DemoRow
-                      key={d.match_id}
-                      demo={d}
-                      retrying={
-                        retry.isPending && retry.variables === d.match_id
-                      }
-                      onRetry={() =>
-                        retry.mutate(d.match_id, {
-                          onSuccess: () =>
-                            toast.success(
-                              "Demo en la cola: el Worker la busca en los próximos 10 minutos."
-                            ),
-                          onError: (e) => toast.error(errorMessage(e)),
-                        })
-                      }
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-              <Pager
-                page={page}
-                total={list.data.total}
-                per={DEMOS_PER}
-                onPage={setPage}
-              />
-            </TableBox>
-          )}
+          <AdminTable
+            table={table}
+            query={list}
+            className="min-w-[720px]"
+            loadingClassName="h-64"
+            empty="No hay demos con ese filtro."
+          />
         </section>
 
         <aside
@@ -214,75 +171,106 @@ export function DemosTab() {
   )
 }
 
-function DemoRow({
-  demo: d,
+function demoColumns({
   retrying,
   onRetry,
 }: {
-  demo: AdminDemo
-  retrying: boolean
-  onRetry: () => void
-}) {
-  const st = STATUS[d.demo_status]
-  const score =
-    d.score1 != null && d.score2 != null ? `${d.score1}–${d.score2}` : null
-  return (
-    <TableRow>
-      <TableCell className="pl-4">
-        <span className="flex flex-col gap-0.5">
-          <span className="font-medium">
-            {KIND[d.kind] ?? d.kind} · {d.map ?? "—"}{" "}
-            {score && (
-              <span className="font-mono text-muted-foreground">{score}</span>
+  retrying: (matchId: string) => boolean
+  onRetry: (matchId: string) => void
+}): DataColumn<AdminDemo>[] {
+  return [
+    {
+      id: "match",
+      header: "Partida",
+      headClassName: "pl-4",
+      cellClassName: "pl-4",
+      cell: ({ row: { original: d } }) => {
+        const score =
+          d.score1 != null && d.score2 != null
+            ? `${d.score1}–${d.score2}`
+            : null
+        return (
+          <span className="flex flex-col gap-0.5">
+            <span className="font-medium">
+              {KIND[d.kind] ?? d.kind} · {d.map ?? "—"}{" "}
+              {score && (
+                <span className="font-mono text-muted-foreground">{score}</span>
+              )}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {fmtDateTime(d.played_at)}
+            </span>
+          </span>
+        )
+      },
+    },
+    {
+      id: "server",
+      header: "Servidor",
+      cell: ({ row }) => row.original.server?.name ?? "—",
+    },
+    {
+      id: "status",
+      header: "Estado",
+      cell: ({ row: { original: d } }) => {
+        const st = STATUS[d.demo_status]
+        return (
+          <span className="flex flex-col gap-1">
+            <Chip tone={st.tone}>{st.label}</Chip>
+            {(d.demo_status === "missing" || d.demo_status === "pending") && (
+              <span className="text-xs text-muted-foreground">
+                {d.demo_attempts === 1
+                  ? "1 intento"
+                  : `${d.demo_attempts} intentos`}
+              </span>
             )}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {fmtDateTime(d.played_at)}
-          </span>
-        </span>
-      </TableCell>
-      <TableCell>{d.server?.name ?? "—"}</TableCell>
-      <TableCell>
-        <span className="flex flex-col gap-1">
-          <Chip tone={st.tone}>{st.label}</Chip>
-          {(d.demo_status === "missing" || d.demo_status === "pending") && (
-            <span className="text-xs text-muted-foreground">
-              {d.demo_attempts === 1
-                ? "1 intento"
-                : `${d.demo_attempts} intentos`}
-            </span>
+        )
+      },
+    },
+    {
+      id: "size",
+      header: "Tamaño",
+      headClassName: "text-right",
+      cellClassName: "text-right font-mono",
+      cell: ({ row }) => fmtBytes(row.original.demo_size),
+    },
+    {
+      id: "expires",
+      header: "Vence",
+      cellClassName: "text-muted-foreground",
+      cell: ({ row }) =>
+        row.original.expires_at ? fmtDate(row.original.expires_at) : "—",
+    },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Acciones</span>,
+      cellClassName: "pr-4 text-right whitespace-nowrap",
+      cell: ({ row: { original: d } }) => (
+        <>
+          {d.can_retry && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={retrying(d.match_id)}
+              onClick={() => onRetry(d.match_id)}
+            >
+              Reintentar
+            </Button>
           )}
-        </span>
-      </TableCell>
-      <TableCell className="text-right font-mono">
-        {fmtBytes(d.demo_size)}
-      </TableCell>
-      <TableCell className="text-muted-foreground">
-        {d.expires_at ? fmtDate(d.expires_at) : "—"}
-      </TableCell>
-      <TableCell className="pr-4 text-right whitespace-nowrap">
-        {d.can_retry && (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={retrying}
-            onClick={onRetry}
-          >
-            Reintentar
-          </Button>
-        )}
-        {d.demo_status === "uploaded" && d.demo_url && (
-          <a
-            href={d.demo_url}
-            className="text-[13px] text-primary hover:underline"
-            rel="noreferrer"
-          >
-            Descargar
-          </a>
-        )}
-      </TableCell>
-    </TableRow>
-  )
+          {d.demo_status === "uploaded" && d.demo_url && (
+            <a
+              href={d.demo_url}
+              className="text-[13px] text-primary hover:underline"
+              rel="noreferrer"
+            >
+              Descargar
+            </a>
+          )}
+        </>
+      ),
+    },
+  ]
 }
 
 function Workers() {

@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { SearchIcon, XIcon } from "lucide-react"
-import { useId, useState } from "react"
+import { useId, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -15,25 +19,10 @@ import {
 } from "@/components/ui/input-group"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { CONFIRM_TEXT, fmtDateTime, signed } from "../../lib/format"
-import {
-  EmptyState,
-  Pager,
-  QueryError,
-  TableBox,
-  headCell,
-} from "../../components/ui"
+import { AdminTable } from "../../components/ui"
 import {
   ADJ_PER,
   adjustmentsOptions,
@@ -326,11 +315,84 @@ function NewAdjustment() {
   )
 }
 
+function adjustmentColumns(
+  onUndo: (a: EloAdjustment) => void
+): DataColumn<EloAdjustment>[] {
+  return [
+    {
+      id: "applied_at",
+      header: "Fecha",
+      headClassName: "pl-4",
+      cellClassName: "pl-4 whitespace-nowrap text-muted-foreground",
+      cell: ({ row }) => fmtDateTime(row.original.applied_at),
+    },
+    {
+      id: "player",
+      header: "Jugador",
+      cellClassName: "font-medium",
+      cell: ({ row }) => row.original.player?.alias ?? row.original.steam_id,
+    },
+    {
+      id: "change",
+      header: "Cambio",
+      cellClassName: "font-mono whitespace-nowrap",
+      cell: ({ row: { original: a } }) => (
+        <span
+          className={cn(
+            "font-semibold",
+            a.delta >= 0 ? "text-win" : "text-destructive"
+          )}
+        >
+          {a.kind === "set"
+            ? `Fijar en ${a.set_elo} (${signed(a.delta)})`
+            : signed(a.delta)}
+        </span>
+      ),
+    },
+    {
+      id: "reason",
+      header: "Motivo",
+      cellClassName: "max-w-[360px] whitespace-normal",
+      cell: ({ row }) => row.original.reason,
+    },
+    {
+      id: "by",
+      header: "Por",
+      cellClassName: "text-muted-foreground",
+      cell: ({ row }) => row.original.created_by?.alias ?? "—",
+    },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Acciones</span>,
+      cellClassName: "pr-4 text-right",
+      cell: ({ row }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onUndo(row.original)}
+        >
+          Deshacer
+        </Button>
+      ),
+    },
+  ]
+}
+
 function History() {
   const [page, setPage] = useState(1)
   const list = useQuery(adjustmentsOptions(page))
   const undo = useUndoAdjustment()
   const [target, setTarget] = useState<EloAdjustment | null>(null)
+  const columns = useMemo(() => adjustmentColumns(setTarget), [])
+  const table = useServerTable({
+    columns,
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: ADJ_PER,
+    onPage: setPage,
+    getRowId: (a) => String(a.id),
+  })
 
   return (
     <section
@@ -343,75 +405,13 @@ function History() {
           Más recientes primero · deshacer pide escribir «estoy seguro»
         </span>
       </div>
-      {list.isError ? (
-        <QueryError error={list.error} onRetry={() => void list.refetch()} />
-      ) : list.isPending ? (
-        <Skeleton className="h-48 rounded-xl" />
-      ) : list.data.items.length === 0 ? (
-        <EmptyState>Todavía no hay ajustes manuales.</EmptyState>
-      ) : (
-        <TableBox>
-          <Table className="min-w-[720px]">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className={cn(headCell, "pl-4")}>Fecha</TableHead>
-                <TableHead className={headCell}>Jugador</TableHead>
-                <TableHead className={headCell}>Cambio</TableHead>
-                <TableHead className={headCell}>Motivo</TableHead>
-                <TableHead className={headCell}>Por</TableHead>
-                <TableHead className={headCell}>
-                  <span className="sr-only">Acciones</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.data.items.map((a) => (
-                <TableRow key={a.id}>
-                  <TableCell className="pl-4 whitespace-nowrap text-muted-foreground">
-                    {fmtDateTime(a.applied_at)}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {a.player?.alias ?? a.steam_id}
-                  </TableCell>
-                  <TableCell className="font-mono whitespace-nowrap">
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        a.delta >= 0 ? "text-win" : "text-destructive"
-                      )}
-                    >
-                      {a.kind === "set"
-                        ? `Fijar en ${a.set_elo} (${signed(a.delta)})`
-                        : signed(a.delta)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="max-w-[360px] whitespace-normal">
-                    {a.reason}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {a.created_by?.alias ?? "—"}
-                  </TableCell>
-                  <TableCell className="pr-4 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setTarget(a)}
-                    >
-                      Deshacer
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <Pager
-            page={page}
-            total={list.data.total}
-            per={ADJ_PER}
-            onPage={setPage}
-          />
-        </TableBox>
-      )}
+      <AdminTable
+        table={table}
+        query={list}
+        className="min-w-[720px]"
+        loadingClassName="h-48"
+        empty="Todavía no hay ajustes manuales."
+      />
       <ConfirmDialog
         open={target !== null}
         onOpenChange={(o) => !o && setTarget(null)}

@@ -12,6 +12,8 @@ export type SeasonConfig = Schemas["SeasonConfig"]
 
 export type SeasonPatch = Schemas["SeasonPatch"]
 
+export type SeasonPreviewRow = Schemas["SeasonPreviewRow"]
+
 export type PreviewParams = {
   top_n: number
   min_matches: number

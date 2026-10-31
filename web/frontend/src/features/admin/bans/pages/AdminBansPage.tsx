@@ -15,29 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { SelectButton } from "@/components/data-table/DataTable"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { serverStatusOptions } from "@/features/public/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { daysUntil, fmtDate } from "../../lib/format"
 import {
   AdminHeader,
+  AdminTable,
   AdminTabs,
   Chip,
-  EmptyState,
-  Pager,
   PickHint,
-  QueryError,
   SplitLayout,
-  TableBox,
-  headCell,
 } from "../../components/ui"
 import { BanDialog } from "../components/BanDialog"
 import { BanPanel } from "../components/BanPanel"
@@ -56,6 +48,88 @@ type StatusTab = (typeof STATUS_TABS)[number]
 export type BanSearch = z.infer<typeof banSearchSchema>
 
 const ALL = "all"
+
+const BAN_COLUMNS: DataColumn<Ban>[] = [
+  {
+    id: "player",
+    header: "Jugador",
+    headClassName: "pl-4",
+    cellClassName: "py-1.5 pl-2",
+    cell: ({ row: { original: b } }) => (
+      <SelectButton>
+        <span
+          className={cn(
+            "font-semibold break-all",
+            !b.player && !b.nick && "font-mono text-[13px] font-normal"
+          )}
+        >
+          {banLabel(b)}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {b.player ? "Ficha" : "SteamID sin ficha"}
+        </span>
+      </SelectButton>
+    ),
+  },
+  {
+    id: "reason",
+    header: "Motivo",
+    cellClassName: "max-w-[280px] py-3 whitespace-normal",
+    cell: ({ row }) => row.original.reason,
+  },
+  {
+    id: "expires",
+    header: "Vence",
+    cellClassName: "py-3 whitespace-nowrap",
+    cell: ({ row: { original: b } }) => {
+      const days = b.expires_at ? daysUntil(b.expires_at) : 0
+      return (
+        <span className="flex flex-col gap-0.5">
+          <span className={cn(b.permanent && "font-semibold text-destructive")}>
+            {b.permanent ? "Permanente" : fmtDate(b.expires_at)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {b.status === "active" && !b.permanent
+              ? days <= 1
+                ? "mañana"
+                : `en ${days} días`
+              : b.status === "lifted" && b.lifted
+                ? `${b.lifted.replaced_by ? "Reemplazado" : "Levantado"} el ${fmtDate(b.lifted.at)}`
+                : `Desde ${fmtDate(b.created_at)}`}
+          </span>
+        </span>
+      )
+    },
+  },
+  {
+    id: "origin",
+    header: "Origen",
+    cellClassName: "py-3",
+    cell: ({ row }) => {
+      const origin = banOrigin(row.original)
+      return (
+        <span className="flex flex-col items-start gap-1">
+          <Chip tone={origin.tone}>{origin.label}</Chip>
+          <span className="text-xs text-muted-foreground">{origin.by}</span>
+        </span>
+      )
+    },
+  },
+]
+
+// En "Todos" se suma el estado de cada baneo.
+const BAN_COLUMNS_ALL: DataColumn<Ban>[] = [
+  ...BAN_COLUMNS,
+  {
+    id: "status",
+    header: "Estado",
+    cellClassName: "py-3",
+    cell: ({ row }) => {
+      const st = BAN_STATUS[row.original.status]
+      return <Chip tone={st.tone}>{st.label}</Chip>
+    },
+  },
+]
 
 export function AdminBansPage({
   search,
@@ -81,6 +155,15 @@ export function AdminBansPage({
     onSearch({ ...patch, page: undefined })
 
   const list = useQuery(bansOptions(status, filters, page))
+  const table = useServerTable({
+    columns: tab === "all" ? BAN_COLUMNS_ALL : BAN_COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: BANS_PER,
+    onPage: (p) => onSearch({ page: p === 1 ? undefined : p }),
+    getRowId: (b) => b.id,
+  })
   const counts = {
     active: useQuery(banCountOptions("active", filters)).data,
     expired: useQuery(banCountOptions("expired", filters)).data,
@@ -199,51 +282,17 @@ export function AdminBansPage({
       <SplitLayout
         asideLabel="Detalle del baneo"
         main={
-          list.isError ? (
-            <QueryError
-              error={list.error}
-              onRetry={() => void list.refetch()}
-            />
-          ) : list.isPending ? (
-            <Skeleton className="h-80 rounded-xl" />
-          ) : list.data.items.length === 0 ? (
-            <EmptyState>Ningún baneo con esos filtros.</EmptyState>
-          ) : (
-            <TableBox>
-              <Table className="min-w-[700px]">
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className={cn(headCell, "pl-4")}>
-                      Jugador
-                    </TableHead>
-                    <TableHead className={headCell}>Motivo</TableHead>
-                    <TableHead className={headCell}>Vence</TableHead>
-                    <TableHead className={headCell}>Origen</TableHead>
-                    {tab === "all" && (
-                      <TableHead className={headCell}>Estado</TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {list.data.items.map((b) => (
-                    <BanRow
-                      key={b.id}
-                      b={b}
-                      on={b.id === search.ban}
-                      showStatus={tab === "all"}
-                      onSelect={() => open(b)}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-              <Pager
-                page={page}
-                total={list.data.total}
-                per={BANS_PER}
-                onPage={(p) => onSearch({ page: p === 1 ? undefined : p })}
-              />
-            </TableBox>
-          )
+          <AdminTable
+            table={table}
+            query={list}
+            className="min-w-[700px]"
+            empty="Ningún baneo con esos filtros."
+            rowClassName={() => "align-top"}
+            selection={{
+              isSelected: (b) => b.id === search.ban,
+              onSelect: open,
+            }}
+          />
         }
         aside={
           <>
@@ -284,76 +333,6 @@ export function AdminBansPage({
         />
       )}
     </section>
-  )
-}
-
-function BanRow({
-  b,
-  on,
-  showStatus,
-  onSelect,
-}: {
-  b: Ban
-  on: boolean
-  showStatus: boolean
-  onSelect: () => void
-}) {
-  const origin = banOrigin(b)
-  const st = BAN_STATUS[b.status]
-  const days = b.expires_at ? daysUntil(b.expires_at) : 0
-  return (
-    <TableRow className={cn("align-top", on && "bg-primary/[0.08]")}>
-      <TableCell className="py-1.5 pl-2">
-        <button
-          type="button"
-          aria-pressed={on}
-          onClick={onSelect}
-          className="flex w-full flex-col gap-0.5 rounded-lg px-2 py-1.5 text-left hover:bg-muted"
-        >
-          <span
-            className={cn(
-              "font-semibold break-all",
-              !b.player && !b.nick && "font-mono text-[13px] font-normal"
-            )}
-          >
-            {banLabel(b)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {b.player ? "Ficha" : "SteamID sin ficha"}
-          </span>
-        </button>
-      </TableCell>
-      <TableCell className="max-w-[280px] py-3 whitespace-normal">
-        {b.reason}
-      </TableCell>
-      <TableCell className="py-3 whitespace-nowrap">
-        <span className="flex flex-col gap-0.5">
-          <span className={cn(b.permanent && "font-semibold text-destructive")}>
-            {b.permanent ? "Permanente" : fmtDate(b.expires_at)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {b.status === "active" && !b.permanent
-              ? days <= 1
-                ? "mañana"
-                : `en ${days} días`
-              : b.status === "lifted" && b.lifted
-                ? `${b.lifted.replaced_by ? "Reemplazado" : "Levantado"} el ${fmtDate(b.lifted.at)}`
-                : `Desde ${fmtDate(b.created_at)}`}
-          </span>
-        </span>
-      </TableCell>
-      <TableCell className="py-3">
-        <span className="flex flex-col items-start gap-1">
-          <Chip tone={origin.tone}>{origin.label}</Chip>
-          <span className="text-xs text-muted-foreground">{origin.by}</span>
-        </span>
-      </TableCell>
-      {showStatus && (
-        <TableCell className="py-3">
-          <Chip tone={st.tone}>{st.label}</Chip>
-        </TableCell>
-      )}
-    </TableRow>
   )
 }
 

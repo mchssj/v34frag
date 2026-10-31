@@ -12,31 +12,23 @@ import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { playerDetailOptions } from "../../players/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { isBlockedName } from "../../lib/errors"
 import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../../lib/format"
 import {
+  AdminTable,
   Chip,
-  EmptyState,
   PanelSection,
-  Pager,
   PickHint,
-  QueryError,
   SplitLayout,
-  TableBox,
-  headCell,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { SelectButton } from "@/components/data-table/DataTable"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import { BanDialog } from "../../bans/components/BanDialog"
 import {
   USERS_PER,
@@ -59,6 +51,53 @@ const ROLE_TONE: Record<string, Tone> = {
 
 const roleLabel = (r: string) => ROLE_LABEL[r as keyof typeof ROLE_LABEL] ?? r
 
+const COLUMNS: DataColumn<AdminUser>[] = [
+  {
+    id: "account",
+    header: "Cuenta",
+    headClassName: "pl-4",
+    cellClassName: "py-1.5 pl-2",
+    cell: ({ row: { original: u } }) => (
+      <SelectButton>
+        <span className="font-semibold">{u.alias}</span>
+        <span className="text-xs text-muted-foreground">
+          {u.alias_changed_at
+            ? `Alias cambiado el ${fmtDate(u.alias_changed_at)}`
+            : "Nunca cambió el alias"}
+        </span>
+      </SelectButton>
+    ),
+  },
+  {
+    id: "role",
+    header: "Rol",
+    cell: ({ row: { original: u } }) => (
+      <span className="flex flex-wrap gap-1">
+        <Chip tone={ROLE_TONE[u.role] ?? "neutral"}>{roleLabel(u.role)}</Chip>
+        {u.streamer && <Chip tone="primary">Streamer</Chip>}
+      </span>
+    ),
+  },
+  {
+    id: "player",
+    header: "Ficha",
+    cellClassName: "text-[13px]",
+    cell: ({ row: { original: u } }) =>
+      !u.player_id ? (
+        <span className="text-muted-foreground">Sin ficha</span>
+      ) : u.steam_id ? (
+        "Con SteamID"
+      ) : (
+        <span className="text-amber-700 dark:text-amber-400">Sin SteamID</span>
+      ),
+  },
+  {
+    id: "vip",
+    header: "VIP",
+    cell: ({ row }) => <VipChip vip={row.original.vip} />,
+  },
+]
+
 export function AccountsTab({
   selected,
   onSelect,
@@ -74,6 +113,15 @@ export function AccountsTab({
   const [page, setPage] = useState(1)
   const list = useQuery(usersOptions(q ?? "", filter, page))
   const current = list.data?.items.find((u) => u.id === selected) ?? null
+  const table = useServerTable({
+    columns: COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: USERS_PER,
+    onPage: setPage,
+    getRowId: (u) => u.id,
+  })
 
   return (
     <SplitLayout
@@ -107,88 +155,16 @@ export function AccountsTab({
               ]}
             />
           </div>
-          {list.isError ? (
-            <QueryError
-              error={list.error}
-              onRetry={() => void list.refetch()}
-            />
-          ) : list.isPending ? (
-            <Skeleton className="h-80 rounded-xl" />
-          ) : list.data.items.length === 0 ? (
-            <EmptyState>Ninguna cuenta coincide.</EmptyState>
-          ) : (
-            <TableBox>
-              <Table className="min-w-[640px]">
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className={cn(headCell, "pl-4")}>
-                      Cuenta
-                    </TableHead>
-                    <TableHead className={headCell}>Rol</TableHead>
-                    <TableHead className={headCell}>Ficha</TableHead>
-                    <TableHead className={headCell}>VIP</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {list.data.items.map((u) => {
-                    const on = u.id === selected
-                    return (
-                      <TableRow
-                        key={u.id}
-                        className={cn(on && "bg-primary/[0.08]")}
-                      >
-                        <TableCell className="py-1.5 pl-2">
-                          <button
-                            type="button"
-                            aria-pressed={on}
-                            onClick={() => onSelect(u.id)}
-                            className="flex w-full flex-col gap-0.5 rounded-lg px-2 py-1.5 text-left hover:bg-muted"
-                          >
-                            <span className="font-semibold">{u.alias}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {u.alias_changed_at
-                                ? `Alias cambiado el ${fmtDate(u.alias_changed_at)}`
-                                : "Nunca cambió el alias"}
-                            </span>
-                          </button>
-                        </TableCell>
-                        <TableCell>
-                          <span className="flex flex-wrap gap-1">
-                            <Chip tone={ROLE_TONE[u.role] ?? "neutral"}>
-                              {roleLabel(u.role)}
-                            </Chip>
-                            {u.streamer && <Chip tone="primary">Streamer</Chip>}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-[13px]">
-                          {!u.player_id ? (
-                            <span className="text-muted-foreground">
-                              Sin ficha
-                            </span>
-                          ) : u.steam_id ? (
-                            "Con SteamID"
-                          ) : (
-                            <span className="text-amber-700 dark:text-amber-400">
-                              Sin SteamID
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <VipChip vip={u.vip} />
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-              <Pager
-                page={page}
-                total={list.data.total}
-                per={USERS_PER}
-                onPage={setPage}
-              />
-            </TableBox>
-          )}
+          <AdminTable
+            table={table}
+            query={list}
+            className="min-w-[640px]"
+            empty="Ninguna cuenta coincide."
+            selection={{
+              isSelected: (u) => u.id === selected,
+              onSelect: (u) => onSelect(u.id),
+            }}
+          />
         </>
       }
       aside={

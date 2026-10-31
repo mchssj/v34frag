@@ -1,6 +1,11 @@
 import type { Header, Row, RowData } from "@tanstack/react-table"
 import { cn } from "cn"
-import type { KeyboardEvent, ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react"
 
 import {
   QueryErrorMessage,
@@ -33,6 +38,41 @@ export type RowLink = {
   me?: boolean
 }
 
+/** Fila elegida de una tabla con panel de detalle (Administración). */
+export type RowSelection<T> = {
+  isSelected: (row: T) => boolean
+  onSelect: (row: T) => void
+}
+
+const SelectContext = createContext<{ on: boolean; select: () => void }>({
+  on: false,
+  select: () => {},
+})
+
+/** Botón de la celda que elige la fila (`aria-pressed`); el contenido lo pone la columna. */
+export function SelectButton({
+  className,
+  children,
+}: {
+  className?: string
+  children: ReactNode
+}) {
+  const { on, select } = useContext(SelectContext)
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={select}
+      className={cn(
+        "flex w-full flex-col gap-0.5 rounded-lg px-2 py-1.5 text-left hover:bg-muted",
+        className
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
 const colOf = <T extends RowData>(h: { column: { columnDef: unknown } }) =>
   h.column.columnDef as DataColumn<T>
 
@@ -44,7 +84,8 @@ const cellClass = <T extends RowData>(col: DataColumn<T>, row: T) =>
 /**
  * Tabla de una lista paginada por la API, sobre la Table de shadcn. Dibuja la cabecera, las filas
  * de carga, el error con "Reintentar", el vacío y las filas (clicables con `rowLink`).
- * `stateAs="block"`: el error y el vacío reemplazan la tabla en lugar de ir en una fila.
+ * `stateAs="block"`: la carga (`loading`), el error y el vacío reemplazan la tabla en lugar de ir en
+ * una fila, y `frame` envuelve solo la tabla (por ejemplo, con su caja y el paginador).
  */
 export function DataTable<T extends RowData>({
   table,
@@ -55,6 +96,9 @@ export function DataTable<T extends RowData>({
   className,
   rowLink,
   rowClassName,
+  selection,
+  loading,
+  frame = (t) => t,
   skeletonRows = 8,
   skeletonCellClassName = "px-4 py-3",
   skeletonClassName = "h-7 w-full",
@@ -68,6 +112,10 @@ export function DataTable<T extends RowData>({
   className?: string
   rowLink?: (row: T) => RowLink
   rowClassName?: (row: T) => string | undefined
+  selection?: RowSelection<T>
+  /** Carga en bloque (con `stateAs="block"`); si no, filas de skeleton. */
+  loading?: ReactNode
+  frame?: (table: ReactNode) => ReactNode
   skeletonRows?: number
   skeletonCellClassName?: string
   skeletonClassName?: string
@@ -78,9 +126,10 @@ export function DataTable<T extends RowData>({
     <QueryErrorMessage error={query.error} onRetry={query.refetch} />
   )
 
-  if (stateAs === "block" && !query.isPending) {
-    if (query.isError) return errorNode
-    if (!rows.length) return empty
+  if (stateAs === "block") {
+    if (query.isPending && loading) return loading
+    if (!query.isPending && query.isError) return errorNode
+    if (!query.isPending && !rows.length) return empty
   }
 
   const stateRow = (children: ReactNode, className?: string) => (
@@ -94,7 +143,7 @@ export function DataTable<T extends RowData>({
     </TableRow>
   )
 
-  return (
+  return frame(
     <Table className={className}>
       <TableHeader>
         {table.getHeaderGroups().map((group) => (
@@ -130,6 +179,7 @@ export function DataTable<T extends RowData>({
                     table={table}
                     row={row}
                     link={rowLink?.(row.original)}
+                    selection={selection}
                     className={rowClassName?.(row.original)}
                   />
                 ))}
@@ -153,11 +203,13 @@ function DataRow<T extends RowData>({
   table,
   row,
   link,
+  selection,
   className,
 }: {
   table: DataTableInstance<T>
   row: Row<TableFeats, T>
   link?: RowLink
+  selection?: RowSelection<T>
   className?: string
 }) {
   const cells = row.getAllCells().map((cell) => (
@@ -168,6 +220,18 @@ function DataRow<T extends RowData>({
       <table.FlexRender cell={cell} />
     </TableCell>
   ))
+  if (selection) {
+    const on = selection.isSelected(row.original)
+    return (
+      <SelectContext
+        value={{ on, select: () => selection.onSelect(row.original) }}
+      >
+        <TableRow className={cn(on && "bg-primary/[0.08]", className)}>
+          {cells}
+        </TableRow>
+      </SelectContext>
+    )
+  }
   if (!link) return <TableRow className={className}>{cells}</TableRow>
 
   const onKey = (e: KeyboardEvent) => {

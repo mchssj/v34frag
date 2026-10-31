@@ -2,7 +2,12 @@ import { cn } from "cn"
 import type { ReactNode } from "react"
 
 import { errorMessage } from "@/api/errors"
-import { RetryButton } from "@/components/brand/QueryState"
+import type { RowData } from "@tanstack/react-table"
+import { RetryButton, type QueryLike } from "@/components/brand/QueryState"
+import { DataTable, type RowSelection } from "@/components/data-table/DataTable"
+import { DataTablePagination } from "@/components/data-table/DataTablePagination"
+import type { DataTableInstance } from "@/components/data-table/useServerTable"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty } from "@/components/ui/empty"
@@ -244,51 +249,10 @@ export function QueryError({
   )
 }
 
-/** Clases de la cabecera de las tablas de Administración. */
-export const headCell =
-  "h-auto py-2.5 text-xs font-medium text-muted-foreground"
-
 /** Contenedor de tabla con borde y scroll horizontal. */
 export function TableBox({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card">{children}</div>
-  )
-}
-
-/** Pie de una tabla paginada: "Página n de m" con Anterior y Siguiente. Solo si hay más de una. */
-export function Pager({
-  page,
-  total,
-  per,
-  onPage,
-}: {
-  page: number
-  total: number
-  per: number
-  onPage: (page: number) => void
-}) {
-  const pages = Math.max(1, Math.ceil(total / per))
-  if (pages <= 1) return null
-  return (
-    <div className="flex items-center justify-end gap-2 border-t px-4 py-2.5 text-[13px] text-muted-foreground">
-      Página {page} de {pages}
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={page <= 1}
-        onClick={() => onPage(page - 1)}
-      >
-        Anterior
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={page >= pages}
-        onClick={() => onPage(page + 1)}
-      >
-        Siguiente
-      </Button>
-    </div>
   )
 }
 
@@ -337,5 +301,50 @@ export function SaveBar({
         {saveLabel}
       </Button>
     </div>
+  )
+}
+
+/**
+ * Tabla paginada de Administración sobre DataTable: skeleton en bloque, error con "Reintentar",
+ * vacío punteado y la tabla en su caja con "Página n de m" al pie.
+ */
+export function AdminTable<T extends RowData>({
+  table,
+  query,
+  empty,
+  className,
+  loadingClassName = "h-80",
+  rowClassName,
+  selection,
+}: {
+  table: DataTableInstance<T>
+  query: Pick<QueryLike<unknown>, "isPending" | "isError" | "error" | "refetch">
+  empty: ReactNode
+  className?: string
+  /** Alto del skeleton mientras carga. */
+  loadingClassName?: string
+  rowClassName?: (row: T) => string | undefined
+  selection?: RowSelection<T>
+}) {
+  return (
+    <DataTable
+      table={table}
+      query={query}
+      className={className}
+      stateAs="block"
+      loading={<Skeleton className={cn("rounded-xl", loadingClassName)} />}
+      error={
+        <QueryError error={query.error} onRetry={() => void query.refetch()} />
+      }
+      empty={<EmptyState>{empty}</EmptyState>}
+      rowClassName={rowClassName}
+      selection={selection}
+      frame={(t) => (
+        <TableBox>
+          {t}
+          <DataTablePagination table={table} mode="compact" />
+        </TableBox>
+      )}
+    />
   )
 }
