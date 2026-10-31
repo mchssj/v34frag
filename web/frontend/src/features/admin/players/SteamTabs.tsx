@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/table"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../dialogs"
-import { fmtDate, fmtDateTime, type Tone } from "../format"
+import { ConfirmDialog } from "../components/dialogs"
+import { fmtDate, fmtDateTime, type Tone } from "../lib/format"
 import {
   Card,
   Chip,
@@ -29,7 +29,7 @@ import {
   TableBox,
   headCell,
   warnText,
-} from "../ui"
+} from "../components/ui"
 import {
   UNLINKED_PER,
   pickPlayerOptions,

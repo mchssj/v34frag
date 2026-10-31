@@ -3,7 +3,7 @@ import { PlusIcon } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { AdminHeader, AdminTabs } from "../ui"
+import { AdminHeader, AdminTabs } from "../components/ui"
 import { FichasTab } from "./FichasTab"
 import { steamRequestsOptions } from "./queries"
 import { SteamRequestsTab, UnlinkedTab } from "./SteamTabs"

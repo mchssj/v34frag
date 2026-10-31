@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog } from "../dialogs"
-import { Card, Chip, EmptyState, QueryError } from "../ui"
+import { ConfirmDialog } from "../components/dialogs"
+import { Card, Chip, EmptyState, QueryError } from "../components/ui"
 import {
   hitsOptions,
   useAddWord,

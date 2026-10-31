@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table"
 import { serverStatusOptions } from "@/features/public/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
-import { daysUntil, fmtDate } from "../format"
+import { daysUntil, fmtDate } from "../lib/format"
 import {
   AdminHeader,
   AdminTabs,
@@ -38,7 +38,7 @@ import {
   SplitLayout,
   TableBox,
   headCell,
-} from "../ui"
+} from "../components/ui"
 import { BanDialog } from "./BanDialog"
 import { BanPanel } from "./BanPanel"
 import { BAN_STATUS, banLabel, banOrigin } from "./bans"

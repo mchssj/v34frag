@@ -7,7 +7,13 @@ import { errorMessage } from "@/api/errors"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AdminHeader, Card, EmptyState, QueryError, SaveBar } from "../ui"
+import {
+  AdminHeader,
+  Card,
+  EmptyState,
+  QueryError,
+  SaveBar,
+} from "../components/ui"
 import {
   rankingConfigOptions,
   rankingTopOptions,

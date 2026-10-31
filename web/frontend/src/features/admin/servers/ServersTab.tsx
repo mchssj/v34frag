@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog, SecretDialog } from "../dialogs"
+import { ConfirmDialog, SecretDialog } from "../components/dialogs"
 import { HudSection, hudChip } from "./HudSection"
 import {
   ago,
@@ -25,7 +25,7 @@ import {
   endOfDayIso,
   latestVersion,
   licenseLabel,
-} from "../format"
+} from "../lib/format"
 import {
   Chip,
   Dot,
@@ -36,7 +36,7 @@ import {
   QueryError,
   SplitLayout,
   warnText,
-} from "../ui"
+} from "../components/ui"
 import {
   serversOptions,
   useCreateServer,

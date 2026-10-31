@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
-import { CONFIRM_TEXT } from "../format"
+import { CONFIRM_TEXT } from "../lib/format"
 
 // Administración › Servidores y ELO (contrato admin.md: Servidores, Demos, ELO, ajustes e interrumpidos).
 

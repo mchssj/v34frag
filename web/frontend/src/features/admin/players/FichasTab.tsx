@@ -24,9 +24,9 @@ import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
 import { PlayerAvatar } from "@/features/ranking/components/parts"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../dialogs"
-import { isBlockedName } from "../errors"
-import { fmtDate, fmtDateTime } from "../format"
+import { ConfirmDialog } from "../components/dialogs"
+import { isBlockedName } from "../lib/errors"
+import { fmtDate, fmtDateTime } from "../lib/format"
 import {
   Chip,
   EmptyState,
@@ -38,7 +38,7 @@ import {
   SplitLayout,
   TableBox,
   headCell,
-} from "../ui"
+} from "../components/ui"
 import {
   PLAYERS_PER,
   freeAccountsOptions,

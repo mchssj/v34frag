@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { AdminHeader, AdminTabs } from "../ui"
+import { AdminHeader, AdminTabs } from "../components/ui"
 import { clipReviewOptions } from "./queries"
 import { ReviewTab } from "./ReviewTab"
 import { RulesTab } from "./RulesTab"

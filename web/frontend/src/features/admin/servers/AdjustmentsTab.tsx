@@ -24,9 +24,15 @@ import {
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { ConfirmDialog } from "../dialogs"
-import { fmtDateTime, signed } from "../format"
-import { EmptyState, Pager, QueryError, TableBox, headCell } from "../ui"
+import { ConfirmDialog } from "../components/dialogs"
+import { fmtDateTime, signed } from "../lib/format"
+import {
+  EmptyState,
+  Pager,
+  QueryError,
+  TableBox,
+  headCell,
+} from "../components/ui"
 import {
   ADJ_PER,
   adjustmentsOptions,

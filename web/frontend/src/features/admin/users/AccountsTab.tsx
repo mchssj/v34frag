@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/table"
 import { playerDetailOptions } from "@/features/admin/players/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
-import { ConfirmDialog } from "../dialogs"
-import { isBlockedName } from "../errors"
-import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../format"
+import { ConfirmDialog } from "../components/dialogs"
+import { isBlockedName } from "../lib/errors"
+import { endOfDayIso, fmtDate, isoDatePlus, type Tone } from "../lib/format"
 import {
   Chip,
   EmptyState,
@@ -36,7 +36,7 @@ import {
   SplitLayout,
   TableBox,
   headCell,
-} from "../ui"
+} from "../components/ui"
 import { BanDialog } from "../bans/BanDialog"
 import {
   USERS_PER,

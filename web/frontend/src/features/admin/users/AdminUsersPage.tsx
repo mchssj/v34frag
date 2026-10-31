@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
-import { AdminHeader, AdminTabs } from "../ui"
+import { AdminHeader, AdminTabs } from "../components/ui"
 import { AccountsTab } from "./AccountsTab"
 import { hitsOptions } from "./queries"
 import { WordsTab } from "./WordsTab"

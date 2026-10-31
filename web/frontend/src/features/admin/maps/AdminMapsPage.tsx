@@ -36,7 +36,7 @@ import {
   StatTile,
   TableBox,
   headCell,
-} from "../ui"
+} from "../components/ui"
 import { AddMapDialog } from "./AddMapDialog"
 import {
   catalogStats,

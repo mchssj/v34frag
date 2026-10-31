@@ -3,7 +3,7 @@ import { PlusIcon } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { AdminHeader, AdminTabs, StatTile } from "../ui"
+import { AdminHeader, AdminTabs, StatTile } from "../components/ui"
 import { AdjustmentsTab } from "./AdjustmentsTab"
 import { DemosTab } from "./DemosTab"
 import { EloRulesTab } from "./EloRulesTab"

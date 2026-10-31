@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { pickPlayerOptions } from "@/features/admin/players/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { Card } from "../ui"
+import { Card } from "../components/ui"
 import {
   addTier,
   removeTier,

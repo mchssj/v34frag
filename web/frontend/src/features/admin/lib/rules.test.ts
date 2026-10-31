@@ -6,17 +6,17 @@ import {
   canSeeAdmin,
   homeAdminSection,
 } from "@/auth/permissions"
-import { requestBlock } from "./players/SteamTabs"
-import { adjustValueError, adjustedElo } from "./servers/AdjustmentsTab"
-import { parseElo } from "./servers/EloRulesTab"
-import { leadingSide } from "./servers/ReviewTab"
-import { hudChip, parseHudPort } from "./servers/HudSection"
-import { serverWarnings } from "./servers/ServersTab"
-import type { AdminServer } from "./servers/queries"
-import { banExpiry } from "./bans/BanDialog"
-import { banOrigin, banSteps, canEditBan } from "./bans/bans"
-import type { Ban } from "./bans/queries"
-import type { SteamRequest } from "./players/queries"
+import { requestBlock } from "../players/SteamTabs"
+import { adjustValueError, adjustedElo } from "../servers/AdjustmentsTab"
+import { parseElo } from "../servers/EloRulesTab"
+import { leadingSide } from "../servers/ReviewTab"
+import { hudChip, parseHudPort } from "../servers/HudSection"
+import { serverWarnings } from "../servers/ServersTab"
+import type { AdminServer } from "../servers/queries"
+import { banExpiry } from "../bans/BanDialog"
+import { banOrigin, banSteps, canEditBan } from "../bans/bans"
+import type { Ban } from "../bans/queries"
+import type { SteamRequest } from "../players/queries"
 
 const server = (o: Partial<AdminServer> = {}): AdminServer => ({
   id: "s1",

@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ConfirmDialog, SecretDialog } from "../dialogs"
+import { ConfirmDialog, SecretDialog } from "../components/dialogs"
 import {
   ago,
   fmtBytes,
@@ -24,7 +24,7 @@ import {
   fmtDateTime,
   olderThan,
   type Tone,
-} from "../format"
+} from "../lib/format"
 import {
   Card,
   Chip,
@@ -35,7 +35,7 @@ import {
   QueryError,
   TableBox,
   headCell,
-} from "../ui"
+} from "../components/ui"
 import {
   DEMOS_PER,
   demoSummaryOptions,

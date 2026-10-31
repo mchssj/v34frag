@@ -7,8 +7,8 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { fmtDate } from "../format"
-import { Card, Chip, QueryError, SaveBar } from "../ui"
+import { fmtDate } from "../lib/format"
+import { Card, Chip, QueryError, SaveBar } from "../components/ui"
 import {
   CAPS,
   CLIP_TYPES,

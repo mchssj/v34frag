@@ -2,8 +2,11 @@ import { CastIcon } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { ConfirmDialog, SecretDialog } from "@/features/admin/dialogs"
-import { fmtDate } from "@/features/admin/format"
+import {
+  ConfirmDialog,
+  SecretDialog,
+} from "@/features/admin/components/dialogs"
+import { fmtDate } from "@/features/admin/lib/format"
 import { useNewHudLink } from "../api/queries"
 import type { MyProfile } from "../types"
 import { CardTitle, SectionCard } from "./ui"

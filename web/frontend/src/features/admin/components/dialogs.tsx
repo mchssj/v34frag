@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { CONFIRM_TEXT, isConfirmText } from "./format"
+import { CONFIRM_TEXT, isConfirmText } from "../lib/format"
 
 type Reason = { label: string; help?: string; required: boolean }
 

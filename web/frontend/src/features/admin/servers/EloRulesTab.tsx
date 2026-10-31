@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { fmtDate, signed } from "../format"
-import { Card, QueryError } from "../ui"
+import { fmtDate, signed } from "../lib/format"
+import { Card, QueryError } from "../components/ui"
 import {
   eloConfigOptions,
   eloPreviewOptions,

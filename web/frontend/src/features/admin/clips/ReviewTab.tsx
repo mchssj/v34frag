@@ -6,8 +6,8 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ago, fmtDate } from "../format"
-import { Chip, EmptyState, QueryError } from "../ui"
+import { ago, fmtDate } from "../lib/format"
+import { Chip, EmptyState, QueryError } from "../components/ui"
 import { clipLabel } from "./clips"
 import {
   clipReviewOptions,

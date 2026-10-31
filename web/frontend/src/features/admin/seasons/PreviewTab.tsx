@@ -20,7 +20,7 @@ import {
   QueryError,
   TableBox,
   headCell,
-} from "../ui"
+} from "../components/ui"
 import { seasonPreviewOptions, type PreviewFilter } from "./queries"
 import { LIMITS, type SeasonForm } from "./seasons"
 

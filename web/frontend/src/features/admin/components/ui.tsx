@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 
 import { errorMessage, isRetryable } from "@/api/errors"
 import { Button } from "@/components/ui/button"
-import type { Tone } from "./format"
+import type { Tone } from "../lib/format"
 
 // Piezas comunes de las pantallas de Administración (diseño aprobado el 2026-10-28).
 
