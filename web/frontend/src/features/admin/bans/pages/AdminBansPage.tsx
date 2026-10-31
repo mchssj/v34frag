@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table"
 import { serverStatusOptions } from "@/features/public/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
-import { daysUntil, fmtDate } from "../lib/format"
+import { daysUntil, fmtDate } from "../../lib/format"
 import {
   AdminHeader,
   AdminTabs,
@@ -38,20 +38,18 @@ import {
   SplitLayout,
   TableBox,
   headCell,
-} from "../components/ui"
-import { BanDialog } from "./BanDialog"
-import { BanPanel } from "./BanPanel"
-import { BAN_STATUS, banLabel, banOrigin } from "./bans"
+} from "../../components/ui"
+import { BanDialog } from "../components/BanDialog"
+import { BanPanel } from "../components/BanPanel"
+import { BAN_STATUS, banLabel, banOrigin } from "../lib/bans"
 import {
   BANS_PER,
   banCountOptions,
   banPerson,
   bansOptions,
   personBansOptions,
-  type Ban,
-  type BanFilters,
-  type BanStatus,
-} from "./queries"
+} from "../api/queries"
+import type { Ban, BanFilters, BanStatus } from "../types"
 
 const STATUS_TABS = ["active", "expired", "lifted", "all"] as const
 type StatusTab = (typeof STATUS_TABS)[number]

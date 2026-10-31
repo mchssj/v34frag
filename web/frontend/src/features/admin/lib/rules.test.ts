@@ -13,9 +13,9 @@ import { leadingSide } from "../servers/ReviewTab"
 import { hudChip, parseHudPort } from "../servers/HudSection"
 import { serverWarnings } from "../servers/ServersTab"
 import type { AdminServer } from "../servers/queries"
-import { banExpiry } from "../bans/BanDialog"
-import { banOrigin, banSteps, canEditBan } from "../bans/bans"
-import type { Ban } from "../bans/queries"
+import { banExpiry } from "../bans/components/BanDialog"
+import { banOrigin, banSteps, canEditBan } from "../bans/lib/bans"
+import type { Ban } from "../bans/types"
 import type { SteamRequest } from "../players/queries"
 
 const server = (o: Partial<AdminServer> = {}): AdminServer => ({

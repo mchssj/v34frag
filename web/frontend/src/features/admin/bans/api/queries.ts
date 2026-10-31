@@ -5,25 +5,15 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
-
-// Administración › Baneos: la lista única de todos los servidores (contrato admin.md).
-
-export type Ban = Schemas["Ban"]
-export type BanStatus = Ban["status"]
-export type BanSource = Ban["source"]
-export type BanCreate = Schemas["BanCreate"]
-export type BanPatch = Schemas["BanPatch"]
-
-/** Orden de la lista: los más recientes primero, o los que vencen antes (los permanentes al final). */
-export type BanSort = "recent" | "soon"
-
-export type BanFilters = {
-  source?: BanSource
-  server?: string
-  q?: string
-  sort: BanSort
-}
+import { api, unwrap } from "@/api/client"
+import type {
+  Ban,
+  BanStatus,
+  BanCreate,
+  BanPatch,
+  BanFilters,
+  BanPerson,
+} from "../types"
 
 export const BANS_PER = 25
 
@@ -90,10 +80,6 @@ export function banCountOptions(status: BanStatus, f: BanFilters) {
 export const activeBanCountOptions = banCountOptions("active", {
   sort: "recent",
 })
-
-/** A quién alcanza un baneo: la ficha o, si no tiene, el SteamID. */
-export type BanPerson =
-  { kind: "player"; id: string } | { kind: "steam"; steamId: string }
 
 export function banPerson(b: Ban): BanPerson | null {
   if (b.player) return { kind: "player", id: b.player.id }

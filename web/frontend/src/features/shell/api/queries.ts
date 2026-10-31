@@ -3,7 +3,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { api, unwrap } from "@/api/client"
 import type { AuthUser } from "@/auth/queries"
 import { canAccessAdminSection } from "@/auth/permissions"
-import { activeBanCountOptions } from "@/features/admin/bans/queries"
+import { activeBanCountOptions } from "@/features/admin/bans/api/queries"
 import { clipReviewCountOptions } from "@/features/admin/clips/queries"
 import {
   myProfileOptions,

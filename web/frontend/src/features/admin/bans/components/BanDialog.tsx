@@ -17,15 +17,15 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { pickPlayerOptions } from "@/features/admin/players/queries"
+import { pickPlayerOptions } from "../../players/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { endOfDayIso, fmtDate, isoDatePlus } from "../lib/format"
+import { endOfDayIso, fmtDate, isoDatePlus } from "../../lib/format"
 import {
   activeBansForOptions,
   useCreateBan,
   useUpdateBan,
-  type Ban,
-} from "./queries"
+} from "../api/queries"
+import type { Ban } from "../types"
 
 export type BanTarget =
   | { kind: "player"; id: string; label: string }

@@ -37,7 +37,7 @@ import {
   TableBox,
   headCell,
 } from "../components/ui"
-import { BanDialog } from "../bans/BanDialog"
+import { BanDialog } from "../bans/components/BanDialog"
 import {
   USERS_PER,
   usersOptions,

@@ -6,12 +6,13 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmDialog } from "../components/dialogs"
-import { daysUntil, fmtDate } from "../lib/format"
-import { Chip, PanelSection } from "../components/ui"
+import { ConfirmDialog } from "../../components/dialogs"
+import { daysUntil, fmtDate } from "../../lib/format"
+import { Chip, PanelSection } from "../../components/ui"
 import { BanDialog, type BanTarget } from "./BanDialog"
-import { BAN_STATUS, banLabel, banSteps, canEditBan } from "./bans"
-import { useLiftBan, type Ban } from "./queries"
+import { BAN_STATUS, banLabel, banSteps, canEditBan } from "../lib/bans"
+import { useLiftBan } from "../api/queries"
+import type { Ban } from "../types"
 
 /** Detalle de un baneo: qué pasó, las acciones y los otros baneos de esa persona. */
 export function BanPanel({

@@ -1,5 +1,5 @@
-import type { Tone } from "../lib/format"
-import type { Ban, BanStatus } from "./queries"
+import type { Tone } from "../../lib/format"
+import type { Ban, BanStatus } from "../types"
 
 // Reglas de la sección Baneos que no dependen de React.
 
