@@ -169,6 +169,15 @@ bool Map_Save()
 	return ok;
 }
 
+/** Guarda y, si no se pudo, se lo dice a quien hizo el cambio: en memoria se pierde al cambiar de mapa. */
+bool Map_SaveOrWarn(int client)
+{
+	if (Map_Save())
+		return true;
+	ReplyToCommand(client, "[2v2] NO se pudo guardar el archivo: este cambio se pierde al cambiar de mapa. Mirá el log de errores.");
+	return false;
+}
+
 /** El mapa está listo para jugar: sitio y 2 spawns por equipo. Las zonas son opcionales. */
 bool Map_Ready()
 {
@@ -247,7 +256,8 @@ public Action Cmd_Site(int client, int args)
 		{
 			g_fSite = pos;
 			g_bHasSite = true;
-			ReplyToCommand(client, Map_Save() ? "[2v2] Sitio guardado." : "[2v2] No se pudo guardar. Mirá el log de errores.");
+			if (Map_SaveOrWarn(client))
+				ReplyToCommand(client, "[2v2] Sitio guardado.");
 			return Plugin_Handled;
 		}
 	}
@@ -286,8 +296,8 @@ public Action Cmd_Spawn(int client, int args)
 	g_fSpawn[side][n][1] = pos[1];
 	g_fSpawn[side][n][2] = pos[2];
 	g_fSpawn[side][n][3] = ang[1];
-	Map_Save();
-	ReplyToCommand(client, "[2v2] Spawn de %s guardado (%d de %d).", t ? "T" : "CT", g_iSpawns[side], SPAWNS_PER_TEAM);
+	if (Map_SaveOrWarn(client))
+		ReplyToCommand(client, "[2v2] Spawn de %s guardado (%d de %d).", t ? "T" : "CT", g_iSpawns[side], SPAWNS_PER_TEAM);
 	return Plugin_Handled;
 }
 
@@ -320,8 +330,8 @@ public Action Cmd_DelSpawn(int client, int args)
 		for (int c = 0; c < 4; c++)
 			g_fSpawn[bestSide][i][c] = g_fSpawn[bestSide][i + 1][c];
 	g_iSpawns[bestSide]--;
-	Map_Save();
-	ReplyToCommand(client, "[2v2] Spawn de %s borrado.", bestSide == SIDE_T ? "T" : "CT");
+	if (Map_SaveOrWarn(client))
+		ReplyToCommand(client, "[2v2] Spawn de %s borrado.", bestSide == SIDE_T ? "T" : "CT");
 	return Plugin_Handled;
 }
 
@@ -365,9 +375,9 @@ public Action Cmd_Zone2(int client, int args)
 	GetClientAbsOrigin(client, pos);
 	Map_AddZone(g_fCorner[client], pos);
 	g_bHasCorner[client] = false;
-	Map_Save();
 	Map_DrawZone(client, g_iZones - 1);
-	ReplyToCommand(client, "[2v2] Zona prohibida guardada (%d).", g_iZones);
+	if (Map_SaveOrWarn(client))
+		ReplyToCommand(client, "[2v2] Zona prohibida guardada (%d).", g_iZones);
 	return Plugin_Handled;
 }
 
@@ -389,8 +399,8 @@ public Action Cmd_DelZone(int client, int args)
 		g_fZoneMax[i] = g_fZoneMax[i + 1];
 	}
 	g_iZones--;
-	Map_Save();
-	ReplyToCommand(client, "[2v2] Zona borrada. Quedan %d.", g_iZones);
+	if (Map_SaveOrWarn(client))
+		ReplyToCommand(client, "[2v2] Zona borrada. Quedan %d.", g_iZones);
 	return Plugin_Handled;
 }
 

@@ -341,7 +341,11 @@ public Action Cmd_DelSpawn(int client, int args)
 		g_aBombs[bestSite].Erase(bestIndex);
 	else
 		g_aPoints[bestSite][bestSide].Erase(bestIndex);
-	Spawns_Save();
+	if (!Spawns_Save())
+	{
+		ReplyToCommand(client, "[Retake] NO se pudo guardar el archivo: este cambio se pierde al cambiar de mapa. Mirá el log de errores.");
+		return Plugin_Handled;
+	}
 	ReplyToCommand(client, "[Retake] Punto borrado del sitio %s (%s).", bestSite == SITE_A ? "A" : "B", bestSide == -1 ? "bomba" : (bestSide == SIDE_T ? "T" : "CT"));
 	return Plugin_Handled;
 }
