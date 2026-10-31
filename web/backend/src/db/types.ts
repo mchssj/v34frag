@@ -3845,6 +3845,9 @@ isOneToOne: false
             "ac_admin_sessions":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_status"?: string }; Returns: Json
                            },
+"ac_agent_unlink":
+{ Args: { "p_access": string,"p_secret": string }; Returns: boolean
+                           },
 "ac_bridge_end":
 { Args: { "p_reason"?: string,"p_steam": string,"p_token": string }; Returns: boolean
                            },

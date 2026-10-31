@@ -247,6 +247,20 @@ begin
     else jsonb_build_object('id', s.id, 'server_id', s.server_id, 'match_uid', s.match_uid, 'started_at', s.started_at) end);
 end $$;
 
+-- Desvincular desde la aplicación: el token deja de valer y se cierra la sesión.
+create function public.ac_agent_unlink(p_secret text, p_access text) returns boolean
+  language plpgsql security definer set search_path = public as $$
+declare v_id uuid;
+begin
+  perform ac_require_api(p_secret);
+  update ac_devices set revoked_at = now()
+   where access_hash = ac_hash(p_access) and access_expires_at > now() and revoked_at is null
+   returning id into v_id;
+  if v_id is null then return false; end if;
+  update ac_sessions set status = 'closed', ended_at = now(), end_reason = 'revoked' where device_id = v_id and status = 'open';
+  return true;
+end $$;
+
 -- =====================================================================================================
 -- 6. Bridge (con el token del servidor)
 -- =====================================================================================================
@@ -379,12 +393,12 @@ revoke all on function public.ac_hash(text), public.ac_token(text), public.ac_us
 grant execute on function public.ac_can_review() to authenticated;
 
 revoke all on function public.ac_link_start(text, text, text), public.ac_link_claim(text, text), public.ac_token_refresh(text, text),
-  public.ac_heartbeat(text, text, text, text), public.ac_bridge_player(text, text, text, boolean, text), public.ac_bridge_end(text, text, text),
+  public.ac_agent_unlink(text, text), public.ac_heartbeat(text, text, text, text), public.ac_bridge_player(text, text, text, boolean, text), public.ac_bridge_end(text, text, text),
   public.ac_link_approve(text), public.ac_device_revoke(uuid), public.ac_public_status(uuid),
   public.ac_admin_sessions(text, integer, integer), public.ac_set_open(integer) from public, anon, authenticated;
 
 grant execute on function public.ac_link_start(text, text, text), public.ac_link_claim(text, text), public.ac_token_refresh(text, text),
-  public.ac_heartbeat(text, text, text, text), public.ac_bridge_player(text, text, text, boolean, text), public.ac_bridge_end(text, text, text),
+  public.ac_agent_unlink(text, text), public.ac_heartbeat(text, text, text, text), public.ac_bridge_player(text, text, text, boolean, text), public.ac_bridge_end(text, text, text),
   public.ac_public_status(uuid) to anon, authenticated;
 grant execute on function public.ac_link_approve(text), public.ac_device_revoke(uuid),
   public.ac_admin_sessions(text, integer, integer), public.ac_set_open(integer) to authenticated;

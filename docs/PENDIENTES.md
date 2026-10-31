@@ -7,8 +7,8 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 ## Anticheat FRAG (rama `kyan/anticheat-backend`, sin merge)
 
 - **Estado:** base y API hechas y probadas en local el 2026-10-30, con el replanteo `39`. Nada desplegado, ni en el servidor real ni en RBK (RBK queda afuera por ahora, como excepción escrita, por decisión de Kyan).
-- **Qué falta:** agente, Bridge, página `/anticheat/vincular`, procesos, capturas, panel, revisión legal y pruebas de campo.
-- **Bitácora:** [`2026-10-30-anticheat-backend`](bitacora/2026-10-30-anticheat-backend/). La auditoría y la prueba de captura están en la rama `kyan/pruebas`.
+- **Qué falta:** Bridge, página `/anticheat/vincular`, procesos, capturas, panel, revisión legal, firma de la aplicación y pruebas de campo.
+- **Bitácora:** [`2026-10-30-anticheat-backend`](bitacora/2026-10-30-anticheat-backend/) y [`2026-10-30-anticheat-agente`](bitacora/2026-10-30-anticheat-agente/). La auditoría y la prueba de captura están en la rama `kyan/pruebas`.
 
 ## Orden de trabajo (decidido por Daniel el 2026-10-15)
 

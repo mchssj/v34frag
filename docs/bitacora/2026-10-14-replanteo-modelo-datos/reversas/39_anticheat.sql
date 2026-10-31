@@ -22,6 +22,7 @@ drop function public.ac_public_status(uuid);
 drop function public.ac_device_revoke(uuid);
 drop function public.ac_bridge_end(text, text, text);
 drop function public.ac_bridge_player(text, text, text, boolean, text);
+drop function public.ac_agent_unlink(text, text);
 drop function public.ac_heartbeat(text, text, text, text);
 drop function public.ac_token_refresh(text, text);
 drop function public.ac_link_claim(text, text);

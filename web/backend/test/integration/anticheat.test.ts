@@ -1,3 +1,10 @@
+import { spawn } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { serve } from '@hono/node-server';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { createApp } from '../../src/app';
@@ -153,6 +160,65 @@ describe('Bridge y obligatoriedad', () => {
     expect(await bridge()).toMatchObject({ linked: true });
     check(await anon().rpc('ac_bridge_end', { p_token: token, p_steam: steam }));
     expect(await (await beat(d.access_token)).json()).toEqual({ session: null });
+  });
+});
+
+// El ejecutable real contra la API local. Se salta si no se compiló (agent/build.bat).
+const exe = fileURLToPath(new URL('../../../../agent/build/CMLeagueAC.exe', import.meta.url));
+describe.skipIf(!existsSync(exe))('aplicación real', () => {
+  it('vincula, abre sesión, la cierra, avisa sin conexión y desvincula', { timeout: 90_000 }, async () => {
+    const envIp = localEnv({ AC_API_SECRET: SECRET });
+    let server = serve({ fetch: (r) => app.fetch(r, envIp), port: 0, hostname: '127.0.0.1' });
+    await new Promise((ok) => server.once('listening', ok));
+    const port = (server.address() as AddressInfo).port;
+    const dir = mkdtempSync(join(tmpdir(), 'cmleagueac-'));
+    writeFileSync(join(dir, 'consent-1.txt'), 'version=1\n');
+    const log = () => { try { return readFileSync(join(dir, 'agent.log'), 'utf8'); } catch { return ''; } };
+    const until = async (re: RegExp, ms = 15_000) => {
+      const end = Date.now() + ms;
+      for (;;) {
+        const m = re.exec(log());
+        if (m) return m;
+        if (Date.now() > end) throw new Error(`No apareció ${re} en el registro:\n${log()}`);
+        await new Promise((ok) => setTimeout(ok, 200));
+      }
+    };
+    const proc = spawn(exe, ['--portable', '--no-browser', '--auto-link', '--beat', '1', '--api', `http://127.0.0.1:${port}`, '--data-dir', dir]);
+    try {
+      const code = (await until(/código ([A-Z2-9]{8})/))[1]!;
+      expect((await post('/api/v1/me/anticheat/approve', { user_code: code }, bearer(owner.token))).status).toBe(200);
+      await until(/cuenta vinculada/);
+      // Los tokens quedan cifrados: en disco no hay ninguno en claro.
+      expect(readFileSync(join(dir, 'access.bin')).toString('latin1')).not.toContain('fraga_');
+      expect(log()).not.toMatch(/fraga_|fragr_/);
+
+      // Sin CLIENT_IP_HEADER la API ve la IP como "unknown".
+      await new Promise((ok) => setTimeout(ok, 1500));
+      expect(await bridge({ p_ip: 'unknown' })).toMatchObject({ linked: true, action: 'allow' });
+      await until(/sesión abierta/);
+      check(await anon().rpc('ac_bridge_end', { p_token: token, p_steam: steam }));
+      await until(/sesión cerrada/);
+
+      await new Promise<void>((ok) => { server.close(() => ok()); (server as unknown as { closeAllConnections?: () => void }).closeAllConnections?.(); });
+      await until(/latido fallido: 0/);
+      server = serve({ fetch: (r) => app.fetch(r, envIp), port, hostname: '127.0.0.1' });
+      await new Promise((ok) => server.once('listening', ok));
+
+      const before = (log().match(/latido fallido/g) ?? []).length;
+      await new Promise((ok) => setTimeout(ok, 2500));
+      expect((log().match(/latido fallido/g) ?? []).length).toBeLessThanOrEqual(before + 1);
+    } finally {
+      proc.kill();
+      await new Promise<void>((ok) => { server.close(() => ok()); (server as unknown as { closeAllConnections?: () => void }).closeAllConnections?.(); });
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('la ruta de desvincular revoca el token', async () => {
+    const d = await enroll(owner.token);
+    expect((await post('/api/v1/anticheat/unlink', {}, { 'X-Agent-Token': d.access_token })).status).toBe(204);
+    expect((await beat(d.access_token)).status).toBe(401);
+    expect((await post('/api/v1/anticheat/unlink', {}, { 'X-Agent-Token': d.access_token })).status).toBe(401);
   });
 });
 
