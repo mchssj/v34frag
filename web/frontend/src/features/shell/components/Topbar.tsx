@@ -48,7 +48,9 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
         <span className="hidden flex-1 truncate text-left sm:inline">
           Buscar…
         </span>
-        <Kbd className="hidden h-auto rounded px-1.5 font-mono text-[11px] text-inherit sm:inline-flex"></Kbd>
+        <Kbd className="hidden h-auto rounded px-1.5 font-mono text-[11px] font-normal text-inherit sm:inline-flex">
+          {SEARCH_SHORTCUT}
+        </Kbd>
       </Button>
       <ThemeMenu />
       <NotificationsMenu />
