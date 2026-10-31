@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { AuthHeading } from "@/features/auth/components/ui"
 import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
+import { initialOf } from "@/components/brand/PlayerAvatar"
 import { Card } from "@/components/ui/card"
 import { Greeting } from "./Greeting"
 
@@ -20,7 +21,7 @@ export function PhotoStep({
   nameError: string | null
   onName: (name: string) => void
 }) {
-  const initial = alias.slice(0, 1).toUpperCase()
+  const initial = initialOf(alias)
   const trimmed = name.trim()
   return (
     <>

@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -20,7 +21,6 @@ import {
 import { MAX_ROSTER, STATUS_LABEL, type RosterStatus } from "../lib/model"
 import { invitablePlayersOptions, useInvitePlayer } from "../api/queries"
 import type { PlayerSummary } from "../types"
-import { Initial } from "./ui"
 
 // El backend acepta hasta 200 caracteres en invitaciones y pedidos.
 const MESSAGE_MAX = 200
@@ -147,8 +147,8 @@ export function InviteDrawer({
                         selected?.id === p.id && "bg-muted"
                       )}
                     >
-                      <Initial
-                        name={p.alias}
+                      <PlayerAvatar
+                        alias={p.alias}
                         photo={p.photo_url}
                         className="size-8"
                         fallbackClassName="text-[13px]"

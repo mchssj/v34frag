@@ -6,7 +6,7 @@ import { type KeyboardEvent } from "react"
 import { WatchTvButton } from "@/features/mixes/components/parts"
 import { liveMixesOptions } from "@/features/mixes/api/queries"
 import type { MixItem } from "@/features/mixes/types"
-import { KindBadge } from "./KindBadge"
+import { KindBadge } from "@/components/brand/KindBadge"
 
 // ---------- En vivo ----------
 

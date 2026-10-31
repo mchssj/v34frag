@@ -1,5 +1,6 @@
-import { type MatchKind } from "../lib/search"
 import { Badge } from "@/components/ui/badge"
+
+type MatchKind = "mix" | "pcw" | "official"
 
 export const KIND_LABEL: Record<MatchKind, string> = {
   mix: "Mix",
@@ -7,8 +8,7 @@ export const KIND_LABEL: Record<MatchKind, string> = {
   official: "Torneo",
 }
 
-// ---------- Tabla ----------
-
+/** Tipo de partida (Mix, PCW, Torneo) en etiqueta suave. */
 export function KindBadge({ kind }: { kind: MatchKind }) {
   return (
     <Badge variant="soft" shape="tag" size="sm" className="text-inherit">

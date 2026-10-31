@@ -1,12 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { ArrowRightIcon, PlugZapIcon } from "lucide-react"
 
+import { KIND_LABEL } from "@/components/brand/KindBadge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { sideName } from "@/features/public/lib/format"
 import { useFeaturedLive } from "../api/queries"
-
-const KIND_LABEL = { mix: "Mix", pcw: "PCW", official: "Torneo" } as const
 
 /**
  * Franja "ahora": la partida destacada en vivo. "TU PRÓXIMA" (con countdown) llega cuando el

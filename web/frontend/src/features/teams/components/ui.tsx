@@ -1,7 +1,6 @@
 import { cn } from "cn"
 import { useState, type ReactNode } from "react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { BadgeVariant } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import {
@@ -163,32 +162,5 @@ export function Soon({
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
-  )
-}
-
-/** Foto del jugador o, si no tiene o no carga, la inicial del alias en un círculo. */
-export function Initial({
-  name,
-  photo,
-  className,
-  fallbackClassName,
-}: {
-  name: string
-  photo?: string | null
-  className?: string
-  fallbackClassName?: string
-}) {
-  return (
-    <Avatar aria-hidden className={cn("shrink-0", className)}>
-      {photo && <AvatarImage src={photo} alt="" />}
-      <AvatarFallback
-        className={cn(
-          "bg-secondary font-semibold text-secondary-foreground",
-          fallbackClassName
-        )}
-      >
-        {name.trim().charAt(0).toUpperCase() || "?"}
-      </AvatarFallback>
-    </Avatar>
   )
 }

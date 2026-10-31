@@ -17,6 +17,7 @@ import { toast } from "sonner"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { initialOf } from "@/components/brand/PlayerAvatar"
 import { Segmented } from "@/components/brand/Segmented"
 import { StatTile } from "@/components/brand/StatTile"
 import { NoLevelBadge } from "@/components/illustrations"
@@ -139,7 +140,7 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
         <Avatar className="size-24 rounded-xl after:hidden after:rounded-xl">
           {photo && <AvatarImage src={photo} alt="" className="rounded-xl" />}
           <AvatarFallback className="rounded-xl bg-secondary text-4xl font-semibold text-foreground">
-            {p.alias.slice(0, 1).toUpperCase()}
+            {initialOf(p.alias)}
           </AvatarFallback>
         </Avatar>
         <div className="flex min-w-[240px] flex-1 flex-col gap-2">

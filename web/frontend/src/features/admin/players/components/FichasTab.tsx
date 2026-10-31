@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
-import { PlayerAvatar } from "@/features/ranking/components/parts"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { isBlockedName } from "../../lib/errors"
@@ -39,6 +38,7 @@ import {
   headCell,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { initialOf, PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import {
   PLAYERS_PER,
   freeAccountsOptions,
@@ -164,6 +164,7 @@ export function FichasTab({
                             className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left hover:bg-muted"
                           >
                             <PlayerAvatar
+                              size="row"
                               alias={p.alias}
                               photo={p.photo_url}
                               className="size-[34px]"
@@ -480,7 +481,7 @@ function FichaForm({
 
       <AvatarPicker
         url={p.photo_url}
-        initial={p.alias.slice(0, 1).toUpperCase()}
+        initial={initialOf(p.alias)}
         size="md"
         title="Foto de la ficha"
         hint="JPEG, PNG o WebP. Se recorta a 256×256."

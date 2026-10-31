@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { UserIcon } from "lucide-react"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { ROLE_SLOTS, rolesMap, type RoleSlot } from "../lib/model"
 import type { RosterEntry } from "../types"
-import { Eyebrow, Initial, Panel } from "./ui"
+import { Eyebrow, Panel } from "./ui"
 
 // --- Roles de equipo -----------------------------------------------------
 
@@ -56,8 +57,8 @@ export function TeamRoles({ members }: { members: RosterEntry[] }) {
                 key={m.player_id}
                 className="flex items-center gap-2 rounded-full border bg-card py-1 pr-3 pl-1"
               >
-                <Initial
-                  name={m.alias}
+                <PlayerAvatar
+                  alias={m.alias}
                   photo={m.photo_url}
                   className="size-6"
                   fallbackClassName="text-[10px]"
@@ -107,8 +108,8 @@ function RoleSpot({
               aria-label={`Perfil de ${m.alias}`}
               className="rounded-full ring-2 ring-card outline-none hover:ring-primary focus-visible:ring-ring"
             >
-              <Initial
-                name={m.alias}
+              <PlayerAvatar
+                alias={m.alias}
                 photo={m.photo_url}
                 className="size-14"
                 fallbackClassName="text-lg"

@@ -12,6 +12,7 @@ import { cn } from "cn"
 import { ArrowRightIcon } from "lucide-react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { initialOf } from "@/components/brand/PlayerAvatar"
 import { SectionHeading } from "@/components/brand/SectionHeading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -202,7 +203,7 @@ function TopPlayers() {
                     aria-hidden
                     className="grid size-[34px] shrink-0 place-items-center rounded-full bg-secondary text-[13px] font-semibold"
                   >
-                    {p.alias[0]?.toUpperCase()}
+                    {initialOf(p.alias)}
                   </span>
                 )}
                 <span className="flex min-w-0 flex-1 flex-col">

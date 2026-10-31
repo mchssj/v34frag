@@ -6,6 +6,7 @@ import type { KeyboardEvent, ReactNode } from "react"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { ListPagination } from "@/components/brand/ListPagination"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { QueryErrorMessage } from "@/components/brand/QueryState"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/tooltip"
 import { fmt2, roleCountry } from "../lib/labels"
 import {
-  PlayerAvatar,
   Podium,
   RankingHeader,
   SortHead,
@@ -146,6 +146,7 @@ function HistoricView({ search, onChange }: Props) {
     value: p.elo,
     badge: (
       <PlayerAvatar
+        size="row"
         alias={p.player.alias}
         photo={p.player.photo_url}
         className="size-[46px]"
@@ -264,7 +265,11 @@ function HistoricRow({
       </TableCell>
       <TableCell>
         <span className="flex items-center gap-2.5">
-          <PlayerAvatar alias={p.player.alias} photo={p.player.photo_url} />
+          <PlayerAvatar
+            size="row"
+            alias={p.player.alias}
+            photo={p.player.photo_url}
+          />
           <span className="flex flex-col leading-tight">
             <span className="font-medium">{p.player.alias}</span>
             {sub && (
@@ -335,6 +340,7 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
     value: r.elo,
     badge: (
       <PlayerAvatar
+        size="row"
         alias={r.player.alias}
         photo={r.player.photo_url}
         className="size-[46px]"
@@ -479,7 +485,11 @@ function StandingRow({
       </TableCell>
       <TableCell>
         <span className="flex items-center gap-2.5">
-          <PlayerAvatar alias={r.player.alias} photo={r.player.photo_url} />
+          <PlayerAvatar
+            size="row"
+            alias={r.player.alias}
+            photo={r.player.photo_url}
+          />
           <span className="font-medium text-foreground">{r.player.alias}</span>
         </span>
       </TableCell>

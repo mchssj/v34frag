@@ -6,6 +6,7 @@ import { useState } from "react"
 
 import { isApiError } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { QueryErrorMessage } from "@/components/brand/QueryState"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -25,7 +26,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { myProfileOptions } from "@/features/profile/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { barPct, compareWinner, fmt2 } from "../lib/labels"
-import { PlayerAvatar } from "../components/parts"
 import { compareOptions, playerSearchOptions } from "../api/queries"
 import type { Compare as CompareData, ComparePlayer } from "../types"
 import type { CompareSearch } from "../lib/search"
@@ -147,6 +147,7 @@ function PlayerCombobox({
                     }}
                   >
                     <PlayerAvatar
+                      size="row"
                       alias={p.alias}
                       photo={p.photo_url}
                       className="size-6"
@@ -350,6 +351,7 @@ function Head({ p, color }: { p: ComparePlayer; color: string }) {
       style={{ boxShadow: `inset 0 3px 0 ${color}` }}
     >
       <PlayerAvatar
+        size="row"
         alias={p.player.alias}
         photo={p.player.photo_url}
         className="size-[52px] [&_[data-slot=avatar-fallback]]:text-xl"

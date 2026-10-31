@@ -80,12 +80,6 @@ export const fmtMonth = (iso: string) =>
 export const fmtAgo = (iso: string) =>
   formatDistanceToNow(parseISO(iso), { locale: es, addSuffix: true })
 
-export const KIND_LABEL: Record<PlayerMatch["kind"], string> = {
-  mix: "Mix",
-  pcw: "PCW",
-  official: "Torneo",
-}
-
 /**
  * Título y subtítulo de una partida (contrato 5): en un mix, "Mix · {mapa}" y "{fecha} · {marcador}";
  * en un torneo, "{bando 1} vs {bando 2}" y "{torneo} · {fase}"; en una PCW, los bandos y "PCW · {mapa}".

@@ -10,6 +10,7 @@ import {
 import { type KeyboardEvent, type ReactNode } from "react"
 import { errorMessage } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { KindBadge } from "@/components/brand/KindBadge"
 import { ListPagination } from "@/components/brand/ListPagination"
 import { RetryButton } from "@/components/brand/QueryState"
 import { Button } from "@/components/ui/button"
@@ -27,7 +28,6 @@ import { CancelChip, DemoStatus } from "@/features/mixes/components/parts"
 import { matchesListOptions } from "../api/queries"
 import type { MatchSummary } from "../types"
 import { DEFAULT_PER, PER_OPTIONS, type MatchesSearch } from "../lib/search"
-import { KindBadge } from "./KindBadge"
 import type { Patch } from "./MatchFilters"
 
 const sideName = (s: MatchSummary["side1"], n: 1 | 2) =>

@@ -18,6 +18,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { useMe } from "@/auth/queries"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -68,7 +69,7 @@ import { RecentForm } from "../components/RecentForm"
 import { StarPlayer } from "../components/StarPlayer"
 import { TeamRoles } from "../components/TeamRoles"
 import { TeamKpis } from "../components/TeamKpis"
-import { Eyebrow, Initial, Soon, TeamCrest } from "../components/ui"
+import { Eyebrow, Soon, TeamCrest } from "../components/ui"
 
 /** Desde cuándo existe el equipo (`founded_at`: la aprobación o, en los viejos, el primer ingreso). */
 const foundedLabel = (iso: string | null) =>
@@ -448,8 +449,8 @@ function LeaderLeaveDialog({
                       : "enabled:hover:bg-muted/60"
                   )}
                 >
-                  <Initial
-                    name={m.alias}
+                  <PlayerAvatar
+                    alias={m.alias}
                     photo={m.photo_url}
                     className="size-8"
                   />

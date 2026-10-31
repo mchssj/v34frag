@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +31,7 @@ import {
   useTransferCaptain,
 } from "../api/queries"
 import type { RosterEntry } from "../types"
-import { Eyebrow, Initial, Panel, STATUS_CHIP } from "./ui"
+import { Eyebrow, Panel, STATUS_CHIP } from "./ui"
 
 const since = (iso: string | null) =>
   iso ? `desde ${format(parseISO(iso), "MMM yyyy", { locale: es })}` : null
@@ -123,8 +124,8 @@ function RosterRow({
         aria-label={`Perfil de ${member.alias}`}
         className="rounded-full outline-none hover:ring-2 hover:ring-primary focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <Initial
-          name={member.alias}
+        <PlayerAvatar
+          alias={member.alias}
           photo={member.photo_url}
           className="size-8"
           fallbackClassName="text-[13px]"

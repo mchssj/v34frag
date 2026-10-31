@@ -3,8 +3,9 @@ import { Link } from "@tanstack/react-router"
 import { CrownIcon } from "lucide-react"
 import { playerDetailOptions } from "@/features/profile/api/queries"
 import { formatNumber } from "@/features/public/lib/format"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { teamStarOptions } from "../api/queries"
-import { Eyebrow, Initial } from "./ui"
+import { Eyebrow } from "./ui"
 
 // --- Jugador estrella ----------------------------------------------------
 
@@ -43,8 +44,8 @@ export function StarPlayer({ teamId }: { teamId: string }) {
         params={{ nick: star.alias }}
         className="mt-3 flex items-center gap-3.5 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <Initial
-          name={star.alias}
+        <PlayerAvatar
+          alias={star.alias}
           photo={star.photo_url}
           className="size-16"
           fallbackClassName="bg-primary text-2xl font-bold text-primary-foreground"

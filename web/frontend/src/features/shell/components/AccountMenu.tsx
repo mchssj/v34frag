@@ -12,6 +12,7 @@ import { useState } from "react"
 
 import { useLogout, type AuthUser } from "@/auth/queries"
 import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
+import { initialOf } from "@/components/brand/PlayerAvatar"
 import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme, type Theme } from "@/components/theme-provider"
 import {
@@ -77,7 +78,7 @@ export function AccountMenu({
                 {avatar ? (
                   <img src={avatar} alt="" className="size-full object-cover" />
                 ) : (
-                  alias.slice(0, 1).toUpperCase()
+                  initialOf(alias)
                 )}
               </span>
               <span className="flex min-w-0 flex-1 flex-col leading-[1.25]">

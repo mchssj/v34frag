@@ -15,6 +15,7 @@ import { toast } from "sonner"
 import { errorMessage, isApiError } from "@/api/errors"
 import { useMe } from "@/auth/queries"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { initialOf } from "@/components/brand/PlayerAvatar"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -224,7 +225,7 @@ function DataCard({
         <div className="flex flex-col gap-[18px] p-5">
           <AvatarPicker
             url={details?.avatar_url}
-            initial={alias.slice(0, 1).toUpperCase()}
+            initial={initialOf(alias)}
             size="md"
             title="Avatar"
             hint="JPEG, PNG o WebP · máximo 1 MB. Se recorta a 256×256."

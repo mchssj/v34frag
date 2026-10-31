@@ -7,9 +7,10 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { timeAgo } from "@/features/shell/notifications/lib/model"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { teamPendingOptions, useAnswerJoin } from "../api/queries"
 import type { TeamInvite } from "../types"
-import { Initial, Panel } from "./ui"
+import { Panel } from "./ui"
 
 // --- Pedidos para entrar (líder) -----------------------------------------
 
@@ -72,8 +73,8 @@ function JoinRequestRow({
         aria-label={`Perfil de ${nick}`}
         className="rounded-full outline-none hover:ring-2 hover:ring-primary focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <Initial
-          name={nick}
+        <PlayerAvatar
+          alias={nick}
           photo={request.player.photo_url}
           className="size-9"
           fallbackClassName="text-sm"

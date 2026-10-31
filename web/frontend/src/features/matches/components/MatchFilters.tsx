@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { SearchIcon, UserCheckIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { KIND_LABEL } from "@/components/brand/KindBadge"
 import {
   InputGroup,
   InputGroupAddon,
@@ -21,7 +22,6 @@ import type { MapEntry } from "@/features/maps/types"
 import { Soon } from "@/features/teams/components/ui"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { KINDS, type MatchesSearch } from "../lib/search"
-import { KIND_LABEL } from "./KindBadge"
 
 // Listado /matches: mixes, PCW y torneos juntos (bitácora 2026-10-30-partidas-unificadas). Los
 // filtros, la página y el tamaño viven en la URL. Los mixes en juego salen de /mixes, porque

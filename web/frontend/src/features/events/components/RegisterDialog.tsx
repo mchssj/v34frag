@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,7 +17,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { STATUS_LABEL, statusOf } from "@/features/teams/lib/model"
 import { teamMembersOptions } from "@/features/teams/api/queries"
 import type { RosterEntry } from "@/features/teams/types"
-import { Initial } from "@/features/teams/components/ui"
 import { modeText, type MyTeamRef } from "../lib/model"
 import { useRegisterTeam, useUnregisterTeam } from "../api/queries"
 import type { EventDetail, Registration } from "../types"
@@ -189,8 +189,8 @@ function RosterPicker({
                   reason && "opacity-60"
                 )}
               >
-                <Initial
-                  name={m.alias}
+                <PlayerAvatar
+                  alias={m.alias}
                   photo={m.photo_url}
                   className="size-7"
                 />

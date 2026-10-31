@@ -5,9 +5,9 @@ import { type KeyboardEvent, type ReactNode } from "react"
 import { errorMessage } from "@/api/errors"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { KindBadge } from "@/components/brand/KindBadge"
 import { ListPagination } from "@/components/brand/ListPagination"
 import { RetryButton } from "@/components/brand/QueryState"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -20,13 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  KIND_LABEL,
-  fmtDay,
-  matchTitle,
-  resultOf,
-  scoreOf,
-} from "../../lib/labels"
+import { fmtDay, matchTitle, resultOf, scoreOf } from "../../lib/labels"
 import { playerMatchesOptions } from "../../api/queries"
 import type { PlayerMatch } from "../../types"
 import { DEFAULT_PER, PER_OPTIONS, type PlayerSearch } from "../../lib/search"
@@ -181,14 +175,7 @@ export function Matches({
                     {m.played_at ? fmtDay(m.played_at) : "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="soft"
-                      shape="tag"
-                      size="sm"
-                      className="text-inherit"
-                    >
-                      {KIND_LABEL[m.kind]}
-                    </Badge>
+                    <KindBadge kind={m.kind} />
                   </TableCell>
                   <TableCell className="font-mono">{m.map ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">

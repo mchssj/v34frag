@@ -11,7 +11,6 @@ import {
 } from "lucide-react"
 import type { ReactNode } from "react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -32,25 +31,6 @@ export function useMine() {
     playerId: profile?.player?.id ?? null,
     teamIds: new Set(profile?.teams.map((t) => t.id) ?? []),
   }
-}
-
-export function PlayerAvatar({
-  alias,
-  photo,
-  className,
-}: {
-  alias: string
-  photo: string | null
-  className?: string
-}) {
-  return (
-    <Avatar className={cn("size-[30px] after:hidden", className)}>
-      {photo && <AvatarImage src={photo} alt="" />}
-      <AvatarFallback className="bg-secondary text-xs font-semibold text-foreground">
-        {alias.slice(0, 1).toUpperCase()}
-      </AvatarFallback>
-    </Avatar>
-  )
 }
 
 export function MineChip() {
