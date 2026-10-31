@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { rerank } from "../lib/rerank"
+import { rerank } from "./rerank"
 
 const team = (name: string, won: number, lost: number) => ({
   team: { id: name, name },
