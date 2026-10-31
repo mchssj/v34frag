@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 
 import { TeamCrest } from "@/features/teams/components/ui"
 import { Badge } from "@/components/ui/badge"
+import { Empty } from "@/components/ui/empty"
 import { STATUS_CHIP, STATUS_LABEL, type EventStatus } from "../lib/model"
 
 export function StatusChip({
@@ -106,8 +107,8 @@ export function Card({
 /** Recuadro punteado para lo que todavía no existe (llave sin fixture, sin grupos…). */
 export function EmptyBox({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[calc(var(--radius)+4px)] border border-dashed px-6 py-12 text-center text-sm text-pretty text-muted-foreground">
+    <Empty className="block flex-none rounded-[calc(var(--radius)+4px)] border border-dashed px-6 py-12 text-sm text-pretty text-muted-foreground">
       {children}
-    </div>
+    </Empty>
   )
 }

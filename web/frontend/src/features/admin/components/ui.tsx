@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { errorMessage, isRetryable } from "@/api/errors"
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Empty } from "@/components/ui/empty"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import type { Tone } from "../lib/format"
@@ -226,9 +227,9 @@ export function PanelSection({
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+    <Empty className="block flex-none rounded-xl border border-dashed p-6 text-sm text-wrap text-muted-foreground">
       {children}
-    </p>
+    </Empty>
   )
 }
 
