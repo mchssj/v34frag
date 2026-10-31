@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { mapImage, mixMapNames, type MapEntry } from "./queries"
+import { mapImage, mixMapNames } from "./queries"
+import type { MapEntry } from "../types"
 
 const map = (name: string, o: Partial<MapEntry> = {}): MapEntry => ({
   name,

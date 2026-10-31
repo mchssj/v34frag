@@ -39,7 +39,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Toggle } from "@/components/ui/toggle"
-import { mapsOptions, type MapEntry } from "@/features/maps/queries"
+import { mapsOptions } from "@/features/maps/api/queries"
+import type { MapEntry } from "@/features/maps/types"
 import { cancelReasonLabel, fmtDay, fmtTime } from "@/features/mixes/labels"
 import { CancelChip, DemoStatus, WatchTvButton } from "@/features/mixes/parts"
 import {

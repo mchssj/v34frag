@@ -3,8 +3,8 @@ import { CheckIcon, LockIcon } from "lucide-react"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { MAX_POOL, defaultPool, poolChoices, poolError } from "./pool"
-import type { MapEntry } from "./queries"
+import { MAX_POOL, defaultPool, poolChoices, poolError } from "../lib/pool"
+import type { MapEntry } from "../types"
 
 /**
  * "Mapas del veto" de los formularios de Torneos y PCW: el pool por defecto (`null`) o los mapas

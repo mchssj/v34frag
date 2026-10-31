@@ -1,12 +1,7 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
-
-// Catálogo de mapas (contrato partidas.md y admin.md, replanteo 30). Trae también los retirados:
-// una sala vieja necesita la foto de un mapa que ya no se elige. Cada mapa tiene sus versiones de
-// servidor (Inferno: de_inferno y de_inferno_classic) y una sola foto para todas.
-
-export type MapEntry = Schemas["MapItem"]
+import { api, unwrap } from "@/api/client"
+import type { MapEntry } from "../types"
 
 export const mapKeys = {
   all: ["maps"] as const,

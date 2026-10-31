@@ -17,7 +17,7 @@ import {
   stintRole,
   tilePct,
 } from "./labels"
-import type { MapEntry } from "@/features/maps/queries"
+import type { MapEntry } from "@/features/maps/types"
 import type {
   EloAdjustment,
   MapStat,

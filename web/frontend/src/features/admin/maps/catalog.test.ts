@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { MapEntry } from "@/features/maps/queries"
+import type { MapEntry } from "@/features/maps/types"
 import {
   changedCount,
   fromCatalog,

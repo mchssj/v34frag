@@ -1,4 +1,4 @@
-import type { MapEntry } from "./queries"
+import type { MapEntry } from "../types"
 
 // Pool de mapas de un torneo o una PCW (`map_pool`; null = el pool por defecto). Reglas de
 // map_pool_check: entre el BO más alto y 20 mapas, sin repetir, y solo disponibles (uno que se

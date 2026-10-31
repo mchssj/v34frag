@@ -6,7 +6,8 @@ import {
 } from "date-fns"
 import { es } from "date-fns/locale"
 
-import { mapEntryOf, type MapEntry } from "@/features/maps/queries"
+import { mapEntryOf } from "@/features/maps/api/queries"
+import type { MapEntry } from "@/features/maps/types"
 import { FACEIT_LINK, STEAM_LINK } from "@/features/profile/lib/schemas"
 import type {
   EloAdjustment,

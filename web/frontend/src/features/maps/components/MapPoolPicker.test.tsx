@@ -3,7 +3,7 @@ import { useState } from "react"
 import { describe, expect, it } from "vitest"
 
 import { MapPoolPicker } from "./MapPoolPicker"
-import type { MapEntry } from "./queries"
+import type { MapEntry } from "../types"
 
 const map = (name: string, position: number, veto = true): MapEntry => ({
   name,

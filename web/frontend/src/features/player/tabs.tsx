@@ -41,7 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { mapsOptions } from "@/features/maps/queries"
+import { mapsOptions } from "@/features/maps/api/queries"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
 import { STATUS_LABEL } from "@/features/teams/lib/model"

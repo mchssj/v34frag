@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
-import { mapKeys } from "@/features/maps/queries"
+import { mapKeys } from "@/features/maps/api/queries"
 import type { DraftMap } from "./catalog"
 import { toBody } from "./catalog"
 

@@ -1,4 +1,4 @@
-import type { MapEntry } from "@/features/maps/queries"
+import type { MapEntry } from "@/features/maps/types"
 
 // Borrador del catálogo de Administración › Mapas: lo que se manda entero con PUT /admin/maps.
 // La foto no está acá: se sube o se quita aparte, al momento.

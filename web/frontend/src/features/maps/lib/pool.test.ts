@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { defaultPool, poolChoices, poolError } from "./pool"
-import type { MapEntry } from "./queries"
+import type { MapEntry } from "../types"
 
 const map = (name: string, o: Partial<MapEntry> = {}): MapEntry => ({
   name,

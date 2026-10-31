@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { mapsOptions } from "@/features/maps/queries"
+import { mapsOptions } from "@/features/maps/api/queries"
 import { SearchBox } from "@/components/brand/SearchBox"
 import {
   AdminHeader,
