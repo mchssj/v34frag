@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { AuthHeading } from "@/features/auth/components/ui"
 import { AvatarPicker } from "@/features/profile/components/AvatarPicker"
+import { Card } from "@/components/ui/card"
 import { Greeting } from "./Greeting"
 
 /** Paso "Foto y nombre": los dos opcionales. La foto se sube al elegirla. */
@@ -61,7 +62,11 @@ export function PhotoStep({
         )}
       </div>
 
-      <div className="flex items-center gap-3 rounded-tile border bg-card px-3.5 py-3">
+      <Card
+        variant="outline"
+        radius="tile"
+        className="flex items-center gap-3 px-3.5 py-3"
+      >
         <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary font-semibold">
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="size-full object-cover" />
@@ -77,7 +82,7 @@ export function PhotoStep({
               : "Nuevo jugador · empieza con 1000 ELO"}
           </span>
         </span>
-      </div>
+      </Card>
     </>
   )
 }

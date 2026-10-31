@@ -15,13 +15,14 @@ import {
 import { type ReactNode } from "react"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useTeamLogos } from "@/features/teams/api/queries"
 import { Soon, TeamCrest } from "@/features/teams/components/ui"
 import { fmtAgo, fmtLong, fmtMonthShort } from "../../lib/labels"
 import { medalsOptions, titlesOptions } from "../../api/queries"
 import type { PlayerDetail, Title } from "../../types"
-import { card, Loaded } from "./shared"
+import { Loaded } from "./shared"
 
 // ---------- Bio y torneos ----------
 
@@ -43,7 +44,7 @@ export function Bio({
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(240px,1fr)]">
-        <div className={cn(card, "flex flex-col items-start gap-3 p-5")}>
+        <Card variant="outline" className="flex flex-col items-start gap-3 p-5">
           <QuoteIcon
             aria-hidden
             className={cn(
@@ -76,26 +77,28 @@ export function Bio({
               )}
             </>
           )}
-        </div>
-        <dl className={cn(card, "flex flex-col px-4 py-1.5")}>
-          <Fact icon={FlagIcon} label="País">
-            {d?.country ? (
-              <span className="inline-flex items-center gap-1.5">
-                {country && <CountryFlag country={country} />}
-                {d.country}
-              </span>
-            ) : null}
-          </Fact>
-          <Fact icon={CrosshairIcon} label="Rol">
-            {d?.game_role}
-          </Fact>
-          <Fact icon={CalendarIcon} label="Miembro desde">
-            {d?.joined_at && fmtMonthShort(d.joined_at)}
-          </Fact>
-          <Fact icon={ClockIcon} label="Última conexión">
-            {d?.last_seen && fmtAgo(d.last_seen)}
-          </Fact>
-        </dl>
+        </Card>
+        <Card variant="outline" asChild className="flex flex-col px-4 py-1.5">
+          <dl>
+            <Fact icon={FlagIcon} label="País">
+              {d?.country ? (
+                <span className="inline-flex items-center gap-1.5">
+                  {country && <CountryFlag country={country} />}
+                  {d.country}
+                </span>
+              ) : null}
+            </Fact>
+            <Fact icon={CrosshairIcon} label="Rol">
+              {d?.game_role}
+            </Fact>
+            <Fact icon={CalendarIcon} label="Miembro desde">
+              {d?.joined_at && fmtMonthShort(d.joined_at)}
+            </Fact>
+            <Fact icon={ClockIcon} label="Última conexión">
+              {d?.last_seen && fmtAgo(d.last_seen)}
+            </Fact>
+          </dl>
+        </Card>
       </div>
       <Palmares nick={nick} />
     </div>
@@ -145,87 +148,89 @@ function Palmares({ nick }: { nick: string }) {
               .filter(Boolean)
               .join(" · ")
             return (
-              <section
-                aria-label="Palmarés"
+              <Card
+                variant="outline"
+                asChild
                 className={cn(
-                  card,
                   "flex flex-col gap-4 p-[18px]",
                   !empty &&
                     "bg-gradient-to-b from-amber-400/[0.07] via-card to-card"
                 )}
               >
-                <div className="flex flex-wrap items-baseline gap-2.5">
-                  <h3 className="text-[15px] font-semibold">Palmarés</h3>
-                  <span className="text-[12.5px] text-muted-foreground">
-                    {empty ? "Todavía sin títulos" : summary}
-                  </span>
-                </div>
-                {empty ? (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2.5">
-                    <TrophySlot icon={TrophyIcon}>
-                      Gana un torneo con tu equipo
-                    </TrophySlot>
-                    <TrophySlot icon={MedalIcon}>
-                      Las medallas las entregan los admins
-                    </TrophySlot>
+                <section aria-label="Palmarés">
+                  <div className="flex flex-wrap items-baseline gap-2.5">
+                    <h3 className="text-[15px] font-semibold">Palmarés</h3>
+                    <span className="text-[12.5px] text-muted-foreground">
+                      {empty ? "Todavía sin títulos" : summary}
+                    </span>
                   </div>
-                ) : (
-                  <>
-                    {won.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          Torneos
-                        </span>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2.5">
-                          {won.map((t) => (
-                            <TitleCard
-                              key={`${t.event.id}-${t.result}`}
-                              t={{ ...t, team: withLogo(t.team) }}
-                            />
-                          ))}
+                  {empty ? (
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2.5">
+                      <TrophySlot icon={TrophyIcon}>
+                        Gana un torneo con tu equipo
+                      </TrophySlot>
+                      <TrophySlot icon={MedalIcon}>
+                        Las medallas las entregan los admins
+                      </TrophySlot>
+                    </div>
+                  ) : (
+                    <>
+                      {won.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            Torneos
+                          </span>
+                          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2.5">
+                            {won.map((t) => (
+                              <TitleCard
+                                key={`${t.event.id}-${t.result}`}
+                                t={{ ...t, team: withLogo(t.team) }}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {given.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          Medallas
-                        </span>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
-                          {given.map((m) => (
-                            <div
-                              key={`${m.title}-${m.icon}`}
-                              className={cn(
-                                "flex items-center gap-2.5 rounded-[10px] bg-muted",
-                                won.length ? "p-2.5" : "p-3.5"
-                              )}
-                            >
-                              <span
-                                aria-hidden
-                                className={
-                                  won.length ? "text-xl" : "text-[26px]"
-                                }
+                      )}
+                      {given.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            Medallas
+                          </span>
+                          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
+                            {given.map((m) => (
+                              <div
+                                key={`${m.title}-${m.icon}`}
+                                className={cn(
+                                  "flex items-center gap-2.5 rounded-[10px] bg-muted",
+                                  won.length ? "p-2.5" : "p-3.5"
+                                )}
                               >
-                                {m.icon ?? "🏅"}
-                              </span>
-                              <span className="flex min-w-0 flex-col">
-                                <span className="text-[12.5px] font-semibold break-words">
-                                  {m.title}
+                                <span
+                                  aria-hidden
+                                  className={
+                                    won.length ? "text-xl" : "text-[26px]"
+                                  }
+                                >
+                                  {m.icon ?? "🏅"}
                                 </span>
-                                <span className="font-mono text-[11px] font-semibold text-muted-foreground">
-                                  ×{m.count}
-                                  {m.last_at &&
-                                    ` · ${fmtMonthShort(m.last_at)}`}
+                                <span className="flex min-w-0 flex-col">
+                                  <span className="text-[12.5px] font-semibold break-words">
+                                    {m.title}
+                                  </span>
+                                  <span className="font-mono text-[11px] font-semibold text-muted-foreground">
+                                    ×{m.count}
+                                    {m.last_at &&
+                                      ` · ${fmtMonthShort(m.last_at)}`}
+                                  </span>
                                 </span>
-                              </span>
-                            </div>
-                          ))}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </section>
+                      )}
+                    </>
+                  )}
+                </section>
+              </Card>
             )
           }}
         </Loaded>
@@ -237,7 +242,7 @@ function Palmares({ nick }: { nick: string }) {
 function TitleCard({ t }: { t: Title }) {
   const champion = t.result === "champion"
   return (
-    <div className="flex flex-col gap-2.5 rounded-xl border bg-card p-3.5">
+    <Card variant="outline" className="flex flex-col gap-2.5 p-3.5">
       <span
         className={cn(
           "grid size-11 place-items-center rounded-xl",
@@ -268,7 +273,7 @@ function TitleCard({ t }: { t: Title }) {
         con {t.team.name}
         {t.at && ` · ${fmtLong(t.at)}`}
       </span>
-    </div>
+    </Card>
   )
 }
 

@@ -3,6 +3,7 @@ import { Controller, type Control } from "react-hook-form"
 
 import type { SignupValues } from "@/auth/schemas"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { AuthHeading } from "../ui"
 import { ALIAS_LABEL, type AliasState } from "../../lib/useAliasStatus"
@@ -76,7 +77,11 @@ export function AliasStep({
                 <span className="text-xs text-muted-foreground">
                   Así te verán
                 </span>
-                <div className="flex items-center gap-3 rounded-tile border bg-card px-3.5 py-3">
+                <Card
+                  variant="outline"
+                  radius="tile"
+                  className="flex items-center gap-3 px-3.5 py-3"
+                >
                   <span
                     aria-hidden
                     className="grid size-10 place-items-center rounded-full bg-secondary font-semibold"
@@ -92,7 +97,7 @@ export function AliasStep({
                     </span>
                   </span>
                   <LevelBadge level={4} />
-                </div>
+                </Card>
               </div>
             </>
           )

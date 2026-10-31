@@ -4,10 +4,11 @@ import { MedalIcon } from "lucide-react"
 import { type ReactNode } from "react"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import { bestSeasonId } from "../../lib/labels"
 import { seasonsOptions } from "../../api/queries"
 import type { PlayerSeason } from "../../types"
-import { card, Loaded } from "./shared"
+import { Loaded } from "./shared"
 
 // ---------- Temporadas ----------
 
@@ -18,7 +19,10 @@ export function Seasons({ nick }: { nick: string }) {
       {(items) => {
         if (!items.length)
           return (
-            <div className={cn(card, "flex min-h-[396px] flex-col pb-6")}>
+            <Card
+              variant="outline"
+              className="flex min-h-[396px] flex-col pb-6"
+            >
               <EmptyState
                 icon={MedalIcon}
                 title="Todavía no terminó ninguna temporada"
@@ -53,7 +57,7 @@ export function Seasons({ nick }: { nick: string }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           )
         const best = bestSeasonId(items)
         return (
@@ -72,9 +76,9 @@ function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
   const played = s.wins + s.losses
   const wr = played ? Math.round((s.wins / played) * 100) : 0
   return (
-    <div
+    <Card
+      variant="outline"
       className={cn(
-        card,
         "relative flex flex-col gap-3.5 p-4",
         best && "border-amber-400/70 ring-3 ring-amber-400/15"
       )}
@@ -162,7 +166,7 @@ function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
           )}
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 

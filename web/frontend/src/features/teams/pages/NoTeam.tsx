@@ -16,6 +16,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   Tooltip,
   TooltipContent,
@@ -148,55 +149,61 @@ function InviteCard({ invite }: { invite: TeamInvite }) {
   const soon =
     differenceInCalendarDays(parseISO(invite.expires_at), new Date()) <= 1
   return (
-    <li className="flex flex-col gap-3 rounded-xl border bg-card p-4 text-left">
-      <span className="flex items-center gap-3">
-        <TeamCrest team={invite.team} size="sm" />
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate font-semibold">{invite.team.name}</span>
-          <span className="text-xs text-muted-foreground">
-            {invite.invited_by
-              ? `${invite.invited_by.alias} te invita como ${STATUS_LABEL[invite.role].toLowerCase()}`
-              : `Te invitan como ${STATUS_LABEL[invite.role].toLowerCase()}`}
+    <Card
+      variant="outline"
+      asChild
+      className="flex flex-col gap-3 p-4 text-left"
+    >
+      <li>
+        <span className="flex items-center gap-3">
+          <TeamCrest team={invite.team} size="sm" />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate font-semibold">{invite.team.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {invite.invited_by
+                ? `${invite.invited_by.alias} te invita como ${STATUS_LABEL[invite.role].toLowerCase()}`
+                : `Te invitan como ${STATUS_LABEL[invite.role].toLowerCase()}`}
+            </span>
           </span>
         </span>
-      </span>
-      {invite.message && (
-        <p className="text-[13px] text-pretty">“{invite.message}”</p>
-      )}
-      <span className="flex flex-wrap items-center gap-2">
-        <span
-          className={
-            soon
-              ? "flex flex-1 items-center gap-1.5 text-xs text-destructive"
-              : "flex flex-1 items-center gap-1.5 text-xs text-muted-foreground"
-          }
-        >
-          <ClockIcon className="size-3.5" aria-hidden />
-          {expiry(invite.expires_at)}
+        {invite.message && (
+          <p className="text-[13px] text-pretty">“{invite.message}”</p>
+        )}
+        <span className="flex flex-wrap items-center gap-2">
+          <span
+            className={
+              soon
+                ? "flex flex-1 items-center gap-1.5 text-xs text-destructive"
+                : "flex flex-1 items-center gap-1.5 text-xs text-muted-foreground"
+            }
+          >
+            <ClockIcon className="size-3.5" aria-hidden />
+            {expiry(invite.expires_at)}
+          </span>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/teams/$id" params={{ id: invite.team.id }}>
+              Ver equipo
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={answer.isPending}
+            onClick={() => void reply(false)}
+          >
+            Rechazar
+          </Button>
+          <Button
+            size="sm"
+            disabled={answer.isPending}
+            onClick={() => void reply(true)}
+          >
+            <CheckIcon aria-hidden />
+            Aceptar
+          </Button>
         </span>
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/teams/$id" params={{ id: invite.team.id }}>
-            Ver equipo
-          </Link>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={answer.isPending}
-          onClick={() => void reply(false)}
-        >
-          Rechazar
-        </Button>
-        <Button
-          size="sm"
-          disabled={answer.isPending}
-          onClick={() => void reply(true)}
-        >
-          <CheckIcon aria-hidden />
-          Aceptar
-        </Button>
-      </span>
-    </li>
+      </li>
+    </Card>
   )
 }
 
@@ -212,7 +219,10 @@ function RequestCard({
 }) {
   const pending = request.status === "pending"
   return (
-    <div className="mt-3 flex w-full max-w-[480px] items-center gap-3 rounded-xl border bg-card p-3 text-left shadow-[0_1px_2px_rgb(0_0_0/.06)]">
+    <Card
+      variant="outline"
+      className="mt-3 flex w-full max-w-[480px] items-center gap-3 p-3 text-left shadow-[0_1px_2px_rgb(0_0_0/.06)]"
+    >
       <TeamCrest team={request} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate font-semibold">{request.name}</span>
@@ -276,6 +286,6 @@ function RequestCard({
           Enviar otra
         </Button>
       )}
-    </div>
+    </Card>
   )
 }

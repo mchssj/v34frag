@@ -4,12 +4,12 @@ import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   AdminHeader,
-  Card,
   EmptyState,
   QueryError,
   SaveBar,
@@ -56,7 +56,10 @@ export function AdminRankingPage() {
         <Skeleton className="h-64 rounded-xl" />
       ) : (
         <div className="flex flex-wrap items-start gap-5">
-          <Card className="min-w-0 flex-[1_1_340px] gap-4">
+          <Card
+            variant="outline"
+            className="flex min-w-0 flex-[1_1_340px] flex-col gap-4 p-4"
+          >
             <h2 className="text-[17px] font-bold">Puntos por partida ganada</h2>
             <PointsField
               id={`${id}-o`}
@@ -78,7 +81,10 @@ export function AdminRankingPage() {
             </p>
           </Card>
 
-          <Card className="min-w-0 flex-[999_1_480px]">
+          <Card
+            variant="outline"
+            className="flex min-w-0 flex-[999_1_480px] flex-col gap-3 p-4"
+          >
             <div className="flex flex-col gap-1">
               <h2 className="text-[17px] font-bold">
                 Así quedaría el top de torneos

@@ -21,6 +21,7 @@ import {
   headCell,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { StatTile } from "@/components/brand/StatTile"
 import { seasonPreviewOptions } from "../api/queries"
 import type { PreviewFilter } from "../types"
 import { LIMITS, type SeasonForm } from "../lib/seasons"
@@ -97,15 +98,13 @@ export function PreviewTab({ form }: { form: SeasonForm }) {
                 ["Bajan como máximo", s?.max_drop],
               ] as const
             ).map(([label, value]) => (
-              <div
+              <StatTile
                 key={label}
-                className="flex flex-col gap-1 rounded-xl border bg-card px-3.5 py-3"
-              >
-                <span className="text-xs text-muted-foreground">{label}</span>
-                <span className="font-mono text-[22px] font-semibold">
-                  {value ?? "—"}
-                </span>
-              </div>
+                label={label}
+                value={value ?? "—"}
+                className="px-3.5 py-3"
+                valueClassName="tracking-normal"
+              />
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2">

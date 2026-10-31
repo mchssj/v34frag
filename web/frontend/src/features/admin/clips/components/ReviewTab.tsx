@@ -5,6 +5,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { ago, fmtDate } from "../../lib/format"
@@ -59,93 +60,95 @@ function ReviewCard({ r }: { r: ClipReview }) {
   const busy = approve.isPending || again.isPending
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-xl border bg-card">
-      <div className="grid aspect-video place-items-center bg-muted">
-        {ready && video.url ? (
-          <video
-            src={video.url}
-            controls
-            preload="metadata"
-            className="size-full bg-black object-contain"
-            aria-label={`Clip de ${who}`}
-          />
-        ) : ready && video.embed_url ? (
-          <iframe
-            src={video.embed_url}
-            title={`Clip de ${who}`}
-            allow="autoplay; fullscreen"
-            className="size-full border-0"
-          />
-        ) : (
-          <span className="flex flex-col items-center gap-2 px-4 text-center text-[13px] text-muted-foreground">
-            <Spinner className="size-6" />
-            {video.status === "failed"
-              ? "La grabación falló. Mándalo a grabar de nuevo."
-              : "Grabándose. Aparece acá cuando esté listo."}
+    <Card variant="outline" asChild className="flex flex-col overflow-hidden">
+      <article>
+        <div className="grid aspect-video place-items-center bg-muted">
+          {ready && video.url ? (
+            <video
+              src={video.url}
+              controls
+              preload="metadata"
+              className="size-full bg-black object-contain"
+              aria-label={`Clip de ${who}`}
+            />
+          ) : ready && video.embed_url ? (
+            <iframe
+              src={video.embed_url}
+              title={`Clip de ${who}`}
+              allow="autoplay; fullscreen"
+              className="size-full border-0"
+            />
+          ) : (
+            <span className="flex flex-col items-center gap-2 px-4 text-center text-[13px] text-muted-foreground">
+              <Spinner className="size-6" />
+              {video.status === "failed"
+                ? "La grabación falló. Mándalo a grabar de nuevo."
+                : "Grabándose. Aparece acá cuando esté listo."}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2.5 px-4 pt-3.5 pb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Chip tone="primary" className="font-mono font-bold">
+              {clipLabel(clip.type)}
+            </Chip>
+            <span className="font-semibold">{who}</span>
+            {clip.vip && <Chip tone="vip">VIP</Chip>}
+          </div>
+          <span className="text-[13px] text-muted-foreground">
+            {[match.map, match.played_at && fmtDate(match.played_at)]
+              .filter(Boolean)
+              .join(" · ")}{" "}
+            ·{" "}
+            <Link
+              to="/match/$id"
+              params={{ id: match.id }}
+              className="text-primary hover:underline"
+            >
+              Ver la partida
+            </Link>
           </span>
-        )}
-      </div>
-      <div className="flex flex-col gap-2.5 px-4 pt-3.5 pb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip tone="primary" className="font-mono font-bold">
-            {clipLabel(clip.type)}
-          </Chip>
-          <span className="font-semibold">{who}</span>
-          {clip.vip && <Chip tone="vip">VIP</Chip>}
+          <span className="text-xs text-muted-foreground">
+            {r.reprocess_count === 1
+              ? "Reprocesado una vez"
+              : `Reprocesado ${r.reprocess_count} veces`}
+            , {ago(r.reprocessed_at)}
+          </span>
+          {error && (
+            <p role="alert" className="text-[13px] text-destructive">
+              {errorMessage(error)}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button
+              disabled={!ready || busy}
+              onClick={() =>
+                approve.mutate(clip.id, {
+                  onSuccess: () => toast.success("Publicado en Discord."),
+                })
+              }
+            >
+              <CheckIcon aria-hidden />
+              Bien, publicarlo
+            </Button>
+            <Button
+              variant="outline"
+              disabled={
+                busy ||
+                video.status === "pending" ||
+                video.status === "processing"
+              }
+              onClick={() =>
+                again.mutate(clip.id, {
+                  onSuccess: () => toast.success("Se va a grabar de nuevo."),
+                })
+              }
+            >
+              Reprocesar otra vez
+            </Button>
+          </div>
         </div>
-        <span className="text-[13px] text-muted-foreground">
-          {[match.map, match.played_at && fmtDate(match.played_at)]
-            .filter(Boolean)
-            .join(" · ")}{" "}
-          ·{" "}
-          <Link
-            to="/match/$id"
-            params={{ id: match.id }}
-            className="text-primary hover:underline"
-          >
-            Ver la partida
-          </Link>
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {r.reprocess_count === 1
-            ? "Reprocesado una vez"
-            : `Reprocesado ${r.reprocess_count} veces`}
-          , {ago(r.reprocessed_at)}
-        </span>
-        {error && (
-          <p role="alert" className="text-[13px] text-destructive">
-            {errorMessage(error)}
-          </p>
-        )}
-        <div className="flex flex-wrap gap-2 pt-1">
-          <Button
-            disabled={!ready || busy}
-            onClick={() =>
-              approve.mutate(clip.id, {
-                onSuccess: () => toast.success("Publicado en Discord."),
-              })
-            }
-          >
-            <CheckIcon aria-hidden />
-            Bien, publicarlo
-          </Button>
-          <Button
-            variant="outline"
-            disabled={
-              busy ||
-              video.status === "pending" ||
-              video.status === "processing"
-            }
-            onClick={() =>
-              again.mutate(clip.id, {
-                onSuccess: () => toast.success("Se va a grabar de nuevo."),
-              })
-            }
-          >
-            Reprocesar otra vez
-          </Button>
-        </div>
-      </div>
-    </article>
+      </article>
+    </Card>
   )
 }

@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 
 import { TeamCrest } from "@/features/teams/components/ui"
 import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import { Empty } from "@/components/ui/empty"
 import { STATUS_CHIP, STATUS_LABEL, type EventStatus } from "../lib/model"
 
@@ -76,8 +77,8 @@ export function TagBox({
   )
 }
 
-/** Tarjeta de las pestañas (radio + 4px, padding 20px). */
-export function Card({
+/** Tarjeta con título de las pestañas (padding 20px). */
+export function SectionCard({
   title,
   aside,
   children,
@@ -89,18 +90,19 @@ export function Card({
   className?: string
 }) {
   return (
-    <section
-      className={cn(
-        "flex min-w-0 flex-col gap-3 rounded-[calc(var(--radius)+4px)] border bg-card p-5",
-        className
-      )}
+    <Card
+      variant="outline"
+      asChild
+      className={cn("flex min-w-0 flex-col gap-3 p-5", className)}
     >
-      <header className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        {aside}
-      </header>
-      {children}
-    </section>
+      <section>
+        <header className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold">{title}</h2>
+          {aside}
+        </header>
+        {children}
+      </section>
+    </Card>
   )
 }
 

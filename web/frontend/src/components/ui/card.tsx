@@ -1,19 +1,44 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+import { Slot } from "radix-ui"
+
+const cardVariants = cva("group/card bg-card text-card-foreground", {
+  variants: {
+    variant: {
+      default:
+        "flex flex-col gap-(--card-spacing) overflow-hidden py-(--card-spacing) text-sm ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+      // Superficie con borde y sin relleno: el contenido define su espaciado.
+      outline: "border",
+    },
+    // Radios del proyecto: el `cn` no fusiona los propios (tile, hero) con los de Tailwind.
+    radius: {
+      xl: "rounded-xl",
+      tile: "rounded-tile",
+      hero: "rounded-hero",
+    },
+  },
+  defaultVariants: { variant: "default", radius: "xl" },
+})
 
 function Card({
   className,
   size = "default",
+  variant,
+  radius,
+  asChild = false,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof cardVariants> & {
+    size?: "default" | "sm"
+    asChild?: boolean
+  }) {
+  const Comp = asChild ? Slot.Root : "div"
   return (
-    <div
+    <Comp
       data-slot="card"
       data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className
-      )}
+      className={cn(cardVariants({ variant, radius }), className)}
       {...props}
     />
   )

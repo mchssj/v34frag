@@ -5,6 +5,7 @@ import { Filters } from "../components/MatchFilters"
 import type { Patch } from "../components/MatchFilters"
 import { LiveBlock } from "../components/LiveBlock"
 import { MatchesTable } from "../components/MatchesTable"
+import { Card } from "@/components/ui/card"
 
 export function MatchesList({
   search,
@@ -26,14 +27,15 @@ export function MatchesList({
         </p>
       </div>
       <MixKpis />
-      <div
+      <Card
+        variant="outline"
+        className="scroll-mt-4 overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
         id="lista-partidas"
-        className="scroll-mt-4 overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)]"
       >
         <Filters search={search} onChange={onChange} />
         {showLive && <LiveBlock />}
         <MatchesTable search={search} onChange={onChange} />
-      </div>
+      </Card>
     </section>
   )
 }

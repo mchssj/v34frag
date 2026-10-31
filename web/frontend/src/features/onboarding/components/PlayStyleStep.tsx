@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { Card } from "@/components/ui/card"
 import { AuthHeading } from "@/features/auth/components/ui"
 import { Greeting } from "./Greeting"
 import { COUNTRIES, GAME_ROLES } from "@/features/profile/lib/schemas"
@@ -62,26 +63,30 @@ export function PlayStyleStep({
         <legend className="sr-only">Puesto preferido</legend>
         <div className="grid grid-cols-3 gap-2">
           {ROLES.map(({ value, hint, icon: Icon }) => (
-            <label
-              key={value}
-              className="flex cursor-pointer flex-col items-start gap-2 rounded-tile border bg-card p-3 text-left transition-colors hover:bg-muted/50 has-checked:border-primary has-checked:bg-primary/8 has-checked:ring-1 has-checked:ring-primary has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+            <Card
+              variant="outline"
+              radius="tile"
+              asChild
+              className="flex cursor-pointer flex-col items-start gap-2 p-3 text-left transition-colors hover:bg-muted/50 has-checked:border-primary has-checked:bg-primary/8 has-checked:ring-1 has-checked:ring-primary has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
             >
-              <input
-                type="radio"
-                name="game_role"
-                value={value}
-                checked={role === value}
-                onChange={() => onRole(value)}
-                className="sr-only"
-              />
-              <Icon className="size-[18px]" aria-hidden />
-              <span className="text-[13px] font-semibold hyphens-auto">
-                {value}
-              </span>
-              <span className="text-[11px] leading-[1.35] hyphens-auto text-muted-foreground">
-                {hint}
-              </span>
-            </label>
+              <label key={value}>
+                <input
+                  type="radio"
+                  name="game_role"
+                  value={value}
+                  checked={role === value}
+                  onChange={() => onRole(value)}
+                  className="sr-only"
+                />
+                <Icon className="size-[18px]" aria-hidden />
+                <span className="text-[13px] font-semibold hyphens-auto">
+                  {value}
+                </span>
+                <span className="text-[11px] leading-[1.35] hyphens-auto text-muted-foreground">
+                  {hint}
+                </span>
+              </label>
+            </Card>
           ))}
         </div>
       </fieldset>

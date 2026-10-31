@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { Controller, type Control } from "react-hook-form"
 
 import { BrandTile, type Brand } from "@/components/brand/BrandTile"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { AuthField } from "@/features/auth/components/ui"
 import type { SocialsInput, SocialsValues } from "../lib/schemas"
@@ -36,7 +37,7 @@ export function ContactFields({
     ))
 
   return (
-    <div className="flex flex-col rounded-tile border bg-card">
+    <Card variant="outline" radius="tile" className="flex flex-col">
       {rows.map((row) => (
         <div
           key={row.name}
@@ -53,7 +54,7 @@ export function ContactFields({
           </AuthField>
         </div>
       ))}
-    </div>
+    </Card>
   )
 }
 

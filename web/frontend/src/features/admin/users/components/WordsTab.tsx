@@ -6,11 +6,12 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ConfirmDialog } from "../../components/dialogs"
-import { Card, Chip, EmptyState, QueryError } from "../../components/ui"
+import { Chip, EmptyState, QueryError } from "../../components/ui"
 import {
   hitsOptions,
   useAddWord,
@@ -43,7 +44,10 @@ export function WordsTab({
 
   return (
     <div className="flex flex-wrap items-start gap-5">
-      <Card className="min-w-0 flex-[1_1_340px] gap-3.5">
+      <Card
+        variant="outline"
+        className="flex min-w-0 flex-[1_1_340px] flex-col gap-3.5 p-4"
+      >
         <div className="flex flex-col gap-1">
           <h2 className="text-[17px] font-bold">Palabras bloqueadas</h2>
           <span className="text-[13px] leading-relaxed text-muted-foreground">
@@ -149,46 +153,49 @@ export function WordsTab({
         ) : (
           <ul className="flex flex-col gap-2">
             {hits.data.items.map((h) => (
-              <li
-                key={`${h.kind}-${h.id}`}
-                className="flex flex-wrap items-center gap-3 rounded-xl border bg-card px-4 py-3"
+              <Card
+                variant="outline"
+                asChild
+                className="flex flex-wrap items-center gap-3 px-4 py-3"
               >
-                <Chip tone={h.kind === "alias" ? "primary" : "neutral"}>
-                  {KIND[h.kind]}
-                </Chip>
-                <span className="flex flex-1 flex-col gap-0.5">
-                  <span className="font-semibold">{h.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    Contiene «{h.word}»
+                <li key={`${h.kind}-${h.id}`}>
+                  <Chip tone={h.kind === "alias" ? "primary" : "neutral"}>
+                    {KIND[h.kind]}
+                  </Chip>
+                  <span className="flex flex-1 flex-col gap-0.5">
+                    <span className="font-semibold">{h.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Contiene «{h.word}»
+                    </span>
                   </span>
-                </span>
-                {h.kind === "alias" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditAlias(h)}
-                  >
-                    Cambiar alias
-                  </Button>
-                )}
-                {h.kind === "player" && (
-                  <Link
-                    to="/admin/players"
-                    className="text-[13px] text-primary hover:underline"
-                  >
-                    Editar ficha
-                  </Link>
-                )}
-                {h.kind === "team" && (
-                  <Link
-                    to="/teams/$id"
-                    params={{ id: h.id }}
-                    className="text-[13px] text-primary hover:underline"
-                  >
-                    Ver equipo
-                  </Link>
-                )}
-              </li>
+                  {h.kind === "alias" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEditAlias(h)}
+                    >
+                      Cambiar alias
+                    </Button>
+                  )}
+                  {h.kind === "player" && (
+                    <Link
+                      to="/admin/players"
+                      className="text-[13px] text-primary hover:underline"
+                    >
+                      Editar ficha
+                    </Link>
+                  )}
+                  {h.kind === "team" && (
+                    <Link
+                      to="/teams/$id"
+                      params={{ id: h.id }}
+                      className="text-[13px] text-primary hover:underline"
+                    >
+                      Ver equipo
+                    </Link>
+                  )}
+                </li>
+              </Card>
             ))}
           </ul>
         )}

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { TriangleAlertIcon } from "lucide-react"
 
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   advanceOf,
@@ -113,100 +114,105 @@ export function StandingsTab({ event }: { event: EventDetail }) {
 function Table({ table, advance }: { table: StandingTable; advance: number }) {
   const cols = COLUMNS[table.stage]
   return (
-    <section className="min-w-0 overflow-hidden rounded-[calc(var(--radius)+4px)] border bg-card">
-      <h2 className="border-b px-4 py-3 text-sm font-semibold">
-        {table.title}
-      </h2>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-[13px]">
-          <thead>
-            <tr className="border-b text-xs text-muted-foreground">
-              <th scope="col" className="py-2 pr-2 pl-4 text-left font-medium">
-                #
-              </th>
-              <th scope="col" className="p-2 text-left font-medium">
-                Equipo
-              </th>
-              {cols.map((c, i) => (
+    <Card variant="outline" asChild className="min-w-0 overflow-hidden">
+      <section>
+        <h2 className="border-b px-4 py-3 text-sm font-semibold">
+          {table.title}
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-[13px]">
+            <thead>
+              <tr className="border-b text-xs text-muted-foreground">
                 <th
-                  key={c.label}
                   scope="col"
-                  className={cn(
-                    "p-2 font-medium whitespace-nowrap",
-                    i === cols.length - 1 && "pr-4"
-                  )}
+                  className="py-2 pr-2 pl-4 text-left font-medium"
                 >
-                  {c.title ? (
-                    <abbr title={c.title} className="no-underline">
-                      {c.label}
-                    </abbr>
-                  ) : (
-                    c.label
-                  )}
+                  #
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {table.rows.map((r) => {
-              const adv = qualifies(r, advance)
-              return (
-                <tr
-                  key={r.team.id}
-                  className={cn(
-                    "border-b last:border-b-0",
-                    adv && "bg-primary/5"
-                  )}
-                >
-                  <td
+                <th scope="col" className="p-2 text-left font-medium">
+                  Equipo
+                </th>
+                {cols.map((c, i) => (
+                  <th
+                    key={c.label}
+                    scope="col"
                     className={cn(
-                      "py-[9px] pr-2 pl-4 font-mono",
-                      adv && "shadow-[inset_2px_0_0_var(--primary)]"
+                      "p-2 font-medium whitespace-nowrap",
+                      i === cols.length - 1 && "pr-4"
                     )}
                   >
-                    {r.place}
-                  </td>
-                  <td className="px-2 py-[9px] font-medium">
-                    <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      <Link
-                        to="/teams/$id"
-                        params={{ id: r.team.id }}
-                        className="rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                      >
-                        {r.team.name}
-                      </Link>
-                      {adv && (
-                        <span className="text-[11px] font-medium text-primary">
-                          Clasifica
-                        </span>
-                      )}
-                      {r.tied && (
-                        <span className="rounded bg-muted px-1.5 text-[11px] font-medium text-muted-foreground">
-                          Empate
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  {cols.map((c, i) => (
+                    {c.title ? (
+                      <abbr title={c.title} className="no-underline">
+                        {c.label}
+                      </abbr>
+                    ) : (
+                      c.label
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {table.rows.map((r) => {
+                const adv = qualifies(r, advance)
+                return (
+                  <tr
+                    key={r.team.id}
+                    className={cn(
+                      "border-b last:border-b-0",
+                      adv && "bg-primary/5"
+                    )}
+                  >
                     <td
-                      key={c.label}
                       className={cn(
-                        "px-2 py-[9px] text-center whitespace-nowrap",
-                        c.mono && "font-mono",
-                        c.muted && "text-muted-foreground",
-                        c.strong && "font-semibold",
-                        i === cols.length - 1 && "pr-4"
+                        "py-[9px] pr-2 pl-4 font-mono",
+                        adv && "shadow-[inset_2px_0_0_var(--primary)]"
                       )}
                     >
-                      {c.cell(r)}
+                      {r.place}
                     </td>
-                  ))}
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
+                    <td className="px-2 py-[9px] font-medium">
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <Link
+                          to="/teams/$id"
+                          params={{ id: r.team.id }}
+                          className="rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                        >
+                          {r.team.name}
+                        </Link>
+                        {adv && (
+                          <span className="text-[11px] font-medium text-primary">
+                            Clasifica
+                          </span>
+                        )}
+                        {r.tied && (
+                          <span className="rounded bg-muted px-1.5 text-[11px] font-medium text-muted-foreground">
+                            Empate
+                          </span>
+                        )}
+                      </span>
+                    </td>
+                    {cols.map((c, i) => (
+                      <td
+                        key={c.label}
+                        className={cn(
+                          "px-2 py-[9px] text-center whitespace-nowrap",
+                          c.mono && "font-mono",
+                          c.muted && "text-muted-foreground",
+                          c.strong && "font-semibold",
+                          i === cols.length - 1 && "pr-4"
+                        )}
+                      >
+                        {c.cell(r)}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </Card>
   )
 }

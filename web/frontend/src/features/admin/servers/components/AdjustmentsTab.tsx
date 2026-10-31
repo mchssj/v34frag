@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   InputGroup,
   InputGroupAddon,
@@ -110,217 +111,218 @@ function NewAdjustment() {
     )
 
   return (
-    <section
-      aria-label="Nuevo ajuste"
-      className="flex flex-wrap gap-6 rounded-xl border bg-card p-4"
-    >
-      <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-[17px] font-bold">Nuevo ajuste</h2>
-          <span className="text-[13px] leading-relaxed text-muted-foreground">
-            Para un mix caído, un abandono o un error. Cuenta desde ahora: no
-            toca partidas ni stats.
-          </span>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor={`${id}-q`}>
-            Jugadores{" "}
-            <span className="font-normal text-muted-foreground">
-              ({picked.length} de {MAX_PLAYERS})
+    <Card variant="outline" asChild className="flex flex-wrap gap-6 p-4">
+      <section aria-label="Nuevo ajuste">
+        <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-[17px] font-bold">Nuevo ajuste</h2>
+            <span className="text-[13px] leading-relaxed text-muted-foreground">
+              Para un mix caído, un abandono o un error. Cuenta desde ahora: no
+              toca partidas ni stats.
             </span>
-          </Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <SearchIcon aria-hidden className="size-3.5" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id={`${id}-q`}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por alias"
-              disabled={picked.length >= MAX_PLAYERS}
-            />
-          </InputGroup>
-          {debounced && suggestions.length > 0 && (
-            <ul className="flex flex-col overflow-hidden rounded-lg border">
-              {suggestions.map((p) => (
-                <li key={p.id}>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`${id}-q`}>
+              Jugadores{" "}
+              <span className="font-normal text-muted-foreground">
+                ({picked.length} de {MAX_PLAYERS})
+              </span>
+            </Label>
+            <InputGroup>
+              <InputGroupAddon>
+                <SearchIcon aria-hidden className="size-3.5" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id={`${id}-q`}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar por alias"
+                disabled={picked.length >= MAX_PLAYERS}
+              />
+            </InputGroup>
+            {debounced && suggestions.length > 0 && (
+              <ul className="flex flex-col overflow-hidden rounded-lg border">
+                {suggestions.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      className="flex h-10 w-full items-center justify-between px-3 text-left hover:bg-muted"
+                      onClick={() => {
+                        setPicked((x) => [...x, p])
+                        setQ("")
+                      }}
+                    >
+                      <span>{p.alias}</span>
+                      <span className="font-mono text-muted-foreground">
+                        {p.elo ?? "—"}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {debounced && search.data && suggestions.length === 0 && (
+              <span className="text-xs text-muted-foreground">
+                Ninguna ficha con SteamID coincide.
+              </span>
+            )}
+          </div>
+          {picked.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5">
+              {picked.map((p) => (
+                <li
+                  key={p.id}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border pr-1 pl-2.5 text-[13px]"
+                >
+                  {p.alias}
+                  <span className="font-mono text-muted-foreground">
+                    {p.elo}
+                  </span>
                   <button
                     type="button"
-                    className="flex h-10 w-full items-center justify-between px-3 text-left hover:bg-muted"
-                    onClick={() => {
-                      setPicked((x) => [...x, p])
-                      setQ("")
-                    }}
+                    aria-label={`Quitar a ${p.alias}`}
+                    className="grid size-6 place-items-center rounded-full bg-muted"
+                    onClick={() =>
+                      setPicked((x) => x.filter((y) => y.id !== p.id))
+                    }
                   >
-                    <span>{p.alias}</span>
-                    <span className="font-mono text-muted-foreground">
-                      {p.elo ?? "—"}
-                    </span>
+                    <XIcon aria-hidden className="size-3" />
                   </button>
                 </li>
               ))}
             </ul>
           )}
-          {debounced && search.data && suggestions.length === 0 && (
-            <span className="text-xs text-muted-foreground">
-              Ninguna ficha con SteamID coincide.
-            </span>
-          )}
-        </div>
-        {picked.length > 0 && (
-          <ul className="flex flex-wrap gap-1.5">
-            {picked.map((p) => (
-              <li
-                key={p.id}
-                className="inline-flex h-8 items-center gap-1.5 rounded-full border pr-1 pl-2.5 text-[13px]"
-              >
-                {p.alias}
-                <span className="font-mono text-muted-foreground">{p.elo}</span>
-                <button
-                  type="button"
-                  aria-label={`Quitar a ${p.alias}`}
-                  className="grid size-6 place-items-center rounded-full bg-muted"
-                  onClick={() =>
-                    setPicked((x) => x.filter((y) => y.id !== p.id))
-                  }
-                >
-                  <XIcon aria-hidden className="size-3" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div
-          role="radiogroup"
-          aria-label="Tipo de ajuste"
-          className="inline-flex gap-1 self-start rounded-lg bg-muted p-1"
-        >
-          <button
-            type="button"
-            role="radio"
-            aria-checked={mode === "delta"}
-            className={seg(mode === "delta")}
-            onClick={() => {
-              setMode("delta")
-              setValue("20")
-            }}
+          <div
+            role="radiogroup"
+            aria-label="Tipo de ajuste"
+            className="inline-flex gap-1 self-start rounded-lg bg-muted p-1"
           >
-            Sumar o restar
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={mode === "set"}
-            className={seg(mode === "set")}
-            onClick={() => {
-              setMode("set")
-              setValue(String(config.data?.config.start_elo ?? 1000))
-            }}
-          >
-            Fijar en
-          </button>
-        </div>
-        <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${id}-v`}>
-              {mode === "delta" ? "Cambio" : "ELO final"}
-            </Label>
-            <Input
-              id={`${id}-v`}
-              inputMode="numeric"
-              value={value}
-              aria-invalid={!!valueErr}
-              onChange={(e) => setValue(e.target.value)}
-              className="h-10 font-mono"
-            />
-            <span
-              className={cn(
-                "text-xs",
-                valueErr ? "text-destructive" : "text-muted-foreground"
-              )}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "delta"}
+              className={seg(mode === "delta")}
+              onClick={() => {
+                setMode("delta")
+                setValue("20")
+              }}
             >
-              {valueErr ??
-                (mode === "delta"
-                  ? "Negativo para restar."
-                  : "El jugador queda en este valor.")}
-            </span>
+              Sumar o restar
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "set"}
+              className={seg(mode === "set")}
+              onClick={() => {
+                setMode("set")
+                setValue(String(config.data?.config.start_elo ?? 1000))
+              }}
+            >
+              Fijar en
+            </button>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${id}-r`} className="flex justify-between">
-              <span>Motivo</span>
-              <span className="font-mono font-normal text-muted-foreground">
-                {reason.length}/200
+          <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${id}-v`}>
+                {mode === "delta" ? "Cambio" : "ELO final"}
+              </Label>
+              <Input
+                id={`${id}-v`}
+                inputMode="numeric"
+                value={value}
+                aria-invalid={!!valueErr}
+                onChange={(e) => setValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <span
+                className={cn(
+                  "text-xs",
+                  valueErr ? "text-destructive" : "text-muted-foreground"
+                )}
+              >
+                {valueErr ??
+                  (mode === "delta"
+                    ? "Negativo para restar."
+                    : "El jugador queda en este valor.")}
               </span>
-            </Label>
-            <Textarea
-              id={`${id}-r`}
-              rows={3}
-              maxLength={200}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Ej.: el mix del 27/10 se cayó con 13–5 a favor"
-            />
-            <span className="text-xs text-muted-foreground">
-              Lo ve el jugador en su historial de ELO.
-            </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${id}-r`} className="flex justify-between">
+                <span>Motivo</span>
+                <span className="font-mono font-normal text-muted-foreground">
+                  {reason.length}/200
+                </span>
+              </Label>
+              <Textarea
+                id={`${id}-r`}
+                rows={3}
+                maxLength={200}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Ej.: el mix del 27/10 se cayó con 13–5 a favor"
+              />
+              <span className="text-xs text-muted-foreground">
+                Lo ve el jugador en su historial de ELO.
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-3 rounded-xl bg-muted p-3.5">
-        <span className="text-[13px] font-semibold">Así quedan</span>
-        {picked.length === 0 ? (
-          <span className="text-[13px] text-muted-foreground">
-            Elige al menos un jugador.
-          </span>
-        ) : (
-          picked.map((p) => {
-            const before = p.elo ?? config.data?.config.start_elo ?? 0
-            const after = valueErr
-              ? before
-              : adjustedElo(before, mode, v, floor)
-            const d = after - before
-            return (
-              <div
-                key={p.id}
-                className="flex items-center justify-between gap-2"
-              >
-                <span className="font-medium">{p.alias}</span>
-                <span className="flex items-center gap-2 font-mono">
-                  <span className="text-muted-foreground">{before}</span>
-                  <span aria-hidden>→</span>
-                  <span className="font-semibold">{after}</span>
-                  <span
-                    className={cn(
-                      "text-xs",
-                      d >= 0 ? "text-win" : "text-destructive"
-                    )}
-                  >
-                    ({signed(d)})
+        <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-3 rounded-xl bg-muted p-3.5">
+          <span className="text-[13px] font-semibold">Así quedan</span>
+          {picked.length === 0 ? (
+            <span className="text-[13px] text-muted-foreground">
+              Elige al menos un jugador.
+            </span>
+          ) : (
+            picked.map((p) => {
+              const before = p.elo ?? config.data?.config.start_elo ?? 0
+              const after = valueErr
+                ? before
+                : adjustedElo(before, mode, v, floor)
+              const d = after - before
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="font-medium">{p.alias}</span>
+                  <span className="flex items-center gap-2 font-mono">
+                    <span className="text-muted-foreground">{before}</span>
+                    <span aria-hidden>→</span>
+                    <span className="font-semibold">{after}</span>
+                    <span
+                      className={cn(
+                        "text-xs",
+                        d >= 0 ? "text-win" : "text-destructive"
+                      )}
+                    >
+                      ({signed(d)})
+                    </span>
                   </span>
-                </span>
-              </div>
-            )
-          })
-        )}
-        <span className="text-xs leading-snug text-muted-foreground">
-          Calculado con el ELO actual y el mínimo de {floor}. La respuesta trae
-          el valor real.
-        </span>
-        {adjust.isError && (
-          <p role="alert" className="text-sm text-destructive">
-            {errorMessage(adjust.error)}
-          </p>
-        )}
-        <span className="flex-1" />
-        <Button size="xl" disabled={disabled} onClick={apply}>
-          {picked.length > 1
-            ? `Aplicar a ${picked.length} jugadores`
-            : "Aplicar ajuste"}
-        </Button>
-      </div>
-    </section>
+                </div>
+              )
+            })
+          )}
+          <span className="text-xs leading-snug text-muted-foreground">
+            Calculado con el ELO actual y el mínimo de {floor}. La respuesta
+            trae el valor real.
+          </span>
+          {adjust.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {errorMessage(adjust.error)}
+            </p>
+          )}
+          <span className="flex-1" />
+          <Button size="xl" disabled={disabled} onClick={apply}>
+            {picked.length > 1
+              ? `Aplicar a ${picked.length} jugadores`
+              : "Aplicar ajuste"}
+          </Button>
+        </div>
+      </section>
+    </Card>
   )
 }
 

@@ -7,6 +7,7 @@ import { useState } from "react"
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   Command,
   CommandEmpty,
@@ -250,7 +251,10 @@ export function CompareView({ data }: { data: CompareData }) {
         <Head p={b} color="var(--chart-2)" />
       </div>
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border bg-card px-5 py-2 shadow-[0_1px_2px_rgb(0_0_0/.04)] max-sm:px-3.5">
+        <Card
+          variant="outline"
+          className="px-5 py-2 shadow-[0_1px_2px_rgb(0_0_0/.04)] max-sm:px-3.5"
+        >
           {rows.map((r) => {
             const w = compareWinner(r.va, r.vb)
             return (
@@ -298,8 +302,11 @@ export function CompareView({ data }: { data: CompareData }) {
               </div>
             )
           })}
-        </div>
-        <div className="flex flex-col gap-3 rounded-xl border bg-card px-5 py-4 shadow-[0_1px_2px_rgb(0_0_0/.04)]">
+        </Card>
+        <Card
+          variant="outline"
+          className="flex flex-col gap-3 px-5 py-4 shadow-[0_1px_2px_rgb(0_0_0/.04)]"
+        >
           <div className="flex flex-wrap items-center gap-3.5 text-xs">
             <span className="flex-1 text-sm font-semibold">
               ELO en los últimos 30 mixes
@@ -322,7 +329,7 @@ export function CompareView({ data }: { data: CompareData }) {
               <b className="text-foreground">{together.against.a_wins}</b>
             </span>
           </div>
-        </div>
+        </Card>
       </div>
     </>
   )
@@ -342,8 +349,9 @@ function Head({ p, color }: { p: ComparePlayer; color: string }) {
     .filter(Boolean)
     .join(" · ")
   return (
-    <div
-      className="relative flex min-w-0 items-center gap-3.5 rounded-xl border bg-card p-[18px] transition-colors hover:bg-muted"
+    <Card
+      variant="outline"
+      className="relative flex min-w-0 items-center gap-3.5 p-[18px] transition-colors hover:bg-muted"
       style={{ boxShadow: `inset 0 3px 0 ${color}` }}
     >
       <PlayerAvatar
@@ -369,7 +377,7 @@ function Head({ p, color }: { p: ComparePlayer; color: string }) {
           {p.elo ?? "—"}
         </span>
       </span>
-    </div>
+    </Card>
   )
 }
 

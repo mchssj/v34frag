@@ -185,25 +185,6 @@ export function SplitLayout({
   )
 }
 
-export function Card({
-  className,
-  children,
-}: {
-  className?: string
-  children: ReactNode
-}) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col gap-3 rounded-xl border bg-card p-4",
-        className
-      )}
-    >
-      {children}
-    </div>
-  )
-}
-
 /** Bloque del panel de detalle, separado por una línea. */
 export function PanelSection({
   title,

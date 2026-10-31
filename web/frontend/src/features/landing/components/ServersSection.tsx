@@ -10,6 +10,7 @@ import { toast } from "sonner"
 
 import { SectionHeading } from "@/components/brand/SectionHeading"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -285,7 +286,11 @@ export function ServersSection() {
           }
         />
         <div className="flex flex-wrap items-stretch gap-5">
-          <div className="min-w-0 flex-[999_1_560px] overflow-hidden rounded-hero border bg-card">
+          <Card
+            variant="outline"
+            radius="hero"
+            className="min-w-0 flex-[999_1_560px] overflow-hidden"
+          >
             <div className="overflow-x-auto">
               <div
                 role="table"
@@ -335,7 +340,7 @@ export function ServersSection() {
               </code>{" "}
               en la consola del juego.
             </p>
-          </div>
+          </Card>
           <DiscordCard />
         </div>
       </div>

@@ -5,10 +5,11 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fmtDate } from "../../lib/format"
-import { Card, Chip, QueryError, SaveBar } from "../../components/ui"
+import { Chip, QueryError, SaveBar } from "../../components/ui"
 import {
   CAPS,
   CLIP_TYPES,
@@ -43,7 +44,10 @@ export function RulesTab() {
 
   return (
     <div className={cn("flex flex-wrap items-start gap-5", dirty && "pb-24")}>
-      <Card className="min-w-0 flex-[999_1_520px] gap-3.5">
+      <Card
+        variant="outline"
+        className="flex min-w-0 flex-[999_1_520px] flex-col gap-3.5 p-4"
+      >
         <div className="flex flex-col gap-1">
           <h2 className="text-[17px] font-bold">Qué jugada vale más</h2>
           <span className="text-[13px] leading-relaxed text-muted-foreground">
@@ -109,7 +113,7 @@ export function RulesTab() {
       </Card>
 
       <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-4">
-        <Card className="gap-3.5">
+        <Card variant="outline" className="flex flex-col gap-3.5 p-4">
           <h2 className="text-[17px] font-bold">Cuántos se muestran</h2>
           {CAPS.map((k) => (
             <div key={k.key} className="flex items-center gap-3">
@@ -134,7 +138,7 @@ export function RulesTab() {
           ))}
         </Card>
 
-        <Card>
+        <Card variant="outline" className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-0.5">
             <h2 className="text-[15px] font-bold">Así quedaría un mix</h2>
             <span className="text-xs text-muted-foreground">

@@ -1,5 +1,6 @@
 import { LinkIcon, MailCheckIcon, TargetIcon } from "lucide-react"
 
+import { Card } from "@/components/ui/card"
 import { maskEmail } from "../../lib/register"
 
 export function CheckEmailStep({
@@ -25,7 +26,11 @@ export function CheckEmailStep({
           luego inicia sesión.
         </p>
       </div>
-      <div className="flex flex-col gap-2.5 rounded-tile border bg-card px-4 py-3.5">
+      <Card
+        variant="outline"
+        radius="tile"
+        className="flex flex-col gap-2.5 px-4 py-3.5"
+      >
         <span className="text-[13px] font-semibold">
           Al entrar por primera vez
         </span>
@@ -37,7 +42,7 @@ export function CheckEmailStep({
           <LinkIcon className="size-4 shrink-0" aria-hidden />
           Vincula tu jugador con !claim en el servidor (opcional)
         </span>
-      </div>
+      </Card>
     </>
   )
 }

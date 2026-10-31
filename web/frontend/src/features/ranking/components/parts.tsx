@@ -14,6 +14,7 @@ import type { ReactNode } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -250,41 +251,44 @@ export function Podium({
   return (
     <ol aria-label="Podio" className="grid gap-4 md:grid-cols-3">
       {items.map((it, i) => (
-        <li
-          key={it.key}
+        <Card
+          variant="outline"
+          asChild
           className={cn(
-            "relative flex min-w-0 items-center gap-3.5 rounded-xl border bg-card p-[18px] shadow-[0_1px_2px_rgb(0_0_0/.04)] transition-colors focus-within:bg-muted hover:bg-muted",
+            "relative flex min-w-0 items-center gap-3.5 p-[18px] shadow-[0_1px_2px_rgb(0_0_0/.04)] transition-colors focus-within:bg-muted hover:bg-muted",
             i === 0 &&
               "border-[color-mix(in_oklch,var(--primary)_50%,var(--border))]"
           )}
         >
-          <span
-            className={cn(
-              "font-mono text-[32px] font-bold tracking-[-1px]",
-              i === 0 ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            {i + 1}
-          </span>
-          <span className="relative shrink-0">
-            {it.badge}
-            {i === 0 && (
-              <CrownIcon
-                aria-hidden
-                className="absolute -top-3 left-1/2 size-[18px] -translate-x-1/2 fill-primary text-primary"
-              />
-            )}
-          </span>
-          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="truncate text-[15px] font-semibold">
-              {it.link}
+          <li key={it.key}>
+            <span
+              className={cn(
+                "font-mono text-[32px] font-bold tracking-[-1px]",
+                i === 0 ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              {i + 1}
             </span>
-            <span className="text-xs text-muted-foreground">{it.sub}</span>
-          </span>
-          <span className="font-mono text-xl font-semibold tabular-nums">
-            {it.value}
-          </span>
-        </li>
+            <span className="relative shrink-0">
+              {it.badge}
+              {i === 0 && (
+                <CrownIcon
+                  aria-hidden
+                  className="absolute -top-3 left-1/2 size-[18px] -translate-x-1/2 fill-primary text-primary"
+                />
+              )}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="truncate text-[15px] font-semibold">
+                {it.link}
+              </span>
+              <span className="text-xs text-muted-foreground">{it.sub}</span>
+            </span>
+            <span className="font-mono text-xl font-semibold tabular-nums">
+              {it.value}
+            </span>
+          </li>
+        </Card>
       ))}
     </ol>
   )

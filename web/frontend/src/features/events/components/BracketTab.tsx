@@ -11,6 +11,7 @@ import {
 } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   buildBracket,
@@ -42,77 +43,79 @@ export function BracketTab({ event }: { event: EventDetail }) {
   const after = sections.filter(ending)
 
   return (
-    <section className="overflow-hidden rounded-[calc(var(--radius)+4px)] border bg-card">
-      <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2.5">
-        <span className="text-[13px] text-pretty text-muted-foreground">
-          Pasa el cursor sobre un equipo para seguir su camino. Arrastra para
-          moverte.
-        </span>
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Alejar"
-            disabled={zoom <= ZOOM.min}
-            onClick={() => setZoom((z) => clampZoom(z - ZOOM.step))}
-          >
-            <ZoomOutIcon aria-hidden />
-          </Button>
-          <span
-            aria-live="polite"
-            className="w-12 text-center font-mono text-xs font-medium"
-          >
-            {Math.round(zoom * 100)}%
+    <Card variant="outline" asChild className="overflow-hidden">
+      <section>
+        <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2.5">
+          <span className="text-[13px] text-pretty text-muted-foreground">
+            Pasa el cursor sobre un equipo para seguir su camino. Arrastra para
+            moverte.
           </span>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Acercar"
-            disabled={zoom >= ZOOM.max}
-            onClick={() => setZoom((z) => clampZoom(z + ZOOM.step))}
-          >
-            <ZoomInIcon aria-hidden />
-          </Button>
-          <Button
-            variant="outline"
-            className="text-xs"
-            onClick={() => setZoom(ZOOM.fit)}
-          >
-            Ajustar
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Alejar"
+              disabled={zoom <= ZOOM.min}
+              onClick={() => setZoom((z) => clampZoom(z - ZOOM.step))}
+            >
+              <ZoomOutIcon aria-hidden />
+            </Button>
+            <span
+              aria-live="polite"
+              className="w-12 text-center font-mono text-xs font-medium"
+            >
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Acercar"
+              disabled={zoom >= ZOOM.max}
+              onClick={() => setZoom((z) => clampZoom(z + ZOOM.step))}
+            >
+              <ZoomInIcon aria-hidden />
+            </Button>
+            <Button
+              variant="outline"
+              className="text-xs"
+              onClick={() => setZoom(ZOOM.fit)}
+            >
+              Ajustar
+            </Button>
+          </div>
         </div>
-      </div>
-      <div
-        ref={canvas}
-        {...pan}
-        data-testid="bracket-canvas"
-        className="h-[460px] cursor-grab overflow-auto bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:16px_16px] active:cursor-grabbing"
-      >
-        {/* `zoom` (no `transform`) para que el área de scroll siga el tamaño real. */}
-        {/* Las etapas previas (grupos, upper y lower) apiladas; a la derecha, la final con el
+        <div
+          ref={canvas}
+          {...pan}
+          data-testid="bracket-canvas"
+          className="h-[460px] cursor-grab overflow-auto bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:16px_16px] active:cursor-grabbing"
+        >
+          {/* `zoom` (no `transform`) para que el área de scroll siga el tamaño real. */}
+          {/* Las etapas previas (grupos, upper y lower) apiladas; a la derecha, la final con el
             campeón y el 3.er puesto debajo. */}
-        <div style={{ zoom }} className="flex w-max items-center gap-14 p-7">
-          {[before, after].map(
-            (list, i) =>
-              list.length > 0 && (
-                <div key={i} className="flex flex-col gap-10">
-                  {list.map((s) => (
-                    <Section
-                      key={s.key}
-                      section={s}
-                      champion={
-                        s.final ? (event.champion?.name ?? null) : undefined
-                      }
-                      hover={hover}
-                      onHover={setHover}
-                    />
-                  ))}
-                </div>
-              )
-          )}
+          <div style={{ zoom }} className="flex w-max items-center gap-14 p-7">
+            {[before, after].map(
+              (list, i) =>
+                list.length > 0 && (
+                  <div key={i} className="flex flex-col gap-10">
+                    {list.map((s) => (
+                      <Section
+                        key={s.key}
+                        section={s}
+                        champion={
+                          s.final ? (event.champion?.name ?? null) : undefined
+                        }
+                        hover={hover}
+                        onHover={setHover}
+                      />
+                    ))}
+                  </div>
+                )
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </Card>
   )
 }
 

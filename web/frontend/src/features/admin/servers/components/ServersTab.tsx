@@ -38,6 +38,7 @@ import {
   warnText,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { Card } from "@/components/ui/card"
 import {
   serversOptions,
   useCreateServer,
@@ -241,63 +242,69 @@ function ServerRow({
     !!s.plugin_version &&
     compareVersions(s.plugin_version, latest) < 0
   return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onSelect}
+    <Card
+      variant="outline"
+      asChild
       className={cn(
-        "flex w-full flex-wrap items-start gap-4 rounded-xl border bg-card px-4 py-3.5 text-left transition-colors hover:bg-muted",
+        "flex w-full flex-wrap items-start gap-4 px-4 py-3.5 text-left transition-colors hover:bg-muted",
         selected && "border-primary ring-3 ring-primary/20",
         !s.active && "opacity-70"
       )}
     >
-      <span className="flex min-w-0 flex-[2_1_220px] flex-col gap-1">
-        <span className="flex items-center gap-2 text-[15px] font-semibold">
-          <Dot tone={!s.active ? "muted" : s.online ? "win" : "warn"} />
-          {s.name}
+      <button type="button" aria-pressed={selected} onClick={onSelect}>
+        <span className="flex min-w-0 flex-[2_1_220px] flex-col gap-1">
+          <span className="flex items-center gap-2 text-[15px] font-semibold">
+            <Dot tone={!s.active ? "muted" : s.online ? "win" : "warn"} />
+            {s.name}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {[s.mode ? MODES[s.mode] : null, s.region]
+              .filter(Boolean)
+              .join(" · ") || "Sin modo ni región"}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {s.connect_address ?? "Sin dirección"}
+          </span>
         </span>
-        <span className="text-xs text-muted-foreground">
-          {[s.mode ? MODES[s.mode] : null, s.region]
-            .filter(Boolean)
-            .join(" · ") || "Sin modo ni región"}
-        </span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {s.connect_address ?? "Sin dirección"}
-        </span>
-      </span>
-      <Cell label="Estado" className="flex-[1_1_150px]">
-        <span className="font-medium">
-          {!s.active
-            ? "Sin acceso"
-            : `${s.online ? "En línea" : "Sin señal"} · ${ago(s.last_seen_at)}`}
-        </span>
-      </Cell>
-      <Cell label="Licencia" className="flex-[1_1_170px]">
-        <Chip tone={lic.tone}>{lic.text}</Chip>
-      </Cell>
-      <Cell label="HUD" className="flex-[1_1_120px]">
-        <Chip tone={hudChip(s.hud).tone}>{hudChip(s.hud).text}</Chip>
-      </Cell>
-      <Cell label="Plugin" className="flex-[1_1_110px]">
-        <span
-          className={cn(
-            "font-mono",
-            old && s.active && cn("font-medium", warnText)
-          )}
+        <Cell label="Estado" className="flex-[1_1_150px]">
+          <span className="font-medium">
+            {!s.active
+              ? "Sin acceso"
+              : `${s.online ? "En línea" : "Sin señal"} · ${ago(s.last_seen_at)}`}
+          </span>
+        </Cell>
+        <Cell label="Licencia" className="flex-[1_1_170px]">
+          <Chip tone={lic.tone}>{lic.text}</Chip>
+        </Cell>
+        <Cell label="HUD" className="flex-[1_1_120px]">
+          <Chip tone={hudChip(s.hud).tone}>{hudChip(s.hud).text}</Chip>
+        </Cell>
+        <Cell label="Plugin" className="flex-[1_1_110px]">
+          <span
+            className={cn(
+              "font-mono",
+              old && s.active && cn("font-medium", warnText)
+            )}
+          >
+            {s.plugin_version ?? "—"}
+            {old ? " · vieja" : ""}
+          </span>
+        </Cell>
+        <Cell
+          label="Partidas"
+          className="flex-[1_1_100px] items-end text-right"
         >
-          {s.plugin_version ?? "—"}
-          {old ? " · vieja" : ""}
-        </span>
-      </Cell>
-      <Cell label="Partidas" className="flex-[1_1_100px] items-end text-right">
-        <span className="font-mono font-semibold">
-          {s.matches.toLocaleString("es")}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {s.last_match_at ? `Última ${ago(s.last_match_at)}` : "Sin partidas"}
-        </span>
-      </Cell>
-    </button>
+          <span className="font-mono font-semibold">
+            {s.matches.toLocaleString("es")}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {s.last_match_at
+              ? `Última ${ago(s.last_match_at)}`
+              : "Sin partidas"}
+          </span>
+        </Cell>
+      </button>
+    </Card>
   )
 }
 

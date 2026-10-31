@@ -1,6 +1,7 @@
 import { cn } from "cn"
 
 import type { ReactNode } from "react"
+import { Card } from "@/components/ui/card"
 
 /** Tarjeta de una sección de Mi perfil (radio + 4px). */
 export function SectionCard({
@@ -11,11 +12,13 @@ export function SectionCard({
   children: ReactNode
 }) {
   return (
-    <section
-      className={cn("overflow-hidden rounded-xl border bg-card", className)}
+    <Card
+      variant="outline"
+      asChild
+      className={cn("overflow-hidden", className)}
     >
-      {children}
-    </section>
+      <section>{children}</section>
+    </Card>
   )
 }
 

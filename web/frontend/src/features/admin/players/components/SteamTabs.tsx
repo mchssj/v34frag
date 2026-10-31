@@ -20,7 +20,6 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { ConfirmDialog } from "../../components/dialogs"
 import { fmtDate, fmtDateTime, type Tone } from "../../lib/format"
 import {
-  Card,
   Chip,
   EmptyState,
   Pager,
@@ -30,6 +29,7 @@ import {
   warnText,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { Card } from "@/components/ui/card"
 import {
   UNLINKED_PER,
   pickPlayerOptions,
@@ -94,7 +94,7 @@ export function SteamRequestsTab() {
         className="flex min-w-0 flex-[1_1_300px] flex-col gap-3"
       >
         <MaxSteam />
-        <Card>
+        <Card variant="outline" className="flex flex-col gap-3 p-4">
           <h2 className="text-[15px] font-semibold">Antes de aprobar</h2>
           <span className="text-[13px] leading-relaxed text-muted-foreground">
             Aprobar un SteamID adicional o quitar uno de una ficha con varios
@@ -115,116 +115,118 @@ function RequestCard({ r }: { r: SteamRequest }) {
   const closed = CLOSED[r.status]
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="flex flex-wrap items-center gap-2">
-          <Chip tone={r.kind === "add" ? "primary" : "warn"}>
-            {r.kind === "add" ? "SteamID adicional" : "Quiere desvincular"}
-          </Chip>
-          <span className="font-semibold">{r.player.nick}</span>
+    <Card variant="outline" asChild className="flex flex-col gap-3 p-4">
+      <article>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="flex flex-wrap items-center gap-2">
+            <Chip tone={r.kind === "add" ? "primary" : "warn"}>
+              {r.kind === "add" ? "SteamID adicional" : "Quiere desvincular"}
+            </Chip>
+            <span className="font-semibold">{r.player.nick}</span>
+            <span className="text-xs text-muted-foreground">
+              {r.user?.alias ? `cuenta ${r.user.alias} · ` : ""}
+              {r.player_steam_count} SteamID hoy
+            </span>
+          </span>
           <span className="text-xs text-muted-foreground">
-            {r.user?.alias ? `cuenta ${r.user.alias} · ` : ""}
-            {r.player_steam_count} SteamID hoy
+            {fmtDateTime(r.created_at)}
           </span>
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {fmtDateTime(r.created_at)}
-        </span>
-      </div>
-      <dl className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5 text-[13px]">
-        <Info label="SteamID" mono>
-          {r.steam_id}
-        </Info>
-        <Info label="Nick que usó">{r.nick ?? "—"}</Info>
-        <Info label="Servidor">{r.server?.name ?? "—"}</Info>
-        <Info label="Partidas con ese SteamID" mono>
-          {r.matches}
-        </Info>
-      </dl>
-      {r.note && (
-        <p className="rounded-lg bg-muted px-3 py-2.5 text-[13px] leading-relaxed">
-          «{r.note}»
-        </p>
-      )}
-      {block && <span className={cn("text-[13px]", warnText)}>{block}</span>}
-      {r.status === "pending" ? (
-        <div className="flex flex-wrap gap-2">
-          {!block && (
-            <Button size="md" onClick={() => setConfirm("approve")}>
-              {r.kind === "add" ? "Aprobar" : "Aprobar y quitar"}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="md"
-            onClick={() => setConfirm("reject")}
-          >
-            Rechazar
-          </Button>
         </div>
-      ) : (
-        closed && (
-          <span className="flex flex-col gap-1">
-            <Chip tone={closed.tone}>{closed.label}</Chip>
-            {r.reason && (
-              <span className="text-xs text-muted-foreground">
-                Motivo: {r.reason}
-              </span>
+        <dl className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5 text-[13px]">
+          <Info label="SteamID" mono>
+            {r.steam_id}
+          </Info>
+          <Info label="Nick que usó">{r.nick ?? "—"}</Info>
+          <Info label="Servidor">{r.server?.name ?? "—"}</Info>
+          <Info label="Partidas con ese SteamID" mono>
+            {r.matches}
+          </Info>
+        </dl>
+        {r.note && (
+          <p className="rounded-lg bg-muted px-3 py-2.5 text-[13px] leading-relaxed">
+            «{r.note}»
+          </p>
+        )}
+        {block && <span className={cn("text-[13px]", warnText)}>{block}</span>}
+        {r.status === "pending" ? (
+          <div className="flex flex-wrap gap-2">
+            {!block && (
+              <Button size="md" onClick={() => setConfirm("approve")}>
+                {r.kind === "add" ? "Aprobar" : "Aprobar y quitar"}
+              </Button>
             )}
-          </span>
-        )
-      )}
-      <ConfirmDialog
-        open={confirm === "approve"}
-        onOpenChange={(o) => !o && setConfirm(null)}
-        title={
-          r.kind === "add"
-            ? `¿Sumar este SteamID a ${r.player.nick}?`
-            : `¿Quitar este SteamID de ${r.player.nick}?`
-        }
-        description={
-          r.kind === "add"
-            ? `Le pasa sus ${r.matches} partidas y recalcula el ELO de esta ficha; los demás no cambian.`
-            : `Sus ${r.matches} partidas vuelven a quedar sin ficha y se recalcula el ELO de esta ficha; los demás no cambian.`
-        }
-        confirmLabel="Aprobar"
-        pending={approve.isPending}
-        error={approve.error}
-        onConfirm={() =>
-          approve.mutate(r, {
-            onSuccess: () => {
-              setConfirm(null)
-              toast.success("Pedido aprobado.")
-            },
-          })
-        }
-      />
-      <ConfirmDialog
-        open={confirm === "reject"}
-        onOpenChange={(o) => !o && setConfirm(null)}
-        title={`¿Rechazar el pedido de ${r.player.nick}?`}
-        confirmLabel="Rechazar"
-        danger
-        reason={{
-          label: "Motivo (opcional)",
-          help: "Lo ve el jugador.",
-          required: false,
-        }}
-        pending={reject.isPending}
-        error={reject.error}
-        onConfirm={(reason) =>
-          reject.mutate(
-            { id: r.id, reason },
-            {
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => setConfirm("reject")}
+            >
+              Rechazar
+            </Button>
+          </div>
+        ) : (
+          closed && (
+            <span className="flex flex-col gap-1">
+              <Chip tone={closed.tone}>{closed.label}</Chip>
+              {r.reason && (
+                <span className="text-xs text-muted-foreground">
+                  Motivo: {r.reason}
+                </span>
+              )}
+            </span>
+          )
+        )}
+        <ConfirmDialog
+          open={confirm === "approve"}
+          onOpenChange={(o) => !o && setConfirm(null)}
+          title={
+            r.kind === "add"
+              ? `¿Sumar este SteamID a ${r.player.nick}?`
+              : `¿Quitar este SteamID de ${r.player.nick}?`
+          }
+          description={
+            r.kind === "add"
+              ? `Le pasa sus ${r.matches} partidas y recalcula el ELO de esta ficha; los demás no cambian.`
+              : `Sus ${r.matches} partidas vuelven a quedar sin ficha y se recalcula el ELO de esta ficha; los demás no cambian.`
+          }
+          confirmLabel="Aprobar"
+          pending={approve.isPending}
+          error={approve.error}
+          onConfirm={() =>
+            approve.mutate(r, {
               onSuccess: () => {
                 setConfirm(null)
-                toast.success("Pedido rechazado.")
+                toast.success("Pedido aprobado.")
               },
-            }
-          )
-        }
-      />
-    </article>
+            })
+          }
+        />
+        <ConfirmDialog
+          open={confirm === "reject"}
+          onOpenChange={(o) => !o && setConfirm(null)}
+          title={`¿Rechazar el pedido de ${r.player.nick}?`}
+          confirmLabel="Rechazar"
+          danger
+          reason={{
+            label: "Motivo (opcional)",
+            help: "Lo ve el jugador.",
+            required: false,
+          }}
+          pending={reject.isPending}
+          error={reject.error}
+          onConfirm={(reason) =>
+            reject.mutate(
+              { id: r.id, reason },
+              {
+                onSuccess: () => {
+                  setConfirm(null)
+                  toast.success("Pedido rechazado.")
+                },
+              }
+            )
+          }
+        />
+      </article>
+    </Card>
   )
 }
 
@@ -250,7 +252,7 @@ function MaxSteam() {
   const save = useSaveSteamConfig()
   const current = config.data?.max_steam_ids
   return (
-    <Card>
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <h2 className="text-[15px] font-semibold">SteamID por ficha</h2>
       <span className="text-[13px] leading-relaxed text-muted-foreground">
         Cuántos puede pedir un jugador con !claim. Un admin puede sumar hasta 4.

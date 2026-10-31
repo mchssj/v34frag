@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { currentSeasonOptions } from "@/features/ranking/api/queries"
@@ -263,106 +264,109 @@ function ActiveHero({ season }: { season: Season }) {
   const s = preview.data?.summary
 
   return (
-    <section
-      aria-label="Temporada activa"
-      className="flex flex-wrap items-center gap-5 rounded-xl border bg-card p-5"
+    <Card
+      variant="outline"
+      asChild
+      className="flex flex-wrap items-center gap-5 p-5"
     >
-      <div className="flex min-w-[300px] flex-1 flex-col gap-2.5">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h2 className="text-xl font-bold">
-            Temporada {season.number} · {season.name}
-          </h2>
-          <Badge variant="winSoft" shape="pill" size="md" className="gap-1.5">
-            <span aria-hidden className="size-1.5 rounded-full bg-win" />
-            Activa
-          </Badge>
+      <section aria-label="Temporada activa">
+        <div className="flex min-w-[300px] flex-1 flex-col gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="text-xl font-bold">
+              Temporada {season.number} · {season.name}
+            </h2>
+            <Badge variant="winSoft" shape="pill" size="md" className="gap-1.5">
+              <span aria-hidden className="size-1.5 rounded-full bg-win" />
+              Activa
+            </Badge>
+          </div>
+          <Progress
+            value={pct}
+            aria-label="Avance de la temporada"
+            className="h-2"
+            indicatorClassName="rounded-full"
+          />
+          <span className="text-[13px] text-muted-foreground">
+            Empezó el {fmtDate(season.starts_at)} · termina el{" "}
+            {fmtDate(season.ends_at)} a las 06:00 (Argentina)
+          </span>
         </div>
-        <Progress
-          value={pct}
-          aria-label="Avance de la temporada"
-          className="h-2"
-          indicatorClassName="rounded-full"
-        />
-        <span className="text-[13px] text-muted-foreground">
-          Empezó el {fmtDate(season.starts_at)} · termina el{" "}
-          {fmtDate(season.ends_at)} a las 06:00 (Argentina)
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-6">
-        <Fact label="Faltan">{days > 0 ? `${days} días` : `${hours} h`}</Fact>
-        <Fact label="En el ranking">
-          {counts.data ? (
-            <>
-              {counts.data.ranked}{" "}
-              <span className="text-[13px] text-muted-foreground">
-                de {counts.data.players}
-              </span>
-            </>
-          ) : (
-            "—"
-          )}
-        </Fact>
-      </div>
-      <Button
-        variant="outline"
-        size="md"
-        className="border-destructive/50 font-semibold text-destructive hover:text-destructive"
-        onClick={() => setClosing(true)}
-      >
-        Terminar temporada
-      </Button>
+        <div className="flex flex-wrap gap-6">
+          <Fact label="Faltan">{days > 0 ? `${days} días` : `${hours} h`}</Fact>
+          <Fact label="En el ranking">
+            {counts.data ? (
+              <>
+                {counts.data.ranked}{" "}
+                <span className="text-[13px] text-muted-foreground">
+                  de {counts.data.players}
+                </span>
+              </>
+            ) : (
+              "—"
+            )}
+          </Fact>
+        </div>
+        <Button
+          variant="outline"
+          size="md"
+          className="border-destructive/50 font-semibold text-destructive hover:text-destructive"
+          onClick={() => setClosing(true)}
+        >
+          Terminar temporada
+        </Button>
 
-      <ConfirmDialog
-        open={closing}
-        onOpenChange={setClosing}
-        title={`¿Terminar la temporada ${season.number} ahora?`}
-        description="No se puede deshacer."
-        confirmLabel="Terminar temporada"
-        danger
-        typed
-        pending={close.isPending}
-        error={close.error}
-        onConfirm={() =>
-          close.mutate(CONFIRM_TEXT, {
-            onSuccess: (r) => {
-              setClosing(false)
-              toast.success(
-                `Temporada ${season.number} terminada: ${r.medals} medallas y ${r.reset} reinicios. Empezó la temporada ${season.number + 1}.`
-              )
-            },
-          })
-        }
-      >
-        {s ? (
-          <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
-            <li>
-              Se guarda la foto del ranking final de {s.players} jugadores.
-            </li>
-            <li>
-              {s.medals} reciben medalla (top {season.top_n}).
-            </li>
-            <li>
-              <strong className="text-foreground">
-                {resetRule(
-                  season.reset_pct,
-                  season.reset_floor,
-                  season.reset_all
-                )}
-              </strong>{" "}
-              Cambia el ELO de {s.reset}{" "}
-              {s.reset === 1 ? "jugador" : "jugadores"}. Si no es lo que
-              quieres, cancela y cambia el reinicio en "Temporada activa".
-            </li>
-            <li>
-              Se abre la temporada {season.number + 1} con los valores de
-              "Próxima temporada".
-            </li>
-          </ul>
-        ) : (
-          <Skeleton className="h-24 rounded-lg" />
-        )}
-      </ConfirmDialog>
-    </section>
+        <ConfirmDialog
+          open={closing}
+          onOpenChange={setClosing}
+          title={`¿Terminar la temporada ${season.number} ahora?`}
+          description="No se puede deshacer."
+          confirmLabel="Terminar temporada"
+          danger
+          typed
+          pending={close.isPending}
+          error={close.error}
+          onConfirm={() =>
+            close.mutate(CONFIRM_TEXT, {
+              onSuccess: (r) => {
+                setClosing(false)
+                toast.success(
+                  `Temporada ${season.number} terminada: ${r.medals} medallas y ${r.reset} reinicios. Empezó la temporada ${season.number + 1}.`
+                )
+              },
+            })
+          }
+        >
+          {s ? (
+            <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+              <li>
+                Se guarda la foto del ranking final de {s.players} jugadores.
+              </li>
+              <li>
+                {s.medals} reciben medalla (top {season.top_n}).
+              </li>
+              <li>
+                <strong className="text-foreground">
+                  {resetRule(
+                    season.reset_pct,
+                    season.reset_floor,
+                    season.reset_all
+                  )}
+                </strong>{" "}
+                Cambia el ELO de {s.reset}{" "}
+                {s.reset === 1 ? "jugador" : "jugadores"}. Si no es lo que
+                quieres, cancela y cambia el reinicio en "Temporada activa".
+              </li>
+              <li>
+                Se abre la temporada {season.number + 1} con los valores de
+                "Próxima temporada".
+              </li>
+            </ul>
+          ) : (
+            <Skeleton className="h-24 rounded-lg" />
+          )}
+        </ConfirmDialog>
+      </section>
+    </Card>
   )
 }
 

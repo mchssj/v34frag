@@ -5,6 +5,7 @@ import { toast } from "sonner"
 
 import type { Schemas } from "@/api/client"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ConfirmDialog } from "../../components/dialogs"
 import { ago, fmtDateTime } from "../../lib/format"
@@ -108,132 +109,134 @@ function PendingCard({ match: m }: { match: MatchSummary }) {
   const leader = leadingSide(m)
 
   return (
-    <article className="flex h-full flex-col gap-3 rounded-xl border bg-card p-4">
-      <div className="flex justify-between gap-2">
-        <span className="flex flex-col gap-0.5">
-          <Link
-            to="/match/$id"
-            params={{ id: m.id }}
-            className="font-mono font-semibold hover:underline"
-          >
-            {m.map ?? "Mix"}
-          </Link>
-          <span className="text-xs text-muted-foreground">
-            {fmtDateTime(m.played_at ?? m.starts_at)}
+    <Card variant="outline" asChild className="flex h-full flex-col gap-3 p-4">
+      <article>
+        <div className="flex justify-between gap-2">
+          <span className="flex flex-col gap-0.5">
+            <Link
+              to="/match/$id"
+              params={{ id: m.id }}
+              className="font-mono font-semibold hover:underline"
+            >
+              {m.map ?? "Mix"}
+            </Link>
+            <span className="text-xs text-muted-foreground">
+              {fmtDateTime(m.played_at ?? m.starts_at)}
+            </span>
           </span>
-        </span>
-        <span className="font-mono text-[22px] font-bold">
-          {score(m.side1.score, m.side2.score)}
-        </span>
-      </div>
-      {!r ? (
-        <Skeleton className="h-12 rounded-lg" />
-      ) : (
-        <>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Rondas jugadas</span>
-              <span className="font-mono">
-                {r.rounds_played} / {r.max_rounds} ({pct} %)
+          <span className="font-mono text-[22px] font-bold">
+            {score(m.side1.score, m.side2.score)}
+          </span>
+        </div>
+        {!r ? (
+          <Skeleton className="h-12 rounded-lg" />
+        ) : (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Rondas jugadas</span>
+                <span className="font-mono">
+                  {r.rounds_played} / {r.max_rounds} ({pct} %)
+                </span>
+              </div>
+              <div aria-hidden className="relative h-2 rounded-full bg-muted">
+                <span
+                  className={
+                    r.can_apply
+                      ? "absolute inset-y-0 left-0 rounded-full bg-primary"
+                      : "absolute inset-y-0 left-0 rounded-full bg-muted-foreground"
+                  }
+                  style={{ width: `${Math.min(100, pct)}%` }}
+                />
+                <span
+                  className="absolute -inset-y-[3px] w-0.5 bg-foreground"
+                  style={{ left: `${minPct}%` }}
+                />
+              </div>
+            </div>
+            {r.can_apply ? (
+              <span className="text-[13px]">
+                {leader
+                  ? `Gana ${leader} con ${r.rounds_played} rondas jugadas.`
+                  : `${r.rounds_played} rondas jugadas.`}
               </span>
-            </div>
-            <div aria-hidden className="relative h-2 rounded-full bg-muted">
-              <span
-                className={
-                  r.can_apply
-                    ? "absolute inset-y-0 left-0 rounded-full bg-primary"
-                    : "absolute inset-y-0 left-0 rounded-full bg-muted-foreground"
-                }
-                style={{ width: `${Math.min(100, pct)}%` }}
-              />
-              <span
-                className="absolute -inset-y-[3px] w-0.5 bg-foreground"
-                style={{ left: `${minPct}%` }}
-              />
-            </div>
-          </div>
-          {r.can_apply ? (
-            <span className="text-[13px]">
-              {leader
-                ? `Gana ${leader} con ${r.rounds_played} rondas jugadas.`
-                : `${r.rounds_played} rondas jugadas.`}
-            </span>
-          ) : (
-            <span className={`text-[13px] ${warnText}`}>
-              {r.blocked_reason ?? "No se puede aplicar el ELO."}
-            </span>
+            ) : (
+              <span className={`text-[13px] ${warnText}`}>
+                {r.blocked_reason ?? "No se puede aplicar el ELO."}
+              </span>
+            )}
+          </>
+        )}
+        <div className="mt-auto flex gap-2">
+          {r?.can_apply && (
+            <Button
+              size="md"
+              className="flex-1"
+              onClick={() => setConfirm("apply")}
+            >
+              Aplicar ELO
+            </Button>
           )}
-        </>
-      )}
-      <div className="mt-auto flex gap-2">
-        {r?.can_apply && (
           <Button
+            variant="outline"
             size="md"
             className="flex-1"
-            onClick={() => setConfirm("apply")}
+            onClick={() => setConfirm("discard")}
           >
-            Aplicar ELO
+            Descartar
           </Button>
-        )}
-        <Button
-          variant="outline"
-          size="md"
-          className="flex-1"
-          onClick={() => setConfirm("discard")}
-        >
-          Descartar
-        </Button>
-      </div>
-      <ConfirmDialog
-        open={confirm === "apply"}
-        onOpenChange={(o) => !o && setConfirm(null)}
-        title="¿Aplicar el ELO de este mix?"
-        description={
-          <>
-            <span>
-              {m.map ?? "Mix"} · {score(m.side1.score, m.side2.score)}.{" "}
-              {leader
-                ? `Gana ${leader} con ${r?.rounds_played ?? 0} rondas jugadas.`
-                : ""}
-            </span>
-            <span>
-              El ELO se mueve según la participación de cada uno. No se deshace
-              desde acá.
-            </span>
-          </>
-        }
-        confirmLabel="Aplicar ELO"
-        typed
-        pending={apply.isPending}
-        error={apply.error}
-        onConfirm={() =>
-          apply.mutate(m.id, {
-            onSuccess: () => {
-              setConfirm(null)
-              toast.success("ELO aplicado.")
-            },
-          })
-        }
-      />
-      <ConfirmDialog
-        open={confirm === "discard"}
-        onOpenChange={(o) => !o && setConfirm(null)}
-        title="¿Descartar este mix?"
-        description="Queda cancelado y no mueve el ELO de nadie."
-        confirmLabel="Descartar"
-        danger
-        pending={discard.isPending}
-        error={discard.error}
-        onConfirm={() =>
-          discard.mutate(m.id, {
-            onSuccess: () => {
-              setConfirm(null)
-              toast.success("Mix descartado.")
-            },
-          })
-        }
-      />
-    </article>
+        </div>
+        <ConfirmDialog
+          open={confirm === "apply"}
+          onOpenChange={(o) => !o && setConfirm(null)}
+          title="¿Aplicar el ELO de este mix?"
+          description={
+            <>
+              <span>
+                {m.map ?? "Mix"} · {score(m.side1.score, m.side2.score)}.{" "}
+                {leader
+                  ? `Gana ${leader} con ${r?.rounds_played ?? 0} rondas jugadas.`
+                  : ""}
+              </span>
+              <span>
+                El ELO se mueve según la participación de cada uno. No se
+                deshace desde acá.
+              </span>
+            </>
+          }
+          confirmLabel="Aplicar ELO"
+          typed
+          pending={apply.isPending}
+          error={apply.error}
+          onConfirm={() =>
+            apply.mutate(m.id, {
+              onSuccess: () => {
+                setConfirm(null)
+                toast.success("ELO aplicado.")
+              },
+            })
+          }
+        />
+        <ConfirmDialog
+          open={confirm === "discard"}
+          onOpenChange={(o) => !o && setConfirm(null)}
+          title="¿Descartar este mix?"
+          description="Queda cancelado y no mueve el ELO de nadie."
+          confirmLabel="Descartar"
+          danger
+          pending={discard.isPending}
+          error={discard.error}
+          onConfirm={() =>
+            discard.mutate(m.id, {
+              onSuccess: () => {
+                setConfirm(null)
+                toast.success("Mix descartado.")
+              },
+            })
+          }
+        />
+      </article>
+    </Card>
   )
 }
 
@@ -241,7 +244,10 @@ function StaleRow({ live: l }: { live: LiveMix }) {
   const close = useCloseStaleMix()
   const [open, setOpen] = useState(false)
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-card px-4 py-3.5">
+    <Card
+      variant="outline"
+      className="flex flex-wrap items-center gap-4 px-4 py-3.5"
+    >
       <span aria-hidden className="size-2.5 rounded-full bg-amber-500" />
       <span className="flex flex-1 flex-col gap-0.5">
         <span>
@@ -275,6 +281,6 @@ function StaleRow({ live: l }: { live: LiveMix }) {
           })
         }
       />
-    </div>
+    </Card>
   )
 }

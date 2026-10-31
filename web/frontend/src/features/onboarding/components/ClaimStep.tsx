@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { errorMessage } from "@/api/errors"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { AuthHeading, ErrorAlert } from "@/features/auth/components/ui"
 import { serverStatusOptions } from "@/features/public/api/queries"
 import { claimServer } from "@/features/public/lib/format"
@@ -80,7 +81,10 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
       />
 
       {!linked && (
-        <div className="flex flex-col items-center gap-2.5 rounded-xl border bg-card p-[22px]">
+        <Card
+          variant="outline"
+          className="flex flex-col items-center gap-2.5 p-[22px]"
+        >
           <span className="text-xs text-muted-foreground">
             Tu código de un solo uso
           </span>
@@ -121,7 +125,7 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
                 : "Generando código…"}
             </span>
           )}
-        </div>
+        </Card>
       )}
 
       {create.error != null && (

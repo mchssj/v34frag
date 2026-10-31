@@ -14,6 +14,7 @@ import {
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { myTeamsOptions } from "@/features/teams/api/queries"
 import { BracketTab } from "../components/BracketTab"
@@ -64,65 +65,67 @@ export function EventView({
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="overflow-hidden rounded-[calc(var(--radius)+4px)] border bg-card">
-        <EventBanner url={event.banner_url} className="h-[120px]" />
-        <div className="flex flex-wrap items-end gap-4 px-5 py-4">
-          <div className="flex min-w-[min(100%,240px)] flex-1 flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusChip status={event.status} />
-              <span className="text-[13px] text-muted-foreground">
-                {dateRange(event.starts_on, event.ends_on)}
+      <Card variant="outline" asChild className="overflow-hidden">
+        <section>
+          <EventBanner url={event.banner_url} className="h-[120px]" />
+          <div className="flex flex-wrap items-end gap-4 px-5 py-4">
+            <div className="flex min-w-[min(100%,240px)] flex-1 flex-col gap-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusChip status={event.status} />
+                <span className="text-[13px] text-muted-foreground">
+                  {dateRange(event.starts_on, event.ends_on)}
+                </span>
+              </div>
+              <h1 className="text-[26px] leading-tight font-semibold tracking-[-0.5px] text-balance">
+                {event.name}
+              </h1>
+              <span className="text-sm text-muted-foreground">
+                {[
+                  event.game_mode,
+                  TEMPLATE_LABEL[event.template],
+                  boText(event),
+                  prizeText(event.prize),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </span>
             </div>
-            <h1 className="text-[26px] leading-tight font-semibold tracking-[-0.5px] text-balance">
-              {event.name}
-            </h1>
-            <span className="text-sm text-muted-foreground">
-              {[
-                event.game_mode,
-                TEMPLATE_LABEL[event.template],
-                boText(event),
-                prizeText(event.prize),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
+            <EventCta event={event} />
           </div>
-          <EventCta event={event} />
-        </div>
-        <nav
-          aria-label="Secciones del torneo"
-          className="flex gap-1 overflow-x-auto border-t px-4"
-        >
-          {TABS.map((t) => (
-            <Link
-              key={t.label}
-              to="/events/$id"
-              params={{ id: eventId }}
-              search={{ tab: t.id }}
-              resetScroll={false}
-              aria-current={tab === t.id ? "page" : undefined}
-              // En teléfono las pestañas se desplazan: la activa queda a la vista.
-              ref={
-                tab === t.id
-                  ? (el) =>
-                      el?.scrollIntoView({
-                        block: "nearest",
-                        inline: "nearest",
-                      })
-                  : undefined
-              }
-              className={cn(
-                "flex h-[42px] shrink-0 items-center px-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
-                tab === t.id &&
-                  "text-foreground shadow-[inset_0_-2px_0_var(--primary)]"
-              )}
-            >
-              {t.label}
-            </Link>
-          ))}
-        </nav>
-      </section>
+          <nav
+            aria-label="Secciones del torneo"
+            className="flex gap-1 overflow-x-auto border-t px-4"
+          >
+            {TABS.map((t) => (
+              <Link
+                key={t.label}
+                to="/events/$id"
+                params={{ id: eventId }}
+                search={{ tab: t.id }}
+                resetScroll={false}
+                aria-current={tab === t.id ? "page" : undefined}
+                // En teléfono las pestañas se desplazan: la activa queda a la vista.
+                ref={
+                  tab === t.id
+                    ? (el) =>
+                        el?.scrollIntoView({
+                          block: "nearest",
+                          inline: "nearest",
+                        })
+                    : undefined
+                }
+                className={cn(
+                  "flex h-[42px] shrink-0 items-center px-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
+                  tab === t.id &&
+                    "text-foreground shadow-[inset_0_-2px_0_var(--primary)]"
+                )}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </nav>
+        </section>
+      </Card>
 
       {tab === "bracket" ? (
         <BracketTab event={event} />

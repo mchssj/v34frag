@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { Segmented } from "@/components/brand/Segmented"
+import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -103,47 +104,52 @@ function EventCard({ event }: { event: EventSummary }) {
   const bo = boText(event)
 
   return (
-    <Link
-      to="/events/$id"
-      params={{ id: event.id }}
-      className="flex flex-col overflow-hidden rounded-[calc(var(--radius)+4px)] border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)] transition-colors outline-none hover:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+    <Card
+      variant="outline"
+      asChild
+      className="flex flex-col overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)] transition-colors outline-none hover:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <EventBanner url={event.banner_url} className="h-[88px] border-b">
-        <StatusChip status={event.status} className="absolute top-3 right-3" />
-      </EventBanner>
-      <div className="flex flex-col gap-2.5 px-4 py-3.5">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-base font-semibold">{event.name}</span>
-          <span className="text-[13px] text-muted-foreground">
-            {event.game_mode} · {TEMPLATE_LABEL[event.template]}
-            {bo && ` · ${bo}`}
-          </span>
-        </div>
-        <dl className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-muted-foreground">Fechas</dt>
-            <dd className="font-medium">
-              {dateRange(event.starts_on, event.ends_on)}
-            </dd>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-muted-foreground">Premio</dt>
-            <dd className="font-medium">{prizeText(event.prize)}</dd>
-          </div>
-        </dl>
-        <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between gap-3 text-xs">
-            <span className="text-muted-foreground">{foot.label}</span>
-            <span className="truncate font-medium">{foot.value}</span>
-          </div>
-          <Progress
-            value={Math.round(foot.ratio * 100)}
-            aria-label={foot.label}
-            className="rounded-[2px]"
+      <Link to="/events/$id" params={{ id: event.id }}>
+        <EventBanner url={event.banner_url} className="h-[88px] border-b">
+          <StatusChip
+            status={event.status}
+            className="absolute top-3 right-3"
           />
+        </EventBanner>
+        <div className="flex flex-col gap-2.5 px-4 py-3.5">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-base font-semibold">{event.name}</span>
+            <span className="text-[13px] text-muted-foreground">
+              {event.game_mode} · {TEMPLATE_LABEL[event.template]}
+              {bo && ` · ${bo}`}
+            </span>
+          </div>
+          <dl className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Fechas</dt>
+              <dd className="font-medium">
+                {dateRange(event.starts_on, event.ends_on)}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Premio</dt>
+              <dd className="font-medium">{prizeText(event.prize)}</dd>
+            </div>
+          </dl>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between gap-3 text-xs">
+              <span className="text-muted-foreground">{foot.label}</span>
+              <span className="truncate font-medium">{foot.value}</span>
+            </div>
+            <Progress
+              value={Math.round(foot.ratio * 100)}
+              aria-label={foot.label}
+              className="rounded-[2px]"
+            />
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </Card>
   )
 }
 

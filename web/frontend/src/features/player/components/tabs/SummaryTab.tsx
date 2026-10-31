@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
+import { Card } from "@/components/ui/card"
 import { KeyPlays } from "../KeyPlays"
 import { adjustmentLabel, fmtDay, matchTitle, resultOf } from "../../lib/labels"
 import {
@@ -8,7 +9,7 @@ import {
   recentMatchesOptions,
 } from "../../api/queries"
 import type { PlayerDetail } from "../../types"
-import { card, Loaded, Delta, RESULT_CHIP, useOpenMatch } from "./shared"
+import { Loaded, Delta, RESULT_CHIP, useOpenMatch } from "./shared"
 
 // ---------- Resumen ----------
 
@@ -28,7 +29,7 @@ export function Summary({
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-2">
-      <div className={cn(card, "overflow-hidden")}>
+      <Card variant="outline" className="overflow-hidden">
         <div className="flex items-center border-b px-4 py-3.5 text-sm font-semibold">
           Partidas recientes
           <button
@@ -85,9 +86,9 @@ export function Summary({
             )
           }
         </Loaded>
-      </div>
+      </Card>
       <div className="flex flex-col gap-4">
-        <div className={cn(card, "flex flex-col gap-3 p-4")}>
+        <Card variant="outline" className="flex flex-col gap-3 p-4">
           <span className="text-sm font-semibold">Logros</span>
           <Loaded q={medals}>
             {(items) =>
@@ -118,10 +119,10 @@ export function Summary({
               )
             }
           </Loaded>
-        </div>
+        </Card>
         {/* Solo si el admin le hizo algún ajuste (contrato 5). */}
         {adjustments.data && adjustments.data.length > 0 && (
-          <div className={cn(card, "flex flex-col gap-3 p-4")}>
+          <Card variant="outline" className="flex flex-col gap-3 p-4">
             <span className="text-sm font-semibold">Ajustes de ELO</span>
             {adjustments.data.map((a) => (
               <div key={a.id} className="flex items-start gap-2.5 text-[13px]">
@@ -143,7 +144,7 @@ export function Summary({
                 </span>
               </div>
             ))}
-          </div>
+          </Card>
         )}
         <KeyPlays stats={player.stats} />
       </div>

@@ -8,6 +8,7 @@ import { FilterChips } from "@/components/brand/FilterChips"
 import { ListPagination } from "@/components/brand/ListPagination"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -28,7 +29,7 @@ import {
 import { playerMatchesOptions } from "../../api/queries"
 import type { PlayerMatch } from "../../types"
 import { DEFAULT_PER, PER_OPTIONS, type PlayerSearch } from "../../lib/search"
-import { card, Delta, useOpenMatch } from "./shared"
+import { Delta, useOpenMatch } from "./shared"
 
 // ---------- Partidas ----------
 
@@ -89,7 +90,7 @@ export function Matches({
   }
 
   return (
-    <div className={cn(card, "overflow-hidden")}>
+    <Card variant="outline" className="overflow-hidden">
       <div className="flex flex-wrap items-center gap-3 border-b p-3">
         <FilterChips
           size="sm"
@@ -249,6 +250,6 @@ export function Matches({
           />
         </div>
       )}
-    </div>
+    </Card>
   )
 }

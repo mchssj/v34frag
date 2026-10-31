@@ -17,7 +17,7 @@ import {
 } from "../lib/model"
 import { eventRegistrationsOptions } from "../api/queries"
 import type { EventDetail } from "../types"
-import { Card, TagBox } from "./ui"
+import { SectionCard, TagBox } from "./ui"
 
 /** Resumen: información, reglas y equipos inscriptos. */
 export function SummaryTab({ event }: { event: EventDetail }) {
@@ -49,7 +49,7 @@ export function SummaryTab({ event }: { event: EventDetail }) {
 
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-4">
-      <Card title="Información">
+      <SectionCard title="Información">
         <dl className="flex flex-col gap-2.5">
           {info.map(([k, v]) => (
             <div
@@ -61,8 +61,8 @@ export function SummaryTab({ event }: { event: EventDetail }) {
             </div>
           ))}
         </dl>
-      </Card>
-      <Card title="Reglas">
+      </SectionCard>
+      <SectionCard title="Reglas">
         <ol className="flex list-decimal flex-col gap-2 pl-[18px] text-sm leading-normal">
           {rulesOf(event.rules).map((rule, i) => (
             <li key={i}>
@@ -70,7 +70,7 @@ export function SummaryTab({ event }: { event: EventDetail }) {
             </li>
           ))}
         </ol>
-      </Card>
+      </SectionCard>
       <Entrants event={event} />
     </div>
   )
@@ -96,7 +96,7 @@ function Entrants({ event }: { event: EventDetail }) {
   const slots = Math.min(4, free ?? 0)
 
   return (
-    <Card
+    <SectionCard
       title="Equipos inscriptos"
       aside={
         <span className="font-mono text-xs font-medium text-muted-foreground">
@@ -138,6 +138,6 @@ function Entrants({ event }: { event: EventDetail }) {
           ))}
         </ul>
       )}
-    </Card>
+    </SectionCard>
   )
 }

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { ArrowRightIcon, UnplugIcon } from "lucide-react"
+import { StatTile } from "@/components/brand/StatTile"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { mixStatsOptions } from "@/features/mixes/api/queries"
 
@@ -24,19 +26,12 @@ export function MixKpis() {
     <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
       <LiveKpi count={data?.live_now} />
       {tiles.map((t) => (
-        <div
+        <StatTile
           key={t.label}
-          className="flex flex-col gap-1 rounded-xl border bg-card px-4 py-3.5 shadow-[0_1px_2px_rgb(0_0_0/.04)]"
-        >
-          <span className="text-xs text-muted-foreground">{t.label}</span>
-          {t.value === undefined ? (
-            <Skeleton className="h-7 w-16" />
-          ) : (
-            <span className="font-mono text-[22px] font-semibold tracking-[-0.5px] tabular-nums">
-              {t.value}
-            </span>
-          )}
-        </div>
+          label={t.label}
+          value={t.value}
+          className="shadow-[0_1px_2px_rgb(0_0_0/.04)]"
+        />
       ))}
     </div>
   )
@@ -51,7 +46,10 @@ function LiveKpi({ count }: { count: number | undefined }) {
     return <Skeleton className="col-span-2 h-[74px] rounded-xl md:col-span-1" />
   if (count === 0)
     return (
-      <div className="col-span-2 flex items-center gap-3.5 rounded-xl border border-dashed bg-card px-4 py-3.5 md:col-span-1">
+      <Card
+        variant="outline"
+        className="col-span-2 flex items-center gap-3.5 border-dashed px-4 py-3.5 md:col-span-1"
+      >
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
           <UnplugIcon className="size-5" aria-hidden />
         </span>
@@ -59,7 +57,7 @@ function LiveKpi({ count }: { count: number | undefined }) {
           <span className="text-xs text-muted-foreground">En vivo ahora</span>
           <span className="text-[15px] font-semibold">Ningún mix en juego</span>
         </span>
-      </div>
+      </Card>
     )
   return (
     <div className="col-span-2 flex items-center gap-3.5 rounded-xl border border-destructive/45 bg-[color-mix(in_oklch,var(--destructive)_7%,var(--card))] px-4 py-3.5 md:col-span-1">

@@ -18,10 +18,12 @@ import { toast } from "sonner"
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { Segmented } from "@/components/brand/Segmented"
+import { StatTile } from "@/components/brand/StatTile"
 import { NoLevelBadge } from "@/components/illustrations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
@@ -132,7 +134,7 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
   const [first, ...rest] = p.teams
 
   return (
-    <div className="rounded-xl border bg-card">
+    <Card variant="outline">
       <div className="flex flex-wrap items-start gap-5 p-5">
         <Avatar className="size-24 rounded-xl after:hidden after:rounded-xl">
           {photo && <AvatarImage src={photo} alt="" className="rounded-xl" />}
@@ -281,7 +283,7 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
           )}
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -344,7 +346,7 @@ const LEVEL_BG = (l: number) =>
 function LevelCard({ p }: { p: PlayerDetail }) {
   const level = p.level
   return (
-    <div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
+    <Card variant="outline" className="flex flex-col gap-4 p-5">
       <span className="text-sm font-semibold">Nivel</span>
       {level === null || p.elo === null ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3.5 py-2 text-center">
@@ -434,7 +436,7 @@ function LevelCard({ p }: { p: PlayerDetail }) {
           </span>
         </span>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -452,7 +454,7 @@ function EloCard({
   const q = useQuery(eloHistoryOptions(nick, range))
   const [label, setLabel] = useState<string | null>(null)
   return (
-    <div className="flex min-w-0 flex-col gap-2.5 rounded-xl border bg-card px-5 py-4">
+    <Card variant="outline" className="flex min-w-0 flex-col gap-2.5 px-5 py-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex-1 text-sm font-semibold">Evolución de ELO</span>
         <span className="min-h-4 font-mono text-xs font-medium text-muted-foreground">
@@ -476,7 +478,7 @@ function EloCard({
           onHover={setLabel}
         />
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -528,21 +530,19 @@ function StatTiles({ p }: { p: PlayerDetail }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       {tiles.map((t) => (
-        <div
+        <StatTile
           key={t.label}
-          className="flex flex-col gap-1.5 rounded-xl border bg-card px-4 py-3.5"
+          label={t.label}
+          value={t.value ?? "—"}
+          className="gap-1.5"
         >
-          <span className="text-xs text-muted-foreground">{t.label}</span>
-          <span className="font-mono text-[22px] font-semibold tracking-[-0.5px] tabular-nums">
-            {t.value ?? "—"}
-          </span>
           <Progress
             value={t.pct}
             aria-hidden
             indicatorClassName="bg-foreground"
           />
           <span className="text-[11px] text-muted-foreground">{t.note}</span>
-        </div>
+        </StatTile>
       ))}
     </div>
   )

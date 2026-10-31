@@ -15,6 +15,7 @@ import { useState, type ReactNode } from "react"
 
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -98,7 +99,10 @@ export function MixRoom({
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)]">
+      <Card
+        variant="outline"
+        className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
+      >
         <MapBackdrop image={mapImage}>
           <Scoreboard room={room} />
         </MapBackdrop>
@@ -124,7 +128,7 @@ export function MixRoom({
             {adminAction}
           </span>
         </div>
-      </div>
+      </Card>
 
       {room.status === "cancelled" && (
         <Notice icon={<BanIcon aria-hidden className="size-4" />}>
@@ -146,11 +150,17 @@ export function MixRoom({
 
       <StatsTabs value={tab} onChange={pickTab} />
       {tab === "clutch" && room.clutchData !== true ? (
-        <p className="rounded-xl border bg-card px-4 py-8 text-center text-[13px] text-muted-foreground">
-          {live
-            ? "Los clutches se cuentan al terminar el mix."
-            : "Sin datos de Clutches disponibles."}
-        </p>
+        <Card
+          variant="outline"
+          asChild
+          className="px-4 py-8 text-center text-[13px] text-muted-foreground"
+        >
+          <p>
+            {live
+              ? "Los clutches se cuentan al terminar el mix."
+              : "Sin datos de Clutches disponibles."}
+          </p>
+        </Card>
       ) : (
         (["side1", "side2"] as const).map((s, i) => (
           <SideTable
@@ -363,74 +373,73 @@ function SideTable({
   const res = RESULT[side.result]
   const players = sortPlayers(side.players, cols, sort)
   return (
-    <section
-      aria-label={side.name}
-      className="overflow-hidden rounded-xl border bg-card"
-    >
-      <div
-        className={cn(
-          "flex items-center gap-2.5 border-b px-4 py-3",
-          accent === "a"
-            ? "shadow-[inset_3px_0_0_var(--primary)]"
-            : "shadow-[inset_3px_0_0_var(--chart-2)]"
-        )}
-      >
-        <h2 className="text-sm font-semibold">{side.name}</h2>
-        <span
+    <Card variant="outline" asChild className="overflow-hidden">
+      <section aria-label={side.name}>
+        <div
           className={cn(
-            "inline-flex h-5 items-center rounded-[calc(var(--radius)-4px)] px-1.5 text-[11px] font-semibold",
-            res.className
+            "flex items-center gap-2.5 border-b px-4 py-3",
+            accent === "a"
+              ? "shadow-[inset_3px_0_0_var(--primary)]"
+              : "shadow-[inset_3px_0_0_var(--chart-2)]"
           )}
         >
-          {res.label}
-        </span>
-        <span className="ml-auto font-mono text-lg font-semibold tabular-nums">
-          {side.score}
-        </span>
-      </div>
-      <Table
-        className={cn(
-          "table-fixed text-[13px]",
-          cols.length > 8 ? "min-w-[1000px]" : "min-w-[560px]"
-        )}
-      >
-        <TableHeader>
-          <TableRow className="text-xs hover:bg-transparent">
-            <TableHead className="sticky left-0 z-[1] w-[210px] bg-card pl-4 font-medium text-muted-foreground">
-              Jugador
-            </TableHead>
-            {cols.map((c, i) => (
-              <TableHead
-                key={c.key}
-                className={cn(
-                  "font-medium text-muted-foreground",
-                  i === cols.length - 1 ? "pr-4 text-right" : "text-center"
-                )}
-              >
-                <StatHead
-                  col={c}
-                  sort={sort?.key === c.key ? sort.dir : null}
-                  onClick={() => onSort(c.key)}
-                />
+          <h2 className="text-sm font-semibold">{side.name}</h2>
+          <span
+            className={cn(
+              "inline-flex h-5 items-center rounded-[calc(var(--radius)-4px)] px-1.5 text-[11px] font-semibold",
+              res.className
+            )}
+          >
+            {res.label}
+          </span>
+          <span className="ml-auto font-mono text-lg font-semibold tabular-nums">
+            {side.score}
+          </span>
+        </div>
+        <Table
+          className={cn(
+            "table-fixed text-[13px]",
+            cols.length > 8 ? "min-w-[1000px]" : "min-w-[560px]"
+          )}
+        >
+          <TableHeader>
+            <TableRow className="text-xs hover:bg-transparent">
+              <TableHead className="sticky left-0 z-[1] w-[210px] bg-card pl-4 font-medium text-muted-foreground">
+                Jugador
               </TableHead>
+              {cols.map((c, i) => (
+                <TableHead
+                  key={c.key}
+                  className={cn(
+                    "font-medium text-muted-foreground",
+                    i === cols.length - 1 ? "pr-4 text-right" : "text-center"
+                  )}
+                >
+                  <StatHead
+                    col={c}
+                    sort={sort?.key === c.key ? sort.dir : null}
+                    onClick={() => onSort(c.key)}
+                  />
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {players.map((p) => (
+              <PlayerRow
+                key={p.key}
+                p={p}
+                cols={cols}
+                best={best}
+                rounds={partialRounds(p, totalRounds)}
+                showMvp={status !== "cancelled"}
+              />
             ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {players.map((p) => (
-            <PlayerRow
-              key={p.key}
-              p={p}
-              cols={cols}
-              best={best}
-              rounds={partialRounds(p, totalRounds)}
-              showMvp={status !== "cancelled"}
-            />
-          ))}
-        </TableBody>
-      </Table>
-      {footer}
-    </section>
+          </TableBody>
+        </Table>
+        {footer}
+      </section>
+    </Card>
   )
 }
 

@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { BadgeVariant } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import {
   Tooltip,
   TooltipContent,
@@ -90,24 +91,26 @@ export function Panel({
   bodyClassName?: string
 }) {
   return (
-    <section
-      className={cn(
-        "flex min-w-0 flex-col overflow-hidden rounded-hero border bg-card",
-        className
-      )}
+    <Card
+      variant="outline"
+      radius="hero"
+      asChild
+      className={cn("flex min-w-0 flex-col overflow-hidden", className)}
     >
-      {title && (
-        <header className="flex items-center justify-between gap-3 border-b px-[18px] py-3.5">
-          <h2 className="text-[15px] font-semibold">{title}</h2>
-          {aside && (
-            <span className="text-xs text-muted-foreground">{aside}</span>
-          )}
-        </header>
-      )}
-      <div className={cn("flex min-w-0 flex-1 flex-col", bodyClassName)}>
-        {children}
-      </div>
-    </section>
+      <section>
+        {title && (
+          <header className="flex items-center justify-between gap-3 border-b px-[18px] py-3.5">
+            <h2 className="text-[15px] font-semibold">{title}</h2>
+            {aside && (
+              <span className="text-xs text-muted-foreground">{aside}</span>
+            )}
+          </header>
+        )}
+        <div className={cn("flex min-w-0 flex-1 flex-col", bodyClassName)}>
+          {children}
+        </div>
+      </section>
+    </Card>
   )
 }
 

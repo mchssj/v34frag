@@ -9,6 +9,7 @@ import {
   HourglassIcon,
   SkullIcon,
 } from "@/components/icons/game"
+import { Card } from "@/components/ui/card"
 
 type Stats = Schemas["PlayerStatsDetail"]
 
@@ -21,7 +22,7 @@ const ratio = (a: number, b: number) => (b > 0 ? a / b : null)
 export function KeyPlays({ stats }: { stats: Stats | null | undefined }) {
   const maps = stats?.maps ?? 0
   return (
-    <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
+    <Card variant="outline" className="flex flex-col gap-4 p-4">
       <span className="text-sm font-semibold">Jugadas clave</span>
       {!stats || maps === 0 ? (
         <span className="text-[13px] text-muted-foreground">
@@ -30,7 +31,7 @@ export function KeyPlays({ stats }: { stats: Stats | null | undefined }) {
       ) : (
         <Content stats={stats} maps={maps} />
       )}
-    </div>
+    </Card>
   )
 }
 

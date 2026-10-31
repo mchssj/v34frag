@@ -3,13 +3,14 @@ import { XIcon } from "lucide-react"
 import { useId, useState, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { pickPlayerOptions } from "../../players/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { Card } from "../../components/ui"
+
 import {
   addTier,
   removeTier,
@@ -48,7 +49,10 @@ export function SeasonFormView({
   return (
     <div className="flex flex-wrap items-start gap-5">
       <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-4">
-        <Card className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
+        <Card
+          variant="outline"
+          className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5 p-4"
+        >
           {mode === "active" ? (
             <>
               <Field id={`${id}-n`} label="Nombre">
@@ -113,7 +117,7 @@ export function SeasonFormView({
           </Field>
         </Card>
 
-        <Card>
+        <Card variant="outline" className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-[17px] font-bold">Medallas por tramo</h2>
             <span className="text-[13px] leading-relaxed text-muted-foreground">
@@ -299,7 +303,10 @@ function ResetCard({
           : `${who}Pierde ${elo - after} de ELO.`
 
   return (
-    <Card className="min-w-0 flex-[1_1_360px] gap-3.5">
+    <Card
+      variant="outline"
+      className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5 p-4"
+    >
       {notice && (
         <p className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-[13px] leading-relaxed">
           {notice}

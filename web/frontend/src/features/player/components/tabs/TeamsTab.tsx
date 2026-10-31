@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { cn } from "cn"
 import { CrownIcon, SearchIcon, UsersIcon } from "lucide-react"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { STATUS_LABEL } from "@/features/teams/lib/model"
 import { useTeamLogos } from "@/features/teams/api/queries"
 import { STATUS_CHIP, TeamCrest } from "@/features/teams/components/ui"
 import { fmtMonthShort, legacyTeams, stintLength } from "../../lib/labels"
 import { teamsOptions } from "../../api/queries"
 import type { TeamStint } from "../../types"
-import { card, Loaded } from "./shared"
+import { Loaded } from "./shared"
 
 // ---------- Equipos ----------
 
@@ -32,7 +32,10 @@ export function Teams({
   const withLogo = useTeamLogos((q.data ?? []).map((s) => s.team))
   const old = legacyTeams(legacy)
   return (
-    <div className={cn(card, "flex min-h-[396px] flex-col gap-3 px-5 py-4")}>
+    <Card
+      variant="outline"
+      className="flex min-h-[396px] flex-col gap-3 px-5 py-4"
+    >
       <Loaded q={q}>
         {(items) => {
           if (!items.length)
@@ -99,7 +102,7 @@ export function Teams({
           <span className="text-[13px] leading-relaxed">{old}</span>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 

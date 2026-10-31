@@ -45,6 +45,7 @@ import {
 } from "../api/queries"
 import type { RankingPlayer, Season, SeasonStanding } from "../types"
 import { SearchBox } from "@/components/brand/SearchBox"
+import { Card } from "@/components/ui/card"
 import { Progress as UiProgress } from "@/components/ui/progress"
 import { SeasonBar } from "../components/SeasonBar"
 import {
@@ -159,7 +160,10 @@ function HistoricView({ search, onChange }: Props) {
   return (
     <>
       <Podium items={items} loading={podium.isPending} />
-      <div className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)]">
+      <Card
+        variant="outline"
+        className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
+      >
         <div className="flex flex-wrap items-center gap-2 border-b p-3">
           <SearchBox
             value={search.q}
@@ -239,7 +243,7 @@ function HistoricView({ search, onChange }: Props) {
           </TableBody>
         </Table>
         <Paging search={search} total={list.data?.total} onChange={onChange} />
-      </div>
+      </Card>
     </>
   )
 }
@@ -345,7 +349,10 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
   return (
     <>
       <Podium items={items} loading={podium.isPending} />
-      <div className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)]">
+      <Card
+        variant="outline"
+        className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
+      >
         <div className="flex flex-wrap items-center gap-2 border-b p-3">
           <SearchBox
             value={search.q}
@@ -444,7 +451,7 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
           temporada. Al cerrar, quienes tengan más de {season.reset_floor} de
           ELO se reinician al {season.reset_pct} % de lo que tengan por encima.
         </p>
-      </div>
+      </Card>
     </>
   )
 }

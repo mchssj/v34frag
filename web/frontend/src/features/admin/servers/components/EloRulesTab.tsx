@@ -9,11 +9,12 @@ import { errorMessage } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtDate, signed } from "../../lib/format"
-import { Card, QueryError } from "../../components/ui"
+import { QueryError } from "../../components/ui"
 import {
   eloConfigOptions,
   eloPreviewOptions,
@@ -71,128 +72,132 @@ function EloForm({
 
   return (
     <div className="flex flex-wrap items-start gap-5">
-      <section
-        aria-label="Reglas del ELO"
-        className="flex min-w-0 flex-[999_1_520px] flex-col rounded-xl border bg-card"
+      <Card
+        variant="outline"
+        asChild
+        className="flex min-w-0 flex-[999_1_520px] flex-col"
       >
-        <div className="flex flex-col gap-2.5 p-4 pb-0">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-[17px] font-bold">Reglas del ELO</h2>
-            {updatedAt && (
-              <span className="text-xs text-muted-foreground">
-                Guardado el {fmtDate(updatedAt)}
-                {updatedBy ? ` por ${updatedBy}` : ""}
-              </span>
-            )}
-          </div>
-          <Alert>
-            <InfoIcon aria-hidden />
-            <AlertDescription>
-              Los cambios valen para los mixes que terminen desde que guardas.{" "}
-              <b>No recalculan el historial.</b> Para corregir a jugadores
-              puntuales usa Ajustes manuales.
-            </AlertDescription>
-          </Alert>
-        </div>
-        {groups.map((g) => (
-          <fieldset key={g} className="flex flex-col gap-3.5 border-b p-4">
-            <legend className="float-left mb-3.5 w-full text-xs font-semibold tracking-[0.5px] text-muted-foreground uppercase">
-              {g}
-            </legend>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
-              {ELO_FIELDS.filter((f) => f.group === g).map((f) => {
-                const err = errors[f.key]
-                const isChanged = !err && d[f.key].trim() !== savedDraft[f.key]
-                return (
-                  <div key={f.key} className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor={`${id}-${f.key}`}
-                      className="flex justify-between gap-2 text-[13px] font-medium"
-                    >
-                      <span>{f.label}</span>
-                      {isChanged && (
-                        <span className="font-mono text-xs font-normal text-primary">
-                          antes {savedDraft[f.key]}
-                        </span>
-                      )}
-                    </label>
-                    <div className="relative">
-                      <Input
-                        id={`${id}-${f.key}`}
-                        inputMode="decimal"
-                        value={d[f.key]}
-                        aria-invalid={!!err}
-                        aria-describedby={`${id}-${f.key}-help`}
-                        onChange={(e) =>
-                          setD((p) => ({ ...p, [f.key]: e.target.value }))
-                        }
-                        className="h-10 pr-8 font-mono"
-                      />
-                      {f.unit && (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs text-muted-foreground"
-                        >
-                          {f.unit}
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      id={`${id}-${f.key}-help`}
-                      className={cn(
-                        "text-xs leading-snug",
-                        err ? "text-destructive" : "text-muted-foreground"
-                      )}
-                    >
-                      {err ?? `${f.help} (${f.min}–${f.max})`}
-                    </span>
-                  </div>
-                )
-              })}
+        <section aria-label="Reglas del ELO">
+          <div className="flex flex-col gap-2.5 p-4 pb-0">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-[17px] font-bold">Reglas del ELO</h2>
+              {updatedAt && (
+                <span className="text-xs text-muted-foreground">
+                  Guardado el {fmtDate(updatedAt)}
+                  {updatedBy ? ` por ${updatedBy}` : ""}
+                </span>
+              )}
             </div>
-          </fieldset>
-        ))}
-        <div className="flex flex-wrap items-center justify-end gap-2.5 p-4">
-          <span className="flex-1 text-[13px] text-muted-foreground">
-            {save.isError
-              ? errorMessage(save.error)
-              : changed.length === 0
-                ? "Sin cambios"
-                : changed.length === 1
-                  ? "1 cambio sin guardar"
-                  : `${changed.length} cambios sin guardar`}
-          </span>
-          <Button
-            variant="outline"
-            size="md"
-            disabled={changed.length === 0 || save.isPending}
-            onClick={() => setD(savedDraft)}
-          >
-            Descartar
-          </Button>
-          <Button
-            size="md"
-            disabled={changed.length === 0 || !values || save.isPending}
-            onClick={() =>
-              values &&
-              save.mutate(values, {
-                onSuccess: () =>
-                  toast.success(
-                    "Reglas guardadas. Valen para los mixes que terminen desde ahora."
-                  ),
-              })
-            }
-          >
-            Guardar reglas
-          </Button>
-        </div>
-      </section>
+            <Alert>
+              <InfoIcon aria-hidden />
+              <AlertDescription>
+                Los cambios valen para los mixes que terminen desde que guardas.{" "}
+                <b>No recalculan el historial.</b> Para corregir a jugadores
+                puntuales usa Ajustes manuales.
+              </AlertDescription>
+            </Alert>
+          </div>
+          {groups.map((g) => (
+            <fieldset key={g} className="flex flex-col gap-3.5 border-b p-4">
+              <legend className="float-left mb-3.5 w-full text-xs font-semibold tracking-[0.5px] text-muted-foreground uppercase">
+                {g}
+              </legend>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+                {ELO_FIELDS.filter((f) => f.group === g).map((f) => {
+                  const err = errors[f.key]
+                  const isChanged =
+                    !err && d[f.key].trim() !== savedDraft[f.key]
+                  return (
+                    <div key={f.key} className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor={`${id}-${f.key}`}
+                        className="flex justify-between gap-2 text-[13px] font-medium"
+                      >
+                        <span>{f.label}</span>
+                        {isChanged && (
+                          <span className="font-mono text-xs font-normal text-primary">
+                            antes {savedDraft[f.key]}
+                          </span>
+                        )}
+                      </label>
+                      <div className="relative">
+                        <Input
+                          id={`${id}-${f.key}`}
+                          inputMode="decimal"
+                          value={d[f.key]}
+                          aria-invalid={!!err}
+                          aria-describedby={`${id}-${f.key}-help`}
+                          onChange={(e) =>
+                            setD((p) => ({ ...p, [f.key]: e.target.value }))
+                          }
+                          className="h-10 pr-8 font-mono"
+                        />
+                        {f.unit && (
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs text-muted-foreground"
+                          >
+                            {f.unit}
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        id={`${id}-${f.key}-help`}
+                        className={cn(
+                          "text-xs leading-snug",
+                          err ? "text-destructive" : "text-muted-foreground"
+                        )}
+                      >
+                        {err ?? `${f.help} (${f.min}–${f.max})`}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </fieldset>
+          ))}
+          <div className="flex flex-wrap items-center justify-end gap-2.5 p-4">
+            <span className="flex-1 text-[13px] text-muted-foreground">
+              {save.isError
+                ? errorMessage(save.error)
+                : changed.length === 0
+                  ? "Sin cambios"
+                  : changed.length === 1
+                    ? "1 cambio sin guardar"
+                    : `${changed.length} cambios sin guardar`}
+            </span>
+            <Button
+              variant="outline"
+              size="md"
+              disabled={changed.length === 0 || save.isPending}
+              onClick={() => setD(savedDraft)}
+            >
+              Descartar
+            </Button>
+            <Button
+              size="md"
+              disabled={changed.length === 0 || !values || save.isPending}
+              onClick={() =>
+                values &&
+                save.mutate(values, {
+                  onSuccess: () =>
+                    toast.success(
+                      "Reglas guardadas. Valen para los mixes que terminen desde ahora."
+                    ),
+                })
+              }
+            >
+              Guardar reglas
+            </Button>
+          </div>
+        </section>
+      </Card>
 
       <aside
         aria-label="Vista previa"
         className="flex min-w-0 flex-[1_1_380px] flex-col gap-3"
       >
-        <Card className="gap-3.5">
+        <Card variant="outline" className="flex flex-col gap-3.5 p-4">
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="text-[15px] font-semibold">Así queda un mix</h2>
             <span className="text-xs text-muted-foreground">

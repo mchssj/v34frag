@@ -25,6 +25,7 @@ import { ListState, Paging, RowLink } from "./PlayersRanking"
 import { teamPodiumOptions, teamRankingOptions } from "../api/queries"
 import type { RankingTeam } from "../types"
 import { SearchBox } from "@/components/brand/SearchBox"
+import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import type { TeamRankingSearch } from "../lib/search"
 
@@ -75,7 +76,10 @@ export function TeamsRanking({
         }
       />
       <Podium items={items} loading={podium.isPending} />
-      <div className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)]">
+      <Card
+        variant="outline"
+        className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
+      >
         <div className="flex flex-wrap items-center gap-2 border-b p-3">
           <SearchBox
             value={search.q}
@@ -141,7 +145,7 @@ export function TeamsRanking({
             {pcw && ` · ${ppw.pcw} pts por PCW ganada como equipo oficial`}
           </p>
         )}
-      </div>
+      </Card>
     </section>
   )
 }

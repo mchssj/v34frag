@@ -4,6 +4,7 @@ import { cn } from "cn"
 import { ChevronDownIcon, CheckIcon, HistoryIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +28,10 @@ export function SeasonBar({
   onSelect: (value: string) => void
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border bg-card px-4 py-3">
+    <Card
+      variant="outline"
+      className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3"
+    >
       <SeasonPicker seasons={seasons} season={season} onSelect={onSelect} />
       {!season ? (
         <span className="text-xs text-muted-foreground">
@@ -74,7 +78,7 @@ export function SeasonBar({
           )}
         </>
       )}
-    </div>
+    </Card>
   )
 }
 

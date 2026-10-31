@@ -2,11 +2,12 @@ import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { MapIcon } from "lucide-react"
 import { EmptyState } from "@/components/brand/EmptyState"
+import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapCards, type MapCard } from "../../lib/labels"
 import { mapStatsOptions } from "../../api/queries"
-import { card, Loaded } from "./shared"
+import { Loaded } from "./shared"
 
 // ---------- Mapas ----------
 
@@ -19,11 +20,11 @@ export function Maps({ nick }: { nick: string }) {
         const cards = mapCards(catalog, items)
         if (!cards.length)
           return (
-            <div className={cn(card, "flex min-h-[396px]")}>
+            <Card variant="outline" className="flex min-h-[396px]">
               <EmptyState icon={MapIcon} title="Todavía no jugó mapas">
                 Sus estadísticas por mapa aparecen al jugar en el servidor.
               </EmptyState>
-            </div>
+            </Card>
           )
         return (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
@@ -44,7 +45,7 @@ function MapTile({ map }: { map: MapCard }) {
   const wr = played ? Math.round(((s?.wins ?? 0) / played) * 100) : 0
   const maps = s?.maps ?? played
   return (
-    <div className={cn(card, "flex flex-col overflow-hidden")}>
+    <Card variant="outline" className="flex flex-col overflow-hidden">
       <div
         className={cn(
           "relative h-[72px] border-b bg-cover bg-center",
@@ -98,7 +99,7 @@ function MapTile({ map }: { map: MapCard }) {
         className="mt-auto h-[3px] rounded-none"
         indicatorClassName={wr >= 50 ? "bg-win" : "bg-muted-foreground"}
       />
-    </div>
+    </Card>
   )
 }
 

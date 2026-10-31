@@ -15,6 +15,7 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { joinState, lookingForText, MAX_ROSTER, rankOf } from "../lib/model"
@@ -166,92 +167,99 @@ function TeamCard({
   }
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-hero border bg-card">
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="flex items-start gap-3">
-          <TeamCrest team={team} size="sm" />
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate font-semibold">{team.name}</span>
-            <span className="text-xs text-muted-foreground">
-              {team.members}/{team.max_members ?? MAX_ROSTER} en el roster
+    <Card
+      variant="outline"
+      radius="hero"
+      asChild
+      className="flex flex-col overflow-hidden"
+    >
+      <li>
+        <div className="flex flex-1 flex-col gap-3 p-4">
+          <div className="flex items-start gap-3">
+            <TeamCrest team={team} size="sm" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-semibold">{team.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {team.members}/{team.max_members ?? MAX_ROSTER} en el roster
+              </span>
             </span>
-          </span>
-          <span className="flex flex-col items-end">
-            <span className="font-mono text-sm font-bold">
-              {rank ? `#${rank}` : "—"}
+            <span className="flex flex-col items-end">
+              <span className="font-mono text-sm font-bold">
+                {rank ? `#${rank}` : "—"}
+              </span>
+              <span className="text-[11px] text-muted-foreground">ranking</span>
             </span>
-            <span className="text-[11px] text-muted-foreground">ranking</span>
-          </span>
+          </div>
+          {team.looking_for.length > 0 ? (
+            <ul className="flex flex-wrap gap-1.5" aria-label="Qué busca">
+              {team.looking_for.map((w) => (
+                <li
+                  key={w}
+                  className="inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium"
+                >
+                  <span className="size-1.5 rounded-full bg-win" aria-hidden />
+                  {lookingForText(w)}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {state === "full"
+                ? "Roster completo"
+                : "No está buscando jugadores"}
+            </p>
+          )}
         </div>
-        {team.looking_for.length > 0 ? (
-          <ul className="flex flex-wrap gap-1.5" aria-label="Qué busca">
-            {team.looking_for.map((w) => (
-              <li
-                key={w}
-                className="inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium"
-              >
-                <span className="size-1.5 rounded-full bg-win" aria-hidden />
-                {lookingForText(w)}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            {state === "full"
-              ? "Roster completo"
-              : "No está buscando jugadores"}
-          </p>
-        )}
-      </div>
-      <div className="flex items-center justify-between gap-2 border-t bg-muted/40 px-4 py-2.5">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground"
-        >
-          <Link to="/teams/$id" params={{ id: team.id }}>
-            Ver equipo
-            <ArrowUpRightIcon aria-hidden />
-          </Link>
-        </Button>
-        {state === "join" && (
+        <div className="flex items-center justify-between gap-2 border-t bg-muted/40 px-4 py-2.5">
           <Button
+            asChild
+            variant="ghost"
             size="sm"
-            disabled={join.isPending}
-            onClick={() => void ask()}
-            className="bg-foreground text-background hover:bg-foreground/85"
+            className="text-muted-foreground"
           >
-            <UserPlusIcon aria-hidden />
-            Pedir entrar
+            <Link to="/teams/$id" params={{ id: team.id }}>
+              Ver equipo
+              <ArrowUpRightIcon aria-hidden />
+            </Link>
           </Button>
-        )}
-        {state === "sent" && (
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={cancel.isPending}
-            onClick={() => void withdraw()}
-            aria-label={`Pedido enviado a ${team.name}. Tocar para cancelar`}
-            className={cn("border-win text-win hover:text-win")}
-          >
-            <CheckIcon aria-hidden />
-            Pedido enviado
-          </Button>
-        )}
-        {state === "full" && (
-          <Button size="sm" variant="outline" disabled>
-            <LockIcon aria-hidden />
-            Completo
-          </Button>
-        )}
-        {state === "member" && (
-          <Button size="sm" variant="outline" disabled>
-            <CheckIcon aria-hidden />
-            Tu equipo
-          </Button>
-        )}
-      </div>
-    </li>
+          {state === "join" && (
+            <Button
+              size="sm"
+              disabled={join.isPending}
+              onClick={() => void ask()}
+              className="bg-foreground text-background hover:bg-foreground/85"
+            >
+              <UserPlusIcon aria-hidden />
+              Pedir entrar
+            </Button>
+          )}
+          {state === "sent" && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={cancel.isPending}
+              onClick={() => void withdraw()}
+              aria-label={`Pedido enviado a ${team.name}. Tocar para cancelar`}
+              className={cn("border-win text-win hover:text-win")}
+            >
+              <CheckIcon aria-hidden />
+              Pedido enviado
+            </Button>
+          )}
+          {state === "full" && (
+            <Button size="sm" variant="outline" disabled>
+              <LockIcon aria-hidden />
+              Completo
+            </Button>
+          )}
+          {state === "member" && (
+            <Button size="sm" variant="outline" disabled>
+              <CheckIcon aria-hidden />
+              Tu equipo
+            </Button>
+          )}
+        </div>
+      </li>
+    </Card>
   )
 }

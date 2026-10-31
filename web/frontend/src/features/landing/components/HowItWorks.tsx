@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 
 import { SectionHeading } from "@/components/brand/SectionHeading"
+import { Card } from "@/components/ui/card"
 
 const STEPS: {
   n: string
@@ -65,37 +66,41 @@ export function HowItWorks() {
       <ol className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-5">
         {STEPS.map(
           ({ n, icon: Icon, title, text, footIcon: FootIcon, foot }) => (
-            <li
-              key={n}
-              className="flex flex-col overflow-hidden rounded-hero border bg-card"
+            <Card
+              variant="outline"
+              radius="hero"
+              asChild
+              className="flex flex-col overflow-hidden"
             >
-              <div className="flex flex-1 flex-col gap-3.5 px-6 pt-6 pb-5">
-                <div className="flex items-center justify-between">
-                  <span className="grid size-11 place-items-center rounded-tile bg-primary/14">
-                    <Icon className="size-5 text-primary" aria-hidden />
-                  </span>
-                  <span
-                    aria-hidden
-                    className="font-mono text-[40px] leading-none font-bold tracking-[-2px] text-muted"
-                  >
-                    {n}
-                  </span>
+              <li key={n}>
+                <div className="flex flex-1 flex-col gap-3.5 px-6 pt-6 pb-5">
+                  <div className="flex items-center justify-between">
+                    <span className="grid size-11 place-items-center rounded-tile bg-primary/14">
+                      <Icon className="size-5 text-primary" aria-hidden />
+                    </span>
+                    <span
+                      aria-hidden
+                      className="font-mono text-[40px] leading-none font-bold tracking-[-2px] text-muted"
+                    >
+                      {n}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold tracking-[-0.3px]">
+                    {title}
+                  </h3>
+                  <p className="text-sm leading-[1.6] text-pretty text-muted-foreground">
+                    {text}
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold tracking-[-0.3px]">
-                  {title}
-                </h3>
-                <p className="text-sm leading-[1.6] text-pretty text-muted-foreground">
-                  {text}
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5 border-t bg-muted/45 px-6 py-3.5">
-                <FootIcon
-                  className="size-3.5 text-muted-foreground"
-                  aria-hidden
-                />
-                <span className="font-mono text-xs font-medium">{foot}</span>
-              </div>
-            </li>
+                <div className="flex items-center gap-2.5 border-t bg-muted/45 px-6 py-3.5">
+                  <FootIcon
+                    className="size-3.5 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <span className="font-mono text-xs font-medium">{foot}</span>
+                </div>
+              </li>
+            </Card>
           )
         )}
       </ol>

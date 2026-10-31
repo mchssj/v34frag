@@ -26,7 +26,6 @@ import {
   type Tone,
 } from "../../lib/format"
 import {
-  Card,
   Chip,
   Dot,
   EmptyState,
@@ -36,6 +35,7 @@ import {
   headCell,
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
+import { Card } from "@/components/ui/card"
 import {
   DEMOS_PER,
   demoSummaryOptions,
@@ -195,7 +195,7 @@ export function DemosTab() {
           aria-label="Worker de demos"
           className="flex min-w-0 flex-[1_1_300px] flex-col gap-3"
         >
-          <Card>
+          <Card variant="outline" className="flex flex-col gap-3 p-4">
             <h2 className="text-[15px] font-semibold">Espacio en R2</h2>
             <span className="font-mono text-2xl font-semibold">
               {s ? fmtBytes(s.uploaded_bytes) : "—"}
@@ -294,7 +294,7 @@ function Workers() {
   } | null>(null)
 
   return (
-    <Card>
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <h2 className="text-[15px] font-semibold">Worker de demos</h2>
       {workers.isError ? (
         <QueryError
