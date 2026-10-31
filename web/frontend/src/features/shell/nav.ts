@@ -153,6 +153,13 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         admin: "bans",
         badge: "adminBans",
       },
+      {
+        key: "admin-anticheat",
+        label: "Anticheat",
+        to: "/admin/anticheat",
+        icon: ShieldAlertIcon,
+        admin: "anticheat",
+      },
     ],
   },
 ]
@@ -171,6 +178,7 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
   maps: "Mapas",
   users: "Usuarios",
   bans: "Baneos",
+  anticheat: "Anticheat",
 }
 
 /** Secciones de Mi perfil en los breadcrumbs (la principal, Perfil, queda como "Mi perfil"). */

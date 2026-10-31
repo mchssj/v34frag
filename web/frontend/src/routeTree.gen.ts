@@ -21,6 +21,7 @@ import { Route as AppPcwRouteImport } from './routes/_app/pcw'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as AppAdminAnticheatRouteImport } from './routes/_app/admin.anticheat'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
@@ -31,6 +32,7 @@ import { Route as AppAdminSeasonsRouteImport } from './routes/_app/admin.seasons
 import { Route as AppAdminServersRouteImport } from './routes/_app/admin.servers'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app/admin.teams'
 import { Route as AppAdminUsersRouteImport } from './routes/_app/admin.users'
+import { Route as AppAnticheatVincularRouteImport } from './routes/_app/anticheat.vincular'
 import { Route as AppEventsIndexRouteImport } from './routes/_app/events.index'
 import { Route as AppEventsIdRouteImport } from './routes/_app/events.$id'
 import { Route as AppMatchIdRouteImport } from './routes/_app/match.$id'
@@ -108,6 +110,11 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AuthRoute,
 } as any)
+const AppAdminAnticheatRoute = AppAdminAnticheatRouteImport.update({
+  id: '/anticheat',
+  path: '/anticheat',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminBansRoute = AppAdminBansRouteImport.update({
   id: '/bans',
   path: '/bans',
@@ -157,6 +164,11 @@ const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAnticheatVincularRoute = AppAnticheatVincularRouteImport.update({
+  id: '/anticheat/vincular',
+  path: '/anticheat/vincular',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppEventsIndexRoute = AppEventsIndexRouteImport.update({
   id: '/events/',
@@ -260,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/admin/anticheat': typeof AppAdminAnticheatRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/events': typeof AppAdminEventsRoute
@@ -270,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/admin/servers': typeof AppAdminServersRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/users': typeof AppAdminUsersRoute
+  '/anticheat/vincular': typeof AppAnticheatVincularRoute
   '/events/$id': typeof AppEventsIdRoute
   '/match/$id': typeof AppMatchIdRoute
   '/matches/results': typeof AppMatchesResultsRoute
@@ -299,6 +313,7 @@ export interface FileRoutesByTo {
   '/pcw': typeof AppPcwRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/admin/anticheat': typeof AppAdminAnticheatRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/events': typeof AppAdminEventsRoute
@@ -309,6 +324,7 @@ export interface FileRoutesByTo {
   '/admin/servers': typeof AppAdminServersRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/users': typeof AppAdminUsersRoute
+  '/anticheat/vincular': typeof AppAnticheatVincularRoute
   '/events/$id': typeof AppEventsIdRoute
   '/match/$id': typeof AppMatchIdRoute
   '/matches/results': typeof AppMatchesResultsRoute
@@ -342,6 +358,7 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/_app/admin/anticheat': typeof AppAdminAnticheatRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
@@ -352,6 +369,7 @@ export interface FileRoutesById {
   '/_app/admin/servers': typeof AppAdminServersRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/users': typeof AppAdminUsersRoute
+  '/_app/anticheat/vincular': typeof AppAnticheatVincularRoute
   '/_app/events/$id': typeof AppEventsIdRoute
   '/_app/match/$id': typeof AppMatchIdRoute
   '/_app/matches/results': typeof AppMatchesResultsRoute
@@ -384,6 +402,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/login'
     | '/register'
+    | '/admin/anticheat'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/events'
@@ -394,6 +413,7 @@ export interface FileRouteTypes {
     | '/admin/servers'
     | '/admin/teams'
     | '/admin/users'
+    | '/anticheat/vincular'
     | '/events/$id'
     | '/match/$id'
     | '/matches/results'
@@ -423,6 +443,7 @@ export interface FileRouteTypes {
     | '/pcw'
     | '/login'
     | '/register'
+    | '/admin/anticheat'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/events'
@@ -433,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/servers'
     | '/admin/teams'
     | '/admin/users'
+    | '/anticheat/vincular'
     | '/events/$id'
     | '/match/$id'
     | '/matches/results'
@@ -465,6 +487,7 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
+    | '/_app/admin/anticheat'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
     | '/_app/admin/events'
@@ -475,6 +498,7 @@ export interface FileRouteTypes {
     | '/_app/admin/servers'
     | '/_app/admin/teams'
     | '/_app/admin/users'
+    | '/_app/anticheat/vincular'
     | '/_app/events/$id'
     | '/_app/match/$id'
     | '/_app/matches/results'
@@ -588,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_app/admin/anticheat': {
+      id: '/_app/admin/anticheat'
+      path: '/anticheat'
+      fullPath: '/admin/anticheat'
+      preLoaderRoute: typeof AppAdminAnticheatRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/bans': {
       id: '/_app/admin/bans'
       path: '/bans'
@@ -657,6 +688,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/users'
       preLoaderRoute: typeof AppAdminUsersRouteImport
       parentRoute: typeof AppAdminRoute
+    }
+    '/_app/anticheat/vincular': {
+      id: '/_app/anticheat/vincular'
+      path: '/anticheat/vincular'
+      fullPath: '/anticheat/vincular'
+      preLoaderRoute: typeof AppAnticheatVincularRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/events/': {
       id: '/_app/events/'
@@ -788,6 +826,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppAdminRouteChildren {
+  AppAdminAnticheatRoute: typeof AppAdminAnticheatRoute
   AppAdminBansRoute: typeof AppAdminBansRoute
   AppAdminClipsRoute: typeof AppAdminClipsRoute
   AppAdminEventsRoute: typeof AppAdminEventsRoute
@@ -801,6 +840,7 @@ interface AppAdminRouteChildren {
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminAnticheatRoute: AppAdminAnticheatRoute,
   AppAdminBansRoute: AppAdminBansRoute,
   AppAdminClipsRoute: AppAdminClipsRoute,
   AppAdminEventsRoute: AppAdminEventsRoute,
@@ -844,6 +884,7 @@ interface AppRouteChildren {
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
   AppProfileRoute: typeof AppProfileRouteWithChildren
+  AppAnticheatVincularRoute: typeof AppAnticheatVincularRoute
   AppEventsIdRoute: typeof AppEventsIdRoute
   AppMatchIdRoute: typeof AppMatchIdRoute
   AppMatchesResultsRoute: typeof AppMatchesResultsRoute
@@ -866,6 +907,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
   AppProfileRoute: AppProfileRouteWithChildren,
+  AppAnticheatVincularRoute: AppAnticheatVincularRoute,
   AppEventsIdRoute: AppEventsIdRoute,
   AppMatchIdRoute: AppMatchIdRoute,
   AppMatchesResultsRoute: AppMatchesResultsRoute,
