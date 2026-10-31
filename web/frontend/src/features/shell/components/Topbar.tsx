@@ -21,9 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { breadcrumbsFor } from "./nav"
-import { NotificationsMenu } from "./notifications/NotificationsMenu"
-import { useCrumbData } from "./queries"
+import { breadcrumbsFor } from "../lib/nav"
+import { NotificationsMenu } from "../notifications/components/NotificationsMenu"
+import { useCrumbData } from "../api/queries"
 
 // ⌘ en Mac, Ctrl en el resto.
 const isMac =

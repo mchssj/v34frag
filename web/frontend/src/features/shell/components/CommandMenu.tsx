@@ -20,7 +20,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { LogoutDialog } from "./AccountMenu"
-import { NAV_GROUPS, type AppPath } from "./nav"
+import { NAV_GROUPS, type AppPath } from "../lib/nav"
 
 type Page = { label: string; to: AppPath; icon: LucideIcon; hint: string }
 

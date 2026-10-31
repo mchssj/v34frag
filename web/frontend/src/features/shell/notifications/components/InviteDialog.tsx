@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog"
-import type { Described, Notification } from "./model"
+import type { Described, Notification } from "../lib/model"
 
 /** Detalle de una invitación a un equipo, con Aceptar / Rechazar. */
 export function InviteDialog({

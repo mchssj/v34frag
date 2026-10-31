@@ -3,7 +3,7 @@ import { ArrowRightIcon, PlugZapIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { sideName } from "@/features/public/api/queries"
-import { useFeaturedLive } from "./queries"
+import { useFeaturedLive } from "../api/queries"
 
 const KIND_LABEL = { mix: "Mix", pcw: "PCW", official: "Torneo" } as const
 

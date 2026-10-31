@@ -6,7 +6,7 @@ import {
 
 import { api, unwrap } from "@/api/client"
 import { errorFromResponse, isApiError, networkError } from "@/api/errors"
-import { shellKeys } from "@/features/shell/queries"
+import { shellKeys } from "@/features/shell/api/queries"
 import type { LiveMixDetail, EloChoice } from "../types"
 
 // Sin SSE por ahora (contrato 8d): el listado y la sala en vivo se consultan cada 20 segundos.

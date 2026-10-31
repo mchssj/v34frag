@@ -7,7 +7,8 @@ import {
 import { api, unwrap, type Schemas } from "@/api/client"
 import { errorFromResponse, networkError } from "@/api/errors"
 import { profileKeys } from "@/features/profile/api/queries"
-import type { Notification } from "./model"
+import type { Notification } from "../lib/model"
+import type { Resolution } from "../types"
 
 // Contrato notificaciones.md: el contador se consulta cada 30 s, al enfocar la pestaña y después de
 // cada acción propia, siempre con If-None-Match; la lista, solo al abrir el menú.
@@ -87,8 +88,6 @@ export function useMarkRead() {
       queryClient.invalidateQueries({ queryKey: notificationKeys.all }),
   })
 }
-
-export type Resolution = "accepted" | "rejected"
 
 /** Acepta o rechaza una invitación o un pedido para entrar, con sus endpoints de siempre. */
 export function useResolveRequest() {

@@ -8,7 +8,7 @@ import {
 import { es } from "date-fns/locale"
 
 import type { Schemas } from "@/api/client"
-import type { AppPath } from "../nav"
+import type { AppPath } from "../../lib/nav"
 
 // Notificaciones de la API (contrato notificaciones.md, sección 12). La base guarda `type` y `data`
 // con los nombres del momento; el texto, el icono y el link se arman acá.

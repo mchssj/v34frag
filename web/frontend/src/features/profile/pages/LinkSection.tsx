@@ -33,7 +33,7 @@ import {
   useRequestUnlink,
 } from "@/features/onboarding/api/queries"
 import type { SteamStatus } from "@/features/onboarding/types"
-import { timeAgo } from "@/features/shell/notifications/model"
+import { timeAgo } from "@/features/shell/notifications/lib/model"
 import {
   claimOutcome,
   gameAccounts,

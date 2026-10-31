@@ -3,7 +3,7 @@
 
 import { differenceInSeconds, parseISO } from "date-fns"
 
-import { timeAgo } from "@/features/shell/notifications/model"
+import { timeAgo } from "@/features/shell/notifications/lib/model"
 
 /**
  * "Último cambio hace X" (`password_changed_at`). null si no hay fecha: solo se guarda desde el

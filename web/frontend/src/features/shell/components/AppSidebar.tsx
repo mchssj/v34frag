@@ -19,9 +19,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/api/queries"
-import { activeNavKey, NAV_GROUPS, type BadgeKey } from "./nav"
+import { activeNavKey, NAV_GROUPS, type BadgeKey } from "../lib/nav"
 import { AccountMenu } from "./AccountMenu"
-import { useBadgeCounts } from "./queries"
+import { useBadgeCounts } from "../api/queries"
 
 const itemClass =
   "gap-2.5 px-2 rounded-lg data-active:font-semibold [&_svg]:size-4"

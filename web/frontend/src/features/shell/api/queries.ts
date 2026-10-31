@@ -16,7 +16,7 @@ import {
 } from "@/features/public/api/queries"
 import { eventDetailOptions } from "@/features/events/api/queries"
 import { teamDetailOptions } from "@/features/teams/api/queries"
-import type { BadgeKey, CrumbData } from "./nav"
+import type { BadgeKey, CrumbData } from "../lib/nav"
 
 const MINUTE = 60_000
 

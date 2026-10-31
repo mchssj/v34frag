@@ -35,7 +35,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/api/queries"
-import { useShellIdentity } from "./queries"
+import { useShellIdentity } from "../api/queries"
 
 function roleLabel(
   role: AuthUser["role"],

@@ -38,14 +38,14 @@ import {
   type Notification,
   type NotificationKind,
   type NotificationTab,
-} from "./model"
+} from "../lib/model"
 import {
   notificationsOptions,
   unreadCountOptions,
   useMarkRead,
   useResolveRequest,
-  type Resolution,
-} from "./queries"
+} from "../api/queries"
+import type { Resolution } from "../types"
 
 const ICONS: Record<NotificationKind, LucideIcon> = {
   invite: UserPlusIcon,

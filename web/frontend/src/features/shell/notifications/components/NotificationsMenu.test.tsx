@@ -12,7 +12,7 @@ import {
 } from "vitest"
 
 import { renderWithQuery } from "@/test/render"
-import { sampleNotifications } from "./mock"
+import { sampleNotifications } from "../lib/mock"
 import { NotificationsMenu } from "./NotificationsMenu"
 
 const navigate = vi.hoisted(() => vi.fn())
