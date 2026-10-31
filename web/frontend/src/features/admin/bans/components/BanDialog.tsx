@@ -26,12 +26,12 @@ import {
   useUpdateBan,
 } from "../api/queries"
 import type { Ban } from "../types"
+import { banExpiry } from "../lib/bans"
+import type { Duration } from "../lib/bans"
 
 export type BanTarget =
   | { kind: "player"; id: string; label: string }
   | { kind: "steam"; steamId: string }
-
-type Duration = "1" | "3" | "7" | "30" | "date" | "perm"
 
 const DURATIONS: { key: Duration; label: string }[] = [
   { key: "1", label: "1 día" },
@@ -46,17 +46,6 @@ const STEAM64 = /^7656\d{13}$/
 
 const targetLabel = (t: BanTarget) =>
   t.kind === "player" ? t.label : t.steamId
-
-/** Fecha de vencimiento del baneo (null = permanente). */
-export function banExpiry(
-  d: Duration,
-  date: string,
-  now = new Date()
-): string | null {
-  if (d === "perm") return null
-  if (d === "date") return endOfDayIso(date)
-  return new Date(now.getTime() + Number(d) * 86_400_000).toISOString()
-}
 
 /**
  * Banear (con `fixed` o eligiendo a quién) o cambiar un baneo activo (`ban`). Un baneo vale en todos

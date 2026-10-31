@@ -6,17 +6,14 @@ import {
   canSeeAdmin,
   homeAdminSection,
 } from "@/auth/permissions"
-import { requestBlock } from "../players/components/SteamTabs"
-import {
-  adjustValueError,
-  adjustedElo,
-} from "../servers/components/AdjustmentsTab"
-import { parseElo } from "../servers/components/EloRulesTab"
-import { leadingSide } from "../servers/components/ReviewTab"
-import { hudChip, parseHudPort } from "../servers/components/HudSection"
-import { serverWarnings } from "../servers/components/ServersTab"
+import { requestBlock } from "../players/lib/steam"
+import { adjustValueError, adjustedElo } from "../servers/lib/adjustments"
+import { parseElo } from "../servers/lib/eloRules"
+import { leadingSide } from "../servers/lib/review"
+import { hudChip, parseHudPort } from "../servers/lib/hud"
+import { serverWarnings } from "../servers/lib/servers"
 import type { AdminServer } from "../servers/types"
-import { banExpiry } from "../bans/components/BanDialog"
+import { banExpiry } from "../bans/lib/bans"
 import { banOrigin, banSteps, canEditBan } from "../bans/lib/bans"
 import type { Ban } from "../bans/types"
 import type { SteamRequest } from "../players/types"

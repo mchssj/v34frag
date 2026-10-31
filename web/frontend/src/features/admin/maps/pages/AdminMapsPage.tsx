@@ -1,12 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useBlocker } from "@tanstack/react-router"
 import { cn } from "cn"
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ImageIcon,
-  PlusIcon,
-} from "lucide-react"
+import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 
@@ -50,8 +45,9 @@ import {
 } from "../lib/catalog"
 import { MapPanel } from "../components/MapPanel"
 import { useSaveCatalog } from "../api/queries"
+import { MAP_FILTERS } from "../lib/catalog"
+import { MapThumb } from "../components/MapThumb"
 
-export const MAP_FILTERS = ["mixes", "veto", "nophoto", "retired"] as const
 export type MapFilter = (typeof MAP_FILTERS)[number]
 
 export function AdminMapsPage({
@@ -398,32 +394,5 @@ function MapRow({
         </Chip>
       </TableCell>
     </TableRow>
-  )
-}
-
-export function MapThumb({
-  image,
-  dim,
-  className,
-}: {
-  image: string | null
-  dim?: boolean
-  className?: string
-}) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "grid h-10 w-[72px] shrink-0 place-items-center overflow-hidden rounded-md bg-muted text-muted-foreground",
-        dim && "opacity-50",
-        className
-      )}
-    >
-      {image ? (
-        <img src={image} alt="" className="size-full object-cover" />
-      ) : (
-        <ImageIcon className="size-4" />
-      )}
-    </span>
   )
 }

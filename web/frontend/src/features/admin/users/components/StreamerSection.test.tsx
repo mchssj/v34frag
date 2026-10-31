@@ -12,7 +12,7 @@ import {
 } from "vitest"
 
 import { renderWithQuery } from "@/test/render"
-import { StreamerSection } from "./AccountsTab"
+import { StreamerSection } from "./StreamerSection"
 import type { AdminUser } from "../types"
 
 const API = "http://api.test"

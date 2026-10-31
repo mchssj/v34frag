@@ -1,5 +1,6 @@
 import type { Tone } from "../../lib/format"
 import type { Ban, BanStatus } from "../types"
+import { endOfDayIso } from "../../lib/format"
 
 // Reglas de la sección Baneos que no dependen de React.
 
@@ -94,3 +95,16 @@ export function banSteps(b: Ban): BanStep[] {
 /** Cambiar o levantar: solo uno activo, y uno permanente solo si se pueden tocar los permanentes. */
 export const canEditBan = (b: Ban, canPermanent: boolean) =>
   b.status === "active" && (canPermanent || !b.permanent)
+
+export type Duration = "1" | "3" | "7" | "30" | "date" | "perm"
+
+/** Fecha de vencimiento del baneo (null = permanente). */
+export function banExpiry(
+  d: Duration,
+  date: string,
+  now = new Date()
+): string | null {
+  if (d === "perm") return null
+  if (d === "date") return endOfDayIso(date)
+  return new Date(now.getTime() + Number(d) * 86_400_000).toISOString()
+}

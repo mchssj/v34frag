@@ -127,3 +127,5 @@ export function imageError(file: File): string | null {
   if (file.size > MAP_IMAGE_MAX_BYTES) return "La foto pesa más de 2 MB."
   return null
 }
+
+export const MAP_FILTERS = ["mixes", "veto", "nophoto", "retired"] as const

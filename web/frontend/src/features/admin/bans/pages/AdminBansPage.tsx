@@ -50,20 +50,9 @@ import {
   personBansOptions,
 } from "../api/queries"
 import type { Ban, BanFilters, BanStatus } from "../types"
+import { banSearchSchema, STATUS_TABS } from "../lib/search"
 
-const STATUS_TABS = ["active", "expired", "lifted", "all"] as const
 type StatusTab = (typeof STATUS_TABS)[number]
-
-/** Filtros de la URL de `/admin/bans` (todos opcionales; sin estado = Activos). */
-export const banSearchSchema = z.object({
-  status: z.enum(STATUS_TABS).optional().catch(undefined),
-  source: z.enum(["web", "server", "import"]).optional().catch(undefined),
-  server: z.uuid().optional().catch(undefined),
-  q: z.string().max(60).optional().catch(undefined),
-  sort: z.enum(["recent", "soon"]).optional().catch(undefined),
-  page: z.number().int().min(1).optional().catch(undefined),
-  ban: z.uuid().optional().catch(undefined),
-})
 export type BanSearch = z.infer<typeof banSearchSchema>
 
 const ALL = "all"

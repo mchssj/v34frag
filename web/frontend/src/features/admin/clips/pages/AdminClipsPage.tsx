@@ -4,8 +4,8 @@ import { AdminHeader, AdminTabs } from "../../components/ui"
 import { clipReviewOptions } from "../api/queries"
 import { ReviewTab } from "../components/ReviewTab"
 import { RulesTab } from "../components/RulesTab"
+import { CLIP_TABS } from "../lib/clips"
 
-export const CLIP_TABS = ["review", "rules"] as const
 export type ClipTab = (typeof CLIP_TABS)[number]
 
 export function AdminClipsPage({

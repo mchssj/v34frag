@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ConfirmDialog, SecretDialog } from "../../components/dialogs"
-import { HudSection, hudChip } from "./HudSection"
+import { HudSection } from "./HudSection"
+import { hudChip } from "../lib/hud"
 import {
   ago,
   compareVersions,
@@ -45,41 +46,11 @@ import {
   useUpdateServer,
 } from "../api/queries"
 import type { AdminServer, ServerCreate, ServerToken } from "../types"
+import { MODES, serverWarnings } from "../lib/servers"
 
-export const MODES = {
-  mix: "Mix",
-  competitive: "Competitivo",
-  public: "Público",
-  deathmatch: "Deathmatch",
-  retakes: "Retakes",
-  practice: "Práctica",
-} as const
 type Mode = keyof typeof MODES
 
 type Filter = "all" | "online" | "warn" | "revoked"
-
-/** Activo con algo que mirar: sin señal, licencia por vencer o vencida, o plugin viejo. */
-export function serverWarnings(s: AdminServer, latest: string | null) {
-  if (!s.active) return []
-  const out: string[] = []
-  if (!s.online)
-    out.push(
-      `No valida su licencia desde ${ago(s.last_seen_at)} (lo hace al cargar cada mapa y cada 30 minutos).`
-    )
-  if (s.license_state === "expiring")
-    out.push(
-      "La licencia vence en pocos días: renuévala para que siga jugando mixes."
-    )
-  if (s.license_state === "expired")
-    out.push("Licencia vencida: no puede jugar mixes ni subir resultados.")
-  if (
-    latest &&
-    s.plugin_version &&
-    compareVersions(s.plugin_version, latest) < 0
-  )
-    out.push(`Tiene el plugin ${s.plugin_version}; la última es ${latest}.`)
-  return out
-}
 
 type Selection = { kind: "new" } | { kind: "edit"; id: string } | null
 

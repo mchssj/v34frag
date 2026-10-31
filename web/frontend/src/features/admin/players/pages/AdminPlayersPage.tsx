@@ -7,8 +7,8 @@ import { AdminHeader, AdminTabs } from "../../components/ui"
 import { FichasTab } from "../components/FichasTab"
 import { steamRequestsOptions } from "../api/queries"
 import { SteamRequestsTab, UnlinkedTab } from "../components/SteamTabs"
+import { PLAYER_TABS } from "../lib/tabs"
 
-export const PLAYER_TABS = ["fichas", "requests", "unlinked"] as const
 export type PlayerTab = (typeof PLAYER_TABS)[number]
 
 export function AdminPlayersPage({

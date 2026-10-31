@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import {
-  AdminClipsPage,
-  CLIP_TABS,
-} from "@/features/admin/clips/pages/AdminClipsPage"
+import { AdminClipsPage } from "@/features/admin/clips/pages/AdminClipsPage"
+import { CLIP_TABS } from "@/features/admin/clips/lib/clips"
 
 export const Route = createFileRoute("/_app/admin/clips")({
   validateSearch: z.object({
