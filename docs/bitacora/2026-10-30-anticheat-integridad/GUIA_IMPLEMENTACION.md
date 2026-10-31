@@ -19,13 +19,18 @@ Implementado y probado en local el 2026-10-30. Nada desplegado.
 | Retención: borra lo vencido, respeta lo abierto y lo conservado; `anon` no puede llamarla | Pasa |
 | Inversa `41` y volver a aplicar | Pasa |
 | Instalar y desinstalar la 0.3.0 | Pasa, sin dejar rastro |
-| Bridge en `cssds`: carga, `sm_ac_status`, `cml_ac_mix`, `sm_ac_open` por RCON | Pasa. **Sin jugador real no se probó expulsar.** Se retiró después |
+| Bridge en `cssds`, con Kyan conectado y la base local | Sin SteamID y sin aplicación: expulsa unos 15 a 20 s después de empezar el mix. Con la aplicación abierta: sigue jugando. Aplicación cerrada en partida: expulsa unos 2 min 15 s después del último latido. El SteamID se simuló con `BRIDGE_DEBUG=`, porque un servidor LAN no da uno. Se retiró después |
 
-**Sin probar:** el cron en un VPS y la expulsión con un jugador real.
+**Sin probar:** el cron en un VPS y el Bridge con un SteamID real, en un servidor con validación.
 
 ## En qué se apartó del plan
 
 Ninguno.
+
+## Incidentes durante las pruebas
+
+- El Bridge saltaba la comprobación si el jugador no tenía SteamID válido, y nunca lo expulsaba. Corregido: en un mix cuenta como no verificado.
+- Con `sv_lan 0`, `cssds` rechaza a ClientMod por validación de Steam. Por eso la prueba usó la compilación de depuración.
 
 ## Cómo revertir
 
