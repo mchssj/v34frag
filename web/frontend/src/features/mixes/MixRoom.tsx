@@ -27,7 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { crestText } from "@/features/teams/model"
+import { crestText } from "@/features/teams/lib/model"
 import { MapBackdrop } from "./MapBackdrop"
 import {
   cancelReasonLabel,

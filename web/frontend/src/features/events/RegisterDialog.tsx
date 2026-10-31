@@ -13,9 +13,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
-import { STATUS_LABEL, statusOf } from "@/features/teams/model"
-import { teamMembersOptions, type RosterEntry } from "@/features/teams/queries"
-import { Initial } from "@/features/teams/ui"
+import { STATUS_LABEL, statusOf } from "@/features/teams/lib/model"
+import { teamMembersOptions } from "@/features/teams/api/queries"
+import type { RosterEntry } from "@/features/teams/types"
+import { Initial } from "@/features/teams/components/ui"
 import { modeText, type MyTeamRef } from "./model"
 import {
   useRegisterTeam,

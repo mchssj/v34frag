@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { TeamView } from "@/features/teams/TeamView"
+import { TeamView } from "@/features/teams/pages/TeamView"
 
 export const Route = createFileRoute("/_app/teams/$id")({
   component: TeamPage,

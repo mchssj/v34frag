@@ -18,8 +18,9 @@ import {
   lookingForText,
   MAX_ROSTER,
   type LookingFor,
-} from "./model"
-import { useSetLookingFor, type TeamDetail } from "./queries"
+} from "../lib/model"
+import { useSetLookingFor } from "../api/queries"
+import type { TeamDetail } from "../types"
 
 /** Etiquetas "Busca activo…" de la cabecera (solo lectura, también en la vista pública). */
 export function LookingForTags({ team }: { team: TeamDetail }) {

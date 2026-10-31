@@ -7,20 +7,7 @@ import {
 
 import { api, unwrap, type Schemas } from "@/api/client"
 import { profileKeys } from "@/features/profile/api/queries"
-
-// Equipos: Mi equipo, vista pública, Crear y Buscar (handoff_equipo). Bitácoras 2026-10-24-equipo y
-// 2026-10-29-equipo-torneos-api-frontend.
-
-export type TeamDetail = Schemas["TeamDetail"]
-export type TeamSummary = Schemas["TeamSummary"]
-export type RosterEntry = Schemas["RosterEntry"]
-export type TeamInvite = Schemas["Invite"]
-export type TeamRequest = Schemas["TeamRequest"]
-export type MatchSummary = Schemas["MatchSummary"]
-export type PlayerSummary = Schemas["PlayerSummary"]
-export type MyTeamEntry = Schemas["MyTeam"]
-export type TeamEvent = Schemas["TeamEvent"]
-export type RosterStatusValue = Schemas["InviteBody"]["role"]
+import type { TeamDetail, TeamSummary, RosterStatusValue } from "../types"
 
 const MINUTE = 60_000
 

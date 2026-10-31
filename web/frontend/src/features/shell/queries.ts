@@ -15,7 +15,7 @@ import {
   sideName,
 } from "@/features/public/api/queries"
 import { eventDetailOptions } from "@/features/events/queries"
-import { teamDetailOptions } from "@/features/teams/queries"
+import { teamDetailOptions } from "@/features/teams/api/queries"
 import type { BadgeKey, CrumbData } from "./nav"
 
 const MINUTE = 60_000

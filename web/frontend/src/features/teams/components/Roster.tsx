@@ -29,13 +29,13 @@ import {
   STATUS_LABEL,
   statusOf,
   type RosterStatus,
-} from "./model"
+} from "../lib/model"
 import {
   useKickMember,
   useSetMemberRole,
   useTransferCaptain,
-  type RosterEntry,
-} from "./queries"
+} from "../api/queries"
+import type { RosterEntry } from "../types"
 import { Eyebrow, Initial, Panel, STATUS_CHIP } from "./ui"
 
 const since = (iso: string | null) =>

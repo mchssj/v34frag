@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorAlert } from "@/features/auth/ui"
-import { InviteDrawer } from "./InviteDrawer"
+import { InviteDrawer } from "../components/InviteDrawer"
 import {
   heirsOf,
   joinState,
@@ -45,7 +45,7 @@ import {
   statusOf,
   titlesOf,
   winRate,
-} from "./model"
+} from "../lib/model"
 import {
   championsOptions,
   myInvitesOptions,
@@ -56,12 +56,11 @@ import {
   useJoinTeam,
   useLeaveTeam,
   useTransferCaptain,
-  type RosterEntry,
-  type TeamDetail,
-} from "./queries"
-import { Roster } from "./Roster"
-import { LookingForTags, RecruitSheet } from "./Recruit"
-import { EditableCrest, EditTeamSheet } from "./TeamLogo"
+} from "../api/queries"
+import type { RosterEntry, TeamDetail } from "../types"
+import { Roster } from "../components/Roster"
+import { LookingForTags, RecruitSheet } from "../components/Recruit"
+import { EditableCrest, EditTeamSheet } from "../components/TeamLogo"
 import {
   JoinRequests,
   RecentForm,
@@ -70,8 +69,8 @@ import {
   TeamKpis,
   TeamRoles,
   TournamentHistory,
-} from "./sections"
-import { Eyebrow, Initial, Soon, TeamCrest } from "./ui"
+} from "../components/sections"
+import { Eyebrow, Initial, Soon, TeamCrest } from "../components/ui"
 
 /** Desde cuándo existe el equipo (`founded_at`: la aprobación o, en los viejos, el primer ingreso). */
 const foundedLabel = (iso: string | null) =>

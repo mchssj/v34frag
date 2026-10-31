@@ -1,5 +1,5 @@
 import type { Schemas } from "@/api/client"
-import type { RosterEntry, TeamDetail } from "./queries"
+import type { RosterEntry, TeamDetail } from "../types"
 
 // Lógica pura de la vista de equipo (handoff_equipo).
 

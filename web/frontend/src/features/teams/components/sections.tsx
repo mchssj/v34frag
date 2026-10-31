@@ -22,16 +22,15 @@ import {
   rolesMap,
   type MatchResult,
   type RoleSlot,
-} from "./model"
+} from "../lib/model"
 import {
   teamEventsOptions,
   teamMatchesOptions,
   teamPendingOptions,
   teamStarOptions,
   useAnswerJoin,
-  type RosterEntry,
-  type TeamInvite,
-} from "./queries"
+} from "../api/queries"
+import type { RosterEntry, TeamInvite } from "../types"
 import { Eyebrow, Initial, Panel } from "./ui"
 
 // --- KPIs ----------------------------------------------------------------

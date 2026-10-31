@@ -21,7 +21,8 @@ import {
   ImageError,
   type CropArea,
 } from "@/lib/image"
-import { useRemoveLogo, useUploadLogo, type TeamDetail } from "./queries"
+import { useRemoveLogo, useUploadLogo } from "../api/queries"
+import type { TeamDetail } from "../types"
 import { TeamCrest } from "./ui"
 
 /**

@@ -16,17 +16,16 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { joinState, lookingForText, MAX_ROSTER, rankOf } from "./model"
+import { joinState, lookingForText, MAX_ROSTER, rankOf } from "../lib/model"
 import {
   myInvitesOptions,
   teamRankingOptions,
   teamSearchOptions,
   useCancelJoin,
   useJoinTeam,
-  type TeamInvite,
-  type TeamSummary,
-} from "./queries"
-import { TeamCrest } from "./ui"
+} from "../api/queries"
+import type { TeamInvite, TeamSummary } from "../types"
+import { TeamCrest } from "../components/ui"
 
 type LookingFor = TeamSummary["looking_for"][number]
 

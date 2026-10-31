@@ -47,7 +47,7 @@ import {
   mixStatsOptions,
   type MixItem,
 } from "@/features/mixes/queries"
-import { Soon } from "@/features/teams/ui"
+import { Soon } from "@/features/teams/components/ui"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { matchesListOptions, type MatchSummary } from "./queries"
 import {

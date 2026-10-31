@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { crestText, type RosterStatus } from "./model"
+import { crestText, type RosterStatus } from "../lib/model"
 
 /** Colores del chip de estado en el roster: Activo verde, Suplente gris, Coach naranja. */
 export const STATUS_CHIP: Record<RosterStatus, string> = {

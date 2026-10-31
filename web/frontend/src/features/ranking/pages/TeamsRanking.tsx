@@ -20,7 +20,7 @@ import {
   useMine,
   type PodiumItem,
 } from "../components/parts"
-import { TeamCrest } from "@/features/teams/ui"
+import { TeamCrest } from "@/features/teams/components/ui"
 import { ListState, Paging, RowLink } from "./PlayersRanking"
 import { teamPodiumOptions, teamRankingOptions } from "../api/queries"
 import type { RankingTeam } from "../types"

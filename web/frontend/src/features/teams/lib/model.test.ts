@@ -12,7 +12,7 @@ import {
   winRate,
 } from "./model"
 import type { MatchLike } from "./model"
-import type { RosterEntry } from "./queries"
+import type { RosterEntry } from "../types"
 
 const member = (alias: string, role: string, extra = {}): RosterEntry => ({
   player_id: alias,

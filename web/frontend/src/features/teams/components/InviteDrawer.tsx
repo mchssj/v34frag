@@ -17,12 +17,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { MAX_ROSTER, STATUS_LABEL, type RosterStatus } from "./model"
-import {
-  invitablePlayersOptions,
-  useInvitePlayer,
-  type PlayerSummary,
-} from "./queries"
+import { MAX_ROSTER, STATUS_LABEL, type RosterStatus } from "../lib/model"
+import { invitablePlayersOptions, useInvitePlayer } from "../api/queries"
+import type { PlayerSummary } from "../types"
 import { Initial } from "./ui"
 
 // El backend acepta hasta 200 caracteres en invitaciones y pedidos.

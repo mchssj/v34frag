@@ -15,7 +15,7 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { myTeamsOptions } from "@/features/teams/queries"
+import { myTeamsOptions } from "@/features/teams/api/queries"
 import { BracketTab } from "./BracketTab"
 import { MatchesTab } from "./MatchesTab"
 import {
