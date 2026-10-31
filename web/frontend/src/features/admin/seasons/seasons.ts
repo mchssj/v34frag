@@ -1,4 +1,4 @@
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 import type { Season, SeasonConfig, SeasonTier } from "./queries"
 
 // Reglas de la sección Temporadas que no dependen de React (contrato temporadas.md, 8f).

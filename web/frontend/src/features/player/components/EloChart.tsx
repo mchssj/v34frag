@@ -4,7 +4,7 @@ import { ChartLineIcon } from "lucide-react"
 
 import type { Schemas } from "@/api/client"
 import { GhostChart } from "@/components/illustrations"
-import { fmtDay } from "./labels"
+import { fmtDay } from "../lib/labels"
 
 type Point = Schemas["EloPoint"]
 

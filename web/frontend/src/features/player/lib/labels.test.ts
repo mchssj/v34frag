@@ -23,7 +23,7 @@ import type {
   MapStat,
   PlayerMatch,
   PlayerSeason,
-} from "./queries"
+} from "../types"
 import { playerSearchSchema, toMatchesQuery } from "./search"
 
 const match = (o: Partial<PlayerMatch> = {}): PlayerMatch => ({

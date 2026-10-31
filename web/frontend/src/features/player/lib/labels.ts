@@ -14,7 +14,7 @@ import type {
   MapStat,
   PlayerMatch,
   PlayerSeason,
-} from "./queries"
+} from "../types"
 
 // Textos y cálculos del perfil público (handoff_perfil_publico y contrato 5).
 

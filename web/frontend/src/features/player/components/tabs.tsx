@@ -63,7 +63,7 @@ import {
   scoreOf,
   stintLength,
   type MapCard,
-} from "./labels"
+} from "../lib/labels"
 import {
   adjustmentsOptions,
   mapStatsOptions,
@@ -73,19 +73,21 @@ import {
   seasonsOptions,
   teamsOptions,
   titlesOptions,
-  type PlayerDetail,
-  type PlayerMatch,
-  type PlayerSeason,
-  type TeamStint,
-  type Title,
-} from "./queries"
+} from "../api/queries"
+import type {
+  PlayerDetail,
+  PlayerMatch,
+  PlayerSeason,
+  TeamStint,
+  Title,
+} from "../types"
 import {
   DEFAULT_PER,
   PER_OPTIONS,
   TABS,
   type PlayerSearch,
   type Tab,
-} from "./search"
+} from "../lib/search"
 
 const LABELS: Record<Tab, string> = {
   resumen: "Resumen",

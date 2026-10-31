@@ -15,7 +15,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { renderWithQuery } from "@/test/render"
 import { PlayerProfile } from "./PlayerProfile"
-import type { PlayerSearch } from "./search"
+import type { PlayerSearch } from "../lib/search"
 
 const navigate = vi.hoisted(() => vi.fn())
 vi.mock("@tanstack/react-router", async (orig) => ({

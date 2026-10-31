@@ -1,17 +1,8 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
-import { api, unwrap, type Schemas } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { isApiError } from "@/api/errors"
-import { toMatchesQuery, type PlayerSearch } from "./search"
-
-export type PlayerDetail = Schemas["PlayerDetail"]
-export type PlayerMatch = Schemas["PlayerMatch"]
-export type MapStat = Schemas["PlayerMapStats"]
-export type MedalSummary = Schemas["MedalSummary"]
-export type EloAdjustment = Schemas["EloPlayerAdjustment"]
-export type TeamStint = Schemas["TeamStint"]
-export type PlayerSeason = Schemas["PlayerSeason"]
-export type Title = Schemas["Title"]
+import { toMatchesQuery, type PlayerSearch } from "../lib/search"
 
 // Todas las rutas aceptan el nick o el id (contrato 5). La clave usa el nick en minúsculas.
 const k = (nick: string) => nick.toLowerCase()

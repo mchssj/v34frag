@@ -23,7 +23,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
-import { EloChart } from "./EloChart"
+import { EloChart } from "../components/EloChart"
 import {
   LEVEL_FLOORS,
   faceitUrl,
@@ -33,10 +33,11 @@ import {
   nextLevelText,
   steamUrl,
   tilePct,
-} from "./labels"
-import { eloHistoryOptions, playerOptions, type PlayerDetail } from "./queries"
-import { RANGES, type PlayerSearch, type Tab } from "./search"
-import { PlayerTabs } from "./tabs"
+} from "../lib/labels"
+import { eloHistoryOptions, playerOptions } from "../api/queries"
+import type { PlayerDetail } from "../types"
+import { RANGES, type PlayerSearch, type Tab } from "../lib/search"
+import { PlayerTabs } from "../components/tabs"
 
 // Perfil público /player/{nick} (handoff_perfil_publico). Cada sección pide lo suyo a la API.
 
