@@ -24,7 +24,7 @@
 | Usuarios y alias | `GET /api/v1/admin/users?q=` (alias, rol, jugador). `PUT /api/v1/admin/users/{id}/alias`: si choca con una palabra bloqueada, ofrecer "Guardar igual" (`force: true`) | Disponible |
 | Palabras bloqueadas | Lista, alta y baja, y "Nombres actuales que la contienen": `GET`/`POST /api/v1/admin/blocked-words`, `DELETE /api/v1/admin/blocked-words/{id}`, `GET /api/v1/admin/blocked-words/hits` | Disponible |
 | Equipos | Alta, edición y baja; sumar a un jugador directamente y cambiar su rol. Nombre o sigla con palabra bloqueada: ofrecer "Guardar igual" (`force: true`). La baja falla si tiene partidas o inscripciones. Caminos: `POST /api/v1/admin/teams`, `PATCH`/`DELETE /api/v1/admin/teams/{id}`, `POST /api/v1/admin/teams/{id}/members`, `PATCH /api/v1/admin/teams/{id}/members/{playerId}` (rol) | Disponible |
-| Solicitudes de equipo nuevo | Listar (`has_steam` dice si se puede aprobar), aprobar y rechazar: `GET /api/v1/admin/team-requests`, `POST /api/v1/admin/team-requests/{userId}/approve` y `/reject` | Disponible |
+| Solicitudes de equipo nuevo | Listar (`has_steam` dice si se puede aprobar), aprobar y rechazar: `GET /api/v1/admin/team-requests`, `POST /api/v1/admin/team-requests/{userId}/approve` y `/reject` (desde el 2026-10-30, con `{ reason }` opcional, hasta 300 caracteres: el usuario lo ve en su solicitud) | Disponible |
 | Puntos del ranking | `GET`/`PUT /api/v1/admin/ranking/config` | Disponible |
 | Servidores | Ver "Servidores (admin)" abajo | Disponible |
 | ELO | Ver "ELO (admin)" abajo | Disponible |

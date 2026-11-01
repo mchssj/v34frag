@@ -37,9 +37,12 @@ stateDiagram-v2
 | Endpoint | Quién | Pantalla |
 |---|---|---|
 | `GET /api/v1/teams` | Todos | **Equipos** (por defecto oficiales): nombre, sigla, capitán, jugadores (de 10) |
-| `GET /api/v1/teams/{id}` | Todos | **Equipo:** datos, capitán, récord y `viewer` |
+| `GET /api/v1/teams/{id}` | Todos | **Equipo:** datos, capitán, récord y `viewer`. Desde el 2026-10-30: `dissolved_at` (equipo disuelto: mostrar "Equipo disuelto"; `null` si sigue activo), `name_changed_at` y `next_name_change_at` (desde cuándo el capitán puede volver a cambiar el nombre; `null`: ya puede) |
+| `PATCH /api/v1/teams/{id}` | Capitán o admin | **Editar equipo:** `looking_for`, y desde el 2026-10-30 también `name` (2 a 40) y `tag` (1 a 6, en mayúsculas). Únicos entre los equipos activos y sin palabras bloqueadas. El capitán los cambia **una vez cada 30 días** (`409 CONFLICT` con `details.next_change_at`) y no mientras el equipo juega un torneo en curso (`409`). El admin no espera |
+| `POST /api/v1/teams/{id}/dissolve` | Capitán o admin | **Disolver equipo** (2026-10-30), con confirmación. `204`. Queda archivado: sale de `GET /teams`, de Buscar equipo y del ranking, y conserva partidas, títulos y su página. Todos pasan a ex integrantes y reciben `team_dissolved`. `409` si está inscrito en un torneo con inscripciones abiertas o en curso, o si ya estaba disuelto |
 | `GET /api/v1/teams/{id}/members` | Todos | Plantel (`active=true`: alias, rol, ELO, nivel, capitán) y ex integrantes (`active=false`). Las partidas del equipo: `GET /api/v1/matches?team={id}` |
-| `GET`/`PUT /api/v1/me/team-request` | Usuario | **Solicitar equipo nuevo** (nombre y sigla), una por usuario. Al aprobarla, el usuario queda como dueño, capitán y primer miembro |
+| `GET`/`PUT /api/v1/me/team-request` | Usuario | **Solicitar equipo nuevo** (nombre y sigla), una por usuario. Al aprobarla, el usuario queda como dueño, capitán y primer miembro. Desde el 2026-10-30 trae `created_at` ("Enviada hace 2 días"; `null` en las viejas) y `reject_reason` (motivo del rechazo, si el admin escribió uno) |
+| `DELETE /api/v1/me/team-request` | Usuario | **Cancelar la solicitud** (2026-10-30): solo una pendiente; borra también el logo propuesto. `204`; `404` si no hay; `409` si ya fue aprobada o rechazada |
 | `GET /api/v1/me/team-invites` | Usuario | **Mis invitaciones** recibidas (`kind=invite`) y pedidos enviados (`kind=request`), abiertos |
 | `POST /api/v1/teams/{id}/join-requests` | Usuario | Botón "Pedir entrar" en la página del equipo |
 | `POST /api/v1/team-invites/{id}/accept` / `…/reject` | Invitado | Aceptar o rechazar |

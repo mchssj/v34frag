@@ -203,7 +203,7 @@ describe('perfil público', () => {
     expect((await get(`/api/v1/players/${nick(0)}/elo-history?order=asc&per=1`)).body.items[0].match_id).toBe(mixIds[0]);
 
     const titles = await get(`/api/v1/players/${nick(0)}/titles`);
-    expect(titles.body.items).toEqual([{ event: { id: eventId, name: `Copa ${sfx}` }, result: 'champion', team: { id: teamIds[0], name: `MprT0${sfx}`, tag: 'M0' }, at: expect.any(String) }]);
+    expect(titles.body.items).toEqual([{ event: { id: eventId, name: `Copa ${sfx}` }, result: 'champion', team: { id: teamIds[0], name: `MprT0${sfx}`, tag: 'M0', logo_url: null }, at: expect.any(String) }]);
     expect((await get(`/api/v1/players/${nick(3)}/titles?result=runner_up`)).body.items[0]).toMatchObject({ result: 'runner_up', team: { id: teamIds[1] } });
     expect((await get(`/api/v1/players/${nick(3)}/titles?result=champion`)).body.total).toBe(0);
 

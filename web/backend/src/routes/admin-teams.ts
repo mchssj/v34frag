@@ -13,6 +13,7 @@ import {
   IdParam,
   MemberBody,
   RankingConfig,
+  RejectTeamRequestBody,
   RoleBody,
   TeamPlayerParam,
   TeamRequestQuery,
@@ -83,7 +84,9 @@ const approve = createRoute({
 });
 const reject = createRoute({
   method: 'post', path: '/api/v1/admin/team-requests/{userId}/reject', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Rechazar una solicitud', request: { params: UserIdParam },
+  summary: 'Rechazar una solicitud',
+  description: 'Con `reason` opcional (hasta 300 caracteres): el usuario lo ve en su solicitud (`GET /api/v1/me/team-request`).',
+  request: { params: UserIdParam, body: { required: false, ...json(RejectTeamRequestBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 
@@ -181,7 +184,9 @@ export const adminTeams = createRouter()
     return c.json({ id }, 201);
   })
   .openapi(reject, async (c) => {
-    must(await c.var.sb.rpc('reject_team_request', { p_user: c.req.valid('param').userId }));
+    // Sin cuerpo, valid('json') viene vacío.
+    const reason = (c.req.valid('json') as { reason?: string } | undefined)?.reason;
+    must(await c.var.sb.rpc('reject_team_request', { p_user: c.req.valid('param').userId, ...(reason ? { p_reason: reason } : {}) }));
     return c.body(null, 204);
   })
   .openapi(getTeamConfig, async (c) => {

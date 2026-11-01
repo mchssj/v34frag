@@ -1,7 +1,7 @@
 import { z } from '@hono/zod-openapi';
-import { dateParam, Envelope, listQuery } from '../lib/list';
+import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { Clutches, ReviewStatus } from './common';
-import { LiveGameRef } from './live';
+import { LiveGameRef, MixMvp } from './live';
 import { TeamRef } from './players';
 
 const num = z.number().nullable();
@@ -15,7 +15,24 @@ export { ReviewStatus };
 
 export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'played_at', order: 'desc' }).extend({
   kind: MatchKind.optional().openapi({ description: '`official` (torneo), `pcw` o `mix`. Sin filtro: todas' }),
-  status: MatchStatus.optional(),
+  status: z
+    .string()
+    .transform((v, ctx) => {
+      const list = [...new Set(v.split(',').map((s) => s.trim()).filter(Boolean))];
+      const bad = list.filter((s) => !MatchStatus.safeParse(s).success);
+      if (!list.length || bad.length) {
+        ctx.addIssue({ code: 'custom', message: `Estado no válido: ${bad.join(', ') || '(vacío)'}. Usa upcoming, live, finished o cancelled.` });
+        return z.NEVER;
+      }
+      return list as z.infer<typeof MatchStatus>[];
+    })
+    .optional()
+    .openapi({
+      type: 'string',
+      example: 'finished,cancelled',
+      description: 'Uno o varios estados separados por comas: `upcoming`, `live`, `finished` o `cancelled`. Sin filtro: todos',
+    }),
+  mine: boolParam('`true`: solo las partidas donde jugó el usuario (pide sesión; sin ficha, la lista viene vacía)'),
   event: z.uuid().optional().openapi({ description: 'Partidas de un torneo' }),
   team: z.uuid().optional().openapi({ description: 'Partidas de un equipo' }),
   player: z.uuid().optional().openapi({ description: 'Partidas donde jugó un jugador (en una serie, en alguno de sus mapas)' }),
@@ -57,7 +74,19 @@ export const MatchSummary = z
   })
   .openapi('MatchSummary');
 
-export const MatchList = Envelope(MatchSummary).openapi('MatchList');
+// (E17) Fila del listado de /matches: el resumen más el MVP de los mixes.
+export const MatchListItem = MatchSummary.extend({
+  mvp: MixMvp.nullable().openapi({ description: 'Mix: el de mejor rating (como en `/mixes`); null en el resto' }),
+}).openapi('MatchListItem');
+
+// (E16) Cuántas hay de cada tipo con los mismos filtros, salvo `kind`.
+export const MatchCounts = z
+  .object({ all: z.number().int(), mix: z.number().int(), pcw: z.number().int(), official: z.number().int() })
+  .openapi('MatchCounts');
+
+export const MatchList = Envelope(MatchListItem)
+  .extend({ counts: MatchCounts.openapi({ description: 'Partidas por tipo con los filtros de la consulta salvo `kind` (para los chips)' }) })
+  .openapi('MatchList');
 
 export const RosterPlayer = z
   .object({ player_id: z.uuid().nullable(), alias: z.string(), guest: z.boolean().openapi({ description: 'Invitado sin ficha (solo PCW)' }) })
@@ -130,6 +159,7 @@ export const MatchDetail = MatchSummary.extend({
   maps_detail: z.array(z.object({ map: z.string().nullable(), r1: num, r2: num, game_id: z.uuid().nullable() })).openapi({ description: 'Torneo o PCW: mapas de la serie' }),
   games: z.array(GameRef).openapi({ description: 'Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle)' }),
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
+  series_players: z.array(PlayerLine).openapi({ description: 'Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego' }),
   clutch_data: z.boolean().openapi({ description: 'Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen)' }),
   mvp: PlayerLine.nullable().openapi({ description: 'Mix: el de mejor rating' }),
   veto: VetoState.nullable().openapi({ description: 'Torneo o PCW' }),

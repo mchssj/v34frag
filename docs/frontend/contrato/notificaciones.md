@@ -75,6 +75,7 @@ Todo con sesión (`401` sin ella).
 | `team_role_changed` | Jugador | `team`, `role` (`player`, `sub`, `coach`) | "Ahora eres Activo / Suplente / Coach en {team.name}" | `/teams/{team.id}` |
 | `team_added` | Jugador | `team`, `role` | "Un admin te sumó a {team.name}" | `/teams/{team.id}` |
 | `team_deleted` | Roster | `team` | "Se borró el equipo {team.name}" | — |
+| `team_dissolved` | Roster (2026-10-30) | `team` | "Se disolvió el equipo {team.name}" | Página del equipo |
 | `team_request_answered` | El que pidió | `name`, `tag`, `approved` | "Aprobaron (o rechazaron) tu equipo {name}" | `/myteam` |
 
 #### Torneos (`tournament`)

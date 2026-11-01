@@ -50,6 +50,17 @@ describe('fromPostgrest', () => {
     const e = fromPostgrest({ code: 'P0001', message: 'El tag debe tener entre 2 y 24 caracteres' });
     expect(e).toMatchObject({ status: 400, code: 'BUSINESS_RULE', message: 'El tag debe tener entre 2 y 24 caracteres' });
   });
+
+  it('P0002 → 404 NOT_FOUND con el mensaje de la función (replanteo 39)', () => {
+    expect(fromPostgrest({ code: 'P0002', message: 'No existe ese equipo' })).toMatchObject({ status: 404, code: 'NOT_FOUND', message: 'No existe ese equipo' });
+  });
+
+  it('V3901 → 409 CONFLICT con el objeto del detail, si viene (replanteo 39)', () => {
+    const e = fromPostgrest({ code: 'V3901', message: 'Una vez cada 30 días', details: '{"next_change_at": "2026-11-29T10:00:00+00:00"}' });
+    expect(e).toMatchObject({ status: 409, code: 'CONFLICT', message: 'Una vez cada 30 días', details: { next_change_at: '2026-11-29T10:00:00+00:00' } });
+    expect(fromPostgrest({ code: 'V3901', message: 'x' }).details).toBeUndefined();
+    expect(fromPostgrest({ code: 'V3901', message: 'x', details: '["no", "objeto"]' }).details).toBeUndefined();
+  });
 });
 
 describe('fromAuthError', () => {

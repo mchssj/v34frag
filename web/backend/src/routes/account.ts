@@ -80,6 +80,19 @@ const putTeamRequest = createRoute({
   responses: { 200: { description: 'Solicitud pendiente', ...json(TeamRequest) }, ...errorResponses(400, 401, 413) },
 });
 
+const deleteTeamRequest = createRoute({
+  method: 'delete',
+  path: '/api/v1/me/team-request',
+  tags: ['Equipos'],
+  summary: 'Cancelar mi solicitud de equipo nuevo',
+  description: 'Solo una pendiente: borra la solicitud y el logo propuesto. `404` si no hay; `409 CONFLICT` si ya fue aprobada o rechazada.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  responses: { 204: { description: 'Cancelada' }, ...errorResponses(401, 404, 409) },
+});
+
+const REQUEST = 'name, tag, status, logo_url, created_at, reject_reason';
+
 export const account = createRouter()
   .openapi(putAlias, async (c) => {
     const { sb, user } = c.var;
@@ -97,7 +110,7 @@ export const account = createRouter()
   })
   .openapi(getTeamRequest, async (c) => {
     const { sb, user } = c.var;
-    const r = must(await sb.from('team_requests').select('name, tag, status, logo_url').eq('user_id', user.id).maybeSingle());
+    const r = must(await sb.from('team_requests').select(REQUEST).eq('user_id', user.id).maybeSingle());
     return c.json(r ? { ...r, status: r.status as 'pending' | 'approved' | 'rejected' } : null, 200);
   })
   .openapi(putTeamRequest, async (c) => {
@@ -111,7 +124,7 @@ export const account = createRouter()
     const r = await sb
       .from('team_requests')
       .upsert({ user_id: user.id, name, tag, status: 'pending', ...(up ? { logo_url: up.url } : {}) })
-      .select('name, tag, status, logo_url')
+      .select(REQUEST)
       .single();
     if (r.error) {
       if (up) await dropPhoto(c, up.path);
@@ -120,4 +133,10 @@ export const account = createRouter()
     // El logo de una solicitud ya aprobada es el del equipo: ese no se borra.
     if (up && prev?.status !== 'approved') removePhoto(c, prev?.logo_url);
     return c.json({ ...r.data, status: r.data.status as 'pending' | 'approved' | 'rejected' }, 200);
+  })
+  .openapi(deleteTeamRequest, async (c) => {
+    // La función borra la pendiente y devuelve su logo; el de una aprobada es el del equipo, pero esa no se borra.
+    const logo = must(await c.var.sb.rpc('cancel_team_request'));
+    removePhoto(c, logo);
+    return c.body(null, 204);
   });
