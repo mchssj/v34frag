@@ -18,6 +18,7 @@ Sin desplegar.
 | `web/backend/src/routes/events.ts`, `schemas/events.ts` | `POST /events/{id}/seeds/ranking`, `SeedsResult`, `viewer.can_own` |
 | `web/backend/src/routes/matches.ts`, `schemas/matches.ts` | `GET /matches/{id}/games/candidates`, `PUT /matches/{id}/maps`, `GameCandidate`, `SeriesMap`, `SeriesMapsBody` |
 | `web/backend/src/db/types.ts` | Regenerado |
+| `web/backend/src/routes/pcw-play.ts` | `GET /servers` también para los moderadores (para asignar el servidor de una partida) |
 | `web/backend/test/integration/admin-torneos.test.ts` | Nuevo: moderador (siembra por ranking, etapas, sin cancelar ni borrar, reiniciar) y mapas de una serie |
 | `docs/frontend/contrato/` | `torneos.md`, `partidas.md` y la novedad en `README.md` |
 
@@ -41,6 +42,7 @@ Contra la Supabase local, el 2026-11-01:
 - **Rutas:** `GET /matches/{id}/games/candidates` (el plan decía `/games/candidates` sin detallar) y `PUT /matches/{id}/maps`.
 - **Sin puntos:** un equipo sin partidas cuenta 0 puntos (no "al final"): con eso, el ELO ordena a todos los que tienen 0, también a los que jugaron y perdieron.
 - **Vincular un mix:** no exige que todos los jugadores sean del plantel (como `!match`); alcanza con que haya jugado un inscrito, porque lo decide una persona. El bando se deduce por mayoría y se puede invertir con `side1`.
+- **Servidores:** `GET /servers` era solo para organizadores y admins; se sumaron los moderadores, que también asignan el servidor de una partida.
 - **Cancelar:** como la API cancela con un `UPDATE` que permite la política de gestión, el bloqueo al moderador es un trigger (`events_owner_only`), no la política.
 
 ## Cómo revertir
