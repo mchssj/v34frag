@@ -22,6 +22,7 @@ import {
   presetOf,
   SWISS_PRESETS,
   swissMatches,
+  swissCupo,
   swissTeams,
   TEMPLATE_HINT,
   TEMPLATE_LABEL,
@@ -110,8 +111,11 @@ export function EventForm({
     toLocalInput(initial?.registration_closes_at)
   )
   const [prize, setPrize] = useState(initial?.prize ?? "")
+  // Un torneo nuevo arranca en suizo: el cupo viene con los equipos que pide.
   const [maxTeams, setMaxTeams] = useState<number | "">(
-    initial?.max_teams ?? ""
+    initial?.max_teams !== undefined
+      ? (initial.max_teams ?? "")
+      : (swissCupo("swiss", DEFAULTS.swiss) ?? "")
   )
   const [rules, setRules] = useState(initial?.rules ?? "")
   const [template, setTemplate] = useState<Template>(
@@ -125,13 +129,24 @@ export function EventForm({
   // null = el pool por defecto del catálogo.
   const [pool, setPool] = useState<string[] | null>(initial?.map_pool ?? null)
 
-  const set = (patch: EventConfig) => setConfig((c) => ({ ...c, ...patch }))
+  // Solo el suizo pide un número exacto de equipos: al cambiar sus etapas o equipos por etapa, el
+  // cupo se completa solo (se puede cambiar a mano después).
+  const set = (patch: EventConfig) => {
+    const next = { ...config, ...patch }
+    setConfig(next)
+    const cupo = swissCupo(template, next)
+    if (cupo) setMaxTeams(cupo)
+  }
   const setPo = (patch: NonNullable<EventConfig["playoffs"]>) =>
     setConfig((c) => ({ ...c, playoffs: { ...c.playoffs, ...patch } }))
   const pickTemplate = (t: Template) => {
     if (locked || t === template) return
     setTemplate(t)
     setConfig(DEFAULTS[t])
+    const cupo = swissCupo(t, DEFAULTS[t])
+    // Al salir del suizo, el cupo que puso el suizo se borra; uno escrito a mano queda.
+    if (cupo) setMaxTeams(cupo)
+    else if (maxTeams === swissCupo(template, config)) setMaxTeams("")
   }
 
   // El BO más alto de la configuración (solo las claves bo*), para el mínimo del pool.
@@ -269,7 +284,11 @@ export function EventForm({
         <Labeled
           id={`${id}-max`}
           label="Cupo de equipos"
-          hint="Vacío: sin cupo."
+          hint={
+            template === "swiss"
+              ? `El suizo elegido necesita ${swissCupo(template, config) ?? "—"}.`
+              : "Vacío: sin cupo."
+          }
         >
           <Input
             id={`${id}-max`}

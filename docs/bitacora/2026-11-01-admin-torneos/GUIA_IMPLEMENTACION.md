@@ -89,6 +89,15 @@ Daniel pidió que "Termina" sea una fecha tentativa: el torneo puede terminar an
   - El único control sigue siendo que no sea anterior a "Empieza", y solo en el formulario: la API no lo valida.
 - **Partidas sin fecha:** un resultado a mano o un W.O. no ponían `played_at`, así que esos torneos no tenían fecha de fin. El trigger `matches_played_at` les pone la del momento en que se carga el resultado (solo torneo y PCW; los mixes la traen del servidor). Las partidas viejas sin fecha siguen sin ella.
 
+## Ajuste: cupo del suizo y aviso de equipos (2026-11-01)
+
+Daniel aprobó dos cambios, solo del frontend:
+
+- **Cupo automático, solo en el suizo:** es el único formato que pide un número exacto de equipos. Al elegirlo o cambiar sus etapas o equipos por etapa, "Cupo de equipos" se completa con lo que pide (24, 32, 16 u 8) y se puede cambiar a mano. Un torneo nuevo arranca con 24 (el suizo por defecto). Al pasar a otro formato, el cupo que había puesto el suizo se borra; uno escrito a mano queda. Los otros formatos aceptan un rango (eliminación: desde 2; grupos: al menos 2 por grupo; grupos con doble eliminación: de 4 a 8 por grupo), así que no completan nada.
+- **Aviso en el Resumen:** si los inscritos no entran en lo que pide el formato, por ejemplo "El suizo necesita 24 equipos y hay 21: faltan 3." o "Con 2 grupos hacen falta entre 8 y 16 equipos y hay 17: sobran 1.". Bloquea "Generar fixture", igual que haría la base al generar.
+- **Archivos:** `web/frontend/src/features/admin/events/lib/model.ts` (`swissCupo`, `teamsNeeded`, `teamsIssue`, con pruebas en `model.test.ts`), `components/EventForm.tsx` y `components/ManageTabs.tsx`.
+- **Pruebas:** typecheck, lint y 414 unitarias.
+
 ## Cómo revertir
 
 1. Base: `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/41_admin_torneos.sql`.

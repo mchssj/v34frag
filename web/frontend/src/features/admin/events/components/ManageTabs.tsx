@@ -22,6 +22,7 @@ import {
 import type { EventDetail, Registration } from "@/features/events/types"
 import { EmptyState, QueryError, TableBox } from "../../components/ui"
 import { fmtDateTime } from "../../lib/format"
+import { teamsIssue } from "../lib/model"
 import {
   useEventAction,
   useRemoveRegistration,
@@ -48,7 +49,9 @@ export function SummaryTab({
   const short = regs.filter((r) => active(r) < event.players_per_team)
   const issues: { tone: "bad" | "warn"; text: string }[] = []
   if (event.status === "registration") {
-    if (regs.length < Math.max(2, event.min_teams ?? 2))
+    const format = teamsIssue(event.template, event.config, regs.length)
+    if (format) issues.push({ tone: "bad", text: format })
+    else if (regs.length < Math.max(2, event.min_teams ?? 2))
       issues.push({
         tone: "bad",
         text: `Hacen falta al menos ${Math.max(2, event.min_teams ?? 2)} equipos inscritos (hay ${regs.length}).`,

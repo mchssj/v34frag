@@ -112,6 +112,45 @@ export const presetOf = (c: { stages: number; size: number; wins: number }) =>
 export const swissTeams = (stages: number, size: number) =>
   size + (stages - 1) * (size / 2)
 
+/** Cupo que pide el formato: solo el suizo pide un número exacto. */
+export const swissCupo = (template: Template, c: EventConfig) =>
+  template === "swiss" && c.stages && c.size
+    ? swissTeams(c.stages, c.size)
+    : null
+
+/**
+ * Equipos que acepta cada formato al generar el fixture (las mismas reglas que la base):
+ * suizo exacto, grupos con al menos 2 por grupo, grupos con doble eliminación de 4 a 8 por grupo.
+ */
+export function teamsNeeded(
+  template: Template,
+  c: EventConfig
+): { min: number; max: number | null } {
+  const g = c.groups ?? 2
+  if (template === "swiss") {
+    const n = swissCupo(template, c) ?? 2
+    return { min: n, max: n }
+  }
+  if (template === "groups") return { min: g * 2, max: null }
+  if (template === "groups_double") return { min: g * 4, max: g * 8 }
+  return { min: 2, max: null }
+}
+
+/** Aviso del Resumen si los inscritos no entran en lo que pide el formato; null si entran. */
+export function teamsIssue(template: Template, c: EventConfig, n: number) {
+  const { min, max } = teamsNeeded(template, c)
+  if (n >= min && (max == null || n <= max)) return null
+  const diff = n < min ? `faltan ${min - n}` : `sobran ${n - (max ?? n)}`
+  if (template === "swiss")
+    return `El suizo necesita ${min} equipos y hay ${n}: ${diff}.`
+  const g = c.groups ?? 2
+  if (template === "groups_double")
+    return `Con ${g} grupos hacen falta entre ${min} y ${max} equipos y hay ${n}: ${diff}.`
+  if (template === "groups")
+    return `Con ${g} grupos hacen falta al menos ${min} equipos y hay ${n}: ${diff}.`
+  return `Hacen falta al menos ${min} equipos y hay ${n}: ${diff}.`
+}
+
 /**
  * Partidas y rondas de una etapa suiza: se juega por récord hasta que cada equipo llega a `wins`
  * victorias o derrotas (16 a 3 victorias: 33 partidas en 5 rondas).
