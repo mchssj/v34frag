@@ -487,6 +487,19 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. **Reporter 2.6.1** (pico y copia a disco de los intentos): desplegado el 2026-10-29. La migración `20261029200000_ips_intentos_hora.sql` está en producción y en staging, y el plugin en **el real, RBK y flow**. Falta verificar en cada uno, después de su cambio de mapa, que el log diga 2.6.1 y que no aparezca `IPs: no se pudieron registrar`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
 
+### 1.31 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** lo que pidió el frontend en `pendientes-backend-cmleague.md` (E9 a E18 y E20): filtros, contadores y MVP en `GET /matches`, cancelar la solicitud de equipo con su fecha y el motivo del rechazo, disolver un equipo, nombre y sigla editables por el capitán, biografía del jugador, logos en el historial y los títulos, y cierre y total de jugadores en las temporadas.
+- **Hecho el 2026-10-30 en local y commiteado el 2026-11-01** (en `feat/backend-api-fase-1`): replanteo `39` con su inversa y sus pruebas SQL, API, tipos, pruebas unitarias y de integración, y el contrato del frontend.
+- **Falta:**
+  1. Llevarlo a `feat/frontend-fase-1` (merge del backend, 2026-11-01).
+  2. Cargar la `39` en staging y redesplegar la API del VPS. Sin la `39`, esta API falla en `/matches`, equipos, temporadas y Mi perfil (lee columnas nuevas).
+  3. En el corte, la `39` va después de la `38` (punto 1.5).
+  4. El frontend activa lo suyo y regenera `src/api/schema.d.ts`.
+  5. E19 (búsqueda global ⌘K) queda para más adelante.
+- No toca el plugin: nada que subir al servidor real ni a flow.
+- **Bitácora:** [`2026-10-30-api-pendientes-frontend`](bitacora/2026-10-30-api-pendientes-frontend/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

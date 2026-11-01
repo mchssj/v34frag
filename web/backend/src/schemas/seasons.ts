@@ -107,7 +107,15 @@ export const StandingQuery = listQuery(['rank', 'elo', 'matches', 'alias', 'rati
 export const StandingList = Envelope(Standing).openapi('SeasonStandingList');
 
 export const PlayerSeason = Standing.omit({ player: true, teams: true, rating: true, kd: true })
-  .extend({ season: z.object({ id: z.uuid(), number: z.number().int(), name: z.string() }) })
+  .extend({
+    season: z.object({
+      id: z.uuid(),
+      number: z.number().int(),
+      name: z.string(),
+      ended_at: z.string().nullable().openapi({ description: 'Cuándo cerró la temporada' }),
+      players: z.number().int().openapi({ description: 'Cuántos jugadores tuvieron puesto en el ranking final ("#3 de 214")' }),
+    }),
+  })
   .openapi('PlayerSeason');
 export const PlayerSeasonQuery = listQuery(['number'], { sort: 'number', order: 'desc' });
 export const PlayerSeasonList = Envelope(PlayerSeason).openapi('PlayerSeasonList');

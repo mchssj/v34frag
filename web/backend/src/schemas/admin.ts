@@ -159,6 +159,10 @@ export const AdminTeamRequest = z
   })
   .openapi('AdminTeamRequest');
 
+export const RejectTeamRequestBody = z
+  .object({ reason: z.string().trim().max(300).optional().openapi({ description: 'Motivo del rechazo (opcional, hasta 300 caracteres)' }) })
+  .openapi('RejectTeamRequestBody');
+
 export const RankingConfig = z
   .object({
     win_official: z.number().int().min(0).max(1000).openapi({ description: 'Puntos por partida de torneo ganada' }),

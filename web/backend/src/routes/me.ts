@@ -53,7 +53,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
   const [account, details, player, prefs, vip, streamer] = await Promise.all([
     profileOf(config, user.token, user.id),
     sb.from('profile_details').select(DETAILS).eq('user_id', user.id).maybeSingle().then(must),
-    sb.from('players').select('id, nick, photo_url, steam_id').eq('user_id', user.id).limit(1).maybeSingle().then(must),
+    sb.from('players').select('id, nick, photo_url, steam_id, bio').eq('user_id', user.id).limit(1).maybeSingle().then(must),
     sb.from('user_preferences').select('preferences').eq('user_id', user.id).maybeSingle().then(must),
     vipStatusOf(sb, [user.id]),
     streamersOf(sb, [user.id]).then((m) => m.get(user.id)),
@@ -65,7 +65,7 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
     : [];
   const filter = [`captain_id.eq.${user.id}`, `owner_id.eq.${user.id}`, ...(memberOf.length ? [`id.in.(${memberOf.join(',')})`] : [])];
   const teams = mustHave(
-    await sb.from('teams').select('id, name, tag, captain_id').eq('kind', 'official').or(filter.join(',')).order('name'),
+    await sb.from('teams').select('id, name, tag, captain_id').eq('kind', 'official').is('dissolved_at', null).or(filter.join(',')).order('name'),
   ).map((t) => ({ id: t.id, name: t.name, tag: t.tag, is_captain: t.captain_id === user.id, is_member: memberOf.includes(t.id) }));
 
   // Partidas jugadas: las de la vista player_matches (mixes, PCW y torneos terminados).
@@ -117,7 +117,8 @@ const patchProfile = createRoute({
   summary: 'Editar mi perfil',
   description:
     'Solo se cambian los campos enviados. `null` o `""` borra un campo. `tag` es el alias y sigue las reglas de ' +
-    '`PUT /api/v1/me/alias` (único, sin palabras bloqueadas, una vez cada 15 días): conviene usar esa ruta.',
+    '`PUT /api/v1/me/alias` (único, sin palabras bloqueadas, una vez cada 15 días): conviene usar esa ruta. `bio` va en la ficha ' +
+    'del jugador: sin jugador vinculado, `409 CONFLICT`.',
   security: bearer,
   middleware: [requireUser] as const,
   request: { body: { required: true, ...json(ProfilePatch) } },
@@ -154,11 +155,13 @@ export const me = createRouter()
   .openapi(getProfile, async (c) => c.json(await loadMyProfile(c), 200))
   .openapi(patchProfile, async (c) => {
     const { sb, user, config } = c.var;
-    const { tag, preferences, ...fields } = c.req.valid('json');
+    const { tag, preferences, bio, ...fields } = c.req.valid('json');
 
     if (tag !== undefined && tag !== (await profileOf(config, user.token, user.id))?.tag) {
       must(await sb.rpc('set_my_tag', { p_tag: tag }));
     }
+    // (E12) null borra la biografía (los tipos generados no admiten null en los argumentos).
+    if (bio !== undefined) must(await sb.rpc('set_my_bio', { p_bio: bio as string }));
     const changes = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined));
     if (Object.keys(changes).length) {
       must(

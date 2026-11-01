@@ -1,9 +1,9 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { currentUser, isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
-import { must, mustHave, notFound, searchTerm } from '../lib/db';
+import { levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { STEAM64 } from '../schemas/claim';
 import { notModified } from '../lib/etag';
-import { AppError } from '../lib/errors';
+import { AppError, fromPostgrest } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import { bearer, errorResponses, json } from '../schemas/common';
@@ -23,10 +23,22 @@ import {
   type PlayerLine,
   type RosterPlayer,
 } from '../schemas/matches';
+import type { MixMvp } from '../schemas/live';
 import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
 import { clutchesOf, demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
+
+// Lo que usan los filtros del listado de un query builder de PostgREST (como Orderable en lib/list.ts).
+interface Filters<Q> {
+  eq(column: string, value: unknown): Q;
+  in(column: string, values: readonly unknown[]): Q;
+  or(filters: string): Q;
+  contains(column: string, value: unknown): Q;
+  ilike(column: string, pattern: string): Q;
+  gte(column: string, value: unknown): Q;
+  lte(column: string, value: unknown): Q;
+}
 
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -126,21 +138,70 @@ type DetailRow = {
 export const matches = createRouter()
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
-    let q = c.var.sb.from('match_list').select(MATCH_LIST, { count: 'exact' }).eq('bye', false);
+    const sb = c.var.sb;
+    let me: string | null = null;
+    if (p.mine) {
+      const user = currentUser(c);
+      if (!user) throw new AppError(401, 'UNAUTHORIZED', 'Para ver tus partidas tienes que iniciar sesión.');
+      me = must(await sb.from('players').select('id').eq('user_id', user.id).maybeSingle())?.id ?? null;
+      if (!me) return c.json({ ...envelope([], 0, p), counts: { all: 0, mix: 0, pcw: 0, official: 0 } }, 200);
+    }
+    // Los mismos filtros para la página y para los contadores por tipo (E16), que no filtran por `kind`.
+    const filtered = <Q extends Filters<Q>>(q: Q): Q => {
+      let r = q.eq('bye', false);
+      if (p.status) r = r.in('status', p.status);
+      if (p.review) r = r.eq('review', p.review);
+      if (p.event) r = r.eq('event_id', p.event);
+      if (p.team) r = r.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
+      if (p.player) r = r.contains('player_ids', [p.player]);
+      if (me) r = r.contains('player_ids', [me]);
+      if (p.server) r = r.eq('server_id', p.server);
+      if (p.map) r = r.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
+      if (p.from) r = r.gte('at', p.from);
+      if (p.to) r = r.lte('at', p.to);
+      const term = searchTerm(p.q);
+      // (E18) también por el nick de los que jugaron.
+      if (term) r = r.or(`search.ilike.%${term}%,player_search.ilike.%${term}%`);
+      return r;
+    };
+    let q = filtered(sb.from('match_list').select(MATCH_LIST, { count: 'exact' }));
     if (p.kind) q = q.eq('kind', p.kind);
-    if (p.status) q = q.eq('status', p.status);
-    if (p.review) q = q.eq('review', p.review);
-    if (p.event) q = q.eq('event_id', p.event);
-    if (p.team) q = q.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
-    if (p.player) q = q.contains('player_ids', [p.player]);
-    if (p.server) q = q.eq('server_id', p.server);
-    if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
-    if (p.from) q = q.gte('at', p.from);
-    if (p.to) q = q.lte('at', p.to);
-    const term = searchTerm(p.q);
-    if (term) q = q.ilike('search', `%${term}%`);
-    const { rows, total } = await runList<MatchRow, typeof q>(q, p, {});
-    return c.json(envelope(rows.map(toSummary), total, p), 200);
+    const countOf = async (kind?: 'mix' | 'pcw' | 'official') => {
+      let cq = filtered(sb.from('match_list').select('id', { count: 'exact', head: true }));
+      if (kind) cq = cq.eq('kind', kind);
+      const r = await cq;
+      if (r.error) throw fromPostgrest(r.error);
+      return r.count ?? 0;
+    };
+    // El total de la página ya es uno de los contadores: ese no se vuelve a pedir.
+    const [{ rows, total }, all, mix, pcw, official] = await Promise.all([
+      runList<MatchRow, typeof q>(q, p, {}),
+      p.kind ? countOf() : null,
+      p.kind === 'mix' ? null : countOf('mix'),
+      p.kind === 'pcw' ? null : countOf('pcw'),
+      p.kind === 'official' ? null : countOf('official'),
+    ]);
+    const counts = { all: all ?? total, mix: mix ?? total, pcw: pcw ?? total, official: official ?? total };
+    // (E17) El MVP de los mixes de la página sale de mix_list, que ya lo calcula.
+    const mixIds = rows.filter((r) => r.kind === 'mix').map((r) => r.id);
+    const mvps = new Map<string, z.infer<typeof MixMvp>>();
+    if (mixIds.length) {
+      const found = mustHave(
+        await sb.from('mix_list').select('match_id, mvp_player_id, mvp_alias, mvp_game_nick, mvp_elo, mvp_rating').in('match_id', mixIds),
+      );
+      for (const m of found) {
+        if (!m.match_id || (m.mvp_player_id === null && m.mvp_game_nick === null)) continue;
+        mvps.set(m.match_id, {
+          player_id: m.mvp_player_id,
+          alias: m.mvp_alias,
+          game_nick: m.mvp_game_nick,
+          elo: m.mvp_elo,
+          level: levelOf(m.mvp_elo),
+          rating: m.mvp_rating === null ? null : Number(m.mvp_rating),
+        });
+      }
+    }
+    return c.json({ ...envelope(rows.map((r) => ({ ...toSummary(r), mvp: mvps.get(r.id) ?? null })), total, p), counts }, 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');

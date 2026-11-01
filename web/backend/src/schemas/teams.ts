@@ -74,6 +74,13 @@ export const Record_ = z
 export const TeamDetail = TeamSummary.extend({
   founded_at: z.string().nullable().openapi({ description: 'Fecha de aprobación de la solicitud. En los equipos anteriores, el ingreso más antiguo del plantel' }),
   record: Record_.nullable().openapi({ description: 'Récord del ranking (solo equipos oficiales)' }),
+  dissolved_at: z.string().nullable().openapi({
+    description: 'Equipo disuelto (archivado): conserva su historial, pero no sale en los listados ni en el ranking. null si sigue activo',
+  }),
+  name_changed_at: z.string().nullable().openapi({ description: 'Último cambio de nombre o sigla del capitán (los del admin no cuentan)' }),
+  next_name_change_at: z.string().nullable().openapi({
+    description: 'Desde cuándo el capitán puede volver a cambiar el nombre o la sigla (30 días después del último). null: ya puede',
+  }),
   viewer: z
     .object({ is_captain: z.boolean(), is_member: z.boolean(), is_admin: z.boolean() })
     .nullable()
@@ -129,7 +136,20 @@ export const JoinRequestBody = z
 export const MemberRoleBody = z.object({ role: RosterRole }).openapi('MemberRoleBody');
 
 export const TeamPatch = z
-  .object({ looking_for: z.array(RosterRole).max(3).openapi({ description: 'Qué busca el equipo; `[]`: no busca' }) })
+  .object({
+    looking_for: z.array(RosterRole).max(3).optional().openapi({ description: 'Qué busca el equipo; `[]`: no busca' }),
+    // (E11) Mismas reglas que la solicitud de equipo nuevo.
+    name: z.string().trim().min(2).max(40).optional().openapi({ example: 'Titanes', description: 'Nombre: de 2 a 40 caracteres' }),
+    tag: z
+      .string()
+      .trim()
+      .min(1)
+      .max(6)
+      .transform((v) => v.toUpperCase())
+      .optional()
+      .openapi({ example: 'TIT', description: 'Sigla: de 1 a 6 caracteres (se guarda en mayúsculas)' }),
+  })
+  .refine((o) => Object.values(o).some((v) => v !== undefined), { message: 'No hay nada para actualizar.' })
   .openapi('TeamPatch');
 
 export const ImageFile = (description: string) =>
@@ -214,6 +234,8 @@ export const TeamRequest = z
     tag: z.string().nullable(),
     status: z.enum(['pending', 'approved', 'rejected']),
     logo_url: z.string().nullable().openapi({ description: 'Logo propuesto (pasa al equipo al aprobar)' }),
+    created_at: z.string().nullable().openapi({ description: 'Cuándo se envió (o se volvió a enviar). null en las solicitudes viejas' }),
+    reject_reason: z.string().nullable().openapi({ description: 'Motivo del rechazo, si el admin escribió uno. null en el resto' }),
   })
   .openapi('TeamRequest');
 

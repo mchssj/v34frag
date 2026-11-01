@@ -179,7 +179,15 @@ describe('temporadas', () => {
       expect.objectContaining({ title: 'Temporada 1 · #1', icon: '🏆', rank: 1, season: { id: seasonId, number: 1, name: 'Temporada 1' } }),
     ]);
     const hist = await (await call('GET', `/api/v1/players/${players[1]}/seasons`, undefined, '')).json();
-    expect(hist.items).toEqual([expect.objectContaining({ season: { id: seasonId, number: 1, name: 'Temporada 1' }, rank: 2, medal: { name: 'Subcampeón', icon: '🥈' } })]);
+    expect(hist.items).toEqual([
+      expect.objectContaining({
+        season: { id: seasonId, number: 1, name: 'Temporada 1', ended_at: expect.any(String), players: expect.any(Number) },
+        rank: 2,
+        medal: { name: 'Subcampeón', icon: '🥈' },
+      }),
+    ]);
+    // (E20) "#2 de N": N cuenta a los que tuvieron puesto, así que no puede ser menos que el puesto.
+    expect(hist.items[0].season.players).toBeGreaterThanOrEqual(2);
   });
 
   it('un recálculo (automático: desde la web ya no se puede) después del cierre deja el mismo ELO', async () => {

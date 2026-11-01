@@ -224,13 +224,18 @@ export const seasons = createRouter()
     const p = c.req.valid('query');
     const q = c.var.sb
       .from('player_season_list')
-      .select('season_id, number, name, rank, eligible, elo, peak_elo, matches, wins, losses, elo_after, tier, icon', { count: 'exact' })
+      .select('season_id, number, name, ended_at, players, rank, eligible, elo, peak_elo, matches, wins, losses, elo_after, tier, icon', { count: 'exact' })
       .eq('player_id', id);
-    type Row = Omit<StandingRow, 'player_id' | 'nick' | 'photo_url'> & { season_id: string | null; number: number | null; name: string | null };
+    type Row = Omit<StandingRow, 'player_id' | 'nick' | 'photo_url'> & {
+      season_id: string | null; number: number | null; name: string | null; ended_at: string | null; players: number | null;
+    };
     const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'season_id');
     return c.json(
       envelope(
-        rows.map(({ season_id, number, name, ...r }) => ({ season: { id: season_id!, number: number!, name: name ?? '' }, ...stats(r) })),
+        rows.map(({ season_id, number, name, ended_at, players, ...r }) => ({
+          season: { id: season_id!, number: number!, name: name ?? '', ended_at, players: players ?? 0 },
+          ...stats(r),
+        })),
         total,
         p,
       ),
