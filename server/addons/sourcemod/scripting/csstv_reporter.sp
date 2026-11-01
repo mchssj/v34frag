@@ -15,6 +15,7 @@
  * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
  * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
  * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
+ * csstv/mm.inc toma las salas del matchmaking de la web (csstv_mm lo prende).
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -35,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.6.1"
+#define PLUGIN_VERSION "2.7.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -140,6 +141,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/menu.inc"
 #include "csstv/maps.inc"
 #include "csstv/match.inc"
+#include "csstv/mm.inc"
 #include "csstv/status.inc"
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
@@ -214,6 +216,7 @@ public void OnPluginStart()
 	Menu_Init();
 	Maps_Init();
 	Match_Init();
+	Mm_Init();
 	Status_Init();
 	Claim_Init();
 	Whois_Init();
@@ -235,6 +238,7 @@ public void OnConfigsExecuted()
 	StartReadyTimer();
 	License_Check();
 	Http_ScheduleProcess(5.0);
+	Mm_OnConfigsExecuted();   // antes de Match_OnMapReady: retoma la sala
 	Match_OnMapReady();   // vínculo con la web: un pendiente se descarta, uno activo se actualiza (series)
 }
 
@@ -272,12 +276,14 @@ public void OnClientPostAdminCheck(int client)
 {
 	Recon_OnJoin(client);
 	Match_OnClientJoin(client);
+	Mm_OnClientJoin(client);
 	Ips_OnJoin(client);
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_bReady[client] = false;
+	Mm_OnClientLeave(client);
 	Recon_Remember(client);
 	Board_SaveClient(client);
 	Clips_OnLeave(client);   // antes de Stats_ClientLeave: puede dejar a un compañero en clutch
@@ -460,6 +466,9 @@ public Action Cmd_Status(int client, int args)
 	char lic[160];
 	License_StatusText(lic, sizeof(lic));
 	ReplyToCommand(client, "[%s] Licencia: %s", g_sTag, lic);
+	char mm[96];
+	Mm_StatusText(mm, sizeof(mm));
+	ReplyToCommand(client, "[%s] Matchmaking: %s", g_sTag, mm);
 	if (g_sLastError[0])
 		ReplyToCommand(client, "[%s] Último error: %s", g_sTag, g_sLastError);
 	return Plugin_Handled;
@@ -531,7 +540,7 @@ public Action Timer_ReadyReminder(Handle timer)
 void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
-	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total && Match_ReadyAllows())
+	if (License_Allows() && !Maps_ChangePending() && total >= Mm_MinPlayers() && CountReady() == total && Match_ReadyAllows())
 		StartMatch(0, g_cvReadyKnife.BoolValue);
 }
 
@@ -636,6 +645,7 @@ void StartMatch(int maxRounds = 0, bool knife = false)
 	ExecIfExists("csstv/live.cfg");
 
 	Match_OnMatchStart();
+	Mm_OnMatchStart();
 	PickTeamNames();
 	Match_ApplyTeamNames();
 	Recon_RememberAll();
@@ -878,6 +888,7 @@ void FinishMatch()
 	if (QueueResult("terminada"))
 		PrintToChatAll("%s Enviando el resultado a CSSTV…", PREFIX);
 	Live_Discard();
+	Mm_OnMatchOver("");
 
 	RestoreStartMoney();
 	ExecIfExists("csstv/end.cfg");
@@ -891,6 +902,7 @@ void FinishMatch()
  */
 void CancelMatch(const char[] reason, const char[] by)
 {
+	Mm_OnMatchOver("La partida se cancelo en el servidor");
 	Pause_Clear();
 	Gg_Clear();
 	Knife_Reset();
@@ -931,7 +943,7 @@ void CancelMatch(const char[] reason, const char[] by)
  */
 public Action Timer_AbandonCheck(Handle timer)
 {
-	int min = g_cvAbandonPlayers.IntValue;
+	int min = Mm_AbandonMin(g_cvAbandonPlayers.IntValue);
 	if (min <= 0 || !(g_State == State_Starting || g_State == State_Live || g_State == State_Halftime || g_State == State_Knife))
 	{
 		g_iAbandonSince = 0;

@@ -959,7 +959,7 @@ begin
     'team1=' || translate(m.side1_name, E'\r\n', '  '), 'team2=' || translate(m.side2_name, E'\r\n', '  '),
     't1=' || coalesce((select string_agg(csstv_steam2(p.steam_id), ',') from mm_lobby_players lp join players p on p.id = lp.player_id where lp.lobby_id = l.id and lp.team = 1), ''),
     't2=' || coalesce((select string_agg(csstv_steam2(p.steam_id), ',') from mm_lobby_players lp join players p on p.id = lp.player_id where lp.lobby_id = l.id and lp.team = 2), ''),
-    'connect_seconds=' || coalesce(greatest(0, extract(epoch from l.connect_deadline - now()))::int, (select connect_minutes * 60 from mm_config)));
+    'connect_seconds=' || coalesce(extract(epoch from greatest(l.connect_deadline - now(), interval '0'))::int, (select connect_minutes * 60 from mm_config)));
 end $$;
 
 create function public.csstv_mm_report(p_token text, p_lobby uuid, p_event text, p_data text default null) returns boolean

@@ -3,7 +3,7 @@
 set client_min_messages = warning;
 
 create temp table t_u as
-  select gen_random_uuid() as id, i, format('mmt%s', i) as nick, (1000 + i * 40) as elo, format('765611980000%05s', i) as steam
+  select gen_random_uuid() as id, i, format('mmt%s', i) as nick, (1000 + i * 40) as elo, '765611980000' || lpad(i::text, 5, '0') as steam
     from generate_series(1, 11) i;
 insert into auth.users (id, email, email_confirmed_at, created_at, aud, role)
   select id, nick || '@test.local', now(), now() - interval '30 days', 'authenticated', 'authenticated' from t_u;
@@ -115,11 +115,14 @@ declare v_lobby uuid := (select id from mm_lobbies where status = 'assigned'); v
 begin
   update game_servers set token_hash = encode(extensions.digest(v_tok, 'sha256'), 'hex') where name = 'mmt-server';
   perform pg_temp.check(csstv_mm_poll(v_tok) like '%lobby=' || v_lobby || '%', 'el plugin recibe la sala');
+  -- Los campos que lee csstv/mm.inc, en líneas clave=valor y con los planteles en STEAM_0.
+  perform pg_temp.check(csstv_mm_poll(v_tok) ~ ('status=assigned' || E'\n' || 'map=\S+' || E'\n' || 'password=\S+' || E'\n' || 'code=\S+' || E'\n' || 'team1=.+' || E'\n' || 'team2=.+' || E'\n' || 't1=STEAM_0:[^\n]+' || E'\n' || 't2=STEAM_0:[^\n]+'), 'el poll trae lo que lee el plugin');
   perform pg_temp.check(csstv_mm_report(v_tok, v_lobby, 'taken'), 'el plugin toma la sala');
   perform pg_temp.check((select status from mm_lobbies where id = v_lobby) = 'connecting', 'pasa a conectando');
   for r in select csstv_steam2(p.steam_id) s from mm_lobby_players lp join players p on p.id = lp.player_id where lp.lobby_id = v_lobby loop
     perform csstv_mm_report(v_tok, v_lobby, 'connected', r.s);
   end loop;
+  perform pg_temp.check(not exists (select 1 from mm_lobby_players where lobby_id = v_lobby and connected_at is null), 'el plugin marca a todos conectados por SteamID');
   perform csstv_mm_report(v_tok, v_lobby, 'live');
   perform pg_temp.check((select status from mm_lobbies where id = v_lobby) = 'live', 'la sala queda en vivo');
   perform csstv_mm_password(v_tok, 'uid-1', 'abcd', 'idle');

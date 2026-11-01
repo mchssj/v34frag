@@ -135,6 +135,11 @@ public Action Cmd_Match(int client, int args)
 		License_Reply(client);
 		return Plugin_Handled;
 	}
+	if (Mm_HasLobby())
+	{
+		QolReply(client, "[%s] Es una sala del matchmaking: el vínculo lo maneja la web.", g_sTag);
+		return Plugin_Handled;
+	}
 
 	if (args == 0)
 	{
@@ -683,13 +688,13 @@ void Match_OnMapReady()
 {
 	if (g_LinkState == Link_Pending)
 		Link_Clear();
-	else if (g_LinkState == Link_Active)
+	else if (g_LinkState == Link_Active && !Mm_HasLobby())
 		Link_Lookup(g_sLinkCode, 0);
 }
 
 public Action Timer_LinkRefresh(Handle timer)
 {
-	if (g_LinkState == Link_Active && g_State == State_Warmup)
+	if (g_LinkState == Link_Active && g_State == State_Warmup && !Mm_HasLobby())
 		Link_Lookup(g_sLinkCode, 0);
 	return Plugin_Stop;
 }
