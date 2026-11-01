@@ -202,6 +202,8 @@ describe('partida: detalle, veto, chat y código', () => {
     expect(d.body.viewer).toMatchObject({ can_veto: true, can_chat: true, can_manage: false, is_participant: true });
     expect(d.body.link_code).toMatch(/^[A-Z2-9]{5}$/);
     expect(d.body.roster1).toHaveLength(5);
+    // Replanteo 44: rating reciente en 5v5; sin partidas, null.
+    expect(d.body.roster1.every((p: { rating: number | null }) => p.rating === null)).toBe(true);
     // Un extraño no ve el código ni puede escribir.
     const extra = await createUser();
     const ext = await req('GET', `/api/v1/matches/${m.id}`, { token: extra.token });

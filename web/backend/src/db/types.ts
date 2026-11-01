@@ -4568,6 +4568,11 @@ isOneToOne: false
 "pcw_side_team":
 { Args: { "p_side": string,"p_team": string }; Returns: undefined
                            },
+"player_recent_rating":
+{ Args: { "p_days"?: number,"p_players": (string)[] }; Returns: {
+              "maps": number,"player_id": string,"rating": number
+            }[]
+                           },
 "player_ref":
 { Args: { "p_player": string }; Returns: Json
                            },
