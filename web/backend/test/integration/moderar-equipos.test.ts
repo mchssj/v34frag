@@ -82,7 +82,10 @@ describe('moderar equipos', () => {
     const removed = (await req('GET', '/api/v1/notifications?per=50', { token: other.token })).body.items.find((n: { type: string }) => n.type === 'team_removed');
     expect(removed.data.reason).toBe('Baneado');
     const h = await req('GET', `/api/v1/admin/teams/${team}/history?per=2`, { token: adm.token });
-    expect(h.body.items[0]).toMatchObject({ action: 'member_removed', actor_role: 'moderator', reason: 'Baneado' });
+    expect(h.body.items[0]).toMatchObject({ action: 'member_removed', actor_role: 'moderator', reason: 'Baneado', actor: { user_id: mod.id } });
+    // El alias del autor sale de su ficha: la del líder se ve aunque quien consulta sea otro.
+    const full = await req('GET', `/api/v1/admin/teams/${team}/history?per=50`, { token: mod.token });
+    expect(full.body.items.find((e: { action: string }) => e.action === 'created').actor.alias).toBeTruthy();
     expect((await req('POST', `/api/v1/admin/teams/${team}/dissolve`, { token: mod.token, body: {} })).status).toBe(403);
   });
 

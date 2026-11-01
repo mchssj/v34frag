@@ -194,8 +194,9 @@ export const adminTeams = createRouter()
     type Row = { id: number; at: string; actor_id: string | null; actor_role: string; action: string; data: Record<string, unknown>; reason: string | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, { at: ['id'] }, 'id'); // el id crece con cada cambio (varios pueden tener la misma hora)
     const ids = [...new Set(rows.flatMap((r) => (r.actor_id ? [r.actor_id] : [])))];
-    const names = ids.length ? mustHave(await c.var.sb.from('profiles').select('id, tag').in('id', ids)) : [];
-    const alias = new Map(names.map((n) => [n.id, n.tag]));
+    // El alias sale de la ficha del jugador (pública); profiles solo deja leer el propio.
+    const names = ids.length ? mustHave(await c.var.sb.from('players').select('user_id, nick').in('user_id', ids)) : [];
+    const alias = new Map(names.map((n) => [n.user_id, n.nick]));
     return c.json(
       envelope(
         rows.map((r) => ({
