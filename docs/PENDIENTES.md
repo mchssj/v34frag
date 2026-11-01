@@ -537,6 +537,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
 
+### 1.35 Moderar equipos (replanteo `43`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** Administración › Equipos con "Moderar equipos" (moderadores y admins: lista, historial, renombrar, quitar logo y miembros; admin además líder, sumar, rol, disolver) y "Configuración equipo" (admin). Motivo opcional y aviso obligatorio al líder (`team_staff_action`).
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `43` en staging después de la `42` y redesplegar la API.
+  2. En el corte, la `43` va después de la `42`.
+- No toca el plugin.
+- **Bitácora:** [`2026-11-01-moderar-equipos`](bitacora/2026-11-01-moderar-equipos/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
