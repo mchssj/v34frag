@@ -297,6 +297,7 @@ describe("ctaFor", () => {
     max_teams: 8,
     champion: null,
     ends_on: null,
+    finished_at: null,
     registration_closes_at: null,
     live_match: null,
     current_stage: null,
@@ -384,7 +385,22 @@ describe("ctaFor", () => {
         myTeams: [],
         registeredIds: none,
         now,
-      }).kind
-    ).toBe("champion")
+      })
+    ).toMatchObject({ kind: "champion", on: "2025-08-02" })
+    // El fin real gana sobre el tentativo.
+    expect(
+      ctaFor({
+        event: {
+          ...base,
+          status: "finished",
+          champion: team(1),
+          ends_on: "2025-08-02",
+          finished_at: "2025-07-30T22:10:00Z",
+        },
+        myTeams: [],
+        registeredIds: none,
+        now,
+      })
+    ).toMatchObject({ kind: "champion", on: "2025-07-30T22:10:00Z" })
   })
 })

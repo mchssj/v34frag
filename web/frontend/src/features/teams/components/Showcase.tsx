@@ -8,8 +8,13 @@ type Title = {
   id: string
   name: string
   ends_on: string | null
+  /** Fin real (última partida); `ends_on` es el tentativo. */
+  finished_at?: string | null
   prize: string | null
 }
+
+/** Cuándo salió campeón: el fin real si está; si no, el tentativo. */
+const endOf = (t: Title) => t.finished_at ?? t.ends_on
 
 export function Showcase({
   titles,
@@ -50,7 +55,7 @@ export function Showcase({
                     {t.name}
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    {["Campeón", t.ends_on && timeAgo(t.ends_on), t.prize]
+                    {["Campeón", endOf(t) && timeAgo(endOf(t) ?? ""), t.prize]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>

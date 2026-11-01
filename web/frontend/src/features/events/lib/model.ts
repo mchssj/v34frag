@@ -408,6 +408,7 @@ export function ctaFor({
     | "max_teams"
     | "champion"
     | "ends_on"
+    | "finished_at"
     | "registration_closes_at"
     | "live_match"
     | "current_stage"
@@ -444,6 +445,11 @@ export function ctaFor({
       : { kind: "matches", stage: event.current_stage }
   }
   if (event.status === "finished" && event.champion)
-    return { kind: "champion", team: event.champion, on: event.ends_on }
+    // El fin real (última partida); ends_on es solo el tentativo del organizador.
+    return {
+      kind: "champion",
+      team: event.champion,
+      on: event.finished_at ?? event.ends_on,
+    }
   return { kind: "none" }
 }

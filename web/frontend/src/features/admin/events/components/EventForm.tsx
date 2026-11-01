@@ -233,7 +233,11 @@ export function EventForm({
             onChange={(e) => setStartsOn(e.target.value)}
           />
         </Labeled>
-        <Labeled id={`${id}-end`} label="Termina">
+        <Labeled
+          id={`${id}-end`}
+          label="Termina (aproximado)"
+          hint="Fecha tentativa: puede terminar antes o después."
+        >
           <Input
             id={`${id}-end`}
             type="date"

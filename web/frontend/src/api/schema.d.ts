@@ -14047,7 +14047,7 @@ export interface paths {
         };
         /**
          * Servidores activos
-         * @description Para asignar el servidor de una partida (organizadores y admins).
+         * @description Para asignar el servidor de una partida (organizadores, moderadores y admins).
          */
         get: {
             parameters: {
@@ -17203,7 +17203,10 @@ export interface components {
             /** @enum {string} */
             status: "registration" | "in_progress" | "finished" | "cancelled";
             starts_on: string | null;
+            /** @description Fin tentativo que pone el organizador: el torneo puede terminar antes o después */
             ends_on: string | null;
+            /** @description Cuándo terminó de verdad: la última partida jugada. null mientras no terminó (o si sus partidas no tienen fecha) */
+            finished_at: string | null;
             prize: string | null;
             /** @description Equipos inscritos */
             teams: number;
@@ -17412,7 +17415,10 @@ export interface components {
             registration_closes_at?: string | null;
             /** Format: date */
             starts_on?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`
+             */
             ends_on?: string | null;
             prize?: string | null;
             rules?: string | null;
@@ -17472,7 +17478,10 @@ export interface components {
             registration_closes_at?: string | null;
             /** Format: date */
             starts_on?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`
+             */
             ends_on?: string | null;
             prize?: string | null;
             rules?: string | null;
