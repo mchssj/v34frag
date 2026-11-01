@@ -15,8 +15,14 @@ const st = JSON.parse(execSync('pnpm exec supabase status -o json', { stdio: ['i
 if (!/^http:\/\/(127\.0\.0\.1|localhost)/.test(st.API_URL)) throw new Error('Esto solo corre contra la Supabase local');
 
 const a = createClient(st.API_URL, st.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-const users = (await a.auth.admin.listUsers({ perPage: 1000 })).data.users;
-const user = users.find((u) => u.email === email);
+// Las pruebas automáticas dejan muchas cuentas locales: hay que recorrer todas las páginas.
+let user: { id: string; email?: string } | undefined;
+for (let page = 1; !user; page++) {
+  const { data, error } = await a.auth.admin.listUsers({ page, perPage: 1000 });
+  if (error) throw error;
+  user = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  if (data.users.length < 1000) break;
+}
 if (!user) throw new Error(`No existe la cuenta ${email}: regístrala primero en la web local`);
 
 const NAME = 'Servidor de demo';
