@@ -2,6 +2,8 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-25**.
 
+> **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
+
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
 ## Orden de trabajo (decidido por Daniel el 2026-10-15)
@@ -121,7 +123,7 @@ Ordenado por urgencia.
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-**Plugins que esperan la web nueva** (salen o se prenden en el corte, en el servidor real y en RBK en la misma tanda):
+**Plugins que esperan la web nueva** (salen o se prenden en el corte, en el servidor real y en flow en la misma tanda):
 
 | Plugin | Estado | Qué falta en el corte |
 |---|---|---|
@@ -270,14 +272,14 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - si se quiere, cambiar el nombre de los archivos de las demos (`v34frag_…dem`) con el próximo deploy del Worker (punto 1.1).
 - **Bitácora:** [`2026-10-22-nombre-cmleague`](bitacora/2026-10-22-nombre-cmleague/)
 
-### 1.14 RBK igual al servidor real (con Stripper) y prórroga y medio tiempo nuevos: falta reiniciar RBK
+### 1.14 RBK igual al servidor real (con Stripper) y prórroga y medio tiempo nuevos: cancelado (RBK dado de baja el 2026-10-29)
 
 - **Qué es:**
   - RBK queda igual a nuestro servidor. Le faltaba Stripper:Source, que les saca la niebla a los mapas, y tenía otros valores de partida y otros plugins.
   - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"` (bajado a `"3.0"` el 2026-10-24, punto 1.18).
 - **Subido el 2026-10-22.**
   - Servidor real: se carga en el próximo cambio de mapa.
-  - **RBK: falta que Daniel lo reinicie desde el panel.** Metamod y las extensiones solo cargan al arrancar.
+  - ~~RBK: falta que Daniel lo reinicie desde el panel~~: cancelado, RBK dejó de usarse el 2026-10-29.
 - **Después del reinicio**, verificar por SFTP:
   - logs de errores sin nada nuevo;
   - `license.txt` actualizado;
@@ -293,7 +295,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **2026-10-29: el relay pasa al VPS** (relay 2.0.0, plan [`2026-10-29-hud-relay-vps`](bitacora/2026-10-29-hud-relay-vps/GUIA_IMPLEMENTACION.md)): un relay para todos los servidores, administrado desde la web. Desplegado en el VPS contra staging (`hud.cmleague.lat`). **flow** ya tiene `csstv_hud` 1.1.0 (no lo tenía) apuntando al relay, en el puerto `27501`, como prueba autorizada por Daniel. Falta:
   - ~~confirmar la prueba con flow~~: **funcionó el 2026-10-29** (paquetes con la clave correcta, el HUD y el panel con datos, y la sesión en staging). Queda **prendido en flow** por decisión de Daniel (por consola está en `csstv_hud 0` desde el congelamiento del 2026-10-29, que fue por los bots y no por el HUD: ver la guía, "Incidentes"; volver a `csstv_hud 1`). Falta que kyan confirme si existe `maps/de_dust2_ob.nav` y, si no, generarlo. Cómo apagarlo si laguea: `GUIA_IMPLEMENTACION.md`, "Cómo apagar el HUD de un servidor";
   - ~~el frontend~~: hecho el 2026-10-29 ([`2026-10-29-frontend-hud`](bitacora/2026-10-29-frontend-hud/GUIA_IMPLEMENTACION.md)); falta desplegarlo con `desplegar.sh web`;
-  - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real, RBK y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
+  - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
 - **2026-10-30: HUD versión 2** (relay 2.1.0, plan [`2026-10-30-hud-version-2`](bitacora/2026-10-30-hud-version-2/GUIA_IMPLEMENTACION.md)): el diseño del torneo de CS2 (marcador con siglas, vivos y clutch, tarjetas con foto y número de tecla, la vida que oscurece la tarjeta y la flash y el humo con franja y borde). Solo cambia lo que dibuja OBS; el plugin no. **Desplegado en el VPS el 2026-10-30** (build `ea72879c8f86-local10301427`, con cambios sin commit). Falta verlo con la SourceTV real en OBS y, después del commit, volver a desplegar para que el build lleve el nombre del commit.
 - **2026-10-30: serie de mapas en el HUD** (relay 2.2.0, plan [`2026-10-30-hud-serie-mapas`](bitacora/2026-10-30-hud-serie-mapas/GUIA_IMPLEMENTACION.md)): en `/control`, BO1/BO3/BO5 y por mapa el pick y el ganador; el HUD muestra `CMLEAGUE | BO3 | Jugando en … | Pick de …` y las rayitas de mapas ganados. Probado en local y **desplegado en el VPS el 2026-10-30** (build `7b6540df4295-local10301756`, con cambios sin commit). Falta verlo en OBS y, después del commit, volver a desplegar. No toca el plugin.
 
@@ -426,14 +428,14 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Reprocesar antes de la web nueva:** desde el SQL Editor, con las consultas de la guía. La web vieja no lo tiene.
 - **Bitácora:** [`2026-10-28-clips-vip-y-reprocesar`](bitacora/2026-10-28-clips-vip-y-reprocesar/)
 
-### 1.25 Demos de RBK a R2: verificar con el primer mix de RBK
+### 1.25 Demos de RBK a R2: cancelado (RBK dado de baja el 2026-10-29)
 
 - **Desplegado el 2026-10-26:**
   - Worker `v34frag-demos` versión `1475d128`, con el secreto `PTERO_KEY_edbee7d6` (la key del panel de RBK, `SERVER1_PANEL_API_KEY` en el `.env`).
   - En producción, `game_servers.panel_server_id = 'edbee7d6'` para RBK.
   - En RBK (`SERVER1_*`), `csstv_demo "1"`, con la copia `csstv_reporter.cfg.bak_20261026`. Se aplica en el próximo cambio de mapa.
 - RBK ya tenía `+tv_enable 1 +tv_port 27063` en el arranque del panel. Nuestro servidor no cambia.
-- **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
+- **Cancelado el 2026-10-29** (RBK dejó de usarse). Queda por limpiar el secreto `PTERO_KEY_edbee7d6` del Worker y la key de `cloudflare/demo-worker/scripts/dev-vars.py`. Lo que faltaba era, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
 - **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
 
 ### 1.26 Equipo y Torneos en la API (replanteo `33`): falta el frontend
@@ -497,7 +499,67 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. **Reporter 2.6.1** (pico y copia a disco de los intentos): desplegado el 2026-10-29. La migración `20261029200000_ips_intentos_hora.sql` está en producción y en staging, y el plugin en **el real, RBK y flow**. Falta verificar en cada uno, después de su cambio de mapa, que el log diga 2.6.1 y que no aparezca `IPs: no se pudieron registrar`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
 
-### 1.31 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
+### 1.31 Datos para las medallas (reporter 2.7.0): desplegado, falta verificar
+
+- **Qué es:** el reporter cuenta kills y HS por arma, clutchs (1v1 a 1v5 e intentos), rondas sobrevividas, ganadas de CT y de T, pistolas, ecos, bombas explotadas y el equipamiento de cada ronda. La base de producción lo guarda en `match_round_log` y `match_player_extra` para que la web nueva tenga datos desde antes del corte. La web vieja no cambia.
+- **Hecho el 2026-10-29:** migración `supabase/migrations/20261029210000_medallas_datos.sql`, **aplicada en producción, staging y local** (17 pruebas en las tres). Reporter 2.7.0 probado con bots en el servidor local.
+- **Desplegado el 2026-10-29** en **el real y flow** (genérico md5 `1f74ced7`, flow licenciado `f02def68`; la 2.6.1 en `plugins/disabled/`). RBK no, porque dejó de usarse. Se carga en el próximo cambio de mapa.
+- **Falta:**
+  1. Verificar el primer mix de cada servidor (consulta en la guía) y publicar el changelog.
+  2. Lo que sigue de las medallas está en `INVESTIGACION.md`: el motor que las otorga, el modelo (clave y nivel) y las preguntas abiertas (MVP, clutch desde 1v1, umbrales de eco, cuándo se calculan).
+- **Bitácora:** [`2026-10-29-medallas-datos`](bitacora/2026-10-29-medallas-datos/)
+
+### 1.32 Clips con la cámara en otro jugador y el menú al final: falta el portátil y el reproceso
+
+- **Qué pasaba:** los dos 3k de "New™ always" en de_cbble (mix de flow del 2026-10-29) salieron desde los ojos de Vodka, y el de la última ronda terminaba con el menú del juego.
+- **Hecho el 2026-10-29 (sin commit):** `render/leer_demo.py` (el largo de `svc_UpdateStringTable` es de 16 bits: con 20 no veía a los que se reconectan), `render/render_clip.py` y `render/procesar.py` (los tramos no pasan del final de la demo). Probado con la demo; sin probar en el juego.
+- **Falta:**
+  1. Llevar `render/` al portátil (con la tarea desactivada).
+  2. Después, y no antes, reprocesar los dos clips con `bitacora/2026-10-29-clips-pov-y-final-demo/pruebas/reprocesar_cbble.sql`, revisarlos en Drive y aprobarlos.
+     - El primer reproceso (2026-10-30) dejó bien la cámara, pero el 3k de la ronda 29 no mostraba la última kill.
+     - Con el render que llega al último tick y congela el cuadro: aprobar el de la ronda 18 y reprocesar otra vez el de la 29 (final del mismo `.sql`).
+  3. ~~Plugin: que la demo siga grabando después del final~~: hecho en la 2.7.0 (punto 1.33). Los dos clips se aprobaron así: el de la ronda 29 queda sin la última kill.
+- **Bitácora:** [`2026-10-29-clips-pov-y-final-demo`](bitacora/2026-10-29-clips-pov-y-final-demo/)
+
+### 1.33 La demo sigue grabando 5 s después del final del mix (reporter 2.7.1): desplegado, falta verificar
+
+- **Qué es:** `FinishMatch` corta la demo 5 s después (`Demo_StopLater`), para que la última kill del mix se vea en los clips.
+- **Desplegado el 2026-10-30 como 2.7.1** en **el real y flow** (genérico md5 `9418edaa`, flow licenciado `087ffe0b`; la 2.7.0 en `plugins/disabled/`). La 2.7.0 se había desplegado con builds anteriores a este cambio: Daniel lo notó en su clutch de la última ronda del mix de tuscan en flow (2026-10-30). Se carga en el próximo cambio de mapa.
+- **Falta:**
+  1. Verificar el primer mix de cada servidor: el log dice 2.7.1 y la demo llega unos 5 s después del final.
+  2. Publicar el changelog.
+  3. El clip de ese mix (`569f24cc`, daniloev, ronda 29) necesita el render nuevo del punto 1.32 y un reproceso: su demo ya quedó cortada.
+- **Bitácora:** [`2026-10-29-demo-segundos-finales`](bitacora/2026-10-29-demo-segundos-finales/)
+
+### 1.34 Clips de nuke que fallaron por una kill justo después del salto: falta el portátil y el reproceso
+
+- **Qué pasaba:** los 6 clips de nuke_old_blue_ep (`flow-20261029T210433-5ce4`, 2026-10-30) quedaron `failed` con "la demo pasó de largo el tick 70272 (3 veces)". El control miraba la primera kill de cualquiera después del salto, y había una 1,5 s después.
+- **Hecho el 2026-10-30 (sin commit):** `render/render_clip.py` mira la primera kill desde 2,5 s después del salto (`SEEK_SLACK_SECONDS`). Probado con la demo; sin probar en el juego.
+- **Falta:**
+  1. Llevar `render/` al portátil.
+  2. Con la confirmación de Daniel, devolver los clips a la cola con `bitacora/2026-10-30-render-kill-cerca-del-salto/pruebas/reprocesar_nuke.sql` y revisar que queden `done`.
+- **Bitácora:** [`2026-10-30-render-kill-cerca-del-salto`](bitacora/2026-10-30-render-kill-cerca-del-salto/)
+
+### 1.35 Clips de dust2 que fallaron por una línea de consola larga: falta el portátil y el reproceso
+
+- **Qué pasaba:** los 5 clips del mix de dust2_ob de GO TO KNOW contra New™ (`flow-20261029T234042-496d`) fallaron dos veces con "no apareció 'CML_PASO_14'": la consola corta la línea en unos 255 caracteres y ese paso medía 259 (la cámara llega a «New™ CH1LI» desde un jugador de nombre largo).
+- **Hecho el 2026-10-30 (sin commit):** `render/render_clip.py` parte en varias líneas los pasos de más de 250 caracteres (`console_lines`). Probado con la demo; sin probar en el juego.
+- **Falta:**
+  1. Llevar `render/` al portátil.
+  2. Con la confirmación de Daniel, devolver los clips a la cola con `bitacora/2026-10-30-render-linea-consola-larga/pruebas/reprocesar_dust2.sql` y revisar que queden `done`.
+- **Bitácora:** [`2026-10-30-render-linea-consola-larga`](bitacora/2026-10-30-render-linea-consola-larga/)
+
+### 1.36 Colores del chat: reporte de daño y plata del equipo (reporter 2.7.2): desplegado, falta verificar
+
+- **Qué es:** la paleta del artifact "Colores del chat de CMLeague" (aprobada por Daniel el 2026-10-30). El reporte de daño sale en español, una línea por jugador con dado, recibido y vivo o muerto. La plata del equipo sale sin total, una línea por compañero, con el color según lo que le alcanza. Etiqueta nueva `{#gris}`.
+- **Hecho el 2026-10-30 (sin commit):** `qol.inc`, `stats.inc` y la versión 2.7.2. Compila sin avisos; `plugins/csstv_reporter.smx` ya es la 2.7.2.
+- **Falta:**
+  1. ~~Probar con bots~~: **hecho el 2026-10-30** (el texto sale bien; ver la guía).
+  2. ~~Desplegar~~: **hecho el 2026-10-30** en **el real** (`.smx` genérico, md5 `5d2136e7`) y **flow** (build licenciado, md5 `ba676761`). La 2.7.1 quedó en `plugins/disabled/` de los dos. Falta ver en el primer mix de cada uno que el log diga 2.7.2 y que los colores se vean bien, con ClientMod y sin él, y publicar el `CHANGELOG_DISCORD.txt`.
+  3. Pasarle el artifact a kyan para que ajuste los colores del retake.
+- **Bitácora:** [`2026-10-30-colores-chat`](bitacora/2026-10-30-colores-chat/)
+
+### 1.37 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** lo que pidió el frontend en `pendientes-backend-cmleague.md` (E9 a E18 y E20): filtros, contadores y MVP en `GET /matches`, cancelar la solicitud de equipo con su fecha y el motivo del rechazo, disolver un equipo, nombre y sigla editables por el capitán, biografía del jugador, logos en el historial y los títulos, y cierre y total de jugadores en las temporadas.
 - **Hecho el 2026-10-30 en local y commiteado el 2026-11-01** (en `feat/backend-api-fase-1`): replanteo `39` con su inversa y sus pruebas SQL, API, tipos, pruebas unitarias y de integración, y el contrato del frontend.
@@ -510,14 +572,14 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real ni a flow.
 - **Bitácora:** [`2026-10-30-api-pendientes-frontend`](bitacora/2026-10-30-api-pendientes-frontend/)
 
-### 1.32 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
+### 1.38 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** lo que pidió la Llave por formato del frontend: `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en `GET /events/{id}/matches`, y `series_players` (stats de la serie con el rating ponderado por rondas) en `GET /matches/{id}` de torneo y PCW.
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge. El frontend ya los usa: rating de la serie en el detalle resumido, y origen y destino de cada lado en la Llave.
-- **Falta:** redesplegar la API del VPS junto con lo del punto 1.31. No toca la base ni el plugin.
+- **Falta:** redesplegar la API del VPS junto con lo del punto 1.37. No toca la base ni el plugin.
 - **Bitácora:** [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/)
 
-### 1.33 Crear un equipo al instante (replanteo `40`): commit del 2026-11-01, sin desplegar
+### 1.39 Crear un equipo al instante (replanteo `40`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** cualquier usuario con SteamID crea su equipo sin aprobación (`POST /api/v1/teams`). Tope de equipos por capitán configurable (`max_led`, 1 por defecto), aptitud por modo en la ficha (`eligible_modes`) y el ranking de equipos solo con los que tienen 5 jugadores o suplentes. Se borran la aprobación, el rechazo y la cancelación de solicitudes.
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
@@ -527,7 +589,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real ni a flow.
 - **Bitácora:** [`2026-11-01-equipo-al-instante`](bitacora/2026-11-01-equipo-al-instante/)
 
-### 1.34 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
+### 1.40 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** Administración › Torneos. Moderadores que operan todos los torneos (sin cancelar ni borrar), siembra por ranking (torneos y PCW) con la etapa de entrada del suizo según la siembra, y cada mapa de una serie con un mix vinculado a mano o el resultado a mano ("Sin detalle de la partida").
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
@@ -537,7 +599,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
 
-### 1.35 Moderar equipos (replanteo `43`): commit del 2026-11-01, sin desplegar
+### 1.41 Moderar equipos (replanteo `43`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** Administración › Equipos con "Moderar equipos" (moderadores y admins: lista, historial, renombrar, quitar logo y miembros; admin además líder, sumar, rol, disolver) y "Configuración equipo" (admin). Motivo opcional y aviso obligatorio al líder (`team_staff_action`).
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
@@ -661,7 +723,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 - **Baneos gestionados desde la web** (plan aprobado el 2026-10-26): **base y API hechas el 2026-10-26**, solo en local (replanteo `31`, rama `feat/backend-api-fase-1`). Tabla `bans` (lista única para todos los servidores, incluido RBK), rol `moderator` (permanente solo admin; el moderador cambia o levanta cualquiera que no sea permanente), funciones del plugin (`csstv_ban_check`, `csstv_bans_since`, `csstv_ban_add`, `csstv_ban_lift`) y `/api/v1/bans`, `/api/v1/players/{id}/bans` y `/api/v1/admin/bans*`. Ver [`2026-10-25-baneos-web`](bitacora/2026-10-25-baneos-web/DOCUMENTACION.md). Falta, en este orden:
   - el frontend: página pública "Baneos", Administración › Baneos, el botón "Banear", el aviso en la ficha y `moderator` en los roles de Administración;
   - el plugin `csstv_bans` (congelado hasta el final, o como excepción si Daniel la pide): consulta al conectarse, sincronización cada 3 minutos y al empezar cada mapa (no cada 30 s, para no cargar el #1; Daniel, 2026-10-26) y `!syncbans` para moderadores y admins. También la importación de los `banned_user.cfg` del real y de RBK;
-  - el despliegue con la web nueva (Daniel, 2026-10-26): el plugin, en el servidor real y en RBK (build licenciado) en la misma tanda. Está en la lista de plugins que esperan la web nueva (punto 1.5).
+  - el despliegue con la web nueva (Daniel, 2026-10-26): el plugin, en el servidor real y en flow (build licenciado) en la misma tanda. Está en la lista de plugins que esperan la web nueva (punto 1.5).
 - ~~**Maestra de mapas**~~ (pedido por Daniel el 2026-10-24): **backend hecho el 2026-10-25**, solo en local (replanteo `30`). Es el catálogo `map_pool`:
   - un mapa disponible o retirado (no se borra);
   - `mixes`: el select de Mixes;
@@ -712,7 +774,7 @@ Daniel definió el 2026-10-16 (opción B): **en el calentamiento se escuchan tod
   - Cada requerimiento va en `docs/bitacora/AAAA-MM-DD-slug/` con `PLAN.md` (no se edita después), `DOCUMENTACION.md`, `GUIA_IMPLEMENTACION.md` y `pruebas/` opcional, más una fila en el índice. Formato en [`bitacora/PLANTILLA.md`](bitacora/PLANTILLA.md).
   - Todo en español, con diagramas Mermaid.
   - Changelog para jugadores: `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `v34frag X.Y.Z --  Changelog` (dos espacios después de `--`), con tuteo y sin detalles técnicos.
-- **Credenciales:** todas en el `.env` de la raíz, que no se versiona. `SFTP_CSS_*` es el servidor real, `SERVER1_*` es RBK, `FTP_WEB_*` es la web, `PTERO_PANEL_*` es la API del panel, y además `DEMO_WORKER_TOKEN` y `ACCELERATOR_CRASH_KEY`. Para SFTP se usó `paramiko` en un entorno virtual aparte.
+- **Credenciales:** todas en el `.env` de la raíz, que no se versiona. `SFTP_CSS_*` es el servidor real, `SERVER2_*` es flow (`SERVER1_*` era RBK, dado de baja el 2026-10-29), `FTP_WEB_*` es la web, `PTERO_PANEL_*` es la API del panel, y además `DEMO_WORKER_TOKEN` y `ACCELERATOR_CRASH_KEY`. Para SFTP se usó `paramiko` en un entorno virtual aparte.
 - **Servidor local de pruebas:**
   - Está en `E:\CSS DEDICATED SERVER\server`: SourceMod 1.10, Accelerator, puerto 27016, RCON con la clave de `cstrike\cfg\server.cfg`.
   - Las pruebas se hacen con bots en `$2000$` y equipos desparejos (3 contra 1), con la build de depuración (`spcomp csstv_reporter.sp CSSTV_DEBUG=`) y `csstv_debug_fakecmd <userid> <comando>`.
@@ -722,5 +784,5 @@ Daniel definió el 2026-10-16 (opción B): **en el calentamiento se escuchan tod
   - **Bots:**
     - `bot_add_ct <nombre>` solo acepta nombres de `BotProfile.db`. Para otros nombres se usa `sm_rename`; con `CSSTV_DEBUG`, el SteamID falso sale del nombre actual.
     - Un `jointeam` de un bot que procesa el motor **tira el servidor**, aun sin nuestro plugin. Para moverlos se usa `!team` / `sm_team`.
-- **Servidor real:** ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (RBK) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (RBK) en la misma tanda (ver `CLAUDE.md`).
+- **Servidor real:** ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (flow) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (flow) en la misma tanda (ver `CLAUDE.md`).
 - **Pruebas de SQL:** PostgreSQL 18 local (`initdb` + `pg_ctl` en un puerto libre), `docs/bitacora/2026-10-11-elo-jugadores/pruebas/stub_supabase.sql`, todas las migraciones en orden y después los `pruebas_*.sql`.

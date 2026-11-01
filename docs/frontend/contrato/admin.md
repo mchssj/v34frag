@@ -33,7 +33,7 @@
 
 ### Baneos (moderadores y admins)
 
-Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-web/PLAN.md). Un baneo vale en **todos los servidores** (también RBK), se aplica al conectarse y, a quien ya está jugando (aunque sea un mix), lo echa la sincronización de cada 3 minutos y de cada cambio de mapa, o al momento si un moderador o admin escribe `!syncbans` en el servidor (conviene decirlo en el formulario de "Banear") y no avisa por Discord ni por notificación. Los servidores lo aplican cuando tengan el plugin `csstv_bans` (después del corte).
+Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-web/PLAN.md). Un baneo vale en **todos los servidores** (también los externos, como flow), se aplica al conectarse y, a quien ya está jugando (aunque sea un mix), lo echa la sincronización de cada 3 minutos y de cada cambio de mapa, o al momento si un moderador o admin escribe `!syncbans` en el servidor (conviene decirlo en el formulario de "Banear") y no avisa por Discord ni por notificación. Los servidores lo aplican cuando tengan el plugin `csstv_bans` (después del corte).
 
 | Acción | Endpoint | Reglas |
 |---|---|---|
@@ -70,7 +70,7 @@ Plan: [`docs/bitacora/2026-10-28-vip-fase-0/`](../../bitacora/2026-10-28-vip-fas
 | `DELETE /api/v1/admin/servers/{id}` | Solo sin partidas. Con partidas, `400 BUSINESS_RULE`: ofrecer "Revocar" |
 
 - **El token se muestra una sola vez** (la base guarda su hash). Mostrar `cfg` en un cuadro con "Copiar" y avisar que no se vuelve a ver; si se pierde, se genera otro.
-- **`build_command`:** para servidores externos (como RBK), que llevan el build licenciado. Mostrarlo junto al token.
+- **`build_command`:** para servidores externos (como flow), que llevan el build licenciado. Mostrarlo junto al token.
 - **`license_state`:** `ok`; `expiring` (vence en 7 días o menos: aviso amarillo); `expired` (el servidor no puede jugar mixes ni subir resultados: aviso rojo); `revoked`.
 - **`online`:** el servidor validó su licencia en los últimos 35 minutos (lo hace al cargar cada mapa y cada 30 minutos).
 - **IP permitida:** `last_ip` es la IP de la última conexión válida; ofrecer "Usar la última IP" para cargarla en `allowed_ip`.
