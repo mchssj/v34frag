@@ -290,6 +290,8 @@ export type MmState = {
   queue_activity: {
     modes: { mode: string; searching: number; missing: number }[]
     levels: { label: string; count: number }[]
+    /** Quiénes están buscando, los que más esperan primero (hasta 50). */
+    players: { player_id: string; nick: string; level: number; mode: string }[]
   }
   /** Sonido de partida encontrada. */
   sounds: {

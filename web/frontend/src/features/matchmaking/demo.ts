@@ -867,6 +867,24 @@ export function createDemoSource({
         { label: "Nivel 4 a 7", count: queueSize - 2 + mine },
         { label: "Nivel 8 a 10", count: 1 },
       ],
+      players: [
+        ...BOTS.slice(0, queueSize).map(([nick, level], i) => ({
+          player_id: `queue-${i}`,
+          nick,
+          level,
+          mode: "5v5",
+        })),
+        ...(queue
+          ? [
+              {
+                player_id: ME.player_id,
+                nick: ME.nick,
+                level: ME.level,
+                mode: queue.mode,
+              },
+            ]
+          : []),
+      ],
     }
   }
 

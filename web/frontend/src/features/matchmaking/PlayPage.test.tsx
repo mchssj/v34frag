@@ -554,7 +554,7 @@ describe("PlayPage (con la demo)", () => {
     await act(async () =>
       (
         await screen.findByRole("button", {
-          name: "Ver la actividad de la cola",
+          name: "Ver quiénes están buscando partida",
         })
       ).focus()
     )

@@ -5,12 +5,19 @@ import {
   ShieldAlertIcon,
   ShieldCheckIcon,
 } from "lucide-react"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -221,7 +228,7 @@ export function PlayBar({
   )
 }
 
-/** Círculo con la i: al pasar el ratón, cuánta gente hay buscando. */
+/** Círculo con la i: al pasar el ratón, cuánta gente hay buscando; con un clic, quiénes son. */
 function QueueInfo({
   activity,
   searching,
@@ -229,46 +236,74 @@ function QueueInfo({
   activity: MmState["queue_activity"]
   searching: number
 }) {
+  const [detail, setDetail] = useState(false)
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          aria-label="Ver la actividad de la cola"
-          className="rounded-full hover:text-foreground"
-        >
-          <InfoIcon aria-hidden className="size-3.5" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent className="max-w-none p-3">
-        <div className="w-56">
-          <p className="mb-2 text-xs font-semibold">
-            {searching} buscando partida
-          </p>
-          <ul className="flex flex-col gap-1 text-xs">
-            {activity.modes.map((m) => (
-              <li key={m.mode} className="flex justify-between gap-2">
-                <span>
-                  <span className="font-mono font-semibold">{m.mode}</span>{" "}
-                  {m.searching} buscando
-                </span>
-                <span className="opacity-70">
-                  {m.missing === 1 ? "falta 1" : `faltan ${m.missing}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <ul className="mt-2 flex flex-col gap-0.5 border-t border-current/15 pt-2 text-xs">
-            {activity.levels.map((l) => (
-              <li key={l.label} className="flex justify-between gap-2">
-                {l.label}
-                <span className="font-mono tabular-nums">{l.count}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </TooltipContent>
-    </Tooltip>
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="Ver quiénes están buscando partida"
+            onClick={() => setDetail(true)}
+            className="rounded-full hover:text-foreground"
+          >
+            <InfoIcon aria-hidden className="size-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-none p-3">
+          <div className="w-56">
+            <p className="mb-2 text-xs font-semibold">
+              {searching} buscando partida
+            </p>
+            <ul className="flex flex-col gap-1 text-xs">
+              {activity.modes.map((m) => (
+                <li key={m.mode} className="flex justify-between gap-2">
+                  <span>
+                    <span className="font-mono font-semibold">{m.mode}</span>{" "}
+                    {m.searching} buscando
+                  </span>
+                  <span className="opacity-70">
+                    {m.missing === 1 ? "falta 1" : `faltan ${m.missing}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <ul className="mt-2 flex flex-col gap-0.5 border-t border-current/15 pt-2 text-xs">
+              {activity.levels.map((l) => (
+                <li key={l.label} className="flex justify-between gap-2">
+                  {l.label}
+                  <span className="font-mono tabular-nums">{l.count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+      <Dialog open={detail} onOpenChange={setDetail}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>{searching} buscando partida</DialogTitle>
+          </DialogHeader>
+          {activity.players.length ? (
+            <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto text-sm">
+              {activity.players.map((p) => (
+                <li key={p.player_id} className="flex items-center gap-2">
+                  <LevelBadge level={p.level} size={20} />
+                  <span className="min-w-0 flex-1 truncate">{p.nick}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {p.mode}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Nadie está buscando partida.
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
