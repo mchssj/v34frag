@@ -154,5 +154,14 @@ begin
 end $$;
 reset role;
 
+do $$
+declare v_m uuid; v_l uuid;
+begin
+  insert into matches (kind, status, best_of, side1_name, side2_name) values ('mm', 'upcoming', 1, 'a', 'b') returning id into v_m;
+  insert into mm_lobbies (mode, status, map, match_id) values ('5v5', 'connecting', 'de_nuke', v_m) returning id into v_l;
+  perform mm_cancel_lobby(v_l, 'No se conectaron todos a tiempo');
+  perform pg_temp.check((select status from matches where id = v_m) = 'cancelled' and (select end_reason from mm_lobbies where id = v_l) = 'No se conectaron todos a tiempo', 'se cancela una sala con partida y motivo libre');
+end $$;
+
 select 'pruebas de 42 ok' as resultado;
 rollback;

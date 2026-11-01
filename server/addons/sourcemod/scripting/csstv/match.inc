@@ -442,8 +442,9 @@ void Link_AnnounceSides()
 			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}",
 			g_iLinkMaxStandins, LINK_MAX_SIDE);
 	else
-		QolChatAll("%s {#amarillo}%s{#normal} juega de %s y {#amarillo}%s{#normal} de %s. Partida de torneo: solo juegan los inscritos de cada equipo.",
-			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}");
+		QolChatAll("%s {#amarillo}%s{#normal} juega de %s y {#amarillo}%s{#normal} de %s. %s: solo juegan los inscritos de cada equipo.",
+			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}",
+			Mm_HasLobby() ? "Sala del matchmaking" : "Partida de torneo");
 }
 
 /**
@@ -582,7 +583,7 @@ public Action Cmd_MatchJoinTeam(int client, const char[] command, int argc)
 	{
 		if (g_iLinkMaxStandins == 0)
 		{
-			QolChat(client, "%s Es una partida de torneo: solo juegan los inscritos de cada equipo.", PREFIX);
+			QolChat(client, "%s Es %s: solo juegan los inscritos de cada equipo.", PREFIX, Mm_HasLobby() ? "una sala del matchmaking" : "una partida de torneo");
 			return Plugin_Handled;
 		}
 		if (Link_SideCount(to, client, true) >= g_iLinkMaxStandins)

@@ -409,7 +409,7 @@ int Mm_CountRoster(const char[] list)
 /** Toma la sala (o la retoma después de un reinicio: announce = false, sin "taken"). */
 void Mm_Take(const char[] lobby, const char[] text, bool announce)
 {
-	char map[PLATFORM_MAX_PATH], t1[1024], t2[1024], args[128];
+	char map[PLATFORM_MAX_PATH], t1[1024], t2[1024], args[256];
 	Link_Field(text, "map", map, sizeof(map));
 	Link_Field(text, "t1", t1, sizeof(t1));
 	Link_Field(text, "t2", t2, sizeof(t2));

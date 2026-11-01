@@ -684,7 +684,8 @@ begin
   update mm_lobbies set status = 'cancelled', ended_at = now(), end_reason = p_reason where id = p_lobby and status not in ('finished', 'cancelled') returning * into l;
   if l.id is null then return; end if;
   if l.match_id is not null then
-    update matches set status = 'cancelled', cancel_reason = p_reason where id = l.match_id and status <> 'finished';
+    -- matches.cancel_reason solo admite los motivos de los mixes: el texto queda en la sala (end_reason).
+    update matches set status = 'cancelled' where id = l.match_id and status <> 'finished';
   end if;
   if p_requeue then
     -- Un grupo vuelve solo si aceptaron todos sus integrantes.
@@ -1367,7 +1368,9 @@ begin
         'levels', jsonb_build_array(
           jsonb_build_object('label', 'Nivel 1 a 3', 'count', (select count(*) from mm_queue where elo_level(elo) between 1 and 3)),
           jsonb_build_object('label', 'Nivel 4 a 7', 'count', (select count(*) from mm_queue where elo_level(elo) between 4 and 7)),
-          jsonb_build_object('label', 'Nivel 8 a 10', 'count', (select count(*) from mm_queue where elo_level(elo) >= 8)))),
+          jsonb_build_object('label', 'Nivel 8 a 10', 'count', (select count(*) from mm_queue where elo_level(elo) >= 8))),
+        'players', (select coalesce(jsonb_agg(jsonb_build_object('player_id', x.id, 'nick', x.nick, 'level', elo_level(x.elo), 'mode', x.mode) order by x.joined_at), '[]')
+                      from (select p.id, p.nick, q3.elo, q3.mode, q3.joined_at from mm_queue q3 join players p on p.id = q3.player_id order by q3.joined_at limit 50) x)),
     'friends', (select coalesce(jsonb_agg(jsonb_build_object('player_id', p.id, 'nick', p.nick, 'level', elo_level(mm_player_elo(p.id)),
           -- El estado solo se ve si los dos se marcaron.
           'status', case when not exists (select 1 from mm_friends o where o.user_id = p.user_id and o.player_id = v_player.id) then null
