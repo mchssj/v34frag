@@ -4,6 +4,21 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
+/** Un mapa de la serie. pick y win van por lado (ct o t): "Intercambiar" los da vuelta junto con los nombres. */
+export interface SeriesMap {
+  map: string;
+  pick: "" | "ct" | "t" | "decider";
+  win: "" | "ct" | "t";
+}
+
+export interface Series {
+  bo: 1 | 3 | 5;
+  /** Siempre SERIES_MAPS renglones, aunque el formato use menos: pasar de BO5 a BO3 no borra nada. */
+  maps: SeriesMap[];
+}
+
+export const SERIES_MAPS = 5;
+
 export interface Control {
   /** Modo VPS: el servidor que transmite (id de game_servers). null: todavía no eligió. */
   server: string | null;
@@ -14,7 +29,11 @@ export interface Control {
   showFocus: boolean;
   showKills: boolean;
   showScore: boolean;
+  showSeries: boolean;
+  series: Series;
 }
+
+const emptySeries = (): Series => ({ bo: 1, maps: Array.from({ length: SERIES_MAPS }, () => ({ map: "", pick: "", win: "" })) });
 
 export const DEFAULT_CONTROL: Control = {
   server: null,
@@ -25,15 +44,38 @@ export const DEFAULT_CONTROL: Control = {
   showFocus: true,
   showKills: true,
   showScore: true,
+  showSeries: true,
+  series: emptySeries(),
 };
 
-const BOOLS = ["showPlayers", "showFocus", "showKills", "showScore"] as const;
+const BOOLS = ["showPlayers", "showFocus", "showKills", "showScore", "showSeries"] as const;
+const PICKS = new Set(["", "ct", "t", "decider"]);
+const WINS = new Set(["", "ct", "t"]);
+const flip = <T extends string>(v: T): T => (v === "ct" ? "t" : v === "t" ? "ct" : v) as T;
+
+/** Aplica un cambio parcial de la serie: { bo } y/o { maps: [{ map, pick, win }, …] } (los renglones que falten no cambian). */
+function mergeSeries(current: Series, input: unknown): Series {
+  if (typeof input !== "object" || input === null) return current;
+  const i = input as Record<string, unknown>;
+  const next: Series = { bo: current.bo, maps: current.maps.map((m) => ({ ...m })) };
+  if (i.bo === 1 || i.bo === 3 || i.bo === 5) next.bo = i.bo;
+  if (Array.isArray(i.maps))
+    i.maps.slice(0, SERIES_MAPS).forEach((raw: unknown, n) => {
+      if (typeof raw !== "object" || raw === null) return;
+      const r = raw as Record<string, unknown>;
+      const m = next.maps[n]!;
+      if (typeof r.map === "string") m.map = r.map.trim().replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 64);
+      if (typeof r.pick === "string" && PICKS.has(r.pick)) m.pick = r.pick as SeriesMap["pick"];
+      if (typeof r.win === "string" && WINS.has(r.win)) m.win = r.win as SeriesMap["win"];
+    });
+  return next;
+}
 
 /** Aplica un cambio parcial que llega de /control. Ignora los campos inválidos. */
 export function mergeControl(current: Control, input: unknown): Control {
   if (typeof input !== "object" || input === null) return current;
   const i = input as Record<string, unknown>;
-  const next = { ...current };
+  const next = { ...current, series: mergeSeries(current.series ?? emptySeries(), i.series) };
   for (const k of ["teamCT", "teamT"] as const) {
     const v = i[k];
     if (typeof v === "string") next[k] = v.trim().slice(0, 32);
@@ -45,7 +87,10 @@ export function mergeControl(current: Control, input: unknown): Control {
     next.server = i.server;
   }
   for (const k of BOOLS) if (typeof i[k] === "boolean") next[k] = i[k];
-  if (i.swap === true) [next.teamCT, next.teamT] = [next.teamT, next.teamCT];
+  if (i.swap === true) {
+    [next.teamCT, next.teamT] = [next.teamT, next.teamCT];
+    next.series = { ...next.series, maps: next.series.maps.map((m) => ({ map: m.map, pick: flip(m.pick), win: flip(m.win) })) };
+  }
   return next;
 }
 

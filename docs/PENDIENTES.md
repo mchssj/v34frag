@@ -43,6 +43,13 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - Daniel, 2026-10-15.
 - ~~**PCW "como equipo"**~~: hecho en la `10` (2026-10-15).
 - **[`docs/frontend/contrato/`](frontend/contrato/README.md)** (antes `contract.md`, partido por módulos el 2026-10-19): contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza el archivo de su módulo, las novedades del índice y `decisiones.md`.
+- **Pedidos del frontend al backend sin resolver** (Esteban, 2026-10-30), en la "Segunda tanda" de [`contrato-backend-equipo-torneos.md`](../contrato-backend-equipo-torneos.md). Mientras tanto, el frontend los muestra deshabilitados con "Próximamente":
+  - **E9:** cancelar la solicitud de equipo nuevo;
+  - **E10:** disolver un equipo;
+  - **E11:** nombre y sigla editables por el líder;
+  - **E12:** biografía editable por el jugador (`PATCH /me/profile` con `bio`). Hoy solo la cambia un admin.
+  - **E13:** `logo_url` en el historial de equipos y los títulos de un jugador. Hoy el frontend pide el detalle de cada equipo para mostrar el logo.
+  - **E14 a E18** (tercera tanda, Partidas unificadas): varios estados en `status`, `mine=true`, contadores por tipo, `mvp` en los mixes y búsqueda por nick en `GET /matches`.
 
 ## Estado del repositorio
 
@@ -463,6 +470,8 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - ~~confirmar la prueba con flow~~: **funcionó el 2026-10-29** (paquetes con la clave correcta, el HUD y el panel con datos, y la sesión en staging). Queda **prendido en flow** por decisión de Daniel (por consola está en `csstv_hud 0` desde el congelamiento del 2026-10-29, que fue por los bots y no por el HUD: ver la guía, "Incidentes"; volver a `csstv_hud 1`). Falta que kyan confirme si existe `maps/de_dust2_ob.nav` y, si no, generarlo. Cómo apagarlo si laguea: `GUIA_IMPLEMENTACION.md`, "Cómo apagar el HUD de un servidor";
   - ~~el frontend~~: hecho el 2026-10-29 ([`2026-10-29-frontend-hud`](bitacora/2026-10-29-frontend-hud/GUIA_IMPLEMENTACION.md)); falta desplegarlo con `desplegar.sh web`;
   - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real, RBK y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
+- **2026-10-30: HUD versión 2** (relay 2.1.0, plan [`2026-10-30-hud-version-2`](bitacora/2026-10-30-hud-version-2/GUIA_IMPLEMENTACION.md)): el diseño del torneo de CS2 (marcador con siglas, vivos y clutch, tarjetas con foto y número de tecla, la vida que oscurece la tarjeta y la flash y el humo con franja y borde). Solo cambia lo que dibuja OBS; el plugin no. **Desplegado en el VPS el 2026-10-30** (build `ea72879c8f86-local10301427`, con cambios sin commit). Falta verlo con la SourceTV real en OBS y, después del commit, volver a desplegar para que el build lleve el nombre del commit.
+- **2026-10-30: serie de mapas en el HUD** (relay 2.2.0, plan [`2026-10-30-hud-serie-mapas`](bitacora/2026-10-30-hud-serie-mapas/GUIA_IMPLEMENTACION.md)): en `/control`, BO1/BO3/BO5 y por mapa el pick y el ganador; el HUD muestra `CMLEAGUE | BO3 | Jugando en … | Pick de …` y las rayitas de mapas ganados. Probado en local y **desplegado en el VPS el 2026-10-30** (build `7b6540df4295-local10301756`, con cambios sin commit). Falta verlo en OBS y, después del commit, volver a desplegar. No toca el plugin.
 
 - **2026-10-25:** ya no está en el servidor real (lo sacó kyan, según Daniel). Sigue en RBK con `csstv_hud "0"`.
 

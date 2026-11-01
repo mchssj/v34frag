@@ -1,0 +1,2 @@
+# Siempre LF (Prettier usa endOfLine: lf), aunque core.autocrlf esté activo.
+* text=auto eol=lf
