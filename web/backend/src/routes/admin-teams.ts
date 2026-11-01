@@ -9,15 +9,11 @@ import type { AppEnv } from '../lib/types';
 import {
   AdminTeamCreate,
   AdminTeamPatch,
-  AdminTeamRequestList,
   IdParam,
   MemberBody,
   RankingConfig,
-  RejectTeamRequestBody,
   RoleBody,
   TeamPlayerParam,
-  TeamRequestQuery,
-  UserIdParam,
 } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { Created, TeamConfig } from '../schemas/teams';
@@ -68,41 +64,20 @@ const setRole = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
 
-// ---------- solicitudes de equipo nuevo ----------
-
-const requests = createRoute({
-  method: 'get', path: '/api/v1/admin/team-requests', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Solicitudes de equipo nuevo', description: 'Por defecto, las pendientes primero. `has_steam` dice si se puede aprobar.',
-  request: { query: TeamRequestQuery },
-  responses: { 200: { description: 'Solicitudes', ...json(AdminTeamRequestList) }, ...errorResponses(400, 401, 403) },
-});
-const approve = createRoute({
-  method: 'post', path: '/api/v1/admin/team-requests/{userId}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Aprobar una solicitud', description: 'Crea el equipo con el usuario como dueño, capitán y primer miembro.',
-  request: { params: UserIdParam },
-  responses: { 201: { description: 'Equipo creado', ...json(Created) }, ...errorResponses(400, 401, 403) },
-});
-const reject = createRoute({
-  method: 'post', path: '/api/v1/admin/team-requests/{userId}/reject', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Rechazar una solicitud',
-  description: 'Con `reason` opcional (hasta 300 caracteres): el usuario lo ve en su solicitud (`GET /api/v1/me/team-request`).',
-  request: { params: UserIdParam, body: { required: false, ...json(RejectTeamRequestBody) } },
-  responses: { ...done, ...errorResponses(400, 401, 403) },
-});
-
 // ---------- plantel ----------
 
 const getTeamConfig = createRoute({
   method: 'get', path: '/api/v1/admin/teams/config', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Máximo de miembros de un equipo',
+  summary: 'Configuración de los equipos', description: 'Máximo de miembros y de cuántos equipos puede ser capitán una persona.',
   responses: { 200: { description: 'Configuración', ...json(TeamConfig) }, ...errorResponses(401, 403) },
 });
 const putTeamConfig = createRoute({
   method: 'put', path: '/api/v1/admin/teams/config', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Cambiar el máximo de miembros',
+  summary: 'Cambiar la configuración de los equipos',
   description:
-    'Entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva ' +
-    '(`409 ROSTER_FULL` al invitar o aceptar).',
+    '`max_members` entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva ' +
+    '(`409 ROSTER_FULL` al invitar o aceptar). `max_led` entre 1 y 10 (1 por defecto): de cuántos equipos oficiales activos puede ser capitán una ' +
+    'persona al crear un equipo o recibir la capitanía (el admin no tiene tope). Bajarlo no saca a nadie de la capitanía.',
   request: { body: { required: true, ...json(TeamConfig) } },
   responses: { 200: { description: 'Guardada', ...json(TeamConfig) }, ...errorResponses(400, 401, 403) },
 });
@@ -169,35 +144,15 @@ export const adminTeams = createRouter()
     if (!rows.length) throw notFound('ese jugador en el plantel');
     return c.body(null, 204);
   })
-  .openapi(requests, async (c) => {
-    const p = c.req.valid('query');
-    let q = c.var.sb.from('admin_team_requests').select('user_id, alias, has_steam, name, tag, status', { count: 'exact' });
-    if (p.status) q = q.eq('status', p.status);
-    const term = searchTerm(p.q);
-    if (term) q = q.ilike('search', `%${term}%`);
-    type Row = { user_id: string; alias: string | null; has_steam: boolean; name: string; tag: string | null; status: string };
-    const { rows, total } = await runList<Row, typeof q>(q, p, { status: ['status_order', 'name'] }, 'user_id');
-    return c.json(envelope(rows, total, p), 200);
-  })
-  .openapi(approve, async (c) => {
-    const id = mustHave(await c.var.sb.rpc('approve_team_request', { p_user: c.req.valid('param').userId }));
-    return c.json({ id }, 201);
-  })
-  .openapi(reject, async (c) => {
-    // Sin cuerpo, valid('json') viene vacío.
-    const reason = (c.req.valid('json') as { reason?: string } | undefined)?.reason;
-    must(await c.var.sb.rpc('reject_team_request', { p_user: c.req.valid('param').userId, ...(reason ? { p_reason: reason } : {}) }));
-    return c.body(null, 204);
-  })
   .openapi(getTeamConfig, async (c) => {
-    const r = must(await c.var.sb.from('team_config').select('max_members').eq('id', 1).maybeSingle());
+    const r = must(await c.var.sb.from('team_config').select('max_members, max_led').eq('id', 1).maybeSingle());
     if (!r) throw new AppError(500, 'INTERNAL', 'Falta la configuración del plantel.');
     return c.json(r, 200);
   })
   .openapi(putTeamConfig, async (c) => {
-    const { max_members } = c.req.valid('json');
-    must(await c.var.sb.rpc('set_team_config', { p_max_members: max_members }));
-    return c.json({ max_members }, 200);
+    const { max_members, max_led } = c.req.valid('json');
+    must(await c.var.sb.rpc('set_team_config', { p_max_members: max_members, p_max_led: max_led }));
+    return c.json({ max_members, max_led }, 200);
   })
   .openapi(getRanking, async (c) => {
     const r = must(await c.var.sb.from('ranking_config').select('win_official, win_pcw').eq('id', 1).maybeSingle());

@@ -1661,13 +1661,13 @@ isOneToOne: false
                   ]
                 },"team_config": {
                   Row: {
-                    "id": number,"max_members": number,"updated_at": string
+                    "id": number,"max_led": number,"max_members": number,"updated_at": string
                   }
                   Insert: {
-                    "id"?: number,"max_members"?: number,"updated_at"?: string
+                    "id"?: number,"max_led"?: number,"max_members"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "id"?: number,"max_members"?: number,"updated_at"?: string
+                    "id"?: number,"max_led"?: number,"max_members"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -3742,9 +3742,6 @@ isOneToOne: false
 "approve_steam_request":
 { Args: { "p_id": number }; Returns: undefined
                            },
-"approve_team_request":
-{ Args: { "p_user": string }; Returns: string
-                           },
 "ban_active_for":
 { Args: { "p_steam": string }; Returns: {
               "created_at": string,
@@ -3811,9 +3808,6 @@ isOneToOne: false
                            },
 "cancel_steam_unlink":
 { Args: { "p_steam": string }; Returns: undefined
-                           },
-"cancel_team_request":
-{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "claim_with_code":
 { Args: { "p_code": string,"p_nick"?: string,"p_steam": string,"p_token": string }; Returns: Json
@@ -4278,9 +4272,6 @@ isOneToOne: false
 "reject_steam_request":
 { Args: { "p_id": number,"p_reason": string }; Returns: undefined
                            },
-"reject_team_request":
-{ Args: { "p_reason"?: string,"p_user": string }; Returns: undefined
-                           },
 "render_auth":
 { Args: { "p_token": string }; Returns: string
                            },
@@ -4379,7 +4370,7 @@ isOneToOne: false
 { Args: { "p_team": string,"p_user": string }; Returns: undefined
                            },
 "set_team_config":
-{ Args: { "p_max_members": number }; Returns: undefined
+{ Args: { "p_max_led"?: number,"p_max_members": number }; Returns: undefined
                            },
 "set_user_role":
 { Args: { "p_role": string,"p_user": string }; Returns: undefined
@@ -4420,8 +4411,16 @@ isOneToOne: false
 "team_can_join":
 { Args: { "p_player": string,"p_team": string }; Returns: undefined
                            },
+"team_create":
+{ Args: { "p_name": string,"p_tag": string }; Returns: string
+                           },
 "team_dissolve":
 { Args: { "p_team": string }; Returns: undefined
+                           },
+"team_eligible_modes":
+{ Args: { "p_team": string }; Returns: {
+              "code": string,"missing": number,"name": string,"players_per_team": number
+            }[]
                            },
 "team_event_history":
 { Args: { "p_team": string }; Returns: {
@@ -4448,6 +4447,12 @@ isOneToOne: false
                            },
 "team_max_members":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"team_players":
+{ Args: { "p_team": string }; Returns: number
+                           },
+"team_rankable":
+{ Args: { "p_team": string }; Returns: boolean
                            },
 "team_ref":
 { Args: { "p_team": string }; Returns: Json
