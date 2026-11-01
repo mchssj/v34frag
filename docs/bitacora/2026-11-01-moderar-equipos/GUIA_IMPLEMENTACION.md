@@ -43,6 +43,7 @@ Contra la Supabase local, el 2026-11-01:
 - **Rutas de quitar:** son `POST …/logo/remove` y `POST …/members/{playerId}/remove`, con el motivo en el cuerpo (un `DELETE` con cuerpo es frágil en algunos clientes).
 - **Líder nuevo:** tiene que ser del plantel. Antes el admin podía poner a cualquier jugador con cuenta, aunque no estuviera en el equipo.
 - **Renombrar:** solo controla lo que cambia, como `team_rename`. Lo mostró una prueba: una sigla vieja repetida en otro equipo frenaba un cambio de nombre.
+- **Autor del historial:** el alias sale de la ficha del jugador (`players.nick`): `profiles` solo deja leer el propio, y el panel mostraba el rol repetido en lugar del nombre. Un staff sin ficha aparece como "Moderador" o "Admin".
 - **`name_blocked`:** la lista lo usa a través de `team_name_blocked`, porque la función original no se expone a los usuarios.
 
 ## Cómo revertir
