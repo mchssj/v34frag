@@ -39,7 +39,10 @@ www.cmleague.lat {
 api.cmleague.lat {
 	import comun api
 	# Caddy reemplaza X-Forwarded-For con la IP real del cliente (no confía en la que manda): CLIENT_IP_HEADER=x-forwarded-for.
-	reverse_proxy 127.0.0.1:8787
+	reverse_proxy 127.0.0.1:8787 {
+		# Que un reload de Caddy no corte los sockets del matchmaking.
+		stream_close_delay 5m
+	}
 }
 
 # Relay del HUD (plan docs/bitacora/2026-10-29-hud-relay-vps): cada streamer entra con su token en la ruta

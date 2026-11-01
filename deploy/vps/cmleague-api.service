@@ -7,6 +7,8 @@ Wants=network-online.target
 ConditionPathExists=/srv/cmleague/api/current/server.mjs
 
 [Service]
+# Cada socket del matchmaking es un archivo abierto.
+LimitNOFILE=65535
 Type=simple
 User=cmleague
 Group=cmleague

@@ -1,0 +1,36 @@
+# Worker del matchmaking (plan docs/bitacora/2026-10-28-matchmaking): llama a mm_tick() cada 2 s.
+[Unit]
+Description=CMLeague: worker del matchmaking
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/srv/cmleague/api/current/mm-worker.mjs
+
+[Service]
+Type=simple
+User=cmleague
+Group=cmleague
+WorkingDirectory=/srv/cmleague/api/current
+EnvironmentFile=/etc/cmleague/season.env
+ExecStart=/usr/bin/node --enable-source-maps /srv/cmleague/api/current/mm-worker.mjs
+Restart=always
+RestartSec=5
+MemoryMax=256M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadOnlyPaths=/srv/cmleague
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

@@ -105,7 +105,7 @@ if ! chequear; then
   if [ -n "$anterior" ]; then
     echo "== FALLA: vuelta a $(basename "$anterior")"
     apuntar "$anterior"
-    [ "$parte" = api ] && sudo systemctl restart cmleague-api
+    [ "$parte" = api ] && sudo systemctl restart cmleague-api && sudo systemctl restart cmleague-mm
     [ "$parte" = hud ] && sudo systemctl restart cmleague-hud
   fi
   [ "$parte" = web ] || echo "Logs (desde ubuntu): sudo journalctl -u cmleague-$parte -n 50"
@@ -143,7 +143,7 @@ if [[ "$parte" == api ]]; then
   BUILD_SHA="$sha" pnpm build
   pnpm build:check
   local_dir="$RAIZ/web/backend/dist"
-  archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map)
+  archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map mm-worker.mjs mm-worker.mjs.map)
 elif [[ "$parte" == hud ]]; then
   cd "$RAIZ/hud/relay"
   if (( pruebas )); then
