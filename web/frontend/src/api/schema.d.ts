@@ -17108,6 +17108,8 @@ export interface components {
             alias: string;
             /** @description Invitado sin ficha (solo PCW) */
             guest: boolean;
+            /** @description Rating de las últimas 4 semanas en partidas 5v5 de cualquier tipo (replanteo 44). null sin partidas o si es invitado */
+            rating: number | null;
         };
         GameRef: {
             /** Format: uuid */

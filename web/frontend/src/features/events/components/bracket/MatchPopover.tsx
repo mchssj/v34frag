@@ -110,8 +110,8 @@ function MatchSummary({
   const missing = ([1, 2] as const).filter((n) => !sides[n - 1].teamId)
   const advantage = d?.advantage_side ? sides[d.advantage_side - 1] : null
   const maps = d?.maps_detail.filter((x) => x.r1 != null || x.r2 != null) ?? []
-  // Con juegos terminados, los que jugaron con el rating de la serie (E21); si no, los inscritos.
-  // Una API anterior a E21 no manda `series_players`.
+  // Con juegos terminados, los que jugaron con el rating de la serie (E21); si no (sin jugar o con
+  // el resultado a mano), los inscritos con su rating de las últimas 4 semanas en 5v5 (replanteo 44).
   const series = d?.series_players ?? []
   const lineupOf = (n: 1 | 2): Lineup[] => {
     if (!d) return []
@@ -123,12 +123,14 @@ function MatchSummary({
       }))
     return (n === 1 ? d.roster1 : d.roster2).map((p) => ({
       name: p.alias,
-      rating: null,
+      rating: p.rating ?? null,
     }))
   }
   const rosters = d ? [lineupOf(1), lineupOf(2)] : null
   const lineups = rosters && (rosters[0].length > 0 || rosters[1].length > 0)
   const rated = series.length > 0
+  const recentRated =
+    !rated && !!d && [...d.roster1, ...d.roster2].some((p) => p.rating != null)
   // Todos los mapas cargados a mano (sin mix vinculado): no hay stats de jugadores.
   const manualOnly = maps.length > 0 && maps.every((x) => !x.game_id)
 
@@ -219,7 +221,13 @@ function MatchSummary({
       )}
       {lineups && rosters && (
         <Section
-          title={rated ? "Alineaciones · rating de la serie" : "Alineaciones"}
+          title={
+            rated
+              ? "Alineaciones · rating de la serie"
+              : recentRated
+                ? "Alineaciones · rating de las últimas 4 semanas (5v5)"
+                : "Alineaciones"
+          }
         >
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[13px]">
             {Array.from(
