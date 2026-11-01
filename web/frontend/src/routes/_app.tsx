@@ -1,4 +1,8 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router"
+
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
+import { MmSourceContext } from "@/features/matchmaking/source"
 import { useEffect, useState } from "react"
 
 import { requireAuth } from "@/auth/guards"
@@ -55,7 +59,11 @@ function AppLayout() {
         <Topbar onSearch={() => setSearchOpen(true)} />
         <NowBar />
         <div className="flex flex-1 justify-center p-6">
-          <div className="w-full max-w-[1320px] min-w-0">
+          <div className="flex w-full max-w-[1320px] min-w-0 flex-col gap-4">
+            {/* Si te caés de una partida, el aviso te sigue por toda la web. */}
+            <MmSourceContext value={apiMmSource}>
+              <ReconnectBanner />
+            </MmSourceContext>
             <Outlet />
           </div>
         </div>
