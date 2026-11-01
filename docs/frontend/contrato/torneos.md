@@ -87,7 +87,7 @@ stateDiagram-v2
 
 | Endpoint | Quién | Pantalla |
 |---|---|---|
-| `GET /api/v1/events` | Todos | **Torneos** |
+| `GET /api/v1/events` | Todos | **Torneos**. Desde el 2026-11-01, `ends_on` es el fin **tentativo** del organizador y `finished_at` el real (la última partida jugada; null mientras no terminó) |
 | `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, estado, campeón, empate pendiente y `viewer`. Con `ETag`. `viewer` suma `can_own` (2026-11-01): cancelar y borrar (admin u organizador dueño); `can_manage` incluye ahora a los moderadores |
 | `GET /api/v1/events/{id}/registrations` | Todos | Inscritos con siembra y jugadores |
 | `GET /api/v1/events/{id}/matches` | Todos | Partidas (con `stage`, `phase`, `grp`, `round`, `pos` y `bye` para dibujar la llave; hasta 200 por página). Desde el 2026-11-01, también `next_win`/`next_win_slot` y `next_lose`/`next_lose_slot`: a qué partida y a qué lado pasan el ganador y el perdedor (`null` si no sigue). `stage` puede ser `group_upper` o `group_lower` en los grupos de doble eliminación. Con `ETag` |
