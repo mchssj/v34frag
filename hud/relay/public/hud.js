@@ -2,7 +2,7 @@
 // dibuja; el reloj corre solo entre paquetes.
 import { DEFUSER, EQUIP, ICON, TEAM_CT, TEAM_T, clock, connect, el, weaponGlyph, weaponName } from "./common.js";
 
-const KILL_MS = 5000;
+const KILL_MS = 12000;
 const BANNER_MS = 5000;
 // Alto del cuerpo de la tarjeta (sin la franja del equipamiento): lo que llena la vida.
 const CARD_BODY = 202;
@@ -10,6 +10,12 @@ const CARD_BODY = 202;
 let state = null;
 let control = null;
 let killsKey = "";
+// Diferencia entre el reloj de esta PC y el del relay (las horas del estado son del relay). Si la PC está adelantada,
+// las kills se veían menos tiempo y el reloj de la ronda iba corrido. Mínimo de las últimas muestras: la demora de la
+// red solo suma. Ver docs/bitacora/2026-10-30-hud-killfeed-reloj.
+const skewSamples = [];
+let skew = 0;
+const relayNow = () => Date.now() - skew;
 // Si el relay encontró las fuentes del juego, el HUD va con íconos; si no, con los nombres de las armas.
 let icons = false; // clientmodkillfeed.ttf: armas, agregados del feed, chaleco, granadas y C4
 let kitIcon = false; // cs.ttf: el kit de desactivación
@@ -283,7 +289,7 @@ function renderAlive() {
 function renderKills() {
   const box = $("kills");
   box.classList.toggle("hidden", control?.showKills === false);
-  const now = Date.now();
+  const now = relayNow();
   const visible = (state?.kills ?? []).filter((k) => now - k.at < KILL_MS);
   // Solo se redibuja si cambió la lista; si no, la animación de entrada se repetiría cada 250 ms.
   const key = visible.map((k) => `${k.at}:${k.victim}`).join(",");
@@ -328,7 +334,7 @@ function renderKills() {
 function renderBanner() {
   const box = $("banner");
   const end = state?.lastEnd;
-  if (!end || Date.now() - end.at > BANNER_MS || (end.winner !== TEAM_CT && end.winner !== TEAM_T)) {
+  if (!end || relayNow() - end.at > BANNER_MS || (end.winner !== TEAM_CT && end.winner !== TEAM_T)) {
     box.classList.remove("show");
     return;
   }
@@ -342,7 +348,7 @@ function renderBanner() {
 
 function tick() {
   const t = document.getElementById("time");
-  if (t) t.textContent = state?.phaseEndsAt ? clock(state.phaseEndsAt - Date.now()) : "";
+  if (t) t.textContent = state?.phaseEndsAt ? clock(state.phaseEndsAt - relayNow()) : "";
 }
 
 function render() {
@@ -357,6 +363,11 @@ function render() {
 connect({
   page: "hud",
   onState: (s) => {
+    if (s.updatedAt) {
+      skewSamples.push(Date.now() - s.updatedAt);
+      if (skewSamples.length > 40) skewSamples.shift();
+      skew = Math.min(...skewSamples);
+    }
     state = s;
     render();
   },
