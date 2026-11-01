@@ -163,5 +163,15 @@ begin
   perform pg_temp.check((select status from matches where id = v_m) = 'cancelled' and (select end_reason from mm_lobbies where id = v_l) = 'No se conectaron todos a tiempo', 'se cancela una sala con partida y motivo libre');
 end $$;
 
+do $$
+declare v_l uuid; v_u uuid; v_s jsonb;
+begin
+  select lobby_id, user_id into v_l, v_u from mm_lobby_players lp join mm_lobbies l on l.id = lp.lobby_id where l.status = 'finished' order by l.created_at desc limit 1;
+  v_s := mm_lobby_json(v_l, v_u);
+  perform pg_temp.check(jsonb_typeof(v_s #> '{match,stats}') = 'array', 'la sala terminada trae las estadísticas');
+  perform pg_temp.check(mm_elo_stake(v_l, v_u) ? 'win', 'se calcula el ELO en juego');
+  perform pg_temp.check(mm_elo_stake(v_l, gen_random_uuid()) is null, 'quien no juega no tiene ELO en juego');
+end $$;
+
 select 'pruebas de 42 ok' as resultado;
 rollback;

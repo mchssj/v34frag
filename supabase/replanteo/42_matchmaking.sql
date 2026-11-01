@@ -1240,8 +1240,9 @@ create function public.mm_player_card(p_player uuid, p_viewer uuid, p_lp mm_lobb
   language sql stable security definer set search_path = public as $$
   select jsonb_build_object(
     'player_id', p.id, 'nick', p.nick, 'photo_url', p.photo_url,
-    'elo', mm_player_elo(p.id), 'level', elo_level(mm_player_elo(p.id)),
-    'vip', coalesce(is_vip(p.user_id), false), 'is_me', p.user_id = p_viewer, 'country', null,
+    -- En una sala, el ELO con el que entró: el resumen calcula el cambio desde ese valor.
+    'elo', coalesce((p_lp).elo, mm_player_elo(p.id)), 'level', elo_level(coalesce((p_lp).elo, mm_player_elo(p.id))),
+    'vip', coalesce(is_vip(p.user_id), false), 'is_me', p.user_id = p_viewer, 'country', (select country from profile_details d where d.user_id = p.user_id),
     'team', (p_lp).team, 'party_id', (p_lp).party_id, 'is_captain', coalesce((p_lp).is_captain, false),
     'accepted', (p_lp).accepted_at is not null, 'connected', (p_lp).connected_at is not null,
     'left_until', (p_lp).left_at + make_interval(mins => (select reconnect_minutes from mm_config)),
@@ -1267,6 +1268,47 @@ create function public.mm_team_win_pct(p_lobby uuid, p_team int, p_map text) ret
   select round(100.0 * sum(s.wins) / nullif(sum(s.wins + s.losses), 0))::int
     from mm_lobby_players lp join player_map_stats s on s.player_id = lp.player_id and s.map_name = p_map
    where lp.lobby_id = p_lobby and lp.team = p_team $$;
+
+/** Estadísticas de la partida con el modelo de la sala de Mixes (RoomPlayer). Equipo A o B: lo resuelve la tarjeta por `key`. */
+create function public.mm_game_stats(p_game uuid, p_viewer uuid) returns jsonb
+  language sql stable set search_path = public as $$
+  with t as (select greatest(coalesce(score1, 0) + coalesce(score2, 0), 1) as total, winner_side from matches where id = p_game),
+  s as (select x.*, p.user_id, p.nick as alias from match_player_stats x left join players p on p.id = x.player_id where x.match_id = p_game and x.team in (1, 2)),
+  best as (select s.id from s, t where s.team = t.winner_side order by s.rating desc nulls last limit 1)
+  select coalesce(jsonb_agg(jsonb_build_object(
+      'key', coalesce(s.player_id::text, s.steam_id), 'nick', coalesce(s.alias, s.nick), 'alias', s.alias, 'guest', s.player_id is null,
+      'mvp', s.id in (select id from best), 'me', s.user_id is not distinct from p_viewer and s.user_id is not null,
+      'k', s.kills, 'd', s.deaths, 'a', s.assists,
+      'hs', case when s.kills > 0 then round(100.0 * s.headshots / s.kills) end, 'hsKills', s.headshots,
+      'adr', case when s.rounds > 0 then round(s.damage::numeric / s.rounds, 1) end, 'rounds', s.rounds,
+      'k2', s.k2, 'k3', s.k3, 'k4', s.k4, 'k5', s.k5, 'fk', s.first_kills, 'fd', s.first_deaths, 'plants', s.plants, 'defuses', s.defuses,
+      'clutches', (select jsonb_agg((select coalesce(sum(c.won), 0) from match_clutches c where c.match_id = p_game and c.steam_id = s.steam_id and c.vs = v) order by v) from generate_series(1, 5) v),
+      'rating', s.rating, 'delta', s.elo_delta) order by s.rating desc nulls last), '[]')
+    from s $$;
+
+/** ELO en juego para quien mira, con la misma cuenta de elo_apply_match sin el bonus por rendimiento. */
+create function public.mm_elo_stake(p_lobby uuid, p_viewer uuid) returns jsonb
+  language plpgsql stable set search_path = public as $$
+declare
+  c_sig0 constant double precision := 25.0 / 3;
+  c_beta constant double precision := 25.0 / 6;
+  c_tau constant double precision := 25.0 / 300;
+  v_team smallint;
+  mu1 double precision; mu2 double precision; s2 double precision;
+  p double precision;
+  v_base integer;
+begin
+  select team into v_team from mm_lobby_players where lobby_id = p_lobby and user_id = p_viewer;
+  if v_team is null or not (select affects_elo from mm_lobbies where id = p_lobby) then return null; end if;
+  select coalesce(sum(coalesce(e.mu, 25)) filter (where lp.team = 1), 0), coalesce(sum(coalesce(e.mu, 25)) filter (where lp.team = 2), 0),
+         sum(coalesce(e.sigma, c_sig0) ^ 2 + c_tau * c_tau + c_beta * c_beta)
+    into mu1, mu2, s2
+    from mm_lobby_players lp join players pl on pl.id = lp.player_id left join player_elo e on e.steam_id = elo_key(pl.steam_id)
+   where lp.lobby_id = p_lobby;
+  p := csstv_ncdf((case when v_team = 1 then mu1 - mu2 else mu2 - mu1 end) / sqrt(s2));
+  v_base := coalesce((select base from elo_config where id = 1), 30);
+  return jsonb_build_object('win', greatest(round(2 * v_base * (1 - p))::int, 1), 'loss', greatest(round(2 * v_base * p)::int, 1));
+end $$;
 
 create function public.mm_lobby_json(p_lobby uuid, p_viewer uuid) returns jsonb
   language plpgsql stable security definer set search_path = public as $$
@@ -1294,10 +1336,13 @@ begin
                    from mm_mode_maps mm join map_pool mp on mp.name = mm.map where mm.mode = l.mode)) end,
     'match', case when l.status = 'finished' or (l.status = 'live' and m.id is not null) then jsonb_build_object(
         'score1', coalesce(m.score1, 0), 'score2', coalesce(m.score2, 0), 'rounds', coalesce(m.score1, 0) + coalesce(m.score2, 0), 'halves', null,
-        'winner', l.winner_team, 'played_at', coalesce(m.played_at, l.created_at), 'demo_url', null, 'stats', '[]'::jsonb, 'clips', '[]'::jsonb) end,
+        'winner', l.winner_team, 'played_at', coalesce(m.played_at, l.created_at), 'demo_url', null, 'clips', '[]'::jsonb,
+        -- La API completa el demo y los clips con game_id.
+        'game_id', (select id from matches g where g.parent_match_id = l.match_id limit 1),
+        'stats', coalesce(mm_game_stats((select id from matches g where g.parent_match_id = l.match_id limit 1), p_viewer), '[]'::jsonb)) end,
     'reported', (select coalesce(jsonb_agg(p.id), '[]') from mm_reports r join players p on p.user_id = r.reported_id where r.lobby_id = l.id and r.reporter_id = p_viewer),
     'commended', (select player_id from mm_commends where lobby_id = l.id and user_id = p_viewer),
-    'elo_stake', null);
+    'elo_stake', case when l.status in ('veto', 'waiting_server', 'assigned', 'connecting', 'live') then mm_elo_stake(l.id, p_viewer) end);
 end $$;
 
 create function public.mm_my_state() returns jsonb

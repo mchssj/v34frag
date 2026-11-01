@@ -7,6 +7,8 @@ import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { readAudio, storageError, SOUND_MAX_BYTES } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
+import { demoUrl } from '../services/matches';
+import { LIST_COLUMNS, toVideo, type ClipRow } from './clips';
 
 // Matchmaking (plan docs/bitacora/2026-10-28-matchmaking). Las reglas las valida la base: acá solo se valida la forma
 // del pedido y se devuelve el estado nuevo. El estado es mm_my_state() y lo consume el frontend tal cual.
@@ -30,7 +32,26 @@ const route = (method: 'get' | 'post' | 'put' | 'patch' | 'delete', path: string
   });
 
 const rpc = async (c: C, fn: string, args: Record<string, unknown> = {}) => must(await c.var.sb.rpc(fn as never, args as never));
-const state = async (c: C) => c.json(mustHave(await c.var.sb.rpc('mm_my_state' as never)) as never, 200);
+type GameRef = { game_id?: string | null; demo_url: string | null; clips: unknown[] };
+
+/** La base da la partida; el demo y los videos de los clips dependen de la configuración de la API. */
+async function withGame(c: C, game: GameRef) {
+  const { sb, config } = c.var;
+  const g = must(await sb.from('matches').select('kind, external_id, demo_status').eq('id', game.game_id!).maybeSingle());
+  if (g) game.demo_url = demoUrl(config, g as { kind: string; external_id: string | null; demo_status: string });
+  const rows = must(await sb.from('match_clip_list').select(LIST_COLUMNS).eq('match_id', game.game_id!).order('position')) as unknown as ClipRow[];
+  game.clips = rows.map((r) => ({
+    id: r.id, type: r.type, round: r.round, player_id: r.player_id, nick: r.player_name ?? '', kills: r.kills ?? 0,
+    video: toVideo(r, config.CLIPS_BASE_URL, false),
+  }));
+}
+
+const state = async (c: C) => {
+  const s = mustHave(await c.var.sb.rpc('mm_my_state' as never)) as { lobby?: { match?: GameRef | null } | null };
+  const game = s.lobby?.match;
+  if (game?.game_id) await withGame(c, game);
+  return c.json(s as never, 200);
+};
 const body = <T>(c: C) => (c.req as unknown as { valid(t: 'json'): T }).valid('json');
 const param = (c: C) => (c.req as unknown as { valid(t: 'param'): { id: string } }).valid('param').id;
 const jsonBody = (schema: z.ZodTypeAny) => ({ body: { required: true, ...json(schema) } });

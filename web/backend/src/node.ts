@@ -1,6 +1,7 @@
 // Entrada de Node (pnpm dev:node, y dist/server.mjs en el VPS). La misma app que en Workers, servida con @hono/node-server.
 import { serve } from '@hono/node-server';
 import { createNodeWebSocket } from '@hono/node-ws';
+import { Hono } from 'hono';
 import { createApp } from './app';
 import { createClient } from '@supabase/supabase-js';
 import { createMmHub, listenMm } from './mm/socket';
@@ -31,8 +32,10 @@ const hub = createMmHub(async (token) => {
   const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString()) as { exp?: number };
   return { id: data.user.id, exp: payload.exp };
 });
-const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
-app.get('/api/v1/mm/ws', upgradeWebSocket(() => {
+// App aparte: los middlewares de la API (secureHeaders) escriben cabeceras y la respuesta 101 no las admite.
+const wsApp = new Hono();
+const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app: wsApp });
+wsApp.get('/api/v1/mm/ws', upgradeWebSocket(() => {
   let conn: ReturnType<typeof hub.open> = null;
   return {
     onOpen: (_e, ws) => { conn = hub.open(ws); },
