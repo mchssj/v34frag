@@ -153,7 +153,6 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/admin/steam/unlinked` | `q` (nombre o SteamID) | **`last_played` desc**, `matches`, `last_nick` |
 | `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
 | `GET /api/v1/admin/blocked-words/hits` | `kind` | **`kind` asc**, `name` |
-| `GET /api/v1/admin/team-requests` | `status`, `q` | **`status` asc** (pendientes primero), `name` |
 | `GET /api/v1/admin/demos` | `status` (`pending`, `uploaded`, `missing`, `expired`), `server`, `kind`, `from`, `to`, `q` | **`played_at` desc**, `demo_size`, `demo_attempts`, `demo_uploaded_at`, `expires_at` |
 | `GET /api/v1/admin/demo-workers` | `q`, `active`, `online` | **`name` asc**, `created_at`, `last_seen_at` |
 | `GET /api/v1/admin/servers` | `q` (nombre, dirección, IPs, versión, región), `active`, `license` (`ok`, `expiring`, `expired`, `revoked`), `online`, `has_panel`, `mode` | **`name` asc**, `created_at`, `last_seen_at`, `license_expires_at`, `matches` |

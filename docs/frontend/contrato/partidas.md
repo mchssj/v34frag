@@ -173,3 +173,12 @@ La tabla de cada bando en la sala del mix (terminado o en vivo) tiene pestañas:
 - **Mix en vivo:** los mismos campos salvo `clutches` (llegan con el resultado).
 - **Fórmulas** (las calcula el frontend; "—" si el divisor es 0): K/R = `kills / rounds`; HS % = `headshots / kills`; MK = `k2 + k3 + k4 + k5`; MK % = `MK / rounds`; intentos de entrada = `first_kills + first_deaths`; % de intentos = `intentos / rounds`; % de éxito = `first_kills / intentos`.
 - **No hay** (necesitarían más trabajo del plugin, en pausa): precisión, KAST, RWS, rondas sobrevividas, trades, clutches perdidos, kills por minuto, MVP por ronda ni Swing.
+
+### Mapas de una serie (2026-11-01)
+
+| Endpoint | Quién | Qué hace |
+|---|---|---|
+| `GET /api/v1/matches/{id}/games/candidates` | Admin, moderador u organizador | Mixes para vincular: terminados en los últimos 14 días, sin vincular (o ya de esta partida) y con al menos un inscrito. `registered` (inscritos que jugaron), `side1` (bando del mix que fue el equipo 1) y `linked`. Hasta 20 |
+| `PUT /api/v1/matches/{id}/maps` | Admin, moderador u organizador | `{ maps: [{ game_id, side1? } o { map, r1, r2 }] }`: cada mapa es un mix vinculado (con stats) o un **resultado a mano** (sin detalle). Con la serie definida, se cierra y la llave avanza; si no, queda en curso. Los mixes que salen se desvinculan. `409` si el mix es de otra partida |
+
+En `GET /api/v1/matches/{id}`, un mapa de `maps_detail` con `game_id: null` se cargó a mano: la página dice "Sin detalle de la partida" en ese mapa. Los horarios son a mano (`PATCH /api/v1/matches/{id}` con `starts_at`), sin horarios automáticos.

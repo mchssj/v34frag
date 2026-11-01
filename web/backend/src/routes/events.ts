@@ -15,6 +15,7 @@ import {
   BannerResult,
   BannerUpload,
   DrawResult,
+  SeedsResult,
   GameMode,
   GameModeBody,
   EventCreate,
@@ -237,6 +238,18 @@ const draw = createRoute({
   responses: { 200: { description: 'Siembra sorteada', ...json(DrawResult) }, ...errorResponses(400, 401, 403) },
 });
 
+const seedRanking = createRoute({
+  method: 'post', path: '/api/v1/events/{id}/seeds/ranking', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Sembrar por ranking',
+  description:
+    'Ordena a los inscritos por los puntos totales del ranking de equipos (torneos y PCW); si empatan, por el ELO promedio de sus activos ' +
+    'inscritos; si siguen, por quién se inscribió antes. Reemplaza la siembra (antes de generar). En un suizo de varias etapas, la ' +
+    'siembra decide en qué etapa entra cada equipo: los mejores, a la más avanzada (en bloques de `size / 2`). Lo mismo vale al ' +
+    'sortear o al cambiar la siembra a mano.',
+  request: { params: EventParam },
+  responses: { 200: { description: 'Siembra nueva', ...json(SeedsResult) }, ...errorResponses(400, 401, 403, 404) },
+});
+
 const generate = createRoute({
   method: 'post', path: '/api/v1/events/{id}/generate', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
   summary: 'Generar el fixture',
@@ -328,7 +341,11 @@ export const events = createRouter()
     ]);
     if (!e || !extra) throw notFound('ese torneo');
     const user = currentUser(c);
-    const viewer = user ? { can_manage: !!must(await sb.rpc('can_manage_event', { p_event: id })) } : null;
+    const viewer = user
+      ? await Promise.all([sb.rpc('can_manage_event', { p_event: id }).then(must), sb.rpc('can_own_event', { p_event: id }).then(must)]).then(
+          ([manage, own]) => ({ can_manage: !!manage, can_own: !!own }),
+        )
+      : null;
     const row = e as unknown as EventRow;
     const [stages, live] = await Promise.all([currentStages(c, [row]), liveMatch(c, id)]);
     const body = {
@@ -484,6 +501,13 @@ export const events = createRouter()
     const rows = mustHave(await c.var.sb.from('events').update({ seeds: teams }).eq('id', id).select('id'));
     if (!rows.length) throw new AppError(403, 'FORBIDDEN', 'Solo el organizador del torneo o un admin cambia la siembra.');
     return c.body(null, 204);
+  })
+  .openapi(seedRanking, async (c) => {
+    const { id } = c.req.valid('param');
+    const ids = mustHave(await c.var.sb.rpc('event_seed_ranking', { p_event: id })) as string[];
+    const teams = mustHave(await c.var.sb.from('teams').select('id, name, tag').in('id', ids));
+    const byId = new Map(teams.map((t) => [t.id, t]));
+    return c.json({ seeds: ids.map((t) => ({ id: t, name: byId.get(t)?.name ?? '', tag: byId.get(t)?.tag ?? null })) }, 200);
   })
   .openapi(draw, async (c) => {
     const { id } = c.req.valid('param');

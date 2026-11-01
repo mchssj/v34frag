@@ -16,6 +16,8 @@ import {
   MyTeam,
   Ranking,
   RankingQuery,
+  Created,
+  TeamCreateBody,
   TeamDetail,
   TeamEventList,
   TeamEventQuery,
@@ -83,6 +85,23 @@ const detail = createRoute({
   middleware: [optionalUser] as const,
   request: { params: TeamParam },
   responses: { 200: { description: 'Equipo', ...json(TeamDetail) }, ...errorResponses(400, 401, 404) },
+});
+
+const createTeam = createRoute({
+  method: 'post',
+  path: '/api/v1/teams',
+  tags: ['Equipos'],
+  summary: 'Crear un equipo',
+  description:
+    'Se crea al instante, sin aprobación: quien lo crea queda como dueño, capitán y primer miembro. Hace falta tener el SteamID ' +
+    'vinculado (`400`). Nombre de 2 a 40 y sigla de 1 a 6 (en mayúsculas), sin palabras bloqueadas (`400`) y sin repetir los de ' +
+    'otro equipo activo (`409 CONFLICT` con `details.reason` `name_taken` o `tag_taken`). Cada persona puede ser capitán de hasta ' +
+    '`max_led` equipos activos (lo fija el admin, 1 por defecto): `409 CONFLICT` con `details.reason: lead_limit` y `details.max_led`. ' +
+    'El logo se sube después con `PUT /api/v1/teams/{id}/logo`.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  request: { body: { required: true, ...json(TeamCreateBody) } },
+  responses: { 201: { description: 'Equipo creado', ...json(Created) }, ...errorResponses(400, 401, 409) },
 });
 
 const members = createRoute({
@@ -205,6 +224,11 @@ const RANK_COLUMNS = {
 };
 
 export const teams = createRouter()
+  .openapi(createTeam, async (c) => {
+    const { name, tag } = c.req.valid('json');
+    const id = mustHave(await c.var.sb.rpc('team_create', { p_name: name, p_tag: tag }));
+    return c.json({ id }, 201);
+  })
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
     let q = c.var.sb.from('team_overview').select(OVERVIEW, { count: 'exact' }).eq('kind', p.kind).is('dissolved_at', null);
@@ -220,7 +244,10 @@ export const teams = createRouter()
     const sb = c.var.sb;
     const team = must(await sb.from('team_overview').select(OVERVIEW).eq('id', id).maybeSingle());
     if (!team) throw notFound('ese equipo');
-    const s = must(await sb.from('team_standings').select('*').eq('team_id', id).maybeSingle());
+    const [s, modes] = await Promise.all([
+      sb.from('team_standings').select('*').eq('team_id', id).maybeSingle().then(must),
+      team.kind === 'official' ? sb.rpc('team_eligible_modes', { p_team: id }).then(mustHave) : Promise.resolve([]),
+    ]);
     let viewer: z.infer<typeof TeamDetail>['viewer'] = null;
     const user = currentUser(c);
     if (user) {
@@ -237,6 +264,7 @@ export const teams = createRouter()
         dissolved_at: team.dissolved_at,
         name_changed_at: team.name_changed_at,
         next_name_change_at: nextNameChange(team.name_changed_at),
+        eligible_modes: modes,
         record: s
           ? {
               official: { played: s.official_played ?? 0, won: s.official_won ?? 0, lost: s.official_lost ?? 0, points: s.official_points ?? 0 },

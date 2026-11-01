@@ -100,27 +100,13 @@ describe('partidas (E14 a E18)', () => {
   });
 });
 
-describe('solicitud de equipo nuevo (E9)', () => {
-  it('cancelar la pendiente; no una rechazada; motivo del rechazo', async () => {
+describe('solicitud de equipo nuevo (E9, reemplazada por el replanteo 40)', () => {
+  it('ya no se piden ni se aprueban equipos: solo queda leer la solicitud vieja', async () => {
     const u = await player();
+    expect((await req('PUT', '/api/v1/me/team-request', { token: u.token, body: { name: `Pedido ${rnd()}`, tag: 'ped' } })).status).toBe(404);
     expect((await req('DELETE', '/api/v1/me/team-request', { token: u.token })).status).toBe(404);
-    const put = await req('PUT', '/api/v1/me/team-request', { token: u.token, body: { name: `Pedido ${rnd()}`, tag: 'ped' } });
-    expect(put.body).toMatchObject({ status: 'pending', created_at: expect.any(String), reject_reason: null });
-    expect((await req('DELETE', '/api/v1/me/team-request', { token: u.token })).status).toBe(204);
+    expect((await req('GET', '/api/v1/admin/team-requests', { token: adm.token })).status).toBe(404);
     expect((await req('GET', '/api/v1/me/team-request', { token: u.token })).body).toBeNull();
-
-    await req('PUT', '/api/v1/me/team-request', { token: u.token, body: { name: `Pedido ${rnd()}`, tag: 'ped' } });
-    const rej = await req('POST', `/api/v1/admin/team-requests/${u.id}/reject`, { token: adm.token, body: { reason: 'Nombre repetido' } });
-    expect(rej.status).toBe(204);
-    expect((await req('GET', '/api/v1/me/team-request', { token: u.token })).body).toMatchObject({ status: 'rejected', reject_reason: 'Nombre repetido' });
-    const del = await req('DELETE', '/api/v1/me/team-request', { token: u.token });
-    expect(del.status).toBe(409);
-    expect(del.body.error.code).toBe('CONFLICT');
-
-    // Rechazar sin cuerpo sigue funcionando.
-    await req('PUT', '/api/v1/me/team-request', { token: u.token, body: { name: `Pedido ${rnd()}`, tag: 'ped' } });
-    expect((await req('POST', `/api/v1/admin/team-requests/${u.id}/reject`, { token: adm.token })).status).toBe(204);
-    expect((await req('GET', '/api/v1/me/team-request', { token: u.token })).body.reject_reason).toBeNull();
   });
 });
 

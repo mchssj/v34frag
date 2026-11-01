@@ -94,25 +94,28 @@ describe('equipos y plantel', () => {
   let cap: Awaited<ReturnType<typeof player>>;
   let team: string;
 
-  it('solicitud de equipo nuevo: sin SteamID no; con SteamID el admin la aprueba', async () => {
+  it('crear un equipo al instante: sin SteamID no; nombre repetido y tope de capitán con 409', async () => {
     const sin = await player({ steam: false });
-    const r = await req('PUT', '/api/v1/me/team-request', { token: sin.token, body: { name: 'Sin', tag: 'sin' } });
-    expect(r.body.error.message).toBe('Para pedir un equipo tenés que tener tu SteamID vinculado');
+    const r = await req('POST', '/api/v1/teams', { token: sin.token, body: { name: 'Sin', tag: 'sin' } });
+    expect(r.body.error.message).toBe('Para crear un equipo tenés que tener tu SteamID vinculado');
 
     cap = await player();
     const name = `Titanes ${rnd()}`;
-    const put = await req('PUT', '/api/v1/me/team-request', { token: cap.token, body: { name, tag: 'tit' } });
-    expect(put.body).toEqual({ name, tag: 'TIT', status: 'pending', logo_url: null, created_at: expect.any(String), reject_reason: null });
-    expect((await req('GET', '/api/v1/admin/team-requests', { token: cap.token })).status).toBe(403);
-    const list = await req('GET', `/api/v1/admin/team-requests?status=pending&q=${encodeURIComponent(name)}`, { token: adm.token });
-    expect(list.body.items).toEqual([expect.objectContaining({ user_id: cap.id, name, has_steam: true, status: 'pending' })]);
-    const ap = await req('POST', `/api/v1/admin/team-requests/${cap.id}/approve`, { token: adm.token });
-    expect(ap.status).toBe(201);
-    team = ap.body.id;
-    expect((await req('GET', '/api/v1/me/team-request', { token: cap.token })).body.status).toBe('approved');
+    const tag = rnd().slice(0, 5);
+    const created = await req('POST', '/api/v1/teams', { token: cap.token, body: { name, tag } });
+    expect(created.status).toBe(201);
+    team = created.body.id;
+    const otro = await player();
+    const dup = await req('POST', '/api/v1/teams', { token: otro.token, body: { name: name.toUpperCase(), tag: rnd().slice(0, 5) } });
+    expect(dup).toMatchObject({ status: 409, body: { error: { code: 'CONFLICT', details: { reason: 'name_taken' } } } });
+    const second = await req('POST', '/api/v1/teams', { token: cap.token, body: { name: `Otro ${rnd()}`, tag: rnd().slice(0, 5) } });
+    expect(second).toMatchObject({ status: 409, body: { error: { code: 'CONFLICT', details: { reason: 'lead_limit', max_led: 1 } } } });
+    expect((await req('GET', '/api/v1/me/team-request', { token: cap.token })).body).toBeNull();
 
     const detail = await req('GET', `/api/v1/teams/${team}`, { token: cap.token });
-    expect(detail.body).toMatchObject({ name, tag: 'TIT', members: 1, max_members: 10, captain: { player_id: cap.playerId } });
+    expect(detail.body).toMatchObject({ name, tag: tag.toUpperCase(), members: 1, max_members: 10, captain: { player_id: cap.playerId } });
+    expect(detail.body.eligible_modes).toContainEqual({ code: '5v5', name: expect.any(String), players_per_team: 5, missing: 4 });
+    expect(detail.body.eligible_modes).toContainEqual(expect.objectContaining({ code: '1v1', missing: 0 }));
     expect(detail.body.viewer).toEqual({ is_captain: true, is_member: true, is_admin: false });
     const roster = await req('GET', `/api/v1/teams/${team}/members?active=true`);
     expect(roster.body.items).toEqual([expect.objectContaining({ player_id: cap.playerId, is_captain: true })]);
@@ -197,8 +200,15 @@ describe('ranking, listados y fichas', () => {
     const sb = admin();
     const mkTeam = async (kind: 'official' | 'pcw', parent?: string) =>
       (await sb.from('teams').insert({ name: `R ${rnd()}`, tag: 'R', kind, parent_team_id: parent ?? null }).select('id').single()).data!.id as string;
+    // El ranking solo muestra equipos con 5 jugadores (replanteo 40).
+    const fill = async (team: string) => {
+      const ps = (await sb.from('players').insert(Array.from({ length: 5 }, () => ({ nick: `R${rnd()}${rnd()}`, steam_id: steam() }))).select('id')).data!;
+      const r = await sb.from('team_members').insert(ps.map((p) => ({ team_id: team, player_id: p.id as string })));
+      if (r.error) throw r.error;
+    };
     const a = await mkTeam('official');
     const b = await mkTeam('official');
+    await Promise.all([fill(a), fill(b)]);
     const side = await mkTeam('pcw', a);
     const rival = await mkTeam('pcw');
     await sb.from('matches').insert([

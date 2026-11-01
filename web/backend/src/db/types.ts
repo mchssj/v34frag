@@ -1661,13 +1661,13 @@ isOneToOne: false
                   ]
                 },"team_config": {
                   Row: {
-                    "id": number,"max_members": number,"updated_at": string
+                    "id": number,"max_led": number,"max_members": number,"updated_at": string
                   }
                   Insert: {
-                    "id"?: number,"max_members"?: number,"updated_at"?: string
+                    "id"?: number,"max_led"?: number,"max_members"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "id"?: number,"max_members"?: number,"updated_at"?: string
+                    "id"?: number,"max_led"?: number,"max_members"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -3742,9 +3742,6 @@ isOneToOne: false
 "approve_steam_request":
 { Args: { "p_id": number }; Returns: undefined
                            },
-"approve_team_request":
-{ Args: { "p_user": string }; Returns: string
-                           },
 "ban_active_for":
 { Args: { "p_steam": string }; Returns: {
               "created_at": string,
@@ -3803,6 +3800,9 @@ isOneToOne: false
 "can_manage_event":
 { Args: { "p_event": string }; Returns: boolean
                            },
+"can_own_event":
+{ Args: { "p_event": string }; Returns: boolean
+                           },
 "cancel_pcw_match":
 { Args: { "p_match": string }; Returns: undefined
                            },
@@ -3811,9 +3811,6 @@ isOneToOne: false
                            },
 "cancel_steam_unlink":
 { Args: { "p_steam": string }; Returns: undefined
-                           },
-"cancel_team_request":
-{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "claim_with_code":
 { Args: { "p_code": string,"p_nick"?: string,"p_steam": string,"p_token": string }; Returns: Json
@@ -4105,6 +4102,9 @@ isOneToOne: false
 "event_seed_order":
 { Args: { "s": number }; Returns: (number)[]
                            },
+"event_seed_ranking":
+{ Args: { "p_event": string }; Returns: (string)[]
+                           },
 "event_set_result":
 { Args: { "p_clear"?: boolean,"p_maps"?: Json,"p_match": string,"p_walkover_winner"?: string }; Returns: undefined
                            },
@@ -4177,6 +4177,14 @@ isOneToOne: false
 "match_chat_can_write":
 { Args: { "p_match": string }; Returns: boolean
                            },
+"match_game_candidates":
+{ Args: { "p_match": string }; Returns: {
+              "game_id": string,"linked": boolean,"map": string,"played_at": string,"players": number,"registered": number,"score1": number,"score2": number,"server_name": string,"side1": number
+            }[]
+                           },
+"match_game_side":
+{ Args: { "p_game": string,"p_match": string }; Returns: number
+                           },
 "match_link_code":
 { Args: { "p_match": string }; Returns: string
                            },
@@ -4207,6 +4215,9 @@ isOneToOne: false
                            },
 "match_schedule":
 { Args: { "p_match": string,"p_server": string,"p_starts_at": string }; Returns: undefined
+                           },
+"match_set_maps":
+{ Args: { "p_maps": Json,"p_match": string }; Returns: undefined
                            },
 "match_users":
 { Args: { "p_match": string }; Returns: (string)[]
@@ -4277,9 +4288,6 @@ isOneToOne: false
                            },
 "reject_steam_request":
 { Args: { "p_id": number,"p_reason": string }; Returns: undefined
-                           },
-"reject_team_request":
-{ Args: { "p_reason"?: string,"p_user": string }; Returns: undefined
                            },
 "render_auth":
 { Args: { "p_token": string }; Returns: string
@@ -4379,7 +4387,7 @@ isOneToOne: false
 { Args: { "p_team": string,"p_user": string }; Returns: undefined
                            },
 "set_team_config":
-{ Args: { "p_max_members": number }; Returns: undefined
+{ Args: { "p_max_led"?: number,"p_max_members": number }; Returns: undefined
                            },
 "set_user_role":
 { Args: { "p_role": string,"p_user": string }; Returns: undefined
@@ -4420,8 +4428,16 @@ isOneToOne: false
 "team_can_join":
 { Args: { "p_player": string,"p_team": string }; Returns: undefined
                            },
+"team_create":
+{ Args: { "p_name": string,"p_tag": string }; Returns: string
+                           },
 "team_dissolve":
 { Args: { "p_team": string }; Returns: undefined
+                           },
+"team_eligible_modes":
+{ Args: { "p_team": string }; Returns: {
+              "code": string,"missing": number,"name": string,"players_per_team": number
+            }[]
                            },
 "team_event_history":
 { Args: { "p_team": string }; Returns: {
@@ -4448,6 +4464,12 @@ isOneToOne: false
                            },
 "team_max_members":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"team_players":
+{ Args: { "p_team": string }; Returns: number
+                           },
+"team_rankable":
+{ Args: { "p_team": string }; Returns: boolean
                            },
 "team_ref":
 { Args: { "p_team": string }; Returns: Json

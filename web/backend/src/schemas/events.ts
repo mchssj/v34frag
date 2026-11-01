@@ -168,7 +168,12 @@ export const EventDetail = EventSummary.extend({
     .nullable()
     .openapi({ description: 'Sorteo de la siembra (POST /events/{id}/draw): cuándo y quién. null si la siembra se cargó a mano o cambió después' }),
   map_pool: z.array(z.string()).nullable().openapi({ description: 'Pool del veto del torneo; `null`: el pool por defecto (GET /maps?veto_default=true)' }),
-  viewer: z.object({ can_manage: z.boolean() }).nullable(),
+  viewer: z
+    .object({
+      can_manage: z.boolean().openapi({ description: 'Gestiona el torneo: admin, moderador u organizador dueño' }),
+      can_own: z.boolean().openapi({ description: 'Además lo cancela y lo borra: admin u organizador dueño (el moderador no)' }),
+    })
+    .nullable(),
 }).openapi('EventDetail', {
   description: 'Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings',
 });
@@ -208,6 +213,10 @@ export const RegistrationBody = z
   .openapi('RegistrationBody');
 
 export const SeedsBody = z.object({ teams: z.array(z.uuid()).max(256) }).openapi('SeedsBody');
+
+export const SeedsResult = z
+  .object({ seeds: z.array(TeamRef).openapi({ description: 'La siembra nueva, del 1 en adelante' }) })
+  .openapi('SeedsResult');
 
 export const DrawResult = z
   .object({
