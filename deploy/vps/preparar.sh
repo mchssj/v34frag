@@ -221,7 +221,7 @@ for u in cmleague-api.service cmleague-mm.service cmleague-season.service cmleag
   install -m 644 "$DIR/$u" "/etc/systemd/system/$u"
 done
 systemctl daemon-reload
-systemctl enable cmleague-api.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
+systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
 systemctl start cmleague-season.timer cmleague-notify.timer
 # cmleague-hud queda instalado y apagado: se prende a mano después de completar hud.json (token del relay) y copiar
 # las fuentes (systemctl enable --now cmleague-hud; ver docs/bitacora/2026-10-29-hud-relay-vps).
