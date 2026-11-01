@@ -146,10 +146,21 @@ export function liveText(m: LiveMatch) {
 
 // ---- Llave ----
 
-const BRACKET_STAGES = ["upper", "lower", "ko", "third", "grand"] as const
+// group_upper y group_lower: los grupos de doble eliminación (`groups_double`).
+const BRACKET_STAGES = [
+  "group_upper",
+  "group_lower",
+  "upper",
+  "lower",
+  "ko",
+  "third",
+  "grand",
+] as const
 type BracketStage = (typeof BRACKET_STAGES)[number]
 
-const STAGE_TITLE: Record<BracketStage, string> = {
+export const STAGE_TITLE: Record<BracketStage, string> = {
+  group_upper: "Upper",
+  group_lower: "Lower",
   upper: "Upper",
   lower: "Lower",
   ko: "Playoffs",
@@ -168,6 +179,8 @@ export type BracketColumn = {
 
 export type BracketSection = {
   key: string
+  stage: BracketStage
+  grp: number | null
   /** null cuando la llave tiene una sola sección (eliminación directa). */
   title: string | null
   columns: BracketColumn[]
@@ -188,7 +201,7 @@ function columnTitle(label: string | null, grp: number | null, round: number) {
 /**
  * Secciones de la llave a partir de las partidas: una por etapa (y por grupo en los grupos de
  * doble eliminación), con columnas por ronda y filas por posición. La fase de grupos y el suizo
- * no son llaves: van en Posiciones.
+ * se dibujan aparte (`lib/bracket.ts`).
  */
 export function buildBracket(
   matches: EventMatch[],
@@ -229,6 +242,8 @@ export function buildBracket(
     const base = STAGE_TITLE[stage as BracketStage]
     return {
       key,
+      stage: stage as BracketStage,
+      grp,
       title: grp ? `Grupo ${groupLetter(grp)} · ${base.toLowerCase()}` : base,
       columns,
       final: !grp && stage === finalStage,

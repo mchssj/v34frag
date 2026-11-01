@@ -54,9 +54,14 @@ const TABS: { id: EventTab | undefined; label: string }[] = [
 export function EventView({
   eventId,
   tab,
+  phase,
+  onPhase,
 }: {
   eventId: string
   tab: EventTab | undefined
+  /** Fase de la Llave (`?phase=`). */
+  phase?: string
+  onPhase: (phase: string) => void
 }) {
   const { data: event, error } = useQuery(eventDetailOptions(eventId))
 
@@ -128,7 +133,7 @@ export function EventView({
       </Card>
 
       {tab === "bracket" ? (
-        <BracketTab event={event} />
+        <BracketTab event={event} phase={phase} onPhase={onPhase} />
       ) : tab === "standings" ? (
         <StandingsTab event={event} />
       ) : tab === "matches" ? (

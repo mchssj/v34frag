@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
-import { TrophyIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react"
+import { ZoomInIcon, ZoomOutIcon } from "lucide-react"
 import {
+  useMemo,
   useRef,
   useState,
   type MouseEvent,
@@ -10,259 +10,254 @@ import {
   type RefObject,
 } from "react"
 
+import { Segmented } from "@/components/brand/Segmented"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  buildBracket,
-  sidesOf,
-  type BracketColumn,
-  type BracketSection,
-} from "../lib/model"
-import { eventMatchesOptions } from "../api/queries"
-import type { EventDetail, EventMatch } from "../types"
-import { EmptyBox, TagBox } from "./ui"
+  eventMatchesOptions,
+  eventRegistrationsOptions,
+  eventStandingsOptions,
+} from "../api/queries"
+import {
+  defaultPhase,
+  destinationsOf,
+  emptyPhaseText,
+  groupsOf,
+  phasesOf,
+  swissGrid,
+  swissOptions,
+  type Phase,
+  type PhaseStatus,
+} from "../lib/bracket"
+import { advanceOf, buildBracket } from "../lib/model"
+import type { EventDetail, Standing } from "../types"
+import { BracketTree } from "./bracket/BracketTree"
+import { BracketContext, type BracketCtx } from "./bracket/context"
+import { GroupsDoublePhase } from "./bracket/GroupsDoublePhase"
+import { GroupsPhase } from "./bracket/GroupsPhase"
+import { SwissPhase } from "./bracket/SwissPhase"
+import { EmptyBox } from "./ui"
 
 const ZOOM = { min: 0.5, max: 1.5, step: 0.1, fit: 0.85 }
 const clampZoom = (z: number) =>
   Math.min(ZOOM.max, Math.max(ZOOM.min, Math.round(z * 10) / 10))
 
-/** Llave: columnas por ronda, zoom de 50 a 150 %, arrastre y el camino del equipo bajo el cursor. */
-export function BracketTab({ event }: { event: EventDetail }) {
+const DOT: Record<PhaseStatus, string> = {
+  done: "bg-win",
+  live: "bg-destructive",
+  pending: "bg-muted-foreground/50",
+}
+const DOT_LABEL: Record<PhaseStatus, string> = {
+  done: "terminada",
+  live: "en vivo",
+  pending: "por jugar",
+}
+
+/**
+ * Llave: un chip por fase (abre en la que se está jugando), zoom de 50 a 150 %, arrastre, el
+ * camino del equipo bajo el cursor y el detalle resumido al hacer clic en una partida.
+ */
+export function BracketTab({
+  event,
+  phase: phaseKey,
+  onPhase,
+}: {
+  event: EventDetail
+  /** `?phase=` de la URL; si no existe, la fase en curso. */
+  phase?: string
+  onPhase: (key: string) => void
+}) {
   const matches = useQuery(eventMatchesOptions(event.id)).data
+  const registrations = useQuery(eventRegistrationsOptions(event.id)).data
+  const standings = useQuery(eventStandingsOptions(event.id)).data
   const [zoom, setZoom] = useState(1)
   const [hover, setHover] = useState<string | null>(null)
   const canvas = useRef<HTMLDivElement>(null)
   const pan = usePan(canvas)
 
-  if (!matches) return <Skeleton className="h-[512px] rounded-hero" />
-  const sections = buildBracket(matches, event.template)
-  if (sections.length === 0) return <EmptyBox>{emptyText(event)}</EmptyBox>
-  const ending = (s: BracketSection) => s.final || s.key === "0:third"
-  const before = sections.filter((s) => !ending(s))
-  const after = sections.filter(ending)
-
-  return (
-    <Card variant="outline" asChild className="overflow-hidden">
-      <section>
-        <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2.5">
-          <span className="text-[13px] text-pretty text-muted-foreground">
-            Pasa el cursor sobre un equipo para seguir su camino. Arrastra para
-            moverte.
-          </span>
-          <div className="ml-auto flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Alejar"
-              disabled={zoom <= ZOOM.min}
-              onClick={() => setZoom((z) => clampZoom(z - ZOOM.step))}
-            >
-              <ZoomOutIcon aria-hidden />
-            </Button>
-            <span
-              aria-live="polite"
-              className="w-12 text-center font-mono text-xs font-medium"
-            >
-              {Math.round(zoom * 100)}%
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Acercar"
-              disabled={zoom >= ZOOM.max}
-              onClick={() => setZoom((z) => clampZoom(z + ZOOM.step))}
-            >
-              <ZoomInIcon aria-hidden />
-            </Button>
-            <Button
-              variant="outline"
-              className="text-xs"
-              onClick={() => setZoom(ZOOM.fit)}
-            >
-              Ajustar
-            </Button>
-          </div>
-        </div>
-        <div
-          ref={canvas}
-          {...pan}
-          data-testid="bracket-canvas"
-          className="h-[460px] cursor-grab overflow-auto bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:16px_16px] active:cursor-grabbing"
-        >
-          {/* `zoom` (no `transform`) para que el área de scroll siga el tamaño real. */}
-          {/* Las etapas previas (grupos, upper y lower) apiladas; a la derecha, la final con el
-            campeón y el 3.er puesto debajo. */}
-          <div style={{ zoom }} className="flex w-max items-center gap-14 p-7">
-            {[before, after].map(
-              (list, i) =>
-                list.length > 0 && (
-                  <div key={i} className="flex flex-col gap-10">
-                    {list.map((s) => (
-                      <Section
-                        key={s.key}
-                        section={s}
-                        champion={
-                          s.final ? (event.champion?.name ?? null) : undefined
-                        }
-                        hover={hover}
-                        onHover={setHover}
-                      />
-                    ))}
-                  </div>
-                )
-            )}
-          </div>
-        </div>
-      </section>
-    </Card>
+  const phases = useMemo(
+    () => (matches ? phasesOf(matches, event.template, event.config) : []),
+    [matches, event.template, event.config]
   )
-}
+  const ctx = useMemo<BracketCtx>(
+    () => ({
+      all: matches ?? [],
+      seeds: new Map(registrations?.map((r) => [r.team.id, r.seed])),
+      marks: destinationsOf(matches ?? [], event.template, standings ?? []),
+      hover,
+      onHover: setHover,
+    }),
+    [matches, registrations, standings, event.template, hover]
+  )
 
-function emptyText(event: EventDetail) {
-  if (event.status === "registration")
-    return "La llave se arma cuando se cierran las inscripciones."
-  if (event.template === "swiss")
-    return "Los playoffs se arman cuando termina el suizo."
-  if (event.template === "groups" || event.template === "groups_double")
-    return "Los playoffs se arman cuando termina la fase de grupos."
-  return "Este torneo no tiene llave."
-}
+  if (!matches) return <Skeleton className="h-[512px] rounded-hero" />
+  if (matches.length === 0)
+    return (
+      <EmptyBox>
+        {event.status === "registration"
+          ? "La llave se arma cuando se cierran las inscripciones."
+          : "Este torneo todavía no tiene partidas."}
+      </EmptyBox>
+    )
+  const current = phases.find((p) => p.key === phaseKey) ?? defaultPhase(phases)
 
-function Section({
-  section,
-  champion,
-  hover,
-  onHover,
-}: {
-  section: BracketSection
-  /** undefined: la sección no termina en el campeón; null: todavía por definir. */
-  champion: string | null | undefined
-  hover: string | null
-  onHover: (team: string | null) => void
-}) {
   return (
-    <div className="flex flex-col gap-3">
-      {section.title && (
-        <h3 className="text-[13px] font-semibold">{section.title}</h3>
-      )}
-      <div className="flex gap-14">
-        {section.columns.map((c) => (
-          <Column key={c.round} column={c} hover={hover} onHover={onHover} />
-        ))}
-        {champion !== undefined && (
-          <div className="flex w-[180px] flex-col justify-center pt-[26px]">
-            <div className="flex flex-col items-center gap-2 rounded-[calc(var(--radius)+4px)] border border-dashed bg-background p-5">
-              <TrophyIcon className="size-7 text-primary" aria-hidden />
-              <span className="text-xs text-muted-foreground">Campeón</span>
-              <span className="text-center text-[15px] font-semibold">
-                {champion ?? "Por definir"}
+    <BracketContext.Provider value={ctx}>
+      <Card variant="outline" asChild className="overflow-hidden">
+        <section>
+          <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2.5">
+            {phases.length > 1 && (
+              <Segmented
+                label="Fases del torneo"
+                value={current.key}
+                onChange={onPhase}
+                options={phases.map((p) => ({
+                  value: p.key,
+                  ariaLabel: `${p.label}, ${DOT_LABEL[p.status]}`,
+                  label: (
+                    <>
+                      <span
+                        aria-hidden
+                        className={cn("size-1.5 rounded-full", DOT[p.status])}
+                      />
+                      {p.label}
+                    </>
+                  ),
+                }))}
+              />
+            )}
+            <span className="text-[13px] text-pretty text-muted-foreground">
+              Haz clic en una partida para ver el detalle. Pasa el cursor sobre
+              un equipo para seguir su camino.
+            </span>
+            <div className="ml-auto flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Alejar"
+                disabled={zoom <= ZOOM.min}
+                onClick={() => setZoom((z) => clampZoom(z - ZOOM.step))}
+              >
+                <ZoomOutIcon aria-hidden />
+              </Button>
+              <span
+                aria-live="polite"
+                className="w-12 text-center font-mono text-xs font-medium"
+              >
+                {Math.round(zoom * 100)}%
               </span>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Acercar"
+                disabled={zoom >= ZOOM.max}
+                onClick={() => setZoom((z) => clampZoom(z + ZOOM.step))}
+              >
+                <ZoomInIcon aria-hidden />
+              </Button>
+              <Button
+                variant="outline"
+                className="text-xs"
+                onClick={() => setZoom(ZOOM.fit)}
+              >
+                Ajustar
+              </Button>
             </div>
           </div>
-        )}
-      </div>
-    </div>
+          <div
+            ref={canvas}
+            {...pan}
+            data-testid="bracket-canvas"
+            className="max-h-[75svh] min-h-[260px] cursor-grab overflow-auto bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:16px_16px] active:cursor-grabbing"
+          >
+            {/* `zoom` (no `transform`) para que el área de scroll siga el tamaño real. */}
+            <div style={{ zoom }} className="w-max p-7">
+              <PhaseView
+                key={current.key}
+                phase={current}
+                event={event}
+                standings={standings ?? []}
+              />
+            </div>
+          </div>
+        </section>
+      </Card>
+    </BracketContext.Provider>
   )
 }
 
-function Column({
-  column,
-  hover,
-  onHover,
+function PhaseView({
+  phase,
+  event,
+  standings,
 }: {
-  column: BracketColumn
-  hover: string | null
-  onHover: (team: string | null) => void
+  phase: Phase
+  event: EventDetail
+  standings: Standing[]
 }) {
-  return (
-    <div className="flex w-[232px] flex-col">
-      <div className="flex justify-between gap-2 pb-2.5 text-xs font-medium text-muted-foreground">
-        <span className="truncate">{column.title}</span>
-        <span className="font-mono">BO{column.bo}</span>
-      </div>
-      <div className="flex flex-1 flex-col justify-around gap-4">
-        {column.games.map((m) => (
-          <Game key={m.id} match={m} hover={hover} onHover={onHover} />
-        ))}
-      </div>
-    </div>
-  )
-}
+  const { template, config } = event
+  const view = useMemo(() => {
+    switch (phase.kind) {
+      case "tree":
+      case "groups_double":
+        return {
+          kind: phase.kind,
+          sections: buildBracket(phase.matches, template),
+        }
+      case "groups":
+        return { kind: phase.kind, groups: groupsOf(phase.matches, standings) }
+      case "swiss":
+        return {
+          kind: phase.kind,
+          grid: swissGrid(phase.matches, swissOptions(config)),
+        }
+    }
+  }, [phase, template, config, standings])
 
-function Game({
-  match,
-  hover,
-  onHover,
-}: {
-  match: EventMatch
-  hover: string | null
-  onHover: (team: string | null) => void
-}) {
-  const sides = sidesOf(match)
-  const onPath = !!hover && sides.some((s) => s.teamId === hover)
-  const live = match.status === "live"
-  return (
-    <Link
-      to="/match/$id"
-      params={{ id: match.id }}
-      draggable={false}
-      aria-label={`${sides[0].name} contra ${sides[1].name}`}
-      className={cn(
-        "relative flex flex-col rounded-[calc(var(--radius)-2px)] border bg-background shadow-[0_1px_2px_rgb(0_0_0/.06)] transition-[border-color,opacity] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        onPath ? "border-primary" : live && "border-destructive",
-        hover && !onPath && "opacity-45"
-      )}
-    >
-      {sides.map((s, i) => (
-        <span
-          key={i}
-          onMouseEnter={() => s.teamId && onHover(s.teamId)}
-          onMouseLeave={() => onHover(null)}
-          className={cn(
-            "flex h-9 items-center gap-2 px-2.5 text-[13px]",
-            // Sin overflow-hidden en la tarjeta (el chip VIVO sobresale): las filas llevan el radio.
-            i === 0
-              ? "rounded-t-[calc(var(--radius)-3px)] border-b"
-              : "rounded-b-[calc(var(--radius)-3px)]",
-            hover && s.teamId === hover && "bg-primary/14"
-          )}
-        >
-          <TagBox
-            team={s.teamId ? s : null}
-            className="size-[22px] text-[8px]"
-          />
-          <span
-            className={cn(
-              "flex-1 truncate",
-              s.won && "font-semibold",
-              (!s.teamId || s.lost) && "text-muted-foreground"
-            )}
-          >
-            {s.name}
-          </span>
-          <span
-            className={cn(
-              "font-mono text-[13px] font-semibold",
-              s.lost && "text-muted-foreground"
-            )}
-          >
-            {s.score ?? ""}
-          </span>
-        </span>
-      ))}
-      {live && (
-        <span className="absolute -top-2 right-2 grid h-4 place-items-center rounded bg-destructive px-[5px] text-[9px] font-bold text-white">
-          VIVO
-        </span>
-      )}
-    </Link>
-  )
+  if (phase.matches.length === 0)
+    return (
+      <p className="max-w-[420px] py-10 text-sm text-pretty text-muted-foreground">
+        {emptyPhaseText(phase, template)}
+      </p>
+    )
+  const advance = advanceOf(template, config)
+  switch (view.kind) {
+    case "tree":
+      return (
+        <BracketTree
+          sections={view.sections}
+          champion={
+            view.sections.some((s) => s.final)
+              ? (event.champion?.name ?? null)
+              : undefined
+          }
+        />
+      )
+    case "groups_double":
+      return (
+        <GroupsDoublePhase
+          sections={view.sections}
+          standings={standings}
+          advance={advance}
+        />
+      )
+    case "groups":
+      return (
+        <GroupsPhase
+          groups={view.groups}
+          advance={advance}
+          bo={phase.matches[0]?.best_of ?? null}
+        />
+      )
+    case "swiss":
+      return <SwissPhase grid={view.grid} />
+  }
 }
 
 /**
  * Arrastrar el lienzo con el mouse para moverse. Un arrastre de más de 3px anula el clic, así no
- * se abre la partida donde se soltó. En pantallas táctiles queda el scroll nativo.
+ * se abre el detalle de la partida donde se soltó. En pantallas táctiles queda el scroll nativo.
  */
 function usePan(ref: RefObject<HTMLDivElement | null>) {
   const start = useRef<{

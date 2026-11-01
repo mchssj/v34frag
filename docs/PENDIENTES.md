@@ -41,6 +41,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - **E12:** biografía editable por el jugador (`PATCH /me/profile` con `bio`). Hoy solo la cambia un admin.
   - **E13:** `logo_url` en el historial de equipos y los títulos de un jugador. Hoy el frontend pide el detalle de cada equipo para mostrar el logo.
   - **E14 a E18** (tercera tanda, Partidas unificadas): varios estados en `status`, `mine=true`, contadores por tipo, `mvp` en los mixes y búsqueda por nick en `GET /matches`.
+  - **E21 y E22** (cuarta tanda, Llave por formato, 2026-10-31): rating de cada jugador en la serie (`series_players` en `MatchDetail`) y `next_win`/`next_lose` con su lugar en `EventMatch`. También falta nombrar `group_upper` y `group_lower` en la descripción de `EventMatch.stage`.
 
 ## Estado del repositorio
 

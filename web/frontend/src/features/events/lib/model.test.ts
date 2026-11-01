@@ -213,8 +213,16 @@ describe("buildBracket", () => {
     const sections = buildBracket(
       [
         match({ stage: "ko", label: "Semifinal" }),
-        match({ stage: "upper", grp: 2, label: "Grupo B · upper · ronda 1" }),
-        match({ stage: "upper", grp: 1, label: "Grupo A · final del upper" }),
+        match({
+          stage: "group_upper",
+          grp: 2,
+          label: "Grupo B · upper · ronda 1",
+        }),
+        match({
+          stage: "group_upper",
+          grp: 1,
+          label: "Grupo A · final del upper",
+        }),
       ],
       "groups_double"
     )
