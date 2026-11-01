@@ -1,0 +1,2 @@
+# Los scripts se corren con bash: siempre LF, aunque core.autocrlf esté activo.
+*.sh text eol=lf

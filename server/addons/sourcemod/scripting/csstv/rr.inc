@@ -18,7 +18,7 @@
 #define RR_MAX_AMMO    32
 
 bool g_bRrValid;               // hay foto de la ronda en curso (o de la que acaba de terminar)
-int g_iRrSegA, g_iRrSegB, g_iRrSegRound, g_iRrTotA, g_iRrTotB, g_iRrRoundLog;
+int g_iRrSegA, g_iRrSegB, g_iRrSegRound, g_iRrTotA, g_iRrTotB, g_iRrRoundLog, g_iRrClips;
 int g_iRrPauses[2];
 int g_iRrStats[MAX_REC][ST_COUNT];
 int g_iRrBoardFrags[MAX_REC];
@@ -62,6 +62,7 @@ void Rr_Snapshot()
 	g_iRrTotA = g_iTotA;
 	g_iRrTotB = g_iTotB;
 	g_iRrRoundLog = g_iRoundLogCount;
+	g_iRrClips = g_iClipCount;
 	g_iRrPauses[0] = g_iPausesUsed[0];
 	g_iRrPauses[1] = g_iPausesUsed[1];
 	Board_SaveAll();
@@ -140,6 +141,8 @@ public Action Cmd_Rr(int client, int args)
 	g_iTotA = g_iRrTotA;
 	g_iTotB = g_iRrTotB;
 	g_iRoundLogCount = g_iRrRoundLog;
+	if (g_iClipCount > g_iRrClips)
+		g_iClipCount = g_iRrClips;   // los clips de la ronda anulada
 	Pause_Clear();
 	g_iPausesUsed[0] = g_iRrPauses[0];
 	g_iPausesUsed[1] = g_iRrPauses[1];

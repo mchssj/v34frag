@@ -1,0 +1,8 @@
+v34frag 2.3.1 --  Changelog
+
+Para admins y moderadores: !whois con menú
+- Si tu búsqueda coincide con varias personas, ahora se abre un menú para que elijas a quién revisar.
+- En el menú aparecen juntos los que están conectados y los que no. Los conectados van primero.
+- Cada opción te dice si está conectado o en cuántas partidas jugó, y si tiene perfil en la web.
+- Si escribes el nombre exacto de alguien conectado, te muestra sus datos directo, sin menú.
+- Desde la consola sigue saliendo la lista en texto con el SteamID de cada uno.

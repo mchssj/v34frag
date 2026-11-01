@@ -1,0 +1,11 @@
+CMLeague --  Changelog
+
+Llega con la web nueva.
+
+Notificaciones
+- La campana de la web te avisa lo que te importa: si te invitan a un equipo o alguien pide entrar al tuyo, si te pasan el liderazgo, si te toca vetar, el horario y el resultado de tus partidas de torneo y de PCW.
+- También te avisa si subes o bajas de nivel, si un admin te ajusta el ELO, si tu jugada ya tiene video y cómo terminaste cuando cierra la temporada.
+- Las invitaciones y los pedidos para entrar a tu equipo los aceptas o rechazas desde la misma campana.
+- Puedes apagar las que no quieras por tipo (equipos, torneos, PCW, mixes, temporadas, cuenta). Las invitaciones, los pedidos y el aviso de cambio de contraseña llegan siempre.
+- "Novedades" (torneos nuevos y temporada nueva) viene apagada: préndela si quieres enterarte.
+- Se guardan tus últimas 100 notificaciones.

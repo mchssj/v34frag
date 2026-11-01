@@ -12,7 +12,9 @@ Navegador ──► index.html (HTML + CSS + JS vanilla)
             └─ Storage   (buckets avatars, photos, proofs)
 ```
 
-No existe backend propio. Toda la lógica de negocio que corre en el navegador (generación de fixtures, avance de brackets, cálculo de tablas y ranking) se persiste escribiendo directamente en las tablas; las reglas que deben ser confiables (permisos, PCW, cambio de capitán, tag de usuario) se delegan en **RLS** y **funciones RPC** de Postgres.
+> **En construcción (2026-10-14):** una API REST propia en [`web/backend`](../web/backend/README.md) (Node 24 + Hono + TypeScript) que va a reemplazar el acceso directo del navegador a Supabase. Hoy cubre Auth y Mi perfil, y la web publicada todavía no la usa. Ver la bitácora [`2026-10-14-backend-base-auth-perfil`](bitacora/2026-10-14-backend-base-auth-perfil/DOCUMENTACION.md).
+
+Hoy no existe backend propio. Toda la lógica de negocio que corre en el navegador (generación de fixtures, avance de brackets, cálculo de tablas y ranking) se persiste escribiendo directamente en las tablas; las reglas que deben ser confiables (permisos, PCW, cambio de capitán, tag de usuario) se delegan en **RLS** y **funciones RPC** de Postgres.
 
 ## Organización de `index.html`
 

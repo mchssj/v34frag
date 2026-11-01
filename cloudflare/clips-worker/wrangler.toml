@@ -1,0 +1,14 @@
+name = "cmleague-clips"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+# Cuenta de Cloudflare de Daniel (la de los clips; las demos están en otra cuenta).
+account_id = "f9aab74b3e17be485adeade51fa2f32e"
+
+[[r2_buckets]]
+binding = "CLIPS"
+bucket_name = "cmleague-clips"
+# `wrangler dev --remote` exige un bucket de "preview"; se usa el mismo.
+preview_bucket_name = "cmleague-clips"
+
+# Sin secretos ni crons: solo lee el bucket. La máquina de render sube directo con las claves S3 (render/r2.py).
+# Despliegue: CLOUDFLARE_API_TOKEN=<CF_API_TOKEN_CLIPS del .env> pnpm exec wrangler deploy

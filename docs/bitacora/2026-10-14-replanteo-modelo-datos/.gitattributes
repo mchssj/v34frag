@@ -1,0 +1,2 @@
+# Las pruebas se corren con bash: siempre LF.
+*.sh text eol=lf

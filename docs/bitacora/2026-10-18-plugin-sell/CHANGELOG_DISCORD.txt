@@ -1,0 +1,9 @@
+v34frag 2.2.1 --  Changelog
+
+Vende lo que compraste con !sell
+- ¿Compraste algo por error? Escribe !sell y elige qué vender en el menú. Te devuelve lo que pagaste.
+- !sell all vende todo de una, sin menú. Lo puedes poner en un bind.
+- Solo se vende lo que compraste en esta ronda y sigues teniendo. Lo que traes de la ronda anterior o levantaste del piso no se vende.
+- Se puede vender durante el freezetime y hasta 5 segundos después, en cualquier parte del mapa.
+- Si te dañaron el chaleco o ya lanzaste la granada, eso ya no se vende.
+- Si al comprar se te cayó un arma al piso, al vender no vuelve: búscala donde quedó.

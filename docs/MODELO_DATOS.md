@@ -1,6 +1,6 @@
 # Modelo de datos (Supabase)
 
-> El esquema vive sólo en el proyecto Supabase (`wmzfwsizashpszxlvpeb`), no en este repositorio.
+> Desde el 2026-10-14 el esquema real está volcado en [`supabase/schema/public.sql`](../supabase/schema/public.sql) (sin datos; se actualiza con `supabase/schema/volcar.sh`). Esa es la fuente de verdad: este documento puede estar atrasado. Por ejemplo, todavía no describe las tablas `matchmaking_*`, `demo_workers` ni algunas columnas nuevas de `matches` y `game_servers`. Los cambios que entran con el corte (replanteo) están resumidos al final.
 > Todas las tablas (✔) salen del export de `information_schema`, las políticas de `pg_policies` y las funciones de `pg_proc`.
 
 ## Diagrama
@@ -208,7 +208,7 @@ Cambios para recibir los mixes del servidor. Detalle de instalación en [GUIA_SE
 |---|---|
 | `matches.kind`, `teams.kind` | Nuevo valor `mix`. Cada mix crea dos equipos `mix` temporales; `score1/score2` guardan **rondas**. |
 | `matches` | `external_id` (UNIQUE, `match_uid` del plugin) y `server_id`. |
-| `players` | `steam_id` (SteamID64, UNIQUE) y `stats_auto` (recalcular stats desde los mixes). |
+| `players` | `steam_id` (SteamID64, UNIQUE) y `stats_auto` (recalcular stats desde los mixes). Desde el corte (replanteo `15`), `steam_id` es el **principal**: una ficha puede tener más SteamID (ver "Después del corte"). |
 | `match_player_stats` | `player_id`, `nick`, `rounds`, `k1`–`k5`, `first_kills`, `first_deaths`, `plants`, `defuses`, `teamkills`, `suicides`, `rating`; UNIQUE (`match_id`, `steam_id`); FK a `matches` con borrado en cascada; RLS (lectura pública, escritura admin). |
 | `game_servers` | Servidores autorizados: `name`, `token_hash` (SHA-256), `active`, `last_seen_at`. Solo admin. |
 | `ingest_chunks` | Partes en tránsito del envío; sin acceso directo. |
@@ -234,6 +234,7 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | `elo_recompute_all()` | Admin (o SQL Editor). Reinicia `player_elo` y aplica todos los mixes por `played_at`. Devuelve la cantidad. |
 | `ingest_server_chunk`, `ingest_server_match` | Redefinidas: después de `csstv_ingest` llaman a `elo_apply_match`. |
 | `csstv_ncdf(x)`, `csstv_npdf(x)` | Normal acumulada y densidad. |
+| Migración `20261015210000` | Tabla `elo_adjustments` (`steam_id`, `delta`, `reason`, `applied_at`, `created_by`; lectura pública): ajustes manuales que solo mueven `elo` y `peak_elo`. `elo_add_adjustment(steam_ids[], delta, motivo, fecha)` y `elo_remove_adjustment(id)` (admin). `elo_recompute_all` intercala los ajustes con los mixes por fecha, así que sobreviven al recálculo. |
 | Migración `20261014120000` | `elo_config` suma `min_pct` (35) y `full_pct` (90). `elo_weight(rondas, total, min, completo)` (interna) da el peso de cada jugador. `elo_apply_match` escala el cambio de ELO y la actualización de TrueSkill por ese peso y pondera la fuerza de cada equipo; los de peso 0 no reciben ELO. `elo_set_config` suma `p_min_pct` y `p_full_pct` (vacíos = conservar); se borra la versión de 6 parámetros. |
 | Migración `20261011230000` | Tabla `elo_config` (una fila: `base`, `bonus_max`, `bonus_factor`, `elo_floor`, `start_elo`; lectura pública) y `elo_set_config(...)` (admin, valida y puede recalcular). `elo_apply_match` lee de ahí sus parámetros; el check de `player_elo.elo` pasa a `>= 0`. |
 | Migración `20261011220000` | `csstv_steam64` y `elo_apply_match` aceptan SteamID64 de cuentas nuevas (`765612` + 11 dígitos), además de `7656119` + 10. |
@@ -244,6 +245,65 @@ Detalle de reglas y fórmulas en la [bitácora](bitacora/2026-10-11-elo-jugadore
 | Objeto | Detalle |
 |---|---|
 | `widget_player(p_player uuid, p_desde timestamptz)` | Nueva. `stable`, `security invoker`, ejecutable por `anon`. JSON con `nick`, `team_tag`, `elo`, `peak_elo`, `matches`, `kd`, `rating`, `hoy` (V/D/E, ±ELO, kills y deaths de los mixes terminados desde `p_desde`) y `ultimos` (los últimos 5 mixes). `null` si el jugador no existe. Lo usa `widget.html`. [Bitácora](bitacora/2026-10-29-widget-streamers/DOCUMENTACION.md) |
+## Después del corte: replanteo (`supabase/replanteo/01` a `19`)
+
+> **Todavía no está en producción.** Todo lo de arriba describe el modelo actual, el que usa la web vieja. Estas migraciones se aplican en el corte, junto con el backend y la web nueva. Detalle en la bitácora [`2026-10-14-replanteo-modelo-datos`](bitacora/2026-10-14-replanteo-modelo-datos/DOCUMENTACION.md).
+
+```mermaid
+erDiagram
+  teams ||--o{ team_members : team_id
+  players ||--o{ team_members : player_id
+  teams ||--o{ matches : "team1 / team2 (torneo y PCW)"
+  matches ||--o{ matches : "parent_match_id (mapas de !match)"
+  matches ||--o{ match_player_stats : match_id
+  players ||--o| player_stats : "vista"
+  players ||--o{ player_map_stats : "vista"
+  pcw_config ||--o{ pcw_posts : "formatos permitidos"
+  teams ||--o{ team_invites : team_id
+  players ||--o{ team_invites : player_id
+  teams ||--o{ teams : "parent_team_id (PCW como equipo)"
+  ranking_config ||--o{ team_standings : "puntos"
+  events ||--o{ tournament_registration_players : event_id
+  events ||--o{ event_stage_teams : "grupos y suizo"
+  matches ||--o{ match_vetos : "veto (map_pool)"
+  players ||--o{ player_extra_steam_ids : "SteamID adicionales"
+  players ||--o{ steam_requests : "pedidos de SteamID adicional"
+  claim_codes }o--|| profiles : "códigos de !claim"
+  game_servers ||--o{ matches : server_id
+```
+
+| Qué | Antes | Después |
+|---|---|---|
+| Mixes | Cada mix creaba dos equipos `mix` | Los bandos van en la partida: `side1_name`, `side2_name`, `lineup1`, `lineup2`, `side1_guests`, `side2_guests`. No existen equipos `mix` |
+| Ganador | `winner` (id de equipo) | Además `winner_side` (1, 2 o null = empate) en todas las partidas. El ELO y las victorias lo usan |
+| Plantel | `teams.members` (arreglo) | Tabla `team_members`: `team_id`, `player_id`, `role` (`player`, `sub`, `coach`), `joined_at`, `left_at` (null = activo) |
+| Stats de jugadores | Columnas en `players` cargadas a mano o recalculadas (`stats_auto`, `recompute_player_stats`); tabla `player_map_stats` manual | Vistas `player_stats` y `player_map_stats`, calculadas solo desde `match_player_stats` |
+| Privacidad | `public`, `members` o `private` | `public` o `private` |
+| `!match` | — | `matches.link_code` (torneo y PCW), `parent_match_id` y `parent_side1` (mix vinculado). `csstv_match_lookup`, `csstv_link_game`, `csstv_steam2` |
+| Reglas de plantel | — | 5 jugadores para inscribirse a un torneo (trigger en `tournament_registrations`); 4 con cuenta para publicar o aceptar una PCW (`pcw_make_side`) |
+| Formatos de PCW | BO1, BO3 o BO5 libre | `pcw_config.best_of` (solo admin, con `set_pcw_formats`); `create_pcw_post` rechaza un formato deshabilitado |
+| Nombre del jugador | `profiles.tag` (cuenta) y `players.nick` (lo pone el admin), distintos | Un alias: `profiles.tag`, único sin distinguir mayúsculas; el `nick` de un jugador vinculado lo copia. `set_my_tag` (cada 15 días) y `set_user_tag` (admin) |
+| Palabras bloqueadas | — | `blocked_words` (admin) y `name_blocked`; se aplica a alias, equipos y solicitudes |
+| Entrar a un equipo | El admin editaba el arreglo | `team_invites` (invitación del capitán o pedido del jugador). Tope de 10 activos, SteamID obligatorio, sin choques de torneo ni de partida pendiente (`team_members_rules`, `tournament_registrations_unicos`) |
+| Ranking de equipos | Calculado en el navegador (3 puntos por victoria de torneo) | Vista `team_standings` con puntos de `ranking_config` (30 por partida de torneo, 5 por PCW jugada como el equipo, `teams.parent_team_id`) |
+| Listados | El navegador traía tablas enteras | Vistas `player_overview`, `team_overview`, `player_matches` y `steam_unlinked`, paginadas por la API |
+| Bajas | Por cascada | Un jugador, equipo o torneo con partidas jugadas no se puede borrar |
+| Torneos | `events.format`, `best_of`, `final_bo`, `stage` (texto) y el motor de llaves en el navegador | `events.template` (`single`, `double`, `groups`, `swiss`), `config` (BO por fase y números de la plantilla), `status`, `organizer_id`, `players_min`/`players_max`. **El motor está en la base** (`event_generate`, `event_progress`, `event_set_result`) y avanza solo, también con `!match` |
+| Inscripción | Equipo completo | `tournament_registration_players`: jugadores inscritos (un jugador, un equipo por torneo). `!match` en torneos usa los inscritos |
+| Resultados | Reportes de los capitanes (`result_reports`) y aprobación del admin | Llegan del servidor con `!match`; a mano, el organizador o el admin. `result_reports` se quita |
+| Veto | Lista fija en la web, sin validar | `map_pool` (versiones, Inferno tiene dos) y `veto_act` valida turno, acción y mapa |
+| Código de `!match` | Legible por cualquiera | Columna oculta; `match_link_code` para participantes, organizador y admins |
+| Matchmaking | 4 tablas `matchmaking_*` y 11 funciones | Borrado |
+| **SteamID por ficha** (`15`) | Uno: `players.steam_id`, lo vinculaba un admin | **Varios por ficha:** `players.steam_id` es el principal y los adicionales van en `player_extra_steam_ids`; la vista `player_steam_all` los junta (`is_primary`). El primero se vincula con `!claim` (`claim_codes`, `claim_with_code`); los adicionales se piden con `!claim` desde la otra PC o el otro servidor (`steam_requests`) y los aprueba un admin. Tope por ficha en `claim_config.max_steam_ids` (de 1 a 4, 3 por defecto). Un SteamID es de **una sola ficha** y hay **un solo ELO por ficha** (clave del ELO: el SteamID principal). La ingesta y `!match` reconocen todos los SteamID. Cada intento queda en `claim_log` |
+| Perfil sin reclamar (`15`) | `steam_unlinked` (solo admin) | Vistas públicas por SteamID para quien jugó sin ficha; no crean ficha ni van al ranking |
+| Listados (`11`) | — | Vistas de lectura para la API con paginación, filtros y orden: `match_list` (con `server_id` desde la `19`), `event_list`, `event_registrations`, `event_standings`, etc. |
+| Servidores (`12`) | `game_servers` editado a mano | Nombre único, IP permitida, `admin_create_server` (id y token), licencia y la vista `admin_server_list` |
+| ELO (`13`) | — | `elo_simulate`: vista previa de un cambio de configuración, sin guardar |
+| Demos (`14`) | — | Admin de demos y de los Workers de demos (`admin_demo_list`, `admin_demo_retry`, tokens) |
+| Mixes en vivo (`16`) | — | `live_match_list` y `live_match_players`; `match_list` suma `cancel_reason` y la revisión de los interrumpidos |
+| Torneos (`17`) | — | Plantilla `groups_double` y sorteo (`event_draw`, `events.drawn_at`/`drawn_by`) |
+| Preferencias (`18`) | En el navegador | `user_preferences` (solo el propio usuario) y `set_my_preferences` |
+| Limpieza | `player_claims`, `profiles.player_id`, `player_medals.color`, `matches.demo_url`, `matches.video_url`, formato `swiss` | Borrados |
 
 ## Pendiente de confirmar
 

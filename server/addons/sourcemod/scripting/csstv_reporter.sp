@@ -8,8 +8,14 @@
  * equipos bloqueados, contador de vivos y créditos. csstv/rr.inc agrega !rr.
  * csstv/license.inc valida la licencia del servidor: sin ella no se juegan mixes.
  * csstv/knife.inc (ronda de cuchillo), csstv/gg.inc (rendición), csstv/summary.inc
- * (resumen final), csstv/menu.inc (categoría v34frag del menú de admin) y csstv/maps.inc
- * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas).
+ * (resumen final), csstv/menu.inc (categoría CMLeague del menú de admin) y csstv/maps.inc
+ * (votación de mapa de los jugadores: !rtv, !vote <mapa>, !mapas). csstv/live.inc manda una foto
+ * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
+ * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
+ * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
+ * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
+ * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
+ * csstv/mm.inc toma las salas del matchmaking de la web (csstv_mm lo prende).
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -30,11 +36,13 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.8.0"
+#define PLUGIN_VERSION "2.8.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
-char g_sTag[32] = "v34frag";
-char g_sPrefix[48] = "\x04[v34frag]\x01";
+char g_sTag[32] = "CMLeague";
+char g_sPrefix[48] = "\x04[CMLeague]\x01";
 #define PREFIX g_sPrefix
+// Invitación al Discord: al final del resumen de la partida y en los consejos del chat.
+#define DISCORD_INVITE "dsc.gg/v34frag"
 
 #define TEAM_SPEC 1
 #define TEAM_T 2
@@ -113,10 +121,15 @@ char g_sTeamNick[2][24];
 char g_sTeam[2][40];
 bool g_bSurrender;             // la partida terminó por !gg
 int g_iSurrenderTeam;          // 0 = A, 1 = B
+// !match (csstv/match.inc): lo que viaja en el resultado. Se fija al empezar; desvincular durante la partida lo borra.
+char g_sMatchLinkCode[8];
+int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es el equipo A de este mix
 
 #include "csstv/stats.inc"
 #include "csstv/json.inc"
+#include "csstv/clips.inc"
 #include "csstv/queue.inc"
+#include "csstv/live.inc"
 #include "csstv/http.inc"
 #include "csstv/license_id.inc"
 #include "csstv/license.inc"
@@ -127,6 +140,13 @@ int g_iSurrenderTeam;          // 0 = A, 1 = B
 #include "csstv/summary.inc"
 #include "csstv/menu.inc"
 #include "csstv/maps.inc"
+#include "csstv/match.inc"
+#include "csstv/mm.inc"
+#include "csstv/status.inc"
+#include "csstv/claim.inc"
+#include "csstv/whois.inc"
+#include "csstv/tips.inc"
+#include "csstv/ips.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -174,6 +194,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_score", Cmd_Score, "Muestra el marcador.");
 
 	CreateTimer(1.0, Timer_AbandonCheck, _, TIMER_REPEAT);
+	Ips_Init();
 
 	HookEventEx("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEventEx("round_end", Event_RoundEnd);
@@ -183,9 +204,11 @@ public void OnPluginStart()
 	HookEventEx("bomb_planted", Event_BombPlanted);
 	HookEventEx("bomb_defused", Event_BombDefused);
 	HookEventEx("bomb_exploded", Event_BombExploded);
+	HookEventEx("round_freeze_end", Event_FreezeEnd, EventHookMode_PostNoCopy);
 
 	Stats_Init();
 	Queue_Init();
+	Live_Init();   // después de Queue_Init: un mix cortado por una caída pasa a la cola
 	Qol_Init();
 	Rr_Init();
 	Knife_Init();
@@ -193,12 +216,20 @@ public void OnPluginStart()
 	License_Init();
 	Menu_Init();
 	Maps_Init();
+	Match_Init();
+	Mm_Init();
+	Status_Init();
+	Claim_Init();
+	Whois_Init();
+	Tips_Init();
+	Clips_Init();
 }
 
 public void OnMapStart()
 {
 	ResetMatch();
 	Queue_EnsureDirs();
+	Live_FlushMapChange();   // mix cortado por el fin del mapa anterior: ahora sí es un cambio de mapa
 	Maps_OnMapStart();
 }
 
@@ -208,6 +239,8 @@ public void OnConfigsExecuted()
 	StartReadyTimer();
 	License_Check();
 	Http_ScheduleProcess(5.0);
+	Mm_OnConfigsExecuted();   // antes de Match_OnMapReady: retoma la sala
+	Match_OnMapReady();   // vínculo con la web: un pendiente se descarta, uno activo se actualiza (series)
 }
 
 public void OnMapEnd()
@@ -223,24 +256,38 @@ public void OnMapEnd()
 	Pause_Clear();
 }
 
+public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
+{
+	Ips_OnConnect(client);
+	return true;
+}
+
 public void OnClientPutInServer(int client)
 {
 	g_bReady[client] = false;
 	Gg_ClientReset(client);
 	Stats_ClientReset(client);
 	Board_OnClientPut(client);
+	Claim_ClientReset(client);
+	Whois_ClientReset(client);
+	Clips_ClientReset(client);
 }
 
 public void OnClientPostAdminCheck(int client)
 {
 	Recon_OnJoin(client);
+	Match_OnClientJoin(client);
+	Mm_OnClientJoin(client);
+	Ips_OnJoin(client);
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_bReady[client] = false;
+	Mm_OnClientLeave(client);
 	Recon_Remember(client);
 	Board_SaveClient(client);
+	Clips_OnLeave(client);   // antes de Stats_ClientLeave: puede dejar a un compañero en clutch
 	Stats_ClientLeave(client);
 	Maps_OnClientDisconnect(client);
 }
@@ -321,6 +368,7 @@ public Action Cmd_Swap(int client, int args)
 		return Plugin_Handled;
 	}
 	SwapTeams();
+	Match_OnSwap();
 	g_iSideA = TEAM_CT;
 	ServerCommand("mp_restartgame 1");   // para que todos aparezcan en su lado nuevo
 	PrintToChatAll("%s Un admin intercambió los equipos: los CT pasan a T y los T a CT.", PREFIX);
@@ -413,9 +461,15 @@ public Action Cmd_Status(int client, int args)
 	char mode[96];
 	Http_ModeText(mode, sizeof(mode));
 	ReplyToCommand(client, "[%s] Envío: %s · en cola: %d · rechazados: %d", g_sTag, mode, Queue_Count(false), Queue_Count(true));
+	char live[96];
+	Live_StatusText(live, sizeof(live));
+	ReplyToCommand(client, "[%s] Fotos en vivo: %s", g_sTag, live);
 	char lic[160];
 	License_StatusText(lic, sizeof(lic));
 	ReplyToCommand(client, "[%s] Licencia: %s", g_sTag, lic);
+	char mm[96];
+	Mm_StatusText(mm, sizeof(mm));
+	ReplyToCommand(client, "[%s] Matchmaking: %s", g_sTag, mm);
 	if (g_sLastError[0])
 		ReplyToCommand(client, "[%s] Último error: %s", g_sTag, g_sLastError);
 	return Plugin_Handled;
@@ -477,13 +531,17 @@ public Action Timer_ReadyReminder(Handle timer)
 	PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
 	if (missing)
 		PrintToChatAll("%s Faltan: %s%s", PREFIX, names, missing > 6 ? "…" : "");
+	if (g_LinkState == Link_Active)
+		QolChatAll("%s Partida vinculada: {#amarillo}%s{#normal} (BO%d, serie %d-%d). !status para ver los detalles.", PREFIX, g_sLinkTitle, g_iLinkBestOf, g_iLinkScore[0], g_iLinkScore[1]);
+	else if (g_LinkState == Link_Pending)
+		QolChatAll("%s Vínculo pendiente: {#amarillo}%s{#normal}. Falta que confirme alguien de %s con !match %s.", PREFIX, g_sLinkTitle, g_sLinkTeamName[2 - g_iLinkProposer], g_sLinkCode);
 	return Plugin_Continue;
 }
 
 void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
-	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total)
+	if (License_Allows() && !Maps_ChangePending() && total >= Mm_MinPlayers() && CountReady() == total && Match_ReadyAllows())
 		StartMatch(0, g_cvReadyKnife.BoolValue);
 }
 
@@ -523,6 +581,7 @@ void ResetMatch()
 {
 	g_State = State_Warmup;
 	g_sMatchUid[0] = '\0';
+	Live_Reset();
 	g_iStartedAt = 0;
 	g_iMatchMaxRounds = 0;
 	g_iAbandonSince = 0;
@@ -546,10 +605,12 @@ void ResetMatch()
 	for (int i = 1; i <= MaxClients; i++)
 		g_bReady[i] = false;
 	Stats_Reset();
+	Clips_Clear();
 	Qol_Reset();
 	Rr_Reset();
 	Knife_Reset();
 	Gg_Reset();
+	Match_Reset();
 }
 
 void BackToWarmup()
@@ -558,6 +619,9 @@ void BackToWarmup()
 	RestoreStartMoney();
 	ResetMatch();
 	ExecIfExists("csstv/warmup.cfg");
+	// Partida vinculada (serie BO3/BO5): se actualiza el marcador de la serie cuando la web ya recibió el resultado.
+	if (g_LinkState == Link_Active)
+		CreateTimer(8.0, Timer_LinkRefresh, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /** maxRounds: rondas del reglamentario (0 = csstv_maxrounds). knife: ronda de cuchillo antes del LO3. */
@@ -581,7 +645,10 @@ void StartMatch(int maxRounds = 0, bool knife = false)
 	ServerCommand("mp_maxrounds 0; mp_winlimit 0; mp_timelimit 0");
 	ExecIfExists("csstv/live.cfg");
 
+	Match_OnMatchStart();
+	Mm_OnMatchStart();
 	PickTeamNames();
+	Match_ApplyTeamNames();
 	Recon_RememberAll();
 	if (knife)
 		Knife_Begin();
@@ -663,6 +730,7 @@ void OnRestartsDone()
 		GetCurrentMap(map, sizeof(map));
 		LogMessage("Partida %s en vivo en %s.", g_sMatchUid, map);
 		PrintToChatAll("%s ¡EN VIVO! ¡EN VIVO! ¡EN VIVO! Suerte a todos.", PREFIX);
+		Clips_OnLiveStart();   // en el mismo cuadro: los ticks de los clips cuentan desde la demo
 		Demo_Start();
 	}
 	else
@@ -688,12 +756,14 @@ int OtherSide(int side)
 void OnRoundCompleted(int winnerSide, int reason)
 {
 	bool aWon = winnerSide == g_iSideA;
-	Stats_RoundEnd(g_iSideA);
+	bool halfStart = g_iSegRound == 0 || g_iSegRound == g_iSegLen / 2;   // primera ronda de una mitad
+	Stats_RoundEnd(g_iSideA, winnerSide, halfStart && g_iSegment == 0, !halfStart);
 	Stats_LogRound(aWon ? 1 : 2, g_iSideA, reason);
 
 	if (aWon) { g_iSegA++; g_iTotA++; }
 	else      { g_iSegB++; g_iTotB++; }
 	g_iSegRound++;
+	Clips_RoundEnd(winnerSide, g_iTotA + g_iTotB);   // antes de FinishMatch y de la foto en vivo
 	Stats_SnapshotRound(g_iTotA + g_iTotB);
 	Board_SaveAll();
 
@@ -717,6 +787,8 @@ void OnRoundCompleted(int winnerSide, int reason)
 		PrintToChatAll("%s Medio tiempo. Se cambian los lados.", PREFIX);
 		CreateTimer(g_cvHalftimeDelay.FloatValue, Timer_Halftime, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
+	if (g_State != State_Finished)
+		Live_Snapshot();
 }
 
 public Action Timer_Halftime(Handle timer)
@@ -809,7 +881,7 @@ void FinishMatch()
 {
 	g_State = State_Finished;
 	Pause_Clear();
-	Demo_Stop();
+	Demo_StopLater();
 	Gg_Clear();
 	int endedAt = GetTime();
 	Summary_Print();
@@ -817,6 +889,8 @@ void FinishMatch()
 	Json_BuildPayload(endedAt);
 	if (QueueResult("terminada"))
 		PrintToChatAll("%s Enviando el resultado a CSSTV…", PREFIX);
+	Live_Discard();
+	Mm_OnMatchOver("");
 
 	RestoreStartMoney();
 	ExecIfExists("csstv/end.cfg");
@@ -830,6 +904,7 @@ void FinishMatch()
  */
 void CancelMatch(const char[] reason, const char[] by)
 {
+	Mm_OnMatchOver("La partida se cancelo en el servidor");
 	Pause_Clear();
 	Gg_Clear();
 	Knife_Reset();
@@ -840,16 +915,27 @@ void CancelMatch(const char[] reason, const char[] by)
 		PrintToChatAll("%s Partida cancelada. No se jugó ninguna ronda, así que no se guarda.", PREFIX);
 		if (g_bDemoRecorded)
 			Demo_Discard(g_sMatchUid);
+		Live_Discard();
 		return;
 	}
 	PrintToChatAll("%s Partida cancelada (%s %d - %d %s). Queda guardada como cancelada.", PREFIX, g_sTeam[0], g_iTotA, g_iTotB, g_sTeam[1]);
 	Json_BuildPayload(GetTime(), true, reason, by);
 	if (StrEqual(reason, "map_change"))
+	{
+		// Se encola al arrancar el mapa siguiente (csstv/live.inc): si el servidor se reinicia en el
+		// medio, al volver queda como interrumpido. Sin foto en vivo, se encola ya, como antes.
+		if (Live_DeferMapChange())
+		{
+			Live_Reset();
+			return;
+		}
 		QueueResult("cancelada por cambio de mapa");
+	}
 	else if (StrEqual(reason, "abandoned"))
 		QueueResult("cancelada por abandono");
 	else
 		QueueResult("cancelada por un admin");
+	Live_Discard();
 }
 
 /**
@@ -859,7 +945,7 @@ void CancelMatch(const char[] reason, const char[] by)
  */
 public Action Timer_AbandonCheck(Handle timer)
 {
-	int min = g_cvAbandonPlayers.IntValue;
+	int min = Mm_AbandonMin(g_cvAbandonPlayers.IntValue);
 	if (min <= 0 || !(g_State == State_Starting || g_State == State_Live || g_State == State_Halftime || g_State == State_Knife))
 	{
 		g_iAbandonSince = 0;
@@ -947,6 +1033,7 @@ public Action Timer_AfterFinish(Handle timer)
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	Stats_RoundStart();
+	Clips_RoundStart();
 	Rr_OnRoundStart();
 	Qol_ScheduleScoreSync();
 	if (g_bRestarting)
@@ -1009,9 +1096,10 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	if (victim <= 0)
 		return;
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-	Stats_OnDeath(victim, attacker, event.GetBool("headshot"));
 	char weapon[32];
 	event.GetString("weapon", weapon, sizeof(weapon));
+	Stats_OnDeath(victim, attacker, event.GetBool("headshot"), weapon);
+	Clips_OnDeath(victim, attacker);
 	Qol_OnDeath(victim, attacker, weapon);
 }
 
@@ -1040,7 +1128,16 @@ public void Event_BombExploded(Event event, const char[] name, bool dontBroadcas
 {
 	if (g_State != State_Live || g_bRestarting)
 		return;
-	Qol_OnBombScore(GetClientOfUserId(event.GetInt("userid")));   // quien la plantó
+	int planter = GetClientOfUserId(event.GetInt("userid"));   // quien la plantó
+	if (planter > 0)
+		Stats_Add(planter, ST_BOMBS, 1);
+	Qol_OnBombScore(planter);
+}
+
+public void Event_FreezeEnd(Event event, const char[] name, bool dontBroadcast)
+{
+	if (g_State == State_Live && !g_bRestarting)
+		Stats_FreezeEnd();
 }
 
 // ---------------------------------------------------------------------------

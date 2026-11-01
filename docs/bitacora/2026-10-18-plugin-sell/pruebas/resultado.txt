@@ -1,0 +1,40 @@
+Bots: CT Tom, T Dean
+1. Una sola compra (AK del T) y venta:
+  Dean: $15000 | - | weapon_glock | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 18.9 s
+  Dean: $12500 | weapon_ak47 | weapon_glock | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 17.9 s
+L 10/19/2026 - 08:41:58: [csstv_sell.smx] [respuesta a Dean] [v34frag] Vendiste AK-47: +$2500.
+  Dean: $15000 | - | weapon_glock | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 16.9 s
+2. Varias en el mismo frame (chaleco + casco, HE, 2 flash):
+  Dean: $13300 | - | weapon_glock | chaleco 100 casco 1 | kit 0 | visión 0 | HE 1 flash 2 humo 0 | ventana 15.9 s
+L 10/19/2026 - 08:42:00: [csstv_sell.smx] [respuesta a Dean] [v34frag] Vendiste todo: +$1700.
+  Dean: $15000 | - | weapon_glock | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 14.8 s
+3. Sin compras:
+L 10/19/2026 - 08:42:01: [csstv_sell.smx] [respuesta a Dean] [v34frag] No compraste nada en esta ronda que puedas vender.
+4. Deagle del CT (la USP queda en el piso), kit y visiÃ³n nocturna por separado:
+  Tom: $15000 | - | weapon_usp | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 13.7 s
+  Tom: $12900 | - | weapon_deagle | chaleco 0 casco 0 | kit 1 | visión 1 | HE 0 flash 0 humo 0 | ventana 11.4 s
+L 10/19/2026 - 08:42:05: [csstv_sell.smx] [respuesta a Tom] [v34frag] Vendiste todo: +$2100.
+  Tom: $15000 | - | - | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 10.3 s
+5. Chaleco daÃ±ado (100 -> 80): no se vende; el AK de la misma ronda sÃ­:
+  Dean: $11850 | weapon_ak47 | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 17.1 s
+L 10/19/2026 - 08:42:10: [csstv_sell.smx] [respuesta a Dean] [v34frag] Vendiste AK-47: +$2500.
+  Dean: $14350 | - | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 16.0 s
+6. Granadas: 2 flash compradas y 1 lanzada (en v34 no se tiran al piso): se venden 1 flash y el humo:
+  Dean: $13650 | - | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 2 humo 1 | ventana 14.3 s
+  Dean: $13650 | - | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 1 humo 1 | ventana 14.0 s
+L 10/19/2026 - 08:42:13: [csstv_sell.smx] [respuesta a Dean] [v34frag] Vendiste todo: +$500.
+  Dean: $14150 | - | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 12.9 s
+7. Arma tirada al piso: no se vende:
+  Dean: $11050 | - | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 10.5 s
+L 10/19/2026 - 08:42:17: [csstv_sell.smx] [respuesta a Dean] [v34frag] No compraste nada en esta ronda que puedas vender.
+8. Tope de 16000 (plata en 15900 despuÃ©s de comprar):
+  Dean: $15900 | weapon_awp | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 8.7 s
+L 10/19/2026 - 08:42:19: [csstv_sell.smx] [respuesta a Dean] [v34frag] Vendiste AWP: +$100 (llegaste al tope de $16000).
+  Dean: $16000 | - | weapon_glock | chaleco 80 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana 7.7 s
+9. Afuera de la ventana (comprada al principio, vendida a los 21 s):
+  Dean: $12750 | weapon_famas | weapon_glock | chaleco 0 casco 0 | kit 0 | visión 0 | HE 0 flash 0 humo 0 | ventana -2.7 s
+L 10/19/2026 - 08:42:44: [csstv_sell.smx] [respuesta a Dean] [v34frag] Ya no se puede vender: solo hasta 5 s despuÃ©s del freezetime.
+10. Ronda nueva: lo anterior ya no se vende:
+L 10/19/2026 - 08:42:48: [csstv_sell.smx] [respuesta a Dean] [v34frag] No compraste nada en esta ronda que puedas vender.
+11. Muerto:
+L 10/19/2026 - 08:42:49: [csstv_sell.smx] [respuesta a Dean] [v34frag] Solo los jugadores vivos pueden vender.

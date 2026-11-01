@@ -1,0 +1,119 @@
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { json, makeApp, testEnv } from '../helpers';
+import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
+
+// Rutas de !claim con PostgREST simulado (sin Docker): valores por defecto cuando la base devuelve poco.
+const USER = '77777777-7777-4777-8777-777777777777';
+const S = '76561198000000001';
+let key: TestKey;
+beforeAll(async () => {
+  key = await makeKey();
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
+function postgrest(handler: (url: URL) => Response | undefined) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      const raw = String(input instanceof Request ? input.url : input);
+      if (raw.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
+      const url = new URL(raw);
+      if (url.pathname.endsWith('/profiles')) return Response.json([{ role: 'admin' }]);
+      return handler(url) ?? Response.json([]);
+    }),
+  );
+}
+const call = async (method: string, path: string, body?: unknown) =>
+  makeApp().request(
+    path,
+    {
+      method,
+      headers: { Authorization: `Bearer ${await signToken(key, userClaims(USER))}`, 'Content-Type': 'application/json' },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    },
+    testEnv(),
+  );
+
+describe('!claim: valores por defecto', () => {
+  it('perfil sin reclamar con columnas vacías', async () => {
+    postgrest((url) => (url.pathname.endsWith('/steam_profile_list') ? Response.json([{ steam_id: S }]) : undefined));
+    const body = await json(await call('GET', `/api/v1/players/steam/${S}`));
+    expect(body).toEqual({
+      steam_id: S, claimed: false, player_id: null,
+      profile: { steam_id: S, last_nick: null, nicks: [], matches: 0, first_played: null, last_played: null, elo: null, peak_elo: null, elo_matches: 0, level: null, stats: null },
+      ban: null,
+    });
+  });
+
+  it('estado sin ficha, sin código y sin configuración', async () => {
+    postgrest(() => undefined);
+    expect(await json(await call('GET', '/api/v1/me/claim-code'))).toEqual({ steam_ids: [], max_steam_ids: 3, last_code: null, pending_requests: 0 });
+  });
+
+  it('código vencido', async () => {
+    postgrest((url) =>
+      url.pathname.endsWith('/claim_codes') ? Response.json([{ code: 'ABCDEF', expires_at: '2020-01-01T00:00:00Z', used_at: null, used_steam_id: null, result: null }]) : undefined,
+    );
+    expect((await json(await call('GET', '/api/v1/me/claim-code'))).last_code).toMatchObject({ status: 'expired' });
+  });
+
+  it('estado con un pedido de desvincular pendiente', async () => {
+    postgrest((url) => {
+      if (url.pathname.endsWith('/players')) return Response.json([{ id: USER }]);
+      if (url.pathname.endsWith('/player_steam_all'))
+        return Response.json([{ steam_id: S, is_primary: false, added_at: '2026-10-19T12:00:00+00:00' }, { steam_id: '76561198000000002', is_primary: true }]);
+      if (url.pathname.endsWith('/steam_requests')) return Response.json([{ steam_id: S, kind: 'remove' }, { steam_id: '76561198000000003', kind: 'add' }]);
+      return undefined;
+    });
+    expect(await json(await call('GET', '/api/v1/me/claim-code'))).toMatchObject({
+      steam_ids: [
+        { steam_id: '76561198000000002', is_primary: true, added_at: null, unlink_pending: false },
+        { steam_id: S, is_primary: false, added_at: '2026-10-19T12:00:00+00:00', unlink_pending: true },
+      ],
+      pending_requests: 2,
+    });
+  });
+
+  it('pedido de desvincular: la base no devuelve el pedido o el id', async () => {
+    postgrest((url) => (url.pathname.endsWith('/rpc/request_steam_unlink') ? Response.json(7) : undefined));
+    expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, { reason: 'x' })).status).toBe(500);
+    postgrest((url) => (url.pathname.endsWith('/rpc/request_steam_unlink') ? Response.json(null) : undefined));
+    expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, {})).status).toBe(500);
+    expect((await call('POST', '/api/v1/me/steam/123/unlink')).status).toBe(400);
+    expect((await call('POST', `/api/v1/me/steam/${S}/unlink`, { reason: 'x'.repeat(201) })).status).toBe(400);
+  });
+
+  it('cancelar el pedido de desvincular: pasa el SteamID y responde 204; el error de la base es 400', async () => {
+    let body = '';
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const raw = String(input instanceof Request ? input.url : input);
+      if (raw.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
+      if (raw.includes('/rpc/cancel_steam_unlink')) {
+        body = String(init?.body);
+        return body.includes(S) ? new Response(null, { status: 204 }) : Response.json({ code: 'P0001', message: 'No tenés un pedido pendiente para desvincular ese SteamID' }, { status: 400 });
+      }
+      return Response.json([]);
+    }));
+    expect((await call('DELETE', `/api/v1/me/steam/${S}/unlink`)).status).toBe(204);
+    expect(JSON.parse(body)).toEqual({ p_steam: S });
+    const err = await call('DELETE', '/api/v1/me/steam/76561198000000009/unlink');
+    expect(err.status).toBe(400);
+    expect((await json(err)).error.message).toBe('No tenés un pedido pendiente para desvincular ese SteamID');
+    expect((await call('DELETE', '/api/v1/me/steam/123/unlink')).status).toBe(400);
+  });
+
+  it('la base no devuelve el código: 500', async () => {
+    postgrest(() => undefined);
+    expect((await call('POST', '/api/v1/me/claim-code')).status).toBe(500);
+  });
+
+  it('configuración sin fila y guardado sin respuesta', async () => {
+    postgrest(() => undefined);
+    expect(await json(await call('GET', '/api/v1/admin/steam/config'))).toEqual({ max_steam_ids: 3 });
+    postgrest((url) => (url.pathname.endsWith('/rpc/set_claim_config') ? Response.json(null) : undefined));
+    expect(await json(await call('PUT', '/api/v1/admin/steam/config', { max_steam_ids: 2 }))).toEqual({ max_steam_ids: 2 });
+  });
+});

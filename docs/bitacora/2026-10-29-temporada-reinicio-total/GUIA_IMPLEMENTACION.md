@@ -1,0 +1,86 @@
+# Reinicio total de una temporada: guía de implementación
+
+## Estado
+
+- **Implementado y probado en local el 2026-10-29**, commiteado en `feat/frontend-fase-1` (`e529dce`).
+- **Desplegado contra staging el 2026-10-29:** la `37` en la base de staging y la API y el frontend `e529dceeb4ab` en el VPS (ver "Desplegar en staging").
+- **Falta:** probarlo en el navegador contra staging y, en el corte, aplicar la `37` en producción después de la `36` (`docs/PENDIENTES.md`, puntos 1.5 y 1.29). Producción no se tocó: no tiene los replanteos `01` a `36`, y la `37` abortaría.
+- No toca el plugin: nada que subir al servidor real, a RBK ni a flow.
+
+## Cambios respecto del plan
+
+- En la vista previa, las filas que suben se pintan en verde (`text-win`) y solo las que bajan en rojo. Antes, todo lo que se reiniciaba iba en rojo.
+- Los recuadros "Bajan en promedio" y "Bajan como máximo" de la vista previa no cambiaron. Con `reset_all`, el promedio puede salir negativo (los de abajo suben).
+
+## Pasos
+
+```mermaid
+sequenceDiagram
+  participant SQL as Supabase local
+  participant API as web/backend
+  participant Web as web/frontend
+  SQL->>SQL: 37: aplicar, probar, abortar la 2.ª vez, inversa, comparar y volver a aplicar
+  API->>SQL: pnpm db:types
+  API->>API: esquemas, rutas y pruebas
+  Web->>API: pnpm gen:api (API local)
+  Web->>Web: checkbox, vista previa, cierre, historial y pruebas
+```
+
+1. **Base:** `supabase/replanteo/37_reinicio_total.sql`, su inversa y su prueba. Se probó a mano con el mismo ciclo que `correr.sh`, porque `correr.sh` se corta en la `23` (deuda técnica 7.0):
+   - aplicar la `37` y correr `pruebas/37_reinicio_total.sql`: **23 de 23 OK**;
+   - una segunda aplicación aborta;
+   - la inversa deja la estructura (`pruebas/estructura.sql`) **idéntica** a la de antes;
+   - se vuelve a aplicar.
+   - Con la `37` aplicada pasan también las pruebas de la `30` (28), la `34` (26) y la `35` (28).
+   - La de la `24` falla en "la fecha de fin tiene que ser futura" con y sin la `37`. Es un problema anterior, anotado en `docs/PENDIENTES.md` (7.0).
+2. **API:** `pnpm db:types`. La base local tenía aplicada la migración `20261029120000_vip_dias.sql`, que es de otro requerimiento y está sin commit, así que se dejó afuera su cambio en `vip_status`. Después, `reset_all` en `schemas/seasons.ts` y `routes/seasons.ts`.
+   - `pnpm typecheck` sin errores.
+   - Pruebas unitarias: **392 de 392**, con una nueva para el reinicio total.
+   - Integración de temporadas: **9 de 9**, con el reinicio total en la vista previa y `reset_all: false` en la configuración.
+3. **Frontend:** `pnpm gen:api` con la API local (`pnpm dev:node`).
+   - `pnpm typecheck` y `pnpm lint` sin errores, y Prettier aplicado.
+   - `pnpm test`: **342 de 342**, con pruebas nuevas de `resetElo`, `resetTitle` y `seasonPatch`.
+4. **Captura:** con Playwright, en 1440 px, en claro y en oscuro, con una cuenta admin creada solo para eso en el Auth **local** (`captura37@test.local`), que se borró después. Las capturas están en `pruebas/`. No se apretó "Guardar".
+
+## Desplegar en staging
+
+**Hecho el 2026-10-29**, a pedido de Daniel:
+
+- respaldo del esquema `public` de staging con `pg_dump --schema-only` (en el scratchpad de la sesión, fuera del repo);
+- la `37` aplicada con `psql`: las 2 temporadas y la configuración quedaron con `reset_all = false`;
+- `deploy/vps/desplegar.sh api` y `deploy/vps/desplegar.sh web`: los dos en `e529dceeb4ab`, con pruebas y build;
+- comprobado: `/api/health` con `e529dceeb4ab` y `GET /api/v1/seasons` con `reset_all` en cada temporada. La web da `401` por la contraseña de Caddy del ensayo, como antes.
+- Falta el paso 3 (probarlo en el navegador).
+
+1. Correr `supabase/replanteo/37_reinicio_total.sql` en la base de staging. Aborta si ya se aplicó.
+2. Redesplegar la API del VPS (`deploy/`) y el frontend. La API nueva lee `reset_all`: **sin la `37`, `/api/v1/seasons` da 500**.
+3. En Administración › Temporadas: marcar la opción en "Próxima temporada", guardar, recargar y verificar que siga marcada. En la vista previa del cierre, los de debajo del piso tienen que aparecer con su ELO nuevo.
+
+## Revertir
+
+- Base: `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/37_reinicio_total.sql`. El ELO de un cierre que ya se hizo con `reset_all` queda como está; un `elo_recompute_all` lo rehace sin la opción.
+- La API y el frontend de antes funcionan sin la columna, así que se revierten con el commit anterior.
+
+## Primer uso en staging: el reinicio quedó en la temporada equivocada (2026-10-29)
+
+Daniel puso "0 %, piso 1000 y reiniciar a todos" en **Próxima temporada** y terminó la temporada 2. Cada temporada se cierra con sus propias reglas (las de **Temporada activa**), así que la 2 se cerró con 10 % sobre 2001. Nadie pasaba de 2001 (el máximo era 1245), así que nadie cambió. Los valores quedaron en la temporada 3, para su propio cierre.
+
+**Arreglo en staging**, con un ensayo previo en una transacción con `rollback`. En el ensayo, `elo_recompute_all` sin cambios dejó todo igual (0 diferencias):
+
+```sql
+begin;
+update seasons set reset_pct = 0, reset_floor = 1000, reset_all = true where number = 2;
+update season_standings st set elo_after = season_reset_elo(st.elo, 0, 1000, true)
+  from seasons s where s.id = st.season_id and s.number = 2;
+select elo_recompute_all();   -- no crea avisos (replanteo 28)
+commit;
+```
+
+Resultado: los 20 jugadores en 1000 (también por la API pública) y la foto de la temporada 2 con `elo_after = 1000`. La temporada 3 y la configuración quedaron como las dejó Daniel (0 %, 1000, todos).
+
+**Cambios en el frontend para que no vuelva a pasar:**
+
+- La tarjeta del reinicio dice a qué cierre se aplica. En "Temporada activa": "Se aplica al terminar la temporada N (esta)". En "Próxima temporada": "Se aplica al terminar la temporada N+1, no la actual…".
+- El diálogo de "Terminar temporada" muestra en negrita las reglas exactas del cierre (`resetRule`; por ejemplo, "Reinicio total: todos quedan en 1000 de ELO.") y cuántos cambian, y dice que se cambian en "Temporada activa".
+- `pnpm typecheck` y `pnpm lint` sin errores; las 48 pruebas de `src/features/admin` pasan, con una nueva de `resetRule`.
+- Revisado en el navegador contra la base local, con una cuenta y una temporada temporales que se borraron después.

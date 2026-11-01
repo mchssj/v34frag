@@ -85,9 +85,14 @@ void Http_ProcessQueue()
 	if (g_bSending || !g_cvEnabled.BoolValue || !g_cvSend.BoolValue || !Http_Available() || !Http_Configured() || !License_Allows())
 		return;
 	char uid[64];
+	g_iLiveSendingSeq = 0;
+	// Primero los resultados de la cola; si no hay, la foto más nueva del mix en vivo (csstv/live.inc).
 	if (!Queue_Next(uid, sizeof(uid)))
-		return;
-	if (!Queue_Load(uid))
+	{
+		if (!Live_Pending(uid, sizeof(uid)))
+			return;
+	}
+	else if (!Queue_Load(uid))
 	{
 		Format(g_sLastError, sizeof(g_sLastError), "No se pudo leer %s.json; se mueve a failed/.", uid);
 		LogError("%s", g_sLastError);
@@ -139,6 +144,14 @@ public void Http_OnResponse(bool success, const char[] error, System2HTTPRequest
 			Http_SendPart();
 			return;
 		}
+		if (g_iLiveSendingSeq)
+		{
+			Live_OnSent(true);
+			g_bSending = false;
+			Http_ResetBackoff();
+			Http_ScheduleProcess(1.0);
+			return;
+		}
 		char content[128];
 		response.GetContent(content, sizeof(content));
 		StripQuotes(content);
@@ -161,15 +174,25 @@ public void Http_OnResponse(bool success, const char[] error, System2HTTPRequest
 	g_bSending = false;
 	if (status >= 400 && status < 500 && status != 408 && status != 429)
 	{
-		Format(g_sLastError, sizeof(g_sLastError), "HTTP %d en %s (parte %d/%d): %s. Archivo movido a failed/.", status, g_sSendingUid, g_iSendPart, g_iSendTotal, detail);
-		LogError("%s", g_sLastError);
-		Queue_Move(g_sSendingUid, true);
+		if (g_iLiveSendingSeq)
+		{
+			// Una foto rechazada no se reintenta: la de la ronda siguiente la reemplaza.
+			Format(g_sLastError, sizeof(g_sLastError), "HTTP %d en %s (parte %d/%d): %s", status, g_sSendingUid, g_iSendPart, g_iSendTotal, detail);
+			Live_OnSent(false, g_sLastError);
+		}
+		else
+		{
+			Format(g_sLastError, sizeof(g_sLastError), "HTTP %d en %s (parte %d/%d): %s. Archivo movido a failed/.", status, g_sSendingUid, g_iSendPart, g_iSendTotal, detail);
+			LogError("%s", g_sLastError);
+			Queue_Move(g_sSendingUid, true);
+		}
 		Http_ScheduleProcess(1.0);
 	}
 	else
 	{
 		Format(g_sLastError, sizeof(g_sLastError), "Error transitorio (%d) en %s: %s. Se reintenta.", status, g_sSendingUid, detail);
 		LogError("%s", g_sLastError);
+		g_iLiveSendingSeq = 0;
 		Http_ScheduleRetry();
 	}
 }

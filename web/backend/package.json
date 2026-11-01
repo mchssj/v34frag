@@ -1,0 +1,59 @@
+{
+  "name": "v34frag-api",
+  "private": true,
+  "description": "API REST de la web v34frag (Hono + TypeScript). Corre en Cloudflare Workers y en Node 24 (ver docs/bitacora/2026-10-14-backend-base-auth-perfil).",
+  "type": "module",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=12"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:node": "tsx watch src/node.ts",
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build-check.mjs",
+    "start": "node --enable-source-maps dist/server.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run --project unit",
+    "test:int": "vitest run --project integration",
+    "db:start": "bash scripts/db-local.sh start",
+    "db:stop": "bash scripts/db-local.sh stop",
+    "db:reset": "bash scripts/db-local.sh reset",
+    "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --env preview",
+    "db:types": "supabase gen types typescript --local --schema public > src/db/types.ts",
+    "smoke": "node scripts/smoke.mjs",
+    "season:tick": "tsx scripts/season-tick.mts",
+    "demos:sftp": "tsx scripts/demos-sftp.mts",
+    "notify:tick": "tsx scripts/notify-tick.mts",
+    "anticheat:tick": "tsx scripts/anticheat-tick.mts",
+    "mm:worker": "tsx scripts/mm-worker.mts",
+    "ac:demo": "tsx scripts/anticheat-demo.mts",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:unit": "vitest run --project unit --coverage"
+  },
+  "dependencies": {
+    "@hono/node-ws": "^1.3.1",
+    "@hono/zod-openapi": "1.6.3",
+    "@scalar/hono-api-reference": "0.12.7",
+    "@supabase/supabase-js": "2.117.2",
+    "hono": "4.13.11",
+    "postgres": "^3.4.9",
+    "ssh2": "1.17.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261001.1",
+    "@hono/node-server": "2.1.3",
+    "@types/node": "24.19.0",
+    "@types/ssh2": "1.15.6",
+    "@vitest/coverage-v8": "5.0.2",
+    "esbuild": "0.28.2",
+    "supabase": "2.118.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vitest": "5.0.2",
+    "wrangler": "4.146.0"
+  },
+  "packageManager": "pnpm@12.8.1"
+}
