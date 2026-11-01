@@ -25,7 +25,7 @@ import {
 } from '../schemas/matches';
 import type { MixMvp } from '../schemas/live';
 import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
-import { clutchesOf, demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
+import { clutchesOf, demoUrl, MATCH_LIST, mixReview, sumSeries, toSummary, vetoState, type MatchRow, type StatRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
 
@@ -218,7 +218,7 @@ export const matches = createRouter()
     const [ev, games, stats, vetos, pool, server, caps, liveGame] = await Promise.all([
       m.event_id ? sb.from('events').select('config').eq('id', m.event_id).maybeSingle().then(must) : Promise.resolve(null),
       series
-        ? sb.from('matches').select('id, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
+        ? sb.from('matches').select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
         : Promise.resolve([]),
       series
         ? Promise.resolve([])
@@ -260,25 +260,42 @@ export const matches = createRouter()
         ]);
     const clutchData = !series && !!clutchInfo?.clutch_data;
 
-    // Stats del mix con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
-    const linked = stats.map((s) => s.player_id).filter((x): x is string => !!x);
+    // Torneo o PCW: stats de la serie, sumadas sobre los juegos terminados y en los lados de la serie (E21).
+    const finished = games.filter((g) => g.status === 'finished');
+    const seriesStats = finished.length
+      ? sumSeries(
+          mustHave(
+            await sb
+              .from('match_player_stats')
+              .select('match_id, player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses')
+              .in('match_id', finished.map((g) => g.id)),
+          ),
+          new Map(finished.map((g) => [g.id, g.parent_side1 === 2])),
+        )
+      : [];
+
+    // Stats del mix (o de la serie) con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
+    const linked = [...stats, ...seriesStats].map((s) => s.player_id).filter((x): x is string => !!x);
     const fichas = linked.length ? mustHave(await sb.from('players').select('id, nick, steam_id').in('id', linked)) : [];
     const aliases = new Map(fichas.map((p) => [p.id, p.nick]));
     const primary = new Map(fichas.map((p) => [p.id, p.steam_id]));
     const steamOf = (s: { player_id: string | null; steam_id: string }) => (s.player_id ? primary.get(s.player_id) : s.steam_id);
-    const elos = await eloBySteam(sb, stats.map(steamOf));
-    const players: z.infer<typeof PlayerLine>[] = stats
-      .map((s) => ({
-        player_id: s.player_id, alias: s.player_id ? (aliases.get(s.player_id) ?? null) : null, game_nick: s.nick, side: s.team,
-        // Sin ficha: el SteamID64 enlaza a su perfil sin reclamar (bots y NOSTEAM no tienen).
-        steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
-        kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
-        rating: s.rating, elo_delta: s.elo_delta,
-        ...eloLevel(elos, steamOf(s)),
-        k2: s.k2, k3: s.k3, k4: s.k4, k5: s.k5, first_kills: s.first_kills, first_deaths: s.first_deaths, plants: s.plants, defuses: s.defuses,
-        clutches: clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null,
-      }))
-      .sort((a, b) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0));
+    const elos = await eloBySteam(sb, [...stats, ...seriesStats].map(steamOf));
+    const lineOf = (s: StatRow, clutches: z.infer<typeof PlayerLine>['clutches']): z.infer<typeof PlayerLine> => ({
+      player_id: s.player_id, alias: s.player_id ? (aliases.get(s.player_id) ?? null) : null, game_nick: s.nick, side: s.team,
+      // Sin ficha: el SteamID64 enlaza a su perfil sin reclamar (bots y NOSTEAM no tienen).
+      steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
+      kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
+      rating: s.rating, elo_delta: s.elo_delta,
+      ...eloLevel(elos, steamOf(s)),
+      k2: s.k2, k3: s.k3, k4: s.k4, k5: s.k5, first_kills: s.first_kills, first_deaths: s.first_deaths, plants: s.plants, defuses: s.defuses,
+      clutches,
+    });
+    const bySideAndRating = (a: z.infer<typeof PlayerLine>, b: z.infer<typeof PlayerLine>) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0);
+    const players = stats
+      .map((s) => lineOf(s, clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null))
+      .sort(bySideAndRating);
+    const series_players = seriesStats.map((s) => lineOf(s, null)).sort(bySideAndRating);
     const mvp = players.filter((p) => (p.rounds ?? 0) > 0).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
 
     // Lo que puede hacer quien consulta.
@@ -328,6 +345,7 @@ export const matches = createRouter()
         return { id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at, demo_url: demoUrl(config, g) };
       }),
       players,
+      series_players,
       mvp,
       veto,
       review_detail: mixReview(m),

@@ -159,6 +159,7 @@ export const MatchDetail = MatchSummary.extend({
   maps_detail: z.array(z.object({ map: z.string().nullable(), r1: num, r2: num, game_id: z.uuid().nullable() })).openapi({ description: 'Torneo o PCW: mapas de la serie' }),
   games: z.array(GameRef).openapi({ description: 'Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle)' }),
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
+  series_players: z.array(PlayerLine).openapi({ description: 'Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego' }),
   clutch_data: z.boolean().openapi({ description: 'Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen)' }),
   mvp: PlayerLine.nullable().openapi({ description: 'Mix: el de mejor rating' }),
   veto: VetoState.nullable().openapi({ description: 'Torneo o PCW' }),

@@ -97,16 +97,20 @@ export const RegistrationQuery = listQuery(['seed', 'name'], { sort: 'seed', ord
 export const RegistrationList = Envelope(Registration).openapi('RegistrationList');
 
 export const EventMatch = MatchSummary.extend({
-  stage: z.string().nullable().openapi({ description: '`ko`, `third`, `upper`, `lower`, `grand`, `group` o `swiss`' }),
+  stage: z.string().nullable().openapi({ description: '`ko`, `third`, `upper`, `lower`, `grand`, `group`, `swiss`, `group_upper` o `group_lower` (grupos de doble eliminación)' }),
   phase: z.number().int().nullable(),
   grp: z.number().int().nullable(),
   round: z.number().int().nullable(),
   pos: z.number().int().nullable(),
   bye: z.boolean(),
+  next_win: z.uuid().nullable().openapi({ description: 'Partida a la que pasa el ganador (null si no sigue en la llave)' }),
+  next_win_slot: z.number().int().nullable().openapi({ description: 'Lado (1 o 2) que ocupa el ganador en `next_win`' }),
+  next_lose: z.uuid().nullable().openapi({ description: 'Partida a la que pasa el perdedor (lower o 3.er puesto); null si queda eliminado' }),
+  next_lose_slot: z.number().int().nullable().openapi({ description: 'Lado (1 o 2) que ocupa el perdedor en `next_lose`' }),
 }).openapi('EventMatch');
 
 export const EventMatchQuery = listQuery(['bracket', 'starts_at', 'played_at'], { sort: 'bracket', order: 'asc' }, 200).extend({
-  stage: z.enum(['ko', 'third', 'upper', 'lower', 'grand', 'group', 'swiss']).optional(),
+  stage: z.enum(['ko', 'third', 'upper', 'lower', 'grand', 'group', 'swiss', 'group_upper', 'group_lower']).optional(),
   phase: z.coerce.number().int().optional(),
   grp: z.coerce.number().int().optional(),
   round: z.coerce.number().int().optional(),

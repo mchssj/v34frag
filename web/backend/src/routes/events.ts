@@ -394,8 +394,20 @@ export const events = createRouter()
     if (p.status) q = q.eq('status', p.status);
     if (p.team) q = q.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
     const { rows, total } = await runList<MatchRow, typeof q>(q, p, { bracket: ['phase', 'stage_order', 'grp', 'round', 'pos'] });
+    // A qué partida pasa cada lado (no está en match_list).
+    const links = rows.length
+      ? new Map(
+          mustHave(await c.var.sb.from('matches').select('id, next_win, next_win_slot, next_lose, next_lose_slot').in('id', rows.map((m) => m.id))).map((l) => [l.id, l]),
+        )
+      : new Map();
     const body = envelope(
-      rows.map((m) => ({ ...toSummary(m), stage: m.stage, phase: m.phase, grp: m.grp, round: m.round, pos: m.pos, bye: m.bye })),
+      rows.map((m) => {
+        const l = links.get(m.id);
+        return {
+          ...toSummary(m), stage: m.stage, phase: m.phase, grp: m.grp, round: m.round, pos: m.pos, bye: m.bye,
+          next_win: l?.next_win ?? null, next_win_slot: l?.next_win_slot ?? null, next_lose: l?.next_lose ?? null, next_lose_slot: l?.next_lose_slot ?? null,
+        };
+      }),
       total,
       p,
     );

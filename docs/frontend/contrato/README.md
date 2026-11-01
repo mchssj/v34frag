@@ -42,6 +42,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 
 | Tema | Qué cambió | Dónde |
 |---|---|---|
+| **Llave y serie** (nuevo, 2026-11-01) | `GET /events/{id}/matches` suma `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` (E22); `GET /matches/{id}` de torneo o PCW suma `series_players` con el rating de la serie (E21) | [Torneos](torneos.md), [Partidas](partidas.md) |
 | **Listados (rompe)** | Todo `GET` de lista pagina, filtra y ordena en el servidor y responde `{ items, total, page, per, sort, order }`. `sort` fuera de la lista cerrada da `400` | Sección [1](api.md), "Listados" |
 | **Detalles sin listas (rompe)** | La ficha del jugador, el equipo y el torneo ya no traen sus listas: van en sub-endpoints (`/players/{id}/map-stats`, `/medals`, `/teams`; `/teams/{id}/members`; `/events/{id}/registrations`, `/matches`, `/standings`) | Secciones [5](jugadores.md), [6](equipos.md) y [8b](torneos.md) |
 | **Chat de partida (rompe)** | Pagina por cursor: `before`, `after`, `limit`; responde `{ items, has_more, limit }` | Sección [8](partidas.md) |

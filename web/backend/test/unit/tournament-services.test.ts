@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { vetoSequence, vetoState } from '../../src/services/matches';
+import { sumSeries, vetoSequence, vetoState } from '../../src/services/matches';
 import { lastRounds, stageLabel } from '../../src/services/stages';
 
 describe('stageLabel', () => {
@@ -56,5 +56,27 @@ describe('veto', () => {
     expect(s.next).toBeNull();
     expect(s.maps_to_play).toEqual([{ map: 'd', version: 'd_classic', decider: true }]);
     expect(vetoState(pool, acts, 1, 't1', 't2', {}).maps_to_play[0]!.version).toBe('d');
+  });
+});
+
+describe('sumSeries (E21)', () => {
+  const zeros = { kills: 0, deaths: 0, assists: 0, headshots: 0, damage: 0, rounds: 0, k2: 0, k3: 0, k4: 0, k5: 0, first_kills: 0, first_deaths: 0, plants: 0, defuses: 0 };
+  const row = (match_id: string, player_id: string | null, steam_id: string, team: number, rounds: number, rating: number | null, kills: number) =>
+    ({ ...zeros, match_id, player_id, steam_id, nick: steam_id, team, rounds, rating, kills });
+
+  it('suma los juegos con el lado de la serie y el rating ponderado por rondas', () => {
+    // En el juego g2 los bandos están invertidos: el lado 2 del juego es el lado 1 de la serie.
+    const out = sumSeries(
+      [row('g1', 'p1', 's1', 1, 30, 1.5, 25), row('g2', 'p1', 's1', 2, 20, 0.5, 10), row('g1', null, 's9', 2, 30, 1, 20)],
+      new Map([['g1', false], ['g2', true]]),
+    );
+    const p1 = out.find((x) => x.player_id === 'p1');
+    expect(p1).toMatchObject({ team: 1, kills: 35, rounds: 50, rating: 1.1, elo_delta: null });
+    expect(out.find((x) => x.steam_id === 's9')).toMatchObject({ team: 2, rounds: 30, rating: 1 });
+    expect(out).toHaveLength(2);
+  });
+
+  it('sin rating en ningún juego queda en null', () => {
+    expect(sumSeries([row('g1', 'p1', 's1', 1, 0, null, 0)], new Map())[0]?.rating).toBeNull();
   });
 });

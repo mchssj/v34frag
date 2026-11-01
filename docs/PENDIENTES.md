@@ -500,6 +500,13 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real ni a flow.
 - **Bitácora:** [`2026-10-30-api-pendientes-frontend`](bitacora/2026-10-30-api-pendientes-frontend/)
 
+### 1.32 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** lo que pidió la Llave por formato del frontend: `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en `GET /events/{id}/matches`, y `series_players` (stats de la serie con el rating ponderado por rondas) en `GET /matches/{id}` de torneo y PCW.
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:** redesplegar la API del VPS junto con lo del punto 1.31. No toca la base ni el plugin.
+- **Bitácora:** [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
