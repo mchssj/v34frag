@@ -174,8 +174,31 @@ export function describe(n: Notification, me?: string | null): Described {
       return {
         kind: "team",
         title: `Te sacaron de ${team}`,
-        body: "Ya no eres parte del plantel.",
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}`
+          : "Ya no eres parte del plantel.",
       }
+    case "team_staff_action": {
+      // Acción de un moderador o un admin sobre el equipo; le llega siempre al líder.
+      const who = d.by === "admin" ? "Un admin" : "Un moderador"
+      const what: Record<string, string> = {
+        renamed: `cambió el nombre del equipo a ${str(d.name, team)}`,
+        logo_removed: `quitó el logo de ${team}`,
+        member_removed: `sacó a ${player} de ${team}`,
+        captain_changed: `pasó el liderazgo de ${team} a ${player}`,
+        member_added: `sumó a ${player} a ${team}`,
+        role_changed: `cambió el rol de ${player} en ${team}`,
+        dissolved: `disolvió ${team}`,
+      }
+      return {
+        kind: "team",
+        title: `${who} ${what[str(d.action)] ?? `hizo un cambio en ${team}`}`,
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}`
+          : "Sin motivo indicado.",
+        link: d.action === "dissolved" ? undefined : teamLink(d.team),
+      }
+    }
     case "team_member_left":
       return {
         kind: "roster",
@@ -187,7 +210,9 @@ export function describe(n: Notification, me?: string | null): Described {
       return {
         kind: "team",
         title: `Ahora eres ${ROLE[str(d.role)] ?? "parte del plantel"} en ${team}`,
-        body: "Cambió tu rol en el plantel.",
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}`
+          : "Cambió tu rol en el plantel.",
         link: teamLink(d.team),
       }
     case "team_added":

@@ -65,7 +65,19 @@ sequenceDiagram
 
 Solo los equipos activos, con líder, miembros, jugadores (sin el coach), torneos abiertos o en curso, si el nombre o la sigla tienen una palabra bloqueada, y el último cambio. Filtros de la API: `blocked`, `incomplete` (menos de 5), `no_leader` e `in_event`, más la búsqueda por nombre, sigla o jugadores.
 
-## Dónde está cada cosa (backend)
+## La pantalla
+
+- **Lista:** filtros (Todos, Palabra bloqueada, Incompletos, Sin líder, En un torneo) y búsqueda por nombre, sigla o jugador.
+- **Panel del equipo elegido:**
+  - datos (miembros, jugadores sin coach, torneos activos);
+  - acciones: "Cambiar nombre y sigla" y "Quitar logo" para todo el staff, y "Sumar jugador" y "Disolver" solo para el admin;
+  - plantel: rol editable y "Hacer líder" para el admin, "Quitar" para todo el staff (deshabilitado para el líder);
+  - historial con autor, rol, motivo y fecha.
+- **Cada acción** abre un diálogo con lo propio de la acción, el motivo opcional y el texto exacto del aviso que recibe el líder. Disolver pide escribir el nombre.
+- **Configuración equipo:** solo para el admin; el moderador no ve la pestaña.
+- **Notificación** del líder: "Un moderador cambió el nombre del equipo a X", con "Motivo: …" o "Sin motivo indicado".
+
+## Dónde está cada cosa
 
 | Qué | Archivo |
 |---|---|
@@ -74,3 +86,5 @@ Solo los equipos activos, con líder, miembros, jugadores (sin el coach), torneo
 | Esquemas | `web/backend/src/schemas/admin.ts` (`AdminTeamQuery`, `AdminTeamRow`, `TeamAuditEntry`, `ReasonBody`) |
 | Pruebas | `web/backend/test/integration/moderar-equipos.test.ts` |
 | Contrato | `docs/frontend/contrato/admin.md`, `notificaciones.md` y `README.md` |
+| Pantalla | `web/frontend/src/features/admin/teams/` (ruta `routes/_app/admin.teams.tsx`) |
+| Texto de los avisos | `web/frontend/src/features/shell/notifications/lib/model.ts` |

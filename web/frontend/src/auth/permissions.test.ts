@@ -8,10 +8,11 @@ import {
 } from "./permissions"
 
 describe("permisos de Administración", () => {
-  it("el moderador ve Administración pero solo entra a Baneos y Torneos", () => {
+  it("el moderador ve Administración pero solo entra a Baneos, Torneos y Equipos", () => {
     expect(canSeeAdmin("moderator")).toBe(true)
     expect(canAccessAdminSection("moderator", "bans")).toBe(true)
     expect(canAccessAdminSection("moderator", "events")).toBe(true)
+    expect(canAccessAdminSection("moderator", "teams")).toBe(true)
     expect(canAccessAdminSection("moderator", "users")).toBe(false)
     expect(canAccessAdminSection("moderator", "servers")).toBe(false)
     expect(canAccessAdminSection("admin", "bans")).toBe(true)

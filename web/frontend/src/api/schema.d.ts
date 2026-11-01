@@ -6014,7 +6014,70 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Equipos para moderar
+         * @description Moderadores y admins. Solo los activos (un disuelto es como si no existiera). Con líder, plantel, torneos activos, palabra bloqueada y último cambio.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `name`, `last_change`, `members` */
+                    sort?: "name" | "last_change" | "members";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el nombre, la sigla y los jugadores del plantel */
+                    q?: string;
+                    /** @description `blocked`: nombre o sigla con una palabra bloqueada; `incomplete`: menos de 5 jugadores o suplentes; `no_leader`: sin líder; `in_event`: inscrito en un torneo abierto o en curso */
+                    filter?: "blocked" | "incomplete" | "no_leader" | "in_event";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Equipos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminTeamList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         put?: never;
         /**
          * Crear un equipo oficial
@@ -6080,6 +6143,83 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teams/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historial de un equipo
+         * @description Moderadores y admins: cada cambio de nombre y sigla, logo, líder, plantel, roles y disolución, con quién (y su rol) y el motivo.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `at` */
+                    sort?: "at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Historial */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamAuditList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6160,7 +6300,7 @@ export interface paths {
         head?: never;
         /**
          * Editar un equipo
-         * @description Nombre, sigla o capitán. El capitán puede ser cualquier jugador con cuenta.
+         * @description Nombre y sigla: moderadores y admins, sin la espera de 30 días del equipo (que sigue contando desde su último cambio). Líder (`captain_player_id`, del plantel y con cuenta): solo admin, sin el tope de equipos por líder. `force` (guardar con una palabra bloqueada) es solo de admin. El líder recibe `team_staff_action` con el motivo, si lo hay.
          */
         patch: {
             parameters: {
@@ -6224,6 +6364,262 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/v1/admin/teams/{id}/logo/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar el logo de un equipo
+         * @description Moderadores y admins. El líder recibe el aviso `team_staff_action` con el motivo, si lo hay.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ReasonBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teams/{id}/members/{playerId}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar a un miembro
+         * @description Moderadores y admins. Al líder no (`409`: primero un admin cambia el líder). El jugador recibe `team_removed` y el líder `team_staff_action`, con el motivo si lo hay.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    playerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ReasonBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teams/{id}/dissolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disolver un equipo
+         * @description Solo admin. Deja de existir (no se reactiva). `409` si está inscrito en un torneo abierto o en curso.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ReasonBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/teams/{id}/members": {
         parameters: {
             query?: never;
@@ -6235,7 +6631,7 @@ export interface paths {
         put?: never;
         /**
          * Sumar un jugador al plantel
-         * @description Directo, sin invitación. Las reglas siguen valiendo: tope de 10, SteamID y choques de torneo o de partida pendiente.
+         * @description Solo admin. Directo, sin invitación. Las reglas siguen valiendo: máximo de miembros, SteamID y choques de torneo o de partida pendiente. Avisa al jugador y al líder.
          */
         post: {
             parameters: {
@@ -6316,7 +6712,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Cambiar el rol de un miembro */
+        /**
+         * Cambiar el rol de un miembro
+         * @description Solo admin. Avisa al jugador y al líder.
+         */
         patch: {
             parameters: {
                 query?: never;
@@ -15634,12 +16033,71 @@ export interface components {
              */
             force: boolean;
         };
+        AdminTeamList: {
+            items: components["schemas"]["AdminTeamRow"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminTeamRow: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            tag: string | null;
+            logo_url: string | null;
+            founded_at: string | null;
+            captain: {
+                /** Format: uuid */
+                player_id: string;
+                alias: string;
+            } | null;
+            members: number;
+            /** @description Jugadores y suplentes (sin el coach) */
+            players: number;
+            /** @description Torneos abiertos o en curso en los que está inscrito */
+            events_active: number;
+            /** @description El nombre o la sigla tiene una palabra bloqueada */
+            blocked: boolean;
+            last_change_at: string | null;
+        };
+        TeamAuditList: {
+            items: components["schemas"]["TeamAuditEntry"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        TeamAuditEntry: {
+            id: number;
+            at: string;
+            actor: {
+                /** Format: uuid */
+                user_id: string | null;
+                alias: string | null;
+            };
+            /** @enum {string} */
+            actor_role: "team" | "moderator" | "admin" | "system";
+            /** @description `created`, `renamed`, `logo_changed`, `logo_removed`, `captain_changed`, `member_added`, `member_removed`, `member_left`, `role_changed` o `dissolved` */
+            action: string;
+            /** @description Detalle: nombres de antes y después, jugador, rol… */
+            data: {
+                [key: string]: unknown;
+            };
+            reason: string | null;
+        };
         AdminTeamPatch: {
             name?: string;
             tag?: string;
             /**
              * Format: uuid
-             * @description Nuevo capitán (jugador con cuenta)
+             * @description Nuevo líder, del plantel y con cuenta (solo admin)
              */
             captain_player_id?: string;
             /**
@@ -15647,6 +16105,12 @@ export interface components {
              * @default false
              */
             force: boolean;
+            /** @description Motivo (opcional): lo ve el líder en el aviso y queda en el historial */
+            reason?: string;
+        };
+        ReasonBody: {
+            /** @description Motivo (opcional): lo ve el líder en el aviso y queda en el historial */
+            reason?: string;
         };
         MemberBody: {
             /** Format: uuid */
@@ -15656,10 +16120,14 @@ export interface components {
              * @enum {string}
              */
             role: "player" | "sub" | "coach";
+            /** @description Motivo (opcional): lo ve el líder en el aviso y queda en el historial */
+            reason?: string;
         };
         RoleBody: {
             /** @enum {string} */
             role: "player" | "sub" | "coach";
+            /** @description Motivo (opcional): lo ve el líder en el aviso y queda en el historial */
+            reason?: string;
         };
         TeamConfig: {
             /** @description Máximo de miembros de un equipo oficial */

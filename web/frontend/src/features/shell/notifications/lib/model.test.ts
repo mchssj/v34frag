@@ -32,6 +32,7 @@ const TYPES: [string, Notification["category"]][] = [
   ["team_join_answered", "team"],
   ["team_captain", "team"],
   ["team_removed", "team"],
+  ["team_staff_action", "team"],
   ["team_member_left", "team"],
   ["team_role_changed", "team"],
   ["team_added", "team"],
@@ -201,5 +202,40 @@ group("notificaciones", () => {
     expect(timeAgo(ago(180), now)).toBe("hace 3 horas")
     expect(timeAgo(ago(60 * 24), now)).toBe("ayer")
     expect(timeAgo(ago(60 * 24 * 4), now)).toBe("hace 4 días")
+  })
+})
+
+group("team_staff_action", () => {
+  it("dice quién, qué y el motivo", () => {
+    const d = describe(
+      base({
+        type: "team_staff_action",
+        category: "team",
+        data: {
+          team: { id: "t1", name: "Kraken" },
+          action: "renamed",
+          by: "moderator",
+          name: "Halcones",
+          reason: "Palabra no permitida",
+        },
+      })
+    )
+    expect(d.title).toBe("Un moderador cambió el nombre del equipo a Halcones")
+    expect(d.body).toBe("Motivo: Palabra no permitida")
+    const k = describe(
+      base({
+        type: "team_staff_action",
+        category: "team",
+        data: {
+          team: { id: "t1", name: "Kraken" },
+          action: "member_removed",
+          by: "admin",
+          player: { id: "p", alias: "vex" },
+          reason: null,
+        },
+      })
+    )
+    expect(k.title).toBe("Un admin sacó a vex de Kraken")
+    expect(k.body).toBe("Sin motivo indicado.")
   })
 })
