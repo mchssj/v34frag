@@ -129,7 +129,7 @@ describe('torneo de punta a punta', () => {
     expect((await req('POST', `/api/v1/events/${ev}/reset`, { token: org.token })).body.error.message).toBe('Ya se jugaron partidas: el fixture no se puede reiniciar');
     expect((await req('DELETE', `/api/v1/events/${ev}`, { token: org.token })).status).toBe(400);
     const list = await req('GET', `/api/v1/events?status=finished&organizer=${org.id}&q=${encodeURIComponent(evName.toLowerCase())}`);
-    expect(list.body.items).toEqual([expect.objectContaining({ id: ev, champion: expect.objectContaining({ id: teams[2]!.id }) })]);
+    expect(list.body.items).toEqual([expect.objectContaining({ id: ev, champion: expect.objectContaining({ id: teams[2]!.id }), finished_at: expect.any(String) })]);
     expect((await req('GET', `/api/v1/events?status=registration&q=${encodeURIComponent(evName)}`)).body.total).toBe(0);
     // La partida del jugador campeón aparece filtrando por jugador.
     const byPlayer = await req('GET', `/api/v1/matches?event=${ev}&team=${teams[2]!.id}`);

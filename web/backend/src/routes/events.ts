@@ -45,7 +45,7 @@ type C = Context<AppEnv>;
 const LIST =
   'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, ' +
   'champion_logo_url, teams, game_mode, players_per_team, subs_max, bo, bo_final, progress_played, progress_total, current_match_id, banner_url, ' +
-  'registration_closes_at';
+  'registration_closes_at, finished_at';
 const EXTRA = 'id, rules, min_teams, config, tie_pending, drawn_at, drawn_by, map_pool';
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -55,6 +55,7 @@ type EventRow = {
   champion_name: string | null; champion_tag: string | null; champion_logo_url: string | null; teams: number; game_mode: string;
   players_per_team: number | null; subs_max: number; bo: number | null; bo_final: number | null; progress_played: number | null;
   progress_total: number | null; current_match_id: string | null; banner_url: string | null; registration_closes_at: string | null;
+  finished_at: string | null;
 };
 
 type BoValue = 1 | 3 | 5;
@@ -67,6 +68,7 @@ const summary = (e: EventRow, stage: string | null = null): z.infer<typeof Event
   status: e.status as z.infer<typeof EventSummary>['status'],
   starts_on: e.starts_on,
   ends_on: e.ends_on,
+  finished_at: e.finished_at,
   prize: e.prize,
   teams: e.teams ?? 0,
   max_teams: e.max_teams,

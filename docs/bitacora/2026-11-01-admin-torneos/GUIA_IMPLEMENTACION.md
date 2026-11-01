@@ -21,6 +21,8 @@ Sin desplegar.
 | `web/backend/src/routes/pcw-play.ts` | `GET /servers` también para los moderadores (para asignar el servidor de una partida) |
 | `web/backend/test/integration/admin-torneos.test.ts` | Nuevo: moderador (siembra por ranking, etapas, sin cancelar ni borrar, reiniciar) y mapas de una serie |
 | `docs/frontend/contrato/` | `torneos.md`, `partidas.md` y la novedad en `README.md` |
+| `supabase/replanteo/42_torneo_fin_real.sql` (+ inversa y 3 pruebas) | Ajuste del 2026-11-01: `event_list.finished_at` y el trigger `matches_played_at` |
+| `web/backend/src/routes/events.ts`, `schemas/events.ts` | `EventSummary.finished_at`; `ends_on` descrito como tentativo |
 
 ## Archivos (frontend)
 
@@ -75,6 +77,17 @@ Contra la Supabase local, el 2026-11-01:
 - **Siembra en la lista:** las filas muestran los activos inscritos, no los puntos ni el ELO (la API de inscripciones no los trae); el orden por ranking lo hace la base.
 - **Servidores:** `GET /servers` era solo para organizadores y admins; se sumaron los moderadores, que también asignan el servidor de una partida.
 - **Cancelar:** como la API cancela con un `UPDATE` que permite la política de gestión, el bloqueo al moderador es un trigger (`events_owner_only`), no la política.
+
+## Ajuste: fin tentativo y fin real (2026-11-01)
+
+Daniel pidió que "Termina" sea una fecha tentativa: el torneo puede terminar antes o después.
+
+- **Antes:** `ends_on` ya era opcional y nada dependía de ella (el torneo termina cuando se juega la final), salvo la fecha que se mostraba del campeón ("Campeón · hace X días"), que salía de `ends_on`.
+- **Ahora:**
+  - `event_list.finished_at` (replanteo `42`) es la fecha de la última partida terminada. La API la devuelve en `EventSummary.finished_at` y el frontend la usa para el campeón; si falta, usa `ends_on`.
+  - En el formulario, el campo se llama "Termina (aproximado)".
+  - El único control sigue siendo que no sea anterior a "Empieza", y solo en el formulario: la API no lo valida.
+- **Partidas sin fecha:** un resultado a mano o un W.O. no ponían `played_at`, así que esos torneos no tenían fecha de fin. El trigger `matches_played_at` les pone la del momento en que se carga el resultado (solo torneo y PCW; los mixes la traen del servidor). Las partidas viejas sin fecha siguen sin ella.
 
 ## Cómo revertir
 

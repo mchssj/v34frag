@@ -42,6 +42,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 
 | Tema | Qué cambió | Dónde |
 |---|---|---|
+| **Fin real del torneo** (nuevo, 2026-11-01) | `EventSummary.finished_at`: cuándo terminó de verdad (la última partida). `ends_on` queda como fin tentativo, opcional y sin validar en la API. Para la fecha del campeón, usar `finished_at` | [Torneos](torneos.md) |
 | **Gestión de torneos** (nuevo, 2026-11-01) | Los moderadores gestionan todos los torneos (sin cancelar ni borrar: `viewer.can_own`). `POST /events/{id}/seeds/ranking`; la etapa de entrada del suizo sale de la siembra. `GET /matches/{id}/games/candidates` y `PUT /matches/{id}/maps`: mix vinculado o resultado a mano por mapa | [Torneos](torneos.md), [Partidas](partidas.md) |
 | **Equipo al instante (rompe)** (nuevo, 2026-11-01) | `POST /api/v1/teams` crea el equipo sin aprobación. Se borran `PUT`/`DELETE /me/team-request` y `/admin/team-requests…`. `TeamDetail.eligible_modes` dice para qué modos alcanza el plantel. El ranking de equipos solo muestra los que tienen 5 jugadores o suplentes. `TeamConfig` suma `max_led` | [Equipos](equipos.md), [Admin](admin.md) |
 | **Llave y serie** (nuevo, 2026-11-01) | `GET /events/{id}/matches` suma `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` (E22); `GET /matches/{id}` de torneo o PCW suma `series_players` con el rating de la serie (E21) | [Torneos](torneos.md), [Partidas](partidas.md) |
