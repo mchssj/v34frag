@@ -52,6 +52,10 @@ Handle g_hPauseTimer;
 
 // Demo
 bool g_bRecording;
+Handle g_hDemoStopTimer;       // corte pendiente de la demo al terminar el mix (Demo_StopLater)
+// Segundos que sigue grabando la demo después del final del mix. Sin ellos la demo terminaba en el tick de la
+// última kill y esa jugada no se veía en los clips (el juego dibuja 0,1 s atrás). docs/bitacora/2026-10-29-demo-segundos-finales
+#define DEMO_TAIL_SECONDS 5.0
 
 // Contador de vivos y créditos
 Handle g_hAliveSync;
@@ -134,9 +138,9 @@ public void OnChatTagChanged(ConVar cv, const char[] oldValue, const char[] newV
  */
 native int CM_GetClientModAuth(int client);   // clientmod.inc: 2 = ClientMod, 3 = ClientMod desactualizado
 
-static const char g_sColorTag[][] = { "{#normal}", "{#verde}", "{#rojo}", "{#amarillo}", "{#ct}", "{#t}" };
-static const char g_sColorRgb[][] = { "\x01", "\x073EFF3E", "\x07FF4040", "\x07FFD700", "\x0799CCFF", "\x07EAB93D" };
-static const char g_sColorBasic[][] = { "\x01", "\x04", "\x01", "\x01", "\x01", "\x01" };
+static const char g_sColorTag[][] = { "{#normal}", "{#verde}", "{#rojo}", "{#amarillo}", "{#ct}", "{#t}", "{#gris}" };
+static const char g_sColorRgb[][] = { "\x01", "\x073EFF3E", "\x07FF4040", "\x07FFD700", "\x0799CCFF", "\x07EAB93D", "\x079A9A9A" };
+static const char g_sColorBasic[][] = { "\x01", "\x04", "\x01", "\x01", "\x01", "\x01", "\x01" };
 
 bool ChatUsesRgb(int client)
 {
@@ -428,41 +432,50 @@ void Qol_RoundHeader()
 }
 
 /**
- * Daño de la ronda anterior, con el formato de la consola del juego:
- *   [CMLeague] Damage Given to "Rival" - 54 in 2 hits      (verde)
- *   [CMLeague] Damage Taken from "Rival" - 27 in 1 hit     (rojo)
- * Primero todo el daño dado y después el recibido; solo rivales con daño.
+ * Daño de la ronda anterior, una línea por jugador con daño en algún sentido:
+ *   — Daño de la ronda —                                        (gris)
+ *   Dado 117 en 1 · Recibido 11 en 1 · Dennis muerto
+ * Dado en verde, recibido en rojo, los ceros en gris; "vivo" (amarillo) o
+ * "muerto" (gris) según cómo terminó la ronda.
  */
 void Qol_DamageReport(int client)
 {
+	bool header;
+	char given[32], taken[32];
 	for (int j = 1; j <= MaxClients; j++)
 	{
-		if (j == client || !IsClientInGame(j) || g_iPrevDmg[client][j] <= 0)
+		if (j == client || !IsClientInGame(j) || (g_iPrevDmg[client][j] <= 0 && g_iPrevDmg[j][client] <= 0))
 			continue;
-		int hits = g_iPrevHits[client][j];
-		QolChat(client, "%s {#verde}Damage Given{#normal} to \"%N\" - {#verde}%d{#normal} in %d %s", PREFIX,
-			j, g_iPrevDmg[client][j], hits, hits == 1 ? "hit" : "hits");
+		if (!header)
+		{
+			QolChat(client, "{#gris}— Daño de la ronda —");
+			header = true;
+		}
+		DamageAmount(g_iPrevDmg[client][j], g_iPrevHits[client][j], "{#verde}", given, sizeof(given));
+		DamageAmount(g_iPrevDmg[j][client], g_iPrevHits[j][client], "{#rojo}", taken, sizeof(taken));
+		QolChat(client, "Dado %s · Recibido %s · %N %s", given, taken, j,
+			g_bPrevAlive[j] ? "{#amarillo}vivo" : "{#gris}muerto");
 	}
-	for (int j = 1; j <= MaxClients; j++)
-	{
-		if (j == client || !IsClientInGame(j) || g_iPrevDmg[j][client] <= 0)
-			continue;
-		int hits = g_iPrevHits[j][client];
-		QolChat(client, "%s {#rojo}Damage Taken{#normal} from \"%N\" - {#rojo}%d{#normal} in %d %s", PREFIX,
-			j, g_iPrevDmg[j][client], hits, hits == 1 ? "hit" : "hits");
-	}
+}
+
+/** "{#verde}117{#normal} en 1", o "{#gris}0{#normal}" si no hubo daño. */
+void DamageAmount(int dmg, int hits, const char[] color, char[] out, int len)
+{
+	if (dmg > 0)
+		Format(out, len, "%s%d{#normal} en %d", color, dmg, hits);
+	else
+		strcopy(out, len, "{#gris}0{#normal}");
 }
 
 void Qol_TeamMoney(int team)
 {
-	int clients[MAXPLAYERS], money[MAXPLAYERS], n, total;
+	int clients[MAXPLAYERS], money[MAXPLAYERS], n;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || GetClientTeam(i) != team)
 			continue;
 		clients[n] = i;
 		money[n] = GetEntProp(i, Prop_Send, "m_iAccount");
-		total += money[n];
 		n++;
 	}
 	if (!n)
@@ -481,42 +494,35 @@ void Qol_TeamMoney(int team)
 		money[b + 1] = m;
 	}
 
-	char line[256], part[96], name[MAX_NAME_LENGTH], amount[16];
-	FormatMoney(total, amount, sizeof(amount));
-	Format(line, sizeof(line), "%s Plata del equipo: {#verde}%s", PREFIX, amount);
-	PrintToTeam(team, line);
-	line[0] = '\0';
-	for (int k = 0; k < n; k++)
-	{
-		GetClientName(clients[k], name, sizeof(name));
-		TruncateUtf8(name, 14);
-		FormatMoney(money[k], amount, sizeof(amount));
-		Format(part, sizeof(part), "%s%s {#verde}%s{#normal}", line[0] ? " · " : "", name, amount);
-		// Con las etiquetas contadas: al convertirlas a color el texto queda más corto.
-		if (strlen(line) + strlen(part) > 190)
-		{
-			PrintTeamLine(team, line);
-			Format(part, sizeof(part), "%s {#verde}%s{#normal}", name, amount);
-			line[0] = '\0';
-		}
-		StrCat(line, sizeof(line), part);
-	}
-	if (line[0])
-		PrintTeamLine(team, line);
-}
-
-void PrintTeamLine(int team, const char[] text)
-{
-	char line[256];
-	Format(line, sizeof(line), "%s %s", PREFIX, text);
-	PrintToTeam(team, line);
-}
-
-void PrintToTeam(int team, const char[] text)
-{
+	// Una línea por jugador; la propia dice "Tú". El color dice qué le alcanza.
+	char name[MAX_NAME_LENGTH], amount[32];
 	for (int i = 1; i <= MaxClients; i++)
-		if (QolTarget(i) && GetClientTeam(i) == team)
-			QolChat(i, "%s", text);
+	{
+		if (!QolTarget(i) || GetClientTeam(i) != team)
+			continue;
+		for (int k = 0; k < n; k++)
+		{
+			if (clients[k] == i)
+				strcopy(name, sizeof(name), "Tú");
+			else
+				GetClientName(clients[k], name, sizeof(name));
+			ColoredMoney(money[k], amount, sizeof(amount));
+			QolChat(i, "%s %s", name, amount);
+		}
+	}
+}
+
+/** Verde: compra completa (desde $4.500); amarillo: media compra (desde $2.500); rojo: eco. */
+void ColoredMoney(int value, char[] out, int len)
+{
+	char money[16];
+	FormatMoney(value, money, sizeof(money));
+	if (value >= 4500)
+		Format(out, len, "{#verde}%s", money);
+	else if (value >= 2500)
+		Format(out, len, "{#amarillo}%s", money);
+	else
+		Format(out, len, "{#rojo}%s", money);
 }
 
 /** $21.350 */
@@ -820,6 +826,9 @@ void Pause_Clear()
 
 void Demo_Start()
 {
+	// La demo del mix anterior todavía en sus segundos finales: se corta ya.
+	if (g_hDemoStopTimer != null)
+		Demo_Stop();
 	if (!g_cvDemo.BoolValue || g_bRecording)
 		return;
 	ConVar tv = FindConVar("tv_enable");
@@ -838,11 +847,28 @@ void Demo_Start()
 
 void Demo_Stop()
 {
+	delete g_hDemoStopTimer;
 	if (!g_bRecording)
 		return;
 	ServerCommand("tv_stoprecord");
 	g_bRecording = false;
 	CreateTimer(3.0, Timer_DemoCleanup);
+}
+
+/** Al terminar el mix: corta la demo DEMO_TAIL_SECONDS después. Si antes cambia el mapa, se cancela el mix o
+ *  empieza otro, Demo_Stop (OnMapEnd, CancelMatch, BackToWarmup o Demo_Start) corta en el acto. */
+void Demo_StopLater()
+{
+	if (!g_bRecording || g_hDemoStopTimer != null)
+		return;
+	g_hDemoStopTimer = CreateTimer(DEMO_TAIL_SECONDS, Timer_DemoStop);
+}
+
+public Action Timer_DemoStop(Handle timer)
+{
+	g_hDemoStopTimer = null;
+	Demo_Stop();
+	return Plugin_Stop;
 }
 
 public Action Timer_DemoCleanup(Handle timer)
