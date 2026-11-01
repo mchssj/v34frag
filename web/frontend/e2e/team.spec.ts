@@ -47,11 +47,11 @@ test.describe("sin equipo, contra la API real", () => {
     const filtered = page.waitForRequest((r) =>
       r.url().includes("looking_for=sub")
     )
-    await page.getByRole("button", { name: "Buscan suplente" }).click()
+    await page.getByRole("radio", { name: "Buscan suplente" }).click()
     await filtered
     await expect(
-      page.getByRole("button", { name: "Buscan suplente" })
-    ).toHaveAttribute("aria-pressed", "true")
+      page.getByRole("radio", { name: "Buscan suplente" })
+    ).toHaveAttribute("aria-checked", "true")
 
     await page.getByRole("button", { name: "Volver" }).click()
     await expect(page).toHaveURL(/\/myteam$/)
@@ -61,7 +61,7 @@ test.describe("sin equipo, contra la API real", () => {
     page,
   }) => {
     await page.goto("/myteam?view=create")
-    const send = page.getByRole("button", { name: "Enviar solicitud" })
+    const send = page.getByRole("button", { name: "Crear equipo" })
     await expect(send).toBeDisabled()
     await page.getByLabel("Nombre").fill("Lobos del Sur")
     await page.getByLabel("Sigla").fill("lds")
@@ -95,46 +95,39 @@ test.describe("sin equipo, contra la API real", () => {
       page.getByRole("button", { name: "Cambiar imagen" })
     ).toBeVisible()
 
-    // La solicitud va en multipart con el logo; la cuenta no tiene SteamID y el backend la rechaza.
+    // Se crea al instante (el logo se sube después); la cuenta no tiene SteamID y el backend lo rechaza.
     const request = page.waitForRequest(
-      (r) => r.url().endsWith("/api/v1/me/team-request") && r.method() === "PUT"
+      (r) => r.url().endsWith("/api/v1/teams") && r.method() === "POST"
     )
     await send.click()
     expect((await request).headers()["content-type"]).toContain(
-      "multipart/form-data"
+      "application/json"
     )
     await expect(page.getByText(/SteamID vinculado/)).toBeVisible()
   })
 
-  test("solicitud pendiente: se ve en una tarjeta y se edita", async ({
+  test("solicitud vieja rechazada: se ve con el motivo y se puede crear el equipo", async ({
     page,
   }) => {
     await page.route("**/api/v1/me/team-request", (route) =>
-      route.request().method() === "GET"
-        ? route.fulfill({
-            json: {
-              name: "Lobos del Sur",
-              tag: "LDS",
-              status: "pending",
-              logo_url: null,
-            },
-          })
-        : route.continue()
+      route.fulfill({
+        json: {
+          name: "Lobos del Sur",
+          tag: "LDS",
+          status: "rejected",
+          logo_url: null,
+          created_at: null,
+          reject_reason: "Ya hay un equipo con ese nombre.",
+        },
+      })
     )
     await page.goto("/myteam")
-    await expect(page.getByText("Pendiente de aprobación")).toBeVisible()
-    await expect(page.getByText("Lobos del Sur")).toBeVisible()
-    // Mientras está pendiente, la tarjeta reemplaza a "Crear equipo"; cancelar espera al backend.
+    await expect(page.getByText("Solicitud no aprobada")).toBeVisible()
     await expect(
-      page.getByRole("button", { name: "Crear equipo" })
-    ).toHaveCount(0)
-    await expect(
-      page.getByRole("button", { name: "Cancelar solicitud" })
-    ).toBeDisabled()
-    await page.getByRole("button", { name: "Editar solicitud" }).click()
-    await expect(page).toHaveURL(/view=create&edit=true/)
-    await expect(page.getByLabel("Nombre")).toHaveValue("Lobos del Sur")
-    await expect(page.getByLabel("Sigla")).toHaveValue("LDS")
+      page.getByText("Ya hay un equipo con ese nombre.")
+    ).toBeVisible()
+    await page.getByRole("button", { name: "Crear equipo" }).click()
+    await expect(page).toHaveURL(/view=create/)
   })
 
   test("vista pública de un equipo real: datos, roster y sin herramientas de gestión", async ({
@@ -143,7 +136,7 @@ test.describe("sin equipo, contra la API real", () => {
     const team = (
       await (
         await page.request.get(
-          `${API}/api/v1/teams?per=1&sort=members&order=desc`
+          `${API}/api/v1/teams?per=1&sort=members&order=desc&has_space=true`
         )
       ).json()
     ).items[0] as { id: string; name: string; members: number }
@@ -232,7 +225,7 @@ test.describe("capitán, con la API de equipos simulada", () => {
       page.getByRole("menuitem", { name: /Ceder liderazgo/ })
     ).toHaveAttribute("aria-disabled", "true")
     await page.getByRole("menuitem", { name: "Expulsar del equipo" }).click()
-    const kick = page.getByRole("dialog", { name: "Expulsar a nacho" })
+    const kick = page.getByRole("alertdialog", { name: "Expulsar a nacho" })
     await kick.getByRole("button", { name: "Expulsar" }).click()
     await expect(kick).toBeHidden()
     expect(calls).toContainEqual(
@@ -246,7 +239,7 @@ test.describe("capitán, con la API de equipos simulada", () => {
     await page.getByRole("button", { name: "Opciones de kova" }).click()
     await page.getByRole("menuitem", { name: /Ceder liderazgo/ }).click()
     await page
-      .getByRole("dialog", { name: "Ceder liderazgo a kova" })
+      .getByRole("alertdialog", { name: "Ceder liderazgo a kova" })
       .getByRole("button", { name: "Ceder liderazgo" })
       .click()
     await expect(

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="h" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="256" y2="0">
+      <stop offset="0" stop-color="#7af0ff"/><stop offset=".25" stop-color="#c58bff"/><stop offset=".5" stop-color="#ff8ad0"/><stop offset=".75" stop-color="#ffe9a8"/><stop offset="1" stop-color="#7af0ff"/>
+      <animateTransform attributeName="gradientTransform" type="translate" values="-256 0;256 0" dur="3s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".5"/></linearGradient>
+  </defs>
+  <path fill-rule="evenodd" fill="url(#h)" d="M26 14h204a12 12 0 0 1 12 12v204a12 12 0 0 1-12 12H26a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12ZM40 32a8 8 0 0 0-8 8v176a8 8 0 0 0 8 8h176a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8Z"/>
+  <path fill-rule="evenodd" fill="url(#s)" d="M26 14h204a12 12 0 0 1 12 12v204a12 12 0 0 1-12 12H26a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12ZM40 32a8 8 0 0 0-8 8v176a8 8 0 0 0 8 8h176a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8Z"/>
+  <g fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="1">
+    <path d="M14 60h18M14 100h18M14 140h18M14 180h18M224 60h18M224 100h18M224 140h18M224 180h18M60 14v18M100 14v18M140 14v18M180 14v18M60 224v18M100 224v18M140 224v18M180 224v18"/>
+  </g>
+  <rect x="14" y="14" width="228" height="228" rx="12" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/>
+</svg>

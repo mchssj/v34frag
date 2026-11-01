@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs><mask id="m"><rect width="256" height="256" fill="#fff"/><rect x="34" y="34" width="188" height="188" rx="8" fill="#000"/></mask><pattern id="hx" width="20" height="17.3" patternUnits="userSpaceOnUse"><path d="M5 0h10l5 8.66-5 8.66H5L0 8.66Z" fill="none" stroke="#c8e04a" stroke-opacity=".25" stroke-width="1.2"/></pattern></defs>
+  <rect x="16" y="16" width="224" height="224" rx="14" fill="#1f3a1c" mask="url(#m)"/>
+  <rect x="16" y="16" width="224" height="224" rx="14" fill="url(#hx)" mask="url(#m)"/>
+  <rect x="16" y="16" width="224" height="224" rx="14" fill="none" stroke="#c8e04a" stroke-width="4"/>
+  <rect x="31" y="31" width="194" height="194" rx="9" fill="none" stroke="#c8e04a" stroke-width="2.5"/>
+  <g font-family="Arial, sans-serif" font-weight="700">
+    <g transform="translate(6 6)"><rect width="44" height="44" fill="#2e6b2a" stroke="#d8f0d0" stroke-width="2"/><text x="5" y="12" font-size="9" fill="#d8f0d0">55</text><text x="22" y="36" font-size="22" text-anchor="middle" fill="#fff">Cs</text></g>
+    <g transform="translate(206 206)"><rect width="44" height="44" fill="#2e6b2a" stroke="#d8f0d0" stroke-width="2"/><text x="5" y="12" font-size="9" fill="#d8f0d0">34</text><text x="22" y="36" font-size="22" text-anchor="middle" fill="#fff">Ss</text></g>
+  </g>
+  <g fill="#7fd8ff" stroke="#e0f7ff" stroke-width="1">
+    <path d="M232 40l6 10-6 14-6-14Z"><animate attributeName="opacity" values="1;.3;1" dur="1.6s" repeatCount="indefinite"/></path>
+    <path d="M24 200l5 8-5 12-5-12Z"><animate attributeName="opacity" values=".3;1;.3" dur="1.6s" repeatCount="indefinite"/></path>
+    <path d="M128 4l5 7-5 10-5-10Z"><animate attributeName="opacity" values="1;.4;1" dur="2s" repeatCount="indefinite"/></path>
+  </g>
+  <g fill="none" stroke="#c8e04a" stroke-width="1.5" opacity=".8">
+    <circle cx="24" cy="120" r="3"><animate attributeName="cy" values="170;70" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="3s" repeatCount="indefinite"/></circle>
+    <circle cx="232" cy="140" r="4"><animate attributeName="cy" values="190;80" dur="3.6s" begin="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="3.6s" begin="1s" repeatCount="indefinite"/></circle>
+  </g>
+</svg>

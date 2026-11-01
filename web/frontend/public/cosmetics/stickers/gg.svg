@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <path d="M20 22h88a12 12 0 0 1 12 12v46a12 12 0 0 1-12 12H58l-22 22v-22H20A12 12 0 0 1 8 80V34a12 12 0 0 1 12-12Z" fill="#fff" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M20 22h88a12 12 0 0 1 12 12v46a12 12 0 0 1-12 12H58l-22 22v-22H20A12 12 0 0 1 8 80V34a12 12 0 0 1 12-12Z" fill="#48d597" stroke="#15573a" stroke-width="3" stroke-linejoin="round"/>
+  <text x="64" y="76" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="46" letter-spacing="3" fill="#fff" stroke="#15573a" stroke-width="2" paint-order="stroke">GG</text>
+</svg>

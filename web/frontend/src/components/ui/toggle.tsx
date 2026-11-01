@@ -12,6 +12,11 @@ const toggleVariants = cva(
       variant: {
         default: "bg-transparent",
         outline: "border border-input bg-transparent hover:bg-muted",
+        // Pills de filtro: borde redondo; la activa, sólida.
+        pill: "rounded-full border border-border bg-transparent hover:bg-muted data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:hover:bg-foreground data-[state=on]:hover:text-background",
+        // Control segmentado sobre bg-muted: la activa, en tarjeta con sombra.
+        segment:
+          "rounded-[calc(var(--radius)-4px)] text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-[0_1px_2px_rgb(0_0_0/.08)] data-[state=on]:hover:bg-background",
       },
       size: {
         default:

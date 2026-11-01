@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a5414"/><stop offset=".4" stop-color="#f6cf6a"/><stop offset=".7" stop-color="#c8952a"/><stop offset="1" stop-color="#6a460f"/></linearGradient>
+    <g id="bl"><rect x="-5" y="-12" width="10" height="20" rx="1.5" fill="url(#b)"/><path d="M-5 -12c0-6 5-10 5-10s5 4 5 10Z" fill="#b9bec6"/></g>
+    <pattern id="row" width="16" height="30" patternUnits="userSpaceOnUse"><use href="#bl" x="8" y="18"/></pattern>
+  </defs>
+  <path fill-rule="evenodd" fill="#3a2c18" d="M12 12h232v232H12zM32 32v192h192V32z"/>
+  <g>
+    <rect x="12" y="0" width="232" height="30" fill="url(#row)"/>
+    <rect x="12" y="226" width="232" height="30" fill="url(#row)" transform="rotate(180 128 241)"/>
+    <rect x="12" y="0" width="232" height="30" fill="url(#row)" transform="rotate(90 128 128)"/>
+    <rect x="12" y="0" width="232" height="30" fill="url(#row)" transform="rotate(-90 128 128)"/>
+  </g>
+  <rect x="12" y="12" width="232" height="232" rx="4" fill="none" stroke="#1d150a" stroke-width="3"/>
+  <rect x="32" y="32" width="192" height="192" rx="3" fill="none" stroke="#5c4526" stroke-width="3"/>
+  <g fill="#6b5233" stroke="#1d150a" stroke-width="2"><rect x="4" y="4" width="28" height="28" rx="4"/><rect x="224" y="4" width="28" height="28" rx="4"/><rect x="4" y="224" width="28" height="28" rx="4"/><rect x="224" y="224" width="28" height="28" rx="4"/></g>
+  <g fill="#c8952a"><circle cx="18" cy="18" r="4"/><circle cx="238" cy="18" r="4"/><circle cx="18" cy="238" r="4"/><circle cx="238" cy="238" r="4"/></g>
+</svg>

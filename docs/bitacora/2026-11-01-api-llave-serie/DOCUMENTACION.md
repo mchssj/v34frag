@@ -42,6 +42,12 @@ flowchart LR
 - **Orden:** por lado y, dentro de cada lado, por rating de mayor a menor.
 - **Vacío** en los mixes y en una serie sin juegos terminados.
 
+## En el frontend
+
+- **Origen de un lado sin equipo** (`originOf`): primero `side.name`; después, la partida que apunta a ese lado con `next_win` ("Ganador de…") o `next_lose` ("Perdedor de…"); si no hay enlace, lo deducido por ronda y posición. Ahora también hay origen en el lower y la gran final.
+- **Destino** (`destinationsOf`): el que pierde en el upper muestra "↓ L2" (la ronda del lower) con `next_lose`, aunque todavía no aparezca en el lower.
+- **Detalle resumido:** si hay `series_players`, las alineaciones son los que jugaron, con su rating de la serie (verde desde 1,00) y el título "Alineaciones · rating de la serie". Si no, los inscritos sin rating.
+
 ## Dónde está cada cosa
 
 | Qué | Archivo |
@@ -53,3 +59,5 @@ flowchart LR
 | Detalle de la partida | `web/backend/src/routes/matches.ts` (`detail`) |
 | Pruebas | `test/unit/tournament-services.test.ts` (`sumSeries`) y `test/integration/llave-serie.test.ts` |
 | Contrato del frontend | `docs/frontend/contrato/README.md`, `torneos.md` y `partidas.md` |
+| Origen y destino en la Llave | `web/frontend/src/features/events/lib/bracket.ts` |
+| Rating en el detalle resumido | `web/frontend/src/features/events/components/bracket/MatchPopover.tsx` |

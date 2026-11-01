@@ -18,14 +18,31 @@ import { Route as AppHallOfFameRouteImport } from './routes/_app/hall-of-fame'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
+import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoBioRouteImport } from './routes/demo.bio'
+import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
+import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
+import { Route as DemoConfigsRouteImport } from './routes/demo.configs'
+import { Route as DemoCreditosRouteImport } from './routes/demo.creditos'
+import { Route as DemoEloRouteImport } from './routes/demo.elo'
+import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
+import { Route as DemoFavoritasRouteImport } from './routes/demo.favoritas'
+import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
+import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
+import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
+import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
+import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
+import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
+import { Route as DemoVipRouteImport } from './routes/demo.vip'
+import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminAnticheatRouteImport } from './routes/_app/admin.anticheat'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
-import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
 import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
+import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
 import { Route as AppAdminRankingRouteImport } from './routes/_app/admin.ranking'
 import { Route as AppAdminSeasonsRouteImport } from './routes/_app/admin.seasons'
@@ -50,6 +67,9 @@ import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.pri
 import { Route as AppRankingIndexRouteImport } from './routes/_app/ranking.index'
 import { Route as AppRankingTeamsRouteImport } from './routes/_app/ranking.teams'
 import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
+import { Route as AppAdminEventsIndexRouteImport } from './routes/_app/admin.events.index'
+import { Route as AppAdminEventsIdRouteImport } from './routes/_app/admin.events.$id'
+import { Route as AppAdminEventsNewRouteImport } from './routes/_app/admin.events.new'
 import { Route as AppMixesLiveUidRouteImport } from './routes/_app/mixes.live.$uid'
 
 const IndexRoute = IndexRouteImport.update({
@@ -95,6 +115,11 @@ const AppPcwRoute = AppPcwRouteImport.update({
   path: '/pcw',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPlayRoute = AppPlayRouteImport.update({
+  id: '/play',
+  path: '/play',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -109,6 +134,86 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => AuthRoute,
+} as any)
+const DemoBioRoute = DemoBioRouteImport.update({
+  id: '/demo/bio',
+  path: '/demo/bio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoBuscadorRoute = DemoBuscadorRouteImport.update({
+  id: '/demo/buscador',
+  path: '/demo/buscador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoComparadorRoute = DemoComparadorRouteImport.update({
+  id: '/demo/comparador',
+  path: '/demo/comparador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoConfigsRoute = DemoConfigsRouteImport.update({
+  id: '/demo/configs',
+  path: '/demo/configs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoCreditosRoute = DemoCreditosRouteImport.update({
+  id: '/demo/creditos',
+  path: '/demo/creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoEloRoute = DemoEloRouteImport.update({
+  id: '/demo/elo',
+  path: '/demo/elo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoExportarRoute = DemoExportarRouteImport.update({
+  id: '/demo/exportar',
+  path: '/demo/exportar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoFavoritasRoute = DemoFavoritasRouteImport.update({
+  id: '/demo/favoritas',
+  path: '/demo/favoritas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
+  id: '/demo/matchmaking',
+  path: '/demo/matchmaking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoMedallasRoute = DemoMedallasRouteImport.update({
+  id: '/demo/medallas',
+  path: '/demo/medallas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoMisionesRoute = DemoMisionesRouteImport.update({
+  id: '/demo/misiones',
+  path: '/demo/misiones',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
+  id: '/demo/recalculo',
+  path: '/demo/recalculo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoTiendaRoute = DemoTiendaRouteImport.update({
+  id: '/demo/tienda',
+  path: '/demo/tienda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoTorneoStatsRoute = DemoTorneoStatsRouteImport.update({
+  id: '/demo/torneo-stats',
+  path: '/demo/torneo-stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoVipRoute = DemoVipRouteImport.update({
+  id: '/demo/vip',
+  path: '/demo/vip',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoWidgetRoute = DemoWidgetRouteImport.update({
+  id: '/demo/widget',
+  path: '/demo/widget',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminAnticheatRoute = AppAdminAnticheatRouteImport.update({
   id: '/anticheat',
@@ -125,14 +230,14 @@ const AppAdminClipsRoute = AppAdminClipsRouteImport.update({
   path: '/clips',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => AppAdminRoute,
-} as any)
 const AppAdminMapsRoute = AppAdminMapsRouteImport.update({
   id: '/maps',
   path: '/maps',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminMatchmakingRoute = AppAdminMatchmakingRouteImport.update({
+  id: '/matchmaking',
+  path: '/matchmaking',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminPlayersRoute = AppAdminPlayersRouteImport.update({
@@ -255,6 +360,21 @@ const AppTeamsIdRoute = AppTeamsIdRouteImport.update({
   path: '/teams/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminEventsIndexRoute = AppAdminEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminEventsIdRoute = AppAdminEventsIdRouteImport.update({
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminEventsNewRoute = AppAdminEventsNewRouteImport.update({
+  id: '/events/new',
+  path: '/events/new',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
   id: '/mixes/live/$uid',
   path: '/mixes/live/$uid',
@@ -269,14 +389,31 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
+  '/play': typeof AppPlayRoute
   '/profile': typeof AppProfileRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
+  '/demo/creditos': typeof DemoCreditosRoute
+  '/demo/elo': typeof DemoEloRoute
+  '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
+  '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/misiones': typeof DemoMisionesRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/admin/anticheat': typeof AppAdminAnticheatRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
-  '/admin/events': typeof AppAdminEventsRoute
   '/admin/maps': typeof AppAdminMapsRoute
+  '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
@@ -301,7 +438,10 @@ export interface FileRoutesByFullPath {
   '/players/': typeof AppPlayersIndexRoute
   '/profile/': typeof AppProfileIndexRoute
   '/ranking/': typeof AppRankingIndexRoute
+  '/admin/events/$id': typeof AppAdminEventsIdRoute
+  '/admin/events/new': typeof AppAdminEventsNewRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -311,13 +451,30 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
+  '/play': typeof AppPlayRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
+  '/demo/creditos': typeof DemoCreditosRoute
+  '/demo/elo': typeof DemoEloRoute
+  '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
+  '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/misiones': typeof DemoMisionesRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/admin/anticheat': typeof AppAdminAnticheatRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
-  '/admin/events': typeof AppAdminEventsRoute
   '/admin/maps': typeof AppAdminMapsRoute
+  '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
@@ -342,7 +499,10 @@ export interface FileRoutesByTo {
   '/players': typeof AppPlayersIndexRoute
   '/profile': typeof AppProfileIndexRoute
   '/ranking': typeof AppRankingIndexRoute
+  '/admin/events/$id': typeof AppAdminEventsIdRoute
+  '/admin/events/new': typeof AppAdminEventsNewRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/admin/events': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -355,14 +515,31 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
+  '/_app/play': typeof AppPlayRoute
   '/_app/profile': typeof AppProfileRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
+  '/demo/creditos': typeof DemoCreditosRoute
+  '/demo/elo': typeof DemoEloRoute
+  '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
+  '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/misiones': typeof DemoMisionesRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/tienda': typeof DemoTiendaRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/anticheat': typeof AppAdminAnticheatRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
-  '/_app/admin/events': typeof AppAdminEventsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
+  '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
   '/_app/admin/ranking': typeof AppAdminRankingRoute
   '/_app/admin/seasons': typeof AppAdminSeasonsRoute
@@ -387,7 +564,10 @@ export interface FileRoutesById {
   '/_app/players/': typeof AppPlayersIndexRoute
   '/_app/profile/': typeof AppProfileIndexRoute
   '/_app/ranking/': typeof AppRankingIndexRoute
+  '/_app/admin/events/$id': typeof AppAdminEventsIdRoute
+  '/_app/admin/events/new': typeof AppAdminEventsNewRoute
   '/_app/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/_app/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -399,14 +579,31 @@ export interface FileRouteTypes {
     | '/home'
     | '/myteam'
     | '/pcw'
+    | '/play'
     | '/profile'
     | '/login'
     | '/register'
+    | '/demo/bio'
+    | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/configs'
+    | '/demo/creditos'
+    | '/demo/elo'
+    | '/demo/exportar'
+    | '/demo/favoritas'
+    | '/demo/matchmaking'
+    | '/demo/medallas'
+    | '/demo/misiones'
+    | '/demo/recalculo'
+    | '/demo/tienda'
+    | '/demo/torneo-stats'
+    | '/demo/vip'
+    | '/demo/widget'
     | '/admin/anticheat'
     | '/admin/bans'
     | '/admin/clips'
-    | '/admin/events'
     | '/admin/maps'
+    | '/admin/matchmaking'
     | '/admin/players'
     | '/admin/ranking'
     | '/admin/seasons'
@@ -431,7 +628,10 @@ export interface FileRouteTypes {
     | '/players/'
     | '/profile/'
     | '/ranking/'
+    | '/admin/events/$id'
+    | '/admin/events/new'
     | '/mixes/live/$uid'
+    | '/admin/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -441,13 +641,30 @@ export interface FileRouteTypes {
     | '/home'
     | '/myteam'
     | '/pcw'
+    | '/play'
     | '/login'
     | '/register'
+    | '/demo/bio'
+    | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/configs'
+    | '/demo/creditos'
+    | '/demo/elo'
+    | '/demo/exportar'
+    | '/demo/favoritas'
+    | '/demo/matchmaking'
+    | '/demo/medallas'
+    | '/demo/misiones'
+    | '/demo/recalculo'
+    | '/demo/tienda'
+    | '/demo/torneo-stats'
+    | '/demo/vip'
+    | '/demo/widget'
     | '/admin/anticheat'
     | '/admin/bans'
     | '/admin/clips'
-    | '/admin/events'
     | '/admin/maps'
+    | '/admin/matchmaking'
     | '/admin/players'
     | '/admin/ranking'
     | '/admin/seasons'
@@ -472,7 +689,10 @@ export interface FileRouteTypes {
     | '/players'
     | '/profile'
     | '/ranking'
+    | '/admin/events/$id'
+    | '/admin/events/new'
     | '/mixes/live/$uid'
+    | '/admin/events'
   id:
     | '__root__'
     | '/'
@@ -484,14 +704,31 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/myteam'
     | '/_app/pcw'
+    | '/_app/play'
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/bio'
+    | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/configs'
+    | '/demo/creditos'
+    | '/demo/elo'
+    | '/demo/exportar'
+    | '/demo/favoritas'
+    | '/demo/matchmaking'
+    | '/demo/medallas'
+    | '/demo/misiones'
+    | '/demo/recalculo'
+    | '/demo/tienda'
+    | '/demo/torneo-stats'
+    | '/demo/vip'
+    | '/demo/widget'
     | '/_app/admin/anticheat'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
-    | '/_app/admin/events'
     | '/_app/admin/maps'
+    | '/_app/admin/matchmaking'
     | '/_app/admin/players'
     | '/_app/admin/ranking'
     | '/_app/admin/seasons'
@@ -516,7 +753,10 @@ export interface FileRouteTypes {
     | '/_app/players/'
     | '/_app/profile/'
     | '/_app/ranking/'
+    | '/_app/admin/events/$id'
+    | '/_app/admin/events/new'
     | '/_app/mixes/live/$uid'
+    | '/_app/admin/events/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -524,6 +764,22 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   WelcomeRoute: typeof WelcomeRoute
+  DemoBioRoute: typeof DemoBioRoute
+  DemoBuscadorRoute: typeof DemoBuscadorRoute
+  DemoComparadorRoute: typeof DemoComparadorRoute
+  DemoConfigsRoute: typeof DemoConfigsRoute
+  DemoCreditosRoute: typeof DemoCreditosRoute
+  DemoEloRoute: typeof DemoEloRoute
+  DemoExportarRoute: typeof DemoExportarRoute
+  DemoFavoritasRoute: typeof DemoFavoritasRoute
+  DemoMatchmakingRoute: typeof DemoMatchmakingRoute
+  DemoMedallasRoute: typeof DemoMedallasRoute
+  DemoMisionesRoute: typeof DemoMisionesRoute
+  DemoRecalculoRoute: typeof DemoRecalculoRoute
+  DemoTiendaRoute: typeof DemoTiendaRoute
+  DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
+  DemoVipRoute: typeof DemoVipRoute
+  DemoWidgetRoute: typeof DemoWidgetRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -591,6 +847,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPcwRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/play': {
+      id: '/_app/play'
+      path: '/play'
+      fullPath: '/play'
+      preLoaderRoute: typeof AppPlayRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -611,6 +874,118 @@ declare module '@tanstack/react-router' {
       fullPath: '/register'
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/demo/bio': {
+      id: '/demo/bio'
+      path: '/demo/bio'
+      fullPath: '/demo/bio'
+      preLoaderRoute: typeof DemoBioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/buscador': {
+      id: '/demo/buscador'
+      path: '/demo/buscador'
+      fullPath: '/demo/buscador'
+      preLoaderRoute: typeof DemoBuscadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/comparador': {
+      id: '/demo/comparador'
+      path: '/demo/comparador'
+      fullPath: '/demo/comparador'
+      preLoaderRoute: typeof DemoComparadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/configs': {
+      id: '/demo/configs'
+      path: '/demo/configs'
+      fullPath: '/demo/configs'
+      preLoaderRoute: typeof DemoConfigsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/creditos': {
+      id: '/demo/creditos'
+      path: '/demo/creditos'
+      fullPath: '/demo/creditos'
+      preLoaderRoute: typeof DemoCreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/elo': {
+      id: '/demo/elo'
+      path: '/demo/elo'
+      fullPath: '/demo/elo'
+      preLoaderRoute: typeof DemoEloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/exportar': {
+      id: '/demo/exportar'
+      path: '/demo/exportar'
+      fullPath: '/demo/exportar'
+      preLoaderRoute: typeof DemoExportarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/favoritas': {
+      id: '/demo/favoritas'
+      path: '/demo/favoritas'
+      fullPath: '/demo/favoritas'
+      preLoaderRoute: typeof DemoFavoritasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/matchmaking': {
+      id: '/demo/matchmaking'
+      path: '/demo/matchmaking'
+      fullPath: '/demo/matchmaking'
+      preLoaderRoute: typeof DemoMatchmakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/medallas': {
+      id: '/demo/medallas'
+      path: '/demo/medallas'
+      fullPath: '/demo/medallas'
+      preLoaderRoute: typeof DemoMedallasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/misiones': {
+      id: '/demo/misiones'
+      path: '/demo/misiones'
+      fullPath: '/demo/misiones'
+      preLoaderRoute: typeof DemoMisionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/recalculo': {
+      id: '/demo/recalculo'
+      path: '/demo/recalculo'
+      fullPath: '/demo/recalculo'
+      preLoaderRoute: typeof DemoRecalculoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/tienda': {
+      id: '/demo/tienda'
+      path: '/demo/tienda'
+      fullPath: '/demo/tienda'
+      preLoaderRoute: typeof DemoTiendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/torneo-stats': {
+      id: '/demo/torneo-stats'
+      path: '/demo/torneo-stats'
+      fullPath: '/demo/torneo-stats'
+      preLoaderRoute: typeof DemoTorneoStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/vip': {
+      id: '/demo/vip'
+      path: '/demo/vip'
+      fullPath: '/demo/vip'
+      preLoaderRoute: typeof DemoVipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/widget': {
+      id: '/demo/widget'
+      path: '/demo/widget'
+      fullPath: '/demo/widget'
+      preLoaderRoute: typeof DemoWidgetRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/admin/anticheat': {
       id: '/_app/admin/anticheat'
@@ -633,18 +1008,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminClipsRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/events': {
-      id: '/_app/admin/events'
-      path: '/events'
-      fullPath: '/admin/events'
-      preLoaderRoute: typeof AppAdminEventsRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
     '/_app/admin/maps': {
       id: '/_app/admin/maps'
       path: '/maps'
       fullPath: '/admin/maps'
       preLoaderRoute: typeof AppAdminMapsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/matchmaking': {
+      id: '/_app/admin/matchmaking'
+      path: '/matchmaking'
+      fullPath: '/admin/matchmaking'
+      preLoaderRoute: typeof AppAdminMatchmakingRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/players': {
@@ -815,6 +1190,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeamsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/events/': {
+      id: '/_app/admin/events/'
+      path: '/events'
+      fullPath: '/admin/events/'
+      preLoaderRoute: typeof AppAdminEventsIndexRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/events/$id': {
+      id: '/_app/admin/events/$id'
+      path: '/events/$id'
+      fullPath: '/admin/events/$id'
+      preLoaderRoute: typeof AppAdminEventsIdRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/events/new': {
+      id: '/_app/admin/events/new'
+      path: '/events/new'
+      fullPath: '/admin/events/new'
+      preLoaderRoute: typeof AppAdminEventsNewRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/mixes/live/$uid': {
       id: '/_app/mixes/live/$uid'
       path: '/mixes/live/$uid'
@@ -829,28 +1225,34 @@ interface AppAdminRouteChildren {
   AppAdminAnticheatRoute: typeof AppAdminAnticheatRoute
   AppAdminBansRoute: typeof AppAdminBansRoute
   AppAdminClipsRoute: typeof AppAdminClipsRoute
-  AppAdminEventsRoute: typeof AppAdminEventsRoute
   AppAdminMapsRoute: typeof AppAdminMapsRoute
+  AppAdminMatchmakingRoute: typeof AppAdminMatchmakingRoute
   AppAdminPlayersRoute: typeof AppAdminPlayersRoute
   AppAdminRankingRoute: typeof AppAdminRankingRoute
   AppAdminSeasonsRoute: typeof AppAdminSeasonsRoute
   AppAdminServersRoute: typeof AppAdminServersRoute
   AppAdminTeamsRoute: typeof AppAdminTeamsRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
+  AppAdminEventsIdRoute: typeof AppAdminEventsIdRoute
+  AppAdminEventsNewRoute: typeof AppAdminEventsNewRoute
+  AppAdminEventsIndexRoute: typeof AppAdminEventsIndexRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminAnticheatRoute: AppAdminAnticheatRoute,
   AppAdminBansRoute: AppAdminBansRoute,
   AppAdminClipsRoute: AppAdminClipsRoute,
-  AppAdminEventsRoute: AppAdminEventsRoute,
   AppAdminMapsRoute: AppAdminMapsRoute,
+  AppAdminMatchmakingRoute: AppAdminMatchmakingRoute,
   AppAdminPlayersRoute: AppAdminPlayersRoute,
   AppAdminRankingRoute: AppAdminRankingRoute,
   AppAdminSeasonsRoute: AppAdminSeasonsRoute,
   AppAdminServersRoute: AppAdminServersRoute,
   AppAdminTeamsRoute: AppAdminTeamsRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
+  AppAdminEventsIdRoute: AppAdminEventsIdRoute,
+  AppAdminEventsNewRoute: AppAdminEventsNewRoute,
+  AppAdminEventsIndexRoute: AppAdminEventsIndexRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
@@ -883,6 +1285,7 @@ interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
+  AppPlayRoute: typeof AppPlayRoute
   AppProfileRoute: typeof AppProfileRouteWithChildren
   AppAnticheatVincularRoute: typeof AppAnticheatVincularRoute
   AppEventsIdRoute: typeof AppEventsIdRoute
@@ -906,6 +1309,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHomeRoute: AppHomeRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
+  AppPlayRoute: AppPlayRoute,
   AppProfileRoute: AppProfileRouteWithChildren,
   AppAnticheatVincularRoute: AppAnticheatVincularRoute,
   AppEventsIdRoute: AppEventsIdRoute,
@@ -942,6 +1346,22 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   WelcomeRoute: WelcomeRoute,
+  DemoBioRoute: DemoBioRoute,
+  DemoBuscadorRoute: DemoBuscadorRoute,
+  DemoComparadorRoute: DemoComparadorRoute,
+  DemoConfigsRoute: DemoConfigsRoute,
+  DemoCreditosRoute: DemoCreditosRoute,
+  DemoEloRoute: DemoEloRoute,
+  DemoExportarRoute: DemoExportarRoute,
+  DemoFavoritasRoute: DemoFavoritasRoute,
+  DemoMatchmakingRoute: DemoMatchmakingRoute,
+  DemoMedallasRoute: DemoMedallasRoute,
+  DemoMisionesRoute: DemoMisionesRoute,
+  DemoRecalculoRoute: DemoRecalculoRoute,
+  DemoTiendaRoute: DemoTiendaRoute,
+  DemoTorneoStatsRoute: DemoTorneoStatsRoute,
+  DemoVipRoute: DemoVipRoute,
+  DemoWidgetRoute: DemoWidgetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

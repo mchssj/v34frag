@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="d" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8fdff"/><stop offset=".3" stop-color="#7fe3ff"/><stop offset=".6" stop-color="#3a8cff"/><stop offset="1" stop-color="#b9f3ff"/></linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <clipPath id="c"><path fill-rule="evenodd" clip-rule="evenodd" d="M16 16h224v224H16zM32 32v192h192V32z"/></clipPath>
+    <path id="gem" d="M0 -14L10 -4L0 14L-10 -4Z" fill="url(#d)" stroke="#1d4f9a" stroke-width="1.2"/>
+    <path id="star" d="M0 -7L1.6 -1.6L7 0L1.6 1.6L0 7L-1.6 1.6L-7 0L-1.6 -1.6Z" fill="#fff"/>
+  </defs>
+  <path fill-rule="evenodd" fill="url(#d)" d="M16 16h224v224H16zM32 32v192h192V32z" stroke="#1d4f9a" stroke-width="2"/>
+  <g clip-path="url(#c)" stroke="#ffffff" stroke-opacity=".5" stroke-width="1" fill="none">
+    <path d="M16 16L32 32M240 16L224 32M240 240L224 224M16 240L32 224M60 16l20 16M120 16l-14 16M170 16l18 16M240 70l-16 20M240 150l-16-14M200 240l-14-16M110 240l18-16M16 190l16-18M16 100l16 16"/>
+  </g>
+  <g clip-path="url(#c)">
+    <rect x="-120" y="-60" width="50" height="380" fill="url(#s)" transform="rotate(30 128 128)">
+      <animate attributeName="x" values="-160;380" dur="2.4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <use href="#gem" transform="translate(128 14) scale(1.6)"/>
+  <use href="#gem" transform="translate(16 16)"/><use href="#gem" transform="translate(240 16)"/>
+  <use href="#gem" transform="translate(16 240)"/><use href="#gem" transform="translate(240 240)"/>
+  <use href="#star" x="60" y="22"><animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite"/></use>
+  <use href="#star" x="234" y="170"><animate attributeName="opacity" values="0;1;0" dur="1.8s" begin=".6s" repeatCount="indefinite"/></use>
+  <use href="#star" x="22" y="120"><animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="1.2s" repeatCount="indefinite"/></use>
+  <use href="#star" x="180" y="236"><animate attributeName="opacity" values="0;1;0" dur="1.8s" begin=".9s" repeatCount="indefinite"/></use>
+</svg>

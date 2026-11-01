@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6b5a3a"/><stop offset="1" stop-color="#3e3322"/></linearGradient>
+    <pattern id="h" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="16" fill="#f2c230"/><rect x="8" width="8" height="16" fill="#1b1b1f"/></pattern>
+  </defs>
+  <path fill-rule="evenodd" fill="url(#h)" d="M14 14h228v228H14zM30 30v196h196V30z"/>
+  <rect x="14" y="14" width="228" height="228" rx="4" fill="none" stroke="#111" stroke-width="3"/>
+  <rect x="30" y="30" width="196" height="196" fill="none" stroke="#111" stroke-width="3"/>
+  <g fill="none" stroke-width="4" stroke-linecap="round">
+    <path d="M78 200c-14-14 6-22-6-34" stroke="#d93a3a"/>
+    <path d="M96 200c-6-12 14-16 4-30" stroke="#3a7bd9"/>
+    <path d="M178 200c12-12-8-20 6-32" stroke="#e8d23a"/>
+  </g>
+  <g transform="translate(70 196)">
+    <rect width="116" height="54" rx="6" fill="url(#t)" stroke="#111" stroke-width="3"/>
+    <rect x="8" y="8" width="20" height="38" rx="3" fill="#8b7853"/>
+    <rect x="88" y="8" width="20" height="38" rx="3" fill="#8b7853"/>
+    <rect x="34" y="10" width="48" height="22" rx="3" fill="#0d1a0f" stroke="#111" stroke-width="2"/>
+    <text x="58" y="27" text-anchor="middle" font-family="Consolas, Courier New, monospace" font-size="16" font-weight="700" fill="#4dff7a">0:35<animate attributeName="opacity" values="1;1;.35;1" dur="1s" repeatCount="indefinite"/></text>
+    <circle cx="58" cy="42" r="5" fill="#ff2a2a">
+      <animate attributeName="opacity" values="1;.15;1" dur=".8s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="5;6.5;5" dur=".8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

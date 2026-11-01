@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a0606"/><stop offset="1" stop-color="#0a0101"/></linearGradient><pattern id="e" width="40" height="30" patternUnits="userSpaceOnUse"><path d="M0 0Q20 34 40 0" fill="#8a1010" stroke="#ffb02e" stroke-opacity=".45" stroke-width="2"/><path d="M-20 15Q0 49 20 15M20 15Q40 49 60 15" fill="#6a0a0a" stroke="#ffb02e" stroke-opacity=".45" stroke-width="2"/></pattern><linearGradient id="br" x1="0" y1="0" x2="1" y2="1"><stop offset=".4" stop-color="#ffd56b" stop-opacity="0"/><stop offset=".5" stop-color="#ffd56b" stop-opacity=".45"/><stop offset=".6" stop-color="#ffd56b" stop-opacity="0"/></linearGradient><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+  <rect width="400" height="400" fill="url(#c)"/>
+  <rect width="400" height="400" fill="url(#e)" opacity=".85"/>
+  <rect x="-400" width="400" height="400" fill="url(#br)"><animate attributeName="x" values="-400;400;400" keyTimes="0;.5;1" dur="4s" repeatCount="indefinite"/></rect>
+  <g><ellipse cx="200" cy="200" rx="70" ry="34" fill="#ffb02e" filter="url(#b)" opacity=".5"/><ellipse cx="200" cy="200" rx="58" ry="26" fill="#ffc23a"/><ellipse cx="200" cy="200" rx="7" ry="24" fill="#120202"><animate attributeName="rx" values="7;3;7;7" keyTimes="0;.1;.2;1" dur="4s" repeatCount="indefinite"/></ellipse></g>
+</svg>

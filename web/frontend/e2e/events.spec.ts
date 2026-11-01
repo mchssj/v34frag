@@ -3,8 +3,10 @@ import { expect, test } from "@playwright/test"
 import { USER_STATE } from "./helpers"
 import {
   E_DONE,
+  E_GD,
   E_LIVE,
   E_REG,
+  E_SWISS,
   LIVE_MATCHES,
   mockEvents,
 } from "./event-fixtures"
@@ -22,7 +24,7 @@ test("contra la API real: el listado carga sin errores", async ({ page }) => {
     page.getByRole("heading", { name: "Torneos y copas" })
   ).toBeVisible()
   await expect(
-    page.getByRole("group", { name: "Filtrar por estado" })
+    page.getByRole("radiogroup", { name: "Filtrar por estado" })
   ).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -45,11 +47,11 @@ test("listado: orden por estado, pie de cada tarjeta y filtro en la URL", async 
   ])
   expect(extra).toEqual([])
 
-  await page.getByRole("button", { name: "En curso" }).click()
+  await page.getByRole("radio", { name: "En curso" }).click()
   await expect(page).toHaveURL(/\/events\?status=in_progress$/)
   await expect(cards).toHaveCount(1)
-  await expect(page.getByRole("button", { name: "En curso" })).toHaveAttribute(
-    "aria-pressed",
+  await expect(page.getByRole("radio", { name: "En curso" })).toHaveAttribute(
+    "aria-checked",
     "true"
   )
 
@@ -162,7 +164,7 @@ test("inscripciones, jugador sin liderazgo: le toca al líder", async ({
   ).toBeVisible()
 })
 
-test("llave en curso: en vivo, camino del equipo, zoom y clic hacia la partida", async ({
+test("llave en curso: en vivo, camino del equipo, zoom y el detalle al hacer clic", async ({
   page,
 }) => {
   await mockEvents(page)
@@ -183,11 +185,13 @@ test("llave en curso: en vivo, camino del equipo, zoom y clic hacia la partida",
   await expect(canvas.getByText("Campeón")).toBeVisible()
 
   // Pasar sobre Furia Sur apaga las partidas que no son de su camino.
-  const other = canvas.getByRole("link", { name: "Andes Gaming contra Brava" })
+  const other = canvas.getByRole("button", {
+    name: "Andes Gaming contra Brava",
+  })
   await canvas.getByText("Furia Sur").first().hover()
   await expect(other).toHaveCSS("opacity", "0.45")
   await expect(
-    canvas.getByRole("link", { name: "Furia Sur contra Cóndor Five" })
+    canvas.getByRole("button", { name: "Furia Sur contra Cóndor Five" })
   ).toHaveCSS("opacity", "1")
 
   await page.getByRole("button", { name: "Acercar" }).click()
@@ -195,8 +199,134 @@ test("llave en curso: en vivo, camino del equipo, zoom y clic hacia la partida",
   await page.getByRole("button", { name: "Ajustar" }).click()
   await expect(page.getByText("85%")).toBeVisible()
 
-  await canvas.getByRole("link", { name: "Furia Sur contra Vértigo" }).click()
+  // Sin equipos todavía, la final dice de dónde sale cada lado.
+  await expect(
+    canvas.getByRole("button", {
+      name: "Ganador de Semifinal 1 contra Ganador de Semifinal 2",
+    })
+  ).toBeVisible()
+  // Una sola fase: sin chips.
+  await expect(
+    page.getByRole("radiogroup", { name: "Fases del torneo" })
+  ).toHaveCount(0)
+
+  // El clic abre el detalle resumido; desde ahí se va a la partida.
+  await canvas.getByRole("button", { name: "Furia Sur contra Vértigo" }).click()
+  const detail = page.getByRole("dialog", { name: "Furia Sur contra Vértigo" })
+  await expect(detail).toContainText("Semifinal · BO3 · En vivo · CMLeague #1")
+  await expect(detail).toContainText("de_dust2")
+  await expect(detail).toContainText("kz")
+  // Rating de la serie (E21): los que jugaron, con el nombre en el juego si no tienen ficha.
+  await expect(detail).toContainText("Alineaciones · rating de la serie")
+  await expect(detail).toContainText("1.25")
+  await expect(detail).toContainText("nox_ingame")
+  await page.keyboard.press("Escape")
+  await expect(detail).toBeHidden()
+  await canvas.getByRole("button", { name: "Furia Sur contra Vértigo" }).click()
+  await detail.getByRole("link", { name: "Ver en vivo" }).click()
   await expect(page).toHaveURL(new RegExp(`/match/${live.id}$`))
+})
+
+test("llave de grupos: chip de fase en la URL, fechas, cruces y el detalle desde una celda", async ({
+  page,
+}) => {
+  await mockEvents(page)
+  await page.goto(`/events/${E_DONE}?tab=bracket`)
+  const phases = page.getByRole("radiogroup", { name: "Fases del torneo" })
+  // Todo jugado: abre en la última fase, los playoffs, con el campeón.
+  await expect(
+    phases.getByRole("radio", { name: /^Playoffs/ })
+  ).toHaveAttribute("aria-checked", "true")
+  await expect(
+    page.getByTestId("bracket-canvas").getByText("Campeón")
+  ).toBeVisible()
+
+  await phases.getByRole("radio", { name: /^Fase de grupos/ }).click()
+  await expect(page).toHaveURL(/phase=groups/)
+  const groupA = page.getByRole("region", { name: "Grupo A" })
+  await expect(groupA).toContainText("4 equipos · clasifican 2 · BO1")
+  await expect(groupA.getByText("Fecha 3")).toBeVisible()
+  await expect(
+    groupA.getByRole("button", { name: "Furia Sur contra Cóndor Five" })
+  ).toBeVisible()
+
+  await groupA.getByRole("radio", { name: "Cruces" }).click()
+  await expect(groupA.getByText("Fecha 3")).toHaveCount(0)
+  await groupA
+    .getByRole("button", { name: "Furia Sur contra Cóndor Five: 1:0" })
+    .click()
+  const detail = page.getByRole("dialog", {
+    name: "Furia Sur contra Cóndor Five",
+  })
+  await expect(detail).toContainText("Grupo A · fecha 1 · BO1 · Terminada")
+  await expect(detail.getByRole("link", { name: "Ver partida" })).toBeVisible()
+
+  // La fase elegida sobrevive a la recarga.
+  await page.reload()
+  await expect(
+    phases.getByRole("radio", { name: /^Fase de grupos/ })
+  ).toHaveAttribute("aria-checked", "true")
+})
+
+test("llave del suizo: recuadros por récord, franjas y rondas por armar", async ({
+  page,
+}) => {
+  await mockEvents(page)
+  await page.goto(`/events/${E_SWISS}?tab=bracket`)
+  const phases = page.getByRole("radiogroup", { name: "Fases del torneo" })
+  await expect(
+    phases.getByRole("radio", { name: /^Fase suiza/ })
+  ).toHaveAttribute("aria-checked", "true")
+  const canvas = page.getByTestId("bracket-canvas")
+  for (const record of ["0:0", "1:0", "0:1", "2:0", "1:1", "0:2", "2:2"])
+    await expect(
+      canvas.getByText(record, { exact: true }).first()
+    ).toBeVisible()
+  await expect(
+    canvas.getByRole("group", { name: "Clasificados" })
+  ).toContainText("3:0")
+  await expect(canvas.getByRole("group", { name: "Eliminados" })).toContainText(
+    "0:3"
+  )
+  // Rondas 4 y 5 todavía no existen: 3 + 3 + 3 partidas por armar.
+  await expect(canvas.getByText("Partida por armar")).toHaveCount(9)
+  await expect(canvas.getByText("VIVO")).toBeVisible()
+
+  // Solo escudos: el nombre aparece en el detalle.
+  await canvas.getByRole("button", { name: "Suizo 1 contra Suizo 16" }).click()
+  const detail = page.getByRole("dialog", { name: "Suizo 1 contra Suizo 16" })
+  await expect(detail).toContainText(
+    "Suizo · fase 1 · ronda 1 · BO1 · Terminada"
+  )
+  await expect(detail).toContainText("Suizo 1")
+})
+
+test("llave de grupos de doble eliminación: upper y lower por grupo con sus destinos", async ({
+  page,
+}) => {
+  await mockEvents(page)
+  await page.goto(`/events/${E_GD}?tab=bracket`)
+  const phases = page.getByRole("radiogroup", { name: "Fases del torneo" })
+  await expect(phases.getByRole("radio", { name: /^Grupos/ })).toHaveAttribute(
+    "aria-checked",
+    "true"
+  )
+  const groupA = page.getByRole("region", { name: "Grupo A" })
+  await expect(groupA.getByText("Upper", { exact: true })).toBeVisible()
+  await expect(groupA.getByText("Lower", { exact: true })).toBeVisible()
+  await expect(groupA.getByText("→ PO")).toHaveCount(2)
+  await expect(groupA.getByText("↓ L1")).toHaveCount(2)
+  await expect(groupA.getByText("✕ 4.º")).toBeVisible()
+  await expect(groupA.getByText("✕ 3.º")).toBeVisible()
+
+  // Plegar un grupo.
+  await groupA.getByRole("button", { name: /Grupo A/ }).click()
+  await expect(groupA.getByText("Upper", { exact: true })).toHaveCount(0)
+
+  await phases.getByRole("radio", { name: /^Playoffs/ }).click()
+  await expect(
+    page.getByText("Los playoffs se arman cuando termina la fase de grupos.")
+  ).toBeVisible()
 })
 
 test("posiciones y partidas", async ({ page }) => {

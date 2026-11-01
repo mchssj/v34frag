@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2230"/><stop offset="1" stop-color="#0b0e14"/></linearGradient><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="22"/></filter></defs>
+  <rect width="400" height="400" fill="url(#c)"/>
+  <ellipse cx="0" cy="237" rx="148" ry="67" fill="#c3ccd8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="23s" begin="-6s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="124" rx="121" ry="54" fill="#9aa6b8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="25s" begin="-17s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="377" rx="136" ry="61" fill="#9aa6b8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="18s" begin="-1s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="46" rx="116" ry="52" fill="#7d8899" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="17s" begin="-13s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="48" rx="142" ry="64" fill="#c3ccd8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="23s" begin="-7s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="162" rx="87" ry="39" fill="#c3ccd8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="24s" begin="-3s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="77" rx="144" ry="65" fill="#c3ccd8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="17s" begin="-3s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="264" rx="109" ry="49" fill="#7d8899" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="16s" begin="-12s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="0" cy="247" rx="144" ry="65" fill="#9aa6b8" opacity=".35" filter="url(#b)"><animate attributeName="cx" values="-160;560" dur="20s" begin="-12s" repeatCount="indefinite"/></ellipse>
+</svg>

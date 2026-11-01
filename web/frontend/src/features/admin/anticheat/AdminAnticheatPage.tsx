@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 
@@ -23,24 +24,26 @@ import {
   verifySession,
   type AcSession,
 } from "@/features/anticheat/queries"
-import { fmtDate } from "../format"
+import { fmtDate } from "@/features/admin/lib/format"
+import { FilterChips } from "@/components/brand/FilterChips"
+import { HEAD_CELL as headCell } from "@/components/data-table/DataTable"
 import {
   AdminHeader,
-  Card,
   Dot,
   EmptyState,
-  FilterChips,
   PanelSection,
   PickHint,
   QueryError,
   SplitLayout,
   TableBox,
-  headCell,
-} from "../ui"
+} from "@/features/admin/components/ui"
 
 // Hechos observados y su nivel de verificación. Nunca "limpio", "cheater" ni "culpable": concluye una persona.
 
-const STATUS: Record<AcSession["status"], { label: string; tone: "win" | "muted" | "warn" }> = {
+const STATUS: Record<
+  AcSession["status"],
+  { label: string; tone: "win" | "muted" | "warn" }
+> = {
   open: { label: "Agente conectado", tone: "win" },
   closed: { label: "Sesión cerrada", tone: "muted" },
   lost: { label: "Agente desconectado", tone: "warn" },
@@ -61,7 +64,9 @@ const INTEGRITY = {
 
 function Integrity({ session }: { session: AcSession }) {
   const verify = useMutation({ mutationFn: () => verifySession(session.id) })
-  const hold = useMutation({ mutationFn: (held: boolean) => holdSession(session.id, held) })
+  const hold = useMutation({
+    mutationFn: (held: boolean) => holdSession(session.id, held),
+  })
   const result = verify.data
   return (
     <PanelSection title="Integridad">
@@ -70,13 +75,27 @@ function Integrity({ session }: { session: AcSession }) {
         verificable: la aplicación corre en el equipo del jugador.
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" disabled={verify.isPending} onClick={() => verify.mutate()}>
+        <Button
+          size="sm"
+          disabled={verify.isPending}
+          onClick={() => verify.mutate()}
+        >
           Verificar
         </Button>
-        <Button variant="outline" size="sm" disabled={hold.isPending} onClick={() => hold.mutate(true)}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={hold.isPending}
+          onClick={() => hold.mutate(true)}
+        >
           Conservar por caso abierto
         </Button>
-        <Button variant="ghost" size="sm" disabled={hold.isPending} onClick={() => hold.mutate(false)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={hold.isPending}
+          onClick={() => hold.mutate(false)}
+        >
           Quitar
         </Button>
       </div>
@@ -105,10 +124,20 @@ function Integrity({ session }: { session: AcSession }) {
       )}
       {(verify.isError || hold.isError) && (
         <Alert variant="destructive">
-          <AlertDescription>{errorMessage(verify.error ?? hold.error)}</AlertDescription>
+          <AlertDescription>
+            {errorMessage(verify.error ?? hold.error)}
+          </AlertDescription>
         </Alert>
       )}
     </PanelSection>
+  )
+}
+
+function Card({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+      {children}
+    </div>
   )
 }
 
@@ -138,7 +167,10 @@ export function AdminAnticheatPage() {
       <SplitLayout
         main={
           sessions.isError ? (
-            <QueryError error={sessions.error} onRetry={() => void sessions.refetch()} />
+            <QueryError
+              error={sessions.error}
+              onRetry={() => void sessions.refetch()}
+            />
           ) : sessions.isPending ? (
             <Skeleton className="h-64 w-full" />
           ) : sessions.data.items.length === 0 ? (
@@ -209,7 +241,12 @@ function Evidence({ session }: { session: AcSession }) {
   })
 
   if (evidence.isError)
-    return <QueryError error={evidence.error} onRetry={() => void evidence.refetch()} />
+    return (
+      <QueryError
+        error={evidence.error}
+        onRetry={() => void evidence.refetch()}
+      />
+    )
   if (evidence.isPending) return <Skeleton className="h-64 w-full" />
   const { screenshots, processes, requests } = evidence.data
   // Lo inesperado primero, sin juzgar: un dato que falta no es un indicio.
@@ -247,9 +284,7 @@ function Evidence({ session }: { session: AcSession }) {
           </div>
           {capture.isError && (
             <Alert variant="destructive">
-              <AlertDescription>
-                {errorMessage(capture.error)}
-              </AlertDescription>
+              <AlertDescription>{errorMessage(capture.error)}</AlertDescription>
             </Alert>
           )}
         </PanelSection>
@@ -287,7 +322,8 @@ function Evidence({ session }: { session: AcSession }) {
                   <Skeleton className="aspect-video w-full" />
                 )}
                 <figcaption className="text-xs text-muted-foreground">
-                  {fmtDate(s.taken_at)} · {s.kind === "manual" ? "Pedida" : "Automática"}
+                  {fmtDate(s.taken_at)} ·{" "}
+                  {s.kind === "manual" ? "Pedida" : "Automática"}
                   <br />
                   <span className="font-mono" title={s.sha256}>
                     SHA-256 {s.sha256.slice(0, 12)}…
@@ -311,10 +347,14 @@ function Evidence({ session }: { session: AcSession }) {
         </PanelSection>
       )}
 
-      <PanelSection title={`Programas abiertos o cerrados durante la sesión (${started.length})`}>
+      <PanelSection
+        title={`Programas abiertos o cerrados durante la sesión (${started.length})`}
+      >
         <ProcessList items={started} />
       </PanelSection>
-      <PanelSection title={`Inventario inicial (${processes.length - started.length})`}>
+      <PanelSection
+        title={`Inventario inicial (${processes.length - started.length})`}
+      >
         <ProcessList items={processes.filter((p) => p.kind === "inventory")} />
       </PanelSection>
     </Card>
@@ -343,9 +383,14 @@ function ProcessList({
         <li key={i} className="rounded border p-2">
           <span className="font-medium">{p.name}</span>{" "}
           <span className="text-muted-foreground">
-            {p.kind === "end" ? "cerrado" : p.kind === "start" ? "abierto" : ""} PID {p.pid}
+            {p.kind === "end" ? "cerrado" : p.kind === "start" ? "abierto" : ""}{" "}
+            PID {p.pid}
           </span>
-          {p.path && <div className="truncate text-muted-foreground" title={p.path}>{p.path}</div>}
+          {p.path && (
+            <div className="truncate text-muted-foreground" title={p.path}>
+              {p.path}
+            </div>
+          )}
           <div className="text-muted-foreground">
             {SIGNATURE[p.signature ?? "unknown"] ?? "No verificable"}
             {p.publisher ? ` · ${p.publisher}` : ""}
@@ -366,10 +411,20 @@ function OpenMixes() {
           Abiertos hasta {fmtDate(open.data.open_until)}
         </span>
       )}
-      <Button variant="outline" size="sm" disabled={open.isPending} onClick={() => open.mutate(60)}>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={open.isPending}
+        onClick={() => open.mutate(60)}
+      >
         Abrir mixes 1 hora
       </Button>
-      <Button variant="ghost" size="sm" disabled={open.isPending} onClick={() => open.mutate(0)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={open.isPending}
+        onClick={() => open.mutate(0)}
+      >
         Cerrar
       </Button>
     </div>

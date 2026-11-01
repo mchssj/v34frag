@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" shape-rendering="crispEdges">
+  <defs>
+    <pattern id="px" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#f0449b"/><rect x="8" width="8" height="8" fill="#ff8ad0"/><rect y="8" width="8" height="8" fill="#ff8ad0"/><rect x="8" y="8" width="8" height="8" fill="#b02a72"/>
+      <animateTransform attributeName="patternTransform" type="translate" values="0 0;16 0" dur="1s" calcMode="discrete" keyTimes="0;.5" repeatCount="indefinite"/>
+    </pattern>
+  </defs>
+  <path fill-rule="evenodd" fill="#1a0a14" d="M16 16h224v224H16zM32 32v192h192V32z"/>
+  <path fill-rule="evenodd" fill="url(#px)" d="M16 16h224v8H16zM16 232h224v8H16zM16 24h8v208h-8zM232 24h8v208h-8z"/>
+  <path fill="#fff" d="M8 8h24v8H16v16H8zM224 8h24v24h-8V16h-16zM8 224h8v16h16v8H8zM240 224h8v24h-24v-8h16z"/>
+  <g fill="#ffe14d">
+    <path d="M116 0h8v8h8v8h-8v8h-8v-8h-8V8h8z"><animate attributeName="opacity" values="1;0;1" dur="1s" calcMode="discrete" repeatCount="indefinite"/></path>
+    <path d="M120 232h16v8h-16zM128 240h8v8h-8z"/>
+  </g>
+  <rect x="32" y="32" width="192" height="192" fill="none" stroke="#ff8ad0" stroke-width="2"/>
+</svg>

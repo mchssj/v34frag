@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs></defs>
+  <g transform="translate(64 54)">
+    <path d="M-50 14Q-44-26 0-30Q44-26 52 6Q62 12 56 18L-54 20Q-60 16-50 14Z" fill="#4a4038" stroke="#fff" stroke-width="5" paint-order="stroke"/>
+    <path d="M-30 8h60" stroke="#2e2822" stroke-width="3"/>
+    <rect x="-22" y="10" width="44" height="10" rx="1.5" fill="#d9dde2" stroke="#1c1916" stroke-width="1"/>
+    <rect x="-22" y="10" width="8" height="10" fill="#fff"><animate attributeName="x" values="-22;14;-22" dur="1.8s" repeatCount="indefinite"/></rect>
+  </g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#1c1916" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="22" letter-spacing="1.5" fill="#c9a35a">NAVAJA</text>
+  </g>
+</svg>

@@ -25,7 +25,7 @@ import {
 } from "country-flag-icons/react/3x2"
 import { GlobeIcon } from "lucide-react"
 
-import type { COUNTRIES } from "@/features/profile/schemas"
+import type { COUNTRIES } from "@/features/profile/lib/schemas"
 
 type CountryName = (typeof COUNTRIES)[number]
 

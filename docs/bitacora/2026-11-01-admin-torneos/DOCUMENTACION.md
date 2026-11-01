@@ -61,7 +61,19 @@ No se puede usar un mix vinculado a otra partida (`409`). Tampoco el mismo mix e
 
 A mano, en cada partida (`PATCH /matches/{id}` con `starts_at`). No hay horarios automáticos.
 
-## Dónde está cada cosa (backend)
+## La pantalla
+
+- **Lista** (`/admin/events`): estado, búsqueda y la columna "Qué falta" (inscritos, partidas pendientes, campeón). El organizador ve solo los suyos. El moderador no ve "Crear torneo".
+- **Crear** (`/admin/events/new`) y **Configuración**: el mismo formulario. Primero la plantilla y sus números, y a la derecha el resumen de cómo se juega. El suizo trae presets: Major clásico de 24, Major expandido de 32, una etapa de 16 y uno corto de 8. Con el fixture generado, el formato queda bloqueado.
+- **Gestionar** (`/admin/events/{id}?tab=`):
+  - **Resumen:** los pasos, lo que falta antes de generar (equipos incompletos, mínimo de inscritos), los botones "Generar fixture" y "Volver a la siembra", y el ordenador de empates.
+  - **Inscripciones:** con los activos de cada equipo y "Quitar".
+  - **Siembra:** por ranking, sorteo o a mano (arrastrar, ▲ ▼, Alt + flechas). Los bloques muestran en qué etapa entra cada equipo, y al lado se ven los cruces de la primera ronda.
+  - **Partidas:** con el panel de cada una (horario, servidor, mapas, W.O. y anular).
+  - **Configuración.**
+- **Detalle resumido de la Llave:** un mapa cargado a mano dice "sin detalle". Si ninguno tiene mix, aparece "Sin detalle de la partida".
+
+## Dónde está cada cosa
 
 | Qué | Archivo |
 |---|---|
@@ -70,3 +82,5 @@ A mano, en cada partida (`PATCH /matches/{id}` con `starts_at`). No hay horarios
 | Candidatos y mapas de una serie | `web/backend/src/routes/matches.ts`, `schemas/matches.ts` (`GameCandidate`, `SeriesMap`, `SeriesMapsBody`) |
 | Pruebas | `web/backend/test/integration/admin-torneos.test.ts` |
 | Contrato | `docs/frontend/contrato/torneos.md`, `partidas.md` y `README.md` |
+| Pantalla | `web/frontend/src/features/admin/events/` (rutas `routes/_app/admin.events.*`) |
+| "Sin detalle" en la Llave | `web/frontend/src/features/events/components/bracket/MatchPopover.tsx` |

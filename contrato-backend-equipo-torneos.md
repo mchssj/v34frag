@@ -328,3 +328,30 @@ En el frontend, "Partidas" y "Mixes" pasan a ser un solo listado ([artifact](htt
 | E16 | Pone el número en cada chip de tipo |
 | E17 | Muestra el MVP en la columna Detalle de los mixes |
 | E18 | La búsqueda encuentra partidas por el nick de un jugador |
+
+## Cuarta tanda (2026-10-31): Llave por formato
+
+La pestaña Llave dibuja ahora cada fase de cada plantilla y, al hacer clic en una partida, abre un detalle resumido con los mapas y las alineaciones ([bitácora](docs/bitacora/2026-10-31-llave-por-formato/)). Funciona con la API actual; para completarlo pedimos:
+
+> **Resueltos el 2026-11-01** (E21 y E22): `series_players` en `GET /matches/{id}` y `next_win`/`next_win_slot`/`next_lose`/`next_lose_slot` en `GET /events/{id}/matches`, con `group_upper` y `group_lower` en la descripción de `stage`. El frontend ya los usa. Bitácora: [`2026-11-01-api-llave-serie`](docs/bitacora/2026-11-01-api-llave-serie/).
+
+### E21. Rating de cada jugador en la serie
+
+**Hoy:** `GET /matches/{id}` trae `players` solo en los mixes. En una partida de torneo o PCW, las stats están en cada juego vinculado (`games`), y el detalle resumido muestra los rosters sin rating.
+
+**Pedimos:** `series_players` en `MatchDetail` de torneo y PCW: alias, `player_id`, lado y rating de la serie (ponderado por rondas de los juegos vinculados). Vacío si no se jugó ningún juego.
+
+### E22. A qué partida pasa el ganador y el perdedor
+
+**Hoy:** la base ya guarda `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en cada partida, pero `EventMatch` no los expone. El frontend deduce de dónde sale cada lado por ronda y posición solo en las llaves de eliminación (`ko`, `upper`, `group_upper` y el 3.er puesto); en el lower y la gran final muestra "Por definir", y marca a qué ronda del lower bajó el perdedor recién cuando aparece ahí.
+
+**Pedimos:** esos cuatro campos en `EventMatch` (`GET /events/{id}/matches`). Con eso, el frontend arma "Ganador de Semifinal 1" o "Perdedor de la final del upper" en todas las llaves y la marca "↓ L2" antes de que se juegue el cruce. Si se prefiere mandar el texto ya armado en `side.name`, el frontend también lo usa (hoy lo muestra si llega).
+
+**Además:** la descripción de `EventMatch.stage` en la OpenAPI no nombra `group_upper` ni `group_lower`, que son los que devuelve la API en los grupos de doble eliminación.
+
+### Qué hace el frontend cuando llegue cada uno
+
+| # | Cambio en el frontend |
+|---|---|
+| E21 | Suma la columna de rating a las alineaciones del detalle resumido |
+| E22 | Deja de deducir el origen y el destino de cada lado y usa los enlaces de la base en todas las llaves |

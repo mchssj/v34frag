@@ -1,4 +1,8 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router"
+
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
+import { MmSourceContext } from "@/features/matchmaking/source"
 import { useEffect, useState } from "react"
 
 import { requireAuth } from "@/auth/guards"
@@ -9,11 +13,11 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/features/shell/AppSidebar"
-import { CommandMenu } from "@/features/shell/CommandMenu"
-import { NowBar } from "@/features/shell/NowBar"
-import { Topbar } from "@/features/shell/Topbar"
-import { useSyncThemeFx } from "@/features/theme-fx/useSyncThemeFx"
+import { AppSidebar } from "@/features/shell/components/AppSidebar"
+import { CommandMenu } from "@/features/shell/components/CommandMenu"
+import { NowBar } from "@/features/shell/components/NowBar"
+import { Topbar } from "@/features/shell/components/Topbar"
+import { useSyncThemeFx } from "@/features/theme-fx/lib/useSyncThemeFx"
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: requireAuth,
@@ -56,7 +60,11 @@ function AppLayout() {
         <NowBar />
         <div className="flex flex-1 justify-center p-6">
           {/* Columna flex: una vista puede ocupar todo el alto con flex-1 (p. ej. "Sin equipo"). */}
-          <div className="flex w-full max-w-[1320px] min-w-0 flex-col">
+          <div className="flex w-full max-w-[1320px] min-w-0 flex-col gap-4">
+            {/* Si te caés de una partida, el aviso te sigue por toda la web. */}
+            <MmSourceContext value={apiMmSource}>
+              <ReconnectBanner />
+            </MmSourceContext>
             <Outlet />
           </div>
         </div>

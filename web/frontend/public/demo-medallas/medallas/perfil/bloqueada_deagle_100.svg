@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="300" viewBox="0 0 260 300">
+  <title>CM League - Kills con Deagle 100 (bloqueada)</title>
+  <desc>CM League. Medalla de perfil, vector editable con capas nombradas. Textos vivos: fuente Montserrat (ExtraBold/Black). Versión plana con brillo solo en el marco.</desc>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9DA1AB" /><stop offset=".28" stop-color="#5E626C" />
+      <stop offset=".5" stop-color="#2A2C33" /><stop offset=".68" stop-color="#5E626C" />
+      <stop offset=".82" stop-color="#9DA1AB" stop-opacity=".9" /><stop offset="1" stop-color="#2A2C33" />
+    </linearGradient>
+    <clipPath id="recorte-forma"><path d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" /></clipPath>
+  <filter id="resplandor-marco" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" /></filter></defs>
+  <g id="cinta">
+    <path d="M76 8 L184 8 L198 30 L184 50 L76 50 L62 30 Z" fill="#2A2C33" stroke="#0B0C10" stroke-width="3" stroke-linejoin="round" />
+    <path d="M90 9 L110 9 L114 49 L94 49 Z" fill="#5E626C" />
+    <path d="M150 9 L170 9 L166 49 L146 49 Z" fill="#5E626C" />
+    <path d="M119 9 L141 9 L139 49 L121 49 Z" fill="#0F1014" />
+    <path d="M128 9 L132 9 L131.5 49 L128.5 49 Z" fill="#5E626C" opacity=".8" />
+    <rect id="pasador" x="96" y="44" width="68" height="9" rx="4" fill="#5E626C" stroke="#0B0C10" stroke-width="2" />
+  </g>
+  <g id="forma-octagono">
+    <path id="resplandor-marco" d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" fill="none" stroke="#5E626C" stroke-width="26" stroke-linejoin="round" opacity=".55" filter="url(#resplandor-marco)" /><path id="borde-exterior" d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" fill="#0B0C10" stroke="#0B0C10" stroke-width="18" stroke-linejoin="round" />
+    <path id="marco-metal" d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" fill="url(#metal)" stroke="url(#metal)" stroke-width="10" stroke-linejoin="round" />
+    <path id="filete-claro" d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" transform="translate(7.80 8.46) scale(0.94)" fill="none" stroke="#9DA1AB" stroke-width="1.6" opacity=".55" />
+    <path id="cara" d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" transform="translate(11.70 12.69) scale(0.91)" fill="#191A1F" stroke="#0B0C10" stroke-width="3" />
+    <path id="filete-acento" d="M86 32 H174 L226 84 V198 L174 250 H86 L34 198 V84 Z" transform="translate(19.50 21.15) scale(0.85)" fill="none" stroke="#5E626C" stroke-width="1.5" opacity=".5" />
+    </g>
+  <g id="textos-editables" font-family="Montserrat, Arial, sans-serif" text-anchor="middle">
+    <g id="etiqueta">
+      <rect x="92.1" y="60" width="75.8" height="22" rx="11" fill="#121318" stroke="#5E626C" stroke-width="2" />
+      <text x="130" y="75.3" font-size="11.5" font-weight="800" letter-spacing=".8" fill="#B5B9C2">DEAGLE</text>
+    </g>
+    <text id="numero" x="130" y="142" font-size="58" font-weight="900" letter-spacing="-2" fill="#A9ADB7">100</text>
+  </g>
+  <g id="puntos-nivel"><path d="M117.0 156 L122.0 161 L117.0 166 L112.0 161 Z" fill="#24262D" stroke="#0B0C10" stroke-width="1.5" /><path d="M130.0 156 L135.0 161 L130.0 166 L125.0 161 Z" fill="#24262D" stroke="#0B0C10" stroke-width="1.5" /><path d="M143.0 156 L148.0 161 L143.0 166 L138.0 161 Z" fill="#24262D" stroke="#0B0C10" stroke-width="1.5" /></g>
+  <g id="icono" opacity=".6" transform="translate(130 203) scale(1.12) translate(-130 -204)">
+    <g id="silueta-deagle"><path d="M94 -779 Q94 -783 96 -785 Q99 -793 113.5 -802.0 Q128 -811 164 -820 Q166 -822 170.5 -830.5 Q175 -839 175 -851 Q175 -856 174.5 -860.5 Q174 -865 170 -871 Q168 -872 164.5 -878.0 Q161 -884 153 -901 L153 -917 L168 -921 Q170 -919 172 -918 Q175 -915 177 -915 L205 -915 Q205 -917 208 -922 Q209 -925 211 -928 L236 -949 Q238 -950 241 -951 Q245 -953 247 -955 L247 -967 Q247 -971 248 -978 L250 -978 L279 -978 L300 -957 L336 -957 L349 -964 L498 -964 Q500 -961 502 -959 Q506 -955 507 -955 L702 -951 L704 -949 Q705 -948 707 -948 L718 -948 Q719 -949 719 -950 Q719 -952 720 -953 Q721 -955 723 -957 L940 -955 Q940 -952 941 -950 Q941 -948 941.5 -946.5 Q942 -945 942 -944 L953 -944 Q953 -945 955 -949 Q956 -951 958 -953 L1001 -953 Q1003 -954 1008.5 -957.5 Q1014 -961 1020.0 -964.5 Q1026 -968 1032.0 -970.5 Q1038 -973 1041 -973 Q1046 -973 1048.5 -966.0 Q1051 -959 1051 -957 Q1054 -954 1059 -953 Q1062 -952 1066 -951 Q1067 -950 1068 -950 L1071 -950 Q1073 -949 1076 -949 L1075 -930 L1078 -903 Q1077 -895 1074 -886 Q1072 -878 1069.0 -869.0 Q1066 -860 1064 -851 Q1058 -831 1054.0 -820.5 Q1050 -810 1047.5 -805.5 Q1045 -801 1044.0 -800.0 Q1043 -799 1042 -799 L662 -799 Q661 -799 650.0 -795.0 Q639 -791 625 -777 Q613 -765 601.0 -742.0 Q589 -719 589 -677 L589 -670 L589 -668 L587 -668 Q586 -667 571.0 -664.0 Q556 -661 535.0 -659.0 Q514 -657 489.5 -657.5 Q465 -658 446 -664 Q441 -663 431.5 -653.0 Q422 -643 421 -630 Q420 -623 416.0 -599.5 Q412 -576 406.5 -549.5 Q401 -523 397.0 -501.0 Q393 -479 392 -476 L406 -439 L403 -439 Q364 -434 324 -430 Q289 -427 248.5 -426.0 Q208 -425 170 -430 Q168 -430 165 -431 Q158 -433 155 -439 Q150 -447 150 -469 Q150 -482 153.0 -502.0 Q156 -522 164.0 -549.0 Q172 -576 186.0 -612.0 Q200 -648 222 -695 L222 -698 Q222 -701 222.5 -705.0 Q223 -709 223 -715 Q223 -731 216.0 -748.5 Q209 -766 182 -770 Q181 -770 168.0 -770.5 Q155 -771 139.5 -772.0 Q124 -773 110.5 -773.5 Q97 -774 96 -774 L94 -776 L94 -779 L94 -779 Z M462 -707 Q462 -699 467.5 -693.5 Q473 -688 481 -688 L546 -688 Q554 -688 560.0 -693.5 Q566 -699 566 -707 L566 -767 Q566 -775 560.0 -780.5 Q554 -786 546 -786 L481 -786 Q473 -786 467.5 -780.5 Q462 -775 462 -767 L462 -707 L462 -707 Z" transform="translate(94.27 246.77) scale(0.06098 0.06098)" fill="#0B0C10" stroke="#0B0C10" stroke-width="78.7" stroke-linejoin="round" /><path d="M94 -779 Q94 -783 96 -785 Q99 -793 113.5 -802.0 Q128 -811 164 -820 Q166 -822 170.5 -830.5 Q175 -839 175 -851 Q175 -856 174.5 -860.5 Q174 -865 170 -871 Q168 -872 164.5 -878.0 Q161 -884 153 -901 L153 -917 L168 -921 Q170 -919 172 -918 Q175 -915 177 -915 L205 -915 Q205 -917 208 -922 Q209 -925 211 -928 L236 -949 Q238 -950 241 -951 Q245 -953 247 -955 L247 -967 Q247 -971 248 -978 L250 -978 L279 -978 L300 -957 L336 -957 L349 -964 L498 -964 Q500 -961 502 -959 Q506 -955 507 -955 L702 -951 L704 -949 Q705 -948 707 -948 L718 -948 Q719 -949 719 -950 Q719 -952 720 -953 Q721 -955 723 -957 L940 -955 Q940 -952 941 -950 Q941 -948 941.5 -946.5 Q942 -945 942 -944 L953 -944 Q953 -945 955 -949 Q956 -951 958 -953 L1001 -953 Q1003 -954 1008.5 -957.5 Q1014 -961 1020.0 -964.5 Q1026 -968 1032.0 -970.5 Q1038 -973 1041 -973 Q1046 -973 1048.5 -966.0 Q1051 -959 1051 -957 Q1054 -954 1059 -953 Q1062 -952 1066 -951 Q1067 -950 1068 -950 L1071 -950 Q1073 -949 1076 -949 L1075 -930 L1078 -903 Q1077 -895 1074 -886 Q1072 -878 1069.0 -869.0 Q1066 -860 1064 -851 Q1058 -831 1054.0 -820.5 Q1050 -810 1047.5 -805.5 Q1045 -801 1044.0 -800.0 Q1043 -799 1042 -799 L662 -799 Q661 -799 650.0 -795.0 Q639 -791 625 -777 Q613 -765 601.0 -742.0 Q589 -719 589 -677 L589 -670 L589 -668 L587 -668 Q586 -667 571.0 -664.0 Q556 -661 535.0 -659.0 Q514 -657 489.5 -657.5 Q465 -658 446 -664 Q441 -663 431.5 -653.0 Q422 -643 421 -630 Q420 -623 416.0 -599.5 Q412 -576 406.5 -549.5 Q401 -523 397.0 -501.0 Q393 -479 392 -476 L406 -439 L403 -439 Q364 -434 324 -430 Q289 -427 248.5 -426.0 Q208 -425 170 -430 Q168 -430 165 -431 Q158 -433 155 -439 Q150 -447 150 -469 Q150 -482 153.0 -502.0 Q156 -522 164.0 -549.0 Q172 -576 186.0 -612.0 Q200 -648 222 -695 L222 -698 Q222 -701 222.5 -705.0 Q223 -709 223 -715 Q223 -731 216.0 -748.5 Q209 -766 182 -770 Q181 -770 168.0 -770.5 Q155 -771 139.5 -772.0 Q124 -773 110.5 -773.5 Q97 -774 96 -774 L94 -776 L94 -779 L94 -779 Z M462 -707 Q462 -699 467.5 -693.5 Q473 -688 481 -688 L546 -688 Q554 -688 560.0 -693.5 Q566 -699 566 -707 L566 -767 Q566 -775 560.0 -780.5 Q554 -786 546 -786 L481 -786 Q473 -786 467.5 -780.5 Q462 -775 462 -767 L462 -707 L462 -707 Z" transform="translate(94.27 246.77) scale(0.06098 0.06098)" fill="#5E626C" /></g>
+  </g>
+  <g id="candado">
+    <circle cx="130" cy="252" r="21" fill="#0B0C10" />
+    <circle cx="130" cy="252" r="17.5" fill="#1C1D23" stroke="#7D818B" stroke-width="2.5" />
+    <path d="M123.5 250 V245 Q123.5 238 130 238 Q136.5 238 136.5 245 V250" fill="none" stroke="#C3C6CE" stroke-width="3.2" stroke-linecap="round" />
+    <rect x="120" y="249" width="20" height="15" rx="3" fill="#C3C6CE" />
+    <path d="M130 254 V259" stroke="#1C1D23" stroke-width="2.6" stroke-linecap="round" />
+  </g>
+</svg>

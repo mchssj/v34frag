@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { AdminMapsPage, MAP_FILTERS } from "@/features/admin/maps/AdminMapsPage"
+import { AdminMapsPage } from "@/features/admin/maps/pages/AdminMapsPage"
+import { MAP_FILTERS } from "@/features/admin/maps/lib/catalog"
 
 export const Route = createFileRoute("/_app/admin/maps")({
   validateSearch: z.object({

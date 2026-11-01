@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset=".5" stop-color="#f2b830"/><stop offset="1" stop-color="#b8780f"/></linearGradient>
+    <filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <path d="M64 6l52 22v34c0 30-22 50-52 60C34 112 12 92 12 62V28Z" fill="#fff" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M64 6l52 22v34c0 30-22 50-52 60C34 112 12 92 12 62V28Z" fill="#1b1b22" stroke="url(#o)" stroke-width="5" stroke-linejoin="round"/>
+  <text x="64" y="76" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="42" letter-spacing="1" fill="url(#o)" filter="url(#g)">1v5
+    <animate attributeName="opacity" values="1;.75;1" dur="1.2s" repeatCount="indefinite"/>
+  </text>
+  <g fill="#ff3b4e">
+    <path d="M34 92l6 6M40 92l-6 6M50 96l6 6M56 96l-6 6M62 98l6 6M68 98l-6 6M74 96l6 6M80 96l-6 6M88 92l6 6M94 92l-6 6" stroke="#ff3b4e" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>
