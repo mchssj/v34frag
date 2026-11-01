@@ -13,12 +13,14 @@ import {
   ChatPage,
   ChatParam,
   ChatQuery,
+  GameCandidate,
   MatchDetail,
   MatchList,
   MatchListQuery,
   MatchParam,
   ResultBody,
   ScheduleBody,
+  SeriesMapsBody,
   VetoBody,
   type PlayerLine,
   type RosterPlayer,
@@ -114,6 +116,30 @@ const result = createRoute({
     'Si cambia el ganador, la llave se corrige sola; falla si ya se jugaron partidas que dependían de esta.',
   request: { params: MatchParam, body: { required: true, ...json(ResultBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403) },
+});
+
+const candidates = createRoute({
+  method: 'get', path: '/api/v1/matches/{id}/games/candidates', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Mixes para vincular a una partida de torneo',
+  description:
+    'Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta ' +
+    'partida), jugados por al menos un inscrito de alguno de los dos equipos. Primero los vinculados y después los que más inscritos ' +
+    'tienen. `side1` dice qué bando del mix fue el equipo 1. Hasta 20.',
+  request: { params: MatchParam },
+  responses: { 200: { description: 'Mixes', ...json(z.array(GameCandidate)) }, ...errorResponses(401, 403, 404) },
+});
+
+const seriesMaps = createRoute({
+  method: 'put', path: '/api/v1/matches/{id}/maps', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Mapas de una serie de torneo: mix vinculado o resultado a mano',
+  description:
+    'Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya ' +
+    'jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la ' +
+    'partida dice "Sin detalle de la partida" en ese mapa). Si la serie queda definida, se cierra y la llave avanza; si no, queda en ' +
+    'curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si ' +
+    'un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.',
+  request: { params: MatchParam, body: { required: true, ...json(SeriesMapsBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
 });
 
 const resetVeto = createRoute({
@@ -419,6 +445,13 @@ export const matches = createRouter()
         p_clear: clear ?? false,
       }),
     );
+    return c.body(null, 204);
+  })
+  .openapi(candidates, async (c) => {
+    return c.json(mustHave(await c.var.sb.rpc('match_game_candidates', { p_match: c.req.valid('param').id })), 200);
+  })
+  .openapi(seriesMaps, async (c) => {
+    must(await c.var.sb.rpc('match_set_maps', { p_match: c.req.valid('param').id, p_maps: c.req.valid('json').maps as never }));
     return c.body(null, 204);
   })
   .openapi(resetVeto, async (c) => {

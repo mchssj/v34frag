@@ -14,7 +14,7 @@ Sin desplegar.
 | `supabase/replanteo/40_equipo_al_instante.sql` | Nuevo |
 | `supabase/replanteo/README.md` | Fila de la `40` |
 | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/40_equipo_al_instante.sql` | Nueva: inversa (vuelve la aprobación; los equipos creados se quedan) |
-| `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/40_equipo_al_instante.sql` | Nuevas: 23 pruebas SQL, con rollback |
+| `docs/bitacora/2026-10-14-replanteo-modelo-datos/pruebas/40_equipo_al_instante.sql` | Nuevas: 26 pruebas SQL, con rollback |
 | `web/backend/src/routes/teams.ts` | `POST /api/v1/teams` y `eligible_modes` en el detalle |
 | `web/backend/src/schemas/teams.ts` | `TeamCreateBody`, `EligibleMode`, `TeamDetail.eligible_modes`, `TeamConfig.max_led`; se borran `TeamRequestBody` y `TeamRequestForm` |
 | `web/backend/src/routes/account.ts` | Se borran `PUT` y `DELETE /me/team-request` (queda el `GET`) |
@@ -35,7 +35,7 @@ Sin desplegar.
 
 Contra la Supabase local, el 2026-11-01:
 
-- SQL de la `40`: 23 de 23. La inversa se probó ida y vuelta (aplicar, revertir y volver a aplicar).
+- SQL de la `40`: 26 de 26. La inversa se probó ida y vuelta (aplicar, revertir y volver a aplicar).
 - `pnpm typecheck`: sin errores.
 - `pnpm test`: 396 unitarias.
 - `pnpm test:int`: 172 de integración.

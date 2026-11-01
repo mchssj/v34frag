@@ -88,7 +88,7 @@ stateDiagram-v2
 | Endpoint | Quién | Pantalla |
 |---|---|---|
 | `GET /api/v1/events` | Todos | **Torneos** |
-| `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, estado, campeón, empate pendiente y `viewer`. Con `ETag` |
+| `GET /api/v1/events/{id}` | Todos | **Torneo**: configuración, estado, campeón, empate pendiente y `viewer`. Con `ETag`. `viewer` suma `can_own` (2026-11-01): cancelar y borrar (admin u organizador dueño); `can_manage` incluye ahora a los moderadores |
 | `GET /api/v1/events/{id}/registrations` | Todos | Inscritos con siembra y jugadores |
 | `GET /api/v1/events/{id}/matches` | Todos | Partidas (con `stage`, `phase`, `grp`, `round`, `pos` y `bye` para dibujar la llave; hasta 200 por página). Desde el 2026-11-01, también `next_win`/`next_win_slot` y `next_lose`/`next_lose_slot`: a qué partida y a qué lado pasan el ganador y el perdedor (`null` si no sigue). `stage` puede ser `group_upper` o `group_lower` en los grupos de doble eliminación. Con `ETag` |
 | `GET /api/v1/events/{id}/standings` | Todos | Tablas de grupos (`group`), grupos de doble eliminación (`group_double`) y del suizo, con la posición. Con `ETag` |
@@ -96,6 +96,8 @@ stateDiagram-v2
 | `POST /api/v1/events`, `PATCH`/`DELETE /api/v1/events/{id}`, `POST …/cancel` | Organizador o admin | Crear, editar, borrar, cancelar. `map_pool` (opcional): el pool del veto del torneo, entre los mapas disponibles del catálogo (`GET /maps`, por ejemplo `de_russka` aunque no esté en el pool por defecto), sin repetir y con al menos tantos mapas como el BO más alto de `config`. `null` = el pool por defecto. **No cambia después del primer veto** de una partida del torneo (`400`). El detalle lo devuelve en `map_pool` |
 | `PUT /api/v1/events/{id}/seeds` | Organizador o admin | Orden de siembra a mano (todos los inscritos) |
 | `POST /api/v1/events/{id}/draw` | Organizador o admin | Sorteo de la siembra (`{ seeds, drawn_at }`) |
+| `POST /api/v1/events/{id}/seeds/ranking` | Admin, moderador u organizador | **Sembrar por ranking** (2026-11-01): puntos totales del ranking de equipos (torneos y PCW), después ELO promedio de los activos inscritos y después la inscripción. `200 { seeds }`. Solo antes de generar |
+| (siembra del suizo) | — | En un suizo de varias etapas, la etapa de entrada de cada equipo (`start_stage` de la inscripción) sale de la siembra: los mejores, a la etapa más avanzada, en bloques de `size / 2`. Vale al sembrar por ranking, al sortear y al cambiar la siembra a mano |
 | `POST /api/v1/events/{id}/generate` · `…/reset` · `…/ties` | Organizador o admin | Fixture y empates |
 
 **Para dibujar las llaves:** las partidas traen `stage` y la posición.

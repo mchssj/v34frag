@@ -517,6 +517,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real ni a flow.
 - **Bitácora:** [`2026-11-01-equipo-al-instante`](bitacora/2026-11-01-equipo-al-instante/)
 
+### 1.34 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** Administración › Torneos. Moderadores que operan todos los torneos (sin cancelar ni borrar), siembra por ranking (torneos y PCW) con la etapa de entrada del suizo según la siembra, y cada mapa de una serie con un mix vinculado a mano o el resultado a mano ("Sin detalle de la partida").
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `41` en staging después de la `40` y redesplegar la API.
+  2. En el corte, la `41` va después de la `40`.
+- No toca el plugin.
+- **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

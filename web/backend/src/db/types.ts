@@ -3800,6 +3800,9 @@ isOneToOne: false
 "can_manage_event":
 { Args: { "p_event": string }; Returns: boolean
                            },
+"can_own_event":
+{ Args: { "p_event": string }; Returns: boolean
+                           },
 "cancel_pcw_match":
 { Args: { "p_match": string }; Returns: undefined
                            },
@@ -4099,6 +4102,9 @@ isOneToOne: false
 "event_seed_order":
 { Args: { "s": number }; Returns: (number)[]
                            },
+"event_seed_ranking":
+{ Args: { "p_event": string }; Returns: (string)[]
+                           },
 "event_set_result":
 { Args: { "p_clear"?: boolean,"p_maps"?: Json,"p_match": string,"p_walkover_winner"?: string }; Returns: undefined
                            },
@@ -4171,6 +4177,14 @@ isOneToOne: false
 "match_chat_can_write":
 { Args: { "p_match": string }; Returns: boolean
                            },
+"match_game_candidates":
+{ Args: { "p_match": string }; Returns: {
+              "game_id": string,"linked": boolean,"map": string,"played_at": string,"players": number,"registered": number,"score1": number,"score2": number,"server_name": string,"side1": number
+            }[]
+                           },
+"match_game_side":
+{ Args: { "p_game": string,"p_match": string }; Returns: number
+                           },
 "match_link_code":
 { Args: { "p_match": string }; Returns: string
                            },
@@ -4201,6 +4215,9 @@ isOneToOne: false
                            },
 "match_schedule":
 { Args: { "p_match": string,"p_server": string,"p_starts_at": string }; Returns: undefined
+                           },
+"match_set_maps":
+{ Args: { "p_maps": Json,"p_match": string }; Returns: undefined
                            },
 "match_users":
 { Args: { "p_match": string }; Returns: (string)[]

@@ -217,5 +217,37 @@ export const ResultBody = z
   .refine((b) => [b.maps, b.walkover, b.clear].filter((x) => x !== undefined).length === 1, { message: 'Mandá maps, walkover o clear (uno solo).' })
   .openapi('ResultBody');
 
+export const GameCandidate = z
+  .object({
+    game_id: z.uuid(),
+    map: z.string().nullable(),
+    played_at: z.string().nullable(),
+    score1: z.number().int().nullable().openapi({ description: 'Rondas del bando 1 del mix' }),
+    score2: z.number().int().nullable(),
+    server_name: z.string().nullable(),
+    players: z.number().int().openapi({ description: 'Jugadores con rondas en el mix' }),
+    registered: z.number().int().openapi({ description: 'Cuántos de ellos son inscritos de alguno de los dos equipos' }),
+    side1: z.number().int().openapi({ description: 'Bando del mix que jugó como el equipo 1 (deducido por los inscritos, o el guardado si ya está vinculado)' }),
+    linked: z.boolean().openapi({ description: 'Ya está vinculado a esta partida' }),
+  })
+  .openapi('GameCandidate');
+
+export const SeriesMap = z
+  .object({
+    game_id: z.uuid().optional().openapi({ description: 'Mix vinculado: las rondas y el mapa salen del mix' }),
+    side1: z.union([z.literal(1), z.literal(2)]).optional().openapi({ description: 'Con `game_id`: bando del mix que es el equipo 1. Si falta, se deduce' }),
+    map: z.string().max(40).nullable().optional().openapi({ description: 'Resultado a mano: el mapa' }),
+    r1: z.number().int().min(0).max(99).optional().openapi({ description: 'Resultado a mano: rondas del equipo 1' }),
+    r2: z.number().int().min(0).max(99).optional(),
+  })
+  .refine((x) => (x.game_id ? x.r1 === undefined && x.r2 === undefined : x.r1 !== undefined && x.r2 !== undefined), {
+    message: 'Cada mapa lleva `game_id` (mix vinculado) o `r1` y `r2` (resultado a mano).',
+  })
+  .openapi('SeriesMap');
+
+export const SeriesMapsBody = z
+  .object({ maps: z.array(SeriesMap).max(5).openapi({ description: 'Los mapas de la serie en orden. Lista vacía: sin resultado' }) })
+  .openapi('SeriesMapsBody');
+
 export const MatchParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 export const ChatParam = z.object({ id: z.coerce.number().int().openapi({ param: { name: 'id', in: 'path' } }) });
