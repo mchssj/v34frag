@@ -1,5 +1,10 @@
 import { cn } from "cn"
-import { InfoIcon, LoaderIcon } from "lucide-react"
+import {
+  InfoIcon,
+  LoaderIcon,
+  ShieldAlertIcon,
+  ShieldCheckIcon,
+} from "lucide-react"
 import type { ReactNode } from "react"
 import { toast } from "sonner"
 
@@ -13,14 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { askNotificationPermission } from "./alert"
+import { EloMeter } from "./EloMeter"
 import { fmtClock, isCountry } from "./labels"
 import { useMmAction, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { InvitePref, MmState } from "./types"
 import { useNow } from "./useNow"
 
-// Barra de abajo de "Mi grupo": modo, región, invitaciones y buscar partida.
+// Panel al costado de "Tu equipo": tu ELO, modo, región, invitaciones y buscar partida.
 
 export const ANY_REGION = "any"
 
@@ -53,8 +64,9 @@ export function PlayBar({
   const noServer = state.servers.free === 0
 
   return (
-    <div className="grid gap-6 border-t pt-6 sm:grid-cols-2 lg:grid-cols-4">
-      <Column title="Modo de juego">
+    <div className="flex flex-col gap-4 rounded-xl border bg-card/95 p-4">
+      <EloMeter elo={state.me.elo} level={state.me.level} />
+      <Column title="Modo">
         <Segmented
           label="Modo de juego"
           value={mode}
@@ -67,11 +79,13 @@ export function PlayBar({
           onChange={onMode}
         />
         {modeInfo && !modeInfo.affects_elo && (
-          <span className="text-xs text-muted-foreground">
+          <span className="w-full text-right text-xs text-muted-foreground">
             {mode} no da ELO: sirve para practicar
           </span>
         )}
-        <ul aria-label="Últimos resultados" className="flex gap-1.5">
+      </Column>
+      <Column title="Últimas">
+        <ul aria-label="Últimos resultados" className="flex gap-1">
           {state.me.recent.map((r, i) => (
             <li
               key={i}
@@ -91,7 +105,7 @@ export function PlayBar({
 
       <Column title="Servidor">
         <Select value={region} onValueChange={onRegion} disabled={queued}>
-          <SelectTrigger aria-label="Región del servidor" className="w-44">
+          <SelectTrigger aria-label="Región del servidor" className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -116,7 +130,7 @@ export function PlayBar({
           ]}
           onChange={(v) => setPref.mutate(v as InvitePref)}
         />
-        <span className="text-xs text-muted-foreground">
+        <span className="w-full text-right text-xs text-muted-foreground">
           {state.invites_pref === "private"
             ? "Nadie te puede invitar"
             : pending
@@ -125,21 +139,24 @@ export function PlayBar({
         </span>
       </Column>
 
-      <div className="flex flex-col items-center gap-2 lg:items-end">
+      <div className="flex flex-col gap-2 border-t pt-4">
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <InfoIcon aria-hidden className="size-3.5" />
+          <QueueInfo
+            activity={state.queue_activity}
+            searching={state.queue_size}
+          />
           {state.active_players} jugadores activos
         </span>
         <span
           className={cn(
             "text-xs",
-            noServer ? "text-sidebar-primary" : "text-muted-foreground"
+            noServer ? "text-primary" : "text-muted-foreground"
           )}
         >
           Servidores: {state.servers.free} de {state.servers.total} libres
         </span>
         {queued ? (
-          <div className="flex w-full max-w-60 flex-col items-center gap-2">
+          <div className="flex w-full flex-col items-center gap-2">
             <span className="flex items-center gap-2 font-semibold">
               <LoaderIcon className="size-4 animate-spin" aria-hidden />
               Buscando{" "}
@@ -150,7 +167,11 @@ export function PlayBar({
             <span className="text-center text-xs text-muted-foreground">
               {noServer
                 ? "Todos los servidores están ocupados: la partida se arma cuando se libere uno"
-                : `Rival de ±${state.queue!.elo_window ?? "∞"} ELO`}
+                : `Rival de ±${state.queue!.elo_window ?? "∞"} ELO${
+                    state.queue!.eta_s
+                      ? ` · espera estimada ${fmtClock(state.queue!.eta_s * 1000)}`
+                      : ""
+                  }`}
             </span>
             <Button
               variant="outline"
@@ -164,11 +185,12 @@ export function PlayBar({
         ) : (
           <Button
             size="xl"
-            className="w-full max-w-60 bg-win font-bold tracking-wide text-white uppercase hover:bg-win/85"
+            className="w-full"
             disabled={
               follower ||
               !state.open ||
               !!state.penalty ||
+              (state.anticheat.required && state.anticheat.status !== "ok") ||
               !!state.ban ||
               !!state.block_reason ||
               join.isPending
@@ -188,6 +210,7 @@ export function PlayBar({
             {leader?.nick} es el líder y busca por el grupo.
           </span>
         )}
+        <AnticheatLine anticheat={state.anticheat} />
         {state.block_reason && (
           <span className="text-center text-xs text-destructive">
             {state.block_reason}
@@ -198,12 +221,83 @@ export function PlayBar({
   )
 }
 
+/** Círculo con la i: al pasar el ratón, cuánta gente hay buscando. */
+function QueueInfo({
+  activity,
+  searching,
+}: {
+  activity: MmState["queue_activity"]
+  searching: number
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label="Ver la actividad de la cola"
+          className="rounded-full hover:text-foreground"
+        >
+          <InfoIcon aria-hidden className="size-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-none p-3">
+        <div className="w-56">
+          <p className="mb-2 text-xs font-semibold">
+            {searching} buscando partida
+          </p>
+          <ul className="flex flex-col gap-1 text-xs">
+            {activity.modes.map((m) => (
+              <li key={m.mode} className="flex justify-between gap-2">
+                <span>
+                  <span className="font-mono font-semibold">{m.mode}</span>{" "}
+                  {m.searching} buscando
+                </span>
+                <span className="opacity-70">
+                  {m.missing === 1 ? "falta 1" : `faltan ${m.missing}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <ul className="mt-2 flex flex-col gap-0.5 border-t border-current/15 pt-2 text-xs">
+            {activity.levels.map((l) => (
+              <li key={l.label} className="flex justify-between gap-2">
+                {l.label}
+                <span className="font-mono tabular-nums">{l.count}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function AnticheatLine({ anticheat }: { anticheat: MmState["anticheat"] }) {
+  if (!anticheat.required)
+    return (
+      <span className="text-xs text-muted-foreground">
+        Anticheat no obligatorio
+      </span>
+    )
+  const ok = anticheat.status === "ok"
+  const Icon = ok ? ShieldCheckIcon : ShieldAlertIcon
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 text-xs",
+        ok ? "text-win" : "text-destructive"
+      )}
+    >
+      <Icon aria-hidden className="size-3.5" />
+      {ok ? "Anticheat activo" : "Anticheat inactivo"}
+    </span>
+  )
+}
+
 function Column({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-2.5">
-      <span className="text-[11px] font-semibold tracking-[0.8px] text-muted-foreground uppercase">
-        {title}
-      </span>
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+      <span className="text-xs font-medium text-muted-foreground">{title}</span>
       {children}
     </div>
   )
@@ -225,7 +319,7 @@ function Segmented({
     <div
       role="radiogroup"
       aria-label={label}
-      className="inline-flex rounded-lg border bg-muted/40 p-1"
+      className="inline-flex gap-0.5 rounded-lg bg-muted p-[3px]"
     >
       {options.map((o) => (
         <button
@@ -236,8 +330,8 @@ function Segmented({
           disabled={o.disabled && o.value !== value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "rounded-md px-3.5 py-1 text-sm font-medium text-muted-foreground transition disabled:opacity-40",
-            o.value === value && "bg-background text-foreground shadow-sm"
+            "h-7 rounded-md px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40",
+            o.value === value && "bg-card text-foreground shadow-xs"
           )}
         >
           {o.label}

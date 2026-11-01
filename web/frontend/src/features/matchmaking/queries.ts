@@ -151,3 +151,12 @@ export function useMmAdminMutation<A, R>(fn: (arg: A) => Promise<R>) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: mmKeys.all }),
   })
 }
+
+export function feedOptions(source: MmSource) {
+  return queryOptions({
+    queryKey: ["mm", "feed"] as const,
+    queryFn: ({ signal }) => source.feed(signal),
+    staleTime: 20_000,
+    refetchInterval: 30_000,
+  })
+}

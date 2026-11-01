@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   ArrowDownRightIcon,
@@ -8,6 +9,7 @@ import {
   DownloadIcon,
   Link2Icon,
   PlayIcon,
+  ShieldCheckIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -30,15 +32,19 @@ import {
   connectCommand,
   fmtClock,
   isCountry,
+  mapLabel,
   secondsLeft,
   steamConnectUrl,
   teamName,
 } from "../labels"
+import { LobbyChat } from "../LobbyChat"
 import { PasswordField } from "../PasswordField"
 import { ReportDialog } from "../ReportDialog"
 import type { MmLobby, MmPlayer, MmVetoMap } from "../types"
 import { useNow } from "../useNow"
 import { VetoBoard } from "../VetoBoard"
+import { Encounters } from "./Encounters"
+import { MatchSummary, PlayAgain, PlayerPostMatch } from "./PostMatch"
 import { teamPlayers, type Team } from "./roomData"
 
 // Descripción general de la sala: los jugadores de cada equipo a los lados y, en el medio, el
@@ -54,7 +60,7 @@ export function RoomOverview({
   onBack: () => void
 }) {
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_minmax(300px,360px)_1fr]">
+    <div className="grid items-stretch gap-4 lg:grid-cols-[1fr_minmax(320px,400px)_1fr]">
       <TeamColumn lobby={lobby} team={1} />
       <Center lobby={lobby} map={map} onBack={onBack} />
       <TeamColumn lobby={lobby} team={2} />
@@ -64,20 +70,42 @@ export function RoomOverview({
 
 function TeamColumn({ lobby, team }: { lobby: MmLobby; team: Team }) {
   const live = ["connecting", "live", "finished"].includes(lobby.status)
+  const mine = lobby.players.some((p) => p.is_me && p.team === team)
   return (
-    <section aria-label={teamName(team)} className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">Jugadores · {teamName(team)}</h2>
-      <ul className="flex flex-col gap-3">
-        {teamPlayers(lobby, team).map((p) => (
-          <PlayerCard
-            key={p.player_id}
-            p={p}
-            lobby={lobby}
-            showConnection={live}
-          />
-        ))}
-      </ul>
-    </section>
+    <div className="flex flex-col gap-3">
+      <section
+        aria-label={teamName(team)}
+        className="flex-1 overflow-hidden rounded-xl border bg-card"
+      >
+        <h2
+          className={cn(
+            "flex items-baseline justify-between border-b px-4 py-2 text-sm font-semibold",
+            team === 1
+              ? "shadow-[inset_3px_0_0_var(--primary)]"
+              : "shadow-[inset_3px_0_0_var(--chart-2)]"
+          )}
+        >
+          Jugadores · {teamName(team)}
+          <span className="text-[11px] font-normal text-muted-foreground">
+            Últimas 30 partidas
+          </span>
+        </h2>
+        <ul className="flex flex-col divide-y">
+          {teamPlayers(lobby, team).map((p) => (
+            <PlayerCard
+              key={p.player_id}
+              p={p}
+              lobby={lobby}
+              showConnection={live}
+            />
+          ))}
+        </ul>
+      </section>
+      {/* Debajo de los jugadores: el de equipo en tu columna y el general en la del rival. */}
+      {lobby.match_id && (
+        <LobbyChat lobby={lobby} scope={mine ? "team" : "all"} />
+      )}
+    </div>
   )
 }
 
@@ -94,9 +122,9 @@ function PlayerCard({
   return (
     <li
       className={cn(
-        "flex flex-col gap-2 rounded-xl border bg-card p-3",
-        p.is_me && "border-primary/50",
-        (p.left_until || p.abandoned) && "border-destructive/60"
+        "flex flex-col gap-1.5 px-3 py-2",
+        p.is_me && "bg-primary/6",
+        (p.left_until || p.abandoned) && "bg-destructive/8"
       )}
     >
       <div className="flex items-center gap-2.5">
@@ -106,23 +134,29 @@ function PlayerCard({
             src={p.photo_url}
             alias={p.nick}
             frameSrc={p.frame_url}
-            size={58}
+            size={46}
           />
         ) : (
-          <Avatar className="size-11 rounded-lg">
+          <Avatar className="size-9 rounded-lg">
             {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
             <AvatarFallback className="rounded-lg text-sm font-semibold">
               {p.nick.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         )}
-        <span className="flex min-w-0 items-center gap-1.5 font-semibold">
+        <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
           {p.country && <CountryFlag country={p.country} />}
-          <NameFx
-            text={p.nick}
-            effect={{ css_class: p.name_class ?? null }}
-            className="truncate"
-          />
+          <Link
+            to="/player/$nick"
+            params={{ nick: p.nick }}
+            className="min-w-0 truncate hover:underline"
+          >
+            <NameFx
+              text={p.nick}
+              effect={{ css_class: p.name_class ?? null }}
+              className="truncate"
+            />
+          </Link>
           {p.vip && <VipBadge />}
           {p.is_me && (
             <span className="text-xs text-muted-foreground">(vos)</span>
@@ -130,7 +164,13 @@ function PlayerCard({
           {p.is_captain && (
             <CrownIcon
               aria-label="Capitán"
-              className="size-3.5 shrink-0 text-sidebar-primary"
+              className="size-3.5 shrink-0 text-primary"
+            />
+          )}
+          {p.anticheat && (
+            <ShieldCheckIcon
+              aria-label="Anticheat activo"
+              className="size-3.5 shrink-0 text-win"
             />
           )}
           {p.party_id && (
@@ -145,6 +185,7 @@ function PlayerCard({
           {p.elo_trend !== null && <Trend value={p.elo_trend} />}
           <span className="font-mono text-sm tabular-nums">{p.elo}</span>
           <LevelBadge level={p.level} size={22} className="rounded-full" />
+          {!p.is_me && <Encounters player={p} />}
           {!p.is_me && (
             <ReportDialog
               lobbyId={lobby.id}
@@ -154,30 +195,73 @@ function PlayerCard({
           )}
         </span>
       </div>
+      {p.form.length > 0 && (
+        <FormLine p={p}>
+          {!p.is_me && lobby.status === "finished" && (
+            <PlayerPostMatch lobby={lobby} player={p} />
+          )}
+        </FormLine>
+      )}
       {(p.left_until || p.abandoned) && (
         <LeftNotice until={p.left_until} abandoned={p.abandoned} />
       )}
       {r ? (
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-muted-foreground">
-            Últimas 30 partidas
-          </span>
-          <dl className="grid grid-cols-4 gap-x-3 gap-y-1.5">
-            <Stat label="Partidas" value={r.matches.toLocaleString("es-AR")} />
-            <Stat label="Victorias" value={`${r.win_pct}%`} />
-            <Stat label="Rating" value={r.rating.toFixed(2)} />
-            <Stat label="K/D/A" value={`${r.k}/${r.d}/${r.a}`} />
-            <Stat label="K/D" value={r.kd.toFixed(2)} />
-            <Stat label="K/R" value={r.kr.toFixed(2)} />
-            <Stat label="ADR" value={r.adr.toFixed(1)} />
-          </dl>
-        </div>
+        <dl className="grid grid-cols-6 gap-x-2">
+          <Stat label="Rating" value={r.rating.toFixed(2)} />
+          <Stat label="Victorias" value={`${r.win_pct}%`} />
+          <Stat label="K/D/A" value={`${r.k}/${r.d}/${r.a}`} />
+          <Stat label="K/D" value={r.kd.toFixed(2)} />
+          <Stat label="K/R" value={r.kr.toFixed(2)} />
+          <Stat label="ADR" value={r.adr.toFixed(1)} />
+        </dl>
       ) : (
         <span className="text-xs text-muted-foreground">
           Sin partidas todavía
         </span>
       )}
     </li>
+  )
+}
+
+/** Sus últimos 5 resultados y su mejor mapa. */
+function FormLine({
+  p,
+  children,
+}: {
+  p: MmPlayer
+  children?: React.ReactNode
+}) {
+  return (
+    <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+      <ul
+        aria-label={`Últimos resultados de ${p.nick}`}
+        className="flex gap-0.5"
+      >
+        {p.form.map((r, i) => (
+          <li
+            key={i}
+            className={cn(
+              "grid size-4 place-items-center rounded-[3px] font-mono text-[9px] font-bold",
+              r === "W"
+                ? "bg-win/15 text-win"
+                : "bg-destructive/15 text-destructive"
+            )}
+          >
+            {r === "W" ? "G" : "P"}
+          </li>
+        ))}
+      </ul>
+      {p.fav_map && (
+        <span className="ml-auto">
+          Mejor mapa:{" "}
+          <span className="font-medium text-foreground">
+            {mapLabel(p.fav_map.map)}
+          </span>{" "}
+          {p.fav_map.win_pct}%
+        </span>
+      )}
+      {children}
+    </div>
   )
 }
 
@@ -266,7 +350,7 @@ function Center({
       {/* Durante el veto, el tablero ya dice qué pasa. */}
       {!inVeto && (
         <div className="rounded-xl border bg-card p-4">
-          <h2 className="flex items-center gap-2 font-semibold">
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
             {lobby.status === "live" && <LiveDot />}
             {lobby.status === "cancelled" && (
               <BanIcon aria-hidden className="size-4 text-muted-foreground" />
@@ -291,11 +375,13 @@ function Center({
         </div>
       )}
 
-      {inVeto && lobby.veto && <VetoBoard lobby={lobby} compact />}
+      {inVeto && lobby.veto && <VetoBoard lobby={lobby} />}
+
+      {lobby.status === "finished" && <MatchSummary lobby={lobby} />}
 
       {lobby.server && !ended && (
         <Block title="Servidor">
-          <div className="flex flex-col gap-3 rounded-xl border bg-card p-3 text-sm">
+          <div className="flex flex-col gap-2 rounded-xl border bg-card p-3 text-sm">
             <span className="flex items-center gap-2 font-semibold">
               {isCountry(lobby.region) && (
                 <CountryFlag country={lobby.region} />
@@ -319,7 +405,7 @@ function Center({
                   lobby.server.address,
                   lobby.server.password
                 )}
-                className={cn(buttonVariants({ size: "sm" }), "flex-1")}
+                className={cn(buttonVariants({ size: "lg" }), "flex-1")}
               >
                 <PlayIcon aria-hidden />
                 Conectar
@@ -360,14 +446,21 @@ function Center({
       {lobby.match?.demo_url && (
         <a
           href={lobby.match.demo_url}
-          className={cn(buttonVariants({ variant: "ghost" }), "text-primary")}
+          className={buttonVariants({ variant: "outline" })}
         >
           <DownloadIcon aria-hidden />
           Ver demo
         </a>
       )}
+      {lobby.status === "finished" && (
+        <PlayAgain lobby={lobby} onDone={onBack} />
+      )}
       {ended && (
-        <Button size="md" onClick={onBack} className="font-semibold uppercase">
+        <Button
+          size="md"
+          variant={lobby.status === "finished" ? "outline" : "default"}
+          onClick={onBack}
+        >
           Volver a Jugar
         </Button>
       )}
@@ -385,7 +478,7 @@ function Block({
   children: React.ReactNode
 }) {
   return (
-    <section aria-label={title} className="flex flex-col gap-2">
+    <section aria-label={title} className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">{title}</h3>
         {aside}
@@ -453,7 +546,7 @@ function VetoHistory({ lobby }: { lobby: MmLobby }) {
             </li>
           ))}
           {lobby.map && (
-            <li className="mt-1 flex items-center gap-2 font-semibold text-win">
+            <li className="mt-1 flex items-center gap-2 font-semibold text-primary">
               <span className="w-5" />
               Se juega {label(lobby.map)}
             </li>

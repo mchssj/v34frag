@@ -2,11 +2,13 @@ import { act, screen, within } from "@testing-library/react"
 import type { AnchorHTMLAttributes, ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { renderWithQuery } from "@/test/render"
-import { alertInvite } from "./alert"
+import { alertFriend, alertInvite } from "./alert"
 import { createDemoSource } from "./demo"
 import { buildSlots, slotOrder } from "./GroupSlots"
 import { PlayPage } from "./PlayPage"
+import { ReconnectBanner } from "./ReconnectBanner"
 import { MmSourceContext } from "./source"
 
 vi.mock("sonner", () => ({
@@ -15,6 +17,9 @@ vi.mock("sonner", () => ({
 vi.mock("./alert", () => ({
   alertMatchFound: vi.fn(),
   alertInvite: vi.fn(),
+  alertFriend: vi.fn(),
+  previewSound: vi.fn(),
+  alertServerReady: vi.fn(),
   askNotificationPermission: vi.fn(),
   unlockAudio: vi.fn(),
   useAudioReady: () => true,
@@ -38,9 +43,11 @@ vi.mock("@tanstack/react-router", () => ({
 function setup() {
   const demo = createDemoSource({ random: () => 0.5 })
   const view = renderWithQuery(
-    <MmSourceContext value={demo.source}>
-      <PlayPage />
-    </MmSourceContext>
+    <TooltipProvider>
+      <MmSourceContext value={demo.source}>
+        <PlayPage />
+      </MmSourceContext>
+    </TooltipProvider>
   )
   return { ...demo, ...view }
 }
@@ -122,7 +129,7 @@ describe("PlayPage (con la demo)", () => {
     expect(
       await screen.findByText("Preparando el servidor")
     ).toBeInTheDocument()
-    expect(screen.getByText(/CM League #1/)).toBeInTheDocument()
+    expect(screen.getAllByText(/CM League #1/).length).toBeGreaterThan(0)
     expect(screen.getByLabelText("Contraseña oculta")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /Conectar/ })).toHaveAttribute(
       "href",
@@ -160,13 +167,17 @@ describe("PlayPage (con la demo)", () => {
       await screen.findByRole("button", { name: "Invitar a un amigo" })
     )
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ma")
-    await user.click(await screen.findByRole("button", { name: /maxi/ }))
+    await user.click(
+      await screen.findByRole("button", { name: /^(?!Invitar|Sacar).*maxi/ })
+    )
     expect(
       await screen.findByText("maxi", { selector: "strong" })
     ).toBeInTheDocument()
     await flush(3500)
     // maxi aceptó: ya es una tarjeta del grupo y no queda lugar para invitar.
-    expect(await screen.findByText("maxi")).toBeInTheDocument()
+    expect(
+      await screen.findByRole("button", { name: "Opciones de maxi" })
+    ).toBeInTheDocument()
     expect(
       screen.queryByRole("button", { name: "Invitar a un amigo" })
     ).toBeNull()
@@ -240,6 +251,26 @@ describe("PlayPage (con la demo)", () => {
     expect(await searchButton()).toBeDisabled()
   })
 
+  it("sin el agente no deja buscar; apagado en el admin, sí", async () => {
+    const { controls, source } = setup()
+    await screen.findByText("tu.nick")
+    expect(screen.getByText("Anticheat activo")).toBeInTheDocument()
+    await act(async () => controls.setFlag("noAgent", true))
+    expect(
+      await screen.findByText("Para jugar necesitás el anticheat activo")
+    ).toBeInTheDocument()
+    expect(await searchButton()).toBeDisabled()
+
+    const config = await source.adminConfig()
+    await act(async () => {
+      await source.saveConfig({ ...config, require_anticheat: false })
+    })
+    expect(
+      await screen.findByText("Anticheat no obligatorio")
+    ).toBeInTheDocument()
+    expect(await searchButton()).toBeEnabled()
+  })
+
   it("avisa el cierre de temporada", async () => {
     const { controls } = setup()
     await screen.findByText("tu.nick")
@@ -267,19 +298,16 @@ describe("PlayPage (con la demo)", () => {
     })
     await flush()
 
-    // Chat a todos y al equipo, en el panel que abre el ícono de la barra.
-    await user.click(screen.getByRole("button", { name: "Chat de la sala" }))
-    await user.type(screen.getByLabelText("Mensaje"), "vamos")
-    await user.click(screen.getByRole("button", { name: "Enviar" }))
-    expect(await screen.findByText("vamos")).toBeInTheDocument()
-    await user.click(screen.getByRole("button", { name: "Todos" }))
-    await user.type(screen.getByLabelText("Mensaje"), "yo voy B")
-    await user.click(screen.getByRole("button", { name: "Enviar" }))
-    expect(await screen.findByText("yo voy B")).toBeInTheDocument()
-    expect(
-      within(screen.getByRole("list", { name: "Mensajes" })).getByText("Equipo")
-    ).toBeInTheDocument()
-    await user.keyboard("{Escape}")
+    // Chat general y chat de equipo, cada uno por su lado.
+    await user.type(screen.getByLabelText("Mensaje a todos"), "vamos")
+    await user.click(screen.getByRole("button", { name: "Enviar a todos" }))
+    const general = screen.getByRole("region", { name: "Chat general" })
+    expect(await within(general).findByText("vamos")).toBeInTheDocument()
+    await user.type(screen.getByLabelText("Mensaje a tu equipo"), "yo voy B")
+    await user.click(screen.getByRole("button", { name: "Enviar a tu equipo" }))
+    const equipo = screen.getByRole("region", { name: "Chat de equipo" })
+    expect(await within(equipo).findByText("yo voy B")).toBeInTheDocument()
+    expect(within(general).queryByText("yo voy B")).toBeNull()
 
     // Reportar a un jugador: después queda deshabilitado.
     await user.click(screen.getByRole("button", { name: "Reportar a gordo" }))
@@ -329,11 +357,8 @@ describe("PlayPage (con la demo)", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("Jugada de la partida")).toBeInTheDocument()
 
-    // Por jugadores: una sola tabla con los 10.
-    await user.click(
-      screen.getByRole("button", { name: "Ordenar por jugadores" })
-    )
-    expect(screen.getAllByRole("table")).toHaveLength(1)
+    // Las mismas tablas de Mixes, una por equipo.
+    expect(screen.getAllByRole("table")).toHaveLength(2)
 
     // Sigue a la vista aunque la API ya no la devuelva, hasta volver a Jugar.
     await flush(7000)
@@ -352,7 +377,9 @@ describe("PlayPage (con la demo)", () => {
       await screen.findByRole("button", { name: "Invitar a un amigo" })
     )
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ma")
-    await user.click(await screen.findByRole("button", { name: /maxi/ }))
+    await user.click(
+      await screen.findByRole("button", { name: /^(?!Invitar|Sacar).*maxi/ })
+    )
     await flush(3500)
 
     // Hacer líder a maxi.
@@ -392,7 +419,9 @@ describe("PlayPage (con la demo)", () => {
       await screen.findByRole("button", { name: "Invitar a un amigo" })
     )
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ju")
-    await user.click(await screen.findByRole("button", { name: /juanchi/ }))
+    await user.click(
+      await screen.findByRole("button", { name: /^(?!Invitar|Sacar).*juanchi/ })
+    )
     await flush(3500)
     await user.click(
       await screen.findByRole("button", { name: "Opciones de juanchi" })
@@ -402,6 +431,171 @@ describe("PlayPage (con la demo)", () => {
     await user.click(screen.getByRole("button", { name: "Sacar del grupo" }))
     await flush()
     expect((await source.state()).party).toBeNull()
+  })
+
+  it("muestra con quién ya jugaste y lleva a la partida", async () => {
+    const { user, controls } = setup()
+    await user.click(await searchButton())
+    await act(async () => {
+      controls.skip()
+      controls.skip()
+      controls.skip()
+    })
+    await flush()
+    const nacho = screen.getAllByRole("button", {
+      name: /^Jugaste \d+ (con|contra) nacho$/,
+    })
+    expect(nacho.length).toBeGreaterThan(0)
+    // Quien no jugó nunca con vos no muestra nada.
+    expect(
+      screen.queryByRole("button", { name: /^Jugaste \d+ (con|contra) gordo$/ })
+    ).toBeNull()
+    await user.click(nacho[0]!)
+    expect(
+      (await screen.findAllByRole("link", { name: /:/ })).length
+    ).toBeGreaterThan(0)
+  })
+
+  it("muestra la probabilidad de ganar, el ELO en juego y sugiere qué banear", async () => {
+    const { user, controls } = setup()
+    await screen.findByText("tu.nick")
+    await act(async () => controls.setFlag("captain", true))
+    await user.click(await searchButton())
+    await act(async () => {
+      controls.skip()
+      controls.skip()
+    })
+    // El rival banea primero: después es tu turno.
+    await flush(4000)
+    expect(
+      await screen.findByRole("img", { name: /Probabilidad de ganar/ })
+    ).toBeInTheDocument()
+    expect(screen.getByText(/En juego:/)).toBeInTheDocument()
+    expect(screen.getByText(/Te conviene banear/)).toBeInTheDocument()
+  })
+
+  it("al terminar: resumen, felicitar una vez y jugar de nuevo", async () => {
+    const { user, controls } = setup()
+    await user.click(await searchButton())
+    await act(async () => {
+      for (let i = 0; i < 6; i++) controls.skip()
+    })
+    await flush()
+    await act(async () => controls.finish())
+    await flush()
+    expect(await screen.findByText("Tu partida")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Felicitar a nacho" }))
+    expect(
+      await screen.findByRole("button", { name: "Felicitaste a nacho" })
+    ).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Felicitar a lauti" })
+    ).toBeDisabled()
+    await user.click(screen.getByRole("button", { name: "Jugar de nuevo" }))
+    expect(
+      await screen.findByRole("button", { name: "Cancelar" })
+    ).toBeInTheDocument()
+  })
+
+  it("el bloqueo es de VIP, de 1 solo, y te lo manda al otro equipo", async () => {
+    const { user, controls, source } = setup()
+    await user.type(
+      await screen.findByLabelText("Buscar a quién bloquear"),
+      "lau"
+    )
+    await user.click(
+      await screen.findByRole("button", { name: "Bloquear a lauti" })
+    )
+    expect(
+      await screen.findByRole("button", { name: "Sacar el bloqueo a lauti" })
+    ).toBeInTheDocument()
+    expect(screen.queryByLabelText("Buscar a quién bloquear")).toBeNull()
+
+    await user.click(await searchButton())
+    await act(async () => controls.skip())
+    await flush()
+    const players = (await source.state()).lobby!.players
+    const team = (n: string) => players.find((p) => p.nick === n)!.team
+    expect(team("lauti")).not.toBe(team("tu.nick"))
+  })
+
+  it("sin VIP el bloqueo está cerrado", async () => {
+    const { controls } = setup()
+    await screen.findByText("tu.nick")
+    await act(async () => controls.setFlag("notVip", true))
+    expect(await screen.findByText("Exclusivo para VIP")).toBeInTheDocument()
+  })
+
+  it("si te desconectás, el aviso aparece y se va cuando volvés", async () => {
+    const demo = createDemoSource({ random: () => 0.5 })
+    renderWithQuery(
+      <MmSourceContext value={demo.source}>
+        <ReconnectBanner />
+      </MmSourceContext>
+    )
+    await demo.source.join("5v5", null)
+    for (let i = 0; i < 10; i++) {
+      if ((await demo.source.state()).lobby?.status === "live") break
+      await act(async () => demo.controls.skip())
+      await flush()
+    }
+    await act(async () => demo.controls.meLeaves())
+    await flush()
+    expect(
+      await screen.findByText("Te desconectaste de la partida")
+    ).toBeInTheDocument()
+    await act(async () => demo.controls.meLeaves())
+    await flush()
+    expect(screen.queryByText("Te desconectaste de la partida")).toBeNull()
+  })
+
+  it("muestra la cola, las sanciones y avisa si un amigo busca", async () => {
+    const { controls } = setup()
+    await act(async () =>
+      (
+        await screen.findByRole("button", {
+          name: "Ver la actividad de la cola",
+        })
+      ).focus()
+    )
+    await flush(1000)
+    expect((await screen.findAllByText("faltan 4")).length).toBeGreaterThan(0)
+    expect(
+      screen.getByText("Baneo del servidor", { exact: false })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Invitar a maxi al grupo" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("Todavía no te marcó")).toBeInTheDocument()
+    await act(async () => controls.friendSearches())
+    await flush()
+    expect(alertFriend).toHaveBeenCalledWith("maxi")
+    expect(await screen.findByText("Buscando partida")).toBeInTheDocument()
+  })
+
+  it("eligen un sonido de los admins, y subir uno propio es de VIP", async () => {
+    const { user, controls, source } = setup()
+    await user.click(
+      await screen.findByRole("button", { name: "Configuración" })
+    )
+    await user.click(await screen.findByRole("button", { name: "Campana" }))
+    await flush()
+    const state = await source.state()
+    expect(state.sounds.selected).toBe("snd-campana")
+    expect(state.sounds.url).toMatch(/^data:audio/)
+
+    await user.upload(
+      screen.getByLabelText("Archivo de tu sonido"),
+      new File(["x"], "mio.mp3", { type: "audio/mpeg" })
+    )
+    await flush()
+    expect((await source.state()).sounds.custom?.name).toBe("mio.mp3")
+
+    await act(async () => controls.setFlag("notVip", true))
+    await flush()
+    expect(await screen.findByText(/exclusivo para VIP/)).toBeInTheDocument()
+    // Sin VIP vuelve al predeterminado: su sonido deja de usarse.
+    expect((await source.state()).sounds.selected).toBeNull()
   })
 
   it("rechazar la partida deja una sanción", async () => {

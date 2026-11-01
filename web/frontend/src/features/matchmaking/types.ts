@@ -45,10 +45,27 @@ export type MmPlayer = MmCosmetics & {
   is_me: boolean
   photo_url: string | null
   country: Country | null
+  /** Agente del anticheat activo (`ac_public_status`). */
+  anticheat: boolean
+  /** Últimos 5 resultados, del más nuevo al más viejo. */
+  form: ("W" | "L")[]
+  /** Su mejor mapa en las últimas partidas. */
+  fav_map: { map: string; win_pct: number } | null
+  /** Partidas anteriores con este jugador (de quien mira): en su equipo y en contra. */
+  meetings: { with: MmMeeting[]; against: MmMeeting[] }
   /** Último cambio de ELO (la flecha de la tarjeta); null sin partidas. */
   elo_trend: number | null
   /** Sus últimas 30 partidas; null si no tiene ninguna. */
   recent: MmRecent | null
+}
+
+export type MmMeeting = {
+  match_id: string
+  map: string | null
+  played_at: string
+  /** Si ganó quien mira. */
+  won: boolean
+  score: string
 }
 
 /** Promedios de las últimas 30 partidas de un jugador (vista `player_recent_stats`). */
@@ -101,6 +118,8 @@ export type MmServer = {
   address: string
   /** Solo la reciben los 10 de la sala, desde `assigned`. */
   password: string
+  /** SourceTV (`game_servers.tv_port`), para "Ver en CM League TV". */
+  tv: { host: string; port: number } | null
 }
 
 export type MmVetoMap = {
@@ -108,7 +127,9 @@ export type MmVetoMap = {
   /** "Dust2"; el nombre del servidor es `name`. */
   label: string
   image_url: string | null
-  background_url: string | null
+  /** % de victorias de cada equipo en este mapa (promedio de sus jugadores); null sin datos. */
+  team1_win_pct: number | null
+  team2_win_pct: number | null
 }
 
 export type MmVetoBan = {
@@ -132,7 +153,6 @@ export type MmChatMessage = {
   nick: string
   /** null = a todos; si no, solo lo ve ese equipo. */
   team: 1 | 2 | null
-  mine: boolean
   message: string
   created_at: string
 }
@@ -153,9 +173,12 @@ export type MmLobby = {
   server: MmServer | null
   match_id: string | null
   end_reason: string | null
-  chat: MmChatMessage[]
   /** player_id de los que ya reportó el que mira en esta sala. */
   reported: string[]
+  /** A quién felicitó el que mira en esta partida (uno por partida). */
+  commended: string | null
+  /** ELO en juego para el que mira; null si el modo no da ELO. */
+  elo_stake: { win: number; loss: number } | null
 }
 
 export type MmQueue = {
@@ -165,6 +188,8 @@ export type MmQueue = {
   position: number
   /** ± ELO que acepta hoy la búsqueda; null = sin límite. */
   elo_window: number | null
+  /** Espera estimada en segundos; null sin datos o sin servidores libres. */
+  eta_s: number | null
 }
 
 export type MmPartyMember = MmCosmetics & {
@@ -216,6 +241,25 @@ export type MmMe = MmCosmetics & {
   recent: ("W" | "L")[]
 }
 
+export type MmSound = { id: string; name: string; url: string }
+
+export type MmFriend = {
+  player_id: string
+  nick: string
+  level: number
+  /** null = todavía no te marcó, así que no se ve su estado. */
+  status: "free" | "queue" | "playing" | "offline" | null
+}
+
+export type MmSanction = {
+  id: string
+  kind: "penalty" | "mm_ban" | "server_ban"
+  reason: string
+  created_at: string
+  /** null = sin vencimiento. */
+  until: string | null
+}
+
 export type MmState = {
   open: boolean
   me: MmMe
@@ -234,6 +278,42 @@ export type MmState = {
   party: MmParty | null
   invites: MmInvite[]
   penalty: MmPenalty | null
+  /** Bloqueo de compañeros: con quién no te toca en el mismo equipo. */
+  blocks: {
+    list: { player_id: string; nick: string }[]
+    max: number
+    vip_only: boolean
+    /** Si esta cuenta puede usarlo. */
+    allowed: boolean
+  }
+  /** Quién está buscando ahora, por modo y por nivel. */
+  queue_activity: {
+    modes: { mode: string; searching: number; missing: number }[]
+    levels: { label: string; count: number }[]
+  }
+  /** Sonido de partida encontrada. */
+  sounds: {
+    /** Los que subieron los admins. */
+    catalog: MmSound[]
+    /** El elegido; null = el predeterminado. */
+    selected: string | null
+    /** El propio, si es VIP y subió uno. */
+    custom: MmSound | null
+    can_upload: boolean
+    /** Qué reproducir; null = el predeterminado. */
+    url: string | null
+  }
+  /** A quiénes marcó como amigos. */
+  friends: MmFriend[]
+  /** Historial propio: sanciones de la cola, exclusiones y baneos del servidor. */
+  sanctions: {
+    items: MmSanction[]
+    /** Escalón actual de la escalera de sanciones y cuándo baja. */
+    level: number
+    level_resets_at: string | null
+  }
+  /** Anticheat: si la cola lo exige y cómo está el agente de quien mira. */
+  anticheat: { required: boolean; status: "ok" | "no_agent" | "stale" }
   /** Exclusión del matchmaking por un reporte. */
   ban: { until: string; reason: string } | null
   /** Cuenta nueva: lo que le falta para poder jugar; null = ya puede. */
@@ -246,7 +326,12 @@ export type MmState = {
 }
 
 /** Evento del socket: solo el tipo y la sala; el estado se vuelve a pedir por REST. */
-export type MmEvent = { t: string; lobby?: string }
+export type MmEvent = {
+  t: string
+  lobby?: string
+  /** En `friend.searching`: el amigo que entró a la cola. */
+  friend?: { player_id: string; nick: string }
+}
 
 export type PasswordKind = "mix" | "idle"
 
@@ -290,6 +375,10 @@ export type MmAdminConfig = {
   /** Minutos de cada escalón de sanción. */
   penalty_ladder: number[]
   reconnect_minutes: number
+  /** Exigir el agente del anticheat para jugar. */
+  require_anticheat: boolean
+  max_blocks: number
+  blocks_vip_only: boolean
   min_mixes: number
   min_account_days: number
   season_queue_close_minutes: number
@@ -348,18 +437,41 @@ export type MmAdminLobby = {
   created_at: string
 }
 
-/** Un mapa del catálogo (`map_pool`), el mismo para Mixes, PCW, torneos y matchmaking. */
-export type MmCatalogMap = {
-  name: string
-  /** Nombre visible; null = se arma del nombre (`de_dust2` → "Dust2"). */
-  display_name: string | null
-  /** Versiones del servidor; la primera es el nombre. */
-  versions: string[]
-  active: boolean
-  /** Tarjeta del veto y fondo del marcador de Mixes. */
-  image_url: string | null
-  /** Fondo grande de la sala de matchmaking. */
-  background_url: string | null
+/** Lo que se muestra debajo de Mi grupo; sale de rutas que ya existen. */
+export type MmFeed = {
+  /** La mejor jugada de la semana; null si no hay. */
+  highlight: {
+    match_id: string
+    nick: string
+    title: string
+    image_url: string | null
+  } | null
+  live: {
+    uid: string
+    map: string | null
+    image_url: string | null
+    side1_name: string
+    side2_name: string
+    score1: number
+    score2: number
+    round: number
+  }[]
+  recent: {
+    match_id: string
+    map: string | null
+    image_url: string | null
+    won: boolean
+    score: string
+    kills: number
+    deaths: number
+    rating: number | null
+    elo_delta: number | null
+  }[]
+  top: {
+    position: number
+    nick: string
+    photo_url: string | null
+    elo: number
+    level: number
+  }[]
 }
-
-export type MapArt = "image" | "background"

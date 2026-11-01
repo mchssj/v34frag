@@ -2,20 +2,23 @@ import { createContext, useContext } from "react"
 
 import { authFetch } from "@/auth/authFetch"
 import { errorFromResponse, networkError } from "@/api/errors"
+import type { Schemas } from "@/api/client"
+import { mapImage, type MapEntry } from "@/features/maps/queries"
 import { env } from "@/lib/env"
 import type {
   InvitePref,
-  MapArt,
   MmAdminConfig,
   MmAdminLobby,
   MmAdminBan,
   MmAdminMap,
   MmAdminReport,
   MmAdminServer,
-  MmCatalogMap,
+  MmChatMessage,
   MmEvent,
+  MmFeed,
   MmPasswordEntry,
   MmPlayerHit,
+  MmSound,
   MmState,
   MmStatsDay,
   ReportReason,
@@ -27,19 +30,33 @@ import type {
  */
 export type MmSource = {
   state(signal?: AbortSignal): Promise<MmState>
+  feed(signal?: AbortSignal): Promise<MmFeed>
   join(mode: string, region: string | null): Promise<MmState>
   setInvitePref(pref: InvitePref): Promise<MmState>
   leave(): Promise<MmState>
   accept(): Promise<MmState>
   decline(): Promise<MmState>
-  veto(map: string): Promise<MmState>
-  sendChat(message: string, teamOnly: boolean): Promise<MmState>
+  veto(matchId: string, map: string): Promise<MmState>
+  chat(matchId: string, signal?: AbortSignal): Promise<MmChatMessage[]>
+  sendChat(matchId: string, message: string, teamOnly: boolean): Promise<void>
   report(
     lobbyId: string,
     playerId: string,
     reason: ReportReason,
     note: string
   ): Promise<MmState>
+  commend(lobbyId: string, playerId: string): Promise<MmState>
+  block(playerId: string): Promise<MmState>
+  unblock(playerId: string): Promise<MmState>
+  setSound(soundId: string | null): Promise<MmState>
+  /** Solo VIP. */
+  uploadMySound(file: File): Promise<MmState>
+  deleteMySound(): Promise<MmState>
+  adminSounds(signal?: AbortSignal): Promise<MmSound[]>
+  uploadSound(name: string, file: File): Promise<MmSound>
+  deleteSound(soundId: string): Promise<void>
+  addFriend(playerId: string): Promise<MmState>
+  removeFriend(playerId: string): Promise<MmState>
   searchPlayers(q: string, signal?: AbortSignal): Promise<MmPlayerHit[]>
   invite(playerId: string): Promise<MmState>
   respondInvite(inviteId: string, accept: boolean): Promise<MmState>
@@ -69,11 +86,6 @@ export type MmSource = {
   unban(userId: string): Promise<void>
   adminStats(days: number, signal?: AbortSignal): Promise<MmStatsDay[]>
   setServerEnabled(serverId: string, enabled: boolean): Promise<MmAdminServer>
-  adminCatalog(signal?: AbortSignal): Promise<MmCatalogMap[]>
-  /** El catálogo completo, en orden (no borra: un mapa se retira con `active: false`). */
-  saveCatalog(maps: MmCatalogMap[]): Promise<MmCatalogMap[]>
-  uploadMapArt(name: string, kind: MapArt, file: File): Promise<MmCatalogMap>
-  removeMapArt(name: string, kind: MapArt): Promise<MmCatalogMap>
   adminLobbies(signal?: AbortSignal): Promise<MmAdminLobby[]>
   cancelLobby(lobbyId: string): Promise<void>
   subscribe(
@@ -111,6 +123,51 @@ const send = <T>(path: string, body: unknown, method = "POST") =>
 export function createApiSource(openSocket: MmSocketFactory): MmSource {
   return {
     state: (signal) => call("/api/v1/mm/state", { signal }),
+    // Rutas que ya existen. Cada una puede fallar sola (sin sesión no hay "mis partidas").
+    feed: async (signal) => {
+      const get = <T>(path: string) =>
+        call<{ items: T[] }>(path, { signal })
+          .then((r) => r.items)
+          .catch(() => [] as T[])
+      const [live, mine, top, maps] = await Promise.all([
+        get<Schemas["LiveMixSummary"]>("/api/v1/mixes/live?per=4"),
+        get<Schemas["PlayerMatch"]>("/api/v1/me/matches?per=5"),
+        get<Schemas["RankingPlayer"]>("/api/v1/ranking/players?per=5"),
+        get<MapEntry>("/api/v1/maps?include_inactive=true&per=100"),
+      ])
+      return {
+        // La jugada de la semana todavía no tiene ruta.
+        highlight: null,
+        live: live.map((m) => ({
+          uid: m.uid,
+          map: m.map,
+          image_url: mapImage(maps, m.map),
+          side1_name: m.side1.name ?? "Equipo A",
+          side2_name: m.side2.name ?? "Equipo B",
+          score1: m.side1.score ?? 0,
+          score2: m.side2.score ?? 0,
+          round: m.rounds_played,
+        })),
+        recent: mine.map((m) => ({
+          match_id: m.match_id,
+          map: m.map,
+          image_url: mapImage(maps, m.map),
+          won: m.won === true,
+          score: `${m.score1 ?? 0} : ${m.score2 ?? 0}`,
+          kills: m.kills ?? 0,
+          deaths: m.deaths ?? 0,
+          rating: m.rating,
+          elo_delta: m.elo_delta,
+        })),
+        top: top.map((p) => ({
+          position: p.position,
+          nick: p.player.alias,
+          photo_url: p.player.photo_url,
+          elo: p.elo,
+          level: p.level ?? 1,
+        })),
+      }
+    },
     join: (mode, region) => send("/api/v1/mm/queue", { mode, region }),
     // Privado o Público es una preferencia más de la cuenta (ruta que ya existe).
     setInvitePref: async (mm_invites) => {
@@ -120,9 +177,35 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     leave: () => call("/api/v1/mm/queue", { method: "DELETE" }),
     accept: () => post("/api/v1/mm/lobby/accept"),
     decline: () => post("/api/v1/mm/lobby/decline"),
-    veto: (map) => send("/api/v1/mm/lobby/veto", { map }),
-    sendChat: (message, team_only) =>
-      send("/api/v1/mm/lobby/chat", { message, team_only }),
+    // Veto y chat: las rutas de partida que ya existen (la partida se crea al empezar el veto).
+    veto: async (matchId, map) => {
+      await send(`/api/v1/matches/${encodeURIComponent(matchId)}/veto`, { map })
+      return call("/api/v1/mm/state")
+    },
+    chat: async (matchId, signal) =>
+      (
+        await call<{
+          items: {
+            id: number
+            alias: string
+            message: string
+            created_at: string
+            side?: 1 | 2 | null
+          }[]
+        }>(`/api/v1/matches/${encodeURIComponent(matchId)}/chat`, { signal })
+      ).items.map((m) => ({
+        id: String(m.id),
+        nick: m.alias,
+        team: m.side ?? null,
+        message: m.message,
+        created_at: m.created_at,
+      })),
+    sendChat: async (matchId, message, teamOnly) => {
+      await send(`/api/v1/matches/${encodeURIComponent(matchId)}/chat`, {
+        message,
+        team_only: teamOnly,
+      })
+    },
     report: (lobby_id, player_id, reason, note) =>
       send("/api/v1/mm/reports", { lobby_id, player_id, reason, note }),
     // Usa la búsqueda de jugadores que ya existe; el backend filtra a quién se puede invitar.
@@ -143,6 +226,38 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
         elo: p.elo ?? 0,
         level: p.level ?? 1,
       })),
+    commend: (lobby_id, player_id) =>
+      send("/api/v1/mm/commends", { lobby_id, player_id }),
+    setSound: (sound_id) =>
+      send("/api/v1/mm/sounds/selected", { sound_id }, "PUT"),
+    uploadMySound: (file) => {
+      const body = new FormData()
+      body.set("file", file)
+      return call("/api/v1/mm/sounds/mine", { method: "POST", body })
+    },
+    deleteMySound: () => call("/api/v1/mm/sounds/mine", { method: "DELETE" }),
+    adminSounds: (signal) =>
+      call<{ items: MmSound[] }>("/api/v1/admin/mm/sounds", { signal }).then(
+        (r) => r.items
+      ),
+    uploadSound: (name, file) => {
+      const body = new FormData()
+      body.set("name", name)
+      body.set("file", file)
+      return call("/api/v1/admin/mm/sounds", { method: "POST", body })
+    },
+    deleteSound: (id) =>
+      call(`/api/v1/admin/mm/sounds/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+    addFriend: (player_id) => send("/api/v1/mm/friends", { player_id }),
+    removeFriend: (id) =>
+      call(`/api/v1/mm/friends/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+    block: (player_id) => send("/api/v1/mm/blocks", { player_id }),
+    unblock: (id) =>
+      call(`/api/v1/mm/blocks/${encodeURIComponent(id)}`, { method: "DELETE" }),
     invite: (player_id) => send("/api/v1/mm/party/invites", { player_id }),
     respondInvite: (id, accept) =>
       post(
@@ -192,29 +307,6 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
         { mm_enabled },
         "PATCH"
       ),
-    adminCatalog: async (signal) =>
-      (
-        await call<{ items: MmCatalogMap[] }>(
-          "/api/v1/maps?include_inactive=true&per=100",
-          { signal }
-        )
-      ).items,
-    saveCatalog: async (maps) => {
-      await send("/api/v1/admin/maps", { maps }, "PUT")
-      return maps
-    },
-    uploadMapArt: (name, kind, file) => {
-      const form = new FormData()
-      form.append("file", file)
-      return call(`/api/v1/admin/maps/${encodeURIComponent(name)}/${kind}`, {
-        method: "POST",
-        body: form,
-      })
-    },
-    removeMapArt: (name, kind) =>
-      call(`/api/v1/admin/maps/${encodeURIComponent(name)}/${kind}`, {
-        method: "DELETE",
-      }),
     adminLobbies: (signal) => call("/api/v1/admin/mm/lobbies", { signal }),
     cancelLobby: (id) =>
       post(`/api/v1/admin/mm/lobbies/${encodeURIComponent(id)}/cancel`),

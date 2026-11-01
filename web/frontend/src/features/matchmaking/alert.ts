@@ -50,8 +50,26 @@ export function askNotificationPermission() {
     void Notification.requestPermission()
 }
 
-export function alertMatchFound() {
-  tones([880, 1320], 0.18)
+const MAX_SOUND_MS = 10_000
+
+/** Reproduce un sonido subido (corta a los 10 s); sin URL o si falla, el predeterminado. */
+function playSound(url: string | null | undefined) {
+  const fallback = () => tones([880, 1320], 0.18)
+  if (!url) return fallback()
+  const sound = new Audio(url)
+  sound.volume = 0.6
+  sound.play().catch(fallback)
+  setTimeout(() => sound.pause(), MAX_SOUND_MS)
+}
+
+/** Probar un sonido desde Configuración: viene de un clic, así que el navegador deja sonar. */
+export function previewSound(url: string | null) {
+  unlockAudio()
+  playSound(url)
+}
+
+export function alertMatchFound(soundUrl?: string | null) {
+  playSound(soundUrl)
   notify("Partida encontrada", "Tenés 20 segundos para aceptar.", "mm-found")
 }
 
@@ -86,4 +104,18 @@ function tones(freqs: number[], step: number) {
     osc.start(ac.currentTime + i * step)
     osc.stop(ac.currentTime + i * step + step * 0.8)
   })
+}
+
+export function alertServerReady() {
+  tones([520, 780, 1040], 0.16)
+  notify(
+    "Tu servidor está listo",
+    "Entrá antes de que venza el tiempo.",
+    "mm-server"
+  )
+}
+
+export function alertFriend(nick: string) {
+  tones([740, 990], 0.1)
+  notify("Tu amigo está buscando", `${nick} entró a la cola.`, "mm-friend")
 }

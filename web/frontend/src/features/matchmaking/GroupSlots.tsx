@@ -28,7 +28,7 @@ import { useMmSource } from "./source"
 import type { Country, MmCosmetics, MmState } from "./types"
 import { useNow } from "./useNow"
 
-// "Mi grupo" (plan, sección 7): una tarjeta por lugar del equipo. En el medio, el jugador; al lado,
+// "Tu equipo" (plan, sección 7): una tarjeta por lugar del equipo. En el medio, el jugador; al lado,
 // el grupo; después, los lugares que el grupo puede llenar (se invita) y los que llena la cola.
 
 type Card = MmCosmetics & {
@@ -108,21 +108,21 @@ export function GroupSlots({
   const slots = buildSlots(state, teamSize)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-full flex-col gap-3">
       {/* En celular (menos de 640 px) la tarjeta propia va arriba y grande, y los demás lugares en
           una fila de tarjetas chicas (plan, decisión "Celular"). */}
       <ul
-        className="grid grid-cols-4 gap-2 sm:grid-cols-[repeat(var(--cols),minmax(0,1fr))] sm:gap-3"
+        className="grid w-full flex-1 grid-cols-4 gap-2 sm:grid-cols-[repeat(var(--cols),minmax(0,1fr))] sm:gap-3"
         style={{ "--cols": teamSize } as CSSProperties}
       >
         {slots.map((slot, i) => (
           <li
             key={i}
             className={cn(
-              "sm:aspect-[3/4] sm:max-h-[260px] sm:min-h-[180px]",
+              "sm:min-h-[260px]",
               slot.kind === "member" && slot.card.is_me
                 ? "col-span-full h-56 max-sm:order-first sm:col-span-1 sm:h-auto"
-                : "aspect-square sm:aspect-[3/4]"
+                : "aspect-square sm:aspect-auto"
             )}
           >
             {slot.kind === "member" && (
@@ -162,7 +162,7 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
         card.background_url
           ? "border-white/15 text-white"
           : card.is_me
-            ? "border-foreground/15 bg-[radial-gradient(120%_80%_at_50%_0%,color-mix(in_oklch,var(--foreground)_14%,transparent),transparent_70%),linear-gradient(to_bottom,color-mix(in_oklch,var(--foreground)_6%,var(--card)),var(--card))]"
+            ? "bg-card shadow-[inset_0_0_0_2px_var(--primary)]"
             : "bg-card"
       )}
     >
@@ -172,7 +172,7 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
       {card.is_leader && (
         <CrownIcon
           aria-label="Líder del grupo"
-          className="absolute top-2.5 right-2.5 size-4 text-sidebar-primary"
+          className="absolute top-2.5 right-2.5 size-4 text-primary"
         />
       )}
       {card.frame_url ? (
@@ -215,7 +215,7 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
 }
 
 const dashed =
-  "flex size-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground"
+  "flex size-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-background/30 text-muted-foreground"
 
 function EmptySlot() {
   return (

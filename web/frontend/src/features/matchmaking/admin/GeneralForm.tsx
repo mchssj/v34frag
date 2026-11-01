@@ -32,6 +32,9 @@ const int = (min: number, max: number) =>
 const schema = z
   .object({
     open: z.boolean(),
+    require_anticheat: z.boolean(),
+    blocks_vip_only: z.boolean(),
+    max_blocks: int(0, 10),
     modes: z.array(
       z.object({
         mode: z.string(),
@@ -127,6 +130,22 @@ function Form({ initial }: { initial: MmAdminConfig }) {
         />
         <Controller
           control={c}
+          name="require_anticheat"
+          render={({ field }) => (
+            <label className="flex items-start gap-3 text-sm">
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
+              <span className="flex flex-col">
+                Anticheat obligatorio
+                <span className="text-xs text-muted-foreground">
+                  Sin el agente activo no se entra a la cola y el servidor
+                  expulsa al jugador. Apagarlo vale para las salas nuevas.
+                </span>
+              </span>
+            </label>
+          )}
+        />
+        <Controller
+          control={c}
           name="modes"
           render={({ field, fieldState }) => (
             <fieldset className="flex flex-col gap-2">
@@ -184,6 +203,29 @@ function Form({ initial }: { initial: MmAdminConfig }) {
             control={c}
             name="min_account_days"
             label="Días de cuenta mínimos"
+          />
+        </Grid>
+      </Section>
+
+      <Section
+        title="Bloqueo de compañeros"
+        description="Con quien bloqueó no le toca en el mismo equipo; en contra, sí. En 0 está apagado."
+      >
+        <Controller
+          control={c}
+          name="blocks_vip_only"
+          render={({ field }) => (
+            <label className="flex items-center gap-3 text-sm">
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
+              Solo para VIP
+            </label>
+          )}
+        />
+        <Grid>
+          <NumberField
+            control={c}
+            name="max_blocks"
+            label="Bloqueos por cuenta"
           />
         </Grid>
       </Section>
@@ -334,7 +376,10 @@ function Grid({ children }: { children: React.ReactNode }) {
   )
 }
 
-type NumberName = Exclude<keyof Values, "open" | "modes" | "penalty_ladder">
+type NumberName = Exclude<
+  keyof Values,
+  "open" | "modes" | "penalty_ladder" | "require_anticheat" | "blocks_vip_only"
+>
 
 function NumberField({
   control,

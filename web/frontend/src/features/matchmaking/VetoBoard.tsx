@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { secondsLeft, teamName } from "./labels"
+import { suggestBan } from "./room/roomData"
 import { useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby, MmVetoBan, MmVetoMap } from "./types"
@@ -19,24 +20,18 @@ import { useNow } from "./useNow"
 // Veto de capitanes (plan, sección 2): banean por turnos hasta que queda un mapa. Solo el capitán
 // del turno puede hacer clic; los demás lo ven en vivo.
 
-export function VetoBoard({
-  lobby,
-  compact = false,
-}: {
-  lobby: MmLobby
-  /** En la columna del medio de la sala: tres mapas por fila. */
-  compact?: boolean
-}) {
+export function VetoBoard({ lobby }: { lobby: MmLobby }) {
   const source = useMmSource()
   const veto = lobby.veto!
   const now = useNow(veto.turn !== null, 250)
-  const ban = useMmMutation((map: string) => source.veto(map))
+  const ban = useMmMutation((map: string) => source.veto(lobby.match_id!, map))
 
   const me = lobby.players.find((p) => p.is_me)
   const captainOf = (team: 1 | 2) =>
     lobby.players.find((p) => p.team === team && p.is_captain)
   const myTurn = veto.turn !== null && me?.is_captain && me.team === veto.turn
   const left = secondsLeft(veto.deadline, now)
+  const suggestion = me ? suggestBan(veto, me.team) : null
   const banOf = new Map(veto.bans.map((b) => [b.map, b]))
   const turnCaptain = veto.turn ? captainOf(veto.turn) : null
 
@@ -60,10 +55,7 @@ export function VetoBoard({
                 veto.turn === t ? "font-semibold" : "text-muted-foreground"
               )}
             >
-              <CrownIcon
-                aria-hidden
-                className="size-3.5 text-sidebar-primary"
-              />
+              <CrownIcon aria-hidden className="size-3.5 text-primary" />
               {teamName(t)}: {captainOf(t)?.nick ?? "—"}
               {captainOf(t)?.is_me && " (vos)"}
             </span>
@@ -83,14 +75,13 @@ export function VetoBoard({
         </div>
       </CardHeader>
       <CardContent>
-        <ul
-          className={cn(
-            "grid gap-2",
-            compact
-              ? "grid-cols-3"
-              : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-7"
-          )}
-        >
+        {me && veto.turn === me.team && suggestion && (
+          <p className="mb-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs">
+            Te conviene banear <strong>{suggestion.label}</strong>: tu equipo
+            gana {suggestion.mine} %, ellos {suggestion.theirs} %.
+          </p>
+        )}
+        <ul className="flex flex-col gap-1">
           {veto.pool.map((m) => (
             <MapTile
               key={m.name}
@@ -139,33 +130,47 @@ function MapTile({
               : label
         }
         className={cn(
-          "relative flex aspect-[4/3] w-full flex-col justify-end overflow-hidden rounded-xl border bg-muted p-2.5 text-left transition",
-          canBan &&
-            "cursor-pointer hover:border-destructive hover:ring-2 hover:ring-destructive/30",
-          ban && "opacity-45 grayscale",
-          picked && "border-win ring-2 ring-win/40"
+          "flex h-8 w-full items-center gap-2.5 rounded-lg border bg-muted/40 pr-2.5 text-left text-[13px] transition-colors",
+          canBan && "cursor-pointer hover:border-destructive hover:bg-muted",
+          ban && "opacity-50",
+          picked && "border-primary bg-primary/10"
         )}
       >
-        {map.image_url && (
-          <img
-            src={map.image_url}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 -z-0 size-full object-cover"
-          />
+        <span className="h-full w-14 shrink-0 overflow-hidden rounded-l-[inherit] bg-muted">
+          {map.image_url && (
+            <img
+              src={map.image_url}
+              alt=""
+              aria-hidden
+              className={cn("size-full object-cover", ban && "grayscale")}
+            />
+          )}
+        </span>
+        <span className={cn("font-medium", ban && "line-through")}>
+          {label}
+        </span>
+        {!ban && !picked && map.team1_win_pct !== null && (
+          <span
+            title="% de victorias en este mapa de cada equipo"
+            className="ml-auto font-mono text-[11px] text-muted-foreground tabular-nums"
+          >
+            A {map.team1_win_pct}% · B {map.team2_win_pct}%
+          </span>
         )}
-        <span className="relative font-semibold drop-shadow">{label}</span>
         {ban && (
-          <span className="relative mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+          <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
             <BanIcon aria-hidden className="size-3" />
             {teamName(ban.team)}
             {ban.auto && " · auto"}
           </span>
         )}
         {picked && (
-          <span className="relative mt-0.5 text-[11px] font-semibold text-win">
+          <span className="ml-auto text-xs font-semibold text-primary">
             Se juega
           </span>
+        )}
+        {canBan && (
+          <span className="text-xs font-medium text-destructive">Banear</span>
         )}
       </button>
     </li>

@@ -39,14 +39,12 @@ export function Highlights({
       aria-label="Lo más destacado de la partida"
       className="flex flex-col gap-4"
     >
-      <h2 className="text-2xl font-bold tracking-[-0.5px]">
-        Lo más destacado de la partida
-      </h2>
+      <h2 className="text-lg font-semibold">Lo más destacado de la partida</h2>
       <div className="grid gap-5 lg:grid-cols-[1fr_300px] lg:items-center">
         <Video clip={clip} poster={poster} />
         <div className="flex flex-col gap-3">
           {clip.id === clips[0]!.id && (
-            <span className="text-xs font-bold tracking-[2px] text-sidebar-primary uppercase">
+            <span className="text-xs font-bold tracking-[2px] text-primary uppercase">
               Jugada de la partida
             </span>
           )}

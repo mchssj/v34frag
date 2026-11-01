@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 import { useState } from "react"
@@ -21,40 +22,12 @@ import {
   useMmAdminMutation,
 } from "../queries"
 import { useMmSource } from "../source"
-import { CatalogPanel } from "./CatalogPanel"
 import type { MmAdminMap } from "../types"
 
-// Administración › Matchmaking › Mapas, en dos partes: el catálogo (agregar y editar mapas, imagen
-// y fondo) y el veto de cada modo (`mm_mode_maps`, en orden; mínimo 2).
+// Administración › Matchmaking › Mapas: qué mapas del catálogo entran al veto de cada modo y en qué
+// orden (mínimo 2). El catálogo y sus imágenes se editan en Administración › Mapas.
 
 export function MapsPanel() {
-  const [part, setPart] = useState<"catalog" | "veto">("catalog")
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-1">
-        {(
-          [
-            ["catalog", "Catálogo"],
-            ["veto", "Veto por modo"],
-          ] as const
-        ).map(([key, label]) => (
-          <Button
-            key={key}
-            size="sm"
-            variant={part === key ? "secondary" : "ghost"}
-            aria-pressed={part === key}
-            onClick={() => setPart(key)}
-          >
-            {label}
-          </Button>
-        ))}
-      </div>
-      {part === "catalog" ? <CatalogPanel /> : <VetoMapsPanel />}
-    </div>
-  )
-}
-
-function VetoMapsPanel() {
   const source = useMmSource()
   const { data: config } = useQuery(adminConfigOptions(source))
   const [mode, setMode] = useState("5v5")
@@ -136,7 +109,12 @@ function MapsEditor({
         <CardTitle>Mapas del veto en {mode}</CardTitle>
         <CardDescription>
           Los marcados entran al veto de capitanes de este modo, en este orden.
-          Son aparte de los de Mixes. Mínimo 2.
+          Son aparte de los de Mixes. Mínimo 2. Para sumar un mapa o cambiar su
+          imagen, andá a{" "}
+          <Link to="/admin/maps" className="underline underline-offset-4">
+            Administración › Mapas
+          </Link>
+          .
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

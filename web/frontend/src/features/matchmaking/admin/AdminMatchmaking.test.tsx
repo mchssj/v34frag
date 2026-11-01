@@ -10,6 +10,12 @@ vi.mock("sonner", () => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }))
 
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
+}))
+
 function setup() {
   const demo = createDemoSource({ random: () => 0.5 })
   const view = renderWithQuery(
@@ -48,7 +54,6 @@ describe("Administración › Matchmaking", () => {
   it("Mapas: sumar uno y guardar lo pone en el veto; con menos de 2 no guarda", async () => {
     const { user, source } = setup()
     await user.click(screen.getByRole("tab", { name: "Mapas" }))
-    await user.click(screen.getByRole("button", { name: "Veto por modo" }))
     await user.click(
       await screen.findByRole("switch", { name: "de_dust en el veto" })
     )
@@ -65,7 +70,6 @@ describe("Administración › Matchmaking", () => {
   it("Mapas: cada modo tiene su veto", async () => {
     const { user } = setup()
     await user.click(screen.getByRole("tab", { name: "Mapas" }))
-    await user.click(screen.getByRole("button", { name: "Veto por modo" }))
     expect(await screen.findByText("Mapas del veto en 5v5")).toBeInTheDocument()
     await user.click(screen.getByRole("radio", { name: "2v2" }))
     expect(await screen.findByText("Mapas del veto en 2v2")).toBeInTheDocument()

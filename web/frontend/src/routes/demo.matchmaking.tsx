@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { AdminMatchmaking } from "@/features/matchmaking/admin/AdminMatchmaking"
 import { createDemoSource, type DemoFlag } from "@/features/matchmaking/demo"
 import { PlayPage } from "@/features/matchmaking/PlayPage"
+import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
 import { MmSourceContext } from "@/features/matchmaking/source"
 
 // Ejemplo del matchmaking sin API ni sesión (plan docs/bitacora/2026-10-28-matchmaking). Solo en
@@ -27,7 +28,7 @@ function DemoMatchmaking() {
   return (
     <QueryClientProvider client={queryClient}>
       <MmSourceContext value={source}>
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 p-6">
+        <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 p-6">
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed p-3 text-sm">
             <span className="mr-2 font-mono text-xs font-semibold tracking-[1px] text-primary uppercase">
               Demo
@@ -66,6 +67,16 @@ function DemoMatchmaking() {
             >
               El compañero sale del grupo
             </Button>
+            <Button size="sm" variant="outline" onClick={controls.meLeaves}>
+              Me desconecto / vuelvo
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={controls.friendSearches}
+            >
+              Un amigo busca partida
+            </Button>
             {FLAGS.map((f) => (
               <FlagSwitch
                 key={f.flag}
@@ -92,6 +103,7 @@ function DemoMatchmaking() {
               ))}
             </span>
           </div>
+          <ReconnectBanner />
           {view === "player" ? <PlayPage /> : <AdminMatchmaking />}
         </div>
       </MmSourceContext>
@@ -104,6 +116,8 @@ const FLAGS: { flag: DemoFlag; label: string }[] = [
   { flag: "newcomer", label: "Cuenta nueva" },
   { flag: "serversBusy", label: "Servidores ocupados" },
   { flag: "season", label: "Cierre de temporada" },
+  { flag: "noAgent", label: "Sin anticheat" },
+  { flag: "notVip", label: "Sin VIP" },
 ]
 
 function FlagSwitch({

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { GeneralForm } from "./GeneralForm"
 import { LobbiesPanel } from "./LobbiesPanel"
 import { MapsPanel } from "./MapsPanel"
+import { SoundsPanel } from "./SoundsPanel"
 import { ReportsPanel } from "./ReportsPanel"
 import { ServerPasswords } from "./ServerPasswords"
 import { StatsPanel } from "./StatsPanel"
@@ -13,6 +14,7 @@ import { StatsPanel } from "./StatsPanel"
 const TABS = [
   { key: "general", label: "General" },
   { key: "maps", label: "Mapas" },
+  { key: "sounds", label: "Sonidos" },
   { key: "servers", label: "Servidores" },
   { key: "lobbies", label: "Salas" },
   { key: "reports", label: "Reportes" },
@@ -58,6 +60,7 @@ export function AdminMatchmaking() {
       >
         {tab === "general" && <GeneralForm />}
         {tab === "maps" && <MapsPanel />}
+        {tab === "sounds" && <SoundsPanel />}
         {tab === "servers" && <ServerPasswords />}
         {tab === "lobbies" && <LobbiesPanel />}
         {tab === "reports" && <ReportsPanel />}

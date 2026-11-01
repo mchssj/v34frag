@@ -87,22 +87,10 @@ export const REASON_TEXT: Record<ReportReason, string> = {
 }
 
 /** "de_dust2" → "Dust2", "cs_office" → "Office". */
-export function mapLabel(name: string, displayName?: string | null) {
-  if (displayName?.trim()) return displayName.trim()
+export function mapLabel(name: string) {
   const base = name.replace(/^[a-z]{2,4}_/, "").replace(/_/g, " ")
   return base.charAt(0).toUpperCase() + base.slice(1)
 }
-
-/** Límites de las imágenes del mapa (plan, decisión "Imagen y fondo de cada mapa"). */
-export const MAP_ART_RULES = {
-  image: { maxMb: 2, hint: "JPEG, PNG o WebP, hasta 2 MB, idealmente 4:3" },
-  background: {
-    maxMb: 4,
-    hint: "JPEG, PNG o WebP, hasta 4 MB, idealmente 1920 × 1080",
-  },
-} as const
-
-export const MAP_ART_TYPES = ["image/jpeg", "image/png", "image/webp"]
 
 /** Si una región es un país con bandera (las regiones son texto libre). */
 export const isCountry = (r: string | null): r is Country =>

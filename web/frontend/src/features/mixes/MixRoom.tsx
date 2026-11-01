@@ -339,7 +339,7 @@ const RESULT: Record<SideResult, { label: string; className: string }> = {
   draw: { label: "Empate", className: "bg-muted text-muted-foreground" },
 }
 
-function SideTable({
+export function SideTable({
   side,
   accent,
   status,

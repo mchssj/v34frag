@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "cn"
 import { SendIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
@@ -5,107 +6,114 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { useMmMutation } from "./queries"
+import { mmKeys } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby } from "./types"
 
-const MAX = 200
+const MAX = 300
 
-// Chat de sala (plan, decisión "Chat de sala"): a todos o solo al equipo.
-export function LobbyChat({ lobby }: { lobby: MmLobby }) {
+// Chat de sala (plan, decisión "Chat de sala"): debajo de los jugadores: el de equipo en la columna
+// propia y el general en la del rival. Los dos salen del chat de la partida.
+export function LobbyChat({
+  lobby,
+  scope,
+  className,
+}: {
+  lobby: MmLobby
+  scope: "all" | "team"
+  className?: string
+}) {
   const source = useMmSource()
   const [text, setText] = useState("")
-  const [teamOnly, setTeamOnly] = useState(false)
-  const send = useMmMutation(({ m, team }: { m: string; team: boolean }) =>
-    source.sendChat(m, team)
+  const matchId = lobby.match_id!
+  const chatKey = [...mmKeys.all, "chat", matchId]
+  const queryClient = useQueryClient()
+  const { data = [] } = useQuery({
+    queryKey: chatKey,
+    queryFn: ({ signal }) => source.chat(matchId, signal),
+  })
+  const team = scope === "team"
+  const send = useMutation({
+    mutationFn: (m: string) => source.sendChat(matchId, m, team),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKey }),
+  })
+  const me = lobby.players.find((p) => p.is_me)
+  const messages = data.filter((m) =>
+    team ? m.team !== null && m.team === me?.team : m.team === null
   )
-  const end = useRef<HTMLLIElement>(null)
-  const count = lobby.chat.length
+  const list = useRef<HTMLUListElement>(null)
+  const count = messages.length
   useEffect(() => {
-    end.current?.scrollIntoView({ block: "nearest" })
+    // Solo baja la lista: scrollIntoView movería también la página.
+    if (list.current) list.current.scrollTop = list.current.scrollHeight
   }, [count])
 
   const submit = () => {
     const m = text.trim()
     if (!m) return
-    send.mutate(
-      { m, team: teamOnly },
-      {
-        onSuccess: () => setText(""),
-        onError: (e) => toast.error(errorMessage(e)),
-      }
-    )
+    send.mutate(m, {
+      onSuccess: () => setText(""),
+      onError: (e) => toast.error(errorMessage(e)),
+    })
   }
+  const where = team ? "a tu equipo" : "a todos"
 
   return (
-    <Card size="sm" className="h-full">
-      <CardHeader>
-        <CardTitle>Chat de la sala</CardTitle>
-      </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col gap-2">
-        <ul
-          aria-label="Mensajes"
-          aria-live="polite"
-          className="flex h-56 flex-col gap-1.5 overflow-y-auto rounded-lg border bg-muted/30 p-2 text-sm"
+    <section
+      aria-label={team ? "Chat de equipo" : "Chat general"}
+      className={cn(
+        "flex h-64 flex-col overflow-hidden rounded-xl border bg-card",
+        className
+      )}
+    >
+      <h2 className="border-b px-4 py-2 text-sm font-semibold">
+        {team ? "Chat de equipo" : "Chat general"}
+      </h2>
+      <ul
+        ref={list}
+        aria-label="Mensajes"
+        aria-live="polite"
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 py-2 text-[13px]"
+      >
+        {count === 0 && (
+          <li className="m-auto text-xs text-muted-foreground">
+            Todavía no hay mensajes.
+          </li>
+        )}
+        {messages.map((m) => (
+          <li key={m.id} className="leading-snug break-words">
+            <strong className={cn(m.nick === me?.nick && "text-primary")}>
+              {m.nick}:
+            </strong>{" "}
+            {m.message}
+          </li>
+        ))}
+      </ul>
+      <form
+        className="flex gap-1.5 border-t p-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          submit()
+        }}
+      >
+        <Input
+          aria-label={`Mensaje ${where}`}
+          placeholder={`Mensaje ${where}`}
+          maxLength={MAX}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="h-8"
+        />
+        <Button
+          type="submit"
+          size="icon"
+          aria-label={`Enviar ${where}`}
+          disabled={!text.trim() || send.isPending}
         >
-          {count === 0 && (
-            <li className="m-auto text-xs text-muted-foreground">
-              Todavía no hay mensajes.
-            </li>
-          )}
-          {lobby.chat.map((m) => (
-            <li key={m.id} className="leading-snug break-words">
-              {m.team !== null && (
-                <span className="mr-1 rounded bg-primary/15 px-1 text-[10px] font-semibold text-primary uppercase">
-                  Equipo
-                </span>
-              )}
-              <strong className={cn(m.mine && "text-primary")}>
-                {m.nick}:
-              </strong>{" "}
-              {m.message}
-            </li>
-          ))}
-          <li ref={end} aria-hidden />
-        </ul>
-        <form
-          className="flex gap-1.5"
-          onSubmit={(e) => {
-            e.preventDefault()
-            submit()
-          }}
-        >
-          <Button
-            type="button"
-            size="sm"
-            variant={teamOnly ? "secondary" : "ghost"}
-            aria-pressed={teamOnly}
-            title="Mandar solo a tu equipo"
-            onClick={() => setTeamOnly((v) => !v)}
-            className="h-8"
-          >
-            {teamOnly ? "Equipo" : "Todos"}
-          </Button>
-          <Input
-            aria-label="Mensaje"
-            placeholder={teamOnly ? "Mensaje a tu equipo" : "Mensaje a todos"}
-            maxLength={MAX}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="h-8"
-          />
-          <Button
-            type="submit"
-            size="icon"
-            aria-label="Enviar"
-            disabled={!text.trim() || send.isPending}
-          >
-            <SendIcon />
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+          <SendIcon />
+        </Button>
+      </form>
+    </section>
   )
 }

@@ -4,25 +4,28 @@ import { REASON_TEXT, mapLabel } from "./labels"
 import type { MmSource } from "./source"
 import type {
   InvitePref,
-  MapArt,
   MmAdminConfig,
   MmAdminBan,
   MmAdminLobby,
   MmAdminMap,
   MmAdminReport,
   MmAdminServer,
-  MmCatalogMap,
   MmChatMessage,
   MmEvent,
+  MmFeed,
   MmInvite,
   MmClip,
   MmCosmetics,
   MmLobby,
   MmMatch,
+  MmMeeting,
   MmParty,
   MmPasswordEntry,
   MmPlayer,
+  MmFriend,
   MmPlayerHit,
+  MmSanction,
+  MmSound,
   MmRecent,
   MmState,
   MmStatsDay,
@@ -93,7 +96,7 @@ const ME = { player_id: "me", nick: "tu.nick", level: 8, elo: 1610, ...ME_COS }
 const ME_CARD = {
   nick: ME.nick,
   country: "Argentina" as const,
-  photo_url: null,
+  photo_url: demoAvatar(ME.nick),
   elo: ME.elo,
   level: ME.level,
   ...ME_COS,
@@ -120,6 +123,9 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   elo_unlimited_after_s: 300,
   penalty_ladder: [5, 15, 60, 1440],
   reconnect_minutes: 3,
+  require_anticheat: true,
+  max_blocks: 1,
+  blocks_vip_only: true,
   min_mixes: 5,
   min_account_days: 7,
   season_queue_close_minutes: 15,
@@ -131,43 +137,39 @@ const DEFAULT_MODE_MAPS: Record<string, string[]> = {
   "2v2": ["de_dust2", "de_inferno", "aim_map", "fy_iceworld"],
   "1v1": ["aim_map", "awp_map", "fy_iceworld"],
 }
-// Catálogo inicial de la demo. Las imágenes son dibujos generados (demoArt); de_season no tiene
-// fondo y de_cache no tiene imagen, para ver qué se muestra cuando falta cada una.
-const DISPLAY: Record<string, string> = { de_cbble: "Cobblestone" }
-function seedCatalog(): MmCatalogMap[] {
-  return [
-    ...DEMO_POOL,
-    "de_aztec",
-    "de_dust",
-    "de_piranesi",
-    "cs_office",
-    "aim_map",
-    "awp_map",
-    "fy_iceworld",
-  ].map((name, i) => ({
-    name,
-    display_name: DISPLAY[name] ?? null,
-    versions: name === "de_inferno" ? [name, "de_inferno_classic"] : [name],
-    active: name !== "de_piranesi",
-    image_url: name === "de_cache" || i > 9 ? null : demoArt(name, "image"),
-    background_url:
-      name === "de_season" || i > 9 ? null : demoArt(name, "background"),
-  }))
-}
+// Catálogo de la demo (en la app, Administración › Mapas). Las imágenes son dibujos generados;
+// de_cache no tiene, para ver qué se muestra cuando falta.
+const CATALOG = [
+  ...DEMO_POOL,
+  "de_aztec",
+  "de_dust",
+  "cs_office",
+  "aim_map",
+  "awp_map",
+  "fy_iceworld",
+]
 
 /** Imagen de ejemplo en SVG: un degradé con el nombre del mapa (la demo no tiene fotos). */
-export function demoArt(name: string, kind: MapArt) {
+export function demoArt(name: string) {
   let h = 0
   for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360
-  const [w, hh] = kind === "image" ? [400, 300] : [1920, 1080]
   const label = mapLabel(name).toUpperCase()
-  const size = kind === "image" ? 44 : 160
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${hh}" viewBox="0 0 ${w} ${hh}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},55%,42%)"/><stop offset="1" stop-color="hsl(${(h + 50) % 360},60%,14%)"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><text x="50%" y="56%" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="${size}" fill="rgba(255,255,255,.22)">${label}</text></svg>`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},35%,38%)"/><stop offset="1" stop-color="hsl(${(h + 50) % 360},40%,14%)"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><text x="50%" y="56%" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="70" fill="rgba(255,255,255,.14)">${label}</text></svg>`
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
+/** Foto de ejemplo en SVG: un degradé con las iniciales, distinto para cada nick. */
+export function demoAvatar(nick: string) {
+  const h = seed(nick) % 360
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},70%,55%)"/><stop offset="1" stop-color="hsl(${(h + 70) % 360},65%,30%)"/></linearGradient></defs><rect width="128" height="128" fill="url(#g)"/><text x="50%" y="60%" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="48" fill="#fff">${nick.slice(0, 2).toUpperCase()}</text></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+const imageOf = (name: string) => (name === "de_cache" ? null : demoArt(name))
+
 /** Escenarios que la demo deja prender para ver cada aviso de Jugar. */
-export type DemoFlag = "captain" | "newcomer" | "serversBusy" | "season"
+export type DemoFlag =
+  "captain" | "newcomer" | "serversBusy" | "season" | "noAgent" | "notVip"
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
 const SECOND = 1000
 
@@ -188,6 +190,10 @@ class DemoError extends ApiError {
 export type DemoControls = {
   /** Adelanta a la fase siguiente. */
   skip(): void
+  /** Te desconectás de la partida en curso; otra vez, volvés. */
+  meLeaves(): void
+  /** Un amigo entra a la cola. */
+  friendSearches(): void
   /** Otro jugador rechaza la confirmación. */
   someoneDeclines(): void
   /** Termina el mix en vivo (rota la contraseña del servidor). */
@@ -227,14 +233,21 @@ export function createDemoSource({
     newcomer: false,
     serversBusy: false,
     season: false,
+    noAgent: false,
+    notVip: false,
   }
   let reports: MmAdminReport[] = []
   let bans: MmAdminBan[] = []
   let invitesPref: InvitePref = "public"
   let config = structuredClone(DEFAULT_CONFIG)
   let modeMaps = structuredClone(DEFAULT_MODE_MAPS)
-  let catalog = seedCatalog()
-  const byName = (name: string) => catalog.find((m) => m.name === name)
+  let chatLog: MmChatMessage[] = []
+  let blocks: MmState["blocks"]["list"] = []
+  let friends = seedFriends()
+  let soundCatalog = seedSounds()
+  let selectedSound: string | null = null
+  let mySound: MmSound | null = null
+  let sanctions = seedSanctions(now())
   let teamSize = 5
   let lobbyCreatedAt = ""
   // Cuándo pasa sola a la fase siguiente; null = espera una acción.
@@ -333,8 +346,23 @@ export function createDemoSource({
   }
   reports = seedReports()
 
-  const emit = (t: string) => {
-    for (const fn of listeners) fn({ t, lobby: lobby?.id })
+  const emit = (t: string, friend?: MmEvent["friend"]) => {
+    for (const fn of listeners) fn({ t, lobby: lobby?.id, friend })
+  }
+
+  function addPenalty(reason: string) {
+    const t = now()
+    penalty = { until: iso(t + 5 * 60 * SECOND), level: 1 }
+    sanctions = [
+      {
+        id: id("san"),
+        kind: "penalty",
+        reason,
+        created_at: iso(t),
+        until: penalty.until,
+      },
+      ...sanctions,
+    ]
   }
 
   const penalized = () => !!penalty && Date.parse(penalty.until) > now()
@@ -347,8 +375,15 @@ export function createDemoSource({
     isMe = false
   ): MmPlayer => ({
     ...p,
-    photo_url: null,
+    photo_url: demoAvatar(p.nick),
     ...COS_OF[p.nick],
+    anticheat: true,
+    meetings: isMe ? { with: [], against: [] } : meetingsOf(p.nick),
+    form: formOf(p.nick),
+    fav_map: {
+      map: DEMO_POOL[seed(p.nick) % DEMO_POOL.length]!,
+      win_pct: 52 + (seed(p.nick) % 24),
+    },
     country: COUNTRY_OF[p.nick] ?? "Argentina",
     elo_trend: trend(p.nick),
     recent: recentOf(p.nick, p.elo),
@@ -363,6 +398,7 @@ export function createDemoSource({
   })
 
   function newLobby(): MmLobby {
+    chatLog = []
     const mate = partner()
     const bots = BOTS.filter(([nick]) => nick !== mate?.nick)
       .slice(0, teamSize * 2 - (mate ? 2 : 1))
@@ -395,22 +431,18 @@ export function createDemoSource({
       server: null,
       match_id: null,
       end_reason: null,
-      chat: [],
       reported: [],
+      commended: null,
+      elo_stake: eloStake(all, queue?.mode ?? "5v5"),
     }
   }
 
   function say(nick: string, message: string, team: 1 | 2 | null = null) {
     if (!lobby) return
-    const msg: MmChatMessage = {
-      id: id("msg"),
-      nick,
-      team,
-      mine: nick === ME.nick,
-      message,
-      created_at: iso(now()),
-    }
-    lobby = { ...lobby, chat: [...lobby.chat, msg].slice(-100) }
+    chatLog = [
+      ...chatLog,
+      { id: id("msg"), nick, team, message, created_at: iso(now()) },
+    ].slice(-100)
     emit("lobby.chat")
   }
 
@@ -422,14 +454,45 @@ export function createDemoSource({
       .forEach((p, i) => (p.team = [0, 3].includes(i % 4) ? 1 : 2))
     const me = all.find((p) => p.is_me)!
     const mate = all.find((p) => p.party_id && !p.is_me)
-    if (!mate || mate.team === me.team) return
-    const swap = all
-      .filter((p) => p.team === me.team && !p.is_me)
-      .sort(
-        (a, b) => Math.abs(a.elo - mate.elo) - Math.abs(b.elo - mate.elo)
-      )[0]!
-    swap.team = mate.team
-    mate.team = me.team
+    if (mate && mate.team !== me.team) {
+      const swap = closest(all, mate, me.team, null)
+      swap.team = mate.team
+      mate.team = me.team
+    }
+    // Con quien bloqueaste no te toca en tu equipo; en contra, sí.
+    for (const b of blocks) {
+      const p = all.find((x) => x.player_id === b.player_id)
+      if (!p || p.team !== me.team) continue
+      const swap = closest(all, p, me.team === 1 ? 2 : 1, mate ?? null)
+      swap.team = p.team
+      p.team = me.team === 1 ? 2 : 1
+    }
+  }
+
+  function closest(
+    all: MmPlayer[],
+    to: MmPlayer,
+    team: 1 | 2,
+    keep: MmPlayer | null
+  ) {
+    return all
+      .filter((p) => p.team === team && !p.is_me && p !== to && p !== keep)
+      .sort((a, b) => Math.abs(a.elo - to.elo) - Math.abs(b.elo - to.elo))[0]!
+  }
+
+  function eloStake(all: MmPlayer[], mode: string) {
+    if (!config.modes.find((m) => m.mode === mode)?.affects_elo) return null
+    const me = all.find((p) => p.is_me)!
+    const avg = (t: 1 | 2) => {
+      const l = all.filter((p) => p.team === t)
+      return l.reduce((s, p) => s + p.elo, 0) / l.length
+    }
+    const rival = me.team === 1 ? 2 : 1
+    const chance = 1 / (1 + 10 ** ((avg(rival) - avg(me.team)) / 400))
+    return {
+      win: Math.round(50 * (1 - chance)),
+      loss: Math.round(50 * chance),
+    }
   }
 
   function startVeto() {
@@ -452,12 +515,14 @@ export function createDemoSource({
     lobby = {
       ...lobby,
       status: "veto",
+      match_id: id("match"),
       veto: {
         pool: (modeMaps[lobby.mode] ?? DEMO_POOL).map((name) => ({
           name,
-          label: mapLabel(name, byName(name)?.display_name),
-          image_url: byName(name)?.image_url ?? null,
-          background_url: byName(name)?.background_url ?? null,
+          label: mapLabel(name),
+          image_url: imageOf(name),
+          team1_win_pct: 35 + (seed(`mi-equipo-${name}`) % 35),
+          team2_win_pct: 35 + (seed(`${name}-el-rival`) % 35),
         })),
         bans: [],
         turn: first,
@@ -571,6 +636,7 @@ export function createDemoSource({
             name: servers[0]!.name,
             address: servers[0]!.address,
             password: pw.password,
+            tv: { host: "45.235.98.12", port: 27020 },
           },
         }
         phaseAt = t + 2 * SECOND
@@ -594,7 +660,6 @@ export function createDemoSource({
         lobby = {
           ...lobby,
           status: "live",
-          match_id: id("match"),
           match: matchSnapshot(lobby, false),
         }
         setServer("live")
@@ -636,6 +701,7 @@ export function createDemoSource({
       region,
       joined_at: iso(now()),
       position: queueSize + 1,
+      eta_s: 95,
       elo_window: config.elo_window_start,
     }
     emit("queue.changed")
@@ -651,7 +717,7 @@ export function createDemoSource({
     const what = partyAt.what
     partyAt = null
     if (what === "accept" && party?.pending) {
-      const friend = FRIENDS.find((f) => f.nick === party!.pending!.to_nick)!
+      const friend = KNOWN().find((f) => f.nick === party!.pending!.to_nick)!
       party = {
         ...party,
         members: [
@@ -699,7 +765,7 @@ export function createDemoSource({
       if (lobby.players.every((p) => p.accepted)) return startVeto()
       if (Date.parse(lobby.accept_deadline!) <= t) {
         const meAccepted = lobby.players.find((p) => p.is_me)!.accepted
-        if (!meAccepted) penalty = { until: iso(t + 5 * 60 * SECOND), level: 1 }
+        if (!meAccepted) addPenalty("No aceptaste una partida")
         return cancel(
           meAccepted
             ? "Un jugador no aceptó a tiempo"
@@ -721,6 +787,7 @@ export function createDemoSource({
         if (p.left_until && Date.parse(p.left_until) <= t) {
           p.left_until = null
           p.abandoned = true
+          if (p.is_me) addPenalty("Abandonaste una partida")
           emit("lobby.player")
         }
       }
@@ -758,6 +825,51 @@ export function createDemoSource({
       : servers.filter((x) => x.mm_enabled && x.state === "free").length
   const banned = () => bans.find((b) => b.user_id === "me")
 
+  function soundsState(): MmState["sounds"] {
+    const can_upload = !flags.notVip
+    const custom = can_upload ? mySound : null
+    const all = custom ? [...soundCatalog, custom] : soundCatalog
+    const chosen = all.find((x) => x.id === selectedSound) ?? null
+    return {
+      catalog: structuredClone(soundCatalog),
+      selected: chosen?.id ?? null,
+      custom,
+      can_upload,
+      url: chosen?.url ?? null,
+    }
+  }
+
+  function soundFile(file: File) {
+    if (!["audio/mpeg", "audio/ogg", "audio/wav"].includes(file.type))
+      throw new DemoError("El sonido tiene que ser MP3, OGG o WAV")
+    if (file.size > 1024 * 1024)
+      throw new DemoError("El sonido puede pesar hasta 1 MB")
+    return URL.createObjectURL(file)
+  }
+
+  function queueActivity(): MmState["queue_activity"] {
+    const mine = queue ? (party?.members.length ?? 1) : 0
+    return {
+      modes: config.modes
+        .filter((m) => m.enabled)
+        .map((m) => {
+          const base = m.mode === "5v5" ? queueSize : 1
+          const searching = base + (queue?.mode === m.mode ? mine : 0)
+          const room = m.players_per_team * 2
+          return {
+            mode: m.mode,
+            searching,
+            missing: room - (searching % room),
+          }
+        }),
+      levels: [
+        { label: "Nivel 1 a 3", count: 1 },
+        { label: "Nivel 4 a 7", count: queueSize - 2 + mine },
+        { label: "Nivel 8 a 10", count: 1 },
+      ],
+    }
+  }
+
   const snapshot = (): MmState => ({
     open: config.open,
     me: structuredClone(ME_CARD),
@@ -776,6 +888,37 @@ export function createDemoSource({
     party: party && structuredClone(party),
     invites: structuredClone(invites),
     penalty: penalized() ? penalty : null,
+    blocks: {
+      list: blocks,
+      max: config.max_blocks,
+      vip_only: config.blocks_vip_only,
+      allowed: !config.blocks_vip_only || !flags.notVip,
+    },
+    sounds: soundsState(),
+    queue_activity: queueActivity(),
+    friends: structuredClone(friends),
+    sanctions: {
+      items: [
+        ...(banned()
+          ? [
+              {
+                id: "mm-ban",
+                kind: "mm_ban" as const,
+                reason: banned()!.reason,
+                created_at: iso(now()),
+                until: banned()!.until,
+              },
+            ]
+          : []),
+        ...structuredClone(sanctions),
+      ],
+      level: penalized() ? 1 : 0,
+      level_resets_at: penalized() ? iso(now() + 7 * 86_400_000) : null,
+    },
+    anticheat: {
+      required: config.require_anticheat,
+      status: flags.noAgent ? "no_agent" : "ok",
+    },
     ban: banned() ? { until: banned()!.until, reason: banned()!.reason } : null,
     newcomer: flags.newcomer ? { mixes_left: 2, days_left: 0 } : null,
     servers: {
@@ -799,8 +942,13 @@ export function createDemoSource({
     async state() {
       return snapshot()
     },
+    async feed() {
+      return DEMO_FEED()
+    },
     async join(mode, region) {
       if (penalized()) throw new DemoError("Tenés una sanción vigente")
+      if (config.require_anticheat && flags.noAgent)
+        throw new DemoError("Para jugar tenés que tener el anticheat activo")
       if (flags.newcomer)
         throw new DemoError("Te faltan 2 mixes para jugar matchmaking")
       if (!amLeader())
@@ -811,6 +959,7 @@ export function createDemoSource({
       if (!size) throw new DemoError("Ese modo no está habilitado")
       if ((party?.members.length ?? 1) > size)
         throw new DemoError(`Tu grupo no entra en un equipo de ${mode}`)
+      if (lobby?.status === "finished") lobby = null
       joinQueue(mode, region)
       return snapshot()
     },
@@ -822,7 +971,7 @@ export function createDemoSource({
     },
     async leave() {
       if (lobby?.status === "accepting") {
-        penalty = { until: iso(now() + 5 * 60 * SECOND), level: 1 }
+        addPenalty("Rechazaste una partida")
         cancel("Rechazaste la partida", false)
       }
       queue = null
@@ -837,25 +986,106 @@ export function createDemoSource({
       return snapshot()
     },
     async decline() {
-      penalty = { until: iso(now() + 5 * 60 * SECOND), level: 1 }
+      addPenalty("Rechazaste una partida")
       cancel("Rechazaste la partida", false)
       return snapshot()
     },
-    async veto(map) {
+    async chat() {
+      return structuredClone(chatLog)
+    },
+    async veto(_matchId, map) {
       if (!myTurn()) throw new DemoError("No es tu turno de banear")
       ban(map, false)
       return snapshot()
     },
     async searchPlayers(q) {
       const term = q.trim().toLowerCase()
-      return FRIENDS.filter(
+      return KNOWN().filter(
         (f) => term && f.nick.includes(term) && f.nick !== partner()?.nick
       )
     },
+    async commend(_lobbyId, playerId) {
+      if (!lobby) throw new DemoError("La sala ya no está")
+      if (lobby.commended) throw new DemoError("Ya felicitaste en esta partida")
+      lobby = { ...lobby, commended: playerId }
+      emit("state")
+      return snapshot()
+    },
+    async setSound(soundId) {
+      selectedSound = soundId
+      emit("state")
+      return snapshot()
+    },
+    async uploadMySound(file) {
+      if (flags.notVip) throw new DemoError("Exclusivo para VIP")
+      const url = soundFile(file)
+      mySound = { id: "mi-sonido", name: file.name, url }
+      selectedSound = mySound.id
+      emit("state")
+      return snapshot()
+    },
+    async deleteMySound() {
+      mySound = null
+      emit("state")
+      return snapshot()
+    },
+    async adminSounds() {
+      return structuredClone(soundCatalog)
+    },
+    async uploadSound(name, file) {
+      const url = soundFile(file)
+      const sound = { id: id("snd"), name, url }
+      soundCatalog = [...soundCatalog, sound]
+      emit("state")
+      return sound
+    },
+    async deleteSound(soundId) {
+      soundCatalog = soundCatalog.filter((x) => x.id !== soundId)
+      emit("state")
+    },
+    async addFriend(playerId) {
+      const hit = KNOWN().find((f) => f.player_id === playerId)
+      if (!hit) throw new DemoError("Ese jugador no existe")
+      if (friends.some((f) => f.player_id === playerId))
+        throw new DemoError(`${hit.nick} ya está en tus amigos`)
+      friends = [
+        ...friends,
+        {
+          player_id: hit.player_id,
+          nick: hit.nick,
+          level: hit.level,
+          status: null,
+        },
+      ]
+      emit("state")
+      return snapshot()
+    },
+    async removeFriend(playerId) {
+      friends = friends.filter((f) => f.player_id !== playerId)
+      emit("state")
+      return snapshot()
+    },
+    async block(playerId) {
+      if (config.blocks_vip_only && flags.notVip)
+        throw new DemoError("El bloqueo es exclusivo para VIP")
+      if (blocks.length >= config.max_blocks)
+        throw new DemoError("Ya usaste todos tus bloqueos")
+      const hit = KNOWN().find((f) => f.player_id === playerId)
+      if (!hit) throw new DemoError("Ese jugador no existe")
+      blocks = [...blocks, { player_id: hit.player_id, nick: hit.nick }]
+      emit("state")
+      return snapshot()
+    },
+    async unblock(playerId) {
+      blocks = blocks.filter((b) => b.player_id !== playerId)
+      emit("state")
+      return snapshot()
+    },
     async invite(playerId) {
-      const friend = FRIENDS.find((f) => f.player_id === playerId)
+      const friend = KNOWN().find((f) => f.player_id === playerId)
       if (!friend) throw new DemoError("Ese jugador no existe")
-      if (queue || lobby) throw new DemoError("Primero salí de la cola")
+      if (queue || (lobby && lobby.status !== "finished"))
+        throw new DemoError("Primero salí de la cola")
       if (party && party.members.length >= party.max_size)
         throw new DemoError("Tu grupo ya está completo")
       if (Math.abs(friend.elo - ME.elo) > config.party_max_elo_gap)
@@ -956,11 +1186,10 @@ export function createDemoSource({
       emit("mm.config")
       return structuredClone(config)
     },
-    async sendChat(message, teamOnly) {
-      const text = message.trim().slice(0, 200)
+    async sendChat(_matchId, message, teamOnly) {
+      const text = message.trim().slice(0, 300)
       if (!lobby || !text) throw new DemoError("No hay sala activa")
       say(ME.nick, text, teamOnly ? (myTeam() ?? null) : null)
-      return snapshot()
     },
     async report(lobbyId, playerId, reason, note) {
       const target = lobby?.players.find((x) => x.player_id === playerId)
@@ -1034,48 +1263,6 @@ export function createDemoSource({
       srv.mm_enabled = enabled
       return structuredClone(srv)
     },
-    async adminCatalog() {
-      return structuredClone(catalog)
-    },
-    async saveCatalog(next) {
-      const names = new Set(next.map((m) => m.name))
-      if (catalog.some((m) => !names.has(m.name)))
-        throw new DemoError("Un mapa no se borra: retiralo")
-      if (names.size !== next.length)
-        throw new DemoError("Hay dos mapas con el mismo nombre")
-      const bad = next.find((m) => !/^[a-z0-9_]{3,32}$/.test(m.name))
-      if (bad)
-        throw new DemoError(`"${bad.name}" no es un nombre de mapa válido`)
-      // Un mapa retirado sale del veto de todos los modos.
-      const retired = new Set(next.filter((m) => !m.active).map((m) => m.name))
-      for (const mode of Object.keys(modeMaps))
-        modeMaps[mode] = modeMaps[mode]!.filter((m) => !retired.has(m))
-      catalog = structuredClone(next)
-      return structuredClone(catalog)
-    },
-    async uploadMapArt(name, kind, file) {
-      const map = byName(name)
-      if (!map) throw new DemoError("Ese mapa no existe")
-      const max = kind === "image" ? 2 : 4
-      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
-        throw new DemoError("Tiene que ser JPEG, PNG o WebP")
-      if (file.size > max * 1024 * 1024)
-        throw new DemoError(`Pesa más de ${max} MB`)
-      const url =
-        typeof URL.createObjectURL === "function"
-          ? URL.createObjectURL(file)
-          : `blob:demo/${file.name}`
-      if (kind === "image") map.image_url = url
-      else map.background_url = url
-      return structuredClone(map)
-    },
-    async removeMapArt(name, kind) {
-      const map = byName(name)
-      if (!map) throw new DemoError("Ese mapa no existe")
-      if (kind === "image") map.image_url = null
-      else map.background_url = null
-      return structuredClone(map)
-    },
     async adminLobbies() {
       const list: MmAdminLobby[] = []
       if (lobby && !["finished", "cancelled"].includes(lobby.status))
@@ -1110,13 +1297,11 @@ export function createDemoSource({
   // Primero los del veto del modo (en su orden) y después el resto del catálogo.
   function adminMapList(mode: string): MmAdminMap[] {
     const chosen = modeMaps[mode] ?? []
-    const rest = catalog
-      .filter((m) => m.active && !chosen.includes(m.name))
-      .map((m) => m.name)
+    const rest = CATALOG.filter((m) => !chosen.includes(m))
     const row = (name: string, in_mm: boolean): MmAdminMap => ({
       name,
-      label: mapLabel(name, byName(name)?.display_name),
-      image_url: byName(name)?.image_url ?? null,
+      label: mapLabel(name),
+      image_url: imageOf(name),
       in_mm,
     })
     return [
@@ -1127,6 +1312,22 @@ export function createDemoSource({
 
   const controls: DemoControls = {
     skip: advance,
+    meLeaves() {
+      if (lobby?.status !== "live") return
+      const me = lobby.players.find((x) => x.is_me)!
+      me.left_until = me.left_until
+        ? null
+        : iso(now() + config.reconnect_minutes * 60 * SECOND)
+      emit("lobby.player")
+    },
+    friendSearches() {
+      // Con invitaciones en Privado tampoco llegan estos avisos.
+      if (invitesPref === "private") return
+      const f = friends.find((x) => x.status === "free")
+      if (!f) return
+      f.status = "queue"
+      emit("friend.searching", { player_id: f.player_id, nick: f.nick })
+    },
     someoneDeclines() {
       if (lobby?.status === "accepting")
         cancel("Un jugador no aceptó a tiempo", true)
@@ -1172,7 +1373,13 @@ export function createDemoSource({
       partyAt = null
       config = structuredClone(DEFAULT_CONFIG)
       modeMaps = structuredClone(DEFAULT_MODE_MAPS)
-      catalog = seedCatalog()
+      chatLog = []
+      blocks = []
+      friends = seedFriends()
+      soundCatalog = seedSounds()
+      selectedSound = null
+      mySound = null
+      sanctions = seedSanctions(now())
       reports = seedReports()
       bans = []
       invitesPref = "public"
@@ -1249,6 +1456,27 @@ function seed(text: string) {
   let h = 7
   for (const c of text) h = (h * 31 + c.charCodeAt(0)) % 9973
   return h
+}
+
+/** Partidas anteriores de ejemplo: gordo no tiene ninguna, para ver que no se muestra nada. */
+function meetingsOf(nick: string): MmPlayer["meetings"] {
+  if (nick === "gordo") return { with: [], against: [] }
+  const h = seed(nick)
+  const list = (n: number, offset: number): MmMeeting[] =>
+    Array.from({ length: n }, (_, i) => {
+      const won = (h + i + offset) % 2 === 0
+      const other = 4 + ((h + i) % 9)
+      return {
+        match_id: `${nick}-${offset}-${i}`,
+        map: DEMO_POOL[(h + i + offset) % DEMO_POOL.length]!,
+        played_at: new Date(
+          Date.now() - (i + 1 + offset) * 3 * 86_400_000
+        ).toISOString(),
+        won,
+        score: won ? `13 : ${other}` : `${other} : 13`,
+      }
+    })
+  return { with: list(h % 4, 0), against: list((h >> 2) % 4, 1) }
 }
 
 function trend(nick: string) {
@@ -1377,5 +1605,162 @@ function matchSnapshot(lobby: MmLobby, finished: boolean): MmMatch {
           clip(5, team1[2], "clutch_1", 1, 19, "processing"),
         ]
       : [],
+  }
+}
+
+/** Todos los que se pueden buscar: los amigos y los de la cola. */
+function KNOWN(): MmPlayerHit[] {
+  return [
+    ...FRIENDS,
+    ...BOTS.map(([nick, level, elo]) => ({
+      player_id: `p-${nick}`,
+      nick,
+      level,
+      elo,
+    })),
+  ]
+}
+
+/** Un WAV chiquito con una secuencia de tonos, para que la demo suene sin subir archivos. */
+function toneWav(freqs: number[], step = 0.16) {
+  const rate = 8000
+  const n = Math.floor(rate * step)
+  const bytes = new Uint8Array(44 + n * freqs.length)
+  const view = new DataView(bytes.buffer)
+  const text = (at: number, t: string) =>
+    [...t].forEach((c, i) => view.setUint8(at + i, c.charCodeAt(0)))
+  text(0, "RIFF")
+  view.setUint32(4, bytes.length - 8, true)
+  text(8, "WAVEfmt ")
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1, true)
+  view.setUint16(22, 1, true)
+  view.setUint32(24, rate, true)
+  view.setUint32(28, rate, true)
+  view.setUint16(32, 1, true)
+  view.setUint16(34, 8, true)
+  text(36, "data")
+  view.setUint32(40, n * freqs.length, true)
+  freqs.forEach((f, k) => {
+    for (let i = 0; i < n; i++)
+      bytes[44 + k * n + i] = 128 + 60 * Math.sin((2 * Math.PI * f * i) / rate)
+  })
+  return `data:audio/wav;base64,${btoa(String.fromCharCode(...bytes))}`
+}
+
+function seedSounds(): MmSound[] {
+  return [
+    { id: "snd-alarma", name: "Alarma", url: toneWav([900, 600, 900, 600]) },
+    { id: "snd-campana", name: "Campana", url: toneWav([1320, 990, 660], 0.3) },
+    { id: "snd-arcade", name: "Arcade", url: toneWav([440, 660, 880, 1100]) },
+  ]
+}
+
+function seedFriends(): MmFriend[] {
+  const status: MmFriend["status"][] = ["free", "playing", null]
+  return FRIENDS.slice(0, 3).map((f, i) => ({
+    player_id: f.player_id,
+    nick: f.nick,
+    level: f.level,
+    status: status[i]!,
+  }))
+}
+
+function seedSanctions(t: number): MmSanction[] {
+  const day = 86_400_000
+  return [
+    {
+      id: "san-viejo",
+      kind: "penalty",
+      reason: "Rechazaste una partida",
+      created_at: new Date(t - 12 * day).toISOString(),
+      until: new Date(t - 12 * day + 5 * 60_000).toISOString(),
+    },
+    {
+      id: "ban-viejo",
+      kind: "server_ban",
+      reason: "Lenguaje ofensivo en el chat",
+      created_at: new Date(t - 60 * day).toISOString(),
+      until: new Date(t - 53 * day).toISOString(),
+    },
+  ]
+}
+
+function formOf(nick: string): ("W" | "L")[] {
+  const h = seed(nick)
+  return [0, 1, 2, 3, 4].map((i) => ((h >> i) & 1 ? "W" : "L"))
+}
+
+function DEMO_FEED(): MmFeed {
+  const live = (
+    uid: string,
+    map: string,
+    a: string,
+    b: string,
+    s1: number,
+    s2: number
+  ) => ({
+    uid,
+    map,
+    image_url: imageOf(map),
+    side1_name: a,
+    side2_name: b,
+    score1: s1,
+    score2: s2,
+    round: s1 + s2 + 1,
+  })
+  const recent = (
+    n: number,
+    map: string,
+    won: boolean,
+    score: string,
+    k: number,
+    d: number,
+    rating: number,
+    delta: number
+  ) => ({
+    match_id: `partida-${n}`,
+    map,
+    image_url: imageOf(map),
+    won,
+    score,
+    kills: k,
+    deaths: d,
+    rating,
+    elo_delta: delta,
+  })
+  const top = (position: number, nick: string, elo: number, level: number) => ({
+    position,
+    nick,
+    photo_url: demoAvatar(nick),
+    elo,
+    level,
+  })
+  return {
+    highlight: {
+      match_id: "partida-semana",
+      nick: "sinclair",
+      title: "Ace con AWP en Inferno",
+      image_url: imageOf("de_inferno"),
+    },
+    live: [
+      live("en-vivo-1", "de_inferno", "team_ruso", "team_vane", 9, 7),
+      live("en-vivo-2", "de_mirage", "team_tano", "team_mono", 4, 2),
+      live("en-vivo-3", "de_nuke", "team_sinclair", "team_chapa", 11, 11),
+    ],
+    recent: [
+      recent(1, "de_dust2", true, "13 : 9", 21, 14, 1.34, 24),
+      recent(2, "de_tuscan", true, "13 : 11", 18, 15, 1.12, 19),
+      recent(3, "de_train", false, "8 : 13", 12, 17, 0.84, -21),
+      recent(4, "de_season", true, "13 : 5", 24, 8, 1.71, 22),
+      recent(5, "de_cbble", false, "11 : 13", 19, 18, 1.03, -18),
+    ],
+    top: [
+      top(1, "sinclair", 2640, 10),
+      top(2, "vane", 2512, 10),
+      top(3, "ruso", 2398, 10),
+      top(4, "tano", 2287, 10),
+      top(5, "mono", 2175, 10),
+    ],
   }
 }

@@ -1,5 +1,12 @@
-import type { RoomPlayer } from "@/features/mixes/room"
-import type { MmClip, MmLobby, MmPlayer, MmRecent } from "../types"
+import type { RoomPlayer, RoomSide } from "@/features/mixes/room"
+import type {
+  MmClip,
+  MmLobby,
+  MmMatch,
+  MmPlayer,
+  MmRecent,
+  MmVeto,
+} from "../types"
 
 // Cálculos de la sala de la partida (plan, sección 7, "Sala de la partida"). Solo con lo que trae
 // la sala: nada de Swing, KAST ni duelos (decisión "Datos que la sala no muestra").
@@ -115,4 +122,59 @@ export function clipTitle(clip: MmClip, mapName: string | null) {
       ? "Ace"
       : clip.type.toUpperCase()
   return mapName ? `${mapName} · ${what}` : what
+}
+
+/** Un bando con el modelo de la sala de Mixes, para usar sus mismas tablas. */
+export function roomSide(lobby: MmLobby, match: MmMatch, team: Team): RoomSide {
+  const ids = new Set(teamPlayers(lobby, team).map((p) => p.player_id))
+  return {
+    name: teamLabel(lobby, team),
+    score: team === 1 ? match.score1 : match.score2,
+    result:
+      match.winner === null
+        ? "playing"
+        : match.winner === team
+          ? "win"
+          : "loss",
+    players: match.stats
+      .filter((s) => ids.has(s.key))
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)),
+  }
+}
+
+/** Probabilidad (0 a 100) de que gane el equipo A según el ELO promedio, con la fórmula de Elo. */
+export function winChance(a: number, b: number) {
+  return Math.round(100 / (1 + 10 ** ((b - a) / 400)))
+}
+
+/** El mapa que más le conviene banear a un equipo: donde más le saca ventaja el rival. */
+export function suggestBan(veto: MmVeto, team: Team) {
+  const banned = new Set(veto.bans.map((b) => b.map))
+  let best: { label: string; mine: number; theirs: number } | null = null
+  for (const m of veto.pool) {
+    if (banned.has(m.name)) continue
+    const a = m.team1_win_pct
+    const b = m.team2_win_pct
+    if (a === null || b === null) continue
+    const [mine, theirs] = team === 1 ? [a, b] : [b, a]
+    if (!best || theirs - mine > best.theirs - best.mine)
+      best = { label: m.label, mine, theirs }
+  }
+  // Con menos de 5 puntos de diferencia no es una ventaja real.
+  return best && best.theirs - best.mine >= 5 ? best : null
+}
+
+/** Tu partida contra tu promedio de las últimas 30, en % de diferencia. */
+export function comparedToAverage(stat: RoomPlayer, recent: MmRecent | null) {
+  if (!recent) return []
+  const diff = (now: number | null, avg: number) =>
+    now === null || avg === 0 ? null : Math.round(((now - avg) / avg) * 100)
+  const items = [
+    { label: "Rating", diff: diff(stat.rating, recent.rating) },
+    { label: "ADR", diff: diff(stat.adr, recent.adr) },
+    { label: "K/D", diff: diff(stat.d ? stat.k / stat.d : null, recent.kd) },
+  ]
+  return items.filter(
+    (i): i is { label: string; diff: number } => i.diff !== null
+  )
 }
