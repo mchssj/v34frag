@@ -379,7 +379,8 @@ describe('más casos del plantel y del admin', () => {
     const solo = await createUser();
     expect((await req('GET', '/api/v1/me/team-invites', { token: solo.token })).body).toMatchObject({ items: [], total: 0 });
     const nop = (await req('POST', '/api/v1/admin/players', { token: adm.token, body: { nick: `SinCta${rnd()}` } })).body.id;
-    expect((await req('PATCH', `/api/v1/admin/teams/${team}`, { token: adm.token, body: { captain_player_id: nop } })).status).toBe(400);
+    // El líder nuevo tiene que ser del plantel (replanteo 43): uno de afuera da 404.
+    expect((await req('PATCH', `/api/v1/admin/teams/${team}`, { token: adm.token, body: { captain_player_id: nop } })).status).toBe(404);
     expect((await req('PATCH', `/api/v1/admin/teams/${team}`, { token: adm.token, body: { name: `Renombrado ${rnd()}` } })).status).toBe(204);
     expect((await req('DELETE', `/api/v1/admin/teams/${team}`, { token: adm.token })).status).toBe(204);
   });

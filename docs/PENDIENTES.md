@@ -530,10 +530,20 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Qué es:** Administración › Torneos. Moderadores que operan todos los torneos (sin cancelar ni borrar), siembra por ranking (torneos y PCW) con la etapa de entrada del suizo según la siembra, y cada mapa de una serie con un mix vinculado a mano o el resultado a mano ("Sin detalle de la partida").
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
 - **Falta:**
-  1. Cargar la `41` en staging después de la `40` y redesplegar la API.
-  2. En el corte, la `41` va después de la `40`.
+  1. Cargar la `41` y la `42` (fin real del torneo) en staging después de la `40` y redesplegar la API.
+  2. En el corte, la `41` y la `42` van después de la `40`.
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
+
+### 1.35 Moderar equipos (replanteo `43`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** Administración › Equipos con "Moderar equipos" (moderadores y admins: lista, historial, renombrar, quitar logo y miembros; admin además líder, sumar, rol, disolver) y "Configuración equipo" (admin). Motivo opcional y aviso obligatorio al líder (`team_staff_action`).
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `43` en staging después de la `42` y redesplegar la API.
+  2. En el corte, la `43` va después de la `42`.
+- No toca el plugin.
+- **Bitácora:** [`2026-11-01-moderar-equipos`](bitacora/2026-11-01-moderar-equipos/)
 
 ## 2. Investigaciones abiertas
 

@@ -70,12 +70,13 @@ Todo con sesión (`401` sin ella).
 | `team_invite_answered` | Líder | `team`, `player`, `accepted` | "{player.alias} aceptó (o rechazó) tu invitación a {team.name}" | `/teams/{team.id}` |
 | `team_join_answered` | Jugador | `team`, `accepted` | "{team.name} aceptó (o rechazó) tu pedido" | `/teams/{team.id}` |
 | `team_captain` | Nuevo líder | `team` | "Ahora eres el líder de {team.name}" | `/teams/{team.id}` |
-| `team_removed` | Jugador | `team` | "Te sacaron de {team.name}" | — |
+| `team_removed` | Jugador | `team`, `reason` (2026-11-01: el motivo del staff, si lo hay) | "Te sacaron de {team.name}" | — |
 | `team_member_left` | Líder | `team`, `player` | "{player.alias} dejó {team.name}" | `/teams/{team.id}` |
 | `team_role_changed` | Jugador | `team`, `role` (`player`, `sub`, `coach`) | "Ahora eres Activo / Suplente / Coach en {team.name}" | `/teams/{team.id}` |
 | `team_added` | Jugador | `team`, `role` | "Un admin te sumó a {team.name}" | `/teams/{team.id}` |
 | `team_deleted` | Roster | `team` | "Se borró el equipo {team.name}" | — |
 | `team_dissolved` | Roster (2026-10-30) | `team` | "Se disolvió el equipo {team.name}" | Página del equipo |
+| `team_staff_action` | Staff (2026-11-01) | `team`, `action` (`renamed`, `logo_removed`, `member_removed`, `captain_changed`, `member_added`, `role_changed`, `dissolved`), `by` (`admin` o `moderator`), `reason` (o null), `player` si aplica, `old_name`/`name` al renombrar | "Un moderador cambió el nombre de {team.name}: {reason}" | Página del equipo. **Obligatoria**: va siempre al líder (y al anterior si cambió el líder) y no se apaga en las preferencias |
 | `team_request_answered` | El que pidió | `name`, `tag`, `approved` | "Aprobaron (o rechazaron) tu equipo {name}" | `/myteam` |
 
 #### Torneos (`tournament`)

@@ -129,7 +129,7 @@ describe('torneo de punta a punta', () => {
     expect((await req('POST', `/api/v1/events/${ev}/reset`, { token: org.token })).body.error.message).toBe('Ya se jugaron partidas: el fixture no se puede reiniciar');
     expect((await req('DELETE', `/api/v1/events/${ev}`, { token: org.token })).status).toBe(400);
     const list = await req('GET', `/api/v1/events?status=finished&organizer=${org.id}&q=${encodeURIComponent(evName.toLowerCase())}`);
-    expect(list.body.items).toEqual([expect.objectContaining({ id: ev, champion: expect.objectContaining({ id: teams[2]!.id }) })]);
+    expect(list.body.items).toEqual([expect.objectContaining({ id: ev, champion: expect.objectContaining({ id: teams[2]!.id }), finished_at: expect.any(String) })]);
     expect((await req('GET', `/api/v1/events?status=registration&q=${encodeURIComponent(evName)}`)).body.total).toBe(0);
     // La partida del jugador campeón aparece filtrando por jugador.
     const byPlayer = await req('GET', `/api/v1/matches?event=${ev}&team=${teams[2]!.id}`);
@@ -202,6 +202,8 @@ describe('partida: detalle, veto, chat y código', () => {
     expect(d.body.viewer).toMatchObject({ can_veto: true, can_chat: true, can_manage: false, is_participant: true });
     expect(d.body.link_code).toMatch(/^[A-Z2-9]{5}$/);
     expect(d.body.roster1).toHaveLength(5);
+    // Replanteo 44: rating reciente en 5v5; sin partidas, null.
+    expect(d.body.roster1.every((p: { rating: number | null }) => p.rating === null)).toBe(true);
     // Un extraño no ve el código ni puede escribir.
     const extra = await createUser();
     const ext = await req('GET', `/api/v1/matches/${m.id}`, { token: extra.token });

@@ -56,7 +56,8 @@ export const EventSummary = z
     template: Template,
     status: EventStatus,
     starts_on: z.string().nullable(),
-    ends_on: z.string().nullable(),
+    ends_on: z.string().nullable().openapi({ description: 'Fin tentativo que pone el organizador: el torneo puede terminar antes o después' }),
+    finished_at: z.string().nullable().openapi({ description: 'Cuándo terminó de verdad: la última partida jugada. null mientras no terminó (o si sus partidas no tienen fecha)' }),
     prize: z.string().nullable(),
     teams: z.number().int().openapi({ description: 'Equipos inscritos' }),
     max_teams: z.number().int().nullable(),
@@ -191,7 +192,7 @@ export const EventCreate = z
       .optional()
       .openapi({ description: 'Cierre de inscripciones (fecha y hora). Después, solo el organizador o un admin cambian las inscripciones. null: hasta generar el fixture' }),
     starts_on: z.iso.date().nullable().optional(),
-    ends_on: z.iso.date().nullable().optional(),
+    ends_on: z.iso.date().nullable().optional().openapi({ description: 'Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`' }),
     prize: z.string().trim().max(200).nullable().optional(),
     rules: z.string().trim().max(5000).nullable().optional(),
     min_teams: z.number().int().min(2).max(256).nullable().optional(),

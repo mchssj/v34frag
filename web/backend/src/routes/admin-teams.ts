@@ -1,14 +1,20 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
-import { requireAdmin, requireUser } from '../lib/auth';
+import { isAdmin, requireAdmin, requireModerator, requireUser } from '../lib/auth';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
+import { removePhoto } from '../services/photos';
 import type { AppEnv } from '../lib/types';
 import {
   AdminTeamCreate,
+  AdminTeamList,
   AdminTeamPatch,
+  AdminTeamQuery,
+  ReasonBody,
+  TeamAuditList,
+  TeamAuditQuery,
   IdParam,
   MemberBody,
   RankingConfig,
@@ -39,9 +45,46 @@ const createTeam = createRoute({
   request: { body: { required: true, ...json(AdminTeamCreate) } },
   responses: { 201: { description: 'Creado', ...json(Created) }, ...errorResponses(400, 401, 403, 404) },
 });
+const listTeams = createRoute({
+  method: 'get', path: '/api/v1/admin/teams', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  summary: 'Equipos para moderar',
+  description: 'Moderadores y admins. Solo los activos (un disuelto es como si no existiera). Con líder, plantel, torneos activos, palabra bloqueada y último cambio.',
+  request: { query: AdminTeamQuery },
+  responses: { 200: { description: 'Equipos', ...json(AdminTeamList) }, ...errorResponses(400, 401, 403) },
+});
+const history = createRoute({
+  method: 'get', path: '/api/v1/admin/teams/{id}/history', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  summary: 'Historial de un equipo',
+  description: 'Moderadores y admins: cada cambio de nombre y sigla, logo, líder, plantel, roles y disolución, con quién (y su rol) y el motivo.',
+  request: { params: IdParam, query: TeamAuditQuery },
+  responses: { 200: { description: 'Historial', ...json(TeamAuditList) }, ...errorResponses(400, 401, 403) },
+});
+const removeLogo = createRoute({
+  method: 'post', path: '/api/v1/admin/teams/{id}/logo/remove', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  summary: 'Quitar el logo de un equipo', description: 'Moderadores y admins. El líder recibe el aviso `team_staff_action` con el motivo, si lo hay.',
+  request: { params: IdParam, body: { required: false, ...json(ReasonBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404) },
+});
+const removeMember = createRoute({
+  method: 'post', path: '/api/v1/admin/teams/{id}/members/{playerId}/remove', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  summary: 'Quitar a un miembro',
+  description: 'Moderadores y admins. Al líder no (`409`: primero un admin cambia el líder). El jugador recibe `team_removed` y el líder `team_staff_action`, con el motivo si lo hay.',
+  request: { params: TeamPlayerParam, body: { required: false, ...json(ReasonBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
+});
+const dissolveTeam = createRoute({
+  method: 'post', path: '/api/v1/admin/teams/{id}/dissolve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Disolver un equipo', description: 'Solo admin. Deja de existir (no se reactiva). `409` si está inscrito en un torneo abierto o en curso.',
+  request: { params: IdParam, body: { required: false, ...json(ReasonBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
+});
 const patchTeam = createRoute({
-  method: 'patch', path: '/api/v1/admin/teams/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Editar un equipo', description: 'Nombre, sigla o capitán. El capitán puede ser cualquier jugador con cuenta.',
+  method: 'patch', path: '/api/v1/admin/teams/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  summary: 'Editar un equipo',
+  description:
+    'Nombre y sigla: moderadores y admins, sin la espera de 30 días del equipo (que sigue contando desde su último cambio). Líder (`captain_player_id`, ' +
+    'del plantel y con cuenta): solo admin, sin el tope de equipos por líder. `force` (guardar con una palabra bloqueada) es solo de admin. ' +
+    'El líder recibe `team_staff_action` con el motivo, si lo hay.',
   request: { params: IdParam, body: { required: true, ...json(AdminTeamPatch) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
@@ -54,13 +97,14 @@ const deleteTeam = createRoute({
 const addMember = createRoute({
   method: 'post', path: '/api/v1/admin/teams/{id}/members', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Sumar un jugador al plantel',
-  description: 'Directo, sin invitación. Las reglas siguen valiendo: tope de 10, SteamID y choques de torneo o de partida pendiente.',
+  description: 'Solo admin. Directo, sin invitación. Las reglas siguen valiendo: máximo de miembros, SteamID y choques de torneo o de partida pendiente. Avisa al jugador y al líder.',
   request: { params: IdParam, body: { required: true, ...json(MemberBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
 });
 const setRole = createRoute({
   method: 'patch', path: '/api/v1/admin/teams/{id}/members/{playerId}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Cambiar el rol de un miembro', request: { params: TeamPlayerParam, body: { required: true, ...json(RoleBody) } },
+  summary: 'Cambiar el rol de un miembro', description: 'Solo admin. Avisa al jugador y al líder.',
+  request: { params: TeamPlayerParam, body: { required: true, ...json(RoleBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
 
@@ -114,13 +158,87 @@ export const adminTeams = createRouter()
     }
     return c.json({ id: team.id }, 201);
   })
+  .openapi(listTeams, async (c) => {
+    const p = c.req.valid('query');
+    let q = c.var.sb
+      .from('admin_team_list')
+      .select('id, name, tag, logo_url, founded_at, captain_player_id, captain_alias, members, players, events_active, blocked, last_change_at', { count: 'exact' });
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('search', `%${term}%`);
+    if (p.filter === 'blocked') q = q.eq('blocked', true);
+    if (p.filter === 'incomplete') q = q.lt('players', 5);
+    if (p.filter === 'no_leader') q = q.is('captain_player_id', null);
+    if (p.filter === 'in_event') q = q.gt('events_active', 0);
+    type Row = {
+      id: string; name: string; tag: string | null; logo_url: string | null; founded_at: string | null; captain_player_id: string | null;
+      captain_alias: string | null; members: number; players: number; events_active: number; blocked: boolean; last_change_at: string | null;
+    };
+    const { rows, total } = await runList<Row, typeof q>(q, p, { name: ['name'], last_change: ['last_change_at'], members: ['members'] }, 'id');
+    return c.json(
+      envelope(
+        rows.map((r) => ({
+          id: r.id, name: r.name, tag: r.tag, logo_url: r.logo_url, founded_at: r.founded_at,
+          captain: r.captain_player_id ? { player_id: r.captain_player_id, alias: r.captain_alias ?? '' } : null,
+          members: r.members, players: r.players, events_active: r.events_active, blocked: r.blocked, last_change_at: r.last_change_at,
+        })),
+        total,
+        p,
+      ),
+      200,
+    );
+  })
+  .openapi(history, async (c) => {
+    const { id } = c.req.valid('param');
+    const p = c.req.valid('query');
+    const q = c.var.sb.from('team_audit').select('id, at, actor_id, actor_role, action, data, reason', { count: 'exact' }).eq('team_id', id);
+    type Row = { id: number; at: string; actor_id: string | null; actor_role: string; action: string; data: Record<string, unknown>; reason: string | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, { at: ['id'] }, 'id'); // el id crece con cada cambio (varios pueden tener la misma hora)
+    const ids = [...new Set(rows.flatMap((r) => (r.actor_id ? [r.actor_id] : [])))];
+    // El alias sale de la ficha del jugador (pública); profiles solo deja leer el propio.
+    const names = ids.length ? mustHave(await c.var.sb.from('players').select('user_id, nick').in('user_id', ids)) : [];
+    const alias = new Map(names.map((n) => [n.user_id, n.nick]));
+    return c.json(
+      envelope(
+        rows.map((r) => ({
+          id: r.id, at: r.at, actor: { user_id: r.actor_id, alias: r.actor_id ? (alias.get(r.actor_id) ?? null) : null },
+          actor_role: r.actor_role as 'team' | 'moderator' | 'admin' | 'system', action: r.action, data: r.data ?? {}, reason: r.reason,
+        })),
+        total,
+        p,
+      ),
+      200,
+    );
+  })
   .openapi(patchTeam, async (c) => {
     const { id } = c.req.valid('param');
-    const { name, tag, captain_player_id, force } = c.req.valid('json');
-    await checkBlocked(c, [name, tag], force, 'name');
-    const captain_id = captain_player_id ? await userOf(c, captain_player_id) : undefined;
-    const rows = mustHave(await c.var.sb.from('teams').update({ name, tag, captain_id }).eq('id', id).select('id'));
-    if (!rows.length) throw notFound('ese equipo');
+    const { name, tag, captain_player_id, force, reason } = c.req.valid('json');
+    const admin = await isAdmin(c);
+    if (captain_player_id && !admin) throw new AppError(403, 'FORBIDDEN', 'Solo un admin cambia el líder.');
+    // Las palabras bloqueadas: el admin puede forzar; al moderador lo frena la base.
+    if (admin) await checkBlocked(c, [name, tag], force, 'name');
+    if (name !== undefined || tag !== undefined) {
+      const team = must(await c.var.sb.from('teams').select('name, tag').eq('id', id).maybeSingle());
+      if (!team) throw notFound('ese equipo');
+      must(await c.var.sb.rpc('team_staff_rename', { p_team: id, p_name: name ?? team.name, p_tag: tag ?? team.tag ?? '', p_reason: reason ?? '' }));
+    }
+    if (captain_player_id) must(await c.var.sb.rpc('team_staff_set_captain', { p_team: id, p_player: captain_player_id, p_reason: reason ?? '' }));
+    return c.body(null, 204);
+  })
+  .openapi(removeLogo, async (c) => {
+    const reason = (c.req.valid('json') as { reason?: string } | undefined)?.reason;
+    const url = must(await c.var.sb.rpc('team_staff_remove_logo', { p_team: c.req.valid('param').id, p_reason: reason ?? '' }));
+    removePhoto(c, url as string | null);
+    return c.body(null, 204);
+  })
+  .openapi(removeMember, async (c) => {
+    const { id, playerId } = c.req.valid('param');
+    const reason = (c.req.valid('json') as { reason?: string } | undefined)?.reason;
+    must(await c.var.sb.rpc('team_staff_remove_member', { p_team: id, p_player: playerId, p_reason: reason ?? '' }));
+    return c.body(null, 204);
+  })
+  .openapi(dissolveTeam, async (c) => {
+    const reason = (c.req.valid('json') as { reason?: string } | undefined)?.reason;
+    must(await c.var.sb.rpc('team_staff_dissolve', { p_team: c.req.valid('param').id, p_reason: reason ?? '' }));
     return c.body(null, 204);
   })
   .openapi(deleteTeam, async (c) => {
@@ -130,18 +248,14 @@ export const adminTeams = createRouter()
   })
   .openapi(addMember, async (c) => {
     const { id } = c.req.valid('param');
-    const { player_id, role } = c.req.valid('json');
-    const r = await c.var.sb.from('team_members').insert({ team_id: id, player_id, role, joined_at: new Date().toISOString() });
-    if (r.error?.code === '23505') throw new AppError(409, 'CONFLICT', 'Ese jugador ya está en el equipo.');
-    must(r);
+    const { player_id, role, reason } = c.req.valid('json');
+    must(await c.var.sb.rpc('team_staff_add_member', { p_team: id, p_player: player_id, p_role: role, p_reason: reason ?? '' }));
     return c.body(null, 204);
   })
   .openapi(setRole, async (c) => {
     const { id, playerId } = c.req.valid('param');
-    const rows = mustHave(
-      await c.var.sb.from('team_members').update({ role: c.req.valid('json').role }).eq('team_id', id).eq('player_id', playerId).is('left_at', null).select('id'),
-    );
-    if (!rows.length) throw notFound('ese jugador en el plantel');
+    const { role, reason } = c.req.valid('json');
+    must(await c.var.sb.rpc('team_staff_set_role', { p_team: id, p_player: playerId, p_role: role, p_reason: reason ?? '' }));
     return c.body(null, 204);
   })
   .openapi(getTeamConfig, async (c) => {

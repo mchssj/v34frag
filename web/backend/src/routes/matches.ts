@@ -268,10 +268,19 @@ export const matches = createRouter()
       const ids = m.event_id
         ? mustHave(await sb.from('tournament_registration_players').select('player_id').eq('event_id', m.event_id).eq('team_id', team)).map((r) => r.player_id)
         : mustHave(await sb.from('team_members').select('player_id').eq('team_id', team).is('left_at', null)).map((r) => r.player_id);
-      const people = ids.length ? mustHave(await sb.from('players').select('id, nick').in('id', ids)) : [];
+      const [people, recent] = ids.length
+        ? await Promise.all([
+            sb.from('players').select('id, nick').in('id', ids).then(mustHave),
+            // Rating de las últimas 4 semanas en 5v5: el de la serie lo da series_players cuando hay juegos con stats.
+            sb.rpc('player_recent_rating', { p_players: ids }).then(mustHave),
+          ])
+        : [[], []];
+      const ratingOf = new Map(recent.map((r) => [r.player_id, r.rating === null ? null : Number(r.rating)]));
       return [
-        ...people.map((p) => ({ player_id: p.id, alias: p.nick, guest: false })).sort((a, b) => a.alias.localeCompare(b.alias)),
-        ...guests.map((g) => ({ player_id: null, alias: g, guest: true })),
+        ...people
+          .map((p) => ({ player_id: p.id, alias: p.nick, guest: false, rating: ratingOf.get(p.id) ?? null }))
+          .sort((a, b) => a.alias.localeCompare(b.alias)),
+        ...guests.map((g) => ({ player_id: null, alias: g, guest: true, rating: null })),
       ];
     };
     const guestsOf = (t: string | null) => (caps.find((x) => x.id === t)?.guests as string[] | undefined) ?? [];

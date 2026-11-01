@@ -132,21 +132,66 @@ export const AdminTeamCreate = z
   })
   .openapi('AdminTeamCreate');
 
+const reason = z.string().trim().max(300).optional().openapi({ description: 'Motivo (opcional): lo ve el líder en el aviso y queda en el historial' });
+
 export const AdminTeamPatch = z
   .object({
     name: z.string().trim().min(2).max(40).optional(),
     tag: z.string().trim().min(1).max(6).transform((v) => v.toUpperCase()).optional(),
-    captain_player_id: z.uuid().optional().openapi({ description: 'Nuevo capitán (jugador con cuenta)' }),
+    captain_player_id: z.uuid().optional().openapi({ description: 'Nuevo líder, del plantel y con cuenta (solo admin)' }),
     force,
+    reason,
   })
   .refine((o) => o.name !== undefined || o.tag !== undefined || o.captain_player_id !== undefined, { message: 'No hay nada para actualizar.' })
   .openapi('AdminTeamPatch');
 
 export const MemberBody = z
-  .object({ player_id: z.uuid(), role: z.enum(['player', 'sub', 'coach']).default('player') })
+  .object({ player_id: z.uuid(), role: z.enum(['player', 'sub', 'coach']).default('player'), reason })
   .openapi('MemberBody');
 
-export const RoleBody = z.object({ role: z.enum(['player', 'sub', 'coach']) }).openapi('RoleBody');
+export const RoleBody = z.object({ role: z.enum(['player', 'sub', 'coach']), reason }).openapi('RoleBody');
+
+export const ReasonBody = z.object({ reason }).openapi('ReasonBody');
+
+export const AdminTeamQuery = listQuery(['name', 'last_change', 'members'], { sort: 'name', order: 'asc' }).extend({
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la sigla y los jugadores del plantel' }),
+  filter: z.enum(['blocked', 'incomplete', 'no_leader', 'in_event']).optional().openapi({
+    description: '`blocked`: nombre o sigla con una palabra bloqueada; `incomplete`: menos de 5 jugadores o suplentes; `no_leader`: sin líder; `in_event`: inscrito en un torneo abierto o en curso',
+  }),
+});
+
+export const AdminTeamRow = z
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    tag: z.string().nullable(),
+    logo_url: z.string().nullable(),
+    founded_at: z.string().nullable(),
+    captain: z.object({ player_id: z.uuid(), alias: z.string() }).nullable(),
+    members: z.number().int(),
+    players: z.number().int().openapi({ description: 'Jugadores y suplentes (sin el coach)' }),
+    events_active: z.number().int().openapi({ description: 'Torneos abiertos o en curso en los que está inscrito' }),
+    blocked: z.boolean().openapi({ description: 'El nombre o la sigla tiene una palabra bloqueada' }),
+    last_change_at: z.string().nullable(),
+  })
+  .openapi('AdminTeamRow');
+export const AdminTeamList = Envelope(AdminTeamRow).openapi('AdminTeamList');
+
+export const TeamAuditEntry = z
+  .object({
+    id: z.number().int(),
+    at: z.string(),
+    actor: z.object({ user_id: z.uuid().nullable(), alias: z.string().nullable() }),
+    actor_role: z.enum(['team', 'moderator', 'admin', 'system']),
+    action: z.string().openapi({
+      description: '`created`, `renamed`, `logo_changed`, `logo_removed`, `captain_changed`, `member_added`, `member_removed`, `member_left`, `role_changed` o `dissolved`',
+    }),
+    data: z.record(z.string(), z.unknown()).openapi({ description: 'Detalle: nombres de antes y después, jugador, rol…' }),
+    reason: z.string().nullable(),
+  })
+  .openapi('TeamAuditEntry');
+export const TeamAuditQuery = listQuery(['at'], { sort: 'at', order: 'desc' });
+export const TeamAuditList = Envelope(TeamAuditEntry).openapi('TeamAuditList');
 
 export const RankingConfig = z
   .object({
