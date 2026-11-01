@@ -1,4 +1,4 @@
--- Replanteo 40: anticheat FRAG, procesos y capturas (plan docs/bitacora/2026-10-30-anticheat-evidencia).
+-- Replanteo 46: anticheat FRAG, procesos y capturas (plan docs/bitacora/2026-10-30-anticheat-evidencia).
 --   - El agente manda eventos de procesos y capturas solo de una sesión de su equipo.
 --   - Lo pendiente de una sesión cerrada se acepta, pero solo si se observó antes de que cerrara (más un margen de 1 minuto).
 --   - Todo es idempotente: reintentar no duplica. Nada de esto es público.
@@ -8,10 +8,10 @@ begin;
 do $$
 begin
   if to_regclass('public.ac_sessions') is null then
-    raise exception 'replanteo 40: falta ac_sessions (aplicar antes 39_anticheat.sql)';
+    raise exception 'replanteo 46: falta ac_sessions (aplicar antes 45_anticheat.sql)';
   end if;
   if to_regclass('public.ac_screenshots') is not null then
-    raise exception 'replanteo 40: ac_screenshots ya existe (¿ya se aplicó?)';
+    raise exception 'replanteo 46: ac_screenshots ya existe (¿ya se aplicó?)';
   end if;
 end $$;
 

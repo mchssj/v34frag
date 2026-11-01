@@ -1,4 +1,4 @@
--- Inversa de supabase/replanteo/41_anticheat_integridad.sql. Borra la cadena y los registros de integridad.
+-- Inversa de supabase/replanteo/47_anticheat_integridad.sql. Borra la cadena y los registros de integridad.
 begin;
 
 do $$

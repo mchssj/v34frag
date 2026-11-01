@@ -8,7 +8,7 @@ Implementado y probado contra la Supabase local (2026-10-30), en la rama `kyan/a
 
 | Archivo | Cambio |
 |---|---|
-| `supabase/replanteo/39_anticheat.sql` y su inversa | Nuevos |
+| `supabase/replanteo/45_anticheat.sql` y su inversa | Nuevos |
 | `web/backend/src/routes/anticheat.ts`, `schemas/anticheat.ts` | Nuevos |
 | `web/backend/test/integration/anticheat.test.ts` | Nuevo: 16 pruebas |
 | `web/backend/src/app.ts`, `env.ts`, `lib/ratelimit.ts`, `.dev.vars.example` | Rutas, `AC_API_SECRET` y límites |
@@ -17,7 +17,7 @@ Implementado y probado contra la Supabase local (2026-10-30), en la rama `kyan/a
 
 ## Despliegue (pendiente, con el corte)
 
-1. `39_anticheat.sql` va con el corte, después de la `38`.
+1. `45_anticheat.sql` va con el corte, después de la `38`.
 2. Generar un secreto de 32 caracteres o más y cargarlo como `AC_API_SECRET` en la API.
 3. Guardar su hash en la base:
 
@@ -40,7 +40,7 @@ Contra la Supabase local:
 | `pnpm typecheck` | Sin errores |
 | `pnpm test` | 392 pasan |
 | `pnpm test:int` (incluye las 16 del anticheat) | Pasan |
-| `pnpm db:reset` con la `39` | Carga, con los `.sql` en LF (ver incidentes) |
+| `pnpm db:reset` con la `45` | Carga, con los `.sql` en LF (ver incidentes) |
 | Inversa y vuelta a aplicar | Sin objetos `ac_*` ni bucket; vuelve a aplicar |
 
 **Sin probar:** el flujo con un agente y un Bridge reales, porque no existen; la página de la web; el proxy del VPS; carga.
@@ -58,4 +58,4 @@ Contra la Supabase local:
 
 ## Cómo revertir
 
-Antes del corte, no aplicar la `39`. Después, correr la inversa, que borra sesiones y equipos vinculados, y aborta si `ac-evidence` tiene archivos. En el código, `git revert` del commit.
+Antes del corte, no aplicar la `45`. Después, correr la inversa, que borra sesiones y equipos vinculados, y aborta si `ac-evidence` tiene archivos. En el código, `git revert` del commit.

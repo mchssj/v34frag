@@ -52,8 +52,8 @@ Para que haya `kick`, deben cumplirse todas estas condiciones:
 
 | Qué | Archivo / ubicación |
 |---|---|
-| Base | `supabase/replanteo/39_anticheat.sql` |
-| Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/39_anticheat.sql` |
+| Base | `supabase/replanteo/45_anticheat.sql` |
+| Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/45_anticheat.sql` |
 | Rutas | `web/backend/src/routes/anticheat.ts` |
 | Contrato | `web/backend/src/schemas/anticheat.ts` |
 | Pruebas | `web/backend/test/integration/anticheat.test.ts` |

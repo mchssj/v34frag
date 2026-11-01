@@ -25,6 +25,7 @@
 #define MM_DONE_WAIT 300
 #define MM_RETRY_SECONDS 10
 #define MM_OUT_MAX 768
+#define MM_LIVE_POLL 10
 
 ConVar g_cvMm;
 ConVar g_cvMmPoll;
@@ -35,6 +36,7 @@ bool g_bMmDone;
 bool g_bMmDoneAborted;
 int g_iMmDoneAt;
 bool g_bMmLive;
+int g_iMmAbandons[2];          // abandonos confirmados de cada equipo de la sala
 bool g_bMmLoaded;
 int g_iMmRosterTotal;
 bool g_bMmPollBusy;
@@ -282,10 +284,13 @@ public Action Timer_MmTick(Handle timer)
 		Mm_Queue("csstv_mm_password", args);
 	}
 	Mm_FlushOut();
-	// Un mix o un !match en curso: la web lo ve fuera de línea y no le asigna nada.
-	if (g_State != State_Warmup || (!Mm_HasLobby() && g_LinkState != Link_None))
+	// Un mix o un !match en curso: la web lo ve fuera de línea y no le asigna nada. Una sala en vivo sí
+	// consulta, más espaciado: derrota automática, anulación y cuántos abandonos lleva cada equipo.
+	bool live = g_bMmLive && Mm_HasLobby();
+	if (!live && (g_State != State_Warmup || (!Mm_HasLobby() && g_LinkState != Link_None)))
 		return Plugin_Continue;
-	if (g_bMmPollBusy || GetTime() - g_iMmLastPoll < g_cvMmPoll.IntValue)
+	int every = live && g_cvMmPoll.IntValue < MM_LIVE_POLL ? MM_LIVE_POLL : g_cvMmPoll.IntValue;
+	if (g_bMmPollBusy || GetTime() - g_iMmLastPoll < every)
 		return Plugin_Continue;
 	Mm_Poll();
 	return Plugin_Continue;
@@ -331,6 +336,11 @@ public void Mm_OnPoll(bool success, const char[] error, System2HTTPRequest reque
 		return;
 	}
 	g_iMmPollErrors = 0;
+	if (g_bMmLive && Mm_HasLobby())
+	{
+		Mm_OnLivePoll(text);
+		return;
+	}
 	// La respuesta pudo tardar: si en el medio empezó una partida, no se toca nada.
 	if (g_State != State_Warmup)
 		return;
@@ -372,6 +382,43 @@ public void Mm_OnPoll(bool success, const char[] error, System2HTTPRequest reque
 	if (g_LinkState != Link_None || Maps_ChangePending())
 		return;
 	Mm_Take(lobby, text, StrEqual(st, "assigned"));
+}
+
+/** Con la sala en vivo: la web la anuló o un equipo perdió por abandonos. */
+void Mm_OnLivePoll(const char[] text)
+{
+	char lobby[40], num[16], parts[2][8];
+	Link_Field(text, "lobby", lobby, sizeof(lobby));
+	if (!StrEqual(lobby, g_sMmLobby))
+	{
+		QolChatAll("%s La web anuló la partida.", PREFIX);
+		CancelMatch("admin", "Web");
+		BackToWarmup();
+		return;
+	}
+	Link_Field(text, "abandons", num, sizeof(num));
+	if (ExplodeString(num, ",", parts, 2, 8) == 2)
+	{
+		g_iMmAbandons[0] = StringToInt(parts[0]);
+		g_iMmAbandons[1] = StringToInt(parts[1]);
+	}
+	Link_Field(text, "forfeit", num, sizeof(num));
+	int team = StringToInt(num);
+	if ((team == 1 || team == 2) && g_State == State_Live && !g_bRestarting)
+	{
+		int t = team == g_iMatchLinkSideA ? 0 : 1;
+		QolChatAll("%s {#amarillo}%s{#normal} pierde la partida: abandonaron 2 jugadores.", PREFIX, g_sTeam[t]);
+		Gg_Surrender(t);
+	}
+}
+
+/** !gg: el equipo que perdió a un jugador se puede rendir yendo abajo por cualquier diferencia. */
+int Mm_GgMinDiff(int t, int minDiff)
+{
+	if (!g_bMmLive || !Mm_HasLobby())
+		return minDiff;
+	int team = t == 0 ? g_iMatchLinkSideA : 3 - g_iMatchLinkSideA;
+	return (team == 1 || team == 2) && g_iMmAbandons[team - 1] > 0 ? 1 : minDiff;
 }
 
 void Mm_OnNoLobby(const char[] text)
@@ -523,6 +570,8 @@ void Mm_OnMatchStart()
 	if (!Mm_On() || !Mm_HasLobby())
 		return;
 	g_bMmLive = true;
+	g_iMmAbandons[0] = 0;
+	g_iMmAbandons[1] = 0;
 	Mm_Report("live", "");
 }
 

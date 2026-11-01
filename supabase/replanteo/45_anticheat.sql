@@ -1,4 +1,4 @@
--- Replanteo 39: anticheat FRAG, etapa 1 (plan docs/bitacora/2026-10-30-anticheat-backend).
+-- Replanteo 45: anticheat FRAG, etapa 1 (plan docs/bitacora/2026-10-30-anticheat-backend).
 --   - El agente se vincula a la cuenta con un código que el jugador aprueba en la web.
 --   - El Bridge pregunta por cada jugador con el token del servidor y recibe allow o kick.
 --   - Las funciones del agente piden un secreto que solo tiene la API: la anon key es pública y la IP la informa la API.
@@ -8,10 +8,10 @@ begin;
 do $$
 begin
   if to_regprocedure('public.steam_owner(text)') is null or to_regprocedure('public.is_steam64(text)') is null then
-    raise exception 'replanteo 39: falta steam_owner o is_steam64 (aplicar antes 15_claim.sql)';
+    raise exception 'replanteo 45: falta steam_owner o is_steam64 (aplicar antes 15_claim.sql)';
   end if;
   if to_regclass('public.ac_config') is not null then
-    raise exception 'replanteo 39: ac_config ya existe (¿ya se aplicó?)';
+    raise exception 'replanteo 45: ac_config ya existe (¿ya se aplicó?)';
   end if;
 end $$;
 

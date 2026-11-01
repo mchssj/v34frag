@@ -1,4 +1,4 @@
--- Replanteo 41: anticheat FRAG, integridad y retención (plan docs/bitacora/2026-10-30-anticheat-integridad).
+-- Replanteo 47: anticheat FRAG, integridad y retención (plan docs/bitacora/2026-10-30-anticheat-integridad).
 --   - Cada evidencia lleva una entrada firmada por el equipo, encadenada a la anterior.
 --   - La verificación detecta alteraciones posteriores y queda registrada.
 --   - Lo probado es que nada cambió desde el envío, NO que el equipo del jugador haya dicho la verdad.
@@ -8,10 +8,10 @@ begin;
 do $$
 begin
   if to_regclass('public.ac_screenshots') is null then
-    raise exception 'replanteo 41: falta ac_screenshots (aplicar antes 40_anticheat_evidencia.sql)';
+    raise exception 'replanteo 47: falta ac_screenshots (aplicar antes 46_anticheat_evidencia.sql)';
   end if;
   if to_regclass('public.ac_evidence') is not null then
-    raise exception 'replanteo 41: ac_evidence ya existe (¿ya se aplicó?)';
+    raise exception 'replanteo 47: ac_evidence ya existe (¿ya se aplicó?)';
   end if;
 end $$;
 

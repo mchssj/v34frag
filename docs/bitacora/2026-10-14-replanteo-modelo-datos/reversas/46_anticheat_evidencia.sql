@@ -1,4 +1,4 @@
--- Inversa de supabase/replanteo/40_anticheat_evidencia.sql. Borra procesos, capturas y solicitudes.
+-- Inversa de supabase/replanteo/46_anticheat_evidencia.sql. Borra procesos, capturas y solicitudes.
 -- Los archivos de ac-evidence hay que borrarlos antes con la API de Storage.
 begin;
 

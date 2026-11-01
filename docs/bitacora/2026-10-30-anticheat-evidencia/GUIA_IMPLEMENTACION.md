@@ -16,7 +16,7 @@ Implementado y probado en local el 2026-10-30, sin jugadores reales. **No distri
 
 ## Despliegue (pendiente, con el corte)
 
-1. `40_anticheat_evidencia.sql`, después de la `39`.
+1. `46_anticheat_evidencia.sql`, después de la `45`.
 2. `SUPABASE_SERVICE_KEY` y `AC_API_SECRET` en la API. **Nunca en la aplicación ni en el plugin.**
 3. Bridge: en `cfg/sourcemod/cml_anticheat.cfg`, `cml_ac_api_url` (termina en `/rest/v1/rpc/`), `cml_ac_api_key` y `cml_ac_server_token`. Junto con `live.cfg`, `end.cfg` y `warmup.cfg`.
 4. Activar en el servidor real con `ac_server_policy`, primero con `enforce_mixes` en `false`.
@@ -49,7 +49,7 @@ Implementado y probado en local el 2026-10-30, sin jugadores reales. **No distri
 
 ## Cómo revertir
 
-Antes del corte, no aplicar la `40`. Después, vaciar `ac-evidence` y correr su inversa. Sacar `cml_anticheat_bridge.smx` en el próximo cambio de mapa. En el código, `git revert`.
+Antes del corte, no aplicar la `46`. Después, vaciar `ac-evidence` y correr su inversa. Sacar `cml_anticheat_bridge.smx` en el próximo cambio de mapa. En el código, `git revert`.
 
 ## Agregado después
 

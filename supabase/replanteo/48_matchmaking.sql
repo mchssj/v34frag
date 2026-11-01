@@ -1,4 +1,4 @@
--- Replanteo 42: matchmaking con cola en la web y servidor automático (plan docs/bitacora/2026-10-28-matchmaking).
+-- Replanteo 48: matchmaking con cola en la web y servidor automático (plan docs/bitacora/2026-10-28-matchmaking).
 --   - Todo el estado vive en la base: cola, grupos, salas, confirmaciones y sanciones.
 --   - mm_tick() arma las salas y vence los plazos; lo llama cada 2 s el worker con la service_role.
 --   - La partida es una fila de matches (kind = 'mm'): el veto y el chat son los de siempre.
@@ -9,13 +9,13 @@ begin;
 do $$
 begin
   if to_regclass('public.ac_devices') is null then
-    raise exception 'replanteo 42: falta ac_devices (aplicar antes 39_anticheat.sql)';
+    raise exception 'replanteo 48: falta ac_devices (aplicar antes 45_anticheat.sql)';
   end if;
   if to_regclass('public.game_modes') is null or to_regclass('public.bans') is null then
-    raise exception 'replanteo 42: faltan game_modes o bans (aplicar antes 31 y 33)';
+    raise exception 'replanteo 48: faltan game_modes o bans (aplicar antes 31 y 33)';
   end if;
   if to_regclass('public.mm_config') is not null then
-    raise exception 'replanteo 42: mm_config ya existe (¿ya se aplicó?)';
+    raise exception 'replanteo 48: mm_config ya existe (¿ya se aplicó?)';
   end if;
 end $$;
 
@@ -54,6 +54,9 @@ create table public.mm_config (
   blocks_vip_only boolean not null default true,
   min_mixes integer not null default 5 check (min_mixes >= 0),
   min_account_days integer not null default 7 check (min_account_days >= 0),
+  abandon_extra_elo integer not null default 5 check (abandon_extra_elo between 0 and 100),
+  abandon_adjust_pct integer not null default 50 check (abandon_adjust_pct between 0 and 100),
+  abandon_gg_pct integer not null default 50 check (abandon_gg_pct between 0 and 100),
   season_queue_close_minutes integer not null default 15 check (season_queue_close_minutes >= 0)
 );
 insert into public.mm_config default values;
@@ -143,6 +146,7 @@ create table public.mm_lobbies (
   password text,
   require_anticheat boolean not null default true,
   affects_elo boolean not null default true,
+  forfeit_team smallint check (forfeit_team in (1, 2)),
   accept_deadline timestamptz,
   veto_turn smallint check (veto_turn in (1, 2)),
   veto_deadline timestamptz,
@@ -775,6 +779,7 @@ end $$;
 create function public.mm_tick() returns jsonb
   language plpgsql security definer set search_path = public as $$
 declare
+  v_ab1 int; v_ab2 int;
   c mm_config%rowtype;
   l mm_lobbies%rowtype;
   r record;
@@ -837,6 +842,14 @@ begin
         perform mm_penalize(r.user_id, 'Abandonaste una partida');
         perform mm_emit('lobby.player', l.id, mm_lobby_users(l.id));
       end loop;
+      -- 2 o más abandonos: ese equipo pierde (el plugin lo ve en el poll). En los dos equipos, la partida se anula.
+      select count(*) filter (where team = 1 and abandoned), count(*) filter (where team = 2 and abandoned) into v_ab1, v_ab2
+        from mm_lobby_players where lobby_id = l.id;
+      if v_ab1 >= 2 and v_ab2 >= 2 then
+        perform mm_cancel_lobby(l.id, 'Abandonaron los dos equipos: partida anulada');
+      elsif (v_ab1 >= 2 or v_ab2 >= 2) and l.forfeit_team is null then
+        update mm_lobbies set forfeit_team = case when v_ab1 >= 2 then 1 else 2 end where id = l.id;
+      end if;
     end if;
   end loop;
 
@@ -912,6 +925,7 @@ declare
   l mm_lobbies%rowtype;
   r1 int; r2 int;
   lado int := coalesce(p_side_a, 1);
+  v_left uuid;
 begin
   select * into par from matches where link_code = upper(trim(coalesce(p_code, ''))) and status in ('upcoming', 'live') for update;
   if par.id is null or par.kind <> 'mm' then return csstv_link_game_base(p_game, p_code, p_side_a); end if;
@@ -924,12 +938,105 @@ begin
   update matches set maps = jsonb_build_array(jsonb_build_object('map', g.map, 'r1', r1, 'r2', r2, 'game_id', g.id)),
     score1 = r1, score2 = r2, map = g.map, server_id = g.server_id, played_at = g.played_at, status = 'finished'
    where id = par.id;
+  -- Irse al final no sale gratis: quien sigue desconectado cuando termina la partida también abandonó.
+  for v_left in select user_id from mm_lobby_players where lobby_id = l.id and left_at is not null and not abandoned loop
+    update mm_lobby_players set abandoned = true, left_at = null where lobby_id = l.id and user_id = v_left;
+    perform mm_penalize(v_left, 'Abandonaste una partida');
+  end loop;
+  -- Derrota automática: pierde aunque fuera ganando.
+  if l.forfeit_team is not null then
+    update matches set winner_side = case when l.forfeit_team = 1 then 3 - lado else lado end where id = g.id returning winner_side into g.winner_side;
+  end if;
   update mm_lobbies set status = 'finished', ended_at = now(), end_reason = 'result',
-    winner_team = case when r1 > r2 then 1 when r2 > r1 then 2 end where id = l.id;
+    winner_team = case g.winner_side when lado then 1 when 3 - lado then 2 else case when r1 > r2 then 1 when r2 > r1 then 2 end end where id = l.id;
   perform mm_emit('lobby.finished', l.id, mm_lobby_users(l.id));
   return true;
 end $$;
 revoke all on function public.csstv_link_game(uuid, text, int), public.csstv_link_game_base(uuid, text, int) from public, anon, authenticated;
+
+-- ---------- Abandono en el ELO (definido con Daniel el 2026-11-01) ----------
+-- Sale de datos guardados (mm_lobby_players.abandoned y las rondas de la partida): un recálculo da lo mismo.
+
+create function public.mm_elo_abandoned(p_game uuid, p_key text) returns boolean
+  language sql stable set search_path = public as $$
+  select exists (select 1 from matches g join mm_lobbies l on l.match_id = g.parent_match_id
+                   join mm_lobby_players lp on lp.lobby_id = l.id and lp.abandoned join players p on p.id = lp.player_id
+                  where g.id = p_game and elo_key(p.steam_id) = p_key) $$;
+
+/** El cambio de ELO con las reglas de abandono; null si se aplica el normal. p_team es el equipo del juego. */
+create function public.mm_elo_delta(p_game uuid, p_key text, p_team int, p_res double precision, p_prob double precision, p_delta int) returns int
+  language plpgsql stable set search_path = public as $$
+declare
+  c mm_config%rowtype;
+  g matches%rowtype;
+  v_lobby uuid;
+  v_mine int;
+  n_own int; n_rival int;
+  v_total numeric; v_rounds numeric;
+  f numeric;
+begin
+  select * into g from matches where id = p_game;
+  if g.parent_match_id is null then return null; end if;
+  select id into v_lobby from mm_lobbies where match_id = g.parent_match_id;
+  if v_lobby is null then return null; end if;
+  select * into c from mm_config;
+  if mm_elo_abandoned(p_game, p_key) then
+    -- Derrota completa, sin ajuste por participación ni bonus, más el fijo.
+    return least(round(2 * coalesce((select base from elo_config where id = 1), 30) * (0 - p_prob))::int - c.abandon_extra_elo, -1);
+  end if;
+  v_mine := case when p_team = coalesce(g.parent_side1, 1) then 1 else 2 end;
+  select count(*) filter (where team = v_mine), count(*) filter (where team <> v_mine) into n_own, n_rival
+    from mm_lobby_players where lobby_id = v_lobby and abandoned;
+  -- Sin abandonos, con uno por equipo (quedan parejos) o con 2 o más en un equipo (derrota automática): ELO normal.
+  if n_own + n_rival <> 1 or p_res = 0.5 then return null; end if;
+  if g.end_reason = 'surrender' and n_own = 1 and p_res = 0 then
+    return round(p_delta::numeric * c.abandon_gg_pct / 100);
+  end if;
+  select greatest(coalesce(g.score1, 0) + coalesce(g.score2, 0), coalesce(max(rounds), 0)) into v_total
+    from match_player_stats where match_id = p_game and team in (1, 2);
+  select coalesce(max(s.rounds), 0) into v_rounds
+    from mm_lobby_players lp join players p on p.id = lp.player_id
+    left join match_player_stats s on s.match_id = p_game and elo_key(s.steam_id) = elo_key(p.steam_id)
+   where lp.lobby_id = v_lobby and lp.abandoned;
+  f := least(greatest((v_total - v_rounds) / nullif(v_total, 0), 0), 1) * c.abandon_adjust_pct / 100;
+  -- Su equipo gana más o pierde menos; el rival, al revés.
+  return round(p_delta::numeric * (case when (n_own = 1) = (p_res = 1) then 1 + f else 1 - f end));
+end $$;
+
+create function pg_temp.reemplazar(fn regprocedure, cambios text[][]) returns void language plpgsql as $$
+declare d text := pg_get_functiondef(fn); i int;
+begin
+  for i in 1 .. array_length(cambios, 1) loop
+    if position(cambios[i][1] in d) = 0 then
+      raise exception 'replanteo 48: en % no se encontró: %', fn, left(cambios[i][1], 80);
+    end if;
+    d := replace(d, cambios[i][1], cambios[i][2]);
+  end loop;
+  execute d;
+end $$;
+
+select pg_temp.reemplazar('public.elo_apply_match(uuid)', array[
+  ['and elo_weight(rounds, total, cfg.min_pct, cfg.full_pct) > 0;',
+   'and (elo_weight(rounds, total, cfg.min_pct, cfg.full_pct) > 0 or mm_elo_abandoned(p_match, elo_key(steam_id)));'],
+  -- Quien abandona cuenta completo, también en la fuerza de su equipo: sin ajuste por participación.
+  ['elo_weight(s.rounds, total, cfg.min_pct, cfg.full_pct) wt',
+   'case when mm_elo_abandoned(p_match, elo_key(s.steam_id)) then 1 else elo_weight(s.rounds, total, cfg.min_pct, cfg.full_pct) end wt'],
+  ['res    := case when r.team = 1 then res1 else 1 - res1 end;',
+   'res    := case when mm_elo_abandoned(p_match, r.steam_id) then 0 when r.team = 1 then res1 else 1 - res1 end;'],
+  ['if res = 1 then delta := greatest(delta, 1); elsif res = 0 then delta := least(delta, -1); end if;',
+   'if res = 1 then delta := greatest(delta, 1); elsif res = 0 then delta := least(delta, -1); end if; delta := coalesce(mm_elo_delta(p_match, r.steam_id, r.team, res, p_team, delta), delta);'],
+  ['new_mu := r.mu + r.wt * s2 / c * v;', 'new_mu := r.mu + r.wt * s2 / c * coalesce(v, 0);'],
+  ['new_mu := r.mu - r.wt * s2 / c * v;', 'new_mu := r.mu - r.wt * s2 / c * coalesce(v, 0);'],
+  ['r.wt * r.wt * s2 / (c * c) * w,', 'r.wt * r.wt * s2 / (c * c) * coalesce(w, 0),']
+]);
+
+select pg_temp.reemplazar('public.elo_recompute_player(text, text[])', array[
+  ['continue when wt <= 0;', 'continue when wt <= 0 and not mm_elo_abandoned(ev.mid, p_key);'],
+  ['res := case r.winner_side when r.team then 1 when 3 - r.team then 0 else 0.5 end;',
+   'res := case when mm_elo_abandoned(ev.mid, p_key) then 0 else case r.winner_side when r.team then 1 when 3 - r.team then 0 else 0.5 end end;'],
+  ['if res = 1 then delta := greatest(delta, 1); elsif res = 0 then delta := least(delta, -1); end if;',
+   'if res = 1 then delta := greatest(delta, 1); elsif res = 0 then delta := least(delta, -1); end if; delta := coalesce(mm_elo_delta(ev.mid, p_key, r.team, res, r.win_prob::double precision, delta), delta);']
+]);
 
 -- ---------- Plugin ----------
 
@@ -960,7 +1067,9 @@ begin
     'team1=' || translate(m.side1_name, E'\r\n', '  '), 'team2=' || translate(m.side2_name, E'\r\n', '  '),
     't1=' || coalesce((select string_agg(csstv_steam2(p.steam_id), ',') from mm_lobby_players lp join players p on p.id = lp.player_id where lp.lobby_id = l.id and lp.team = 1), ''),
     't2=' || coalesce((select string_agg(csstv_steam2(p.steam_id), ',') from mm_lobby_players lp join players p on p.id = lp.player_id where lp.lobby_id = l.id and lp.team = 2), ''),
-    'connect_seconds=' || coalesce(extract(epoch from greatest(l.connect_deadline - now(), interval '0'))::int, (select connect_minutes * 60 from mm_config)));
+    'connect_seconds=' || coalesce(extract(epoch from greatest(l.connect_deadline - now(), interval '0'))::int, (select connect_minutes * 60 from mm_config)),
+    'abandons=' || (select count(*) filter (where team = 1 and abandoned) || ',' || count(*) filter (where team = 2 and abandoned) from mm_lobby_players where lobby_id = l.id),
+    case when l.forfeit_team is not null then 'forfeit=' || l.forfeit_team end);
 end $$;
 
 create function public.csstv_mm_report(p_token text, p_lobby uuid, p_event text, p_data text default null) returns boolean
@@ -1152,6 +1261,9 @@ begin
     blocks_vip_only = coalesce((p->>'blocks_vip_only')::boolean, blocks_vip_only),
     min_mixes = coalesce((p->>'min_mixes')::int, min_mixes),
     min_account_days = coalesce((p->>'min_account_days')::int, min_account_days),
+    abandon_extra_elo = coalesce((p->>'abandon_extra_elo')::int, abandon_extra_elo),
+    abandon_adjust_pct = coalesce((p->>'abandon_adjust_pct')::int, abandon_adjust_pct),
+    abandon_gg_pct = coalesce((p->>'abandon_gg_pct')::int, abandon_gg_pct),
     season_queue_close_minutes = coalesce((p->>'season_queue_close_minutes')::int, season_queue_close_minutes);
   for m in select * from jsonb_array_elements(coalesce(p->'modes', '[]')) loop
     update mm_mode_settings set enabled = (m->>'enabled')::boolean, affects_elo = (m->>'affects_elo')::boolean where mode = m->>'mode';

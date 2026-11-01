@@ -1,5 +1,5 @@
 /**
- * CMLeague Anticheat: Bridge (plan docs/bitacora/2026-10-30-anticheat-evidencia, replanteo 39).
+ * CMLeague Anticheat: Bridge (plan docs/bitacora/2026-10-30-anticheat-evidencia, replanteo 45).
  *
  * Le pregunta a la base por cada jugador real, al entrar y cada minuto, y aplica la respuesta en los mixes:
  *   - allow: sigue jugando. kick: se le avisa y, si en 20 s no cambió, se lo expulsa. Expulsar no es una sanción: no crea un ban.

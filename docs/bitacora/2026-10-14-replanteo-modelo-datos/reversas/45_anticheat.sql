@@ -1,4 +1,4 @@
--- Inversa de supabase/replanteo/39_anticheat.sql. Borra las sesiones y los equipos vinculados.
+-- Inversa de supabase/replanteo/45_anticheat.sql. Borra las sesiones y los equipos vinculados.
 begin;
 
 do $$

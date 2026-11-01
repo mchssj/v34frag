@@ -9,7 +9,7 @@ Aplicación mínima compilada y probada contra la API local (2026-10-30). Sin di
 | Archivo | Cambio |
 |---|---|
 | `agent/` | Nuevo: la aplicación |
-| `supabase/replanteo/39_anticheat.sql`, su inversa, `web/backend/src/routes/anticheat.ts`, `src/db/types.ts` | `ac_agent_unlink` y `POST /api/v1/anticheat/unlink` |
+| `supabase/replanteo/45_anticheat.sql`, su inversa, `web/backend/src/routes/anticheat.ts`, `src/db/types.ts` | `ac_agent_unlink` y `POST /api/v1/anticheat/unlink` |
 | `web/backend/test/integration/anticheat.test.ts` | Prueba con el ejecutable real |
 
 ## Despliegue

@@ -40,7 +40,7 @@ Cada verificación y cada firma rechazada quedan en `ac_integrity_logs`.
 
 | Qué | Archivo |
 |---|---|
-| Base | `supabase/replanteo/41_anticheat_integridad.sql` |
+| Base | `supabase/replanteo/47_anticheat_integridad.sql` |
 | API | `web/backend/src/routes/anticheat-evidence.ts` |
 | Cron | `web/backend/src/jobs/anticheat-retention.ts`, `scripts/anticheat-tick.mts` |
 | Firma | `agent/src/evidence.cpp` |

@@ -1,5 +1,37 @@
--- Inversa del replanteo 42 (matchmaking). Borra las salas y las partidas mm.
+-- Inversa del replanteo 48 (matchmaking). Borra las salas y las partidas mm.
 begin;
+
+create function pg_temp.reemplazar(fn regprocedure, cambios text[][]) returns void language plpgsql as $$
+declare d text := pg_get_functiondef(fn); i int;
+begin
+  for i in 1 .. array_length(cambios, 1) loop
+    if position(cambios[i][1] in d) = 0 then
+      raise exception 'inversa 48: en % no se encontró: %', fn, left(cambios[i][1], 80);
+    end if;
+    d := replace(d, cambios[i][1], cambios[i][2]);
+  end loop;
+  execute d;
+end $$;
+
+select pg_temp.reemplazar('public.elo_apply_match(uuid)', array[
+  ['and (elo_weight(rounds, total, cfg.min_pct, cfg.full_pct) > 0 or mm_elo_abandoned(p_match, elo_key(steam_id)));',
+   'and elo_weight(rounds, total, cfg.min_pct, cfg.full_pct) > 0;'],
+  ['case when mm_elo_abandoned(p_match, elo_key(s.steam_id)) then 1 else elo_weight(s.rounds, total, cfg.min_pct, cfg.full_pct) end wt',
+   'elo_weight(s.rounds, total, cfg.min_pct, cfg.full_pct) wt'],
+  ['res    := case when mm_elo_abandoned(p_match, r.steam_id) then 0 when r.team = 1 then res1 else 1 - res1 end;',
+   'res    := case when r.team = 1 then res1 else 1 - res1 end;'],
+  [' delta := coalesce(mm_elo_delta(p_match, r.steam_id, r.team, res, p_team, delta), delta);', ''],
+  ['new_mu := r.mu + r.wt * s2 / c * coalesce(v, 0);', 'new_mu := r.mu + r.wt * s2 / c * v;'],
+  ['new_mu := r.mu - r.wt * s2 / c * coalesce(v, 0);', 'new_mu := r.mu - r.wt * s2 / c * v;'],
+  ['r.wt * r.wt * s2 / (c * c) * coalesce(w, 0),', 'r.wt * r.wt * s2 / (c * c) * w,']
+]);
+
+select pg_temp.reemplazar('public.elo_recompute_player(text, text[])', array[
+  ['continue when wt <= 0 and not mm_elo_abandoned(ev.mid, p_key);', 'continue when wt <= 0;'],
+  ['res := case when mm_elo_abandoned(ev.mid, p_key) then 0 else case r.winner_side when r.team then 1 when 3 - r.team then 0 else 0.5 end end;',
+   'res := case r.winner_side when r.team then 1 when 3 - r.team then 0 else 0.5 end;'],
+  [' delta := coalesce(mm_elo_delta(ev.mid, p_key, r.team, res, r.win_prob::double precision, delta), delta);', '']
+]);
 
 drop trigger if exists mm_notify_chat on public.match_chat;
 drop policy if exists "sonidos: leer" on storage.objects;

@@ -42,7 +42,7 @@ flowchart TD
 
 | Qué | Archivo |
 |---|---|
-| Base | `supabase/replanteo/40_anticheat_evidencia.sql` |
+| Base | `supabase/replanteo/46_anticheat_evidencia.sql` |
 | API | `web/backend/src/routes/anticheat-evidence.ts` |
 | Aplicación | `agent/src/evidence.cpp` |
 | Bridge | `server/addons/sourcemod/scripting/cml_anticheat_bridge.sp` |

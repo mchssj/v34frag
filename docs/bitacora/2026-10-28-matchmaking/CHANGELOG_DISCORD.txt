@@ -1,0 +1,10 @@
+v34frag 2.8.0 --  Changelog
+
+Llega el matchmaking.
+
+- Busca partida desde la web: el sistema arma equipos parejos por ELO y te asigna servidor.
+- Acepta la partida cuando salte el aviso y banea mapas con tu capitán.
+- Puedes jugar en dúo con un amigo.
+- Si te caes, tienes 3 minutos para volver. Un aviso te lo recuerda en toda la web.
+- Irse sale caro: quien abandona pierde ELO y recibe una sanción. Tu equipo no paga por quien se fue.
+- Elige el sonido que te avisa cuando encuentras partida.
