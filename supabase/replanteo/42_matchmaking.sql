@@ -69,7 +69,7 @@ insert into public.mm_mode_settings (mode, enabled, affects_elo, position)
 
 create table public.mm_mode_maps (
   mode text not null references public.game_modes(code),
-  map text not null references public.map_pool(name) on update cascade,
+  map text not null references public.map_pool(name) on update cascade on delete cascade,
   position integer not null default 0,
   primary key (mode, map)
 );
