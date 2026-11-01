@@ -9,11 +9,11 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/features/shell/AppSidebar"
-import { CommandMenu } from "@/features/shell/CommandMenu"
-import { NowBar } from "@/features/shell/NowBar"
-import { Topbar } from "@/features/shell/Topbar"
-import { useSyncThemeFx } from "@/features/theme-fx/useSyncThemeFx"
+import { AppSidebar } from "@/features/shell/components/AppSidebar"
+import { CommandMenu } from "@/features/shell/components/CommandMenu"
+import { NowBar } from "@/features/shell/components/NowBar"
+import { Topbar } from "@/features/shell/components/Topbar"
+import { useSyncThemeFx } from "@/features/theme-fx/lib/useSyncThemeFx"
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: requireAuth,

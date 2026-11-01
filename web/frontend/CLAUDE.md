@@ -54,13 +54,55 @@ src/
   api/        schema.d.ts (generado), client.ts (openapi-fetch + authFetch), errors.ts (ApiError y mensajes)
   auth/       tokenStore, refresh, authFetch, queries, guards, permissions (reglas por rol), AuthSync, schemas, callback, redirect
   assets/     imagen del hero (AVIF y WebP)
-  components/ ui/ (shadcn), brand/ (Brand: isotipo, wordmark y lockup de CM League; ThemeToggle de la app, ThemeSwitch de la landing, CountryFlag, LevelBadge, ListPagination, LiveDot, SectionHeading), theme-provider
+  components/ ui/ (shadcn), brand/ (piezas propias que usan varios módulos; ver "Componentes comunes"), data-table/ (tablas paginadas con TanStack Table), icons/, illustrations/, theme-provider
   config/     site.ts: datos fijos que la API todavía no expone (servidores, Discord, IP del !claim)
-  features/   componentes por dominio (admin/, auth/, auth/register/, events/, landing/, maps/, matches/, mixes/, onboarding/, player/, profile/, public/, ranking/, shell/, teams/, theme-fx/)
+  features/   un módulo por dominio (admin/<sección>, auth, events, landing, maps, matches, mixes, onboarding, player, profile, public, ranking, shell, teams, theme-fx), cada uno con las carpetas de abajo
   lib/        env.ts (VITE_API_URL validada), image.ts (recorte del avatar), useMediaQuery.ts
   routes/     una ruta por archivo; _auth = páginas sin sesión, _app = con sesión, _admin = rol admin
   test/       setup y utilidades de prueba
 ```
+
+### Carpetas de un módulo (`src/features/<módulo>/`)
+
+Cada módulo usa solo las carpetas que necesita:
+
+| Carpeta | Qué va |
+|---|---|
+| `api/` | `queries.ts`: queryOptions, claves de caché y mutaciones |
+| `types/` | `index.ts`: los alias de `Schemas[...]` y los tipos propios del módulo |
+| `components/` | Las piezas que usan las páginas (subcarpetas si un grupo crece, p. ej. `player/components/tabs/`) |
+| `pages/` | Lo que renderiza una ruta: una por vista o sub vista |
+| `lib/` | Helpers puros (textos, cálculos, esquemas de la URL) y hooks que no son componentes |
+
+- **Pruebas:** van al lado del archivo que prueban (`lib/labels.test.ts`).
+- **Imports:** relativos adentro del módulo (`../api/queries`) y con `@/` entre módulos (`@/features/teams/types`).
+- **`lib/` no importa de `api/`:** es `api/` el que importa de `lib/`.
+- **Lo que usan varios módulos** va en `src/components/brand/`.
+
+### Componentes comunes
+
+Antes de armar algo a mano, se usa shadcn (`components/ui/`) o una de estas piezas. Si hace falta otro aspecto, se ajusta con `className` o con una variante, sin copiar el componente.
+
+| Para | Usar |
+|---|---|
+| Tarjetas | `Card variant="outline"` (borde, sin relleno) con `radius` `xl`, `tile` o `hero`; `asChild` para otra etiqueta |
+| Chips y estados | `Badge` con sus variantes de tono (`win`, `live`, `soft`…), forma y tamaño |
+| Filtros en píldoras / segmentados | `FilterChips` / `Segmented` (sobre `ToggleGroup`) |
+| Pestañas, vacíos, progreso, atajos | `Tabs`, `EmptyState` (sobre `Empty`), `Progress`, `Kbd` |
+| Campos de formulario | `Field`, `FieldLabel`, `FieldDescription`, `FieldError` (ajustados a la escala del proyecto); `AuthField` con react-hook-form |
+| Carga y error de una consulta | `QueryState`, `QueryErrorMessage` y `RetryButton` (`brand/QueryState`) |
+| Confirmar una acción | `ConfirmDialog` (sobre `AlertDialog`; con frase a escribir o motivo) |
+| KPI | `StatTile` |
+| Jugador / equipo / tipo de partida | `PlayerAvatar` (e `initialOf`), `TeamCrest`, `KindBadge` y `KIND_LABEL` |
+
+### Tablas
+
+Las listas paginadas por la API usan `components/data-table/` (TanStack Table v9). Las tablas chicas o editables (un mix, las posiciones de un torneo, el catálogo de mapas) quedan con la `Table` de shadcn.
+
+1. Columnas `DataColumn<T>[]` a nivel de módulo (o en un `useMemo` si dependen de datos), con `headClassName` y `cellClassName` (que puede ser una función de la fila). Las que ordenan llevan `accessorKey`, `enableSorting: true` y `header: ({ column }) => <SortHeader column={column} label="…" />`.
+2. `useServerTable({ columns, data, total, page, per, onPage, onPer?, sort?, defaultSort?, onSort? })`. Con el estado en la URL: `...urlPaging(search, onChange, DEFAULT_PER)` y `...urlSorting(search, onChange, "elo")`.
+3. `<DataTable table query empty />` con `rowLink` (fila que abre algo, con Enter) o `selection` (fila elegida y `SelectButton`), y `stateAs="block"` si el error y el vacío reemplazan la tabla. En Administración, `AdminTable`.
+4. `<DataTablePagination table perOptions perLabel />` (o `mode="compact"`).
 
 ## Diseño
 

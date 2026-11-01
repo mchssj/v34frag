@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { EventList } from "@/features/events/EventList"
+import { EventList } from "@/features/events/pages/EventList"
 
 // ?status: el filtro del listado (sin él, Todos).
 const searchSchema = z.object({

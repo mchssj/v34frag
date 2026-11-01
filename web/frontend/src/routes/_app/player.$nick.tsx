@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { PlayerProfile } from "@/features/player/PlayerProfile"
-import { playerSearchSchema } from "@/features/player/search"
+import { PlayerProfile } from "@/features/player/pages/PlayerProfile"
+import { playerSearchSchema } from "@/features/player/lib/search"
 
 export const Route = createFileRoute("/_app/player/$nick")({
   validateSearch: playerSearchSchema,

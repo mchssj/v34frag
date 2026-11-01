@@ -28,7 +28,7 @@ test("perfil de un jugador del ranking: resumen, pestañas y una partida", async
     page.getByRole("navigation", { name: "breadcrumb" })
   ).toContainText(alias)
 
-  await page.getByRole("button", { name: "10", exact: true }).click()
+  await page.getByRole("radio", { name: "10", exact: true }).click()
   await expect(page).toHaveURL(/range=10/)
 
   for (const [tab, text] of [
@@ -45,7 +45,7 @@ test("perfil de un jugador del ranking: resumen, pestañas y una partida", async
 
   await page.getByRole("tab", { name: "Partidas" }).click()
   await expect(page).toHaveURL(/tab=partidas/)
-  await page.getByRole("button", { name: "Mix", exact: true }).click()
+  await page.getByRole("radio", { name: "Mix", exact: true }).click()
   await expect(page).toHaveURL(/kind=mix/)
   const row = page.locator("tbody tr[role=link]").first()
   await expect(row).toBeVisible()

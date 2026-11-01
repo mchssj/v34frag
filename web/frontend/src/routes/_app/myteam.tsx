@@ -3,12 +3,15 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { Spinner } from "@/components/ui/spinner"
-import { CreateTeam } from "@/features/teams/CreateTeam"
-import { FindTeam } from "@/features/teams/FindTeam"
-import { NoTeam } from "@/features/teams/NoTeam"
-import { myTeamsOptions } from "@/features/teams/queries"
-import { TeamSwitcher, type MyTeam } from "@/features/teams/TeamSwitcher"
-import { TeamView } from "@/features/teams/TeamView"
+import { CreateTeam } from "@/features/teams/pages/CreateTeam"
+import { FindTeam } from "@/features/teams/pages/FindTeam"
+import { NoTeam } from "@/features/teams/pages/NoTeam"
+import { myTeamsOptions } from "@/features/teams/api/queries"
+import {
+  TeamSwitcher,
+  type MyTeam,
+} from "@/features/teams/components/TeamSwitcher"
+import { TeamView } from "@/features/teams/pages/TeamView"
 
 // ?team: el equipo elegido entre los propios; ?view: Crear o Buscar (así funciona Atrás).
 const searchSchema = z.object({

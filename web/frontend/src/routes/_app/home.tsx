@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import { useMe } from "@/auth/queries"
-import { ProfileBanner } from "@/features/onboarding/ProfileBanner"
+import { ProfileBanner } from "@/features/onboarding/components/ProfileBanner"
 
 export const Route = createFileRoute("/_app/home")({
   component: HomePage,

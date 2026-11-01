@@ -34,7 +34,7 @@ test("jugadores: temporada activa por defecto, Histórico, nivel, orden y perfil
 
   const podium = page.getByRole("list", { name: "Podio" })
   const first = await podium.getByRole("link").first().textContent()
-  await page.getByRole("button", { name: "Nivel 1–6" }).click()
+  await page.getByRole("radio", { name: "Nivel 1–6" }).click()
   await expect(page).toHaveURL(/level=1-6/)
   // El podio no cambia con los filtros.
   await expect(podium.getByRole("link").first()).toHaveText(first ?? "")
@@ -52,7 +52,7 @@ test("los filtros no mueven el scroll; cambiar de página vuelve al inicio de la
   page,
 }) => {
   await page.goto("/ranking?season=all")
-  const filter = page.getByRole("button", { name: "Nivel 1–6" })
+  const filter = page.getByRole("radio", { name: "Nivel 1–6" })
   await expect(filter).toBeVisible()
   await filter.evaluate((el) =>
     window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 80)

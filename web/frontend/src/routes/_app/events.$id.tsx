@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { EventView } from "@/features/events/EventView"
+import { EventView } from "@/features/events/pages/EventView"
 
 // ?tab: la pestaña (sin él, Resumen).
 const searchSchema = z.object({

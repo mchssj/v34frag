@@ -1,0 +1,454 @@
+import { useQuery } from "@tanstack/react-query"
+import { cn } from "cn"
+import { SearchIcon, XIcon } from "lucide-react"
+import { useId, useMemo, useState } from "react"
+import { toast } from "sonner"
+
+import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
+import {
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useDebouncedValue } from "@/lib/useDebouncedValue"
+import { CONFIRM_TEXT, fmtDateTime, signed } from "../../lib/format"
+import { AdminTable } from "../../components/ui"
+import {
+  ADJ_PER,
+  adjustmentsOptions,
+  eloConfigOptions,
+  playerSearchOptions,
+  useAdjustElo,
+  useUndoAdjustment,
+} from "../api/queries"
+import type { EloAdjustment, PlayerSummary } from "../types"
+import { adjustValueError, adjustedElo } from "../lib/adjustments"
+import type { Mode } from "../lib/adjustments"
+
+const MAX_PLAYERS = 10
+
+export function AdjustmentsTab() {
+  return (
+    <div className="flex flex-col gap-5">
+      <NewAdjustment />
+      <History />
+    </div>
+  )
+}
+
+function NewAdjustment() {
+  const id = useId()
+  const config = useQuery(eloConfigOptions)
+  const [q, setQ] = useState("")
+  const debounced = useDebouncedValue(q.trim(), 250)
+  const search = useQuery(playerSearchOptions(debounced))
+  const [picked, setPicked] = useState<PlayerSummary[]>([])
+  const [mode, setMode] = useState<Mode>("delta")
+  const [value, setValue] = useState("20")
+  const [reason, setReason] = useState("")
+  const adjust = useAdjustElo()
+
+  const floor = config.data?.config.elo_floor ?? 0
+  const valueErr = adjustValueError(mode, value)
+  const v = Number(value)
+  const suggestions = (search.data?.items ?? []).filter(
+    (p) => !picked.some((x) => x.id === p.id)
+  )
+  const disabled =
+    picked.length === 0 || !!valueErr || !reason.trim() || adjust.isPending
+
+  function apply() {
+    adjust.mutate(
+      {
+        player_ids: picked.map((p) => p.id),
+        reason: reason.trim(),
+        ...(mode === "delta" ? { delta: v } : { set_elo: v }),
+      },
+      {
+        onSuccess: (res) => {
+          const n = res.items.filter((i) => i.adjustment_id !== null).length
+          toast.success(
+            n === 0
+              ? "Ya tenían ese ELO: no se ajustó a nadie."
+              : n === 1
+                ? "Ajuste aplicado."
+                : `Ajuste aplicado a ${n} jugadores.`
+          )
+          setPicked([])
+          setReason("")
+        },
+      }
+    )
+  }
+
+  const seg = (on: boolean) =>
+    cn(
+      "h-9 rounded-md px-3.5 text-[13px] transition-colors",
+      on
+        ? "bg-card font-semibold text-foreground shadow-sm"
+        : "text-muted-foreground hover:text-foreground"
+    )
+
+  return (
+    <Card variant="outline" asChild className="flex flex-wrap gap-6 p-4">
+      <section aria-label="Nuevo ajuste">
+        <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-[17px] font-bold">Nuevo ajuste</h2>
+            <span className="text-[13px] leading-relaxed text-muted-foreground">
+              Para un mix caído, un abandono o un error. Cuenta desde ahora: no
+              toca partidas ni stats.
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`${id}-q`}>
+              Jugadores{" "}
+              <span className="font-normal text-muted-foreground">
+                ({picked.length} de {MAX_PLAYERS})
+              </span>
+            </Label>
+            <InputGroup>
+              <InputGroupAddon>
+                <SearchIcon aria-hidden className="size-3.5" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id={`${id}-q`}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar por alias"
+                disabled={picked.length >= MAX_PLAYERS}
+              />
+            </InputGroup>
+            {debounced && suggestions.length > 0 && (
+              <ul className="flex flex-col overflow-hidden rounded-lg border">
+                {suggestions.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      className="flex h-10 w-full items-center justify-between px-3 text-left hover:bg-muted"
+                      onClick={() => {
+                        setPicked((x) => [...x, p])
+                        setQ("")
+                      }}
+                    >
+                      <span>{p.alias}</span>
+                      <span className="font-mono text-muted-foreground">
+                        {p.elo ?? "—"}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {debounced && search.data && suggestions.length === 0 && (
+              <span className="text-xs text-muted-foreground">
+                Ninguna ficha con SteamID coincide.
+              </span>
+            )}
+          </div>
+          {picked.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5">
+              {picked.map((p) => (
+                <li
+                  key={p.id}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border pr-1 pl-2.5 text-[13px]"
+                >
+                  {p.alias}
+                  <span className="font-mono text-muted-foreground">
+                    {p.elo}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Quitar a ${p.alias}`}
+                    className="grid size-6 place-items-center rounded-full bg-muted"
+                    onClick={() =>
+                      setPicked((x) => x.filter((y) => y.id !== p.id))
+                    }
+                  >
+                    <XIcon aria-hidden className="size-3" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div
+            role="radiogroup"
+            aria-label="Tipo de ajuste"
+            className="inline-flex gap-1 self-start rounded-lg bg-muted p-1"
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "delta"}
+              className={seg(mode === "delta")}
+              onClick={() => {
+                setMode("delta")
+                setValue("20")
+              }}
+            >
+              Sumar o restar
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={mode === "set"}
+              className={seg(mode === "set")}
+              onClick={() => {
+                setMode("set")
+                setValue(String(config.data?.config.start_elo ?? 1000))
+              }}
+            >
+              Fijar en
+            </button>
+          </div>
+          <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${id}-v`}>
+                {mode === "delta" ? "Cambio" : "ELO final"}
+              </Label>
+              <Input
+                id={`${id}-v`}
+                inputMode="numeric"
+                value={value}
+                aria-invalid={!!valueErr}
+                onChange={(e) => setValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <span
+                className={cn(
+                  "text-xs",
+                  valueErr ? "text-destructive" : "text-muted-foreground"
+                )}
+              >
+                {valueErr ??
+                  (mode === "delta"
+                    ? "Negativo para restar."
+                    : "El jugador queda en este valor.")}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${id}-r`} className="flex justify-between">
+                <span>Motivo</span>
+                <span className="font-mono font-normal text-muted-foreground">
+                  {reason.length}/200
+                </span>
+              </Label>
+              <Textarea
+                id={`${id}-r`}
+                rows={3}
+                maxLength={200}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Ej.: el mix del 27/10 se cayó con 13–5 a favor"
+              />
+              <span className="text-xs text-muted-foreground">
+                Lo ve el jugador en su historial de ELO.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-3 rounded-xl bg-muted p-3.5">
+          <span className="text-[13px] font-semibold">Así quedan</span>
+          {picked.length === 0 ? (
+            <span className="text-[13px] text-muted-foreground">
+              Elige al menos un jugador.
+            </span>
+          ) : (
+            picked.map((p) => {
+              const before = p.elo ?? config.data?.config.start_elo ?? 0
+              const after = valueErr
+                ? before
+                : adjustedElo(before, mode, v, floor)
+              const d = after - before
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="font-medium">{p.alias}</span>
+                  <span className="flex items-center gap-2 font-mono">
+                    <span className="text-muted-foreground">{before}</span>
+                    <span aria-hidden>→</span>
+                    <span className="font-semibold">{after}</span>
+                    <span
+                      className={cn(
+                        "text-xs",
+                        d >= 0 ? "text-win" : "text-destructive"
+                      )}
+                    >
+                      ({signed(d)})
+                    </span>
+                  </span>
+                </div>
+              )
+            })
+          )}
+          <span className="text-xs leading-snug text-muted-foreground">
+            Calculado con el ELO actual y el mínimo de {floor}. La respuesta
+            trae el valor real.
+          </span>
+          {adjust.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {errorMessage(adjust.error)}
+            </p>
+          )}
+          <span className="flex-1" />
+          <Button size="xl" disabled={disabled} onClick={apply}>
+            {picked.length > 1
+              ? `Aplicar a ${picked.length} jugadores`
+              : "Aplicar ajuste"}
+          </Button>
+        </div>
+      </section>
+    </Card>
+  )
+}
+
+function adjustmentColumns(
+  onUndo: (a: EloAdjustment) => void
+): DataColumn<EloAdjustment>[] {
+  return [
+    {
+      id: "applied_at",
+      header: "Fecha",
+      headClassName: "pl-4",
+      cellClassName: "pl-4 whitespace-nowrap text-muted-foreground",
+      cell: ({ row }) => fmtDateTime(row.original.applied_at),
+    },
+    {
+      id: "player",
+      header: "Jugador",
+      cellClassName: "font-medium",
+      cell: ({ row }) => row.original.player?.alias ?? row.original.steam_id,
+    },
+    {
+      id: "change",
+      header: "Cambio",
+      cellClassName: "font-mono whitespace-nowrap",
+      cell: ({ row: { original: a } }) => (
+        <span
+          className={cn(
+            "font-semibold",
+            a.delta >= 0 ? "text-win" : "text-destructive"
+          )}
+        >
+          {a.kind === "set"
+            ? `Fijar en ${a.set_elo} (${signed(a.delta)})`
+            : signed(a.delta)}
+        </span>
+      ),
+    },
+    {
+      id: "reason",
+      header: "Motivo",
+      cellClassName: "max-w-[360px] whitespace-normal",
+      cell: ({ row }) => row.original.reason,
+    },
+    {
+      id: "by",
+      header: "Por",
+      cellClassName: "text-muted-foreground",
+      cell: ({ row }) => row.original.created_by?.alias ?? "—",
+    },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Acciones</span>,
+      cellClassName: "pr-4 text-right",
+      cell: ({ row }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onUndo(row.original)}
+        >
+          Deshacer
+        </Button>
+      ),
+    },
+  ]
+}
+
+function History() {
+  const [page, setPage] = useState(1)
+  const list = useQuery(adjustmentsOptions(page))
+  const undo = useUndoAdjustment()
+  const [target, setTarget] = useState<EloAdjustment | null>(null)
+  const columns = useMemo(() => adjustmentColumns(setTarget), [])
+  const table = useServerTable({
+    columns,
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: ADJ_PER,
+    onPage: setPage,
+    getRowId: (a) => String(a.id),
+  })
+
+  return (
+    <section
+      aria-label="Historial de ajustes"
+      className="flex flex-col gap-2.5"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-[17px] font-bold">Historial</h2>
+        <span className="text-xs text-muted-foreground">
+          Más recientes primero · deshacer pide escribir «estoy seguro»
+        </span>
+      </div>
+      <AdminTable
+        table={table}
+        query={list}
+        className="min-w-[720px]"
+        loadingClassName="h-48"
+        empty="Todavía no hay ajustes manuales."
+      />
+      <ConfirmDialog
+        open={target !== null}
+        onOpenChange={(o) => !o && setTarget(null)}
+        title="¿Deshacer este ajuste?"
+        description={
+          target && (
+            <>
+              <span>
+                {target.player?.alias ?? target.steam_id}:{" "}
+                {target.kind === "set"
+                  ? `fijado en ${target.set_elo}`
+                  : `${signed(target.delta)} ELO`}
+                . Motivo: «{target.reason}»
+              </span>
+              <span>
+                {target.kind === "set"
+                  ? "Al deshacer un «fijar» se recalcula el ELO de todos para que quede como si el ajuste no hubiera existido."
+                  : "Se le resta el cambio. Si después hubo un cierre o comienzo de temporada o un «fijar» del mismo jugador, se recalcula el ELO de todos."}
+              </span>
+            </>
+          )
+        }
+        confirmLabel="Deshacer ajuste"
+        danger
+        typed={CONFIRM_TEXT}
+        pending={undo.isPending}
+        error={undo.error}
+        onConfirm={() =>
+          target &&
+          undo.mutate(target.id, {
+            onSuccess: () => {
+              setTarget(null)
+              toast.success("Ajuste deshecho.")
+            },
+          })
+        }
+      />
+    </section>
+  )
+}
