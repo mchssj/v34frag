@@ -262,7 +262,10 @@ class Game:
         # Parámetros del launcher: se guarda el ini original y se restaura al final.
         shutil.copyfile(self.ini, self.ini + ".render_orig")
         lines = open(self.ini, encoding="utf-8").read().splitlines()
-        params = f"Params=-novid -windowed -noborder -w {c['width']} -h {c['height']} +exec cmleague_render"
+        # launch_params: parámetros extra de la máquina (en el portátil, "-dxlevel 90" para probar si la gráfica
+        # integrada deja de deformar el mapa).
+        extra = f" {c['launch_params']}" if c.get("launch_params") else ""
+        params = f"Params=-novid -windowed -noborder -w {c['width']} -h {c['height']}{extra} +exec cmleague_render"
         lines = [params if l.startswith("Params=") else l for l in lines]
         open(self.ini, "w", encoding="utf-8").write("\n".join(lines) + "\n")
         subprocess.run(["reg", "export", c["registry_key"], self.reg_backup, "/y"], check=True, capture_output=True)
