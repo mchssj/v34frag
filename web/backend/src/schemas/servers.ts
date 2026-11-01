@@ -51,6 +51,7 @@ export const ServerPatch = z
     name: Name.optional(),
     ...fields,
     active: z.boolean().optional().openapi({ description: '`false` revoca (el token deja de funcionar), `true` reactiva' }),
+    mm_enabled: z.boolean().optional().openapi({ description: 'Si el matchmaking puede usar este servidor' }),
   })
   .refine((o) => Object.values(o).some((v) => v !== undefined), { message: 'No hay nada para actualizar.' })
   .openapi('AdminServerPatch');

@@ -20,6 +20,7 @@ import { auth } from './routes/auth';
 import { claim } from './routes/claim';
 import { clips } from './routes/clips';
 import { bans } from './routes/bans';
+import { mm } from './routes/mm';
 import { vip } from './routes/vip';
 import { hud } from './routes/hud';
 import { elo } from './routes/elo';
@@ -93,6 +94,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', elo);
   app.route('/', bans);
   app.route('/', vip);
+  app.route('/', mm);
   app.route('/', hud);
   app.route('/', seasons);
   app.route('/', matches);

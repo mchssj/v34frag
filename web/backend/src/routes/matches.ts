@@ -280,7 +280,7 @@ export const matches = createRouter()
     const { id } = c.req.valid('param');
     const { after, before, limit } = c.req.valid('query');
     if (after !== undefined && before !== undefined) throw new AppError(400, 'VALIDATION_ERROR', 'Mandá `after` o `before`, no los dos.');
-    let q = c.var.sb.from('match_chat_public').select('id, user_id, alias, message, created_at').eq('match_id', id);
+    let q = c.var.sb.from('match_chat_public').select('id, user_id, alias, message, created_at, side' as 'id, user_id, alias, message, created_at').eq('match_id', id);
     if (after !== undefined) q = q.gt('id', after);
     if (before !== undefined) q = q.lt('id', before);
     // Con `after` se leen los más viejos primero; si no, los más nuevos y se dan vuelta.
@@ -290,7 +290,7 @@ export const matches = createRouter()
     if (after === undefined) page.reverse();
     return c.json(
       {
-        items: page.map((r) => ({ id: r.id!, user_id: r.user_id, alias: r.alias ?? 'Usuario', message: r.message ?? '', created_at: r.created_at! })),
+        items: page.map((r) => ({ id: r.id!, user_id: r.user_id, alias: r.alias ?? 'Usuario', message: r.message ?? '', created_at: r.created_at!, side: (r as { side?: number | null }).side ?? null })),
         has_more,
         limit,
       },
@@ -300,7 +300,9 @@ export const matches = createRouter()
   .openapi(sendChat, async (c) => {
     const { id } = c.req.valid('param');
     const { sb, user } = c.var;
-    const r = await sb.from('match_chat').insert({ match_id: id, user_id: user.id, message: c.req.valid('json').message }).select('id').single();
+    const { message, team_only } = c.req.valid('json');
+    const side = team_only ? must(await sb.rpc('mm_my_team' as never, { p_match: id } as never)) : null;
+    const r = await sb.from('match_chat').insert({ match_id: id, user_id: user.id, message, side } as never).select('id').single();
     if (r.error?.code === '42501') throw new AppError(403, 'FORBIDDEN', 'En esta partida escriben solo los dos equipos, el organizador y los admins.');
     const row = mustHave(r);
     const msg = mustHave(await sb.from('match_chat_public').select('id, user_id, alias, message, created_at').eq('id', row.id).single());

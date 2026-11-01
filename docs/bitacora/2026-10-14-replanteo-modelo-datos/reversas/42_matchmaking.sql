@@ -2,6 +2,9 @@
 begin;
 
 drop trigger if exists mm_notify_chat on public.match_chat;
+drop policy if exists "sonidos: leer" on storage.objects;
+drop policy if exists "sonidos: escribir" on storage.objects;
+drop policy if exists "sonidos: borrar" on storage.objects;
 drop policy if exists "chat: mm solo la sala" on public.match_chat;
 drop view if exists public.match_chat_public;
 create view public.match_chat_public as

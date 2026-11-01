@@ -142,7 +142,7 @@ export const MatchDetail = MatchSummary.extend({
 }).openapi('MatchDetail');
 
 export const ChatMessage = z
-  .object({ id: z.number().int(), user_id: z.uuid().nullable(), alias: z.string(), message: z.string(), created_at: z.string() })
+  .object({ id: z.number().int(), user_id: z.uuid().nullable(), alias: z.string(), message: z.string(), created_at: z.string(), side: z.number().int().nullable().optional() })
   .openapi('ChatMessage');
 
 export const ChatQuery = z.object({
@@ -159,7 +159,7 @@ export const ChatPage = z
   })
   .openapi('ChatPage');
 
-export const ChatBody = z.object({ message: z.string().trim().min(1).max(300) }).openapi('ChatBody');
+export const ChatBody = z.object({ message: z.string().trim().min(1).max(300), team_only: z.boolean().optional().openapi({ description: 'En una sala de matchmaking: solo a tu equipo' }) }).openapi('ChatBody');
 export const VetoBody = z
   .object({ map: z.string().min(1).max(40), version: z.string().min(1).max(40).optional() })
   .openapi('VetoBody');

@@ -31,6 +31,27 @@ export async function readImage(file: File, maxBytes: number): Promise<{ bytes: 
   return { bytes, type };
 }
 
+// Sonidos de partida: MP3, OGG o WAV, hasta 1 MB. Se mira el tipo real, no el que declara el navegador.
+export const SOUND_MAX_BYTES = 1024 * 1024;
+type AudioType = { mime: string; ext: string };
+
+function sniffAudio(b: Uint8Array): AudioType | null {
+  const ascii = (at: number, s: string) => [...s].every((ch, i) => b[at + i] === ch.charCodeAt(0));
+  if (ascii(0, 'ID3') || (b[0] === 0xff && ((b[1] ?? 0) & 0xe0) === 0xe0)) return { mime: 'audio/mpeg', ext: 'mp3' };
+  if (ascii(0, 'OggS')) return { mime: 'audio/ogg', ext: 'ogg' };
+  if (ascii(0, 'RIFF') && ascii(8, 'WAVE')) return { mime: 'audio/wav', ext: 'wav' };
+  return null;
+}
+
+export async function readAudio(file: File, maxBytes: number): Promise<{ bytes: Uint8Array; type: AudioType }> {
+  if (file.size === 0) throw new AppError(400, 'INVALID_FILE', 'El archivo está vacío.');
+  if (file.size > maxBytes) throw new AppError(413, 'FILE_TOO_LARGE', 'El sonido puede pesar hasta 1 MB.');
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const type = sniffAudio(bytes);
+  if (!type) throw new AppError(400, 'INVALID_FILE', 'El sonido tiene que ser MP3, OGG o WAV.');
+  return { bytes, type };
+}
+
 /** Traduce un error de Supabase Storage. */
 export function storageError(e: { message: string; statusCode?: string | number }): AppError {
   const status = Number(e.statusCode ?? 0);

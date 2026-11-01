@@ -277,6 +277,16 @@ begin
   end loop;
 end $$;
 
+-- Sonidos: públicos para leer. Los admins escriben en catalogo/ y cada VIP en su carpeta.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values ('sounds', 'sounds', true, 1048576, array['audio/mpeg', 'audio/ogg', 'audio/wav']) on conflict (id) do nothing;
+create policy "sonidos: leer" on storage.objects for select to anon, authenticated using (bucket_id = 'sounds');
+create policy "sonidos: escribir" on storage.objects for insert to authenticated with check (
+  bucket_id = 'sounds' and (((storage.foldername(name))[1] = 'catalogo' and is_admin())
+    or ((storage.foldername(name))[1] = auth.uid()::text and is_vip(auth.uid()))));
+create policy "sonidos: borrar" on storage.objects for delete to authenticated using (
+  bucket_id = 'sounds' and (((storage.foldername(name))[1] = 'catalogo' and is_admin()) or (storage.foldername(name))[1] = auth.uid()::text));
+
 -- ---------- Ayudas ----------
 
 create function public.mm_new_password(p_len int default 6) returns text
@@ -872,6 +882,10 @@ create or replace function public.match_chat_can_write(p_match uuid) returns boo
 $$;
 
 /** En una mm leen los 10 y los admins, y los mensajes de equipo solo ese equipo. */
+create function public.mm_my_team(p_match uuid) returns smallint
+  language sql stable security definer set search_path = public as $$
+  select lp.team from mm_lobbies l join mm_lobby_players lp on lp.lobby_id = l.id where l.match_id = p_match and lp.user_id = auth.uid() $$;
+
 create function public.mm_chat_can_read(p_match uuid, p_side smallint) returns boolean
   language sql stable security definer set search_path = public as $$
   select not exists (select 1 from matches m where m.id = p_match and m.kind = 'mm')
@@ -1395,7 +1409,8 @@ begin
         'server', (select name from game_servers where id = l.server_id), 'players', (select count(*) from mm_lobby_players where lobby_id = l.id)) order by l.created_at desc), '[]')
         from mm_lobbies l where l.status not in ('finished', 'cancelled'))
     when 'reports' then (select coalesce(jsonb_agg(jsonb_build_object('id', r.id, 'lobby_id', r.lobby_id, 'reason', r.reason, 'note', r.note, 'status', r.status, 'created_at', r.created_at,
-        'reporter', (select nick from players where user_id = r.reporter_id), 'reported', (select nick from players where user_id = r.reported_id), 'reported_user', r.reported_id) order by r.created_at desc), '[]')
+        'mode', (select mode from mm_lobbies where id = r.lobby_id),
+        'reporter', (select nick from players where user_id = r.reporter_id), 'reported', (select nick from players where user_id = r.reported_id), 'reported_user_id', r.reported_id) order by r.created_at desc), '[]')
         from mm_reports r)
     when 'bans' then (select coalesce(jsonb_agg(jsonb_build_object('user_id', b.user_id, 'until', b.until, 'reason', b.reason, 'nick', (select nick from players where user_id = b.user_id)) order by b.until desc), '[]')
         from mm_bans b where b.until > now())
@@ -1406,11 +1421,15 @@ begin
         'password', (select to_jsonb(p) from mm_server_passwords p where p.server_id = s.id and p.applied_at is not null order by p.applied_at desc limit 1)) order by s.name), '[]')
         from game_servers s left join mm_server_state st on st.server_id = s.id)
     when 'passwords' then (select coalesce(jsonb_agg(to_jsonb(p) order by p.created_at desc), '[]') from mm_server_passwords p where p.server_id = p_arg::uuid)
-    when 'maps' then (select coalesce(jsonb_agg(jsonb_build_object('name', mp.name, 'image_url', mp.image_url, 'in_veto', mm.map is not null, 'position', mm.position) order by mm.position nulls last, mp.position), '[]')
+    when 'maps' then (select coalesce(jsonb_agg(jsonb_build_object('name', mp.name, 'label', initcap(regexp_replace(mp.name, '^[a-z]+_', '')), 'image_url', mp.image_url, 'in_mm', mm.map is not null) order by mm.position nulls last, mp.position), '[]')
         from map_pool mp left join mm_mode_maps mm on mm.map = mp.name and mm.mode = p_arg where mp.active)
-    when 'stats' then (select coalesce(jsonb_agg(jsonb_build_object('day', d.day, 'mode', d.mode, 'built', d.built, 'played', d.played, 'cancelled', d.cancelled, 'abandons', d.abandons,
-        'wait_avg_s', (select round(extract(epoch from avg(q.left_at - q.joined_at))) from mm_queue_log q where q.outcome = 'matched' and q.mode = d.mode and q.left_at::date = d.day)) order by d.day desc), '[]')
-        from (select l.created_at::date as day, l.mode, count(*) built, count(*) filter (where l.status = 'finished') played, count(*) filter (where l.status = 'cancelled') cancelled,
+    when 'stats' then (select coalesce(jsonb_agg(jsonb_build_object('day', d.day, 'mode', d.mode, 'lobbies', d.lobbies, 'played', d.played, 'abandons', d.abandons,
+        'cancelled', (select coalesce(jsonb_object_agg(x.r, x.n), '{}') from (select end_reason r, count(*) n from mm_lobbies c where c.status = 'cancelled' and c.mode = d.mode and c.created_at::date = d.day group by 1) x),
+        'avg_wait_s', coalesce((select round(extract(epoch from avg(q.left_at - q.joined_at))) from mm_queue_log q where q.outcome = 'matched' and q.mode = d.mode and q.left_at::date = d.day), 0),
+        'p90_wait_s', coalesce((select round(percentile_cont(0.9) within group (order by extract(epoch from q.left_at - q.joined_at))) from mm_queue_log q where q.outcome = 'matched' and q.mode = d.mode and q.left_at::date = d.day), 0),
+        'avg_elo_diff', coalesce((select round(avg(x.diff)) from (select abs(avg(lp.elo) filter (where lp.team = 1) - avg(lp.elo) filter (where lp.team = 2)) diff
+             from mm_lobby_players lp join mm_lobbies c on c.id = lp.lobby_id where c.mode = d.mode and c.created_at::date = d.day group by lp.lobby_id) x), 0)) order by d.day desc), '[]')
+        from (select l.created_at::date as day, l.mode, count(*) lobbies, count(*) filter (where l.status = 'finished') played,
                      (select count(*) from mm_lobby_players lp join mm_lobbies x on x.id = lp.lobby_id where lp.abandoned and x.mode = l.mode and x.created_at::date = l.created_at::date) abandons
                 from mm_lobbies l where l.created_at > now() - make_interval(days => coalesce(p_arg::int, 7)) group by 1, 2) d)
   end;
@@ -1480,7 +1499,7 @@ grant execute on function public.mm_join(text, text), public.mm_leave(), public.
   public.mm_report(uuid, uuid, text, text), public.mm_admin_resolve_report(uuid, text, integer), public.mm_admin_config(),
   public.mm_set_config(jsonb), public.mm_set_mode_maps(text, text[]), public.mm_admin_cancel(uuid, text), public.mm_admin_unban(uuid),
   public.mm_admin_rotate_password(uuid), public.mm_admin_sound_add(text, text), public.mm_admin_sound_delete(uuid), public.mm_admin_sounds(),
-  public.mm_my_state(), public.mm_admin_lists(text, text), public.mm_set_server_enabled(uuid, boolean)
+  public.mm_my_state(), public.mm_admin_lists(text, text), public.mm_set_server_enabled(uuid, boolean), public.mm_my_team(uuid)
   to authenticated;
 -- El chat las usa con la sesión de quien lee.
 grant execute on function public.mm_chat_can_read(uuid, smallint) to anon, authenticated;

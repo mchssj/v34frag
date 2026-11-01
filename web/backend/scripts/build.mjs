@@ -15,6 +15,7 @@ await build({
     'season-tick': 'scripts/season-tick.mts',
     'demos-sftp': 'scripts/demos-sftp.mts',
     'notify-tick': 'scripts/notify-tick.mts',
+    'mm-worker': 'scripts/mm-worker.mts',
   },
   outdir: 'dist',
   outExtension: { '.js': '.mjs' },
