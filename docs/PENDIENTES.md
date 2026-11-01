@@ -41,7 +41,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - **E12:** biografía editable por el jugador (`PATCH /me/profile` con `bio`). Hoy solo la cambia un admin.
   - **E13:** `logo_url` en el historial de equipos y los títulos de un jugador. Hoy el frontend pide el detalle de cada equipo para mostrar el logo.
   - **E14 a E18** (tercera tanda, Partidas unificadas): varios estados en `status`, `mine=true`, contadores por tipo, `mvp` en los mixes y búsqueda por nick en `GET /matches`.
-  - **E21 y E22** (cuarta tanda, Llave por formato, 2026-10-31): rating de cada jugador en la serie (`series_players` en `MatchDetail`) y `next_win`/`next_lose` con su lugar en `EventMatch`. También falta nombrar `group_upper` y `group_lower` en la descripción de `EventMatch.stage`.
+  - ~~**E21 y E22**~~ (cuarta tanda, Llave por formato): **resueltos el 2026-11-01** en la API (`series_players` y `next_win`/`next_lose`) y activados en la Llave. Ver [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/).
 
 ## Estado del repositorio
 
@@ -513,7 +513,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 ### 1.32 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** lo que pidió la Llave por formato del frontend: `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en `GET /events/{id}/matches`, y `series_players` (stats de la serie con el rating ponderado por rondas) en `GET /matches/{id}` de torneo y PCW.
-- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge.
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge. El frontend ya los usa: rating de la serie en el detalle resumido, y origen y destino de cada lado en la Llave.
 - **Falta:** redesplegar la API del VPS junto con lo del punto 1.31. No toca la base ni el plugin.
 - **Bitácora:** [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/)
 

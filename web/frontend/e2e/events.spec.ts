@@ -216,6 +216,10 @@ test("llave en curso: en vivo, camino del equipo, zoom y el detalle al hacer cli
   await expect(detail).toContainText("Semifinal · BO3 · En vivo · CMLeague #1")
   await expect(detail).toContainText("de_dust2")
   await expect(detail).toContainText("kz")
+  // Rating de la serie (E21): los que jugaron, con el nombre en el juego si no tienen ficha.
+  await expect(detail).toContainText("Alineaciones · rating de la serie")
+  await expect(detail).toContainText("1.25")
+  await expect(detail).toContainText("nox_ingame")
   await page.keyboard.press("Escape")
   await expect(detail).toBeHidden()
   await canvas.getByRole("button", { name: "Furia Sur contra Vértigo" }).click()

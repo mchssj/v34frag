@@ -333,6 +333,8 @@ En el frontend, "Partidas" y "Mixes" pasan a ser un solo listado ([artifact](htt
 
 La pestaña Llave dibuja ahora cada fase de cada plantilla y, al hacer clic en una partida, abre un detalle resumido con los mapas y las alineaciones ([bitácora](docs/bitacora/2026-10-31-llave-por-formato/)). Funciona con la API actual; para completarlo pedimos:
 
+> **Resueltos el 2026-11-01** (E21 y E22): `series_players` en `GET /matches/{id}` y `next_win`/`next_win_slot`/`next_lose`/`next_lose_slot` en `GET /events/{id}/matches`, con `group_upper` y `group_lower` en la descripción de `stage`. El frontend ya los usa. Bitácora: [`2026-11-01-api-llave-serie`](docs/bitacora/2026-11-01-api-llave-serie/).
+
 ### E21. Rating de cada jugador en la serie
 
 **Hoy:** `GET /matches/{id}` trae `players` solo en los mixes. En una partida de torneo o PCW, las stats están en cada juego vinculado (`games`), y el detalle resumido muestra los rosters sin rating.

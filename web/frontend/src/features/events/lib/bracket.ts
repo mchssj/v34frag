@@ -127,8 +127,9 @@ function matchName(m: EventMatch, all: EventMatch[]) {
 }
 
 /**
- * De dónde sale un lado sin equipo: lo que mande el backend (`side.name`) o, en las llaves de
- * eliminación, el ganador de la partida anterior. Si no se puede saber, null ("Por definir").
+ * De dónde sale un lado sin equipo: lo que mande el backend (`side.name`), la partida que apunta
+ * a este lado con `next_win`/`next_lose` (E22) o, si no vienen, el ganador de la partida anterior
+ * deducido por ronda y posición. Si no se puede saber, null ("Por definir").
  */
 export function originOf(
   m: EventMatch,
@@ -138,6 +139,14 @@ export function originOf(
   const s = side === 1 ? m.side1 : m.side2
   if (s.team) return null
   if (s.name) return s.name
+  const winner = all.find(
+    (x) => x.next_win === m.id && x.next_win_slot === side
+  )
+  if (winner) return winner.bye ? null : `Ganador de ${matchName(winner, all)}`
+  const loser = all.find(
+    (x) => x.next_lose === m.id && x.next_lose_slot === side
+  )
+  if (loser) return `Perdedor de ${matchName(loser, all)}`
   const round = m.round ?? 1
   if (m.stage === "third") {
     const semis = all.filter(
@@ -181,6 +190,7 @@ export function destinationsOf(
         s.team.id === teamId &&
         (grp == null || s.grp === grp)
     )
+  const byId = new Map(all.map((x) => [x.id, x]))
   const next = (teamId: string, m: EventMatch, stages: string[]) =>
     all.find(
       (x) =>
@@ -218,7 +228,10 @@ export function destinationsOf(
         return
       }
       if (stage === "upper" || stage === "group_upper") {
-        const lower = next(id, m, [groupStage ? "group_lower" : "lower"])
+        // Con el enlace de la base (E22) se sabe antes de que el equipo aparezca en el lower.
+        const linked = m.next_lose ? byId.get(m.next_lose) : undefined
+        const lower =
+          linked ?? next(id, m, [groupStage ? "group_lower" : "lower"])
         if (lower) marks[i] = { text: `↓ L${lower.round ?? 1}`, tone: "down" }
         return
       }

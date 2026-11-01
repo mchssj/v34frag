@@ -58,6 +58,10 @@ function match(
     round: 1,
     pos: 1,
     bye: false,
+    next_win: null,
+    next_win_slot: null,
+    next_lose: null,
+    next_lose_slot: null,
     ...rest,
   } as EventMatch
 }
@@ -175,6 +179,27 @@ describe("originOf", () => {
     expect(originOf(m, 1, [m])).toBeNull()
     expect(originOf(match({ stage: "lower", round: 2 }), 1, [])).toBeNull()
   })
+
+  it("con los enlaces de la base (E22) sabe el origen también en el lower y la gran final", () => {
+    const uf = match({ stage: "upper", round: 2, label: "Final del upper" })
+    const lf = match({
+      stage: "lower",
+      round: 2,
+      a: 3,
+      label: "Final del lower",
+    })
+    const gf = match({ stage: "grand", round: 1, label: "Gran final" })
+    uf.next_win = gf.id
+    uf.next_win_slot = 1
+    uf.next_lose = lf.id
+    uf.next_lose_slot = 2
+    lf.next_win = gf.id
+    lf.next_win_slot = 2
+    const all = [uf, lf, gf]
+    expect(originOf(gf, 1, all)).toBe("Ganador de Final del upper")
+    expect(originOf(gf, 2, all)).toBe("Ganador de Final del lower")
+    expect(originOf(lf, 2, all)).toBe("Perdedor de Final del upper")
+  })
 })
 
 describe("destinationsOf", () => {
@@ -194,6 +219,16 @@ describe("destinationsOf", () => {
       { text: "→ GF", tone: "up" },
       { text: "✕", tone: "out" },
     ])
+  })
+
+  it("con next_lose (E22) marca la ronda del lower antes de que el equipo aparezca ahí", () => {
+    const l2 = match({ stage: "lower", round: 2 })
+    const u1 = match({ stage: "upper", round: 1, a: 1, b: 2, win: 1 })
+    const u2 = match({ stage: "upper", round: 2, a: 1 })
+    u1.next_lose = l2.id
+    u1.next_lose_slot = 1
+    const marks = destinationsOf([u1, u2, l2], "double")
+    expect(marks.get(u1.id)).toEqual([null, { text: "↓ L2", tone: "down" }])
   })
 
   it("grupos de doble eliminación: clasificados y puesto de los eliminados según las posiciones", () => {

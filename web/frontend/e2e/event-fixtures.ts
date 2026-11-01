@@ -325,6 +325,17 @@ export const MATCH_DETAIL = {
   roster1: [{ player_id: null, alias: "kz", guest: false }],
   roster2: [{ player_id: null, alias: "nox", guest: false }],
   server: { id: null, name: "CMLeague #1", address: null },
+  // Rating de la serie (E21): "kz" no está inscrito y entra por haber jugado.
+  series_players: [
+    { player_id: null, alias: "kz", game_nick: "kz", side: 1, rating: 1.25 },
+    {
+      player_id: null,
+      alias: null,
+      game_nick: "nox_ingame",
+      side: 2,
+      rating: 0.8,
+    },
+  ],
 }
 
 const row = (

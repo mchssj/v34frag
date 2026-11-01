@@ -262,7 +262,7 @@ describe("pestañas del perfil", () => {
       losses: 5,
       elo_after: 1000,
       medal: null,
-      season: { id, number: 1, name: id },
+      season: { id, number: 1, name: id, ended_at: null, players: 0 },
     })
     expect(bestSeasonId([season("a", 12), season("b", 3)])).toBe("b")
     // Sin clasificar no cuenta, aunque tenga mejor puesto.

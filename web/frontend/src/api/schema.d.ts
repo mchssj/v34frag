@@ -470,7 +470,7 @@ export interface paths {
         head?: never;
         /**
          * Editar mi perfil
-         * @description Solo se cambian los campos enviados. `null` o `""` borra un campo. `tag` es el alias y sigue las reglas de `PUT /api/v1/me/alias` (único, sin palabras bloqueadas, una vez cada 15 días): conviene usar esa ruta.
+         * @description Solo se cambian los campos enviados. `null` o `""` borra un campo. `tag` es el alias y sigue las reglas de `PUT /api/v1/me/alias` (único, sin palabras bloqueadas, una vez cada 15 días): conviene usar esa ruta. `bio` va en la ficha del jugador: sin jugador vinculado, `409 CONFLICT`.
          */
         patch: {
             parameters: {
@@ -1116,7 +1116,55 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        /**
+         * Cancelar mi solicitud de equipo nuevo
+         * @description Solo una pendiente: borra la solicitud y el logo propuesto. `404` si no hay; `409 CONFLICT` si ya fue aprobada o rechazada.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Cancelada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -3273,7 +3321,7 @@ export interface paths {
         head?: never;
         /**
          * Editar mi equipo
-         * @description El capitán o un admin. Por ahora, qué busca el equipo (`looking_for`). El nombre y la sigla los cambia un admin.
+         * @description El capitán o un admin: qué busca el equipo (`looking_for`), el nombre y la sigla. El nombre y la sigla siguen las reglas de la solicitud y no pueden repetir los de otro equipo activo. El capitán los cambia una vez cada 30 días (`409 CONFLICT` con `details.next_change_at`; el admin no espera) y no mientras el equipo juega un torneo en curso (`409`). Un equipo disuelto no se edita (`409`).
          */
         patch: {
             parameters: {
@@ -3326,6 +3374,15 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3402,6 +3459,90 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teams/{id}/dissolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disolver el equipo
+         * @description El capitán o un admin. El equipo queda archivado: sale del listado, de Buscar equipo y del ranking, pero conserva sus partidas, sus títulos y su página (con `dissolved_at`). Todos los miembros pasan a ex integrantes y reciben el aviso `team_dissolved`; las invitaciones y los pedidos abiertos se cancelan. `409 CONFLICT` si está inscrito en un torneo con las inscripciones abiertas o en curso (primero hay que darlo de baja) o si ya estaba disuelto.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Disuelto */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -6443,7 +6584,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Rechazar una solicitud */
+        /**
+         * Rechazar una solicitud
+         * @description Con `reason` opcional (hasta 300 caracteres): el usuario lo ve en su solicitud (`GET /api/v1/me/team-request`).
+         */
         post: {
             parameters: {
                 query?: never;
@@ -6453,7 +6597,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["RejectTeamRequestBody"];
+                };
+            };
             responses: {
                 /** @description Hecho */
                 204: {
@@ -10052,7 +10200,10 @@ export interface paths {
                     order?: "asc" | "desc";
                     /** @description `official` (torneo), `pcw` o `mix`. Sin filtro: todas */
                     kind?: "mix" | "pcw" | "official";
-                    status?: "upcoming" | "live" | "finished" | "cancelled";
+                    /** @description Uno o varios estados separados por comas: `upcoming`, `live`, `finished` o `cancelled`. Sin filtro: todos */
+                    status?: string;
+                    /** @description `true`: solo las partidas donde jugó el usuario (pide sesión; sin ficha, la lista viene vacía) */
+                    mine?: "true" | "false";
                     /** @description Partidas de un torneo */
                     event?: string;
                     /** @description Partidas de un equipo */
@@ -12136,7 +12287,7 @@ export interface paths {
                     sort?: "bracket" | "starts_at" | "played_at";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    stage?: "ko" | "third" | "upper" | "lower" | "grand" | "group" | "swiss";
+                    stage?: "ko" | "third" | "upper" | "lower" | "grand" | "group" | "swiss" | "group_upper" | "group_lower";
                     phase?: number | null;
                     grp?: number | null;
                     round?: number | null;
@@ -14221,6 +14372,8 @@ export interface components {
                 photo_url: string | null;
                 /** @description El SteamID principal. Todos los de la cuenta están en `GET /api/v1/me/claim-code` (`steam_ids`) */
                 steam_id: string | null;
+                /** @description Biografía de la ficha (se cambia con `PATCH /api/v1/me/profile`) */
+                bio: string | null;
             } | null;
             /** @description Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno) */
             teams: {
@@ -14318,6 +14471,12 @@ export interface components {
              */
             discord?: string | null;
             preferences?: components["schemas"]["PreferencesPatch"];
+            /**
+             * @description Biografía de la ficha: hasta 500 caracteres, con saltos de línea y sin palabras bloqueadas. `null` o `""` la borra. Sin jugador vinculado, `409`
+             * @example AWPer de Rosario.
+             *     Busco equipo para la próxima copa.
+             */
+            bio?: string | null;
         };
         /** @description Solo se cambian las claves enviadas; `null` borra una */
         PreferencesPatch: {
@@ -14448,6 +14607,10 @@ export interface components {
             status: "pending" | "approved" | "rejected";
             /** @description Logo propuesto (pasa al equipo al aprobar) */
             logo_url: string | null;
+            /** @description Cuándo se envió (o se volvió a enviar). null en las solicitudes viejas */
+            created_at: string | null;
+            /** @description Motivo del rechazo, si el admin escribió uno. null en el resto */
+            reject_reason: string | null;
         } | null;
         TeamRequestBody: {
             /** @example Titanes */
@@ -15064,6 +15227,12 @@ export interface components {
             /** @description Fecha de aprobación de la solicitud. En los equipos anteriores, el ingreso más antiguo del plantel */
             founded_at: string | null;
             record: components["schemas"]["TeamRecord"];
+            /** @description Equipo disuelto (archivado): conserva su historial, pero no sale en los listados ni en el ranking. null si sigue activo */
+            dissolved_at: string | null;
+            /** @description Último cambio de nombre o sigla del capitán (los del admin no cuentan) */
+            name_changed_at: string | null;
+            /** @description Desde cuándo el capitán puede volver a cambiar el nombre o la sigla (30 días después del último). null: ya puede */
+            next_name_change_at: string | null;
             /** @description Qué puede hacer quien consulta (null sin sesión) */
             viewer: {
                 is_captain: boolean;
@@ -15116,7 +15285,17 @@ export interface components {
         };
         TeamPatch: {
             /** @description Qué busca el equipo; `[]`: no busca */
-            looking_for: ("player" | "sub" | "coach")[];
+            looking_for?: ("player" | "sub" | "coach")[];
+            /**
+             * @description Nombre: de 2 a 40 caracteres
+             * @example Titanes
+             */
+            name?: string;
+            /**
+             * @description Sigla: de 1 a 6 caracteres (se guarda en mayúsculas)
+             * @example TIT
+             */
+            tag?: string;
         };
         LogoResult: {
             logo_url: string;
@@ -15525,6 +15704,10 @@ export interface components {
             name: string;
             tag: string | null;
             status: string;
+        };
+        RejectTeamRequestBody: {
+            /** @description Motivo del rechazo (opcional, hasta 300 caracteres) */
+            reason?: string;
         };
         TeamConfig: {
             /** @description Máximo de miembros de un equipo oficial */
@@ -16253,6 +16436,10 @@ export interface components {
                 id: string;
                 number: number;
                 name: string;
+                /** @description Cuándo cerró la temporada */
+                ended_at: string | null;
+                /** @description Cuántos jugadores tuvieron puesto en el ranking final ("#3 de 214") */
+                players: number;
             };
         };
         SeasonConfigRead: components["schemas"]["SeasonConfig"] & {
@@ -16364,7 +16551,7 @@ export interface components {
             reset: boolean;
         };
         MatchList: {
-            items: components["schemas"]["MatchSummary"][];
+            items: components["schemas"]["MatchListItem"][];
             /** @description Total con los filtros aplicados */
             total: number;
             page: number;
@@ -16372,7 +16559,33 @@ export interface components {
             sort: string;
             /** @enum {string} */
             order: "asc" | "desc";
+            counts: components["schemas"]["MatchCounts"];
         };
+        MatchListItem: components["schemas"]["MatchSummary"] & {
+            mvp: components["schemas"]["MixMvp"];
+        };
+        MatchSide: {
+            /** @description Nombre del equipo o del bando del mix */
+            name: string | null;
+            team: components["schemas"]["TeamRef"] & (Record<string, never> | null);
+            /** @description Mapas ganados (serie) o rondas (mix) */
+            score: number | null;
+        };
+        /** @description Mix: el de mejor rating (como en `/mixes`); null en el resto */
+        MixMvp: {
+            /**
+             * Format: uuid
+             * @description Ficha, si tiene
+             */
+            player_id: string | null;
+            /** @description Alias si tiene ficha; si no, null */
+            alias: string | null;
+            /** @description Nombre que usó en el juego */
+            game_nick: string | null;
+            elo: number | null;
+            level: number | null;
+            rating: number | null;
+        } | null;
         MatchSummary: {
             /** Format: uuid */
             id: string;
@@ -16411,12 +16624,12 @@ export interface components {
              */
             parent_match_id: string | null;
         };
-        MatchSide: {
-            /** @description Nombre del equipo o del bando del mix */
-            name: string | null;
-            team: components["schemas"]["TeamRef"] & (Record<string, never> | null);
-            /** @description Mapas ganados (serie) o rondas (mix) */
-            score: number | null;
+        /** @description Partidas por tipo con los filtros de la consulta salvo `kind` (para los chips) */
+        MatchCounts: {
+            all: number;
+            mix: number;
+            pcw: number;
+            official: number;
         };
         MatchDetail: components["schemas"]["MatchSummary"] & {
             stage: string | null;
@@ -16451,6 +16664,8 @@ export interface components {
             games: components["schemas"]["GameRef"][];
             /** @description Mix: stats de cada jugador */
             players: components["schemas"]["PlayerLine"][];
+            /** @description Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego */
+            series_players: components["schemas"]["PlayerLine"][];
             /** @description Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen) */
             clutch_data: boolean;
             mvp: components["schemas"]["PlayerLine"] & (Record<string, never> | null);
@@ -16832,7 +17047,7 @@ export interface components {
             max_rounds: number | null;
             /** @description En vivo sin fotos hace más de 10 minutos */
             stale: boolean;
-            mvp: components["schemas"]["MixMvp"];
+            mvp: components["schemas"]["MixMvp"] & unknown;
             /** @description `none`, `pending`, `uploaded`, `missing` o `expired` */
             demo_status: string;
             cancel_reason: string | null;
@@ -16848,21 +17063,6 @@ export interface components {
             name: string | null;
             score: number | null;
         };
-        /** @description El de mejor rating (parcial en vivo) */
-        MixMvp: {
-            /**
-             * Format: uuid
-             * @description Ficha, si tiene
-             */
-            player_id: string | null;
-            /** @description Alias si tiene ficha; si no, null */
-            alias: string | null;
-            /** @description Nombre que usó en el juego */
-            game_nick: string | null;
-            elo: number | null;
-            level: number | null;
-            rating: number | null;
-        } | null;
         /** @description Solo en vivo */
         TvRef: {
             host: string;
@@ -17126,13 +17326,27 @@ export interface components {
             order: "asc" | "desc";
         };
         EventMatch: components["schemas"]["MatchSummary"] & {
-            /** @description `ko`, `third`, `upper`, `lower`, `grand`, `group` o `swiss` */
+            /** @description `ko`, `third`, `upper`, `lower`, `grand`, `group`, `swiss`, `group_upper` o `group_lower` (grupos de doble eliminación) */
             stage: string | null;
             phase: number | null;
             grp: number | null;
             round: number | null;
             pos: number | null;
             bye: boolean;
+            /**
+             * Format: uuid
+             * @description Partida a la que pasa el ganador (null si no sigue en la llave)
+             */
+            next_win: string | null;
+            /** @description Lado (1 o 2) que ocupa el ganador en `next_win` */
+            next_win_slot: number | null;
+            /**
+             * Format: uuid
+             * @description Partida a la que pasa el perdedor (lower o 3.er puesto); null si queda eliminado
+             */
+            next_lose: string | null;
+            /** @description Lado (1 o 2) que ocupa el perdedor en `next_lose` */
+            next_lose_slot: number | null;
         };
         StandingList: {
             items: components["schemas"]["Standing"][];

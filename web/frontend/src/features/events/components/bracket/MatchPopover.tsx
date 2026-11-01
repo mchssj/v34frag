@@ -110,8 +110,25 @@ function MatchSummary({
   const missing = ([1, 2] as const).filter((n) => !sides[n - 1].teamId)
   const advantage = d?.advantage_side ? sides[d.advantage_side - 1] : null
   const maps = d?.maps_detail.filter((x) => x.r1 != null || x.r2 != null) ?? []
-  const rosters = d ? [d.roster1, d.roster2] : null
+  // Con juegos terminados, los que jugaron con el rating de la serie (E21); si no, los inscritos.
+  // Una API anterior a E21 no manda `series_players`.
+  const series = d?.series_players ?? []
+  const lineupOf = (n: 1 | 2): Lineup[] => {
+    if (!d) return []
+    const played = series.filter((p) => p.side === n)
+    if (played.length > 0)
+      return played.map((p) => ({
+        name: p.alias ?? p.game_nick ?? "Jugador",
+        rating: p.rating,
+      }))
+    return (n === 1 ? d.roster1 : d.roster2).map((p) => ({
+      name: p.alias,
+      rating: null,
+    }))
+  }
+  const rosters = d ? [lineupOf(1), lineupOf(2)] : null
   const lineups = rosters && (rosters[0].length > 0 || rosters[1].length > 0)
+  const rated = series.length > 0
 
   return (
     <div className="flex flex-col text-sm">
@@ -187,15 +204,17 @@ function MatchSummary({
         </Section>
       )}
       {lineups && rosters && (
-        <Section title="Alineaciones">
+        <Section
+          title={rated ? "Alineaciones · rating de la serie" : "Alineaciones"}
+        >
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[13px]">
             {Array.from(
               { length: Math.max(rosters[0].length, rosters[1].length) },
               (_, i) => (
                 <LineupPair
                   key={i}
-                  left={rosters[0][i]?.alias}
-                  right={rosters[1][i]?.alias}
+                  left={rosters[0][i]}
+                  right={rosters[1][i]}
                 />
               )
             )}
@@ -308,11 +327,44 @@ function MapRow({
   )
 }
 
-function LineupPair({ left, right }: { left?: string; right?: string }) {
+type Lineup = { name: string; rating: number | null }
+
+function LineupPair({ left, right }: { left?: Lineup; right?: Lineup }) {
   return (
     <>
-      <span className="truncate">{left ?? ""}</span>
-      <span className="truncate text-right">{right ?? ""}</span>
+      <LineupCell player={left} />
+      <LineupCell player={right} reverse />
     </>
+  )
+}
+
+function LineupCell({
+  player,
+  reverse,
+}: {
+  player?: Lineup
+  reverse?: boolean
+}) {
+  if (!player) return <span />
+  return (
+    <span
+      className={cn(
+        "flex min-w-0 items-baseline gap-2",
+        reverse && "flex-row-reverse"
+      )}
+    >
+      <span className="truncate">{player.name}</span>
+      {player.rating != null && (
+        <span
+          className={cn(
+            "ml-auto font-mono text-xs tabular-nums",
+            reverse && "mr-auto ml-0",
+            player.rating >= 1 ? "text-win" : "text-muted-foreground"
+          )}
+        >
+          {player.rating.toFixed(2)}
+        </span>
+      )}
+    </span>
   )
 }
