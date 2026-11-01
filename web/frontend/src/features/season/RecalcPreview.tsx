@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Slider } from "@/components/ui/slider"
 import { levelOf } from "@/features/matchmaking/room/roomData"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 import { HaceteVipButton } from "@/features/vip/upsell"
 
 import { AVG, ME, SEASON, STANDINGS } from "./demo"

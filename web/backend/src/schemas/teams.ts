@@ -71,9 +71,28 @@ export const Record_ = z
   })
   .openapi('TeamRecord');
 
+export const EligibleMode = z
+  .object({
+    code: z.string().openapi({ example: '5v5' }),
+    name: z.string(),
+    players_per_team: z.number().int(),
+    missing: z.number().int().openapi({ description: 'Jugadores que le faltan al equipo para ese modo; 0 = apto' }),
+  })
+  .openapi('EligibleMode');
+
 export const TeamDetail = TeamSummary.extend({
-  founded_at: z.string().nullable().openapi({ description: 'Fecha de aprobación de la solicitud. En los equipos anteriores, el ingreso más antiguo del plantel' }),
+  founded_at: z.string().nullable().openapi({ description: 'Cuándo se creó. En los equipos anteriores a las solicitudes, el ingreso más antiguo del plantel' }),
   record: Record_.nullable().openapi({ description: 'Récord del ranking (solo equipos oficiales)' }),
+  dissolved_at: z.string().nullable().openapi({
+    description: 'Equipo disuelto (archivado): conserva su historial, pero no sale en los listados ni en el ranking. null si sigue activo',
+  }),
+  name_changed_at: z.string().nullable().openapi({ description: 'Último cambio de nombre o sigla del capitán (los del admin no cuentan)' }),
+  next_name_change_at: z.string().nullable().openapi({
+    description: 'Desde cuándo el capitán puede volver a cambiar el nombre o la sigla (30 días después del último). null: ya puede',
+  }),
+  eligible_modes: z.array(EligibleMode).openapi({
+    description: 'Para qué modos alcanza el plantel: cuentan los miembros activos jugadores o suplentes (el coach no). Solo equipos oficiales; vacío en los bandos de PCW',
+  }),
   viewer: z
     .object({ is_captain: z.boolean(), is_member: z.boolean(), is_admin: z.boolean() })
     .nullable()
@@ -129,7 +148,20 @@ export const JoinRequestBody = z
 export const MemberRoleBody = z.object({ role: RosterRole }).openapi('MemberRoleBody');
 
 export const TeamPatch = z
-  .object({ looking_for: z.array(RosterRole).max(3).openapi({ description: 'Qué busca el equipo; `[]`: no busca' }) })
+  .object({
+    looking_for: z.array(RosterRole).max(3).optional().openapi({ description: 'Qué busca el equipo; `[]`: no busca' }),
+    // (E11) Mismas reglas que la solicitud de equipo nuevo.
+    name: z.string().trim().min(2).max(40).optional().openapi({ example: 'Titanes', description: 'Nombre: de 2 a 40 caracteres' }),
+    tag: z
+      .string()
+      .trim()
+      .min(1)
+      .max(6)
+      .transform((v) => v.toUpperCase())
+      .optional()
+      .openapi({ example: 'TIT', description: 'Sigla: de 1 a 6 caracteres (se guarda en mayúsculas)' }),
+  })
+  .refine((o) => Object.values(o).some((v) => v !== undefined), { message: 'No hay nada para actualizar.' })
   .openapi('TeamPatch');
 
 export const ImageFile = (description: string) =>
@@ -179,7 +211,10 @@ export const MyTeam = z
   .openapi('MyTeam');
 
 export const TeamConfig = z
-  .object({ max_members: z.number().int().min(2).max(30).openapi({ description: 'Máximo de miembros de un equipo oficial' }) })
+  .object({
+    max_members: z.number().int().min(2).max(30).openapi({ description: 'Máximo de miembros de un equipo oficial' }),
+    max_led: z.number().int().min(1).max(10).openapi({ description: 'De cuántos equipos oficiales activos puede ser capitán una persona (1 por defecto)' }),
+  })
   .openapi('TeamConfig');
 
 export const CaptainBody = z.object({ player_id: z.uuid() }).openapi('CaptainBody');
@@ -191,7 +226,7 @@ export const TeamPlayerParam = TeamParam.extend({
   playerId: z.uuid().openapi({ param: { name: 'playerId', in: 'path' } }),
 });
 
-export const TeamRequestBody = z
+export const TeamCreateBody = z
   .object({
     name: z.string().trim().min(2).max(40).openapi({ example: 'Titanes' }),
     tag: z
@@ -202,20 +237,18 @@ export const TeamRequestBody = z
       .transform((v) => v.toUpperCase())
       .openapi({ example: 'TIT', description: 'Sigla (se guarda en mayúsculas)' }),
   })
-  .openapi('TeamRequestBody');
-
-export const TeamRequestForm = TeamRequestBody.extend({
-  logo: ImageFile(`Logo opcional. ${LOGO_HELP}`).optional(),
-}).openapi('TeamRequestForm');
+  .openapi('TeamCreateBody');
 
 export const TeamRequest = z
   .object({
     name: z.string(),
     tag: z.string().nullable(),
     status: z.enum(['pending', 'approved', 'rejected']),
-    logo_url: z.string().nullable().openapi({ description: 'Logo propuesto (pasa al equipo al aprobar)' }),
+    logo_url: z.string().nullable().openapi({ description: 'Logo propuesto' }),
+    created_at: z.string().nullable().openapi({ description: 'Cuándo se envió (o se volvió a enviar). null en las solicitudes viejas' }),
+    reject_reason: z.string().nullable().openapi({ description: 'Motivo del rechazo, si el admin escribió uno. null en el resto' }),
   })
-  .openapi('TeamRequest');
+  .openapi('TeamRequest', { description: 'Solicitud vieja (antes de crear equipos al instante, replanteo 40): queda como historial' });
 
 // ---------- ranking ----------
 

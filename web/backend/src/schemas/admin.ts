@@ -148,17 +148,6 @@ export const MemberBody = z
 
 export const RoleBody = z.object({ role: z.enum(['player', 'sub', 'coach']) }).openapi('RoleBody');
 
-export const AdminTeamRequest = z
-  .object({
-    user_id: z.uuid(),
-    alias: z.string().nullable(),
-    has_steam: z.boolean(),
-    name: z.string(),
-    tag: z.string().nullable(),
-    status: z.string(),
-  })
-  .openapi('AdminTeamRequest');
-
 export const RankingConfig = z
   .object({
     win_official: z.number().int().min(0).max(1000).openapi({ description: 'Puntos por partida de torneo ganada' }),
@@ -167,7 +156,6 @@ export const RankingConfig = z
   .openapi('RankingConfig');
 
 export const IdParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
-export const UserIdParam = z.object({ userId: z.uuid().openapi({ param: { name: 'userId', in: 'path' } }) });
 export const TeamPlayerParam = IdParam.extend({ playerId: z.uuid().openapi({ param: { name: 'playerId', in: 'path' } }) });
 
 // ---------- listados ----------
@@ -196,8 +184,3 @@ export const BlockedHitQuery = listQuery(['kind', 'name'], { sort: 'kind', order
 });
 export const BlockedHitList = Envelope(BlockedHit).openapi('BlockedHitList');
 
-export const TeamRequestQuery = listQuery(['status', 'name'], { sort: 'status', order: 'asc' }).extend({
-  status: z.enum(['pending', 'approved', 'rejected']).optional(),
-  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la sigla y el alias de quien pidió' }),
-});
-export const AdminTeamRequestList = Envelope(AdminTeamRequest).openapi('AdminTeamRequestList');

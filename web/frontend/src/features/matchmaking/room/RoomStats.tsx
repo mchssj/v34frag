@@ -3,17 +3,17 @@ import { useState } from "react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapBackdrop } from "@/features/mixes/MapBackdrop"
-import { SideTable } from "@/features/mixes/MixRoom"
-import type { RoomPlayer } from "@/features/mixes/room"
+import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
+import { SideTable } from "@/features/mixes/components/MixRoom"
+import type { RoomPlayer } from "@/features/mixes/lib/room"
 import {
   bestValues,
   columnsFor,
   nextSort,
   type StatsSort,
   type StatsTab,
-} from "@/features/mixes/stats"
-import { StatsTabs } from "@/features/mixes/StatsTabs"
+} from "@/features/mixes/lib/stats"
+import { StatsTabs } from "@/features/mixes/components/StatsTabs"
 import type { MmLobby, MmMatch, MmPlayer } from "../types"
 import { Highlights } from "./Highlights"
 import { leadersOf, mvpOf, roomSide } from "./roomData"

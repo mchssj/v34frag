@@ -41,6 +41,7 @@ flowchart LR
 2. Abrir OBS y conectarse a la SourceTV.
 3. Abrir `http://localhost:8090/control` en el navegador normal:
    - Nombres de los equipos. En el **medio tiempo**, tocar *Intercambiar*, porque cambian de lado.
+   - Serie: BO1, BO3 o BO5 y, por mapa, cuál es, quién lo eligió y quién lo ganó. El HUD muestra arriba a la izquierda el pick del mapa que corre en el servidor y, sobre cada equipo, los mapas ganados.
    - Jugador enfocado (la tarjeta grande): con un clic o con las teclas 1 a 5 (CT) y 6 a 0 (T). Esc lo saca.
    - Qué partes del HUD se ven.
 4. La consola del relay dice cada 10 s si está recibiendo. El HUD aparece **con el mismo retraso que la SourceTV**: si la partida acaba de empezar, tarda esos segundos.
@@ -101,7 +102,7 @@ pnpm build:exe     # dist/relay.exe (Node + relay + HUD en un solo archivo)
 | Un canal por servidor (clave, cola y estado) | `src/channel.ts` |
 | Modo VPS: puertos, streamers y servidor elegido | `src/hub.ts` y `src/remote.ts` (configuración de la base) |
 | Fuentes de los íconos (de la instalación del streamer, nunca en el repo ni en el `.exe`) | `src/font.ts` |
-| Servidor elegido, nombres, jugador enfocado y lo que se muestra | `src/control.ts` (se guarda en `relay-control.json`; en el VPS, uno por streamer en `control.json`) |
+| Servidor elegido, nombres, serie de mapas, jugador enfocado y lo que se muestra | `src/control.ts` (se guarda en `relay-control.json`; en el VPS, uno por streamer en `control.json`) |
 | HUD y página de control | `public/` |
 
 `relay.exe` pesa unos 90 MB, porque lleva Node adentro. No se versiona (`dist/`): se arma con `pnpm build:exe` y se le pasa al streamer por Drive o similar.

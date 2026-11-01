@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { Compare } from "@/features/ranking/Compare"
-import { compareSearchSchema } from "@/features/ranking/search"
+import { Compare } from "@/features/ranking/pages/Compare"
+import { compareSearchSchema } from "@/features/ranking/lib/search"
 
 export const Route = createFileRoute("/_app/players/compare")({
   validateSearch: compareSearchSchema,
@@ -14,7 +14,9 @@ function ComparePage() {
   return (
     <Compare
       search={search}
-      onChange={(next) => void navigate({ search: next, replace: true })}
+      onChange={(next) =>
+        void navigate({ search: next, replace: true, resetScroll: false })
+      }
     />
   )
 }

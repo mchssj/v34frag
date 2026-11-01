@@ -1,4 +1,4 @@
-import { COUNTRIES } from "@/features/profile/schemas"
+import { COUNTRIES } from "@/features/profile/lib/schemas"
 import type {
   Country,
   LobbyStatus,

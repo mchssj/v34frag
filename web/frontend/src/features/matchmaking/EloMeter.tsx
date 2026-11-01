@@ -1,7 +1,7 @@
 import { cn } from "cn"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 /** Tu ELO en el panel de partida: nivel, ELO, barra de los 10 niveles y cuánto falta. */
 export function EloMeter({ elo, level }: { elo: number; level: number }) {

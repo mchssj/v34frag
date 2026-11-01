@@ -1,5 +1,5 @@
 import { levelOf } from "@/features/matchmaking/room/roomData"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 // Jugadores y mixes de ejemplo para /demo/buscador (docs/bitacora/2026-10-29-buscador-avanzado en
 // kyan/pruebas). Se generan con una semilla fija: cada vez que se abre la página salen los mismos.

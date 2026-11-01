@@ -1,4 +1,4 @@
-import type { RoomPlayer, RoomSide } from "@/features/mixes/room"
+import type { RoomPlayer, RoomSide } from "@/features/mixes/lib/room"
 import type {
   MmClip,
   MmLobby,

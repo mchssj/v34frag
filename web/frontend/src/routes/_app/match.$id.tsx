@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { MixMatchRoom } from "@/features/mixes/MixRoomPages"
-import { roomSearchSchema } from "@/features/mixes/search"
+import { MixMatchRoom } from "@/features/mixes/pages/MixRoomPages"
+import { roomSearchSchema } from "@/features/mixes/lib/search"
 
 export const Route = createFileRoute("/_app/match/$id")({
   validateSearch: roomSearchSchema,
@@ -21,6 +21,8 @@ function MatchPage() {
         void navigate({
           search: { stats: t === "general" ? undefined : t },
           replace: true,
+          // Es estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

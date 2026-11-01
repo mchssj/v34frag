@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import {
-  AdminBansPage,
-  banSearchSchema,
-} from "@/features/admin/bans/AdminBansPage"
+import { AdminBansPage } from "@/features/admin/bans/pages/AdminBansPage"
+import { banSearchSchema } from "@/features/admin/bans/lib/search"
 
 export const Route = createFileRoute("/_app/admin/bans")({
   validateSearch: banSearchSchema,
@@ -17,7 +15,10 @@ function AdminBansRoute() {
     <AdminBansPage
       search={search}
       onSearch={(patch) =>
-        void navigate({ search: (prev) => ({ ...prev, ...patch }) })
+        void navigate({
+          search: (prev) => ({ ...prev, ...patch }),
+          resetScroll: false,
+        })
       }
     />
   )

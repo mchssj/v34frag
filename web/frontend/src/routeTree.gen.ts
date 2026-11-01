@@ -40,7 +40,6 @@ import { Route as DemoVipRouteImport } from './routes/demo.vip'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
-import { Route as AppAdminEventsRouteImport } from './routes/_app/admin.events'
 import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
 import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
@@ -66,6 +65,9 @@ import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.pri
 import { Route as AppRankingIndexRouteImport } from './routes/_app/ranking.index'
 import { Route as AppRankingTeamsRouteImport } from './routes/_app/ranking.teams'
 import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
+import { Route as AppAdminEventsIndexRouteImport } from './routes/_app/admin.events.index'
+import { Route as AppAdminEventsIdRouteImport } from './routes/_app/admin.events.$id'
+import { Route as AppAdminEventsNewRouteImport } from './routes/_app/admin.events.new'
 import { Route as AppMixesLiveUidRouteImport } from './routes/_app/mixes.live.$uid'
 
 const IndexRoute = IndexRouteImport.update({
@@ -221,11 +223,6 @@ const AppAdminClipsRoute = AppAdminClipsRouteImport.update({
   path: '/clips',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => AppAdminRoute,
-} as any)
 const AppAdminMapsRoute = AppAdminMapsRouteImport.update({
   id: '/maps',
   path: '/maps',
@@ -351,6 +348,21 @@ const AppTeamsIdRoute = AppTeamsIdRouteImport.update({
   path: '/teams/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminEventsIndexRoute = AppAdminEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminEventsIdRoute = AppAdminEventsIdRouteImport.update({
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminEventsNewRoute = AppAdminEventsNewRouteImport.update({
+  id: '/events/new',
+  path: '/events/new',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
   id: '/mixes/live/$uid',
   path: '/mixes/live/$uid',
@@ -387,7 +399,6 @@ export interface FileRoutesByFullPath {
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
-  '/admin/events': typeof AppAdminEventsRoute
   '/admin/maps': typeof AppAdminMapsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
@@ -413,7 +424,10 @@ export interface FileRoutesByFullPath {
   '/players/': typeof AppPlayersIndexRoute
   '/profile/': typeof AppProfileIndexRoute
   '/ranking/': typeof AppRankingIndexRoute
+  '/admin/events/$id': typeof AppAdminEventsIdRoute
+  '/admin/events/new': typeof AppAdminEventsNewRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -444,7 +458,6 @@ export interface FileRoutesByTo {
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
-  '/admin/events': typeof AppAdminEventsRoute
   '/admin/maps': typeof AppAdminMapsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/admin/players': typeof AppAdminPlayersRoute
@@ -470,7 +483,10 @@ export interface FileRoutesByTo {
   '/players': typeof AppPlayersIndexRoute
   '/profile': typeof AppProfileIndexRoute
   '/ranking': typeof AppRankingIndexRoute
+  '/admin/events/$id': typeof AppAdminEventsIdRoute
+  '/admin/events/new': typeof AppAdminEventsNewRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/admin/events': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -505,7 +521,6 @@ export interface FileRoutesById {
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
-  '/_app/admin/events': typeof AppAdminEventsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
@@ -531,7 +546,10 @@ export interface FileRoutesById {
   '/_app/players/': typeof AppPlayersIndexRoute
   '/_app/profile/': typeof AppProfileIndexRoute
   '/_app/ranking/': typeof AppRankingIndexRoute
+  '/_app/admin/events/$id': typeof AppAdminEventsIdRoute
+  '/_app/admin/events/new': typeof AppAdminEventsNewRoute
   '/_app/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/_app/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -565,7 +583,6 @@ export interface FileRouteTypes {
     | '/demo/widget'
     | '/admin/bans'
     | '/admin/clips'
-    | '/admin/events'
     | '/admin/maps'
     | '/admin/matchmaking'
     | '/admin/players'
@@ -591,7 +608,10 @@ export interface FileRouteTypes {
     | '/players/'
     | '/profile/'
     | '/ranking/'
+    | '/admin/events/$id'
+    | '/admin/events/new'
     | '/mixes/live/$uid'
+    | '/admin/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -622,7 +642,6 @@ export interface FileRouteTypes {
     | '/demo/widget'
     | '/admin/bans'
     | '/admin/clips'
-    | '/admin/events'
     | '/admin/maps'
     | '/admin/matchmaking'
     | '/admin/players'
@@ -648,7 +667,10 @@ export interface FileRouteTypes {
     | '/players'
     | '/profile'
     | '/ranking'
+    | '/admin/events/$id'
+    | '/admin/events/new'
     | '/mixes/live/$uid'
+    | '/admin/events'
   id:
     | '__root__'
     | '/'
@@ -682,7 +704,6 @@ export interface FileRouteTypes {
     | '/demo/widget'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
-    | '/_app/admin/events'
     | '/_app/admin/maps'
     | '/_app/admin/matchmaking'
     | '/_app/admin/players'
@@ -708,7 +729,10 @@ export interface FileRouteTypes {
     | '/_app/players/'
     | '/_app/profile/'
     | '/_app/ranking/'
+    | '/_app/admin/events/$id'
+    | '/_app/admin/events/new'
     | '/_app/mixes/live/$uid'
+    | '/_app/admin/events/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -953,13 +977,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminClipsRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/events': {
-      id: '/_app/admin/events'
-      path: '/events'
-      fullPath: '/admin/events'
-      preLoaderRoute: typeof AppAdminEventsRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
     '/_app/admin/maps': {
       id: '/_app/admin/maps'
       path: '/maps'
@@ -1135,6 +1152,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeamsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/events/': {
+      id: '/_app/admin/events/'
+      path: '/events'
+      fullPath: '/admin/events/'
+      preLoaderRoute: typeof AppAdminEventsIndexRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/events/$id': {
+      id: '/_app/admin/events/$id'
+      path: '/events/$id'
+      fullPath: '/admin/events/$id'
+      preLoaderRoute: typeof AppAdminEventsIdRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/events/new': {
+      id: '/_app/admin/events/new'
+      path: '/events/new'
+      fullPath: '/admin/events/new'
+      preLoaderRoute: typeof AppAdminEventsNewRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/mixes/live/$uid': {
       id: '/_app/mixes/live/$uid'
       path: '/mixes/live/$uid'
@@ -1148,7 +1186,6 @@ declare module '@tanstack/react-router' {
 interface AppAdminRouteChildren {
   AppAdminBansRoute: typeof AppAdminBansRoute
   AppAdminClipsRoute: typeof AppAdminClipsRoute
-  AppAdminEventsRoute: typeof AppAdminEventsRoute
   AppAdminMapsRoute: typeof AppAdminMapsRoute
   AppAdminMatchmakingRoute: typeof AppAdminMatchmakingRoute
   AppAdminPlayersRoute: typeof AppAdminPlayersRoute
@@ -1157,12 +1194,14 @@ interface AppAdminRouteChildren {
   AppAdminServersRoute: typeof AppAdminServersRoute
   AppAdminTeamsRoute: typeof AppAdminTeamsRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
+  AppAdminEventsIdRoute: typeof AppAdminEventsIdRoute
+  AppAdminEventsNewRoute: typeof AppAdminEventsNewRoute
+  AppAdminEventsIndexRoute: typeof AppAdminEventsIndexRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminBansRoute: AppAdminBansRoute,
   AppAdminClipsRoute: AppAdminClipsRoute,
-  AppAdminEventsRoute: AppAdminEventsRoute,
   AppAdminMapsRoute: AppAdminMapsRoute,
   AppAdminMatchmakingRoute: AppAdminMatchmakingRoute,
   AppAdminPlayersRoute: AppAdminPlayersRoute,
@@ -1171,6 +1210,9 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminServersRoute: AppAdminServersRoute,
   AppAdminTeamsRoute: AppAdminTeamsRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
+  AppAdminEventsIdRoute: AppAdminEventsIdRoute,
+  AppAdminEventsNewRoute: AppAdminEventsNewRoute,
+  AppAdminEventsIndexRoute: AppAdminEventsIndexRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(

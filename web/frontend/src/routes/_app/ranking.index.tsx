@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { PlayersRanking } from "@/features/ranking/PlayersRanking"
-import { playerRankingSearchSchema } from "@/features/ranking/search"
+import { PlayersRanking } from "@/features/ranking/pages/PlayersRanking"
+import { playerRankingSearchSchema } from "@/features/ranking/lib/search"
 
 export const Route = createFileRoute("/_app/ranking/")({
   validateSearch: playerRankingSearchSchema,
@@ -18,6 +18,8 @@ function RankingPage() {
         void navigate({
           search: (prev) => ({ ...prev, ...patch }),
           replace: true,
+          // Es estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

@@ -16,6 +16,8 @@ import {
   MyTeam,
   Ranking,
   RankingQuery,
+  Created,
+  TeamCreateBody,
   TeamDetail,
   TeamEventList,
   TeamEventQuery,
@@ -29,8 +31,12 @@ import {
 } from '../schemas/teams';
 import { dropPhoto, removePhoto, savePhoto } from '../services/photos';
 
+// Un solo literal: supabase-js tipa las filas a partir del texto del select.
 const OVERVIEW =
-  'id, name, tag, kind, captain_id, captain_player_id, captain_nick, members, parent_team_id, logo_url, looking_for, max_members, founded_at, events_played';
+  'id, name, tag, kind, captain_id, captain_player_id, captain_nick, members, parent_team_id, logo_url, looking_for, max_members, founded_at, events_played, dissolved_at, name_changed_at';
+
+/** Espera entre cambios de nombre o sigla del capitán (team_rename en el replanteo 39). */
+export const TEAM_NAME_WAIT_DAYS = 30;
 
 type OverviewRow = {
   id: string | null; name: string | null; tag: string | null; kind: string | null; captain_player_id: string | null;
@@ -50,6 +56,12 @@ const toSummary = (t: OverviewRow): z.infer<typeof TeamSummary> => ({
   logo_url: t.logo_url,
   looking_for: (t.looking_for ?? []) as z.infer<typeof RosterRole>[],
 });
+
+const nextNameChange = (changedAt: string | null) => {
+  if (!changedAt) return null;
+  const next = new Date(new Date(changedAt).getTime() + TEAM_NAME_WAIT_DAYS * 86_400_000);
+  return next.getTime() > Date.now() ? next.toISOString() : null;
+};
 
 // ---------- rutas ----------
 
@@ -75,6 +87,23 @@ const detail = createRoute({
   responses: { 200: { description: 'Equipo', ...json(TeamDetail) }, ...errorResponses(400, 401, 404) },
 });
 
+const createTeam = createRoute({
+  method: 'post',
+  path: '/api/v1/teams',
+  tags: ['Equipos'],
+  summary: 'Crear un equipo',
+  description:
+    'Se crea al instante, sin aprobación: quien lo crea queda como dueño, capitán y primer miembro. Hace falta tener el SteamID ' +
+    'vinculado (`400`). Nombre de 2 a 40 y sigla de 1 a 6 (en mayúsculas), sin palabras bloqueadas (`400`) y sin repetir los de ' +
+    'otro equipo activo (`409 CONFLICT` con `details.reason` `name_taken` o `tag_taken`). Cada persona puede ser capitán de hasta ' +
+    '`max_led` equipos activos (lo fija el admin, 1 por defecto): `409 CONFLICT` con `details.reason: lead_limit` y `details.max_led`. ' +
+    'El logo se sube después con `PUT /api/v1/teams/{id}/logo`.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  request: { body: { required: true, ...json(TeamCreateBody) } },
+  responses: { 201: { description: 'Equipo creado', ...json(Created) }, ...errorResponses(400, 401, 409) },
+});
+
 const members = createRoute({
   method: 'get',
   path: '/api/v1/teams/{id}/members',
@@ -93,11 +122,31 @@ const patchTeam = createRoute({
   path: '/api/v1/teams/{id}',
   tags: ['Equipos'],
   summary: 'Editar mi equipo',
-  description: 'El capitán o un admin. Por ahora, qué busca el equipo (`looking_for`). El nombre y la sigla los cambia un admin.',
+  description:
+    'El capitán o un admin: qué busca el equipo (`looking_for`), el nombre y la sigla. El nombre y la sigla siguen las reglas de la ' +
+    `solicitud y no pueden repetir los de otro equipo activo. El capitán los cambia una vez cada ${TEAM_NAME_WAIT_DAYS} días ` +
+    '(`409 CONFLICT` con `details.next_change_at`; el admin no espera) y no mientras el equipo juega un torneo en curso (`409`). ' +
+    'Un equipo disuelto no se edita (`409`).',
   security: bearer,
   middleware: [requireUser] as const,
   request: { params: TeamParam, body: { required: true, ...json(TeamPatch) } },
-  responses: { 204: { description: 'Hecho' }, ...errorResponses(400, 401, 403, 404) },
+  responses: { 204: { description: 'Hecho' }, ...errorResponses(400, 401, 403, 404, 409) },
+});
+
+const dissolve = createRoute({
+  method: 'post',
+  path: '/api/v1/teams/{id}/dissolve',
+  tags: ['Equipos'],
+  summary: 'Disolver el equipo',
+  description:
+    'El capitán o un admin. El equipo queda archivado: sale del listado, de Buscar equipo y del ranking, pero conserva sus partidas, ' +
+    'sus títulos y su página (con `dissolved_at`). Todos los miembros pasan a ex integrantes y reciben el aviso `team_dissolved`; ' +
+    'las invitaciones y los pedidos abiertos se cancelan. `409 CONFLICT` si está inscrito en un torneo con las inscripciones abiertas ' +
+    'o en curso (primero hay que darlo de baja) o si ya estaba disuelto.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  request: { params: TeamParam },
+  responses: { 204: { description: 'Disuelto' }, ...errorResponses(400, 401, 403, 404, 409) },
 });
 
 const logoLimit = bodyLimit({
@@ -175,9 +224,14 @@ const RANK_COLUMNS = {
 };
 
 export const teams = createRouter()
+  .openapi(createTeam, async (c) => {
+    const { name, tag } = c.req.valid('json');
+    const id = mustHave(await c.var.sb.rpc('team_create', { p_name: name, p_tag: tag }));
+    return c.json({ id }, 201);
+  })
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
-    let q = c.var.sb.from('team_overview').select(OVERVIEW, { count: 'exact' }).eq('kind', p.kind);
+    let q = c.var.sb.from('team_overview').select(OVERVIEW, { count: 'exact' }).eq('kind', p.kind).is('dissolved_at', null);
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.has_space !== undefined) q = q.eq('has_space', p.has_space);
@@ -190,7 +244,10 @@ export const teams = createRouter()
     const sb = c.var.sb;
     const team = must(await sb.from('team_overview').select(OVERVIEW).eq('id', id).maybeSingle());
     if (!team) throw notFound('ese equipo');
-    const s = must(await sb.from('team_standings').select('*').eq('team_id', id).maybeSingle());
+    const [s, modes] = await Promise.all([
+      sb.from('team_standings').select('*').eq('team_id', id).maybeSingle().then(must),
+      team.kind === 'official' ? sb.rpc('team_eligible_modes', { p_team: id }).then(mustHave) : Promise.resolve([]),
+    ]);
     let viewer: z.infer<typeof TeamDetail>['viewer'] = null;
     const user = currentUser(c);
     if (user) {
@@ -204,6 +261,10 @@ export const teams = createRouter()
       {
         ...toSummary(team),
         founded_at: team.founded_at,
+        dissolved_at: team.dissolved_at,
+        name_changed_at: team.name_changed_at,
+        next_name_change_at: nextNameChange(team.name_changed_at),
+        eligible_modes: modes,
         record: s
           ? {
               official: { played: s.official_played ?? 0, won: s.official_won ?? 0, lost: s.official_lost ?? 0, points: s.official_points ?? 0 },
@@ -234,8 +295,19 @@ export const teams = createRouter()
   })
   .openapi(patchTeam, async (c) => {
     const { id } = c.req.valid('param');
-    if (!must(await c.var.sb.from('teams').select('id').eq('id', id).maybeSingle())) throw notFound('ese equipo');
-    must(await c.var.sb.rpc('team_update', { p_team: id, p_looking_for: c.req.valid('json').looking_for }));
+    const { looking_for, name, tag } = c.req.valid('json');
+    const sb = c.var.sb;
+    const team = must(await sb.from('teams').select('name, tag').eq('id', id).maybeSingle());
+    if (!team) throw notFound('ese equipo');
+    // Primero el nombre: si no se puede cambiar, no se guarda nada.
+    if (name !== undefined || tag !== undefined) {
+      must(await sb.rpc('team_rename', { p_team: id, p_name: name ?? team.name, p_tag: tag ?? team.tag ?? '' }));
+    }
+    if (looking_for !== undefined) must(await sb.rpc('team_update', { p_team: id, p_looking_for: looking_for }));
+    return c.body(null, 204);
+  })
+  .openapi(dissolve, async (c) => {
+    must(await c.var.sb.rpc('team_dissolve', { p_team: c.req.valid('param').id }));
     return c.body(null, 204);
   })
   .openapi(putLogo, async (c) => {

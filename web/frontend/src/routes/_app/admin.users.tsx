@@ -4,7 +4,7 @@ import { z } from "zod"
 import {
   AdminUsersPage,
   USER_TABS,
-} from "@/features/admin/users/AdminUsersPage"
+} from "@/features/admin/users/pages/AdminUsersPage"
 
 export const Route = createFileRoute("/_app/admin/users")({
   validateSearch: z.object({
@@ -20,7 +20,10 @@ function AdminUsersRoute() {
     <AdminUsersPage
       tab={tab ?? "accounts"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "accounts" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "accounts" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

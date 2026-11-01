@@ -124,3 +124,36 @@ export function clutchesOf(rows: { vs: number | null; won: number | null }[]) {
   }
   return out;
 }
+
+const SUMMED = ['kills', 'deaths', 'assists', 'headshots', 'damage', 'rounds', 'k2', 'k3', 'k4', 'k5', 'first_kills', 'first_deaths', 'plants', 'defuses'] as const;
+
+/** Fila de `match_player_stats` con la que se arma un `PlayerLine`. */
+export type StatRow = {
+  player_id: string | null; steam_id: string; nick: string | null; team: number; rating: number | null; elo_delta: number | null;
+} & Record<(typeof SUMMED)[number], number | null>;
+
+/**
+ * Stats de una serie (E21): suma por jugador los juegos vinculados, con el lado de la serie
+ * (`flipped` dice qué juegos tienen los bandos invertidos, `parent_side1 = 2`) y el rating
+ * ponderado por rondas. Sin `elo_delta`: la serie no mueve el ELO.
+ */
+export function sumSeries(rows: (Omit<StatRow, 'elo_delta'> & { match_id: string | null })[], flipped: Map<string, boolean>): StatRow[] {
+  const acc = new Map<string, { line: StatRow; weighted: number; rated: number }>();
+  for (const r of rows) {
+    const side = r.match_id && flipped.get(r.match_id) ? 3 - r.team : r.team;
+    const key = `${r.player_id ?? r.steam_id}:${side}`;
+    let a = acc.get(key);
+    if (!a) {
+      const zeros = Object.fromEntries(SUMMED.map((k) => [k, 0])) as Record<(typeof SUMMED)[number], number>;
+      a = { line: { player_id: r.player_id, steam_id: r.steam_id, nick: r.nick, team: side, rating: null, elo_delta: null, ...zeros }, weighted: 0, rated: 0 };
+      acc.set(key, a);
+    }
+    for (const k of SUMMED) a.line[k] = (a.line[k] ?? 0) + (r[k] ?? 0);
+    if (r.rating !== null && (r.rounds ?? 0) > 0) {
+      a.weighted += r.rating * (r.rounds ?? 0);
+      a.rated += r.rounds ?? 0;
+    }
+    a.line.nick = r.nick ?? a.line.nick;
+  }
+  return [...acc.values()].map(({ line, weighted, rated }) => ({ ...line, rating: rated ? Math.round((weighted / rated) * 100) / 100 : null }));
+}

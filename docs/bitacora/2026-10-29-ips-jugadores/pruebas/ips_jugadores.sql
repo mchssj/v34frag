@@ -82,6 +82,17 @@ select pg_temp.ok(not exists (select 1 from public.player_connections where ip =
   'lo de más de 90 días se borra (de vez en cuando)');
 select pg_temp.ok(exists (select 1 from public.player_ips where ip = '190.1.2.3'), 'el resumen no se borra');
 
+-- ---------- hora del primer intento (20261029200000_ips_intentos_hora.sql) ----------
+select public.csstv_connections('token-ips', '[]', jsonb_build_array(
+  jsonb_build_object('ip', '77.1.1.1', 'n', 4, 't', extract(epoch from now() - interval '3 hours')::bigint),
+  jsonb_build_object('ip', '77.2.2.2', 'n', 1, 't', extract(epoch from now() - interval '5 days')::bigint),
+  jsonb_build_object('ip', '77.3.3.3', 'n', 1, 't', extract(epoch from now() + interval '2 days')::bigint),
+  jsonb_build_object('ip', '77.4.4.4', 'n', 1, 't', 'no')));
+select pg_temp.ok((select hour = date_trunc('hour', now() - interval '3 hours') and count = 4 from public.connect_attempts where ip = '77.1.1.1'),
+  'con t: el intento queda en la hora en que pasó');
+select pg_temp.ok((select bool_and(hour = date_trunc('hour', now())) and count(*) = 3 from public.connect_attempts where ip in ('77.2.2.2', '77.3.3.3', '77.4.4.4')),
+  't de más de 48 horas, en el futuro o que no es número: la hora actual');
+
 -- ---------- re-ejecutable ----------
 select pg_temp.ok(true, 'fin');
 rollback;

@@ -55,17 +55,13 @@ afterAll(async () => {
 });
 
 describe('notificaciones', () => {
-  it('pedido para crear un equipo: le llega a los admins y la respuesta al que lo pidió', async () => {
+  it('crear un equipo: al instante, sin aviso a los admins', async () => {
     const name = `Notif ${rnd()}`;
-    expect((await req('PUT', '/api/v1/me/team-request', { token: cap.token, body: { name, tag: 'NTF' } })).status).toBe(200);
+    const created = await req('POST', '/api/v1/teams', { token: cap.token, body: { name, tag: rnd().slice(0, 5) } });
+    expect(created.status).toBe(201);
+    team = created.body.id;
     const a = await mine(adm, '?category=admin');
-    expect(a.items).toContainEqual(expect.objectContaining({ type: 'admin_team_request', data: expect.objectContaining({ name }) }));
-    const ap = await req('POST', `/api/v1/admin/team-requests/${cap.id}/approve`, { token: adm.token });
-    expect(ap.status).toBe(201);
-    team = ap.body.id;
-    expect((await mine(cap)).items).toContainEqual(
-      expect.objectContaining({ type: 'team_request_answered', data: expect.objectContaining({ approved: true }), actor: expect.objectContaining({ id: adm.id }) }),
-    );
+    expect(a.items).not.toContainEqual(expect.objectContaining({ type: 'admin_team_request', data: expect.objectContaining({ name }) }));
   });
 
   it('invitar y aceptar: accionable, resuelta y el líder se entera', async () => {

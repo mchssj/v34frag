@@ -34,6 +34,14 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
   - Daniel, 2026-10-15.
 - ~~**PCW "como equipo"**~~: hecho en la `10` (2026-10-15).
 - **[`docs/frontend/contrato/`](frontend/contrato/README.md)** (antes `contract.md`, partido por módulos el 2026-10-19): contrato único para el frontend con todas las decisiones de diseño (escrito el 2026-10-15, pedido de Daniel). **Mantenerlo al día:** cada entrega del backend que cambie algo para el frontend actualiza el archivo de su módulo, las novedades del índice y `decisiones.md`.
+- **Pedidos del frontend al backend sin resolver** (Esteban, 2026-10-30), en la "Segunda tanda" de [`contrato-backend-equipo-torneos.md`](../contrato-backend-equipo-torneos.md). Mientras tanto, el frontend los muestra deshabilitados con "Próximamente":
+  - **E9:** cancelar la solicitud de equipo nuevo;
+  - **E10:** disolver un equipo;
+  - **E11:** nombre y sigla editables por el líder;
+  - **E12:** biografía editable por el jugador (`PATCH /me/profile` con `bio`). Hoy solo la cambia un admin.
+  - **E13:** `logo_url` en el historial de equipos y los títulos de un jugador. Hoy el frontend pide el detalle de cada equipo para mostrar el logo.
+  - **E14 a E18** (tercera tanda, Partidas unificadas): varios estados en `status`, `mine=true`, contadores por tipo, `mvp` en los mixes y búsqueda por nick en `GET /matches`.
+  - ~~**E21 y E22**~~ (cuarta tanda, Llave por formato): **resueltos el 2026-11-01** en la API (`series_players` y `next_win`/`next_lose`) y activados en la Llave. Ver [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/).
 
 ## Estado del repositorio
 
@@ -286,6 +294,8 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - ~~confirmar la prueba con flow~~: **funcionó el 2026-10-29** (paquetes con la clave correcta, el HUD y el panel con datos, y la sesión en staging). Queda **prendido en flow** por decisión de Daniel (por consola está en `csstv_hud 0` desde el congelamiento del 2026-10-29, que fue por los bots y no por el HUD: ver la guía, "Incidentes"; volver a `csstv_hud 1`). Falta que kyan confirme si existe `maps/de_dust2_ob.nav` y, si no, generarlo. Cómo apagarlo si laguea: `GUIA_IMPLEMENTACION.md`, "Cómo apagar el HUD de un servidor";
   - ~~el frontend~~: hecho el 2026-10-29 ([`2026-10-29-frontend-hud`](bitacora/2026-10-29-frontend-hud/GUIA_IMPLEMENTACION.md)); falta desplegarlo con `desplegar.sh web`;
   - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real, RBK y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
+- **2026-10-30: HUD versión 2** (relay 2.1.0, plan [`2026-10-30-hud-version-2`](bitacora/2026-10-30-hud-version-2/GUIA_IMPLEMENTACION.md)): el diseño del torneo de CS2 (marcador con siglas, vivos y clutch, tarjetas con foto y número de tecla, la vida que oscurece la tarjeta y la flash y el humo con franja y borde). Solo cambia lo que dibuja OBS; el plugin no. **Desplegado en el VPS el 2026-10-30** (build `ea72879c8f86-local10301427`, con cambios sin commit). Falta verlo con la SourceTV real en OBS y, después del commit, volver a desplegar para que el build lleve el nombre del commit.
+- **2026-10-30: serie de mapas en el HUD** (relay 2.2.0, plan [`2026-10-30-hud-serie-mapas`](bitacora/2026-10-30-hud-serie-mapas/GUIA_IMPLEMENTACION.md)): en `/control`, BO1/BO3/BO5 y por mapa el pick y el ganador; el HUD muestra `CMLEAGUE | BO3 | Jugando en … | Pick de …` y las rayitas de mapas ganados. Probado en local y **desplegado en el VPS el 2026-10-30** (build `7b6540df4295-local10301756`, con cambios sin commit). Falta verlo en OBS y, después del commit, volver a desplegar. No toca el plugin.
 
 - **2026-10-25:** ya no está en el servidor real (lo sacó kyan, según Daniel). Sigue en RBK con `csstv_hud "0"`.
 
@@ -484,7 +494,48 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   1. En el corte, la `38` va después de la `37` (punto 1.5).
   2. Verificar con el primer jugador que entre: sin `IPs: no se pudieron registrar` en el log y filas en `player_ips`.
   3. Publicar `bitacora/2026-10-29-ips-jugadores/CHANGELOG_DISCORD.txt`.
+  4. **Reporter 2.6.1** (pico y copia a disco de los intentos): desplegado el 2026-10-29. La migración `20261029200000_ips_intentos_hora.sql` está en producción y en staging, y el plugin en **el real, RBK y flow**. Falta verificar en cada uno, después de su cambio de mapa, que el log diga 2.6.1 y que no aparezca `IPs: no se pudieron registrar`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
+
+### 1.31 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** lo que pidió el frontend en `pendientes-backend-cmleague.md` (E9 a E18 y E20): filtros, contadores y MVP en `GET /matches`, cancelar la solicitud de equipo con su fecha y el motivo del rechazo, disolver un equipo, nombre y sigla editables por el capitán, biografía del jugador, logos en el historial y los títulos, y cierre y total de jugadores en las temporadas.
+- **Hecho el 2026-10-30 en local y commiteado el 2026-11-01** (en `feat/backend-api-fase-1`): replanteo `39` con su inversa y sus pruebas SQL, API, tipos, pruebas unitarias y de integración, y el contrato del frontend.
+- **Falta:**
+  1. Llevarlo a `feat/frontend-fase-1` (merge del backend, 2026-11-01).
+  2. Cargar la `39` en staging y redesplegar la API del VPS. Sin la `39`, esta API falla en `/matches`, equipos, temporadas y Mi perfil (lee columnas nuevas).
+  3. En el corte, la `39` va después de la `38` (punto 1.5).
+  4. El frontend activa lo suyo y regenera `src/api/schema.d.ts`.
+  5. E19 (búsqueda global ⌘K) queda para más adelante.
+- No toca el plugin: nada que subir al servidor real ni a flow.
+- **Bitácora:** [`2026-10-30-api-pendientes-frontend`](bitacora/2026-10-30-api-pendientes-frontend/)
+
+### 1.32 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** lo que pidió la Llave por formato del frontend: `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en `GET /events/{id}/matches`, y `series_players` (stats de la serie con el rating ponderado por rondas) en `GET /matches/{id}` de torneo y PCW.
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge. El frontend ya los usa: rating de la serie en el detalle resumido, y origen y destino de cada lado en la Llave.
+- **Falta:** redesplegar la API del VPS junto con lo del punto 1.31. No toca la base ni el plugin.
+- **Bitácora:** [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/)
+
+### 1.33 Crear un equipo al instante (replanteo `40`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** cualquier usuario con SteamID crea su equipo sin aprobación (`POST /api/v1/teams`). Tope de equipos por capitán configurable (`max_led`, 1 por defecto), aptitud por modo en la ficha (`eligible_modes`) y el ranking de equipos solo con los que tienen 5 jugadores o suplentes. Se borran la aprobación, el rechazo y la cancelación de solicitudes.
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `40` en staging después de la `39` y redesplegar la API. Al cargarla, las solicitudes pendientes se resuelven solas (se crea el equipo o se rechazan con el motivo).
+  2. En el corte, la `40` va después de la `39`.
+- No toca el plugin: nada que subir al servidor real ni a flow.
+- **Bitácora:** [`2026-11-01-equipo-al-instante`](bitacora/2026-11-01-equipo-al-instante/)
+
+### 1.34 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** Administración › Torneos. Moderadores que operan todos los torneos (sin cancelar ni borrar), siembra por ranking (torneos y PCW) con la etapa de entrada del suizo según la siembra, y cada mapa de una serie con un mix vinculado a mano o el resultado a mano ("Sin detalle de la partida").
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `41` en staging después de la `40` y redesplegar la API.
+  2. En el corte, la `41` va después de la `40`.
+- No toca el plugin.
+- **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
 
 ## 2. Investigaciones abiertas
 

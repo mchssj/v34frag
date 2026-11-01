@@ -45,6 +45,19 @@ describe("errorFromResponse", () => {
     expect(errorFromResponse(res(502), null).code).toBe("INTERNAL")
   })
 
+  it("reconoce los códigos de Equipo y Torneos y muestra el mensaje del backend", () => {
+    const e = errorFromResponse(res(409), {
+      error: {
+        code: "REGISTRATION_CLOSED",
+        message: "Las inscripciones cerraron el 05 nov.",
+      },
+    })
+    expect(e.code).toBe("REGISTRATION_CLOSED")
+    expect(errorMessage(e)).toBe("Las inscripciones cerraron el 05 nov.")
+    const full = errorFromResponse(res(409), { error: { code: "ROSTER_FULL" } })
+    expect(errorMessage(full)).toBe("El equipo ya tiene el roster completo.")
+  })
+
   it("toma el requestId del header si no viene en el cuerpo", () => {
     const e = errorFromResponse(res(500, { "X-Request-Id": "hdr" }), {})
     expect(e.requestId).toBe("hdr")

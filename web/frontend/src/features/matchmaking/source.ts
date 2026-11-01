@@ -3,7 +3,8 @@ import { createContext, useContext } from "react"
 import { authFetch } from "@/auth/authFetch"
 import { errorFromResponse, networkError } from "@/api/errors"
 import type { Schemas } from "@/api/client"
-import { mapImage, type MapEntry } from "@/features/maps/queries"
+import { mapImage } from "@/features/maps/lib/catalog"
+import type { MapEntry } from "@/features/maps/types"
 import { env } from "@/lib/env"
 import type {
   InvitePref,

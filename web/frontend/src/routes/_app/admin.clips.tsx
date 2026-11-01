@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import {
-  AdminClipsPage,
-  CLIP_TABS,
-} from "@/features/admin/clips/AdminClipsPage"
+import { AdminClipsPage } from "@/features/admin/clips/pages/AdminClipsPage"
+import { CLIP_TABS } from "@/features/admin/clips/lib/clips"
 
 export const Route = createFileRoute("/_app/admin/clips")({
   validateSearch: z.object({
@@ -20,7 +18,10 @@ function AdminClipsPageRoute() {
     <AdminClipsPage
       tab={tab ?? "review"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "review" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "review" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

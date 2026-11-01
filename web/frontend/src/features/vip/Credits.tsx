@@ -1,7 +1,7 @@
 import { cn } from "cn"
 import { HeartIcon } from "lucide-react"
 
-import { PlayerAvatar } from "@/features/ranking/parts"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { VipBadge } from "@/features/shop/cosmetics"
 
 import { RANK_PLAYERS } from "./demo"

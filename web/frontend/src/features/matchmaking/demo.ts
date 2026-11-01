@@ -1,5 +1,5 @@
 import { ApiError } from "@/api/errors"
-import type { RoomPlayer } from "@/features/mixes/room"
+import type { RoomPlayer } from "@/features/mixes/lib/room"
 import { REASON_TEXT, mapLabel } from "./labels"
 import type { MmSource } from "./source"
 import type {

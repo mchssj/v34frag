@@ -2,7 +2,7 @@ import { cn } from "cn"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { levelOf } from "@/features/matchmaking/room/roomData"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 // Widget para OBS (docs/bitacora/2026-10-29-widget-streamers en kyan/pruebas). Los datos tienen la
 // forma de widget_player(); siempre se dibuja oscuro porque va encima del video del stream.

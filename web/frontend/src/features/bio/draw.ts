@@ -12,7 +12,7 @@ import {
 } from "@/features/export/card"
 import type { ExportStats } from "@/features/export/demo"
 import { levelOf } from "@/features/matchmaking/room/roomData"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 // Imágenes para la bio de Twitch y Twitter (docs/bitacora/2026-10-29-widget-bio en kyan/pruebas). Se
 // dibujan al doble de la medida que piden las redes, para que se vean nítidas en pantallas de alta densidad.

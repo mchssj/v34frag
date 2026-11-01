@@ -1,0 +1,8 @@
+CMLeague 2.7.0 --  Changelog
+
+Más estadísticas de cada mix
+- Ahora se guardan tus kills con cada arma (AWP, Deagle, AK, M4, cuchillo, granadas y todas las demás).
+- Se cuentan tus clutchs: cuando quedas solo contra 1, 2, 3, 4 o 5 rivales y tu equipo gana la ronda.
+- También se guardan las rondas que sobrevives, las que ganas de CT y de T, las rondas de pistola y los ecos que ganas, y las bombas que plantas y explotan.
+- Todo esto empieza a contar desde ahora y lo vas a ver en la web nueva, junto con las medallas.
+- No cambia nada en cómo juegas.

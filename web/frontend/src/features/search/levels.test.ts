@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { levelOf } from "@/features/matchmaking/room/roomData"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 import { PLAYERS } from "./demo"
 import { filterPlayers, levelRange } from "./filters"

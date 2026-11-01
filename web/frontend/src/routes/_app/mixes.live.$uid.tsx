@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { MixLiveRoom } from "@/features/mixes/MixRoomPages"
-import { roomSearchSchema } from "@/features/mixes/search"
+import { MixLiveRoom } from "@/features/mixes/pages/MixRoomPages"
+import { roomSearchSchema } from "@/features/mixes/lib/search"
 
 export const Route = createFileRoute("/_app/mixes/live/$uid")({
   validateSearch: roomSearchSchema,
@@ -20,6 +20,8 @@ function LiveMixPage() {
         void navigate({
           search: { stats: t === "general" ? undefined : t },
           replace: true,
+          // Es estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

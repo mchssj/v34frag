@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { PlayerProfile } from "@/features/player/PlayerProfile"
-import { playerSearchSchema } from "@/features/player/search"
+import { PlayerProfile } from "@/features/player/pages/PlayerProfile"
+import { playerSearchSchema } from "@/features/player/lib/search"
 
 export const Route = createFileRoute("/_app/player/$nick")({
   validateSearch: playerSearchSchema,
@@ -22,6 +22,8 @@ function PlayerPage() {
         void navigate({
           search: (prev) => ({ ...prev, ...patch }),
           replace: true,
+          // Pestañas, filtros, página y rango son estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
         })
       }
     />

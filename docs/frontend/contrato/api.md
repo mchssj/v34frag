@@ -134,7 +134,7 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/teams` | `kind` (por defecto `official`), `q`, `has_space` | **`name` asc**, `members` |
 | `GET /api/v1/teams/{id}/members` | `active`, `role` | **`alias` asc**, `joined_at`, `left_at`, `elo` |
 | `GET /api/v1/ranking/teams` | `pcw` (`0` o `1`), `q` | **`points` desc**, `won`, `played`, `name` |
-| `GET /api/v1/matches` | `kind`, `status`, `event`, `team`, `player`, `server`, `map`, `from`, `to`, `q` | **`played_at` desc**, `starts_at` |
+| `GET /api/v1/matches` | `kind`, `status` (uno o varios, separados por comas), `mine`, `event`, `team`, `player`, `server`, `map`, `from`, `to`, `q` (equipos, bandos, torneo y nick) | **`played_at` desc**, `starts_at` |
 | `GET /api/v1/events` | `q`, `status`, `template`, `organizer`, `from`, `to` | **`starts_on` desc**, `name`, `status` |
 | `GET /api/v1/events/{id}/registrations` | `q`, `start_stage` | **`seed` asc**, `name` |
 | `GET /api/v1/events/{id}/matches` | `stage`, `phase`, `grp`, `round`, `status`, `team`, `include_byes` | **`bracket` asc** (fase, etapa, grupo, ronda, posición), `starts_at`, `played_at` |
@@ -153,7 +153,6 @@ GET /api/v1/players?page=2&per=20&sort=rating&order=desc&q=mecha&has_steam=true
 | `GET /api/v1/admin/steam/unlinked` | `q` (nombre o SteamID) | **`last_played` desc**, `matches`, `last_nick` |
 | `GET /api/v1/admin/blocked-words` | `q` | **`word` asc**, `created_at` |
 | `GET /api/v1/admin/blocked-words/hits` | `kind` | **`kind` asc**, `name` |
-| `GET /api/v1/admin/team-requests` | `status`, `q` | **`status` asc** (pendientes primero), `name` |
 | `GET /api/v1/admin/demos` | `status` (`pending`, `uploaded`, `missing`, `expired`), `server`, `kind`, `from`, `to`, `q` | **`played_at` desc**, `demo_size`, `demo_attempts`, `demo_uploaded_at`, `expires_at` |
 | `GET /api/v1/admin/demo-workers` | `q`, `active`, `online` | **`name` asc**, `created_at`, `last_seen_at` |
 | `GET /api/v1/admin/servers` | `q` (nombre, dirección, IPs, versión, región), `active`, `license` (`ok`, `expiring`, `expired`, `revoked`), `online`, `has_panel`, `mode` | **`name` asc**, `created_at`, `last_seen_at`, `license_expires_at`, `matches` |

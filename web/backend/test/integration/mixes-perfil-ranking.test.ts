@@ -11,6 +11,8 @@ const playerIds = Array.from({ length: 6 }, () => crypto.randomUUID());
 const mixIds = [crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID()];
 const teamIds = [crypto.randomUUID(), crypto.randomUUID()];
 const eventId = crypto.randomUUID();
+// Relleno: el ranking de equipos solo muestra los que tienen 5 jugadores (replanteo 40).
+const fillerIds = Array.from({ length: 8 }, () => crypto.randomUUID());
 let finalId: string;
 let eloConfigBefore: unknown = null;
 const liveUid = `mpr${sfx}-vivo`;
@@ -82,6 +84,8 @@ beforeAll(async () => {
   // Torneo: la final la gana el equipo 0 (ficha 0 inscrita); la base marca el campeón sola.
   await insert('teams', teamIds.map((id, i) => ({ id, name: `MprT${i}${sfx}`, tag: `M${i}`, kind: 'official' })));
   await insert('team_members', [{ team_id: teamIds[0], player_id: playerIds[0] }, { team_id: teamIds[1], player_id: playerIds[3] }]);
+  await insert('players', fillerIds.map((id, i) => ({ id, nick: `Rell${i}${Math.random().toString(36).slice(2, 9)}`, steam_id: steam(100 + i) })));
+  await insert('team_members', fillerIds.map((player_id, i) => ({ team_id: teamIds[i < 4 ? 0 : 1], player_id })));
   await insert('events', [{ id: eventId, name: `Copa ${sfx}`, template: 'single', game_mode: '1v1' }]);
   await insert('tournament_registrations', teamIds.map((team_id) => ({ event_id: eventId, team_id })));
   await insert('tournament_registration_players', [
@@ -114,7 +118,7 @@ afterAll(async () => {
   await a.from('elo_adjustments').delete().in('steam_id', playerIds.map((_, i) => steam(i)));
   await a.from('mix_deletions').delete().in('match_id', mixIds);
   await a.from('player_elo').delete().in('steam_id', playerIds.map((_, i) => steam(i)));
-  await a.from('players').delete().in('id', playerIds);
+  await a.from('players').delete().in('id', [...playerIds, ...fillerIds]);
   await a.from('game_servers').delete().eq('id', serverId);
   if (!eloConfigBefore) await a.from('elo_config').delete().eq('id', 1);
 });
@@ -203,7 +207,7 @@ describe('perfil público', () => {
     expect((await get(`/api/v1/players/${nick(0)}/elo-history?order=asc&per=1`)).body.items[0].match_id).toBe(mixIds[0]);
 
     const titles = await get(`/api/v1/players/${nick(0)}/titles`);
-    expect(titles.body.items).toEqual([{ event: { id: eventId, name: `Copa ${sfx}` }, result: 'champion', team: { id: teamIds[0], name: `MprT0${sfx}`, tag: 'M0' }, at: expect.any(String) }]);
+    expect(titles.body.items).toEqual([{ event: { id: eventId, name: `Copa ${sfx}` }, result: 'champion', team: { id: teamIds[0], name: `MprT0${sfx}`, tag: 'M0', logo_url: null }, at: expect.any(String) }]);
     expect((await get(`/api/v1/players/${nick(3)}/titles?result=runner_up`)).body.items[0]).toMatchObject({ result: 'runner_up', team: { id: teamIds[1] } });
     expect((await get(`/api/v1/players/${nick(3)}/titles?result=champion`)).body.total).toBe(0);
 

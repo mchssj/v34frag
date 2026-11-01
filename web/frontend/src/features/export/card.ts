@@ -1,7 +1,7 @@
 import lockup from "@/assets/brand/cmleague-lockup-color-fondo-oscuro.svg"
 import lockupLight from "@/assets/brand/cmleague-lockup-color-fondo-claro.svg"
 import { levelOf } from "@/features/matchmaking/room/roomData"
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 import { PERIOD_LABEL, type ExportPeriod, type ExportStats } from "./demo"
 

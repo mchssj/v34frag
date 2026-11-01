@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { LEVEL_FLOORS } from "@/features/player/labels"
+import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 import type { SearchMatch, SearchPlayer } from "./demo"
 

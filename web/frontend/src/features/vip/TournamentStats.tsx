@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { PlayerAvatar } from "@/features/ranking/parts"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { HaceteVipButton } from "@/features/vip/upsell"
 
 import { RANK_PLAYERS, seeded } from "./demo"

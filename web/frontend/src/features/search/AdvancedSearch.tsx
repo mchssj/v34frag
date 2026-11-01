@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { SearchBox } from "@/features/ranking/SearchBox"
+import { SearchBox } from "@/components/brand/SearchBox"
 import { HaceteVipButton } from "@/features/vip/upsell"
 
 import {

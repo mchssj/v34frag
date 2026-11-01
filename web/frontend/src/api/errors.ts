@@ -17,6 +17,11 @@ export type ApiErrorCode =
   | "FILE_TOO_LARGE"
   | "CONFIG_INVALID"
   | "NOT_AVAILABLE"
+  | "ROSTER_FULL"
+  | "NOT_A_MEMBER"
+  | "COACH_NOT_ALLOWED"
+  | "REGISTRATION_CLOSED"
+  | "PLAYER_NOT_LINKED"
   | "INTERNAL"
   | "NETWORK"
 
@@ -66,6 +71,11 @@ const KNOWN_CODES = new Set<string>([
   "FILE_TOO_LARGE",
   "CONFIG_INVALID",
   "NOT_AVAILABLE",
+  "ROSTER_FULL",
+  "NOT_A_MEMBER",
+  "COACH_NOT_ALLOWED",
+  "REGISTRATION_CLOSED",
+  "PLAYER_NOT_LINKED",
   "INTERNAL",
 ])
 
@@ -162,6 +172,19 @@ export function errorMessage(
       return e.message || "No se encontró lo que buscas."
     case "NOT_AVAILABLE":
       return e.message || "Esto todavía no está disponible."
+    case "ROSTER_FULL":
+      return e.message || "El equipo ya tiene el roster completo."
+    case "NOT_A_MEMBER":
+      return e.message || "Ese jugador ya no está en el roster."
+    case "COACH_NOT_ALLOWED":
+      return e.message || "El coach no se puede inscribir."
+    case "REGISTRATION_CLOSED":
+      return e.message || "Las inscripciones de este torneo ya cerraron."
+    case "PLAYER_NOT_LINKED":
+      return (
+        e.message ||
+        "Todos los inscritos tienen que tener su SteamID vinculado."
+      )
     case "NETWORK":
       return "No se pudo conectar con el servidor. Revisa tu conexión."
     case "INTERNAL":

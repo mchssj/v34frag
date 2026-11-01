@@ -74,6 +74,8 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
       return new AppError(400, 'VALIDATION_ERROR', 'Algún dato no cumple las reglas de la base.');
     case 'P0001': // raise exception de una función SQL: el mensaje es para el usuario
       return new AppError(400, 'BUSINESS_RULE', err.message);
+    case 'P0002': // no_data_found de un raise (replanteo 39): no existe lo que se pidió
+      return new AppError(404, 'NOT_FOUND', err.message);
     // Códigos propios de las funciones SQL (replanteo 33): el mensaje también es para el usuario.
     case 'V3401':
       return new AppError(404, 'NOT_A_MEMBER', err.message);
@@ -85,6 +87,9 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
       return new AppError(409, 'REGISTRATION_CLOSED', err.message);
     case 'V3405':
       return new AppError(400, 'PLAYER_NOT_LINKED', err.message, { aliases: jsonList(err.details) });
+    // (replanteo 39) Choque con el estado actual; el detail, si viene, es un objeto JSON (por ejemplo `next_change_at`).
+    case 'V3901':
+      return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);
@@ -97,6 +102,16 @@ function jsonList(details: string | null | undefined): string[] {
     return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
   } catch {
     return [];
+  }
+}
+
+/** Objeto JSON que una función SQL manda en el detail del error, o undefined. */
+function jsonObject(details: string | null | undefined): Record<string, unknown> | undefined {
+  try {
+    const v: unknown = JSON.parse(details ?? '');
+    return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : undefined;
+  } catch {
+    return undefined;
   }
 }
 

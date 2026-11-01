@@ -69,6 +69,26 @@ flowchart LR
    - El cfg y el `.smx` anteriores quedaron respaldados en el scratchpad de la sesión, fuera del repo (el cfg tiene el token).
    - No se recargó nada: se carga en el próximo cambio de mapa de cada servidor.
 
+## 2.6.1: pico y copia a disco de los intentos (2026-10-29)
+
+Daniel preguntó qué pasa si el servidor se cae (por ejemplo, durante un ataque) con datos en memoria: se perdían hasta 60 segundos. Pidió dos cosas: mandar antes cuando hay un pico, y guardar en disco solo los intentos. También preguntó cuál debía ser el máximo del archivo.
+
+- **Máximo:** el archivo es una foto de lo pendiente, no un log, así que su tope es el de la memoria. Ese tope subió de 256 a **1024 IPs** (unos 40 KB), para que un ataque desde muchas IPs no descarte las nuevas.
+- **Pico:** con 30 intentos desde el último envío, o 10 de una IP, manda en el momento. Como mucho cada 5 segundos.
+- **Disco:** `data/csstv/ips_intentos.txt`, reescrito cada 5 segundos si cambió algo. Al arrancar se suma, sin lo de más de 48 horas, y se manda a los 15 segundos.
+- **Hora real:** cada intento lleva `t` (el primer intento). La migración `20261029200000_ips_intentos_hora.sql` lo usa para la hora, así lo recuperado queda en la hora en que pasó. Sigue aceptando a la 2.6.0, sin `t`.
+- **Pruebas:**
+  - Base local: la migración se aplicó dos veces y la prueba pasó **22 de 22**, con 2 nuevas para `t`.
+  - Plugin `CSSTV_DEBUG` en el servidor local contra la Supabase local, con el cfg y el `.smx` respaldados y restaurados después:
+    - pico: 12 intentos de una IP llegaron al décimo sin esperar;
+    - disco: el archivo tenía los pendientes con su hora;
+    - caída: después de `taskkill /F` y volver a abrir, se recuperaron las 3 IPs (log `IPs: 3 IPs con intentos recuperadas…`), llegaron con los totales correctos y se borró el archivo;
+    - 48 horas: una línea de hace 3 días y una línea rota se descartaron.
+- **Builds:** genérico md5 `bff16923`, RBK `b0a57f27`, flow `6e8f6044`.
+- **Desplegado el 2026-10-29:**
+  - la migración en producción y en staging (verificada en `pg_proc`);
+  - el plugin en **el real, RBK y flow** en la misma tanda, con `pruebas/desplegar_ips.py` (de 2.6.0 a 2.6.1). La 2.6.0 quedó en `plugins/disabled/csstv_reporter_2.6.0.smx` y se borró la 2.4.0. El cfg no cambió porque ya tenía `csstv_ips`. Se carga en el próximo cambio de mapa de cada servidor.
+
 ## Verificar después de desplegar
 
 - En el log de SourceMod de cada servidor: sin `IPs: no se pudieron registrar`.
@@ -77,6 +97,6 @@ flowchart LR
 
 ## Revertir
 
-- Plugin: volver al 2.5.0 en los tres servidores, o `csstv_ips "0"`.
+- Plugin: volver a la 2.6.0 (`plugins/disabled/csstv_reporter_2.6.0.smx`) o a la 2.5.0 en los tres servidores, o `csstv_ips "0"`. La migración `20261029200000` no hace falta revertirla: la 2.6.0 funciona con ella.
 - Web nueva: inversa `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/38_ips_jugadores.sql`.
 - Producción: `drop function public.csstv_connections(text, jsonb, jsonb); drop function public.csstv_ip(text); drop table public.connect_attempts, public.player_connections, public.player_ips;`. Borra los datos.

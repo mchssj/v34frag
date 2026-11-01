@@ -16,8 +16,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { barPct } from "@/features/ranking/labels"
-import { PlayerAvatar } from "@/features/ranking/parts"
+import { barPct } from "@/features/ranking/lib/labels"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 
 import { byNick, COMPARE_PLAYERS, together, type ComparePlayer } from "./demo"
 

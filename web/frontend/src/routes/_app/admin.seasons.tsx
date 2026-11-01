@@ -4,7 +4,7 @@ import { z } from "zod"
 import {
   AdminSeasonsPage,
   SEASON_TABS,
-} from "@/features/admin/seasons/AdminSeasonsPage"
+} from "@/features/admin/seasons/pages/AdminSeasonsPage"
 
 export const Route = createFileRoute("/_app/admin/seasons")({
   validateSearch: z.object({
@@ -20,7 +20,10 @@ function AdminSeasonsPageRoute() {
     <AdminSeasonsPage
       tab={tab ?? "active"}
       onTab={(t) =>
-        void navigate({ search: { tab: t === "active" ? undefined : t } })
+        void navigate({
+          search: { tab: t === "active" ? undefined : t },
+          resetScroll: false,
+        })
       }
     />
   )

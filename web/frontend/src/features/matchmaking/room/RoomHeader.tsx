@@ -3,8 +3,8 @@ import { ServerIcon } from "lucide-react"
 
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapBackdrop } from "@/features/mixes/MapBackdrop"
-import { WatchTvButton } from "@/features/mixes/parts"
+import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
+import { WatchTvButton } from "@/features/mixes/components/parts"
 import { fmtDateTime, isCountry } from "../labels"
 import type { LobbyStatus, MmLobby } from "../types"
 import {

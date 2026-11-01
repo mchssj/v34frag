@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { redirectIfSignedIn } from "@/auth/guards"
 import { CountryFlag } from "@/components/brand/CountryFlag"
-import { CompetitionSection } from "@/features/landing/CompetitionSection"
-import { Hero } from "@/features/landing/Hero"
-import { HowItWorks } from "@/features/landing/HowItWorks"
-import { LandingHeader } from "@/features/landing/LandingHeader"
-import { ServersSection } from "@/features/landing/ServersSection"
+import { CompetitionSection } from "@/features/landing/components/CompetitionSection"
+import { Hero } from "@/features/landing/components/Hero"
+import { HowItWorks } from "@/features/landing/components/HowItWorks"
+import { LandingHeader } from "@/features/landing/components/LandingHeader"
+import { ServersSection } from "@/features/landing/components/ServersSection"
 
 // Solo visitantes: con sesión se va a /home.
 export const Route = createFileRoute("/")({
@@ -37,6 +37,19 @@ function Landing() {
           </span>
           <span className="ml-auto">
             Proyecto de la comunidad, sin relación con Valve.
+          </span>
+          {/* Atribución que pide la licencia CC BY 3.0 de los íconos de juego (components/icons/game.tsx). */}
+          <span className="w-full text-xs">
+            Íconos de juego:{" "}
+            <a
+              href="https://game-icons.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              game-icons.net
+            </a>{" "}
+            (CC BY 3.0).
           </span>
         </div>
       </footer>

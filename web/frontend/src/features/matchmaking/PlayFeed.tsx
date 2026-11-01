@@ -7,8 +7,8 @@ import type { ReactNode } from "react"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { MapBackdrop } from "@/features/mixes/MapBackdrop"
-import { LiveChip } from "@/features/mixes/parts"
+import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
+import { LiveChip } from "@/features/mixes/components/parts"
 import { BlockPanel } from "./BlockPanel"
 import { FriendsPanel } from "./FriendsPanel"
 import { fmtDateTime, mapLabel } from "./labels"
@@ -267,7 +267,7 @@ function TopPlayers({ items }: { items: MmFeed["top"] }) {
     >
       <ol className="flex flex-col divide-y">
         {items.map((p) => (
-          <li key={p.position}>
+          <li key={p.nick}>
             <Link
               to="/player/$nick"
               params={{ nick: p.nick }}

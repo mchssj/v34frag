@@ -1,8 +1,8 @@
 // Contrato provisorio del matchmaking (plan docs/bitacora/2026-10-28-matchmaking). Cuando la API
 // exista, estos tipos salen de `Schemas[...]` con `pnpm gen:api` y este archivo se borra.
 
-import type { RoomPlayer } from "@/features/mixes/room"
-import type { COUNTRIES } from "@/features/profile/schemas"
+import type { RoomPlayer } from "@/features/mixes/lib/room"
+import type { COUNTRIES } from "@/features/profile/lib/schemas"
 
 export type Country = (typeof COUNTRIES)[number]
 

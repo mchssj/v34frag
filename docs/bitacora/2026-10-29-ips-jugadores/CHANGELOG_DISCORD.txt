@@ -1,4 +1,4 @@
-CMLeague 2.6.0 --  Changelog
+CMLeague 2.6.1 --  Changelog
 
 Seguridad de los servidores
 - Desde ahora, cuando entras a un servidor de CMLeague, se guarda la IP desde la que te conectas junto con tu SteamID.

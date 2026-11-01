@@ -41,6 +41,9 @@ import leer_demo  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
 SEEK_TRIES = 3  # saltos a un mismo tramo antes de fallar si la demo se pasa de largo
+SEEK_SLACK_SECONDS = 2.0  # cuánto puede pasarse el salto (después del lead) sin darlo por pasado de largo
+CONSOLE_MAX = 250  # largo máximo de una línea de la consola, con su marca (el juego corta en unos 255: console_lines)
+END_HOLD_SECONDS = 1.5  # cuánto se congela el último cuadro de un tramo que llega al final de la demo (ver segments)
 
 
 def log(msg):
@@ -58,9 +61,14 @@ def load_config(path):
     return cfg
 
 
-def segments(ticks, tick_interval, cfg):
+def segments(ticks, tick_interval, cfg, last_tick=None):
     """Tramos [inicio, fin] en ticks de la demo: pre antes de la primera kill, post después de la última,
-    y un corte cuando entre dos kills pasan más de split_gap_seconds."""
+    y un corte cuando entre dos kills pasan más de split_gap_seconds.
+
+    last_tick: el último tick de la demo (playback_ticks de la cabecera). La grabación termina con la última ronda,
+    en el tick de la última kill, así que una jugada de esa ronda no tiene sus segundos de después: el tramo llega
+    hasta el último tick y encode congela ese cuadro (END_HOLD_SECONDS). Sin el tope, al acabarse la demo se grababa
+    el menú del juego, y con un margen de 0,1 s no se veía la última kill (de_cbble, 2026-10-29)."""
     per_sec = 1 / tick_interval
     pre, post, gap = (round(cfg[k] * per_sec) for k in ("pre_seconds", "post_seconds", "split_gap_seconds"))
     groups = [[ticks[0]]]
@@ -69,7 +77,9 @@ def segments(ticks, tick_interval, cfg):
             groups.append([t])
         else:
             groups[-1].append(t)
-    return [(max(g[0] - pre, 0), g[-1] + post) for g in groups]
+    end = last_tick or None
+    out = [(max(g[0] - pre, 0), g[-1] + post) for g in groups]
+    return [(t0, t1 if end is None else max(min(t1, end), t0 + 1)) for t0, t1 in out]
 
 
 # ---- Windows: elevación, ventanas, mouse y teclado ----
@@ -167,6 +177,46 @@ def console_command(hwnd, text):
     post_key(hwnd, 0x1C, 0x0D)  # Enter
 
 
+def console_line(commands, n):
+    """El texto que escribe console_command para un paso: los comandos y la marca "echo CML_PASO_n"."""
+    return "; " + "; ".join(commands + [f"echo CML_PASO_{n}"])
+
+
+def console_lines(commands, n):
+    """Los comandos de un paso repartidos en líneas de la consola de hasta CONSOLE_MAX caracteres (n: el número de
+    la marca de la primera). Un paso que cabe va en una sola línea, como siempre.
+
+    La consola corta la línea en unos 255 caracteres y la marca del final se perdía (dust2, 2026-10-30: «New™ CH1LI»
+    no se puede escribir y la cámara llega a él desde «GO TO KNOW musul    ^'-'^»; el paso medía 259). Cada línea
+    lleva hideconsole (console_command abre la consola con su tecla, que la cierra si ya está abierta). Van siempre en
+    la misma línea:
+    - spec_player y sus spec_next: si la línea se reenvía, la cámara vuelve al mismo jugador;
+    - startmovie y demo_resume: con la demo en pausa, startmovie grabaría cuadros quietos hasta la línea siguiente;
+    - demo_pause y demo_gototick."""
+    if len(console_line(commands, n)) <= CONSOLE_MAX:
+        return [commands]
+    groups = []
+    for c in commands:
+        prev = groups[-1][-1] if groups else ""
+        if ((c.startswith("spec_next") and prev.startswith(("spec_player", "spec_next")))
+                or (c == "demo_resume" and prev.startswith("startmovie"))
+                or (c.startswith("demo_gototick") and prev == "demo_pause")):
+            groups[-1].append(c)
+        else:
+            groups.append([c])
+    fix = lambda cmds: cmds if "hideconsole" in cmds else ["hideconsole"] + cmds  # noqa: E731
+    lines = [[]]
+    for g in groups:
+        if lines[-1] and len(console_line(fix(lines[-1] + g), n + len(lines) - 1)) > CONSOLE_MAX:
+            lines.append([])
+        lines[-1] += g
+    lines = [fix(line) for line in lines]
+    for k, line in enumerate(lines):
+        if len(console_line(line, n + k)) > CONSOLE_MAX:
+            raise RuntimeError(f"no cabe en una línea de la consola: {console_line(line, n + k)!r}")
+    return lines
+
+
 class Game:
     """El cliente ClientMod de la copia de render, manejado desde su consola."""
 
@@ -212,7 +262,10 @@ class Game:
         # Parámetros del launcher: se guarda el ini original y se restaura al final.
         shutil.copyfile(self.ini, self.ini + ".render_orig")
         lines = open(self.ini, encoding="utf-8").read().splitlines()
-        params = f"Params=-novid -windowed -noborder -w {c['width']} -h {c['height']} +exec cmleague_render"
+        # launch_params: parámetros extra de la máquina (en el portátil, "-dxlevel 90" para probar si la gráfica
+        # integrada deja de deformar el mapa).
+        extra = f" {c['launch_params']}" if c.get("launch_params") else ""
+        params = f"Params=-novid -windowed -noborder -w {c['width']} -h {c['height']}{extra} +exec cmleague_render"
         lines = [params if l.startswith("Params=") else l for l in lines]
         open(self.ini, "w", encoding="utf-8").write("\n".join(lines) + "\n")
         subprocess.run(["reg", "export", c["registry_key"], self.reg_backup, "/y"], check=True, capture_output=True)
@@ -309,14 +362,15 @@ class Game:
 
     def step(self, commands, timeout=60):
         """Escribe el paso en la consola y espera su marca en el log. Si no llegó en 5 s, lo vuelve a escribir
-        (pasa si la consola no llegó a abrirse)."""
-        self.n += 1
+        (pasa si la consola no llegó a abrirse). Un paso que no cabe en una línea va en varias (console_lines), cada
+        una con su marca; step_pos queda al principio del paso completo."""
         self.step_pos = os.path.getsize(self.logfile)
-        marker = f"CML_PASO_{self.n}"
-        text = "; ".join(commands + [f"echo {marker}"])
-        send = lambda: console_command(self.hwnd, text)  # noqa: E731
-        send()
-        self.wait_log(marker, timeout, retry=send)
+        for line in console_lines(commands, self.n + 1):
+            self.n += 1
+            text = console_line(line, self.n)[2:]  # console_command le pone el "; " del principio
+            send = lambda t=text: console_command(self.hwnd, t)  # noqa: E731
+            send()
+            self.wait_log(f"CML_PASO_{self.n}", timeout, retry=send)
 
     def log_text(self, since):
         return open(self.logfile, "rb").read()[since:].decode("utf-8", "replace")
@@ -352,9 +406,10 @@ def count_frames(prefix):
     return len(glob.glob(prefix + "*.tga"))
 
 
-def ffmpeg_segment(cfg, prefix, frames, out, skip=0):
+def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
     """Un tramo: los TGA y el WAV de startmovie a H.264 y AAC. skip: cuadros del principio que se descartan (los
-    primeros cuadros después de un salto salen sin el arma: la cámara todavía no está en primera persona)."""
+    primeros cuadros después de un salto salen sin el arma: la cámara todavía no está en primera persona). hold:
+    cuadros que se repite el último al final (el tramo llega al final de la demo), con silencio."""
     tgas = sorted(glob.glob(prefix + "*.tga"))
     first = tgas[0][len(prefix):-4]
     pattern = f"{prefix}%0{len(first)}d.tga"
@@ -364,9 +419,13 @@ def ffmpeg_segment(cfg, prefix, frames, out, skip=0):
     has_audio = os.path.exists(wav) and os.path.getsize(wav) > 1000
     if has_audio:
         cmd += ["-ss", f"{skip / cfg['fps']:.3f}", "-i", wav]
-    cmd += ["-frames:v", str(frames), "-vf", f"scale={cfg['width']}:{cfg['height']}", "-c:v", "libx264",
+    vf = f"scale={cfg['width']}:{cfg['height']}"
+    if hold:
+        # Se cortan los cuadros del tramo antes de repetir el último: el cuadro congelado es el del último tick.
+        vf = f"trim=end_frame={frames},{vf},tpad=stop_mode=clone:stop={hold}"
+    cmd += ["-frames:v", str(frames + hold), "-vf", vf, "-c:v", "libx264",
             "-crf", str(cfg["crf"]), "-preset", cfg["preset"], "-pix_fmt", "yuv420p"]
-    cmd += ["-c:a", "aac", "-b:a", "128k", "-shortest"] if has_audio else ["-an"]
+    cmd += ["-c:a", "aac", "-b:a", "128k"] + (["-af", "apad"] if hold else []) + ["-shortest"] if has_audio else ["-an"]
     subprocess.run(cmd + [out], check=True)
 
 
@@ -459,6 +518,7 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
 
     lead = lead_frames(cfg)
     lead_ticks = round(cfg.get("lead_seconds", 0.5) / d.tick_interval)
+    slack_ticks = round(SEEK_SLACK_SECONDS / d.tick_interval)
     # Después de cada tramo la demo sigue corriendo hasta que llega el demo_pause (en la prueba del 2026-10-23,
     # entre 5 y 10 s de demo): un tramo que empieza antes de eso es, para el juego, un salto hacia atrás.
     passes = plan_passes(jobs, lead_ticks, round(cfg.get("gap_seconds", 15) / d.tick_interval))
@@ -489,7 +549,10 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
                 prefix = os.path.join(frames_dir, name)
                 # Se salta un poco antes (j0) y esos cuadros se descartan en FFmpeg.
                 goto = ["demo_pause", f"demo_gototick {j0}"] + spec + ["hideconsole", "gameui_hide"]
-                after = next((k for k in all_kills if k["tick"] >= j0), None)
+                # La kill que delata que se pasó de largo: la primera desde j0 + lead + SEEK_SLACK_SECONDS. Pasarse
+                # un poco es normal y solo recorta el principio del tramo; una kill de otro jugador apenas después
+                # del salto hacía fallar los tres intentos (nuke, 2026-10-30: una kill 1,5 s después de j0).
+                after = next((k for k in all_kills if k["tick"] >= j0 + lead_ticks + slack_ticks), None)
                 for attempt in range(1, SEEK_TRIES + 1):
                     game.step(goto)
                     # El salto avanza la demo a toda velocidad y tarda: mientras tanto, la consola escribe cada kill
@@ -548,14 +611,21 @@ def frames_mb(prefixes):
     return sum(os.path.getsize(f) for p in prefixes for f in glob.glob(p + "*")) / 1e6
 
 
-def encode(cfg, prefixes, segs, tick_interval, out):
-    """Los tramos de una jugada a un .mp4 (uno por tramo, unidos con concat sin recodificar). Borra los cuadros."""
+def hold_frames(cfg, seg, last_tick):
+    """Cuadros congelados al final de un tramo que llega al último tick de la demo (0 si no llega)."""
+    return round(END_HOLD_SECONDS * cfg["fps"]) if last_tick and seg[1] >= last_tick else 0
+
+
+def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None):
+    """Los tramos de una jugada a un .mp4 (uno por tramo, unidos con concat sin recodificar). Borra los cuadros.
+    last_tick: el último tick de la demo; el tramo que llega a él termina con el último cuadro congelado."""
     parts = []
     base = os.path.splitext(out)[0]
     try:
         for i, (prefix, seg) in enumerate(zip(prefixes, segs)):
             part = f"{base}.tramo{i}.mp4"
-            ffmpeg_segment(cfg, prefix, segment_frames(seg, tick_interval, cfg), part, skip=lead_frames(cfg))
+            ffmpeg_segment(cfg, prefix, segment_frames(seg, tick_interval, cfg), part, skip=lead_frames(cfg),
+                           hold=hold_frames(cfg, seg, last_tick))
             parts.append(part)
         if len(parts) == 1:
             subprocess.run([cfg["ffmpeg"], "-y", "-loglevel", "error", "-i", parts[0], "-c", "copy",
@@ -624,7 +694,7 @@ def main():
         ticks = [k["tick"] for k in rs[a.round]["kills"] if k["attacker"] == a.player and not k["suicide"]]
         if not ticks:
             raise SystemExit(f"{a.player} no tiene kills en la ronda {a.round}")
-    segs = segments(ticks, d.tick_interval, cfg)
+    segs = segments(ticks, d.tick_interval, cfg, d.header["playback_ticks"])
     log(f"{d.header['map']}, {a.player}: kills en {ticks}, tramos {segs} (tick {d.tick_interval:.5f} s)")
 
     # 2. Grabar.
@@ -640,7 +710,7 @@ def main():
     name = a.name or f"{demo_name}_{a.player.split()[0]}_{ticks[0]}_{cfg['height']}p"
     mb = frames_mb(prefixes)
     out = os.path.join(cfg["out_dir"], name + ".mp4")
-    encode(cfg, prefixes, segs, d.tick_interval, out)
+    encode(cfg, prefixes, segs, d.tick_interval, out, d.header["playback_ticks"])
     times["ffmpeg_s"] = round(time.time() - t_ff, 1)
 
     info = {

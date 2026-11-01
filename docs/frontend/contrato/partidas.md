@@ -8,8 +8,8 @@
 
 | Endpoint | Pantalla |
 |---|---|
-| `GET /api/v1/matches` | **Partidas, Resultados y Mixes** (filtros en la sección 1): `kind` `official` (torneo), `pcw` o `mix`. Cada una trae `label` con la fase ("Semifinal", "Grupo A · fecha 2", "Suizo · fase 1 · ronda 3"…), los dos bandos con equipo y marcador, y `parent_match_id` si es un mapa vinculado con `!match` |
-| `GET /api/v1/matches/{id}` | **Detalle**: serie (`maps_detail`) y mapas jugados (`games`, cada uno es un mix con su propio detalle), roster de cada lado (en torneo, los inscritos; en PCW, el roster con invitados), servidor (para el botón "Conectar"), `demo_url` (mix), stats y MVP (mix), veto, código de `!match` y `viewer` (`can_veto`, `can_chat`, `can_manage`, `is_participant`) |
+| `GET /api/v1/matches` | **Partidas, Resultados y Mixes** (filtros en la sección 1): `kind` `official` (torneo), `pcw` o `mix`. Cada una trae `label` con la fase ("Semifinal", "Grupo A · fecha 2", "Suizo · fase 1 · ronda 3"…), los dos bandos con equipo y marcador, y `parent_match_id` si es un mapa vinculado con `!match`. Desde el 2026-10-30: `status` acepta varios estados separados por comas (`status=finished,cancelled`; con "Ocultar canceladas", solo `finished`); `mine=true` ("Solo donde jugué", pide sesión; sin ficha, lista vacía); `q` también busca por el nick de los que jugaron (alias y nombre en el juego); cada fila trae `mvp` (en los mixes, como en `/mixes`; `null` en el resto) y la respuesta suma `counts: { all, mix, pcw, official }` con los mismos filtros salvo `kind` (para los chips) |
+| `GET /api/v1/matches/{id}` | **Detalle**: serie (`maps_detail`) y mapas jugados (`games`, cada uno es un mix con su propio detalle), roster de cada lado (en torneo, los inscritos; en PCW, el roster con invitados), servidor (para el botón "Conectar"), `demo_url` (mix), stats y MVP (mix), `series_players` (torneo o PCW, desde el 2026-11-01: las stats de cada jugador sumadas sobre los juegos vinculados terminados, en los lados de la serie y con el rating ponderado por rondas), veto, código de `!match` y `viewer` (`can_veto`, `can_chat`, `can_manage`, `is_participant`) |
 | `GET /api/v1/matches/{id}/chat` | Chat **por cursor**: sin parámetros, los últimos `limit` (50 por defecto, máximo 100); con `before=<id>`, los anteriores (historial); con `after=<id>`, los nuevos. Responde `{ items, has_more, limit }`, del más viejo al más nuevo |
 | `POST /api/v1/matches/{id}/chat` · `DELETE /api/v1/chat/{id}` | Escribir (en torneos y PCW: los dos equipos, el organizador y los admins; en mixes, cualquiera con sesión) y borrar el propio |
 | `POST /api/v1/matches/{id}/veto` (`{ map, version? }`) | Veto del capitán en su turno |
@@ -173,3 +173,12 @@ La tabla de cada bando en la sala del mix (terminado o en vivo) tiene pestañas:
 - **Mix en vivo:** los mismos campos salvo `clutches` (llegan con el resultado).
 - **Fórmulas** (las calcula el frontend; "—" si el divisor es 0): K/R = `kills / rounds`; HS % = `headshots / kills`; MK = `k2 + k3 + k4 + k5`; MK % = `MK / rounds`; intentos de entrada = `first_kills + first_deaths`; % de intentos = `intentos / rounds`; % de éxito = `first_kills / intentos`.
 - **No hay** (necesitarían más trabajo del plugin, en pausa): precisión, KAST, RWS, rondas sobrevividas, trades, clutches perdidos, kills por minuto, MVP por ronda ni Swing.
+
+### Mapas de una serie (2026-11-01)
+
+| Endpoint | Quién | Qué hace |
+|---|---|---|
+| `GET /api/v1/matches/{id}/games/candidates` | Admin, moderador u organizador | Mixes para vincular: terminados en los últimos 14 días, sin vincular (o ya de esta partida) y con al menos un inscrito. `registered` (inscritos que jugaron), `side1` (bando del mix que fue el equipo 1) y `linked`. Hasta 20 |
+| `PUT /api/v1/matches/{id}/maps` | Admin, moderador u organizador | `{ maps: [{ game_id, side1? } o { map, r1, r2 }] }`: cada mapa es un mix vinculado (con stats) o un **resultado a mano** (sin detalle). Con la serie definida, se cierra y la llave avanza; si no, queda en curso. Los mixes que salen se desvinculan. `409` si el mix es de otra partida |
+
+En `GET /api/v1/matches/{id}`, un mapa de `maps_detail` con `game_id: null` se cargó a mano: la página dice "Sin detalle de la partida" en ese mapa. Los horarios son a mano (`PATCH /api/v1/matches/{id}` con `starts_at`), sin horarios automáticos. `GET /api/v1/servers` (para elegir el servidor) es para organizadores, moderadores y admins.
