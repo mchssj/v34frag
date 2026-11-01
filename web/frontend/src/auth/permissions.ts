@@ -21,11 +21,11 @@ export type AdminSection = (typeof ADMIN_SECTIONS)[number]
 export const canSeeAdmin = (role: Role) =>
   role === "admin" || role === "organizer" || role === "moderator"
 
-/** Admin entra a todo; el organizador solo a Torneos y el moderador solo a Baneos. */
+/** Admin entra a todo; el organizador solo a Torneos (los suyos) y el moderador a Torneos y Baneos. */
 export const canAccessAdminSection = (role: Role, section: AdminSection) =>
   role === "admin" ||
   (role === "organizer" && section === "events") ||
-  (role === "moderator" && section === "bans")
+  (role === "moderator" && (section === "bans" || section === "events"))
 
 /** Primera sección de Administración a la que entra cada rol. */
 export const homeAdminSection = (role: Role): AdminSection =>

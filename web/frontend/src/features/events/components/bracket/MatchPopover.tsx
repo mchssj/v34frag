@@ -129,6 +129,8 @@ function MatchSummary({
   const rosters = d ? [lineupOf(1), lineupOf(2)] : null
   const lineups = rosters && (rosters[0].length > 0 || rosters[1].length > 0)
   const rated = series.length > 0
+  // Todos los mapas cargados a mano (sin mix vinculado): no hay stats de jugadores.
+  const manualOnly = maps.length > 0 && maps.every((x) => !x.game_id)
 
   return (
     <div className="flex flex-col text-sm">
@@ -183,8 +185,20 @@ function MatchSummary({
           ) : (
             <>
               {maps.map((x, i) => (
-                <MapRow key={i} map={x.map} r1={x.r1} r2={x.r2} />
+                <MapRow
+                  key={i}
+                  map={x.map}
+                  r1={x.r1}
+                  r2={x.r2}
+                  manual={!x.game_id}
+                />
               ))}
+              {manualOnly && (
+                <p className="text-xs text-muted-foreground">
+                  Sin detalle de la partida: el resultado se cargó a mano, sin
+                  las stats de los jugadores.
+                </p>
+              )}
               {d?.live && (
                 <MapRow
                   map={d.live.map}
@@ -299,11 +313,14 @@ function MapRow({
   r1,
   r2,
   live,
+  manual,
 }: {
   map: string | null
   r1: number | null
   r2: number | null
   live?: boolean
+  /** Resultado a mano, sin mix vinculado: "sin detalle". */
+  manual?: boolean
 }) {
   const a = r1 ?? 0
   const b = r2 ?? 0
@@ -318,6 +335,14 @@ function MapRow({
           <Badge variant="live" size="xs" shape="tag">
             VIVO
           </Badge>
+        )}
+        {manual && (
+          <span
+            className="text-[11px] font-normal text-muted-foreground"
+            title="Sin detalle de la partida: resultado cargado a mano"
+          >
+            · sin detalle
+          </span>
         )}
       </span>
       <span className={cn("text-right font-mono tabular-nums", tone(b, a))}>
