@@ -9,6 +9,7 @@ import {
   rosterGroups,
   titlesOf,
   winRate,
+  eligibility,
 } from "./model"
 import type { MatchLike } from "./model"
 import type { RosterEntry } from "../types"
@@ -177,5 +178,38 @@ describe("joinState", () => {
     expect(joinState({ ...base, hasRequest: true })).toBe("sent")
     expect(joinState({ ...base, members: 10 })).toBe("full")
     expect(joinState(base)).toBe("join")
+  })
+})
+
+describe("eligibility", () => {
+  const mode = (code: string, players_per_team: number, missing: number) => ({
+    code,
+    name: code,
+    players_per_team,
+    missing,
+  })
+  it("junta los modos aptos y dice cuántos faltan para el más cercano", () => {
+    expect(
+      eligibility([
+        mode("1v1", 1, 0),
+        mode("2v2", 2, 0),
+        mode("3v3", 3, 1),
+        mode("5v5", 5, 3),
+      ])
+    ).toEqual({
+      apt: "1v1 · 2v2",
+      next: "Falta 1 para 3v3",
+    })
+  })
+  it("apto para todo o para nada", () => {
+    expect(eligibility([mode("1v1", 1, 0), mode("5v5", 5, 0)])).toEqual({
+      apt: "1v1 · 5v5",
+      next: null,
+    })
+    expect(eligibility([mode("5v5", 5, 4)])).toEqual({
+      apt: null,
+      next: "Faltan 4 para 5v5",
+    })
+    expect(eligibility([])).toEqual({ apt: null, next: null })
   })
 })

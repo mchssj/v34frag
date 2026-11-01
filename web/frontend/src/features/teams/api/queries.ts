@@ -230,7 +230,7 @@ export const myInvitesOptions = queryOptions({
     ).items,
 })
 
-/** Mi solicitud de equipo nuevo (null si nunca pedí uno). */
+/** Mi solicitud vieja de equipo (de antes de crear equipos al instante), o null. */
 export const myTeamRequestOptions = queryOptions({
   queryKey: teamKeys.myRequest,
   queryFn: ({ signal }) =>
@@ -278,22 +278,27 @@ function formWith(fields: Record<string, string | Blob | undefined>) {
   return form
 }
 
-export function useRequestTeam() {
-  const queryClient = useQueryClient()
+/** Crea el equipo al instante (sin aprobación) y, si hay logo, lo sube después. Devuelve el id. */
+export function useCreateTeam() {
+  const invalidate = useInvalidateTeam()
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       logo,
       ...body
-    }: Schemas["TeamRequestBody"] & { logo?: Blob }) =>
-      unwrap(
-        api.PUT("/api/v1/me/team-request", {
-          body,
-          // Con logo va en multipart; sin logo, JSON (el backend conserva el que tenía).
-          ...(logo && { bodySerializer: () => formWith({ ...body, logo }) }),
-        })
-      ),
-    onSuccess: (request) =>
-      queryClient.setQueryData(teamKeys.myRequest, request),
+    }: Schemas["TeamCreateBody"] & { logo?: Blob }) => {
+      const { id } = await unwrap(api.POST("/api/v1/teams", { body }))
+      // Si el logo falla, el equipo ya existe: se puede volver a subir desde Mi equipo.
+      if (logo)
+        await unwrap(
+          api.PUT("/api/v1/teams/{id}/logo", {
+            params: { path: { id } },
+            body: { file: "" },
+            bodySerializer: () => formWith({ file: logo }),
+          })
+        ).catch(() => undefined)
+      return id
+    },
+    onSuccess: (id) => invalidate(id),
   })
 }
 

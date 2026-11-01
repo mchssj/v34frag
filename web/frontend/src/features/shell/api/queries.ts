@@ -22,7 +22,6 @@ const MINUTE = 60_000
 
 export const shellKeys = {
   pcwOpen: ["shell", "pcw-open"] as const,
-  adminTeams: ["shell", "admin-team-requests"] as const,
   match: (id: string) => ["match", id] as const,
 }
 
@@ -38,31 +37,12 @@ const pcwOpenOptions = queryOptions({
   refetchInterval: MINUTE,
 })
 
-const adminTeamRequestsOptions = queryOptions({
-  queryKey: shellKeys.adminTeams,
-  queryFn: async ({ signal }) =>
-    (
-      await unwrap(
-        api.GET("/api/v1/admin/team-requests", {
-          params: { query: { status: "pending", per: 1 } },
-          signal,
-        })
-      )
-    ).total,
-  staleTime: MINUTE,
-  refetchInterval: MINUTE,
-})
-
 /** Contadores de los badges. Un contador que falla o vale 0 no muestra badge. */
 export function useBadgeCounts(
   user: AuthUser
 ): Partial<Record<BadgeKey, number>> {
   const live = useQuery(liveCountOptions).data
   const pcw = useQuery(pcwOpenOptions).data
-  const adminTeams = useQuery({
-    ...adminTeamRequestsOptions,
-    enabled: canAccessAdminSection(user.role, "teams"),
-  }).data
   const adminBans = useQuery({
     ...activeBanCountOptions,
     enabled: canAccessAdminSection(user.role, "bans"),
@@ -71,7 +51,7 @@ export function useBadgeCounts(
     ...clipReviewCountOptions,
     enabled: canAccessAdminSection(user.role, "clips"),
   }).data
-  return { live, pcw, adminTeams, adminBans, adminClips }
+  return { live, pcw, adminBans, adminClips }
 }
 
 /** Lo que muestra el pie del sidebar: equipo (capitán o miembro) y nivel del jugador vinculado. */

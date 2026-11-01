@@ -1027,8 +1027,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Mi solicitud de equipo nuevo
-         * @description null si nunca pidió uno.
+         * Mi solicitud de equipo nuevo (historial)
+         * @description La solicitud que mandó antes de que los equipos se crearan al instante (replanteo 40), si la hay; si no, null. Para crear un equipo: `POST /api/v1/teams`.
          */
         get: {
             parameters: {
@@ -1059,112 +1059,9 @@ export interface paths {
                 };
             };
         };
-        /**
-         * Pedir un equipo nuevo
-         * @description Una solicitud por usuario: enviarla de nuevo la reemplaza y vuelve a quedar pendiente. Hace falta tener el SteamID vinculado (quien la pide queda como dueño, capitán y primer jugador). La aprueba un admin. JSON con `name` y `tag`, o `multipart/form-data` con `name`, `tag` y `logo` opcional (JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).). Sin `logo` se conserva el que ya tenía la solicitud. Al aprobarla, el logo pasa al equipo.
-         */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["TeamRequestBody"];
-                    "multipart/form-data": components["schemas"]["TeamRequestForm"];
-                };
-            };
-            responses: {
-                /** @description Solicitud pendiente */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["TeamRequest"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Archivo demasiado grande */
-                413: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
+        put?: never;
         post?: never;
-        /**
-         * Cancelar mi solicitud de equipo nuevo
-         * @description Solo una pendiente: borra la solicitud y el logo propuesto. `404` si no hay; `409 CONFLICT` si ya fue aprobada o rechazada.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Cancelada */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Conflicto con un registro existente */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3247,7 +3144,61 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Crear un equipo
+         * @description Se crea al instante, sin aprobación: quien lo crea queda como dueño, capitán y primer miembro. Hace falta tener el SteamID vinculado (`400`). Nombre de 2 a 40 y sigla de 1 a 6 (en mayúsculas), sin palabras bloqueadas (`400`) y sin repetir los de otro equipo activo (`409 CONFLICT` con `details.reason` `name_taken` o `tag_taken`). Cada persona puede ser capitán de hasta `max_led` equipos activos (lo fija el admin, 1 por defecto): `409 CONFLICT` con `details.reason: lead_limit` y `details.max_led`. El logo se sube después con `PUT /api/v1/teams/{id}/logo`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TeamCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Equipo creado */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Created"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -6429,222 +6380,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/v1/admin/team-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Solicitudes de equipo nuevo
-         * @description Por defecto, las pendientes primero. `has_steam` dice si se puede aprobar.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Página, desde 1 */
-                    page?: number;
-                    /** @description Elementos por página (máximo 100) */
-                    per?: number;
-                    /** @description Campo de orden: `status`, `name` */
-                    sort?: "status" | "name";
-                    /** @description `asc` o `desc` */
-                    order?: "asc" | "desc";
-                    status?: "pending" | "approved" | "rejected";
-                    /** @description Busca en el nombre, la sigla y el alias de quien pidió */
-                    q?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Solicitudes */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AdminTeamRequestList"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/team-requests/{userId}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Aprobar una solicitud
-         * @description Crea el equipo con el usuario como dueño, capitán y primer miembro.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Equipo creado */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Created"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/team-requests/{userId}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Rechazar una solicitud
-         * @description Con `reason` opcional (hasta 300 caracteres): el usuario lo ve en su solicitud (`GET /api/v1/me/team-request`).
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RejectTeamRequestBody"];
-                };
-            };
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/teams/config": {
         parameters: {
             query?: never;
@@ -6652,7 +6387,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Máximo de miembros de un equipo */
+        /**
+         * Configuración de los equipos
+         * @description Máximo de miembros y de cuántos equipos puede ser capitán una persona.
+         */
         get: {
             parameters: {
                 query?: never;
@@ -6692,8 +6430,8 @@ export interface paths {
             };
         };
         /**
-         * Cambiar el máximo de miembros
-         * @description Entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva (`409 ROSTER_FULL` al invitar o aceptar).
+         * Cambiar la configuración de los equipos
+         * @description `max_members` entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva (`409 ROSTER_FULL` al invitar o aceptar). `max_led` entre 1 y 10 (1 por defecto): de cuántos equipos oficiales activos puede ser capitán una persona al crear un equipo o recibir la capitanía (el admin no tiene tope). Bajarlo no saca a nadie de la capitanía.
          */
         put: {
             parameters: {
@@ -10773,6 +10511,162 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/matches/{id}/games/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mixes para vincular a una partida de torneo
+         * @description Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta partida), jugados por al menos un inscrito de alguno de los dos equipos. Primero los vinculados y después los que más inscritos tienen. `side1` dice qué bando del mix fue el equipo 1. Hasta 20.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mixes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GameCandidate"][];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matches/{id}/maps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Mapas de una serie de torneo: mix vinculado o resultado a mano
+         * @description Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la partida dice "Sin detalle de la partida" en ese mapa). Si la serie queda definida, se cierra y la llave avanza; si no, queda en curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SeriesMapsBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/matches/{id}": {
         parameters: {
             query?: never;
@@ -12717,6 +12611,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{id}/seeds/ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sembrar por ranking
+         * @description Ordena a los inscritos por los puntos totales del ranking de equipos (torneos y PCW); si empatan, por el ELO promedio de sus activos inscritos; si siguen, por quién se inscribió antes. Reemplaza la siembra (antes de generar). En un suizo de varias etapas, la siembra decide en qué etapa entra cada equipo: los mejores, a la más avanzada (en bloques de `size / 2`). Lo mismo vale al sortear o al cambiar la siembra a mano.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Siembra nueva */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeedsResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events/{id}/draw": {
         parameters: {
             query?: never;
@@ -14600,34 +14571,19 @@ export interface components {
              */
             reason: "length" | "chars" | "blocked" | "taken" | null;
         };
+        /** @description Solicitud vieja (antes de crear equipos al instante, replanteo 40): queda como historial */
         TeamRequest: {
             name: string;
             tag: string | null;
             /** @enum {string} */
             status: "pending" | "approved" | "rejected";
-            /** @description Logo propuesto (pasa al equipo al aprobar) */
+            /** @description Logo propuesto */
             logo_url: string | null;
             /** @description Cuándo se envió (o se volvió a enviar). null en las solicitudes viejas */
             created_at: string | null;
             /** @description Motivo del rechazo, si el admin escribió uno. null en el resto */
             reject_reason: string | null;
         } | null;
-        TeamRequestBody: {
-            /** @example Titanes */
-            name: string;
-            /**
-             * @description Sigla (se guarda en mayúsculas)
-             * @example TIT
-             */
-            tag: string;
-        };
-        TeamRequestForm: components["schemas"]["TeamRequestBody"] & {
-            /**
-             * Format: binary
-             * @description Logo opcional. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
-             */
-            logo?: string;
-        };
         UnclaimedList: {
             items: components["schemas"]["UnclaimedSummary"][];
             /** @description Total con los filtros aplicados */
@@ -15184,6 +15140,19 @@ export interface components {
             /** @description La más reciente */
             last_at: string;
         };
+        Created: {
+            /** Format: uuid */
+            id: string;
+        };
+        TeamCreateBody: {
+            /** @example Titanes */
+            name: string;
+            /**
+             * @description Sigla (se guarda en mayúsculas)
+             * @example TIT
+             */
+            tag: string;
+        };
         TeamList: {
             items: components["schemas"]["TeamSummary"][];
             /** @description Total con los filtros aplicados */
@@ -15224,7 +15193,7 @@ export interface components {
         } | null;
         /** @description El plantel y los ex integrantes van en /teams/{id}/members; las partidas, en /matches?team={id} */
         TeamDetail: components["schemas"]["TeamSummary"] & {
-            /** @description Fecha de aprobación de la solicitud. En los equipos anteriores, el ingreso más antiguo del plantel */
+            /** @description Cuándo se creó. En los equipos anteriores a las solicitudes, el ingreso más antiguo del plantel */
             founded_at: string | null;
             record: components["schemas"]["TeamRecord"];
             /** @description Equipo disuelto (archivado): conserva su historial, pero no sale en los listados ni en el ranking. null si sigue activo */
@@ -15233,6 +15202,8 @@ export interface components {
             name_changed_at: string | null;
             /** @description Desde cuándo el capitán puede volver a cambiar el nombre o la sigla (30 días después del último). null: ya puede */
             next_name_change_at: string | null;
+            /** @description Para qué modos alcanza el plantel: cuentan los miembros activos jugadores o suplentes (el coach no). Solo equipos oficiales; vacío en los bandos de PCW */
+            eligible_modes: components["schemas"]["EligibleMode"][];
             /** @description Qué puede hacer quien consulta (null sin sesión) */
             viewer: {
                 is_captain: boolean;
@@ -15257,6 +15228,14 @@ export interface components {
             /** @description Torneos en curso o terminados en los que estuvo inscrito */
             events_played: number;
         } | null;
+        EligibleMode: {
+            /** @example 5v5 */
+            code: string;
+            name: string;
+            players_per_team: number;
+            /** @description Jugadores que le faltan al equipo para ese modo; 0 = apto */
+            missing: number;
+        };
         MemberList: {
             items: components["schemas"]["RosterEntry"][];
             /** @description Total con los filtros aplicados */
@@ -15425,10 +15404,6 @@ export interface components {
             } | null;
             created_at: string;
             expires_at: string;
-        };
-        Created: {
-            /** Format: uuid */
-            id: string;
         };
         JoinRequestBody: {
             /** @description Mensaje opcional para el capitán, hasta 200 caracteres */
@@ -15686,32 +15661,11 @@ export interface components {
             /** @enum {string} */
             role: "player" | "sub" | "coach";
         };
-        AdminTeamRequestList: {
-            items: components["schemas"]["AdminTeamRequest"][];
-            /** @description Total con los filtros aplicados */
-            total: number;
-            page: number;
-            per: number;
-            sort: string;
-            /** @enum {string} */
-            order: "asc" | "desc";
-        };
-        AdminTeamRequest: {
-            /** Format: uuid */
-            user_id: string;
-            alias: string | null;
-            has_steam: boolean;
-            name: string;
-            tag: string | null;
-            status: string;
-        };
-        RejectTeamRequestBody: {
-            /** @description Motivo del rechazo (opcional, hasta 300 caracteres) */
-            reason?: string;
-        };
         TeamConfig: {
             /** @description Máximo de miembros de un equipo oficial */
             max_members: number;
+            /** @description De cuántos equipos oficiales activos puede ser capitán una persona (1 por defecto) */
+            max_led: number;
         };
         RankingConfig: {
             /** @description Puntos por partida de torneo ganada */
@@ -16833,6 +16787,42 @@ export interface components {
              */
             clear?: true;
         };
+        GameCandidate: {
+            /** Format: uuid */
+            game_id: string;
+            map: string | null;
+            played_at: string | null;
+            /** @description Rondas del bando 1 del mix */
+            score1: number | null;
+            score2: number | null;
+            server_name: string | null;
+            /** @description Jugadores con rondas en el mix */
+            players: number;
+            /** @description Cuántos de ellos son inscritos de alguno de los dos equipos */
+            registered: number;
+            /** @description Bando del mix que jugó como el equipo 1 (deducido por los inscritos, o el guardado si ya está vinculado) */
+            side1: number;
+            /** @description Ya está vinculado a esta partida */
+            linked: boolean;
+        };
+        SeriesMapsBody: {
+            /** @description Los mapas de la serie en orden. Lista vacía: sin resultado */
+            maps: components["schemas"]["SeriesMap"][];
+        };
+        SeriesMap: {
+            /**
+             * Format: uuid
+             * @description Mix vinculado: las rondas y el mapa salen del mix
+             */
+            game_id?: string;
+            /** @description Con `game_id`: bando del mix que es el equipo 1. Si falta, se deduce */
+            side1?: 1 | 2;
+            /** @description Resultado a mano: el mapa */
+            map?: string | null;
+            /** @description Resultado a mano: rondas del equipo 1 */
+            r1?: number;
+            r2?: number;
+        };
         ClipList: {
             items: components["schemas"]["Clip"][];
             /** @description Total con los filtros aplicados */
@@ -17271,7 +17261,10 @@ export interface components {
             /** @description Pool del veto del torneo; `null`: el pool por defecto (GET /maps?veto_default=true) */
             map_pool: string[] | null;
             viewer: {
+                /** @description Gestiona el torneo: admin, moderador u organizador dueño */
                 can_manage: boolean;
+                /** @description Además lo cancela y lo borra: admin u organizador dueño (el moderador no) */
+                can_own: boolean;
             } | null;
         };
         /** @description La primera partida en vivo del torneo; null si no hay ninguna */
@@ -17490,6 +17483,10 @@ export interface components {
         };
         SeedsBody: {
             teams: string[];
+        };
+        SeedsResult: {
+            /** @description La siembra nueva, del 1 en adelante */
+            seeds: components["schemas"]["TeamRef"][];
         };
         DrawResult: {
             /** @description La siembra sorteada, del 1 en adelante */

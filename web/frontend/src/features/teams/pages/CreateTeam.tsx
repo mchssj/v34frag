@@ -1,36 +1,31 @@
-import { useQuery } from "@tanstack/react-query"
-import { ClockIcon, ImageUpIcon } from "lucide-react"
+import { ImageUpIcon } from "lucide-react"
 import { useEffect, useState, type FormEvent } from "react"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
-import { myTeamRequestOptions, useRequestTeam } from "../api/queries"
+import { useCreateTeam } from "../api/queries"
 import { useLogoPicker } from "../components/TeamLogo"
 import { GridBackdrop } from "../components/ui"
 import { TeamCrest } from "@/components/brand/TeamCrest"
 
-// Mismas reglas que el backend (TeamRequestBody): nombre de 2 a 40 y sigla de 1 a 6.
+// Mismas reglas que el backend (TeamCreateBody): nombre de 2 a 40 y sigla de 1 a 6.
 const NAME = { min: 2, max: 40 }
 const TAG_MAX = 6
 
-/** Crear equipo: nombre y sigla. Lo aprueba un admin; mientras tanto, la solicitud pendiente. */
+/** Crear equipo: nombre, sigla y logo opcional. Queda creado al instante, con quien lo crea como líder. */
 export function CreateTeam({
   onCancel,
-  startEditing = false,
+  onCreated,
 }: {
   onCancel: () => void
-  /** Abre la solicitud pendiente directo en el formulario (desde "Editar solicitud"). */
-  startEditing?: boolean
+  onCreated: (id: string) => void
 }) {
-  const request = useQuery(myTeamRequestOptions).data
-  const send = useRequestTeam()
-  const editable = startEditing && request?.status === "pending"
-  const [name, setName] = useState(editable ? request.name : "")
-  const [tag, setTag] = useState(editable ? (request.tag ?? "") : "")
-  const [editing, setEditing] = useState(editable)
-  // Logo ya recortado, a la espera de enviar la solicitud, con su vista previa.
+  const create = useCreateTeam()
+  const [name, setName] = useState("")
+  const [tag, setTag] = useState("")
+  // Logo ya recortado, a la espera de crear el equipo, con su vista previa.
   const [logo, setLogo] = useState<{ blob: Blob; src: string } | null>(null)
   const picker = useLogoPicker((blob) => {
     setLogo({ blob, src: URL.createObjectURL(blob) })
@@ -51,55 +46,21 @@ export function CreateTeam({
     e.preventDefault()
     if (!valid) return
     try {
-      await send.mutateAsync({
+      const id = await create.mutateAsync({
         name: name.trim(),
         tag: tag.trim(),
         logo: logo?.blob,
       })
-      setEditing(false)
+      onCreated(id)
     } catch {
       // Se muestra con ErrorAlert.
     }
   }
 
-  if (request?.status === "pending" && !editing)
-    return (
-      <Shell>
-        <TeamCrest team={request} size="xl" />
-        <div className="flex flex-col items-center gap-1.5 text-center">
-          <h1 className="text-2xl font-bold tracking-[-0.5px]">
-            {request.name}
-          </h1>
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <ClockIcon className="size-4 text-primary" aria-hidden />
-            Solicitud pendiente: la revisa un admin.
-          </p>
-          <p className="max-w-[360px] text-sm text-pretty text-muted-foreground">
-            Cuando la apruebe, quedas como líder y primer jugador del equipo.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>
-            Volver
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setName(request.name)
-              setTag(request.tag ?? "")
-              setEditing(true)
-            }}
-          >
-            Editar solicitud
-          </Button>
-        </div>
-      </Shell>
-    )
-
   const preview = {
     name: name.trim() || "Tu equipo",
     tag: tag.trim() || "TAG",
-    logo_url: logo?.src ?? (editing ? request?.logo_url : null),
+    logo_url: logo?.src ?? null,
   }
   return (
     <Shell>
@@ -119,7 +80,7 @@ export function CreateTeam({
         {picker.error && <ErrorAlert message={picker.error} />}
         {picker.elements}
         <p className="text-center text-xs text-pretty text-muted-foreground">
-          PNG, JPG o WebP. La encuadras en cuadrado antes de enviarla. Si no
+          PNG, JPG o WebP. La encuadras en cuadrado antes de subirla. Si no
           subes una, el escudo muestra la sigla.
         </p>
         <div className="grid w-full grid-cols-[1fr_110px] gap-2.5">
@@ -146,20 +107,19 @@ export function CreateTeam({
             />
           </label>
         </div>
-        {send.error != null && (
-          <ErrorAlert message={errorMessage(send.error)} />
+        <p className="text-center text-xs text-pretty text-muted-foreground">
+          El equipo se crea al instante y quedas como líder. Para inscribirlo en
+          un torneo necesita los jugadores que pide el modo (5 en 5v5).
+        </p>
+        {create.error != null && (
+          <ErrorAlert message={errorMessage(create.error)} />
         )}
         <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={() => (editing ? setEditing(false) : onCancel())}
-          >
+          <Button type="button" variant="outline" size="md" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button type="submit" size="md" disabled={!valid || send.isPending}>
-            Enviar solicitud
+          <Button type="submit" size="md" disabled={!valid || create.isPending}>
+            Crear equipo
           </Button>
         </div>
       </form>

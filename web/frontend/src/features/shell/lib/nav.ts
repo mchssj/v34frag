@@ -24,8 +24,7 @@ import type { FileRouteTypes } from "@/routeTree.gen"
 export type AppPath = FileRouteTypes["to"]
 
 /** Contadores de los badges del sidebar (salen de la API; en 0 no se muestran). */
-export type BadgeKey =
-  "live" | "pcw" | "adminTeams" | "adminBans" | "adminClips"
+export type BadgeKey = "live" | "pcw" | "adminBans" | "adminClips"
 
 export type NavItem = {
   key: string
@@ -100,7 +99,6 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         to: "/admin/teams",
         icon: ShieldIcon,
         admin: "teams",
-        badge: "adminTeams",
       },
       {
         key: "admin-servers",

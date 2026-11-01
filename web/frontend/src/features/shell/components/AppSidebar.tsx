@@ -117,7 +117,6 @@ export function AppSidebar({ user }: { user: AuthUser }) {
 const BADGE_LABEL: Record<BadgeKey, (n: number) => string> = {
   live: (n) => `${n} en vivo`,
   pcw: (n) => `${n} solicitudes abiertas`,
-  adminTeams: (n) => `${n} pendientes`,
   adminBans: (n) => `${n} baneos activos`,
   adminClips: (n) => `${n} clips para revisar`,
 }
@@ -132,8 +131,7 @@ function NavBadge({ kind, count }: { kind: BadgeKey; count?: number }) {
         "text-[11px] font-semibold",
         kind === "live" && "gap-1 text-destructive",
         kind === "pcw" && "font-mono font-normal text-muted-foreground",
-        (kind === "adminTeams" || kind === "adminClips") &&
-          "rounded-md bg-muted px-1.5 font-mono",
+        kind === "adminClips" && "rounded-md bg-muted px-1.5 font-mono",
         kind === "adminBans" &&
           "rounded-md bg-destructive/15 px-1.5 font-mono text-destructive"
       )}

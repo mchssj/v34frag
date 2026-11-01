@@ -60,7 +60,11 @@ import {
 } from "../api/queries"
 import type { RosterEntry, TeamDetail } from "../types"
 import { Roster } from "../components/Roster"
-import { LookingForTags, RecruitSheet } from "../components/Recruit"
+import {
+  EligibleTags,
+  LookingForTags,
+  RecruitSheet,
+} from "../components/Recruit"
 import { EditableCrest, EditTeamSheet } from "../components/TeamLogo"
 import { TournamentHistory } from "../components/TournamentHistory"
 import { Showcase } from "../components/Showcase"
@@ -138,7 +142,10 @@ export function TeamView({
               · {roster.length}/{team.max_members ?? MAX_ROSTER} en el roster ·{" "}
               {titles.length === 1 ? "1 título" : `${titles.length} títulos`}
             </p>
-            <LookingForTags team={team} />
+            <div className="flex flex-wrap gap-1.5">
+              <EligibleTags team={team} />
+              <LookingForTags team={team} />
+            </div>
           </div>
           {mode === "mine" ? (
             <MineActions

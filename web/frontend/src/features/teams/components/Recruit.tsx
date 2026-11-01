@@ -4,6 +4,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -14,6 +15,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import {
+  eligibility,
   LOOKING_FOR,
   lookingForText,
   MAX_ROSTER,
@@ -154,5 +156,29 @@ function RecruitForm({
         </Button>
       </SheetFooter>
     </>
+  )
+}
+
+/** Para qué modos alcanza el plantel: "Apto para 1v1 · 2v2" y "Faltan 3 para 5v5". */
+export function EligibleTags({ team }: { team: TeamDetail }) {
+  // Una API anterior al replanteo 40 no manda eligible_modes.
+  const { apt, next } = eligibility(team.eligible_modes ?? [])
+  if (!apt && !next) return null
+  return (
+    <ul
+      className="flex flex-wrap gap-1.5"
+      aria-label="Para qué modos alcanza el plantel"
+    >
+      {apt && (
+        <li>
+          <Badge variant="win">Apto para {apt}</Badge>
+        </li>
+      )}
+      {next && (
+        <li>
+          <Badge variant="muted">{next}</Badge>
+        </li>
+      )}
+    </ul>
   )
 }

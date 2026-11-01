@@ -237,3 +237,25 @@ export function heirsOf(members: RosterEntry[]) {
     .filter((m) => !m.is_captain)
     .map((m) => ({ member: m, eligible: m.has_steam }))
 }
+
+/**
+ * Para qué modos alcanza el plantel (eligible_modes de la API): los aptos juntos ("1v1 · 2v2") y,
+ * de los que faltan, el más cercano ("Faltan 3 para 5v5"). Cuentan jugadores y suplentes, no el coach.
+ */
+export function eligibility(modes: TeamDetail["eligible_modes"]): {
+  apt: string | null
+  next: string | null
+} {
+  const apt = modes.filter((m) => m.missing === 0).map((m) => m.code)
+  const pending = modes
+    .filter((m) => m.missing > 0)
+    .toSorted(
+      (a, b) => a.missing - b.missing || a.players_per_team - b.players_per_team
+    )[0]
+  return {
+    apt: apt.length ? apt.join(" · ") : null,
+    next: pending
+      ? `${pending.missing === 1 ? "Falta 1" : `Faltan ${pending.missing}`} para ${pending.code}`
+      : null,
+  }
+}

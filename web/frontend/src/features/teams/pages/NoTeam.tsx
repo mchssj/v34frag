@@ -5,7 +5,6 @@ import {
   CheckIcon,
   ClockIcon,
   ListOrderedIcon,
-  PencilIcon,
   SearchIcon,
   ShieldPlusIcon,
   TrophyIcon,
@@ -18,11 +17,6 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import {
   myInvitesOptions,
   myTeamRequestOptions,
   useAnswerInvite,
@@ -32,7 +26,6 @@ import { cn } from "cn"
 
 import { STATUS_LABEL } from "../lib/model"
 import { Eyebrow, GridBackdrop } from "../components/ui"
-import { Soon } from "@/components/brand/Soon"
 import { TeamCrest } from "@/components/brand/TeamCrest"
 
 /** "Vence mañana" / "Vence en N días". */
@@ -46,11 +39,9 @@ function expiry(iso: string) {
 /** Sin equipo: crear o buscar uno, y las invitaciones recibidas. */
 export function NoTeam({
   onCreate,
-  onEdit,
   onFind,
 }: {
   onCreate: () => void
-  onEdit: () => void
   onFind: () => void
 }) {
   const invites = useQuery(myInvitesOptions).data
@@ -75,17 +66,12 @@ export function NoTeam({
           Crea un equipo oficial o acepta una invitación para inscribirte en
           torneos y sumar puntos en el ranking. Necesitas SteamID vinculado.
         </p>
-        {request && request.status !== "approved" && (
-          <RequestCard request={request} onEdit={onEdit} onCreate={onCreate} />
-        )}
+        {request?.status === "rejected" && <RequestCard request={request} />}
         <div className="mt-2 flex flex-wrap justify-center gap-2.5">
-          {/* Con una solicitud pendiente, la tarjeta reemplaza a "Crear equipo". */}
-          {request?.status !== "pending" && (
-            <Button size="xl" onClick={onCreate}>
-              <ShieldPlusIcon aria-hidden />
-              Crear equipo
-            </Button>
-          )}
+          <Button size="xl" onClick={onCreate}>
+            <ShieldPlusIcon aria-hidden />
+            Crear equipo
+          </Button>
           <Button size="xl" variant="outline" onClick={onFind}>
             <SearchIcon aria-hidden />
             Buscar equipo
@@ -209,17 +195,8 @@ function InviteCard({ invite }: { invite: TeamInvite }) {
   )
 }
 
-/** Solicitud de equipo nuevo, pendiente o rechazada: visible, con editar (y cancelar, cuando exista). */
-function RequestCard({
-  request,
-  onEdit,
-  onCreate,
-}: {
-  request: NonNullable<TeamRequest>
-  onEdit: () => void
-  onCreate: () => void
-}) {
-  const pending = request.status === "pending"
+/** Solicitud vieja rechazada (de antes de crear equipos al instante), con el motivo si lo hay. */
+function RequestCard({ request }: { request: NonNullable<TeamRequest> }) {
   return (
     <Card
       variant="outline"
@@ -228,66 +205,16 @@ function RequestCard({
       <TeamCrest team={request} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate font-semibold">{request.name}</span>
-        {/* Lo que antes era el párrafo va en el tooltip del chip. */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span
-              tabIndex={0}
-              className={cn(
-                "inline-flex h-[22px] w-fit cursor-help items-center gap-1.5 rounded-full px-2 text-[11px] font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                pending
-                  ? "bg-primary/15 text-primary"
-                  : "bg-destructive/15 text-destructive"
-              )}
-            >
-              {pending ? (
-                <ClockIcon className="size-3" aria-hidden />
-              ) : (
-                <XIcon className="size-3" aria-hidden />
-              )}
-              {pending ? "Pendiente de aprobación" : "Rechazada"}
-            </span>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-[260px] text-pretty">
-            {pending
-              ? "La revisa un admin. Cuando la apruebe, quedas como líder y primer jugador."
-              : "Un admin la rechazó. Puedes corregirla y enviar otra."}
-          </TooltipContent>
-        </Tooltip>
-      </span>
-      {pending ? (
-        <span className="flex shrink-0 gap-1.5">
-          {/* TODO backend: DELETE /me/team-request. */}
-          <Soon label="Cancelar solicitud · Próximamente">
-            <Button
-              variant="outline"
-              size="icon"
-              disabled
-              aria-label="Cancelar solicitud"
-            >
-              <XIcon aria-hidden />
-            </Button>
-          </Soon>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Editar solicitud"
-                onClick={onEdit}
-              >
-                <PencilIcon aria-hidden />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Editar solicitud</TooltipContent>
-          </Tooltip>
+        <span className="inline-flex h-[22px] w-fit items-center gap-1.5 rounded-full bg-destructive/15 px-2 text-[11px] font-semibold text-destructive">
+          <XIcon className="size-3" aria-hidden />
+          Solicitud no aprobada
         </span>
-      ) : (
-        <Button size="sm" className="shrink-0" onClick={onCreate}>
-          <ShieldPlusIcon aria-hidden />
-          Enviar otra
-        </Button>
-      )}
+        {request.reject_reason && (
+          <span className="text-xs text-pretty text-muted-foreground">
+            {request.reject_reason}
+          </span>
+        )}
+      </span>
     </Card>
   )
 }
