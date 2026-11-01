@@ -1,0 +1,8 @@
+CMLeague 2.7.2 --  Changelog
+
+Chat más fácil de leer
+
+- El reporte de daño de la ronda ahora sale en español y en una sola línea por rival: cuánto le hiciste, cuánto te hizo y si terminó vivo o muerto.
+- El daño que hiciste sale en verde y el que recibiste en rojo. Si un rival terminó vivo, lo ves en amarillo.
+- La plata de tu equipo sale con una línea por compañero. El color te dice qué le alcanza: verde para comprar todo, amarillo para media compra y rojo para eco.
+- Ya no sale la plata total del equipo.

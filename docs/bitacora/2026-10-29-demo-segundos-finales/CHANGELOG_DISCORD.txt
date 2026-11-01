@@ -1,0 +1,5 @@
+CMLeague 2.7.1 --  Changelog
+
+Clips de la última ronda
+- La grabación de cada mix ahora sigue unos segundos después del final, así la última kill del mix sale completa en los clips.
+- Antes, si tu jugada cerraba el mix, el clip se cortaba justo antes de la kill.

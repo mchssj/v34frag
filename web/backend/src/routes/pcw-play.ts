@@ -194,7 +194,7 @@ function removeMapImage(c: Parameters<typeof inBackground>[0], url: string | nul
 
 const servers = createRoute({
   method: 'get', path: '/api/v1/servers', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Servidores activos', description: 'Para asignar el servidor de una partida (organizadores y admins).',
+  summary: 'Servidores activos', description: 'Para asignar el servidor de una partida (organizadores, moderadores y admins).',
   request: { query: ServerQuery },
   responses: { 200: { description: 'Servidores', ...json(ServerList) }, ...errorResponses(400, 401, 403) },
 });
@@ -332,7 +332,7 @@ export const pcwPlay = createRouter()
   .openapi(servers, async (c) => {
     const p = c.req.valid('query');
     const role = must(await c.var.sb.from('profiles').select('role').eq('id', c.var.user.id).maybeSingle())?.role;
-    if (role !== 'organizer' && !(await isAdmin(c))) throw new AppError(403, 'FORBIDDEN', 'Solo organizadores y admins.');
+    if (role !== 'organizer' && role !== 'moderator' && !(await isAdmin(c))) throw new AppError(403, 'FORBIDDEN', 'Solo organizadores, moderadores y admins.');
     let q = c.var.sb.from('game_servers_public').select('id, name, connect_address', { count: 'exact' });
     const term = searchTerm(p.q);
     if (term) q = q.ilike('name', `%${term}%`);

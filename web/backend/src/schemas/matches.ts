@@ -1,7 +1,7 @@
 import { z } from '@hono/zod-openapi';
-import { dateParam, Envelope, listQuery } from '../lib/list';
+import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { Clutches, ReviewStatus } from './common';
-import { LiveGameRef } from './live';
+import { LiveGameRef, MixMvp } from './live';
 import { TeamRef } from './players';
 
 const num = z.number().nullable();
@@ -15,7 +15,24 @@ export { ReviewStatus };
 
 export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'played_at', order: 'desc' }).extend({
   kind: MatchKind.optional().openapi({ description: '`official` (torneo), `pcw` o `mix`. Sin filtro: todas' }),
-  status: MatchStatus.optional(),
+  status: z
+    .string()
+    .transform((v, ctx) => {
+      const list = [...new Set(v.split(',').map((s) => s.trim()).filter(Boolean))];
+      const bad = list.filter((s) => !MatchStatus.safeParse(s).success);
+      if (!list.length || bad.length) {
+        ctx.addIssue({ code: 'custom', message: `Estado no válido: ${bad.join(', ') || '(vacío)'}. Usa upcoming, live, finished o cancelled.` });
+        return z.NEVER;
+      }
+      return list as z.infer<typeof MatchStatus>[];
+    })
+    .optional()
+    .openapi({
+      type: 'string',
+      example: 'finished,cancelled',
+      description: 'Uno o varios estados separados por comas: `upcoming`, `live`, `finished` o `cancelled`. Sin filtro: todos',
+    }),
+  mine: boolParam('`true`: solo las partidas donde jugó el usuario (pide sesión; sin ficha, la lista viene vacía)'),
   event: z.uuid().optional().openapi({ description: 'Partidas de un torneo' }),
   team: z.uuid().optional().openapi({ description: 'Partidas de un equipo' }),
   player: z.uuid().optional().openapi({ description: 'Partidas donde jugó un jugador (en una serie, en alguno de sus mapas)' }),
@@ -57,7 +74,19 @@ export const MatchSummary = z
   })
   .openapi('MatchSummary');
 
-export const MatchList = Envelope(MatchSummary).openapi('MatchList');
+// (E17) Fila del listado de /matches: el resumen más el MVP de los mixes.
+export const MatchListItem = MatchSummary.extend({
+  mvp: MixMvp.nullable().openapi({ description: 'Mix: el de mejor rating (como en `/mixes`); null en el resto' }),
+}).openapi('MatchListItem');
+
+// (E16) Cuántas hay de cada tipo con los mismos filtros, salvo `kind`.
+export const MatchCounts = z
+  .object({ all: z.number().int(), mix: z.number().int(), pcw: z.number().int(), official: z.number().int() })
+  .openapi('MatchCounts');
+
+export const MatchList = Envelope(MatchListItem)
+  .extend({ counts: MatchCounts.openapi({ description: 'Partidas por tipo con los filtros de la consulta salvo `kind` (para los chips)' }) })
+  .openapi('MatchList');
 
 export const RosterPlayer = z
   .object({ player_id: z.uuid().nullable(), alias: z.string(), guest: z.boolean().openapi({ description: 'Invitado sin ficha (solo PCW)' }) })
@@ -130,6 +159,7 @@ export const MatchDetail = MatchSummary.extend({
   maps_detail: z.array(z.object({ map: z.string().nullable(), r1: num, r2: num, game_id: z.uuid().nullable() })).openapi({ description: 'Torneo o PCW: mapas de la serie' }),
   games: z.array(GameRef).openapi({ description: 'Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle)' }),
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
+  series_players: z.array(PlayerLine).openapi({ description: 'Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego' }),
   clutch_data: z.boolean().openapi({ description: 'Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen)' }),
   mvp: PlayerLine.nullable().openapi({ description: 'Mix: el de mejor rating' }),
   veto: VetoState.nullable().openapi({ description: 'Torneo o PCW' }),
@@ -186,6 +216,38 @@ export const ResultBody = z
   })
   .refine((b) => [b.maps, b.walkover, b.clear].filter((x) => x !== undefined).length === 1, { message: 'Mandá maps, walkover o clear (uno solo).' })
   .openapi('ResultBody');
+
+export const GameCandidate = z
+  .object({
+    game_id: z.uuid(),
+    map: z.string().nullable(),
+    played_at: z.string().nullable(),
+    score1: z.number().int().nullable().openapi({ description: 'Rondas del bando 1 del mix' }),
+    score2: z.number().int().nullable(),
+    server_name: z.string().nullable(),
+    players: z.number().int().openapi({ description: 'Jugadores con rondas en el mix' }),
+    registered: z.number().int().openapi({ description: 'Cuántos de ellos son inscritos de alguno de los dos equipos' }),
+    side1: z.number().int().openapi({ description: 'Bando del mix que jugó como el equipo 1 (deducido por los inscritos, o el guardado si ya está vinculado)' }),
+    linked: z.boolean().openapi({ description: 'Ya está vinculado a esta partida' }),
+  })
+  .openapi('GameCandidate');
+
+export const SeriesMap = z
+  .object({
+    game_id: z.uuid().optional().openapi({ description: 'Mix vinculado: las rondas y el mapa salen del mix' }),
+    side1: z.union([z.literal(1), z.literal(2)]).optional().openapi({ description: 'Con `game_id`: bando del mix que es el equipo 1. Si falta, se deduce' }),
+    map: z.string().max(40).nullable().optional().openapi({ description: 'Resultado a mano: el mapa' }),
+    r1: z.number().int().min(0).max(99).optional().openapi({ description: 'Resultado a mano: rondas del equipo 1' }),
+    r2: z.number().int().min(0).max(99).optional(),
+  })
+  .refine((x) => (x.game_id ? x.r1 === undefined && x.r2 === undefined : x.r1 !== undefined && x.r2 !== undefined), {
+    message: 'Cada mapa lleva `game_id` (mix vinculado) o `r1` y `r2` (resultado a mano).',
+  })
+  .openapi('SeriesMap');
+
+export const SeriesMapsBody = z
+  .object({ maps: z.array(SeriesMap).max(5).openapi({ description: 'Los mapas de la serie en orden. Lista vacía: sin resultado' }) })
+  .openapi('SeriesMapsBody');
 
 export const MatchParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 export const ChatParam = z.object({ id: z.coerce.number().int().openapi({ param: { name: 'id', in: 'path' } }) });

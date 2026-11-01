@@ -79,6 +79,18 @@ export const ProfilePatch = z
     faceit: text(120, cleanFaceit, 'Usa tu nickname de FACEIT o el link de tu perfil.', 'mecha'),
     discord: text(40, (v) => (/^[A-Za-z0-9_.#\-]{2,40}$/.test(v) ? v : null), 'Usa tu nombre de usuario de Discord, sin espacios.', 'mecha_css'),
     preferences: PreferencesPatch.optional(),
+    // (E12) Va en la ficha del jugador, no en profile_details: pide jugador vinculado (409 si no hay).
+    bio: z
+      .string()
+      .transform((v) => v.replace(/\r\n/g, '\n').trim())
+      .pipe(z.string().max(500, 'La biografía tiene hasta 500 caracteres.'))
+      .nullable()
+      .optional()
+      .openapi({
+        type: ['string', 'null'],
+        example: 'AWPer de Rosario.\nBusco equipo para la próxima copa.',
+        description: 'Biografía de la ficha: hasta 500 caracteres, con saltos de línea y sin palabras bloqueadas. `null` o `""` la borra. Sin jugador vinculado, `409`',
+      }),
   })
   .refine((o) => Object.values(o).some((v) => v !== undefined), { message: 'No hay nada para actualizar.' })
   .openapi('ProfilePatch');
@@ -108,6 +120,7 @@ export const MyProfile = z
         nick: z.string(),
         photo_url: z.string().nullable(),
         steam_id: z.string().nullable().openapi({ description: 'El SteamID principal. Todos los de la cuenta están en `GET /api/v1/me/claim-code` (`steam_ids`)' }),
+        bio: z.string().nullable().openapi({ description: 'Biografía de la ficha (se cambia con `PATCH /api/v1/me/profile`)' }),
       })
       .nullable()
       .openapi({ description: 'Ficha de jugador de la cuenta. Se crea o se vincula con `!claim` en el servidor; null si todavía no lo usó' }),

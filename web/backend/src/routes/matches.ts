@@ -1,9 +1,9 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { currentUser, isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
-import { must, mustHave, notFound, searchTerm } from '../lib/db';
+import { levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { STEAM64 } from '../schemas/claim';
 import { notModified } from '../lib/etag';
-import { AppError } from '../lib/errors';
+import { AppError, fromPostgrest } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import { bearer, errorResponses, json } from '../schemas/common';
@@ -13,20 +13,34 @@ import {
   ChatPage,
   ChatParam,
   ChatQuery,
+  GameCandidate,
   MatchDetail,
   MatchList,
   MatchListQuery,
   MatchParam,
   ResultBody,
   ScheduleBody,
+  SeriesMapsBody,
   VetoBody,
   type PlayerLine,
   type RosterPlayer,
 } from '../schemas/matches';
+import type { MixMvp } from '../schemas/live';
 import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
-import { clutchesOf, demoUrl, MATCH_LIST, mixReview, toSummary, vetoState, type MatchRow } from '../services/matches';
+import { clutchesOf, demoUrl, MATCH_LIST, mixReview, sumSeries, toSummary, vetoState, type MatchRow, type StatRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
+
+// Lo que usan los filtros del listado de un query builder de PostgREST (como Orderable en lib/list.ts).
+interface Filters<Q> {
+  eq(column: string, value: unknown): Q;
+  in(column: string, values: readonly unknown[]): Q;
+  or(filters: string): Q;
+  contains(column: string, value: unknown): Q;
+  ilike(column: string, pattern: string): Q;
+  gte(column: string, value: unknown): Q;
+  lte(column: string, value: unknown): Q;
+}
 
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -104,6 +118,30 @@ const result = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403) },
 });
 
+const candidates = createRoute({
+  method: 'get', path: '/api/v1/matches/{id}/games/candidates', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Mixes para vincular a una partida de torneo',
+  description:
+    'Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta ' +
+    'partida), jugados por al menos un inscrito de alguno de los dos equipos. Primero los vinculados y después los que más inscritos ' +
+    'tienen. `side1` dice qué bando del mix fue el equipo 1. Hasta 20.',
+  request: { params: MatchParam },
+  responses: { 200: { description: 'Mixes', ...json(z.array(GameCandidate)) }, ...errorResponses(401, 403, 404) },
+});
+
+const seriesMaps = createRoute({
+  method: 'put', path: '/api/v1/matches/{id}/maps', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Mapas de una serie de torneo: mix vinculado o resultado a mano',
+  description:
+    'Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya ' +
+    'jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la ' +
+    'partida dice "Sin detalle de la partida" en ese mapa). Si la serie queda definida, se cierra y la llave avanza; si no, queda en ' +
+    'curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si ' +
+    'un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.',
+  request: { params: MatchParam, body: { required: true, ...json(SeriesMapsBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
+});
+
 const resetVeto = createRoute({
   method: 'delete', path: '/api/v1/matches/{id}/veto', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
   summary: 'Reiniciar el veto', description: 'El organizador del torneo o un admin.',
@@ -126,21 +164,70 @@ type DetailRow = {
 export const matches = createRouter()
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
-    let q = c.var.sb.from('match_list').select(MATCH_LIST, { count: 'exact' }).eq('bye', false);
+    const sb = c.var.sb;
+    let me: string | null = null;
+    if (p.mine) {
+      const user = currentUser(c);
+      if (!user) throw new AppError(401, 'UNAUTHORIZED', 'Para ver tus partidas tienes que iniciar sesión.');
+      me = must(await sb.from('players').select('id').eq('user_id', user.id).maybeSingle())?.id ?? null;
+      if (!me) return c.json({ ...envelope([], 0, p), counts: { all: 0, mix: 0, pcw: 0, official: 0 } }, 200);
+    }
+    // Los mismos filtros para la página y para los contadores por tipo (E16), que no filtran por `kind`.
+    const filtered = <Q extends Filters<Q>>(q: Q): Q => {
+      let r = q.eq('bye', false);
+      if (p.status) r = r.in('status', p.status);
+      if (p.review) r = r.eq('review', p.review);
+      if (p.event) r = r.eq('event_id', p.event);
+      if (p.team) r = r.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
+      if (p.player) r = r.contains('player_ids', [p.player]);
+      if (me) r = r.contains('player_ids', [me]);
+      if (p.server) r = r.eq('server_id', p.server);
+      if (p.map) r = r.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
+      if (p.from) r = r.gte('at', p.from);
+      if (p.to) r = r.lte('at', p.to);
+      const term = searchTerm(p.q);
+      // (E18) también por el nick de los que jugaron.
+      if (term) r = r.or(`search.ilike.%${term}%,player_search.ilike.%${term}%`);
+      return r;
+    };
+    let q = filtered(sb.from('match_list').select(MATCH_LIST, { count: 'exact' }));
     if (p.kind) q = q.eq('kind', p.kind);
-    if (p.status) q = q.eq('status', p.status);
-    if (p.review) q = q.eq('review', p.review);
-    if (p.event) q = q.eq('event_id', p.event);
-    if (p.team) q = q.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
-    if (p.player) q = q.contains('player_ids', [p.player]);
-    if (p.server) q = q.eq('server_id', p.server);
-    if (p.map) q = q.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
-    if (p.from) q = q.gte('at', p.from);
-    if (p.to) q = q.lte('at', p.to);
-    const term = searchTerm(p.q);
-    if (term) q = q.ilike('search', `%${term}%`);
-    const { rows, total } = await runList<MatchRow, typeof q>(q, p, {});
-    return c.json(envelope(rows.map(toSummary), total, p), 200);
+    const countOf = async (kind?: 'mix' | 'pcw' | 'official') => {
+      let cq = filtered(sb.from('match_list').select('id', { count: 'exact', head: true }));
+      if (kind) cq = cq.eq('kind', kind);
+      const r = await cq;
+      if (r.error) throw fromPostgrest(r.error);
+      return r.count ?? 0;
+    };
+    // El total de la página ya es uno de los contadores: ese no se vuelve a pedir.
+    const [{ rows, total }, all, mix, pcw, official] = await Promise.all([
+      runList<MatchRow, typeof q>(q, p, {}),
+      p.kind ? countOf() : null,
+      p.kind === 'mix' ? null : countOf('mix'),
+      p.kind === 'pcw' ? null : countOf('pcw'),
+      p.kind === 'official' ? null : countOf('official'),
+    ]);
+    const counts = { all: all ?? total, mix: mix ?? total, pcw: pcw ?? total, official: official ?? total };
+    // (E17) El MVP de los mixes de la página sale de mix_list, que ya lo calcula.
+    const mixIds = rows.filter((r) => r.kind === 'mix').map((r) => r.id);
+    const mvps = new Map<string, z.infer<typeof MixMvp>>();
+    if (mixIds.length) {
+      const found = mustHave(
+        await sb.from('mix_list').select('match_id, mvp_player_id, mvp_alias, mvp_game_nick, mvp_elo, mvp_rating').in('match_id', mixIds),
+      );
+      for (const m of found) {
+        if (!m.match_id || (m.mvp_player_id === null && m.mvp_game_nick === null)) continue;
+        mvps.set(m.match_id, {
+          player_id: m.mvp_player_id,
+          alias: m.mvp_alias,
+          game_nick: m.mvp_game_nick,
+          elo: m.mvp_elo,
+          level: levelOf(m.mvp_elo),
+          rating: m.mvp_rating === null ? null : Number(m.mvp_rating),
+        });
+      }
+    }
+    return c.json({ ...envelope(rows.map((r) => ({ ...toSummary(r), mvp: mvps.get(r.id) ?? null })), total, p), counts }, 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');
@@ -157,7 +244,7 @@ export const matches = createRouter()
     const [ev, games, stats, vetos, pool, server, caps, liveGame] = await Promise.all([
       m.event_id ? sb.from('events').select('config').eq('id', m.event_id).maybeSingle().then(must) : Promise.resolve(null),
       series
-        ? sb.from('matches').select('id, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
+        ? sb.from('matches').select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
         : Promise.resolve([]),
       series
         ? Promise.resolve([])
@@ -199,25 +286,42 @@ export const matches = createRouter()
         ]);
     const clutchData = !series && !!clutchInfo?.clutch_data;
 
-    // Stats del mix con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
-    const linked = stats.map((s) => s.player_id).filter((x): x is string => !!x);
+    // Torneo o PCW: stats de la serie, sumadas sobre los juegos terminados y en los lados de la serie (E21).
+    const finished = games.filter((g) => g.status === 'finished');
+    const seriesStats = finished.length
+      ? sumSeries(
+          mustHave(
+            await sb
+              .from('match_player_stats')
+              .select('match_id, player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses')
+              .in('match_id', finished.map((g) => g.id)),
+          ),
+          new Map(finished.map((g) => [g.id, g.parent_side1 === 2])),
+        )
+      : [];
+
+    // Stats del mix (o de la serie) con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
+    const linked = [...stats, ...seriesStats].map((s) => s.player_id).filter((x): x is string => !!x);
     const fichas = linked.length ? mustHave(await sb.from('players').select('id, nick, steam_id').in('id', linked)) : [];
     const aliases = new Map(fichas.map((p) => [p.id, p.nick]));
     const primary = new Map(fichas.map((p) => [p.id, p.steam_id]));
     const steamOf = (s: { player_id: string | null; steam_id: string }) => (s.player_id ? primary.get(s.player_id) : s.steam_id);
-    const elos = await eloBySteam(sb, stats.map(steamOf));
-    const players: z.infer<typeof PlayerLine>[] = stats
-      .map((s) => ({
-        player_id: s.player_id, alias: s.player_id ? (aliases.get(s.player_id) ?? null) : null, game_nick: s.nick, side: s.team,
-        // Sin ficha: el SteamID64 enlaza a su perfil sin reclamar (bots y NOSTEAM no tienen).
-        steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
-        kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
-        rating: s.rating, elo_delta: s.elo_delta,
-        ...eloLevel(elos, steamOf(s)),
-        k2: s.k2, k3: s.k3, k4: s.k4, k5: s.k5, first_kills: s.first_kills, first_deaths: s.first_deaths, plants: s.plants, defuses: s.defuses,
-        clutches: clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null,
-      }))
-      .sort((a, b) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0));
+    const elos = await eloBySteam(sb, [...stats, ...seriesStats].map(steamOf));
+    const lineOf = (s: StatRow, clutches: z.infer<typeof PlayerLine>['clutches']): z.infer<typeof PlayerLine> => ({
+      player_id: s.player_id, alias: s.player_id ? (aliases.get(s.player_id) ?? null) : null, game_nick: s.nick, side: s.team,
+      // Sin ficha: el SteamID64 enlaza a su perfil sin reclamar (bots y NOSTEAM no tienen).
+      steam_id: !s.player_id && STEAM64.test(s.steam_id) ? s.steam_id : null,
+      kills: s.kills, deaths: s.deaths, assists: s.assists, headshots: s.headshots, damage: s.damage, rounds: s.rounds,
+      rating: s.rating, elo_delta: s.elo_delta,
+      ...eloLevel(elos, steamOf(s)),
+      k2: s.k2, k3: s.k3, k4: s.k4, k5: s.k5, first_kills: s.first_kills, first_deaths: s.first_deaths, plants: s.plants, defuses: s.defuses,
+      clutches,
+    });
+    const bySideAndRating = (a: z.infer<typeof PlayerLine>, b: z.infer<typeof PlayerLine>) => (a.side ?? 0) - (b.side ?? 0) || (b.rating ?? 0) - (a.rating ?? 0);
+    const players = stats
+      .map((s) => lineOf(s, clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null))
+      .sort(bySideAndRating);
+    const series_players = seriesStats.map((s) => lineOf(s, null)).sort(bySideAndRating);
     const mvp = players.filter((p) => (p.rounds ?? 0) > 0).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
 
     // Lo que puede hacer quien consulta.
@@ -267,6 +371,7 @@ export const matches = createRouter()
         return { id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at, demo_url: demoUrl(config, g) };
       }),
       players,
+      series_players,
       mvp,
       veto,
       review_detail: mixReview(m),
@@ -342,6 +447,13 @@ export const matches = createRouter()
         p_clear: clear ?? false,
       }),
     );
+    return c.body(null, 204);
+  })
+  .openapi(candidates, async (c) => {
+    return c.json(mustHave(await c.var.sb.rpc('match_game_candidates', { p_match: c.req.valid('param').id })), 200);
+  })
+  .openapi(seriesMaps, async (c) => {
+    must(await c.var.sb.rpc('match_set_maps', { p_match: c.req.valid('param').id, p_maps: c.req.valid('json').maps as never }));
     return c.body(null, 204);
   })
   .openapi(resetVeto, async (c) => {

@@ -302,19 +302,19 @@ export const players = createRouter()
     const p = c.req.valid('query');
     let q = c.var.sb
       .from('team_members_view')
-      .select('team_id, team_name, team_tag, role, is_captain, joined_at, left_at', { count: 'exact' })
+      .select('team_id, team_name, team_tag, team_logo_url, role, is_captain, joined_at, left_at', { count: 'exact' })
       .eq('player_id', id)
       .eq('team_kind', 'official');
     if (p.active !== undefined) q = q.eq('active', p.active);
     type Row = {
-      team_id: string; team_name: string; team_tag: string | null; role: string; is_captain: boolean | null;
+      team_id: string; team_name: string; team_tag: string | null; team_logo_url: string | null; role: string; is_captain: boolean | null;
       joined_at: string | null; left_at: string | null;
     };
     const { rows, total } = await runList<Row, typeof q>(q, p, { name: 'team_name' }, 'team_id');
     return c.json(
       envelope(
         rows.map((r) => ({
-          team: { id: r.team_id, name: r.team_name, tag: r.team_tag },
+          team: { id: r.team_id, name: r.team_name, tag: r.team_tag, logo_url: r.team_logo_url },
           role: r.role,
           is_captain: r.is_captain ?? false,
           joined_at: r.joined_at,
@@ -350,12 +350,17 @@ export const players = createRouter()
       team_tag: string | null; at: string | null;
     };
     const { rows, total } = await runList<Row, typeof q>(q, p, { event: 'event_name' }, 'event_id');
+    // (E13) player_titles no trae el logo: una consulta para los equipos de la página.
+    const teamIds = [...new Set(rows.map((r) => r.team_id).filter((x): x is string => !!x))];
+    const logos = new Map(
+      teamIds.length ? mustHave(await c.var.sb.from('teams').select('id, logo_url').in('id', teamIds)).map((t) => [t.id, t.logo_url] as const) : [],
+    );
     return c.json(
       envelope(
         rows.map((r) => ({
           event: { id: r.event_id!, name: r.event_name ?? '' },
           result: r.result as 'champion' | 'runner_up',
-          team: { id: r.team_id!, name: r.team_name ?? '', tag: r.team_tag },
+          team: { id: r.team_id!, name: r.team_name ?? '', tag: r.team_tag, logo_url: logos.get(r.team_id!) ?? null },
           at: r.at,
         })),
         total,

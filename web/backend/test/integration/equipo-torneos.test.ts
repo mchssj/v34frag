@@ -106,11 +106,12 @@ describe('plantel', () => {
   });
 
   it('máximo de miembros del admin: 409 ROSTER_FULL, has_space y max_members', async () => {
-    const before = (await req('GET', '/api/v1/admin/teams/config', { token: adm.token })).body.max_members as number;
+    const before = (await req('GET', '/api/v1/admin/teams/config', { token: adm.token })).body as { max_members: number; max_led: number };
+    expect(before.max_led).toBe(1);
     const t = await team(1);
     try {
-      expect((await req('PUT', '/api/v1/admin/teams/config', { token: t.cap.token, body: { max_members: 2 } })).status).toBe(403);
-      expect((await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: { max_members: 2 } })).body).toEqual({ max_members: 2 });
+      expect((await req('PUT', '/api/v1/admin/teams/config', { token: t.cap.token, body: { max_members: 2, max_led: 1 } })).status).toBe(403);
+      expect((await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: { max_members: 2, max_led: 1 } })).body).toEqual({ max_members: 2, max_led: 1 });
       const d = await req('GET', `/api/v1/teams/${t.id}`);
       expect(d.body).toMatchObject({ members: 2, max_members: 2 });
       const full = await req('GET', `/api/v1/teams?has_space=false&q=${encodeURIComponent('ET')}&per=100`);
@@ -119,7 +120,7 @@ describe('plantel', () => {
       const inv = await req('POST', `/api/v1/teams/${t.id}/invites`, { token: t.cap.token, body: { player_id: p.player } });
       expect(inv).toMatchObject({ status: 409, body: { error: { code: 'ROSTER_FULL' } } });
     } finally {
-      await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: { max_members: before } });
+      await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: before });
     }
   });
 });
@@ -159,17 +160,21 @@ describe('equipo', () => {
     expect((await req('GET', `/api/v1/teams/${t.id}`)).body.logo_url).toBeNull();
   });
 
-  it('solicitud de equipo nuevo con logo (multipart) y el logo pasa al equipo', async () => {
+  it('crear un equipo y subirle el logo después; con max_led 2 se puede liderar otro', async () => {
     const p = await player();
-    const r = await req('PUT', '/api/v1/me/team-request', { token: p.token, form: form({ name: `Logo ${rnd()}`, tag: 'lg', logo: png(512, 512) }) });
-    expect(r).toMatchObject({ status: 200, body: { tag: 'LG', status: 'pending' } });
-    expect(r.body.logo_url).toContain(`/photos/team-requests/${p.id}/`);
-    // JSON sin logo conserva el que tenía.
-    const j = await req('PUT', '/api/v1/me/team-request', { token: p.token, body: { name: `Logo ${rnd()}`, tag: 'LG' } });
-    expect(j.body.logo_url).toBe(r.body.logo_url);
-    const ap = await req('POST', `/api/v1/admin/team-requests/${p.id}/approve`, { token: adm.token });
-    expect(ap.status).toBe(201);
-    expect((await req('GET', `/api/v1/teams/${ap.body.id}`)).body.logo_url).toBe(r.body.logo_url);
+    const tag = rnd().slice(0, 5);
+    const created = await req('POST', '/api/v1/teams', { token: p.token, body: { name: `Logo ${rnd()}`, tag } });
+    expect(created.status).toBe(201);
+    const up = await req('PUT', `/api/v1/teams/${created.body.id}/logo`, { token: p.token, form: form({ file: png(512, 512) }) });
+    expect(up.body.logo_url).toContain(`/photos/teams/${created.body.id}/`);
+    expect((await req('GET', `/api/v1/teams/${created.body.id}`)).body).toMatchObject({ tag: tag.toUpperCase(), logo_url: up.body.logo_url });
+    const cfg = (await req('GET', '/api/v1/admin/teams/config', { token: adm.token })).body;
+    try {
+      expect((await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: { ...cfg, max_led: 2 } })).status).toBe(200);
+      expect((await req('POST', '/api/v1/teams', { token: p.token, body: { name: `Logo2 ${rnd()}`, tag: rnd().slice(0, 5) } })).status).toBe(201);
+    } finally {
+      await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: cfg });
+    }
   });
 });
 

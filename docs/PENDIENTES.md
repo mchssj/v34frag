@@ -495,6 +495,46 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. **Reporter 2.6.1** (pico y copia a disco de los intentos): desplegado el 2026-10-29. La migración `20261029200000_ips_intentos_hora.sql` está en producción y en staging, y el plugin en **el real, RBK y flow**. Falta verificar en cada uno, después de su cambio de mapa, que el log diga 2.6.1 y que no aparezca `IPs: no se pudieron registrar`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
 
+### 1.31 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** lo que pidió el frontend en `pendientes-backend-cmleague.md` (E9 a E18 y E20): filtros, contadores y MVP en `GET /matches`, cancelar la solicitud de equipo con su fecha y el motivo del rechazo, disolver un equipo, nombre y sigla editables por el capitán, biografía del jugador, logos en el historial y los títulos, y cierre y total de jugadores en las temporadas.
+- **Hecho el 2026-10-30 en local y commiteado el 2026-11-01** (en `feat/backend-api-fase-1`): replanteo `39` con su inversa y sus pruebas SQL, API, tipos, pruebas unitarias y de integración, y el contrato del frontend.
+- **Falta:**
+  1. Llevarlo a `feat/frontend-fase-1` (merge del backend, 2026-11-01).
+  2. Cargar la `39` en staging y redesplegar la API del VPS. Sin la `39`, esta API falla en `/matches`, equipos, temporadas y Mi perfil (lee columnas nuevas).
+  3. En el corte, la `39` va después de la `38` (punto 1.5).
+  4. El frontend activa lo suyo y regenera `src/api/schema.d.ts`.
+  5. E19 (búsqueda global ⌘K) queda para más adelante.
+- No toca el plugin: nada que subir al servidor real ni a flow.
+- **Bitácora:** [`2026-10-30-api-pendientes-frontend`](bitacora/2026-10-30-api-pendientes-frontend/)
+
+### 1.32 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** lo que pidió la Llave por formato del frontend: `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en `GET /events/{id}/matches`, y `series_players` (stats de la serie con el rating ponderado por rondas) en `GET /matches/{id}` de torneo y PCW.
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:** redesplegar la API del VPS junto con lo del punto 1.31. No toca la base ni el plugin.
+- **Bitácora:** [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/)
+
+### 1.33 Crear un equipo al instante (replanteo `40`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** cualquier usuario con SteamID crea su equipo sin aprobación (`POST /api/v1/teams`). Tope de equipos por capitán configurable (`max_led`, 1 por defecto), aptitud por modo en la ficha (`eligible_modes`) y el ranking de equipos solo con los que tienen 5 jugadores o suplentes. Se borran la aprobación, el rechazo y la cancelación de solicitudes.
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `40` en staging después de la `39` y redesplegar la API. Al cargarla, las solicitudes pendientes se resuelven solas (se crea el equipo o se rechazan con el motivo).
+  2. En el corte, la `40` va después de la `39`.
+- No toca el plugin: nada que subir al servidor real ni a flow.
+- **Bitácora:** [`2026-11-01-equipo-al-instante`](bitacora/2026-11-01-equipo-al-instante/)
+
+### 1.34 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
+
+- **Qué es:** Administración › Torneos. Moderadores que operan todos los torneos (sin cancelar ni borrar), siembra por ranking (torneos y PCW) con la etapa de entrada del suizo según la siembra, y cada mapa de una serie con un mix vinculado a mano o el resultado a mano ("Sin detalle de la partida").
+- **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
+- **Falta:**
+  1. Cargar la `41` en staging después de la `40` y redesplegar la API.
+  2. En el corte, la `41` va después de la `40`.
+- No toca el plugin.
+- **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

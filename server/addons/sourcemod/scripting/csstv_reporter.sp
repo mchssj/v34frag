@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.7.0"
+#define PLUGIN_VERSION "2.8.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -204,6 +204,7 @@ public void OnPluginStart()
 	HookEventEx("bomb_planted", Event_BombPlanted);
 	HookEventEx("bomb_defused", Event_BombDefused);
 	HookEventEx("bomb_exploded", Event_BombExploded);
+	HookEventEx("round_freeze_end", Event_FreezeEnd, EventHookMode_PostNoCopy);
 
 	Stats_Init();
 	Queue_Init();
@@ -755,7 +756,8 @@ int OtherSide(int side)
 void OnRoundCompleted(int winnerSide, int reason)
 {
 	bool aWon = winnerSide == g_iSideA;
-	Stats_RoundEnd(g_iSideA);
+	bool halfStart = g_iSegRound == 0 || g_iSegRound == g_iSegLen / 2;   // primera ronda de una mitad
+	Stats_RoundEnd(g_iSideA, winnerSide, halfStart && g_iSegment == 0, !halfStart);
 	Stats_LogRound(aWon ? 1 : 2, g_iSideA, reason);
 
 	if (aWon) { g_iSegA++; g_iTotA++; }
@@ -879,7 +881,7 @@ void FinishMatch()
 {
 	g_State = State_Finished;
 	Pause_Clear();
-	Demo_Stop();
+	Demo_StopLater();
 	Gg_Clear();
 	int endedAt = GetTime();
 	Summary_Print();
@@ -1094,10 +1096,10 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	if (victim <= 0)
 		return;
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-	Stats_OnDeath(victim, attacker, event.GetBool("headshot"));
-	Clips_OnDeath(victim, attacker);
 	char weapon[32];
 	event.GetString("weapon", weapon, sizeof(weapon));
+	Stats_OnDeath(victim, attacker, event.GetBool("headshot"), weapon);
+	Clips_OnDeath(victim, attacker);
 	Qol_OnDeath(victim, attacker, weapon);
 }
 
@@ -1126,7 +1128,16 @@ public void Event_BombExploded(Event event, const char[] name, bool dontBroadcas
 {
 	if (g_State != State_Live || g_bRestarting)
 		return;
-	Qol_OnBombScore(GetClientOfUserId(event.GetInt("userid")));   // quien la plantó
+	int planter = GetClientOfUserId(event.GetInt("userid"));   // quien la plantó
+	if (planter > 0)
+		Stats_Add(planter, ST_BOMBS, 1);
+	Qol_OnBombScore(planter);
+}
+
+public void Event_FreezeEnd(Event event, const char[] name, bool dontBroadcast)
+{
+	if (g_State == State_Live && !g_bRestarting)
+		Stats_FreezeEnd();
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 // Logos de equipos y banners de torneos en el bucket photos (replanteo 33). La política de Storage deja escribir al
-// capitán en teams/<equipo>/, a quien pide un equipo en team-requests/<su id>/ y al organizador en events/<torneo>/.
+// capitán en teams/<equipo>/ y al organizador en events/<torneo>/ (los logos de las solicitudes viejas quedaron en team-requests/<su id>/).
 import type { Context } from 'hono';
 import { inBackground } from '../lib/background';
 import { checkShape, readImage, storageError, type ImageShape } from '../lib/uploads';

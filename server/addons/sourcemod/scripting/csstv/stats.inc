@@ -10,6 +10,7 @@
 
 #define MAX_REC 64
 #define MAX_ROUND_LOG 160
+#define WEAPON_COUNT 26   // g_sWeapons
 
 enum
 {
@@ -32,8 +33,41 @@ enum
 	ST_DEFUSES,
 	ST_TK,
 	ST_SUICIDES,
-	ST_COUNT
+	// 2.7.0: datos para las medallas
+	ST_SURVIVED,
+	ST_WON_CT,
+	ST_WON_T,
+	ST_PISTOL_WON,
+	ST_ECO_WON,
+	ST_BOMBS,        // bombas que plantó y explotaron
+	ST_CLUTCH1,      // clutchs ganados 1v1 … 1v5 (ST_CLUTCH1 + n - 1)
+	ST_CLUTCH2,
+	ST_CLUTCH3,
+	ST_CLUTCH4,
+	ST_CLUTCH5,
+	ST_CLUTCH_TRIES,
+	ST_WKILLS,       // kills por arma: ST_WKILLS + índice en g_sWeapons
+	ST_WHS = ST_WKILLS + WEAPON_COUNT,
+	ST_COUNT = ST_WHS + WEAPON_COUNT
 };
+
+// Armas de v34 tal como las nombra player_death, con su precio (para el equipamiento de la ronda).
+char g_sWeapons[WEAPON_COUNT][] = {
+	"glock", "usp", "p228", "deagle", "elite", "fiveseven",
+	"m3", "xm1014", "mac10", "tmp", "mp5navy", "ump45", "p90",
+	"galil", "famas", "ak47", "m4a1", "sg552", "aug",
+	"scout", "sg550", "awp", "g3sg1", "m249", "knife", "hegrenade"
+};
+int g_iWeaponPrice[WEAPON_COUNT] = {
+	400, 500, 600, 650, 800, 750,
+	1700, 3000, 1400, 1250, 1500, 1700, 2350,
+	2000, 2250, 2500, 3100, 3500, 3500,
+	2750, 4200, 4750, 5000, 5750, 0, 300
+};
+
+// Ecos: equipamiento promedio del bando por debajo de ECO_MAX y el del rival desde ECO_RIVAL_MIN.
+#define ECO_MAX       1500
+#define ECO_RIVAL_MIN 3500
 
 int g_Stats[MAX_REC][ST_COUNT];
 char g_RecSteam[MAX_REC][40];
@@ -53,12 +87,21 @@ bool g_bFirstKillDone;
 int g_iPrevDmg[MAXPLAYERS + 1][MAXPLAYERS + 1];
 int g_iPrevHits[MAXPLAYERS + 1][MAXPLAYERS + 1];
 int g_iPrevRound;          // número de la ronda guardada; 0 = no hay
+bool g_bPrevAlive[MAXPLAYERS + 1];   // seguía vivo al terminar esa ronda
 
 // Registro de rondas
 int g_iRoundLogCount;
 int g_iRoundLogWinner[MAX_ROUND_LOG];   // 1 = A, 2 = B
 int g_iRoundLogSideA[MAX_ROUND_LOG];    // lado del equipo A en esa ronda
 int g_iRoundLogReason[MAX_ROUND_LOG];
+int g_iRoundLogEqA[MAX_ROUND_LOG];      // equipamiento promedio del equipo A (-1 = sin medir)
+int g_iRoundLogEqB[MAX_ROUND_LOG];
+
+// Ronda en curso (2.7.0)
+int g_iRoundEq[4];             // equipamiento promedio por lado (TEAM_T, TEAM_CT) al terminar el freezetime; -1 = sin medir
+bool g_bRoundOver;             // ya terminó la ronda: las muertes de después no cuentan para los clutchs
+int g_iClutchRec[4];           // registro del último vivo de cada lado (-1 = no hubo clutch)
+int g_iClutchVs[4];            // contra cuántos rivales quedó
 
 void Stats_Init()
 {
@@ -207,6 +250,13 @@ void Stats_Add(int client, int stat, int value)
 void Stats_RoundStart()
 {
 	g_bFirstKillDone = false;
+	g_bRoundOver = false;
+	for (int t = 0; t < 4; t++)
+	{
+		g_iRoundEq[t] = -1;
+		g_iClutchRec[t] = -1;
+		g_iClutchVs[t] = 0;
+	}
 	for (int i = 0; i <= MaxClients; i++)
 	{
 		g_iRoundKills[i] = 0;
@@ -231,6 +281,7 @@ void Stats_SnapshotRound(int roundNumber)
 			g_iPrevDmg[i][j] = g_iRoundDmg[i][j];
 			g_iPrevHits[i][j] = g_iRoundHits[i][j];
 		}
+		g_bPrevAlive[i] = i > 0 && IsClientInGame(i) && IsPlayerAlive(i);
 	}
 	g_iPrevRound = roundNumber;
 }
@@ -262,8 +313,17 @@ void Stats_OnHurt(int victim, int attacker, int dmgHealth, int healthLeft, bool 
 	Stats_Add(attacker, ST_DAMAGE, real);
 }
 
-void Stats_OnDeath(int victim, int attacker, bool headshot)
+int Stats_WeaponIndex(const char[] weapon)
 {
+	for (int w = 0; w < WEAPON_COUNT; w++)
+		if (StrEqual(weapon, g_sWeapons[w]))
+			return w;
+	return -1;
+}
+
+void Stats_OnDeath(int victim, int attacker, bool headshot, const char[] weapon)
+{
+	Stats_ClutchCheck(victim);
 	Stats_Add(victim, ST_DEATHS, 1);
 
 	if (attacker <= 0 || attacker == victim || !IsClientInGame(attacker))
@@ -281,6 +341,13 @@ void Stats_OnDeath(int victim, int attacker, bool headshot)
 	Stats_Add(attacker, ST_KILLS, 1);
 	if (headshot)
 		Stats_Add(attacker, ST_HS, 1);
+	int w = Stats_WeaponIndex(weapon);
+	if (w >= 0)
+	{
+		Stats_Add(attacker, ST_WKILLS + w, 1);
+		if (headshot)
+			Stats_Add(attacker, ST_WHS + w, 1);
+	}
 	g_iRoundKills[attacker]++;
 
 	if (!g_bFirstKillDone)
@@ -307,10 +374,99 @@ void Stats_OnDeath(int victim, int attacker, bool headshot)
 }
 
 /**
- * Cierra la ronda: rondas jugadas por jugador (y de qué lado) y multikills.
+ * Clutchs: cuando un lado se queda con un solo vivo contra al menos un rival, ese jugador
+ * intenta el clutch (una vez por ronda y por lado). victim acaba de morir y no se cuenta.
  */
-void Stats_RoundEnd(int sideA)
+void Stats_ClutchCheck(int victim)
 {
+	if (g_bRoundOver)
+		return;
+	int alive[4], last[4];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (i == victim || !IsClientInGame(i) || !IsPlayerAlive(i))
+			continue;
+		int team = GetClientTeam(i);
+		if (team == TEAM_T || team == TEAM_CT)
+		{
+			alive[team]++;
+			last[team] = i;
+		}
+	}
+	for (int team = TEAM_T; team <= TEAM_CT; team++)
+	{
+		int vs = alive[team == TEAM_T ? TEAM_CT : TEAM_T];
+		if (g_iClutchRec[team] >= 0 || alive[team] != 1 || vs < 1)
+			continue;
+		int rec = Stats_GetRec(last[team]);
+		if (rec < 0)
+			continue;
+		g_iClutchRec[team] = rec;
+		g_iClutchVs[team] = vs > 5 ? 5 : vs;
+		g_Stats[rec][ST_CLUTCH_TRIES]++;
+	}
+}
+
+/** Valor del equipamiento de un jugador: armas (sin la C4), granadas, chaleco, casco y kit. */
+int Stats_Equipment(int client)
+{
+	int value, size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+	char cls[32];
+	for (int i = 0; i < size; i++)
+	{
+		int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+		if (ent <= 0 || !IsValidEdict(ent))
+			continue;
+		GetEdictClassname(ent, cls, sizeof(cls));
+		if (StrContains(cls, "weapon_") != 0)
+			continue;
+		if (StrEqual(cls[7], "flashbang"))
+			value += 200;
+		else if (StrEqual(cls[7], "smokegrenade"))
+			value += 300;
+		else
+		{
+			int w = Stats_WeaponIndex(cls[7]);
+			if (w >= 0)
+				value += g_iWeaponPrice[w];
+		}
+	}
+	if (GetClientArmor(client) > 0)
+		value += GetEntProp(client, Prop_Send, "m_bHasHelmet") ? 1000 : 650;
+	if (GetClientTeam(client) == TEAM_CT && GetEntProp(client, Prop_Send, "m_bHasDefuser"))
+		value += 200;
+	return value;
+}
+
+/** Al terminar el freezetime: equipamiento promedio de cada lado. */
+void Stats_FreezeEnd()
+{
+	int sum[4], n[4];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || !IsPlayerAlive(i))
+			continue;
+		int team = GetClientTeam(i);
+		if (team != TEAM_T && team != TEAM_CT)
+			continue;
+		sum[team] += Stats_Equipment(i);
+		n[team]++;
+	}
+	for (int team = TEAM_T; team <= TEAM_CT; team++)
+		g_iRoundEq[team] = n[team] > 0 ? sum[team] / n[team] : -1;
+}
+
+/**
+ * Cierra la ronda: rondas jugadas por jugador (y de qué lado), multikills, rondas
+ * sobrevividas y ganadas, pistolas, ecos y clutchs.
+ * pistol: primera ronda de una mitad del reglamentario. ecoOk: no es la primera de una mitad.
+ */
+void Stats_RoundEnd(int sideA, int winnerSide, bool pistol, bool ecoOk)
+{
+	g_bRoundOver = true;
+	int loserSide = winnerSide == TEAM_CT ? TEAM_T : TEAM_CT;
+	bool eco = ecoOk && g_iRoundEq[winnerSide] >= 0 && g_iRoundEq[loserSide] >= 0
+		&& g_iRoundEq[winnerSide] < ECO_MAX && g_iRoundEq[loserSide] >= ECO_RIVAL_MIN;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
@@ -328,8 +484,22 @@ void Stats_RoundEnd(int sideA)
 			k = 5;
 		if (k > 0)
 			g_Stats[rec][ST_K1 + k - 1]++;
+		if (IsPlayerAlive(i))
+			g_Stats[rec][ST_SURVIVED]++;
+		if (team == winnerSide)
+		{
+			g_Stats[rec][team == TEAM_CT ? ST_WON_CT : ST_WON_T]++;
+			if (pistol)
+				g_Stats[rec][ST_PISTOL_WON]++;
+			if (eco)
+				g_Stats[rec][ST_ECO_WON]++;
+		}
 		GetClientName(i, g_RecName[rec], sizeof(g_RecName[]));
 	}
+	// El clutch cuenta si su lado gana la ronda, aunque él muera después (por ejemplo, con la bomba).
+	int rec = g_iClutchRec[winnerSide];
+	if (rec >= 0)
+		g_Stats[rec][ST_CLUTCH1 + g_iClutchVs[winnerSide] - 1]++;
 }
 
 void Stats_LogRound(int winner, int sideA, int reason)
@@ -339,5 +509,8 @@ void Stats_LogRound(int winner, int sideA, int reason)
 	g_iRoundLogWinner[g_iRoundLogCount] = winner;
 	g_iRoundLogSideA[g_iRoundLogCount] = sideA;
 	g_iRoundLogReason[g_iRoundLogCount] = reason;
+	int sideB = sideA == TEAM_CT ? TEAM_T : TEAM_CT;
+	g_iRoundLogEqA[g_iRoundLogCount] = g_iRoundEq[sideA];
+	g_iRoundLogEqB[g_iRoundLogCount] = g_iRoundEq[sideB];
 	g_iRoundLogCount++;
 }

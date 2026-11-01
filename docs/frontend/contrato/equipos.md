@@ -37,9 +37,12 @@ stateDiagram-v2
 | Endpoint | Quién | Pantalla |
 |---|---|---|
 | `GET /api/v1/teams` | Todos | **Equipos** (por defecto oficiales): nombre, sigla, capitán, jugadores (de 10) |
-| `GET /api/v1/teams/{id}` | Todos | **Equipo:** datos, capitán, récord y `viewer` |
+| `GET /api/v1/teams/{id}` | Todos | **Equipo:** datos, capitán, récord y `viewer`. Desde el 2026-10-30: `dissolved_at` (equipo disuelto: mostrar "Equipo disuelto"; `null` si sigue activo), `name_changed_at` y `next_name_change_at` (desde cuándo el capitán puede volver a cambiar el nombre; `null`: ya puede). Desde el 2026-11-01, `eligible_modes`: por cada modo activo, `{ code, name, players_per_team, missing }` (`missing` = cuántos jugadores le faltan; 0 = apto). Cuentan los miembros activos jugadores o suplentes, no el coach |
+| `PATCH /api/v1/teams/{id}` | Capitán o admin | **Editar equipo:** `looking_for`, y desde el 2026-10-30 también `name` (2 a 40) y `tag` (1 a 6, en mayúsculas). Únicos entre los equipos activos y sin palabras bloqueadas. El capitán los cambia **una vez cada 30 días** (`409 CONFLICT` con `details.next_change_at`) y no mientras el equipo juega un torneo en curso (`409`). El admin no espera |
+| `POST /api/v1/teams/{id}/dissolve` | Capitán o admin | **Disolver equipo** (2026-10-30), con confirmación. `204`. Queda archivado: sale de `GET /teams`, de Buscar equipo y del ranking, y conserva partidas, títulos y su página. Todos pasan a ex integrantes y reciben `team_dissolved`. `409` si está inscrito en un torneo con inscripciones abiertas o en curso, o si ya estaba disuelto |
 | `GET /api/v1/teams/{id}/members` | Todos | Plantel (`active=true`: alias, rol, ELO, nivel, capitán) y ex integrantes (`active=false`). Las partidas del equipo: `GET /api/v1/matches?team={id}` |
-| `GET`/`PUT /api/v1/me/team-request` | Usuario | **Solicitar equipo nuevo** (nombre y sigla), una por usuario. Al aprobarla, el usuario queda como dueño, capitán y primer miembro |
+| `POST /api/v1/teams` | Usuario con SteamID | **Crear equipo** (2026-11-01, replanteo 40): `{ name, tag }`; se crea al instante, sin aprobación, y quien lo crea queda como dueño, capitán y primer miembro. `201 { id }`. `409 CONFLICT` con `details.reason`: `name_taken`, `tag_taken` o `lead_limit` (con `details.max_led`: de cuántos equipos activos puede ser capitán, lo fija el admin, 1 por defecto). El logo se sube después con `PUT /api/v1/teams/{id}/logo` |
+| `GET /api/v1/me/team-request` | Usuario | Solo historial: la solicitud que mandó antes del 2026-11-01, si la hay (las pendientes se resolvieron solas: se creó el equipo o se rechazaron con el motivo). Ya no hay `PUT` ni `DELETE` |
 | `GET /api/v1/me/team-invites` | Usuario | **Mis invitaciones** recibidas (`kind=invite`) y pedidos enviados (`kind=request`), abiertos |
 | `POST /api/v1/teams/{id}/join-requests` | Usuario | Botón "Pedir entrar" en la página del equipo |
 | `POST /api/v1/team-invites/{id}/accept` / `…/reject` | Invitado | Aceptar o rechazar |
@@ -53,7 +56,7 @@ stateDiagram-v2
 | `POST /api/v1/teams/{id}/captain` | Capitán o admin | `{ player_id }`: ceder la capitanía a un jugador con cuenta |
 ## 7. Ranking de equipos (disponible)
 
-- `GET /api/v1/ranking/teams?pcw=0|1`: posición, equipo, PJ, G, P y puntos, paginado. `points_per_win` trae los puntos vigentes por victoria.
+- `GET /api/v1/ranking/teams?pcw=0|1`: posición, equipo, PJ, G, P y puntos, paginado. `points_per_win` trae los puntos vigentes por victoria. Desde el 2026-11-01 solo aparecen los equipos con 5 o más jugadores o suplentes activos (los incompletos sí salen en Buscar equipo).
 - Desde el 2026-10-24 cada fila suma, en el modo pedido (con o sin PCW):
   - `win_rate`: % de victorias (0 a 100; null sin partidas).
   - `trend`: puestos que subió (positivo, "▲n") o bajó (negativo, "▼n") desde hace 30 días; `0` igual ("–"); `null` si hace 30 días no tenía partidas en ese modo ("–").
