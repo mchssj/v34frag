@@ -62,7 +62,7 @@ const SIDE: Record<WelcomeStep, SideCopy> = {
     subtitle: "Agrégalo para que te inviten a PCW.",
   },
   link: {
-    title: "Escribe el código en el chat del servidor.",
+    title: "Escríbelo en el chat de tu primera partida.",
     subtitle: "Tu SteamID queda vinculado a tu cuenta.",
   },
 }

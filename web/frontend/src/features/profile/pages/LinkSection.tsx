@@ -198,7 +198,7 @@ function GameAccountsCard({
           <>
             <CardTitle
               title={g.addTitle}
-              description="Entra al servidor con la cuenta que quieres sumar y escribe el código en el chat."
+              description="Juega una partida con la cuenta que quieres sumar y escribe el código en el chat. Se suma al instante."
             />
             {code && waiting && (
               <div className="flex flex-wrap items-center gap-3 rounded-md border border-dashed bg-card p-3.5">

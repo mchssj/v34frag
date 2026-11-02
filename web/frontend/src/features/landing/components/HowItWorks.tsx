@@ -22,7 +22,7 @@ const STEPS: {
     n: "01",
     icon: UserPlusIcon,
     title: "Crea tu cuenta y elige tu tag",
-    text: "En cuatro pasos. Después vinculas tu jugador escribiendo !claim y un código en el servidor.",
+    text: "En cuatro pasos. En tu primera partida vinculas tu SteamID escribiendo !claim y un código.",
     footIcon: TerminalIcon,
     foot: "!claim K7Q2-9FXM",
   },

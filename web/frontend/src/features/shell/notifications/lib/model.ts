@@ -545,6 +545,14 @@ export function describe(n: Notification, me?: string | null): Described {
         body: player,
         link: { to: "/admin/players" },
       }
+    // (replanteo 58) El !claim de un SteamID nuevo se suma al instante: el aviso es para revisarlo después.
+    case "admin_steam_linked":
+      return {
+        kind: "admin",
+        title: `${player} sumó un SteamID con !claim`,
+        body: `${str(d.steam_id)}${str(d.nick) ? ` (${str(d.nick)})` : ""}. Revísalo en Administración › Jugadores.`,
+        link: { to: "/admin/players" },
+      }
     case "admin_team_request":
       return {
         kind: "admin",

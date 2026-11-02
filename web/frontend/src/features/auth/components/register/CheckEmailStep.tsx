@@ -40,7 +40,7 @@ export function CheckEmailStep({
         </span>
         <span className="flex items-center gap-2.5 text-[13px] text-muted-foreground">
           <LinkIcon className="size-4 shrink-0" aria-hidden />
-          Vincula tu jugador con !claim en el servidor (opcional)
+          Juega tu primera partida y vincula tu SteamID con !claim
         </span>
       </Card>
     </>

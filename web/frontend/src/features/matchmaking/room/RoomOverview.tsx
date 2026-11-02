@@ -153,7 +153,7 @@ function PlayerCard({
               <Badge
                 variant="warn"
                 size="xs"
-                title="Todavía no vinculó su SteamID: tiene que escribir !claim en el servidor"
+                title="Todavía no vinculó su SteamID: tiene que escribir !claim en el chat de la partida"
               >
                 Sin vincular
               </Badge>
@@ -375,6 +375,18 @@ function Center({
       {inVeto && lobby.veto && <VetoBoard lobby={lobby} />}
 
       {needsClaim(lobby) && <ClaimCard />}
+      {/* (replanteo 58) Desde otra PC el SteamID cambia: el !claim lo suma al instante a la ficha. */}
+      {!needsClaim(lobby) &&
+        ["assigned", "connecting"].includes(lobby.status) &&
+        lobby.players.some((p) => p.is_me) && (
+          <p className="text-xs text-muted-foreground">
+            ¿Juegas desde otra PC? Genera un código en{" "}
+            <Link to="/profile/link" className="underline underline-offset-4">
+              Mi perfil › Vinculación
+            </Link>{" "}
+            y escribe !claim en el chat de la partida.
+          </p>
+        )}
 
       {lobby.status === "finished" && <MatchSummary lobby={lobby} />}
 

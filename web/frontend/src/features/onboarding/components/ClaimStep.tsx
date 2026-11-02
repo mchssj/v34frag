@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { useEffect, useRef, useState } from "react"
 
@@ -8,8 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { AuthHeading } from "@/features/auth/components/ui"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
-import { serverStatusOptions } from "@/features/public/api/queries"
-import { claimServer } from "@/features/public/lib/format"
 import {
   currentCode,
   expiryText,
@@ -21,11 +18,6 @@ import type { SteamStatus } from "../types"
 
 export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
   const create = useCreateClaimCode()
-  // Un servidor en línea para el connect (null si no hay ninguno).
-  const server = useQuery({
-    ...serverStatusOptions,
-    select: (s) => claimServer(s.servers),
-  }).data
   const [code, setCode] = useState<ClaimCode | null>(() => currentCode(status))
   const requested = useRef(false)
   const linked = (status?.steam_ids.length ?? 0) > 0
@@ -57,17 +49,13 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
     status?.steam_ids.find((s) => s.is_primary) ?? status?.steam_ids[0]
   const result = status?.last_code?.result
   const steps = [
-    server?.address
-      ? {
-          text: "Entra a un servidor de CM League:",
-          code: `connect ${server.address}`,
-        }
-      : {
-          text: "Entra a un servidor de CM League cuando haya uno en línea.",
-          code: null,
-        },
+    // Ya no se entra al servidor cuando uno quiere: el !claim se hace en la primera partida del matchmaking.
     {
-      text: "Escribe en el chat:",
+      text: "Busca partida en Jugar. Cuando entres al servidor de tu primera partida, abre el chat.",
+      code: null,
+    },
+    {
+      text: "Escribe:",
       code: code ? `!claim ${code.code}` : "!claim …",
     },
     { text: "Espera la confirmación aquí. Toma unos segundos.", code: null },
@@ -182,7 +170,7 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
             ? `Vinculado: SteamID ${primary ? `${primary.steam_id.slice(0, 13)}…` : ""}`
             : result && status?.last_code?.status === "used"
               ? result
-              : "Esperando el comando en el servidor…"}
+              : "Esperando el comando en tu partida…"}
         </span>
       </div>
     </>
