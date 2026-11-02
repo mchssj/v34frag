@@ -4,6 +4,8 @@
 
 Probado con bots en local y **subido el 2026-11-02 como 2.7.3 a flow y MVZG, y a `disabled/` en `aurav34`**. Entra en el próximo cambio de mapa. Falta la prueba con jugadores.
 
+**2.7.4 (2.8.3 en `kyan/pruebas`):** cambia la charla del medio tiempo, porque con la 2.7.3 Kyan casi no pudo comprar en la primera ronda de la mitad (ver "Cambio a la 2.7.4"). **Subida el 2026-11-02 a flow y a `disabled/` en `aurav34`. MVZG no la tiene:** ahí corre el 2.8.2 de matchmaking de Daniel.
+
 ## Archivos
 
 | Archivo | Cambio |
@@ -27,6 +29,23 @@ Se comparó cada archivo subido con el original. No se recargó nada: entra en e
 
 Respaldos: `plugins/disabled/csstv_reporter_2.7.2.smx` y `cfg/sourcemod/csstv_reporter.cfg.bak_autopause` en cada servidor.
 
+## Cambio a la 2.7.4
+
+En la 2.7.3 la charla estiraba 10 s el freezetime de la primera ronda de la mitad y bloqueaba la compra. `mp_buytime 0.25` (15 s) cuenta desde que empieza el freezetime, y en los servidores el freezetime es de 15 s (`mp_freezetime 15` en el `live.cfg` de flow y MVZG; el del repo dice 6). Así que, al terminar la charla, quedaban unos 2 s para comprar.
+
+Kyan pidió que el alltalk empiece al terminar la última ronda, que la siguiente tarde 10 s y que el alltalk se apague cuando quedan 10 s de freezetime. Cómo quedó está en la documentación. Además hay una ConVar nueva, `csstv_half_alltalk_off "10"`, que va en el cfg de cada servidor.
+
+- Código de producción: `pruebas/reporter-2.7.4.patch`, desde `6898c05`, igual que el de la 2.7.3.
+- Builds compilados el 2026-11-02: licenciado de flow, 127090 bytes; licenciado de MVZG, 127091 bytes; genérico, 127041 bytes.
+- Despliegue del 2026-11-02, sin recargar nada (entra en el próximo cambio de mapa). Se comparó cada archivo subido con el original.
+
+| Servidor | Qué se subió | Respaldo |
+|---|---|---|
+| flow (`#2`, `SERVER2_*`) | Build licenciado 2.7.4 y la línea nueva del cfg | `plugins/disabled/csstv_reporter_2.7.3.smx` y `cfg/sourcemod/csstv_reporter.cfg.bak_274` |
+| `aurav34` (`#3`, `SFTP_CSS_*`) | Genérico 2.7.4 en `plugins/disabled/` (el reporter sigue desactivado) y la línea del cfg | Los mismos |
+| MVZG (`#1`, `SERVER3_*`) | **Nada.** Ahí corre un 2.8.2 licenciado para MVZG (136613 bytes): es el matchmaking de Daniel (`feat/mm-claim-en-sala`, sobre la 2.8.1), que trae la charla de la 2.7.3. Subirle la 2.7.4 le sacaría el matchmaking: queda para que lo decidan Kyan y Daniel | — |
+- En MVZG, mientras siga con la charla de la 2.7.3, se puede poner `csstv_half_alltalk "0"` en el cfg para que no se coma el tiempo de compra.
+
 ## Pruebas
 
 ### Con bots (`C:\Users\Agus\Downloads\cssds`, 2026-11-02)
@@ -39,7 +58,8 @@ Con `pruebas/escenario.sh`, en la 2.8.1 y en la 2.7.3, build `CSSTV_DEBUG`, `css
 | Se va en freezetime | Pausa; "Volvió el jugador" a los 6 s, al volver |
 | Se va otro después | Sin pausa |
 | Partida nueva, se va a mitad de ronda y no vuelve | Pausa en la próxima ronda, termina por tiempo (12 s de prueba) |
-| Medio tiempo | `sv_alltalk` en 1 durante 10 s, y de nuevo en 0 |
+| Medio tiempo (2.7.3) | `sv_alltalk` en 1 durante 10 s, y de nuevo en 0 |
+| Medio tiempo (2.8.3 y 2.7.4, `pruebas/medio_tiempo.sh`, freezetime 15) | Fin de la mitad 14:52:05, ronda nueva con los lados cambiados 14:52:15 (sin una ronda intermedia a los 5 s) y alltalk apagado 14:52:20. Medido desde el `bot_kill`: `sv_alltalk` en 1 hasta +15/16 s y después en 0 |
 
 ### Falta probar con jugadores
 
@@ -47,13 +67,13 @@ Se subió sin esta prueba, por decisión de Kyan. Los bots no prueban lo siguien
 
 1. La campana se escucha, incluso con el juego en segundo plano. El motor puede silenciar el juego sin foco.
 2. El texto en el centro aparece.
-3. En el medio tiempo nadie puede moverse ni comprar durante los 10 s, y se oye al otro equipo por voz.
-4. Después de la charla queda el freezetime normal y se puede comprar.
+3. En el medio tiempo se oye al otro equipo por voz desde el final de la ronda hasta que quedan 10 s de freezetime.
+4. En la primera ronda de la mitad se puede comprar durante todo el freezetime.
 5. Un jugador real se desconecta y vuelve: la pausa termina al volver y sigue en su equipo.
 
 ## En qué se apartó del plan
 
-- La charla del medio tiempo se pidió durante la implementación.
+- La charla del medio tiempo se pidió durante la implementación, y en la 2.7.4 se rehízo como se cuenta arriba.
 - La campana suena tres veces, porque dura 0,69 s y se pidió que se escuche bien.
 
 ## Incidentes durante las pruebas
