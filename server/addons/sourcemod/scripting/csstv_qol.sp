@@ -11,6 +11,12 @@
  *     mapa siguiente, para que el servidor quede libre. 40 s por defecto: la SourceTV va atrasada y
  *     tiene que llegar a mostrar el final. Si para entonces ya empezó otra partida, no hace nada.
  *
+ * Desde la 1.1.0 (plan docs/bitacora/2026-11-02-qol-tanda-3):
+ *   - quien se va en vivo y vuelve en la misma mitad recupera su plata y, si estaba vivo, su equipo;
+ *   - csstv_qol_eq segundos antes de que termine el freezetime, cada equipo ve qué tiene cada uno (y !eq);
+ *   - "Fulano: 1 vs 3" en el centro para los muertos y los espectadores, y en el chat si lo gana;
+ *   - !nades en el calentamiento: granadas infinitas, trayectoria visible y !rethrow.
+ *
  * El estado del mix se lee de sm_csstv_status, como hace v34_retake, así no depende de la versión
  * del reporter. Con retake, wingman o deathmatch prendidos no hace nada: tienen sus propias reglas.
  * Sin licencia.
@@ -22,8 +28,12 @@
 #include <sdktools>
 #include <cstrike>
 #include <nextmap>
+#include <sdkhooks>
 
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.1.0"
+#define AMMO_HE    11
+#define AMMO_FLASH 12
+#define AMMO_SMOKE 13
 #define TEAM_T  2
 #define TEAM_CT 3
 #define C4_MOVE 32.0   // unidades que tiene que moverse para no contar como quieto
@@ -32,7 +42,7 @@ public Plugin myinfo =
 {
 	name = "CSSTV QOL",
 	author = "CMLeague",
-	description = "Reaparecer en el calentamiento, mejor de la ronda y C4 de un jugador quieto",
+	description = "Calentamiento, mejor de la ronda, C4 de un quieto, reconexión, equipamiento, clutch y práctica de granadas",
 	version = PLUGIN_VERSION,
 	url = ""
 };
@@ -41,9 +51,15 @@ ConVar g_cvRespawn;
 ConVar g_cvRoundBest;
 ConVar g_cvC4Afk;
 ConVar g_cvEndKick;
+ConVar g_cvRestore;
+ConVar g_cvEq;
+ConVar g_cvClutch;
+ConVar g_cvNades;
+ConVar g_cvFreezeTime;
 ConVar g_cvStartMoney;
 ConVar g_cvTag;
 
+char g_sLastClutch[64];             // último clutch anunciado, para sm_qol_status
 char g_sLastBest[192];              // último "mejor de la ronda", para sm_qol_status
 char g_sState[32];                  // estado del reporter, leído cada segundo
 bool g_bOtherMode;                  // retake, wingman o deathmatch prendido
@@ -55,6 +71,17 @@ int g_iRound;                       // cuenta las rondas, para que un timer viej
 int g_iC4Carrier;                   // userid de quien tenía la C4 al terminar el freezetime
 float g_fC4Pos[3];
 
+StringMap g_hSaved;                 // SteamID -> plata y equipo de quien se fue en vivo
+int g_iHalf;                        // sube en cada medio tiempo: lo guardado vale solo en la misma mitad
+int g_iClutch[4];                   // por lado: userid del último vivo, ya anunciado
+int g_iClutchVs[4];
+bool g_bNades[MAXPLAYERS + 1];
+float g_fThrowPos[MAXPLAYERS + 1][3];
+float g_fThrowAng[MAXPLAYERS + 1][3];
+char g_sThrowWeapon[MAXPLAYERS + 1][24];
+int g_iBeam;
+int g_iHalo;
+
 public void OnPluginStart()
 {
 	CreateConVar("csstv_qol_version", PLUGIN_VERSION, "Versión de CSSTV QOL.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
@@ -62,7 +89,16 @@ public void OnPluginStart()
 	g_cvRoundBest = CreateConVar("csstv_qol_round_best", "1", "Con la partida en vivo, decir al final de cada ronda quién hizo más daño y más kills.", _, true, 0.0, true, 1.0);
 	g_cvC4Afk     = CreateConVar("csstv_qol_c4_afk", "20", "Segundos después del freezetime: si quien tiene la C4 no se movió, la tira (0 = no).", _, true, 0.0, true, 120.0);
 	g_cvEndKick   = CreateConVar("csstv_qol_end_kick", "40", "Segundos después del fin de la partida: contraseña al azar, expulsar a todos y cambiar de mapa (0 = no). Que le dé tiempo a la SourceTV de mostrar el final.", _, true, 0.0, true, 120.0);
+	g_cvRestore   = CreateConVar("csstv_qol_restore", "1", "Quien se va en vivo y vuelve en la misma mitad recupera su plata y su equipo.", _, true, 0.0, true, 1.0);
+	g_cvEq        = CreateConVar("csstv_qol_eq", "6", "Segundos antes del fin del freezetime para mostrarle a cada equipo qué tiene cada uno (0 = no; !eq siempre).", _, true, 0.0, true, 60.0);
+	g_cvClutch    = CreateConVar("csstv_qol_clutch", "1", "Anunciar los clutch (1 vs 2 o más) a los muertos y los espectadores.", _, true, 0.0, true, 1.0);
+	g_cvNades     = CreateConVar("csstv_qol_nades", "1", "Permitir !nades (práctica de granadas) en el calentamiento.", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "csstv_qol");
+	g_cvFreezeTime = FindConVar("mp_freezetime");
+	g_hSaved = new StringMap();
+	RegConsoleCmd("sm_eq", Cmd_Eq, "Qué tiene cada uno de tu equipo: armas, chaleco, kit, granadas y plata.");
+	RegConsoleCmd("sm_nades", Cmd_Nades, "Práctica de granadas en el calentamiento: infinitas y con la trayectoria.");
+	RegConsoleCmd("sm_rethrow", Cmd_Rethrow, "Práctica de granadas: volver al lugar y la mira de la última que tiraste.");
 	g_cvStartMoney = FindConVar("mp_startmoney");
 
 	HookEvent("player_death", Event_PlayerDeath);
@@ -71,15 +107,15 @@ public void OnPluginStart()
 	HookEvent("player_team", Event_PlayerTeam);
 	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("round_freeze_end", Event_FreezeEnd, EventHookMode_PostNoCopy);
-	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+	HookEvent("round_end", Event_RoundEnd);
 	RegAdminCmd("sm_qol_status", Cmd_Status, ADMFLAG_GENERIC, "Estado de CSSTV QOL: qué lee del reporter y de los otros modos.");
 	CreateTimer(1.0, Timer_State, _, TIMER_REPEAT);
 }
 
 public Action Cmd_Status(int client, int args)
 {
-	ReplyToCommand(client, "[QOL] v%s · reporter: %s · otro modo: %s · en vivo esta ronda: %s · último: %s", PLUGIN_VERSION,
-		g_sState[0] ? g_sState : "-", g_bOtherMode ? "sí" : "no", g_bLive ? "sí" : "no", g_sLastBest[0] ? g_sLastBest : "-");
+	ReplyToCommand(client, "[QOL] v%s · reporter: %s · otro modo: %s · en vivo esta ronda: %s · último: %s · clutch: %s", PLUGIN_VERSION,
+		g_sState[0] ? g_sState : "-", g_bOtherMode ? "sí" : "no", g_bLive ? "sí" : "no", g_sLastBest[0] ? g_sLastBest : "-", g_sLastClutch[0] ? g_sLastClutch : "-");
 	return Plugin_Handled;
 }
 
@@ -87,11 +123,33 @@ public Action Cmd_Status(int client, int args)
 public Action Timer_State(Handle timer)
 {
 	bool wasOver = StrEqual(g_sState, "terminada");
+	bool wasHalf = StrEqual(g_sState, "medio tiempo");
 	ReporterState(g_sState, sizeof(g_sState));
+	if (!wasHalf && StrEqual(g_sState, "medio tiempo"))
+		g_iHalf++;
+	if (!StrEqual(g_sState, "en vivo") && !StrEqual(g_sState, "medio tiempo"))
+		g_hSaved.Clear();   // fuera de una partida no hay nada que devolver
 	if (!wasOver && StrEqual(g_sState, "terminada") && g_cvEndKick.IntValue > 0)
 		CreateTimer(g_cvEndKick.FloatValue - 1.0, Timer_EndKick, _, TIMER_FLAG_NO_MAPCHANGE);   // el estado se lee con hasta 1 s de atraso
 	g_bOtherMode = ModeOn("sm_retake") || ModeOn("sm_2v2") || ModeOn("sm_dm");
+	if (!InWarmup())
+		for (int i = 1; i <= MaxClients; i++)
+			if (g_bNades[i])
+				Nades_Off(i, true);
 	return Plugin_Continue;
+}
+
+public void OnMapStart()
+{
+	g_iBeam = PrecacheModel("materials/sprites/laser.vmt");
+	g_iHalo = PrecacheModel("materials/sprites/halo01.vmt");
+}
+
+public void OnClientDisconnect(int client)
+{
+	Restore_Save(client);
+	g_bNades[client] = false;
+	g_sThrowWeapon[client][0] = '\0';
 }
 
 public void OnConfigsExecuted()
@@ -159,6 +217,8 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		g_iKills[attacker]++;
 	if (victim > 0 && g_cvRespawn.BoolValue && InWarmup())
 		CreateTimer(1.5, Timer_Respawn, GetClientUserId(victim), TIMER_FLAG_NO_MAPCHANGE);
+	if (g_cvClutch.BoolValue && IsLive())
+		RequestFrame(Frame_Clutch);
 }
 
 public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
@@ -199,6 +259,13 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 		g_iKills[i] = 0;
 	}
 	g_bLive = g_cvRoundBest.BoolValue && IsLive();
+	for (int t = 0; t < 4; t++)
+		g_iClutch[t] = 0;
+	if (g_cvEq.IntValue > 0 && IsLive() && g_cvFreezeTime != null)
+	{
+		float wait = g_cvFreezeTime.FloatValue - g_cvEq.FloatValue;
+		CreateTimer(wait < 2.0 ? 2.0 : wait, Timer_Eq, g_iRound, TIMER_FLAG_NO_MAPCHANGE);
+	}
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
@@ -206,6 +273,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0)
 		g_iLastHp[client] = 100;
+	if (client > 0 && g_cvRestore.BoolValue && IsLive())
+		CreateTimer(0.3, Timer_Restore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);   // después de las armas de la aparición
 }
 
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
@@ -223,6 +292,7 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
+	Clutch_RoundEnd(event.GetInt("winner"));
 	if (!g_bLive)
 		return;
 	g_bLive = false;
@@ -352,5 +422,355 @@ public Action Timer_EndMap(Handle timer, DataPack pack)
 	pack.Reset();
 	pack.ReadString(map, sizeof(map));
 	ForceChangeLevel(map, "CMLeague: fin de la partida");
+	return Plugin_Stop;
+}
+
+// ---------------------------------------------------------------------------
+// Volver con tu plata y tu equipo
+// ---------------------------------------------------------------------------
+
+/** SteamID; los bots (solo en pruebas) por nombre. */
+bool RestoreKey(int client, char[] key, int len)
+{
+	if (IsFakeClient(client))
+	{
+		Format(key, len, "bot:%N", client);
+		return true;
+	}
+	return GetClientAuthId(client, AuthId_Steam2, key, len) && !StrEqual(key, "STEAM_ID_PENDING");
+}
+
+int Ammo(int client, int idx)
+{
+	return GetEntProp(client, Prop_Send, "m_iAmmo", _, idx);
+}
+
+/** Al irse en vivo: "mitad|plata|vivo|chaleco|casco|kit|HE|FB|SM|arma1,arma2". */
+void Restore_Save(int client)
+{
+	if (!g_cvRestore.BoolValue || !IsClientInGame(client) || !IsLive())
+		return;
+	int team = GetClientTeam(client);
+	if (team != TEAM_T && team != TEAM_CT)
+		return;
+	char key[64];
+	if (!RestoreKey(client, key, sizeof(key)))
+		return;
+	bool alive = IsPlayerAlive(client);
+	char guns[96], cls[32];
+	if (alive)
+	{
+		for (int slot = 0; slot <= 1; slot++)
+		{
+			int w = GetPlayerWeaponSlot(client, slot);
+			if (w <= 0)
+				continue;
+			GetEdictClassname(w, cls, sizeof(cls));
+			if (guns[0])
+				StrCat(guns, sizeof(guns), ",");
+			StrCat(guns, sizeof(guns), cls);
+		}
+	}
+	char val[160];
+	Format(val, sizeof(val), "%d|%d|%d|%d|%d|%d|%d|%d|%d|%s", g_iHalf, GetEntProp(client, Prop_Send, "m_iAccount"), alive,
+		alive ? GetEntProp(client, Prop_Send, "m_ArmorValue") : 0, alive ? GetEntProp(client, Prop_Send, "m_bHasHelmet") : 0,
+		alive && team == TEAM_CT ? GetEntProp(client, Prop_Send, "m_bHasDefuser") : 0,
+		alive ? Ammo(client, AMMO_HE) : 0, alive ? Ammo(client, AMMO_FLASH) : 0, alive ? Ammo(client, AMMO_SMOKE) : 0, guns);
+	g_hSaved.SetString(key, val);
+}
+
+public Action Timer_Restore(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !IsClientInGame(client) || !IsPlayerAlive(client))
+		return Plugin_Stop;
+	char key[64], val[160];
+	if (!RestoreKey(client, key, sizeof(key)) || !g_hSaved.GetString(key, val, sizeof(val)))
+		return Plugin_Stop;
+	g_hSaved.Remove(key);
+	char f[10][96];
+	if (ExplodeString(val, "|", f, sizeof(f), sizeof(f[])) < 9 || StringToInt(f[0]) != g_iHalf)
+		return Plugin_Stop;   // se fue en la otra mitad: ya empezó de cero
+	int money = StringToInt(f[1]);
+	if (money > GetEntProp(client, Prop_Send, "m_iAccount"))
+		SetEntProp(client, Prop_Send, "m_iAccount", money);
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	if (!StringToInt(f[2]))
+	{
+		PrintToChat(client, "\x04[%s]\x01 Volviste: recuperaste tu plata ($%d).", tag, money);
+		return Plugin_Stop;
+	}
+	if (f[9][0])
+	{
+		char guns[2][32];
+		int n = ExplodeString(f[9], ",", guns, sizeof(guns), sizeof(guns[]));
+		for (int g = 0; g < n; g++)
+		{
+			int slot = StrEqual(guns[g], "weapon_glock") || StrEqual(guns[g], "weapon_usp") || StrEqual(guns[g], "weapon_p228")
+				|| StrEqual(guns[g], "weapon_deagle") || StrEqual(guns[g], "weapon_elite") || StrEqual(guns[g], "weapon_fiveseven") ? 1 : 0;
+			int old = GetPlayerWeaponSlot(client, slot);
+			if (old > 0)
+			{
+				RemovePlayerItem(client, old);
+				AcceptEntityInput(old, "Kill");
+			}
+			GivePlayerItem(client, guns[g]);
+		}
+	}
+	SetEntProp(client, Prop_Send, "m_ArmorValue", StringToInt(f[3]));
+	SetEntProp(client, Prop_Send, "m_bHasHelmet", StringToInt(f[4]));
+	if (GetClientTeam(client) == TEAM_CT)
+		SetEntProp(client, Prop_Send, "m_bHasDefuser", StringToInt(f[5]));
+	static const char nades[3][] = { "weapon_hegrenade", "weapon_flashbang", "weapon_smokegrenade" };
+	for (int k = 0; k < 3; k++)
+		for (int c = Ammo(client, AMMO_HE + k); c < StringToInt(f[6 + k]); c++)
+			GivePlayerItem(client, nades[k]);
+	PrintToChat(client, "\x04[%s]\x01 Volviste: recuperaste tu plata y tu equipo.", tag);
+	return Plugin_Stop;
+}
+
+// ---------------------------------------------------------------------------
+// Equipamiento del equipo
+// ---------------------------------------------------------------------------
+
+void GunName(const char[] cls, char[] out, int len)
+{
+	static const char from[][] = { "weapon_ak47", "weapon_m4a1", "weapon_awp", "weapon_deagle", "weapon_galil", "weapon_famas",
+		"weapon_sg552", "weapon_aug", "weapon_scout", "weapon_g3sg1", "weapon_sg550", "weapon_m249", "weapon_mp5navy", "weapon_ump45",
+		"weapon_p90", "weapon_mac10", "weapon_tmp", "weapon_m3", "weapon_xm1014", "weapon_glock", "weapon_usp", "weapon_p228",
+		"weapon_elite", "weapon_fiveseven" };
+	static const char to[][] = { "AK-47", "M4A1", "AWP", "Deagle", "Galil", "FAMAS", "SG 552", "AUG", "Scout", "G3SG1", "SG 550",
+		"M249", "MP5", "UMP", "P90", "MAC-10", "TMP", "M3", "XM1014", "Glock", "USP", "P228", "Dualies", "Five-SeveN" };
+	for (int i = 0; i < sizeof(from); i++)
+	{
+		if (StrEqual(cls, from[i]))
+		{
+			strcopy(out, len, to[i]);
+			return;
+		}
+	}
+	strcopy(out, len, cls[StrContains(cls, "weapon_") == 0 ? 7 : 0]);
+}
+
+void EqLine(int client, char[] out, int len)
+{
+	char gun[24], pistol[24], cls[32];
+	gun = "-";
+	pistol = "-";
+	int w = GetPlayerWeaponSlot(client, 0);
+	if (w > 0)
+	{
+		GetEdictClassname(w, cls, sizeof(cls));
+		GunName(cls, gun, sizeof(gun));
+	}
+	w = GetPlayerWeaponSlot(client, 1);
+	if (w > 0)
+	{
+		GetEdictClassname(w, cls, sizeof(cls));
+		GunName(cls, pistol, sizeof(pistol));
+	}
+	int armor = GetEntProp(client, Prop_Send, "m_ArmorValue");
+	char extra[64];
+	Format(extra, sizeof(extra), "%s%s", armor > 0 ? (GetEntProp(client, Prop_Send, "m_bHasHelmet") ? " · chaleco y casco" : " · chaleco") : " · sin chaleco",
+		GetClientTeam(client) == TEAM_CT && GetEntProp(client, Prop_Send, "m_bHasDefuser") ? " · kit" : "");
+	char nades[32];
+	int he = Ammo(client, AMMO_HE), fb = Ammo(client, AMMO_FLASH), sm = Ammo(client, AMMO_SMOKE);
+	if (he + fb + sm > 0)
+		Format(nades, sizeof(nades), " ·%s%s%s", he ? " HE" : "", fb == 2 ? " 2 flash" : (fb ? " flash" : ""), sm ? " humo" : "");
+	Format(out, len, "\x04%N\x01: %s · %s%s%s · $%d", client, gun, pistol, extra, nades, GetEntProp(client, Prop_Send, "m_iAccount"));
+}
+
+/** viewer 0: a la consola del servidor, sin colores (sm_eq por rcon). */
+void Eq_ShowTo(int viewer, int team)
+{
+	char line[192];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i) == team)
+		{
+			EqLine(i, line, sizeof(line));
+			if (viewer)
+				PrintToChat(viewer, "%s", line);
+			else
+			{
+				ReplaceString(line, sizeof(line), "\x04", "");
+				ReplaceString(line, sizeof(line), "\x01", "");
+				PrintToServer("[%s] %s", team == TEAM_T ? "T" : "CT", line);
+			}
+		}
+	}
+}
+
+public Action Timer_Eq(Handle timer, int round)
+{
+	if (round != g_iRound || !IsLive())
+		return Plugin_Stop;
+	for (int v = 1; v <= MaxClients; v++)
+	{
+		if (IsClientInGame(v) && !IsFakeClient(v) && (GetClientTeam(v) == TEAM_T || GetClientTeam(v) == TEAM_CT))
+		{
+			PrintToChat(v, "\x04— Equipo —");
+			Eq_ShowTo(v, GetClientTeam(v));
+		}
+	}
+	return Plugin_Stop;
+}
+
+public Action Cmd_Eq(int client, int args)
+{
+	if (client == 0)
+	{
+		Eq_ShowTo(0, TEAM_T);
+		Eq_ShowTo(0, TEAM_CT);
+		return Plugin_Handled;
+	}
+	if (GetClientTeam(client) != TEAM_T && GetClientTeam(client) != TEAM_CT)
+		return Plugin_Handled;
+	Eq_ShowTo(client, GetClientTeam(client));
+	return Plugin_Handled;
+}
+
+// ---------------------------------------------------------------------------
+// Clutch
+// ---------------------------------------------------------------------------
+
+int AliveOn(int team, int &last)
+{
+	int n;
+	last = 0;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i) == team)
+		{
+			n++;
+			last = i;
+		}
+	}
+	return n;
+}
+
+public void Frame_Clutch(any data)
+{
+	for (int team = TEAM_T; team <= TEAM_CT; team++)
+	{
+		if (g_iClutch[team])
+			continue;
+		int last, other;
+		int mine = AliveOn(team, last);
+		int vs = AliveOn(team == TEAM_T ? TEAM_CT : TEAM_T, other);
+		if (mine != 1 || vs < 2)
+			continue;
+		g_iClutch[team] = GetClientUserId(last);
+		g_iClutchVs[team] = vs;
+		Format(g_sLastClutch, sizeof(g_sLastClutch), "%N 1 vs %d", last, vs);
+		for (int i = 1; i <= MaxClients; i++)
+			if (IsClientInGame(i) && !IsFakeClient(i) && !IsPlayerAlive(i))
+				PrintCenterText(i, "%N: 1 vs %d", last, vs);
+	}
+}
+
+void Clutch_RoundEnd(int winner)
+{
+	if (winner != TEAM_T && winner != TEAM_CT || !g_iClutch[winner] || !IsLive())
+		return;
+	int client = GetClientOfUserId(g_iClutch[winner]);
+	g_iClutch[winner] = 0;
+	if (client <= 0)
+		return;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	PrintToChatAll("\x04[%s]\x01 ¡\x04%N\x01 ganó el clutch 1 vs %d!", tag, client, g_iClutchVs[winner]);
+}
+
+// ---------------------------------------------------------------------------
+// Práctica de granadas
+// ---------------------------------------------------------------------------
+
+public Action Cmd_Nades(int client, int args)
+{
+	if (client <= 0 || !IsClientInGame(client))
+		return Plugin_Handled;
+	if (g_bNades[client])
+	{
+		Nades_Off(client, false);
+		return Plugin_Handled;
+	}
+	if (!g_cvNades.BoolValue || !InWarmup())
+	{
+		ReplyToCommand(client, "[Granadas] Solo en el calentamiento.");
+		return Plugin_Handled;
+	}
+	g_bNades[client] = true;
+	if (IsPlayerAlive(client))
+	{
+		if (!Ammo(client, AMMO_HE)) GivePlayerItem(client, "weapon_hegrenade");
+		while (Ammo(client, AMMO_FLASH) < 2) { if (GivePlayerItem(client, "weapon_flashbang") == -1) break; }
+		if (!Ammo(client, AMMO_SMOKE)) GivePlayerItem(client, "weapon_smokegrenade");
+	}
+	PrintToChat(client, "\x04[Granadas]\x01 Práctica prendida: granadas infinitas y con trayectoria. !rethrow vuelve a donde tiraste la última. !nades para apagarla.");
+	return Plugin_Handled;
+}
+
+void Nades_Off(int client, bool auto)
+{
+	g_bNades[client] = false;
+	if (IsClientInGame(client))
+		PrintToChat(client, "\x04[Granadas]\x01 Práctica apagada%s.", auto ? ": se terminó el calentamiento" : "");
+}
+
+public Action Cmd_Rethrow(int client, int args)
+{
+	if (client <= 0 || !g_bNades[client] || !IsPlayerAlive(client))
+	{
+		ReplyToCommand(client, "[Granadas] Primero prendé la práctica con !nades.");
+		return Plugin_Handled;
+	}
+	if (!g_sThrowWeapon[client][0])
+	{
+		ReplyToCommand(client, "[Granadas] Todavía no tiraste ninguna.");
+		return Plugin_Handled;
+	}
+	float zero[3];
+	TeleportEntity(client, g_fThrowPos[client], g_fThrowAng[client], zero);
+	FakeClientCommandEx(client, "use %s", g_sThrowWeapon[client]);
+	return Plugin_Handled;
+}
+
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	if (StrEqual(classname, "hegrenade_projectile") || StrEqual(classname, "flashbang_projectile") || StrEqual(classname, "smokegrenade_projectile"))
+		RequestFrame(Frame_Projectile, EntIndexToEntRef(entity));
+}
+
+public void Frame_Projectile(int ref)
+{
+	int ent = EntRefToEntIndex(ref);
+	if (ent == INVALID_ENT_REFERENCE)
+		return;
+	int owner = GetEntPropEnt(ent, Prop_Send, "m_hThrower");
+	if (owner <= 0 || owner > MaxClients || !g_bNades[owner] || !IsClientInGame(owner))
+		return;
+	char cls[32];
+	GetEdictClassname(ent, cls, sizeof(cls));
+	ReplaceString(cls, sizeof(cls), "_projectile", "");
+	Format(g_sThrowWeapon[owner], sizeof(g_sThrowWeapon[]), "weapon_%s", cls);
+	GetClientAbsOrigin(owner, g_fThrowPos[owner]);
+	GetClientEyeAngles(owner, g_fThrowAng[owner]);
+	int color[4] = { 255, 200, 40, 255 };
+	TE_SetupBeamFollow(ent, g_iBeam, g_iHalo, 6.0, 1.5, 1.5, 1, color);
+	TE_SendToAll();
+	CreateTimer(0.4, Timer_GiveNade, GetClientUserId(owner), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/** Devuelve la que tiró, si ya no le queda de ese tipo. */
+public Action Timer_GiveNade(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !g_bNades[client] || !IsPlayerAlive(client))
+		return Plugin_Stop;
+	int idx = StrEqual(g_sThrowWeapon[client], "weapon_hegrenade") ? AMMO_HE : (StrEqual(g_sThrowWeapon[client], "weapon_flashbang") ? AMMO_FLASH : AMMO_SMOKE);
+	if (!Ammo(client, idx))
+		GivePlayerItem(client, g_sThrowWeapon[client]);
 	return Plugin_Stop;
 }
