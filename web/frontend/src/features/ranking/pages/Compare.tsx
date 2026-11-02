@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
-import { ArrowLeftIcon, ChevronsUpDownIcon } from "lucide-react"
+import { ChevronsUpDownIcon } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { useState } from "react"
 
 import { isApiError } from "@/api/errors"
@@ -45,13 +46,12 @@ export function Compare({
 
   return (
     <section className="flex flex-col gap-5">
-      <Link
-        to="/ranking"
+      <BackButton
+        fallback={{ to: "/ranking" }}
+        label="Ranking"
         className="inline-flex w-fit items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeftIcon aria-hidden className="size-3.5" />
-        Ranking
-      </Link>
+        iconClassName="size-3.5"
+      />
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="min-w-[200px] flex-1 text-2xl font-semibold tracking-[-0.4px]">
           Comparar jugadores

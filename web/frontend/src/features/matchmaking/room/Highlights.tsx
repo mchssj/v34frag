@@ -18,7 +18,8 @@ export function Highlights({
   poster,
 }: {
   clips: MmClip[]
-  players: MmPlayer[]
+  /** Para la foto de quien hizo la jugada. */
+  players: Pick<MmPlayer, "player_id" | "photo_url">[]
   mapName: string | null
   poster: string | null
 }) {

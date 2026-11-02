@@ -230,15 +230,7 @@ function NoMatches({
     )
   if (search.kind === "pcw")
     return (
-      <EmptyState
-        icon={SwordsIcon}
-        title="Todavía no se jugó ningún PCW"
-        action={
-          <Button asChild variant="outline" size="sm">
-            <Link to="/pcw">Ir a PCW</Link>
-          </Button>
-        }
-      >
+      <EmptyState icon={SwordsIcon} title="Todavía no se jugó ningún PCW">
         Los PCW aparecen acá cuando dos equipos juegan en el servidor.
       </EmptyState>
     )

@@ -158,6 +158,8 @@ export type ReportReason = "afk" | "toxic" | "cheat" | "abandon" | "other"
 export type MmLobby = {
   id: string
   mode: string
+  /** Imagen fija de la tarjeta del MVP (Administración › Matchmaking › General). */
+  mvp_image_url?: string | null
   region: string | null
   match: MmMatch | null
   status: LobbyStatus
@@ -191,6 +193,8 @@ export type MmQueue = {
 export type MmPartyMember = MmVip & {
   player_id: string
   nick: string
+  /** Foto de la ficha o, si no tiene, el avatar del perfil (replanteo 55). */
+  photo_url?: string | null
   level: number
   elo: number
   is_me: boolean
@@ -380,6 +384,8 @@ export type MmAdminConfig = {
   min_mixes: number
   min_account_days: number
   season_queue_close_minutes: number
+  /** Imagen de la tarjeta del MVP; se sube y se quita aparte (no viaja en saveConfig). */
+  mvp_image_url?: string | null
 }
 
 export type MmAdminMap = {

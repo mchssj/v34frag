@@ -4,13 +4,13 @@ import { cn } from "cn"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import {
-  ArrowLeftIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
   PlayIcon,
   XIcon,
 } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { useRef, useState } from "react"
 
 import { TeamCrest } from "@/components/brand/TeamCrest"
@@ -77,30 +77,18 @@ export function SeriesRoom({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        {d.event ? (
-          <Link
-            to="/events/$id"
-            params={{ id: d.event.id }}
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
-            )}
-          >
-            <ArrowLeftIcon aria-hidden className="size-4" />
-            {d.event.name}
-          </Link>
-        ) : (
-          <Link
-            to="/pcw"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
-            )}
-          >
-            <ArrowLeftIcon aria-hidden className="size-4" />
-            PCW
-          </Link>
-        )}
+        <BackButton
+          fallback={
+            d.event
+              ? { to: "/events/$id", params: { id: d.event.id } }
+              : { to: "/matches", search: { kind: "pcw" } }
+          }
+          label={d.event?.name ?? "PCW"}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
+          )}
+        />
         {d.label && (
           <span className="text-[13px] text-muted-foreground">{d.label}</span>
         )}

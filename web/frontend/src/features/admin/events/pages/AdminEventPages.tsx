@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { ArrowLeftIcon } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -145,12 +145,10 @@ export function AdminEventPage({
 
 function BackLink() {
   return (
-    <Link
-      to="/admin/events"
+    <BackButton
+      fallback={{ to: "/admin/events" }}
+      label="Torneos"
       className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-    >
-      <ArrowLeftIcon className="size-4" aria-hidden />
-      Torneos
-    </Link>
+    />
   )
 }

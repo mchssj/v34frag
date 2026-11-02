@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react"
+import { act, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { renderWithQuery } from "@/test/render"
@@ -39,6 +39,26 @@ describe("Administración › Matchmaking", () => {
       "2v2",
       "1v1",
     ])
+  })
+
+  it("General: imagen del MVP, sin imagen se ofrece subirla; con imagen, quitarla", async () => {
+    const { user, source, queryClient } = setup()
+    expect(
+      await screen.findByRole("button", { name: "Subir imagen" })
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Quitar" })).toBeNull()
+
+    // Subir pasa por el recorte (canvas): acá se sube por la fuente y se vuelve a pedir la configuración.
+    await source.uploadMvpImage(new Blob(["x"], { type: "image/webp" }))
+    await act(() => queryClient.invalidateQueries())
+    expect(
+      await screen.findByRole("img", { name: "Imagen actual del MVP" })
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Quitar" }))
+    expect(
+      await screen.findByRole("button", { name: "Subir imagen" })
+    ).toBeInTheDocument()
+    expect((await source.adminConfig()).mvp_image_url).toBeNull()
   })
 
   it("General: no deja apagar todos los modos", async () => {

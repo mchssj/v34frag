@@ -74,6 +74,9 @@ export type MmSource = {
   rotatePassword(serverId: string): Promise<MmPasswordEntry>
   adminConfig(signal?: AbortSignal): Promise<MmAdminConfig>
   saveConfig(config: MmAdminConfig): Promise<MmAdminConfig>
+  /** Imagen de la tarjeta del MVP (4:1). */
+  uploadMvpImage(file: Blob): Promise<{ url: string }>
+  deleteMvpImage(): Promise<{ url: null }>
   adminMaps(mode: string, signal?: AbortSignal): Promise<MmAdminMap[]>
   /** Los mapas del veto de ese modo, en orden. */
   saveMaps(mode: string, names: string[]): Promise<MmAdminMap[]>
@@ -121,8 +124,21 @@ const send = <T>(path: string, body: unknown, method = "POST") =>
     body: JSON.stringify(body),
   })
 
+/** Imagen de la tarjeta del MVP, para el detalle de un mix (fuera de /play). */
+export const fetchMvpImage = (signal?: AbortSignal) =>
+  call<{ url: string | null }>("/api/v1/mm/mvp-image", { signal }).then(
+    (r) => r.url
+  )
+
 export function createApiSource(openSocket: MmSocketFactory): MmSource {
   return {
+    uploadMvpImage: (file) => {
+      const body = new FormData()
+      body.set("file", file, "mvp.webp")
+      return call("/api/v1/admin/mm/mvp-image", { method: "PUT", body })
+    },
+    deleteMvpImage: () =>
+      call("/api/v1/admin/mm/mvp-image", { method: "DELETE" }),
     state: (signal) => call("/api/v1/mm/state", { signal }),
     // Rutas que ya existen. Cada una puede fallar sola (sin sesión no hay "mis partidas").
     feed: async (signal) => {

@@ -14,7 +14,6 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
-import { Route as AppHallOfFameRouteImport } from './routes/_app/hall-of-fame'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
@@ -76,11 +75,6 @@ const WelcomeRoute = WelcomeRouteImport.update({
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHallOfFameRoute = AppHallOfFameRouteImport.update({
-  id: '/hall-of-fame',
-  path: '/hall-of-fame',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHomeRoute = AppHomeRouteImport.update({
@@ -283,7 +277,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
-  '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
@@ -328,7 +321,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
-  '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
@@ -375,7 +367,6 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/welcome': typeof WelcomeRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
-  '/_app/hall-of-fame': typeof AppHallOfFameRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
@@ -422,7 +413,6 @@ export interface FileRouteTypes {
     | '/'
     | '/welcome'
     | '/admin'
-    | '/hall-of-fame'
     | '/home'
     | '/myteam'
     | '/pcw'
@@ -467,7 +457,6 @@ export interface FileRouteTypes {
     | '/'
     | '/welcome'
     | '/admin'
-    | '/hall-of-fame'
     | '/home'
     | '/myteam'
     | '/pcw'
@@ -513,7 +502,6 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/welcome'
     | '/_app/admin'
-    | '/_app/hall-of-fame'
     | '/_app/home'
     | '/_app/myteam'
     | '/_app/pcw'
@@ -598,13 +586,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/hall-of-fame': {
-      id: '/_app/hall-of-fame'
-      path: '/hall-of-fame'
-      fullPath: '/hall-of-fame'
-      preLoaderRoute: typeof AppHallOfFameRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/home': {
@@ -941,7 +922,6 @@ const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
-  AppHallOfFameRoute: typeof AppHallOfFameRoute
   AppHomeRoute: typeof AppHomeRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
@@ -964,7 +944,6 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
-  AppHallOfFameRoute: AppHallOfFameRoute,
   AppHomeRoute: AppHomeRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,

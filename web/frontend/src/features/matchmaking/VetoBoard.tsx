@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card"
 import { secondsLeft, teamName } from "./labels"
 import { suggestBan } from "./room/roomData"
-import { useMmMutation } from "./queries"
+import { banOptimistic, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby, MmVetoBan, MmVetoMap } from "./types"
 import { useNow } from "./useNow"
@@ -24,7 +24,10 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
   const source = useMmSource()
   const veto = lobby.veto!
   const now = useNow(veto.turn !== null, 250)
-  const ban = useMmMutation((map: string) => source.veto(lobby.match_id!, map))
+  const ban = useMmMutation(
+    (map: string) => source.veto(lobby.match_id!, map),
+    banOptimistic
+  )
 
   const me = lobby.players.find((p) => p.is_me)
   const captainOf = (team: 1 | 2) =>

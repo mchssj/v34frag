@@ -1,5 +1,4 @@
 import {
-  AwardIcon,
   BanIcon,
   CalendarRangeIcon,
   ChartColumnIcon,
@@ -35,6 +34,8 @@ export type NavItem = {
   badge?: BadgeKey
   /** Ítem de Administración: visible solo si el rol puede entrar a esa sección. */
   admin?: AdminSection
+  /** Sección sin terminar: se ve en el menú, gris y sin link, con "Pronto". */
+  soon?: boolean
 }
 
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
@@ -51,13 +52,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         badge: "live",
       },
       { key: "events", label: "Torneos", to: "/events", icon: TrophyIcon },
-      {
-        key: "pcw",
-        label: "PCW",
-        to: "/pcw",
-        icon: CrosshairIcon,
-        badge: "pcw",
-      },
+      // Desactivado hasta que PCW esté listo (Daniel, 2026-11-02).
+      { key: "pcw", label: "PCW", to: "/pcw", icon: CrosshairIcon, soon: true },
       { key: "myteam", label: "Mi equipo", to: "/myteam", icon: ShieldIcon },
     ],
   },
@@ -69,12 +65,6 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         label: "Ranking",
         to: "/ranking",
         icon: ListOrderedIcon,
-      },
-      {
-        key: "hall-of-fame",
-        label: "Palmarés",
-        to: "/hall-of-fame",
-        icon: AwardIcon,
       },
     ],
   },

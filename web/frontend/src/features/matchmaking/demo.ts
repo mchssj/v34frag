@@ -1184,6 +1184,16 @@ export function createDemoSource({
     async adminConfig() {
       return structuredClone(config)
     },
+    async uploadMvpImage(file) {
+      config = { ...config, mvp_image_url: URL.createObjectURL(file) }
+      emit("mm.config")
+      return { url: config.mvp_image_url! }
+    },
+    async deleteMvpImage() {
+      config = { ...config, mvp_image_url: null }
+      emit("mm.config")
+      return { url: null }
+    },
     async saveConfig(next) {
       if (!next.modes.some((m) => m.enabled))
         throw new DemoError("Tiene que quedar al menos un modo habilitado")

@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { AuthUser } from "@/auth/queries"
 import { canAccessAdminSection } from "@/auth/permissions"
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand"
+import { Badge } from "@/components/ui/badge"
 import {
   Sidebar,
   SidebarContent,
@@ -82,17 +83,34 @@ export function AppSidebar({ user }: { user: AuthUser }) {
             <SidebarMenu className="gap-0.5">
               {group.items.map((item) => (
                 <SidebarMenuItem key={item.key}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={active === item.key}
-                    tooltip={item.label}
-                    className={itemClass}
-                  >
-                    <Link to={item.to} onClick={closeMobile}>
+                  {item.soon ? (
+                    <SidebarMenuButton
+                      aria-disabled
+                      tooltip={`${item.label} (pronto)`}
+                      className={cn(
+                        itemClass,
+                        "cursor-default opacity-50 hover:bg-transparent"
+                      )}
+                    >
                       <item.icon aria-hidden />
                       <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                      <Badge variant="muted" size="xs" className="ml-auto">
+                        Pronto
+                      </Badge>
+                    </SidebarMenuButton>
+                  ) : (
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active === item.key}
+                      tooltip={item.label}
+                      className={itemClass}
+                    >
+                      <Link to={item.to} onClick={closeMobile}>
+                        <item.icon aria-hidden />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  )}
                   {item.badge && (
                     <NavBadge kind={item.badge} count={counts[item.badge]} />
                   )}

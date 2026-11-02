@@ -72,7 +72,7 @@ export function buildSlots(state: MmState, teamSize: number): Slot[] {
             : {
                 ...m,
                 country: null,
-                photo_url: null,
+                photo_url: m.photo_url ?? null,
               }
         )
     : [{ ...state.me, player_id: "me", is_me: true, is_leader: false }]

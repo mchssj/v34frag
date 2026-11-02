@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
+import { Link, Navigate } from "@tanstack/react-router"
 import type { ReactNode } from "react"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
@@ -13,6 +13,7 @@ import { myProfileOptions } from "@/features/profile/api/queries"
 import { matchDetailOptions } from "@/features/shell/api/queries"
 import { SeriesRoom } from "@/features/series/pages/SeriesRoom"
 import { DeleteMixDialog } from "../components/DeleteMixDialog"
+import { mixHighlights } from "../components/MixHighlights"
 import { MixRoom } from "../components/MixRoom"
 import { liveMixOptions } from "../api/queries"
 import { roomFromLive, roomFromMatch } from "../lib/room"
@@ -60,6 +61,12 @@ export function MixMatchRoom({
     )
 
   const m = match.data
+  // La serie del matchmaking (un contenedor de veto y chat): se muestra el mapa jugado.
+  if ((m.kind as string) === "mm") {
+    const game = (m as { games?: { id: string }[] }).games?.[0]
+    if (game)
+      return <Navigate to="/match/$id" params={{ id: game.id }} replace />
+  }
   if (m.kind !== "mix")
     return (
       <SeriesRoom
@@ -79,6 +86,11 @@ export function MixMatchRoom({
     <MixRoom
       room={room}
       mapImage={mapImage(maps, m.map)}
+      highlights={
+        room.status === "finished"
+          ? mixHighlights(m.id, room, m.map)
+          : undefined
+      }
       tab={tab}
       onTab={onTab}
       adminAction={

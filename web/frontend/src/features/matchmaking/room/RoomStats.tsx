@@ -33,7 +33,6 @@ export function RoomStats({
   mapName: string | null
 }) {
   const byId = new Map(lobby.players.map((p) => [p.player_id, p]))
-  const mvp = mvpOf(match.stats)
   const [tab, setTab] = useState<StatsTab>("general")
   const [sort, setSort] = useState<StatsSort>(null)
   const cols = columnsFor(tab, "finished")
@@ -41,33 +40,11 @@ export function RoomStats({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        {mvp && (
-          <MvpCard stat={mvp} player={byId.get(mvp.key)} backdrop={backdrop} />
-        )}
-        <ul
-          aria-label="Destacados"
-          className="flex flex-col divide-y overflow-hidden rounded-xl border bg-card"
-        >
-          {leadersOf(match.stats).map((l) => (
-            <li
-              key={l.label}
-              className="flex flex-1 items-center gap-3 px-4 py-2.5"
-            >
-              <PlayerAvatar p={byId.get(l.player.key)} size="size-8" />
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-medium">
-                  {l.player.nick}
-                </span>
-                <span className="text-xs text-muted-foreground">{l.label}</span>
-              </span>
-              <span className="ml-auto font-mono text-lg font-semibold tabular-nums">
-                {l.value}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <MvpAndLeaders
+        stats={match.stats}
+        image={lobby.mvp_image_url ?? null}
+        playerOf={(key) => byId.get(key)}
+      />
 
       <StatsTabs
         value={tab}
@@ -102,7 +79,13 @@ export function RoomStats({
   )
 }
 
-function PlayerAvatar({ p, size }: { p: MmPlayer | undefined; size: string }) {
+function PlayerAvatar({
+  p,
+  size,
+}: {
+  p: { nick: string; photo_url?: string | null } | undefined
+  size: string
+}) {
   return (
     <Avatar className={size}>
       {p?.photo_url && <AvatarImage src={p.photo_url} alt="" />}
@@ -113,14 +96,64 @@ function PlayerAvatar({ p, size }: { p: MmPlayer | undefined; size: string }) {
   )
 }
 
+/** Lo que se muestra de un jugador junto a sus números (en un mix, sin foto ni nivel). */
+export type CardPlayer = Pick<MmPlayer, "nick" | "photo_url"> &
+  Partial<Pick<MmPlayer, "level" | "elo">>
+
+/**
+ * MVP y destacados (más kills, más daño…), arriba de las tablas. La usan la sala del matchmaking y
+ * el detalle de un mix terminado. `image` es la imagen fija del MVP que sube un admin.
+ */
+export function MvpAndLeaders({
+  stats,
+  image,
+  playerOf,
+}: {
+  stats: RoomPlayer[]
+  image: string | null
+  playerOf: (key: string) => CardPlayer | undefined
+}) {
+  const mvp = mvpOf(stats)
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+      {mvp && <MvpCard stat={mvp} player={playerOf(mvp.key)} image={image} />}
+      <ul
+        aria-label="Destacados"
+        className="flex flex-col divide-y overflow-hidden rounded-xl border bg-card"
+      >
+        {leadersOf(stats).map((l) => (
+          <li
+            key={l.label}
+            className="flex flex-1 items-center gap-3 px-4 py-2.5"
+          >
+            <PlayerAvatar
+              p={playerOf(l.player.key) ?? l.player}
+              size="size-8"
+            />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium">
+                {l.player.nick}
+              </span>
+              <span className="text-xs text-muted-foreground">{l.label}</span>
+            </span>
+            <span className="ml-auto font-mono text-lg font-semibold tabular-nums">
+              {l.value}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 function MvpCard({
   stat,
   player,
-  backdrop,
+  image,
 }: {
   stat: RoomPlayer
-  player: MmPlayer | undefined
-  backdrop: string | null
+  player: CardPlayer | undefined
+  image: string | null
 }) {
   const items: [string, string][] = [
     [stat.rating?.toFixed(2) ?? "—", "Rating"],
@@ -137,9 +170,9 @@ function MvpCard({
       aria-label="MVP"
       className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/.04)]"
     >
-      <MapBackdrop image={backdrop} className="h-full py-0">
+      <MapBackdrop image={image} className="h-full py-0">
         <div className="flex h-full flex-wrap items-center gap-x-6 gap-y-4 p-5">
-          <PlayerAvatar p={player} size="size-16" />
+          <PlayerAvatar p={player ?? stat} size="size-16" />
           <div className="flex flex-col gap-1">
             <span className="inline-flex h-[18px] w-fit items-center rounded-[4px] bg-primary px-[5px] text-[10px] font-bold text-primary-foreground">
               MVP
@@ -151,7 +184,7 @@ function MvpCard({
             >
               {stat.nick}
             </Link>
-            {player && (
+            {player?.level !== undefined && (
               <span className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                 <LevelBadge level={player.level} size={20} />
                 {player.elo}

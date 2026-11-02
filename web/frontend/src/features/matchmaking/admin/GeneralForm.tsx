@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch"
 import { adminConfigOptions, useMmAdminMutation } from "../queries"
 import { useMmSource } from "../source"
 import type { MmAdminConfig } from "../types"
+import { MvpImageCard } from "./MvpImageCard"
 
 // Administración › Matchmaking › General: todo `mm_config` y los modos (plan, sección 7).
 
@@ -83,7 +84,12 @@ export function GeneralForm() {
   const source = useMmSource()
   const { data } = useQuery(adminConfigOptions(source))
   if (!data) return <Skeleton className="h-96 w-full rounded-xl" />
-  return <Form initial={data} />
+  return (
+    <div className="flex flex-col gap-4">
+      <MvpImageCard url={data.mvp_image_url ?? null} />
+      <Form initial={data} />
+    </div>
+  )
 }
 
 function Form({ initial }: { initial: MmAdminConfig }) {

@@ -337,7 +337,7 @@ describe("MatchesList", () => {
     expect(
       await screen.findByText("Todavía no se jugó ningún PCW")
     ).toBeVisible()
-    expect(screen.getByRole("link", { name: "Ir a PCW" })).toBeVisible()
+    expect(screen.queryByRole("link", { name: "Ir a PCW" })).toBeNull()
     // Sin partidas no hay paginación.
     expect(screen.queryByText(/^Mostrando/)).toBeNull()
   })

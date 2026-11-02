@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { activeNavKey, breadcrumbsFor } from "./nav"
+import { activeNavKey, breadcrumbsFor, NAV_GROUPS } from "./nav"
 
 const mix = {
   kind: "mix" as const,
@@ -20,7 +20,6 @@ describe("activeNavKey", () => {
     expect(activeNavKey("/home")).toBe("home")
     expect(activeNavKey("/matches")).toBe("matches")
     expect(activeNavKey("/events/abc")).toBe("events")
-    expect(activeNavKey("/hall-of-fame")).toBe("hall-of-fame")
     expect(activeNavKey("/profile")).toBe("profile")
   })
 
@@ -124,5 +123,15 @@ describe("Baneos en el sidebar", () => {
   it("es una sección propia, marcada en /admin/bans", () => {
     expect(activeNavKey("/admin/bans")).toBe("admin-bans")
     expect(activeNavKey("/admin/users")).toBe("admin-users")
+  })
+})
+
+describe("NAV_GROUPS", () => {
+  const items = NAV_GROUPS.flatMap((g) => g.items)
+
+  it("Palmarés no está en el menú y PCW está desactivado hasta que estén listos", () => {
+    expect(items.find((i) => i.key === "hall-of-fame")).toBeUndefined()
+    expect(items.find((i) => i.key === "pcw")).toMatchObject({ soon: true })
+    expect(items.find((i) => i.key === "pcw")?.badge).toBeUndefined()
   })
 })

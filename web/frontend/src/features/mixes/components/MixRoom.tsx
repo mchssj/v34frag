@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   ArrowDownIcon,
-  ArrowLeftIcon,
   ArrowUpIcon,
   BanIcon,
   CircleAlertIcon,
@@ -11,6 +10,7 @@ import {
   LoaderIcon,
   ServerIcon,
 } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { useState, type ReactNode } from "react"
 
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
@@ -60,11 +60,14 @@ export function MixRoom({
   room,
   mapImage,
   adminAction,
+  highlights,
   tab = "general",
   onTab,
 }: {
   room: Room
   mapImage: string | null
+  /** Mix terminado: MVP y destacados arriba de las tablas, y los clips debajo (`MixHighlights`). */
+  highlights?: { top: ReactNode; bottom: ReactNode }
   /** "Borrar este mix" (solo admin, solo terminados o cancelados). */
   adminAction?: ReactNode
   /** Pestaña de estadísticas (en la URL, `?stats=`). */
@@ -75,17 +78,14 @@ export function MixRoom({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link
-          to="/matches"
-          search={{ kind: "mix" }}
+        <BackButton
+          fallback={{ to: "/matches", search: { kind: "mix" } }}
+          label="Partidas"
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
             "h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
           )}
-        >
-          <ArrowLeftIcon aria-hidden className="size-4" />
-          Volver
-        </Link>
+        />
         <span className="text-[13px] text-muted-foreground">
           {live ? "Mix en vivo" : "Mix"} · reportado por el servidor
         </span>
@@ -140,7 +140,9 @@ export function MixRoom({
         </Notice>
       )}
 
+      {highlights?.top}
       <RoomStats room={room} tab={tab} onTab={onTab} />
+      {highlights?.bottom}
     </section>
   )
 }

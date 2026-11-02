@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { Link, useNavigate, useRouter } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "cn"
 import {
-  ArrowLeftIcon,
   CheckIcon,
   EllipsisIcon,
   LockIcon,
@@ -13,13 +12,14 @@ import {
   PencilIcon,
   UserPlusIcon,
 } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { useMe } from "@/auth/queries"
 import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -512,7 +512,6 @@ function LeaderLeaveDialog({
 
 /** Acciones de la vista pública: volver y el botón de pedido según el estado. */
 function PublicActions({ team }: { team: TeamDetail }) {
-  const router = useRouter()
   const signedIn = !!useMe().data
   const invites = useQuery({ ...myInvitesOptions, enabled: signedIn }).data
   const request = invites?.find(
@@ -549,10 +548,11 @@ function PublicActions({ team }: { team: TeamDetail }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button variant="ghost" onClick={() => router.history.back()}>
-        <ArrowLeftIcon aria-hidden />
-        Volver
-      </Button>
+      <BackButton
+        fallback={{ to: "/ranking/teams" }}
+        label="Equipos"
+        className={buttonVariants({ variant: "ghost" })}
+      />
       {state === "signin" && (
         <Button asChild>
           <Link to="/login" search={{ redirect: `/teams/${team.id}` }}>

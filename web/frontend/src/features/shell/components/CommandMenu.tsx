@@ -71,6 +71,7 @@ export function CommandMenu({
   const pages: Page[] = [
     ...NAV_GROUPS.flatMap((g) =>
       g.items
+        .filter((i) => !i.soon)
         .filter((i) => !i.admin || canAccessAdminSection(user.role, i.admin))
         .map((i) => ({
           label: i.label,
