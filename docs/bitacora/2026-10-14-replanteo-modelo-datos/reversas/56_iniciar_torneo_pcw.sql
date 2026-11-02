@@ -31,18 +31,12 @@ select pg_temp.reemplazar('public.csstv_mm_report(text, uuid, text, text)', arra
    '  end if;' || E'\n', '']
 ]);
 select pg_temp.reemplazar('public.csstv_match_lookup(text, text)', array[
-  [E'
-' || '  v_srv  uuid;   -- (replanteo 56)', ''],
+  [E'\n' || '  v_srv  uuid;   -- (replanteo 56)', ''],
   ['    v_srv := csstv_auth(p_token);', '    perform csstv_auth(p_token);'],
-  [E'
-' || '  -- (replanteo 56) reservada desde la web para otro servidor' || E'
-' ||
-   '  if exists (select 1 from match_bookings b where b.match_id = m.id and b.server_id is distinct from v_srv' || E'
-' ||
-   '               and b.status not in (''finished'', ''abandoned'', ''cancelled'')) then' || E'
-' ||
-   '    return ''ok=0'' || linea || ''error=Esa partida está reservada desde la web para otro servidor'';' || E'
-' ||
+  [E'\n' || '  -- (replanteo 56) reservada desde la web para otro servidor' || E'\n' ||
+   '  if exists (select 1 from match_bookings b where b.match_id = m.id and b.server_id is distinct from v_srv' || E'\n' ||
+   '               and b.status not in (''finished'', ''abandoned'', ''cancelled'')) then' || E'\n' ||
+   '    return ''ok=0'' || linea || ''error=Esa partida está reservada desde la web para otro servidor'';' || E'\n' ||
    '  end if;', '']
 ]);
 select pg_temp.reemplazar('public.csstv_mm_password(text, text, text, text, uuid)', array[

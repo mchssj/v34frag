@@ -451,7 +451,7 @@ void Link_AnnounceSides()
 	else
 		QolChatAll("%s {#amarillo}%s{#normal} juega de %s y {#amarillo}%s{#normal} de %s. %s: solo juegan los inscritos de cada equipo.",
 			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}",
-			Mm_HasLobby() ? "Sala del matchmaking" : "Partida de torneo");
+			Mm_HasLobby() && !Mm_IsBooking() ? "Sala del matchmaking" : "Partida de torneo");
 }
 
 /**
