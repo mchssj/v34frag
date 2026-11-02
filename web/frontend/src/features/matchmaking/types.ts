@@ -37,6 +37,8 @@ export type MmPlayer = MmVip & {
   /** No volvió a tiempo (plan, decisión "Abandono"). */
   abandoned: boolean
   is_me: boolean
+  /** Si su ficha tiene SteamID; sin vincular hace !claim en el servidor de la sala. Sin el campo, vinculado. */
+  linked?: boolean
   photo_url: string | null
   country: Country | null
   /** Agente del anticheat activo (`ac_public_status`). */

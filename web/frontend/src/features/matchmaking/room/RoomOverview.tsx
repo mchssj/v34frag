@@ -43,6 +43,7 @@ import { ReportDialog } from "../ReportDialog"
 import type { MmLobby, MmPlayer, MmVetoMap } from "../types"
 import { useNow } from "../useNow"
 import { VetoBoard } from "../VetoBoard"
+import { ClaimCard, needsClaim } from "./ClaimCard"
 import { Encounters } from "./Encounters"
 import { MatchSummary, PlayAgain, PlayerPostMatch } from "./PostMatch"
 import { teamPlayers, type Team } from "./roomData"
@@ -147,6 +148,16 @@ function PlayerCard({
           {p.is_me && (
             <span className="text-xs text-muted-foreground">(tú)</span>
           )}
+          {p.linked === false &&
+            !["finished", "cancelled"].includes(lobby.status) && (
+              <Badge
+                variant="warn"
+                size="xs"
+                title="Todavía no vinculó su SteamID: tiene que escribir !claim en el servidor"
+              >
+                Sin vincular
+              </Badge>
+            )}
           {p.is_captain && (
             <CrownIcon
               aria-label="Capitán"
@@ -362,6 +373,8 @@ function Center({
       )}
 
       {inVeto && lobby.veto && <VetoBoard lobby={lobby} />}
+
+      {needsClaim(lobby) && <ClaimCard />}
 
       {lobby.status === "finished" && <MatchSummary lobby={lobby} />}
 
