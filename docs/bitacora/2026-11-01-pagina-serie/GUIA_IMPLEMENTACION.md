@@ -42,10 +42,12 @@ Implementado y probado en local el 2026-11-01. Backend con commit en `feat/backe
 
 La web de staging se desplegó con esta página mientras la API de staging todavía no tenía `6c56bd84`. Una serie con mapas vinculados se habría roto al abrirla (`games[].players` no llegaba). Ahora `seriesMaps` completa lo que falte: sin `players` el mapa se muestra sin stats, y sin `demo_status` la demo cuenta como subida si tiene link. Una prueba unitaria nueva lo cubre.
 
-## Despliegue (pendiente)
+## Despliegue
 
-1. Redesplegar la API del VPS (no toca la base).
-2. El frontend nuevo se publica en el corte.
+- **Staging, 2026-11-02:**
+  - **API `c7a329085628`.** La API de staging corría `kyan/pruebas` (`4079c8a2`, con el matchmaking), así que no se desplegó nuestra rama sola: eso habría sacado el matchmaking. Se armó una rama temporal local con `kyan/pruebas` (`5ef75cc9`) más `feat/backend-api-fase-1` (`6e2f4706`), pasaron las 397 pruebas y se borró después. Ese commit no está en GitHub. Lo nuevo de API respecto de lo que había es solo `6c56bd84`. Los conflictos fueron del relay del HUD (no es parte de la API) y del índice de la bitácora.
+  - **Web `6d228f93b4dc-local11020706`**, desde la carpeta de siempre: incluye el frontend del matchmaking que otra sesión tiene sin commit (`/play`), igual que la versión anterior.
+- **Producción:** en el corte.
 
 ## Cómo revertir
 

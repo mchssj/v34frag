@@ -107,6 +107,7 @@ Daniel notó que no había dónde subir el banner: la lista de torneos y la pág
 - **Archivos:** `web/frontend/src/features/admin/events/components/BannerCard.tsx` (nuevo), `components/ManageTabs.tsx`, `api/queries.ts` (`useUploadBanner`, `useRemoveBanner`), `src/lib/image.ts` (`cropBanner`) y `features/profile/components/AvatarCropDialog.tsx` (prop `aspect`).
 - **Pruebas:** typecheck, lint y 464 unitarias. Recorrido real con una prueba temporal de Playwright (después se borró): un admin subió una imagen de 1600×500, la encuadró y quedó guardada en el Storage local y en la vista previa.
 - **Sin cambios en el backend ni en la base.**
+- **Staging:** web `6d228f93b4dc-local11020706` del 2026-11-02.
 
 ## Cómo revertir
 
