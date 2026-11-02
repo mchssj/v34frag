@@ -1,0 +1,494 @@
+diff --git a/server/addons/sourcemod/scripting/csstv/knife.inc b/server/addons/sourcemod/scripting/csstv/knife.inc
+index 14b9e61..7536b28 100644
+--- a/server/addons/sourcemod/scripting/csstv/knife.inc
++++ b/server/addons/sourcemod/scripting/csstv/knife.inc
+@@ -1,7 +1,8 @@
+ /**
+  * Ronda de cuchillo (!live knife): antes del LO3 se juega una ronda solo con cuchillo, sin
+- * compras ni C4. El equipo que la gana elige lado con !stay o !switch (vale el primero que
+- * lo escribe; si nadie elige en csstv_knife_time segundos, se queda). No cuenta para las
++ * compras ni C4. El capitán del equipo que la gana (el jugador que le da nombre al equipo) elige
++ * lado en un menú o con !stay / !switch. Si el capitán ya no está en el equipo, elige el primero
++ * del equipo que lo escriba. Si nadie elige en csstv_knife_time segundos, se queda. No cuenta para las
+  * estadísticas, el marcador ni la demo, que empiezan con el LO3.
+  *
+  * La usan !live knife y, desde la 1.8.0, el inicio por !ready (csstv_ready_knife 1, por defecto).
+@@ -40,6 +41,7 @@ void Knife_Reset()
+ void Knife_Begin()
+ {
+ 	g_State = State_Knife;
++	Qol_StartAlert("¡Arranca la ronda de cuchillo!");
+ 	QolChatAll("%s {#amarillo}Ronda de cuchillo{#normal}: %s (%s) vs %s (%s). El que gana elige lado.", PREFIX,
+ 		g_sTeam[0], g_iSideA == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}",
+ 		g_sTeam[1], g_iSideA == TEAM_CT ? "{#t}T{#normal}" : "{#ct}CT{#normal}");
+@@ -112,12 +114,54 @@ void Knife_OnRoundEnd(int winnerSide)
+ 	g_iKnifeWinner = winnerSide == g_iSideA ? 0 : 1;
+ 	g_bKnifeChoosing = true;
+ 	int secs = g_cvKnifeTime.IntValue;
+-	QolChatAll("%s Ganó la ronda de cuchillo el {#amarillo}%s{#normal} (%s). Escriban {#verde}!stay{#normal} para quedarse o {#verde}!switch{#normal} para cambiar de lado (%d s).", PREFIX,
+-		g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", secs);
++	int cap = Knife_Captain();
++	if (cap)
++	{
++		QolChatAll("%s Ganó la ronda de cuchillo el {#amarillo}%s{#normal} (%s). Elige el lado su capitán, {#amarillo}%N{#normal}, en el menú o con {#verde}!stay{#normal} / {#verde}!switch{#normal} (%d s).", PREFIX,
++			g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", cap, secs);
++		if (!IsFakeClient(cap))
++			Knife_Menu(cap, secs);
++	}
++	else
++		QolChatAll("%s Ganó la ronda de cuchillo el {#amarillo}%s{#normal} (%s). Escriban {#verde}!stay{#normal} para quedarse o {#verde}!switch{#normal} para cambiar de lado (%d s).", PREFIX,
++			g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", secs);
+ 	delete g_hKnifeTimer;
+ 	g_hKnifeTimer = CreateTimer(float(secs), Timer_KnifeTimeout, _, TIMER_FLAG_NO_MAPCHANGE);
+ }
+ 
++/** El capitán del equipo ganador si sigue en el servidor y en el equipo; si no, 0. Puede ser un bot (solo en pruebas). */
++int Knife_Captain()
++{
++	int c = GetClientOfUserId(g_iCaptain[g_iKnifeWinner]);
++	if (c <= 0 || !IsClientInGame(c) || !IsTeamSide(GetClientTeam(c)) || TeamIndexOf(c) != g_iKnifeWinner)
++		return 0;
++	return c;
++}
++
++void Knife_Menu(int client, int secs)
++{
++	int side = GetClientTeam(client);
++	Menu m = new Menu(Menu_Knife);
++	m.SetTitle("Ganaron el cuchillo: ¿qué lado?");
++	m.AddItem("stay", side == TEAM_CT ? "Quedarse de CT" : "Quedarse de T");
++	m.AddItem("switch", side == TEAM_CT ? "Cambiar a T" : "Cambiar a CT");
++	m.ExitButton = false;
++	m.Display(client, secs);
++}
++
++public int Menu_Knife(Menu menu, MenuAction action, int client, int item)
++{
++	if (action == MenuAction_End)
++		delete menu;
++	else if (action == MenuAction_Select)
++	{
++		char info[8];
++		menu.GetItem(item, info, sizeof(info));
++		Knife_Choose(client, StrEqual(info, "switch"));
++	}
++	return 0;
++}
++
+ public Action Timer_KnifeTimeout(Handle timer)
+ {
+ 	g_hKnifeTimer = null;
+@@ -152,13 +196,18 @@ void Knife_Choose(int client, bool swap)
+ 		QolReply(client, "[%s] Solo puede elegir el %s, que ganó la ronda de cuchillo.", g_sTag, g_sTeam[g_iKnifeWinner]);
+ 		return;
+ 	}
++	int cap = Knife_Captain();
++	if (cap && cap != client)
++	{
++		QolReply(client, "[%s] El lado lo elige el capitán, %N.", g_sTag, cap);
++		return;
++	}
+ 	Knife_Decide(client, swap);
+ }
+ 
+ /** client = 0: se acabó el tiempo. */
+ void Knife_Decide(int client, bool swap)
+ {
+-	g_bKnifeChoosing = false;
+ 	delete g_hKnifeTimer;
+ 	int side = g_iKnifeWinner == 0 ? g_iSideA : OtherSide(g_iSideA);
+ 	if (swap)
+@@ -170,6 +219,7 @@ void Knife_Decide(int client, bool swap)
+ 		QolChatAll("%s Nadie eligió a tiempo: el %s se queda en su lado.", PREFIX, g_sTeam[g_iKnifeWinner]);
+ 	LogMessage("Partida %s: ronda de cuchillo para el equipo %s, %s.", g_sMatchUid, g_iKnifeWinner == 0 ? "A" : "B", swap ? "cambia de lado" : "se queda");
+ 	if (swap)
+-		SwapTeams();
++		SwapTeams();   // con g_bKnifeChoosing todavía en true: si el cambio cierra la ronda, no se toma como otra ronda de cuchillo
++	g_bKnifeChoosing = false;
+ 	GoLive();
+ }
+diff --git a/server/addons/sourcemod/scripting/csstv/qol.inc b/server/addons/sourcemod/scripting/csstv/qol.inc
+index fa1f129..4cc3c1e 100644
+--- a/server/addons/sourcemod/scripting/csstv/qol.inc
++++ b/server/addons/sourcemod/scripting/csstv/qol.inc
+@@ -15,7 +15,8 @@
+ #define PAUSE_TIMED    1
+ #define PAUSE_UNTIL    2
+ #define PAUSE_BOTH     3
+-#define PAUSE_BY_ADMIN 2       // g_iPauseBy: 0 = equipo A, 1 = equipo B, 2 = admin
++#define PAUSE_BY_ADMIN 2       // g_iPauseBy: 0 = equipo A, 1 = equipo B, 2 = admin, 3 = desconexión
++#define PAUSE_BY_AUTO  3
+ #define PAUSE_HOLD     3600.0  // segundos que se alarga el freezetime en una pausa sin tiempo
+ #define DEMO_DIR       "csstv_demos"
+ 
+@@ -26,6 +27,10 @@ ConVar g_cvHpOnDeath;
+ ConVar g_cvPauseMode;
+ ConVar g_cvPauseMax;
+ ConVar g_cvPauseTime;
++ConVar g_cvAutoPause;
++ConVar g_cvAutoPauseTime;
++ConVar g_cvHalfTalk;
++ConVar g_cvHalfTalkOff;
+ ConVar g_cvDemo;
+ ConVar g_cvDemoKeep;
+ ConVar g_cvChatColors;
+@@ -49,6 +54,11 @@ float g_fPauseEnds;            // GetGameTime() en que termina una pausa con tie
+ bool g_bUnpauseReady[2];
+ int g_iPauseTicks;
+ Handle g_hPauseTimer;
++bool g_bAutoPauseUsed;         // una sola por partida
++bool g_bAutoPausePending;      // espera el inicio de la próxima ronda
++int g_iAutoPauseRec = -1;      // registro de stats del jugador que se fue
++bool g_bHalfTalk;
++int g_iHalfTalkSaved;
+ 
+ // Demo
+ bool g_bRecording;
+@@ -100,6 +110,10 @@ void Qol_Init()
+ 	LoadTranslations("common.phrases");   // ProcessTargetString
+ 
+ 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
++	g_cvAutoPause     = CreateConVar("csstv_autopause", "1", "Pausa automática si un jugador se va durante la partida (una por partida).", _, true, 0.0, true, 1.0);
++	g_cvAutoPauseTime = CreateConVar("csstv_autopause_time", "120", "Segundos de la pausa automática, si el jugador no vuelve antes.", _, true, 5.0, true, 600.0);
++	g_cvHalfTalk      = CreateConVar("csstv_half_alltalk", "10", "Segundos entre la última ronda de la mitad y la primera de la otra, con alltalk (0 = sin alltalk y sin espera extra).", _, true, 0.0, true, 60.0);
++	g_cvHalfTalkOff   = CreateConVar("csstv_half_alltalk_off", "10", "Segundos de freezetime que quedan cuando se apaga el alltalk del medio tiempo.", _, true, 0.0, true, 60.0);
+ 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
+ 	RegConsoleCmd("sm_unpause", Cmd_Unpause, "Seguir después de una pausa (o cancelar la que pediste).");
+ 	RegAdminCmd("sm_forcepause", Cmd_ForcePause, ADMFLAG_GENERIC, "Pausa de admin: dura hasta sm_forceunpause o !unpause de los dos equipos.");
+@@ -254,6 +268,11 @@ void Qol_Reset()
+ 	Pause_Clear();
+ 	g_iPausesUsed[0] = 0;
+ 	g_iPausesUsed[1] = 0;
++	g_bAutoPauseUsed = false;
++	g_bAutoPausePending = false;
++	g_iAutoPauseRec = -1;
++	if (g_bHalfTalk)
++		HalfTalk_Stop();
+ 	for (int i = 0; i <= MaxClients; i++)
+ 		g_iKillerUserId[i] = 0;
+ 	Board_Reset();
+@@ -377,6 +396,12 @@ void Qol_OnLiveRoundStart()
+ {
+ 	for (int i = 0; i <= MaxClients; i++)
+ 		g_iKillerUserId[i] = 0;
++	if (g_bAutoPausePending)
++	{
++		g_bAutoPausePending = false;
++		g_iPauseBy = PAUSE_BY_AUTO;
++		g_bPauseRequested = true;   // si había una táctica pedida, esta la reemplaza
++	}
+ 	if (g_bPauseRequested)
+ 		CreateTimer(0.1, Timer_StartRequestedPause, _, TIMER_FLAG_NO_MAPCHANGE);
+ 	// La plata del inicio de ronda ya está acreditada medio segundo después.
+@@ -682,18 +707,23 @@ public Action Timer_StartRequestedPause(Handle timer)
+ void Pause_Start()
+ {
+ 	int mode = g_cvPauseMode.IntValue;
+-	bool admin = g_iPauseBy == PAUSE_BY_ADMIN;
++	bool admin = g_iPauseBy == PAUSE_BY_ADMIN, auto = g_iPauseBy == PAUSE_BY_AUTO;
+ 	g_bPauseRequested = false;
+ 	g_bPaused = true;
+ 	g_bUnpauseReady[0] = false;
+ 	g_bUnpauseReady[1] = false;
+-	g_bPauseTimed = !admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH);
+-	float secs = g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD;
++	g_bPauseTimed = auto || (!admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH));
++	float secs = auto ? g_cvAutoPauseTime.FloatValue : (g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD);
+ 	g_fPauseEnds = GetGameTime() + secs;
+ 	g_iPauseTicks = 0;
+ 	GameRules_SetPropFloat("m_fRoundStartTime", g_fPauseEnds);
+ 
+-	if (admin)
++	if (auto)
++	{
++		g_bAutoPauseUsed = true;
++		QolChatAll("%s {#amarillo}Pausa automática: se fue un jugador.{#normal} Sigue cuando vuelva, o en %d segundos.", PREFIX, RoundToFloor(secs));
++	}
++	else if (admin)
+ 	{
+ 		QolChatAll("%s {#amarillo}Pausa del admin.{#normal} Sigue con !forceunpause o cuando los dos equipos escriban !unpause.", PREFIX);
+ 	}
+@@ -812,6 +842,113 @@ void Pause_End(const char[] reason)
+ 	QolChatAll("%s {#verde}%s Se sigue en 3 segundos.", PREFIX, reason);
+ }
+ 
++/** Desde OnClientDisconnect, antes de Stats_ClientLeave: un jugador de la partida se va. */
++void AutoPause_OnLeave(int client)
++{
++	if (!g_cvAutoPause.BoolValue || !MatchRunning() || g_bAutoPauseUsed || g_bAutoPausePending
++		|| !IsClientInGame(client) || !IsTeamSide(GetClientTeam(client)))
++		return;
++	int rec = Stats_GetRec(client);
++	if (rec < 0)
++		return;
++	g_iAutoPauseRec = rec;
++	if (g_State == State_Live && !g_bRestarting && !g_bPaused && InFreezeTime())
++	{
++		g_iPauseBy = PAUSE_BY_AUTO;
++		Pause_Start();
++		return;
++	}
++	g_bAutoPausePending = true;
++	QolChatAll("%s {#amarillo}%N se fue.{#normal} Si no vuelve, hay pausa automática al inicio de la próxima ronda.", PREFIX, client);
++}
++
++/** Desde Recon_Place: volvió a su equipo. Solo cuenta el jugador por el que se pausó. */
++void AutoPause_OnReturn(int client)
++{
++	if (g_iAutoPauseRec < 0 || Stats_FindRec(client) != g_iAutoPauseRec)
++		return;
++	g_iAutoPauseRec = -1;
++	g_bAutoPausePending = false;
++	if (g_bPauseRequested && g_iPauseBy == PAUSE_BY_AUTO)
++		g_bPauseRequested = false;
++	if (g_bPaused && g_iPauseBy == PAUSE_BY_AUTO)
++		Pause_End("Volvió el jugador.");
++}
++
++/** Campana y texto para el que está esperando en otra cosa, al empezar el cuchillo o el LO3. */
++void Qol_StartAlert(const char[] text)
++{
++	PrintCenterTextAll("%s", text);
++	PlayBell();
++	CreateTimer(0.8, Timer_Bell, _, TIMER_FLAG_NO_MAPCHANGE);
++	CreateTimer(1.6, Timer_Bell, _, TIMER_FLAG_NO_MAPCHANGE);
++}
++
++public Action Timer_Bell(Handle timer)
++{
++	PlayBell();
++	return Plugin_Stop;
++}
++
++void PlayBell()
++{
++	for (int i = 1; i <= MaxClients; i++)
++		if (IsClientInGame(i) && !IsFakeClient(i))
++			ClientCommand(i, "play buttons/bell1.wav");
++}
++
++// ---------------------------------------------------------------------------
++// Charla del medio tiempo: alltalk desde el final de la mitad hasta que quedan
++// csstv_half_alltalk_off segundos del freezetime de la ronda siguiente
++// ---------------------------------------------------------------------------
++
++/** Al terminar la última ronda de una mitad. */
++void HalfTalk_Begin()
++{
++	if (g_cvHalfTalk.IntValue <= 0 || g_bHalfTalk)
++		return;
++	ConVar alltalk = FindConVar("sv_alltalk");
++	g_iHalfTalkSaved = alltalk.IntValue;
++	alltalk.SetInt(1, false, false);
++	g_bHalfTalk = true;
++	QolChatAll("%s {#amarillo}Medio tiempo:{#normal} alltalk hasta que queden %d segundos de freezetime.", PREFIX, g_cvHalfTalkOff.IntValue);
++}
++
++/** Segundos desde el final de la mitad hasta la ronda siguiente (0 = sin charla). */
++int HalfTalk_Gap()
++{
++	return g_bHalfTalk ? g_cvHalfTalk.IntValue : 0;
++}
++
++/** Desde OnRestartsDone, en la vuelta del medio tiempo: programa el final. */
++void HalfTalk_OnRoundStart()
++{
++	if (!g_bHalfTalk)
++		return;
++	float wait = FindConVar("mp_freezetime").FloatValue - g_cvHalfTalkOff.FloatValue;
++	if (wait <= 0.0)
++	{
++		Timer_HalfTalkEnd(null);
++		return;
++	}
++	CreateTimer(wait, Timer_HalfTalkEnd, _, TIMER_FLAG_NO_MAPCHANGE);
++}
++
++public Action Timer_HalfTalkEnd(Handle timer)
++{
++	if (!g_bHalfTalk)
++		return Plugin_Stop;
++	HalfTalk_Stop();
++	QolChatAll("%s Se terminó el alltalk: se vuelve a hablar solo con tu equipo.", PREFIX);
++	return Plugin_Stop;
++}
++
++void HalfTalk_Stop()
++{
++	g_bHalfTalk = false;
++	FindConVar("sv_alltalk").SetInt(g_iHalfTalkSaved, false, false);
++}
++
+ /** Sin mensajes: al cancelar, terminar la partida o cambiar de mapa. */
+ void Pause_Clear()
+ {
+@@ -1128,10 +1265,16 @@ int Recon_WantedSide(int client)
+ bool Recon_Place(int client)
+ {
+ 	int want = Recon_WantedSide(client);
+-	if (!want || GetClientTeam(client) == want)
++	if (!want)
+ 		return false;
++	if (GetClientTeam(client) == want)
++	{
++		AutoPause_OnReturn(client);
++		return false;
++	}
+ 	MoveToTeam(client, want);
+ 	QolChatAll("%s {#amarillo}%N{#normal} volvió y sigue en el %s.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
++	AutoPause_OnReturn(client);
+ 	return true;
+ }
+ 
+diff --git a/server/addons/sourcemod/scripting/csstv_reporter.sp b/server/addons/sourcemod/scripting/csstv_reporter.sp
+index f9672e9..f8bd584 100644
+--- a/server/addons/sourcemod/scripting/csstv_reporter.sp
++++ b/server/addons/sourcemod/scripting/csstv_reporter.sp
+@@ -35,7 +35,7 @@
+ #include <adminmenu>
+ #define REQUIRE_PLUGIN
+ 
+-#define PLUGIN_VERSION "2.7.2"
++#define PLUGIN_VERSION "2.7.5"
+ // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
+ char g_sTag[32] = "CMLeague";
+ char g_sPrefix[48] = "\x04[CMLeague]\x01";
+@@ -91,6 +91,7 @@ ConVar g_cvAssistDamage;
+ ConVar g_cvIncludeBots;
+ ConVar g_cvValidateId;
+ ConVar g_cvHalftimeDelay;
++bool g_bHalfSwap;   // el próximo reinicio es la vuelta del medio tiempo
+ ConVar g_cvAbandonPlayers;
+ ConVar g_cvAbandonSeconds;
+ ConVar g_cvEndDelay;
+@@ -117,6 +118,7 @@ bool g_bDemoRecorded;          // la partida actual tiene demo (va en el resulta
+ Handle g_hReadyTimer;
+ // Nombres de los equipos de la partida: "Equipo <nick>" (A = el que empezó de CT).
+ char g_sTeamNick[2][24];
++int g_iCaptain[2];             // userid del que le da nombre al equipo: elige lado tras el cuchillo
+ char g_sTeam[2][40];
+ bool g_bSurrender;             // la partida terminó por !gg
+ int g_iSurrenderTeam;          // 0 = A, 1 = B
+@@ -281,6 +283,7 @@ public void OnClientDisconnect(int client)
+ 	g_bReady[client] = false;
+ 	Recon_Remember(client);
+ 	Board_SaveClient(client);
++	AutoPause_OnLeave(client);
+ 	Clips_OnLeave(client);   // antes de Stats_ClientLeave: puede dejar a un compañero en clutch
+ 	Stats_ClientLeave(client);
+ 	Maps_OnClientDisconnect(client);
+@@ -591,6 +594,7 @@ void ResetMatch()
+ 	for (int t = 0; t < 2; t++)
+ 	{
+ 		g_sTeamNick[t][0] = '\0';
++		g_iCaptain[t] = 0;
+ 		strcopy(g_sTeam[t], sizeof(g_sTeam[]), t == 0 ? "Equipo A" : "Equipo B");
+ 	}
+ 	for (int i = 1; i <= MaxClients; i++)
+@@ -650,6 +654,7 @@ void StartMatch(int maxRounds = 0, bool knife = false)
+ void GoLive()
+ {
+ 	g_State = State_Starting;
++	Qol_StartAlert("¡Arranca la partida!");
+ 	QolChatAll("%s La partida empieza: {#amarillo}%s{#normal} (%s) vs {#amarillo}%s{#normal} (%s). MR%d: gana el primero en llegar a %d.", PREFIX,
+ 		g_sTeam[0], g_iSideA == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}",
+ 		g_sTeam[1], g_iSideA == TEAM_CT ? "{#t}T{#normal}" : "{#ct}CT{#normal}",
+@@ -658,7 +663,7 @@ void GoLive()
+ }
+ 
+ /**
+- * Nombre de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
++ * Nombre y capitán de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
+  * que empieza de CT. El nombre queda fijo toda la partida, aunque ese jugador se vaya.
+  */
+ void PickTeamNames()
+@@ -679,6 +684,7 @@ void PickTeamNames()
+ 		int pick = nh ? humans[GetRandomInt(0, nh - 1)] : (nb ? bots[GetRandomInt(0, nb - 1)] : 0);
+ 		if (!pick)
+ 			continue;
++		g_iCaptain[t] = GetClientUserId(pick);
+ 		GetClientName(pick, g_sTeamNick[t], sizeof(g_sTeamNick[]));
+ 		ReplaceString(g_sTeamNick[t], sizeof(g_sTeamNick[]), "{", "(");   // que un nick no pueda meter etiquetas de color
+ 		TrimString(g_sTeamNick[t]);
+@@ -688,12 +694,12 @@ void PickTeamNames()
+ 	}
+ }
+ 
+-void BeginRestarts(int count, int purpose)
++void BeginRestarts(int count, int purpose, int delay = 1)
+ {
+ 	g_bRestarting = true;
+ 	g_iRestartsLeft = count;
+ 	g_iRestartPurpose = purpose;
+-	ServerCommand("mp_restartgame 1");
++	ServerCommand("mp_restartgame %d", delay);   // también reemplaza el reinicio de ronda que tenga pendiente el juego
+ }
+ 
+ public Action Timer_NextRestart(Handle timer)
+@@ -727,6 +733,11 @@ void OnRestartsDone()
+ 	{
+ 		PrintToChatAll("%s ¡EN VIVO! %s %d - %d %s.", PREFIX, g_sTeam[0], g_iTotA, g_iTotB, g_sTeam[1]);
+ 		Board_ScheduleRestoreAll();
++		if (g_bHalfSwap)
++		{
++			g_bHalfSwap = false;
++			HalfTalk_OnRoundStart();
++		}
+ 		if (g_iRestartPurpose == PURPOSE_REROUND)
+ 			Rr_ScheduleRestore();
+ 	}
+@@ -775,6 +786,7 @@ void OnRoundCompleted(int winnerSide, int reason)
+ 	{
+ 		g_State = State_Halftime;
+ 		PrintToChatAll("%s Medio tiempo. Se cambian los lados.", PREFIX);
++		HalfTalk_Begin();
+ 		CreateTimer(g_cvHalftimeDelay.FloatValue, Timer_Halftime, _, TIMER_FLAG_NO_MAPCHANGE);
+ 	}
+ 	if (g_State != State_Finished)
+@@ -785,12 +797,31 @@ public Action Timer_Halftime(Handle timer)
+ {
+ 	if (g_State != State_Halftime)
+ 		return Plugin_Stop;
++	g_bHalfSwap = true;
++	// Con la charla, la ronda siguiente empieza a los csstv_half_alltalk segundos del final.
++	// El cambio de lado va justo antes, para que nadie quede vivo y en el otro equipo mientras tanto.
++	int wait = RoundToCeil(float(HalfTalk_Gap()) - g_cvHalftimeDelay.FloatValue);
++	if (wait > 1)
++	{
++		BeginRestarts(1, PURPOSE_RESUME, wait);
++		CreateTimer(float(wait) - 0.5, Timer_HalfSwap, _, TIMER_FLAG_NO_MAPCHANGE);
++		return Plugin_Stop;
++	}
+ 	Board_SaveAll();   // incluye las kills después del fin de la ronda; antes del cambio, que suma una muerte
+ 	SwapTeams();
+ 	BeginRestarts(1, PURPOSE_RESUME);
+ 	return Plugin_Stop;
+ }
+ 
++public Action Timer_HalfSwap(Handle timer)
++{
++	if (g_State != State_Halftime || !g_bRestarting || !g_bHalfSwap)
++		return Plugin_Stop;
++	Board_SaveAll();
++	SwapTeams();
++	return Plugin_Stop;
++}
++
+ void StartOvertime()
+ {
+ 	g_State = State_Halftime;
+diff --git a/server/cfg/sourcemod/csstv_reporter.cfg b/server/cfg/sourcemod/csstv_reporter.cfg
+index e2d9aa6..800b73d 100644
+--- a/server/cfg/sourcemod/csstv_reporter.cfg
++++ b/server/cfg/sourcemod/csstv_reporter.cfg
+@@ -64,6 +64,10 @@ csstv_rtv_options "5"         // mapas en el menú de la votación (además de "
+ csstv_pause_mode "3"          // 0 desactivadas, 1 con tiempo, 2 hasta !unpause de los dos equipos, 3 con tiempo o !unpause
+ csstv_pause_max "2"           // pausas por equipo y por partida
+ csstv_pause_time "60"         // segundos de cada pausa (modos 1 y 3)
++csstv_autopause "1"           // pausa automática si un jugador se va (una por partida)
++csstv_autopause_time "120"    // segundos de esa pausa, si no vuelve antes
++csstv_half_alltalk "10"       // segundos entre la última ronda de la mitad y la siguiente, con alltalk (0 = no)
++csstv_half_alltalk_off "10"   // segundos de freezetime que quedan cuando se apaga ese alltalk
+ 
+ // --- Demo (requiere +tv_enable 1 en la línea de arranque) ---
+ csstv_demo "1"                // grabar cstrike/csstv_demos/<match_uid>.dem

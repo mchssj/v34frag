@@ -1,0 +1,17 @@
+CMLeague 2.7.5 --  Changelog
+
+Calentamiento:
+- Si mueres en el calentamiento, reapareces al toque con plata para seguir practicando.
+
+Ronda de cuchillo:
+- El lado lo elige el capitán del equipo que gana, en un menú. Si no está, puede elegir cualquiera del equipo.
+
+Durante la partida:
+- Al terminar cada ronda se muestra quién hizo más daño y quién hizo más kills.
+- Si tienes la C4 y no te mueves en los primeros 20 segundos de la ronda, la tiras al piso para que la agarre otro.
+
+Coach:
+- Nuevo !coach: en el calentamiento, un jugador por equipo puede ser coach. Mira solo a su equipo y habla solo con ellos.
+
+Fin de la partida:
+- A los 15 segundos de terminar, el servidor cambia la contraseña, saca a todos y cambia de mapa, para quedar libre para la próxima.

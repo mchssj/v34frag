@@ -1,7 +1,8 @@
 /**
  * Ronda de cuchillo (!live knife): antes del LO3 se juega una ronda solo con cuchillo, sin
- * compras ni C4. El equipo que la gana elige lado con !stay o !switch (vale el primero que
- * lo escribe; si nadie elige en csstv_knife_time segundos, se queda). No cuenta para las
+ * compras ni C4. El capitán del equipo que la gana (el jugador que le da nombre al equipo) elige
+ * lado en un menú o con !stay / !switch. Si el capitán ya no está en el equipo, elige el primero
+ * del equipo que lo escriba. Si nadie elige en csstv_knife_time segundos, se queda. No cuenta para las
  * estadísticas, el marcador ni la demo, que empiezan con el LO3.
  *
  * La usan !live knife y, desde la 1.8.0, el inicio por !ready (csstv_ready_knife 1, por defecto).
@@ -113,10 +114,52 @@ void Knife_OnRoundEnd(int winnerSide)
 	g_iKnifeWinner = winnerSide == g_iSideA ? 0 : 1;
 	g_bKnifeChoosing = true;
 	int secs = g_cvKnifeTime.IntValue;
-	QolChatAll("%s Ganó la ronda de cuchillo el {#amarillo}%s{#normal} (%s). Escriban {#verde}!stay{#normal} para quedarse o {#verde}!switch{#normal} para cambiar de lado (%d s).", PREFIX,
-		g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", secs);
+	int cap = Knife_Captain();
+	if (cap)
+	{
+		QolChatAll("%s Ganó la ronda de cuchillo el {#amarillo}%s{#normal} (%s). Elige el lado su capitán, {#amarillo}%N{#normal}, en el menú o con {#verde}!stay{#normal} / {#verde}!switch{#normal} (%d s).", PREFIX,
+			g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", cap, secs);
+		if (!IsFakeClient(cap))
+			Knife_Menu(cap, secs);
+	}
+	else
+		QolChatAll("%s Ganó la ronda de cuchillo el {#amarillo}%s{#normal} (%s). Escriban {#verde}!stay{#normal} para quedarse o {#verde}!switch{#normal} para cambiar de lado (%d s).", PREFIX,
+			g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", secs);
 	delete g_hKnifeTimer;
 	g_hKnifeTimer = CreateTimer(float(secs), Timer_KnifeTimeout, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/** El capitán del equipo ganador si sigue en el servidor y en el equipo; si no, 0. Puede ser un bot (solo en pruebas). */
+int Knife_Captain()
+{
+	int c = GetClientOfUserId(g_iCaptain[g_iKnifeWinner]);
+	if (c <= 0 || !IsClientInGame(c) || !IsTeamSide(GetClientTeam(c)) || TeamIndexOf(c) != g_iKnifeWinner)
+		return 0;
+	return c;
+}
+
+void Knife_Menu(int client, int secs)
+{
+	int side = GetClientTeam(client);
+	Menu m = new Menu(Menu_Knife);
+	m.SetTitle("Ganaron el cuchillo: ¿qué lado?");
+	m.AddItem("stay", side == TEAM_CT ? "Quedarse de CT" : "Quedarse de T");
+	m.AddItem("switch", side == TEAM_CT ? "Cambiar a T" : "Cambiar a CT");
+	m.ExitButton = false;
+	m.Display(client, secs);
+}
+
+public int Menu_Knife(Menu menu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_End)
+		delete menu;
+	else if (action == MenuAction_Select)
+	{
+		char info[8];
+		menu.GetItem(item, info, sizeof(info));
+		Knife_Choose(client, StrEqual(info, "switch"));
+	}
+	return 0;
 }
 
 public Action Timer_KnifeTimeout(Handle timer)
@@ -153,13 +196,18 @@ void Knife_Choose(int client, bool swap)
 		QolReply(client, "[%s] Solo puede elegir el %s, que ganó la ronda de cuchillo.", g_sTag, g_sTeam[g_iKnifeWinner]);
 		return;
 	}
+	int cap = Knife_Captain();
+	if (cap && cap != client)
+	{
+		QolReply(client, "[%s] El lado lo elige el capitán, %N.", g_sTag, cap);
+		return;
+	}
 	Knife_Decide(client, swap);
 }
 
 /** client = 0: se acabó el tiempo. */
 void Knife_Decide(int client, bool swap)
 {
-	g_bKnifeChoosing = false;
 	delete g_hKnifeTimer;
 	int side = g_iKnifeWinner == 0 ? g_iSideA : OtherSide(g_iSideA);
 	if (swap)
@@ -171,6 +219,7 @@ void Knife_Decide(int client, bool swap)
 		QolChatAll("%s Nadie eligió a tiempo: el %s se queda en su lado.", PREFIX, g_sTeam[g_iKnifeWinner]);
 	LogMessage("Partida %s: ronda de cuchillo para el equipo %s, %s.", g_sMatchUid, g_iKnifeWinner == 0 ? "A" : "B", swap ? "cambia de lado" : "se queda");
 	if (swap)
-		SwapTeams();
+		SwapTeams();   // con g_bKnifeChoosing todavía en true: si el cambio cierra la ronda, no se toma como otra ronda de cuchillo
+	g_bKnifeChoosing = false;
 	GoLive();
 }

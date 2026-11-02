@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.8.3"
+#define PLUGIN_VERSION "2.8.5"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -119,6 +119,7 @@ bool g_bDemoRecorded;          // la partida actual tiene demo (va en el resulta
 Handle g_hReadyTimer;
 // Nombres de los equipos de la partida: "Equipo <nick>" (A = el que empezó de CT).
 char g_sTeamNick[2][24];
+int g_iCaptain[2];             // userid del que le da nombre al equipo: elige lado tras el cuchillo
 char g_sTeam[2][40];
 bool g_bSurrender;             // la partida terminó por !gg
 int g_iSurrenderTeam;          // 0 = A, 1 = B
@@ -602,6 +603,7 @@ void ResetMatch()
 	for (int t = 0; t < 2; t++)
 	{
 		g_sTeamNick[t][0] = '\0';
+		g_iCaptain[t] = 0;
 		strcopy(g_sTeam[t], sizeof(g_sTeam[]), t == 0 ? "Equipo A" : "Equipo B");
 	}
 	for (int i = 1; i <= MaxClients; i++)
@@ -671,7 +673,7 @@ void GoLive()
 }
 
 /**
- * Nombre de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
+ * Nombre y capitán de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
  * que empieza de CT. El nombre queda fijo toda la partida, aunque ese jugador se vaya.
  */
 void PickTeamNames()
@@ -692,6 +694,7 @@ void PickTeamNames()
 		int pick = nh ? humans[GetRandomInt(0, nh - 1)] : (nb ? bots[GetRandomInt(0, nb - 1)] : 0);
 		if (!pick)
 			continue;
+		g_iCaptain[t] = GetClientUserId(pick);
 		GetClientName(pick, g_sTeamNick[t], sizeof(g_sTeamNick[]));
 		ReplaceString(g_sTeamNick[t], sizeof(g_sTeamNick[]), "{", "(");   // que un nick no pueda meter etiquetas de color
 		TrimString(g_sTeamNick[t]);
