@@ -3,8 +3,8 @@
 // sale de la base cada 30 segundos (remote.ts): abrir y cerrar puertos, claves nuevas y streamers revocados se aplican
 // sin reiniciar.
 
-import { Channel, emptyState } from "./channel.ts";
-import { type Control, type ControlStore, mergeControl } from "./control.ts";
+import { Channel, type DelayMode, emptyState } from "./channel.ts";
+import { type Control, type ControlStore, delayModeOf, mergeControl } from "./control.ts";
 import type { RemoteConfig, RemoteServer, RemoteStreamer, Session } from "./remote.ts";
 import { sha256 } from "./remote.ts";
 import type { Client, HttpServer } from "./server.ts";
@@ -66,9 +66,20 @@ export class Hub {
     return { ...this.deps.controls.get(viewer), server: this.selected(viewer) };
   }
 
+  /** El retraso que eligió el streamer para un servidor. */
+  private modeOf(viewer: string, server: string): DelayMode {
+    return delayModeOf(this.deps.controls.get(viewer), server);
+  }
+
+  /** La vía que mira el streamer en su servidor, o null si no eligió servidor. */
+  private laneOf(viewer: string): { id: string; lane: ReturnType<Channel["laneKey"]> } | null {
+    const id = this.selected(viewer);
+    return id ? { id, lane: this.slots.get(id)!.channel.laneKey(this.modeOf(viewer, id)) } : null;
+  }
+
   stateFor(viewer: string): GameState {
     const id = this.selected(viewer);
-    return id ? this.slots.get(id)!.channel.snapshot() : emptyState();
+    return id ? this.slots.get(id)!.channel.snapshot(this.modeOf(viewer, id), this.now()) : emptyState();
   }
 
   initial(viewer: string): { event: string; data: unknown }[] {
@@ -79,14 +90,22 @@ export class Hub {
   }
 
   onControl(viewer: string, body: unknown): void {
-    const before = this.selected(viewer);
+    const before = this.laneOf(viewer);
+    const modesBefore = { ...(this.deps.controls.get(viewer).delays ?? {}) };
     const next = mergeControl(this.deps.controls.get(viewer), body);
     // Solo se guarda un servidor que existe.
     if (next.server !== null && !this.slots.has(next.server)) next.server = this.deps.controls.get(viewer).server;
     this.deps.controls.set(viewer, next);
     const mine = (c: Client) => c.viewer === viewer;
     this.http?.broadcast("control", this.control(viewer), mine);
-    if (this.selected(viewer) !== before) this.http?.broadcast("state", this.stateFor(viewer), mine);
+    const after = this.laneOf(viewer);
+    if (after?.id !== before?.id || after?.lane !== before?.lane) this.http?.broadcast("state", this.stateFor(viewer), mine);
+    for (const [id, slot] of this.slots) {
+      const mode = this.modeOf(viewer, id);
+      if (mode === (modesBefore[id] ?? "tv")) continue;
+      const what = mode === "tv" ? `SourceTV (${slot.channel.delaySeconds("tv")} s)` : mode === "live" ? "en vivo" : `${mode} s`;
+      this.deps.log(`${this.byUser.get(viewer)?.alias ?? viewer}: retraso de ${slot.server.name} → ${what}.`);
+    }
   }
 
   /** Quién tiene el HUD abierto (OBS) en qué servidor. */
@@ -122,11 +141,16 @@ export class Hub {
         streaming: [...(watchers.get(server.id) ?? [])],
       }));
     const hudOpen = (this.http?.connections() ?? []).filter((c) => c.viewer === viewer && c.page === "hud").length;
+    const channel = sel ? this.slots.get(sel)!.channel : null;
+    const mode = sel ? this.modeOf(viewer, sel) : "tv";
     return {
       mode: "vps",
       alias: this.byUser.get(viewer)?.alias ?? "",
       selected: sel,
-      delaySeconds: sel ? this.slots.get(sel)!.channel.delaySeconds() : null,
+      delaySeconds: channel ? channel.delaySeconds(mode) : null,
+      delayMode: mode,
+      delayLocked: this.deps.delay !== null,
+      tvDelay: channel ? channel.tvDelay : null,
       servers,
       hudOpen,
       ...extra,
@@ -137,14 +161,29 @@ export class Hub {
   tick(): void {
     const now = this.now();
     for (const [id, slot] of this.slots) {
-      if (!slot.channel.release(now)) continue;
-      const state = slot.channel.snapshot();
-      this.http?.broadcast("state", state, (c) => this.selected(c.viewer) === id);
+      for (const lane of slot.channel.release(now)) {
+        const state = slot.channel.snapshot(lane === "tv" ? "tv" : lane === 0 ? "live" : lane, now);
+        this.http?.broadcast("state", state, (c) => {
+          const v = this.laneOf(c.viewer);
+          return v?.id === id && v.lane === lane;
+        });
+      }
     }
+  }
+
+  /** Marca como miradas las vías de los que tienen /hud o /control abierto y borra las demás. */
+  housekeeping(): void {
+    const now = this.now();
+    for (const c of this.http?.connections() ?? []) {
+      const id = this.selected(c.viewer);
+      if (id) this.slots.get(id)!.channel.touch(this.modeOf(c.viewer, id), now);
+    }
+    for (const slot of this.slots.values()) slot.channel.prune(now);
   }
 
   /** Pide la configuración a la base (informando sesiones y paquetes) y la aplica. */
   async refresh(): Promise<void> {
+    this.housekeeping();
     const seen: Record<string, string> = {};
     for (const [id, slot] of this.slots) {
       const at = slot.channel.lastPacketAt;
