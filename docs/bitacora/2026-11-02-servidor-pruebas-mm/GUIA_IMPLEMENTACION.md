@@ -15,6 +15,8 @@ Hecho el 2026-11-02. Los archivos subidos se compararon con los locales. **Todo 
 | `aurav34`, `csstv_reporter.cfg` | `csstv_api_url`, `csstv_api_key` y `csstv_server_token` de staging (los del `csstv_reporter.cfg.mm_staging` de Daniel; el token coincide con el `token_hash` de staging), `csstv_claim "1"`, `csstv_mm "1"` y `csstv_mm_poll "5"` | `csstv_reporter.cfg.bak_antes_mm2` |
 | `aurav34`, `v34_retake.cfg` | `sm_retake_autostart "0"` | `v34_retake.cfg.bak_antes_mm` |
 
+**Retake, 2026-11-02 (más tarde):** Kyan pidió dejar el retake como estaba. `v34_retake.cfg` volvió a `sm_retake_autostart "1"` (desde `v34_retake.cfg.bak_antes_mm`). Con el retake prendido solo, una sala del matchmaking que llegue a `aurav34` puede jugarse en modo retake.
+
 Antes de subir se revisó que `aurav34` no tuviera nada en `data/csstv/live` ni en `queue`, para que no se mandara a staging nada viejo de producción.
 
 ## Cómo rearmar el 2.8.4

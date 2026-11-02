@@ -33,6 +33,18 @@ A pedido de Kyan, en la misma tanda. Cada archivo subido se comparó con el loca
 | MVZG (`#1`, `SERVER3_*`) | Reporter 2.7.5 licenciado (127866 bytes), `csstv_qol` y `csstv_coach` | `plugins/disabled/csstv_reporter_2.7.4.smx` |
 | `aurav34` (`#3`, `SFTP_CSS_*`) | Reporter 2.8.5 genérico (137461 bytes), `csstv_qol` y `csstv_coach` | `plugins/disabled/csstv_reporter_2.8.4.smx` |
 
+### `csstv_qol` 1.0.1 (2026-11-02)
+
+Kyan pidió 40 s para el fin de la partida, así la SourceTV llega a mostrar el final, y dejarlo prendido solo en MVZG, para las pruebas. La 1.0.1 tiene 40 s por defecto y no hace nada si para entonces ya empezó otra partida. Se subió a los tres servidores (11909 bytes) con su `cfg/sourcemod/csstv_qol.cfg`, que no existía todavía:
+
+| Servidor | `csstv_qol_end_kick` |
+|---|---|
+| MVZG | `40` |
+| flow | `0` (apagado) |
+| `aurav34` | `0` (apagado) |
+
+Prueba en `cssds` con la 2.7.5: la partida terminó a las 16:26:14, y la contraseña nueva y la expulsión fueron a las 16:26:53. El mapa cambió a las 16:26:55.
+
 - `csstv_qol` y `csstv_coach` crean su cfg la primera vez (`cfg/sourcemod/csstv_qol.cfg` y `csstv_coach.cfg`) con los valores por defecto.
 - El fin de la partida pone la contraseña con `sm_rpw` de `csstv_password`. flow y MVZG tienen `csstv_password` en `plugins/`, y `aurav34` tiene la 1.1.0, que con matchmaking deja la contraseña a la web.
 

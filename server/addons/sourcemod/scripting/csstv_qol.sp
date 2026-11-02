@@ -8,7 +8,8 @@
  *     freezetime, la tira al piso;
  *   - csstv_qol_end_kick segundos después de que termina una partida pone una contraseña al azar
  *     (con !rpw de csstv_password; con matchmaking la maneja la web), expulsa a todos y cambia al
- *     mapa siguiente, para que el servidor quede libre.
+ *     mapa siguiente, para que el servidor quede libre. 40 s por defecto: la SourceTV va atrasada y
+ *     tiene que llegar a mostrar el final. Si para entonces ya empezó otra partida, no hace nada.
  *
  * El estado del mix se lee de sm_csstv_status, como hace v34_retake, así no depende de la versión
  * del reporter. Con retake, wingman o deathmatch prendidos no hace nada: tienen sus propias reglas.
@@ -22,7 +23,7 @@
 #include <cstrike>
 #include <nextmap>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define TEAM_T  2
 #define TEAM_CT 3
 #define C4_MOVE 32.0   // unidades que tiene que moverse para no contar como quieto
@@ -60,7 +61,7 @@ public void OnPluginStart()
 	g_cvRespawn   = CreateConVar("csstv_qol_warmup_respawn", "1", "Reaparecer a los 1,5 s en el calentamiento del reporter.", _, true, 0.0, true, 1.0);
 	g_cvRoundBest = CreateConVar("csstv_qol_round_best", "1", "Con la partida en vivo, decir al final de cada ronda quién hizo más daño y más kills.", _, true, 0.0, true, 1.0);
 	g_cvC4Afk     = CreateConVar("csstv_qol_c4_afk", "20", "Segundos después del freezetime: si quien tiene la C4 no se movió, la tira (0 = no).", _, true, 0.0, true, 120.0);
-	g_cvEndKick   = CreateConVar("csstv_qol_end_kick", "15", "Segundos después del fin de la partida: contraseña al azar, expulsar a todos y cambiar de mapa (0 = no).", _, true, 0.0, true, 120.0);
+	g_cvEndKick   = CreateConVar("csstv_qol_end_kick", "40", "Segundos después del fin de la partida: contraseña al azar, expulsar a todos y cambiar de mapa (0 = no). Que le dé tiempo a la SourceTV de mostrar el final.", _, true, 0.0, true, 120.0);
 	AutoExecConfig(true, "csstv_qol");
 	g_cvStartMoney = FindConVar("mp_startmoney");
 
@@ -318,6 +319,11 @@ public Action Timer_C4Afk(Handle timer, int round)
 
 public Action Timer_EndKick(Handle timer)
 {
+	if (g_sState[0] && !StrEqual(g_sState, "calentamiento") && !StrEqual(g_sState, "terminada"))
+	{
+		LogMessage("Fin de la partida: no se expulsa a nadie porque ya empezó otra (%s).", g_sState);
+		return Plugin_Stop;
+	}
 	ServerCommand("sm_rpw");   // csstv_password la guarda para los mapas siguientes; con matchmaking no hace nada
 	char tag[32];
 	Tag(tag, sizeof(tag));
