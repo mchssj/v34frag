@@ -92,6 +92,13 @@ const ImageForm = z.object({ file: z.instanceof(File).openapi({ type: 'string', 
 
 const form = (c: C) => (c.req as unknown as { valid(t: 'form'): { file: File; name?: string } }).valid('form');
 
+/** "@player Hay gente en la queue, ¡mándate!" y abajo "5v5: 7 buscando · avisó Kyan". El alias va sin markdown ni menciones. */
+export function queuePingText(p: { alias: string; queue: Record<string, number> }, role?: string) {
+  const who = p.alias.replace(/[\\*_~`|>@#:<]/g, '').slice(0, 32).trim() || 'Alguien';
+  const modes = Object.entries(p.queue).filter(([, n]) => n > 0).map(([m, n]) => `${m}: ${n} buscando`);
+  return `${role ? `<@&${role}> ` : ''}Hay gente en la queue, ¡mándate!\n${[...modes, `avisó ${who}`].join(' · ')}`;
+}
+
 const r = createRouter();
 const add = (def: ReturnType<typeof route>, handler: (c: C) => Promise<Response>) => r.openapi(def as never, handler as never);
 
@@ -101,6 +108,26 @@ add(route('post', '/api/v1/mm/queue', { summary: 'Entrar a la cola', request: js
   return { p_mode: b.mode, p_region: b.region ?? null };
 }));
 add(route('delete', '/api/v1/mm/queue', { summary: 'Salir de la cola' }), action('mm_leave'));
+
+// Aviso de la cola en Discord (replanteo 57). La base decide si se puede (en la cola, uno cada 15 min; el staff siempre) y
+// la API publica. allowed_mentions limita la mención al rol: un alias no puede mencionar a nadie.
+add(route('get', '/api/v1/mm/queue/ping', { summary: 'Si puedo avisar en Discord que hay gente en la cola' }), async (c) =>
+  c.json((await rpc(c, 'mm_queue_ping_status')) as never, 200));
+add(route('post', '/api/v1/mm/queue/ping', { summary: 'Avisar en Discord (#avisos) que hay gente en la cola' }), async (c) => {
+  const { DISCORD_QUEUE_WEBHOOK_URL: hook, DISCORD_QUEUE_ROLE_ID: role } = c.var.config;
+  if (!hook) throw new AppError(501, 'NOT_AVAILABLE', 'El aviso en Discord no está configurado.');
+  const ping = (await rpc(c, 'mm_queue_ping')) as unknown as { id: string; alias: string; queue: Record<string, number> };
+  const res = await fetch(hook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: queuePingText(ping, role), allowed_mentions: { parse: [], roles: role ? [role] : [] } }),
+  }).catch(() => null);
+  if (!res?.ok) {
+    await rpc(c, 'mm_queue_ping_cancel', { p_id: ping.id });
+    throw new AppError(502, 'NOT_AVAILABLE', 'Discord no recibió el aviso. Probá de nuevo en un rato.');
+  }
+  return c.json((await rpc(c, 'mm_queue_ping_status')) as never, 200);
+});
 add(route('post', '/api/v1/mm/lobby/accept', { summary: 'Aceptar la partida' }), action('mm_accept'));
 add(route('post', '/api/v1/mm/lobby/decline', { summary: 'Rechazar la partida' }), action('mm_decline'));
 

@@ -97,6 +97,9 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
       return new AppError(403, 'PCW_BANNED', err.message);
     case 'V5602':
       return new AppError(409, 'SERVER_BUSY', err.message);
+    // (replanteo 57) Aviso de la cola en Discord antes de los 15 minutos; el detail trae next_at.
+    case 'V5701':
+      return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);

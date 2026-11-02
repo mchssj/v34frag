@@ -38,6 +38,10 @@ const EnvSchema = z.object({
   // La API la usa solo para subir las capturas del anticheat al bucket privado. También la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
   // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),
+  // Webhook de Discord del aviso de la cola del matchmaking (#avisos) y el rol que menciona (replanteo 57). Secreto: solo en
+  // el entorno. Sin el webhook, el aviso responde 501.
+  DISCORD_QUEUE_WEBHOOK_URL: z.url().startsWith('https://discord.com/api/webhooks/').optional(),
+  DISCORD_QUEUE_ROLE_ID: z.string().regex(/^\d{5,25}$/).optional(),
 });
 
 export type Config = z.infer<typeof EnvSchema> & { corsOrigins: RegExp[] };
