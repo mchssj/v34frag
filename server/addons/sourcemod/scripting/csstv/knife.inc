@@ -40,6 +40,7 @@ void Knife_Reset()
 void Knife_Begin()
 {
 	g_State = State_Knife;
+	Qol_StartAlert("¡Arranca la ronda de cuchillo!");
 	QolChatAll("%s {#amarillo}Ronda de cuchillo{#normal}: %s (%s) vs %s (%s). El que gana elige lado.", PREFIX,
 		g_sTeam[0], g_iSideA == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}",
 		g_sTeam[1], g_iSideA == TEAM_CT ? "{#t}T{#normal}" : "{#ct}CT{#normal}");

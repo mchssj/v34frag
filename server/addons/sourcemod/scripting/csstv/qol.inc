@@ -15,7 +15,8 @@
 #define PAUSE_TIMED    1
 #define PAUSE_UNTIL    2
 #define PAUSE_BOTH     3
-#define PAUSE_BY_ADMIN 2       // g_iPauseBy: 0 = equipo A, 1 = equipo B, 2 = admin
+#define PAUSE_BY_ADMIN 2       // g_iPauseBy: 0 = equipo A, 1 = equipo B, 2 = admin, 3 = desconexión
+#define PAUSE_BY_AUTO  3
 #define PAUSE_HOLD     3600.0  // segundos que se alarga el freezetime en una pausa sin tiempo
 #define DEMO_DIR       "csstv_demos"
 
@@ -26,6 +27,9 @@ ConVar g_cvHpOnDeath;
 ConVar g_cvPauseMode;
 ConVar g_cvPauseMax;
 ConVar g_cvPauseTime;
+ConVar g_cvAutoPause;
+ConVar g_cvAutoPauseTime;
+ConVar g_cvHalfTalk;
 ConVar g_cvDemo;
 ConVar g_cvDemoKeep;
 ConVar g_cvChatColors;
@@ -49,6 +53,11 @@ float g_fPauseEnds;            // GetGameTime() en que termina una pausa con tie
 bool g_bUnpauseReady[2];
 int g_iPauseTicks;
 Handle g_hPauseTimer;
+bool g_bAutoPauseUsed;         // una sola por partida
+bool g_bAutoPausePending;      // espera el inicio de la próxima ronda
+int g_iAutoPauseRec = -1;      // registro de stats del jugador que se fue
+bool g_bHalfTalk;
+int g_iHalfTalkSaved;
 
 // Demo
 bool g_bRecording;
@@ -100,6 +109,12 @@ void Qol_Init()
 	LoadTranslations("common.phrases");   // ProcessTargetString
 
 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
+	g_cvAutoPause     = CreateConVar("csstv_autopause", "1", "Pausa automática si un jugador se va durante la partida (una por partida).", _, true, 0.0, true, 1.0);
+	g_cvAutoPauseTime = CreateConVar("csstv_autopause_time", "120", "Segundos de la pausa automática, si el jugador no vuelve antes.", _, true, 5.0, true, 600.0);
+	g_cvHalfTalk      = CreateConVar("csstv_half_alltalk", "10", "Segundos quietos y con alltalk al cambiar de lado en el medio tiempo (0 = no).", _, true, 0.0, true, 60.0);
+	AddCommandListener(Cmd_HalfTalkBuy, "buy");
+	AddCommandListener(Cmd_HalfTalkBuy, "autobuy");
+	AddCommandListener(Cmd_HalfTalkBuy, "rebuy");
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
 	RegConsoleCmd("sm_unpause", Cmd_Unpause, "Seguir después de una pausa (o cancelar la que pediste).");
 	RegAdminCmd("sm_forcepause", Cmd_ForcePause, ADMFLAG_GENERIC, "Pausa de admin: dura hasta sm_forceunpause o !unpause de los dos equipos.");
@@ -254,6 +269,11 @@ void Qol_Reset()
 	Pause_Clear();
 	g_iPausesUsed[0] = 0;
 	g_iPausesUsed[1] = 0;
+	g_bAutoPauseUsed = false;
+	g_bAutoPausePending = false;
+	g_iAutoPauseRec = -1;
+	if (g_bHalfTalk)
+		HalfTalk_Stop();
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
 	Board_Reset();
@@ -377,6 +397,12 @@ void Qol_OnLiveRoundStart()
 {
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
+	if (g_bAutoPausePending)
+	{
+		g_bAutoPausePending = false;
+		g_iPauseBy = PAUSE_BY_AUTO;
+		g_bPauseRequested = true;   // si había una táctica pedida, esta la reemplaza
+	}
 	if (g_bPauseRequested)
 		CreateTimer(0.1, Timer_StartRequestedPause, _, TIMER_FLAG_NO_MAPCHANGE);
 	// La plata del inicio de ronda ya está acreditada medio segundo después.
@@ -682,18 +708,23 @@ public Action Timer_StartRequestedPause(Handle timer)
 void Pause_Start()
 {
 	int mode = g_cvPauseMode.IntValue;
-	bool admin = g_iPauseBy == PAUSE_BY_ADMIN;
+	bool admin = g_iPauseBy == PAUSE_BY_ADMIN, auto = g_iPauseBy == PAUSE_BY_AUTO;
 	g_bPauseRequested = false;
 	g_bPaused = true;
 	g_bUnpauseReady[0] = false;
 	g_bUnpauseReady[1] = false;
-	g_bPauseTimed = !admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH);
-	float secs = g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD;
+	g_bPauseTimed = auto || (!admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH));
+	float secs = auto ? g_cvAutoPauseTime.FloatValue : (g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD);
 	g_fPauseEnds = GetGameTime() + secs;
 	g_iPauseTicks = 0;
 	GameRules_SetPropFloat("m_fRoundStartTime", g_fPauseEnds);
 
-	if (admin)
+	if (auto)
+	{
+		g_bAutoPauseUsed = true;
+		QolChatAll("%s {#amarillo}Pausa automática: se fue un jugador.{#normal} Sigue cuando vuelva, o en %d segundos.", PREFIX, RoundToFloor(secs));
+	}
+	else if (admin)
 	{
 		QolChatAll("%s {#amarillo}Pausa del admin.{#normal} Sigue con !forceunpause o cuando los dos equipos escriban !unpause.", PREFIX);
 	}
@@ -810,6 +841,109 @@ void Pause_End(const char[] reason)
 	if (g_State == State_Live && InFreezeTime())
 		GameRules_SetPropFloat("m_fRoundStartTime", GetGameTime() + 3.0);
 	QolChatAll("%s {#verde}%s Se sigue en 3 segundos.", PREFIX, reason);
+}
+
+/** Desde OnClientDisconnect, antes de Stats_ClientLeave: un jugador de la partida se va. */
+void AutoPause_OnLeave(int client)
+{
+	if (!g_cvAutoPause.BoolValue || !MatchRunning() || g_bAutoPauseUsed || g_bAutoPausePending
+		|| !IsClientInGame(client) || !IsTeamSide(GetClientTeam(client)))
+		return;
+	int rec = Stats_GetRec(client);
+	if (rec < 0)
+		return;
+	g_iAutoPauseRec = rec;
+	if (g_State == State_Live && !g_bRestarting && !g_bPaused && InFreezeTime())
+	{
+		g_iPauseBy = PAUSE_BY_AUTO;
+		Pause_Start();
+		return;
+	}
+	g_bAutoPausePending = true;
+	QolChatAll("%s {#amarillo}%N se fue.{#normal} Si no vuelve, hay pausa automática al inicio de la próxima ronda.", PREFIX, client);
+}
+
+/** Desde Recon_Place: volvió a su equipo. Solo cuenta el jugador por el que se pausó. */
+void AutoPause_OnReturn(int client)
+{
+	if (g_iAutoPauseRec < 0 || Stats_FindRec(client) != g_iAutoPauseRec)
+		return;
+	g_iAutoPauseRec = -1;
+	g_bAutoPausePending = false;
+	if (g_bPauseRequested && g_iPauseBy == PAUSE_BY_AUTO)
+		g_bPauseRequested = false;
+	if (g_bPaused && g_iPauseBy == PAUSE_BY_AUTO)
+		Pause_End("Volvió el jugador.");
+}
+
+/** Campana y texto para el que está esperando en otra cosa, al empezar el cuchillo o el LO3. */
+void Qol_StartAlert(const char[] text)
+{
+	PrintCenterTextAll("%s", text);
+	PlayBell();
+	CreateTimer(0.8, Timer_Bell, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.6, Timer_Bell, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_Bell(Handle timer)
+{
+	PlayBell();
+	return Plugin_Stop;
+}
+
+void PlayBell()
+{
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && !IsFakeClient(i))
+			ClientCommand(i, "play buttons/bell1.wav");
+}
+
+// ---------------------------------------------------------------------------
+// Charla del medio tiempo: todos quietos y con alltalk, antes del freezetime normal
+// ---------------------------------------------------------------------------
+
+/** Desde OnRestartsDone, en la vuelta del medio tiempo. */
+void HalfTalk_Start()
+{
+	int secs = g_cvHalfTalk.IntValue;
+	if (secs <= 0)
+		return;
+	CreateTimer(0.2, Timer_HalfTalkStart, secs, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_HalfTalkStart(Handle timer, int secs)
+{
+	if (g_State != State_Live || !InFreezeTime())
+		return Plugin_Stop;
+	ConVar alltalk = FindConVar("sv_alltalk");
+	g_iHalfTalkSaved = alltalk.IntValue;
+	alltalk.SetInt(1, false, false);
+	g_bHalfTalk = true;
+	GameRules_SetPropFloat("m_fRoundStartTime", GameRules_GetPropFloat("m_fRoundStartTime") + float(secs));
+	QolChatAll("%s {#amarillo}Medio tiempo:{#normal} alltalk por %d segundos. Después se vuelve a hablar solo con tu equipo.", PREFIX, secs);
+	CreateTimer(float(secs), Timer_HalfTalkEnd, _, TIMER_FLAG_NO_MAPCHANGE);
+	return Plugin_Stop;
+}
+
+public Action Timer_HalfTalkEnd(Handle timer)
+{
+	if (!g_bHalfTalk)
+		return Plugin_Stop;
+	HalfTalk_Stop();
+	QolChatAll("%s Se terminó el alltalk: ya pueden comprar.", PREFIX);
+	return Plugin_Stop;
+}
+
+void HalfTalk_Stop()
+{
+	g_bHalfTalk = false;
+	FindConVar("sv_alltalk").SetInt(g_iHalfTalkSaved, false, false);
+}
+
+/** Durante la charla no se compra. */
+public Action Cmd_HalfTalkBuy(int client, const char[] command, int argc)
+{
+	return g_bHalfTalk ? Plugin_Handled : Plugin_Continue;
 }
 
 /** Sin mensajes: al cancelar, terminar la partida o cambiar de mapa. */
@@ -1128,10 +1262,16 @@ int Recon_WantedSide(int client)
 bool Recon_Place(int client)
 {
 	int want = Recon_WantedSide(client);
-	if (!want || GetClientTeam(client) == want)
+	if (!want)
 		return false;
+	if (GetClientTeam(client) == want)
+	{
+		AutoPause_OnReturn(client);
+		return false;
+	}
 	MoveToTeam(client, want);
 	QolChatAll("%s {#amarillo}%N{#normal} volvió y sigue en el %s.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
+	AutoPause_OnReturn(client);
 	return true;
 }
 
