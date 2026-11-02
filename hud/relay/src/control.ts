@@ -3,6 +3,7 @@
 // por streamer (ControlStore).
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { type DelayMode, parseDelayMode } from "./channel.ts";
 
 /** Un mapa de la serie. pick y win van por lado (ct o t): "Intercambiar" los da vuelta junto con los nombres. */
 export interface SeriesMap {
@@ -31,7 +32,12 @@ export interface Control {
   showScore: boolean;
   showSeries: boolean;
   series: Series;
+  /** Retraso que eligió para cada servidor (id de game_servers; "local" en el modo local). Sin entrada: "tv". */
+  delays: Record<string, DelayMode>;
 }
+
+/** Clave del servidor en delays para el modo local, que tiene uno solo. */
+export const LOCAL_SERVER = "local";
 
 const emptySeries = (): Series => ({ bo: 1, maps: Array.from({ length: SERIES_MAPS }, () => ({ map: "", pick: "", win: "" })) });
 
@@ -46,6 +52,7 @@ export const DEFAULT_CONTROL: Control = {
   showScore: true,
   showSeries: true,
   series: emptySeries(),
+  delays: {},
 };
 
 const BOOLS = ["showPlayers", "showFocus", "showKills", "showScore", "showSeries"] as const;
@@ -71,11 +78,33 @@ function mergeSeries(current: Series, input: unknown): Series {
   return next;
 }
 
+const isServer = (v: unknown): v is string => typeof v === "string" && (v === LOCAL_SERVER || /^[0-9a-f-]{36}$/i.test(v));
+
+/** { delay: { server, mode } } desde /control, o { delays: { … } } desde el archivo guardado. Lo inválido se ignora. */
+function mergeDelays(current: Record<string, DelayMode>, i: Record<string, unknown>): Record<string, DelayMode> {
+  const next = { ...current };
+  const set = (server: unknown, mode: unknown) => {
+    const m = parseDelayMode(mode);
+    if (!isServer(server) || m === null) return;
+    if (m === "tv") delete next[server];
+    else next[server] = m;
+  };
+  if (typeof i.delays === "object" && i.delays !== null) for (const [k, v] of Object.entries(i.delays)) set(k, v);
+  if (typeof i.delay === "object" && i.delay !== null) {
+    const d = i.delay as Record<string, unknown>;
+    set(d.server, d.mode);
+  }
+  return next;
+}
+
+/** El retraso que eligió para un servidor. */
+export const delayModeOf = (c: Control, server: string): DelayMode => c.delays?.[server] ?? "tv";
+
 /** Aplica un cambio parcial que llega de /control. Ignora los campos inválidos. */
 export function mergeControl(current: Control, input: unknown): Control {
   if (typeof input !== "object" || input === null) return current;
   const i = input as Record<string, unknown>;
-  const next = { ...current, series: mergeSeries(current.series ?? emptySeries(), i.series) };
+  const next = { ...current, series: mergeSeries(current.series ?? emptySeries(), i.series), delays: mergeDelays(current.delays ?? {}, i) };
   for (const k of ["teamCT", "teamT"] as const) {
     const v = i[k];
     if (typeof v === "string") next[k] = v.trim().slice(0, 32);

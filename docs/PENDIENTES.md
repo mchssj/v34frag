@@ -539,6 +539,18 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-moderar-equipos`](bitacora/2026-11-01-moderar-equipos/)
 
+### 1.42 Retraso del HUD por streamer y por servidor (relay 2.3.0): con commit, sin desplegar
+
+- **Qué es:** en `/control`, cada streamer elige para cada servidor SourceTV (`tv_delay`), en vivo o un retraso fijo de 1 a 300 s. El relay arma una vía por retraso; el servidor de CS manda lo mismo de siempre.
+- **Solución urgente del 2026-11-01, todavía activa:** `"delay": 0` en `/etc/cmleague/hud.json` del VPS (respaldo `hud.json.bak_20261101`): HUD en vivo para todos.
+- **Hecho el 2026-11-01:** relay 2.3.0, 47 pruebas en verde y prueba de humo con `pnpm simular`.
+- **Falta:**
+  1. `deploy/vps/desplegar.sh hud` desde `feat/frontend-fase-1`.
+  2. Volver `"delay"` a `null` en `hud.json` y reiniciar `cmleague-hud`, avisando antes a quien use el HUD en vivo.
+  3. Verlo en `/control` con flow.
+- No toca el plugin ni los servidores de juego.
+- **Bitácora:** [`2026-11-01-hud-retraso-por-servidor`](bitacora/2026-11-01-hud-retraso-por-servidor/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
