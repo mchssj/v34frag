@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Corre las pruebas del replanteo 49 en la base local del backend (contenedor supabase_db_v34frag-api), dentro de una
-# sola transacción que se deshace: aplica 45 y 48 si faltan, después la 49, las pruebas y la inversa. No deja nada.
+# Corre las pruebas de los replanteos 49 y 52 en la base local del backend (contenedor supabase_db_v34frag-api), dentro de una
+# sola transacción que se deshace: aplica 45 y 48 si faltan, después de la 49 a la 52, las pruebas y las inversas. No deja nada.
 #
 #   bash correr_local.sh <carpeta de la rama feat/mm-claim-en-sala>
 set -euo pipefail
@@ -18,9 +18,12 @@ sin_tx() { grep -v -E '^(begin|commit);$' "$1"; }
   if [ -z "$(docker exec "$db" psql -U postgres -tAc "select to_regclass('public.mm_config')")" ]; then
     sin_tx "$repo/supabase/replanteo/48_matchmaking.sql"
   fi
-  sin_tx "$repo/supabase/replanteo/49_mm_claim_en_sala.sql"
-  cat "$aqui/49_mm_claim_en_sala.sql"
-  # La inversa también tiene que aplicar limpia, y después la cola vuelve a pedir SteamID.
+  for n in 49_mm_claim_en_sala 50_mm_min_mixes_cero 51_mm_min_account_days_cero 52_mm_cuentas_sin_ficha; do
+    sin_tx "$repo/supabase/replanteo/$n.sql"
+  done
+  cat "$aqui/49_mm_claim_en_sala.sql" "$aqui/52_mm_cuentas_sin_ficha.sql"
+  # Las inversas también tienen que aplicar limpias (52 y después 49), y después la cola vuelve a pedir SteamID.
+  sin_tx "$repo/docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/52_mm_cuentas_sin_ficha.sql"
   sin_tx "$repo/docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/49_mm_claim_en_sala.sql"
   cat <<'SQL'
 do $$

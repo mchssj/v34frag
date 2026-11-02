@@ -141,3 +141,46 @@ Pedido por Daniel. Supabase de staging `edaljnirzvisiaathitt`, por el session po
 **Para volver atrás:** renombrar los tres respaldos a su nombre original, con el próximo cambio de mapa.
 
 **Ojo en staging:** flow también figura con `mm_enabled = true`, pero su plugin apunta a producción y nunca consulta a staging, así que no le llegan salas (`mm_free_server` pide un poll de los últimos 30 s).
+
+## Replanteo `52`: cuentas sin ficha (2026-11-02)
+
+**El problema:** al registrarse no se crea una ficha, solo el `!claim` (o un admin) la crea. `mm_block_reason` exigía una ficha una línea antes del SteamID, así que **la `49` no alcanzaba**: una cuenta nueva seguía sin poder entrar a la cola. En la copia de producción, 1177 de 2265 cuentas no tienen ficha, y en staging ninguna de las 4. Las pruebas de la `49` no lo vieron porque le creaban la ficha a mano a la cuenta de prueba.
+
+**Por qué no alcanzaba con crearle una ficha al entrar a la cola:** rompía el caso más común. Un jugador que jugó antes de registrarse tiene una ficha vieja con su SteamID y sin cuenta (2082 en la copia). Si la cuenta ya tiene una ficha vacía, el `!claim` respondía "Ese SteamID es de otra ficha: pedile a un admin".
+
+**Cambios (aprobados por Daniel el 2026-11-02):**
+
+- **`mm_ensure_player`:** `mm_join` le crea la ficha con el alias a cada integrante que no la tenga, y `mm_block_reason` ya no pide ficha.
+- **`claim_with_code`:** si la ficha de la cuenta está vacía (`player_is_empty`: sin SteamID, sin adicionales y sin partidas) y el SteamID es de una ficha sin cuenta, se unen con `player_merge_empty`:
+  - Todo lo que apuntaba a la vacía pasa a la vieja. Se recorren las claves foráneas a `players`, así que entran las tablas del matchmaking y las que se sumen, y también `matches.lineup1` y `lineup2`.
+  - Si una fila ya existe con la vieja, la de la vacía se borra.
+  - Después se borra la vacía y la cuenta pasa a la vieja. El trigger le pone el alias como nick, igual que cuando se toma una ficha cargada por un admin.
+- **`mm_after_claim`:** después de un `!claim` que vincula, el ELO de la cola y de la sala abierta pasa a ser el de la ficha (antes quedaba en 1000) y avisa a la sala.
+- **Arreglo de paso:** las 28 cuentas de la copia que tienen una ficha vacía tampoco reciben más "pedile a un admin".
+- **Sin cambios en el plugin:** en el siguiente poll ve el SteamID en `t1` o `t2` y lo pasa a su equipo.
+- **El reemplazo de `claim_with_code`** se hace con `pg_temp.reemplazar`, como en la `34`: si el texto no está, aborta sin aplicar nada. La inversa hace el reemplazo al revés y vuelve `mm_join` y `mm_block_reason` a como estaban.
+
+**Pruebas (`pruebas/52_mm_cuentas_sin_ficha.sql`, 20 comprobaciones) contra la copia de producción de la base local**, dentro de una transacción que se deshace (`correr_local.sh` corre de la `49` a la `52` y las dos inversas):
+
+- **Cuenta sin ficha:** no está bloqueada, `mm_join` le crea la ficha con el alias y queda en la cola.
+- **A. `!claim` con el SteamID de una ficha vieja real** (1 mix, ELO 997):
+  - La cuenta queda con la ficha vieja y la vacía se borra.
+  - ELO, mixes y partidas quedan iguales.
+  - La sala y el plantel apuntan a la vieja, y el ELO de la sala se actualiza.
+  - El poll la reconoce (`unlinked=0`) y "connected" funciona.
+- **B. `!claim` con un SteamID real que jugó y no tiene ficha:** queda con el ELO de ese SteamID, sus partidas y el ELO de la cola actualizado.
+- **C. `!claim` con el SteamID de una ficha que ya tiene cuenta:** "Ese SteamID pertenece a otra cuenta", y la ficha vacía queda.
+
+**Staging (2026-11-02):**
+
+- **Antes:** `mm_join` y `mm_block_reason` estaban como las espera la `52` (`mm_join` como en la `48` y `mm_block_reason` como en la `49`), y `claim_with_code` igual que en local.
+- **Aplicada** sin errores.
+- **Verificado:**
+  - `claim_with_code` llama a `player_merge_empty` y `mm_after_claim`.
+  - `mm_join` llama a `mm_ensure_player`.
+  - `mm_block_reason` ya no pide ficha.
+  - `player_merge_empty` no es ejecutable para `authenticated`.
+  - `claim_with_code` (para `anon`) y `mm_join` (para `authenticated`) mantienen sus permisos.
+- **Sin pruebas con datos de staging:** no tiene fichas viejas sin cuenta.
+
+**Lo que no cubre:** a una cuenta sin ficha no la pueden invitar a un grupo (`mm_party_invite` busca por ficha) hasta que entre a la cola una vez o haga `!claim`.

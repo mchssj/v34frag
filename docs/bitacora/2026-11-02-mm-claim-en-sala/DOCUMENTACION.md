@@ -34,8 +34,10 @@ sequenceDiagram
 
 | Caso | Qué pasa |
 |---|---|
-| Ficha sin SteamID | Entra a la cola. Las demás condiciones siguen: correo confirmado, sin sanción ni exclusión, días de cuenta, anticheat si se exige y `min_mixes` |
-| `min_mixes` mayor que 0 | Una ficha sin partidas no puede entrar, tenga o no SteamID. Es configuración de Administración › Matchmaking |
+| Cuenta sin ficha (al registrarse no se crea una) | Entra a la cola: `mm_join` le crea la ficha con su alias (replanteo `52`) |
+| Ficha sin SteamID | Entra a la cola. Siguen las demás condiciones: correo confirmado, sin sanción ni exclusión y anticheat si se exige. `min_mixes` y `min_account_days` están en 0 (replanteos `50` y `51`) |
+| `!claim` con el SteamID de una ficha vieja sin cuenta (los que jugaron antes de registrarse) | La ficha vacía de la cuenta se une a la vieja: la cuenta queda con la vieja, con todo su historial y su ELO, y la sala y la cola pasan a apuntar a ella (replanteo `52`) |
+| `!claim` con un SteamID que jugó y no tiene ficha | Se vincula a la ficha de la cuenta con sus partidas viejas (`steam_history_to`) y su ELO, que ya estaba calculado por SteamID |
 | En la sala, sin vincular | Espectador. No puede elegir equipo (es una sala del matchmaking: sin stand-ins) |
 | Hace `!claim` y sale bien | Es el primer SteamID de la ficha: queda vinculado al instante. El plugin adelanta el poll, actualiza el plantel y lo pasa a su equipo |
 | El SteamID ya es de otra ficha | `claim_with_code` lo rechaza y él lo ve en el chat. Con ese SteamID no puede jugar esa sala |
@@ -50,6 +52,10 @@ sequenceDiagram
 | `mm_block_reason(usuario)` | Ya no devuelve "Tu ficha no tiene un SteamID principal" |
 | `csstv_mm_poll(token, versión)` | Suma `n1=` y `n2=` (todos los de cada equipo) y `unlinked=` (cuántos de la sala no tienen SteamID). `t1` y `t2` siguen con los SteamID conocidos |
 | `mm_player_card(...)` | Suma `linked` (la ficha tiene SteamID principal). Llega a la web en `lobby.players[]` y en `me` |
+| `mm_config` (`50` y `51`) | `min_mixes` y `min_account_days` en 0, también por defecto |
+| `mm_join` (`52`) | Le crea la ficha a cada integrante que no la tenga (`mm_ensure_player`) |
+| `mm_block_reason` (`52`) | Tampoco pide ficha |
+| `claim_with_code` (`52`) | Une la ficha vacía de la cuenta con la ficha vieja del SteamID (`player_is_empty`, `player_merge_empty`). Después de vincular, el ELO de la cola y de la sala pasa a ser el de la ficha (`mm_after_claim`) |
 
 Se usa `create or replace`, así que quedan los permisos de la `48`. La inversa deja las tres funciones como en la `48`.
 
@@ -75,7 +81,7 @@ Para un servidor sin matchmaking (`csstv_mm 0`) no cambia nada.
 
 | Qué | Archivo / ubicación |
 |---|---|
-| Replanteo | `supabase/replanteo/49_mm_claim_en_sala.sql` (rama `feat/mm-claim-en-sala`) |
+| Replanteos | `supabase/replanteo/49_mm_claim_en_sala.sql`, `50_mm_min_mixes_cero.sql`, `51_mm_min_account_days_cero.sql` y `52_mm_cuentas_sin_ficha.sql` (rama `feat/mm-claim-en-sala`) |
 | Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/49_mm_claim_en_sala.sql` (misma rama) |
 | Pruebas SQL | `pruebas/49_mm_claim_en_sala.sql` y `pruebas/correr_local.sh` (esta carpeta) |
 | Plugin | `server/addons/sourcemod/scripting/csstv/mm.inc`, `match.inc`, `claim.inc` y `csstv_reporter.sp` (rama `feat/mm-claim-en-sala`) |

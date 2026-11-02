@@ -663,7 +663,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   1. Ver que la próxima demo de flow llegue a R2 por la API, sin `demo_via = sftp`.
   2. **Cuando llegue la key del #1** (en el mismo panel, `panel-mvzg.com`; su `panel_server_id` es `157703b5`, el sufijo del usuario de SFTP): guardarla en el `.env` (por ejemplo, `SFTP_CSS_PANEL_API_KEY_MVZG`), probarla igual y sumarla a `dev-vars.py` como `PTERO_KEY_157703b5`. Ojo: el #1 manda a la Supabase de **staging** (punto 1.44) y el Worker de producción no ve sus partidas. Para tener sus demos haría falta un Worker apuntando a staging, o esperar a que el #1 pase a producción.
 
-### 1.46 Matchmaking sin SteamID vinculado (replanteos `49`, `50` y `51`, plugin 2.8.2): en staging y en el #1
+### 1.46 Matchmaking sin SteamID vinculado (replanteos `49` a `52`, plugin 2.8.2): en staging y en el #1
 
 - **Qué es:** se puede entrar a la cola sin SteamID y se vincula con `!claim` en el servidor de la primera sala. Mientras tanto queda de espectador. Decidido por Daniel el 2026-11-02 (opción A), en lugar de esperar 5 partidas sin vincular.
 - **Dónde:** base y plugin en la rama nueva `feat/mm-claim-en-sala` (worktree `E:\Css V34 Web\v34frag-mmclaim`, sale de `origin/kyan/pruebas`). Web en `feat/frontend-fase-1`.
@@ -674,6 +674,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. **#1: subido el 2026-11-02** (pedido por Daniel, solo ahí): 2.8.2 licenciada `96bb5060-…`, `csstv_password` de la línea del matchmaking y en el cfg `csstv_claim "1"` y `csstv_mm "1"`. Respaldos `.bak_2.7.3`, `.bak_pre_mm` y `.bak_mm`. Entra en el próximo cambio de mapa: **confirmar que `mm_server_state` muestre `plugin_version = 2.8.2`**. Desde entonces la contraseña del #1 la maneja la web. #2 (flow, licenciado `7b01c85b-…`) y #3 (`aurav34`, genérico) reciben la 2.8.2 cuando se abra el matchmaking, en la misma tanda.
   5. ~~Decidir `min_mixes`~~: en 0 (Daniel, 2026-11-02), replanteo `50`, aplicado en staging.
   6. ~~Decidir `min_account_days`~~: en 0 (Daniel, 2026-11-02), replanteo `51`, aplicado en staging.
+  7. **Replanteo `52` (2026-11-02, aplicado en staging):** las cuentas nuevas no tienen ficha y la `49` sola no las dejaba entrar a la cola. Ahora `mm_join` les crea una, y el `!claim` la une con la ficha vieja del jugador si la tiene, con su historial y su ELO. **Va en el corte junto con la `48`**, porque producción tiene miles de fichas viejas sin cuenta.
 - **Bitácora:** [`2026-11-02-mm-claim-en-sala`](bitacora/2026-11-02-mm-claim-en-sala/)
 
 ## 2. Investigaciones abiertas
