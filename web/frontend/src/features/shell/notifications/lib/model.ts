@@ -83,6 +83,13 @@ const ROLE: Record<string, string> = {
   sub: "Suplente",
   coach: "Coach",
 }
+const BOOKING_ATTENTION: Record<string, string> = {
+  wait_expired: "Se terminó la espera: decide qué hacer",
+  server_lost: "El servidor de la partida no responde",
+  server_abort: "El servidor no pudo tomar la partida",
+  between_long: "Más de 30 minutos entre mapas",
+  too_long: "La partida pasó el tiempo máximo",
+}
 const ACCOUNT_ROLE: Record<string, string> = {
   user: "usuario",
   organizer: "organizador",
@@ -310,6 +317,22 @@ export function describe(n: Notification, me?: string | null): Described {
         title: `Se canceló ${nameOf(d.event, "el torneo")}`,
         body: "El torneo no se juega.",
       }
+    // Reserva del servidor (replanteo 56): el texto de la partida llega en `title`.
+    case "match_server_ready":
+      return {
+        kind: "tournament",
+        title: `Hay servidor: ${str(d.title, vs)}`,
+        body: `Entra a ${str(d.server, "el servidor")}: la conexión está en la partida.`,
+        link: matchLink(matchId),
+      }
+    case "booking_attention":
+      return {
+        kind: "tournament",
+        title:
+          BOOKING_ATTENTION[str(d.reason)] ?? "La partida necesita atención",
+        body: str(d.title, vs),
+        link: matchLink(matchId),
+      }
 
     // ---------- PCW ----------
     case "pcw_accepted":
@@ -324,6 +347,24 @@ export function describe(n: Notification, me?: string | null): Described {
         kind: "pcw",
         title: "Se canceló la PCW",
         body: vs,
+      }
+    case "pcw_server_ready":
+      return {
+        kind: "pcw",
+        title: `Hay servidor para tu PCW: ${str(d.title, vs)}`,
+        body: `Entren a ${str(d.server, "el servidor")} en los próximos 15 minutos.`,
+        link: matchLink(matchId),
+      }
+    case "pcw_abandoned":
+      return {
+        kind: "pcw",
+        title: d.banned
+          ? "Tu equipo abandonó la PCW"
+          : "El rival abandonó la PCW",
+        body: d.banned
+          ? `${str(d.title, vs)}. No pueden crear ni aceptar PCW hasta el ${day(d.until) || "fin de la sanción"}.`
+          : `${str(d.title, vs)}. No cuenta para ninguno de los dos.`,
+        link: matchLink(matchId),
       }
     case "pcw_result":
       return {

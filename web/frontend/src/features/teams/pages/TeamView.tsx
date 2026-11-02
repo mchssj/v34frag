@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
+import { PcwBanNotice } from "../components/PcwBanNotice"
 import { InviteDrawer } from "../components/InviteDrawer"
 import {
   heirsOf,
@@ -113,6 +114,7 @@ export function TeamView({
   return (
     <div className="flex flex-col gap-5">
       {switcher}
+      <PcwBanNotice teamId={team.id} />
       <section className="overflow-hidden rounded-[calc(var(--radius)+8px)] border bg-[linear-gradient(120deg,color-mix(in_oklch,var(--primary)_9%,var(--card)),var(--card)_55%)]">
         <div className="flex flex-wrap items-center gap-6 p-6 sm:p-7">
           {isLeader ? (

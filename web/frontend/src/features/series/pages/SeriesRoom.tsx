@@ -25,6 +25,7 @@ import { demoMb } from "@/features/mixes/lib/labels"
 import { statsRoomFromLines } from "@/features/mixes/lib/room"
 import type { StatsTab } from "@/features/mixes/lib/stats"
 import { useSeriesClips } from "../api/queries"
+import { ServerPanel } from "../components/ServerPanel"
 import {
   carouselClips,
   clipKind,
@@ -153,6 +154,7 @@ export function SeriesRoom({
           )}
         </div>
         <div className="flex min-w-0 flex-col gap-2.5">
+          <ServerPanel d={d} names={names} />
           <Info d={d} />
           <Demos maps={maps} />
           <Lineups d={d} />

@@ -353,9 +353,11 @@ export type MmAdminServer = {
   id: string
   name: string
   address: string
-  state: "free" | "lobby" | "live" | "offline"
+  state: "free" | "lobby" | "booking" | "live" | "offline"
   region: string | null
   mm_enabled: boolean
+  official_enabled?: boolean
+  pcw_enabled?: boolean
   password: MmPasswordEntry | null
 }
 

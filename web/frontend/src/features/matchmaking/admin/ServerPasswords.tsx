@@ -44,6 +44,7 @@ import type { MmAdminServer } from "../types"
 const STATE_LABEL: Record<MmAdminServer["state"], string> = {
   free: "Libre",
   lobby: "Sala asignada",
+  booking: "Reservado (torneo o PCW)",
   live: "Mix en vivo",
   offline: "Sin conexión",
 }
@@ -51,6 +52,7 @@ const STATE_LABEL: Record<MmAdminServer["state"], string> = {
 const STATE_TONE: Record<MmAdminServer["state"], string> = {
   free: "bg-win",
   lobby: "bg-sidebar-primary",
+  booking: "bg-sidebar-primary",
   live: "bg-destructive",
   offline: "bg-muted-foreground/40",
 }

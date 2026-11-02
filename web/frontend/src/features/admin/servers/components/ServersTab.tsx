@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { SecretDialog } from "../../components/dialogs"
 import { HudSection } from "./HudSection"
+import { UsesSection } from "./UsesSection"
 import { hudChip } from "../lib/hud"
 import {
   ago,
@@ -622,6 +623,7 @@ function ServerForm({
         </PanelSection>
       )}
 
+      {server && <UsesSection serverId={server.id} />}
       {server && <HudSection server={server} />}
 
       {server && (

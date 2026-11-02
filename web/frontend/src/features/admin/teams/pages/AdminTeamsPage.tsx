@@ -24,11 +24,12 @@ import {
   adminTeamsOptions,
   type AdminTeam,
 } from "../api/queries"
+import { PcwBansTab } from "../components/PcwBansTab"
 import { TeamConfigTab } from "../components/TeamConfigTab"
 import { TeamPanel } from "../components/TeamPanel"
 
 export const adminTeamsSearch = z.object({
-  tab: z.enum(["moderate", "config"]).optional().catch(undefined),
+  tab: z.enum(["moderate", "pcw_bans", "config"]).optional().catch(undefined),
   filter: z
     .enum(["blocked", "incomplete", "no_leader", "in_event"])
     .optional()
@@ -96,7 +97,7 @@ const COLUMNS: DataColumn<AdminTeam>[] = [
   },
 ]
 
-/** Administración › Equipos: Moderar equipos (moderadores y admins) y Configuración equipo (admin). */
+/** Administración › Equipos: Moderar equipos y Sanciones de PCW (moderadores y admins) y Configuración equipo (admin). */
 export function AdminTeamsPage({
   search,
   onSearch,
@@ -105,7 +106,10 @@ export function AdminTeamsPage({
   onSearch: (patch: Partial<AdminTeamsSearch>) => void
 }) {
   const isAdmin = useMe().data?.role === "admin"
-  const tab = isAdmin ? (search.tab ?? "moderate") : "moderate"
+  const tab =
+    search.tab === "config" && !isAdmin
+      ? "moderate"
+      : (search.tab ?? "moderate")
   return (
     <section className="flex flex-col gap-5">
       <AdminHeader
@@ -116,18 +120,21 @@ export function AdminTeamsPage({
             : "Corregir nombres, logos y planteles. Cada cambio le avisa al líder y queda en el historial."
         }
       />
-      {isAdmin && (
-        <AdminTabs
-          label="Equipos"
-          value={tab}
-          onChange={(t) => onSearch({ tab: t === "moderate" ? undefined : t })}
-          tabs={[
-            { key: "moderate", label: "Moderar equipos" },
-            { key: "config", label: "Configuración equipo" },
-          ]}
-        />
-      )}
-      {tab === "config" ? (
+      <AdminTabs
+        label="Equipos"
+        value={tab}
+        onChange={(t) => onSearch({ tab: t === "moderate" ? undefined : t })}
+        tabs={[
+          { key: "moderate", label: "Moderar equipos" },
+          { key: "pcw_bans", label: "Sanciones de PCW" },
+          ...(isAdmin
+            ? [{ key: "config" as const, label: "Configuración equipo" }]
+            : []),
+        ]}
+      />
+      {tab === "pcw_bans" ? (
+        <PcwBansTab />
+      ) : tab === "config" ? (
         <TeamConfigTab />
       ) : (
         <Moderate search={search} onSearch={onSearch} isAdmin={isAdmin} />
