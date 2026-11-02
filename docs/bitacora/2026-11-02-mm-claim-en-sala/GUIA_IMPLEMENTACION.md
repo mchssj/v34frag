@@ -70,7 +70,8 @@ Las 15 comprobaciones de la base:
 2. ~~Commit de las dos ramas~~: **hecho el 2026-11-02** (pedido por Daniel): `d8c4d115` en `feat/mm-claim-en-sala` (base y plugin) y `c05352f5` en `feat/frontend-fase-1` (web). Ninguna rama se subió a GitHub.
 3. **Staging:** ~~aplicar la `49`~~, **hecho el 2026-11-02** (ver abajo). Falta la web, junto con el próximo despliegue de staging. Redesplegar la API no hace falta.
 4. **Plugin:** cuando se despliegue el matchmaking, la 2.8.2 va a #1, #2 y #3 en la misma tanda: genérico en #1 y #3, y build licenciado en flow (#2). El #1 también puede seguir con su build licenciado. Hasta entonces, el 2026-11-01 Daniel decidió no tocar el plugin de ningún servidor.
-5. **`min_mixes`:** hoy vale 5 por defecto. Con eso, un jugador nuevo sin partidas sigue sin poder entrar. Daniel tiene que decidir si lo baja a 0 en Administración › Matchmaking.
+5. ~~`min_mixes`~~: **en 0 desde el 2026-11-02** (replanteo `50`, ver abajo).
+6. **`min_account_days`** (7 días): Daniel tiene que decidir si se queda, se baja o va a 0. En staging, las 4 cuentas que hay tienen menos de 7 días, así que hoy ninguna puede entrar a la cola.
 
 ## Replanteo `49` en staging (2026-11-02)
 
@@ -85,3 +86,11 @@ Pedido por Daniel. Supabase de staging `edaljnirzvisiaathitt`, por el session po
    - Los permisos siguen como en la `48`: `csstv_mm_poll` para `anon` y `mm_block_reason` solo para `service_role`.
 4. **Estado de staging ese día:** la cola cerrada (`open = false`), `min_mixes = 5`, `require_anticheat = false` y ninguna sala abierta. **No hay fichas con cuenta y sin SteamID**, así que la prueba de punta a punta necesita crear una cuenta nueva.
 
+## Replanteo `50`: `min_mixes` en 0 (2026-11-02)
+
+**Decisión de Daniel (2026-11-02):** `min_mixes` siempre en 0. Con el matchmaking como única forma de jugar, un jugador nuevo no tiene dónde jugar los mixes que pide el mínimo. Ese es el mismo problema que resuelve este pedido.
+
+- **Replanteo `supabase/replanteo/50_mm_min_mixes_cero.sql`:** pone `min_mixes` en 0 y cambia el valor por defecto a 0. La inversa vuelve a 5.
+- **Prueba local:** corrió en una transacción que se deshace. Después de la `50` da 0 y 0, y después de la inversa da 5.
+- **Staging:** aplicada el 2026-11-02 sin errores. `min_mixes = 0` y el valor por defecto también es 0.
+- **Por qué un replanteo nuevo:** la `49` ya estaba aplicada en staging.
