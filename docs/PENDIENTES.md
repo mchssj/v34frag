@@ -677,8 +677,32 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   7. **Replanteo `52` (2026-11-02, aplicado en staging):** las cuentas nuevas no tienen ficha y la `49` sola no las dejaba entrar a la cola. Ahora `mm_join` les crea una, y el `!claim` la une con la ficha vieja del jugador si la tiene, con su historial y su ELO. **Va en el corte junto con la `48`**, porque producción tiene miles de fichas viejas sin cuenta.
 - **Bitácora:** [`2026-11-02-mm-claim-en-sala`](bitacora/2026-11-02-mm-claim-en-sala/)
 
+### 1.47 Ajustes después del primer matchmaking (replanteos `53` a `55`): en staging, con commit
+
+- **Qué es:** la serie del matchmaking fuera de Partidas, la flecha de volver, el detalle del mix con el MVP y los clips, la imagen fija del MVP (Administración › Matchmaking › General) la respuesta inmediata en Aceptar y en el veto, y la foto de cada jugador en Jugar (`55`).
+- **Dónde:** base y API en `feat/mm-claim-en-sala`; web en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-02:** `53` a `55` en staging, API `8e78f7650291-local11021850` (rama temporal: `feat/mm-claim-en-sala` más `feat/backend-api-fase-1`, ya borrada) y web `7f7ca3e0f8f4-local11021851`, que también lleva lo de Palmarés y PCW.
+- **Falta:** subir la imagen del MVP y mirarlo en el navegador. ~~El commit~~: hecho el 2026-11-02 (`67bc65bb` en `feat/mm-claim-en-sala` y `26fa9a71` en `feat/frontend-fase-1`, junto con Palmarés). Con el corte, junto con la `48`.
+- **Segunda etapa del rendimiento (pendiente):** que el aviso del socket traiga el cambio en sí (quién aceptó, qué mapa), para no pedir el estado completo.
+- **Bitácora:** [`2026-11-02-ajustes-primer-mm`](bitacora/2026-11-02-ajustes-primer-mm/)
+
 ## 2. Investigaciones abiertas
 
+
+### 1.48 Iniciar partidas de torneo y PCW (replanteo `56`, plugin 2.9.0): con commit y en staging, sin plugin en ningún servidor
+
+- **Qué es:** el organizador inicia una partida de torneo en un servidor libre y apto (Administración › Servidores › Usos del servidor); en una PCW, los dos equipos se marcan listos y entran a la fila. La reserva dura toda la serie, el veto tiene reloj (30 s, al azar si vence), la espera es la del organizador (máximo 20 min) o 15 y 5 min en PCW, y una PCW abandonada sanciona 3 o 7 días. El servidor queda ocupado en el acto, también para el matchmaking.
+- **Dónde:** base, plugin y API en `feat/mm-claim-en-sala` (worktree `E:\Css V34 Web\v34frag-mmclaim`); web en `feat/frontend-fase-1`.
+- **Falta:**
+  1. ~~Commit de las dos ramas~~: **hecho el 2026-11-02** (`d4c407b2`, `6f22bf43` y `421cc8a3` en `feat/mm-claim-en-sala`; `60b16f3d` en `feat/frontend-fase-1`). Sin push.
+  2. ~~Staging~~: **hecho el 2026-11-02**: `56` aplicada, API `3c6a8b357cd1` y web `60b16f3db869`.
+  3. Elegir con Kyan el servidor de prueba (el matchmaking está apagado en todos), prender ahí Torneos y PCW y subirle el reporter 2.9.0, `csstv_mm "1"` y las cfg `live_*.cfg`.
+  4. Probar con clientes en el #1: una BO3 de torneo y una PCW con abandono.
+  5. La lista de partidas listas para iniciar y en curso en Administración › Torneos (no se hizo).
+  6. Que la página de la serie escuche `booking.update` por el socket (hoy se refresca cada 5 s).
+  7. Producción con el corte, junto con la `48`; el plugin a los tres servidores en la misma tanda (#1, flow licenciado `7b01c85b-…` y #3).
+  8. El manual de usuario por rol (Daniel, 2026-11-02: después).
+- **Bitácora:** [`2026-11-02-iniciar-torneo-pcw`](bitacora/2026-11-02-iniciar-torneo-pcw/)
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".
