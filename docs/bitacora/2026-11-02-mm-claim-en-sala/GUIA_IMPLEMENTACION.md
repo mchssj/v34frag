@@ -68,8 +68,8 @@ Las 15 comprobaciones de la base:
 
 1. **Probar el plugin con un servidor y dos clientes** (uno vinculado y otro sin vincular). Comprobar: espectador, recordatorio, `!claim`, el paso a su equipo, que "connected" llegue y que el `!ready` espere.
 2. ~~Commit de las dos ramas~~: **hecho el 2026-11-02** (pedido por Daniel): `d8c4d115` en `feat/mm-claim-en-sala` (base y plugin) y `c05352f5` en `feat/frontend-fase-1` (web). Ninguna rama se subió a GitHub.
-3. **Staging:** ~~aplicar la `49`~~, **hecho el 2026-11-02** (ver abajo). Falta la web, junto con el próximo despliegue de staging. Redesplegar la API no hace falta.
-4. **Plugin:** cuando se despliegue el matchmaking, la 2.8.2 va a #1, #2 y #3 en la misma tanda: genérico en #1 y #3, y build licenciado en flow (#2). El #1 también puede seguir con su build licenciado. Hasta entonces, el 2026-11-01 Daniel decidió no tocar el plugin de ningún servidor.
+3. **Staging:** ~~aplicar la `49`~~ y ~~desplegar la web~~, **hechos el 2026-11-02** (ver abajo). Redesplegar la API no hace falta.
+4. **Plugin:** ~~#1~~, **subido el 2026-11-02** (ver abajo). #2 (flow) y #3 siguen con la 2.7.3: la 2.8.2 les llega cuando se abra el matchmaking, en la misma tanda.
 5. ~~`min_mixes`~~: **en 0 desde el 2026-11-02** (replanteo `50`, ver abajo).
 6. ~~`min_account_days`~~: **en 0 desde el 2026-11-02** (replanteo `51`, ver abajo).
 
@@ -111,3 +111,33 @@ Pedido por Daniel. Supabase de staging `edaljnirzvisiaathitt`, por el session po
 - **Replanteo `supabase/replanteo/51_mm_min_account_days_cero.sql`:** pone `min_account_days` en 0 y cambia el valor por defecto a 0. La inversa vuelve a 7.
 - **Prueba local:** corrió en una transacción que se deshace. Después de la `51` da 0 y 0, y después de la inversa da 7.
 - **Staging:** aplicada el 2026-11-02 sin errores. `min_mixes = 0` y `min_account_days = 0`, los dos también con 0 por defecto.
+
+## Web en staging (2026-11-02)
+
+- **Despliegue:** `deploy/vps/desplegar.sh web` desde `feat/frontend-fase-1` en `b7a10ff3`, sin cambios sin commit en `web/frontend`. Corrieron las pruebas y el build, y se subió la versión `b7a10ff39137`. La anterior era `6d228f93b4dc-local11020706`; su contenido sin commit de ese momento ya está en `c8e48597`.
+- **Comprobado en el VPS:** `web/current` apunta a `b7a10ff39137` y `PlayPage-BTYx0emH.js` tiene "Vincula tu SteamID". Desde afuera, `cmleague.lat/assets/…` responde 401: staging tiene autenticación.
+
+## Plugin 2.8.2 en el #1 (2026-11-02)
+
+**Pedido por Daniel: solo en el #1**, el servidor para probar el matchmaking, que manda a staging. Es una excepción, pedida por él, a la regla de `CLAUDE.md` de desplegar en todos los servidores en la misma tanda. #2 (flow) y #3 siguen con la 2.7.3 (producción no tiene el matchmaking).
+
+| Archivo en el #1 | Qué se subió | Respaldo |
+|---|---|---|
+| `addons/sourcemod/plugins/csstv_reporter.smx` | 2.8.2 **licenciada** con el mismo ID que tenía (`96bb5060-a639-483a-94ef-f15135c57b1b`, "CMLeague #1" en staging): `server/build_licenciado.sh 96bb5060-… srv1`, 136613 bytes | `plugins/disabled/csstv_reporter.smx.bak_2.7.3` |
+| `addons/sourcemod/plugins/csstv_password.smx` | El de la línea del matchmaking (`d56fdc64`): con `csstv_mm 1` no toca la contraseña, que maneja la web. 10875 bytes | `plugins/disabled/csstv_password.smx.bak_pre_mm` |
+| `cfg/sourcemod/csstv_reporter.cfg` | `csstv_claim "0"` → `"1"` (estaba apagado: sin eso no hay `!claim`) y `csstv_mm "1"` al final. Nada más | `cfg/sourcemod/csstv_reporter.cfg.bak_mm` |
+
+- **Cómo:** por SFTP con el `sftp` de OpenSSH, `SFTP_CSS_*_MVZG`, la contraseña por `SSH_ASKPASS`, los comandos por stdin y la clave del host de `ssh-keyscan`.
+- **Verificado:** se bajaron los tres archivos y el respaldo del cfg, y coinciden byte a byte con lo que se subió.
+- **Sin recargar:** entra en el próximo cambio de mapa (`CLAUDE.md`: no recargar con una partida en curso). Al subirlo, el #1 seguía reportando a staging (`last_seen_at` al día) y todavía no había consultado salas (`mm_server_state` vacío).
+- **Diferencias de cfg con el repo:** las que ya había (el #1 se armó igual al #3, punto 1.44 de `PENDIENTES.md`) no se tocaron.
+
+**Qué cambia en el #1 desde el próximo mapa:**
+
+- **La contraseña la maneja la web:** al cambiar de mapa pone una al azar. Sin una sala del matchmaking, nadie entra salvo con la que se rote desde Administración › Matchmaking › Servidores.
+- **Consultas:** cada 5 s consulta salas a staging. En staging, "CMLeague #1" ya tiene `mm_enabled = true` y región `Sudamerica`, pero la cola está cerrada (`mm_config.open = false`).
+- **El `!claim`** funciona contra staging.
+
+**Para volver atrás:** renombrar los tres respaldos a su nombre original, con el próximo cambio de mapa.
+
+**Ojo en staging:** flow también figura con `mm_enabled = true`, pero su plugin apunta a producción y nunca consulta a staging, así que no le llegan salas (`mm_free_server` pide un poll de los últimos 30 s).
