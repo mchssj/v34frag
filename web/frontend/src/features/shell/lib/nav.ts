@@ -5,6 +5,7 @@ import {
   ChartColumnIcon,
   ClapperboardIcon,
   CrosshairIcon,
+  Gamepad2Icon,
   GavelIcon,
   HouseIcon,
   ListOrderedIcon,
@@ -41,6 +42,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: "Jugar",
     items: [
       { key: "home", label: "Para ti", to: "/home", icon: HouseIcon },
+      { key: "play", label: "Jugar", to: "/play", icon: Gamepad2Icon },
       {
         key: "matches",
         label: "Partidas",
@@ -108,6 +110,13 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         admin: "servers",
       },
       {
+        key: "admin-matchmaking",
+        label: "Matchmaking",
+        to: "/admin/matchmaking",
+        icon: Gamepad2Icon,
+        admin: "matchmaking",
+      },
+      {
         key: "admin-seasons",
         label: "Temporadas",
         to: "/admin/seasons",
@@ -163,6 +172,7 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
   players: "Jugadores",
   teams: "Equipos",
   servers: "Servidores y ELO",
+  matchmaking: "Matchmaking",
   seasons: "Temporadas",
   clips: "Clips",
   ranking: "Ranking de equipos",

@@ -8,6 +8,7 @@ export const ADMIN_SECTIONS = [
   "players",
   "teams",
   "servers",
+  "matchmaking",
   "seasons",
   "clips",
   "ranking",

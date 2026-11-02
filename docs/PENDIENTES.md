@@ -619,6 +619,18 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin ni los servidores de juego.
 - **Bitácora:** [`2026-11-01-hud-retraso-por-servidor`](bitacora/2026-11-01-hud-retraso-por-servidor/)
 
+### 1.43 Frontend del matchmaking (`/play`): web desplegada en staging, con commit
+
+- **Qué es:** `/play`, `/admin/matchmaking` y el aviso de reconexión, traídos de `kyan/pruebas` con el diseño de la web y sin los cosméticos de la tienda.
+- **Hecho el 2026-11-01:** web `e0aa0ccc791d-local11020314` en el VPS (`cmleague.lat`), desde `feat/frontend-fase-1` con los cambios sin commit. La API de staging (`4079c8a22757`) ya tenía las rutas `/mm`, el WebSocket y el worker `cmleague-mm`.
+- **Falta:**
+  1. ~~Commit del frontend~~: **hecho el 2026-11-02** en `feat/frontend-fase-1`, con push (pedido por Daniel).
+  2. Abrir la cola en Administración › Matchmaking (`mm_config.open` está en `false`) y decidir si se apaga `require_anticheat`.
+  3. Un servidor que tome las salas. **Decidido por Daniel el 2026-11-01: por ahora no se toca el plugin de ningún servidor.** El plugin consulta la base de su `csstv_api_url`, y nuestro servidor real apunta a producción, que no tiene el matchmaking.
+  4. ~~Redesplegar la API de staging con `6c56bd84`~~: **hecho el 2026-11-02**. API `c7a329085628`: `kyan/pruebas` más `feat/backend-api-fase-1`, armada en una rama temporal local para no sacar el matchmaking. Web `6d228f93b4dc-local11020706` desde la carpeta de siempre (con `/play`). Ver la guía de [`2026-11-01-pagina-serie`](bitacora/2026-11-01-pagina-serie/GUIA_IMPLEMENTACION.md).
+- **Incidente del 2026-11-01:** el panel de Administración › Matchmaking daba 500 por tres errores de la `48`. Corregidos en staging y en `kyan/pruebas` (`a6ca687c`). Ver la guía de la bitácora.
+- **Bitácora:** [`2026-11-01-frontend-matchmaking`](bitacora/2026-11-01-frontend-matchmaking/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

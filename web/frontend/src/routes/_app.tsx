@@ -9,6 +9,9 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
+import { MmSourceContext } from "@/features/matchmaking/source"
 import { AppSidebar } from "@/features/shell/components/AppSidebar"
 import { CommandMenu } from "@/features/shell/components/CommandMenu"
 import { NowBar } from "@/features/shell/components/NowBar"
@@ -56,7 +59,11 @@ function AppLayout() {
         <NowBar />
         <div className="flex flex-1 justify-center p-6">
           {/* Columna flex: una vista puede ocupar todo el alto con flex-1 (p. ej. "Sin equipo"). */}
-          <div className="flex w-full max-w-[1320px] min-w-0 flex-col">
+          <div className="flex w-full max-w-[1320px] min-w-0 flex-col gap-4">
+            {/* Si te caes de una partida, el aviso te sigue por toda la web. */}
+            <MmSourceContext value={apiMmSource}>
+              <ReconnectBanner />
+            </MmSourceContext>
             <Outlet />
           </div>
         </div>
