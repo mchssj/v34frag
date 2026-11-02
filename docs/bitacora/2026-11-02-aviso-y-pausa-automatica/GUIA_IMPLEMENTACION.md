@@ -4,7 +4,7 @@
 
 Probado con bots en local y **subido el 2026-11-02 como 2.7.3 a flow y MVZG, y a `disabled/` en `aurav34`**. Entra en el próximo cambio de mapa. Falta la prueba con jugadores.
 
-**2.7.4 (2.8.3 en `kyan/pruebas`):** cambia la charla del medio tiempo, porque con la 2.7.3 Kyan casi no pudo comprar en la primera ronda de la mitad (ver "Cambio a la 2.7.4"). **Subida el 2026-11-02 a flow y a `disabled/` en `aurav34`. MVZG no la tiene:** ahí corre el 2.8.2 de matchmaking de Daniel.
+**2.7.4 (2.8.3 en `kyan/pruebas`):** cambia la charla del medio tiempo, porque con la 2.7.3 Kyan casi no pudo comprar en la primera ronda de la mitad (ver "Cambio a la 2.7.4"). **Subida el 2026-11-02 a flow, MVZG y `disabled/` en `aurav34`.** En MVZG reemplazó al 2.8.2 de matchmaking de Daniel, por decisión de Kyan.
 
 ## Archivos
 
@@ -43,8 +43,7 @@ Kyan pidió que el alltalk empiece al terminar la última ronda, que la siguient
 |---|---|---|
 | flow (`#2`, `SERVER2_*`) | Build licenciado 2.7.4 y la línea nueva del cfg | `plugins/disabled/csstv_reporter_2.7.3.smx` y `cfg/sourcemod/csstv_reporter.cfg.bak_274` |
 | `aurav34` (`#3`, `SFTP_CSS_*`) | Genérico 2.7.4 en `plugins/disabled/` (el reporter sigue desactivado) y la línea del cfg | Los mismos |
-| MVZG (`#1`, `SERVER3_*`) | **Nada.** Ahí corre un 2.8.2 licenciado para MVZG (136613 bytes): es el matchmaking de Daniel (`feat/mm-claim-en-sala`, sobre la 2.8.1), que trae la charla de la 2.7.3. Subirle la 2.7.4 le sacaría el matchmaking: queda para que lo decidan Kyan y Daniel | — |
-- En MVZG, mientras siga con la charla de la 2.7.3, se puede poner `csstv_half_alltalk "0"` en el cfg para que no se coma el tiempo de compra.
+| MVZG (`#1`, `SERVER3_*`) | Build licenciado 2.7.4 (127091 bytes) y la línea del cfg. Ahí corría un 2.8.2 licenciado para MVZG (136613 bytes), el matchmaking de Daniel (`feat/mm-claim-en-sala`, sobre la 2.8.1), con la charla de la 2.7.3. Kyan decidió subir la 2.7.4 igual, así que **MVZG queda sin el matchmaking** hasta que se arme un 2.8.x con este cambio | `plugins/disabled/csstv_reporter_2.8.2_mm.smx` (el 2.8.2 de Daniel) y `cfg/sourcemod/csstv_reporter.cfg.bak_274` |
 
 ## Pruebas
 
