@@ -105,7 +105,7 @@ Daniel notó que no había dónde subir el banner: la lista de torneos y la pág
 - **Dónde:** Administración › Torneos › un torneo › Configuración, arriba del formulario. Una tarjeta "Banner" con la vista previa, "Subir banner" (o "Cambiar banner") y "Quitar".
 - **Cómo:** se elige JPG, PNG o WebP (hasta 10 MB), se encuadra en 4:1 con el mismo recorte del logo de equipo y se guarda al instante, a 1600×400 en JPEG. Al crear un torneo nuevo, el banner se sube después, desde Configuración.
 - **Archivos:** `web/frontend/src/features/admin/events/components/BannerCard.tsx` (nuevo), `components/ManageTabs.tsx`, `api/queries.ts` (`useUploadBanner`, `useRemoveBanner`), `src/lib/image.ts` (`cropBanner`) y `features/profile/components/AvatarCropDialog.tsx` (prop `aspect`).
-- **Pruebas:** typecheck, lint y 421 unitarias. Recorrido real con una prueba temporal de Playwright (después se borró): un admin subió una imagen de 1600×500, la encuadró y quedó guardada en el Storage local y en la vista previa.
+- **Pruebas:** typecheck, lint y 464 unitarias. Recorrido real con una prueba temporal de Playwright (después se borró): un admin subió una imagen de 1600×500, la encuadró y quedó guardada en el Storage local y en la vista previa.
 - **Sin cambios en el backend ni en la base.**
 
 ## Cómo revertir

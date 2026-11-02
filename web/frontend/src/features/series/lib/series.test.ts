@@ -112,6 +112,28 @@ describe("seriesMaps", () => {
   })
 })
 
+describe("API anterior", () => {
+  it("sin players ni demo_status en los juegos no se rompe", () => {
+    const old = detail({
+      games: [
+        {
+          id: "g1",
+          map: null,
+          score1: 16,
+          score2: 10,
+          played_at: null,
+          demo_url: "https://demo",
+        },
+      ],
+    })
+    expect(seriesMaps(old)[0].game).toMatchObject({
+      players: [],
+      demo_status: "uploaded",
+      demo_size: null,
+    })
+  })
+})
+
 describe("vetoLines", () => {
   it("cuenta el veto en orden y cierra con el decisivo", () => {
     expect(vetoLines(detail())).toEqual([

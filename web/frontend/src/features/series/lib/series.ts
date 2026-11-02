@@ -41,6 +41,20 @@ const sideOfTeam = (d: SeriesDetail, team: string | null): 1 | 2 | null =>
       ? 2
       : null
 
+/**
+ * Una API anterior al 2026-11-01 no manda `players`, `demo_status` ni `demo_size` de cada juego:
+ * sin esto la página se rompe en vez de mostrarse sin las stats por mapa.
+ */
+function withDefaults(g: Game): Game {
+  const old = g as Partial<Game>
+  return {
+    ...g,
+    players: old.players ?? [],
+    demo_status: old.demo_status ?? (g.demo_url ? "uploaded" : "none"),
+    demo_size: old.demo_size ?? null,
+  }
+}
+
 /** Los mapas de la serie: los jugados (o a mano), el que está en vivo y los que faltan del veto. */
 export function seriesMaps(d: SeriesDetail): SeriesMap[] {
   const planned = d.veto?.maps_to_play ?? []
@@ -52,9 +66,10 @@ export function seriesMaps(d: SeriesDetail): SeriesMap[] {
 
   return names.map((map, i) => {
     const detail = played.find((x) => x.map === map) ?? null
-    const game = detail?.game_id
-      ? (d.games.find((g) => g.id === detail.game_id) ?? null)
-      : null
+    const found = detail?.game_id
+      ? d.games.find((g) => g.id === detail.game_id)
+      : undefined
+    const game = found ? withDefaults(found) : null
     const pickAction = d.veto?.actions.find(
       (a) => a.action === "pick" && a.map === map
     )

@@ -38,6 +38,10 @@ Implementado y probado en local el 2026-11-01. Backend con commit en `feat/backe
 - **Prueba de punta a punta:** no quedó una fija. Depende de una serie con mapas vinculados, que los datos de las pruebas (`e2e/event-fixtures.ts`) no arman. Se hizo el recorrido con una prueba temporal y se borró.
 - **"Procesando clips…" sin clips:** además de los clips en cola o grabándose, se muestra si un mapa se jugó hace menos de 6 horas y su demo se está subiendo (los clips necesitan la demo).
 
+## Ajuste: la página no se rompe con una API anterior (2026-11-02)
+
+La web de staging se desplegó con esta página mientras la API de staging todavía no tenía `6c56bd84`. Una serie con mapas vinculados se habría roto al abrirla (`games[].players` no llegaba). Ahora `seriesMaps` completa lo que falte: sin `players` el mapa se muestra sin stats, y sin `demo_status` la demo cuenta como subida si tiene link. Una prueba unitaria nueva lo cubre.
+
 ## Despliegue (pendiente)
 
 1. Redesplegar la API del VPS (no toca la base).
