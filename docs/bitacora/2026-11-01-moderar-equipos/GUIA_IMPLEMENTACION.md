@@ -38,7 +38,7 @@ Sin desplegar.
 
 ## Despliegue (pendiente)
 
-1. Staging: cargar la `43` después de la `42` y redesplegar la API.
+1. Staging: la `43` **cargada en staging el 2026-11-01** (con la 39 a la 44; las pruebas SQL de la 40 a la 44 pasaron allá también). La API del VPS se redesplegó el mismo día (`714ec78ae865`).
 2. Corte: la `43` va después de la `42`.
 3. No toca el plugin.
 

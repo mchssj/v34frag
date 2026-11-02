@@ -28,7 +28,7 @@ Implementado y probado en local el 2026-11-01. Backend con commit en `feat/backe
 
 ## Despliegue (pendiente)
 
-1. Staging: cargar la `44` después de la `43` y redesplegar la API.
+1. Staging: la `44` **cargada en staging el 2026-11-01** (con la 39 a la 44; las pruebas SQL de la 40 a la 44 pasaron allá también). La API del VPS se redesplegó el mismo día (`714ec78ae865`).
 2. Corte: la `44` va después de la `43`.
 3. No toca el plugin.
 

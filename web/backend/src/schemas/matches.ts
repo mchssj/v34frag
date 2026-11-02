@@ -99,17 +99,6 @@ export const RosterPlayer = z
   })
   .openapi('RosterPlayer');
 
-export const GameRef = z
-  .object({
-    id: z.uuid(),
-    map: z.string().nullable(),
-    score1: num.openapi({ description: 'Rondas del bando 1 de la partida' }),
-    score2: num,
-    played_at: z.string().nullable(),
-    demo_url: z.string().nullable(),
-  })
-  .openapi('GameRef');
-
 export const PlayerLine = z
   .object({
     player_id: z.uuid().nullable(),
@@ -129,6 +118,22 @@ export const PlayerLine = z
     clutches: Clutches.nullable().openapi({ description: 'Clutches ganados; null si la partida no tiene datos de clutch (`clutch_data`)' }),
   })
   .openapi('PlayerLine');
+
+export const GameRef = z
+  .object({
+    id: z.uuid(),
+    map: z.string().nullable(),
+    score1: num.openapi({ description: 'Rondas del bando 1 de la partida' }),
+    score2: num,
+    played_at: z.string().nullable(),
+    demo_url: z.string().nullable(),
+    demo_size: z.number().int().nullable().openapi({ description: 'Tamaño de la demo en bytes (null si no hay)' }),
+    demo_status: z.string().openapi({ description: 'Estado de la demo del juego (`pending`, `uploaded`, `failed`…)' }),
+    players: z.array(PlayerLine).openapi({
+      description: 'Juego terminado: stats de cada jugador en ese mapa, en los lados de la serie, con su `elo_delta` y sus clutches. Vacío si no terminó',
+    }),
+  })
+  .openapi('GameRef');
 
 export const VetoState = z
   .object({
@@ -166,7 +171,7 @@ export const MatchDetail = MatchSummary.extend({
   maps_detail: z.array(z.object({ map: z.string().nullable(), r1: num, r2: num, game_id: z.uuid().nullable() })).openapi({ description: 'Torneo o PCW: mapas de la serie' }),
   games: z.array(GameRef).openapi({ description: 'Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle)' }),
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
-  series_players: z.array(PlayerLine).openapi({ description: 'Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego' }),
+  series_players: z.array(PlayerLine).openapi({ description: 'Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` sumado (cada juego mueve el ELO) y `clutches` sumados de los juegos con datos de clutch (null si ninguno tiene). Vacío en los mixes y si no se terminó ningún juego' }),
   clutch_data: z.boolean().openapi({ description: 'Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen)' }),
   mvp: PlayerLine.nullable().openapi({ description: 'Mix: el de mejor rating' }),
   veto: VetoState.nullable().openapi({ description: 'Torneo o PCW' }),

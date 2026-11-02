@@ -244,7 +244,7 @@ export const matches = createRouter()
     const [ev, games, stats, vetos, pool, server, caps, liveGame] = await Promise.all([
       m.event_id ? sb.from('events').select('config').eq('id', m.event_id).maybeSingle().then(must) : Promise.resolve(null),
       series
-        ? sb.from('matches').select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
+        ? sb.from('matches').select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, demo_size, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
         : Promise.resolve([]),
       series
         ? Promise.resolve([])
@@ -296,18 +296,23 @@ export const matches = createRouter()
     const clutchData = !series && !!clutchInfo?.clutch_data;
 
     // Torneo o PCW: stats de la serie, sumadas sobre los juegos terminados y en los lados de la serie (E21).
+    // Cada juego también por separado, con su Δ ELO y sus clutches (página de la serie, 2026-11-01).
     const finished = games.filter((g) => g.status === 'finished');
-    const seriesStats = finished.length
-      ? sumSeries(
-          mustHave(
-            await sb
-              .from('match_player_stats')
-              .select('match_id, player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses')
-              .in('match_id', finished.map((g) => g.id)),
-          ),
-          new Map(finished.map((g) => [g.id, g.parent_side1 === 2])),
-        )
-      : [];
+    const finishedIds = finished.map((g) => g.id);
+    const flipped = new Map(finished.map((g) => [g.id, g.parent_side1 === 2]));
+    const [gameRows, gameClutches, gameClutchInfo] = finished.length
+      ? await Promise.all([
+          sb
+            .from('match_player_stats')
+            .select('match_id, player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses')
+            .in('match_id', finishedIds)
+            .then(mustHave),
+          sb.from('match_clutches').select('match_id, steam_id, vs, won').in('match_id', finishedIds).then(mustHave),
+          sb.from('match_clutch_data').select('match_id, clutch_data').in('match_id', finishedIds).then(mustHave),
+        ])
+      : [[], [], []];
+    const withClutches = new Set(gameClutchInfo.filter((x) => x.clutch_data).map((x) => x.match_id));
+    const seriesStats = finished.length ? sumSeries(gameRows, flipped) : [];
 
     // Stats del mix (o de la serie) con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
     const linked = [...stats, ...seriesStats].map((s) => s.player_id).filter((x): x is string => !!x);
@@ -330,7 +335,29 @@ export const matches = createRouter()
     const players = stats
       .map((s) => lineOf(s, clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null))
       .sort(bySideAndRating);
-    const series_players = seriesStats.map((s) => lineOf(s, null)).sort(bySideAndRating);
+    // Juego por juego, en los lados de la serie. La clave del jugador es la misma de sumSeries.
+    const keyOf = (s: { player_id: string | null; steam_id: string; team: number }) => `${s.player_id ?? s.steam_id}:${s.team}`;
+    const gamePlayers = new Map(
+      finished.map((g) => {
+        const rows = gameRows.filter((r) => r.match_id === g.id);
+        // Una ficha puede haber jugado con más de un SteamID: sus clutches se buscan por todos.
+        const steamsOf = (s: StatRow) => new Set(rows.filter((r) => (r.player_id ?? r.steam_id) === (s.player_id ?? s.steam_id)).map((r) => r.steam_id));
+        const lines = sumSeries(rows, flipped).map((s) => {
+          const steams = steamsOf(s);
+          return { key: keyOf(s), line: lineOf(s, withClutches.has(g.id) ? clutchesOf(gameClutches.filter((c) => c.match_id === g.id && c.steam_id && steams.has(c.steam_id))) : null) };
+        });
+        return [g.id, lines] as const;
+      }),
+    );
+    // Clutches de la serie: la suma de los juegos con datos de clutch (null si ninguno tiene).
+    const seriesClutches = (key: string) => {
+      const found = [...gamePlayers.values()].flat().filter((x) => x.key === key && x.line.clutches).map((x) => x.line.clutches!);
+      if (!found.length) return null;
+      const out = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+      for (const c of found) for (const k of Object.keys(out) as (keyof typeof out)[]) out[k] += c[k] ?? 0;
+      return out;
+    };
+    const series_players = seriesStats.map((s) => lineOf(s, withClutches.size ? seriesClutches(keyOf(s)) : null)).sort(bySideAndRating);
     const mvp = players.filter((p) => (p.rounds ?? 0) > 0).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
 
     // Lo que puede hacer quien consulta.
@@ -377,7 +404,11 @@ export const matches = createRouter()
       games: games.map((g) => {
         // Las rondas del mix van en el orden de los bandos de la partida (parent_side1 dice cuál bando del mix es el equipo 1).
         const flip = g.parent_side1 === 2;
-        return { id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at, demo_url: demoUrl(config, g) };
+        return {
+          id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at,
+          demo_url: demoUrl(config, g), demo_size: g.demo_size ?? null, demo_status: g.demo_status,
+          players: (gamePlayers.get(g.id) ?? []).map((x) => x.line).sort(bySideAndRating),
+        };
       }),
       players,
       series_players,

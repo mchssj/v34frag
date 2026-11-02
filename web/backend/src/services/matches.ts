@@ -135,9 +135,12 @@ export type StatRow = {
 /**
  * Stats de una serie (E21): suma por jugador los juegos vinculados, con el lado de la serie
  * (`flipped` dice qué juegos tienen los bandos invertidos, `parent_side1 = 2`) y el rating
- * ponderado por rondas. Sin `elo_delta`: la serie no mueve el ELO.
+ * ponderado por rondas. Cada juego es un mix con su ELO: `elo_delta` es la suma (null si ningún juego lo movió).
  */
-export function sumSeries(rows: (Omit<StatRow, 'elo_delta'> & { match_id: string | null })[], flipped: Map<string, boolean>): StatRow[] {
+export function sumSeries(
+  rows: (Omit<StatRow, 'elo_delta'> & { elo_delta?: number | null; match_id: string | null })[],
+  flipped: Map<string, boolean>,
+): StatRow[] {
   const acc = new Map<string, { line: StatRow; weighted: number; rated: number }>();
   for (const r of rows) {
     const side = r.match_id && flipped.get(r.match_id) ? 3 - r.team : r.team;
@@ -149,6 +152,7 @@ export function sumSeries(rows: (Omit<StatRow, 'elo_delta'> & { match_id: string
       acc.set(key, a);
     }
     for (const k of SUMMED) a.line[k] = (a.line[k] ?? 0) + (r[k] ?? 0);
+    if (r.elo_delta != null) a.line.elo_delta = (a.line.elo_delta ?? 0) + r.elo_delta;
     if (r.rating !== null && (r.rounds ?? 0) > 0) {
       a.weighted += r.rating * (r.rounds ?? 0);
       a.rated += r.rounds ?? 0;

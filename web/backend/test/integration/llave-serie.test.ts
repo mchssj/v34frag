@@ -101,18 +101,30 @@ describe('E21: stats de la serie', () => {
     const p1 = t1.players[0]!;
     const p2 = t2.players[0]!;
     const ins = await sb.from('match_player_stats').insert([
-      { match_id: g1, steam_id: p1.steam_id, player_id: p1.id, team: 1, nick: 'uno', kills: 25, deaths: 10, rounds: 30, rating: 1.5 },
+      { match_id: g1, steam_id: p1.steam_id, player_id: p1.id, team: 1, nick: 'uno', kills: 25, deaths: 10, rounds: 30, rating: 1.5, elo_delta: 15 },
       { match_id: g1, steam_id: p2.steam_id, player_id: p2.id, team: 2, nick: 'dos', kills: 10, deaths: 25, rounds: 30, rating: 0.7 },
-      { match_id: g2, steam_id: p1.steam_id, player_id: p1.id, team: 2, nick: 'uno', kills: 10, deaths: 12, rounds: 20, rating: 0.5 },
+      { match_id: g2, steam_id: p1.steam_id, player_id: p1.id, team: 2, nick: 'uno', kills: 10, deaths: 12, rounds: 20, rating: 0.5, elo_delta: -9 },
       { match_id: g2, steam_id: p2.steam_id, player_id: p2.id, team: 1, nick: 'dos', kills: 12, deaths: 10, rounds: 20, rating: 1.2 },
       { match_id: g3, steam_id: p1.steam_id, player_id: p1.id, team: 1, nick: 'uno', kills: 99, deaths: 0, rounds: 5, rating: 3 },
     ]);
     if (ins.error) throw ins.error;
+    // Solo el juego 2 tiene clips (y con eso, datos de clutch): p1 ganó un 1v2 ahí.
+    const cw = await sb.from('match_clips').insert({ match_id: g2, round: 3, player_steamid: p1.steam_id, round_won: true, clutch_vs: 2, clutch_start_tick: 1000, end_tick: 1500 });
+    if (cw.error) throw cw.error;
 
     const d = await req('GET', `/api/v1/matches/${m.id}`);
     expect(d.status).toBe(200);
     expect(d.body.series_players).toHaveLength(2);
-    expect(d.body.series_players[0]).toMatchObject({ player_id: p1.id, side: 1, kills: 35, deaths: 22, rounds: 50, rating: 1.1, elo_delta: null, clutches: null });
+    expect(d.body.series_players[0]).toMatchObject({
+      player_id: p1.id, side: 1, kills: 35, deaths: 22, rounds: 50, rating: 1.1, elo_delta: 6, clutches: { '1': 0, '2': 1, '3': 0, '4': 0, '5': 0 },
+    });
+    // Cada juego por separado, en los lados de la serie; el en vivo, sin stats.
+    const byId = (gid: string) => d.body.games.find((g: { id: string }) => g.id === gid);
+    expect(byId(g1).players.find((p: { player_id: string }) => p.player_id === p1.id)).toMatchObject({ side: 1, kills: 25, elo_delta: 15, clutches: null });
+    expect(byId(g2).players.find((p: { player_id: string }) => p.player_id === p1.id)).toMatchObject({ side: 1, kills: 10, elo_delta: -9, clutches: { '2': 1 } });
+    expect(byId(g2).players.find((p: { player_id: string }) => p.player_id === p2.id)).toMatchObject({ side: 2, kills: 12 });
+    expect(byId(g3).players).toEqual([]);
+    expect(byId(g1)).toMatchObject({ demo_status: expect.any(String), demo_size: null });
     expect(d.body.series_players[1]).toMatchObject({ player_id: p2.id, side: 2, kills: 22, rounds: 50, rating: 0.9 });
     expect(d.body.players).toEqual([]);
   });
