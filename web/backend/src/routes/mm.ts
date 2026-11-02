@@ -5,9 +5,10 @@ import { must, mustHave } from '../lib/db';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
-import { readAudio, storageError, SOUND_MAX_BYTES } from '../lib/uploads';
+import { BANNER_MAX_BYTES, readAudio, storageError, SOUND_MAX_BYTES, type ImageShape } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { demoUrl } from '../services/matches';
+import { removePhoto, savePhoto, dropPhoto } from '../services/photos';
 import { LIST_COLUMNS, toVideo, type ClipRow } from './clips';
 
 // Matchmaking (plan docs/bitacora/2026-10-28-matchmaking). Las reglas las valida la base: acá solo se valida la forma
@@ -85,6 +86,10 @@ const removeSound = async (c: C, url: unknown) => {
   const path = typeof url === 'string' ? url.split('/sounds/')[1] : undefined;
   if (path) await c.var.sb.storage.from('sounds').remove([path]);
 };
+/** Imagen de la tarjeta del MVP (replanteo 54): ancha como el banner de un torneo. */
+const MVP_SHAPE: ImageShape = { what: 'La imagen del MVP', ratio: 4, tolerance: 0.05, shape: 'de proporción 4:1', min: [800, 200], max: [2400, 600] };
+const ImageForm = z.object({ file: z.instanceof(File).openapi({ type: 'string', format: 'binary' }) });
+
 const form = (c: C) => (c.req as unknown as { valid(t: 'form'): { file: File; name?: string } }).valid('form');
 
 const r = createRouter();
@@ -197,6 +202,27 @@ add(route('post', '/api/v1/admin/mm/sounds', { summary: 'Subir un sonido', guard
 add(route('delete', '/api/v1/admin/mm/sounds/{id}', { summary: 'Borrar un sonido', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
   await removeSound(c, await rpc(c, 'mm_admin_sound_delete', { p_id: param(c) }));
   return c.json({ ok: true } as never, 200);
+});
+
+// Imagen del MVP (replanteo 54): la sube un admin; la usan la sala del matchmaking y el detalle de un mix.
+add(route('get', '/api/v1/mm/mvp-image', { summary: 'Imagen de la tarjeta del MVP' }), async (c) =>
+  c.json({ url: ((await rpc(c, 'mm_mvp_image')) as string | null) ?? null } as never, 200));
+add(route('put', '/api/v1/admin/mm/mvp-image', { summary: 'Subir la imagen del MVP', guard: requireAdmin, request: { body: multipart(ImageForm) } }), async (c) => {
+  const { url, path } = await savePhoto(c, 'mm', form(c).file, BANNER_MAX_BYTES, MVP_SHAPE);
+  let old: unknown;
+  try {
+    old = await rpc(c, 'mm_admin_set_mvp_image', { p_url: url });
+  } catch (e) {
+    await dropPhoto(c, path);
+    throw e;
+  }
+  removePhoto(c, typeof old === 'string' ? old : null);
+  return c.json({ url } as never, 200);
+});
+add(route('delete', '/api/v1/admin/mm/mvp-image', { summary: 'Quitar la imagen del MVP', guard: requireAdmin }), async (c) => {
+  const old = await rpc(c, 'mm_admin_set_mvp_image', { p_url: null });
+  removePhoto(c, typeof old === 'string' ? old : null);
+  return c.json({ url: null } as never, 200);
 });
 
 export const mm = r;
