@@ -72,14 +72,6 @@ export function MixRoom({
   onTab?: (tab: StatsTab) => void
 }) {
   const live = room.status === "live"
-  // El orden por columna es del componente; con las dos tablas a la vez, como las pestañas.
-  const [sort, setSort] = useState<StatsSort>(null)
-  const cols = columnsFor(tab, room.status)
-  const best = bestValues(cols, [...room.side1.players, ...room.side2.players])
-  const pickTab = (t: StatsTab) => {
-    setSort(null)
-    onTab?.(t)
-  }
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -148,6 +140,35 @@ export function MixRoom({
         </Notice>
       )}
 
+      <RoomStats room={room} tab={tab} onTab={onTab} />
+    </section>
+  )
+}
+
+/**
+ * Pestañas de estadísticas y una tabla por bando. La usan la sala del mix y la página de la
+ * serie (con un mapa o la suma de todos).
+ */
+export function RoomStats({
+  room,
+  tab = "general",
+  onTab,
+}: {
+  room: Pick<Room, "status" | "clutchData" | "side1" | "side2">
+  tab?: StatsTab
+  onTab?: (tab: StatsTab) => void
+}) {
+  const live = room.status === "live"
+  // El orden por columna es del componente; con las dos tablas a la vez, como las pestañas.
+  const [sort, setSort] = useState<StatsSort>(null)
+  const cols = columnsFor(tab, room.status)
+  const best = bestValues(cols, [...room.side1.players, ...room.side2.players])
+  const pickTab = (t: StatsTab) => {
+    setSort(null)
+    onTab?.(t)
+  }
+  return (
+    <>
       <StatsTabs value={tab} onChange={pickTab} />
       {tab === "clutch" && room.clutchData !== true ? (
         <Card
@@ -183,7 +204,7 @@ export function MixRoom({
           />
         ))
       )}
-    </section>
+    </>
   )
 }
 

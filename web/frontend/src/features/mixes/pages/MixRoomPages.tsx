@@ -10,8 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapImage } from "@/features/maps/lib/catalog"
 import { myProfileOptions } from "@/features/profile/api/queries"
-import { Placeholder } from "@/features/shell/components/Placeholder"
 import { matchDetailOptions } from "@/features/shell/api/queries"
+import { SeriesRoom } from "@/features/series/pages/SeriesRoom"
 import { DeleteMixDialog } from "../components/DeleteMixDialog"
 import { MixRoom } from "../components/MixRoom"
 import { liveMixOptions } from "../api/queries"
@@ -27,8 +27,17 @@ function useMyPlayerId() {
   return useQuery(myProfileOptions).data?.player?.id ?? null
 }
 
-/** /match/$id: la sala si es un mix; otra partida sigue con el placeholder. */
-export function MixMatchRoom({ id, tab, onTab }: { id: string } & TabProps) {
+/** /match/$id: la sala si es un mix; la página de la serie si es de torneo o PCW. */
+export function MixMatchRoom({
+  id,
+  tab,
+  onTab,
+  map,
+  onMap,
+}: { id: string } & TabProps & {
+    map?: string
+    onMap?: (gameId: string | undefined) => void
+  }) {
   const match = useQuery(matchDetailOptions(id))
   const me = useMyPlayerId()
   const maps = useQuery(mapsOptions).data
@@ -51,7 +60,17 @@ export function MixMatchRoom({ id, tab, onTab }: { id: string } & TabProps) {
     )
 
   const m = match.data
-  if (m.kind !== "mix") return <Placeholder title="Partida" />
+  if (m.kind !== "mix")
+    return (
+      <SeriesRoom
+        match={m}
+        me={me}
+        tab={tab}
+        onTab={onTab}
+        map={map}
+        onMap={onMap}
+      />
+    )
 
   const room = roomFromMatch(m, me)
   // La API no borra un mix vinculado con !match a un torneo o PCW.

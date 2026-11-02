@@ -8,10 +8,10 @@ export const Route = createFileRoute("/_app/match/$id")({
   component: MatchPage,
 })
 
-// Por ahora solo los mixes tienen sala; torneos y PCW siguen con el placeholder.
+// Un mix abre su sala; una serie de torneo o PCW, la página de la serie.
 function MatchPage() {
   const { id } = Route.useParams()
-  const { stats } = Route.useSearch()
+  const { stats, map } = Route.useSearch()
   const navigate = Route.useNavigate()
   return (
     <MixMatchRoom
@@ -19,9 +19,17 @@ function MatchPage() {
       tab={stats ?? "general"}
       onTab={(t) =>
         void navigate({
-          search: { stats: t === "general" ? undefined : t },
+          search: (s) => ({ ...s, stats: t === "general" ? undefined : t }),
           replace: true,
           // Es estado de la misma vista: no se vuelve arriba.
+          resetScroll: false,
+        })
+      }
+      map={map}
+      onMap={(g) =>
+        void navigate({
+          search: (s) => ({ ...s, map: g }),
+          replace: true,
           resetScroll: false,
         })
       }

@@ -17086,7 +17086,7 @@ export interface components {
             games: components["schemas"]["GameRef"][];
             /** @description Mix: stats de cada jugador */
             players: components["schemas"]["PlayerLine"][];
-            /** @description Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego */
+            /** @description Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` sumado (cada juego mueve el ELO) y `clutches` sumados de los juegos con datos de clutch (null si ninguno tiene). Vacío en los mixes y si no se terminó ningún juego */
             series_players: components["schemas"]["PlayerLine"][];
             /** @description Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen) */
             clutch_data: boolean;
@@ -17120,6 +17120,12 @@ export interface components {
             score2: number | null;
             played_at: string | null;
             demo_url: string | null;
+            /** @description Tamaño de la demo en bytes (null si no hay) */
+            demo_size: number | null;
+            /** @description Estado de la demo del juego (`pending`, `uploaded`, `failed`…) */
+            demo_status: string;
+            /** @description Juego terminado: stats de cada jugador en ese mapa, en los lados de la serie, con su `elo_delta` y sus clutches. Vacío si no terminó */
+            players: components["schemas"]["PlayerLine"][];
         };
         PlayerLine: {
             /** Format: uuid */

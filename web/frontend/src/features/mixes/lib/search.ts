@@ -7,5 +7,7 @@ import { STATS_TABS } from "./stats"
 /** Sala del mix (/match/$id y /mixes/live/$uid): la pestaña de estadísticas. General no va en la URL. */
 export const roomSearchSchema = z.object({
   stats: z.enum(STATS_TABS).optional().catch(undefined),
+  /** Serie de torneo o PCW: el juego (mapa) de las estadísticas; vacío = todos los mapas. */
+  map: z.uuid().optional().catch(undefined),
 })
 export type RoomSearch = z.infer<typeof roomSearchSchema>

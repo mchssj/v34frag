@@ -242,3 +242,37 @@ export function roomFromLive(l: LiveMixDetail, me: string | null): Room {
     side2,
   }
 }
+
+/**
+ * Tablas de una serie de torneo o PCW: las stats de un mapa (`games[].players`) o la suma de los
+ * mapas (`series_players`), ya en los lados de la serie. Siempre de juegos terminados, con Δ ELO.
+ */
+export function statsRoomFromLines(
+  lines: Line[],
+  opts: {
+    names: [string, string]
+    /** Rondas del mapa, o mapas ganados en la suma de la serie. */
+    scores: [number, number]
+    winner: number | null
+    me: string | null
+  }
+): Pick<Room, "status" | "clutchData" | "side1" | "side2"> {
+  const mvp = lines
+    .filter((p) => (p.rounds ?? 0) > 0)
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0]
+  const [side1, side2] = split(
+    lines,
+    "finished",
+    opts.winner,
+    opts.names,
+    opts.scores,
+    { mvpKey: mvp ? identity(mvp) : null, me: opts.me, showDelta: true }
+  )
+  return {
+    status: "finished",
+    // Los clutches llegan en null si ningún mapa tiene datos de clutch.
+    clutchData: lines.some((p) => p.clutches != null),
+    side1,
+    side2,
+  }
+}
