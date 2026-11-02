@@ -67,7 +67,7 @@ Las 15 comprobaciones de la base:
 ## Falta
 
 1. **Probar el plugin con un servidor y dos clientes** (uno vinculado y otro sin vincular). Comprobar: espectador, recordatorio, `!claim`, el paso a su equipo, que "connected" llegue y que el `!ready` espere.
-2. ~~Commit de las dos ramas~~: **hecho el 2026-11-02** (pedido por Daniel): `d8c4d115` en `feat/mm-claim-en-sala` (base y plugin) y `c05352f5` en `feat/frontend-fase-1` (web). Ninguna rama se subió a GitHub.
+2. ~~Commit de las dos ramas~~: **hecho el 2026-11-02** (pedido por Daniel): `d8c4d115` en `feat/mm-claim-en-sala` (base y plugin) y `c05352f5` en `feat/frontend-fase-1` (web). Las dos ramas se subieron a GitHub el 2026-11-02 (pedido por Daniel): `feat/mm-claim-en-sala` como rama nueva (no se tocó `kyan/pruebas`) y `feat/frontend-fase-1`.
 3. **Staging:** ~~aplicar la `49`~~ y ~~desplegar la web~~, **hechos el 2026-11-02** (ver abajo). Redesplegar la API no hace falta.
 4. **Plugin:** ~~#1~~, **subido el 2026-11-02** (ver abajo). #2 (flow) y #3 siguen con la 2.7.3: la 2.8.2 les llega cuando se abra el matchmaking, en la misma tanda.
 5. ~~`min_mixes`~~: **en 0 desde el 2026-11-02** (replanteo `50`, ver abajo).
