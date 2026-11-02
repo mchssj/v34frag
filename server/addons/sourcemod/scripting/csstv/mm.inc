@@ -11,6 +11,11 @@
  *    terminada hasta que la base la cierra con el resultado, para no retomarla. Si en MM_DONE_WAIT segundos no
  *    la cerró (resultado rechazado, por ejemplo), la cancela.
  *
+ * Sin SteamID vinculado (bitácora 2026-11-02-mm-claim-en-sala): la web deja entrar a la cola sin SteamID. Quien no
+ * está en el plantel queda de espectador y se le recuerda el !claim; cuando lo hace, el poll siguiente (adelantado por
+ * Mm_OnClaimLinked) trae su SteamID en t1/t2 y Mm_UpdateRoster lo pasa a su equipo. n1/n2 son todos los de la sala,
+ * con o sin SteamID: el !ready no arranca hasta que estén todos.
+ *
  * La contraseña vigente fuera de una sala vive en data/csstv/mm_pw.txt (valor, id y si falta confirmarla a la
  * base): sobrevive a reinicios y se reintenta hasta que la base la tiene. Nunca va al log ni al chat.
  * Las respuestas son texto clave=valor, como csstv_match_lookup. Con csstv_mm 0 nada de esto corre.
@@ -26,6 +31,7 @@
 #define MM_RETRY_SECONDS 10
 #define MM_OUT_MAX 768
 #define MM_LIVE_POLL 10
+#define MM_CLAIM_EVERY 20
 
 ConVar g_cvMm;
 ConVar g_cvMmPoll;
@@ -39,6 +45,8 @@ bool g_bMmLive;
 int g_iMmAbandons[2];          // abandonos confirmados de cada equipo de la sala
 bool g_bMmLoaded;
 int g_iMmRosterTotal;
+int g_iMmUnlinked;             // de la sala sin SteamID vinculado (tienen que hacer !claim)
+int g_iMmClaimNagAt;
 bool g_bMmPollBusy;
 int g_iMmLastPoll;
 int g_iMmPollErrors;
@@ -284,6 +292,7 @@ public Action Timer_MmTick(Handle timer)
 		Mm_Queue("csstv_mm_password", args);
 	}
 	Mm_FlushOut();
+	Mm_ClaimNag();
 	// Un mix o un !match en curso: la web lo ve fuera de línea y no le asigna nada. Una sala en vivo sí
 	// consulta, más espaciado: derrota automática, anulación y cuántos abandonos lleva cada equipo.
 	bool live = g_bMmLive && Mm_HasLobby();
@@ -378,7 +387,10 @@ public void Mm_OnPoll(bool success, const char[] error, System2HTTPRequest reque
 		Mm_Release();
 	bool known = StrEqual(lobby, g_sMmLobby);
 	if (known && g_LinkState == Link_Active)
+	{
+		Mm_UpdateRoster(text);
 		return;
+	}
 	if (g_LinkState != Link_None || Maps_ChangePending())
 		return;
 	Mm_Take(lobby, text, StrEqual(st, "assigned"));
@@ -453,6 +465,81 @@ int Mm_CountRoster(const char[] list)
 	return n;
 }
 
+/**
+ * Jugadores de cada equipo de la sala. n1/n2 los cuentan a todos, con o sin SteamID (base con el replanteo 49); si no
+ * vienen, se cuentan los SteamID de t1/t2, como antes. También guarda cuántos no tienen SteamID.
+ */
+void Mm_RosterSizes(const char[] text, const char[] t1, const char[] t2, int &n1, int &n2)
+{
+	char num[16];
+	Link_Field(text, "n1", num, sizeof(num));
+	n1 = num[0] ? StringToInt(num) : Mm_CountRoster(t1);
+	Link_Field(text, "n2", num, sizeof(num));
+	n2 = num[0] ? StringToInt(num) : Mm_CountRoster(t2);
+	Link_Field(text, "unlinked", num, sizeof(num));
+	g_iMmUnlinked = StringToInt(num);
+}
+
+/**
+ * Poll con la sala ya tomada, en el calentamiento: si alguien hizo !claim, su SteamID llega en t1/t2. Se actualiza el
+ * plantel, se acomoda a todos y se avisa "connected" de los que se reconocieron recién.
+ */
+void Mm_UpdateRoster(const char[] text)
+{
+	char t1[1024], t2[1024], r1[1024], r2[1024];
+	Link_Field(text, "t1", t1, sizeof(t1));
+	Link_Field(text, "t2", t2, sizeof(t2));
+	int n1, n2;
+	Mm_RosterSizes(text, t1, t2, n1, n2);
+	Format(r1, sizeof(r1), ",%s,", t1);
+	Format(r2, sizeof(r2), ",%s,", t2);
+	if (StrEqual(r1, g_sLinkRoster[0], false) && StrEqual(r2, g_sLinkRoster[1], false))
+		return;
+	bool before[MAXPLAYERS + 1];
+	for (int i = 1; i <= MaxClients; i++)
+		before[i] = IsClientInGame(i) && Link_TeamOf(i) != 0;
+	strcopy(g_sLinkRoster[0], sizeof(g_sLinkRoster[]), r1);
+	strcopy(g_sLinkRoster[1], sizeof(g_sLinkRoster[]), r2);
+	g_iMmRosterTotal = n1 + n2;
+	g_iLinkMinRoster = n1 < n2 ? n1 : n2;
+	LogMessage("Matchmaking: plantel de la sala %s actualizado (%d sin SteamID).", g_sMmLobby, g_iMmUnlinked);
+	Link_AdoptSides();
+	Link_Arrange(true);
+	for (int i = 1; i <= MaxClients; i++)
+		if (!before[i] && IsClientInGame(i) && !IsFakeClient(i) && Link_TeamOf(i))
+			Mm_ReportClient("connected", i);
+}
+
+/** Hay alguien de la sala sin SteamID: este jugador, que no está en el plantel, puede ser él. */
+bool Mm_WaitingClaim(int client)
+{
+	return Mm_On() && Mm_HasLobby() && !g_bMmLive && g_iMmUnlinked > 0 && IsClientInGame(client)
+		&& !IsFakeClient(client) && !IsClientSourceTV(client) && !Link_TeamOf(client);
+}
+
+void Mm_ClaimHint(int client)
+{
+	QolChat(client, "%s Si sos de esta sala y todavía no vinculaste tu SteamID, escribí {#amarillo}!claim <código>{#normal}. El código está en la sala de la web.", PREFIX);
+}
+
+/** Cada MM_CLAIM_EVERY segundos, el recordatorio a los que pueden ser de la sala y no están en el plantel. */
+void Mm_ClaimNag()
+{
+	if (!Mm_HasLobby() || g_bMmLive || g_iMmUnlinked <= 0 || GetTime() - g_iMmClaimNagAt < MM_CLAIM_EVERY)
+		return;
+	g_iMmClaimNagAt = GetTime();
+	for (int i = 1; i <= MaxClients; i++)
+		if (Mm_WaitingClaim(i))
+			Mm_ClaimHint(i);
+}
+
+/** !claim que vinculó el SteamID con una sala tomada: se adelanta el poll para pasarlo a su equipo enseguida. */
+void Mm_OnClaimLinked()
+{
+	if (Mm_On() && Mm_HasLobby() && !g_bMmLive)
+		g_iMmLastPoll = 0;
+}
+
 /** Toma la sala (o la retoma después de un reinicio: announce = false, sin "taken"). */
 void Mm_Take(const char[] lobby, const char[] text, bool announce)
 {
@@ -490,7 +577,8 @@ void Mm_Take(const char[] lobby, const char[] text, bool announce)
 	Format(g_sLinkTitle, sizeof(g_sLinkTitle), "Matchmaking: %s vs %s", g_sLinkTeamName[0], g_sLinkTeamName[1]);
 	Format(g_sLinkRoster[0], sizeof(g_sLinkRoster[]), ",%s,", t1);
 	Format(g_sLinkRoster[1], sizeof(g_sLinkRoster[]), ",%s,", t2);
-	int n1 = Mm_CountRoster(t1), n2 = Mm_CountRoster(t2);
+	int n1, n2;
+	Mm_RosterSizes(text, t1, t2, n1, n2);
 	g_iMmRosterTotal = n1 + n2;
 	g_iLinkBestOf = 1;
 	g_iLinkMaxStandins = 0;
@@ -537,6 +625,7 @@ void Mm_Forget()
 	g_bMmDoneAborted = false;
 	g_bMmLive = false;
 	g_iMmRosterTotal = 0;
+	g_iMmUnlinked = 0;
 	Mm_SaveLobby();
 }
 
@@ -553,6 +642,7 @@ void Mm_Close(const char[] reason)
 	g_iMmDoneAt = GetTime();
 	g_bMmDoneAborted = reason[0] != '\0';
 	g_iMmRosterTotal = 0;
+	g_iMmUnlinked = 0;
 	g_sMmPassword[0] = '\0';
 	g_sMmMap[0] = '\0';
 	Mm_SaveLobby();

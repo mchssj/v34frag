@@ -528,6 +528,8 @@ public Action Timer_LinkGreet(Handle timer, int userid)
 	int k = Link_TeamOf(client);
 	if (k)
 		QolChat(client, "%s Partida vinculada: {#amarillo}%s{#normal}. Jugás con {#amarillo}%s{#normal}.", PREFIX, g_sLinkTitle, g_sLinkTeamName[k - 1]);
+	else if (Mm_WaitingClaim(client))
+		Mm_ClaimHint(client);
 	else
 		QolChat(client, "%s Partida vinculada: {#amarillo}%s{#normal}. Si sos stand-in, entrá al lado de tu equipo.", PREFIX, g_sLinkTitle);
 	return Plugin_Stop;
