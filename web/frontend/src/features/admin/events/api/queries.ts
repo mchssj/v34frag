@@ -125,6 +125,38 @@ export function useUpdateEvent(id: string) {
   })
 }
 
+/** Banner del torneo, ya recortado a 4:1 (quien gestiona el torneo). */
+export function useUploadBanner(id: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: (blob: Blob) => {
+      const form = new FormData()
+      form.append("file", blob, "banner.jpg")
+      return unwrap(
+        api.PUT("/api/v1/events/{id}/banner", {
+          params: { path: { id } },
+          // El schema tipa el archivo como string (binary): el multipart se arma a mano.
+          body: { file: "" },
+          bodySerializer: () => form,
+        })
+      )
+    },
+    onSuccess: () => invalidate(id),
+  })
+}
+
+/** Quita el banner: vuelve el patrón por defecto. */
+export function useRemoveBanner(id: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.DELETE("/api/v1/events/{id}/banner", { params: { path: { id } } })
+      ),
+    onSuccess: () => invalidate(id),
+  })
+}
+
 /** Acciones del torneo sin cuerpo: generar, reiniciar (volver a la siembra), cancelar, borrar. */
 export function useEventAction(id: string) {
   const invalidate = useInvalidateEvent()

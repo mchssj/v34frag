@@ -28,6 +28,7 @@ import {
   useRemoveRegistration,
   useUpdateEvent,
 } from "../api/queries"
+import { BannerCard } from "./BannerCard"
 import { EventForm } from "./EventForm"
 
 const active = (r: Registration) =>
@@ -417,6 +418,7 @@ export function ConfigTab({ event }: { event: EventDetail }) {
   const config = event.config as Record<string, unknown>
   return (
     <div className="flex flex-col gap-6">
+      <BannerCard event={event} />
       <EventForm
         initial={{
           name: event.name,

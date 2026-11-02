@@ -105,6 +105,10 @@ export const cropAvatar = (file: File, area: CropArea) =>
     maxBytes: AVATAR_MAX_BYTES,
   })
 
+/** Banner de un torneo: 1600×400 (el backend acepta 4:1 entre 800×200 y 2400×600), hasta 4 MB. */
+export const cropBanner = (file: File, area: CropArea) =>
+  cropImage(file, area, { width: 1600, height: 400, maxBytes: 4 * 1024 * 1024 })
+
 /** Logo del equipo: 512×512 (el backend acepta de 128 a 1024, cuadrado), hasta 2 MB. */
 export const LOGO_SIZE = 512
 export const cropLogo = (file: File, area: CropArea) =>

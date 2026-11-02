@@ -98,6 +98,16 @@ Daniel aprobó dos cambios, solo del frontend:
 - **Archivos:** `web/frontend/src/features/admin/events/lib/model.ts` (`swissCupo`, `teamsNeeded`, `teamsIssue`, con pruebas en `model.test.ts`), `components/EventForm.tsx` y `components/ManageTabs.tsx`.
 - **Pruebas:** typecheck, lint y 414 unitarias.
 
+## Ajuste: banner del torneo (2026-11-02)
+
+Daniel notó que no había dónde subir el banner: la lista de torneos y la página del torneo mostraban siempre el patrón rayado. El backend ya tenía `PUT` y `DELETE /api/v1/events/{id}/banner` (quien gestiona el torneo; 4:1, entre 800×200 y 2400×600, hasta 4 MB); faltaba la pantalla.
+
+- **Dónde:** Administración › Torneos › un torneo › Configuración, arriba del formulario. Una tarjeta "Banner" con la vista previa, "Subir banner" (o "Cambiar banner") y "Quitar".
+- **Cómo:** se elige JPG, PNG o WebP (hasta 10 MB), se encuadra en 4:1 con el mismo recorte del logo de equipo y se guarda al instante, a 1600×400 en JPEG. Al crear un torneo nuevo, el banner se sube después, desde Configuración.
+- **Archivos:** `web/frontend/src/features/admin/events/components/BannerCard.tsx` (nuevo), `components/ManageTabs.tsx`, `api/queries.ts` (`useUploadBanner`, `useRemoveBanner`), `src/lib/image.ts` (`cropBanner`) y `features/profile/components/AvatarCropDialog.tsx` (prop `aspect`).
+- **Pruebas:** typecheck, lint y 421 unitarias. Recorrido real con una prueba temporal de Playwright (después se borró): un admin subió una imagen de 1600×500, la encuadró y quedó guardada en el Storage local y en la vista previa.
+- **Sin cambios en el backend ni en la base.**
+
 ## Cómo revertir
 
 1. Base: `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/41_admin_torneos.sql`.

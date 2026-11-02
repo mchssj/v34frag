@@ -1,3 +1,4 @@
+import { cn } from "cn"
 import { ZoomInIcon, ZoomOutIcon } from "lucide-react"
 import { useRef, useState } from "react"
 import Cropper, { type Area } from "react-easy-crop"
@@ -27,6 +28,7 @@ export function AvatarCropDialog({
   shape = "round",
   title = "Encuadra tu foto",
   confirmLabel = "Guardar foto",
+  aspect = 1,
 }: {
   src: string
   busy: boolean
@@ -35,6 +37,8 @@ export function AvatarCropDialog({
   shape?: "round" | "rect"
   title?: string
   confirmLabel?: string
+  /** Ancho / alto del recorte: 1 para la foto y el logo, 4 para el banner de un torneo. */
+  aspect?: number
 }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -51,12 +55,17 @@ export function AvatarCropDialog({
             Arrástrala y usa el zoom para que quede como quieres.
           </DialogDescription>
         </div>
-        <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+        <div
+          className={cn(
+            "relative w-full overflow-hidden rounded-lg bg-muted",
+            aspect > 1 ? "aspect-video" : "aspect-square"
+          )}
+        >
           <Cropper
             image={src}
             crop={crop}
             zoom={zoom}
-            aspect={1}
+            aspect={aspect}
             cropShape={shape}
             // La imagen cubre el marco y el círculo lo ocupa entero.
             objectFit="cover"
