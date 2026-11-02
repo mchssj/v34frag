@@ -15,7 +15,7 @@ Probado con bots en local y **subido el 2026-11-02 como 2.7.3 a flow y MVZG, y a
 
 ## Despliegue (hecho el 2026-11-02)
 
-La 2.8.x trae matchmaking sin desplegar, así que producción recibió la **2.7.3**: la 2.7.2 (`6898c05`) con estos cambios, en la rama `kyan/reporter-2-7-3`. `kyan/pruebas` queda con los mismos cambios como 2.8.1. Kyan avisó a Daniel.
+La 2.8.x trae matchmaking sin desplegar, así que producción recibió la **2.7.3**: la 2.7.2 (`6898c05`) con estos cambios. El código está en `pruebas/reporter-2.7.3.patch`: para recompilarla, `git worktree add --detach <carpeta> 6898c05`, `git apply` del parche ahí y `server/build_licenciado.sh` (o `spcomp` para el genérico). La rama `kyan/reporter-2-7-3` donde se commiteó primero se borró el 2026-11-02, a pedido de Kyan. `kyan/pruebas` queda con los mismos cambios como 2.8.1. Kyan avisó a Daniel.
 
 | Servidor | Acceso | Qué se subió |
 |---|---|---|
