@@ -30,6 +30,7 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** clips automáticos (reporter **2.5.0**), pedido por Daniel el 2026-10-23 para que los clips se vayan juntando antes de la web nueva. Aprobado, hecho, probado con bots y **desplegado el 2026-10-23** en la base y los dos servidores (punto 1.16).
 - **Excepción:** contraseña del servidor con `!pw`, `!npw` y `!rpw` para admins y moderadores (`csstv_password` 1.0.0), pedido por Daniel el 2026-10-25 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-25** (punto 1.19).
 - **Excepción:** silenciador automático en la M4A1 y la USP con menú `!as` (`csstv_silencer` 1.0.0), pedido por Kyan el 2026-11-02 como plugin aparte. Probado en local y **subido el 2026-11-02 a `aurav34`, flow y MVZG**. Kyan confirmó que funciona. RBK quedó afuera porque ya no se usa ([`2026-11-02-plugin-silenciador`](bitacora/2026-11-02-plugin-silenciador/)).
+- **Excepción:** aviso de arranque, pausa automática por desconexión y charla del medio tiempo (reporter **2.7.3**, y 2.8.1 en `kyan/pruebas`), pedido por Kyan el 2026-11-02. Probado con bots y **subido el 2026-11-02 a flow y MVZG, y a `disabled/` en `aurav34`**. **Falta la prueba con jugadores** ([`2026-11-02-aviso-y-pausa-automatica`](bitacora/2026-11-02-aviso-y-pausa-automatica/)).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
 ## Decisiones anotadas para planes futuros

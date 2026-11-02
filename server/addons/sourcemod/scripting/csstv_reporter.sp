@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.8.0"
+#define PLUGIN_VERSION "2.8.1"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -92,6 +92,7 @@ ConVar g_cvAssistDamage;
 ConVar g_cvIncludeBots;
 ConVar g_cvValidateId;
 ConVar g_cvHalftimeDelay;
+bool g_bHalfSwap;   // el próximo reinicio es la vuelta del medio tiempo
 ConVar g_cvAbandonPlayers;
 ConVar g_cvAbandonSeconds;
 ConVar g_cvEndDelay;
@@ -287,6 +288,7 @@ public void OnClientDisconnect(int client)
 	Mm_OnClientLeave(client);
 	Recon_Remember(client);
 	Board_SaveClient(client);
+	AutoPause_OnLeave(client);
 	Clips_OnLeave(client);   // antes de Stats_ClientLeave: puede dejar a un compañero en clutch
 	Stats_ClientLeave(client);
 	Maps_OnClientDisconnect(client);
@@ -660,6 +662,7 @@ void StartMatch(int maxRounds = 0, bool knife = false)
 void GoLive()
 {
 	g_State = State_Starting;
+	Qol_StartAlert("¡Arranca la partida!");
 	QolChatAll("%s La partida empieza: {#amarillo}%s{#normal} (%s) vs {#amarillo}%s{#normal} (%s). MR%d: gana el primero en llegar a %d.", PREFIX,
 		g_sTeam[0], g_iSideA == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}",
 		g_sTeam[1], g_iSideA == TEAM_CT ? "{#t}T{#normal}" : "{#ct}CT{#normal}",
@@ -737,6 +740,11 @@ void OnRestartsDone()
 	{
 		PrintToChatAll("%s ¡EN VIVO! %s %d - %d %s.", PREFIX, g_sTeam[0], g_iTotA, g_iTotB, g_sTeam[1]);
 		Board_ScheduleRestoreAll();
+		if (g_bHalfSwap)
+		{
+			g_bHalfSwap = false;
+			HalfTalk_Start();
+		}
 		if (g_iRestartPurpose == PURPOSE_REROUND)
 			Rr_ScheduleRestore();
 	}
@@ -797,6 +805,7 @@ public Action Timer_Halftime(Handle timer)
 		return Plugin_Stop;
 	Board_SaveAll();   // incluye las kills después del fin de la ronda; antes del cambio, que suma una muerte
 	SwapTeams();
+	g_bHalfSwap = true;
 	BeginRestarts(1, PURPOSE_RESUME);
 	return Plugin_Stop;
 }
