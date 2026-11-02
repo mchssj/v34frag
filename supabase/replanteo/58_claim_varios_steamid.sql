@@ -18,13 +18,15 @@ begin
 end $$;
 
 create or replace function pg_temp.reemplazar(fn regprocedure, cambios text[][]) returns void language plpgsql as $$
-declare d text := pg_get_functiondef(fn); i int;
+declare d text := pg_get_functiondef(fn); i int; a text; b text;
 begin
   for i in 1 .. array_length(cambios, 1) loop
-    if position(cambios[i][1] in d) = 0 then
-      raise exception 'replanteo 58: en % no se encontró: %', fn, left(cambios[i][1], 80);
+    -- Sin \r: con el archivo en CRLF (autocrlf), los textos de varias líneas no coincidirían con la función.
+    a := replace(cambios[i][1], E'\r', ''); b := replace(cambios[i][2], E'\r', '');
+    if position(a in d) = 0 then
+      raise exception 'replanteo 58: en % no se encontró: %', fn, left(a, 80);
     end if;
-    d := replace(d, cambios[i][1], cambios[i][2]);
+    d := replace(d, a, b);
   end loop;
   execute d;
 end $$;
