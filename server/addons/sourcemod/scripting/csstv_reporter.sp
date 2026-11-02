@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.8.2"
+#define PLUGIN_VERSION "2.8.6"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -119,6 +119,7 @@ bool g_bDemoRecorded;          // la partida actual tiene demo (va en el resulta
 Handle g_hReadyTimer;
 // Nombres de los equipos de la partida: "Equipo <nick>" (A = el que empezó de CT).
 char g_sTeamNick[2][24];
+int g_iCaptain[2];             // userid del que le da nombre al equipo: elige lado tras el cuchillo
 char g_sTeam[2][40];
 bool g_bSurrender;             // la partida terminó por !gg
 int g_iSurrenderTeam;          // 0 = A, 1 = B
@@ -602,6 +603,7 @@ void ResetMatch()
 	for (int t = 0; t < 2; t++)
 	{
 		g_sTeamNick[t][0] = '\0';
+		g_iCaptain[t] = 0;
 		strcopy(g_sTeam[t], sizeof(g_sTeam[]), t == 0 ? "Equipo A" : "Equipo B");
 	}
 	for (int i = 1; i <= MaxClients; i++)
@@ -671,7 +673,7 @@ void GoLive()
 }
 
 /**
- * Nombre de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
+ * Nombre y capitán de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
  * que empieza de CT. El nombre queda fijo toda la partida, aunque ese jugador se vaya.
  */
 void PickTeamNames()
@@ -692,6 +694,7 @@ void PickTeamNames()
 		int pick = nh ? humans[GetRandomInt(0, nh - 1)] : (nb ? bots[GetRandomInt(0, nb - 1)] : 0);
 		if (!pick)
 			continue;
+		g_iCaptain[t] = GetClientUserId(pick);
 		GetClientName(pick, g_sTeamNick[t], sizeof(g_sTeamNick[]));
 		ReplaceString(g_sTeamNick[t], sizeof(g_sTeamNick[]), "{", "(");   // que un nick no pueda meter etiquetas de color
 		TrimString(g_sTeamNick[t]);
@@ -701,12 +704,12 @@ void PickTeamNames()
 	}
 }
 
-void BeginRestarts(int count, int purpose)
+void BeginRestarts(int count, int purpose, int delay = 1)
 {
 	g_bRestarting = true;
 	g_iRestartsLeft = count;
 	g_iRestartPurpose = purpose;
-	ServerCommand("mp_restartgame 1");
+	ServerCommand("mp_restartgame %d", delay);   // también reemplaza el reinicio de ronda que tenga pendiente el juego
 }
 
 public Action Timer_NextRestart(Handle timer)
@@ -743,7 +746,7 @@ void OnRestartsDone()
 		if (g_bHalfSwap)
 		{
 			g_bHalfSwap = false;
-			HalfTalk_Start();
+			HalfTalk_OnRoundStart();
 		}
 		if (g_iRestartPurpose == PURPOSE_REROUND)
 			Rr_ScheduleRestore();
@@ -793,6 +796,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	{
 		g_State = State_Halftime;
 		PrintToChatAll("%s Medio tiempo. Se cambian los lados.", PREFIX);
+		HalfTalk_Begin();
 		CreateTimer(g_cvHalftimeDelay.FloatValue, Timer_Halftime, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	if (g_State != State_Finished)
@@ -803,10 +807,28 @@ public Action Timer_Halftime(Handle timer)
 {
 	if (g_State != State_Halftime)
 		return Plugin_Stop;
+	g_bHalfSwap = true;
+	// Con la charla, la ronda siguiente empieza a los csstv_half_alltalk segundos del final.
+	// El cambio de lado va justo antes, para que nadie quede vivo y en el otro equipo mientras tanto.
+	int wait = RoundToCeil(float(HalfTalk_Gap()) - g_cvHalftimeDelay.FloatValue);
+	if (wait > 1)
+	{
+		BeginRestarts(1, PURPOSE_RESUME, wait);
+		CreateTimer(float(wait) - 0.5, Timer_HalfSwap, _, TIMER_FLAG_NO_MAPCHANGE);
+		return Plugin_Stop;
+	}
 	Board_SaveAll();   // incluye las kills después del fin de la ronda; antes del cambio, que suma una muerte
 	SwapTeams();
-	g_bHalfSwap = true;
 	BeginRestarts(1, PURPOSE_RESUME);
+	return Plugin_Stop;
+}
+
+public Action Timer_HalfSwap(Handle timer)
+{
+	if (g_State != State_Halftime || !g_bRestarting || !g_bHalfSwap)
+		return Plugin_Stop;
+	Board_SaveAll();
+	SwapTeams();
 	return Plugin_Stop;
 }
 

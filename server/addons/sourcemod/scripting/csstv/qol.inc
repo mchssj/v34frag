@@ -30,6 +30,7 @@ ConVar g_cvPauseTime;
 ConVar g_cvAutoPause;
 ConVar g_cvAutoPauseTime;
 ConVar g_cvHalfTalk;
+ConVar g_cvHalfTalkOff;
 ConVar g_cvDemo;
 ConVar g_cvDemoKeep;
 ConVar g_cvChatColors;
@@ -111,10 +112,8 @@ void Qol_Init()
 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
 	g_cvAutoPause     = CreateConVar("csstv_autopause", "1", "Pausa automática si un jugador se va durante la partida (una por partida).", _, true, 0.0, true, 1.0);
 	g_cvAutoPauseTime = CreateConVar("csstv_autopause_time", "120", "Segundos de la pausa automática, si el jugador no vuelve antes.", _, true, 5.0, true, 600.0);
-	g_cvHalfTalk      = CreateConVar("csstv_half_alltalk", "10", "Segundos quietos y con alltalk al cambiar de lado en el medio tiempo (0 = no).", _, true, 0.0, true, 60.0);
-	AddCommandListener(Cmd_HalfTalkBuy, "buy");
-	AddCommandListener(Cmd_HalfTalkBuy, "autobuy");
-	AddCommandListener(Cmd_HalfTalkBuy, "rebuy");
+	g_cvHalfTalk      = CreateConVar("csstv_half_alltalk", "10", "Segundos entre la última ronda de la mitad y la primera de la otra, con alltalk (0 = sin alltalk y sin espera extra).", _, true, 0.0, true, 60.0);
+	g_cvHalfTalkOff   = CreateConVar("csstv_half_alltalk_off", "10", "Segundos de freezetime que quedan cuando se apaga el alltalk del medio tiempo.", _, true, 0.0, true, 60.0);
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
 	RegConsoleCmd("sm_unpause", Cmd_Unpause, "Seguir después de una pausa (o cancelar la que pediste).");
 	RegAdminCmd("sm_forcepause", Cmd_ForcePause, ADMFLAG_GENERIC, "Pausa de admin: dura hasta sm_forceunpause o !unpause de los dos equipos.");
@@ -899,30 +898,40 @@ void PlayBell()
 }
 
 // ---------------------------------------------------------------------------
-// Charla del medio tiempo: todos quietos y con alltalk, antes del freezetime normal
+// Charla del medio tiempo: alltalk desde el final de la mitad hasta que quedan
+// csstv_half_alltalk_off segundos del freezetime de la ronda siguiente
 // ---------------------------------------------------------------------------
 
-/** Desde OnRestartsDone, en la vuelta del medio tiempo. */
-void HalfTalk_Start()
+/** Al terminar la última ronda de una mitad. */
+void HalfTalk_Begin()
 {
-	int secs = g_cvHalfTalk.IntValue;
-	if (secs <= 0)
+	if (g_cvHalfTalk.IntValue <= 0 || g_bHalfTalk)
 		return;
-	CreateTimer(0.2, Timer_HalfTalkStart, secs, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action Timer_HalfTalkStart(Handle timer, int secs)
-{
-	if (g_State != State_Live || !InFreezeTime())
-		return Plugin_Stop;
 	ConVar alltalk = FindConVar("sv_alltalk");
 	g_iHalfTalkSaved = alltalk.IntValue;
 	alltalk.SetInt(1, false, false);
 	g_bHalfTalk = true;
-	GameRules_SetPropFloat("m_fRoundStartTime", GameRules_GetPropFloat("m_fRoundStartTime") + float(secs));
-	QolChatAll("%s {#amarillo}Medio tiempo:{#normal} alltalk por %d segundos. Después se vuelve a hablar solo con tu equipo.", PREFIX, secs);
-	CreateTimer(float(secs), Timer_HalfTalkEnd, _, TIMER_FLAG_NO_MAPCHANGE);
-	return Plugin_Stop;
+	QolChatAll("%s {#amarillo}Medio tiempo:{#normal} alltalk hasta que queden %d segundos de freezetime.", PREFIX, g_cvHalfTalkOff.IntValue);
+}
+
+/** Segundos desde el final de la mitad hasta la ronda siguiente (0 = sin charla). */
+int HalfTalk_Gap()
+{
+	return g_bHalfTalk ? g_cvHalfTalk.IntValue : 0;
+}
+
+/** Desde OnRestartsDone, en la vuelta del medio tiempo: programa el final. */
+void HalfTalk_OnRoundStart()
+{
+	if (!g_bHalfTalk)
+		return;
+	float wait = FindConVar("mp_freezetime").FloatValue - g_cvHalfTalkOff.FloatValue;
+	if (wait <= 0.0)
+	{
+		Timer_HalfTalkEnd(null);
+		return;
+	}
+	CreateTimer(wait, Timer_HalfTalkEnd, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action Timer_HalfTalkEnd(Handle timer)
@@ -930,7 +939,7 @@ public Action Timer_HalfTalkEnd(Handle timer)
 	if (!g_bHalfTalk)
 		return Plugin_Stop;
 	HalfTalk_Stop();
-	QolChatAll("%s Se terminó el alltalk: ya pueden comprar.", PREFIX);
+	QolChatAll("%s Se terminó el alltalk: se vuelve a hablar solo con tu equipo.", PREFIX);
 	return Plugin_Stop;
 }
 
@@ -938,12 +947,6 @@ void HalfTalk_Stop()
 {
 	g_bHalfTalk = false;
 	FindConVar("sv_alltalk").SetInt(g_iHalfTalkSaved, false, false);
-}
-
-/** Durante la charla no se compra. */
-public Action Cmd_HalfTalkBuy(int client, const char[] command, int argc)
-{
-	return g_bHalfTalk ? Plugin_Handled : Plugin_Continue;
 }
 
 /** Sin mensajes: al cancelar, terminar la partida o cambiar de mapa. */
