@@ -1,6 +1,6 @@
 # Plugins y extensiones externos
 
-Todo lo que corre en el servidor real además de `csstv_reporter`. El inventario sirve para saber qué hay instalado cuando el servidor falla, y para reinstalarlo si hace falta.
+Todo lo que corre en el servidor real (el de ExtremeHost, que desde el 2026-11-02 es el **#3**; ver la numeración en `CLAUDE.md`) además de `csstv_reporter`. El inventario sirve para saber qué hay instalado cuando el servidor falla, y para reinstalarlo si hace falta.
 
 - **En el repo:** solo los binarios que instalamos nosotros, con la misma estructura de carpetas que el servidor (`server/addons/sourcemod/...`).
 - **Lo demás:** lo instalaron el hosting (ExtremeHost) o los admins (kyan, mecha). Acá está anotado con su tamaño y md5 para poder detectar cambios.

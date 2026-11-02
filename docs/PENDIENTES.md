@@ -1,8 +1,10 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-25**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-02**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
+
+> **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
@@ -22,6 +24,8 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** consejos de comandos en el chat cada 3 minutos y el Discord al terminar la partida (reporter **2.4.0**), pedido por Daniel el 2026-10-20. Aprobado, hecho, probado con bots y **desplegado el 2026-10-20** en los dos servidores (punto 1.12).
 - **Excepción:** clips automáticos (reporter **2.5.0**), pedido por Daniel el 2026-10-23 para que los clips se vayan juntando antes de la web nueva. Aprobado, hecho, probado con bots y **desplegado el 2026-10-23** en la base y los dos servidores (punto 1.16).
 - **Excepción:** contraseña del servidor con `!pw`, `!npw` y `!rpw` para admins y moderadores (`csstv_password` 1.0.0), pedido por Daniel el 2026-10-25 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-25** (punto 1.19).
+- **Excepción:** silenciador automático en la M4A1 y la USP con menú `!as` (`csstv_silencer` 1.0.0), pedido por Kyan el 2026-11-02 como plugin aparte. Probado en local y **subido el 2026-11-02 a los tres servidores** (#1 MVZG, #2 flow y #3 `aurav34`; md5 `81c2ef6d…`; verificado por SFTP en el #1 y el #3 el 2026-11-02, flow no se revisó). RBK ya no se usa. Traído a `feat/frontend-fase-1` el 2026-11-02 ([`2026-11-02-plugin-silenciador`](bitacora/2026-11-02-plugin-silenciador/)).
+- **Excepción:** aviso de arranque, pausa automática por desconexión y charla del medio tiempo (reporter **2.7.3**, y 2.8.1 en `kyan/pruebas`, sobre la línea con matchmaking), pedido por Kyan el 2026-11-02. Probado con bots y **subido el 2026-11-02 al #1 (MVZG) y a flow (#2), licenciados, y a `disabled/` en el #3 (`aurav34`, genérico md5 `6f3c543c…`)**. La 2.7.3 se trajo a `feat/frontend-fase-1` el 2026-11-02 (sin el matchmaking del plugin, decisión de Daniel). **Falta la prueba con jugadores** ([`2026-11-02-aviso-y-pausa-automatica`](bitacora/2026-11-02-aviso-y-pausa-automatica/)).
 - **No se toca el plugin** salvo que un cambio en la base lo rompa. Si un requerimiento web necesita algo del plugin, se anota acá en lugar de hacerlo.
 
 ## Decisiones anotadas para planes futuros
@@ -391,7 +395,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** después del cambio de mapa, ver en la consola de cada servidor que las cuatro cvars dan 100, 101, 100 y 101.
 - **Bitácora:** [`2026-10-27-tasas-coherentes`](bitacora/2026-10-27-tasas-coherentes/)
 
-### 1.22 Servidor de flow (CMLeague #3): pasarle el paquete
+### 1.22 Servidor de flow (CMLeague #3, hoy #2): pasarle el paquete
 
 - **Armado el 2026-10-27** en `flow/` (raíz del repo, fuera de git): SourceMod 1.10, Metamod, Stripper, los plugins del #1 más los que solo tiene RBK, los cfgs de partida, `LEEME.txt` y el reporter 2.5.0 **licenciado** (UUID `7b01c85b-bc3e-4aa3-9ab5-3c2044157034`, md5 `0697263ae530ab2cf4ae2a3e7ce92281`). Sin Accelerator, sin los plugins de Extreme Host y sin mapas.
 - **Instalado por flow** (verificado por SFTP el 2026-10-28: `csstv_reporter.smx` de 116417 bytes, el licenciado). Falta verificar que `game_servers.last_seen_at` de flow se actualice.
@@ -631,9 +635,37 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Incidente del 2026-11-01:** el panel de Administración › Matchmaking daba 500 por tres errores de la `48`. Corregidos en staging y en `kyan/pruebas` (`a6ca687c`). Ver la guía de la bitácora.
 - **Bitácora:** [`2026-11-01-frontend-matchmaking`](bitacora/2026-11-01-frontend-matchmaking/)
 
+### 1.44 Servidor #1 nuevo (`SFTP_CSS_*_MVZG`): dejarlo igual al #3
+
+- **Qué es:** el servidor "MVZG", nuestro, que Daniel sumó a la documentación el 2026-11-02. Pasa a ser el **#1**; flow es el **#2** y el servidor real de ExtremeHost ("aurav34"), el **#3**. Su acceso SFTP está en el `.env` como `SFTP_CSS_SERVER_MVZG`, `SFTP_CSS_SERVER_PORT_MVZG`, `SFTP_CSS_USER_MVZG` y `SFTP_CSS_PASSWORD_MVZG`. No tiene API de panel en el `.env`. Está en **el mismo panel y la misma máquina que flow** (`190.104.34.3`), como otro servidor. Lo armó kyan el 2026-10-27 copiando el de flow: hasta el 2026-11-02 tenía el token y el tag de flow (`csstv_reporter.cfg.bak`) y sus dos demos se llaman `flow-…`.
+- **Revisado por SFTP el 2026-11-02** (solo lectura), comparado contra el #3:
+  - **Ya está bien:** `hostname "CMLeague #1"`, `tv_title`, `csstv_server_tag "MVZG"` con token propio, `csstv_calladmin_server "CMLeague #1"` y `_address "190.104.34.3:27022"`, HUD prendido contra `hud.cmleague.lat:27501` con clave, FastDL propio, `csstv_demo "1"`, Stripper igual (con `global_filters.cfg` y `maps/`), `mapcycle.txt` igual, `warmup.cfg` y `end.cfg` iguales, el resto de `server.cfg` y de `csstv_reporter.cfg` igual (MR3 12000, medio tiempo 3 s, `sv_pure`, `phys_timescale`, humo, tasas), `kacr_eyes_antiwall "0"`, `csstv_perf` y los mismos admins.
+  - **Reporter:** la **2.7.3 licenciada** (`96bb5060-…`, 126814 bytes) que subió kyan el 2026-11-02 (bitácora `2026-11-02-aviso-y-pausa-automatica` en `kyan/pruebas`). Daniel dice que puede llevar el genérico; no hace falta cambiarlo mientras el licenciado funcione con su token.
+- **Decisiones de Daniel (2026-11-02) sobre las diferencias:**
+  1. **El #1 es para probar el matchmaking:** por eso manda a staging (`csstv_api_url` = `STAGING_SUPABASE_URL`, `edaljnirzvisiaathitt`). El #3 apunta a producción (`wmzfwsizashpszxlvpeb`). Queda así.
+  2. **`live.cfg` del #1 con `mp_friendlyfire 0` y `mp_flashlight 0`** (el #3 y el repo tienen `1`): queda así por ahora.
+  3. **`Anti_Wallhack_Lite` en `disabled/` en el #1:** se sacó para ver si arreglaba el error del sonido. Todavía no se sabe si lo arregló. Excepción temporal a `CLAUDE.md`.
+  4. **El #3 es el servidor de retake y 2vs2** (`v34_retake`, `v34_wingman`); por eso no tiene los mismos plugins que el #1. **Falta versionar esos plugins en esta rama:** los fuentes (`v34_retake.sp`, `v34_wingman.sp`, `v34_dm.sp`, sus `.inc`, `configs/retake/`) y la bitácora `2026-10-30-plugin-retake` están en `origin/kyan/pruebas`; hay que traerlos.
+  5. `sv_allowupload 0` en el #1 y `1` en el #3: está bien.
+  6. **Demos del #1:** seguramente no tiene cargados los datos de SFTP en Administración, porque es para el matchmaking. Sin cambios.
+- **Hecho el 2026-11-02:** `csstv_server_tag "MVZG"` → `"srv1"` en el `csstv_reporter.cfg` del #1, para que las partidas y las demos nuevas se llamen `srv1-…` (las dos `flow-…` que hay son de antes). Respaldo `csstv_reporter.cfg.bak_tag`, verificado bajándolo de nuevo. Se aplica en el próximo cambio de mapa; no se recargó nada. El tag solo da el prefijo del `match_uid` (el servidor se identifica por el token).
+- **Hecho el 2026-11-02:** en el #3, `csstv_server_tag "srv1"` → `"srv3"` (pedido por Daniel), con el respaldo `csstv_reporter.cfg.bak_tag` y verificado bajándolo de nuevo. El reporter del #3 está en `disabled/`, así que se usa recién cuando se vuelva a activar. Las partidas y demos viejas del #3 siguen como `srv1-…`.
+
+### 1.45 API key del panel de flow en el Worker de demos: cargada, falta ver la primera demo (y pronto la del #1)
+
+- **Qué es:** desde el 2026-11-02 tenemos la API key del panel de flow (`SERVER2_PANEL_API_KEY` en el `.env`). Con ella, el Worker baja las demos de flow por la API del panel en vez de por SFTP desde el VPS, que va a 52-60 KB/s (punto 1.27).
+- **Probada el 2026-11-02, solo lectura:** `GET https://panel-mvzg.com/api/client` da HTTP 200 y ve **solo** el servidor `f337a7d9` (flow, propietario), no el #1. `files/list` de `/cstrike/csstv_demos` también da 200: lista `flow-20261028T222354-0bbb.dem`, que ya está en R2 desde el 2026-10-29 y no se borró a mano.
+- **No hace falta código ni migración:** el Worker ya usa `PTERO_KEY_<panel_server_id>` (`cloudflare/demo-worker/src/index.js`, `panelFor`), y flow ya tiene `panel_server_id = 'f337a7d9'` y `panel_url` en `game_servers` (punto 1.27). Si la API falla, la demo sigue yendo por SFTP.
+- **Hecho:** `cloudflare/demo-worker/scripts/dev-vars.py` arma `PTERO_KEY_f337a7d9` con `SERVER2_PANEL_API_KEY` para `wrangler dev`.
+- **Criterio (Daniel, 2026-11-02):** el estándar es trabajar siempre con la API key del panel; el SFTP queda solo para cuando no se pueda por API.
+- **Hecho el 2026-11-02:** secreto `PTERO_KEY_f337a7d9` cargado en el Worker `v34frag-demos` de producción (`wrangler secret put`, por stdin). `wrangler secret list` lo muestra junto a `ADMIN_KEY`, `CRASH_KEY`, `DEMO_WORKER_TOKEN`, `PTERO_KEY_edbee7d6` y `PTERO_PANEL_API_KEY`. No se corrió `/run` a mano: lo toma el próximo cron.
+- **Falta:**
+  1. Ver que la próxima demo de flow llegue a R2 por la API, sin `demo_via = sftp`.
+  2. **Cuando llegue la key del #1** (en el mismo panel, `panel-mvzg.com`; su `panel_server_id` es `157703b5`, el sufijo del usuario de SFTP): guardarla en el `.env` (por ejemplo, `SFTP_CSS_PANEL_API_KEY_MVZG`), probarla igual y sumarla a `dev-vars.py` como `PTERO_KEY_157703b5`. Ojo: el #1 manda a la Supabase de **staging** (punto 1.44) y el Worker de producción no ve sus partidas. Para tener sus demos haría falta un Worker apuntando a staging, o esperar a que el #1 pase a producción.
+
 ## 2. Investigaciones abiertas
 
-### 2.0 Tirones y sonido en el servidor real (#1)
+### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".
 - **Hallazgos:**
@@ -796,7 +828,7 @@ Daniel definió el 2026-10-16 (opción B): **en el calentamiento se escuchan tod
   - Cada requerimiento va en `docs/bitacora/AAAA-MM-DD-slug/` con `PLAN.md` (no se edita después), `DOCUMENTACION.md`, `GUIA_IMPLEMENTACION.md` y `pruebas/` opcional, más una fila en el índice. Formato en [`bitacora/PLANTILLA.md`](bitacora/PLANTILLA.md).
   - Todo en español, con diagramas Mermaid.
   - Changelog para jugadores: `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `v34frag X.Y.Z --  Changelog` (dos espacios después de `--`), con tuteo y sin detalles técnicos.
-- **Credenciales:** todas en el `.env` de la raíz, que no se versiona. `SFTP_CSS_*` es el servidor real, `SERVER2_*` es flow (`SERVER1_*` era RBK, dado de baja el 2026-10-29), `FTP_WEB_*` es la web, `PTERO_PANEL_*` es la API del panel, y además `DEMO_WORKER_TOKEN` y `ACCELERATOR_CRASH_KEY`. Para SFTP se usó `paramiko` en un entorno virtual aparte.
+- **Credenciales:** todas en el `.env` de la raíz, que no se versiona. `SFTP_CSS_*_MVZG` es el #1 (nuevo, desde el 2026-11-02), `SERVER2_*` es flow (#2), `SFTP_CSS_*` sin sufijo es el servidor real de ExtremeHost (#3) (`SERVER1_*` era RBK, dado de baja el 2026-10-29), `FTP_WEB_*` es la web, `PTERO_PANEL_*` es la API del panel, y además `DEMO_WORKER_TOKEN` y `ACCELERATOR_CRASH_KEY`. Para SFTP se usó `paramiko` en un entorno virtual aparte.
 - **Servidor local de pruebas:**
   - Está en `E:\CSS DEDICATED SERVER\server`: SourceMod 1.10, Accelerator, puerto 27016, RCON con la clave de `cstrike\cfg\server.cfg`.
   - Las pruebas se hacen con bots en `$2000$` y equipos desparejos (3 contra 1), con la build de depuración (`spcomp csstv_reporter.sp CSSTV_DEBUG=`) y `csstv_debug_fakecmd <userid> <comando>`.
@@ -806,5 +838,9 @@ Daniel definió el 2026-10-16 (opción B): **en el calentamiento se escuchan tod
   - **Bots:**
     - `bot_add_ct <nombre>` solo acepta nombres de `BotProfile.db`. Para otros nombres se usa `sm_rename`; con `CSSTV_DEBUG`, el SteamID falso sale del nombre actual.
     - Un `jointeam` de un bot que procesa el motor **tira el servidor**, aun sin nuestro plugin. Para moverlos se usa `!team` / `sm_team`.
-- **Servidor real:** ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (flow) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (flow) en la misma tanda (ver `CLAUDE.md`).
+- **Servidores (numeración del 2026-11-02):**
+  - **#1:** "MVZG", nuestro, en el mismo panel y la misma máquina que flow, acceso `SFTP_CSS_*_MVZG`. Revisado el 2026-11-02 (punto 1.44).
+  - **#2:** flow, externo, build licenciado, acceso `SERVER2_*` sin panel ni consola.
+  - **#3:** el servidor real de siempre ("servidor real" o "#1" en todo lo anterior al 2026-11-02). ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP.
+  - Los servidores de terceros (flow) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue va al #1, al #2 y al #3 en la misma tanda (ver `CLAUDE.md`).
 - **Pruebas de SQL:** PostgreSQL 18 local (`initdb` + `pg_ctl` en un puerto libre), `docs/bitacora/2026-10-11-elo-jugadores/pruebas/stub_supabase.sql`, todas las migraciones en orden y después los `pruebas_*.sql`.
