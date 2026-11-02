@@ -84,3 +84,19 @@ Cuidado con `cssds`: apunta a la Supabase real. Antes de arrancarlo con el repor
 - **`csstv_password`:** lee `csstv_mm` directamente; no hay `csstv_mm_active`.
 - **Sin evento `surrender`:** la base lo deduce de `end_reason` y de las rondas.
 - **Abandono:** las reglas son las de Daniel del 2026-11-01, que reemplazan la sección 10.
+
+## Incidentes en staging
+
+### 2026-11-01: Administración › Matchmaking daba 500
+
+Al usar el panel contra staging (API `4079c8a22757`), guardar General y cargar Servidores, Salas, Mapas, Reportes, Baneos y Métricas respondían 500. Eran tres errores de la `48`, que no se veían en local:
+
+| Función | Error | Corrección |
+|---|---|---|
+| `mm_set_config` | `update mm_config set …` sin `WHERE`. Supabase carga `pg_safeupdate` para PostgREST (`session_preload_libraries` del rol `authenticator`), que rechaza los `UPDATE` sin `WHERE` | `where id = 1` |
+| `mm_set_config` | Sin `penalty_ladder` en el cuerpo, `array(...)` da `{}` (no `null`), así que el `coalesce` no la conservaba y chocaba con `mm_config_penalty_ladder_check` | Solo se reemplaza si llega un array |
+| `mm_admin_lists` | La rama `stats` usaba `l.created_at` sin agrupar en una subconsulta (`subquery uses ungrouped column`). Como la función es un solo `CASE`, el error rompía todas las listas | Agrupa en una subconsulta y cuenta los abandonos afuera |
+
+- Corregido en `supabase/replanteo/48_matchmaking.sql`.
+- **Aplicado en staging el 2026-11-01** con `CREATE OR REPLACE FUNCTION` (SQL en `docs/bitacora/2026-11-01-frontend-matchmaking/pruebas/fix_mm_admin_staging.sql` de `feat/frontend-fase-1`). Antes se probó como admin en una transacción con `ROLLBACK`: las seis listas responden y `mm_set_config` guarda con el cuerpo del formulario.
+- **Sin prueba automática:** `pg_safeupdate` no se puede cargar desde `psql` en Supabase (`access to library "safeupdate" is not allowed`). Las pruebas de la base no pasan por PostgREST, así que no lo detectan.

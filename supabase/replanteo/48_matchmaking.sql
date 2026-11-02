@@ -1254,7 +1254,8 @@ begin
     elo_window_every_s = coalesce((p->>'elo_window_every_s')::int, elo_window_every_s),
     elo_window_max = coalesce((p->>'elo_window_max')::int, elo_window_max),
     elo_unlimited_after_s = coalesce((p->>'elo_unlimited_after_s')::int, elo_unlimited_after_s),
-    penalty_ladder = coalesce(array(select jsonb_array_elements_text(p->'penalty_ladder'))::int[], penalty_ladder),
+    -- Sin la escalera en el cuerpo queda la que estaba (array() de nada da {}, no null).
+    penalty_ladder = case when jsonb_typeof(p->'penalty_ladder') = 'array' then array(select jsonb_array_elements_text(p->'penalty_ladder'))::int[] else penalty_ladder end,
     reconnect_minutes = coalesce((p->>'reconnect_minutes')::int, reconnect_minutes),
     require_anticheat = coalesce((p->>'require_anticheat')::boolean, require_anticheat),
     max_blocks = coalesce((p->>'max_blocks')::int, max_blocks),
@@ -1264,7 +1265,9 @@ begin
     abandon_extra_elo = coalesce((p->>'abandon_extra_elo')::int, abandon_extra_elo),
     abandon_adjust_pct = coalesce((p->>'abandon_adjust_pct')::int, abandon_adjust_pct),
     abandon_gg_pct = coalesce((p->>'abandon_gg_pct')::int, abandon_gg_pct),
-    season_queue_close_minutes = coalesce((p->>'season_queue_close_minutes')::int, season_queue_close_minutes);
+    season_queue_close_minutes = coalesce((p->>'season_queue_close_minutes')::int, season_queue_close_minutes)
+  -- Con WHERE: pg_safeupdate, que Supabase carga para PostgREST, rechaza los UPDATE sin WHERE.
+  where id = 1;
   for m in select * from jsonb_array_elements(coalesce(p->'modes', '[]')) loop
     update mm_mode_settings set enabled = (m->>'enabled')::boolean, affects_elo = (m->>'affects_elo')::boolean where mode = m->>'mode';
   end loop;
@@ -1589,9 +1592,12 @@ begin
         'p90_wait_s', coalesce((select round(percentile_cont(0.9) within group (order by extract(epoch from q.left_at - q.joined_at))) from mm_queue_log q where q.outcome = 'matched' and q.mode = d.mode and q.left_at::date = d.day), 0),
         'avg_elo_diff', coalesce((select round(avg(x.diff)) from (select abs(avg(lp.elo) filter (where lp.team = 1) - avg(lp.elo) filter (where lp.team = 2)) diff
              from mm_lobby_players lp join mm_lobbies c on c.id = lp.lobby_id where c.mode = d.mode and c.created_at::date = d.day group by lp.lobby_id) x), 0)) order by d.day desc), '[]')
-        from (select l.created_at::date as day, l.mode, count(*) lobbies, count(*) filter (where l.status = 'finished') played,
-                     (select count(*) from mm_lobby_players lp join mm_lobbies x on x.id = lp.lobby_id where lp.abandoned and x.mode = l.mode and x.created_at::date = l.created_at::date) abandons
-                from mm_lobbies l where l.created_at > now() - make_interval(days => coalesce(p_arg::int, 7)) group by 1, 2) d)
+        -- Agrupa primero y cuenta los abandonos afuera: una subconsulta no puede usar l.created_at sin agrupar,
+        -- y como todo es un solo CASE, el error rompía también las demás listas.
+        from (select g.day, g.mode, g.lobbies, g.played,
+                     (select count(*) from mm_lobby_players lp join mm_lobbies x on x.id = lp.lobby_id where lp.abandoned and x.mode = g.mode and x.created_at::date = g.day) abandons
+                from (select l.created_at::date as day, l.mode, count(*) lobbies, count(*) filter (where l.status = 'finished') played
+                        from mm_lobbies l where l.created_at > now() - make_interval(days => coalesce(p_arg::int, 7)) group by 1, 2) g) d)
   end;
 end $$;
 
