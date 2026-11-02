@@ -41,7 +41,7 @@ Kyan pidió 40 s para el fin de la partida, así la SourceTV llega a mostrar el 
 |---|---|
 | MVZG | `40` |
 | flow | `0` (apagado) |
-| `aurav34` | `0` (apagado) |
+| `aurav34` | `0` (apagado). Después el reporter volvió a `disabled/` con el matchmaking apagado: ahí queda la 2.7.5 genérica, y el 2.8.5 en `disabled/csstv_reporter_2.8.5_mm.smx` |
 
 Prueba en `cssds` con la 2.7.5: la partida terminó a las 16:26:14, y la contraseña nueva y la expulsión fueron a las 16:26:53. El mapa cambió a las 16:26:55.
 

@@ -2,7 +2,21 @@
 
 ## Estado
 
-Hecho el 2026-11-02. Los archivos subidos se compararon con los locales. **Todo entra en el próximo cambio de mapa de `aurav34`**: no se recargó nada. Falta ver el plugin cargado y una sala real desde la web de staging.
+Hecho el 2026-11-02 y **deshecho el mismo día, a pedido de Kyan**: hoy **ningún servidor tiene matchmaking** (ver "Apagado"). Mientras estuvo, no se vio una sala real.
+
+## Apagado (2026-11-02)
+
+Kyan pidió el retake de `aurav34` como antes y apagar ahí el matchmaking:
+
+| Dónde | Cómo quedó | Respaldo de lo del matchmaking |
+|---|---|---|
+| Staging, `game_servers` | `aurav34`: `mm_enabled = false`, sin región y `mode = 'retakes'`. Ningún servidor con `mm_enabled` y sin salas abiertas | — |
+| `aurav34`, reporter | Fuera de `plugins/` otra vez. En `plugins/disabled/csstv_reporter.smx` queda la 2.7.5 genérica, como el resto de producción | `plugins/disabled/csstv_reporter_2.8.5_mm.smx` |
+| `aurav34`, `csstv_reporter.cfg` | El de antes del matchmaking (`bak_antes_mm2`): producción, `csstv_claim "0"` y sin `csstv_mm` | `csstv_reporter.cfg.bak_mm_aurav34` |
+| `aurav34`, `csstv_password` | El de antes (`csstv_password_antes_mm.smx`) | `plugins/disabled/csstv_password_1.1.0.smx` |
+| `aurav34`, retake | `sm_retake_autostart "1"` | — |
+
+Para volver a probar el matchmaking hay que deshacer esta tabla en el servidor que se elija.
 
 ## Qué se hizo
 
