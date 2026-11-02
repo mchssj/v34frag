@@ -50,7 +50,11 @@ bool g_bPauseRequested;
 bool g_bPaused;
 int g_iPauseBy;
 bool g_bPauseTimed;
-float g_fPauseEnds;            // GetGameTime() en que termina una pausa con tiempo
+bool g_bPauseTech;             // la pausa (pedida o en curso) es técnica: !tech
+int g_iTechHalf[2] = { -1, -1 };   // mitad en que cada equipo (A, B) usó su pausa técnica
+ConVar g_cvTechTime;
+int g_iCountdown;              // cuenta atrás al terminar una pausa
+float g_fPauseEnds;           // GetGameTime() en que termina una pausa con tiempo
 bool g_bUnpauseReady[2];
 int g_iPauseTicks;
 Handle g_hPauseTimer;
@@ -115,6 +119,8 @@ void Qol_Init()
 	g_cvHalfTalk      = CreateConVar("csstv_half_alltalk", "10", "Segundos entre la última ronda de la mitad y la primera de la otra, con alltalk (0 = sin alltalk y sin espera extra).", _, true, 0.0, true, 60.0);
 	g_cvHalfTalkOff   = CreateConVar("csstv_half_alltalk_off", "10", "Segundos de freezetime que quedan cuando se apaga el alltalk del medio tiempo.", _, true, 0.0, true, 60.0);
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
+	RegConsoleCmd("sm_tech", Cmd_Tech, "Pausa técnica (crash, conexión): una por equipo y por mitad, no gasta las tácticas.");
+	g_cvTechTime = CreateConVar("csstv_tech_time", "120", "Segundos de la pausa técnica (!tech). Termina antes si los dos equipos escriben !unpause.", _, true, 10.0, true, 600.0);
 	RegConsoleCmd("sm_unpause", Cmd_Unpause, "Seguir después de una pausa (o cancelar la que pediste).");
 	RegAdminCmd("sm_forcepause", Cmd_ForcePause, ADMFLAG_GENERIC, "Pausa de admin: dura hasta sm_forceunpause o !unpause de los dos equipos.");
 	RegAdminCmd("sm_forceunpause", Cmd_ForceUnpause, ADMFLAG_GENERIC, "Termina la pausa ahora.");
@@ -268,6 +274,8 @@ void Qol_Reset()
 	Pause_Clear();
 	g_iPausesUsed[0] = 0;
 	g_iPausesUsed[1] = 0;
+	g_iTechHalf[0] = -1;
+	g_iTechHalf[1] = -1;
 	g_bAutoPauseUsed = false;
 	g_bAutoPausePending = false;
 	g_iAutoPauseRec = -1;
@@ -400,6 +408,7 @@ void Qol_OnLiveRoundStart()
 	{
 		g_bAutoPausePending = false;
 		g_iPauseBy = PAUSE_BY_AUTO;
+		g_bPauseTech = false;
 		g_bPauseRequested = true;   // si había una táctica pedida, esta la reemplaza
 	}
 	if (g_bPauseRequested)
@@ -669,6 +678,7 @@ public Action Cmd_Pause(int client, int args)
 		return Plugin_Handled;
 	}
 	g_iPauseBy = t;
+	g_bPauseTech = false;
 	if (InFreezeTime())
 	{
 		Pause_Start();
@@ -682,11 +692,48 @@ public Action Cmd_Pause(int client, int args)
 	return Plugin_Handled;
 }
 
+/** Mitad de la partida (cada prórroga tiene dos): para la pausa técnica, una por equipo y por mitad. */
+int Tech_HalfKey()
+{
+	return g_iSegment * 2 + (g_iSegRound >= g_iSegLen / 2 ? 1 : 0);
+}
+
+public Action Cmd_Tech(int client, int args)
+{
+	if (client <= 0 || !IsClientInGame(client))
+		return Plugin_Handled;
+	if (!IsTeamSide(GetClientTeam(client)))
+	{
+		QolReply(client, "[%s] Solo los jugadores de un equipo pueden pedir pausa técnica.", g_sTag);
+		return Plugin_Handled;
+	}
+	if (!CanPauseNow(client))
+		return Plugin_Handled;
+	int t = TeamIndexOf(client);
+	if (g_iTechHalf[t] == Tech_HalfKey())
+	{
+		QolReply(client, "[%s] Tu equipo ya usó su pausa técnica en esta mitad.", g_sTag);
+		return Plugin_Handled;
+	}
+	g_iPauseBy = t;
+	g_bPauseTech = true;
+	if (InFreezeTime())
+		Pause_Start();
+	else
+	{
+		g_bPauseRequested = true;
+		QolChatAll("%s {#amarillo}%N pidió una pausa técnica para el %s.{#normal} Empieza al inicio de la próxima ronda (!unpause para cancelarla).",
+			PREFIX, client, g_sTeam[t]);
+	}
+	return Plugin_Handled;
+}
+
 public Action Cmd_ForcePause(int client, int args)
 {
 	if (!CanPauseNow(client))
 		return Plugin_Handled;
 	g_iPauseBy = PAUSE_BY_ADMIN;
+	g_bPauseTech = false;
 	if (InFreezeTime())
 		Pause_Start();
 	else
@@ -708,12 +755,13 @@ void Pause_Start()
 {
 	int mode = g_cvPauseMode.IntValue;
 	bool admin = g_iPauseBy == PAUSE_BY_ADMIN, auto = g_iPauseBy == PAUSE_BY_AUTO;
+	bool tech = g_bPauseTech && !admin && !auto;
 	g_bPauseRequested = false;
 	g_bPaused = true;
 	g_bUnpauseReady[0] = false;
 	g_bUnpauseReady[1] = false;
-	g_bPauseTimed = auto || (!admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH));
-	float secs = auto ? g_cvAutoPauseTime.FloatValue : (g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD);
+	g_bPauseTimed = auto || tech || (!admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH));
+	float secs = auto ? g_cvAutoPauseTime.FloatValue : (tech ? g_cvTechTime.FloatValue : (g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD));
 	g_fPauseEnds = GetGameTime() + secs;
 	g_iPauseTicks = 0;
 	GameRules_SetPropFloat("m_fRoundStartTime", g_fPauseEnds);
@@ -726,6 +774,12 @@ void Pause_Start()
 	else if (admin)
 	{
 		QolChatAll("%s {#amarillo}Pausa del admin.{#normal} Sigue con !forceunpause o cuando los dos equipos escriban !unpause.", PREFIX);
+	}
+	else if (tech)
+	{
+		g_iTechHalf[g_iPauseBy] = Tech_HalfKey();
+		QolChatAll("%s {#amarillo}Pausa técnica del %s.{#normal} Dura %d segundos, o menos si los dos equipos escriben !unpause. No gasta las pausas tácticas.",
+			PREFIX, g_sTeam[g_iPauseBy], RoundToFloor(secs));
 	}
 	else
 	{
@@ -802,7 +856,7 @@ public Action Cmd_Unpause(int client, int args)
 		QolReply(client, "[%s] No hay ninguna pausa.", g_sTag);
 		return Plugin_Handled;
 	}
-	if (g_bPauseTimed && g_cvPauseMode.IntValue == PAUSE_TIMED)
+	if (g_bPauseTimed && g_cvPauseMode.IntValue == PAUSE_TIMED && !g_bPauseTech)   // la técnica siempre se puede terminar antes
 	{
 		QolReply(client, "[%s] Esta pausa termina sola en %d s.", g_sTag, RoundToCeil(g_fPauseEnds - GetGameTime()));
 		return Plugin_Handled;
@@ -836,10 +890,29 @@ public Action Cmd_ForceUnpause(int client, int args)
 void Pause_End(const char[] reason)
 {
 	g_bPaused = false;
+	g_bPauseTech = false;
 	delete g_hPauseTimer;
 	if (g_State == State_Live && InFreezeTime())
 		GameRules_SetPropFloat("m_fRoundStartTime", GetGameTime() + 3.0);
 	QolChatAll("%s {#verde}%s Se sigue en 3 segundos.", PREFIX, reason);
+	g_iCountdown = 3;
+	PrintCenterTextAll("Sigue en 3");
+	CreateTimer(1.0, Timer_Countdown, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/** "3", "2", "1" en el centro y la campana al seguir. */
+public Action Timer_Countdown(Handle timer)
+{
+	if (g_bPaused || g_State != State_Live)
+		return Plugin_Stop;
+	if (--g_iCountdown > 0)
+	{
+		PrintCenterTextAll("Sigue en %d", g_iCountdown);
+		return Plugin_Continue;
+	}
+	PrintCenterTextAll("¡Sigue!");
+	PlayBell();
+	return Plugin_Stop;
 }
 
 /** Desde OnClientDisconnect, antes de Stats_ClientLeave: un jugador de la partida se va. */
@@ -954,6 +1027,7 @@ void Pause_Clear()
 {
 	g_bPauseRequested = false;
 	g_bPaused = false;
+	g_bPauseTech = false;
 	delete g_hPauseTimer;
 }
 
