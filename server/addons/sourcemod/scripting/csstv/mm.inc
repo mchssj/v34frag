@@ -569,22 +569,28 @@ void Mm_UpdateRoster(const char[] text)
 			Mm_ReportClient("connected", i);
 }
 
-/** Hay alguien de la sala sin SteamID: este jugador, que no está en el plantel, puede ser él. */
+/**
+ * Este jugador no está en el plantel de la sala (o de la reserva): puede ser alguien sin SteamID vinculado o alguien que
+ * entró con otra cuenta de Steam (otra PC). Desde 2.9.1, también con todos vinculados: el !claim suma el SteamID al instante.
+ */
 bool Mm_WaitingClaim(int client)
 {
-	return Mm_On() && Mm_HasLobby() && !g_bMmLive && g_iMmUnlinked > 0 && IsClientInGame(client)
+	return Mm_On() && Mm_HasLobby() && !g_bMmLive && !g_bMmBetween && IsClientInGame(client)
 		&& !IsFakeClient(client) && !IsClientSourceTV(client) && !Link_TeamOf(client);
 }
 
 void Mm_ClaimHint(int client)
 {
-	QolChat(client, "%s Si sos de esta sala y todavía no vinculaste tu SteamID, escribí {#amarillo}!claim <código>{#normal}. El código está en la sala de la web.", PREFIX);
+	if (g_iMmUnlinked > 0)
+		QolChat(client, "%s Si sos de esta sala y todavía no vinculaste tu SteamID, escribí {#amarillo}!claim <código>{#normal}. El código está en la sala de la web.", PREFIX);
+	else
+		QolChat(client, "%s Si sos de esta partida y entraste con otra cuenta de Steam, escribí {#amarillo}!claim <código>{#normal}. El código está en la web, en Mi perfil › Vinculación.", PREFIX);
 }
 
 /** Cada MM_CLAIM_EVERY segundos, el recordatorio a los que pueden ser de la sala y no están en el plantel. */
 void Mm_ClaimNag()
 {
-	if (!Mm_HasLobby() || g_bMmLive || g_iMmUnlinked <= 0 || GetTime() - g_iMmClaimNagAt < MM_CLAIM_EVERY)
+	if (!Mm_HasLobby() || g_bMmLive || g_bMmBetween || GetTime() - g_iMmClaimNagAt < MM_CLAIM_EVERY)
 		return;
 	g_iMmClaimNagAt = GetTime();
 	for (int i = 1; i <= MaxClients; i++)
