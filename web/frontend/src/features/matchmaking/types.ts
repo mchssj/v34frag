@@ -361,6 +361,15 @@ export type MmAdminServer = {
   password: MmPasswordEntry | null
 }
 
+/** Aviso de la cola en Discord (replanteo 57): uno cada 15 minutos para todos; el staff, siempre. */
+export type QueuePingStatus = {
+  staff: boolean
+  queued: boolean
+  /** Desde cuándo se puede volver a avisar; null si ya se puede. */
+  next_at: string | null
+  can_ping: boolean
+}
+
 /** Administración › Matchmaking › General (`mm_config` más los modos). */
 export type MmAdminConfig = {
   open: boolean

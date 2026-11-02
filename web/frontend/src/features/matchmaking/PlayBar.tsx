@@ -1,7 +1,9 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "cn"
 import {
   InfoIcon,
   LoaderIcon,
+  MegaphoneIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
 } from "lucide-react"
@@ -188,6 +190,7 @@ export function PlayBar({
             >
               Cancelar
             </Button>
+            <QueuePing now={now} />
           </div>
         ) : (
           <Button
@@ -224,6 +227,54 @@ export function PlayBar({
           </span>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * "Avisar en Discord" (replanteo 57): publica en #avisos que hay gente en la cola, mencionando al rol @player. Uno cada
+ * 15 minutos para todo el servidor; los moderadores y admins, siempre.
+ */
+function QueuePing({ now }: { now: number }) {
+  const source = useMmSource()
+  const qc = useQueryClient()
+  const key = ["mm", "queue-ping"] as const
+  const status = useQuery({
+    queryKey: key,
+    queryFn: ({ signal }) => source.queuePingStatus(signal),
+    refetchInterval: 30_000,
+  })
+  const ping = useMutation({
+    mutationFn: () => source.queuePing(),
+    onSuccess: (s) => {
+      qc.setQueryData(key, s)
+      toast.success("Listo: avisamos en Discord que hay gente buscando.")
+    },
+    onError: (e) => {
+      toast.error(errorMessage(e))
+      void qc.invalidateQueries({ queryKey: key })
+    },
+  })
+  const s = status.data
+  if (!s) return null
+  const wait = !s.staff && s.next_at ? Date.parse(s.next_at) - now : 0
+  return (
+    <div className="flex w-full flex-col items-center gap-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full"
+        disabled={ping.isPending || wait > 0 || (!s.staff && !s.queued)}
+        onClick={() => ping.mutate()}
+      >
+        <MegaphoneIcon aria-hidden />
+        Avisar en Discord
+      </Button>
+      <span className="text-center text-xs text-muted-foreground">
+        {wait > 0
+          ? `Ya se avisó hace poco: el próximo aviso, en ${fmtClock(wait)}`
+          : "Le avisa al rol @player que hay gente buscando"}
+      </span>
     </div>
   )
 }

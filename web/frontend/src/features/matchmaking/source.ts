@@ -22,6 +22,7 @@ import type {
   MmSound,
   MmState,
   MmStatsDay,
+  QueuePingStatus,
   ReportReason,
 } from "./types"
 
@@ -35,6 +36,9 @@ export type MmSource = {
   join(mode: string, region: string | null): Promise<MmState>
   setInvitePref(pref: InvitePref): Promise<MmState>
   leave(): Promise<MmState>
+  /** Aviso de la cola en Discord (#avisos). */
+  queuePingStatus(signal?: AbortSignal): Promise<QueuePingStatus>
+  queuePing(): Promise<QueuePingStatus>
   accept(): Promise<MmState>
   decline(): Promise<MmState>
   veto(matchId: string, map: string): Promise<MmState>
@@ -192,6 +196,8 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       return call("/api/v1/mm/state")
     },
     leave: () => call("/api/v1/mm/queue", { method: "DELETE" }),
+    queuePingStatus: (signal) => call("/api/v1/mm/queue/ping", { signal }),
+    queuePing: () => call("/api/v1/mm/queue/ping", { method: "POST" }),
     accept: () => post("/api/v1/mm/lobby/accept"),
     decline: () => post("/api/v1/mm/lobby/decline"),
     // Veto y chat: las rutas de partida que ya existen (la partida se crea al empezar el veto).

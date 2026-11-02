@@ -1,4 +1,4 @@
-import { act, screen, within } from "@testing-library/react"
+import { act, screen, waitFor, within } from "@testing-library/react"
 import type { AnchorHTMLAttributes, ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -100,6 +100,27 @@ describe("PlayPage (con la demo)", () => {
     expect(
       screen.getAllByRole("button", { name: "Invitar a un amigo" })
     ).toHaveLength(1)
+  })
+
+  it("buscando, avisa en Discord y después espera los 15 minutos", async () => {
+    const { user } = setup()
+    await user.click(await searchButton())
+    const avisar = await screen.findByRole("button", {
+      name: "Avisar en Discord",
+    })
+    await waitFor(() => expect(avisar).toBeEnabled())
+    expect(
+      screen.getByText("Le avisa al rol @player que hay gente buscando")
+    ).toBeInTheDocument()
+    await user.click(avisar)
+    expect(
+      await screen.findByText(
+        /Ya se avisó hace poco: el próximo aviso, en 1[45]:/
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Avisar en Discord" })
+    ).toBeDisabled()
   })
 
   it("entra a la cola, acepta y llega a la sala con el servidor", async () => {

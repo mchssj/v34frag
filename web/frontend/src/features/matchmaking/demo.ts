@@ -211,6 +211,7 @@ export function createDemoSource({
 
   let queueSize = 6
   let queue: MmState["queue"] = null
+  let lastPing = 0 // último aviso de la cola en Discord (demo)
   let lobby: MmLobby | null = null
   let party: MmParty | null = null
   let invites: MmInvite[] = []
@@ -973,6 +974,29 @@ export function createDemoSource({
       if (pref === "private") invites = []
       emit("state")
       return snapshot()
+    },
+    async queuePingStatus() {
+      const next =
+        lastPing && lastPing + 15 * 60_000 > Date.now()
+          ? new Date(lastPing + 15 * 60_000).toISOString()
+          : null
+      return {
+        staff: false,
+        queued: !!queue,
+        next_at: next,
+        can_ping: !!queue && !next,
+      }
+    },
+    async queuePing() {
+      if (!queue)
+        throw new Error("Tenés que estar buscando partida para avisar")
+      lastPing = Date.now()
+      return {
+        staff: false,
+        queued: true,
+        next_at: new Date(lastPing + 15 * 60_000).toISOString(),
+        can_ping: false,
+      }
     },
     async leave() {
       if (lobby?.status === "accepting") {
