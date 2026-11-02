@@ -27,7 +27,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
 
 ## Despliegue
 
-- **Siempre que se despliegue algo del servidor a nuestro servidor real, se despliega también a los servidores externos (hoy RBK y flow) en la misma tanda.** Ninguno se queda con una versión vieja del plugin.
+- **Siempre que se despliegue algo del servidor a nuestro servidor real, se despliega también a los servidores externos (hoy flow y MVZG) en la misma tanda.** Ninguno se queda con una versión vieja del plugin.
   - Nuestro servidor recibe el `.smx` genérico (`SFTP_CSS_*`). Cada servidor externo recibe su build licenciado (`server/build_licenciado.sh <license_key> <slug>`) por su propio acceso SFTP (`SERVER1_*` para RBK y `SERVER2_*` para flow, CMLeague #3, UUID `7b01c85b-bc3e-4aa3-9ab5-3c2044157034`). flow no nos da acceso a su panel (sin API key ni consola), pero el SFTP funciona (verificado el 2026-10-28; ver [`docs/bitacora/2026-10-27-servidor-flow/`](docs/bitacora/2026-10-27-servidor-flow/) y [`2026-10-28-demos-servidores-externos`](docs/bitacora/2026-10-28-demos-servidores-externos/)). Lo que necesite la consola o la línea de arranque se le pide a flow.
   - Una tarea de despliegue al servidor no está terminada hasta que quedó subida en todos. La guía de implementación y `docs/PENDIENTES.md` tienen que nombrar cada servidor.
   - Si aparece un servidor externo nuevo, se suma a esta lista.
@@ -46,4 +46,4 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - Poner `csstv_send 0` después de cada carga del cfg.
   - Vaciar `data/csstv/queue/` antes de reiniciar.
 - En el servidor real no recargar el plugin con una partida en curso, porque la cancela. Los cambios se cargan en el próximo cambio de mapa.
-- Los servidores de terceros (RBK) llevan el build licenciado (`server/build_licenciado.sh`), nunca el `.smx` genérico.
+- Los servidores de terceros llevan el build licenciado (`server/build_licenciado.sh`), nunca el `.smx` genérico.

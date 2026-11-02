@@ -2,7 +2,7 @@
 
 ## Estado
 
-Probado en local y **desplegado el 2026-11-02 en `aurav34`, flow y MVZG**. **Falta RBK**: su SFTP rechaza la contraseña del `.env`.
+Probado en local y **desplegado el 2026-11-02 en `aurav34`, flow y MVZG**. Kyan confirmó que funciona. RBK quedó afuera porque ya no se usa.
 
 ## Archivos
 
@@ -20,7 +20,6 @@ Se subió `csstv_silencer.smx` a `cstrike/addons/sourcemod/plugins/` por SFTP, s
 | Servidor | Acceso | Resultado |
 |---|---|---|
 | `aurav34` (CMLeague #3) | `SFTP_CSS_*` | Subido, 7409 bytes |
-| RBK | `SERVER1_*` | **No subido**: `Permission denied` |
 | flow (CMLeague #2) | `SERVER2_*` | Subido, 7409 bytes |
 | MVZG (CMLeague #1) | `SERVER3_*` | Subido, 7409 bytes |
 
