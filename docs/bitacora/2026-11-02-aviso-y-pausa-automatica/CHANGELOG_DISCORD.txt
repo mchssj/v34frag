@@ -1,0 +1,12 @@
+CMLeague 2.7.3 --  Changelog
+
+Aviso de arranque:
+- Suena una campana cuando empieza la ronda de cuchillo y cuando empieza la partida.
+
+Pausa automática:
+- Si alguien se va durante la partida, hay una pausa de 2 minutos, o hasta que vuelva.
+- Si se va a mitad de ronda, la pausa empieza en la ronda siguiente.
+- Hay una sola por partida y no gasta las pausas de tu equipo.
+
+Medio tiempo:
+- Al cambiar de lado quedan 10 segundos quietos y con voz para todos. Después se vuelve a hablar solo con tu equipo y ya puedes comprar.
