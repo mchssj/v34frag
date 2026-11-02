@@ -71,7 +71,7 @@ Las 15 comprobaciones de la base:
 3. **Staging:** ~~aplicar la `49`~~, **hecho el 2026-11-02** (ver abajo). Falta la web, junto con el próximo despliegue de staging. Redesplegar la API no hace falta.
 4. **Plugin:** cuando se despliegue el matchmaking, la 2.8.2 va a #1, #2 y #3 en la misma tanda: genérico en #1 y #3, y build licenciado en flow (#2). El #1 también puede seguir con su build licenciado. Hasta entonces, el 2026-11-01 Daniel decidió no tocar el plugin de ningún servidor.
 5. ~~`min_mixes`~~: **en 0 desde el 2026-11-02** (replanteo `50`, ver abajo).
-6. **`min_account_days`** (7 días): Daniel tiene que decidir si se queda, se baja o va a 0. En staging, las 4 cuentas que hay tienen menos de 7 días, así que hoy ninguna puede entrar a la cola.
+6. ~~`min_account_days`~~: **en 0 desde el 2026-11-02** (replanteo `51`, ver abajo).
 
 ## Replanteo `49` en staging (2026-11-02)
 
@@ -94,3 +94,20 @@ Pedido por Daniel. Supabase de staging `edaljnirzvisiaathitt`, por el session po
 - **Prueba local:** corrió en una transacción que se deshace. Después de la `50` da 0 y 0, y después de la inversa da 5.
 - **Staging:** aplicada el 2026-11-02 sin errores. `min_mixes = 0` y el valor por defecto también es 0.
 - **Por qué un replanteo nuevo:** la `49` ya estaba aplicada en staging.
+
+## Replanteo `51`: `min_account_days` en 0 (2026-11-02)
+
+**Decisión de Daniel (2026-11-02):** `min_account_days` en 0 por ahora. En una comunidad tan chica como la de Source, esperar días es un freno muy grande para los jugadores nuevos. Contra quien se hace otra cuenta para evadir un baneo alcanza el SteamID.
+
+**Lo que se comprobó en el código:**
+
+- **SteamID de otra ficha:** `claim_with_code` (replanteo `15`) no lo vincula. Responde "Ese SteamID pertenece a otra cuenta" o "Ese SteamID es de otra ficha: pedile a un admin que lo revise".
+- **Baneo de una ficha:** alcanza a todos sus SteamID en todos los servidores (`ban_active_for` y `csstv_bans_since`, replanteo `31`). El plugin lo revisa al conectarse (`csstv_ban_check`). Una cuenta nueva no puede usar el SteamID de la baneada: el `!claim` lo rechaza y, aunque entrara, el servidor la echa.
+- **SteamID baneado sin ficha:** si una cuenta nueva lo reclama, el baneo sigue valiendo por SteamID. El plugin la echa y `mm_block_reason` no la deja entrar a la cola (`bans.steam_id`).
+- **Lo que no cubre:** una cuenta nueva **con otro SteamID** (en v34 se cambia con el emulador). Así evade las sanciones del matchmaking, que van por cuenta (`mm_penalties`, `mm_bans`), y también el baneo. Esto pasaba igual con los 7 días, que solo lo demoraban. Para detectarlo están las IPs de la ficha (`admin_player_ips`, replanteo `38`).
+
+**Cambios:**
+
+- **Replanteo `supabase/replanteo/51_mm_min_account_days_cero.sql`:** pone `min_account_days` en 0 y cambia el valor por defecto a 0. La inversa vuelve a 7.
+- **Prueba local:** corrió en una transacción que se deshace. Después de la `51` da 0 y 0, y después de la inversa da 7.
+- **Staging:** aplicada el 2026-11-02 sin errores. `min_mixes = 0` y `min_account_days = 0`, los dos también con 0 por defecto.
