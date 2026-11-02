@@ -1,0 +1,7 @@
+CMLeague 2.7.3 --  Changelog
+
+Silenciador automático:
+- La M4A1 y la USP ahora te aparecen con el silenciador puesto, sin esperar la animación.
+- Escribe !as para elegir si lo quieres o no en cada arma. Tu elección queda guardada.
+- Si levantas un arma del piso, queda como estaba.
+- Puedes seguir sacando o poniendo el silenciador con el clic derecho.
