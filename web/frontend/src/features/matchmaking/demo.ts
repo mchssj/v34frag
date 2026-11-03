@@ -213,6 +213,8 @@ export function createDemoSource({
   let queue: MmState["queue"] = null
   let lastPing = 0 // último aviso de la cola en Discord (demo)
   let lobby: MmLobby | null = null
+  /** La última sala terminada ("Tu última partida"). */
+  let lastLobby: MmLobby | null = null
   let party: MmParty | null = null
   let invites: MmInvite[] = []
   let penalty: MmState["penalty"] = null
@@ -334,8 +336,8 @@ export function createDemoSource({
   }
   reports = seedReports()
 
-  const emit = (t: string, friend?: MmEvent["friend"]) => {
-    for (const fn of listeners) fn({ t, lobby: lobby?.id, friend })
+  const emit = (t: string, friend?: MmEvent["friend"], d?: unknown) => {
+    for (const fn of listeners) fn({ t, lobby: lobby?.id, friend, d })
   }
 
   function addPenalty(reason: string) {
@@ -589,7 +591,7 @@ export function createDemoSource({
     // Los que aceptaron vuelven con su lugar original (joined_at no cambia).
     if (backToQueue && accepted && queue) queue = { ...queue, position: 1 }
     else queue = null
-    emit("lobby.cancelled")
+    emit("lobby.cancelled", undefined, { reason, requeue: backToQueue })
   }
 
   function setServer(state: MmAdminServer["state"]) {
@@ -659,6 +661,7 @@ export function createDemoSource({
         return
       case "finished":
       case "cancelled":
+        if (lobby.status === "finished") lastLobby = lobby
         lobby = null
         phaseAt = null
         emit("state")
@@ -891,6 +894,9 @@ export function createDemoSource({
       elo_window: eloWindow(now() - Date.parse(queue.joined_at)),
     },
     lobby: lobby && structuredClone(lobby),
+    last_lobby: structuredClone(
+      lobby?.status === "finished" ? lobby : lastLobby
+    ),
     party: party && structuredClone(party),
     invites: structuredClone(invites),
     penalty: penalized() ? penalty : null,
@@ -956,7 +962,8 @@ export function createDemoSource({
       return snapshot()
     },
     async lobbyMatch() {
-      return snapshot().lobby?.match ?? null
+      const last = lobby?.status === "finished" ? lobby : lastLobby
+      return structuredClone(last?.match ?? lobby?.match ?? null)
     },
     async feed() {
       return DEMO_FEED()
@@ -975,7 +982,10 @@ export function createDemoSource({
       if (!size) throw new DemoError("Ese modo no está habilitado")
       if ((party?.members.length ?? 1) > size)
         throw new DemoError(`Tu grupo no entra en un equipo de ${mode}`)
-      if (lobby?.status === "finished") lobby = null
+      if (lobby?.status === "finished") {
+        lastLobby = lobby
+        lobby = null
+      }
       joinQueue(mode, region)
       return snapshot()
     },
@@ -1415,6 +1425,7 @@ export function createDemoSource({
     reset() {
       queue = null
       lobby = null
+      lastLobby = null
       party = null
       invites = []
       penalty = null

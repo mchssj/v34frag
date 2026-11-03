@@ -29,6 +29,18 @@ export const mmKeys = {
   passwords: (id: string) => ["mm", "admin", "passwords", id] as const,
 }
 
+const ENDED: MmLobby["status"][] = ["finished", "cancelled"]
+
+/**
+ * `lobby` es solo la sala abierta y `last_lobby` la última terminada (replanteo 60). Las respuestas de las acciones
+ * (mm_my_state, como la web anterior) todavía traen en `lobby` la terminada en la última hora: se pasa a `last_lobby`.
+ */
+export function normalizeState(s: MmState): MmState {
+  const lobby = s.lobby && !ENDED.includes(s.lobby.status) ? s.lobby : null
+  const ended = s.lobby?.status === "finished" ? s.lobby : null
+  return { ...s, lobby, last_lobby: s.last_lobby ?? ended }
+}
+
 /** ¿Hay algo que seguir? En cola o en una sala que todavía no terminó. */
 export function isActive(s: MmState | undefined) {
   return !!s && (!!s.queue || !!s.lobby)
@@ -53,8 +65,8 @@ export function lobbyMatchOptions(source: MmSource, lobbyId: string) {
 }
 
 /**
- * El estado de siempre, armado con el liviano (cola, sala, grupo), lo que casi no cambia (en caché 2 minutos) y, si la
- * sala terminó, su partida con las estadísticas (una sola vez). Los componentes lo usan igual que antes.
+ * El estado de siempre, armado con el liviano (cola, sala, grupo) y lo que casi no cambia (en caché 2 minutos). Las
+ * estadísticas de la última partida se piden aparte, al abrir su pestaña (`lobbyMatchOptions`).
  */
 export function mmStateOptions(
   source: MmSource,
@@ -68,14 +80,7 @@ export function mmStateOptions(
         source.stateLive(signal),
         queryClient.fetchQuery(mmProfileOptions(source)),
       ])
-      let lobby = live.lobby ?? null
-      if (lobby?.status === "finished" && lobby.match && !lobby.match.stats) {
-        const match = await queryClient
-          .fetchQuery(lobbyMatchOptions(source, lobby.id))
-          .catch(() => null)
-        if (match) lobby = { ...lobby, match: { ...lobby.match, ...match } }
-      }
-      return { ...profile, ...live, lobby } as MmState
+      return normalizeState({ ...profile, ...live } as MmState)
     },
     refetchInterval: (q) =>
       isActive(q.state.data)
@@ -142,8 +147,11 @@ export function banOptimistic(s: MmState, map: string): MmState {
   }
 }
 
-/** Cuándo terminó la última acción propia (para no repetir el pedido con su aviso). */
-const lastOwnAction = { at: 0 }
+/**
+ * La última acción propia: cuándo empezó y si salió bien. Su respuesta trae los avisos que llegaron **antes** de que
+ * empezara; los que llegan mientras tanto pueden no estar (la respuesta pudo leerse antes), así que esos sí se piden.
+ */
+const lastOwnAction = { startedAt: 0, ok: false }
 
 /**
  * Mutación que devuelve el estado nuevo: se guarda directo, sin esperar al socket. Con `optimistic`,
@@ -157,6 +165,8 @@ export function useMmMutation<A = void>(
   return useMutation({
     mutationFn: fn,
     onMutate: async (arg: A) => {
+      lastOwnAction.startedAt = Date.now()
+      lastOwnAction.ok = false
       if (!optimistic) return { prev: undefined }
       await queryClient.cancelQueries({ queryKey: mmKeys.state })
       const prev = queryClient.getQueryData<MmState>(mmKeys.state)
@@ -167,8 +177,8 @@ export function useMmMutation<A = void>(
       if (ctx?.prev) queryClient.setQueryData(mmKeys.state, ctx.prev)
     },
     onSuccess: (state) => {
-      lastOwnAction.at = Date.now()
-      queryClient.setQueryData(mmKeys.state, state)
+      lastOwnAction.ok = true
+      queryClient.setQueryData(mmKeys.state, normalizeState(state))
       // Las acciones devuelven el estado completo: también trae lo que casi no cambia (un sonido elegido, un bloqueo).
       queryClient.setQueryData(mmKeys.profile, state)
     },
@@ -303,8 +313,8 @@ export function applyMmEvent(
  * Escucha el socket. Cada aviso aplica lo que trae y, si hace falta, se vuelve a pedir solo la parte que cambió
  * (el estado liviano, lo que casi no cambia o el chat). Devuelve si está conectado, para el polling de respaldo.
  *
- * Los avisos que llegan juntos se piden una sola vez. Con una acción propia en curso se espera a que termine: si su
- * respuesta llegó después del último aviso, ya trae ese cambio y no se vuelve a pedir el estado.
+ * Los avisos que llegan juntos se piden una sola vez. Con una acción propia en curso se espera a que termine: si el
+ * último aviso llegó antes de empezarla, su respuesta ya lo trae y no se vuelve a pedir el estado.
  */
 export function useMmSocket(source: MmSource, onEvent?: (e: MmEvent) => void) {
   const queryClient = useQueryClient()
@@ -336,8 +346,9 @@ export function useMmSocket(source: MmSource, onEvent?: (e: MmEvent) => void) {
           queryKey: mmKeys.profile,
           refetchType: "none",
         })
-      const ownIsNewer = lastOwnAction.at > lastEventAt && !n.profile
-      if ((n.live || n.profile) && !ownIsNewer)
+      const covered =
+        lastOwnAction.ok && lastEventAt < lastOwnAction.startedAt && !n.profile
+      if ((n.live || n.profile) && !covered)
         void queryClient.invalidateQueries({ queryKey: mmKeys.state })
     }
     const stop = source.subscribe((e) => {

@@ -12,7 +12,11 @@ import { ReconnectBanner } from "./ReconnectBanner"
 import { MmSourceContext } from "./source"
 
 vi.mock("sonner", () => ({
-  toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  }),
 }))
 vi.mock("./alert", () => ({
   alertMatchFound: vi.fn(),
@@ -362,9 +366,12 @@ describe("PlayPage (con la demo)", () => {
     const { user, controls } = setup()
     await user.click(await searchButton())
     await act(async () => {
-      for (let i = 0; i < 7; i++) controls.skip() // hasta la partida en vivo
+      for (let i = 0; i < 6; i++) controls.skip() // hasta la partida en vivo
     })
     await flush()
+    expect(
+      await screen.findByRole("region", { name: "Sala de la partida" })
+    ).toBeInTheDocument()
     await act(async () => controls.finish())
     await flush()
 
@@ -617,6 +624,47 @@ describe("PlayPage (con la demo)", () => {
     expect(await screen.findByText(/exclusivo para VIP/)).toBeInTheDocument()
     // Sin VIP vuelve al predeterminado: su sonido deja de usarse.
     expect((await source.state()).sounds.selected).toBeNull()
+  })
+
+  it("si otro no acepta, avisa que se canceló y que volviste a la cola", async () => {
+    const { user, controls } = setup()
+    await user.click(await searchButton())
+    await act(async () => controls.skip())
+    await flush()
+    await user.click(await screen.findByRole("button", { name: "Aceptar" }))
+    await act(async () => controls.someoneDeclines())
+    await flush()
+    const { toast } = await import("sonner")
+    expect(toast.warning).toHaveBeenCalledWith(
+      "La partida se canceló: Un jugador no aceptó a tiempo",
+      { description: "Si aceptaste, volviste a la cola con tu lugar." }
+    )
+    expect(screen.queryByText("Partida encontrada")).toBeNull()
+  })
+
+  it("al volver a Jugar después de una partida: Jugar primero y la pestaña Tu última partida", async () => {
+    const demo = createDemoSource({ random: () => 0.5 })
+    await demo.source.join("5v5", null)
+    for (let i = 0; i < 10; i++) {
+      if ((await demo.source.state()).lobby?.status === "live") break
+      demo.controls.skip()
+    }
+    demo.controls.finish()
+    const { user } = renderWithQuery(
+      <TooltipProvider>
+        <MmSourceContext value={demo.source}>
+          <PlayPage />
+        </MmSourceContext>
+      </TooltipProvider>
+    )
+    expect(await searchButton()).toBeInTheDocument()
+    expect(
+      screen.queryByRole("region", { name: "Sala de la partida" })
+    ).toBeNull()
+    await user.click(screen.getByRole("tab", { name: "Tu última partida" }))
+    expect(await screen.findByText("Ganador")).toBeInTheDocument()
+    await user.click(screen.getByRole("tab", { name: "Jugar" }))
+    expect(await searchButton()).toBeInTheDocument()
   })
 
   it("rechazar la partida deja una sanción", async () => {

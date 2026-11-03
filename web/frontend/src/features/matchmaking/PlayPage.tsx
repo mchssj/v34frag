@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AcceptDialog } from "./AcceptDialog"
 import {
   alertInvite,
@@ -33,7 +34,12 @@ import { ANY_REGION, PlayBar } from "./PlayBar"
 import { PlayFeed } from "./PlayFeed"
 import { SoundSettingsDialog } from "./SoundSettings"
 import { MatchRoom } from "./room/MatchRoom"
-import { mmStateOptions, useMmAction, useMmSocket } from "./queries"
+import {
+  lobbyMatchOptions,
+  mmStateOptions,
+  useMmAction,
+  useMmSocket,
+} from "./queries"
 import { useMmSource } from "./source"
 import type { MmInvite, MmLobby, MmState } from "./types"
 import { useNow } from "./useNow"
@@ -48,6 +54,20 @@ export function PlayPage() {
   const socketUp = useMmSocket(source, (e) => {
     if (e.t === "lobby.found") alertMatchFound(soundUrl.current)
     if (e.t === "lobby.server") alertServerReady()
+    if (e.t === "lobby.cancelled") {
+      const d = (e.d ?? {}) as { reason?: string; requeue?: boolean }
+      // Si sale otra sala enseguida, que se note que es otra (bitácora 2026-11-02-mm-flujo-sala).
+      toast.warning(
+        d.reason
+          ? `La partida se canceló: ${d.reason}`
+          : "La partida se canceló",
+        {
+          description: d.requeue
+            ? "Si aceptaste, volviste a la cola con tu lugar."
+            : undefined,
+        }
+      )
+    }
     if (e.t === "friend.searching" && e.friend) {
       const { player_id, nick } = e.friend
       alertFriend(nick)
@@ -75,14 +95,19 @@ export function PlayPage() {
     soundUrl.current = selectedSound
   }, [selectedSound])
 
-  // La sala sigue a la vista después del resultado hasta que el jugador vuelve a Jugar (en la app,
-  // además, queda en /match/$id). `kept` la guarda cuando la API ya no la devuelve.
-  const [kept, setKept] = useState<MmLobby | null>(null)
-  const [closed, setClosed] = useState<string | null>(null)
-  const live = state?.lobby ?? null
-  if (live?.status === "finished" && live !== kept) setKept(live)
-  const candidate = live && live.status !== "accepting" ? live : kept
-  const room = candidate && candidate.id !== closed ? candidate : null
+  // La principal es Jugar; la última partida terminada tiene su pestaña (Daniel, 2026-11-02). Solo se pasa sola a
+  // "Tu última partida" si quien mira estaba en la sala cuando terminó; entrar a la cola o a otra sala vuelve a Jugar.
+  const [view, setView] = useState<"play" | "last">("play")
+  const [watched, setWatched] = useState<string | null>(null)
+  const lobby = state?.lobby ?? null
+  const last = state?.last_lobby ?? null
+  const room = lobby && lobby.status !== "accepting" ? lobby : null
+  if (room && watched !== room.id) setWatched(room.id)
+  if (!room && last && watched === last.id) {
+    setWatched(null)
+    setView("last")
+  }
+  if ((state?.queue || lobby) && view !== "play") setView("play")
 
   return (
     <section className="flex flex-col gap-6">
@@ -128,18 +153,31 @@ export function PlayPage() {
             </Alert>
           )}
           {room ? (
-            <MatchRoom
-              lobby={room}
-              onBack={() => {
-                setClosed(room.id)
-                setKept(null)
-              }}
-            />
+            <MatchRoom lobby={room} onBack={() => setView("play")} />
           ) : (
-            <GroupView state={state} socketUp={socketUp} />
+            <>
+              {last && (
+                <Tabs
+                  value={view}
+                  onValueChange={(v) => setView(v as "play" | "last")}
+                >
+                  <TabsList aria-label="Jugar o tu última partida">
+                    <TabsTrigger value="play">Jugar</TabsTrigger>
+                    <TabsTrigger value="last">Tu última partida</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
+              {view === "last" && last ? (
+                <LastMatch lobby={last} onBack={() => setView("play")} />
+              ) : (
+                <GroupView state={state} socketUp={socketUp} />
+              )}
+            </>
           )}
           {state.lobby?.status === "accepting" && (
             <AcceptDialog
+              // Una sala nueva es otra ventana: se nota que la anterior se canceló.
+              key={state.lobby.id}
               lobby={state.lobby}
               pending={accept.isPending || decline.isPending}
               onAccept={() => accept.mutate()}
@@ -153,6 +191,21 @@ export function PlayPage() {
       )}
     </section>
   )
+}
+
+/** La última partida terminada: las estadísticas se piden al abrirla (una sola vez). */
+function LastMatch({ lobby, onBack }: { lobby: MmLobby; onBack: () => void }) {
+  const source = useMmSource()
+  const match = useQuery(lobbyMatchOptions(source, lobby.id))
+  if (match.isPending) return <Skeleton className="h-80 w-full rounded-xl" />
+  const full =
+    match.data && lobby.match
+      ? { ...lobby, match: { ...lobby.match, ...match.data } }
+      : lobby
+  // Sin las estadísticas (la API falló), la sala se muestra sin la pestaña Estadísticas.
+  if (!full.match?.stats)
+    return <MatchRoom lobby={{ ...full, match: null }} onBack={onBack} />
+  return <MatchRoom lobby={full} onBack={onBack} />
 }
 
 function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {

@@ -10,13 +10,14 @@ import {
   MM_EVENT_COALESCE_MS,
   type MmNeeds,
   mmKeys,
+  normalizeState,
   patchQueueSizes,
   seedFoundLobby,
   useMmMutation,
   useMmSocket,
 } from "./queries"
 import type { MmSource } from "./source"
-import type { MmEvent, MmState } from "./types"
+import type { MmEvent, MmLobby, MmState } from "./types"
 
 const state = (lobby: unknown) => ({ lobby }) as unknown as MmState
 
@@ -137,7 +138,7 @@ describe("useMmSocket", () => {
     expect(invalidate).toHaveBeenCalledTimes(2)
   })
 
-  it("el aviso de una acción propia no vuelve a pedir: la respuesta ya lo trae", async () => {
+  it("un aviso que llega durante una acción propia se pide al terminarla (la respuesta pudo leerse antes)", async () => {
     const { emit, invalidate, start, finish, mutating } = setup()
     await start()
     emit({ t: "lobby.accept" })
@@ -145,6 +146,17 @@ describe("useMmSocket", () => {
     expect(invalidate).not.toHaveBeenCalled()
     await finish()
     expect(mutating()).toBe(0)
+    await act(() => vi.advanceTimersByTimeAsync(MM_EVENT_COALESCE_MS * 3))
+    expect(invalidate).toHaveBeenCalledTimes(1)
+  })
+
+  it("un aviso de antes de empezar la acción no se pide: la respuesta ya lo trae", async () => {
+    const { emit, invalidate, start, finish } = setup()
+    await act(() => vi.advanceTimersByTimeAsync(10_000))
+    emit({ t: "lobby.veto" })
+    await act(() => vi.advanceTimersByTimeAsync(5))
+    await start()
+    await finish()
     await act(() => vi.advanceTimersByTimeAsync(MM_EVENT_COALESCE_MS * 3))
     expect(invalidate).not.toHaveBeenCalled()
   })
@@ -240,5 +252,36 @@ describe("avisos livianos", () => {
     const n = needs()
     applyMmEvent(qc, { t: "lobby.finished", lobby: "L1" }, n)
     expect(n).toMatchObject({ live: true, profile: true })
+  })
+})
+
+describe("normalizeState", () => {
+  const lobby = (id: string, status: string) =>
+    ({ id, status }) as unknown as MmLobby
+
+  it("una sala terminada pasa a last_lobby y lobby queda vacío", () => {
+    const s = normalizeState({
+      lobby: lobby("L1", "finished"),
+    } as unknown as MmState)
+    expect(s.lobby).toBeNull()
+    expect(s.last_lobby!.id).toBe("L1")
+  })
+
+  it("si ya viene last_lobby manda ese, y una cancelada no es la última partida", () => {
+    const s = normalizeState({
+      lobby: lobby("L2", "cancelled"),
+      last_lobby: lobby("L1", "finished"),
+    } as unknown as MmState)
+    expect(s.lobby).toBeNull()
+    expect(s.last_lobby!.id).toBe("L1")
+  })
+
+  it("la sala abierta queda en lobby", () => {
+    const s = normalizeState({
+      lobby: lobby("L3", "live"),
+      last_lobby: null,
+    } as unknown as MmState)
+    expect(s.lobby!.id).toBe("L3")
+    expect(s.last_lobby).toBeNull()
   })
 })

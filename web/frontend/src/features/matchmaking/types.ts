@@ -276,7 +276,10 @@ export type MmState = {
   active_players: number
   live_matches: number
   queue: MmQueue | null
+  /** La sala abierta (aceptando, veto, conectando o en vivo). */
   lobby: MmLobby | null
+  /** La última sala terminada, sin las estadísticas: la pestaña "Tu última partida" (replanteo 60). */
+  last_lobby?: MmLobby | null
   party: MmParty | null
   invites: MmInvite[]
   penalty: MmPenalty | null
