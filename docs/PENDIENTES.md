@@ -5,6 +5,22 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. Lo que le toca a cada uno de los prototipos VIP y las misiones del 2026-10-29 está juntado en [`RESUMEN_PROTOTIPOS_VIP.md`](RESUMEN_PROTOTIPOS_VIP.md). El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Corte a la base de producción (2026-11-03): base hecha, falta el VPS
+
+- **Hecho el 2026-11-03 (Kyan, con Claude):** producción tiene los replanteos `01` a `69`, con respaldo previo (`C:\Users\Agus\Documents\respaldos_cmleague\prod_antes_corte_20261103.dump`) y el ELO idéntico antes y después. Antes del `04` hubo que sacar el CR de 71 funciones que se habían cargado desde Windows. Detalle en [`2026-11-03-corte-produccion/GUIA_IMPLEMENTACION.md`](bitacora/2026-11-03-corte-produccion/GUIA_IMPLEMENTACION.md) (el `PLAN.md` está en `feat/frontend-fase-1`).
+- **La web vieja ya no funciona** con esta base. Daniel ya pasó el VPS a producción: desde las 17:3x UTC la API llama a la base de producción.
+- **Después del corte, el 2026-11-03:**
+  - Limpieza en producción: 34 fichas sin SteamID, sin partidas y sin cuenta, y 10 equipos sin jugadores ([`2026-11-03-limpieza-fichas-equipos`](bitacora/2026-11-03-limpieza-fichas-equipos/)).
+  - Replanteo `70`, aplicado en staging y en producción: disolver y moderar equipos fallaba con "Algo salió mal" porque el `56` y el `58` le habían sacado la categoría a `team_staff_action` ([`2026-11-03-aviso-staff-equipos`](bitacora/2026-11-03-aviso-staff-equipos/)). Falta probarlo desde la web.
+- **Falta:**
+  - Comprobar con Daniel que los tres `.env` del VPS (`api`, `season` y `demos`) y `MM_LISTEN_URL` apunten a producción.
+  - Configuración copiada de staging.
+  - Temporada BETA.
+  - Auth de producción.
+  - Servidores: **#1 MVZG** a producción; **#2 flow** y **#3 `aurav34`** con el reporter nuevo.
+  - Verificar la ingesta de flow, el Worker de demos y el render de clips.
+- **Staging está más abierto que producción:** `anon` y `authenticated` pueden ejecutar 12 funciones internas (19 permisos) (`csstv_ingest`, `csstv_auth`, `create_server_token`, `rotate_server_token`…). En producción solo las ejecuta `service_role`. Hay que cerrarlas en staging.
+
 ## Términos y condiciones y política de privacidad (borradores, sin publicar)
 
 - **Estado:** `terms/terminos.html` escrito y `terms/privacidad.html` reescrita el 2026-11-03, pedidos por Kyan. Cubren toda la plataforma, también lo que no está implementado, con la ley argentina (CCyC, Ley 24.240 y Ley 25.326). No tocan los servidores (ni `aurav34`, flow ni MVZG).
