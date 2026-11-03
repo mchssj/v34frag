@@ -83,7 +83,7 @@ Elegido por Daniel como servidor de prueba de torneos y PCW. Por SFTP (`SFTP_CSS
 - **Verificado:** se bajaron los seis archivos y coinciden byte a byte con lo que se subió.
 - **Staging:** `CMLeague #1` con `official_enabled` y `pcw_enabled` en `true`; `mm_enabled` sigue en `false` (el matchmaking sigue apagado, como lo dejó Kyan). Al subirlo, su última consulta a staging era de las 20:59 UTC con la 2.8.2.
 - **Desde el próximo mapa la contraseña del #1 la maneja la web:** queda cerrado al público. El `csstv_password` ya era el de la línea del matchmaking (10875 bytes).
-- **El 2.9.0 del #1 todavía dice "Sala del matchmaking"** al anunciar los lados de una reserva de torneo (corregido después en la rama, sin subir).
+- **Reemplazado por el 2.9.1 el mismo día** (bitácora `2026-11-02-claim-varios-steamid`), que ya no dice "Sala del matchmaking" en una reserva. El 2.9.0 quedó en `plugins/disabled/csstv_reporter_2.9.0.smx`.
 - **Para volver atrás:** renombrar los dos respaldos a su nombre original y borrar las cuatro `live_*.cfg`, en un cambio de mapa; en staging, apagar las dos marcas.
 
 ## Lo que falta desplegar

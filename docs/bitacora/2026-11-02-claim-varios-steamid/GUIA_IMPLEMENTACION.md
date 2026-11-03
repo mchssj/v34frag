@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Base y web en staging desde el 2026-11-02**, con commit. **El reporter 2.9.1 no se subió a ningún servidor** (el #1 tiene el 2.9.0, subido ese mismo día). No se probó con un cliente real entrando desde otra PC.
+**Base y web en staging desde el 2026-11-02**, con commit. **Reporter 2.9.1 en el #1 desde el 2026-11-02** (pedido por Daniel), sin recargar: entra en el próximo cambio de mapa. No se probó con un cliente real entrando desde otra PC.
 
 ## Archivos
 
@@ -37,7 +37,7 @@ Commits: `02df0fd7` y `7ec0a27a` en `feat/mm-claim-en-sala`; `21dc2fb3` en `feat
 
 ## Falta
 
-1. **Reporter 2.9.1 en el #1** (licenciado, `server/build_licenciado.sh 96bb5060-… srv1`), en el próximo cambio de mapa. El resto de los servidores, con el corte.
+1. ~~Reporter 2.9.1 en el #1~~: **subido el 2026-11-02**: licenciado (`server/build_licenciado.sh 96bb5060-… srv1`, 141959 bytes), por SFTP, verificado byte a byte; el 2.9.0 quedó en `plugins/disabled/csstv_reporter_2.9.0.smx`. El resto de los servidores, con el corte.
 2. Probarlo con alguien que entre a una partida desde otra PC.
 3. Producción, con el corte (junto con la `48`).
 

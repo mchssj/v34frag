@@ -2,7 +2,7 @@
 
 ## Estado
 
-**En staging desde el 2026-11-02**, con commit. **Falta el mensaje de prueba en #avisos**: Daniel pidió que se le avise antes de mandarlo.
+**En staging desde el 2026-11-02**, con commit. **Probado en #avisos el 2026-11-02** (con el visto bueno de Daniel).
 
 ## Archivos
 
@@ -33,10 +33,13 @@ Commits: `37cd005f` en `feat/mm-claim-en-sala` y `9cc0b4d0` en `feat/frontend-fa
 - **API:** 5 pruebas unitarias (publica solo con el rol, Discord falla, 409 con la hora, 501 sin webhook, el texto sin markdown ni menciones).
 - **Web:** la prueba de Jugar avisa y después muestra la espera.
 
+## Prueba en #avisos (2026-11-02)
+
+Con el visto bueno de Daniel, desde el VPS contra la API de staging (`127.0.0.1:8787`), con la cuenta de prueba `daniloev` (no es staff): login, `POST /api/v1/mm/queue` (5v5), `GET /api/v1/mm/queue/ping` (`can_ping: true`), `POST /api/v1/mm/queue/ping` → 200 (Discord lo aceptó; el estado pasó a `next_at` 15 min después y `can_ping: false`) y `DELETE /api/v1/mm/queue`. Mensaje esperado en #avisos: "@player Hay gente en la queue, ¡mándate!" y "5v5: 1 buscando · avisó daniloev". La contraseña y el token no salieron del VPS.
+
 ## Falta
 
-1. **Mensaje de prueba en #avisos**, avisándole antes a Daniel. Menciona al rol `@player` de verdad.
-2. Con el aviso andando, regenerar el webhook en Discord (se pegó en el chat) y actualizarlo en el `.env` y en `/etc/cmleague/api.env`.
+1. Con el aviso andando, regenerar el webhook en Discord (se pegó en el chat) y actualizarlo en el `.env` y en `/etc/cmleague/api.env`.
 3. Producción, con el corte.
 
 ## Cómo revertir
