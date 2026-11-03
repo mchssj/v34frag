@@ -1,5 +1,5 @@
--- Inversa del replanteo 70: amigos sin aviso por el socket (como en la 48), sin el trigger de la foto y con las fotos de
--- ficha que la 70 había borrado (solo si la ficha sigue sin foto: una que puso un admin después no se pisa).
+-- Inversa del replanteo 71: amigos sin aviso por el socket (como en la 48), sin el trigger de la foto y con las fotos de
+-- ficha que la 71 había borrado (solo si la ficha sigue sin foto: una que puso un admin después no se pisa).
 begin;
 
 create or replace function public.mm_add_friend(p_player uuid) returns void
@@ -17,8 +17,8 @@ drop function if exists public.mm_friend_users(uuid);
 drop trigger if exists profile_details_avatar_photo on public.profile_details;
 drop function if exists public.profile_avatar_clears_player_photo();
 
-update players p set photo_url = r.photo_url from replanteo70_fotos_ficha r where r.player_id = p.id and p.photo_url is null;
-drop table if exists public.replanteo70_fotos_ficha;
+update players p set photo_url = r.photo_url from replanteo71_fotos_ficha r where r.player_id = p.id and p.photo_url is null;
+drop table if exists public.replanteo71_fotos_ficha;
 
 notify pgrst, 'reload schema';
 commit;
