@@ -186,6 +186,8 @@ export type DemoControls = {
   someoneDeclines(): void
   /** Termina el mix en vivo (rota la contraseña del servidor). */
   finish(): void
+  /** Cierras la web buscando: a los 10 s la API te saca de la cola (replanteo 63). */
+  closeWeb(): void
   /** Llega una invitación al dúo de otro jugador. */
   receiveInvite(): void
   /** Un compañero de equipo se desconecta durante la partida. */
@@ -219,6 +221,7 @@ export function createDemoSource({
   let party: MmParty | null = null
   let invites: MmInvite[] = []
   let penalty: MmState["penalty"] = null
+  let queueDroppedAt: string | null = null
   const flags: Record<DemoFlag, boolean> = {
     captain: true,
     newcomer: false,
@@ -902,6 +905,7 @@ export function createDemoSource({
     party: party && structuredClone(party),
     invites: structuredClone(invites),
     penalty: penalized() ? penalty : null,
+    queue_dropped_at: queue ? null : queueDroppedAt,
     blocks: {
       list: blocks,
       max: config.max_blocks,
@@ -972,6 +976,7 @@ export function createDemoSource({
     },
     async join(mode, region) {
       if (penalized()) throw new DemoError("Tienes una sanción vigente")
+      queueDroppedAt = null
       if (config.require_anticheat && flags.noAgent)
         throw new DemoError("Para jugar tienes que tener el anticheat activo")
       if (flags.newcomer)
@@ -1433,6 +1438,13 @@ export function createDemoSource({
         cancel("Un jugador no aceptó a tiempo", true)
     },
     finish: finishMix,
+    closeWeb() {
+      if (!queue) return
+      queue = null
+      partyAt = null
+      queueDroppedAt = iso(now())
+      emit("party.changed")
+    },
     receiveInvite() {
       // Con invitaciones en Privado no le llega nada, como en la API.
       if (invitesPref === "private") return
@@ -1470,6 +1482,7 @@ export function createDemoSource({
       party = null
       invites = []
       penalty = null
+      queueDroppedAt = null
       phaseAt = null
       partyAt = null
       config = structuredClone(DEFAULT_CONFIG)

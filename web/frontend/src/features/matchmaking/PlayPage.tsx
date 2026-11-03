@@ -5,6 +5,7 @@ import { cn } from "cn"
 import {
   BanIcon,
   CalendarClockIcon,
+  LogOutIcon,
   ShieldAlertIcon,
   ClockIcon,
   Volume2Icon,
@@ -99,6 +100,8 @@ export function PlayPage() {
   // "Tu última partida" si quien mira estaba en la sala cuando terminó; entrar a la cola o a otra sala vuelve a Jugar.
   const [view, setView] = useState<"play" | "last">("play")
   const [watched, setWatched] = useState<string | null>(null)
+  const [droppedSeen, setDroppedSeen] = useState<string | null>(null)
+  const dropped = state?.queue_dropped_at ?? null
   const lobby = state?.lobby ?? null
   const last = state?.last_lobby ?? null
   const room = lobby && lobby.status !== "accepting" ? lobby : null
@@ -132,6 +135,28 @@ export function PlayPage() {
             </Alert>
           )}
           {state.penalty && <PenaltyAlert until={state.penalty.until} />}
+          {dropped && dropped !== droppedSeen && (
+            <Alert>
+              <LogOutIcon />
+              <AlertTitle>
+                Te sacamos de la cola porque cerraste la web
+              </AlertTitle>
+              <AlertDescription>
+                <span>
+                  Si cierras la web o la sesión mientras buscas, sales de la
+                  cola sin sanción. Vuelve a buscar cuando quieras.
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="mt-1 -ml-2 w-fit"
+                  onClick={() => setDroppedSeen(dropped)}
+                >
+                  Entendido
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
           {state.anticheat.required && state.anticheat.status !== "ok" && (
             <Alert variant="destructive">
               <ShieldAlertIcon />

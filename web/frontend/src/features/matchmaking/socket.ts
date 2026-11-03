@@ -10,6 +10,13 @@ type Deps = {
   onTokenChange: (fn: () => void) => () => void
   WebSocketImpl?: typeof WebSocket
   random?: () => number
+  /** Avisa cuando el navegador recupera internet. Por defecto, el evento `online` de window. */
+  onOnline?: (fn: () => void) => () => void
+}
+
+const windowOnline = (fn: () => void) => {
+  window.addEventListener("online", fn)
+  return () => window.removeEventListener("online", fn)
 }
 
 /** Espera antes de reconectar: 1, 2, 4… hasta 30 s, más hasta 1 s al azar para no volver todos juntos. */
@@ -27,6 +34,7 @@ export function createMmSocket({
   onTokenChange,
   WebSocketImpl = WebSocket,
   random = Math.random,
+  onOnline = windowOnline,
 }: Deps): MmSocketFactory {
   return (onEvent, onStatus) => {
     let ws: WebSocket | null = null
@@ -68,12 +76,21 @@ export function createMmSocket({
     }
 
     const stopToken = onTokenChange(sendAuth)
+    // Al volver internet se reconecta ya, sin esperar el turno: la API saca de la cola a quien no vuelve en 10 s
+    // (replanteo 63), y la espera entre intentos crece a 1, 2, 4… s.
+    const stopOnline = onOnline(() => {
+      if (closed || ws) return
+      clearTimeout(timer)
+      attempt = 0
+      connect()
+    })
     connect()
 
     return () => {
       closed = true
       clearTimeout(timer)
       stopToken()
+      stopOnline()
       ws?.close(1000)
     }
   }

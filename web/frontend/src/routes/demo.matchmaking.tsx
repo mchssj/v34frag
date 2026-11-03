@@ -46,6 +46,9 @@ function DemoMatchmaking() {
             <Button size="sm" variant="outline" onClick={controls.finish}>
               Terminar el mix
             </Button>
+            <Button size="sm" variant="outline" onClick={controls.closeWeb}>
+              Cerrar la web buscando
+            </Button>
             <Button
               size="sm"
               variant="outline"

@@ -127,6 +127,20 @@ describe("PlayPage (con la demo)", () => {
     ).toBeDisabled()
   })
 
+  it("si cerró la web buscando, al volver Jugar le dice por qué ya no busca", async () => {
+    const { user, controls } = setup()
+    await user.click(await searchButton())
+    await screen.findByRole("button", { name: "Avisar en Discord" })
+    act(() => controls.closeWeb())
+    expect(
+      await screen.findByText("Te sacamos de la cola porque cerraste la web")
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Entendido" }))
+    expect(
+      screen.queryByText("Te sacamos de la cola porque cerraste la web")
+    ).toBeNull()
+  })
+
   it("entra a la cola, acepta y llega a la sala con el servidor", async () => {
     const { user, controls } = setup()
     await user.click(await searchButton())

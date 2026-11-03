@@ -280,6 +280,8 @@ export type MmState = {
   lobby: MmLobby | null
   /** La última sala terminada, sin las estadísticas: la pestaña "Tu última partida" (replanteo 60). */
   last_lobby?: MmLobby | null
+  /** Cuándo lo sacamos de la cola por cerrar la web, si fue en los últimos 10 min (replanteo 63). */
+  queue_dropped_at?: string | null
   party: MmParty | null
   invites: MmInvite[]
   penalty: MmPenalty | null
