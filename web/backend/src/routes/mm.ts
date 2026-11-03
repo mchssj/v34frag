@@ -107,8 +107,11 @@ const add = (def: ReturnType<typeof route>, handler: (c: C) => Promise<Response>
 add(route('get', '/api/v1/mm/state', { summary: 'Estado de mi matchmaking (completo)' }), state);
 // (replanteo 59) El estado en dos partes: lo que cambia rápido y lo que casi no cambia. Las estadísticas de una partida
 // terminada salen aparte, una sola vez.
-add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala (sin estadísticas), grupo y contadores' }), async (c) =>
-  c.json({ ...((await rpc(c, 'mm_my_live')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
+add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala (sin estadísticas), grupo y contadores' }), async (c) => {
+  // (replanteo 63) La web sin socket pide esto cada 5 s: cuenta como que sigue conectado.
+  c.var.mmPolled?.(c.var.user.id);
+  return c.json({ ...((await rpc(c, 'mm_my_live')) as unknown as object), server_now: new Date().toISOString() } as never, 200);
+});
 add(route('get', '/api/v1/mm/profile', { summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
   c.json({ ...((await rpc(c, 'mm_my_profile')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
 add(route('get', '/api/v1/mm/lobbies/{id}/match', { summary: 'La partida de una sala que jugué, con las estadísticas y los clips', request: { params: IdParam } }), async (c) => {

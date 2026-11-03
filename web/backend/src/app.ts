@@ -49,6 +49,8 @@ export type AppOptions = {
   rateLimiter?: RateLimiter;
   // Envío UDP para el estado de los servidores (A2S). Lo pasa node.ts; el Worker no tiene UDP.
   udp?: UdpExchange;
+  // La API avisa al socket del matchmaking que una cuenta pidió su estado (presencia en la cola, replanteo 63).
+  mmPolled?: (userId: string) => void;
 };
 
 export function createApp(options: AppOptions = {}) {
@@ -60,6 +62,7 @@ export function createApp(options: AppOptions = {}) {
   app.use('*', async (c, next) => {
     c.set('rateLimiter', rateLimiter);
     c.set('udp', options.udp);
+    c.set('mmPolled', options.mmPolled);
     await next();
   });
   app.use('*', requestLog);
