@@ -15,6 +15,7 @@ import {
 } from "@/features/public/api/queries"
 import { sideName } from "@/features/public/lib/format"
 import { eventDetailOptions } from "@/features/events/api/queries"
+import { manualIndexOptions } from "@/features/help/api/queries"
 import { teamDetailOptions } from "@/features/teams/api/queries"
 import type { BadgeKey, CrumbData } from "../lib/nav"
 
@@ -95,7 +96,7 @@ export function useFeaturedLive() {
 
 /** Nombres de equipo, torneo o partida para los breadcrumbs y el ítem activo. */
 export function useCrumbData(pathname: string): CrumbData {
-  const [, first, id] = pathname.split("/")
+  const [, first, id, third] = pathname.split("/")
   const team = useQuery({
     ...teamDetailOptions(id ?? ""),
     enabled: first === "teams" && !!id,
@@ -108,7 +109,17 @@ export function useCrumbData(pathname: string): CrumbData {
     ...matchDetailOptions(id ?? ""),
     enabled: first === "match" && !!id,
   }).data
+  const manual = useQuery({
+    ...manualIndexOptions(),
+    enabled: first === "help" && !!id,
+  }).data
+  const helpSection = manual?.secciones.find((s) => s.id === id)
+  const helpPage = helpSection?.paginas.find(
+    (p) => p.tarea === decodeURIComponent(third ?? "")
+  )
   return {
+    help: helpSection &&
+      helpPage && { section: helpSection.titulo, title: helpPage.titulo },
     team: team?.name,
     event: event?.name,
     match: match && {

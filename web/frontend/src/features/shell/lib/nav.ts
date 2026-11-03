@@ -7,6 +7,7 @@ import {
   Gamepad2Icon,
   GavelIcon,
   HouseIcon,
+  LifeBuoyIcon,
   ListOrderedIcon,
   MapIcon,
   ServerIcon,
@@ -66,6 +67,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         to: "/ranking",
         icon: ListOrderedIcon,
       },
+      // El manual de usuario, filtrado por rol (docs/bitacora/2026-11-02-manual-usuario).
+      { key: "help", label: "Ayuda", to: "/help", icon: LifeBuoyIcon },
     ],
   },
   {
@@ -182,6 +185,8 @@ const PROFILE_TITLES: Record<string, string> = {
 /** Datos de la vista que necesitan los breadcrumbs (vienen de la API; mientras cargan, faltan). */
 export type CrumbData = {
   team?: string
+  /** Página del manual: su sección y su título. */
+  help?: { section: string; title: string }
   event?: string
   match?: {
     kind: "mix" | "pcw" | "official"
@@ -276,6 +281,15 @@ export function breadcrumbsFor(
         { label: m ? `${m.a} vs ${m.b}` : "Partida" },
       ]
     }
+    case "help":
+      return second
+        ? [
+            { label: "Ayuda", to: "/help" },
+            ...(data.help
+              ? [{ label: data.help.section }, { label: data.help.title }]
+              : []),
+          ]
+        : [{ label: "Ayuda" }]
     case "profile": {
       const section = PROFILE_TITLES[second]
       return section

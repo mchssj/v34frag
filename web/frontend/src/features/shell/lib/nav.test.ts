@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { activeNavKey, breadcrumbsFor, NAV_GROUPS } from "./nav"
+import { activeNavKey, breadcrumbsFor, NAV_GROUPS, type CrumbData } from "./nav"
 
 const mix = {
   kind: "mix" as const,
@@ -133,5 +133,28 @@ describe("NAV_GROUPS", () => {
     expect(items.find((i) => i.key === "hall-of-fame")).toBeUndefined()
     expect(items.find((i) => i.key === "pcw")).toMatchObject({ soon: true })
     expect(items.find((i) => i.key === "pcw")?.badge).toBeUndefined()
+  })
+})
+
+describe("Ayuda en el menú", () => {
+  it("marca Ayuda en el índice y en cada página", () => {
+    expect(activeNavKey("/help")).toBe("help")
+    expect(activeNavKey("/help/jugador/buscar-partida")).toBe("help")
+  })
+
+  it("breadcrumbs: Ayuda, la sección y la página (cuando llegan del índice)", () => {
+    const labels = (p: string, d?: CrumbData) =>
+      breadcrumbsFor(p, d).map((c) => c.label)
+    expect(labels("/help")).toEqual(["Ayuda"])
+    expect(labels("/help/jugador/buscar-partida")).toEqual(["Ayuda"])
+    expect(
+      labels("/help/jugador/buscar-partida", {
+        help: { section: "Jugador", title: "Buscar partida" },
+      })
+    ).toEqual(["Ayuda", "Jugador", "Buscar partida"])
+    expect(breadcrumbsFor("/help/jugador/x")[0]).toEqual({
+      label: "Ayuda",
+      to: "/help",
+    })
   })
 })
