@@ -6,11 +6,11 @@ orden: 1
 
 El matchmaking sanciona solo a quien no acepta una partida, la rechaza, no se conecta al servidor o la abandona. Mientras dura la sanción, ese jugador no puede buscar partida. Cada falta sube un nivel y el siguiente castigo es más largo (5 minutos, 15 minutos, 1 hora y 24 horas). El nivel baja uno por cada semana sin faltas.
 
-Estas sanciones no son baneos: no aparecen en Administración › **Baneos** y no afectan a los servidores.
+Estas sanciones no son baneos de los servidores: no te sacan del juego, solo de la cola. Por eso tienen su propia pestaña en Baneos.
 
 ## Ver las sanciones vigentes
 
-1. Entra a Administración › **Matchmaking** › **Reportes**.
+1. Entra a Administración › **Baneos** y abre la pestaña **Matchmaking**. El número de la pestaña suma las sanciones y las exclusiones vigentes.
 2. En **Sanciones de la cola** está cada jugador sancionado, con el motivo de su última falta, su nivel (por ejemplo, "Nivel 2 de 4") y hasta cuándo dura.
 
 Cuando una sanción vence, sale sola de la lista.
@@ -29,4 +29,4 @@ El jugador puede volver a buscar enseguida, sin recargar la página. Además, su
 
 ## Exclusiones del matchmaking
 
-Las **exclusiones** son otra cosa: las pone un moderador al resolver un reporte con **Excluir**, duran días y aparecen en **Excluidos del matchmaking**, en la misma pestaña.
+Las **exclusiones** son otra cosa: las pone un moderador al resolver un reporte con **Excluir**, duran días y aparecen en **Excluidos del matchmaking**, debajo de las sanciones, en la misma pestaña **Matchmaking** de Baneos. Levantar una exclusión es solo para admins.

@@ -1,4 +1,4 @@
-import { act, screen, within } from "@testing-library/react"
+import { act, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { renderWithQuery } from "@/test/render"
@@ -111,48 +111,17 @@ describe("Administración › Matchmaking", () => {
     expect(cfg.modes.find((m) => m.mode === "2v2")!.affects_elo).toBe(true)
   })
 
-  it("Reportes: excluir crea la exclusión y se puede levantar", async () => {
+  it("Reportes: excluir crea la exclusión; las sanciones se levantan en Baneos", async () => {
     const { user, source } = setup()
     await user.click(screen.getByRole("tab", { name: "Reportes" }))
     await user.click(await screen.findByRole("button", { name: "Excluir 3 d" }))
-    expect(await screen.findByText(/AFK · hasta/)).toBeInTheDocument()
-    expect((await source.adminBans())[0]!.nick).toBe("gordo")
-    const excluded = screen.getByText(/AFK · hasta/).closest("li")!
-    await user.click(within(excluded).getByRole("button", { name: "Levantar" }))
-    expect(await screen.findByText("Nadie excluido.")).toBeInTheDocument()
-  })
-
-  it("Reportes: sanciones de la cola con motivo y nivel; levantar pide motivo", async () => {
-    const { user, source } = setup()
-    await user.click(screen.getByRole("tab", { name: "Reportes" }))
-    const row = (
-      await screen.findByText(/No aceptaste una partida · Nivel 2 de 4/)
-    ).closest("li")!
-    expect(within(row).getByText("colo")).toBeInTheDocument()
-    await user.click(within(row).getByRole("button", { name: "Levantar" }))
-
-    const dialog = await screen.findByRole("alertdialog")
-    expect(dialog).toHaveTextContent("su nivel baja de 2 a 1")
-    const confirm = within(dialog).getByRole("button", { name: "Levantar" })
-    expect(confirm).toBeDisabled()
-    await user.type(within(dialog).getByLabelText("Motivo"), "Se cayó Steam")
-    await user.click(confirm)
-
-    expect(await screen.findByText("Nadie sancionado.")).toBeInTheDocument()
-    expect(await source.adminPenalties()).toEqual([])
-  })
-
-  it("Reportes: levantar la propia sanción la saca de Jugar", async () => {
-    const { source, controls } = setup()
-    await source.join("5v5", null)
-    controls.skip()
-    await source.decline()
-    const mine = async () =>
-      (await source.adminPenalties()).find((p) => p.user_id === "me")
-    expect((await mine())?.reason).toBe("Rechazaste una partida")
-    await source.liftPenalty("me", "Prueba")
-    expect(await mine()).toBeUndefined()
-    expect((await source.state()).penalty).toBeNull()
+    await vi.waitFor(async () =>
+      expect((await source.adminBans())[0]?.nick).toBe("gordo")
+    )
+    expect(
+      screen.getByRole("link", { name: "Baneos › Matchmaking" })
+    ).toHaveAttribute("href", "/admin/bans")
+    expect(screen.queryByText("Sanciones de la cola")).toBeNull()
   })
 
   it("Métricas: suma los días por modo", async () => {

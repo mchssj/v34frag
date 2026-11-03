@@ -4,7 +4,7 @@
 
 El matchmaking sanciona solo a quien no acepta una partida, la rechaza, no se conecta o la abandona (`mm_penalize`). Cada falta sube un nivel de la escalera (`mm_config.penalty_ladder`, por defecto 5, 15, 60 y 1440 min) y, mientras dura, el jugador no puede entrar a la cola. Hasta ahora esas sanciones no se veían en ninguna pantalla de administración y no había forma de levantarlas.
 
-Ahora Administración › Matchmaking › Reportes tiene la tarjeta **Sanciones de la cola**, con las vigentes. Un moderador o un admin puede levantar una con un motivo. Levantar corta la espera y **baja un nivel de la escalera** (decisión de Daniel, 2026-11-02), como si esa falta no hubiera pasado. La falta queda anotada con quién la levantó y por qué. El jugador recibe el aviso `penalty.lifted` por el socket y su pantalla de Jugar se actualiza sola.
+Ahora Administración › Baneos tiene la pestaña **Matchmaking**, con la tarjeta **Sanciones de la cola** (las vigentes) y, debajo, **Excluidos del matchmaking**. Al principio estuvo en Matchmaking › Reportes; Daniel la buscó en Baneos y se movió el mismo día. Un moderador o un admin puede levantar una con un motivo. Levantar corta la espera y **baja un nivel de la escalera** (decisión de Daniel, 2026-11-02), como si esa falta no hubiera pasado. La falta queda anotada con quién la levantó y por qué. El jugador recibe el aviso `penalty.lifted` por el socket y su pantalla de Jugar se actualiza sola.
 
 ```mermaid
 sequenceDiagram
@@ -27,8 +27,8 @@ sequenceDiagram
 | Qué es | Tabla | Dónde se ve | Quién la levanta |
 |---|---|---|---|
 | Baneo de los servidores | `bans` | Administración › Baneos | Moderador, con motivo |
-| Exclusión del matchmaking (desde un reporte) | `mm_bans` | Matchmaking › Reportes › Excluidos del matchmaking | Admin, sin motivo |
-| Sanción automática de la cola | `mm_penalties` y `mm_penalty_log` | Matchmaking › Reportes › **Sanciones de la cola** | Moderador, con motivo |
+| Exclusión del matchmaking (desde un reporte) | `mm_bans` | Baneos › **Matchmaking** › Excluidos del matchmaking | Admin, sin motivo |
+| Sanción automática de la cola | `mm_penalties` y `mm_penalty_log` | Baneos › **Matchmaking** › **Sanciones de la cola** | Moderador, con motivo |
 
 ## Reglas
 
@@ -60,7 +60,8 @@ sequenceDiagram
 
 ## Web
 
-- La tarjeta **Sanciones de la cola** (`PenaltiesCard` en `ReportsPanel.tsx`) muestra en cada fila el nick, el motivo, "Nivel N de M", hasta cuándo dura y el botón **Levantar**. Ese botón abre un `ConfirmDialog` con el motivo obligatorio. El diálogo avisa a qué nivel queda el jugador.
+- La pestaña **Matchmaking** de Baneos (`status=mm` en la URL) suma en su contador las sanciones y las exclusiones vigentes y muestra `SanctionsPanel`. Matchmaking › Reportes deja un link a esa pestaña.
+- La tarjeta **Sanciones de la cola** (`PenaltiesCard` en `SanctionsPanel.tsx`) muestra en cada fila el nick, el motivo, "Nivel N de M", hasta cuándo dura y el botón **Levantar**. Ese botón abre un `ConfirmDialog` con el motivo obligatorio. El diálogo avisa a qué nivel queda el jugador.
 - `applyMmEvent` trata `penalty.lifted` como un cambio del estado y del perfil, que es donde está el nivel de la escalera.
 - La demo (`/demo/matchmaking`) trae una sanción de ejemplo y la propia, si te sancionaste.
 
@@ -80,5 +81,5 @@ sequenceDiagram
 | Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/61_mm_sanciones_admin.sql` (misma rama) |
 | Pruebas SQL | `pruebas/61_mm_sanciones_admin.sql` y `pruebas/correr_local.sh` |
 | Rutas de la API | `web/backend/src/routes/mm.ts` y `web/backend/test/unit/mm-penalties.test.ts` (rama `feat/mm-claim-en-sala`) |
-| Web | `web/frontend/src/features/matchmaking/admin/ReportsPanel.tsx`, `source.ts`, `demo.ts`, `queries.ts` y `types.ts` |
+| Web | `web/frontend/src/features/matchmaking/admin/SanctionsPanel.tsx`, `features/admin/bans/pages/AdminBansPage.tsx` y `lib/search.ts`, `matchmaking/admin/ReportsPanel.tsx` (el link), `source.ts`, `demo.ts`, `queries.ts` y `types.ts` |
 | Manual | `docs/manual/moderador/sanciones-matchmaking.md` y `docs/manual/jugador/buscar-partida.md` |

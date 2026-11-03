@@ -21,6 +21,13 @@ import {
   type DataColumn,
 } from "@/components/data-table/useServerTable"
 import { serverStatusOptions } from "@/features/public/api/queries"
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { SanctionsPanel } from "@/features/matchmaking/admin/SanctionsPanel"
+import {
+  adminBansOptions,
+  adminPenaltiesOptions,
+} from "@/features/matchmaking/queries"
+import { MmSourceContext } from "@/features/matchmaking/source"
 import { SearchBox } from "@/components/brand/SearchBox"
 import { daysUntil, fmtDate } from "../../lib/format"
 import {
@@ -142,7 +149,8 @@ export function AdminBansPage({
   const role = useMe().data?.role ?? "user"
   const canPermanent = canBanPermanent(role)
   const tab: StatusTab = search.status ?? "active"
-  const status: BanStatus | undefined = tab === "all" ? undefined : tab
+  const status: BanStatus | undefined =
+    tab === "all" || tab === "mm" ? undefined : tab
   const page = search.page ?? 1
   const filters: BanFilters = {
     source: search.source,
@@ -169,6 +177,10 @@ export function AdminBansPage({
     expired: useQuery(banCountOptions("expired", filters)).data,
     lifted: useQuery(banCountOptions("lifted", filters)).data,
   }
+  const mmPenalties = useQuery(adminPenaltiesOptions(apiMmSource)).data
+  const mmBans = useQuery(adminBansOptions(apiMmSource)).data
+  const mmCount =
+    mmPenalties && mmBans ? mmPenalties.length + mmBans.length : undefined
   const servers = useQuery(serverStatusOptions).data?.servers ?? []
   const [banning, setBanning] = useState(false)
 
@@ -235,92 +247,108 @@ export function AdminBansPage({
                 ? counts.active + counts.expired + counts.lifted
                 : undefined,
           },
+          { key: "mm", label: "Matchmaking", badge: mmCount },
         ]}
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <SearchBox
-          value={search.q}
-          label="Buscar baneos"
-          placeholder="Nick, motivo o SteamID"
-          onChange={(q) => filter({ q })}
-        />
-        <FilterSelect
-          label="Origen"
-          value={search.source ?? ALL}
-          onChange={(v) =>
-            filter({ source: v === ALL ? undefined : (v as Ban["source"]) })
-          }
-          options={[
-            { value: ALL, label: "Todos" },
-            { value: "web", label: "Web" },
-            { value: "server", label: "Juego (!ban)" },
-            { value: "import", label: "Importados" },
-          ]}
-        />
-        <FilterSelect
-          label="Servidor"
-          value={search.server ?? ALL}
-          onChange={(v) => filter({ server: v === ALL ? undefined : v })}
-          options={[
-            { value: ALL, label: "Todos" },
-            ...servers.map((s) => ({ value: s.id, label: s.name })),
-          ]}
-        />
-        <FilterSelect
-          className="sm:ml-auto"
-          label="Orden"
-          value={filters.sort}
-          onChange={(v) => filter({ sort: v === "soon" ? "soon" : undefined })}
-          options={[
-            { value: "recent", label: "Más recientes" },
-            { value: "soon", label: "Vencen antes" },
-          ]}
-        />
-      </div>
+      {tab === "mm" ? (
+        <MmSourceContext value={apiMmSource}>
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            Lo que deja a alguien sin buscar partida, sin tocar los servidores:
+            las sanciones que pone la cola sola y las exclusiones que se ponen
+            al resolver un reporte.
+          </p>
+          <SanctionsPanel />
+        </MmSourceContext>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <SearchBox
+              value={search.q}
+              label="Buscar baneos"
+              placeholder="Nick, motivo o SteamID"
+              onChange={(q) => filter({ q })}
+            />
+            <FilterSelect
+              label="Origen"
+              value={search.source ?? ALL}
+              onChange={(v) =>
+                filter({ source: v === ALL ? undefined : (v as Ban["source"]) })
+              }
+              options={[
+                { value: ALL, label: "Todos" },
+                { value: "web", label: "Web" },
+                { value: "server", label: "Juego (!ban)" },
+                { value: "import", label: "Importados" },
+              ]}
+            />
+            <FilterSelect
+              label="Servidor"
+              value={search.server ?? ALL}
+              onChange={(v) => filter({ server: v === ALL ? undefined : v })}
+              options={[
+                { value: ALL, label: "Todos" },
+                ...servers.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+            <FilterSelect
+              className="sm:ml-auto"
+              label="Orden"
+              value={filters.sort}
+              onChange={(v) =>
+                filter({ sort: v === "soon" ? "soon" : undefined })
+              }
+              options={[
+                { value: "recent", label: "Más recientes" },
+                { value: "soon", label: "Vencen antes" },
+              ]}
+            />
+          </div>
 
-      <SplitLayout
-        asideLabel="Detalle del baneo"
-        main={
-          <AdminTable
-            table={table}
-            query={list}
-            className="min-w-[700px]"
-            empty="Ningún baneo con esos filtros."
-            rowClassName={() => "align-top"}
-            selection={{
-              isSelected: (b) => b.id === search.ban,
-              onSelect: open,
-            }}
+          <SplitLayout
+            asideLabel="Detalle del baneo"
+            main={
+              <AdminTable
+                table={table}
+                query={list}
+                className="min-w-[700px]"
+                empty="Ningún baneo con esos filtros."
+                rowClassName={() => "align-top"}
+                selection={{
+                  isSelected: (b) => b.id === search.ban,
+                  onSelect: open,
+                }}
+              />
+            }
+            aside={
+              <>
+                {selected ? (
+                  <BanPanel
+                    key={selected.id}
+                    ban={selected}
+                    others={history.data?.items}
+                    canPermanent={canPermanent}
+                    onClose={() => onSearch({ ban: undefined })}
+                    onPick={open}
+                    onChanged={open}
+                  />
+                ) : (
+                  <PickHint
+                    title="Elige un baneo"
+                    text="Acá ves quién lo puso y dónde, si se levantó o lo reemplazó otro, y los demás baneos de esa persona."
+                  />
+                )}
+                <p className="rounded-lg bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                  Al conectarse, el servidor lo frena siempre. A quien ya está
+                  jugando lo echa la próxima sincronización (cada 3 minutos o al
+                  empezar el mapa), o al momento con{" "}
+                  <span className="font-mono">!syncbans</span>.
+                </p>
+              </>
+            }
           />
-        }
-        aside={
-          <>
-            {selected ? (
-              <BanPanel
-                key={selected.id}
-                ban={selected}
-                others={history.data?.items}
-                canPermanent={canPermanent}
-                onClose={() => onSearch({ ban: undefined })}
-                onPick={open}
-                onChanged={open}
-              />
-            ) : (
-              <PickHint
-                title="Elige un baneo"
-                text="Acá ves quién lo puso y dónde, si se levantó o lo reemplazó otro, y los demás baneos de esa persona."
-              />
-            )}
-            <p className="rounded-lg bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
-              Al conectarse, el servidor lo frena siempre. A quien ya está
-              jugando lo echa la próxima sincronización (cada 3 minutos o al
-              empezar el mapa), o al momento con{" "}
-              <span className="font-mono">!syncbans</span>.
-            </p>
-          </>
-        }
-      />
+        </>
+      )}
 
       {banning && (
         <BanDialog
