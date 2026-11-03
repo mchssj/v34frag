@@ -62,7 +62,7 @@ describe('GET /api/v1/matches/{id}/booking', () => {
     const calls = stub();
     const res = await req(`/api/v1/matches/${MATCH}/booking`, { anon: true });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual(BOOKING);
+    expect(await res.json()).toEqual({ ...BOOKING, server_now: expect.any(String) });
     expect(rpcs(calls)).toEqual([{ fn: 'match_booking', body: { p_match: MATCH } }]);
   });
   it('404 si no es una partida de torneo o PCW', async () => {

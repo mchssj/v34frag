@@ -29,6 +29,7 @@ const Booking = z
     can_start: z.boolean(),
     can_ready: z.boolean(),
     ban_until: z.string().nullable(),
+    server_now: z.string().openapi({ description: 'Hora del servidor: la web corrige sus cuentas regresivas con ella' }),
     booking: z.record(z.string(), z.unknown()).nullable().openapi({ description: 'La reserva abierta o la última; null si nunca hubo' }),
   })
   .openapi('MatchBooking');
@@ -83,7 +84,7 @@ const body = <T extends z.ZodTypeAny>(schema: T) => ({ body: { required: true, c
 const rpc = async (c: C, fn: string, args: Record<string, unknown>) => must(await c.var.sb.rpc(fn as never, args as never));
 const booking = async (c: C, id: string) => {
   const b = mustHave(await c.var.sb.rpc('match_booking' as never, { p_match: id } as never));
-  return c.json(b as never, 200);
+  return c.json({ ...(b as object), server_now: new Date().toISOString() } as never, 200);
 };
 
 const getBooking = createRoute({
@@ -164,7 +165,7 @@ export const bookings = createRouter()
     const { id } = c.req.valid('param');
     const b = must(await c.var.sb.rpc('match_booking' as never, { p_match: id } as never));
     if (!b) throw new AppError(404, 'NOT_FOUND', 'No existe esa partida de torneo o PCW.');
-    return c.json(b as never, 200);
+    return c.json({ ...(b as object), server_now: new Date().toISOString() } as never, 200);
   })
   .openapi(start, async (c) => {
     const { id } = c.req.valid('param');

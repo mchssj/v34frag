@@ -51,7 +51,8 @@ const state = async (c: C) => {
   const s = mustHave(await c.var.sb.rpc('mm_my_state' as never)) as { lobby?: { match?: GameRef | null } | null };
   const game = s.lobby?.match;
   if (game?.game_id) await withGame(c, game);
-  return c.json(s as never, 200);
+  // server_now: las cuentas regresivas de la web se corrigen con el reloj del servidor (el de cada PC puede ir corrido).
+  return c.json({ ...s, server_now: new Date().toISOString() } as never, 200);
 };
 const body = <T>(c: C) => (c.req as unknown as { valid(t: 'json'): T }).valid('json');
 const param = (c: C) => (c.req as unknown as { valid(t: 'param'): { id: string } }).valid('param').id;
