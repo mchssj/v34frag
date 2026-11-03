@@ -1,0 +1,35 @@
+== Antes (staging, 2026-11-03, dos corridas)
+GET /api/health (red + API)        mediana 112 ms · p90 115 ms · máx 115 ms
+GET /mm/state/live                 mediana 248 ms · p90 354 ms · máx 1107 ms
+GET /mm/profile                    mediana 256 ms · p90 309 ms · máx 557 ms
+POST /mm/queue (buscar)            mediana 445 ms · p90 1041 ms · máx 1359 ms
+DELETE /mm/queue (cancelar)        mediana 724 ms · p90 1003 ms · máx 1081 ms
+aviso queue.changed desde "buscar" mediana 197 ms · p90 254 ms · máx 608 ms
+socket: abrir hasta "ready"        mediana 451 ms · p90 464 ms · máx 495 ms
+GET /api/health (red + API)        mediana 101 ms · p90 109 ms · máx 109 ms
+GET /mm/state/live                 mediana 263 ms · p90 564 ms · máx 2308 ms
+GET /mm/profile                    mediana 243 ms · p90 338 ms · máx 1525 ms
+POST /mm/queue (buscar)            mediana 395 ms · p90 1047 ms · máx 1254 ms
+DELETE /mm/queue (cancelar)        mediana 687 ms · p90 982 ms · máx 987 ms
+aviso queue.changed desde "buscar" mediana 227 ms · p90 296 ms · máx 537 ms
+socket: abrir hasta "ready"        mediana 454 ms · p90 478 ms · máx 741 ms
+"Buscar" del 2.º → "Partida encontrada"  mediana 2046 ms · máx 2874 ms · (1551, 2046, 2874, 467, 2400)
+"Aceptar" del 2.º → aviso del veto       mediana 1497 ms · máx 2242 ms · (1870, 1020, 2242, 1497, 1278)
+
+== Después (API f5f6d7b98bf2, web c6dd7ce8cb01, dos corridas)
+GET /api/health (red + API)        mediana 89 ms · p90 95 ms · máx 380 ms
+GET /mm/state/live                 mediana 177 ms · p90 220 ms · máx 346 ms
+GET /mm/profile                    mediana 160 ms · p90 168 ms · máx 205 ms
+POST /mm/queue (buscar)            mediana 241 ms · p90 287 ms · máx 443 ms
+DELETE /mm/queue (cancelar)        mediana 223 ms · p90 246 ms · máx 262 ms
+aviso queue.changed desde "buscar" mediana 302 ms · p90 326 ms · máx 485 ms
+socket: abrir hasta "ready"        mediana 374 ms · p90 415 ms · máx 446 ms
+GET /api/health (red + API)        mediana 106 ms · p90 109 ms · máx 110 ms
+GET /mm/state/live                 mediana 193 ms · p90 196 ms · máx 417 ms
+GET /mm/profile                    mediana 171 ms · p90 186 ms · máx 196 ms
+POST /mm/queue (buscar)            mediana 255 ms · p90 502 ms · máx 702 ms
+DELETE /mm/queue (cancelar)        mediana 244 ms · p90 262 ms · máx 358 ms
+aviso queue.changed desde "buscar" mediana 304 ms · p90 312 ms · máx 519 ms
+socket: abrir hasta "ready"        mediana 387 ms · p90 416 ms · máx 418 ms
+"Buscar" del 2.º → "Partida encontrada"  mediana 185 ms · máx 200 ms · (200, 179, 185, 186, 171)
+"Aceptar" del 2.º → aviso del veto       mediana 157 ms · máx 197 ms · (197, 141, 157, 169, 154)

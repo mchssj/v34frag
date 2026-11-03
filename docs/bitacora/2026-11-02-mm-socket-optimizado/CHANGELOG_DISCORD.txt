@@ -1,0 +1,6 @@
+CMLeague 2.9.6 --  Changelog
+
+- El matchmaking es más rápido: la partida aparece apenas entra el último jugador, el veto empieza apenas acepta el último y el servidor queda listo apenas termina el veto. Antes había hasta 2 segundos de espera en cada paso.
+- Si se te cae internet o se suspende tu PC mientras buscas, la web lo nota y te reconecta sola. Mientras no estás, no te armamos partida, así que no te cae una sanción por una partida que no viste.
+- Si cancelas justo cuando se arma una partida, ya no quedas adentro.
+- Buscar, cancelar y aceptar responden más rápido.
