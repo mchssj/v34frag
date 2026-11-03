@@ -226,8 +226,9 @@ add(route('put', '/api/v1/admin/mm/maps/{mode}', { summary: 'Cambiar los mapas d
   await rpc(c, 'mm_set_mode_maps', { p_mode: modeOf(c), p_maps: body<{ maps: string[] }>(c).maps });
   return lists('maps', modeOf)(c);
 });
-add(route('get', '/api/v1/admin/mm/reports', { summary: 'Reportes', guard: requireModerator }), lists('reports'));
-add(route('post', '/api/v1/admin/mm/reports/{id}/resolve', { summary: 'Resolver un reporte', guard: requireModerator, request: { params: IdParam, ...jsonBody(Resolve) } }), async (c) => {
+// Reportes: solo admin (Daniel, 2026-11-03; replanteo 68).
+add(route('get', '/api/v1/admin/mm/reports', { summary: 'Reportes', guard: requireAdmin }), lists('reports'));
+add(route('post', '/api/v1/admin/mm/reports/{id}/resolve', { summary: 'Resolver un reporte', guard: requireAdmin, request: { params: IdParam, ...jsonBody(Resolve) } }), async (c) => {
   const b = body<{ action: string; days?: number }>(c);
   await rpc(c, 'mm_admin_resolve_report', { p_report: param(c), p_action: b.action === 'ban' ? 'mm_ban' : b.action, p_days: b.days ?? null });
   return c.json({ ok: true } as never, 200);

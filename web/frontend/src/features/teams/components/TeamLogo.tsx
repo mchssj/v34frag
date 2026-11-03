@@ -1,4 +1,6 @@
-import { ImageUpIcon, LockIcon, Trash2Icon } from "lucide-react"
+import { format, parseISO } from "date-fns"
+import { es } from "date-fns/locale"
+import { ClockIcon, ImageUpIcon, Trash2Icon } from "lucide-react"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
@@ -21,7 +23,7 @@ import {
   ImageError,
   type CropArea,
 } from "@/lib/image"
-import { useRemoveLogo, useUploadLogo } from "../api/queries"
+import { useRemoveLogo, useRenameTeam, useUploadLogo } from "../api/queries"
 import type { TeamDetail } from "../types"
 import { TeamCrest } from "@/components/brand/TeamCrest"
 
@@ -125,8 +127,9 @@ export function EditableCrest({
 }
 
 /**
- * Panel lateral "Editar equipo" del líder: el logo (se guarda apenas se recorta o se elimina) y el
- * nombre y la sigla, que solo cambia un admin.
+ * Panel lateral "Editar equipo" del líder: el logo (se guarda apenas se recorta o se elimina, cuando
+ * quiera) y el nombre y la sigla, una vez cada `team_config.rename_days` días (el admin, sin espera;
+ * plan docs/bitacora/2026-11-03-reportes-clips-nombre-equipo).
  */
 export function EditTeamSheet({
   team,
@@ -213,25 +216,11 @@ export function EditTeamSheet({
               </span>
             )}
           </div>
-          <div className="grid grid-cols-[minmax(0,1fr)_110px] gap-2.5">
-            <label className="flex flex-col gap-1.5 text-[13px] leading-5 font-medium">
-              Nombre
-              <Input value={team.name} readOnly disabled className="h-10" />
-            </label>
-            <label className="flex flex-col gap-1.5 text-[13px] leading-5 font-medium">
-              Sigla
-              <Input
-                value={team.tag ?? ""}
-                readOnly
-                disabled
-                className="h-10 font-mono"
-              />
-            </label>
-          </div>
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <LockIcon className="size-3.5 shrink-0" aria-hidden />
-            El nombre y la sigla los cambia un admin: pídeselo si hace falta.
-          </p>
+          {/* La key reinicia el formulario al abrir o si el equipo cambió por fuera. */}
+          <RenameFields
+            key={`${open}-${team.name}-${team.tag ?? ""}`}
+            team={team}
+          />
         </div>
         <SheetFooter className="flex-row justify-end border-t px-5 py-3">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -241,5 +230,88 @@ export function EditTeamSheet({
         {picker.elements}
       </SheetContent>
     </Sheet>
+  )
+}
+
+/** Nombre y sigla del equipo: una vez cada `team_config.rename_days` días (el admin, sin espera). */
+function RenameFields({ team }: { team: TeamDetail }) {
+  const rename = useRenameTeam()
+  const [name, setName] = useState(team.name)
+  const [tag, setTag] = useState(team.tag ?? "")
+  const admin = !!team.viewer?.is_admin
+  const next = admin ? null : team.next_name_change_at
+  // La API manda la fecha solo mientras falta para el próximo cambio.
+  const locked = !!next
+  const trimmed = { name: name.trim(), tag: tag.trim() }
+  const changed = trimmed.name !== team.name || trimmed.tag !== (team.tag ?? "")
+  const nameOk =
+    trimmed.name.length >= 2 &&
+    trimmed.name.length <= 40 &&
+    trimmed.tag.length >= 1 &&
+    trimmed.tag.length <= 6
+
+  async function saveName() {
+    try {
+      await rename.mutateAsync({ teamId: team.id, ...trimmed })
+      toast.success("Nombre actualizado")
+    } catch {
+      // Se muestra debajo de los campos.
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="grid grid-cols-[minmax(0,1fr)_110px] gap-2.5">
+        <label className="flex flex-col gap-1.5 text-[13px] leading-5 font-medium">
+          Nombre
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={40}
+            disabled={locked || rename.isPending}
+            className="h-10"
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-[13px] leading-5 font-medium">
+          Sigla
+          <Input
+            value={tag}
+            onChange={(e) =>
+              setTag(e.target.value.toUpperCase().replace(/\s/g, ""))
+            }
+            maxLength={6}
+            disabled={locked || rename.isPending}
+            className="h-10 font-mono"
+          />
+        </label>
+      </div>
+      {locked ? (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <ClockIcon className="size-3.5 shrink-0" aria-hidden />
+          Podrás cambiar el nombre y la sigla el{" "}
+          {format(parseISO(next!), "d 'de' MMMM", { locale: es })}.
+        </p>
+      ) : (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">
+            {admin
+              ? "Como admin, sin espera entre cambios."
+              : "Después de cambiarlos, hay que esperar unos días para el próximo cambio."}
+          </span>
+          <Button
+            size="sm"
+            disabled={!changed || !nameOk || rename.isPending}
+            onClick={() => void saveName()}
+          >
+            {rename.isPending ? "Guardando…" : "Guardar nombre"}
+          </Button>
+        </div>
+      )}
+      {rename.error != null && (
+        <span role="alert" className="text-xs text-destructive">
+          {errorMessage(rename.error)}
+        </span>
+      )}
+    </div>
   )
 }

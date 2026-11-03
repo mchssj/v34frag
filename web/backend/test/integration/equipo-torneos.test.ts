@@ -106,12 +106,13 @@ describe('plantel', () => {
   });
 
   it('máximo de miembros del admin: 409 ROSTER_FULL, has_space y max_members', async () => {
-    const before = (await req('GET', '/api/v1/admin/teams/config', { token: adm.token })).body as { max_members: number; max_led: number };
+    const before = (await req('GET', '/api/v1/admin/teams/config', { token: adm.token })).body as { max_members: number; max_led: number; rename_days: number };
     expect(before.max_led).toBe(1);
+    expect(before.rename_days).toBe(30);
     const t = await team(1);
     try {
-      expect((await req('PUT', '/api/v1/admin/teams/config', { token: t.cap.token, body: { max_members: 2, max_led: 1 } })).status).toBe(403);
-      expect((await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: { max_members: 2, max_led: 1 } })).body).toEqual({ max_members: 2, max_led: 1 });
+      expect((await req('PUT', '/api/v1/admin/teams/config', { token: t.cap.token, body: { max_members: 2, max_led: 1, rename_days: 30 } })).status).toBe(403);
+      expect((await req('PUT', '/api/v1/admin/teams/config', { token: adm.token, body: { max_members: 2, max_led: 1, rename_days: 30 } })).body).toEqual({ max_members: 2, max_led: 1, rename_days: 30 });
       const d = await req('GET', `/api/v1/teams/${t.id}`);
       expect(d.body).toMatchObject({ members: 2, max_members: 2 });
       const full = await req('GET', `/api/v1/teams?has_space=false&q=${encodeURIComponent('ET')}&per=100`);

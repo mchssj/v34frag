@@ -41,8 +41,8 @@ export function ReviewTab() {
         </div>
       )}
       <p className="max-w-[760px] rounded-lg bg-muted px-3 py-2.5 text-[13px] leading-relaxed">
-        Para mandar a grabar de nuevo un clip que salió mal, usa "Reprocesar" en
-        la jugada, dentro de la partida. Se puede mientras la demo siga
+        Para mandar a grabar de nuevo un clip que salió mal, elígelo en la
+        pestaña Clips y toca "Reprocesar". Se puede mientras la demo siga
         guardada: 90 días.
       </p>
     </section>

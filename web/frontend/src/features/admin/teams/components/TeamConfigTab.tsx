@@ -24,6 +24,7 @@ import {
 const RANGE: Record<keyof TeamConfig, [number, number]> = {
   max_members: [2, 30],
   max_led: [1, 10],
+  rename_days: [0, 365],
 }
 const valid = (k: keyof TeamConfig, n: number) =>
   Number.isInteger(n) && n >= RANGE[k][0] && n <= RANGE[k][1]
@@ -39,11 +40,13 @@ export function TeamConfigTab() {
     !!draft &&
     !!config.data &&
     (draft.max_members !== config.data.max_members ||
-      draft.max_led !== config.data.max_led)
+      draft.max_led !== config.data.max_led ||
+      draft.rename_days !== config.data.rename_days)
   const ok =
     !!current &&
     valid("max_members", current.max_members) &&
-    valid("max_led", current.max_led)
+    valid("max_led", current.max_led) &&
+    valid("rename_days", current.rename_days)
 
   const field = (k: keyof TeamConfig) => (v: string) =>
     current && setDraft({ ...current, [k]: v === "" ? -1 : Number(v) })
@@ -79,6 +82,14 @@ export function TeamConfigTab() {
             range={RANGE.max_led}
             onChange={field("max_led")}
           />
+          <NumberField
+            id={`${id}-n`}
+            label="Días entre cambios de nombre"
+            help="Cada cuántos días el líder puede cambiar el nombre y la sigla de su equipo. 0 = cuando quiera. El logo se cambia siempre."
+            value={current.rename_days}
+            range={RANGE.rename_days}
+            onChange={field("rename_days")}
+          />
           <p className="text-xs leading-relaxed text-muted-foreground">
             Para inscribirse en un torneo, cada equipo necesita los jugadores
             activos que pide el modo. En el ranking de equipos solo aparecen los
@@ -92,7 +103,7 @@ export function TeamConfigTab() {
           title="Cambios sin guardar"
           hint={
             !ok
-              ? `Miembros: de ${RANGE.max_members[0]} a ${RANGE.max_members[1]}. Equipos por líder: de ${RANGE.max_led[0]} a ${RANGE.max_led[1]}.`
+              ? `Miembros: de ${RANGE.max_members[0]} a ${RANGE.max_members[1]}. Equipos por líder: de ${RANGE.max_led[0]} a ${RANGE.max_led[1]}. Días entre cambios de nombre: de ${RANGE.rename_days[0]} a ${RANGE.rename_days[1]}.`
               : save.isError
                 ? errorMessage(save.error)
                 : "Vale para todos los equipos desde ahora."

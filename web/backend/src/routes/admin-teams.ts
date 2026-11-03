@@ -121,7 +121,8 @@ const putTeamConfig = createRoute({
   description:
     '`max_members` entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva ' +
     '(`409 ROSTER_FULL` al invitar o aceptar). `max_led` entre 1 y 10 (1 por defecto): de cuántos equipos oficiales activos puede ser capitán una ' +
-    'persona al crear un equipo o recibir la capitanía (el admin no tiene tope). Bajarlo no saca a nadie de la capitanía.',
+    'persona al crear un equipo o recibir la capitanía (el admin no tiene tope). Bajarlo no saca a nadie de la capitanía. `rename_days` entre 0 y 365 ' +
+    '(30 por defecto, 0 = sin espera): cada cuántos días el capitán puede cambiar el nombre o la sigla.',
   request: { body: { required: true, ...json(TeamConfig) } },
   responses: { 200: { description: 'Guardada', ...json(TeamConfig) }, ...errorResponses(400, 401, 403) },
 });
@@ -259,14 +260,14 @@ export const adminTeams = createRouter()
     return c.body(null, 204);
   })
   .openapi(getTeamConfig, async (c) => {
-    const r = must(await c.var.sb.from('team_config').select('max_members, max_led').eq('id', 1).maybeSingle());
+    const r = must(await c.var.sb.from('team_config').select('max_members, max_led, rename_days').eq('id', 1).maybeSingle());
     if (!r) throw new AppError(500, 'INTERNAL', 'Falta la configuración del plantel.');
     return c.json(r, 200);
   })
   .openapi(putTeamConfig, async (c) => {
-    const { max_members, max_led } = c.req.valid('json');
-    must(await c.var.sb.rpc('set_team_config', { p_max_members: max_members, p_max_led: max_led }));
-    return c.json({ max_members, max_led }, 200);
+    const { max_members, max_led, rename_days } = c.req.valid('json');
+    must(await c.var.sb.rpc('set_team_config', { p_max_members: max_members, p_max_led: max_led, p_rename_days: rename_days }));
+    return c.json({ max_members, max_led, rename_days }, 200);
   })
   .openapi(getRanking, async (c) => {
     const r = must(await c.var.sb.from('ranking_config').select('win_official, win_pcw').eq('id', 1).maybeSingle());

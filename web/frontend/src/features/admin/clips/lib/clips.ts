@@ -133,4 +133,4 @@ export function pickClips(plays: SamplePlay[], c: ClipConfig) {
   return { top, vip }
 }
 
-export const CLIP_TABS = ["review", "rules"] as const
+export const CLIP_TABS = ["list", "review", "rules"] as const

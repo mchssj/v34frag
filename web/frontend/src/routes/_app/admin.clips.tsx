@@ -16,10 +16,10 @@ function AdminClipsPageRoute() {
   const navigate = Route.useNavigate()
   return (
     <AdminClipsPage
-      tab={tab ?? "review"}
+      tab={tab ?? "list"}
       onTab={(t) =>
         void navigate({
-          search: { tab: t === "review" ? undefined : t },
+          search: { tab: t === "list" ? undefined : t },
           resetScroll: false,
         })
       }
