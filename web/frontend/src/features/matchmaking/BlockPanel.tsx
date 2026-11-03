@@ -88,11 +88,13 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
 
 export function PlayerPicker({
   label,
+  placeholder = "Buscar por nick",
   verb,
   pending,
   onPick,
 }: {
   label: string
+  placeholder?: string
   verb: string
   pending: boolean
   /** `done` limpia la búsqueda. */
@@ -106,7 +108,7 @@ export function PlayerPicker({
     <>
       <Input
         aria-label={label}
-        placeholder="Buscar por nick"
+        placeholder={placeholder}
         value={q}
         onChange={(e) => setQ(e.target.value)}
         className="h-8"
