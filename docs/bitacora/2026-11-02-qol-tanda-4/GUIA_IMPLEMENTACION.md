@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado con bots en local el 2026-11-02. **Subido el 2026-11-02 a flow, MVZG y `aurav34`**, salvo el reporter de MVZG (ver abajo). Entra en el próximo cambio de mapa, sin recargar nada. Falta la prueba con jugadores.
+Hecho y probado con bots en local el 2026-11-02. **Subido el 2026-11-02 a flow, MVZG y `aurav34`**. En MVZG el reporter es la 2.9.2 (la 2.9.1 de Daniel con esta tanda), subida el 2026-11-03. Entra en el próximo cambio de mapa, sin recargar nada. Falta la prueba con jugadores.
 
 ## Archivos
 
@@ -43,13 +43,19 @@ A pedido de Kyan, en la misma tanda. Antes de reemplazar se comprobó el tamaño
 
 - `csstv_reporter.cfg` recibió `csstv_round_sounds`, `csstv_half_summary`, `csstv_score_title` y `csstv_pause_hud` (flow y `aurav34`). `csstv_qol.cfg` recibió las 9 ConVars nuevas en los tres. `csstv_qol_end_kick` sigue en `40` en MVZG y en `0` en los otros.
 
-### MVZG: el reporter 2.9.x
+### MVZG: el reporter 2.9.x (2026-11-02)
 
 Al revisar MVZG antes de subir apareció un reporter que no es el nuestro: 141959 bytes, de las 21:21 del 2026-11-02, con un `csstv_reporter_2.9.0.smx` de las 18:56 en `disabled/` y la 2.7.6 movida ahí. Su `csstv_reporter.cfg` tiene `csstv_mm "1"` ("reservas de torneo y PCW (2.9.0)"), `csstv_claim "1"` y `csstv_server_tag "srv1"`. La 2.9 no está en ninguna rama del repositorio, local ni de GitHub, así que no se le pudieron sumar los cambios de esta tanda:
 
-- Se dejó su reporter y su `csstv_reporter.cfg` sin tocar. Los plugins aparte funcionan con él porque, sin `csstv_state`, leen el estado por el comando como antes. Por eso **en MVZG la consola se sigue llenando**.
-- Falta en MVZG lo que vive en el reporter: `csstv_state`, pitidos, resumen del medio tiempo, `!faltan`, pausa en pantalla, marcador en el nombre, mensajes a la SourceTV, `!pause` del coach y `!rr` de los capitanes.
-- **Para completarlo:** que Daniel suba la rama de la 2.9, aplicarle `pruebas/reporter-2.7.7.patch` (o los cambios de la 2.8.7), compilar el licenciado de MVZG (UUID `96bb5060-a639-483a-94ef-f15135c57b1b`) y subirlo.
+- Se dejó su reporter y su `csstv_reporter.cfg` sin tocar. Los plugins aparte funcionan con él porque, sin `csstv_state`, leen el estado por el comando como antes. Por eso en MVZG la consola se seguía llenando, hasta la 2.9.2.
+- Faltaba en MVZG lo que vive en el reporter: `csstv_state`, pitidos, resumen del medio tiempo, `!faltan`, pausa en pantalla, marcador en el nombre, mensajes a la SourceTV, `!pause` del coach y `!rr` de los capitanes.
+### MVZG: 2.9.2 (2026-11-03)
+
+- Daniel subió la 2.9.1 a `feat/mm-claim-en-sala` (`eea1821`), que ya tenía nuestra tercera tanda. A pedido de Kyan se unió esa rama con `kyan/pruebas` (commit de la unión `8693f59`). El único conflicto fue la versión, que queda **2.9.2**: la 2.9.1 más esta tanda.
+- Pruebas con bots de la 2.9.2 (`qol4`, `qol4b` y `qol4c`): mismos resultados que con la 2.8.7. `qol4.sh` ya no pasa de la primera ronda porque mata a los bots con `kill`, que ahora está bloqueado en la partida. En una corrida de `qol4c` el MVP del medio tiempo no quedó en la demo: la partida se canceló a los pocos segundos y la SourceTV va atrasada. En las corridas anteriores, con el mismo código, sí quedó.
+- Licenciado de MVZG (`server/build_licenciado.sh 96bb5060-a639-483a-94ef-f15135c57b1b mvzg`), 146398 bytes. Antes de subir se comprobó que el que había era la 2.9.1 (141959 bytes). Respaldo en `plugins/disabled/csstv_reporter_2.9.1.smx` y `cfg/sourcemod/csstv_reporter.cfg.bak_292`.
+- `csstv_reporter.cfg` de MVZG: se le sumaron las 4 ConVars de esta tanda. `csstv_mm "1"`, `csstv_claim "1"` y lo demás de Daniel quedaron igual.
+- Con eso MVZG tiene todo lo de esta tanda, también la consola limpia.
 
 ## Pruebas con bots (`cssds`, 2026-11-02)
 
