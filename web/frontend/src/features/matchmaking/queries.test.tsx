@@ -374,6 +374,14 @@ describe("avisos livianos", () => {
     expect(n).toEqual({ live: true, profile: true, chat: false })
   })
 
+  it("friend.changed pide solo el perfil (la lista de amigos)", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(mmKeys.state, base())
+    const n = needs()
+    applyMmEvent(qc, { t: "friend.changed" }, n)
+    expect(n).toEqual({ live: false, profile: true, chat: false })
+  })
+
   it("lobby.finished también renueva el perfil", () => {
     const qc = new QueryClient()
     qc.setQueryData(mmKeys.state, { ...base(), lobby: { id: "L1" } })

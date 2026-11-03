@@ -15,6 +15,7 @@ import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { initialOf } from "@/components/brand/PlayerAvatar"
 import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme, type Theme } from "@/components/theme-provider"
+import { myPhotoUrl } from "@/features/profile/lib/photo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,7 +59,7 @@ export function AccountMenu({
   const { team, level } = useShellIdentity()
   const { isMobile, state } = useSidebar()
   const profile = useQuery(myProfileOptions).data
-  const avatar = profile?.details.avatar_url
+  const avatar = myPhotoUrl(profile)
   const nick = profile?.player?.nick
   const alias = user.tag ?? "Jugador"
   const [leaving, setLeaving] = useState(false)

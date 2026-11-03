@@ -41,8 +41,9 @@ export function useUploadAvatar() {
           },
         })
       ),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: profileKeys.mine }),
+    // La foto sale en muchas pantallas (ficha, ranking, equipos, matchmaking) y la URL vieja se borra
+    // del bucket: se renueva todo, no solo Mi perfil (bitácora 2026-11-03-amigos-y-foto-perfil).
+    onSuccess: () => queryClient.invalidateQueries(),
   })
 }
 

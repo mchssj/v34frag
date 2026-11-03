@@ -1,0 +1,4 @@
+CMLeague 2.9.10 --  Changelog
+
+- Cuando alguien te suma a sus amigos, lo ves al instante en tu lista de Jugar, sin recargar la página.
+- Tu foto de perfil ahora es la misma en toda la web. Antes, si un admin le había puesto otra foto a tu ficha, al cambiar la tuya solo se veía en el menú de tu cuenta y en el resto seguía la vieja.

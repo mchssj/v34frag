@@ -42,6 +42,6 @@ Todo se cambia en **Mi perfil**, desde el menú de tu cuenta:
 | [Cuenta](/profile/account) | Contraseña y cerrar sesión |
 
 - **Alias:** lo puedes cambiar una vez cada 15 días.
-- **Foto:** JPEG, PNG o WebP de hasta 1 MB. Se recorta en cuadrado.
+- **Foto:** JPEG, PNG o WebP de hasta 1 MB. Se recorta en cuadrado y se ve al instante en toda la web. Si un admin le pone otra foto a tu ficha, se ve esa hasta que subas una nueva.
 - **Contraseña:** al cambiarla se cierran tus otras sesiones abiertas.
 - **Privacidad:** tu alias, tus estadísticas y tus partidas son siempre públicos. Por ahora, para pasar tu perfil a privado, pídeselo a un admin.

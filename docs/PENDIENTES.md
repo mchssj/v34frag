@@ -804,6 +804,18 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** commit (la `69` en las dos ramas) y producción con el corte. `vip_status` tiene el mismo problema (lista de VIP de Administración), sin tocar.
 - **Bitácora:** [`2026-11-03-foto-en-plantel`](bitacora/2026-11-03-foto-en-plantel/)
 
+### 1.58 Amigos al instante y la misma foto de perfil (replanteo `70`): implementado, sin commit ni despliegue
+
+- **Qué es:** sumar o sacar a un amigo avisa `friend.changed` por el socket, y la otra persona lo ve sin recargar. En la foto, gana la última que se subió (Daniel, 2026-11-03): al subir la suya, el jugador deja de ver la de su ficha. Antes, el menú de la cuenta mostraba la foto nueva y el resto de la web la de la ficha.
+- **Dónde:** base en `feat/frontend-fase-1` y en `feat/mm-claim-en-sala` (es del matchmaking); web en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-03:** replanteo `70` con inversa y 11 pruebas SQL (en local con `pg_safeupdate`) y web (560 pruebas).
+- **Falta:**
+  1. Commit en las dos ramas.
+  2. Staging: contar antes las fichas que toca el arreglo de datos (consulta en la guía), aplicar la `70` y desplegar la web. La API no cambia.
+  3. Probar con dos cuentas: B suma a A y A lo ve al instante; cambiar la foto y verla igual en el menú de la cuenta, la ficha, el ranking y Jugar.
+  4. Producción con el corte.
+- **Bitácora:** [`2026-11-03-amigos-y-foto-perfil`](bitacora/2026-11-03-amigos-y-foto-perfil/)
+
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".

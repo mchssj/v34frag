@@ -324,6 +324,9 @@ export function applyMmEvent(
   } else if (e.t === "penalty.lifted") {
     // Un moderador le levantó la sanción: el estado (sin el cartel) y el nivel de la escalera.
     needs.live = needs.profile = true
+  } else if (e.t === "friend.changed") {
+    // (replanteo 70) Alguien te sumó o te sacó de amigos, o lo hiciste en otra pestaña: solo la lista de amigos.
+    needs.profile = true
   } else if (e.t === "friend.searching") {
     // Le llega solo a sus amigos: la lista de amigos (en lo que casi no cambia) muestra que está buscando.
     needs.profile = true

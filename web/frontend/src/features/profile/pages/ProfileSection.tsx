@@ -44,6 +44,7 @@ import {
   type PersonalValues,
 } from "../lib/schemas"
 import { CardFooter, CardTitle, SectionCard } from "../components/ui"
+import { myPhotoUrl } from "../lib/photo"
 
 export function ProfileSection() {
   const user = useMe().data
@@ -61,6 +62,7 @@ export function ProfileSection() {
         email={user.email ?? ""}
         alias={user.tag ?? "J"}
         details={profile.data.details}
+        photo={myPhotoUrl(profile.data)}
       />
     </>
   )
@@ -187,9 +189,12 @@ function DataCard({
   email,
   alias,
   details,
+  photo,
 }: {
   email: string
   alias: string
+  /** La foto que se ve en el resto de la web (myPhotoUrl). */
+  photo: string | null
   details: {
     avatar_url: string | null
     real_name: string | null
@@ -225,7 +230,7 @@ function DataCard({
       <form onSubmit={save} noValidate>
         <div className="flex flex-col gap-[18px] p-5">
           <AvatarPicker
-            url={details?.avatar_url}
+            url={photo}
             initial={initialOf(alias)}
             size="md"
             title="Avatar"

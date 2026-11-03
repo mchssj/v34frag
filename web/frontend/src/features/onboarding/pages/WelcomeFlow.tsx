@@ -34,6 +34,7 @@ import {
   type GameRole,
 } from "../components/PlayStyleStep"
 import { steamStatusOptions } from "../api/queries"
+import { myPhotoUrl } from "@/features/profile/lib/photo"
 import {
   markStepSaved,
   markWelcomeSeen,
@@ -192,7 +193,7 @@ export function WelcomeFlow({ user }: { user: AuthUser }) {
             <PhotoStep
               alias={alias}
               greet={index === 0}
-              avatarUrl={profile.data?.details?.avatar_url}
+              avatarUrl={myPhotoUrl(profile.data)}
               name={name}
               nameError={nameError}
               onName={setName}
