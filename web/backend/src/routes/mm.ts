@@ -71,6 +71,7 @@ const Report = z.object({ lobby_id: Id, player_id: Id, reason: z.enum(['afk', 't
 const Commend = z.object({ lobby_id: Id, player_id: Id }).openapi('MmCommend');
 const Sound = z.object({ sound_id: Id.nullable() }).openapi('MmSoundChoice');
 const Resolve = z.object({ action: z.enum(['dismiss', 'warn', 'mm_ban', 'ban', 'server_ban']), days: z.number().int().positive().max(3650).optional() }).openapi('MmResolve');
+const Lift = z.object({ reason: z.string().trim().min(3).max(300) }).openapi('MmPenaltyLift');
 const Maps = z.object({ maps: z.array(z.string().max(64)).min(2).max(50) }).openapi('MmMaps');
 const Config = z.record(z.string(), z.unknown()).openapi('MmConfigPatch');
 
@@ -223,6 +224,12 @@ add(route('post', '/api/v1/admin/mm/reports/{id}/resolve', { summary: 'Resolver 
 add(route('get', '/api/v1/admin/mm/bans', { summary: 'Exclusiones vigentes', guard: requireModerator }), lists('bans'));
 add(route('delete', '/api/v1/admin/mm/bans/{id}', { summary: 'Levantar una exclusión', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
   await rpc(c, 'mm_admin_unban', { p_user: param(c) });
+  return c.json({ ok: true } as never, 200);
+});
+// Sanciones automáticas de la cola (replanteo 61). Levantar corta la espera y baja un nivel de la escalera.
+add(route('get', '/api/v1/admin/mm/penalties', { summary: 'Sanciones de la cola vigentes', guard: requireModerator }), lists('penalties'));
+add(route('post', '/api/v1/admin/mm/penalties/{id}/lift', { summary: 'Levantar una sanción de la cola', guard: requireModerator, request: { params: IdParam, ...jsonBody(Lift) } }), async (c) => {
+  await rpc(c, 'mm_admin_lift_penalty', { p_user: param(c), p_reason: body<{ reason: string }>(c).reason });
   return c.json({ ok: true } as never, 200);
 });
 add(route('get', '/api/v1/admin/mm/stats', { summary: 'Métricas', guard: requireAdmin, request: { query: z.object({ days: z.coerce.number().int().min(1).max(90).default(7) }) } }),
