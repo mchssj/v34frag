@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Implementado y probado en local el 2026-11-02, sin commit y sin desplegar.** El plugin no cambia: no hay nada que subir a los servidores #1, #2 (flow) ni #3.
+**En staging desde el 2026-11-02, con commit** (base, API y web). Commits: `c20414f0` en `feat/mm-claim-en-sala` (base y API) y `f11f1952` en `feat/frontend-fase-1` (web). El plugin no cambia: no hay nada que subir a los servidores #1, #2 (flow) ni #3.
 
 ## Archivos
 
@@ -27,13 +27,23 @@ Base y API en `E:\Css V34 Web\v34frag-mmclaim` (rama `feat/mm-claim-en-sala`); w
 - **API:** 440 pruebas (4 nuevas) y typecheck.
 - **Web:** 524 pruebas, typecheck y lint.
 
-## Despliegue en staging (falta)
+## Despliegue en staging (hecho el 2026-11-02)
 
-1. **Base:** aplicar la `59` en staging (va después de la `58`).
-2. **API:** rama temporal con `feat/mm-claim-en-sala` y `feat/backend-api-fase-1` en una carpeta aparte, `deploy/vps/desplegar.sh api`. Verificar `GET /api/v1/mm/state/live` sin sesión → 401.
-3. **Web:** desde una carpeta limpia de `feat/frontend-fase-1` (en la carpeta de trabajo está el manual de usuario de otra sesión, sin commit), `deploy/vps/desplegar.sh web`.
-4. **Orden:** base → API → web. La web vieja y la web nueva anterior siguen andando con `GET /api/v1/mm/state` y sin mirar `d`.
-5. **Medir de nuevo** (punto 5 del plan): sonda del socket y pedidos por hora a `/api/v1/mm/state*` en los logs de `cmleague-api`, y comparar con la tabla del plan.
+Sin salas abiertas ni nadie en la cola.
+
+1. **Base:** `59` aplicada en staging sin errores. Verificado: las funciones nuevas existen, `mm_emit` de 3 argumentos ya no está, `mm_my_live` es de `authenticated` y no de `anon`, `mm_emit` y `mm_queue_sizes` no son de `authenticated`, el trigger usa `mm_queue_sizes()`, y con un usuario de prueba `mm_my_profile() || mm_my_live(true)` es igual a `mm_my_state()`.
+2. **API `4225068507f9`:** rama temporal con `feat/mm-claim-en-sala` y `origin/feat/backend-api-fase-1`, armada en una carpeta aparte y borrada después. 429 pruebas. Las tres rutas nuevas responden 401 sin sesión.
+3. **Web `f11f1952fd60`:** desde una carpeta limpia de `feat/frontend-fase-1` (en la de trabajo está el manual de usuario de otra sesión). 509 pruebas.
+
+### Primera medición (2026-11-02, desde la PC de Daniel, 10 pedidos por ruta, cuenta de prueba sin cola ni sala)
+
+| Ruta | Tamaño | Mediana | Máximo |
+|---|---|---|---|
+| `GET /api/v1/mm/state` (completo, el de antes) | 6,7 kB | 420 ms | 635 ms |
+| `GET /api/v1/mm/state/live` | 4,7 kB | 208 ms | 403 ms |
+| `GET /api/v1/mm/profile` | 1,4 kB | 254 ms | 301 ms |
+
+Sin carga no se ven los picos de la medición del plan (p90 de 13,9 s). La comparación que importa es la de los logs de la API con gente en Jugar: pedidos por hora a `/api/v1/mm/state*` y sus percentiles. Queda para la próxima sesión de matchmaking con jugadores.
 
 ## Producción
 
@@ -41,5 +51,5 @@ Con el corte, junto con el resto del matchmaking.
 
 ## Falta
 
-- Commit, staging y la medición de después.
+- La medición con jugadores (logs de la API) y compararla con la tabla del plan.
 - Si la medición lo pide: aplicar el `d` de `lobby.accept` y `lobby.veto` sin pedir el estado liviano.
