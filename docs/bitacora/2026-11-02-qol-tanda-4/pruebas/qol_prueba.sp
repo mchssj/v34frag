@@ -7,6 +7,7 @@
  *   sm_t_money <nombre> <plata>  le pone esa plata
  *   sm_t_kill <atacante> <víctima>  la víctima muere y la kill cuenta para el atacante
  *   sm_t_ground                  cuántas armas hay en el piso (sin dueño)
+ *   sm_t_ragdolls                cuántos cuerpos (cs_ragdoll) hay
  */
 #pragma semicolon 1
 #pragma newdecls required
@@ -24,6 +25,7 @@ public void OnPluginStart()
 	RegServerCmd("sm_t_money", Cmd_Money);
 	RegServerCmd("sm_t_kill", Cmd_Kill);
 	RegServerCmd("sm_t_ground", Cmd_Ground);
+	RegServerCmd("sm_t_ragdolls", Cmd_Ragdolls);
 }
 
 int Find(const char[] name)
@@ -133,5 +135,14 @@ public Action Cmd_Ground(int args)
 			n++;
 	}
 	PrintToServer("[t] armas en el piso: %d", n);
+	return Plugin_Handled;
+}
+
+public Action Cmd_Ragdolls(int args)
+{
+	int n, ent = -1;
+	while ((ent = FindEntityByClassname(ent, "cs_ragdoll")) != -1)
+		n++;
+	PrintToServer("[t] cuerpos: %d", n);
 	return Plugin_Handled;
 }

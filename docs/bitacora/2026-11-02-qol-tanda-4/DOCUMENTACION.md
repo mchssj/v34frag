@@ -5,7 +5,7 @@
 | Mejora | Dónde | Qué ve el jugador |
 |---|---|---|
 | Consola limpia | Reporter 2.7.7 / 2.8.7, `csstv_qol` 1.2.0, `csstv_coach` 1.1.0, `csstv_pedir` 1.0.1, `v34_retake`, `v34_wingman` y `v34_dm` 1.0.1 | Nada. Los admins dejan de ver cada segundo el bloque de `sm_csstv_status` y "[DM] Uso: sm_dm…" en la consola |
-| Coach en primera persona | `csstv_coach` 1.1.0 | El coach solo mira en primera persona. Los rivales, y la C4 si es coach CT, le aparecen solo cuando el compañero que mira los ve |
+| Coach en primera persona | `csstv_coach` 1.1.1 (en v34 primera persona es el modo 3) | El coach solo mira en primera persona. Los rivales, y la C4 si es coach CT, le aparecen solo cuando el compañero que mira los ve |
 | Silencio en el clutch | `csstv_qol` 1.2.0 | Quien queda último vivo de su equipo no escucha a sus compañeros muertos hasta el final de la ronda. `!voz` lo desactiva |
 | Sonidos | Reporter | Un pitido al empezar la última ronda antes del cambio de lado y tres en cada match point |
 | Plata para casters | `csstv_qol` 1.2.0 | Al empezar cada ronda en vivo, a los espectadores y a la SourceTV: "Plata · CT $23.400 (compra completa) · T $8.200 (eco)". Los coaches no lo ven |
@@ -100,5 +100,6 @@ Sale del lugar del radar donde murió el jugador (`m_szLastPlaceName`). Los más
 | `csstv_qol_lock_names` | `1` | Nombres bloqueados |
 | `csstv_qol_goodbye` | `1` | Despedida con K/D |
 | `csstv_qol_block_kill` | `1` | `kill` y `explode` bloqueados en la partida |
+| `csstv_qol_warmup_cleanup` | `8` | 1.2.1: en el calentamiento, segundos para borrar un arma tirada; los cuerpos, a los 2 s (0 = no) |
 
 `!rr` sin admin no tiene ConVar: si se quiere solo para admins, se le da a todos el override `csstv_rr_admin` o se vuelve a la 2.7.6. Ojo: como `sm_rr` pasó a ser un comando para todos, los permisos de admin se preguntan con `csstv_rr_admin` (ADMFLAG_GENERIC).

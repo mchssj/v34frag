@@ -26,6 +26,8 @@
  *   - durante la partida: espectadores sin chat general ni voz para los jugadores, nombres bloqueados
  *     y aviso de quién se fue con su K/D; !admins.
  *   Los avisos de fin de ronda salen 0,3 s después: en el mismo instante no quedan en la demo.
+ *   - 1.2.1: en el calentamiento los cuerpos desaparecen a los 2 s y las armas tiradas a los
+ *     csstv_qol_warmup_cleanup segundos.
  *
  * El estado del mix se lee de la ConVar csstv_state del reporter (2.7.7 o más nuevo) y el de los otros
  * modos de sm_retake_on, sm_2v2_on y sm_dm_on. Si no existen, de las respuestas de sm_csstv_status y de
@@ -42,7 +44,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.2.0"
+#define PLUGIN_VERSION "1.2.1"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -110,6 +112,8 @@ ConVar g_cvSpecVoice;
 ConVar g_cvLockNames;
 ConVar g_cvGoodbye;
 ConVar g_cvBlockKill;
+ConVar g_cvCleanup;
+int g_iCleaned;                                    // cuerpos y armas borrados en el calentamiento, para sm_qol_status
 int g_iRoundKills[MAXPLAYERS + 1];                 // kills a rivales en esta ronda, para el ace
 bool g_bSpecMuted[MAXPLAYERS + 1][MAXPLAYERS + 1]; // [jugador][espectador]: silenciado durante la partida
 bool g_bNameRevert[MAXPLAYERS + 1];                // el próximo cambio de nombre es la vuelta al anterior
@@ -140,11 +144,15 @@ public void OnPluginStart()
 	g_cvSpecChat  = CreateConVar("csstv_qol_spec_chat", "1", "Durante la partida, los espectadores no escriben en el chat general (los admins sí).", _, true, 0.0, true, 1.0);
 	g_cvSpecVoice = CreateConVar("csstv_qol_spec_voice", "1", "Durante la partida, los jugadores no escuchan a los espectadores (el coach sí, a su equipo).", _, true, 0.0, true, 1.0);
 	g_cvLockNames = CreateConVar("csstv_qol_lock_names", "1", "Durante la partida no se puede cambiar el nombre.", _, true, 0.0, true, 1.0);
+	g_cvCleanup   = CreateConVar("csstv_qol_warmup_cleanup", "8", "En el calentamiento: segundos para borrar un arma tirada que nadie levantó (los cuerpos, a los 2 s). 0 = no limpiar.", _, true, 0.0, true, 120.0);
 	g_cvBlockKill = CreateConVar("csstv_qol_block_kill", "1", "Durante la partida, kill y explode (suicidarse por consola) no hacen nada.", _, true, 0.0, true, 1.0);
 	g_cvGoodbye   = CreateConVar("csstv_qol_goodbye", "1", "Durante la partida, avisar quién se fue y con qué K/D.", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "csstv_qol");
 	RegConsoleCmd("sm_voz", Cmd_Voz, "Cuando quedás solo: seguir escuchando (o no) a tus compañeros muertos.");
 	RegConsoleCmd("sm_admins", Cmd_Admins, "Qué admins están conectados.");
+	for (int i = 1; i <= MaxClients; i++)   // recarga del plugin con jugadores adentro
+		if (IsClientInGame(i))
+			OnClientPutInServer(i);
 	AddCommandListener(Cmd_Say, "say");
 	AddCommandListener(Cmd_Suicide, "kill");
 	AddCommandListener(Cmd_Suicide, "explode");
@@ -174,7 +182,7 @@ public Action Cmd_Status(int client, int args)
 	ReplyToCommand(client, "[QOL] v%s · reporter: %s · otro modo: %s · en vivo esta ronda: %s · último: %s · clutch: %s · plata: %s", PLUGIN_VERSION,
 		g_sState[0] ? g_sState : "-", g_bOtherMode ? "sí" : "no", g_bLive ? "sí" : "no", g_sLastBest[0] ? g_sLastBest : "-", g_sLastClutch[0] ? g_sLastClutch : "-",
 		g_sLastMoney[0] ? g_sLastMoney : "-");
-	ReplyToCommand(client, "[QOL] 4k/ace: %s · C4: %s · se fue: %s", g_sLastAce[0] ? g_sLastAce : "-", g_sLastC4[0] ? g_sLastC4 : "-", g_sLastBye[0] ? g_sLastBye : "-");
+	ReplyToCommand(client, "[QOL] 4k/ace: %s · C4: %s · se fue: %s · limpiados en el calentamiento: %d", g_sLastAce[0] ? g_sLastAce : "-", g_sLastC4[0] ? g_sLastC4 : "-", g_sLastBye[0] ? g_sLastBye : "-", g_iCleaned);
 	return Plugin_Handled;
 }
 
@@ -310,6 +318,8 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		g_iRoundKills[attacker]++;
 	if (victim > 0 && g_cvRespawn.BoolValue && InWarmup())
 		CreateTimer(1.5, Timer_Respawn, GetClientUserId(victim), TIMER_FLAG_NO_MAPCHANGE);
+	if (victim > 0 && g_cvCleanup.IntValue > 0 && InWarmup())
+		CreateTimer(2.0, Timer_RemoveBody, GetClientUserId(victim), TIMER_FLAG_NO_MAPCHANGE);
 	if (g_cvClutch.BoolValue && IsLive())
 		RequestFrame(Frame_Clutch);
 	if (g_cvMute.BoolValue && IsLive())
@@ -324,6 +334,55 @@ public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0 && (team == TEAM_T || team == TEAM_CT) && g_cvRespawn.BoolValue && InWarmup())
 		CreateTimer(1.5, Timer_Respawn, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+// ---------------------------------------------------------------------------
+// Calentamiento: sin cuerpos ni armas tiradas. No hay reinicio de ronda que limpie el mapa.
+// ---------------------------------------------------------------------------
+
+public void OnClientPutInServer(int client)
+{
+	SDKHook(client, SDKHook_WeaponDropPost, Hook_WeaponDrop);
+}
+
+/** El cuerpo (cs_ragdoll) a los 2 s de morir. */
+public Action Timer_RemoveBody(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !IsClientInGame(client) || !InWarmup())
+		return Plugin_Stop;
+	// En v34 el jugador no tiene m_hRagdoll: se busca el cuerpo que apunta a él.
+	int body = -1;
+	while ((body = FindEntityByClassname(body, "cs_ragdoll")) != -1)
+	{
+		if (!HasEntProp(body, Prop_Send, "m_hPlayer") || GetEntPropEnt(body, Prop_Send, "m_hPlayer") != client)
+			continue;
+		AcceptEntityInput(body, "Kill");
+		g_iCleaned++;
+	}
+	return Plugin_Stop;
+}
+
+/** Un arma tirada (al morir o con la G) se borra a los csstv_qol_warmup_cleanup segundos si nadie la levantó. La C4 no. */
+public void Hook_WeaponDrop(int client, int weapon)
+{
+	if (weapon <= MaxClients || g_cvCleanup.IntValue <= 0 || !InWarmup() || !IsValidEntity(weapon))
+		return;
+	char cls[32];
+	GetEdictClassname(weapon, cls, sizeof(cls));
+	if (StrEqual(cls, "weapon_c4"))
+		return;
+	CreateTimer(g_cvCleanup.FloatValue, Timer_RemoveWeapon, EntIndexToEntRef(weapon), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_RemoveWeapon(Handle timer, int ref)
+{
+	int weapon = EntRefToEntIndex(ref);
+	if (weapon == INVALID_ENT_REFERENCE || !InWarmup() || GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity") != -1)
+		return Plugin_Stop;
+	AcceptEntityInput(weapon, "Kill");
+	g_iCleaned++;
+	return Plugin_Stop;
 }
 
 public Action Timer_Respawn(Handle timer, int userid)

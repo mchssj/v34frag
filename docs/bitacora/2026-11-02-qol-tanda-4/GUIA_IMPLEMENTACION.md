@@ -57,6 +57,15 @@ Al revisar MVZG antes de subir apareció un reporter que no es el nuestro: 14195
 - `csstv_reporter.cfg` de MVZG: se le sumaron las 4 ConVars de esta tanda. `csstv_mm "1"`, `csstv_claim "1"` y lo demás de Daniel quedaron igual.
 - Con eso MVZG tiene todo lo de esta tanda, también la consola limpia.
 
+### Arreglos después de subir (2026-11-03)
+
+Kyan probó en el servidor y encontró dos cosas:
+
+| Problema | Causa | Arreglo | Prueba con bots | Subido |
+|---|---|---|---|---|
+| El coach seguía en tercera persona | En este motor no existe la cámara de congelado: primera persona es el modo **3** y el 4 es la de persecución. El plugin forzaba el 4 (ya lo decía la bitácora `2026-10-23-clips-video`) | `csstv_coach` 1.1.1: `OBS_IN_EYE 3` | `pruebas/coach_camara.sh`: modo 3 al anotarse, después de tres `spec_mode` y al morir el que miraba (pasa a otro) | flow, MVZG y `aurav34`, con respaldo `plugins/disabled/csstv_coach_1.1.0.smx` |
+| En el calentamiento no desaparecen los cuerpos ni las armas | Con el reaparecer del calentamiento no hay reinicio de ronda que limpie el mapa | `csstv_qol` 1.2.1: el cuerpo (`cs_ragdoll` cuyo `m_hPlayer` es el muerto; en v34 el jugador no tiene `m_hRagdoll`) a los 2 s, y el arma tirada que nadie levantó a los `csstv_qol_warmup_cleanup` (8) s, menos la C4. Solo con el reporter en calentamiento | `pruebas/limpieza.sh`: 2 cuerpos → 0 a los 3,5 s; armas en el piso → 0 a los 10 s | flow, MVZG y `aurav34`, con respaldo `plugins/disabled/csstv_qol_1.2.0.smx` y `csstv_qol.cfg.bak_121`; `csstv_qol_warmup_cleanup "8"` en los tres |
+
 ## Pruebas con bots (`cssds`, 2026-11-02)
 
 `pruebas/qol4.sh <carpeta con los .smx>`, con `-condebug`, el reporter de depuración, `v34_dm` y `v34_retake` cargados y `qol_prueba.smx` de la tercera tanda. Se corrió con la 2.8.7 y con la 2.7.7.

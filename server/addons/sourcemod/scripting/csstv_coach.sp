@@ -24,11 +24,11 @@
 #include <sdktools>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.1.1"
 #define TEAM_SPEC 1
 #define TEAM_T    2
 #define TEAM_CT   3
-#define OBS_IN_EYE 4
+#define OBS_IN_EYE 3   // en este motor (v34) no existe la cámara de congelado: 3 es primera persona y 4 la de persecución
 
 public Plugin myinfo =
 {
