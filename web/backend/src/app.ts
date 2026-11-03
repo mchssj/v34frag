@@ -36,6 +36,7 @@ import { ranking } from './routes/ranking';
 import { roster } from './routes/roster';
 import { seasons } from './routes/seasons';
 import { servers } from './routes/servers';
+import { site } from './routes/site';
 import { system } from './routes/system';
 import { teams } from './routes/teams';
 
@@ -77,6 +78,7 @@ export function createApp(options: AppOptions = {}) {
   );
 
   app.route('/', system);
+  app.route('/', site);
   app.route('/', auth);
   app.route('/', me);
   app.route('/', notifications);

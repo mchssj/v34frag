@@ -109,6 +109,11 @@ export const cropAvatar = (file: File, area: CropArea) =>
 export const cropBanner = (file: File, area: CropArea) =>
   cropImage(file, area, { width: 1600, height: 400, maxBytes: 4 * 1024 * 1024 })
 
+/** Imagen del inicio de sesión: 1600×2000 (4:5) en JPEG, hasta 1,5 MB (el backend acepta 4 MB). */
+export const AUTH_IMAGE_SIZE = { width: 1600, height: 2000 }
+export const cropAuthImage = (file: File, area: CropArea) =>
+  cropImage(file, area, { ...AUTH_IMAGE_SIZE, maxBytes: 1.5 * 1024 * 1024 })
+
 /** Logo del equipo: 512×512 (el backend acepta de 128 a 1024, cuadrado), hasta 2 MB. */
 export const LOGO_SIZE = 512
 export const cropLogo = (file: File, area: CropArea) =>

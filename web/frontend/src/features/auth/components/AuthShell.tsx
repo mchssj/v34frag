@@ -1,8 +1,10 @@
+import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import type { ReactNode } from "react"
 
 import { BrandLockup } from "@/components/brand/Brand"
 import { Button } from "@/components/ui/button"
+import { authImageOptions } from "../api/authImage"
 
 export type SideCopy = { title: string; subtitle: string } | null
 
@@ -23,6 +25,7 @@ export function AuthShell({
   side: SideCopy
   children: ReactNode
 }) {
+  const image = useQuery(authImageOptions).data ?? null
   return (
     <div className="grid min-h-svh grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] bg-background leading-design text-foreground">
       <div className="flex min-w-0 flex-col gap-6 px-8 py-7">
@@ -74,8 +77,16 @@ export function AuthShell({
         </p>
       </div>
 
-      {/* La imagen ambiental está pendiente: por ahora el panel queda en `muted`. */}
-      <aside className="relative min-h-80 border-l bg-muted">
+      {/* La imagen la sube un admin (Administración › Usuarios › Inicio de sesión, 4:5); sin imagen, gris. */}
+      <aside className="relative min-h-80 overflow-hidden border-l bg-muted">
+        {image && (
+          <img
+            src={image}
+            alt=""
+            decoding="async"
+            className="absolute inset-0 size-full object-cover"
+          />
+        )}
         {side && (
           <div className="absolute inset-x-7 bottom-7 flex flex-col gap-2.5 rounded-xl border bg-background/90 p-[18px] backdrop-blur-[8px]">
             <p className="text-[15px] leading-[1.4] font-semibold text-pretty">

@@ -757,6 +757,19 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** borrar el worktree `v34frag-mmfront` y la rama `merge/mm-en-frontend`. El `.smx` del repo en esta rama sigue siendo el 2.7.3.
 - **Bitácora:** [`2026-11-02-mm-en-rama-frontend`](bitacora/2026-11-02-mm-en-rama-frontend/)
 
+### 1.55 Imagen del inicio de sesión configurable (replanteo `67`): con commit, sin desplegar
+
+- **Qué es:** el panel derecho de Iniciar sesión, Registro y Bienvenida muestra la imagen que sube un admin en Administración › Usuarios › Inicio de sesión (4:5, 1600 × 2000, bucket `photos/site/`). Sin imagen, queda gris (Daniel, 2026-11-03).
+- **Dónde:** base, API y web en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-03:** replanteo `67` con inversa y 10 pruebas SQL (corridas en local con `pg_safeupdate`), API (466 pruebas) y web (553 pruebas).
+- **Falta:**
+  1. ~~Correr las pruebas SQL~~: hecho el 2026-11-03.
+  2. ~~Commit~~: hecho el 2026-11-03 en `feat/frontend-fase-1`. Falta llevar la base y la API a `feat/mm-claim-en-sala` si la API de staging sigue saliendo de ahí.
+  3. Staging: la `67`, la API y la web; subir una imagen y mirarla en 1440, 1920 y un teléfono.
+  4. La página del manual de Admin (`docs/manual/admin/imagen-inicio-sesion.md`), con el resto de la sección Admin (punto 1.49).
+  5. Producción con el corte.
+- **Bitácora:** [`2026-11-03-imagen-login`](bitacora/2026-11-03-imagen-login/)
+
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".
