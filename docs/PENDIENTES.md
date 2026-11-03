@@ -139,6 +139,8 @@ Ordenado por urgencia.
 
 ### 1.5 Corte del replanteo: migraciones 01 a 21 y plugin 2.0.0 (`!match` y `!status`) con 2.1.0 (mixes en vivo) y 2.2.0 (`!claim`)
 
+> **Desactualizado (2026-11-03):** el corte ahora es con los replanteos `01` a `69` y lo describe [`2026-11-03-corte-produccion`](bitacora/2026-11-03-corte-produccion/PLAN.md). Lo de abajo queda como historia y como lista de chequeos sueltos.
+
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
 **Plugins que esperan la web nueva** (salen o se prenden en el corte, en el servidor real y en flow en la misma tanda):
