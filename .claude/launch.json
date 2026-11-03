@@ -46,6 +46,24 @@
         "127.0.0.1"
       ],
       "port": 8101
+    },
+    {
+      "name": "anticheat-api",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": [
+        "-lc",
+        "cd /c/Users/Agus/Documents/repo/.claude/worktrees/anticheat-backend/web/backend && PORT=8799 pnpm dev:node"
+      ],
+      "port": 8799
+    },
+    {
+      "name": "anticheat-web",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": [
+        "-lc",
+        "cd /c/Users/Agus/Documents/repo/.claude/worktrees/anticheat-web/web/frontend && pnpm dev --port 5199 --strictPort"
+      ],
+      "port": 5199
     }
   ]
 }
