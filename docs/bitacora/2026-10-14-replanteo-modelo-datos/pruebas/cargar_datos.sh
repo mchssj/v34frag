@@ -20,6 +20,14 @@ cargar() {
     docker exec -i "$contenedor" psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -q >/dev/null
 }
 cargar "$copia/auth_users.sql"
+# Las migraciones dejan filas propias (la de clip_config, por ejemplo) que la copia trae otra vez: se vacía
+# public antes de cargarla (2026-11-03, ensayo del corte).
+docker exec -i "$contenedor" psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -q >/dev/null <<'SQL'
+do $$ declare t text; begin
+  select string_agg(format('public.%I', tablename), ', ') into t from pg_tables where schemaname = 'public';
+  if t is not null then execute 'truncate ' || t || ' cascade'; end if;
+end $$;
+SQL
 cargar "$copia/public.sql"
 docker exec -i "$contenedor" psql -U postgres -d postgres -q -c "notify pgrst, 'reload schema';" >/dev/null
 echo "Datos de producción cargados en la base local (copia del $(cat "$copia/FECHA"))."
