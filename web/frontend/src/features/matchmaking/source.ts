@@ -6,6 +6,7 @@ import type { Schemas } from "@/api/client"
 import { mapImage } from "@/features/maps/lib/catalog"
 import type { MapEntry } from "@/features/maps/types"
 import { env } from "@/lib/env"
+import { syncServerClock } from "./serverClock"
 import type {
   InvitePref,
   MmAdminConfig,
@@ -109,6 +110,7 @@ async function call<T>(
   init?: RequestInit & { signal?: AbortSignal }
 ): Promise<T> {
   let res: Response
+  const started = Date.now()
   try {
     res = await authFetch(`${env.apiUrl}${path}`, init)
   } catch (e) {
@@ -117,6 +119,8 @@ async function call<T>(
   }
   const body: unknown = await res.json().catch(() => undefined)
   if (!res.ok) throw errorFromResponse(res, body)
+  if (body && typeof body === "object" && "server_now" in body)
+    syncServerClock(body.server_now, Date.now() - started)
   return body as T
 }
 

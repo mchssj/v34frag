@@ -9,6 +9,7 @@ import { errorFromResponse, networkError } from "@/api/errors"
 import { authFetch } from "@/auth/authFetch"
 import { shellKeys } from "@/features/shell/api/queries"
 import { env } from "@/lib/env"
+import { syncServerClock } from "@/features/matchmaking/serverClock"
 import { isOpen } from "../lib/booking"
 import type { BookingAction, FreeServer, MatchBooking } from "../types/booking"
 
@@ -19,6 +20,7 @@ async function call<T>(
   init?: RequestInit & { signal?: AbortSignal }
 ): Promise<T> {
   let res: Response
+  const started = Date.now()
   try {
     res = await authFetch(`${env.apiUrl}${path}`, init)
   } catch (e) {
@@ -27,6 +29,8 @@ async function call<T>(
   }
   const body: unknown = await res.json().catch(() => undefined)
   if (!res.ok) throw errorFromResponse(res, body)
+  if (body && typeof body === "object" && "server_now" in body)
+    syncServerClock(body.server_now, Date.now() - started)
   return body as T
 }
 const send = <T>(path: string, body?: unknown, method = "POST") =>

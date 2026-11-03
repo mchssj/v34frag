@@ -261,6 +261,8 @@ export type MmSanction = {
 }
 
 export type MmState = {
+  /** Hora del servidor: la usan las cuentas regresivas (`serverClock`). */
+  server_now?: string
   open: boolean
   me: MmMe
   /** Solo los habilitados. */
