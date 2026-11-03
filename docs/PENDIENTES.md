@@ -572,6 +572,18 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** después del cambio de mapa, ver en la consola de cada servidor que las cuatro cvars dan 100, 101, 100 y 101.
 - **Bitácora:** [`2026-10-27-tasas-coherentes`](bitacora/2026-10-27-tasas-coherentes/)
 
+### 1.36 Servidor nuevo de MVZG (`CMLeague #1`): falta darle identidad propia
+
+- **Qué es:** `190.104.34.3:27022`, en el mismo nodo de MVZG que flow pero con otra cuenta SFTP (`SERVER3_*` en el `.env`, puerto 2022). Sumado por Kyan el 2026-11-02. El SFTP funciona con OpenSSH; `curl` (libssh2) no logra negociar el cifrado. No hay clave de panel.
+- **Estado, revisado solo por lectura el 2026-11-02:** es una copia de flow. `csstv_reporter.smx` y `csstv_reporter.cfg` son idénticos a los de flow: mismo build licenciado, mismo token, `csstv_server_tag "flow"` y `csstv_send "1"`. Lo demás revisado de `server.cfg` coincide con la regla de configuración.
+- **Numeración, cambiada el 2026-11-02 por decisión de Kyan:** este servidor es `#1` y `aurav34` es `#3`. Se cambió `tv_title` y `csstv_calladmin_server` en los dos, `csstv_calladmin_address` en este y `hostname` en `aurav34` (`Retake CMLeague #3 By ExtremeHost`). Respaldos en `*.bak_nombre`. Toma efecto en el próximo cambio de mapa; `csstv_calladmin` puede necesitar que recargue su cfg.
+- **Identidad, 2026-11-02:** ya tiene token y tag propios (`MVZG`) y su build licenciado del reporter 2.7.2 (UUID `96bb5060-a639-483a-94ef-f15135c57b1b`), compilado desde `6898c05`, la misma versión que flow. Respaldo del build anterior en `addons/sourcemod/csstv_reporter.smx.bak_flow`. Entra en el próximo cambio de mapa; falta confirmar con `sm_csstv_status`.
+- **Qué falta:**
+  1. Crearlo en Administración › Servidores, para tener token, tag, licencia, `csstv_hud_port` y `csstv_hud_key` propios.
+  2. Subir su build (decidir si es el genérico, por ser ahora el nuestro, o uno licenciado) y corregir el cfg del reporter.
+  3. Comparar con `aurav34` o con flow usando `comparar.py`, porque `aurav34` es solo de retake.
+- **Flow pasó a `#2`** el 2026-11-02, por decisión de Kyan: `tv_title` y `csstv_calladmin_server`, con respaldos en `*.bak_nombre`. Su `hostname` sigue siendo `ETHEREAL TEAM`. Las bitácoras anteriores lo siguen llamando `#3`.
+
 ### 1.22 Servidor de flow (CMLeague #3): pasarle el paquete
 
 - **Armado el 2026-10-27** en `flow/` (raíz del repo, fuera de git): SourceMod 1.10, Metamod, Stripper, los plugins del #1 más los que solo tiene RBK, los cfgs de partida, `LEEME.txt` y el reporter 2.5.0 **licenciado** (UUID `7b01c85b-bc3e-4aa3-9ab5-3c2044157034`, md5 `0697263ae530ab2cf4ae2a3e7ce92281`). Sin Accelerator, sin los plugins de Extreme Host y sin mapas.
