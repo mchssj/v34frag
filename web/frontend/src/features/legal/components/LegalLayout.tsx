@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/brand/SiteFooter"
 import { ThemeToggle } from "@/components/brand/ThemeToggle"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { HELP_PAGES } from "../lib/pages"
 
 export type LegalSection = { id: string; title: string; body: ReactNode }
 
@@ -35,7 +36,7 @@ export function Wip({ children = "En preparación" }: { children?: ReactNode }) 
   )
 }
 
-/** Página de términos o privacidad: barra, título, índice y secciones numeradas. */
+/** Página de ayuda o legal: barra, título, menú entre páginas, índice y secciones numeradas. */
 export function LegalLayout({
   eyebrow,
   title,
@@ -90,20 +91,38 @@ export function LegalLayout({
         </div>
 
         <div className="grid gap-10 min-[1000px]:grid-cols-[260px_1fr]">
-          <nav
-            aria-label="Índice"
-            className="min-[1000px]:sticky min-[1000px]:top-24 min-[1000px]:self-start"
-          >
-            <Card variant="outline" radius="tile" className="p-4">
-              <p className="mb-2 font-mono text-[11px] font-semibold tracking-[1px] text-muted-foreground uppercase">
-                Índice
+          <aside className="flex flex-col gap-4 min-[1000px]:sticky min-[1000px]:top-24 min-[1000px]:self-start">
+            <Card variant="outline" radius="tile" asChild className="p-1.5">
+              <nav aria-label="Ayuda y legales">
+                <ul className="flex flex-col gap-0.5">
+                  {HELP_PAGES.map((p) => (
+                    <li key={p.to}>
+                      {/* El router marca la página actual con data-status="active". */}
+                      <Link
+                        to={p.to}
+                        className={`flex h-10 items-center rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[status=active]:bg-accent data-[status=active]:text-foreground ${focusRing}`}
+                      >
+                        {p.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </Card>
+
+            <nav
+              aria-label="En esta página"
+              className="hidden px-1.5 min-[1000px]:block"
+            >
+              <p className="mb-2 px-2 font-mono text-[11px] font-semibold tracking-[1px] text-muted-foreground uppercase">
+                En esta página
               </p>
-              <ol className="flex flex-col gap-0.5 text-sm">
+              <ol className="flex flex-col gap-0.5 text-[13px]">
                 {sections.map((s, i) => (
                   <li key={s.id}>
                     <a
                       href={`#${s.id}`}
-                      className={`flex gap-2 rounded-md px-2 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground ${focusRing}`}
+                      className={`flex gap-2 rounded-md px-2 py-1 text-muted-foreground transition-colors hover:text-foreground ${focusRing}`}
                     >
                       <span className="w-5 shrink-0 font-mono text-xs leading-5 text-primary">
                         {i + 1}
@@ -113,8 +132,8 @@ export function LegalLayout({
                   </li>
                 ))}
               </ol>
-            </Card>
-          </nav>
+            </nav>
+          </aside>
 
           <div className="flex max-w-[760px] min-w-0 flex-col gap-10">
             {sections.map((s, i) => (

@@ -22,6 +22,12 @@ Abrir `/terminos` y `/privacidad`, y mirar el pie de `/` y el texto de abajo de 
 
 Borrar `features/legal/`, las dos rutas y `SiteFooter.tsx`, y volver `routes/index.tsx` y `AuthShell.tsx` a su versión anterior.
 
+## Segunda tanda (2026-11-03): centro de ayuda
+
+- Kyan pasó dos capturas: una columna "Legal" para el pie y un menú lateral con Preguntas frecuentes, Soporte, Términos de uso, Privacidad y Seguridad.
+- Se sumaron `/ayuda`, `/soporte` y `/seguridad`, el menú en `LegalLayout` (el índice de secciones pasó abajo como "En esta página", solo en pantallas anchas) y la columna **Legal** del pie. "Ayuda" lleva a Preguntas frecuentes.
+- Probado: `pnpm typecheck` y `pnpm lint` sin errores, 11 pruebas de `features/legal` en verde, y en el navegador a 1440 y 1280 px en oscuro y a 375 px sin scroll horizontal.
+
 ## Pendiente
 
 - Datos completados el 2026-11-03 en las dos copias. Las regiones también: Supabase en el oeste de Estados Unidos (Oregón) y el VPS en Beauharnois (Canadá).

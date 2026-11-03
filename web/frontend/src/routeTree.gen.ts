@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AyudaRouteImport } from './routes/ayuda'
 import { Route as PrivacidadRouteImport } from './routes/privacidad'
+import { Route as SeguridadRouteImport } from './routes/seguridad'
+import { Route as SoporteRouteImport } from './routes/soporte'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
@@ -87,9 +90,24 @@ const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AyudaRoute = AyudaRouteImport.update({
+  id: '/ayuda',
+  path: '/ayuda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadRoute = PrivacidadRouteImport.update({
   id: '/privacidad',
   path: '/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeguridadRoute = SeguridadRouteImport.update({
+  id: '/seguridad',
+  path: '/seguridad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoporteRoute = SoporteRouteImport.update({
+  id: '/soporte',
+  path: '/soporte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TerminosRoute = TerminosRouteImport.update({
@@ -395,7 +413,10 @@ const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ayuda': typeof AyudaRoute
   '/privacidad': typeof PrivacidadRoute
+  '/seguridad': typeof SeguridadRoute
+  '/soporte': typeof SoporteRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
@@ -459,7 +480,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ayuda': typeof AyudaRoute
   '/privacidad': typeof PrivacidadRoute
+  '/seguridad': typeof SeguridadRoute
+  '/soporte': typeof SoporteRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
@@ -525,7 +549,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/ayuda': typeof AyudaRoute
   '/privacidad': typeof PrivacidadRoute
+  '/seguridad': typeof SeguridadRoute
+  '/soporte': typeof SoporteRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
@@ -591,7 +618,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ayuda'
     | '/privacidad'
+    | '/seguridad'
+    | '/soporte'
     | '/terminos'
     | '/welcome'
     | '/admin'
@@ -655,7 +685,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ayuda'
     | '/privacidad'
+    | '/seguridad'
+    | '/soporte'
     | '/terminos'
     | '/welcome'
     | '/admin'
@@ -720,7 +753,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_auth'
+    | '/ayuda'
     | '/privacidad'
+    | '/seguridad'
+    | '/soporte'
     | '/terminos'
     | '/welcome'
     | '/_app/admin'
@@ -787,7 +823,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  AyudaRoute: typeof AyudaRoute
   PrivacidadRoute: typeof PrivacidadRoute
+  SeguridadRoute: typeof SeguridadRoute
+  SoporteRoute: typeof SoporteRoute
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
   DemoBioRoute: typeof DemoBioRoute
@@ -831,11 +870,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ayuda': {
+      id: '/ayuda'
+      path: '/ayuda'
+      fullPath: '/ayuda'
+      preLoaderRoute: typeof AyudaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidad': {
       id: '/privacidad'
       path: '/privacidad'
       fullPath: '/privacidad'
       preLoaderRoute: typeof PrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguridad': {
+      id: '/seguridad'
+      path: '/seguridad'
+      fullPath: '/seguridad'
+      preLoaderRoute: typeof SeguridadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/soporte': {
+      id: '/soporte'
+      path: '/soporte'
+      fullPath: '/soporte'
+      preLoaderRoute: typeof SoporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terminos': {
@@ -1385,7 +1445,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  AyudaRoute: AyudaRoute,
   PrivacidadRoute: PrivacidadRoute,
+  SeguridadRoute: SeguridadRoute,
+  SoporteRoute: SoporteRoute,
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
   DemoBioRoute: DemoBioRoute,
