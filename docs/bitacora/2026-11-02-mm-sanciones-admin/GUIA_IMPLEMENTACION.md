@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Implementado y probado en local el 2026-11-02, sin commit y sin desplegar en staging.** El plugin no cambia: no hay nada que subir a los servidores #1, #2 (flow) ni #3.
+**En staging desde el 2026-11-02, con commit** (base, API y web). El plugin no cambia: no hay nada que subir a los servidores #1, #2 (flow) ni #3.
 
 ## Archivos
 
@@ -23,17 +23,28 @@
 | `docs/manual/moderador/sanciones-matchmaking.md` | Nueva |
 | `docs/manual/jugador/buscar-partida.md` | Un párrafo en "Sanciones" |
 
-## Despliegue en staging (pendiente)
+## Despliegue en staging (hecho el 2026-11-02)
 
-Sin salas abiertas ni nadie en la cola:
+Commits: `c85500d6` en `feat/mm-claim-en-sala` (base y API) y `98d9eb1d` en `feat/frontend-fase-1` (web).
 
-1. **Base:** aplicar `61_mm_sanciones_admin.sql` en la Supabase de staging. Verificar:
-   - existe `mm_penalty_log.lifted_at`;
+1. **Base:** `61` aplicada en staging con `psql -v ON_ERROR_STOP=1`. Verificado:
+   - existen las 3 columnas de `mm_penalty_log`;
    - `mm_admin_lift_penalty` es de `authenticated` y no de `anon`;
-   - `select mm_admin_lists('penalties')` como moderador responde una lista.
-2. **API:** desde `feat/mm-claim-en-sala`, con `deploy/vps/desplegar.sh`.
-3. **Web:** desde una carpeta limpia de `feat/frontend-fase-1`, con `deploy/vps/desplegar.sh`.
-4. **Prueba:** con una cuenta de prueba, buscar partida y no aceptar. Verla en la tarjeta, levantarla con `adminprueba` y comprobar que puede volver a buscar sin recargar.
+   - `mm_admin_lists` tiene la rama `penalties`.
+2. **API `7e5ab1c44a48`:** merge temporal "tmp: API de staging", armado en el worktree limpio `v34frag-deploy`, igual que el anterior (`42250685`): `feat/mm-claim-en-sala` (`eea18213`) con `feat/backend-api-fase-1` (`240e2694`).
+   - Los conflictos estaban todos fuera de `web/backend` (bitácora, HUD y plugin) y se tomaron como en `42250685`.
+   - `web/backend` quedó igual al desplegado más `mm.ts` y su prueba.
+   - Pasaron 437 pruebas.
+3. **Web `3d24324f0998`:** desde un checkout limpio de `feat/frontend-fase-1` en `v34frag-deploy`. Pasaron 518 pruebas.
+   - En el primer intento falló por tiempo "en la sala: chat, reportar y desconexión de un compañero" (`PlayPage.test.tsx`): pasó de los 5 s con toda la suite en paralelo.
+   - Sola tarda 2,7 s. En el segundo intento pasó.
+4. **Prueba de punta a punta** con la cuenta `kyan` (sanción de prueba con `mm_penalize`) y `adminprueba` por la API:
+   - la lista la muestra con nivel 2 de 4 y el motivo;
+   - sin motivo responde 400;
+   - levantar responde 200, deja el nivel en 1 y anota el motivo;
+   - levantar otra vez responde 404 ("No tiene una sanción vigente").
+   - Después se dejó a `kyan` como estaba: se borró la falta de prueba y se restauraron el nivel y las fechas.
+   - **No se probó** el aviso `penalty.lifted` con `kyan` conectado a la web.
 
 ## Producción
 
