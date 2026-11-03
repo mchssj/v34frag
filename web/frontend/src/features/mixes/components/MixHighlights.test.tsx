@@ -113,6 +113,28 @@ describe("MixHighlights", () => {
     ).toBeNull()
   })
 
+  it("pide la foto del perfil de los que tienen ficha (MVP y destacados), no de los invitados", async () => {
+    api({})
+    const pedidos: string[] = []
+    server.use(
+      http.get(`${API}/api/v1/players/:nick`, ({ params }) => {
+        pedidos.push(String(params.nick))
+        return HttpResponse.json({
+          photo_url: "https://x.test/kyan.webp",
+          details: null,
+        })
+      })
+    )
+    const conFicha = {
+      ...room,
+      side1: { players: [{ ...room.side1.players[0], alias: "kyan" }] },
+    } as unknown as Room
+    const h = mixHighlights("m1", conFicha, "de_dust2")
+    renderWithQuery(<>{h.top}</>)
+    await screen.findByRole("region", { name: "MVP" })
+    await vi.waitFor(() => expect(pedidos).toEqual(["kyan"]))
+  })
+
   it("con clips muestra 'Lo más destacado'", async () => {
     api({
       clips: [

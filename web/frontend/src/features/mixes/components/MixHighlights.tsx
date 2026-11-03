@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 
 import { gameClipsOptions } from "@/features/series/api/queries"
 import { Highlights } from "@/features/matchmaking/room/Highlights"
 import { MvpAndLeaders } from "@/features/matchmaking/room/RoomStats"
+import { leadersOf, mvpOf } from "@/features/matchmaking/room/roomData"
+import { playerOptions } from "@/features/player/api/queries"
 import { fetchMvpImage } from "@/features/matchmaking/source"
 import type { MmClip } from "@/features/matchmaking/types"
 import type { Room } from "../lib/room"
@@ -33,6 +35,29 @@ function MixMvp({ room }: { room: Room }) {
   // Sin la imagen (o si la API no la tiene todavía), la tarjeta queda lisa.
   const image = useQuery(mvpImageOptions).data ?? null
   const stats = [...room.side1.players, ...room.side2.players]
+  // El detalle de la partida no trae fotos: se piden los perfiles solo del MVP y de los destacados
+  // (cinco como mucho, con caché). Los invitados sin ficha quedan con las iniciales.
+  const mvp = mvpOf(stats)
+  const shown = [mvp, ...leadersOf(stats).map((l) => l.player)].filter(
+    (p): p is NonNullable<typeof p> => !!p?.alias
+  )
+  const aliases = [...new Set(shown.map((p) => p.alias!))]
+  const photos = useQueries({
+    queries: aliases.map((a) => ({ ...playerOptions(a), retry: false })),
+    combine: (rs) =>
+      new Map(
+        rs.flatMap((r, i) =>
+          r.data
+            ? [
+                [
+                  aliases[i],
+                  r.data.photo_url ?? r.data.details?.avatar_url ?? null,
+                ] as const,
+              ]
+            : []
+        )
+      ),
+  })
   if (!stats.length) return null
   return (
     <MvpAndLeaders
@@ -40,7 +65,12 @@ function MixMvp({ room }: { room: Room }) {
       image={image}
       playerOf={(key) => {
         const p = stats.find((s) => s.key === key)
-        return p ? { nick: p.nick, photo_url: null } : undefined
+        return p
+          ? {
+              nick: p.nick,
+              photo_url: p.alias ? (photos.get(p.alias) ?? null) : null,
+            }
+          : undefined
       }}
     />
   )
