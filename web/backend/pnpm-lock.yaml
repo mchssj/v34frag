@@ -166,6 +166,9 @@ importers:
 
   .:
     dependencies:
+      '@hono/node-ws':
+        specifier: ^1.3.1
+        version: 1.3.1(@hono/node-server@2.1.3(hono@4.13.11))(hono@4.13.11)
       '@hono/zod-openapi':
         specifier: 1.6.3
         version: 1.6.3(hono@4.13.11)(zod@4.6.5)
@@ -178,6 +181,9 @@ importers:
       hono:
         specifier: 4.13.11
         version: 4.13.11
+      postgres:
+        specifier: ^3.4.9
+        version: 3.4.9
       ssh2:
         specifier: 1.17.0
         version: 1.17.0
@@ -623,6 +629,13 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
+
+  '@hono/node-ws@1.3.1':
+    resolution: {integrity: sha512-vo/MwCnpJAVHBkGzWjCJ28wF45fYHAfbPZcH2rodZODHtch2GHA94KtMfusmVycTUtsLAsaNsHhtY6P8X3RQsA==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      '@hono/node-server': ^1.19.11
+      hono: ^4.6.0
 
   '@hono/zod-openapi@1.6.3':
     resolution: {integrity: sha512-VYR82Y60plu8g3pN60OUXMVKpmxh3R04Qs++3DY9vtwZ9/sA/BRY0PcRIR+Z37/3itWtM7pYwT9bKiH9JhqV6Q==}
@@ -1309,6 +1322,10 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postgres@3.4.9:
+    resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
+    engines: {node: '>=12'}
+
   rolldown@1.2.11:
     resolution: {integrity: sha512-qpSwIyz0jHQq5qXBTNxFmE6664rJ7O+4TvPFOiOaBSrz8IOHc1koKKSqTM2H6u1UG1+TveuC6vaDHKXFOvb1Kw==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -1752,6 +1769,15 @@ snapshots:
   '@hono/node-server@2.1.3(hono@4.13.11)':
     dependencies:
       hono: 4.13.11
+
+  '@hono/node-ws@1.3.1(@hono/node-server@2.1.3(hono@4.13.11))(hono@4.13.11)':
+    dependencies:
+      '@hono/node-server': 2.1.3(hono@4.13.11)
+      hono: 4.13.11
+      ws: 8.21.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@hono/zod-openapi@1.6.3(hono@4.13.11)(zod@4.6.5)':
     dependencies:
@@ -2316,6 +2342,8 @@ snapshots:
       nanoid: 3.3.19
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  postgres@3.4.9: {}
 
   rolldown@1.2.11:
     dependencies:

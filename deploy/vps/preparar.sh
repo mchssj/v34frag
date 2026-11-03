@@ -33,7 +33,7 @@ paso "3.1 Comprobaciones previas"
 id "$ADMIN" >/dev/null 2>&1 || falla "no existe el usuario $ADMIN"
 grep -qE '^(ssh-ed25519|ssh-rsa|ecdsa-sha2-)' "/home/$ADMIN/.ssh/authorized_keys" 2>/dev/null \
   || falla "$ADMIN no tiene ninguna llave SSH: sin llave, apagar las contraseñas deja el servidor sin acceso"
-for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-notify.service \
+for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service \
          cmleague-notify.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
          demos.env.example demos-sftp.json.example hud.json.example; do
   [[ -f "$DIR/$f" ]] || falla "falta $f al lado del script"
@@ -216,12 +216,12 @@ ls -la "$ETC"
 
 # --- 3.12 Servicios -------------------------------------------------------------------------------------------------
 paso "3.12 Servicios de systemd"
-for u in cmleague-api.service cmleague-season.service cmleague-season.timer cmleague-notify.service cmleague-notify.timer \
+for u in cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service cmleague-notify.timer \
          cmleague-hud.service cmleague-demos.service cmleague-demos.timer; do
   install -m 644 "$DIR/$u" "/etc/systemd/system/$u"
 done
 systemctl daemon-reload
-systemctl enable cmleague-api.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
+systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
 systemctl start cmleague-season.timer cmleague-notify.timer
 # cmleague-hud queda instalado y apagado: se prende a mano después de completar hud.json (token del relay) y copiar
 # las fuentes (systemctl enable --now cmleague-hud; ver docs/bitacora/2026-10-29-hud-relay-vps).

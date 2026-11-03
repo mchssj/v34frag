@@ -139,7 +139,7 @@ export const adminServers = createRouter()
     const { id } = c.req.valid('param');
     const b = c.req.valid('json');
     const set = Object.fromEntries(Object.entries(b).filter(([, v]) => v !== undefined)) as typeof b;
-    const res = await c.var.sb.from('game_servers').update(set).eq('id', id).select('id');
+    const res = await c.var.sb.from('game_servers').update(set as never).eq('id', id).select('id');
     const rows = sameName(() => must(res));
     if (!rows?.length) throw notFound('ese servidor');
     return c.json(toServer(c, await getServer(c, id)), 200);

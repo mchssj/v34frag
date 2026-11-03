@@ -15,6 +15,7 @@
  * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
  * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
  * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
+ * csstv/mm.inc toma las salas del matchmaking de la web (csstv_mm lo prende).
  *
  * El resultado se guarda primero en addons/sourcemod/data/csstv/queue/<uid>.json
  * y después se envía con la extensión System2 en partes de menos de 2 KB
@@ -35,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.7.3"
+#define PLUGIN_VERSION "2.9.1"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -118,6 +119,7 @@ bool g_bDemoRecorded;          // la partida actual tiene demo (va en el resulta
 Handle g_hReadyTimer;
 // Nombres de los equipos de la partida: "Equipo <nick>" (A = el que empezó de CT).
 char g_sTeamNick[2][24];
+int g_iCaptain[2];             // userid del que le da nombre al equipo: elige lado tras el cuchillo
 char g_sTeam[2][40];
 bool g_bSurrender;             // la partida terminó por !gg
 int g_iSurrenderTeam;          // 0 = A, 1 = B
@@ -141,6 +143,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/menu.inc"
 #include "csstv/maps.inc"
 #include "csstv/match.inc"
+#include "csstv/mm.inc"
 #include "csstv/status.inc"
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
@@ -216,6 +219,7 @@ public void OnPluginStart()
 	Menu_Init();
 	Maps_Init();
 	Match_Init();
+	Mm_Init();
 	Status_Init();
 	Claim_Init();
 	Whois_Init();
@@ -237,7 +241,9 @@ public void OnConfigsExecuted()
 	StartReadyTimer();
 	License_Check();
 	Http_ScheduleProcess(5.0);
+	Mm_OnConfigsExecuted();   // antes de Match_OnMapReady: retoma la sala
 	Match_OnMapReady();   // vínculo con la web: un pendiente se descarta, uno activo se actualiza (series)
+	Match_OnCoachCfg();   // !coach apagado en una sala del matchmaking
 }
 
 public void OnMapEnd()
@@ -274,12 +280,14 @@ public void OnClientPostAdminCheck(int client)
 {
 	Recon_OnJoin(client);
 	Match_OnClientJoin(client);
+	Mm_OnClientJoin(client);
 	Ips_OnJoin(client);
 }
 
 public void OnClientDisconnect(int client)
 {
 	g_bReady[client] = false;
+	Mm_OnClientLeave(client);
 	Recon_Remember(client);
 	Board_SaveClient(client);
 	AutoPause_OnLeave(client);
@@ -463,6 +471,9 @@ public Action Cmd_Status(int client, int args)
 	char lic[160];
 	License_StatusText(lic, sizeof(lic));
 	ReplyToCommand(client, "[%s] Licencia: %s", g_sTag, lic);
+	char mm[96];
+	Mm_StatusText(mm, sizeof(mm));
+	ReplyToCommand(client, "[%s] Matchmaking: %s", g_sTag, mm);
 	if (g_sLastError[0])
 		ReplyToCommand(client, "[%s] Último error: %s", g_sTag, g_sLastError);
 	return Plugin_Handled;
@@ -534,7 +545,7 @@ public Action Timer_ReadyReminder(Handle timer)
 void CheckReadyStart()
 {
 	int total = CountTeamPlayers();
-	if (License_Allows() && !Maps_ChangePending() && total >= g_cvMinPlayers.IntValue && CountReady() == total && Match_ReadyAllows())
+	if (License_Allows() && !Maps_ChangePending() && total >= Mm_MinPlayers() && CountReady() == total && Match_ReadyAllows())
 		StartMatch(0, g_cvReadyKnife.BoolValue);
 }
 
@@ -593,6 +604,7 @@ void ResetMatch()
 	for (int t = 0; t < 2; t++)
 	{
 		g_sTeamNick[t][0] = '\0';
+		g_iCaptain[t] = 0;
 		strcopy(g_sTeam[t], sizeof(g_sTeam[]), t == 0 ? "Equipo A" : "Equipo B");
 	}
 	for (int i = 1; i <= MaxClients; i++)
@@ -637,8 +649,10 @@ void StartMatch(int maxRounds = 0, bool knife = false)
 	// El plugin decide cuándo termina la partida, no el juego.
 	ServerCommand("mp_maxrounds 0; mp_winlimit 0; mp_timelimit 0");
 	ExecIfExists("csstv/live.cfg");
+	Match_ExecKindCfg();   // live_mix, live_mm, live_official o live_pcw: lo propio de cada tipo de partida
 
 	Match_OnMatchStart();
+	Mm_OnMatchStart();
 	PickTeamNames();
 	Match_ApplyTeamNames();
 	Recon_RememberAll();
@@ -661,7 +675,7 @@ void GoLive()
 }
 
 /**
- * Nombre de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
+ * Nombre y capitán de cada equipo: un jugador al azar de cada lado (humanos primero). El equipo A es el
  * que empieza de CT. El nombre queda fijo toda la partida, aunque ese jugador se vaya.
  */
 void PickTeamNames()
@@ -682,6 +696,7 @@ void PickTeamNames()
 		int pick = nh ? humans[GetRandomInt(0, nh - 1)] : (nb ? bots[GetRandomInt(0, nb - 1)] : 0);
 		if (!pick)
 			continue;
+		g_iCaptain[t] = GetClientUserId(pick);
 		GetClientName(pick, g_sTeamNick[t], sizeof(g_sTeamNick[]));
 		ReplaceString(g_sTeamNick[t], sizeof(g_sTeamNick[]), "{", "(");   // que un nick no pueda meter etiquetas de color
 		TrimString(g_sTeamNick[t]);
@@ -691,12 +706,12 @@ void PickTeamNames()
 	}
 }
 
-void BeginRestarts(int count, int purpose)
+void BeginRestarts(int count, int purpose, int delay = 1)
 {
 	g_bRestarting = true;
 	g_iRestartsLeft = count;
 	g_iRestartPurpose = purpose;
-	ServerCommand("mp_restartgame 1");
+	ServerCommand("mp_restartgame %d", delay);   // también reemplaza el reinicio de ronda que tenga pendiente el juego
 }
 
 public Action Timer_NextRestart(Handle timer)
@@ -733,7 +748,7 @@ void OnRestartsDone()
 		if (g_bHalfSwap)
 		{
 			g_bHalfSwap = false;
-			HalfTalk_Start();
+			HalfTalk_OnRoundStart();
 		}
 		if (g_iRestartPurpose == PURPOSE_REROUND)
 			Rr_ScheduleRestore();
@@ -783,6 +798,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	{
 		g_State = State_Halftime;
 		PrintToChatAll("%s Medio tiempo. Se cambian los lados.", PREFIX);
+		HalfTalk_Begin();
 		CreateTimer(g_cvHalftimeDelay.FloatValue, Timer_Halftime, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	if (g_State != State_Finished)
@@ -793,10 +809,28 @@ public Action Timer_Halftime(Handle timer)
 {
 	if (g_State != State_Halftime)
 		return Plugin_Stop;
+	g_bHalfSwap = true;
+	// Con la charla, la ronda siguiente empieza a los csstv_half_alltalk segundos del final.
+	// El cambio de lado va justo antes, para que nadie quede vivo y en el otro equipo mientras tanto.
+	int wait = RoundToCeil(float(HalfTalk_Gap()) - g_cvHalftimeDelay.FloatValue);
+	if (wait > 1)
+	{
+		BeginRestarts(1, PURPOSE_RESUME, wait);
+		CreateTimer(float(wait) - 0.5, Timer_HalfSwap, _, TIMER_FLAG_NO_MAPCHANGE);
+		return Plugin_Stop;
+	}
 	Board_SaveAll();   // incluye las kills después del fin de la ronda; antes del cambio, que suma una muerte
 	SwapTeams();
-	g_bHalfSwap = true;
 	BeginRestarts(1, PURPOSE_RESUME);
+	return Plugin_Stop;
+}
+
+public Action Timer_HalfSwap(Handle timer)
+{
+	if (g_State != State_Halftime || !g_bRestarting || !g_bHalfSwap)
+		return Plugin_Stop;
+	Board_SaveAll();
+	SwapTeams();
 	return Plugin_Stop;
 }
 
@@ -889,6 +923,7 @@ void FinishMatch()
 	if (QueueResult("terminada"))
 		PrintToChatAll("%s Enviando el resultado a CSSTV…", PREFIX);
 	Live_Discard();
+	Mm_OnMatchOver("");
 
 	RestoreStartMoney();
 	ExecIfExists("csstv/end.cfg");
@@ -902,6 +937,7 @@ void FinishMatch()
  */
 void CancelMatch(const char[] reason, const char[] by)
 {
+	Mm_OnMatchOver("La partida se cancelo en el servidor");
 	Pause_Clear();
 	Gg_Clear();
 	Knife_Reset();
@@ -942,7 +978,7 @@ void CancelMatch(const char[] reason, const char[] by)
  */
 public Action Timer_AbandonCheck(Handle timer)
 {
-	int min = g_cvAbandonPlayers.IntValue;
+	int min = Mm_AbandonMin(g_cvAbandonPlayers.IntValue);
 	if (min <= 0 || !(g_State == State_Starting || g_State == State_Live || g_State == State_Halftime || g_State == State_Knife))
 	{
 		g_iAbandonSince = 0;

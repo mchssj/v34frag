@@ -176,6 +176,18 @@ bool Stats_ClientKey(int client, char[] key, int maxlen)
 		Format(key, maxlen, "BOT:%d", GetClientUserId(client));
 #endif
 	}
+#if defined CSSTV_DEBUG
+	else if (GetClientAuthId(client, AuthId_Steam2, key, maxlen, false) && StrEqual(key, "STEAM_ID_LAN", false))
+	{
+		// Solo en la compilación de pruebas: con sv_lan 1 no hay SteamID; se usa el falso por nombre, como a los bots.
+		char lanName[MAX_NAME_LENGTH];
+		GetClientName(client, lanName, sizeof(lanName));
+		int h = 5381;
+		for (int i = 0; lanName[i] != '\0'; i++)
+			h = ((h << 5) + h + lanName[i]) & 0x7FFFFFFF;
+		Format(key, maxlen, "STEAM_0:%d:%d", h & 1, 999000000 + (h >> 1) % 100000);
+	}
+#endif
 	else if (!GetClientAuthId(client, AuthId_Steam2, key, maxlen, g_cvValidateId.BoolValue)
 		|| StrContains(key, "STEAM_ID", false) == 0 || StrContains(key, "STEAM_", false) != 0)
 	{

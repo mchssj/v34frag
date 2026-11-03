@@ -15,7 +15,7 @@
  * de tocarla y manda el server.cfg. Un reinicio vuelve a la del server.cfg.
  *
  * Acceso: flag b (moderadores y admins), con override de sm_pw, sm_npw y sm_rpw. Independiente de
- * csstv_reporter. Sin licencia.
+ * csstv_reporter. Sin licencia. Con csstv_mm 1 en el reporter, la contraseña la maneja la web y el plugin no la toca.
  * Compilación de depuración (PW_DEBUG=): escribe en el log los mensajes, reconoce a los bots por nombre y
  * agrega comandos para que un bot use el plugin.
  */
@@ -24,7 +24,7 @@
 
 #include <sourcemod>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.1.0"
 #define PW_MAX         32
 #define RANDOM_LEN     6
 
@@ -92,7 +92,7 @@ public void OnMapEnd()
 public void OnConfigsExecuted()
 {
 	g_bMapLoading = false;
-	if (!g_cvEnabled.BoolValue)
+	if (!g_cvEnabled.BoolValue || WebManagesPassword())
 		return;
 	if (g_State == Pw_Set)
 		ApplyPassword(g_sPassword);
@@ -204,11 +204,23 @@ bool CanUse(int client, int which)
 	return HasAccess(client, cmds[which], ADMFLAG_GENERIC);
 }
 
+/** Servidor del matchmaking (csstv_mm del reporter, si está cargado). */
+bool WebManagesPassword()
+{
+	ConVar cv = FindConVar("csstv_mm");
+	return cv != null && cv.BoolValue;
+}
+
 bool CheckUse(int client, int which)
 {
 	if (!CanUse(client, which))
 	{
 		Reply(client, "No tienes acceso a este comando.");
+		return false;
+	}
+	if (WebManagesPassword())
+	{
+		Reply(client, "En este servidor la contraseña la maneja la web.");
 		return false;
 	}
 	if (!g_cvEnabled.BoolValue)

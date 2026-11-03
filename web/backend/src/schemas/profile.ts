@@ -65,7 +65,7 @@ export const Preferences = z
   .object({ theme_fx: themeFx, notifications: NotificationPrefs })
   .openapi('Preferences');
 export const PreferencesPatch = z
-  .object({ theme_fx: themeFx.optional(), notifications: NotificationPrefsPatch.optional() })
+  .object({ theme_fx: themeFx.optional(), notifications: NotificationPrefsPatch.optional(), mm_invites: z.enum(['private', 'public']).optional() })
   .strict()
   .openapi('PreferencesPatch', { description: 'Solo se cambian las claves enviadas; `null` borra una' });
 

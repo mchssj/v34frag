@@ -26,14 +26,17 @@
     "season:tick": "tsx scripts/season-tick.mts",
     "demos:sftp": "tsx scripts/demos-sftp.mts",
     "notify:tick": "tsx scripts/notify-tick.mts",
+    "mm:worker": "tsx scripts/mm-worker.mts",
     "test:coverage": "vitest run --coverage",
     "test:coverage:unit": "vitest run --project unit --coverage"
   },
   "dependencies": {
+    "@hono/node-ws": "^1.3.1",
     "@hono/zod-openapi": "1.6.3",
     "@scalar/hono-api-reference": "0.12.7",
     "@supabase/supabase-js": "2.117.2",
     "hono": "4.13.11",
+    "postgres": "^3.4.9",
     "ssh2": "1.17.0",
     "zod": "4.6.5"
   },

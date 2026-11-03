@@ -27,7 +27,7 @@ import { MatchParam } from '../schemas/matches';
 type C = Context<AppEnv>;
 type Type = (typeof CLIP_TYPES)[number];
 const CONFIG_COLUMNS = 'priorities, per_player, per_match, split_gap_seconds, pre_seconds, post_seconds, vip_per_match, updated_at, updated_by';
-const LIST_COLUMNS =
+export const LIST_COLUMNS =
   'id, position, type, priority, round, round_seconds, round_won, player_steamid, player_id, player_name, kills, kill_ticks, ' +
   'clutch_vs, clutch_start_tick, end_tick, tickrate, demo_status, video_status, video_key, video_seconds, video_drive_id, video_in_r2, ' +
   'vip, review';
@@ -94,7 +94,7 @@ const approve = createRoute({
   responses: { 200: { description: 'Aprobado', ...json(Clip) }, ...errorResponses(400, 401, 403, 404) },
 });
 
-type Row = {
+export type ClipRow = {
   id: string | null; position: number | null; type: string | null; priority: number | null; round: number | null;
   round_seconds: number | null; round_won: boolean | null; player_steamid: string | null; player_id: string | null;
   player_name: string | null; kills: number | null; kill_ticks: number[] | null; clutch_vs: number | null;
@@ -106,7 +106,7 @@ type Row = {
 // El video (fase C2, docs/bitacora/2026-10-23-clips-render-automatico): los primeros 15 días, el .mp4 del Worker de
 // clips; siempre, el reproductor de Drive. Sin demo (none, missing, expired) la jugada nunca va a tener video.
 // Un reprocesado sin aprobar (docs/bitacora/2026-10-28-clips-vip-y-reprocesar) se muestra en cola, sin video, salvo a un admin.
-const toVideo = (r: Row, clipsBase: string | undefined, admin: boolean): z.infer<typeof ClipVideo> => {
+export const toVideo = (r: ClipRow, clipsBase: string | undefined, admin: boolean): z.infer<typeof ClipVideo> => {
   const hidden = r.review === 'pending' && !admin;
   const done = r.video_status === 'done' && !hidden;
   const status = hidden ? 'pending' : (r.video_status ?? (r.demo_status === 'uploaded' || r.demo_status === 'pending' ? 'pending' : 'unavailable'));
@@ -118,7 +118,7 @@ const toVideo = (r: Row, clipsBase: string | undefined, admin: boolean): z.infer
   };
 };
 
-const toClip = (r: Row, aliases: Map<string, string>, clipsBase: string | undefined, admin: boolean): z.infer<typeof Clip> => {
+const toClip = (r: ClipRow, aliases: Map<string, string>, clipsBase: string | undefined, admin: boolean): z.infer<typeof Clip> => {
   const ticks = r.kill_ticks ?? [];
   // Donde empieza la jugada: la primera kill o, si no hubo, el inicio del clutch.
   const first = ticks[0] ?? r.clutch_start_tick;
@@ -147,7 +147,7 @@ const toClip = (r: Row, aliases: Map<string, string>, clipsBase: string | undefi
 };
 
 /** Las filas de match_clip_list a la respuesta, con el alias de cada ficha. */
-async function toClips(c: C, rows: Row[], admin: boolean) {
+async function toClips(c: C, rows: ClipRow[], admin: boolean) {
   const linked = [...new Set(rows.map((r) => r.player_id).filter((x): x is string => !!x))];
   const aliases = linked.length
     ? new Map(mustHave(await c.var.sb.from('players').select('id, nick').in('id', linked)).map((x) => [x.id, x.nick]))
@@ -160,7 +160,7 @@ async function existingClip(c: C, id: string) {
 }
 
 async function readClip(c: C, id: string) {
-  const row = must(await c.var.sb.from('match_clip_list').select(LIST_COLUMNS).eq('id', id).maybeSingle()) as Row | null;
+  const row = must(await c.var.sb.from('match_clip_list').select(LIST_COLUMNS).eq('id', id).maybeSingle()) as ClipRow | null;
   if (!row) throw notFound('esa jugada entre los clips');
   return (await toClips(c, [row], true))[0]!;
 }
@@ -176,7 +176,7 @@ export const clips = createRouter()
     if (p.player) q = q.eq('player_id', p.player);
     if (p.type) q = q.eq('type', p.type);
     // Desempate por puesto (siempre ascendente): dos clips de la misma ronda quedan en el orden de la escala.
-    const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'position');
+    const { rows, total } = await runList<ClipRow, typeof q>(q, p, {}, 'position');
     return c.json(envelope(await toClips(c, rows, await isAdmin(c)), total, p), 200);
   })
   .openapi(getConfig, async (c) => {
@@ -209,7 +209,7 @@ export const clips = createRouter()
           sb.from('matches').select('id, map, played_at').in('id', [...new Set(rows.map((r) => r.match_id))]).then(mustHave),
         ])
       : [[], []];
-    const byId = new Map((await toClips(c, list as unknown as Row[], true)).map((x) => [x.id, x]));
+    const byId = new Map((await toClips(c, list as unknown as ClipRow[], true)).map((x) => [x.id, x]));
     const byMatch = new Map(matches.map((m) => [m.id, m]));
     const items = rows.flatMap((r) => {
       const clip = byId.get(r.id);

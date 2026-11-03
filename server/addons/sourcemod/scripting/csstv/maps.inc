@@ -171,6 +171,12 @@ bool Maps_CanVote(int client)
 			QolReply(client, "[%s] El mapa solo se puede votar en el calentamiento.", g_sTag);
 		return false;
 	}
+	if (Mm_HasLobby())
+	{
+		if (client > 0)
+			QolReply(client, "[%s] El mapa de esta sala ya se eligió en el veto.", g_sTag);
+		return false;
+	}
 	if (g_bMapChanging)
 	{
 		if (client > 0)
