@@ -246,6 +246,14 @@ describe("avisos livianos", () => {
     expect(chat).toEqual({ live: false, profile: false, chat: true })
   })
 
+  it("penalty.lifted renueva el estado y el perfil (el nivel de la escalera)", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(mmKeys.state, base())
+    const n = needs()
+    applyMmEvent(qc, { t: "penalty.lifted" }, n)
+    expect(n).toEqual({ live: true, profile: true, chat: false })
+  })
+
   it("lobby.finished también renueva el perfil", () => {
     const qc = new QueryClient()
     qc.setQueryData(mmKeys.state, { ...base(), lobby: { id: "L1" } })

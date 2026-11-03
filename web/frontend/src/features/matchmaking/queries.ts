@@ -298,6 +298,9 @@ export function applyMmEvent(
     if (e.t === "lobby.finished") needs.profile = true
   } else if (e.t.startsWith("party.")) {
     needs.live = true
+  } else if (e.t === "penalty.lifted") {
+    // Un moderador le levantó la sanción: el estado (sin el cartel) y el nivel de la escalera.
+    needs.live = needs.profile = true
   } else if (e.t === "friend.searching") {
     // Le llega solo a sus amigos: la lista de amigos (en lo que casi no cambia) muestra que está buscando.
     needs.profile = true
@@ -391,6 +394,13 @@ export function adminBansOptions(source: MmSource) {
   return queryOptions({
     queryKey: ["mm", "admin", "bans"] as const,
     queryFn: ({ signal }) => source.adminBans(signal),
+  })
+}
+
+export function adminPenaltiesOptions(source: MmSource) {
+  return queryOptions({
+    queryKey: ["mm", "admin", "penalties"] as const,
+    queryFn: ({ signal }) => source.adminPenalties(signal),
   })
 }
 

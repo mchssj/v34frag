@@ -13,6 +13,7 @@ import type {
   MmAdminLobby,
   MmAdminBan,
   MmAdminMap,
+  MmAdminPenalty,
   MmAdminReport,
   MmAdminServer,
   MmChatMessage,
@@ -101,6 +102,9 @@ export type MmSource = {
   ): Promise<void>
   adminBans(signal?: AbortSignal): Promise<MmAdminBan[]>
   unban(userId: string): Promise<void>
+  adminPenalties(signal?: AbortSignal): Promise<MmAdminPenalty[]>
+  /** Corta la espera y baja un nivel de la escalera (replanteo 61). */
+  liftPenalty(userId: string, reason: string): Promise<void>
   adminStats(days: number, signal?: AbortSignal): Promise<MmStatsDay[]>
   setServerEnabled(serverId: string, enabled: boolean): Promise<MmAdminServer>
   adminLobbies(signal?: AbortSignal): Promise<MmAdminLobby[]>
@@ -336,6 +340,11 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     unban: (user) =>
       call(`/api/v1/admin/mm/bans/${encodeURIComponent(user)}`, {
         method: "DELETE",
+      }),
+    adminPenalties: (signal) => call("/api/v1/admin/mm/penalties", { signal }),
+    liftPenalty: (user, reason) =>
+      send(`/api/v1/admin/mm/penalties/${encodeURIComponent(user)}/lift`, {
+        reason,
       }),
     adminStats: (days, signal) =>
       call(`/api/v1/admin/mm/stats?days=${days}`, { signal }),

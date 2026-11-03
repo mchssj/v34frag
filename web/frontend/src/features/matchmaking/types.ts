@@ -436,6 +436,18 @@ export type MmAdminBan = {
   reason: string
 }
 
+/** Sanción automática de la cola vigente (replanteo 61): el motivo es el de la última falta. */
+export type MmAdminPenalty = {
+  user_id: string
+  player_id: string | null
+  nick: string | null
+  level: number
+  max_level: number
+  reason: string | null
+  since: string | null
+  until: string
+}
+
 /** Una fila de `mm_stats_daily`. */
 export type MmStatsDay = {
   day: string

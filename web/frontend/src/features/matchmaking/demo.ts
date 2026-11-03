@@ -8,6 +8,7 @@ import type {
   MmAdminBan,
   MmAdminLobby,
   MmAdminMap,
+  MmAdminPenalty,
   MmAdminReport,
   MmAdminServer,
   MmChatMessage,
@@ -228,6 +229,7 @@ export function createDemoSource({
   }
   let reports: MmAdminReport[] = []
   let bans: MmAdminBan[] = []
+  let otherPenalties = seedPenalties(now())
   let invitesPref: InvitePref = "public"
   let config = structuredClone(DEFAULT_CONFIG)
   let modeMaps = structuredClone(DEFAULT_MODE_MAPS)
@@ -1313,6 +1315,45 @@ export function createDemoSource({
     async unban(userId) {
       bans = bans.filter((b) => b.user_id !== userId)
     },
+    async adminPenalties() {
+      const t = now()
+      const mine: MmAdminPenalty[] =
+        penalty && penalized()
+          ? [
+              {
+                user_id: "me",
+                player_id: ME.player_id,
+                nick: ME.nick,
+                level: penalty.level,
+                max_level: config.penalty_ladder.length,
+                reason:
+                  sanctions.find((x) => x.kind === "penalty")?.reason ?? null,
+                since:
+                  sanctions.find((x) => x.kind === "penalty")?.created_at ??
+                  null,
+                until: penalty.until,
+              },
+            ]
+          : []
+      return [
+        ...mine,
+        ...otherPenalties.filter((x) => Date.parse(x.until) > t),
+      ].sort((a, b) => Date.parse(a.until) - Date.parse(b.until))
+    },
+    async liftPenalty(userId, reason) {
+      if (reason.trim().length < 3)
+        throw new DemoError(
+          "El motivo tiene que tener entre 3 y 300 caracteres"
+        )
+      if (userId === "me" && penalty && penalized()) {
+        penalty = null
+        emit("penalty.lifted")
+        return
+      }
+      if (!otherPenalties.some((x) => x.user_id === userId))
+        throw new DemoError("No tiene una sanción vigente")
+      otherPenalties = otherPenalties.filter((x) => x.user_id !== userId)
+    },
     async adminStats(days) {
       return demoStats(days, now())
     },
@@ -1442,6 +1483,7 @@ export function createDemoSource({
       sanctions = seedSanctions(now())
       reports = seedReports()
       bans = []
+      otherPenalties = seedPenalties(now())
       invitesPref = "public"
       queueSize = 6
       servers.forEach((s) => (s.state = "free"))
@@ -1715,6 +1757,21 @@ function seedFriends(): MmFriend[] {
     level: f.level,
     status: status[i]!,
   }))
+}
+
+function seedPenalties(t: number): MmAdminPenalty[] {
+  return [
+    {
+      user_id: "u-colo",
+      player_id: "p-colo",
+      nick: "colo",
+      level: 2,
+      max_level: DEFAULT_CONFIG.penalty_ladder.length,
+      reason: "No aceptaste una partida",
+      since: new Date(t - 3 * 60_000).toISOString(),
+      until: new Date(t + 12 * 60_000).toISOString(),
+    },
+  ]
 }
 
 function seedSanctions(t: number): MmSanction[] {
