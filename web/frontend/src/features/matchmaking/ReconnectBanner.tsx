@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "cn"
 import { PlayIcon, WifiOffIcon } from "lucide-react"
 
@@ -13,7 +13,7 @@ import { useNow } from "./useNow"
 export function ReconnectBanner() {
   const source = useMmSource()
   const socketUp = useMmSocket(source)
-  const { data } = useQuery(mmStateOptions(source, socketUp))
+  const { data } = useQuery(mmStateOptions(source, socketUp, useQueryClient()))
   const lobby = data?.lobby
   const until = lobby?.players.find((p) => p.is_me)?.left_until ?? null
   const away = lobby?.status === "live" && !!until

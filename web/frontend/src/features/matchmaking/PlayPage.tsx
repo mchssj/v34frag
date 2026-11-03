@@ -1,5 +1,5 @@
 import { toast } from "sonner"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
@@ -66,7 +66,7 @@ export function PlayPage() {
     data: state,
     isPending,
     error,
-  } = useQuery(mmStateOptions(source, socketUp))
+  } = useQuery(mmStateOptions(source, socketUp, useQueryClient()))
   const accept = useMmAction(source, "accept")
   const decline = useMmAction(source, "decline")
   useInviteSound(state?.invites)

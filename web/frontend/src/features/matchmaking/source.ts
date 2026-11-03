@@ -18,6 +18,7 @@ import type {
   MmChatMessage,
   MmEvent,
   MmFeed,
+  MmMatch,
   MmPasswordEntry,
   MmPlayerHit,
   MmSound,
@@ -32,7 +33,14 @@ import type {
  * `subscribe` es el socket: avisa que algo cambió y devuelve cómo cortar.
  */
 export type MmSource = {
+  /** El estado completo, como antes (lo usan la demo y las acciones). */
   state(signal?: AbortSignal): Promise<MmState>
+  /** Lo que cambia rápido: cola, sala (sin las estadísticas de la partida), grupo y contadores. */
+  stateLive(signal?: AbortSignal): Promise<Partial<MmState>>
+  /** Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones. */
+  profile(signal?: AbortSignal): Promise<Partial<MmState>>
+  /** La partida de una sala terminada, con las estadísticas y los clips. */
+  lobbyMatch(lobbyId: string, signal?: AbortSignal): Promise<MmMatch | null>
   feed(signal?: AbortSignal): Promise<MmFeed>
   join(mode: string, region: string | null): Promise<MmState>
   setInvitePref(pref: InvitePref): Promise<MmState>
@@ -199,6 +207,10 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       await send("/api/v1/me/profile", { preferences: { mm_invites } }, "PATCH")
       return call("/api/v1/mm/state")
     },
+    stateLive: (signal) => call("/api/v1/mm/state/live", { signal }),
+    profile: (signal) => call("/api/v1/mm/profile", { signal }),
+    lobbyMatch: (id, signal) =>
+      call(`/api/v1/mm/lobbies/${id}/match`, { signal }),
     leave: () => call("/api/v1/mm/queue", { method: "DELETE" }),
     queuePingStatus: (signal) => call("/api/v1/mm/queue/ping", { signal }),
     queuePing: () => call("/api/v1/mm/queue/ping", { method: "POST" }),

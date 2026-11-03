@@ -948,6 +948,16 @@ export function createDemoSource({
     async state() {
       return snapshot()
     },
+    // La demo no separa el estado: las dos partes son el completo.
+    async stateLive() {
+      return snapshot()
+    },
+    async profile() {
+      return snapshot()
+    },
+    async lobbyMatch() {
+      return snapshot().lobby?.match ?? null
+    },
     async feed() {
       return DEMO_FEED()
     },

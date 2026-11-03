@@ -333,6 +333,8 @@ export type MmState = {
 export type MmEvent = {
   t: string
   lobby?: string
+  /** Lo que cambió (replanteo 59): tamaños de la cola, plazo de la sala encontrada, quién aceptó, el veto. */
+  d?: unknown
   /** En `friend.searching`: el amigo que entró a la cola. */
   friend?: { player_id: string; nick: string }
 }

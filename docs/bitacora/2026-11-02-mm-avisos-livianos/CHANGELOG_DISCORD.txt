@@ -1,0 +1,4 @@
+CMLeague 2.9.2 --  Changelog
+
+- "Partida encontrada" aparece apenas se arma la sala, sin esperar.
+- La pantalla de Jugar va más fluida cuando hay mucha gente buscando.

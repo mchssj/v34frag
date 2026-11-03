@@ -5,9 +5,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   acceptOptimistic,
+  applyMmEvent,
   banOptimistic,
   MM_EVENT_COALESCE_MS,
+  type MmNeeds,
   mmKeys,
+  patchQueueSizes,
+  seedFoundLobby,
   useMmMutation,
   useMmSocket,
 } from "./queries"
@@ -121,7 +125,7 @@ describe("useMmSocket", () => {
     expect(invalidate).not.toHaveBeenCalled()
     act(() => vi.advanceTimersByTime(MM_EVENT_COALESCE_MS))
     expect(invalidate).toHaveBeenCalledTimes(1)
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: mmKeys.all })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: mmKeys.state })
   })
 
   it("un aviso después del anterior vuelve a pedir", () => {
@@ -154,5 +158,87 @@ describe("useMmSocket", () => {
     emit({ t: "lobby.veto" })
     act(() => vi.advanceTimersByTime(MM_EVENT_COALESCE_MS))
     expect(invalidate).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("avisos livianos", () => {
+  const needs = (): MmNeeds => ({ live: false, profile: false, chat: false })
+  const base = () =>
+    ({
+      queue_size: 1,
+      modes: [{ mode: "5v5", players_per_team: 5 }],
+      queue_activity: { modes: [{ mode: "5v5", searching: 1, missing: 9 }] },
+      lobby: null,
+    }) as unknown as MmState
+
+  it("patchQueueSizes actualiza el contador y lo que falta", () => {
+    const next = patchQueueSizes(base(), { size: 7, by_mode: { "5v5": 7 } })
+    expect(next.queue_size).toBe(7)
+    expect(next.queue_activity!.modes[0]).toMatchObject({
+      searching: 7,
+      missing: 3,
+    })
+  })
+
+  it("queue.changed con el dato no pide nada", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(mmKeys.state, base())
+    const n = needs()
+    applyMmEvent(
+      qc,
+      { t: "queue.changed", d: { size: 4, by_mode: { "5v5": 4 } } },
+      n
+    )
+    expect(n).toEqual(needs())
+    expect(qc.getQueryData<MmState>(mmKeys.state)!.queue_size).toBe(4)
+  })
+
+  it("lobby.found arma la sala al instante y pide el estado", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(mmKeys.state, base())
+    const n = needs()
+    const deadline = "2026-11-02T20:00:30Z"
+    applyMmEvent(
+      qc,
+      {
+        t: "lobby.found",
+        lobby: "L1",
+        d: { mode: "5v5", size: 10, accept_deadline: deadline },
+      },
+      n
+    )
+    const lobby = qc.getQueryData<MmState>(mmKeys.state)!.lobby!
+    expect(lobby).toMatchObject({
+      id: "L1",
+      status: "accepting",
+      accept_deadline: deadline,
+    })
+    expect(lobby.players).toHaveLength(10)
+    expect(lobby.players.filter((p) => p.is_me)).toHaveLength(1)
+    expect(n.live).toBe(true)
+  })
+
+  it("seedFoundLobby no pisa la sala que ya está", () => {
+    const s = { ...base(), lobby: { id: "L1" } } as unknown as MmState
+    expect(seedFoundLobby(s, "L1", {})).toBe(s)
+  })
+
+  it("un aviso de otra sala se ignora y el chat pide solo el chat", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(mmKeys.state, { ...base(), lobby: { id: "L1" } })
+    const otra = needs()
+    applyMmEvent(qc, { t: "lobby.update", lobby: "L2" }, otra)
+    expect(otra).toEqual(needs())
+    const chat = needs()
+    applyMmEvent(qc, { t: "lobby.chat", lobby: "L1" }, chat)
+    expect(chat).toEqual({ live: false, profile: false, chat: true })
+  })
+
+  it("lobby.finished también renueva el perfil", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(mmKeys.state, { ...base(), lobby: { id: "L1" } })
+    const n = needs()
+    applyMmEvent(qc, { t: "lobby.finished", lobby: "L1" }, n)
+    expect(n).toMatchObject({ live: true, profile: true })
   })
 })
