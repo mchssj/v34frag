@@ -1,0 +1,4 @@
+CMLeague 2.9.1 --  Changelog
+
+- ¿La cola está floja? Mientras buscas partida, toca "Avisar en Discord" y avisamos en #avisos que hay gente buscando.
+- Se puede avisar una vez cada 15 minutos para todos: el botón te muestra cuánto falta.

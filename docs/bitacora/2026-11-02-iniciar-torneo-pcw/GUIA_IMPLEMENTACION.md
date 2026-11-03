@@ -70,10 +70,26 @@ En `feat/mm-claim-en-sala` también están sin commit los replanteos `53` a `55`
 2. **API `3c6a8b357cd1`:** rama temporal local con `feat/mm-claim-en-sala` (`421cc8a3`) más `feat/backend-api-fase-1` (`240e2694`), como en la bitácora `2026-11-01-pagina-serie`. Los conflictos fueron fuera de la API (bitácoras, relay del HUD y plugin) y se resolvieron con nuestra versión, porque esa rama solo sirve para armar la API. 420 pruebas en verde, `deploy/vps/desplegar.sh api --sin-pruebas` y `/api/health` con la versión. Comprobado desde el VPS: `GET /matches/{id}/booking` de una partida del matchmaking da 404 ("No existe esa partida de torneo o PCW"), `GET /teams/{id}/pcw-ban` da `{"until":null}`, `GET /servers/free` sin sesión da 401 y la OpenAPI tiene las rutas nuevas. La rama temporal y su carpeta se borraron. La anterior era `8e78f7650291-local11021850`.
 3. **Web `60b16f3db869`:** `deploy/vps/desplegar.sh web` desde `feat/frontend-fase-1` sin cambios sin commit en `web/frontend`: 498 pruebas, build y subida. El bundle tiene "Iniciar la partida", "Usos del servidor" y "Sanciones de PCW". La anterior era `7f7ca3e0f8f4-local11021851`.
 
+## Plugin en el #1 (MVZG), 2026-11-02
+
+Elegido por Daniel como servidor de prueba de torneos y PCW. Por SFTP (`SFTP_CSS_*_MVZG`; el #1 no tiene API key de panel), con la clave del host de `ssh-keyscan` y la contraseña por `SSH_ASKPASS`. Sin recargar nada: entra en el próximo cambio de mapa.
+
+| Archivo en el #1 | Qué se subió | Respaldo |
+|---|---|---|
+| `addons/sourcemod/plugins/csstv_reporter.smx` | 2.9.0 **licenciado** (`server/build_licenciado.sh 96bb5060-… srv1`), 141946 bytes | `plugins/disabled/csstv_reporter_2.7.6.smx` (el de Kyan) |
+| `cfg/sourcemod/csstv_reporter.cfg` | `csstv_mm "0"` → `"1"` y `csstv_claim "0"` → `"1"`. Nada más | `cfg/sourcemod/csstv_reporter.cfg.bak_antes_290` |
+| `cfg/csstv/live_official.cfg`, `live_pcw.cfg`, `live_mm.cfg`, `live_mix.cfg` | Nuevas | — |
+
+- **Verificado:** se bajaron los seis archivos y coinciden byte a byte con lo que se subió.
+- **Staging:** `CMLeague #1` con `official_enabled` y `pcw_enabled` en `true`; `mm_enabled` sigue en `false` (el matchmaking sigue apagado, como lo dejó Kyan). Al subirlo, su última consulta a staging era de las 20:59 UTC con la 2.8.2.
+- **Desde el próximo mapa la contraseña del #1 la maneja la web:** queda cerrado al público. El `csstv_password` ya era el de la línea del matchmaking (10875 bytes).
+- **El 2.9.0 del #1 todavía dice "Sala del matchmaking"** al anunciar los lados de una reserva de torneo (corregido después en la rama, sin subir).
+- **Para volver atrás:** renombrar los dos respaldos a su nombre original y borrar las cuatro `live_*.cfg`, en un cambio de mapa; en staging, apagar las dos marcas.
+
 ## Lo que falta desplegar
 
-1. **Elegir con Kyan el servidor de prueba.** El matchmaking está apagado en todos (Kyan, 2026-11-02) y el #1 tiene el 2.7.6 con `csstv_mm "0"`.
-2. **En ese servidor:** prender Torneos y PCW en Administración › Servidores, subir el reporter 2.9.0 (licenciado si es el #1: `server/build_licenciado.sh 96bb5060-… srv1`), `csstv_mm "1"` y las cfg `cfg/csstv/live_*.cfg`, en el próximo cambio de mapa.
+1. ~~Servidor de prueba~~: el #1 (MVZG), elegido por Daniel; **subido el 2026-11-02** (sección anterior).
+2. Confirmar en el próximo mapa que `mm_server_state` del #1 muestra `plugin_version = 2.9.0`.
 3. **Prueba con clientes:** una BO3 de torneo (iniciar, veto con reloj, espera, dejar con 4, 90 s entre mapas) y una PCW (listos, fila, arranque automático y un abandono).
 4. **Producción:** con el corte, junto con la `48`. El plugin y las cfg van a los tres servidores en la misma tanda (#1, flow con su build licenciado `7b01c85b-…` y #3), como pide `CLAUDE.md`.
 
@@ -88,6 +104,19 @@ bash docs/bitacora/2026-11-02-iniciar-torneo-pcw/pruebas/correr_local.sh "E:/Css
 ```
 
 Cubren: aptitud; quién inicia y con qué servidor; el servidor ocupado en el acto (también para el matchmaking) y el índice único; el `!match` desde otro servidor; el veto con reloj y al azar (sin autor); el poll con la reserva; la conexión (plantel, afuera, streamer, organizador); `taken`, dejar con 4, espera vencida (aviso, sin cancelar) y extender hasta 20; en vivo sin falso servidor caído; fin de la serie y servidor libre; BO3 entre mapas, `mapover`, servidor caído y vuelta, liberación y reinicio en el mapa 2; PCW con listos, veto, fila y espera de 15; arranque automático; abandono en vivo (con 4 no), sin ganador, sanción de 3 y de 7 días, la lista del panel y levantar; no presentarse; el servidor que nunca la tomó (a la fila primera, sin sanción); bajarse de la fila; las marcas solo para admins.
+
+### De punta a punta con bots (`pruebas/e2e_bots.sh`, 2026-11-02)
+
+El servidor local (`E:\CSS DEDICATED SERVER`) con el reporter de pruebas (`CSSTV_DEBUG`, bots con SteamID falso) contra la **base local** del backend, nunca la real. El script guarda una copia de la base dentro del contenedor, aplica la 45 y de la 48 a la 56, siembra un torneo BO3 y dos PCW con bots como plantel (nombres de perfiles de `BotProfile.db`: con otro nombre `bot_add_ct` no agrega nada), y al salir apaga el servidor, restaura su plugin, su cfg y su licencia, aplica las inversas y restaura la copia.
+
+```bash
+bash docs/bitacora/2026-11-02-iniciar-torneo-pcw/pruebas/e2e_bots.sh "E:/Css V34 Web/v34frag-mmclaim"
+# == Resultado: 38 comprobaciones bien, 0 fallas
+```
+
+Cubre: el servidor consulta la base; iniciar, veto con reloj (al azar, sin autor) y toma con su contraseña; `live_official.cfg` (fuego amigo, sin charla del medio tiempo, sin `!gg`); dos mapas con el mapa siguiente a los 60 s, fin de la serie, servidor libre y contraseña rotada; PCW con listos, veto, fila, los dos equipos en regla, arranque automático, `live_pcw.cfg` y liberación por un moderador; PCW con un equipo incompleto: abandono, sin ganador, sanción de 3 días al equipo y a sus 4 jugadores, y el otro sin sanción.
+
+Las corridas anteriores encontraron dos errores reales, corregidos: la inversa de la `56` con fines de línea CRLF y el texto "Sala del matchmaking" en una reserva. Las demás fallas eran del script (nombres de bots, el orden del cambio de lado al matar a los bots, buscar el plantel por nombre). Mientras corre, el juego tiene que estar cerrado: con `CMLauncher.exe` abierto, el servidor local se traba al arrancar.
 
 ### Plugin
 
