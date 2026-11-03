@@ -291,7 +291,7 @@ export function ServersSection() {
             radius="hero"
             className="min-w-0 flex-[999_1_560px] overflow-hidden"
           >
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-hidden">
               <div
                 role="table"
                 aria-label="Servidores"

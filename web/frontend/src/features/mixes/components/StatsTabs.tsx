@@ -13,7 +13,7 @@ export function StatsTabs({
     <Tabs
       value={value}
       onValueChange={(t) => onChange(t as StatsTab)}
-      className="max-w-full overflow-x-auto"
+      className="max-w-full overflow-x-auto overflow-y-hidden"
     >
       <TabsList
         aria-label="Estadísticas"

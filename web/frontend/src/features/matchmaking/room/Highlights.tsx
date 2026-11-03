@@ -72,7 +72,10 @@ export function Highlights({
           </Button>
         </div>
       </div>
-      <ul aria-label="Más jugadas" className="flex gap-3 overflow-x-auto pb-2">
+      <ul
+        aria-label="Más jugadas"
+        className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2"
+      >
         {clips.map((c) => (
           <li key={c.id} className="shrink-0">
             <button

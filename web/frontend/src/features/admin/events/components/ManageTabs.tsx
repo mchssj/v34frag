@@ -328,7 +328,7 @@ export function RegistrationsTab({ event }: { event: EventDetail }) {
         {event.subs_max > 0 && ` y hasta ${event.subs_max} suplentes`}.
       </p>
       <TableBox>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground">

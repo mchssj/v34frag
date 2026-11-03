@@ -63,7 +63,7 @@ export function ProfileLayout() {
       <div className="grid items-start gap-5 md:grid-cols-[200px_minmax(0,1fr)] md:gap-7">
         <nav
           aria-label="Secciones de Mi perfil"
-          className="-mx-1 flex gap-0.5 overflow-x-auto px-1 md:sticky md:top-[70px] md:mx-0 md:flex-col md:overflow-visible md:px-0"
+          className="-mx-1 flex gap-0.5 overflow-x-auto overflow-y-hidden px-1 md:sticky md:top-[70px] md:mx-0 md:flex-col md:overflow-visible md:px-0"
         >
           {PROFILE_SECTIONS.map(({ to, label, icon: Icon }) => {
             const active = pathname === to

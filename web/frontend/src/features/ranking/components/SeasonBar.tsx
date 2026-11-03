@@ -129,7 +129,7 @@ function SeasonPicker({
     <div
       role="group"
       aria-label="Temporada"
-      className="inline-flex max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-muted p-[3px]"
+      className="inline-flex max-w-full gap-0.5 overflow-x-auto overflow-y-hidden rounded-[9px] bg-muted p-[3px]"
     >
       {active && (
         <button

@@ -119,7 +119,7 @@ function Table({ table, advance }: { table: StandingTable; advance: number }) {
         <h2 className="border-b px-4 py-3 text-sm font-semibold">
           {table.title}
         </h2>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr className="border-b text-xs text-muted-foreground">

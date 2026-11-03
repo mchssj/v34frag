@@ -103,7 +103,7 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
           ref={rowRef}
           variant="line"
           aria-label="Secciones del perfil"
-          className="flex h-auto w-full [scrollbar-width:none] justify-start gap-1 overflow-x-auto rounded-none border-b p-0 group-data-horizontal/tabs:h-auto"
+          className="flex h-auto w-full [scrollbar-width:none] justify-start gap-1 overflow-x-auto overflow-y-hidden rounded-none border-b p-0 group-data-horizontal/tabs:h-auto"
         >
           {TABS.map((t) => (
             <TabsTrigger

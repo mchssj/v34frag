@@ -43,7 +43,7 @@ export function TournamentHistory({ teamId }: { teamId: string }) {
       ) : (
         <ol
           aria-label="Torneos en los que participó"
-          className="flex overflow-x-auto p-[18px]"
+          className="flex overflow-x-auto overflow-y-hidden p-[18px]"
         >
           {events.map((e) => {
             const tone = TONE[RESULT_LABEL[e.result].tone]

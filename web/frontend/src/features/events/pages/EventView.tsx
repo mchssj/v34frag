@@ -99,7 +99,7 @@ export function EventView({
           </div>
           <nav
             aria-label="Secciones del torneo"
-            className="flex gap-1 overflow-x-auto border-t px-4"
+            className="flex gap-1 overflow-x-auto overflow-y-hidden border-t px-4"
           >
             {TABS.map((t) => (
               <Link

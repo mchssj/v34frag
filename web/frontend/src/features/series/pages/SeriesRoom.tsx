@@ -676,7 +676,7 @@ function Clips({ maps }: { maps: SeriesMap[] }) {
       {open && <ClipPlayer clip={open} onClose={() => setOpen(null)} />}
       <div
         ref={strip}
-        className="flex snap-x gap-2.5 overflow-x-auto pb-1.5"
+        className="flex snap-x gap-2.5 overflow-x-auto overflow-y-hidden pb-1.5"
         tabIndex={0}
         aria-label="Clips de la serie"
       >
