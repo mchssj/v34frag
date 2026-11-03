@@ -58,10 +58,18 @@ const body = <T>(c: C) => (c.req as unknown as { valid(t: 'json'): T }).valid('j
 const param = (c: C) => (c.req as unknown as { valid(t: 'param'): { id: string } }).valid('param').id;
 const jsonBody = (schema: z.ZodTypeAny) => ({ body: { required: true, ...json(schema) } });
 
-/** Una acción del jugador: llama a la función y devuelve el estado. */
-const action = (fn: string, args: (c: C) => Record<string, unknown> = () => ({})) => async (c: C) => {
+/** El estado liviano (mm_my_live): la cola, la sala, el grupo y los contadores. */
+const liveState = async (c: C) =>
+  c.json({ ...((await rpc(c, 'mm_my_live')) as unknown as object), server_now: new Date().toISOString() } as never, 200);
+
+/**
+ * Una acción del jugador: llama a la función y devuelve el estado. Las de la cola, la sala y el grupo devuelven solo el
+ * liviano y la web lo combina con el perfil que ya tiene (plan docs/bitacora/2026-11-02-mm-socket-optimizado, mejora B):
+ * el completo (mm_my_state) es lo más lento del matchmaking. Las sociales cambian el perfil y siguen con el completo.
+ */
+const action = (fn: string, args: (c: C) => Record<string, unknown> = () => ({}), part: 'live' | 'full' = 'full') => async (c: C) => {
   await rpc(c, fn, args(c));
-  return state(c);
+  return part === 'live' ? liveState(c) : state(c);
 };
 const lists = (what: string, arg?: (c: C) => string | undefined) => async (c: C) =>
   c.json((await rpc(c, 'mm_admin_lists', { p_what: what, p_arg: arg?.(c) })) as never, 200);
@@ -110,7 +118,7 @@ add(route('get', '/api/v1/mm/state', { summary: 'Estado de mi matchmaking (compl
 add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala (sin estadísticas), grupo y contadores' }), async (c) => {
   // (replanteo 63) La web sin socket pide esto cada 5 s: cuenta como que sigue conectado.
   c.var.mmPolled?.(c.var.user.id);
-  return c.json({ ...((await rpc(c, 'mm_my_live')) as unknown as object), server_now: new Date().toISOString() } as never, 200);
+  return liveState(c);
 });
 add(route('get', '/api/v1/mm/profile', { summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
   c.json({ ...((await rpc(c, 'mm_my_profile')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
@@ -122,8 +130,8 @@ add(route('get', '/api/v1/mm/lobbies/{id}/match', { summary: 'La partida de una 
 add(route('post', '/api/v1/mm/queue', { summary: 'Entrar a la cola', request: jsonBody(Join) }), action('mm_join', (c) => {
   const b = body<{ mode: string; region?: string | null }>(c);
   return { p_mode: b.mode, p_region: b.region ?? null };
-}));
-add(route('delete', '/api/v1/mm/queue', { summary: 'Salir de la cola' }), action('mm_leave'));
+}, 'live'));
+add(route('delete', '/api/v1/mm/queue', { summary: 'Salir de la cola' }), action('mm_leave', undefined, 'live'));
 
 // Aviso de la cola en Discord (replanteo 57). La base decide si se puede (en la cola, uno cada 15 min; el staff siempre) y
 // la API publica. allowed_mentions limita la mención al rol: un alias no puede mencionar a nadie.
@@ -144,20 +152,20 @@ add(route('post', '/api/v1/mm/queue/ping', { summary: 'Avisar en Discord (#aviso
   }
   return c.json((await rpc(c, 'mm_queue_ping_status')) as never, 200);
 });
-add(route('post', '/api/v1/mm/lobby/accept', { summary: 'Aceptar la partida' }), action('mm_accept'));
-add(route('post', '/api/v1/mm/lobby/decline', { summary: 'Rechazar la partida' }), action('mm_decline'));
+add(route('post', '/api/v1/mm/lobby/accept', { summary: 'Aceptar la partida' }), action('mm_accept', undefined, 'live'));
+add(route('post', '/api/v1/mm/lobby/decline', { summary: 'Rechazar la partida' }), action('mm_decline', undefined, 'live'));
 
 add(route('post', '/api/v1/mm/party/invites', { summary: 'Invitar al grupo', request: jsonBody(PlayerBody) }),
-  action('mm_party_invite', (c) => ({ p_player: body<{ player_id: string }>(c).player_id })));
+  action('mm_party_invite', (c) => ({ p_player: body<{ player_id: string }>(c).player_id }), 'live'));
 add(route('post', '/api/v1/mm/party/invites/{id}/accept', { summary: 'Aceptar una invitación', request: { params: IdParam } }),
-  action('mm_party_respond', (c) => ({ p_invite: param(c), p_accept: true })));
+  action('mm_party_respond', (c) => ({ p_invite: param(c), p_accept: true }), 'live'));
 add(route('post', '/api/v1/mm/party/invites/{id}/decline', { summary: 'Rechazar una invitación', request: { params: IdParam } }),
-  action('mm_party_respond', (c) => ({ p_invite: param(c), p_accept: false })));
-add(route('delete', '/api/v1/mm/party', { summary: 'Salir del grupo' }), action('mm_party_leave'));
+  action('mm_party_respond', (c) => ({ p_invite: param(c), p_accept: false }), 'live'));
+add(route('delete', '/api/v1/mm/party', { summary: 'Salir del grupo' }), action('mm_party_leave', undefined, 'live'));
 add(route('delete', '/api/v1/mm/party/members/{id}', { summary: 'Sacar a alguien del grupo', request: { params: IdParam } }),
-  action('mm_party_kick', (c) => ({ p_player: param(c) })));
+  action('mm_party_kick', (c) => ({ p_player: param(c) }), 'live'));
 add(route('post', '/api/v1/mm/party/leader', { summary: 'Pasar el liderazgo', request: jsonBody(PlayerBody) }),
-  action('mm_party_promote', (c) => ({ p_player: body<{ player_id: string }>(c).player_id })));
+  action('mm_party_promote', (c) => ({ p_player: body<{ player_id: string }>(c).player_id }), 'live'));
 
 add(route('post', '/api/v1/mm/blocks', { summary: 'Bloquear a un jugador', request: jsonBody(PlayerBody) }),
   action('mm_block', (c) => ({ p_player: body<{ player_id: string }>(c).player_id })));
