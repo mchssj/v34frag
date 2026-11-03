@@ -6,6 +6,7 @@ import { createApp } from './app';
 import { createClient } from '@supabase/supabase-js';
 import { claimsVerifier, createMmHub, listenMm, MM_PING_MS, mmSql, sqlPresence } from './mm/socket';
 import { nodeUdp } from './lib/udp-node';
+import { cargarManual, carpetaDelManual } from './lib/manual-node';
 
 // En el VPS las variables las pone systemd (/etc/cmleague/api.env): no se busca .dev.vars.
 if (process.env.APP_ENV !== 'production') {
@@ -18,8 +19,13 @@ if (process.env.APP_ENV !== 'production') {
 
 // El build (scripts/build.mjs) reemplaza BUILD_SHA por el commit, así /api/health dice qué versión corre.
 const env = { ...process.env, GIT_SHA: process.env.GIT_SHA || process.env.BUILD_SHA || 'dev' };
+// Manual de usuario (plan docs/bitacora/2026-11-02-manual-usuario): dist/manual en el VPS, docs/manual en desarrollo.
+const manualDir = carpetaDelManual(import.meta.dirname, process.env.MANUAL_DIR);
+const { manual, errores: erroresManual } = cargarManual(manualDir);
+for (const e of erroresManual) console.error(`manual: ${e}`);
+console.log(`manual: ${manual.paginas.size} páginas y ${manual.imagenes.size} capturas (${manualDir ?? 'sin carpeta'})`);
 // Un pedido del estado liviano cuenta como presencia en la cola (replanteo 63): la web sin socket sigue buscando.
-const app = createApp({ udp: nodeUdp, mmPolled: (user) => hub.polled(user) });
+const app = createApp({ udp: nodeUdp, manual, mmPolled: (user) => hub.polled(user) });
 const port = Number(process.env.PORT ?? 8787);
 // HOST=127.0.0.1 en el VPS: solo Caddy llega a la API. Sin HOST, todas las interfaces (como antes).
 const hostname = process.env.HOST || undefined;

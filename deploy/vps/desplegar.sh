@@ -3,7 +3,7 @@
 # Se corre desde la PC de Daniel (Git Bash) y, más adelante, desde el pipeline de GitHub. Entra como `deploy`.
 #
 # Uso: deploy/vps/desplegar.sh <api|web|hud> [--sin-pruebas]
-#   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, demos-sftp.mjs y notify-tick.mjs; reinicia cmleague-api y chequea
+#   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, demos-sftp.mjs, notify-tick.mjs y manual/; reinicia cmleague-api y chequea
 #        /api/health con el commit. Si el chequeo falla, vuelve sola a la versión anterior.
 #   web: pruebas y build de web/frontend (VITE_API_URL, por defecto https://api.cmleague.lat); sube dist/.
 #        No reinicia nada: Caddy sirve web/current.
@@ -144,6 +144,8 @@ if [[ "$parte" == api ]]; then
   pnpm build:check
   local_dir="$RAIZ/web/backend/dist"
   archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map mm-worker.mjs mm-worker.mjs.map)
+  # El manual de usuario (plan docs/bitacora/2026-11-02-manual-usuario): lo valida y lo copia el build.
+  if [[ -d dist/manual ]]; then archivos+=(manual); fi
 elif [[ "$parte" == hud ]]; then
   cd "$RAIZ/hud/relay"
   if (( pruebas )); then
