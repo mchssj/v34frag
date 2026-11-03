@@ -8,6 +8,7 @@ import {
   applyMmEvent,
   banOptimistic,
   MM_EVENT_COALESCE_MS,
+  mmStateOptions,
   type MmNeeds,
   mmKeys,
   normalizeState,
@@ -255,6 +256,60 @@ describe("avisos livianos", () => {
       searching: 7,
       missing: 3,
     })
+  })
+
+  it("patchQueueSizes aplica el resumen completo (replanteo 66)", () => {
+    const levels = [{ label: "Nivel 1 a 3", count: 2 }]
+    const next = patchQueueSizes(
+      {
+        ...base(),
+        active_players: 1,
+        live_matches: 0,
+        servers: { total: 2, free: 2 },
+        queue_activity: { ...base().queue_activity, levels: [], players: [] },
+      } as unknown as MmState,
+      {
+        size: 2,
+        by_mode: { "5v5": 2 },
+        active_players: 12,
+        live_matches: 1,
+        servers: { total: 2, free: 1 },
+        levels,
+      }
+    )
+    expect(next).toMatchObject({
+      active_players: 12,
+      live_matches: 1,
+      servers: { total: 2, free: 1 },
+    })
+    expect(next.queue_activity.levels).toBe(levels)
+    // Lo que no trae el aviso (la lista de quiénes buscan) queda como estaba.
+    expect(next.queue_activity.players).toEqual([])
+  })
+
+  it("con el aviso viejo (solo tamaños) lo demás queda como estaba", () => {
+    const prev = {
+      ...base(),
+      active_players: 5,
+      servers: { total: 2, free: 2 },
+    } as unknown as MmState
+    const next = patchQueueSizes(prev, { size: 3, by_mode: { "5v5": 3 } })
+    expect(next.active_players).toBe(5)
+    expect(next.servers).toBe(prev.servers)
+  })
+
+  it("sin socket pide el estado cada 30 s aunque no esté buscando; con socket, no", () => {
+    const qc = new QueryClient()
+    const source = {} as MmSource
+    const idle = { state: { data: base() } } as never
+    const sin = mmStateOptions(source, false, qc).refetchInterval as (
+      q: never
+    ) => unknown
+    const con = mmStateOptions(source, true, qc).refetchInterval as (
+      q: never
+    ) => unknown
+    expect(sin(idle)).toBe(30_000)
+    expect(con(idle)).toBe(false)
   })
 
   it("queue.changed con el dato no pide nada", () => {

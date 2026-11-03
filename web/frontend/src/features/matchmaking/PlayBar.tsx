@@ -35,7 +35,7 @@ import {
 import { askNotificationPermission } from "./alert"
 import { EloMeter } from "./EloMeter"
 import { fmtClock, isCountry } from "./labels"
-import { useMmAction, useMmMutation } from "./queries"
+import { mmKeys, useMmAction, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { InvitePref, MmState } from "./types"
 import { useNow } from "./useNow"
@@ -288,6 +288,7 @@ function QueueInfo({
   searching: number
 }) {
   const [detail, setDetail] = useState(false)
+  const queryClient = useQueryClient()
   return (
     <>
       <Tooltip>
@@ -295,7 +296,11 @@ function QueueInfo({
           <button
             type="button"
             aria-label="Ver quiénes están buscando partida"
-            onClick={() => setDetail(true)}
+            onClick={() => {
+              setDetail(true)
+              // La lista no viaja por el socket: se pide al abrirla.
+              void queryClient.invalidateQueries({ queryKey: mmKeys.state })
+            }}
             className="rounded-full hover:text-foreground"
           >
             <InfoIcon aria-hidden className="size-3.5" />

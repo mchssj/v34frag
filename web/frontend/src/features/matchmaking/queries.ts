@@ -82,12 +82,15 @@ export function mmStateOptions(
       ])
       return normalizeState({ ...profile, ...live } as MmState)
     },
+    // Sin socket, nada más lo actualiza: también sin estar buscando (la barra muestra activos y servidores).
     refetchInterval: (q) =>
       isActive(q.state.data)
         ? socketUp
           ? MM_LIVE_REFRESH_MS
           : MM_FALLBACK_MS
-        : false,
+        : socketUp
+          ? false
+          : MM_LIVE_REFRESH_MS,
   })
 }
 
@@ -210,10 +213,21 @@ export function useRotatePassword(source: MmSource, serverId: string) {
 /** Qué hay que volver a pedir después de unos avisos (se juntan los que llegan seguidos). */
 export type MmNeeds = { live: boolean; profile: boolean; chat: boolean }
 
-type QueueSizes = { size?: number; by_mode?: Record<string, number> }
+// queue.changed: desde el replanteo 66 trae el resumen completo; antes, solo size y by_mode.
+type QueueSizes = {
+  size?: number
+  by_mode?: Record<string, number>
+  active_players?: number
+  live_matches?: number
+  servers?: MmState["servers"]
+  levels?: MmState["queue_activity"]["levels"]
+}
 type Found = { mode?: string; size?: number; accept_deadline?: string }
 
-/** queue.changed con los tamaños: se actualiza el contador sin pedir nada. */
+/**
+ * queue.changed con el resumen: se actualiza la barra de Jugar sin pedir nada (cuántos buscan, activos, en vivo,
+ * servidores libres y niveles). La lista de quiénes buscan no viaja: se pide al abrirla.
+ */
 export function patchQueueSizes(s: MmState, d: QueueSizes): MmState {
   const byMode = d.by_mode ?? {}
   const per = (mode: string) =>
@@ -221,8 +235,12 @@ export function patchQueueSizes(s: MmState, d: QueueSizes): MmState {
   return {
     ...s,
     queue_size: d.size ?? s.queue_size,
+    active_players: d.active_players ?? s.active_players,
+    live_matches: d.live_matches ?? s.live_matches,
+    servers: d.servers ?? s.servers,
     queue_activity: s.queue_activity && {
       ...s.queue_activity,
+      levels: d.levels ?? s.queue_activity.levels,
       modes: s.queue_activity.modes.map((m) => {
         const n = byMode[m.mode] ?? 0
         return { ...m, searching: n, missing: per(m.mode) - (n % per(m.mode)) }
