@@ -24,3 +24,7 @@ Espectadores:
 Calentamiento:
 - Nuevo !faltan: muestra quiénes no escribieron !ready.
 - Los cuerpos y las armas tiradas desaparecen solos, así el mapa no se llena.
+- Mientras esperan a que entren todos, el calentamiento es un deathmatch: apareces con un rifle y chaleco con casco. Con !armas eliges con qué arma aparecer (por ejemplo !armas awp).
+
+Matchmaking:
+- Nuevo CMLeague Conectar: lo instalas una vez desde la sala y el botón Conectar abre el juego y entra solo a la partida, con la contraseña puesta.

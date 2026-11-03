@@ -48,6 +48,7 @@ cp "$B/csstv_pedir_dbg.smx" "$SM/plugins/csstv_pedir.smx"
 WD=$(cd "$SV" && pwd -W)
 # +tv_port: el juego abierto (CMLauncher) ocupa el 27020
 powershell.exe -NoProfile -Command "Start-Process -FilePath '$WD/srcds.exe' -WorkingDirectory '$WD' -ArgumentList '-console -condebug -game cstrike -ip 127.0.0.1 -port 27098 -tickrate 66 -insecure +tv_port 27099 +maxplayers 12 +map de_dust2'"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cd "$(dirname "$0")" && pwd -W)/segundo_monitor.ps1" &   # la ventana del srcds al segundo monitor
 sleep 28
 R "bot_join_after_player 0" "bot_add_t Albert" "bot_add_t Allen" "bot_add_ct Bert" "bot_add_ct Bob" "bot_add_ct Brett"
 sleep 6

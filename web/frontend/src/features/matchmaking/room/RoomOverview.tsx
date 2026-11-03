@@ -33,8 +33,9 @@ import {
   fmtClock,
   isCountry,
   mapLabel,
+  CONECTAR_DESCARGA,
+  cmleagueConnectUrl,
   secondsLeft,
-  steamConnectUrl,
   teamName,
 } from "../labels"
 import { LobbyChat } from "../LobbyChat"
@@ -401,7 +402,7 @@ function Center({
                 password={lobby.server.password}
               />
               <a
-                href={steamConnectUrl(
+                href={cmleagueConnectUrl(
                   lobby.server.address,
                   lobby.server.password
                 )}
@@ -410,6 +411,18 @@ function Center({
                 <PlayIcon aria-hidden />
                 Conectar
               </a>
+            </span>
+            {/* El botón abre el v34 con CMLeague Conectar: sin instalarlo, no pasa nada al tocarlo. */}
+            <span className="text-xs text-muted-foreground">
+              ¿No se abre el juego?{" "}
+              <a
+                href={CONECTAR_DESCARGA}
+                download
+                className="font-medium text-foreground underline underline-offset-2"
+              >
+                Instalá CMLeague Conectar
+              </a>{" "}
+              una vez (descomprimilo y abrí conectar.bat).
             </span>
           </div>
         </Block>

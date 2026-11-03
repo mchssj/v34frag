@@ -100,6 +100,7 @@ Sale del lugar del radar donde murió el jugador (`m_szLastPlaceName`). Los más
 | `csstv_qol_lock_names` | `1` | Nombres bloqueados |
 | `csstv_qol_goodbye` | `1` | Despedida con K/D |
 | `csstv_qol_block_kill` | `1` | `kill` y `explode` bloqueados en la partida |
+| `csstv_qol_warmup_guns` | `1` | 1.3.0: en el calentamiento, arma gratis (la de su lado o la de `!armas`) y chaleco con casco al aparecer |
 | `csstv_qol_warmup_cleanup` | `8` | 1.2.1: en el calentamiento, segundos para borrar un arma tirada; los cuerpos, a los 2 s (0 = no) |
 
 `!rr` sin admin no tiene ConVar: si se quiere solo para admins, se le da a todos el override `csstv_rr_admin` o se vuelve a la 2.7.6. Ojo: como `sm_rr` pasó a ser un comando para todos, los permisos de admin se preguntan con `csstv_rr_admin` (ADMFLAG_GENERIC).

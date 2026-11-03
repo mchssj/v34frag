@@ -52,6 +52,10 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 
 ## Decisiones anotadas para planes futuros
 
+- **Repetición 2D y mapa de calor** (Kyan, 2026-11-03: le gustan, pero no se hacen todavía):
+  - Repetición 2D de cada ronda en la web: el servidor guarda las posiciones de los jugadores cada segundo y la web muestra el mapa con los puntos moviéndose.
+  - Mapa de calor de dónde mata y dónde muere cada jugador, por mapa.
+  - Las dos necesitan que el reporter mande posiciones (hoy solo manda los ticks de las kills, para los clips) y una imagen de radar por mapa.
 - **Torneos** (cuando se planee la creación de torneos):
   - El creador del torneo define cuántos jugadores del plantel puede inscribir cada equipo, con un máximo de 10. El plantel de un equipo admite hasta 10.
   - El creador también decide el formato (BO1, BO3, BO5) de las partidas.

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { eloWindow } from "./demo"
 import {
+  cmleagueConnectUrl,
   connectCommand,
   fmtClock,
   maskPassword,
@@ -32,6 +33,9 @@ describe("labels", () => {
     )
     expect(connectCommand("1.2.3.4:27015", "k3x9")).toBe(
       "connect 1.2.3.4:27015; password k3x9"
+    )
+    expect(cmleagueConnectUrl("1.2.3.4:27015", "k3x9")).toBe(
+      "cmleague://connect/1.2.3.4:27015/k3x9"
     )
   })
 

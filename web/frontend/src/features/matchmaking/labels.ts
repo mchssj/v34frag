@@ -45,6 +45,15 @@ export const LOBBY_HINT: Record<LobbyStatus, string> = {
 export const steamConnectUrl = (address: string, password: string) =>
   `steam://connect/${address}/${encodeURIComponent(password)}`
 
+/**
+ * Link de CMLeague Conectar (hud/conectar): abre el CS:S v34 de ClientMod y entra con la contraseña. El de Steam abre
+ * el CS:S de Steam, no el v34. Hace falta instalarlo una vez (CONECTAR_DESCARGA).
+ */
+export const cmleagueConnectUrl = (address: string, password: string) =>
+  `cmleague://connect/${address}/${encodeURIComponent(password)}`
+
+export const CONECTAR_DESCARGA = "/descargas/cmleague-conectar.zip"
+
 export const connectCommand = (address: string, password: string) =>
   `connect ${address}; password ${password}`
 

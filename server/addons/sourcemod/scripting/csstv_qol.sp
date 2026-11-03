@@ -28,6 +28,7 @@
  *   Los avisos de fin de ronda salen 0,3 s después: en el mismo instante no quedan en la demo.
  *   - 1.2.1: en el calentamiento los cuerpos desaparecen a los 2 s y las armas tiradas a los
  *     csstv_qol_warmup_cleanup segundos.
+ *   - 1.3.0: el calentamiento como deathmatch: al aparecer, un arma gratis (!armas) y chaleco con casco.
  *
  * El estado del mix se lee de la ConVar csstv_state del reporter (2.7.7 o más nuevo) y el de los otros
  * modos de sm_retake_on, sm_2v2_on y sm_dm_on. Si no existen, de las respuestas de sm_csstv_status y de
@@ -44,7 +45,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.2.1"
+#define PLUGIN_VERSION "1.3.0"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -113,6 +114,8 @@ ConVar g_cvLockNames;
 ConVar g_cvGoodbye;
 ConVar g_cvBlockKill;
 ConVar g_cvCleanup;
+ConVar g_cvWarmGuns;
+int g_iWarmGun[MAXPLAYERS + 1];                    // !armas: 0 = la de su lado
 int g_iCleaned;                                    // cuerpos y armas borrados en el calentamiento, para sm_qol_status
 int g_iRoundKills[MAXPLAYERS + 1];                 // kills a rivales en esta ronda, para el ace
 bool g_bSpecMuted[MAXPLAYERS + 1][MAXPLAYERS + 1]; // [jugador][espectador]: silenciado durante la partida
@@ -144,12 +147,14 @@ public void OnPluginStart()
 	g_cvSpecChat  = CreateConVar("csstv_qol_spec_chat", "1", "Durante la partida, los espectadores no escriben en el chat general (los admins sí).", _, true, 0.0, true, 1.0);
 	g_cvSpecVoice = CreateConVar("csstv_qol_spec_voice", "1", "Durante la partida, los jugadores no escuchan a los espectadores (el coach sí, a su equipo).", _, true, 0.0, true, 1.0);
 	g_cvLockNames = CreateConVar("csstv_qol_lock_names", "1", "Durante la partida no se puede cambiar el nombre.", _, true, 0.0, true, 1.0);
+	g_cvWarmGuns  = CreateConVar("csstv_qol_warmup_guns", "1", "En el calentamiento, al aparecer: un arma gratis (la de su lado o la de !armas) y chaleco con casco.", _, true, 0.0, true, 1.0);
 	g_cvCleanup   = CreateConVar("csstv_qol_warmup_cleanup", "8", "En el calentamiento: segundos para borrar un arma tirada que nadie levantó (los cuerpos, a los 2 s). 0 = no limpiar.", _, true, 0.0, true, 120.0);
 	g_cvBlockKill = CreateConVar("csstv_qol_block_kill", "1", "Durante la partida, kill y explode (suicidarse por consola) no hacen nada.", _, true, 0.0, true, 1.0);
 	g_cvGoodbye   = CreateConVar("csstv_qol_goodbye", "1", "Durante la partida, avisar quién se fue y con qué K/D.", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "csstv_qol");
 	RegConsoleCmd("sm_voz", Cmd_Voz, "Cuando quedás solo: seguir escuchando (o no) a tus compañeros muertos.");
 	RegConsoleCmd("sm_admins", Cmd_Admins, "Qué admins están conectados.");
+	RegConsoleCmd("sm_armas", Cmd_Armas, "En el calentamiento: elegir el arma con la que aparecés.");
 	for (int i = 1; i <= MaxClients; i++)   // recarga del plugin con jugadores adentro
 		if (IsClientInGame(i))
 			OnClientPutInServer(i);
@@ -226,6 +231,7 @@ public void OnClientDisconnect(int client)
 		}
 	g_bVoiceOn[client] = false;
 	g_bNameRevert[client] = false;
+	g_iWarmGun[client] = 0;
 	for (int i = 1; i <= MaxClients; i++)
 		g_bSpecMuted[client][i] = g_bSpecMuted[i][client] = false;   // el slot que sigue empieza sin overrides
 	g_bNades[client] = false;
@@ -435,6 +441,106 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		g_iLastHp[client] = 100;
 	if (client > 0 && g_cvRestore.BoolValue && IsLive())
 		CreateTimer(0.3, Timer_Restore, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);   // después de las armas de la aparición
+	if (client > 0 && g_cvWarmGuns.BoolValue && InWarmup())
+		CreateTimer(0.2, Timer_WarmGuns, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+// ---------------------------------------------------------------------------
+// Calentamiento como deathmatch: al aparecer, un arma gratis y chaleco con casco (!armas para elegirla).
+// Comprar no sirve: quien reaparece a mitad de la ronda ya no tiene tiempo de compra.
+// ---------------------------------------------------------------------------
+
+static const char g_sWarmCls[][]  = { "", "weapon_ak47", "weapon_m4a1", "weapon_awp", "weapon_galil", "weapon_famas", "weapon_sg552", "weapon_aug", "weapon_scout", "weapon_mp5navy", "weapon_p90", "weapon_m3", "weapon_xm1014" };
+static const char g_sWarmName[][] = { "La de tu lado (AK-47 o M4A1)", "AK-47", "M4A1", "AWP", "Galil", "FAMAS", "SG 552", "AUG", "Scout", "MP5", "P90", "M3", "XM1014" };
+
+public Action Timer_WarmGuns(Handle timer, int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client) && InWarmup())
+		WarmGuns_Give(client, false);
+	return Plugin_Stop;
+}
+
+void WarmGuns_Give(int client, bool replace)
+{
+	int team = GetClientTeam(client);
+	if (team != TEAM_T && team != TEAM_CT)
+		return;
+	int gun = g_iWarmGun[client];
+	char cls[32];
+	strcopy(cls, sizeof(cls), gun > 0 ? g_sWarmCls[gun] : (team == TEAM_T ? "weapon_ak47" : "weapon_m4a1"));
+	int cur = GetPlayerWeaponSlot(client, 0);
+	if (cur != -1 && replace)
+	{
+		RemovePlayerItem(client, cur);
+		AcceptEntityInput(cur, "Kill");
+		cur = -1;
+	}
+	if (cur == -1)
+		GivePlayerItem(client, cls);
+	SetEntProp(client, Prop_Send, "m_ArmorValue", 100);
+	SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+}
+
+public Action Cmd_Armas(int client, int args)
+{
+	if (client <= 0 || !IsClientInGame(client))
+		return Plugin_Handled;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	if (!g_cvWarmGuns.BoolValue || !InWarmup())
+	{
+		PrintToChat(client, "\x04[%s]\x01 !armas es para el calentamiento.", tag);
+		return Plugin_Handled;
+	}
+	if (args > 0)   // !armas awp: directo, sin el menú
+	{
+		char arg[16];
+		GetCmdArg(1, arg, sizeof(arg));
+		for (int i = 1; i < sizeof(g_sWarmCls); i++)
+		{
+			if (StrEqual(g_sWarmCls[i][7], arg, false) || StrEqual(g_sWarmName[i], arg, false))
+			{
+				WarmGuns_Choose(client, i);
+				return Plugin_Handled;
+			}
+		}
+		PrintToChat(client, "\x04[%s]\x01 No conozco esa arma. Escribí !armas para ver la lista.", tag);
+		return Plugin_Handled;
+	}
+	Menu m = new Menu(Menu_Armas);
+	m.SetTitle("Arma del calentamiento");
+	for (int i = 0; i < sizeof(g_sWarmName); i++)
+	{
+		char info[4];
+		IntToString(i, info, sizeof(info));
+		m.AddItem(info, g_sWarmName[i], i == g_iWarmGun[client] ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	}
+	m.Display(client, 20);
+	return Plugin_Handled;
+}
+
+void WarmGuns_Choose(int client, int gun)
+{
+	g_iWarmGun[client] = gun;
+	if (IsPlayerAlive(client) && InWarmup())
+		WarmGuns_Give(client, true);
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	PrintToChat(client, "\x04[%s]\x01 En el calentamiento aparecés con: \x04%s\x01.", tag, g_sWarmName[gun]);
+}
+
+public int Menu_Armas(Menu menu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_End)
+		delete menu;
+	else if (action == MenuAction_Select)
+	{
+		char info[4];
+		menu.GetItem(item, info, sizeof(info));
+		WarmGuns_Choose(client, StringToInt(info));
+	}
+	return 0;
 }
 
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)

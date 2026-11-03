@@ -66,6 +66,21 @@ Kyan probó en el servidor y encontró dos cosas:
 | El coach seguía en tercera persona | En este motor no existe la cámara de congelado: primera persona es el modo **3** y el 4 es la de persecución. El plugin forzaba el 4 (ya lo decía la bitácora `2026-10-23-clips-video`) | `csstv_coach` 1.1.1: `OBS_IN_EYE 3` | `pruebas/coach_camara.sh`: modo 3 al anotarse, después de tres `spec_mode` y al morir el que miraba (pasa a otro) | flow, MVZG y `aurav34`, con respaldo `plugins/disabled/csstv_coach_1.1.0.smx` |
 | En el calentamiento no desaparecen los cuerpos ni las armas | Con el reaparecer del calentamiento no hay reinicio de ronda que limpie el mapa | `csstv_qol` 1.2.1: el cuerpo (`cs_ragdoll` cuyo `m_hPlayer` es el muerto; en v34 el jugador no tiene `m_hRagdoll`) a los 2 s, y el arma tirada que nadie levantó a los `csstv_qol_warmup_cleanup` (8) s, menos la C4. Solo con el reporter en calentamiento | `pruebas/limpieza.sh`: 2 cuerpos → 0 a los 3,5 s; armas en el piso → 0 a los 10 s | flow, MVZG y `aurav34`, con respaldo `plugins/disabled/csstv_qol_1.2.0.smx` y `csstv_qol.cfg.bak_121`; `csstv_qol_warmup_cleanup "8"` en los tres |
 
+### Entrar con un clic y deathmatch en el calentamiento (2026-11-03)
+
+Kyan eligió dos ideas más (12 y 13 de la lista de "el mejor matchmaking").
+
+| Qué | Dónde | Prueba |
+|---|---|---|
+| **Deathmatch mientras esperan:** en el calentamiento, al aparecer, un arma gratis (AK-47 para los T, M4A1 para los CT, o la de `!armas` / `!armas awp`) y chaleco con casco. Comprar no sirve: quien reaparece a mitad de la ronda ya no tiene tiempo de compra | `csstv_qol` 1.3.0 (`csstv_qol_warmup_guns "1"`) | `pruebas/dm_calentamiento.sh`, con `mp_startmoney 0` para que los bots no compren: Bert (CT) con M4A1 y Albert (T) con AK-47, los dos con chaleco 100; `!armas awp` le cambia el arma en el momento y la mantiene al reaparecer; en vivo no da nada (Cecil, solo USP). A los bots SourceMod no les muestra menús: el menú se prueba con jugadores |
+| **Entrar con un clic:** el botón Conectar de la sala y "Volver a la partida" usaban `steam://`, que abre el CS:S de Steam y no el v34 de ClientMod. Ahora usan `cmleague://connect/<ip:puerto>/<contraseña>`, que atiende **CMLeague Conectar** (`hud/conectar/`): se instala una vez con `conectar.bat` (registra el protocolo para el usuario, sin administrador, y busca la carpeta con `CMLauncher.exe`). Con el juego abierto escribe `password …; connect …` en la consola; cerrado, abre el launcher y espera hasta 3 minutos la ventana del juego. Siempre deja el comando copiado | `hud/conectar/conectar.ps1` y `.bat`; la web en `web/frontend/src/features/matchmaking/` (`cmleagueConnectUrl`, `RoomOverview`, `ReconnectBanner`) y la descarga `web/frontend/public/descargas/cmleague-conectar.zip` | `conectar.ps1 -Prueba` con 7 links: los dos buenos dan el comando; con espacio, `;`, puerto imposible, un dominio o comillas, "Ese link no es de una partida de CMLeague". Las contraseñas del matchmaking son letras y números (`Mm_RotatePassword`), dentro de lo que acepta. Web: 43 pruebas del matchmaking, `tsc`, `eslint` y `prettier` en verde. **Falta probarlo en una PC con el juego:** instalar, tocar el botón con el juego abierto y con el juego cerrado |
+
+- Para escribir en el juego, CMLeague Conectar se vuelve a abrir como administrador, igual que la cámara del HUD: Windows pide permiso en cada clic.
+- El link puede venir de cualquier página. Por eso solo acepta una IP con puerto y una contraseña de letras, números, `-` y `_`: nadie puede meter otros comandos en la consola.
+- **Web:** el cambio queda en `kyan/pruebas`. El frontend lo despliega quien despliega la web.
+- Las pruebas con bots ahora mandan la ventana del srcds al segundo monitor (`pruebas/segundo_monitor.ps1`, pedido de Kyan).
+- **Subido el 2026-11-03:** `csstv_qol` 1.3.0 (34646 bytes) a flow, MVZG y `aurav34`, comprobando antes que estaba la 1.2.1. Respaldo en `plugins/disabled/csstv_qol_1.2.1.smx` y `cfg/sourcemod/csstv_qol.cfg.bak_130`; `csstv_qol_warmup_guns "1"` en los tres.
+
 ## Pruebas con bots (`cssds`, 2026-11-02)
 
 `pruebas/qol4.sh <carpeta con los .smx>`, con `-condebug`, el reporter de depuración, `v34_dm` y `v34_retake` cargados y `qol_prueba.smx` de la tercera tanda. Se corrió con la 2.8.7 y con la 2.7.7.
