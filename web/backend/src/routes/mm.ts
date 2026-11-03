@@ -103,7 +103,18 @@ export function queuePingText(p: { alias: string; queue: Record<string, number> 
 const r = createRouter();
 const add = (def: ReturnType<typeof route>, handler: (c: C) => Promise<Response>) => r.openapi(def as never, handler as never);
 
-add(route('get', '/api/v1/mm/state', { summary: 'Estado de mi matchmaking' }), state);
+add(route('get', '/api/v1/mm/state', { summary: 'Estado de mi matchmaking (completo)' }), state);
+// (replanteo 59) El estado en dos partes: lo que cambia rápido y lo que casi no cambia. Las estadísticas de una partida
+// terminada salen aparte, una sola vez.
+add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala (sin estadísticas), grupo y contadores' }), async (c) =>
+  c.json({ ...((await rpc(c, 'mm_my_live')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
+add(route('get', '/api/v1/mm/profile', { summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
+  c.json({ ...((await rpc(c, 'mm_my_profile')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
+add(route('get', '/api/v1/mm/lobbies/{id}/match', { summary: 'La partida de una sala que jugué, con las estadísticas y los clips', request: { params: IdParam } }), async (c) => {
+  const game = (await rpc(c, 'mm_lobby_match', { p_lobby: param(c) })) as unknown as GameRef | null;
+  if (game?.game_id) await withGame(c, game);
+  return c.json((game ?? null) as never, 200);
+});
 add(route('post', '/api/v1/mm/queue', { summary: 'Entrar a la cola', request: jsonBody(Join) }), action('mm_join', (c) => {
   const b = body<{ mode: string; region?: string | null }>(c);
   return { p_mode: b.mode, p_region: b.region ?? null };
