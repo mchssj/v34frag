@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Implementado y probado en local el 2026-11-02, sin commit y sin desplegar.** La API no cambia. El plugin tampoco: no hay nada que subir a los servidores #1, #2 (flow) ni #3.
+**En staging desde el 2026-11-02, con commit** (base y web). Commits: `b2900c3a` en `feat/mm-claim-en-sala` (base) y `8049dc99` en `feat/frontend-fase-1` (web). La API no cambia. El plugin tampoco: no hay nada que subir a los servidores #1, #2 (flow) ni #3.
 
 ## Archivos
 
@@ -28,11 +28,18 @@
 - **La carrera con dos sesiones en paralelo no se probó**: la base local no tiene el matchmaking confirmado (se aplica dentro de la transacción de prueba) y en staging el tick corre solo. El bloqueo es `select … for update` de Postgres; queda para la prueba con jugadores.
 - **Web:** 530 pruebas, typecheck y lint.
 
-## Despliegue en staging (falta)
+## Despliegue en staging (hecho el 2026-11-02)
 
-1. **Base:** la `60` (va después de la `59`). Antes, que no haya salas abiertas.
-2. **Web:** desde una carpeta limpia de `feat/frontend-fase-1`, `deploy/vps/desplegar.sh web`.
-3. La API queda como está (`4225068507f9`).
+Sin salas abiertas ni nadie en la cola.
+
+1. **Base:** `60` aplicada sin errores. Verificado:
+   - existe `mm_queue.ready_at`;
+   - aceptar y rechazar bloquean la sala y miran el plazo, el tick bloquea, `mm_try_build` respeta `ready_at` y `lobby.cancelled` lleva `requeue`;
+   - `mm_accept` es de `authenticated` y no de `anon`;
+   - con `daniloev`: `lobby` vacío, `last_lobby` terminada, y `mm_my_state()` sigue siendo la suma de las dos partes;
+   - `cmleague-mm` sigue activo, sin errores, y `mm_tick()` a mano responde `{"built": 0}`.
+2. **Web `8049dc993a51`:** desde una carpeta limpia de `feat/frontend-fase-1`. 515 pruebas.
+3. **API:** sin cambios (`4225068507f9`). Con `daniloev`, `GET /api/v1/mm/state/live` trae `last_lobby` sin estadísticas y `GET /api/v1/mm/lobbies/{id}/match` las trae (2 filas).
 
 ## Producción
 
@@ -40,6 +47,5 @@ Con el corte, junto con el resto del matchmaking.
 
 ## Falta
 
-- Commit y staging.
 - Probarlo con jugadores: un "Aceptar" en el último segundo, una cancelación con la sala nueva enseguida y entrar a Jugar después de una partida.
 - Actualizar `docs/manual/jugador/buscar-partida.md` ("Tu última partida" y la pausa de 3 s) cuando la sesión del manual lo suba.
