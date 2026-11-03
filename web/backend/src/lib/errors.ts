@@ -10,6 +10,7 @@ export type ErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'WRONG_PASSWORD'
   | 'SAME_PASSWORD'
+  | 'INVALID_LINK'
   | 'EMAIL_NOT_CONFIRMED'
   | 'FORBIDDEN'
   | 'NOT_FOUND'

@@ -9,7 +9,19 @@ import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { createRouter } from '../lib/router';
 import { anonClient, userClient } from '../lib/supabase';
 import type { AppEnv } from '../lib/types';
-import { AuthUser, LoginBody, PasswordChangeBody, RefreshBody, Session, SignupBody, SignupResult, type SessionT } from '../schemas/auth';
+import {
+  AuthUser,
+  ForgotPasswordBody,
+  ForgotPasswordResult,
+  LoginBody,
+  PasswordChangeBody,
+  RefreshBody,
+  ResetPasswordBody,
+  Session,
+  SignupBody,
+  SignupResult,
+  type SessionT,
+} from '../schemas/auth';
 import { toAuthUser } from '../services/account';
 import { bearer, errorResponses, json } from '../schemas/common';
 
@@ -37,6 +49,26 @@ function touchLastSeen(c: Context<AppEnv>, token: string, id: string) {
     })(),
   );
 }
+
+// Pone la contraseña con la sesión dada y cierra todas las demás. Lo usan el cambio y la recuperación.
+async function setPassword(c: Context<AppEnv>, accessToken: string, password: string, sameMessage: string) {
+  const cfg = c.var.config;
+  const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
+  const upd = await fetch(`${cfg.SUPABASE_URL}/auth/v1/user`, { method: 'PUT', headers, body: JSON.stringify({ password }) });
+  if (!upd.ok) {
+    const body = (await upd.json().catch(() => ({}))) as { code?: string; error_code?: string; msg?: string; message?: string };
+    const code = body.error_code ?? body.code;
+    if (code === 'same_password') throw new AppError(400, 'SAME_PASSWORD', sameMessage);
+    if (code === 'weak_password') throw new AppError(400, 'VALIDATION_ERROR', body.msg ?? body.message ?? 'La contraseña es demasiado débil.', [{ path: 'new_password', message: 'Es demasiado débil.' }]);
+    throw new AppError(500, 'INTERNAL', 'No se pudo cambiar la contraseña.');
+  }
+  // Todas las demás sesiones (otras PCs, el celular, la que hizo el pedido) dejan de valer; queda solo esta.
+  const out = await fetch(`${cfg.SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers });
+  if (!out.ok) logError(c, new Error(`logout de las otras sesiones tras cambiar la contraseña: HTTP ${out.status}`));
+}
+
+// Errores de verifyOtp que significan "este link no sirve": vencido, ya usado o mal copiado.
+const INVALID_LINK_CODES = new Set(['otp_expired', 'otp_disabled', 'invalid_credentials', 'validation_failed']);
 
 // ---------- rutas ----------
 
@@ -111,6 +143,40 @@ const changePassword = createRoute({
   responses: {
     200: { description: 'Contraseña cambiada: la sesión nueva', ...json(Session) },
     ...errorResponses(400, 401, 429),
+  },
+});
+
+const forgotPassword = createRoute({
+  method: 'post',
+  path: '/auth/password/forgot',
+  tags: ['Auth'],
+  summary: 'Pedir el correo para recuperar la contraseña',
+  description:
+    'Si hay una cuenta con ese correo, Supabase le manda un link a `/reset-password` del frontend (vence en una hora). ' +
+    'La respuesta es siempre `202` y el pedido sale en segundo plano, así que no deja ver si la cuenta existe. ' +
+    'Hasta 5 pedidos por minuto por IP; Supabase además manda como mucho un correo por minuto a cada dirección.',
+  middleware: [rateLimit(RATE_RULES.recovery)] as const,
+  request: { body: { required: true, ...json(ForgotPasswordBody) } },
+  responses: {
+    202: { description: 'Pedido recibido (haya o no una cuenta)', ...json(ForgotPasswordResult) },
+    ...errorResponses(400, 429),
+  },
+});
+
+const resetPassword = createRoute({
+  method: 'post',
+  path: '/auth/password/reset',
+  tags: ['Auth'],
+  summary: 'Poner una contraseña nueva con el link del correo',
+  description:
+    'Canjea el `token_hash` del correo de recuperación (de un solo uso), pone la contraseña nueva y cierra todas las demás ' +
+    'sesiones de la cuenta. Devuelve una sesión nueva. `400 INVALID_LINK` si el link venció o ya se usó (hay que pedir otro) y ' +
+    '`400 SAME_PASSWORD` si la nueva es igual a la anterior (el link queda gastado igual).',
+  middleware: [rateLimit(RATE_RULES.auth)] as const,
+  request: { body: { required: true, ...json(ResetPasswordBody) } },
+  responses: {
+    200: { description: 'Contraseña cambiada: la sesión nueva', ...json(Session) },
+    ...errorResponses(400, 429),
   },
 });
 
@@ -204,20 +270,33 @@ export const auth = createRouter()
     if (fresh.error) throw fromAuthError(fresh.error);
     if (!fresh.data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
     const session = fresh.data.session;
-    const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' };
-
-    const upd = await fetch(`${cfg.SUPABASE_URL}/auth/v1/user`, { method: 'PUT', headers, body: JSON.stringify({ password: new_password }) });
-    if (!upd.ok) {
-      const body = (await upd.json().catch(() => ({}))) as { code?: string; error_code?: string; msg?: string; message?: string };
-      const code = body.error_code ?? body.code;
-      if (code === 'same_password') throw new AppError(400, 'SAME_PASSWORD', 'La contraseña nueva tiene que ser distinta de la actual.');
-      if (code === 'weak_password') throw new AppError(400, 'VALIDATION_ERROR', body.msg ?? body.message ?? 'La contraseña es demasiado débil.', [{ path: 'new_password', message: 'Es demasiado débil.' }]);
-      throw new AppError(500, 'INTERNAL', 'No se pudo cambiar la contraseña.');
-    }
-    // Todas las demás sesiones (incluida la que hizo el pedido) dejan de valer; queda solo la nueva.
-    const out = await fetch(`${cfg.SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers });
-    if (!out.ok) logError(c, new Error(`logout de las otras sesiones tras cambiar la contraseña: HTTP ${out.status}`));
+    await setPassword(c, session.access_token, new_password, 'La contraseña nueva tiene que ser distinta de la actual.');
     return c.json(await toSession(cfg, session), 200);
+  })
+  .openapi(forgotPassword, async (c) => {
+    const cfg = c.var.config;
+    const { email } = c.req.valid('json');
+    // En segundo plano y sin mirar el resultado: la respuesta y su demora son iguales con o sin cuenta.
+    inBackground(
+      c,
+      (async () => {
+        const { error } = await anonClient(cfg).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
+        if (error) throw new Error(`correo de recuperación: ${error.code ?? error.status} ${error.message}`);
+      })(),
+    );
+    return c.json({ ok: true as const }, 202);
+  })
+  .openapi(resetPassword, async (c) => {
+    const cfg = c.var.config;
+    const { token_hash, new_password } = c.req.valid('json');
+    const { data, error } = await anonClient(cfg).auth.verifyOtp({ type: 'recovery', token_hash });
+    if (error && (INVALID_LINK_CODES.has(error.code ?? '') || error.status === 403 || error.status === 404)) {
+      throw new AppError(400, 'INVALID_LINK', 'El enlace no es válido o venció. Pide otro correo.');
+    }
+    if (error) throw fromAuthError(error);
+    if (!data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
+    await setPassword(c, data.session.access_token, new_password, 'La contraseña nueva tiene que ser distinta de la anterior. Pide otro correo para elegir una.');
+    return c.json(await toSession(cfg, data.session), 200);
   })
   .openapi(me, async (c) => {
     const cfg = c.var.config;

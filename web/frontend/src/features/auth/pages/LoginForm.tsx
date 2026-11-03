@@ -101,6 +101,13 @@ export function LoginForm({
           autoComplete="current-password"
           placeholder="••••••••"
         />
+        <Link
+          to="/forgot-password"
+          search={{}}
+          className="-mt-3 self-end text-[13px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
         <Controller
           control={form.control}
           name="remember"

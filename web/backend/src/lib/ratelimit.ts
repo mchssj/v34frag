@@ -14,6 +14,8 @@ export const RATE_RULES = {
   auth: { name: 'auth', limit: 10, windowSec: 60, binding: 'RL_AUTH' },
   // Cambio de contraseña: 5 intentos por minuto por cuenta (frena a quien prueba claves con una sesión robada).
   password: { name: 'password', limit: 5, windowSec: 60, binding: 'RL_PASSWORD' },
+  // Pedir el correo de recuperación: 5 por minuto por IP (frena a quien llena de correos una casilla ajena).
+  recovery: { name: 'recovery', limit: 5, windowSec: 60, binding: 'RL_RECOVERY' },
   // Anticheat: empezar una vinculación, y consultar o renovar (el agente consulta cada 5 segundos).
   acLink: { name: 'ac_link', limit: 10, windowSec: 60, binding: 'RL_AC_LINK' },
   acClaim: { name: 'ac_claim', limit: 60, windowSec: 60, binding: 'RL_AC_CLAIM' },

@@ -62,6 +62,11 @@ async function fill(user: ReturnType<typeof renderWithQuery>["user"]) {
 const submit = () => screen.getByRole("button", { name: "Iniciar sesión" })
 
 describe("LoginForm", () => {
+  it("tiene el link para recuperar la contraseña", () => {
+    renderWithQuery(<LoginForm redirectTo="/home" />)
+    expect(screen.getByText("¿Olvidaste tu contraseña?")).toBeInTheDocument()
+  })
+
   it("valida en el navegador antes de llamar a la API", async () => {
     const { user } = renderWithQuery(<LoginForm redirectTo="/home" />)
     await user.click(submit())

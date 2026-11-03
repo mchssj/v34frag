@@ -199,3 +199,63 @@ describe('POST /api/v1/me/password', () => {
     expect(res.headers.get('retry-after')).toBeTruthy();
   });
 });
+
+describe('Recuperar la contraseña', () => {
+  // App propia: la del archivo ya gastó el contador "auth" (10 por minuto, todos con la IP "unknown").
+  const propia = createApp();
+  const post = (path: string, body?: unknown) =>
+    propia.request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, env);
+  const getMe = (token: string) => propia.request('/auth/me', { headers: { Authorization: `Bearer ${token}` } }, env);
+  // El link del correo lleva el token_hash: acá se saca con generateLink, sin pasar por Mailpit (la base local manda 2 correos por hora).
+  async function tokenHash(email: string) {
+    const { data, error } = await admin().auth.admin.generateLink({ type: 'recovery', email });
+    if (error || !data.properties?.hashed_token) throw error ?? new Error('generateLink sin hashed_token');
+    return data.properties.hashed_token;
+  }
+
+  it('POST /auth/password/forgot responde lo mismo con y sin cuenta', async () => {
+    const u = await createUser();
+    const conCuenta = await post('/auth/password/forgot', { email: u.email });
+    const sinCuenta = await post('/auth/password/forgot', { email: nuevoEmail() });
+    expect(conCuenta.status).toBe(202);
+    expect(sinCuenta.status).toBe(202);
+    expect(await conCuenta.json()).toEqual(await sinCuenta.json());
+  });
+
+  it('POST /auth/password/reset pone la nueva, cierra las sesiones de antes y el link no sirve dos veces', async () => {
+    const u = await createUser();
+    const otraPc = await (await post('/auth/login', { email: u.email, password: u.password })).json();
+    const hash = await tokenHash(u.email);
+
+    const res = await post('/auth/password/reset', { token_hash: hash, new_password: 'recuperada-789' });
+    expect(res.status).toBe(200);
+    const s = await res.json();
+    expect(s.user).toMatchObject({ id: u.id, email: u.email });
+    expect(Date.now() - Date.parse(s.user.password_changed_at)).toBeLessThan(60_000);
+    expect((await getMe(s.access_token)).status).toBe(200);
+
+    expect((await post('/auth/login', { email: u.email, password: u.password })).status).toBe(401);
+    expect((await post('/auth/login', { email: u.email, password: 'recuperada-789' })).status).toBe(200);
+    expect((await post('/auth/refresh', { refresh_token: u.refresh })).status).toBe(401);
+    expect((await post('/auth/refresh', { refresh_token: otraPc.refresh_token })).status).toBe(401);
+
+    const otraVez = await post('/auth/password/reset', { token_hash: hash, new_password: 'otra-mas-012' });
+    expect(otraVez.status).toBe(400);
+    expect((await otraVez.json()).error.code).toBe('INVALID_LINK');
+    expect((await post('/auth/login', { email: u.email, password: 'otra-mas-012' })).status).toBe(401);
+  });
+
+  it('400 INVALID_LINK con un token_hash inventado', async () => {
+    const res = await post('/auth/password/reset', { token_hash: 'a'.repeat(56), new_password: 'recuperada-789' });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error.code).toBe('INVALID_LINK');
+  });
+
+  it('un link viejo deja de servir cuando se pide otro', async () => {
+    const u = await createUser();
+    const viejo = await tokenHash(u.email);
+    const nuevo = await tokenHash(u.email);
+    expect((await (await post('/auth/password/reset', { token_hash: viejo, new_password: 'recuperada-789' })).json()).error?.code).toBe('INVALID_LINK');
+    expect((await post('/auth/password/reset', { token_hash: nuevo, new_password: 'recuperada-789' })).status).toBe(200);
+  });
+});
