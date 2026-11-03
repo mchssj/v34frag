@@ -22,6 +22,22 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Corte a la base de producción (2026-11-03): base hecha, falta el VPS
+
+- **Hecho el 2026-11-03 (Kyan, con Claude):** producción tiene los replanteos `01` a `69`, con respaldo previo (`C:\Users\Agus\Documents\respaldos_cmleague\prod_antes_corte_20261103.dump`) y el ELO idéntico antes y después. Antes del `04` hubo que sacar el CR de 71 funciones que se habían cargado desde Windows. Detalle en [`2026-11-03-corte-produccion/GUIA_IMPLEMENTACION.md`](bitacora/2026-11-03-corte-produccion/GUIA_IMPLEMENTACION.md) (el `PLAN.md` está en `feat/frontend-fase-1`).
+- **La web vieja ya no funciona** con esta base. Daniel ya pasó el VPS a producción: desde las 17:3x UTC la API llama a la base de producción.
+- **Después del corte, el 2026-11-03:**
+  - Limpieza en producción: 34 fichas sin SteamID, sin partidas y sin cuenta, y 10 equipos sin jugadores ([`2026-11-03-limpieza-fichas-equipos`](bitacora/2026-11-03-limpieza-fichas-equipos/)).
+  - Replanteo `70`, aplicado en staging y en producción: disolver y moderar equipos fallaba con "Algo salió mal" porque el `56` y el `58` le habían sacado la categoría a `team_staff_action` ([`2026-11-03-aviso-staff-equipos`](bitacora/2026-11-03-aviso-staff-equipos/)). Falta probarlo desde la web.
+- **Falta:**
+  - Comprobar con Daniel que los tres `.env` del VPS (`api`, `season` y `demos`) y `MM_LISTEN_URL` apunten a producción.
+  - Configuración copiada de staging.
+  - Temporada BETA.
+  - Auth de producción.
+  - Servidores: **#1 MVZG** a producción; **#2 flow** y **#3 `aurav34`** con el reporter nuevo.
+  - Verificar la ingesta de flow, el Worker de demos y el render de clips.
+- **Staging está más abierto que producción:** `anon` y `authenticated` pueden ejecutar 12 funciones internas (19 permisos) (`csstv_ingest`, `csstv_auth`, `create_server_token`, `rotate_server_token`…). En producción solo las ejecuta `service_role`. Hay que cerrarlas en staging.
+
 ## Orden de trabajo (decidido por Daniel el 2026-10-15)
 
 **Primero todo lo de la web** (base del replanteo, backend, frontend nuevo y plan del VPS). **Los plugins quedan para el final.**
@@ -140,6 +156,8 @@ Ordenado por urgencia.
 ### 1.5 Corte del replanteo: migraciones 01 a 21 y plugin 2.0.0 (`!match` y `!status`) con 2.1.0 (mixes en vivo) y 2.2.0 (`!claim`)
 
 > **Desactualizado (2026-11-03):** el corte ahora es con los replanteos `01` a `69` y lo describe [`2026-11-03-corte-produccion`](bitacora/2026-11-03-corte-produccion/PLAN.md). Lo de abajo queda como historia y como lista de chequeos sueltos.
+>
+> **Temporada BETA creada en producción el 2026-11-03** (Daniel, paso 2.5 del PLAN): número 1, desde el 2026-10-13 00:00 UTC (antes del primer mix, así cuentan los 95), fin el 2026-12-03 06:00 de Argentina, parámetros de `season_config`. Script: [`pruebas/temporada_beta.sql`](bitacora/2026-11-03-corte-produccion/pruebas/temporada_beta.sql).
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
@@ -804,16 +822,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** commit (la `69` en las dos ramas) y producción con el corte. `vip_status` tiene el mismo problema (lista de VIP de Administración), sin tocar.
 - **Bitácora:** [`2026-11-03-foto-en-plantel`](bitacora/2026-11-03-foto-en-plantel/)
 
-### 1.58 Amigos al instante y la misma foto de perfil (replanteo `70`): implementado, sin commit ni despliegue
+### 1.58 Amigos al instante y la misma foto de perfil (replanteo `71`): en staging, falta producción y la web
 
 - **Qué es:** sumar o sacar a un amigo avisa `friend.changed` por el socket, y la otra persona lo ve sin recargar. En la foto, gana la última que se subió (Daniel, 2026-11-03): al subir la suya, el jugador deja de ver la de su ficha. Antes, el menú de la cuenta mostraba la foto nueva y el resto de la web la de la ficha.
 - **Dónde:** base en `feat/frontend-fase-1` y en `feat/mm-claim-en-sala` (es del matchmaking); web en `feat/frontend-fase-1`.
-- **Hecho el 2026-11-03:** replanteo `70` con inversa y 11 pruebas SQL (en local con `pg_safeupdate`) y web (560 pruebas).
+- **Hecho el 2026-11-03:** replanteo `71` (era el `70`: el `70` es el de Kyan) con inversa y 11 pruebas SQL (en local con `pg_safeupdate` y en staging, deshechas), web (560 pruebas), commit en las dos ramas y la base aplicada en staging.
 - **Falta:**
-  1. Commit en las dos ramas.
-  2. Staging: contar antes las fichas que toca el arreglo de datos (consulta en la guía), aplicar la `70` y desplegar la web. La API no cambia.
-  3. Probar con dos cuentas: B suma a A y A lo ve al instante; cambiar la foto y verla igual en el menú de la cuenta, la ficha, el ranking y Jugar.
-  4. Producción con el corte.
+  1. Staging: renombrar el respaldo a `replanteo71_fotos_ficha` (se aplicó cuando se llamaba `70`; detalle en la guía).
+  2. Producción: aplicar la `71` (toca 2 fichas: kyan y saiko pasan a la foto de su cuenta).
+  3. Desplegar la web en el VPS. La API no cambia.
+  4. Probar con dos cuentas: B suma a A y A lo ve al instante; cambiar la foto y verla igual en el menú de la cuenta, la ficha, el ranking y Jugar.
 - **Bitácora:** [`2026-11-03-amigos-y-foto-perfil`](bitacora/2026-11-03-amigos-y-foto-perfil/)
 
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
