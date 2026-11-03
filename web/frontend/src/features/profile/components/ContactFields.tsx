@@ -117,7 +117,7 @@ export const WELCOME_CONTACTS: Row[] = [
     name: "steam",
     label: "Steam",
     placeholder: STEAM_PLACEHOLDER,
-    help: "El link de tu perfil de Steam. Es solo informativo: tu jugador se vincula en el siguiente paso.",
+    help: "El link de tu perfil de Steam. Es solo informativo: tu SteamID se vincula con !claim en tu primera partida.",
   },
   {
     brand: "faceit",

@@ -57,24 +57,27 @@ const steamWith = (ids: string[]) => ({
 })
 
 const patched = vi.fn()
+const codeRequested = vi.fn()
 const server = setupServer(
   http.patch(`${API}/api/v1/me/profile`, async ({ request }) => {
     const body = (await request.json()) as Details
     patched(body)
     return HttpResponse.json(profileWith(body))
   }),
-  http.post(`${API}/api/v1/me/claim-code`, () =>
-    HttpResponse.json({
+  http.post(`${API}/api/v1/me/claim-code`, () => {
+    codeRequested()
+    return HttpResponse.json({
       code: "ABC123",
       expires_at: new Date(Date.now() + 600_000).toISOString(),
     })
-  )
+  })
 )
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }))
 afterEach(() => {
   server.resetHandlers()
   navigate.mockReset()
   patched.mockReset()
+  codeRequested.mockReset()
   localStorage.clear()
 })
 afterAll(() => server.close())
@@ -128,5 +131,15 @@ describe("WelcomeFlow", () => {
     await u.click(screen.getByRole("button", { name: "Guardar y seguir" }))
     expect(await label("paso 2 de 2 · Vinculación")).toBeInTheDocument()
     expect(patched).toHaveBeenCalledWith({ discord: "zeta.cs" })
+  })
+
+  it("Vinculación solo explica el !claim de la primera partida: sin código ni espera", async () => {
+    given({ real_name: "Martín", game_role: "IGL", discord: "zeta" }, [])
+    const { user: u } = renderWithQuery(<WelcomeFlow user={user} />)
+    expect(await label("paso 1 de 1 · Vinculación")).toBeInTheDocument()
+    expect(screen.queryByText(/Espera la confirmación/)).not.toBeInTheDocument()
+    expect(codeRequested).not.toHaveBeenCalled()
+    await u.click(screen.getByRole("button", { name: "Buscar partida" }))
+    expect(navigate).toHaveBeenCalledWith({ to: "/play", replace: true })
   })
 })

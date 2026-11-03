@@ -62,8 +62,9 @@ const SIDE: Record<WelcomeStep, SideCopy> = {
     subtitle: "Agrégalo para que te inviten a PCW.",
   },
   link: {
-    title: "Escríbelo en el chat de tu primera partida.",
-    subtitle: "Tu SteamID queda vinculado a tu cuenta.",
+    title: "Tu código aparece en la sala de tu primera partida.",
+    subtitle:
+      "Lo escribes en el chat del servidor y tu SteamID queda vinculado.",
   },
 }
 const DONE_MESSAGE = "¡Listo! Ya puedes jugar tu primer mix."
@@ -84,14 +85,8 @@ export function WelcomeFlow({ user }: { user: AuthUser }) {
   const [steps, setSteps] = useState<WelcomeStep[] | null>(null)
   const [index, setIndex] = useState(0)
   const current = steps?.[index] ?? null
-  // En la vinculación se consulta cada 5 s hasta que el SteamID queda vinculado.
-  const steam = useQuery({
-    ...steamStatusOptions,
-    refetchInterval: (q) =>
-      current === "link" && !(q.state.data?.steam_ids.length ?? 0)
-        ? 5000
-        : false,
-  })
+  // La vinculación ya no espera aquí: el !claim se hace en la primera partida (sala del matchmaking).
+  const steam = useQuery(steamStatusOptions)
   const update = useUpdateProfile()
   const [name, setName] = useState("")
   const [nameError, setNameError] = useState<string | null>(null)
@@ -222,40 +217,51 @@ export function WelcomeFlow({ user }: { user: AuthUser }) {
           )}
 
           <div className="flex items-center justify-end gap-2">
-            {(current !== "link" || !linked) && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="lg"
-                className="px-3.5 text-sm font-normal text-muted-foreground"
-                onClick={() =>
-                  isLast
-                    ? finish(
-                        current === "link"
-                          ? "Puedes vincular tu jugador desde Mi perfil"
-                          : LATER_MESSAGE
-                      )
-                    : setIndex(index + 1)
-                }
-              >
-                Lo hago después
-              </Button>
-            )}
             {current === "link" ? (
-              <StepButton
-                ready={linked}
-                onClick={() => linked && finish(DONE_MESSAGE)}
-              >
-                Terminar
-              </StepButton>
+              <>
+                {!linked && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="lg"
+                    className="px-3.5 text-sm font-normal text-muted-foreground"
+                    onClick={() => finish(DONE_MESSAGE)}
+                  >
+                    Terminar
+                  </Button>
+                )}
+                <StepButton
+                  ready
+                  onClick={() =>
+                    linked
+                      ? finish(DONE_MESSAGE)
+                      : void navigate({ to: "/play", replace: true })
+                  }
+                >
+                  {linked ? "Terminar" : "Buscar partida"}
+                </StepButton>
+              </>
             ) : (
-              <StepButton
-                ready
-                disabled={update.isPending}
-                onClick={() => void save()}
-              >
-                {isLast ? "Guardar y terminar" : "Guardar y seguir"}
-              </StepButton>
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  className="px-3.5 text-sm font-normal text-muted-foreground"
+                  onClick={() =>
+                    isLast ? finish(LATER_MESSAGE) : setIndex(index + 1)
+                  }
+                >
+                  Lo hago después
+                </Button>
+                <StepButton
+                  ready
+                  disabled={update.isPending}
+                  onClick={() => void save()}
+                >
+                  {isLast ? "Guardar y terminar" : "Guardar y seguir"}
+                </StepButton>
+              </>
             )}
           </div>
         </div>
