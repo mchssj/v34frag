@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { createMmSocket } from "./socket"
+import { createMmSocket, MM_SILENCE_MS } from "./socket"
 
 // Un WebSocket de mentira: se abre al instante y se cierra cuando la prueba lo pide.
 class FakeWs {
@@ -86,6 +86,50 @@ describe("socket del matchmaking", () => {
     )
     online()
     expect(FakeWs.all).toHaveLength(1)
+    stop()
+  })
+
+  it("contesta el ping y no lo pasa a los que escuchan", async () => {
+    const events: string[] = []
+    const open = createMmSocket({
+      url: "ws://x",
+      getToken: () => "t",
+      onTokenChange: () => () => {},
+      WebSocketImpl: FakeWs as unknown as typeof WebSocket,
+      onOnline: () => () => {},
+    })
+    const stop = open(
+      (e) => events.push(e.t),
+      () => {}
+    )
+    await vi.advanceTimersByTimeAsync(0)
+    const ws = FakeWs.all[0]!
+    ws.onmessage?.({ data: '{"t":"ping"}' })
+    expect(ws.sent.at(-1)).toBe('{"t":"pong"}')
+    expect(events).toEqual([])
+    stop()
+  })
+
+  it("si no llega nada en 40 s, descarta la conexión y abre otra", async () => {
+    const status: boolean[] = []
+    const open = createMmSocket({
+      url: "ws://x",
+      getToken: () => "t",
+      onTokenChange: () => () => {},
+      WebSocketImpl: FakeWs as unknown as typeof WebSocket,
+      onOnline: () => () => {},
+    })
+    const stop = open(
+      () => {},
+      (up) => status.push(up)
+    )
+    await vi.advanceTimersByTimeAsync(0)
+    FakeWs.all[0]!.onmessage?.({ data: '{"t":"ready"}' })
+    await vi.advanceTimersByTimeAsync(MM_SILENCE_MS - 1)
+    expect(FakeWs.all).toHaveLength(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(FakeWs.all).toHaveLength(2)
+    expect(status).toEqual([true, false])
     stop()
   })
 })

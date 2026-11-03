@@ -70,6 +70,34 @@ describe("banOptimistic", () => {
   })
 })
 
+describe("useMmMutation con respuesta liviana (mejora B)", () => {
+  it("combina la respuesta con lo que ya había y no pisa el perfil", async () => {
+    const queryClient = new QueryClient()
+    const profile = { me: { nick: "kyan" }, friends: [] }
+    queryClient.setQueryData(mmKeys.profile, profile)
+    queryClient.setQueryData(mmKeys.state, {
+      ...profile,
+      lobby: null,
+      queue: null,
+    } as unknown as MmState)
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    const live = { lobby: null, queue: { mode: "5v5" } } as unknown as MmState
+    const { result } = renderHook(() => useMmMutation(async () => live), {
+      wrapper,
+    })
+    await act(async () => {
+      await result.current.mutateAsync()
+    })
+    expect(queryClient.getQueryData(mmKeys.state)).toMatchObject({
+      me: { nick: "kyan" },
+      queue: { mode: "5v5" },
+    })
+    expect(queryClient.getQueryData(mmKeys.profile)).toBe(profile)
+  })
+})
+
 describe("useMmSocket", () => {
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
@@ -127,6 +155,43 @@ describe("useMmSocket", () => {
     act(() => vi.advanceTimersByTime(MM_EVENT_COALESCE_MS))
     expect(invalidate).toHaveBeenCalledTimes(1)
     expect(invalidate).toHaveBeenCalledWith({ queryKey: mmKeys.state })
+  })
+
+  it("dos hooks en la pestaña comparten un solo socket y piden el estado una sola vez", async () => {
+    let emit: (e: MmEvent) => void = () => {}
+    let stopped = 0
+    const subscribe = vi.fn(
+      (on: (e: MmEvent) => void, up: (v: boolean) => void) => {
+        emit = on
+        up(true)
+        return () => stopped++
+      }
+    )
+    const source = { subscribe } as unknown as MmSource
+    const queryClient = new QueryClient()
+    const invalidate = vi
+      .spyOn(queryClient, "invalidateQueries")
+      .mockResolvedValue(undefined)
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    const seen: string[] = []
+    const a = renderHook(() => useMmSocket(source), { wrapper })
+    const b = renderHook(() => useMmSocket(source, (e) => seen.push(e.t)), {
+      wrapper,
+    })
+    expect(subscribe).toHaveBeenCalledTimes(1)
+    await act(async () => {})
+    expect(a.result.current).toBe(true)
+    expect(b.result.current).toBe(true)
+    act(() => emit({ t: "lobby.veto" }))
+    act(() => vi.advanceTimersByTime(MM_EVENT_COALESCE_MS))
+    expect(seen).toEqual(["lobby.veto"])
+    expect(invalidate).toHaveBeenCalledTimes(1)
+    a.unmount()
+    expect(stopped).toBe(0)
+    b.unmount()
+    expect(stopped).toBe(1)
   })
 
   it("un aviso después del anterior vuelve a pedir", () => {

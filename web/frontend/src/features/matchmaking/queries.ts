@@ -178,9 +178,14 @@ export function useMmMutation<A = void>(
     },
     onSuccess: (state) => {
       lastOwnAction.ok = true
-      queryClient.setQueryData(mmKeys.state, normalizeState(state))
-      // Las acciones devuelven el estado completo: también trae lo que casi no cambia (un sonido elegido, un bloqueo).
-      queryClient.setQueryData(mmKeys.profile, state)
+      // Las de la cola, la sala y el grupo devuelven solo el estado liviano (mejora B): se combina con lo que ya hay.
+      const prev = queryClient.getQueryData<MmState>(mmKeys.state)
+      queryClient.setQueryData(
+        mmKeys.state,
+        normalizeState(prev ? { ...prev, ...state } : state)
+      )
+      // Las sociales devuelven el completo, con lo que casi no cambia (un sonido elegido, un bloqueo).
+      if ("me" in state) queryClient.setQueryData(mmKeys.profile, state)
     },
   })
 }
@@ -312,12 +317,99 @@ export function applyMmEvent(
   }
 }
 
+type SocketShare = {
+  refs: number
+  up: boolean
+  statusListeners: Set<(up: boolean) => void>
+  handlers: Set<(e: MmEvent) => void>
+  stop: () => void
+}
+// Una sola suscripción por fuente y QueryClient (plan docs/bitacora/2026-11-02-mm-socket-optimizado, error 3): antes,
+// el aviso de reconexión del layout y Jugar abrían un socket cada uno y cada aviso pedía el estado dos veces.
+const shares = new WeakMap<QueryClient, Map<MmSource, SocketShare>>()
+
+function acquireSocket(
+  source: MmSource,
+  queryClient: QueryClient
+): SocketShare {
+  let bySource = shares.get(queryClient)
+  if (!bySource) shares.set(queryClient, (bySource = new Map()))
+  const existing = bySource.get(source)
+  if (existing) {
+    existing.refs++
+    return existing
+  }
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let lastEventAt = 0
+  let needs: MmNeeds = { live: false, profile: false, chat: false }
+  const flush = () => {
+    if (queryClient.isMutating() > 0) {
+      timer = setTimeout(flush, MM_EVENT_COALESCE_MS)
+      return
+    }
+    timer = undefined
+    const n = needs
+    needs = { live: false, profile: false, chat: false }
+    if (n.chat)
+      void queryClient.invalidateQueries({
+        queryKey: [...mmKeys.all, "chat"],
+      })
+    // Lo que casi no cambia se marca como viejo: el estado lo vuelve a pedir al armarse.
+    if (n.profile)
+      void queryClient.invalidateQueries({
+        queryKey: mmKeys.profile,
+        refetchType: "none",
+      })
+    const covered =
+      lastOwnAction.ok && lastEventAt < lastOwnAction.startedAt && !n.profile
+    if ((n.live || n.profile) && !covered)
+      void queryClient.invalidateQueries({ queryKey: mmKeys.state })
+  }
+  const share: SocketShare = {
+    refs: 1,
+    up: false,
+    statusListeners: new Set(),
+    handlers: new Set(),
+    stop: () => {},
+  }
+  const stop = source.subscribe(
+    (e) => {
+      for (const h of share.handlers) h(e)
+      applyMmEvent(queryClient, e, needs)
+      lastEventAt = Date.now()
+      if ((needs.live || needs.profile || needs.chat) && timer === undefined)
+        timer = setTimeout(flush, MM_EVENT_COALESCE_MS)
+    },
+    (up) => {
+      share.up = up
+      for (const l of share.statusListeners) l(up)
+    }
+  )
+  share.stop = () => {
+    clearTimeout(timer)
+    stop()
+  }
+  bySource.set(source, share)
+  return share
+}
+
+function releaseSocket(
+  source: MmSource,
+  queryClient: QueryClient,
+  share: SocketShare
+) {
+  if (--share.refs > 0) return
+  share.stop()
+  shares.get(queryClient)?.delete(source)
+}
+
 /**
  * Escucha el socket. Cada aviso aplica lo que trae y, si hace falta, se vuelve a pedir solo la parte que cambió
  * (el estado liviano, lo que casi no cambia o el chat). Devuelve si está conectado, para el polling de respaldo.
  *
  * Los avisos que llegan juntos se piden una sola vez. Con una acción propia en curso se espera a que termine: si el
- * último aviso llegó antes de empezarla, su respuesta ya lo trae y no se vuelve a pedir el estado.
+ * último aviso llegó antes de empezarla, su respuesta ya lo trae y no se vuelve a pedir el estado. Todos los que usan
+ * este hook en la pestaña comparten un solo socket.
  */
 export function useMmSocket(source: MmSource, onEvent?: (e: MmEvent) => void) {
   const queryClient = useQueryClient()
@@ -328,42 +420,20 @@ export function useMmSocket(source: MmSource, onEvent?: (e: MmEvent) => void) {
   })
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined
-    let lastEventAt = 0
-    let needs: MmNeeds = { live: false, profile: false, chat: false }
-    const flush = () => {
-      if (queryClient.isMutating() > 0) {
-        timer = setTimeout(flush, MM_EVENT_COALESCE_MS)
-        return
-      }
-      timer = undefined
-      const n = needs
-      needs = { live: false, profile: false, chat: false }
-      if (n.chat)
-        void queryClient.invalidateQueries({
-          queryKey: [...mmKeys.all, "chat"],
-        })
-      // Lo que casi no cambia se marca como viejo: el estado lo vuelve a pedir al armarse.
-      if (n.profile)
-        void queryClient.invalidateQueries({
-          queryKey: mmKeys.profile,
-          refetchType: "none",
-        })
-      const covered =
-        lastOwnAction.ok && lastEventAt < lastOwnAction.startedAt && !n.profile
-      if ((n.live || n.profile) && !covered)
-        void queryClient.invalidateQueries({ queryKey: mmKeys.state })
-    }
-    const stop = source.subscribe((e) => {
-      handler.current?.(e)
-      applyMmEvent(queryClient, e, needs)
-      lastEventAt = Date.now()
-      if ((needs.live || needs.profile || needs.chat) && timer === undefined)
-        timer = setTimeout(flush, MM_EVENT_COALESCE_MS)
-    }, setUp)
+    const share = acquireSocket(source, queryClient)
+    const onShared = (e: MmEvent) => handler.current?.(e)
+    share.handlers.add(onShared)
+    share.statusListeners.add(setUp)
+    // Un hook que se suma a un socket ya abierto arranca con su estado (fuera del cuerpo del efecto).
+    let active = true
+    queueMicrotask(() => {
+      if (active) setUp(share.up)
+    })
     return () => {
-      clearTimeout(timer)
-      stop()
+      active = false
+      share.handlers.delete(onShared)
+      share.statusListeners.delete(setUp)
+      releaseSocket(source, queryClient, share)
     }
   }, [source, queryClient])
   return up
