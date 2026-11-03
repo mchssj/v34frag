@@ -1,0 +1,6 @@
+CMLeague 2.9.5 --  Changelog
+
+- Si cierras la web o la sesión mientras buscas partida, sales de la cola sin sanción. Ya no te cae una sanción por una partida que no viste.
+- Si recargas la página o se te corta internet unos segundos, sigues buscando con tu lugar. Mientras no estás, no te armamos partida.
+- Si alguien de tu grupo cierra la web, el grupo sale de la cola.
+- Al volver a Jugar te avisamos si te sacamos de la cola.
