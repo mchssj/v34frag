@@ -67,6 +67,8 @@ Con el corte, junto con el resto del matchmaking.
 
 ## En qué se apartó del plan
 
+- **Dónde se levantan (Daniel, 2026-11-02, después del primer despliegue):** el plan las ponía en Matchmaking › Reportes, pero Daniel las buscó en Administración › Baneos. Se movieron las dos tarjetas (sanciones de la cola y exclusiones) a una pestaña **Matchmaking** de Baneos (`SanctionsPanel.tsx`, `STATUS_TABS` con `mm`), con el contador de las vigentes. En Reportes queda un link. Solo cambia la web: 534 pruebas, typecheck y lint. Commit `b5ce9088` y **web `b5ce90880886` en staging (2026-11-02)**, desde un checkout limpio en `v34frag-deploy` (519 pruebas). Antes del cambio, `kyantares` ya había levantado la sanción de prueba de `daniloev` desde Reportes (03:06 UTC, nivel 2 → 1): el primer uso real.
+
 - **El motivo del registro:** la respuesta anterior a Daniel decía que hacía falta una columna nueva. No hacía falta: el motivo ya estaba en `mm_penalty_log`. El plan ya lo corregía.
 - **Orden de las faltas:** para tomar la última se ordena por `created_at` y después por `id`. Dos faltas en la misma transacción tienen la misma hora; se vio en las pruebas.
 - **El aviso `penalty.lifted`:** es un tipo nuevo. La web ya pedía todo ante un aviso desconocido, pero se le agregó una rama propia para que quede claro.
