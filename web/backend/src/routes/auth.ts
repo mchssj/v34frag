@@ -172,6 +172,12 @@ export const auth = createRouter()
   })
   .openapi(logout, async (c) => {
     const cfg = c.var.config;
+    // Sale de la cola del matchmaking en el acto (replanteo 63). Nunca rechaza una sala; si falla, la sesión se cierra igual.
+    try {
+      await c.var.sb.rpc('mm_logout' as never);
+    } catch {
+      // Sin matchmaking en esta base, o la base no responde: no importa para cerrar la sesión.
+    }
     const res = await fetch(`${cfg.SUPABASE_URL}/auth/v1/logout?scope=local`, {
       method: 'POST',
       headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${c.var.user.token}` },

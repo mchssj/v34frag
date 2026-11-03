@@ -13,6 +13,8 @@ export type AppEnv = {
     rateLimiter: RateLimiter;
     // Envío UDP para A2S: solo en Node (node.ts). Sin él, /servers/status responde 501.
     udp: UdpExchange | undefined;
+    // Presencia en la cola del matchmaking: solo en Node (node.ts).
+    mmPolled: ((userId: string) => void) | undefined;
     // Solo existen en rutas con requireUser.
     user: AuthUser;
     sb: Db;

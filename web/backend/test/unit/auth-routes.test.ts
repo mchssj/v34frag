@@ -116,6 +116,24 @@ describe('POST /auth/login', () => {
 });
 
 describe('POST /auth/logout', () => {
+  it('sale de la cola del matchmaking antes de cerrar la sesión (replanteo 63)', async () => {
+    const fetch = gotrue((url) =>
+      url.includes('/rpc/mm_logout') ? new Response(null, { status: 204 }) : url.includes('/auth/v1/logout') ? new Response(null, { status: 204 }) : undefined,
+    );
+    const res = await post('/auth/logout', undefined, await signToken(key, userClaims(USER)));
+    expect(res.status).toBe(204);
+    const urls = fetch.mock.calls.map(([u]) => String(u instanceof Request ? u.url : u));
+    const leave = urls.findIndex((u) => u.includes('/rpc/mm_logout'));
+    expect(leave).toBeGreaterThanOrEqual(0);
+    expect(leave).toBeLessThan(urls.findIndex((u) => u.includes('/auth/v1/logout')));
+  });
+
+  it('si salir de la cola falla, la sesión se cierra igual', async () => {
+    gotrue((url) => (url.includes('/auth/v1/logout') ? new Response(null, { status: 204 }) : undefined));
+    const res = await post('/auth/logout', undefined, await signToken(key, userClaims(USER)));
+    expect(res.status).toBe(204);
+  });
+
   it('204 aunque Supabase diga que la sesión ya no existe', async () => {
     gotrue((url) => (url.includes('/auth/v1/logout') ? authError(404, 'session_not_found') : undefined));
     const res = await post('/auth/logout', undefined, await signToken(key, userClaims(USER)));
