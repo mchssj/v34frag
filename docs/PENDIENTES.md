@@ -796,6 +796,12 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. Producción con el corte. No toca a los servidores de juego.
 - **Bitácora:** [`2026-11-03-reportes-clips-nombre-equipo`](bitacora/2026-11-03-reportes-clips-nombre-equipo/)
 
+### 1.57 La foto de cada integrante en el plantel (replanteo `69`): en staging, sin commit
+
+- **Qué es:** `team_members_view` usa la foto de la cuenta si la ficha no tiene (como `player_overview`). Roles de equipo y el plantel mostraban la inicial (Daniel, 2026-11-03).
+- **Falta:** commit (la `69` en las dos ramas) y producción con el corte. `vip_status` tiene el mismo problema (lista de VIP de Administración), sin tocar.
+- **Bitácora:** [`2026-11-03-foto-en-plantel`](bitacora/2026-11-03-foto-en-plantel/)
+
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".

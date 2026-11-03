@@ -168,3 +168,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-03 | [Valores reales de la base en el manual](2026-11-03-manual-valores-reales/) | **En staging (2026-11-03), con commit:** `ebaecd9c` y `c4b004a4`, API `0d5732881cbe` |
 | 2026-11-03 | [Imagen del inicio de sesión configurable](2026-11-03-imagen-login/) | **En staging (2026-11-03):** `67`, API `0d5732881cbe` y web `e53200f83840` |
 | 2026-11-03 | [Reportes solo para el admin, lista de clips y nombre del equipo](2026-11-03-reportes-clips-nombre-equipo/) | **En staging (2026-11-03), con commit:** `034d280a` y `e53200f8`; base `68`, API `0d5732881cbe` y web `e53200f83840` |
+| 2026-11-03 | [La foto de cada integrante en el plantel de un equipo](2026-11-03-foto-en-plantel/) | Reporte de Daniel (2026-11-03): Roles de equipo mostraba la inicial. **En staging (2026-11-03)**, sin commit: replanteo `69` (4 pruebas en staging, deshechas). La API y la web no cambian |
