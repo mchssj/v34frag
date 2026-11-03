@@ -25,6 +25,8 @@ export type ErrorCode =
   | 'COACH_NOT_ALLOWED'
   | 'REGISTRATION_CLOSED'
   | 'PLAYER_NOT_LINKED'
+  | 'PCW_BANNED'
+  | 'SERVER_BUSY'
   | 'INTERNAL';
 
 export class AppError extends Error {
@@ -89,6 +91,14 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
       return new AppError(400, 'PLAYER_NOT_LINKED', err.message, { aliases: jsonList(err.details) });
     // (replanteo 39) Choque con el estado actual; el detail, si viene, es un objeto JSON (por ejemplo `next_change_at`).
     case 'V3901':
+      return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
+    // (replanteo 56) Sanción por abandonar una PCW, y un servidor que dejó de estar libre al iniciar.
+    case 'V5601':
+      return new AppError(403, 'PCW_BANNED', err.message);
+    case 'V5602':
+      return new AppError(409, 'SERVER_BUSY', err.message);
+    // (replanteo 57) Aviso de la cola en Discord antes de los 15 minutos; el detail trae next_at.
+    case 'V5701':
       return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');

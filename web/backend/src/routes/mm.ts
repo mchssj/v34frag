@@ -5,9 +5,10 @@ import { must, mustHave } from '../lib/db';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
-import { readAudio, storageError, SOUND_MAX_BYTES } from '../lib/uploads';
+import { BANNER_MAX_BYTES, readAudio, storageError, SOUND_MAX_BYTES, type ImageShape } from '../lib/uploads';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { demoUrl } from '../services/matches';
+import { removePhoto, savePhoto, dropPhoto } from '../services/photos';
 import { LIST_COLUMNS, toVideo, type ClipRow } from './clips';
 
 // Matchmaking (plan docs/bitacora/2026-10-28-matchmaking). Las reglas las valida la base: acá solo se valida la forma
@@ -50,7 +51,8 @@ const state = async (c: C) => {
   const s = mustHave(await c.var.sb.rpc('mm_my_state' as never)) as { lobby?: { match?: GameRef | null } | null };
   const game = s.lobby?.match;
   if (game?.game_id) await withGame(c, game);
-  return c.json(s as never, 200);
+  // server_now: las cuentas regresivas de la web se corrigen con el reloj del servidor (el de cada PC puede ir corrido).
+  return c.json({ ...s, server_now: new Date().toISOString() } as never, 200);
 };
 const body = <T>(c: C) => (c.req as unknown as { valid(t: 'json'): T }).valid('json');
 const param = (c: C) => (c.req as unknown as { valid(t: 'param'): { id: string } }).valid('param').id;
@@ -69,6 +71,7 @@ const Report = z.object({ lobby_id: Id, player_id: Id, reason: z.enum(['afk', 't
 const Commend = z.object({ lobby_id: Id, player_id: Id }).openapi('MmCommend');
 const Sound = z.object({ sound_id: Id.nullable() }).openapi('MmSoundChoice');
 const Resolve = z.object({ action: z.enum(['dismiss', 'warn', 'mm_ban', 'ban', 'server_ban']), days: z.number().int().positive().max(3650).optional() }).openapi('MmResolve');
+const Lift = z.object({ reason: z.string().trim().min(3).max(300) }).openapi('MmPenaltyLift');
 const Maps = z.object({ maps: z.array(z.string().max(64)).min(2).max(50) }).openapi('MmMaps');
 const Config = z.record(z.string(), z.unknown()).openapi('MmConfigPatch');
 
@@ -85,17 +88,59 @@ const removeSound = async (c: C, url: unknown) => {
   const path = typeof url === 'string' ? url.split('/sounds/')[1] : undefined;
   if (path) await c.var.sb.storage.from('sounds').remove([path]);
 };
+/** Imagen de la tarjeta del MVP (replanteo 54): ancha como el banner de un torneo. */
+const MVP_SHAPE: ImageShape = { what: 'La imagen del MVP', ratio: 4, tolerance: 0.05, shape: 'de proporción 4:1', min: [800, 200], max: [2400, 600] };
+const ImageForm = z.object({ file: z.instanceof(File).openapi({ type: 'string', format: 'binary' }) });
+
 const form = (c: C) => (c.req as unknown as { valid(t: 'form'): { file: File; name?: string } }).valid('form');
+
+/** "@player Hay gente en la queue, ¡mándate!" y abajo "5v5: 7 buscando · avisó Kyan". El alias va sin markdown ni menciones. */
+export function queuePingText(p: { alias: string; queue: Record<string, number> }, role?: string) {
+  const who = p.alias.replace(/[\\*_~`|>@#:<]/g, '').slice(0, 32).trim() || 'Alguien';
+  const modes = Object.entries(p.queue).filter(([, n]) => n > 0).map(([m, n]) => `${m}: ${n} buscando`);
+  return `${role ? `<@&${role}> ` : ''}Hay gente en la queue, ¡mándate!\n${[...modes, `avisó ${who}`].join(' · ')}`;
+}
 
 const r = createRouter();
 const add = (def: ReturnType<typeof route>, handler: (c: C) => Promise<Response>) => r.openapi(def as never, handler as never);
 
-add(route('get', '/api/v1/mm/state', { summary: 'Estado de mi matchmaking' }), state);
+add(route('get', '/api/v1/mm/state', { summary: 'Estado de mi matchmaking (completo)' }), state);
+// (replanteo 59) El estado en dos partes: lo que cambia rápido y lo que casi no cambia. Las estadísticas de una partida
+// terminada salen aparte, una sola vez.
+add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala (sin estadísticas), grupo y contadores' }), async (c) =>
+  c.json({ ...((await rpc(c, 'mm_my_live')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
+add(route('get', '/api/v1/mm/profile', { summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
+  c.json({ ...((await rpc(c, 'mm_my_profile')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
+add(route('get', '/api/v1/mm/lobbies/{id}/match', { summary: 'La partida de una sala que jugué, con las estadísticas y los clips', request: { params: IdParam } }), async (c) => {
+  const game = (await rpc(c, 'mm_lobby_match', { p_lobby: param(c) })) as unknown as GameRef | null;
+  if (game?.game_id) await withGame(c, game);
+  return c.json((game ?? null) as never, 200);
+});
 add(route('post', '/api/v1/mm/queue', { summary: 'Entrar a la cola', request: jsonBody(Join) }), action('mm_join', (c) => {
   const b = body<{ mode: string; region?: string | null }>(c);
   return { p_mode: b.mode, p_region: b.region ?? null };
 }));
 add(route('delete', '/api/v1/mm/queue', { summary: 'Salir de la cola' }), action('mm_leave'));
+
+// Aviso de la cola en Discord (replanteo 57). La base decide si se puede (en la cola, uno cada 15 min; el staff siempre) y
+// la API publica. allowed_mentions limita la mención al rol: un alias no puede mencionar a nadie.
+add(route('get', '/api/v1/mm/queue/ping', { summary: 'Si puedo avisar en Discord que hay gente en la cola' }), async (c) =>
+  c.json((await rpc(c, 'mm_queue_ping_status')) as never, 200));
+add(route('post', '/api/v1/mm/queue/ping', { summary: 'Avisar en Discord (#avisos) que hay gente en la cola' }), async (c) => {
+  const { DISCORD_QUEUE_WEBHOOK_URL: hook, DISCORD_QUEUE_ROLE_ID: role } = c.var.config;
+  if (!hook) throw new AppError(501, 'NOT_AVAILABLE', 'El aviso en Discord no está configurado.');
+  const ping = (await rpc(c, 'mm_queue_ping')) as unknown as { id: string; alias: string; queue: Record<string, number> };
+  const res = await fetch(hook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: queuePingText(ping, role), allowed_mentions: { parse: [], roles: role ? [role] : [] } }),
+  }).catch(() => null);
+  if (!res?.ok) {
+    await rpc(c, 'mm_queue_ping_cancel', { p_id: ping.id });
+    throw new AppError(502, 'NOT_AVAILABLE', 'Discord no recibió el aviso. Probá de nuevo en un rato.');
+  }
+  return c.json((await rpc(c, 'mm_queue_ping_status')) as never, 200);
+});
 add(route('post', '/api/v1/mm/lobby/accept', { summary: 'Aceptar la partida' }), action('mm_accept'));
 add(route('post', '/api/v1/mm/lobby/decline', { summary: 'Rechazar la partida' }), action('mm_decline'));
 
@@ -181,6 +226,12 @@ add(route('delete', '/api/v1/admin/mm/bans/{id}', { summary: 'Levantar una exclu
   await rpc(c, 'mm_admin_unban', { p_user: param(c) });
   return c.json({ ok: true } as never, 200);
 });
+// Sanciones automáticas de la cola (replanteo 61). Levantar corta la espera y baja un nivel de la escalera.
+add(route('get', '/api/v1/admin/mm/penalties', { summary: 'Sanciones de la cola vigentes', guard: requireModerator }), lists('penalties'));
+add(route('post', '/api/v1/admin/mm/penalties/{id}/lift', { summary: 'Levantar una sanción de la cola', guard: requireModerator, request: { params: IdParam, ...jsonBody(Lift) } }), async (c) => {
+  await rpc(c, 'mm_admin_lift_penalty', { p_user: param(c), p_reason: body<{ reason: string }>(c).reason });
+  return c.json({ ok: true } as never, 200);
+});
 add(route('get', '/api/v1/admin/mm/stats', { summary: 'Métricas', guard: requireAdmin, request: { query: z.object({ days: z.coerce.number().int().min(1).max(90).default(7) }) } }),
   lists('stats', (c) => String((c.req as unknown as { valid(t: 'query'): { days: number } }).valid('query').days)));
 add(route('get', '/api/v1/admin/mm/sounds', { summary: 'Sonidos del catálogo', guard: requireAdmin }), async (c) => c.json({ items: await rpc(c, 'mm_admin_sounds') } as never, 200));
@@ -197,6 +248,27 @@ add(route('post', '/api/v1/admin/mm/sounds', { summary: 'Subir un sonido', guard
 add(route('delete', '/api/v1/admin/mm/sounds/{id}', { summary: 'Borrar un sonido', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
   await removeSound(c, await rpc(c, 'mm_admin_sound_delete', { p_id: param(c) }));
   return c.json({ ok: true } as never, 200);
+});
+
+// Imagen del MVP (replanteo 54): la sube un admin; la usan la sala del matchmaking y el detalle de un mix.
+add(route('get', '/api/v1/mm/mvp-image', { summary: 'Imagen de la tarjeta del MVP' }), async (c) =>
+  c.json({ url: ((await rpc(c, 'mm_mvp_image')) as string | null) ?? null } as never, 200));
+add(route('put', '/api/v1/admin/mm/mvp-image', { summary: 'Subir la imagen del MVP', guard: requireAdmin, request: { body: multipart(ImageForm) } }), async (c) => {
+  const { url, path } = await savePhoto(c, 'mm', form(c).file, BANNER_MAX_BYTES, MVP_SHAPE);
+  let old: unknown;
+  try {
+    old = await rpc(c, 'mm_admin_set_mvp_image', { p_url: url });
+  } catch (e) {
+    await dropPhoto(c, path);
+    throw e;
+  }
+  removePhoto(c, typeof old === 'string' ? old : null);
+  return c.json({ url } as never, 200);
+});
+add(route('delete', '/api/v1/admin/mm/mvp-image', { summary: 'Quitar la imagen del MVP', guard: requireAdmin }), async (c) => {
+  const old = await rpc(c, 'mm_admin_set_mvp_image', { p_url: null });
+  removePhoto(c, typeof old === 'string' ? old : null);
+  return c.json({ url: null } as never, 200);
 });
 
 export const mm = r;

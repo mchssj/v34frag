@@ -9,7 +9,8 @@ const MAX_TOTAL = 2000;
 const MAX_MESSAGE = 4096;
 const AUTH_TIMEOUT_MS = 5_000;
 
-export type MmEvent = { t: string; lobby?: string | null; users?: string[] };
+// d (replanteo 59): lo que cambió, para que la web no tenga que pedir el estado (tamaños de la cola, quién aceptó…).
+export type MmEvent = { t: string; lobby?: string | null; users?: string[]; d?: unknown };
 type Verify = (token: string) => Promise<{ id: string; exp?: number } | null>;
 type Conn = { ws: WSContext; user: string | null; timer: ReturnType<typeof setTimeout> | null };
 
@@ -68,8 +69,8 @@ export function createMmHub(verify: Verify) {
     closed: detach,
 
     /** `users` vacío = a todos los autenticados. */
-    dispatch({ t, lobby, users }: MmEvent) {
-      const data = JSON.stringify({ t, lobby });
+    dispatch({ t, lobby, users, d }: MmEvent) {
+      const data = JSON.stringify(d === undefined || d === null ? { t, lobby } : { t, lobby, d });
       const targets = users?.length ? users.flatMap((u) => [...(byUser.get(u) ?? [])]) : [...conns].filter((c) => c.user);
       for (const conn of targets) conn.ws.send(data);
     },

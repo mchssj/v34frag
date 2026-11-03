@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.8.7"
+#define PLUGIN_VERSION "2.9.2"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -257,6 +257,7 @@ public void OnConfigsExecuted()
 	Http_ScheduleProcess(5.0);
 	Mm_OnConfigsExecuted();   // antes de Match_OnMapReady: retoma la sala
 	Match_OnMapReady();   // vínculo con la web: un pendiente se descarta, uno activo se actualiza (series)
+	Match_OnCoachCfg();   // !coach apagado en una sala del matchmaking
 }
 
 public void OnMapEnd()
@@ -686,6 +687,7 @@ void StartMatch(int maxRounds = 0, bool knife = false)
 	// El plugin decide cuándo termina la partida, no el juego.
 	ServerCommand("mp_maxrounds 0; mp_winlimit 0; mp_timelimit 0");
 	ExecIfExists("csstv/live.cfg");
+	Match_ExecKindCfg();   // live_mix, live_mm, live_official o live_pcw: lo propio de cada tipo de partida
 
 	Match_OnMatchStart();
 	Mm_OnMatchStart();
