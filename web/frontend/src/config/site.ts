@@ -2,7 +2,7 @@
 // 2026-10-16-frontend-diseno-landing-auth). Reemplazar por datos reales cuando existan.
 
 export const DISCORD = {
-  inviteUrl: "https://discord.com",
+  inviteUrl: "https://dsc.gg/v34frag",
   online: 214,
   members: 1386,
   channels: ["buscar-equipo", "pcw", "torneos", "soporte"],
