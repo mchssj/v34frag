@@ -78,7 +78,7 @@ Medido desde la PC de Daniel con `pruebas/medir_mm.mjs` (dos corridas de 12 vuel
 
 - **Ping:** un socket abierto 32 s recibió 4, cada 14 a 15 s.
 - **Cancelar mientras se arma la sala** (`pruebas/carrera.mjs`): 10 rondas en las que `kyan` cancela en el mismo instante en que entra `daniloev`. En las 10 llegó primero cancelar, y en ninguna quedó `kyan` en la sala después de cancelar. El orden exacto no se puede forzar desde afuera: **no es una prueba completa de la carrera**, que también tiene la comprobación de la prueba SQL.
-- Al terminar no quedaron salas abiertas, ni nadie en la cola, ni sanciones. Quedaron 15 salas canceladas de prueba ("Prueba de rendimiento (Claude)" y "Prueba de la carrera (Claude)").
+- Al terminar no quedaron salas abiertas, ni nadie en la cola, ni sanciones. Quedaron 10 salas canceladas de prueba ("Prueba de rendimiento (Claude)", 5 antes y 5 después). En la carrera no se armó ninguna.
 - **No se probó:** con un navegador real, el corte por silencio (wifi caído) ni las dos pestañas en Jugar. Lo cubren las pruebas unitarias.
 
 ## Cómo revertir
