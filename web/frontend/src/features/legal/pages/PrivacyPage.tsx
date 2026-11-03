@@ -56,7 +56,7 @@ const PROVIDERS: [string, string][] = [
   ["Google Drive", "Los videos de los clips"],
   [
     "Discord",
-    "Avisos de !calladmin al staff y publicación de clips en el canal de la liga",
+    "Avisos de !calladmin al staff, el aviso de la cola del matchmaking en #avisos (con el tag de quien avisa) y publicación de clips en el canal de la liga",
   ],
   ["Hosting de la web", "Servir las páginas de la web"],
 ]
@@ -115,9 +115,9 @@ const SECTIONS: LegalSection[] = [
             rol en el juego, links de Steam, FACEIT y Discord, avatar,
             biografía, preferencias y nivel de privacidad del perfil.
           </li>
+          <li>La fecha de tu última visita y tus notificaciones.</li>
           <li>
-            La fecha de tu última visita, tus notificaciones, tus partidas
-            favoritas y tus búsquedas guardadas.
+            Tus partidas favoritas y tus búsquedas guardadas <Wip />
           </li>
           <li>
             Tu equipo, tus pedidos (de equipo, de vinculación de ficha) y tus
@@ -153,7 +153,9 @@ const SECTIONS: LegalSection[] = [
         <h3>Lo que subes o escribes</h3>
         <ul>
           <li>Los mensajes del chat de las partidas en la web.</li>
-          <li>Las capturas y notas de los reportes de resultados.</li>
+          <li>
+            Las capturas y notas de los reportes de resultados <Wip />
+          </li>
           <li>
             Tus configs del juego <Wip />. Al publicarlas quitamos las líneas
             con contraseñas que encontramos.

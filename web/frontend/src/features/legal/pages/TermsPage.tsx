@@ -212,8 +212,8 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           Un baneo alcanza a tu ficha y a todos sus SteamID, también a los que
-          sumes después. La lista de baneos es pública: muestra a quién, desde
-          cuándo, hasta cuándo y el motivo.
+          sumes después. La lista de baneos <Wip /> va a ser pública y va a
+          mostrar a quién, desde cuándo, hasta cuándo y el motivo.
         </li>
         <li>
           En el matchmaking, abandonar una partida tiene una sanción automática
@@ -245,10 +245,11 @@ const SECTIONS: LegalSection[] = [
           se publican en la web.
         </li>
         <li>
-          El ELO y los niveles se calculan con las reglas publicadas en la web.
-          Podemos cambiar esas reglas, recalcular el ELO de todos, borrar un mix
-          (por ejemplo, si hubo trampa o se cayó el servidor) o ajustar el ELO a
-          mano. Las temporadas pueden reiniciar el ranking.
+          El ELO y los niveles se calculan con las reglas de la liga, que vamos
+          a publicar en la web <Wip />. Podemos cambiar esas reglas, recalcular
+          el ELO de todos, borrar un mix (por ejemplo, si hubo trampa o se cayó
+          el servidor) o ajustar el ELO a mano. Las temporadas pueden reiniciar
+          el ranking.
         </li>
         <li>
           El ELO, los puntos, los niveles y el ranking no tienen valor económico
@@ -278,9 +279,10 @@ const SECTIONS: LegalSection[] = [
           términos. Un jugador no puede estar en dos equipos del mismo torneo.
         </li>
         <li>
-          Los capitanes reportan los resultados con capturas. Reportar algo
-          falso es motivo de descalificación. Si los reportes no coinciden,
-          decide un administrador.
+          El resultado de cada partida lo registra el servidor de la liga al
+          terminar. Si el servidor no pudo registrarlo o hay un problema, decide
+          un administrador. Mentir sobre un resultado es motivo de
+          descalificación.
         </li>
         <li>
           Los premios los entrega quien organiza el torneo, como diga el
@@ -290,8 +292,9 @@ const SECTIONS: LegalSection[] = [
           quien lo recibe.
         </li>
         <li>
-          Las PCW (prácticas entre equipos) no cuentan para el ranking, pero se
-          rigen por las mismas reglas de conducta.
+          Las PCW (prácticas entre equipos) <Wip /> no mueven el ELO de los
+          jugadores, pero cuentan para el ranking de equipos y se rigen por las
+          mismas reglas de conducta.
         </li>
       </ul>
     ),
