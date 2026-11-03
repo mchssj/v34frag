@@ -6,6 +6,19 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 > **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
 
+## Términos y condiciones y política de privacidad (borradores, sin publicar)
+
+- **Estado:** `terms/terminos.html` escrito y `terms/privacidad.html` reescrita el 2026-11-03, pedidos por Kyan. Cubren toda la plataforma, también lo que no está implementado, con la ley argentina (CCyC, Ley 24.240 y Ley 25.326). No tocan los servidores (ni `aurav34`, flow ni MVZG).
+- **Falta:**
+  - Aprobación de Daniel o Kyan y revisión de un abogado.
+  - Datos completados el 2026-11-03 (Kyan): provincia de Buenos Aires, `cmleaguev34@gmail.com`, `https://dsc.gg/v34frag`, 13 años y los precios del VIP. Regiones (Kyan, 2026-11-03): Supabase en el oeste de Estados Unidos (Oregón) y el VPS de OVH en Beauharnois (Canadá). Es la **provincia** de Buenos Aires, no la Ciudad Autónoma (Kyan, 2026-11-03). Ya no queda ningún dato marcado en los textos.
+  - Inscribir la base en el Registro Nacional de Bases de Datos de la AAIP.
+  - Las dos páginas están en `terms/`. Google tiene cargada `https://csstv.gamer.gd/privacidad.html` para «CMLeague clips»: al publicar, subir la nueva también ahí o cambiar la URL en la consola de Google.
+  - Ponerle un plazo a `player_ips`, que hoy no tiene.
+  - Publicar las dos juntas y enlazarlas desde la web vieja. En el frontend nuevo ya están las rutas `/terminos` y `/privacidad`, con links en el pie y en el registro ([`2026-11-03-frontend-legales`](bitacora/2026-11-03-frontend-legales/)). Falta avisarle a Esteban y, si se quiere, una casilla de aceptación obligatoria en el registro. Los textos están en dos copias (`.html` y `features/legal/`): se cambian juntas.
+  - **Cobro del VIP:** cobrar sin estar inscripto en ARCA (ex AFIP) es un tema impositivo aparte de estos textos.
+- **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
+
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
 ## Orden de trabajo (decidido por Daniel el 2026-10-15)

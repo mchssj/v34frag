@@ -56,7 +56,21 @@ export function AuthShell({
         </main>
 
         <p className="text-center text-xs text-muted-foreground">
-          Al continuar aceptas las reglas de la comunidad.
+          Al continuar aceptas los{" "}
+          <Link
+            to="/terminos"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            términos y condiciones
+          </Link>{" "}
+          y la{" "}
+          <Link
+            to="/privacidad"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            política de privacidad
+          </Link>
+          .
         </p>
       </div>
 
