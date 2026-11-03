@@ -229,6 +229,7 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'mm.sancion_max': { clave: 'mm.sanciones', formato: { tipo: 'ultima_duracion' }, defecto: ESCALERA },
   'equipo.max_miembros': { formato: { tipo: 'numero' }, defecto: 10 },
   'equipo.capitan_max': { formato: { tipo: 'cantidad', singular: 'equipo', plural: 'equipos' }, defecto: 1 },
+  'equipo.dias_nombre': { formato: { tipo: 'cantidad', singular: 'día', plural: 'días' }, defecto: 30 },
   'clips.por_partida': { formato: { tipo: 'numero' }, defecto: 10 },
   'clips.por_jugador': { formato: { tipo: 'numero' }, defecto: 2 },
   'elo.min_pct': { formato: { tipo: 'porcentaje' }, defecto: 35 },

@@ -2033,13 +2033,13 @@ isOneToOne: false
                   ]
                 },"team_config": {
                   Row: {
-                    "id": number,"max_led": number,"max_members": number,"updated_at": string
+                    "id": number,"max_led": number,"max_members": number,"rename_days": number,"updated_at": string
                   }
                   Insert: {
-                    "id"?: number,"max_led"?: number,"max_members"?: number,"updated_at"?: string
+                    "id"?: number,"max_led"?: number,"max_members"?: number,"rename_days"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "id"?: number,"max_led"?: number,"max_members"?: number,"updated_at"?: string
+                    "id"?: number,"max_led"?: number,"max_members"?: number,"rename_days"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -5050,7 +5050,7 @@ isOneToOne: false
 { Args: { "p_team": string,"p_user": string }; Returns: undefined
                            },
 "set_team_config":
-{ Args: { "p_max_led"?: number,"p_max_members": number }; Returns: undefined
+{ Args: { "p_max_led"?: number,"p_max_members": number,"p_rename_days"?: number }; Returns: undefined
                            },
 "set_user_role":
 { Args: { "p_role": string,"p_user": string }; Returns: undefined

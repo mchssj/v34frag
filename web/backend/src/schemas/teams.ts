@@ -214,6 +214,7 @@ export const TeamConfig = z
   .object({
     max_members: z.number().int().min(2).max(30).openapi({ description: 'Máximo de miembros de un equipo oficial' }),
     max_led: z.number().int().min(1).max(10).openapi({ description: 'De cuántos equipos oficiales activos puede ser capitán una persona (1 por defecto)' }),
+    rename_days: z.number().int().min(0).max(365).openapi({ description: 'Días entre cambios de nombre o sigla del capitán (0 = sin espera; 30 por defecto). Replanteo 68' }),
   })
   .openapi('TeamConfig');
 
