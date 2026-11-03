@@ -20,7 +20,8 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
+ConVar g_cvModeOn;   // sm_dm_on: los otros plugins lo leen sin pasar por la consola
 #define DM_PREFIX "{#verde}[DM]{#blanco}"
 #define TEAM_T 2
 #define TEAM_CT 3
@@ -84,6 +85,7 @@ public void OnPluginStart()
 	g_cvProtect = CreateConVar("sm_dm_protect", "1.5", "Segundos de protección al aparecer. Termina al disparar.", _, true, 0.0, true, 10.0);
 	g_cvKillHp  = CreateConVar("sm_dm_kill_hp", "15", "Vida que da una baja.", _, true, 0.0, true, 100.0);
 	CreateConVar("v34_dm_version", PLUGIN_VERSION, "Versión de v34 Deathmatch.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	g_cvModeOn = CreateConVar("sm_dm_on", "0", "Solo lectura: 1 con el deathmatch prendido.", FCVAR_DONTRECORD);
 	g_cvHsAll.AddChangeHook(OnHsAllChanged);
 
 	g_aSpawns[0] = new ArrayList(4);
@@ -125,6 +127,7 @@ public void OnPluginStart()
 
 public void OnPluginEnd()
 {
+	g_cvModeOn.SetInt(0);   // la ConVar queda después de descargar el plugin
 	Rank_OnPluginEnd();
 	if (g_bActive)
 		Mode_RestoreCvars();
@@ -201,6 +204,13 @@ public void OnClientCookiesCached(int client)
 /** Si csstv_reporter tiene una partida en curso. Llamar desde un timer. Si no se puede leer, se asume que sí. */
 bool Mode_MixInProgress()
 {
+	ConVar state = FindConVar("csstv_state");   // reporter 2.7.7 o más nuevo: no imprime nada en la consola
+	if (state != null)
+	{
+		char s[32];
+		state.GetString(s, sizeof(s));
+		return !StrEqual(s, "calentamiento") && !StrEqual(s, "terminada");
+	}
 	if (!CommandExists("sm_csstv_status"))
 		return false;
 	char out[512];
@@ -292,6 +302,7 @@ void Mode_On()
 	Spawns_Collect("info_player_terrorist", 0);
 	Spawns_Collect("info_player_counterterrorist", 1);
 	g_bActive = true;
+	g_cvModeOn.SetInt(1);
 	ChatAll("%s Deathmatch prendido. {#verde}!guns{#blanco} armas, {#verde}!hs{#blanco} solo cabeza, {#verde}!rank{#blanco} tu puesto.", DM_PREFIX);
 	ServerCommand("mp_restartgame 1");
 }
@@ -309,6 +320,7 @@ void Mode_RestoreCvars()
 void Mode_Off()
 {
 	g_bActive = false;
+	g_cvModeOn.SetInt(0);
 	Mode_RestoreCvars();
 	for (int i = 1; i <= MaxClients; i++)
 		if (IsClientInGame(i) && IsPlayerAlive(i))

@@ -17,8 +17,20 @@
  *   - "Fulano: 1 vs 3" en el centro para los muertos y los espectadores, y en el chat si lo gana;
  *   - !nades en el calentamiento: granadas infinitas, trayectoria visible y !rethrow.
  *
- * El estado del mix se lee de sm_csstv_status, como hace v34_retake, así no depende de la versión
- * del reporter. Con retake, wingman o deathmatch prendidos no hace nada: tienen sus propias reglas.
+ * Desde la 1.2.0 (plan docs/bitacora/2026-11-02-qol-tanda-4):
+ *   - quien queda último vivo de su equipo deja de escuchar a sus compañeros muertos hasta el final
+ *     de la ronda (!voz lo desactiva para uno mismo);
+ *   - al empezar cada ronda en vivo, los espectadores y la SourceTV ven la plata de cada equipo y si
+ *     le alcanza para comprar todo (los coaches de csstv_coach no);
+ *   - 4 kills y ace al final de la ronda; a los T, quién tiene la C4 y dónde quedó si muere con ella;
+ *   - durante la partida: espectadores sin chat general ni voz para los jugadores, nombres bloqueados
+ *     y aviso de quién se fue con su K/D; !admins.
+ *   Los avisos de fin de ronda salen 0,3 s después: en el mismo instante no quedan en la demo.
+ *
+ * El estado del mix se lee de la ConVar csstv_state del reporter (2.7.7 o más nuevo) y el de los otros
+ * modos de sm_retake_on, sm_2v2_on y sm_dm_on. Si no existen, de las respuestas de sm_csstv_status y de
+ * cada comando, que en estos servidores salen en la consola. Con retake, wingman o deathmatch prendidos
+ * no hace nada: tienen sus propias reglas.
  * Sin licencia.
  */
 #pragma semicolon 1
@@ -30,7 +42,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.2.0"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -60,6 +72,10 @@ ConVar g_cvStartMoney;
 ConVar g_cvTag;
 
 char g_sLastClutch[64];             // último clutch anunciado, para sm_qol_status
+char g_sLastMoney[128];             // última plata mostrada a los espectadores, para sm_qol_status
+char g_sLastAce[48];                // y los últimos 4 kills o ace, aviso de la C4 y despedida
+char g_sLastC4[96];
+char g_sLastBye[64];
 char g_sLastBest[192];              // último "mejor de la ronda", para sm_qol_status
 char g_sState[32];                  // estado del reporter, leído cada segundo
 bool g_bOtherMode;                  // retake, wingman o deathmatch prendido
@@ -81,6 +97,30 @@ float g_fThrowAng[MAXPLAYERS + 1][3];
 char g_sThrowWeapon[MAXPLAYERS + 1][24];
 int g_iBeam;
 int g_iHalo;
+ConVar g_cvMute;
+ConVar g_cvSpecMoney;
+bool g_bMuting[MAXPLAYERS + 1];                    // quedó solo y ya se silenció a sus compañeros muertos
+bool g_bMuted[MAXPLAYERS + 1][MAXPLAYERS + 1];     // [vivo][muerto]: silenciado por el clutch
+bool g_bVoiceOn[MAXPLAYERS + 1];                   // !voz: no silenciar
+
+ConVar g_cvAce;
+ConVar g_cvC4Info;
+ConVar g_cvSpecChat;
+ConVar g_cvSpecVoice;
+ConVar g_cvLockNames;
+ConVar g_cvGoodbye;
+ConVar g_cvBlockKill;
+int g_iRoundKills[MAXPLAYERS + 1];                 // kills a rivales en esta ronda, para el ace
+bool g_bSpecMuted[MAXPLAYERS + 1][MAXPLAYERS + 1]; // [jugador][espectador]: silenciado durante la partida
+bool g_bNameRevert[MAXPLAYERS + 1];                // el próximo cambio de nombre es la vuelta al anterior
+
+native bool CSSTV_IsCoach(int client);   // csstv_coach 1.1.0
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	MarkNativeAsOptional("CSSTV_IsCoach");
+	return APLRes_Success;
+}
 
 public void OnPluginStart()
 {
@@ -93,7 +133,24 @@ public void OnPluginStart()
 	g_cvEq        = CreateConVar("csstv_qol_eq", "6", "Segundos antes del fin del freezetime para mostrarle a cada equipo qué tiene cada uno (0 = no; !eq siempre).", _, true, 0.0, true, 60.0);
 	g_cvClutch    = CreateConVar("csstv_qol_clutch", "1", "Anunciar los clutch (1 vs 2 o más) a los muertos y los espectadores.", _, true, 0.0, true, 1.0);
 	g_cvNades     = CreateConVar("csstv_qol_nades", "1", "Permitir !nades (práctica de granadas) en el calentamiento.", _, true, 0.0, true, 1.0);
+	g_cvMute      = CreateConVar("csstv_qol_clutch_mute", "1", "Quien queda último vivo de su equipo no escucha a sus compañeros muertos hasta el final de la ronda (!voz lo desactiva para uno).", _, true, 0.0, true, 1.0);
+	g_cvSpecMoney = CreateConVar("csstv_qol_spec_money", "1", "Al empezar cada ronda en vivo, mostrarles a los espectadores y a la SourceTV la plata de cada equipo (no a los coaches).", _, true, 0.0, true, 1.0);
+	g_cvAce       = CreateConVar("csstv_qol_ace", "1", "Con la partida en vivo, anunciar al final de la ronda a quien hizo 4 kills o un ace.", _, true, 0.0, true, 1.0);
+	g_cvC4Info    = CreateConVar("csstv_qol_c4_info", "1", "A los T: quién tiene la C4 al empezar la ronda y dónde quedó si muere quien la llevaba.", _, true, 0.0, true, 1.0);
+	g_cvSpecChat  = CreateConVar("csstv_qol_spec_chat", "1", "Durante la partida, los espectadores no escriben en el chat general (los admins sí).", _, true, 0.0, true, 1.0);
+	g_cvSpecVoice = CreateConVar("csstv_qol_spec_voice", "1", "Durante la partida, los jugadores no escuchan a los espectadores (el coach sí, a su equipo).", _, true, 0.0, true, 1.0);
+	g_cvLockNames = CreateConVar("csstv_qol_lock_names", "1", "Durante la partida no se puede cambiar el nombre.", _, true, 0.0, true, 1.0);
+	g_cvBlockKill = CreateConVar("csstv_qol_block_kill", "1", "Durante la partida, kill y explode (suicidarse por consola) no hacen nada.", _, true, 0.0, true, 1.0);
+	g_cvGoodbye   = CreateConVar("csstv_qol_goodbye", "1", "Durante la partida, avisar quién se fue y con qué K/D.", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "csstv_qol");
+	RegConsoleCmd("sm_voz", Cmd_Voz, "Cuando quedás solo: seguir escuchando (o no) a tus compañeros muertos.");
+	RegConsoleCmd("sm_admins", Cmd_Admins, "Qué admins están conectados.");
+	AddCommandListener(Cmd_Say, "say");
+	AddCommandListener(Cmd_Suicide, "kill");
+	AddCommandListener(Cmd_Suicide, "explode");
+	HookEvent("bomb_dropped", Event_BombDropped);
+	HookEvent("player_changename", Event_ChangeName);
+	HookEvent("player_disconnect", Event_Disconnect, EventHookMode_Pre);
 	g_cvFreezeTime = FindConVar("mp_freezetime");
 	g_hSaved = new StringMap();
 	RegConsoleCmd("sm_eq", Cmd_Eq, "Qué tiene cada uno de tu equipo: armas, chaleco, kit, granadas y plata.");
@@ -114,8 +171,10 @@ public void OnPluginStart()
 
 public Action Cmd_Status(int client, int args)
 {
-	ReplyToCommand(client, "[QOL] v%s · reporter: %s · otro modo: %s · en vivo esta ronda: %s · último: %s · clutch: %s", PLUGIN_VERSION,
-		g_sState[0] ? g_sState : "-", g_bOtherMode ? "sí" : "no", g_bLive ? "sí" : "no", g_sLastBest[0] ? g_sLastBest : "-", g_sLastClutch[0] ? g_sLastClutch : "-");
+	ReplyToCommand(client, "[QOL] v%s · reporter: %s · otro modo: %s · en vivo esta ronda: %s · último: %s · clutch: %s · plata: %s", PLUGIN_VERSION,
+		g_sState[0] ? g_sState : "-", g_bOtherMode ? "sí" : "no", g_bLive ? "sí" : "no", g_sLastBest[0] ? g_sLastBest : "-", g_sLastClutch[0] ? g_sLastClutch : "-",
+		g_sLastMoney[0] ? g_sLastMoney : "-");
+	ReplyToCommand(client, "[QOL] 4k/ace: %s · C4: %s · se fue: %s", g_sLastAce[0] ? g_sLastAce : "-", g_sLastC4[0] ? g_sLastC4 : "-", g_sLastBye[0] ? g_sLastBye : "-");
 	return Plugin_Handled;
 }
 
@@ -132,6 +191,7 @@ public Action Timer_State(Handle timer)
 	if (!wasOver && StrEqual(g_sState, "terminada") && g_cvEndKick.IntValue > 0)
 		CreateTimer(g_cvEndKick.FloatValue - 1.0, Timer_EndKick, _, TIMER_FLAG_NO_MAPCHANGE);   // el estado se lee con hasta 1 s de atraso
 	g_bOtherMode = ModeOn("sm_retake") || ModeOn("sm_2v2") || ModeOn("sm_dm");
+	SpecVoice_Update();
 	if (!InWarmup())
 		for (int i = 1; i <= MaxClients; i++)
 			if (g_bNades[i])
@@ -148,6 +208,18 @@ public void OnMapStart()
 public void OnClientDisconnect(int client)
 {
 	Restore_Save(client);
+	Mute_Clear(client);
+	for (int c = 1; c <= MaxClients; c++)
+		if (g_bMuted[c][client])
+		{
+			g_bMuted[c][client] = false;
+			if (IsClientInGame(c))
+				SetListenOverride(c, client, Listen_Default);
+		}
+	g_bVoiceOn[client] = false;
+	g_bNameRevert[client] = false;
+	for (int i = 1; i <= MaxClients; i++)
+		g_bSpecMuted[client][i] = g_bSpecMuted[i][client] = false;   // el slot que sigue empieza sin overrides
 	g_bNades[client] = false;
 	g_sThrowWeapon[client][0] = '\0';
 }
@@ -165,6 +237,12 @@ public void OnConfigsExecuted()
 void ReporterState(char[] out, int len)
 {
 	out[0] = '\0';
+	ConVar state = FindConVar("csstv_state");   // reporter 2.7.7 o más nuevo: leerla no imprime nada en la consola
+	if (state != null)
+	{
+		state.GetString(out, len);
+		return;
+	}
 	if (!CommandExists("sm_csstv_status"))
 		return;
 	char buf[512];
@@ -178,8 +256,14 @@ void ReporterState(char[] out, int len)
 		out[end] = '\0';
 }
 
+/** sm_retake_on, sm_2v2_on y sm_dm_on desde la 1.0.1 de cada modo; antes, la respuesta del comando. */
 bool ModeOn(const char[] cmd)
 {
+	char name[32];
+	Format(name, sizeof(name), "%s_on", cmd);
+	ConVar on = FindConVar(name);
+	if (on != null)
+		return on.BoolValue;
 	if (!CommandExists(cmd))
 		return false;
 	char out[256];
@@ -195,6 +279,13 @@ bool InWarmup()
 bool IsLive()
 {
 	return StrEqual(g_sState, "en vivo");
+}
+
+/** Hay una partida en juego: cuchillo, LO3, en vivo o medio tiempo. */
+bool InMatch()
+{
+	return !g_bOtherMode && (StrEqual(g_sState, "en vivo") || StrEqual(g_sState, "medio tiempo")
+		|| StrEqual(g_sState, "iniciando (LO3)") || StrEqual(g_sState, "ronda de cuchillo"));
 }
 
 void Tag(char[] out, int len)
@@ -215,10 +306,14 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	if (g_bLive && attacker > 0 && attacker != victim && victim > 0 && GetClientTeam(attacker) != GetClientTeam(victim))
 		g_iKills[attacker]++;
+	if (IsLive() && attacker > 0 && attacker != victim && victim > 0 && GetClientTeam(attacker) != GetClientTeam(victim))
+		g_iRoundKills[attacker]++;
 	if (victim > 0 && g_cvRespawn.BoolValue && InWarmup())
 		CreateTimer(1.5, Timer_Respawn, GetClientUserId(victim), TIMER_FLAG_NO_MAPCHANGE);
 	if (g_cvClutch.BoolValue && IsLive())
 		RequestFrame(Frame_Clutch);
+	if (g_cvMute.BoolValue && IsLive())
+		RequestFrame(Frame_Mute);
 }
 
 public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
@@ -257,10 +352,16 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 	{
 		g_iDamage[i] = 0;
 		g_iKills[i] = 0;
+		g_iRoundKills[i] = 0;
 	}
+	if (g_cvC4Info.BoolValue)
+		CreateTimer(2.5, Timer_C4Holder, g_iRound, TIMER_FLAG_NO_MAPCHANGE);   // el estado se lee con hasta 2 s de atraso
 	g_bLive = g_cvRoundBest.BoolValue && IsLive();
 	for (int t = 0; t < 4; t++)
 		g_iClutch[t] = 0;
+	Mute_Clear();
+	if (g_cvSpecMoney.BoolValue)
+		CreateTimer(2.5, Timer_SpecMoney, g_iRound, TIMER_FLAG_NO_MAPCHANGE);   // el estado se lee con hasta 2 s de atraso
 	if (g_cvEq.IntValue > 0 && IsLive() && g_cvFreezeTime != null)
 	{
 		float wait = g_cvFreezeTime.FloatValue - g_cvEq.FloatValue;
@@ -292,7 +393,21 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	Clutch_RoundEnd(event.GetInt("winner"));
+	Mute_Clear();
+	// Los mensajes van 0,3 s después: lo que se manda en el mismo instante del fin de la ronda no queda en la demo.
+	CreateTimer(0.3, Timer_RoundEndMsgs, event.GetInt("winner"), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_RoundEndMsgs(Handle timer, int winner)
+{
+	Clutch_RoundEnd(winner);
+	Ace_RoundEnd();
+	RoundBest_Show();
+	return Plugin_Stop;
+}
+
+void RoundBest_Show()
+{
 	if (!g_bLive)
 		return;
 	g_bLive = false;
@@ -665,9 +780,384 @@ public void Frame_Clutch(any data)
 		g_iClutchVs[team] = vs;
 		Format(g_sLastClutch, sizeof(g_sLastClutch), "%N 1 vs %d", last, vs);
 		for (int i = 1; i <= MaxClients; i++)
-			if (IsClientInGame(i) && !IsFakeClient(i) && !IsPlayerAlive(i))
+			if (IsClientInGame(i) && (IsClientSourceTV(i) || (!IsFakeClient(i) && !IsPlayerAlive(i))))
 				PrintCenterText(i, "%N: 1 vs %d", last, vs);
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Silencio en el clutch: el último vivo no escucha a sus compañeros muertos
+// ---------------------------------------------------------------------------
+
+public void Frame_Mute(any data)
+{
+	if (!g_cvMute.BoolValue || !IsLive())
+		return;
+	for (int team = TEAM_T; team <= TEAM_CT; team++)
+	{
+		int last, other;
+		if (AliveOn(team, last) != 1 || AliveOn(team == TEAM_T ? TEAM_CT : TEAM_T, other) < 1)
+			continue;
+		if (IsFakeClient(last) || g_bVoiceOn[last] || g_bMuting[last])
+			continue;
+		int n;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (i != last && IsClientInGame(i) && !IsFakeClient(i) && !IsPlayerAlive(i) && GetClientTeam(i) == team)
+			{
+				SetListenOverride(last, i, Listen_No);
+				g_bMuted[last][i] = true;
+				n++;
+			}
+		}
+		g_bMuting[last] = true;
+		if (n)
+		{
+			char tag[32];
+			Tag(tag, sizeof(tag));
+			PrintToChat(last, "\x04[%s]\x01 Quedaste solo: no escuchás a tus compañeros muertos hasta el final de la ronda. \x04!voz\x01 para escucharlos.", tag);
+		}
+	}
+}
+
+/** Devuelve la voz de todos los que silenció; con only > 0, solo los de ese jugador. */
+void Mute_Clear(int only = 0)
+{
+	for (int c = 1; c <= MaxClients; c++)
+	{
+		if (only && c != only)
+			continue;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (!g_bMuted[c][i])
+				continue;
+			g_bMuted[c][i] = false;
+			if (IsClientInGame(c) && IsClientInGame(i))
+				SetListenOverride(c, i, Listen_Default);
+		}
+		g_bMuting[c] = false;
+	}
+}
+
+public Action Cmd_Voz(int client, int args)
+{
+	if (client <= 0)
+		return Plugin_Handled;
+	g_bVoiceOn[client] = !g_bVoiceOn[client];
+	if (g_bVoiceOn[client])
+		Mute_Clear(client);
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	PrintToChat(client, "\x04[%s]\x01 %s", tag, g_bVoiceOn[client]
+		? "Cuando quedes solo vas a seguir escuchando a tus compañeros muertos."
+		: "Cuando quedes solo no vas a escuchar a tus compañeros muertos hasta el final de la ronda.");
+	return Plugin_Handled;
+}
+
+// ---------------------------------------------------------------------------
+// Plata de los dos equipos para los espectadores y la SourceTV
+// ---------------------------------------------------------------------------
+
+public Action Timer_SpecMoney(Handle timer, int round)
+{
+	if (round != g_iRound || !IsLive() || !g_cvSpecMoney.BoolValue)
+		return Plugin_Stop;
+	char ct[96], t[96];
+	if (!Money_Line(TEAM_CT, ct, sizeof(ct)) || !Money_Line(TEAM_T, t, sizeof(t)))
+		return Plugin_Stop;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	Format(g_sLastMoney, sizeof(g_sLastMoney), "%s · %s", ct, t);
+	ReplaceString(g_sLastMoney, sizeof(g_sLastMoney), "\x04", "");
+	ReplaceString(g_sLastMoney, sizeof(g_sLastMoney), "\x01", "");
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i))
+			continue;
+		bool tv = IsClientSourceTV(i);
+		if (!tv && (IsFakeClient(i) || GetClientTeam(i) > 1 || IsCoach(i)))
+			continue;
+		PrintToChat(i, "\x04[%s]\x01 Plata · %s · %s", tag, ct, t);
+	}
+	return Plugin_Stop;
+}
+
+/**
+ * "CT $23.400 (compra completa)". A un jugador le alcanza para todo si tiene la plata del rifle, el
+ * chaleco con casco (y el kit, si es CT), o si ya tiene un arma principal y $1000 para el chaleco.
+ * Compra completa: a 4 de cada 5. Eco: a 1 de cada 5 o menos, con menos de $2000 de promedio.
+ */
+bool Money_Line(int team, char[] out, int len)
+{
+	int total, n, full;
+	int need = team == TEAM_CT ? 4300 : 3500;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || GetClientTeam(i) != team)
+			continue;
+		int money = GetEntProp(i, Prop_Send, "m_iAccount");
+		total += money;
+		n++;
+		if (money >= need || (IsPlayerAlive(i) && GetPlayerWeaponSlot(i, 0) != -1 && money >= 1000))
+			full++;
+	}
+	if (!n)
+		return false;
+	char label[24], amount[16];
+	if (full * 5 >= n * 4)
+		strcopy(label, sizeof(label), "compra completa");
+	else if (full * 5 <= n && total / n < 2000)
+		strcopy(label, sizeof(label), "eco");
+	else
+		strcopy(label, sizeof(label), "compra parcial");
+	Thousands(total, amount, sizeof(amount));
+	Format(out, len, "\x04%s\x01 $%s (%s)", team == TEAM_CT ? "CT" : "T", amount, label);
+	return true;
+}
+
+/** 23400 -> "23.400" */
+void Thousands(int value, char[] out, int len)
+{
+	if (value < 1000)
+		Format(out, len, "%d", value);
+	else
+		Format(out, len, "%d.%03d", value / 1000, value % 1000);
+}
+
+bool IsCoach(int client)
+{
+	return LibraryExists("csstv_coach") && CSSTV_IsCoach(client);
+}
+
+// ---------------------------------------------------------------------------
+// 4 kills y ace
+// ---------------------------------------------------------------------------
+
+void Ace_RoundEnd()
+{
+	if (!g_cvAce.BoolValue)
+		return;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		int k = g_iRoundKills[i];
+		g_iRoundKills[i] = 0;
+		if (k < 4 || !IsClientInGame(i))
+			continue;
+		if (k >= 5)
+			PrintToChatAll("\x04[%s]\x01 ¡\x04%N\x01 hizo un \x04ACE\x01!", tag, i);
+		else
+			PrintToChatAll("\x04[%s]\x01 \x04%N\x01 hizo 4 kills en la ronda.", tag, i);
+		Format(g_sLastAce, sizeof(g_sLastAce), "%N %d", i, k);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// La C4: quién la tiene y dónde quedó
+// ---------------------------------------------------------------------------
+
+public Action Timer_C4Holder(Handle timer, int round)
+{
+	if (round != g_iRound || !IsLive())
+		return Plugin_Stop;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i) == TEAM_T && C4Of(i) != -1)
+		{
+			char tag[32];
+			Tag(tag, sizeof(tag));
+			Format(g_sLastC4, sizeof(g_sLastC4), "la tiene %N", i);
+			for (int j = 1; j <= MaxClients; j++)
+				if (IsClientInGame(j) && GetClientTeam(j) == TEAM_T)
+					PrintToChat(j, "\x04[%s]\x01 La C4 la tiene \x04%N\x01.", tag, i);
+			break;
+		}
+	}
+	return Plugin_Stop;
+}
+
+public void Event_BombDropped(Event event, const char[] name, bool dontBroadcast)
+{
+	if (g_cvC4Info.BoolValue && IsLive())
+		RequestFrame(Frame_BombDropped, event.GetInt("userid"));   // al morir, la C4 cae antes de que cuente como muerto
+}
+
+public void Frame_BombDropped(int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !IsClientInGame(client) || IsPlayerAlive(client))
+		return;
+	char place[64], tag[32];
+	PlaceOf(client, place, sizeof(place));
+	Tag(tag, sizeof(tag));
+	Format(g_sLastC4, sizeof(g_sLastC4), "%N murió con la C4 en %s", client, place[0] ? place : "-");
+	for (int j = 1; j <= MaxClients; j++)
+	{
+		if (!IsClientInGame(j) || GetClientTeam(j) != TEAM_T)
+			continue;
+		if (place[0])
+			PrintToChat(j, "\x04[%s]\x01 %N murió con la C4: quedó en \x04%s\x01.", tag, client, place);
+		else
+			PrintToChat(j, "\x04[%s]\x01 %N murió con la C4: quedó donde cayó.", tag, client);
+	}
+}
+
+/** Lugar del mapa donde está el jugador (el del radar), con los más comunes en castellano. */
+void PlaceOf(int client, char[] out, int len)
+{
+	out[0] = '\0';
+	if (!HasEntProp(client, Prop_Send, "m_szLastPlaceName"))
+		return;
+	GetEntPropString(client, Prop_Send, "m_szLastPlaceName", out, len);
+	static const char from[][] = { "BombsiteA", "BombsiteB", "BombsiteC", "CTSpawn", "TSpawn", "Middle", "LongA", "ShortA", "Tunnels", "UpperTunnel", "LowerTunnel", "Catwalk", "Ramp", "Bridge" };
+	static const char to[][]   = { "el sitio A", "el sitio B", "el sitio C", "la base CT", "la base T", "Mid", "Long A", "Short A", "Túneles", "Túnel de arriba", "Túnel de abajo", "Catwalk", "la rampa", "el puente" };
+	for (int i = 0; i < sizeof(from); i++)
+	{
+		if (StrEqual(out, from[i]))
+		{
+			strcopy(out, len, to[i]);
+			return;
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Espectadores durante la partida: sin chat general y sin voz para los jugadores
+// ---------------------------------------------------------------------------
+
+bool IsSpectator(int client)
+{
+	return IsClientInGame(client) && !IsFakeClient(client) && GetClientTeam(client) <= 1;
+}
+
+public Action Cmd_Say(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !g_cvSpecChat.BoolValue || !IsSpectator(client) || !InMatch())
+		return Plugin_Continue;
+	if (CheckCommandAccess(client, "csstv_spec_chat", ADMFLAG_CHAT))
+		return Plugin_Continue;
+	char msg[8];
+	GetCmdArg(1, msg, sizeof(msg));
+	if (msg[0] == '!' || msg[0] == '/')   // los comandos del chat siguen andando
+		return Plugin_Continue;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	PrintToChat(client, "\x04[%s]\x01 Durante la partida los espectadores no escriben en el chat general.", tag);
+	return Plugin_Handled;
+}
+
+/** Cada segundo, desde Timer_State. El coach queda afuera: su voz la maneja csstv_coach. */
+void SpecVoice_Update()
+{
+	bool on = g_cvSpecVoice.BoolValue && InMatch();
+	for (int s = 1; s <= MaxClients; s++)
+	{
+		bool mute = on && IsSpectator(s) && !IsCoach(s);
+		for (int p = 1; p <= MaxClients; p++)
+		{
+			if (p == s)
+				continue;
+			bool want = mute && IsClientInGame(p) && !IsFakeClient(p) && GetClientTeam(p) > 1;
+			if (want == g_bSpecMuted[p][s])
+				continue;
+			g_bSpecMuted[p][s] = want;
+			if (IsClientInGame(p) && IsClientInGame(s))
+				SetListenOverride(p, s, want ? Listen_No : Listen_Default);
+		}
+	}
+}
+
+/** Suicidarse por consola durante la partida le regala la kill a nadie y le quita la plata al rival. */
+public Action Cmd_Suicide(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !g_cvBlockKill.BoolValue || !InMatch() || !IsClientInGame(client) || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	PrintToChat(client, "\x04[%s]\x01 Durante la partida no te podés suicidar con %s.", tag, command);
+	return Plugin_Handled;
+}
+
+// ---------------------------------------------------------------------------
+// Nombres bloqueados durante la partida
+// ---------------------------------------------------------------------------
+
+public void Event_ChangeName(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (client <= 0)
+		return;
+	if (g_bNameRevert[client])
+	{
+		g_bNameRevert[client] = false;
+		return;
+	}
+	if (!g_cvLockNames.BoolValue || !InMatch())
+		return;
+	char old[MAX_NAME_LENGTH];
+	event.GetString("oldname", old, sizeof(old));
+	DataPack pack = new DataPack();
+	pack.WriteCell(GetClientUserId(client));
+	pack.WriteString(old);
+	RequestFrame(Frame_NameRevert, pack);
+}
+
+public void Frame_NameRevert(DataPack pack)
+{
+	pack.Reset();
+	int client = GetClientOfUserId(pack.ReadCell());
+	char old[MAX_NAME_LENGTH];
+	pack.ReadString(old, sizeof(old));
+	delete pack;
+	if (client <= 0 || !IsClientInGame(client))
+		return;
+	g_bNameRevert[client] = true;
+	SetClientInfo(client, "name", old);
+	if (HasEntProp(client, Prop_Data, "m_szNetname"))
+		SetEntPropString(client, Prop_Data, "m_szNetname", old);
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	PrintToChat(client, "\x04[%s]\x01 Durante la partida no se puede cambiar el nombre.", tag);
+}
+
+// ---------------------------------------------------------------------------
+// !admins y despedida
+// ---------------------------------------------------------------------------
+
+public Action Cmd_Admins(int client, int args)
+{
+	char names[256];
+	int n;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i) || !CheckCommandAccess(i, "csstv_admins_list", ADMFLAG_GENERIC, true))
+			continue;
+		Format(names, sizeof(names), "%s%s%N", names, n ? ", " : "", i);
+		n++;
+	}
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	if (n)
+		ReplyToCommand(client, "[%s] Admins conectados: %s", tag, names);
+	else
+		ReplyToCommand(client, "[%s] No hay admins conectados. Usá !calladmin si necesitás uno.", tag);
+	return Plugin_Handled;
+}
+
+public Action Event_Disconnect(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (client <= 0 || !IsClientInGame(client) || IsClientSourceTV(client) || !g_cvGoodbye.BoolValue || !InMatch())
+		return Plugin_Continue;
+	int team = GetClientTeam(client);
+	if (team != TEAM_T && team != TEAM_CT)
+		return Plugin_Continue;
+	char tag[32];
+	Tag(tag, sizeof(tag));
+	Format(g_sLastBye, sizeof(g_sLastBye), "%N %d/%d", client, GetClientFrags(client), GetClientDeaths(client));
+	PrintToChatAll("\x04[%s]\x01 %N se fue de la partida (%d/%d).", tag, client, GetClientFrags(client), GetClientDeaths(client));
+	return Plugin_Continue;
 }
 
 void Clutch_RoundEnd(int winner)

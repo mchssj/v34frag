@@ -20,7 +20,8 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
+ConVar g_cvModeOn;   // sm_2v2_on: los otros plugins lo leen sin pasar por la consola
 #define WM_PREFIX "{#verde}[2v2]{#blanco}"
 #define TEAM_SPEC 1
 #define TEAM_T 2
@@ -116,6 +117,7 @@ public void OnPluginStart()
 	g_cvZoneShow   = CreateConVar("sm_2v2_zone_show", "1", "Dibujar siempre las zonas prohibidas con el modo prendido.", _, true, 0.0, true, 1.0);
 	g_cvAbandon    = CreateConVar("sm_2v2_abandon_seconds", "120", "Segundos que se espera a un reemplazo antes de cancelar la partida.", _, true, 10.0, true, 900.0);
 	CreateConVar("v34_wingman_version", PLUGIN_VERSION, "Versión de v34 Wingman.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	g_cvModeOn = CreateConVar("sm_2v2_on", "0", "Solo lectura: 1 con el 2v2 prendido.", FCVAR_DONTRECORD);
 
 	RegAdminCmd("sm_2v2", Cmd_Mode, ADMFLAG_GENERIC, "Prende o apaga el modo. Uso: sm_2v2 <1|0>");
 	RegAdminCmd("sm_2v2_start", Cmd_ForceStart, ADMFLAG_GENERIC, "Empieza la partida sin esperar los !ready.");
@@ -167,6 +169,7 @@ public void OnPluginStart()
 
 public void OnPluginEnd()
 {
+	g_cvModeOn.SetInt(0);   // la ConVar queda después de descargar el plugin
 	Rank_OnPluginEnd();
 	if (g_bActive)
 		Mode_RestoreCvars();
@@ -214,6 +217,13 @@ public void OnClientDisconnect(int client)
  */
 bool Mode_MixInProgress()
 {
+	ConVar state = FindConVar("csstv_state");   // reporter 2.7.7 o más nuevo: no imprime nada en la consola
+	if (state != null)
+	{
+		char s[32];
+		state.GetString(s, sizeof(s));
+		return !StrEqual(s, "calentamiento") && !StrEqual(s, "terminada");
+	}
 	if (!CommandExists("sm_csstv_status"))
 		return false;
 	char out[512];
@@ -229,6 +239,9 @@ bool Mode_MixInProgress()
 /** Si v34_retake está cargado y prendido: los dos modos no pueden correr a la vez. Llamar desde un timer. */
 bool Mode_RetakeIsOn()
 {
+	ConVar on = FindConVar("sm_retake_on");
+	if (on != null)
+		return on.BoolValue;
 	if (!CommandExists("sm_retake"))
 		return false;
 	char out[256];
@@ -328,6 +341,7 @@ void Mode_On()
 	Mode_SetInt("mp_forcecamera", 1);    // al morir solo se mira al propio equipo
 	Mode_SetInt("sv_alltalk", 0);
 	g_bActive = true;
+	g_cvModeOn.SetInt(1);
 	Match_ToWarmup();
 	ChatAll("%s Modo {#amarillo}2v2{#blanco} prendido. Elegí equipo y escribí {#verde}!ready{#blanco}.", WM_PREFIX);
 }
@@ -346,6 +360,7 @@ void Mode_Off()
 {
 	Pause_Clear();
 	g_bActive = false;
+	g_cvModeOn.SetInt(0);
 	g_bRoundOn = false;
 	g_iState = State_Warmup;
 	Voice_Apply();

@@ -23,7 +23,8 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
+ConVar g_cvModeOn;   // sm_retake_on: los otros plugins lo leen sin pasar por la consola
 #define RETAKE_PREFIX "{#verde}[Retake]{#blanco}"
 #define TEAM_SPEC 1
 #define TEAM_T 2
@@ -147,6 +148,7 @@ public void OnPluginStart()
 	g_cvVoteRound    = CreateConVar("sm_retake_vote_round", "25", "Ronda en la que se abre la votación de mapa.", _, true, 1.0, true, 100.0);
 	g_cvAfkRounds    = CreateConVar("sm_retake_afk_rounds", "2", "Rondas seguidas sin moverse para pasar a espectador (0 = nunca).", _, true, 0.0, true, 30.0);
 	CreateConVar("v34_retake_version", PLUGIN_VERSION, "Versión de v34 Retake.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	g_cvModeOn = CreateConVar("sm_retake_on", "0", "Solo lectura: 1 con el retake prendido.", FCVAR_DONTRECORD);
 
 	CreateTimer(STUCK_CHECK, Timer_CheckStuck, _, TIMER_REPEAT);
 	g_hSiteText = CreateHudSynchronizer();
@@ -193,6 +195,7 @@ public void OnPluginStart()
 
 public void OnPluginEnd()
 {
+	g_cvModeOn.SetInt(0);   // la ConVar queda después de descargar el plugin
 	Rank_OnPluginEnd();
 	if (g_bActive)
 		Mode_RestoreCvars();
@@ -257,6 +260,13 @@ public void OnClientDisconnect(int client)
  */
 bool Mode_MixInProgress()
 {
+	ConVar state = FindConVar("csstv_state");   // reporter 2.7.7 o más nuevo: no imprime nada en la consola
+	if (state != null)
+	{
+		char s[32];
+		state.GetString(s, sizeof(s));
+		return !StrEqual(s, "calentamiento") && !StrEqual(s, "terminada");
+	}
 	if (!CommandExists("sm_csstv_status"))
 		return false;
 	char out[512];
@@ -272,6 +282,9 @@ bool Mode_MixInProgress()
 /** Si v34_wingman está cargado y prendido: los dos modos no pueden correr a la vez. Llamar desde un timer. */
 bool Mode_WingmanIsOn()
 {
+	ConVar on = FindConVar("sm_2v2_on");
+	if (on != null)
+		return on.BoolValue;
 	if (!CommandExists("sm_2v2"))
 		return false;
 	char out[256];
@@ -355,6 +368,7 @@ void Mode_On()
 	Mode_SetCvar("mp_timelimit", 0);     // el mapa lo cambia la votación al terminar la partida
 	FindConVar("mp_roundtime").SetString(ROUND_TIME);
 	g_bActive = true;
+	g_cvModeOn.SetInt(1);
 	g_bKeepOn = false;
 	Mode_ResetMatch();
 	Teams_Arrange(Arrange_Keep);
@@ -383,6 +397,7 @@ void Mode_Off()
 {
 	Round_Unfreeze();
 	g_bActive = false;
+	g_cvModeOn.SetInt(0);
 	g_bRoundOn = false;
 	g_bWaiting = false;
 	g_iPlanter = 0;

@@ -19,7 +19,7 @@
 #include <sdktools>
 #include <cstrike>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define TEAM_T  2
 #define TEAM_CT 3
 
@@ -87,8 +87,14 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 // Estado
 // ---------------------------------------------------------------------------
 
+/** sm_retake_on, sm_2v2_on y sm_dm_on desde la 1.0.1 de cada modo; antes, la respuesta del comando. */
 bool ModeOn(const char[] cmd)
 {
+	char name[32];
+	Format(name, sizeof(name), "%s_on", cmd);
+	ConVar on = FindConVar(name);
+	if (on != null)
+		return on.BoolValue;
 	if (!CommandExists(cmd))
 		return false;
 	char out[256];
@@ -100,7 +106,10 @@ bool ModeOn(const char[] cmd)
 public Action Timer_State(Handle timer)
 {
 	g_sState[0] = '\0';
-	if (CommandExists("sm_csstv_status"))
+	ConVar state = FindConVar("csstv_state");   // reporter 2.7.7 o más nuevo: leerla no imprime nada en la consola
+	if (state != null)
+		state.GetString(g_sState, sizeof(g_sState));
+	else if (CommandExists("sm_csstv_status"))
 	{
 		char buf[512];
 		ServerCommandEx(buf, sizeof(buf), "sm_csstv_status");
