@@ -53,3 +53,7 @@
 4. **Falta:** subir la imagen del MVP en Administración › Matchmaking › General, mirarlo en el navegador y hacer el commit.
 
 **Contexto de kyan (en `kyan/pruebas`, 2026-11-02):** puso la 2.7.4 en el #1 (MVZG) en lugar de la 2.8.2 y apagó el matchmaking ahí y en flow. Desde ahora el matchmaking se prueba en `aurav34` (el #3), con la 2.8.4 (la 2.8.2 más la charla nueva del medio tiempo; bitácora `2026-11-02-servidor-pruebas-mm` en su rama).
+
+## Incidentes
+
+- **La imagen del MVP no se guardaba en staging (2026-11-02, código de seguimiento `fe373ca6-…`).** La API la validaba y la subía bien, pero `mm_admin_set_mvp_image` respondía "UPDATE requires a WHERE clause": staging carga `pg_safeupdate` para PostgREST y la función hacía un `UPDATE mm_config` sin `WHERE`. La API borraba la imagen subida y respondía 500 ("Algo salió mal"). Es el mismo error que tuvo `mm_set_config` el 2026-11-01. Las pruebas locales no lo vieron porque la base local no carga `pg_safeupdate`. Corrección: replanteo `62` (`where id = 1`), probado con `pruebas/62_correr_local.sh`, que sí lo carga. **Aplicado en staging el 2026-11-02** con `psql -v ON_ERROR_STOP=1`. Verificado: la función tiene el `where id = 1`, es de `authenticated` y no de `anon`, y `DELETE /api/v1/admin/mm/mvp-image` con `adminprueba` responde 200 (pasa por el mismo `UPDATE`). La API y la web no cambian.
