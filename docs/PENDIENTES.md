@@ -17,6 +17,7 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
   - Ponerle un plazo a `player_ips`, que hoy no tiene.
   - Publicar las dos juntas y enlazarlas desde la web vieja. En el frontend nuevo ya están las rutas `/terminos` y `/privacidad`, con links en el pie y en el registro ([`2026-11-03-frontend-legales`](bitacora/2026-11-03-frontend-legales/)). Falta avisarle a Esteban y, si se quiere, una casilla de aceptación obligatoria en el registro. Los textos están en dos copias (`.html` y `features/legal/`): se cambian juntas.
   - **Cobro del VIP:** cobrar sin estar inscripto en ARCA (ex AFIP) es un tema impositivo aparte de estos textos.
+- **Revisados contra la plataforma el 2026-11-03** (Daniel): lo planteado y no hecho quedó con "En preparación", y se corrigieron los resultados de torneos, las PCW y el aviso de la cola en Discord. Sin commit. Desde ahora, cada requerimiento revisa estos textos y el manual ([`2026-11-03-legales-al-dia`](bitacora/2026-11-03-legales-al-dia/)).
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
@@ -714,7 +715,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   5. La lista de partidas listas para iniciar y en curso en Administración › Torneos (no se hizo).
   6. Que la página de la serie escuche `booking.update` por el socket (hoy se refresca cada 5 s).
   7. Producción con el corte, junto con la `48`; el plugin a los tres servidores en la misma tanda (#1, flow licenciado `7b01c85b-…` y #3).
-  8. El manual de usuario por rol (Daniel, 2026-11-02: después).
+  8. El manual de usuario por rol: en curso, ver 1.49 (sus páginas de capitán y organizador cubren lo de este punto).
 - **Bitácora:** [`2026-11-02-iniciar-torneo-pcw`](bitacora/2026-11-02-iniciar-torneo-pcw/)
 
 ### 1.50 Aviso de la cola en Discord (replanteo `57`): en staging y probado en #avisos
@@ -757,18 +758,43 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** borrar el worktree `v34frag-mmfront` y la rama `merge/mm-en-frontend`. El `.smx` del repo en esta rama sigue siendo el 2.7.3.
 - **Bitácora:** [`2026-11-02-mm-en-rama-frontend`](bitacora/2026-11-02-mm-en-rama-frontend/)
 
-### 1.55 Imagen del inicio de sesión configurable (replanteo `67`): con commit, sin desplegar
+### 1.49 Manual de usuario por rol: con commit y en staging (2026-11-03); faltan las capturas
+
+- **Qué es:** la sección Ayuda (`/help`) con el manual (`docs/manual/`), solo con sesión y filtrado por rol en la API (`/api/v1/manual`). Desde ahora cada `DOCUMENTACION.md` lleva "Qué cambia para cada rol" y se actualiza la página del manual al terminar (`docs/bitacora/PLANTILLA.md`).
+- **Dónde:** manual, web y bitácora en `feat/frontend-fase-1`; API en `feat/mm-claim-en-sala` (worktree `E:\Css V34 Web\v34frag-mmclaim`).
+- **Hecho:** la regla, la API, la web y los textos de las 7 secciones (37 páginas, 3 ocultas por PCW; 2026-11-03), sin capturas. La API se probó en local contra staging con tokens reales.
+- **Falta:**
+  1. Que Daniel revise las páginas. Los tres puntos "Para revisar" de la guía (reportes solo para admin, "Reprocesar" y el nombre del equipo) los resolvió el punto 1.56.
+  2. Las capturas, desde staging (`daniloev`, `kyan` y `adminprueba`, credenciales `STAGING_TEST_*`).
+  3. Los links "¿Cómo funciona?" en Jugar, la página de una serie y Administración › Torneos.
+  4. ~~Commit y despliegue en staging~~: hecho el 2026-11-03 (`ebaecd9c`, `c4b004a4`, API `0d5732881cbe` y web `e53200f83840`).
+- **Valores reales (2026-11-03):** los números configurables del manual van con marcadores (`{{mm.aceptar}}`) que la API reemplaza con `manual_valores()`, replanteo `65`, **aplicado en staging**. Sale con la API del manual ([`2026-11-03-manual-valores-reales`](bitacora/2026-11-03-manual-valores-reales/)).
+- **Bitácora:** [`2026-11-02-manual-usuario`](bitacora/2026-11-02-manual-usuario/)
+
+### 1.55 Imagen del inicio de sesión configurable (replanteo `67`): con commit y en staging (2026-11-03)
 
 - **Qué es:** el panel derecho de Iniciar sesión, Registro y Bienvenida muestra la imagen que sube un admin en Administración › Usuarios › Inicio de sesión (4:5, 1600 × 2000, bucket `photos/site/`). Sin imagen, queda gris (Daniel, 2026-11-03).
 - **Dónde:** base, API y web en `feat/frontend-fase-1`.
 - **Hecho el 2026-11-03:** replanteo `67` con inversa y 10 pruebas SQL (corridas en local con `pg_safeupdate`), API (466 pruebas) y web (553 pruebas).
 - **Falta:**
   1. ~~Correr las pruebas SQL~~: hecho el 2026-11-03.
-  2. ~~Commit~~: hecho el 2026-11-03 en `feat/frontend-fase-1`. Falta llevar la base y la API a `feat/mm-claim-en-sala` si la API de staging sigue saliendo de ahí.
-  3. Staging: la `67`, la API y la web; subir una imagen y mirarla en 1440, 1920 y un teléfono.
+  2. ~~Commit~~: hecho el 2026-11-03 en `feat/frontend-fase-1`. La base y la API también en `feat/mm-claim-en-sala` (`95942673`, 2026-11-03).
+  3. ~~Staging: la `67`, la API y la web~~: hecho el 2026-11-03. Falta subir una imagen y mirarla en 1440, 1920 y un teléfono.
   4. La página del manual de Admin (`docs/manual/admin/imagen-inicio-sesion.md`), con el resto de la sección Admin (punto 1.49).
   5. Producción con el corte.
 - **Bitácora:** [`2026-11-03-imagen-login`](bitacora/2026-11-03-imagen-login/)
+
+### 1.56 Reportes solo para el admin, lista de clips y nombre del equipo (replanteo `68`): con commit y en staging (2026-11-03)
+
+- **Qué es:** los reportes del matchmaking los resuelve solo un admin (web, API y base); pestaña **Clips** en Administración › Clips para reprocesar varios a la vez; el capitán cambia el nombre y la sigla desde **Editar equipo** cada `team_config.rename_days` días (30 por defecto, configurable en Configuración equipo). Pedido por Daniel el 2026-11-03.
+- **Dónde:** base en las dos ramas; API en `feat/mm-claim-en-sala`; web, manual y bitácora en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-03:** replanteo `68` con inversa y 5 pruebas SQL (pasaron en staging, deshechas), API (481 pruebas unitarias), web (557 pruebas) y las 6 páginas del manual.
+- **Falta:**
+  1. ~~Pruebas SQL y `68` en staging~~: el `68` ya estaba aplicado (lo hizo la sesión anterior sin anotarlo) y las pruebas pasaron el 2026-11-03.
+  2. ~~Commit~~: `034d280a` en `feat/mm-claim-en-sala` y `e53200f8` en `feat/frontend-fase-1` (base y API en las dos), sin push.
+  3. ~~Staging~~: API `0d5732881cbe` y web `e53200f83840`, el 2026-11-03. Falta mirarlo en el navegador (la web de staging pide la contraseña de Caddy).
+  4. Producción con el corte. No toca a los servidores de juego.
+- **Bitácora:** [`2026-11-03-reportes-clips-nombre-equipo`](bitacora/2026-11-03-reportes-clips-nombre-equipo/)
 
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 

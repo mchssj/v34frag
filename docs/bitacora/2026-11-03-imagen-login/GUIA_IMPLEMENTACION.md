@@ -24,6 +24,7 @@ Implementado y probado el 2026-11-03 en `feat/frontend-fase-1`, con commit el 20
 | `web/frontend/src/lib/image.ts` | `cropAuthImage` (1600 × 2000) |
 
 ## Despliegue (pendiente)
+> **En staging desde el 2026-11-03**, en una sola tanda con el manual, los valores reales del manual, los legales, la imagen del login (`67`), el resumen del matchmaking (`66`) y los reportes, clips y nombre del equipo (`68`): base `66` y `67` aplicadas (la `65` y la `68` ya estaban), API `0d5732881cbe` (merge temporal "tmp: API de staging" de `034d280a` de `feat/mm-claim-en-sala` sobre `f5f6d7b9`, en `v34frag-deploy`, con `MANUAL_DIR` = `v34frag/docs/manual`: 37 páginas) y web `e53200f83840` (checkout limpio de `feat/frontend-fase-1`). Detalle en [`2026-11-03-reportes-clips-nombre-equipo`](../2026-11-03-reportes-clips-nombre-equipo/GUIA_IMPLEMENTACION.md).
 
 En staging, cuando Daniel lo pida:
 

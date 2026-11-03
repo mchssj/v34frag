@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado el 2026-11-03, **sin commit**. El replanteo `68` **está aplicado en staging** y sus 5 pruebas pasaron ahí (deshechas). API (481 pruebas unitarias) y web (557 pruebas) sin desplegar.
+**En staging desde el 2026-11-03, con commit** (`034d280a` en `feat/mm-claim-en-sala`, `e53200f8` en `feat/frontend-fase-1`; sin push). Base `68`, API `0d5732881cbe` y web `e53200f83840`.
 
 ## Archivos
 
@@ -50,15 +50,15 @@ Implementado y probado el 2026-11-03, **sin commit**. El replanteo `68` **está 
 
 `admin/reportes-matchmaking.md`, `admin/clips.md`, `admin/equipos.md`, `capitan/armar-plantel.md`, `moderador/sanciones-matchmaking.md` y `jugador/baneos-y-sanciones.md`. Validadas con `cargarManual` de la API: 0 errores.
 
-## Despliegue (pendiente)
+## Despliegue en staging (hecho el 2026-11-03)
 
-En staging, con el visto bueno de Daniel:
+En una sola tanda con lo pendiente de otros requerimientos (Daniel, 2026-11-03): el manual (`2026-11-02-manual-usuario` y `2026-11-03-manual-valores-reales`), los legales (`2026-11-03-legales-al-dia`), la imagen del login (`2026-11-03-imagen-login`), el resumen del matchmaking (`2026-11-03-mm-resumen-en-vivo`), el scroll (`ceedbf79`) y la Vinculación de la bienvenida (`2697893a`).
 
-1. ~~Pruebas de la base~~: hechas el 2026-11-03 en staging (ver Pruebas).
-2. ~~Base~~: el `68` ya estaba aplicado en staging (`edaljnirzvisiaathitt`) al correr las pruebas, completo y con `rename_days = 30`. Lo aplicó la sesión anterior y no quedó anotado.
-3. **API:** desplegar `web/backend` desde `feat/mm-claim-en-sala`. **Antes que la web:** la web nueva pide `/admin/clips` y `rename_days`.
-4. **Web:** desplegar `web/frontend` desde `feat/frontend-fase-1`.
-5. Comprobar en staging: la pestaña Clips con `adminprueba`, reprocesar uno fallido, cambiar el nombre de un equipo de prueba con su capitán y ver el 403 de los reportes con un moderador.
+1. **Commits.** En `feat/mm-claim-en-sala`: `c4b004a4` (manual en la API, `65`), `95942673` (base y API de la `67`, traídas de `03d8bd2e`) y `034d280a` (`68`); 490 pruebas. En `feat/frontend-fase-1`: `ebaecd9c` (manual), `be1aa8fd` (legales) y `e53200f8` (`68`, con la base y la API también en esta rama; 472 pruebas de la API). 15 archivos sueltos que estaban en el índice (capturas, logs, el reglamento y `.idea`) se sacaron del índice sin borrarlos.
+2. **Base.** La `65` y la `68` ya estaban aplicadas. Con la cola vacía y sin salas abiertas: `66` y `67` con `psql -v ON_ERROR_STOP=1`. Verificado: `mm_summary` existe y `mm_tick` la usa; `site_config` existe, `anon` puede llamar `site_auth_image()` y no `site_admin_set_auth_image`.
+3. **API `0d5732881cbe`.** En `v34frag-deploy`: merge "tmp: API de staging" de `034d280a` sobre `f5f6d7b9` (la anterior, que ya tenía `feat/backend-api-fase-1` en `240e2694`), sin conflictos. `MANUAL_DIR="E:/Css V34 Web/v34frag/docs/manual" deploy/vps/desplegar.sh api` con `VPS_HOST` del `.env` de `v34frag`. El build cargó 37 páginas del manual. `cmleague-mm` no se reinició: `src/mm` y `src/jobs` no cambiaron.
+4. **Web `e53200f83840`.** Checkout limpio de `e53200f8` en `v34frag-deploy`, `pnpm install --frozen-lockfile` (entran `react-markdown` y `remark-gfm`) y `deploy/vps/desplegar.sh web`.
+5. **Comprobado con `adminprueba`** contra `https://api.cmleague.lat`: el manual con sus 7 secciones y el marcador reemplazado ("una vez cada 30 días"), `/admin/clips`, `/admin/teams/config` con `rename_days: 30`, `/admin/mm/reports` (200) y `/site/auth-image` (`null`). En el VPS, `web/current` tiene la pestaña Clips y "Guardar nombre". La web de staging pide usuario y contraseña (Caddy) y no se miró en el navegador.
 
 En producción, con el corte. Nada para los servidores de juego (#1, #2 y #3): no cambia el plugin.
 
