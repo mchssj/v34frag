@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado el 2026-11-03, con commit en las dos ramas. **Base aplicada en staging** el 2026-11-03 (cuando todavía se llamaba `70`, ver abajo). **Falta producción** (la base de producción ya tiene el corte, `01` a `70`) y desplegar la web. No se miró en el navegador.
+**Desplegado el 2026-11-03**: base en staging y en producción, y la web `507a9d528e2b` en el VPS (que desde el corte apunta a producción). Commit en las dos ramas. Falta la prueba con dos cuentas en el navegador.
 
 ## Archivos
 
@@ -23,14 +23,14 @@ Implementado y probado el 2026-11-03, con commit en las dos ramas. **Base aplica
 ## Despliegue
 
 1. ~~**Commit en las dos ramas**~~ (`friend.changed` es del matchmaking): hecho el 2026-11-03. En `feat/frontend-fase-1`, `46145440` y el de la renumeración; en `feat/mm-claim-en-sala`, `582b8806` y `12cc7e6e`.
-2. ~~**Staging**~~: hecho el 2026-11-03. 0 fichas para el arreglo de datos; las pruebas en staging dentro de una transacción que se deshace dieron todas `OK`; aplicada y verificada (trigger, avisos en las dos funciones, permisos de `authenticated` y respaldo vacío). **Se aplicó como `70`**, así que en staging el respaldo se llama `replanteo70_fotos_ficha`: falta renombrarlo a `replanteo71_fotos_ficha` (`alter table public.replanteo70_fotos_ficha rename to replanteo71_fotos_ficha;` y su `comment`) para que la inversa lo encuentre. La consulta para contar las fichas:
+2. ~~**Staging**~~: hecho el 2026-11-03. 0 fichas para el arreglo de datos; las pruebas en staging dentro de una transacción que se deshace dieron todas `OK`; aplicada y verificada (trigger, avisos en las dos funciones, permisos de `authenticated` y respaldo vacío). **Se aplicó como `70`**, así que el respaldo se renombró a `replanteo71_fotos_ficha` con su `comment` (2026-11-03), para que la inversa lo encuentre. El `comment` con acentos pasado por `psql -c` desde Git Bash llega en Latin-1 y falla (`invalid byte sequence for encoding "UTF8"`): se armó con `chr()`. La consulta para contar las fichas:
    ```sql
    select count(*) from players p join profile_details d on d.user_id = p.user_id
    where p.photo_url is not null and d.avatar_url is not null and p.photo_url <> d.avatar_url;
    ```
    La API no cambia.
-3. **Producción** (el corte ya se hizo, con los replanteos `01` a `70`): toca 2 fichas, kyan y saiko (lectura del 2026-11-03), que pasan a mostrar la foto de su cuenta; las de ficha quedan en el respaldo. Falta aplicarla (pide permiso).
-4. **Web** en el VPS (`deploy/vps/desplegar.sh web` desde un checkout limpio en `v34frag-deploy`). Falta.
+3. ~~**Producción**~~: hecho el 2026-11-03 (el corte ya tenía `01` a `70`). Aplicada sin CR con `psql -v ON_ERROR_STOP=1` y verificada: trigger, avisos en las dos funciones, permisos de `authenticated` y `respaldo: 2` (kyan y saiko, que pasan a mostrar la foto de su cuenta). Después, 0 fichas con dos fotos distintas.
+4. ~~**Web**~~: hecho el 2026-11-03. `v34frag-deploy` en `507a9d52`, `pnpm install --frozen-lockfile` y `deploy/vps/desplegar.sh web`: 560 pruebas, build, `current` → `507a9d528e2b` (antes `e53200f83840`). `https://cmleague.lat` responde 200 y la API (`0d5732881cbe`, `env: production`) no cambió. Nada para los servidores de juego (#1, #2 y #3).
 
 ## Pruebas
 

@@ -822,15 +822,15 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** commit (la `69` en las dos ramas) y producción con el corte. `vip_status` tiene el mismo problema (lista de VIP de Administración), sin tocar.
 - **Bitácora:** [`2026-11-03-foto-en-plantel`](bitacora/2026-11-03-foto-en-plantel/)
 
-### 1.58 Amigos al instante y la misma foto de perfil (replanteo `71`): en staging, falta producción y la web
+### 1.58 Amigos al instante y la misma foto de perfil (replanteo `71`): desplegado (2026-11-03)
 
 - **Qué es:** sumar o sacar a un amigo avisa `friend.changed` por el socket, y la otra persona lo ve sin recargar. En la foto, gana la última que se subió (Daniel, 2026-11-03): al subir la suya, el jugador deja de ver la de su ficha. Antes, el menú de la cuenta mostraba la foto nueva y el resto de la web la de la ficha.
 - **Dónde:** base en `feat/frontend-fase-1` y en `feat/mm-claim-en-sala` (es del matchmaking); web en `feat/frontend-fase-1`.
 - **Hecho el 2026-11-03:** replanteo `71` (era el `70`: el `70` es el de Kyan) con inversa y 11 pruebas SQL (en local con `pg_safeupdate` y en staging, deshechas), web (560 pruebas), commit en las dos ramas y la base aplicada en staging.
 - **Falta:**
-  1. Staging: renombrar el respaldo a `replanteo71_fotos_ficha` (se aplicó cuando se llamaba `70`; detalle en la guía).
-  2. Producción: aplicar la `71` (toca 2 fichas: kyan y saiko pasan a la foto de su cuenta).
-  3. Desplegar la web en el VPS. La API no cambia.
+  1. ~~Staging~~: aplicada y con el respaldo renombrado a `replanteo71_fotos_ficha` (2026-11-03).
+  2. ~~Producción~~: aplicada el 2026-11-03 (kyan y saiko pasaron a la foto de su cuenta; las de ficha, en el respaldo).
+  3. ~~Web~~: `507a9d528e2b` en el VPS el 2026-11-03. La API no cambió.
   4. Probar con dos cuentas: B suma a A y A lo ve al instante; cambiar la foto y verla igual en el menú de la cuenta, la ficha, el ranking y Jugar.
 - **Bitácora:** [`2026-11-03-amigos-y-foto-perfil`](bitacora/2026-11-03-amigos-y-foto-perfil/)
 
