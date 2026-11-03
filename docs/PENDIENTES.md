@@ -703,6 +703,47 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   7. Producción con el corte, junto con la `48`; el plugin a los tres servidores en la misma tanda (#1, flow licenciado `7b01c85b-…` y #3).
   8. El manual de usuario por rol (Daniel, 2026-11-02: después).
 - **Bitácora:** [`2026-11-02-iniciar-torneo-pcw`](bitacora/2026-11-02-iniciar-torneo-pcw/)
+
+### 1.50 Aviso de la cola en Discord (replanteo `57`): en staging y probado en #avisos
+
+- **Qué es:** "Avisar en Discord" en la barra de "Buscando": publica en #avisos "@player Hay gente en la queue, ¡mándate!". Uno cada 15 min para todos; moderadores y admins, siempre.
+- **Hecho el 2026-11-02:** commit, `57` en staging, el webhook y el rol en `/etc/cmleague/api.env` (respaldo `.bak_antes_discord`), API `51b2127f7777` y web `21dc2fb36f7e`.
+- **Probado en #avisos el 2026-11-02** (con el visto bueno de Daniel).
+- **Falta:** regenerar el webhook (se pegó en el chat) y actualizarlo en el `.env` y en el VPS. Producción con el corte.
+- **Bitácora:** [`2026-11-02-aviso-cola-discord`](bitacora/2026-11-02-aviso-cola-discord/)
+
+### 1.51 `!claim` en la primera partida y varios SteamID (replanteo `58`, reporter 2.9.1): en staging y el 2.9.1 en el #1
+
+- **Qué es:** un SteamID nuevo se suma al instante a la ficha con `!claim` (opción A de Daniel), con aviso a los admins; el plantel del matchmaking usa todos los SteamID; los textos ya no dicen "entra al servidor".
+- **Hecho el 2026-11-02:** commit, `58` en staging y la web `21dc2fb36f7e`.
+- **Hecho el 2026-11-02:** el 2.9.1 licenciado en el #1 (entra en el próximo cambio de mapa; el 2.9.0 en `disabled/`).
+- **Falta:** probarlo con alguien que entre desde otra PC. Producción con el corte, junto con la `48`.
+- **Bitácora:** [`2026-11-02-claim-varios-steamid`](bitacora/2026-11-02-claim-varios-steamid/)
+
+### 1.52 Matchmaking con avisos que traen el dato y estado liviano (replanteo `59`): con commit y en staging
+
+- **Qué es:** `queue.changed` actualiza el contador sin pedir nada, "Partida encontrada" se abre con el aviso, el estado se parte en liviano (`/mm/state/live`) y perfil (`/mm/profile`), y cada aviso pide solo lo suyo. Sin cambios en el plugin (nada que subir al #1, #2 ni #3).
+- **Hecho el 2026-11-02:** `59` con inversa y 11 pruebas SQL; API (440 pruebas) y web (524 pruebas).
+- **Hecho el 2026-11-02:** commit, `59` en staging, API `4225068507f9` y web `f11f1952fd60`.
+- **Falta:** medir con jugadores (logs de la API) y comparar con la tabla del plan. Producción con el corte.
+- **Bitácora:** [`2026-11-02-mm-avisos-livianos`](bitacora/2026-11-02-mm-avisos-livianos/)
+
+### 1.53 El flujo de la sala del matchmaking (replanteo `60`): con commit y en staging
+
+- **Qué es:** aceptar sin la carrera con el tick (sancionaba a quien aceptó en el último instante), 3 s de pausa antes de otra sala para quien vuelve a la cola, aviso de cancelación con el motivo, Jugar como principal con la pestaña "Tu última partida", y la pantalla al día cuando otro actúa durante una acción propia. Sin cambios en la API ni en el plugin.
+- **Hecho el 2026-11-02:** `60` con inversa y 17 pruebas SQL; web (530 pruebas).
+- **Hecho el 2026-11-02:** commit, `60` en staging y la web `8049dc993a51`.
+- **Falta:** probarlo con jugadores; actualizar `docs/manual/jugador/buscar-partida.md` cuando se suba el manual. Producción con el corte.
+- **Bitácora:** [`2026-11-02-mm-flujo-sala`](bitacora/2026-11-02-mm-flujo-sala/)
+
+### 1.54 El matchmaking de staging en la rama del frontend: con commit y push
+
+- **Qué es:** `feat/frontend-fase-1` ya tiene la base (replanteos `45` a `62`; los `45` a `47` del anticheat solo porque el `48` los exige), la API (`mm`, `bookings`, socket y worker), el VPS (`cmleague-mm`) y el reporter 2.9.1 de `feat/mm-claim-en-sala`, sin lo demás de kyan. Desde ahora, todo cambio del matchmaking fuera de la web se commitea en las dos ramas (regla en `CLAUDE.md`).
+- **Hecho el 2026-11-02:** commit `55ad155e` (rama `merge/mm-en-frontend`, worktree `v34frag-mmfront`) y fast-forward de `feat/frontend-fase-1`. API: typecheck, 437 pruebas y build bien. Reporter 2.9.1 y `csstv_password` 1.1.0 compilan sin avisos.
+- **Hecho el 2026-11-03:** push de `feat/frontend-fase-1` y de `feat/mm-claim-en-sala` (las dos al día con `origin`).
+- **Falta:** borrar el worktree `v34frag-mmfront` y la rama `merge/mm-en-frontend`. El `.smx` del repo en esta rama sigue siendo el 2.7.3.
+- **Bitácora:** [`2026-11-02-mm-en-rama-frontend`](bitacora/2026-11-02-mm-en-rama-frontend/)
+
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".

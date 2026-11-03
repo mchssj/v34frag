@@ -14,6 +14,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - El formato está en `docs/bitacora/PLANTILLA.md`. Todo en español, con diagramas Mermaid.
 - **Changelog para jugadores:** `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `CMLeague X.Y.Z --  Changelog` (el nombre visible es CMLeague desde el 2026-10-22), con tuteo y sin detalles técnicos.
 - **Commits:** Conventional Commits en español (`feat(servidor): …`, `docs(bitacora): …`). Solo cuando Daniel lo pide.
+- **Ramas del matchmaking (Daniel, 2026-11-02):** `feat/frontend-fase-1` tiene el matchmaking completo (web, base, API, VPS y reporter 2.9.1) sin lo demás de kyan. Todo cambio del matchmaking en la base, la API, el VPS o el plugin se commitea **en las dos ramas**: `feat/frontend-fase-1` y `feat/mm-claim-en-sala` (worktree `v34frag-mmclaim`). La web va solo en `feat/frontend-fase-1`. No se hace merge de `feat/mm-claim-en-sala` ni de `kyan/pruebas` en el frontend: traen tienda, VIP, anticheat, retake y otras cosas que todavía no se implementan ([`2026-11-02-mm-en-rama-frontend`](docs/bitacora/2026-11-02-mm-en-rama-frontend/)).
 - **Inventario de plugins y extensiones de terceros del #3 (el servidor real de ExtremeHost):** `docs/PLUGINS_EXTERNOS.md`.
 - **Paquetes de JavaScript:** **pnpm** (12.8.1, con Corepack), nunca npm, en `web/backend` y `cloudflare/demo-worker`.
   - Instalar con `pnpm install --frozen-lockfile` y correr con `pnpm <script>` o `pnpm exec <bin>`.
