@@ -2,7 +2,7 @@
 
 ## Estado
 
-Commits `30e236d5` y `427f51c3` hechos el 2026-11-04. **Falta:** desplegar la API desde esta rama (paso 1) y el merge en `main` (paso 3). A los servidores de juego no se les sube nada.
+**Desplegado el 2026-11-04 (13:30 UTC):** API `15a357169528`, desde esta rama. Merge en `main` hecho el 2026-11-04. A los servidores de juego no se les subió nada. **Falta:** abrir `/help` con una sesión iniciada.
 
 ## Archivos
 
@@ -23,17 +23,19 @@ Commits `30e236d5` y `427f51c3` hechos el 2026-11-04. **Falta:** desplegar la AP
 
 Antes de reiniciar la API, comprobar que no haya partidas ni salas en curso. El 2026-11-04, cerca de las 13:20 UTC, `live_matches`, `mm_queue` y las salas activas estaban en 0.
 
-1. **API** (falta), desde esta rama, en la carpeta principal. Corre pruebas y build, reinicia `cmleague-api`, chequea `/api/health` y vuelve sola a la versión anterior si falla:
+1. **API** (hecho por Daniel), desde esta rama, en la carpeta principal. Corre pruebas y build, reinicia `cmleague-api`, chequea `/api/health` y vuelve sola a la versión anterior si falla:
 
    ```bash
    deploy/vps/desplegar.sh api
    ```
 
 2. **Comprobar:**
-   - `/api/health` muestra el commit de esta rama, sin `-local`.
-   - El log de `cmleague-api` dice `manual: 37 páginas y 0 capturas`.
-   - `/help` abre con una sesión iniciada.
-3. **Merge en `main`** (falta): en `v34frag-main`, después de decidir qué se hace con sus cambios sin commit. Los 9 conflictos (`PENDIENTES.md`, `bitacora/README.md`, `CHANGELOG_DISCORD.txt`, `csstv_allchat.smx` y `.sp`, `match.inc`, `csstv_reporter.sp`, `live.cfg` y `csstv_reporter.cfg`) se resuelven con la versión de la rama. Lo de `main` ya está en la rama o quedó viejo.
+   - `/api/health` muestra `15a357169528`, sin `-local`: hecho.
+   - El log de `cmleague-api` dice `manual: 37 páginas y 0 capturas`: hecho.
+   - `/api/v1/manual` sin sesión da 401, y las rutas del anticheat dan 404: hecho. Sin errores en el log en el primer minuto.
+   - `/help` abre con una sesión iniciada: **falta**.
+   - `cmleague-mm` no se reinició y sigue en su release anterior. No importa: su script solo importa `supabase-js` y no cambió.
+3. **Merge en `main`** (hecho): en `v34frag-main`. Sus cambios sin commit quedaron copiados en `pruebas/cambios_sin_commit_v34frag-main.patch`, y las reglas de reinicio pasaron a `CLAUDE.md` (Daniel, 2026-11-04). Los 9 conflictos (`PENDIENTES.md`, `bitacora/README.md`, `CHANGELOG_DISCORD.txt`, `csstv_allchat.smx` y `.sp`, `match.inc`, `csstv_reporter.sp`, `live.cfg` y `csstv_reporter.cfg`) se resuelven con la versión de la rama. Lo de `main` ya está en la rama o quedó viejo.
 
 **Servidores:** #1, #2 y #3 sin cambios. Es el repo el que se igualó a ellos, así que no hay tanda de plugin.
 

@@ -60,5 +60,10 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
 - El servidor local de pruebas (`E:\CSS DEDICATED SERVER\server`) **envía a la Supabase real**:
   - Poner `csstv_send 0` después de cada carga del cfg.
   - Vaciar `data/csstv/queue/` antes de reiniciar.
+- **Nunca reiniciar, matar ni hacer `quit` de un servidor (#1, #2 o #3) con un mix en curso, ni dejar nada pendiente que pueda reiniciarlo durante un mix.** Un mix cortado no se recupera (Daniel, 2026-10-15). Antes de cualquier acción que reinicie:
+  - Confirmar en el último `logs/L*.log` que el último evento de `csstv_reporter` es el cierre de la partida (`Resultado guardado en la cola` o `Resultado … enviado`) y no `en vivo`, cuchillo o `Grabando demo`.
+  - Pedirle confirmación a Daniel justo antes, aunque ya lo haya aprobado.
+  - Después, comprobar que el panel no quedó en "stopping" ni con otra acción pendiente. Si quedó, avisarle a Daniel de inmediato: el panel mata el contenedor a los 10 minutos.
+- **No reiniciar el #3 con "Restart" del panel ni con la acción `restart` de su API.** `srcds_run` relanza el juego solo, el contenedor queda en "stopping" y a los 10 minutos el panel lo mata a la fuerza, aunque haya un mix en curso (pasó el 2026-10-15). Para reiniciar el juego, mandar `quit` a la consola: `srcds_run` lo vuelve a lanzar. Si el panel se traba en "stopping", usar Kill y después Start, sin nadie jugando. Por lo mismo, el panel del #3 muestra "starting" todo el tiempo.
 - En ningún servidor (#1, #2 o #3) recargar el plugin con una partida en curso, porque la cancela. Los cambios se cargan en el próximo cambio de mapa.
 - Los servidores de terceros (flow, el #2) llevan el build licenciado (`server/build_licenciado.sh`), nunca el `.smx` genérico.
