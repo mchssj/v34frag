@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="300" viewBox="0 0 260 300">
+  <title>CM League - Semanas completas 52</title>
+  <desc>CM League. Medalla de perfil, vector editable con capas nombradas. Textos vivos: fuente Montserrat (ExtraBold/Black). Versión plana con brillo solo en el marco.</desc>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2FBFF" /><stop offset=".28" stop-color="#9FC3DA" />
+      <stop offset=".5" stop-color="#2F4A5E" /><stop offset=".68" stop-color="#9FC3DA" />
+      <stop offset=".82" stop-color="#F2FBFF" stop-opacity=".9" /><stop offset="1" stop-color="#2F4A5E" />
+    </linearGradient>
+    <clipPath id="recorte-forma"><path d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" /></clipPath>
+  <filter id="resplandor-marco" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" /></filter></defs>
+  <g id="cinta">
+    <path d="M76 8 L184 8 L198 30 L184 50 L76 50 L62 30 Z" fill="#3F1A66" stroke="#0B0C10" stroke-width="3" stroke-linejoin="round" />
+    <path d="M90 9 L110 9 L114 49 L94 49 Z" fill="#A855F7" />
+    <path d="M150 9 L170 9 L166 49 L146 49 Z" fill="#A855F7" />
+    <path d="M119 9 L141 9 L139 49 L121 49 Z" fill="#0F1014" />
+    <path d="M128 9 L132 9 L131.5 49 L128.5 49 Z" fill="#A855F7" opacity=".8" />
+    <rect id="pasador" x="96" y="44" width="68" height="9" rx="4" fill="#9FC3DA" stroke="#0B0C10" stroke-width="2" />
+  </g>
+  <g id="forma-portapapeles">
+    <path id="resplandor-marco" d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" fill="none" stroke="#9FC3DA" stroke-width="26" stroke-linejoin="round" opacity=".55" filter="url(#resplandor-marco)" /><path id="borde-exterior" d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" fill="#0B0C10" stroke="#0B0C10" stroke-width="18" stroke-linejoin="round" />
+    <path id="marco-metal" d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" fill="url(#metal)" stroke="url(#metal)" stroke-width="10" stroke-linejoin="round" />
+    <path id="filete-claro" d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" transform="translate(7.80 8.46) scale(0.94)" fill="none" stroke="#F2FBFF" stroke-width="1.6" opacity=".55" />
+    <path id="cara" d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" transform="translate(11.70 12.69) scale(0.91)" fill="#24152F" stroke="#0B0C10" stroke-width="3" />
+    <path id="filete-acento" d="M60 44 H100 Q106 30 130 30 Q154 30 160 44 H200 Q222 44 222 66 V228 Q222 250 200 250 H60 Q38 250 38 228 V66 Q38 44 60 44 Z" transform="translate(19.50 21.15) scale(0.85)" fill="none" stroke="#A855F7" stroke-width="1.5" opacity=".5" />
+    </g>
+  <g id="textos-editables" font-family="Montserrat, Arial, sans-serif" text-anchor="middle">
+    <g id="etiqueta">
+      <rect x="87.6" y="64" width="84.8" height="22" rx="11" fill="#121318" stroke="#A855F7" stroke-width="2" />
+      <text x="130" y="79.3" font-size="11.5" font-weight="800" letter-spacing=".8" fill="#E9D5FF">SEMANAS</text>
+    </g>
+    <text id="numero" x="130" y="149" font-size="66" font-weight="900" letter-spacing="-2" fill="#FFFFFF">52</text>
+  </g>
+  <g id="puntos-nivel"><path d="M110.5 160 L115.5 165 L110.5 170 L105.5 165 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /><path d="M123.5 160 L128.5 165 L123.5 170 L118.5 165 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /><path d="M136.5 160 L141.5 165 L136.5 170 L131.5 165 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /><path d="M149.5 160 L154.5 165 L149.5 170 L144.5 165 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /></g>
+  <g id="icono" opacity="1" transform="translate(130 203) scale(1.12) translate(-130 -204)">
+    <rect x="106" y="182" width="48" height="46" rx="5" fill="#A855F7" stroke="#0B0C10" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M106 194 H154" stroke="#0B0C10" stroke-width="2.5" />
+    <path d="M118 177 V188 M142 177 V188" stroke="#0B0C10" stroke-width="6" stroke-linecap="round" />
+    <path d="M118 177 V188 M142 177 V188" stroke="#C9CDD6" stroke-width="2.6" stroke-linecap="round" />
+    <g fill="#0B0C10" opacity=".55"><rect x="112" y="201" width="6" height="5" rx="1" /><rect x="122" y="201" width="6" height="5" rx="1" /><rect x="132" y="201" width="6" height="5" rx="1" /><rect x="142" y="201" width="6" height="5" rx="1" /><rect x="112" y="210" width="6" height="5" rx="1" /><rect x="122" y="210" width="6" height="5" rx="1" /><rect x="132" y="210" width="6" height="5" rx="1" /><rect x="142" y="210" width="6" height="5" rx="1" /><rect x="112" y="219" width="6" height="5" rx="1" /><rect x="122" y="219" width="6" height="5" rx="1" /><rect x="132" y="219" width="6" height="5" rx="1" /><rect x="142" y="219" width="6" height="5" rx="1" /></g>
+  </g>
+</svg>

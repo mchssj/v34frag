@@ -6,7 +6,7 @@ import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Button } from "@/components/ui/button"
 
 // Ejemplo de las medallas de CM League en el frontend, en la versión elegida por Kyan: el mismo diseño de
-// siempre con brillo solo en el marco. Sin API: lee los SVG de public/demo-medallas. Solo en `pnpm dev`.
+// siempre con brillo solo en el marco. Sin API: lee el catálogo y los SVG de public/medallas. Solo en `pnpm dev`.
 export const Route = createFileRoute("/demo/medallas")({
   beforeLoad: () => {
     if (!import.meta.env.DEV) throw notFound()
@@ -14,7 +14,6 @@ export const Route = createFileRoute("/demo/medallas")({
   component: DemoMedallas,
 })
 
-const BASE = "/demo-medallas"
 
 type Medalla = {
   archivo: string
@@ -22,7 +21,7 @@ type Medalla = {
   titulo: string
   categoria: string
   grupo: "Entregadas" | "Nuevas"
-  nivel: string
+  nivel: string | null
   equipo: boolean
 }
 
@@ -37,16 +36,18 @@ const card = "rounded-xl border bg-card"
 function src(m: Medalla, bloqueada = false) {
   const i = m.archivo.lastIndexOf("/")
   const file = (bloqueada ? "bloqueada_" : "") + m.archivo.slice(i + 1)
-  return `${BASE}/medallas/${m.archivo.slice(0, i + 1)}${file}`
+  return `/medallas/${m.archivo.slice(0, i + 1)}${file}`
 }
 
 function DemoMedallas() {
   const [view, setView] = useState<keyof typeof VIEWS>("perfil")
   const [medallas, setMedallas] = useState<Medalla[]>([])
   useEffect(() => {
-    fetch(`${BASE}/manifiesto.json`)
+    fetch("/medallas/catalogo.json")
       .then((r) => r.json())
-      .then(setMedallas)
+      .then((c: { medallas: (Omit<Medalla, "nombre"> & { clave: string })[] }) =>
+        setMedallas(c.medallas.map((m) => ({ ...m, nombre: m.clave })))
+      )
   }, [])
 
   return (
@@ -220,7 +221,7 @@ const JUGADORES = [
 ]
 
 function nivelSrc(n: number) {
-  return `${BASE}/niveles/nivel_${String(n).padStart(2, "0")}.svg`
+  return `/niveles/nivel_${String(n).padStart(2, "0")}.svg`
 }
 
 function Niveles() {
