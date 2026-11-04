@@ -150,7 +150,7 @@ const userAlias = createRoute({
 
 const accountStatus = createRoute({
   method: 'get', path: '/api/v1/admin/users/{id}/account', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Estado de la cuenta', description: 'Si confirmó su correo y su último inicio de sesión.',
+  summary: 'Estado de la cuenta', description: 'Si confirmó su correo, su último inicio de sesión y el correo (solo lectura).',
   request: { params: IdParam },
   responses: { 200: { description: 'Estado', ...json(AdminAccountStatus) }, ...errorResponses(401, 403, 404) },
 });
@@ -330,6 +330,7 @@ export const adminPlayers = createRouter()
   })
   .openapi(accountStatus, async (c) => {
     const data = must(await c.var.sb.rpc('admin_account_status', { p_user: c.req.valid('param').id }));
+    c.header('Cache-Control', 'no-store');
     return c.json(data as z.infer<typeof AdminAccountStatus>, 200);
   })
   .openapi(accountResend, async (c) => {

@@ -25,7 +25,7 @@ En **Cuentas** buscas y filtras por **Admins**, **Moderadores**, **Organizadores
   | Moderador | Además banea desde la web (no permanentes), modera equipos y gestiona torneos |
 
   El rol de admin no se da desde la web.
-- **Acceso:** ver si confirmó su correo y cuándo entró por última vez, y ayudarlo a entrar (ver abajo).
+- **Acceso:** ver su correo, si lo confirmó y cuándo entró por última vez, y ayudarlo a entrar (ver abajo). El correo es solo para consultarlo: no se cambia desde aquí. Es un dato personal, así que no lo compartas.
 - **VIP:** darlo hasta una fecha o de por vida, y ver hasta cuándo dura.
 - **Streamer del HUD:** con la marca, la cuenta puede generar su link de OBS desde Mi perfil y transmitir cualquier servidor con el HUD activo. Quitarla corta su link en 30 segundos. A la cuenta se le avisa en los dos casos.
 - **Banear** a su ficha (ver [Banear a un jugador](/help/moderador/banear-jugador)).
