@@ -131,8 +131,8 @@ def _tail(path, pos):
     return pos + len(data)
 
 
-def find_window(title):
-    h = user32.FindWindowW(None, title)
+def find_window(title=None, cls=None):
+    h = user32.FindWindowW(cls, title)
     if not h:
         return None
     r = wt.RECT()
@@ -218,13 +218,26 @@ def console_lines(commands, n):
 
 
 class Game:
-    """El cliente ClientMod de la copia de render, manejado desde su consola."""
+    """El cliente de la copia de render, manejado desde su consola.
+
+    config.json "client" elige cuál (2026-11-04, bitácora 2026-11-04-render-sin-launcher):
+    - "clientmod" (por defecto): CMLauncher.exe, con los parámetros en clientmod.ini y un clic en PLAY;
+    - "v34": el CS:S v34 normal, hl2.exe directo con los parámetros en la línea de comandos. Sin launcher no hay clic a
+      ciegas, y el proceso no está protegido: si quit no lo cierra, se mata. La ventana se busca por la clase del motor
+      (Valve001) o por "window_title" si está en config.json.
+    Lo que pasa dentro del juego (consola, pasos, startmovie) es igual en los dos."""
 
     LAUNCHER = "ClientMod Launcher"
     GAME = "CS:S v34 ClientMod"
+    GAME_CLASS = "Valve001"  # clase de la ventana de los juegos de Source
+    CLIENTS = ("clientmod", "v34")
 
     def __init__(self, cfg):
         self.cfg = cfg
+        self.client = cfg.get("client", "clientmod")
+        if self.client not in self.CLIENTS:
+            raise ValueError(f'config.json: "client" tiene que ser uno de {self.CLIENTS}, no {self.client!r}')
+        self.exe = "CMLauncher.exe" if self.client == "clientmod" else "hl2.exe"
         self.cstrike = os.path.join(cfg["client_dir"], "cstrike")
         self.steps = os.path.join(self.cstrike, "cfg", "cmleague")
         self.logfile = os.path.join(self.cstrike, "cmleague", "render.log")
@@ -259,16 +272,27 @@ class Game:
             "demo_pause",
             "",
         ]))
-        # Parámetros del launcher: se guarda el ini original y se restaura al final.
-        shutil.copyfile(self.ini, self.ini + ".render_orig")
-        lines = open(self.ini, encoding="utf-8").read().splitlines()
-        # launch_params: parámetros extra de la máquina (en el portátil, "-dxlevel 90" para probar si la gráfica
-        # integrada deja de deformar el mapa).
+        if self.client == "clientmod":
+            # Parámetros del launcher: se guarda el ini original y se restaura al final.
+            shutil.copyfile(self.ini, self.ini + ".render_orig")
+            lines = open(self.ini, encoding="utf-8").read().splitlines()
+            lines = [f"Params={self.params()}" if l.startswith("Params=") else l for l in lines]
+            open(self.ini, "w", encoding="utf-8").write("\n".join(lines) + "\n")
+        if os.path.exists(self.reg_backup):
+            os.remove(self.reg_backup)  # que restore no importe el respaldo de otra corrida
+        r = subprocess.run(["reg", "export", c["registry_key"], self.reg_backup, "/y"], capture_output=True)
+        if r.returncode != 0:
+            if self.client == "clientmod":
+                raise RuntimeError(f"no se pudo respaldar el registro {c['registry_key']}: ¿se abrió el juego una vez a mano?")
+            log(f"Aviso: no existe la clave del registro {c['registry_key']}; no se respalda (revisa registry_key).")
+
+    def params(self):
+        """Los parámetros del juego. launch_params: los extra de la máquina (en el portátil, "-dxlevel 90" para
+        probar si la gráfica integrada deja de deformar el mapa; con "v34", los del acceso directo)."""
+        c = self.cfg
         extra = f" {c['launch_params']}" if c.get("launch_params") else ""
-        params = f"Params=-novid -windowed -noborder -w {c['width']} -h {c['height']}{extra} +exec cmleague_render"
-        lines = [params if l.startswith("Params=") else l for l in lines]
-        open(self.ini, "w", encoding="utf-8").write("\n".join(lines) + "\n")
-        subprocess.run(["reg", "export", c["registry_key"], self.reg_backup, "/y"], check=True, capture_output=True)
+        base = "-game cstrike " if self.client == "v34" else ""
+        return f"{base}-novid -windowed -noborder -w {c['width']} -h {c['height']}{extra} +exec cmleague_render"
 
     def restore(self):
         if os.path.exists(self.ini + ".render_orig"):
@@ -279,11 +303,21 @@ class Game:
     # ---- juego ----
 
     def running(self):
-        out = subprocess.run(["tasklist", "/fi", "imagename eq CMLauncher.exe", "/fo", "csv", "/nh"],
+        out = subprocess.run(["tasklist", "/fi", f"imagename eq {self.exe}", "/fo", "csv", "/nh"],
                              capture_output=True, text=True).stdout
-        return "CMLauncher.exe" in out
+        return self.exe.lower() in out.lower()
+
+    def find(self):
+        """La ventana del juego, o None."""
+        if self.client == "clientmod":
+            return find_window(self.GAME)
+        if self.cfg.get("window_title"):
+            return find_window(self.cfg["window_title"])
+        return find_window(cls=self.GAME_CLASS)
 
     def launch(self):
+        if self.client == "v34":
+            return self.launch_v34()
         subprocess.Popen([os.path.join(self.cfg["client_dir"], "CMLauncher.exe")], cwd=self.cfg["client_dir"])
         t0 = time.time()
         while not find_window(self.LAUNCHER):
@@ -307,8 +341,21 @@ class Game:
             time.sleep(0.5)
         self.hwnd = w[0]
 
+    def launch_v34(self):
+        exe = os.path.join(self.cfg["client_dir"], "hl2.exe")
+        cmd = f"{subprocess.list2cmdline([exe])} {self.params()}"
+        subprocess.Popen(cmd, cwd=self.cfg["client_dir"])
+        log("Juego abierto (hl2.exe).")
+        t0 = time.time()
+        while not (w := self.find()):
+            if time.time() - t0 > 120:
+                raise TimeoutError("no apareció la ventana del juego (revisa client_dir, launch_params o window_title)")
+            time.sleep(0.5)
+        self.hwnd = w[0]
+
     def quit(self):
-        """Cierra el juego con el mismo mecanismo de los pasos (no se lo puede matar: es un proceso protegido)."""
+        """Cierra el juego con el mismo mecanismo de los pasos. ClientMod no se puede matar (es un proceso
+        protegido); hl2.exe sí, y se mata si quit no lo cerró en 60 s."""
         if not self.running():
             return
         if self.hwnd:
@@ -317,6 +364,14 @@ class Game:
             while self.running() and time.time() - t0 < 60:
                 console_command(self.hwnd, "quit")
                 time.sleep(4)
+        if self.running() and self.client == "v34":
+            log("El juego no se cerró con quit: lo cierro a la fuerza.")
+            pid = wt.DWORD()
+            if self.hwnd:
+                user32.GetWindowThreadProcessId(self.hwnd, ctypes.byref(pid))
+            target = ["/pid", str(pid.value)] if pid.value else ["/im", self.exe]
+            subprocess.run(["taskkill", "/f"] + target, capture_output=True)
+            time.sleep(2)
         if self.running():
             log("El juego no se cerró: ciérralo a mano.")
 
@@ -510,11 +565,11 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
     if not os.path.exists(dst) or os.path.getsize(dst) != os.path.getsize(demo_path):
         shutil.copyfile(demo_path, dst)
     if game.running():
-        w = find_window(Game.GAME)
+        w = game.find()
         game.hwnd = w[0] if w else None
         game.quit()
         if game.running():
-            raise RuntimeError("ClientMod ya está abierto y no se pudo cerrar: ciérralo antes de grabar")
+            raise RuntimeError(f"el juego ({game.exe}) ya está abierto y no se pudo cerrar: ciérralo antes de grabar")
 
     lead = lead_frames(cfg)
     lead_ticks = round(cfg.get("lead_seconds", 0.5) / d.tick_interval)

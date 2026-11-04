@@ -71,6 +71,31 @@ Esa carpeta tiene que tener `CMLauncher.exe`, `clientmod.ini` y `cstrike/`.
    Sin el mapa, la sesión espera la carga 10 minutos y la jugada falla.
 4. **La consola** la activa el propio script (`con_enable 1` y la tecla de al lado del 1, en `cmleague_render.cfg`). No hace falta tocar nada.
 
+### 3b. O el CS:S v34 normal, sin el launcher (`"client": "v34"`)
+
+Desde el 2026-11-04 se puede grabar con el CS:S v34 normal en vez de ClientMod (bitácora `2026-11-04-render-sin-launcher`). El script abre `hl2.exe` directo, con los parámetros en la línea de comandos: no hay launcher, ni clic en PLAY, ni `clientmod.ini`. En el portátil está en `C:\Program Files (x86)\CSS v34 eXpandedCS`.
+
+1. **Abrir el juego una vez a mano (Daniel)**, con su acceso directo: entrar al menú y salir.
+2. **La clave del registro** donde guarda la resolución, para `registry_key`. Para encontrarla:
+   ```
+   reg query HKCU\Software /s /f ScreenWidth
+   ```
+   Lo que encuentra termina en `\Settings`: en `registry_key` va la clave de arriba, sin el `\Settings`, igual que la de ClientMod (`HKCU\Software\CSSv34_ClientMod`, que tiene adentro `Settings`). Si no aparece nada, se deja la de ejemplo: el script avisa en el log y sigue sin respaldarla.
+3. **Mapas:** igual que en el paso 3, pero en `cstrike/maps/` (con sus `materials`, `models` y `sound` dentro de `cstrike/`). `cstrike_downloads/` es de ClientMod: si se copian los mapas de la PC, el contenido de `cstrike_downloads` va **dentro de `cstrike/`**.
+4. **Permisos:** como la carpeta está en `C:\Program Files (x86)`, el juego tiene que correr como administrador para escribir ahí los cuadros, el log y las demos. El script ya se eleva (y la tarea corre con privilegios más altos), así que no hay que hacer nada. Si se prefiere evitarlo, se puede mover la carpeta entera a, por ejemplo, `C:\CMLeague_Render\v34`.
+5. **En `config.json`** (paso 5):
+   ```json
+   "client": "v34",
+   "client_dir": "C:\\Program Files (x86)\\CSS v34 eXpandedCS",
+   "launch_params": "-steam -appid 240 -32bpp -noipx -nojoy",
+   "registry_key": "<la clave del punto 2>"
+   ```
+   `launch_params` son los del acceso directo, sin `-console` ni `-gl` (el script ya pone `-game cstrike`, la ventana y la resolución). Si el juego no abre sin `-steam -appid 240`, déjalos; si abre igual, se pueden quitar.
+
+   El script busca la ventana por la clase del motor de Source (`Valve001`). Si no la encuentra ("no apareció la ventana del juego"), poner en `config.json` `"window_title"` con el título exacto de la ventana del juego (el que se ve en la barra de tareas).
+
+Para volver a ClientMod: `"client": "clientmod"` y las claves de antes.
+
 ## 4. `.env` reducido
 
 Daniel copia a mano, desde la PC, un `.env` en la **raíz del repo del portátil** con solo estas 12 variables (no el `.env` entero: el de la PC tiene accesos a los servidores, al FTP y al panel):
@@ -96,7 +121,8 @@ Copia `render/config.example.json` a `render/config.json` y cambia solo las ruta
 
 | Clave | Valor |
 |---|---|
-| `client_dir` | La carpeta de ClientMod del paso 3 |
+| `client` | `"clientmod"` (el de ejemplo) o `"v34"` para el CS:S v34 normal (paso 3b) |
+| `client_dir` | La carpeta de ClientMod del paso 3, o la del v34 normal del paso 3b |
 | `work_dir` | Una carpeta de trabajo, por ejemplo `C:\CMLeague_Render\trabajo`: demos, registro y candado |
 | `out_dir` | Por ejemplo `C:\CMLeague_Render\videos`. Los `.mp4` pasan por acá y se borran al subirse |
 | `ffmpeg` | La ruta completa a `ffmpeg.exe` |
@@ -178,7 +204,8 @@ powershell -ExecutionPolicy Bypass -File <ruta del repo>\render\instalar_tarea.p
 
 | Síntoma | Qué mirar |
 |---|---|
-| No aparece la ventana del launcher, o el juego no abre | Que `client_dir` apunte a la carpeta con `CMLauncher.exe`. El clic en PLAY se hace en la posición (785, 450) de una ventana de 890x500: si el launcher del portátil es de otra versión, puede caer fuera del botón |
+| No aparece la ventana del launcher, o el juego no abre | Que `client_dir` apunte a la carpeta con `CMLauncher.exe`. El clic en PLAY se hace en la posición (785, 450) de una ventana de 890x500: si el launcher del portátil es de otra versión, puede caer fuera del botón. Si pasa seguido, probar el v34 normal (paso 3b) |
+| Con `"client": "v34"`: "no apareció la ventana del juego" | Que `client_dir` tenga `hl2.exe`. Si el juego sí abrió, poner `window_title` en `config.json` (paso 3b). Si no abrió, probar con los parámetros del acceso directo en `launch_params` |
 | "no apareció 'Redownloading all lightmaps'" | Falta el mapa de la demo en `cstrike/maps/` (paso 3) |
 | "la demo pasó de largo" o "se reinició dos veces" | Ver los incidentes de `GUIA_IMPLEMENTACION.md`. `gap_seconds` más grande separa más los tramos |
 | "endmovie no cortó la grabación" | Ídem. El script ya reintenta. Mandarle a Daniel `procesar.log` y `ClientMod\cstrike\cmleague\render.log` |
@@ -190,7 +217,7 @@ powershell -ExecutionPolicy Bypass -File <ruta del repo>\render\instalar_tarea.p
 Desde `render/`, con `config.json` ya armado. Busca cada mapa de las últimas 60 partidas en `cstrike/maps`, `cstrike_downloads/maps` y el índice de los `.vpk`:
 
 ```
-python -I -c "import sys;sys.path.insert(0,'.');import json,os,urllib.request,procesar;e=procesar.load_env(procesar.DEFAULT_ENV);h={'apikey':e['RENDER_SUPABASE_KEY'],'Authorization':'Bearer '+e['RENDER_SUPABASE_KEY']};ms={m['map'] if m['map'].startswith(('de_','cs_','aim_','awp_')) else 'de_'+m['map'] for m in json.loads(urllib.request.urlopen(urllib.request.Request(e['RENDER_SUPABASE_URL']+'/rest/v1/matches?select=map&order=played_at.desc&limit=60',headers=h)).read())};c=json.load(open('config.json'))['client_dir'];vpk=open(os.path.join(c,'cstrike','cstrike_dir.vpk'),'rb').read();print('faltan:',sorted(m for m in ms if not any(os.path.exists(os.path.join(c,x,'maps',m+'.bsp')) for x in ('cstrike','cstrike_downloads')) and m.encode() not in vpk) or 'ninguno')"
+python -I -c "import sys;sys.path.insert(0,'.');import json,os,urllib.request,procesar;e=procesar.load_env(procesar.DEFAULT_ENV);h={'apikey':e['RENDER_SUPABASE_KEY'],'Authorization':'Bearer '+e['RENDER_SUPABASE_KEY']};ms={m['map'] if m['map'].startswith(('de_','cs_','aim_','awp_')) else 'de_'+m['map'] for m in json.loads(urllib.request.urlopen(urllib.request.Request(e['RENDER_SUPABASE_URL']+'/rest/v1/matches?select=map&order=played_at.desc&limit=60',headers=h)).read())};c=json.load(open('config.json'))['client_dir'];v=os.path.join(c,'cstrike','cstrike_dir.vpk');vpk=open(v,'rb').read() if os.path.exists(v) else b'';print('faltan:',sorted(m for m in ms if not any(os.path.exists(os.path.join(c,x,'maps',m+'.bsp')) for x in ('cstrike','cstrike_downloads')) and m.encode() not in vpk) or 'ninguno')"
 ```
 
 (La base guarda algunos mapas sin el `de_`, como `cbble`, y el script se lo agrega. Si la base tiene un mapa con otro prefijo y el script lo marca como faltante por error, revisa a mano.)
