@@ -117,3 +117,34 @@ export const ClipReview = z
   .openapi('ClipReview');
 export const ClipReviewList = Envelope(ClipReview).openapi('ClipReviewList');
 export const ClipReviewQuery = listQuery(['reprocessed_at'], { sort: 'reprocessed_at', order: 'asc' });
+
+// Lista de clips para reprocesar varios a la vez (plan docs/bitacora/2026-11-03-reportes-clips-nombre-equipo).
+export const ADMIN_CLIP_STATUS = ['done', 'failed', 'processing', 'queued', 'no_demo'] as const;
+export const AdminClipQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
+  status: z.enum(ADMIN_CLIP_STATUS).optional().openapi({
+    description: '`done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo',
+  }),
+  type: z.enum(CLIP_TYPES).optional(),
+  q: z.string().trim().max(60).optional().openapi({ description: 'Nick del jugador en el juego' }),
+});
+export const AdminClip = z
+  .object({
+    clip: Clip,
+    match: z.object({ id: z.uuid(), map: z.string().nullable(), played_at: z.string().nullable() }),
+    reprocess_count: z.number().int().openapi({ description: 'Cuántas veces se reprocesó' }),
+    discord_posted: z.boolean().openapi({ description: 'Si ya salió en Discord' }),
+    can_reprocess: z.boolean(),
+    blocked_reason: z.string().nullable().openapi({ description: 'Por qué no se puede reprocesar (null si se puede)' }),
+  })
+  .openapi('AdminClip');
+export const AdminClipList = Envelope(AdminClip).openapi('AdminClipList');
+export const ClipReprocessBody = z
+  .object({ ids: z.array(z.uuid()).min(1).max(50).openapi({ description: 'De 1 a 50 clips' }) })
+  .openapi('ClipReprocessBody');
+export const ClipReprocessResult = z
+  .object({
+    results: z.array(
+      z.object({ id: z.uuid(), ok: z.boolean(), error: z.string().nullable().openapi({ description: 'El motivo, si no se pudo' }) }),
+    ),
+  })
+  .openapi('ClipReprocessResult');

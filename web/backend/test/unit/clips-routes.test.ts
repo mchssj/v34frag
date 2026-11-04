@@ -257,3 +257,86 @@ describe('clips: VIP y reprocesar', () => {
     expect(q.get('order')).toBe('video_reprocessed_at.asc.nullslast,id.asc');
   });
 });
+
+// Lista de clips y reproceso en lote (plan docs/bitacora/2026-11-03-reportes-clips-nombre-equipo).
+describe('clips: lista del admin y reprocesar varios', () => {
+  const C2 = '22222222-2222-4222-8222-222222222222';
+  const C3 = '33333333-3333-4333-8333-333333333333';
+  const rows = [
+    { ...ROW, match_id: MATCH, created_at: '2026-11-02T10:00:00Z', video_status: 'done', video_key: 'clips/a.mp4', video_seconds: 9, video_in_r2: true },
+    { ...ROW, id: C2, match_id: MATCH, created_at: '2026-11-02T09:00:00Z', video_status: 'processing' },
+    { ...ROW, id: C3, match_id: MATCH, created_at: '2026-11-02T08:00:00Z', demo_status: 'expired' },
+  ];
+  const lista = (url: URL) => {
+    if (url.pathname.endsWith('/match_clip_list')) return Response.json(rows, { headers: { 'Content-Range': `0-2/3` } });
+    if (url.pathname.endsWith('/match_clips'))
+      return Response.json([{ id: ROW.id, video_reprocess_count: 1, discord_posted_at: '2026-11-02T11:00:00Z' }]);
+    if (url.pathname.endsWith('/matches')) return Response.json([{ id: MATCH, map: 'de_dust2', played_at: '2026-11-02T08:00:00Z' }]);
+    if (url.pathname.endsWith('/players')) return Response.json([{ id: PLAYER, nick: 'Alias' }]);
+    return undefined;
+  };
+
+  it('solo admins y filtros válidos', async () => {
+    postgrest(() => undefined, 'user');
+    expect((await call('GET', '/api/v1/admin/clips')).status).toBe(403);
+    expect((await call('POST', '/api/v1/admin/clips/reprocess', { ids: [ROW.id] })).status).toBe(403);
+    postgrest(() => undefined);
+    expect((await call('GET', '/api/v1/admin/clips?status=raro')).status).toBe(400);
+    expect((await call('POST', '/api/v1/admin/clips/reprocess', { ids: [] })).status).toBe(400);
+    expect((await call('POST', '/api/v1/admin/clips/reprocess', { ids: Array.from({ length: 51 }, () => ROW.id) })).status).toBe(400);
+  });
+
+  it('cada clip con su partida, si salió en Discord y si se puede reprocesar', async () => {
+    postgrest(lista);
+    const res = await call('GET', '/api/v1/admin/clips');
+    expect(res.status).toBe(200);
+    const body = await json(res);
+    expect(body.total).toBe(3);
+    expect(body.items.map((x: { can_reprocess: boolean; blocked_reason: string | null }) => [x.can_reprocess, x.blocked_reason])).toEqual([
+      [true, null],
+      [false, 'Se está grabando ahora'],
+      [false, 'La demo ya no está: no se puede volver a grabar'],
+    ]);
+    expect(body.items[0]).toMatchObject({
+      match: { id: MATCH, map: 'de_dust2' },
+      reprocess_count: 1,
+      discord_posted: true,
+      clip: { id: ROW.id, player: { id: PLAYER, alias: 'Alias' }, video: { status: 'done' } },
+    });
+    const q = calls.find((x) => x.url.pathname.endsWith('/match_clip_list'))!.url;
+    expect(q.searchParams.get('order')).toContain('created_at.desc');
+  });
+
+  it('los filtros llegan a la base', async () => {
+    postgrest(lista);
+    await call('GET', '/api/v1/admin/clips?status=failed&type=ace&q=nick');
+    let q = calls.find((x) => x.url.pathname.endsWith('/match_clip_list'))!.url.searchParams;
+    expect(q.get('video_status')).toBe('eq.failed');
+    expect(q.get('type')).toBe('eq.ace');
+    expect(q.get('player_name')).toBe('ilike.%nick%');
+    postgrest(lista);
+    await call('GET', '/api/v1/admin/clips?status=queued');
+    q = calls.find((x) => x.url.pathname.endsWith('/match_clip_list'))!.url.searchParams;
+    expect(q.get('video_status')).toBe('is.null');
+    expect(q.get('demo_status')).toBe('in.(uploaded,pending)');
+  });
+
+  it('reprocesar varios: uno por uno, sin repetir, y el motivo del que falla', async () => {
+    postgrest((url) => {
+      if (url.pathname.endsWith('/rpc/clip_reprocess')) {
+        const last = calls.at(-1)!.body as { p_clip: string };
+        return last.p_clip === C2
+          ? Response.json({ code: 'P0001', message: 'Esa jugada se está grabando ahora: espera a que termine' }, { status: 400 })
+          : Response.json('pending');
+      }
+      return undefined;
+    });
+    const res = await call('POST', '/api/v1/admin/clips/reprocess', { ids: [ROW.id, C2, ROW.id] });
+    expect(res.status).toBe(200);
+    expect((await json(res)).results).toEqual([
+      { id: ROW.id, ok: true, error: null },
+      { id: C2, ok: false, error: 'Esa jugada se está grabando ahora: espera a que termine' },
+    ]);
+    expect(calls.filter((x) => x.url.pathname.endsWith('/rpc/clip_reprocess'))).toHaveLength(2);
+  });
+});

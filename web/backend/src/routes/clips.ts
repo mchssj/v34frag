@@ -1,18 +1,22 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
-import { must, mustHave, notFound } from '../lib/db';
+import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { STEAM64 } from '../schemas/claim';
 import {
+  AdminClipList,
+  AdminClipQuery,
   Clip,
   ClipConfig,
   ClipConfigPatch,
   ClipList,
   ClipListQuery,
   ClipParam,
+  ClipReprocessBody,
+  ClipReprocessResult,
   ClipReviewList,
   ClipReviewQuery,
   CLIP_TYPES,
@@ -93,6 +97,35 @@ const approve = createRoute({
   request: { params: ClipParam },
   responses: { 200: { description: 'Aprobado', ...json(Clip) }, ...errorResponses(400, 401, 403, 404) },
 });
+
+const adminList = createRoute({
+  method: 'get', path: '/api/v1/admin/clips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Lista de clips',
+  description:
+    'Las jugadas que se muestran (las de `match_clip_list`), de la más nueva a la más vieja, para reprocesar varias a la vez. ' +
+    '`can_reprocess` y `blocked_reason` repiten las reglas de `clip_reprocess`: con la demo todavía en R2, ya grabada (o fallida) y no grabándose.',
+  request: { query: AdminClipQuery },
+  responses: { 200: { description: 'Clips', ...json(AdminClipList) }, ...errorResponses(400, 401, 403) },
+});
+const reprocessMany = createRoute({
+  method: 'post', path: '/api/v1/admin/clips/reprocess', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Reprocesar varios clips',
+  description:
+    'Como `/admin/clips/{id}/reprocess`, para cada uno de `ids` (de 1 a 50), uno por uno: uno que no se puede no frena a los demás. ' +
+    'Devuelve el resultado de cada uno, con el motivo si no se pudo. Cada reprocesado pasa a "Para revisar".',
+  request: { body: { content: { 'application/json': { schema: ClipReprocessBody } }, required: true } },
+  responses: { 200: { description: 'Resultado de cada uno', ...json(ClipReprocessResult) }, ...errorResponses(400, 401, 403) },
+});
+
+/** Por qué no se puede reprocesar (las reglas de clip_reprocess, para apagar la casilla). null si se puede. */
+export const reprocessBlock = (r: { demo_status: string | null; video_status: string | null }) =>
+  r.demo_status !== 'uploaded'
+    ? 'La demo ya no está: no se puede volver a grabar'
+    : r.video_status === null
+      ? 'Todavía no se grabó: ya está en la cola'
+      : r.video_status === 'processing'
+        ? 'Se está grabando ahora'
+        : null;
 
 export type ClipRow = {
   id: string | null; position: number | null; type: string | null; priority: number | null; round: number | null;
@@ -225,6 +258,53 @@ export const clips = createRouter()
     await existingClip(c, id);
     must(await c.var.sb.rpc('clip_reprocess', { p_clip: id }));
     return c.json(await readClip(c, id), 200);
+  })
+  .openapi(adminList, async (c) => {
+    const p = c.req.valid('query');
+    const sb = c.var.sb;
+    let q = sb.from('match_clip_list').select(LIST_COLUMNS + ', match_id, created_at', { count: 'exact' });
+    if (p.type) q = q.eq('type', p.type);
+    const term = searchTerm(p.q);
+    if (term) q = q.ilike('player_name', `%${term}%`);
+    if (p.status === 'done' || p.status === 'failed' || p.status === 'processing') q = q.eq('video_status', p.status);
+    else if (p.status === 'queued') q = q.is('video_status', null).in('demo_status', ['uploaded', 'pending']);
+    else if (p.status === 'no_demo') q = q.is('video_status', null).or('demo_status.is.null,demo_status.not.in.(uploaded,pending)');
+    type Row = ClipRow & { match_id: string; created_at: string };
+    const { rows, total } = await runList<Row, typeof q>(q, p, { created_at: 'created_at' });
+    const ids = rows.map((r) => r.id!);
+    const [extra, matches] = ids.length
+      ? await Promise.all([
+          sb.from('match_clips').select('id, video_reprocess_count, discord_posted_at').in('id', ids).then(mustHave),
+          sb.from('matches').select('id, map, played_at').in('id', [...new Set(rows.map((r) => r.match_id))]).then(mustHave),
+        ])
+      : [[], []];
+    const byId = new Map(extra.map((x) => [x.id, x]));
+    const byMatch = new Map(matches.map((m) => [m.id, m]));
+    const clips = await toClips(c, rows, true);
+    const items = rows.map((r, i) => {
+      const m = byMatch.get(r.match_id);
+      const x = byId.get(r.id!);
+      const blocked = reprocessBlock(r);
+      return {
+        clip: clips[i]!,
+        match: { id: r.match_id, map: m?.map ?? null, played_at: m?.played_at ?? null },
+        reprocess_count: x?.video_reprocess_count ?? 0,
+        discord_posted: !!x?.discord_posted_at,
+        can_reprocess: blocked === null,
+        blocked_reason: blocked,
+      };
+    });
+    return c.json(envelope(items, total, p), 200);
+  })
+  .openapi(reprocessMany, async (c) => {
+    const ids = [...new Set(c.req.valid('json').ids)];
+    const results: { id: string; ok: boolean; error: string | null }[] = [];
+    // Uno por uno: clip_reprocess bloquea la fila y mueve los videos a la papelera; uno que falla no frena al resto.
+    for (const id of ids) {
+      const { error } = await c.var.sb.rpc('clip_reprocess', { p_clip: id });
+      results.push({ id, ok: !error, error: error ? error.message : null });
+    }
+    return c.json({ results }, 200);
   })
   .openapi(approve, async (c) => {
     const { id } = c.req.valid('param');

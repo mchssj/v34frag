@@ -35,7 +35,7 @@ import { dropPhoto, removePhoto, savePhoto } from '../services/photos';
 const OVERVIEW =
   'id, name, tag, kind, captain_id, captain_player_id, captain_nick, members, parent_team_id, logo_url, looking_for, max_members, founded_at, events_played, dissolved_at, name_changed_at';
 
-/** Espera entre cambios de nombre o sigla del capitán (team_rename en el replanteo 39). */
+/** Espera entre cambios de nombre o sigla del capitán si falta team_config.rename_days (replanteo 68; antes, fija). */
 export const TEAM_NAME_WAIT_DAYS = 30;
 
 type OverviewRow = {
@@ -57,9 +57,9 @@ const toSummary = (t: OverviewRow): z.infer<typeof TeamSummary> => ({
   looking_for: (t.looking_for ?? []) as z.infer<typeof RosterRole>[],
 });
 
-const nextNameChange = (changedAt: string | null) => {
-  if (!changedAt) return null;
-  const next = new Date(new Date(changedAt).getTime() + TEAM_NAME_WAIT_DAYS * 86_400_000);
+const nextNameChange = (changedAt: string | null, days: number) => {
+  if (!changedAt || days <= 0) return null;
+  const next = new Date(new Date(changedAt).getTime() + days * 86_400_000);
   return next.getTime() > Date.now() ? next.toISOString() : null;
 };
 
@@ -124,7 +124,7 @@ const patchTeam = createRoute({
   summary: 'Editar mi equipo',
   description:
     'El capitán o un admin: qué busca el equipo (`looking_for`), el nombre y la sigla. El nombre y la sigla siguen las reglas de la ' +
-    `solicitud y no pueden repetir los de otro equipo activo. El capitán los cambia una vez cada ${TEAM_NAME_WAIT_DAYS} días ` +
+    'solicitud y no pueden repetir los de otro equipo activo. El capitán los cambia una vez cada `team_config.rename_days` días ' +
     '(`409 CONFLICT` con `details.next_change_at`; el admin no espera) y no mientras el equipo juega un torneo en curso (`409`). ' +
     'Un equipo disuelto no se edita (`409`).',
   security: bearer,
@@ -244,9 +244,10 @@ export const teams = createRouter()
     const sb = c.var.sb;
     const team = must(await sb.from('team_overview').select(OVERVIEW).eq('id', id).maybeSingle());
     if (!team) throw notFound('ese equipo');
-    const [s, modes] = await Promise.all([
+    const [s, modes, cfg] = await Promise.all([
       sb.from('team_standings').select('*').eq('team_id', id).maybeSingle().then(must),
       team.kind === 'official' ? sb.rpc('team_eligible_modes', { p_team: id }).then(mustHave) : Promise.resolve([]),
+      sb.from('team_config').select('rename_days').eq('id', 1).maybeSingle().then(must),
     ]);
     let viewer: z.infer<typeof TeamDetail>['viewer'] = null;
     const user = currentUser(c);
@@ -263,7 +264,7 @@ export const teams = createRouter()
         founded_at: team.founded_at,
         dissolved_at: team.dissolved_at,
         name_changed_at: team.name_changed_at,
-        next_name_change_at: nextNameChange(team.name_changed_at),
+        next_name_change_at: nextNameChange(team.name_changed_at, cfg?.rename_days ?? TEAM_NAME_WAIT_DAYS),
         eligible_modes: modes,
         record: s
           ? {
