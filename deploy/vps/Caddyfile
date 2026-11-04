@@ -45,6 +45,24 @@ api.cmleague.lat {
 	}
 }
 
+# Supabase del VPS (plan docs/bitacora/2026-11-03-supabase-en-vps): Kong en 127.0.0.1:8000. Desde afuera, solo REST,
+# Auth y Storage; Studio y pg-meta, solo por túnel SSH. Kong pone el CORS. Se agrega en el corte, con el DNS listo.
+db.cmleague.lat {
+	import comun db
+	# Las plantillas de correo que pide GoTrue (deploy/auth/plantillas/, sin secretos).
+	handle_path /plantillas/* {
+		root * /srv/supabase/plantillas
+		file_server
+	}
+	@publico path /rest/v1/* /auth/v1/* /storage/v1/*
+	handle @publico {
+		reverse_proxy 127.0.0.1:8000
+	}
+	handle {
+		respond 404
+	}
+}
+
 # Relay del HUD (plan docs/bitacora/2026-10-29-hud-relay-vps): cada streamer entra con su token en la ruta
 # (/s/<token>/hud); sin token válido el relay responde 404. Sin `comun`: la compresión puede retener los eventos (SSE)
 # del HUD, y el Referer tiene que ir vacío para que el token no salga a Google Fonts.

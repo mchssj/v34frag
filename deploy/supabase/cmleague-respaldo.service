@@ -1,0 +1,14 @@
+# Respaldo diario del Supabase del VPS (plan docs/bitacora/2026-11-03-supabase-en-vps). Lo lanza cmleague-respaldo.timer.
+# Como root: usa docker y lee /srv/supabase.
+[Unit]
+Description=CMLeague: respaldo de la base del VPS
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cmleague-respaldar
+TimeoutStartSec=1800
+Nice=10
+IOSchedulingClass=idle

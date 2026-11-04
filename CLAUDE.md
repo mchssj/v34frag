@@ -49,7 +49,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - Todo cambio de configuración en un servidor se hace en todos en la misma tanda. Un servidor nuevo (como el #1) se arma copiando la configuración del #3 (script de referencia: `docs/bitacora/2026-10-22-rbk-igual-al-real/pruebas/rbk_igual.py`) y se compara con `comparar.py` antes de darlo por listo.
 
 - **Acceso a los servidores: siempre primero por la API key del panel; SFTP solo cuando no se pueda por API** (Daniel, 2026-11-02). Vale para el Worker de demos (`PTERO_KEY_<panel_server_id>`) y para cualquier herramienta nueva.
-  - Secretos `PTERO_KEY_*` del Worker `v34frag-demos`: `157703b5` (#1, desde el 2026-11-03) y `f337a7d9` (flow, #2). El #3 usa `PTERO_PANEL_API_KEY`. `edbee7d6` es de RBK y está por limpiar.
+  - Secretos `PTERO_KEY_*` del Worker `v34frag-demos`: `157703b5` (#1, desde el 2026-11-03) y `f337a7d9` (flow, #2). El #3 usa `PTERO_PANEL_API_KEY`. La de RBK (`edbee7d6`) se borró el 2026-11-03.
   - La API del cliente de Pterodactyl no deja editar la línea de arranque, solo sus variables.
 - **SourceTV en el #1:** `tv_enable 1` y `tv_port 27065` van en su `server.cfg` (desde el 2026-11-03), porque su línea de arranque no los tiene y no se puede editar. El `tv_port` del `server.cfg` tiene que coincidir con el del arranque y con `game_servers.tv_port`.
 
