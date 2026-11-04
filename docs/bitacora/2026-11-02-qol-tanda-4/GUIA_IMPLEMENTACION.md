@@ -113,6 +113,13 @@ Kyan eligió dos ideas más (12 y 13 de la lista de "el mejor matchmaking").
 | `v34_dm` | 1.0.1 | ✓ | ✓ | no lo tiene |
 | `v34_retake`, `v34_wingman` | 1.0.1 | no los tiene | no los tiene | ✓ |
 
+### Sin el menú de modelos (2026-11-04)
+
+- **Pedido de Kyan:** que al entrar al servidor, y al cambiar de equipo, no aparezca el menú para elegir el modelo de CT o de T.
+- **`csstv_qol` 1.3.2 (`csstv_qol_auto_class "1"`):** corta el mensaje `VGUIMenu` de los paneles `class_ter` y `class_ct` y, en el cuadro siguiente, elige un modelo al azar del lado del jugador con `joinclass` (T 1-4, CT 5-8). Es lo mismo que ya hacen `v34_retake` y `v34_wingman`; con esos modos prendidos (`sm_retake_on`, `sm_2v2_on`) se los deja a ellos. Nunca en un bot (`joinclass` en un bot tira el servidor en v34) ni en un jugador vivo: el menú que el juego abre en el medio tiempo también se corta, sin tocar el modelo.
+- **Prueba con bots (`pruebas/cuchillo.sh`):** carga sin errores y el calentamiento y el cuchillo siguen igual. El menú en sí no se puede probar con bots, porque el juego no se lo manda: falta probarlo con un jugador (entrar, y cambiar de equipo).
+- **Subido el 2026-11-04** a flow, MVZG y `aurav34` (36010 bytes), comprobando antes que estaba la 1.3.1. Respaldo en `plugins/disabled/csstv_qol_1.3.1.smx` y `cfg/sourcemod/csstv_qol.cfg.bak_132`; `csstv_qol_auto_class "1"` en los tres. El acceso a MVZG en el `.env` ahora se llama `SFTP_CSS_*_MVZG` (antes `SERVER3_*`).
+
 ## Pruebas con bots (`cssds`, 2026-11-02)
 
 `pruebas/qol4.sh <carpeta con los .smx>`, con `-condebug`, el reporter de depuración, `v34_dm` y `v34_retake` cargados y `qol_prueba.smx` de la tercera tanda. Se corrió con la 2.8.7 y con la 2.7.7.

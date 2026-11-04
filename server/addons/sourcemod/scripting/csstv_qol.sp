@@ -29,6 +29,7 @@
  *   - 1.2.1: en el calentamiento los cuerpos desaparecen a los 2 s y las armas tiradas a los
  *     csstv_qol_warmup_cleanup segundos.
  *   - 1.3.0: el calentamiento como deathmatch: al aparecer, un arma gratis (!armas) y chaleco con casco.
+ *   - 1.3.2: sin el menú de modelos al entrar o cambiar de equipo: se elige uno al azar (csstv_qol_auto_class).
  *
  * El estado del mix se lee de la ConVar csstv_state del reporter (2.7.7 o más nuevo) y el de los otros
  * modos de sm_retake_on, sm_2v2_on y sm_dm_on. Si no existen, de las respuestas de sm_csstv_status y de
@@ -45,7 +46,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.3.1"
+#define PLUGIN_VERSION "1.3.2"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -115,6 +116,7 @@ ConVar g_cvGoodbye;
 ConVar g_cvBlockKill;
 ConVar g_cvCleanup;
 ConVar g_cvWarmGuns;
+ConVar g_cvAutoClass;
 bool g_bStateHooked;
 int g_iWarmGun[MAXPLAYERS + 1];                    // !armas: 0 = la de su lado
 int g_iCleaned;                                    // cuerpos y armas borrados en el calentamiento, para sm_qol_status
@@ -148,6 +150,7 @@ public void OnPluginStart()
 	g_cvSpecChat  = CreateConVar("csstv_qol_spec_chat", "1", "Durante la partida, los espectadores no escriben en el chat general (los admins sí).", _, true, 0.0, true, 1.0);
 	g_cvSpecVoice = CreateConVar("csstv_qol_spec_voice", "1", "Durante la partida, los jugadores no escuchan a los espectadores (el coach sí, a su equipo).", _, true, 0.0, true, 1.0);
 	g_cvLockNames = CreateConVar("csstv_qol_lock_names", "1", "Durante la partida no se puede cambiar el nombre.", _, true, 0.0, true, 1.0);
+	g_cvAutoClass = CreateConVar("csstv_qol_auto_class", "1", "Sin el menú de modelos al entrar a un equipo: se elige uno al azar de su lado.", _, true, 0.0, true, 1.0);
 	g_cvWarmGuns  = CreateConVar("csstv_qol_warmup_guns", "1", "En el calentamiento, al aparecer: un arma gratis (la de su lado o la de !armas) y chaleco con casco.", _, true, 0.0, true, 1.0);
 	g_cvCleanup   = CreateConVar("csstv_qol_warmup_cleanup", "8", "En el calentamiento: segundos para borrar un arma tirada que nadie levantó (los cuerpos, a los 2 s). 0 = no limpiar.", _, true, 0.0, true, 120.0);
 	g_cvBlockKill = CreateConVar("csstv_qol_block_kill", "1", "Durante la partida, kill y explode (suicidarse por consola) no hacen nada.", _, true, 0.0, true, 1.0);
@@ -160,6 +163,7 @@ public void OnPluginStart()
 		if (IsClientInGame(i))
 			OnClientPutInServer(i);
 	AddCommandListener(Cmd_Say, "say");
+	HookUserMessage(GetUserMessageId("VGUIMenu"), Msg_VguiMenu, true);
 	AddCommandListener(Cmd_Suicide, "kill");
 	AddCommandListener(Cmd_Suicide, "explode");
 	HookEvent("bomb_dropped", Event_BombDropped);
@@ -368,6 +372,44 @@ public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0 && (team == TEAM_T || team == TEAM_CT) && g_cvRespawn.BoolValue && InWarmup())
 		CreateTimer(1.5, Timer_Respawn, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+// ---------------------------------------------------------------------------
+// Sin el menú de modelos (1.3.2): al entrar a un equipo, o al cambiar, el juego abre class_ter o class_ct y el jugador
+// queda esperando elegir. Se corta el menú y se elige un modelo al azar de su lado, como hacen v34_retake y v34_wingman
+// (con esos modos prendidos lo hacen ellos). Nunca en un bot: joinclass en un bot tira el servidor en v34.
+// ---------------------------------------------------------------------------
+
+public Action Msg_VguiMenu(UserMsg msgId, BfRead msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	if (!g_cvAutoClass.BoolValue || OtherModeHandlesClass())
+		return Plugin_Continue;
+	char panel[32];
+	msg.ReadString(panel, sizeof(panel));
+	if (StrContains(panel, "class_") != 0)
+		return Plugin_Continue;
+	for (int i = 0; i < playersNum; i++)
+		if (players[i] > 0 && IsClientInGame(players[i]) && !IsFakeClient(players[i]))
+			RequestFrame(Frame_AutoClass, GetClientUserId(players[i]));   // fuera del hook del mensaje
+	return Plugin_Handled;
+}
+
+bool OtherModeHandlesClass()
+{
+	ConVar r = FindConVar("sm_retake_on"), w = FindConVar("sm_2v2_on");
+	return (r != null && r.BoolValue) || (w != null && w.BoolValue);
+}
+
+public void Frame_AutoClass(int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || IsPlayerAlive(client))
+		return;
+	int team = GetClientTeam(client);
+	if (team == TEAM_T)
+		FakeClientCommandEx(client, "joinclass %d", GetRandomInt(1, 4));
+	else if (team == TEAM_CT)
+		FakeClientCommandEx(client, "joinclass %d", GetRandomInt(5, 8));
 }
 
 // ---------------------------------------------------------------------------
