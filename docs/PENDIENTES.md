@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-02**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-03**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
@@ -21,6 +21,48 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## Supabase en el VPS (2026-11-03): hecho; faltan pruebas y el relay del HUD
+
+- **Desde el 2026-11-03 a las 20:50 UTC, la base de producción está en el VPS** (`deploy/supabase/`, `https://db.cmleague.lat`).
+  - La web estuvo caída 2 min 41 s.
+  - La copia es idéntica a la nube, fila a fila.
+  - Ya la usan la API, el socket, los timers, el relay del HUD, flow (#2), el #3 y el Worker de demos.
+  - La nube (`wmzfwsizashpszxlvpeb`) queda sin uso, como vuelta atrás hasta el 2026-12-03: no escribirle.
+  - Detalle en [`2026-11-03-supabase-en-vps`](bitacora/2026-11-03-supabase-en-vps/).
+- **#1 MVZG en producción** (21:10 UTC):
+  - Fila nueva `96bb5060` "Server CM League #1", con el id de su build licenciado; la vieja `7b01c85b` quedó como "flow (histórico)".
+  - Su cfg ya tiene la URL, la clave y el token de producción.
+  - **Con matchmaking** (`csstv_mm "1"`, `mm_enabled = true`). Toma salas cuando cargue el cfg.
+  - Reiniciado: consulta la base nueva cada 5 s (2.9.2).
+- **Falta:**
+  - **R2:** configurado (2026-11-03). Comprobar que el respaldo automático de las 09:00 UTC del 2026-11-04 llegó a `cmleague-respaldos`. El bucket está en la cuenta de agusb06.
+  - **Publicar la privacidad actualizada** en el próximo despliegue de la web (no hace falta para la base).
+  - **Sin relación con el corte:**
+    - Dar de alta a los streamers en producción (Administración): hay 0.
+    - Rotar el webhook de la cola de Discord.
+- **Matchmaking en el #1, primeros intentos (2026-11-03, los dos cancelados):**
+  - **`de_nuke_old_blue` no está en el #1** y sí en el pool del 5v5: la sala se cancela con "El servidor no tiene el mapa". Subir el mapa o sacarlo del pool.
+  - **Sala de `de_inferno`:** el último jugador entró a las 22:45:47, 11 s antes del plazo de conexión (5 min), porque varios tuvieron que hacer `!claim` dentro del servidor. `mm_tick` la canceló a las 22:46:00 con los 10 conectados. Revisar si el plazo debe seguir contando con todos adentro, y que el `!claim` se pueda hacer antes de entrar a la cola.
+- **Primer mix completo en la base nueva (2026-11-03):** guardado y con su demo en R2, tras corregir el `panel_server_id` de flow. ~~El #1 no tiene `panel_server_id`: sus demos no se suben.~~ Arreglado el 2026-11-03: ver "Demos del #1" en el punto 1.44.
+- **Ajustar Kong sin partidas en curso** (usa ~240 MB; Daniel lo deja para después).
+- **flow (#2):** `csstv_claim "1"` en su cfg desde el 2026-11-03; se carga en el próximo cambio de mapa.
+- **flow (#2) sin matchmaking desde el 2026-11-03 (21:25 UTC, Daniel):** `csstv_mm "0"` en su cfg y por consola, y `mm_enabled = false`. Se juega mix normal. Esa tarde tuvo `csstv_mm "1"` un rato.
+
+## Acciones de cuenta en Administración › Usuarios (2026-11-03): listas, sin desplegar
+
+- Reenviar activación, correo de contraseña y contraseña aleatoria, solo admins ([`2026-11-03-admin-cuentas-usuarios`](bitacora/2026-11-03-admin-cuentas-usuarios/)). Replanteo `72` en staging, sin commit.
+- **Falta**, sin partidas y **después** de recuperar la contraseña: los pasos de su guía, incluida la clave de administrador en `api.env` y `sudo sb confirmar-correo on`.
+
+## Recuperar la contraseña (2026-11-03): traído a esta rama, sin desplegar
+
+- `777271fb` de Kyan está en `feat/frontend-fase-1`, sin commit y solo ese cambio. `schema.d.ts` y `routeTree.gen.ts` se regeneraron con el código de esta rama, no se copiaron de la suya ([`2026-11-03-recuperar-contrasena`](bitacora/2026-11-03-recuperar-contrasena/)).
+- **Falta, en este orden:**
+  1. **Sin mix, salas ni cola.** La API se despliega desde `0d573288` más las rutas de Kyan, nunca desde esta rama: a `feat/frontend-fase-1` le faltan el manual y el anticheat, y se borrarían de producción. Quedó preparada y probada (504 pruebas) en un worktree temporal del scratchpad de la sesión; si ya no está, se rehace con `git worktree add --detach <dir> 0d5732881cbe` y aplicando `web/backend` de `777271fb`.
+  2. Desplegar la API (`deploy/vps/desplegar.sh api` de ese worktree) y la web (`deploy/vps/desplegar.sh web` de esta rama; publica también la privacidad).
+  3. Plantillas en el VPS: copiar `deploy/auth/plantillas/` a `/srv/supabase/plantillas`, instalar el `Caddyfile` (`/plantillas/*`) y `cmleague.yml`, y `sudo sb up -d --no-deps auth`. **El paso de su guía con `configurar-auth.mjs` ya no sirve:** cambia la configuración de la nube.
+  4. Probarlo con un correo de prueba.
+- **Falta en su documentación:** las secciones "Qué cambia para cada rol" y "Términos y privacidad", y la página del manual.
 
 ## Corte a la base de producción (2026-11-03): base hecha, falta el VPS
 
@@ -671,7 +713,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 
 ### 1.44 Servidor #1 nuevo (`SFTP_CSS_*_MVZG`): dejarlo igual al #3
 
-- **Qué es:** el servidor "MVZG", nuestro, que Daniel sumó a la documentación el 2026-11-02. Pasa a ser el **#1**; flow es el **#2** y el servidor real de ExtremeHost ("aurav34"), el **#3**. Su acceso SFTP está en el `.env` como `SFTP_CSS_SERVER_MVZG`, `SFTP_CSS_SERVER_PORT_MVZG`, `SFTP_CSS_USER_MVZG` y `SFTP_CSS_PASSWORD_MVZG`. No tiene API de panel en el `.env`. Está en **el mismo panel y la misma máquina que flow** (`190.104.34.3`), como otro servidor. Lo armó kyan el 2026-10-27 copiando el de flow: hasta el 2026-11-02 tenía el token y el tag de flow (`csstv_reporter.cfg.bak`) y sus dos demos se llaman `flow-…`.
+- **Qué es:** el servidor "MVZG", nuestro, que Daniel sumó a la documentación el 2026-11-02. Pasa a ser el **#1**; flow es el **#2** y el servidor real de ExtremeHost ("aurav34"), el **#3**. Su acceso SFTP está en el `.env` como `SFTP_CSS_SERVER_MVZG`, `SFTP_CSS_SERVER_PORT_MVZG`, `SFTP_CSS_USER_MVZG` y `SFTP_CSS_PASSWORD_MVZG`. Desde el 2026-11-03 tiene API key del panel: `SFTP_CSS_API_KEY` (servidor `157703b5`). Está en **el mismo panel y la misma máquina que flow** (`190.104.34.3`), como otro servidor. Lo armó kyan el 2026-10-27 copiando el de flow: hasta el 2026-11-02 tenía el token y el tag de flow (`csstv_reporter.cfg.bak`) y sus dos demos se llaman `flow-…`.
 - **Revisado por SFTP el 2026-11-02** (solo lectura), comparado contra el #3:
   - **Ya está bien:** `hostname "CMLeague #1"`, `tv_title`, `csstv_server_tag "MVZG"` con token propio, `csstv_calladmin_server "CMLeague #1"` y `_address "190.104.34.3:27022"`, HUD prendido contra `hud.cmleague.lat:27501` con clave, FastDL propio, `csstv_demo "1"`, Stripper igual (con `global_filters.cfg` y `maps/`), `mapcycle.txt` igual, `warmup.cfg` y `end.cfg` iguales, el resto de `server.cfg` y de `csstv_reporter.cfg` igual (MR3 12000, medio tiempo 3 s, `sv_pure`, `phys_timescale`, humo, tasas), `kacr_eyes_antiwall "0"`, `csstv_perf` y los mismos admins.
   - **Reporter:** la **2.7.3 licenciada** (`96bb5060-…`, 126814 bytes) que subió kyan el 2026-11-02 (bitácora `2026-11-02-aviso-y-pausa-automatica` en `kyan/pruebas`). Daniel dice que puede llevar el genérico; no hace falta cambiarlo mientras el licenciado funcione con su token.
@@ -684,6 +726,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   6. **Demos del #1:** seguramente no tiene cargados los datos de SFTP en Administración, porque es para el matchmaking. Sin cambios.
 - **Hecho el 2026-11-02:** `csstv_server_tag "MVZG"` → `"srv1"` en el `csstv_reporter.cfg` del #1, para que las partidas y las demos nuevas se llamen `srv1-…` (las dos `flow-…` que hay son de antes). Respaldo `csstv_reporter.cfg.bak_tag`, verificado bajándolo de nuevo. Se aplica en el próximo cambio de mapa; no se recargó nada. El tag solo da el prefijo del `match_uid` (el servidor se identifica por el token).
 - **Hecho el 2026-11-02:** en el #3, `csstv_server_tag "srv1"` → `"srv3"` (pedido por Daniel), con el respaldo `csstv_reporter.cfg.bak_tag` y verificado bajándolo de nuevo. El reporter del #3 está en `disabled/`, así que se usa recién cuando se vuelva a activar. Las partidas y demos viejas del #3 siguen como `srv1-…`.
+- **Demos del #1 (2026-11-03, Daniel): hecho, falta verlo con una partida.**
+  - **Problema:** las partidas del #1 en producción quedaban con `demo_status = none`. El log decía `Demo no grabado: tv_enable está en 0`: el `server.cfg` tenía los demás `tv_*` pero no `tv_enable`, y la línea de arranque tampoco (venía de la copia de flow).
+  - **`server.cfg` del #1, subido por SFTP y verificado bajándolo de nuevo:** `tv_enable 1` agregado, y `tv_port 27064` → `27065`. El arranque del panel y `game_servers.tv_port` usan 27065, y el `server.cfg` (que corre después) lo pisaba. Respaldo: `cstrike/cfg/server.cfg.bak_20261103`. No se reinició ni se recargó nada: se toma en el próximo cambio de mapa. El arranque hace `+exec server.cfg` antes de `+map`, así que también vale tras un reinicio.
+  - **La línea de arranque no se toca:** la API del cliente solo deja editar variables, y la única libre (`Boot_Custom_Command`, máximo 20 caracteres) ya la usa `tv_password`.
+  - **API key del panel del #1:** Daniel la creó el 2026-11-03 y está en el `.env` como `SFTP_CSS_API_KEY`. Probada: entra a `https://panel-mvzg.com`, ve el #1 (`157703b5`) y también flow (`f337a7d9`), y `files/list` de `/cstrike/csstv_demos` da 200.
+  - **Producción:** `game_servers.panel_url = 'https://panel-mvzg.com'` para `96bb5060` (ya tenía `panel_server_id = '157703b5'`). Secreto `PTERO_KEY_157703b5` cargado en el Worker `v34frag-demos` (`wrangler secret put`, por stdin). Con eso, las demos del #1 bajan por la API del panel: no hace falta sumarlo a `demos-sftp.json` del VPS.
+  - **Falta:**
+    1. En la próxima partida del #1, ver `Grabando demo` en su log y la partida con `demo_status = uploaded`.
+    2. Sumar `PTERO_KEY_157703b5` a `cloudflare/demo-worker/scripts/dev-vars.py` (con `SFTP_CSS_API_KEY`) para `wrangler dev`.
+  - **Visto de paso en los logs del #1 (sin tocar):** `addons/sourcemod/configs/adminmenu_cfgs.txt` tiene un error de sintaxis en la línea 33, y `CM_PickupWeapon` no puede escribir su cfg (permisos).
 
 ### 1.45 API key del panel de flow en el Worker de demos: cargada, falta ver la primera demo (y pronto la del #1)
 
@@ -743,7 +795,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Qué es:** "Avisar en Discord" en la barra de "Buscando": publica en #avisos "@player Hay gente en la queue, ¡mándate!". Uno cada 15 min para todos; moderadores y admins, siempre.
 - **Hecho el 2026-11-02:** commit, `57` en staging, el webhook y el rol en `/etc/cmleague/api.env` (respaldo `.bak_antes_discord`), API `51b2127f7777` y web `21dc2fb36f7e`.
 - **Probado en #avisos el 2026-11-02** (con el visto bueno de Daniel).
-- **Falta:** regenerar el webhook (se pegó en el chat) y actualizarlo en el `.env` y en el VPS. Producción con el corte.
+- ~~**Falta:** regenerar el webhook~~: regenerado en Discord ("Avisos") y cargado el 2026-11-03 en el `.env` y en `/etc/cmleague/api.env` (respaldo `api.env.bak_antes_webhook_avisos_202611031915`), con `cmleague-api` reiniciada (`/api/health` bien, producción). El nuevo también se pegó en el chat. Producción ya tiene la `57` (corte).
 - **Bitácora:** [`2026-11-02-aviso-cola-discord`](bitacora/2026-11-02-aviso-cola-discord/)
 
 ### 1.51 `!claim` en la primera partida y varios SteamID (replanteo `58`, reporter 2.9.1): en staging y el 2.9.1 en el #1
