@@ -58,10 +58,14 @@ export const AdminPlayer = z
   })
   .openapi('AdminPlayer');
 
+export const MedalKey = z.string().regex(/^[a-z0-9_]{1,60}$/).openapi({ description: 'Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend)' });
+
 export const MedalBody = z
   .object({
     title: z.string().trim().min(1).max(80),
-    icon: z.string().trim().min(1).max(8).default('🏆').openapi({ description: 'Un emoji' }),
+    icon: z.string().trim().min(1).max(8).default('🏆').openapi({ description: 'Un emoji (para la web vieja y si no hay dibujo)' }),
+    medal_key: MedalKey.optional(),
+    season_id: z.uuid().optional().openapi({ description: 'Temporada de la medalla; sin esto, es de carrera' }),
   })
   .openapi('MedalBody');
 

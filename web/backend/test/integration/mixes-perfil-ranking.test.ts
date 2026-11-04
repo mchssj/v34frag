@@ -213,8 +213,8 @@ describe('perfil público', () => {
 
     const medals = await get(`/api/v1/players/${nick(0)}/medals/summary`);
     expect(medals.body.items).toEqual([
-      { title: `MVP ${sfx}`, icon: '⭐', count: 2, last_at: expect.any(String) },
-      { title: `Top ${sfx}`, icon: '🏆', count: 1, last_at: expect.any(String) },
+      { title: `MVP ${sfx}`, icon: '⭐', medal_key: null, season: null, count: 2, last_at: expect.any(String) },
+      { title: `Top ${sfx}`, icon: '🏆', medal_key: null, season: null, count: 1, last_at: expect.any(String) },
     ]);
     expect((await get(`/api/v1/players/${nick(0)}/medals/summary?sort=title&order=desc&per=1`)).body).toMatchObject({ total: 2, items: [{ title: `Top ${sfx}` }] });
     expect((await get(`/api/v1/players/${nick(0)}/medals`)).body.total).toBe(3);

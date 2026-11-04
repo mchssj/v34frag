@@ -775,6 +775,17 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-moderar-equipos`](bitacora/2026-11-01-moderar-equipos/)
 
+### 1.37 Medallas automáticas (replanteo `72`): hecho en local, sin desplegar
+
+- **Qué es:** las medallas de las stats se dan solas al terminar cada mix y las de temporada al cerrarla; Administración › Medallas para dar las manuales (con temporada y a varios jugadores), corregir y ajustar las reglas; el perfil muestra el dibujo de cada medalla.
+- **Hecho el 2026-11-04** en `kyan/pruebas`, probado en la base local. Sin commit.
+- **Falta:**
+  1. Staging: `20261029210000_medallas_datos.sql` si falta, la `72` y `select medals_award_all();`.
+  2. Redesplegar la API y la web.
+  3. Producción en el mismo orden, con respaldo de `player_medals`.
+  4. Avisarle a Daniel (base y API) y a Esteban (perfil y admin).
+- **Bitácora:** [`2026-11-04-medallas-automaticas`](bitacora/2026-11-04-medallas-automaticas/)
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)

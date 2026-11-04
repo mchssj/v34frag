@@ -14,6 +14,7 @@ import { account } from './routes/account';
 import { anticheat } from './routes/anticheat';
 import { anticheatEvidence } from './routes/anticheat-evidence';
 import { adminDemos } from './routes/admin-demos';
+import { adminMedals } from './routes/admin-medals';
 import { adminPlayers } from './routes/admin-players';
 import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
@@ -99,6 +100,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', players);
   app.route('/', teams);
   app.route('/', roster);
+  app.route('/', adminMedals);
   app.route('/', adminPlayers);
   app.route('/', adminTeams);
   app.route('/', adminServers);

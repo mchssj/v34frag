@@ -226,8 +226,9 @@ export const adminPlayers = createRouter()
   })
   .openapi(addMedal, async (c) => {
     const { id } = c.req.valid('param');
-    const row = mustHave(await c.var.sb.from('player_medals').insert({ player_id: id, ...c.req.valid('json') }).select('id, title, icon, created_at').single());
-    return c.json({ ...row, season: null, rank: null }, 201);
+    const row = mustHave(await c.var.sb.from('player_medals').insert({ player_id: id, ...c.req.valid('json'), source: 'admin' })
+      .select('id, title, icon, created_at, rank, medal_key, source, season:seasons(id, number, name)').single());
+    return c.json({ ...row, season: row.season ?? null, rank: row.rank ?? null, source: 'admin' as const }, 201);
   })
   .openapi(deleteMedal, async (c) => {
     const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', c.req.valid('param').id).select('id'));

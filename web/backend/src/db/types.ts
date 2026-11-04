@@ -1660,15 +1660,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"player_medals": {
+                },"medal_rules": {
                   Row: {
-                    "created_at": string,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"tier": string | null,"title": string
+                    "active": boolean,"icon": string,"medal_key": string,"metric": string,"min_matches": number,"threshold": number,"title": string
                   }
                   Insert: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"tier"?: string | null,"title": string
+                    "active"?: boolean,"icon"?: string,"medal_key": string,"metric": string,"min_matches"?: number,"threshold": number,"title": string
                   }
                   Update: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"tier"?: string | null,"title"?: string
+                    "active"?: boolean,"icon"?: string,"medal_key"?: string,"metric"?: string,"min_matches"?: number,"threshold"?: number,"title"?: string
+                  }
+                  Relationships: []
+                },"player_medals": {
+                  Row: {
+                    "created_at": string,"icon": string | null,"id": string,"medal_key": string | null,"player_id": string | null,"rank": number | null,"season_id": string | null,"source": string,"tier": string | null,"title": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"icon"?: string | null,"id"?: string,"medal_key"?: string | null,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title": string
+                  }
+                  Update: {
+                    "created_at"?: string,"icon"?: string | null,"id"?: string,"medal_key"?: string | null,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -4359,6 +4370,9 @@ isOneToOne: false
                            },
 "admin_grant_streamer":
 { Args: { "p_user": string }; Returns: undefined
+                           },
+"admin_medals_recalculate":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string

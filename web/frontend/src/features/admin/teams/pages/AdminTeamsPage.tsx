@@ -24,6 +24,7 @@ import {
 const RANGE: Record<keyof TeamConfig, [number, number]> = {
   max_members: [2, 30],
   max_led: [1, 10],
+  rename_days: [0, 365],
 }
 const valid = (k: keyof TeamConfig, n: number) =>
   Number.isInteger(n) && n >= RANGE[k][0] && n <= RANGE[k][1]

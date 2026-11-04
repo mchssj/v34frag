@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
+import { MedalImage } from "@/components/brand/MedalImage"
 import { QueryState } from "@/components/brand/QueryState"
 import { Card } from "@/components/ui/card"
+import { seasonShort, useMedalsByKey } from "@/lib/medals"
 import { KeyPlays } from "../KeyPlays"
 import { adjustmentLabel, fmtDay, matchTitle, resultOf } from "../../lib/labels"
 import {
@@ -26,6 +28,7 @@ export function Summary({
   const recent = useQuery(recentMatchesOptions(nick))
   const medals = useQuery(medalsOptions(nick))
   const adjustments = useQuery(adjustmentsOptions(nick))
+  const catalog = useMedalsByKey()
   const open = useOpenMatch()
 
   return (
@@ -98,25 +101,37 @@ export function Summary({
                   Todavía sin medallas.
                 </span>
               ) : (
-                items.map((m) => (
-                  <div
-                    key={`${m.title}-${m.icon}`}
-                    className="flex items-center gap-3"
-                  >
-                    <span
-                      aria-hidden
-                      className="grid size-9 place-items-center rounded-lg bg-primary/12 text-lg"
+                items.map((m) => {
+                  // Con dibujo si tiene clave del catálogo; las viejas, con su emoji.
+                  const def = m.medal_key ? catalog.get(m.medal_key) : undefined
+                  return (
+                    <div
+                      key={`${m.title}-${m.icon}-${m.medal_key}-${m.season?.number}`}
+                      className="flex items-center gap-3"
                     >
-                      {m.icon ?? "🏅"}
-                    </span>
-                    <span className="flex-1 text-sm font-medium">
-                      {m.title}
-                    </span>
-                    <span className="font-mono text-xs font-semibold text-muted-foreground">
-                      ×{m.count}
-                    </span>
-                  </div>
-                ))
+                      <span
+                        aria-hidden
+                        className="grid size-9 place-items-center rounded-lg bg-primary/12 text-lg"
+                      >
+                        {def ? (
+                          <MedalImage
+                            medal={def}
+                            season={seasonShort(m.season)}
+                            className="h-8 w-auto"
+                          />
+                        ) : (
+                          (m.icon ?? "🏅")
+                        )}
+                      </span>
+                      <span className="flex-1 text-sm font-medium">
+                        {m.title}
+                      </span>
+                      <span className="font-mono text-xs font-semibold text-muted-foreground">
+                        ×{m.count}
+                      </span>
+                    </div>
+                  )
+                })
               )
             }
           </QueryState>

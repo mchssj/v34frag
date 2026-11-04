@@ -61,6 +61,7 @@ describe("breadcrumbsFor", () => {
     expect(labels("/admin/bans")).toEqual(["Administración", "Baneos"])
     expect(labels("/admin/maps")).toEqual(["Administración", "Mapas"])
     expect(labels("/admin/seasons")).toEqual(["Administración", "Temporadas"])
+    expect(labels("/admin/medals")).toEqual(["Administración", "Medallas"])
     expect(labels("/admin/clips")).toEqual(["Administración", "Clips"])
     expect(labels("/admin/ranking")).toEqual([
       "Administración",

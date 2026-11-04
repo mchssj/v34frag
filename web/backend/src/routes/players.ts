@@ -290,9 +290,10 @@ export const players = createRouter()
     const p = c.req.valid('query');
     const q = c.var.sb
       .from('player_medals')
-      .select('id, title, icon, created_at, rank, season:seasons(id, number, name)', { count: 'exact' })
+      .select('id, title, icon, created_at, rank, medal_key, source, season:seasons(id, number, name)', { count: 'exact' })
       .eq('player_id', id);
     type Row = { id: string; title: string; icon: string | null; created_at: string; rank: number | null;
+                 medal_key: string | null; source: 'admin' | 'auto' | 'temporada';
                  season: { id: string; number: number; name: string } | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
     return c.json(envelope(rows.map((r) => ({ ...r, season: r.season ?? null, rank: r.rank ?? null })), total, p), 200);
@@ -373,12 +374,15 @@ export const players = createRouter()
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
     const p = c.req.valid('query');
     // Son pocas por jugador: se agrupan, ordenan y paginan acá.
-    const rows = mustHave(await c.var.sb.from('player_medals').select('title, icon, created_at').eq('player_id', id));
-    const groups = new Map<string, { title: string; icon: string | null; count: number; last_at: string }>();
+    const rows = mustHave(await c.var.sb.from('player_medals').select('title, icon, medal_key, created_at, season:seasons(number, name)').eq('player_id', id));
+    type Group = { title: string; icon: string | null; medal_key: string | null; season: { number: number; name: string } | null;
+                   count: number; last_at: string };
+    const groups = new Map<string, Group>();
     for (const r of rows) {
-      const k = JSON.stringify([r.title, r.icon]);
+      const season = r.season ?? null;
+      const k = JSON.stringify([r.title, r.icon, r.medal_key, season?.number ?? null]);
       const g = groups.get(k);
-      if (!g) groups.set(k, { title: r.title, icon: r.icon, count: 1, last_at: r.created_at });
+      if (!g) groups.set(k, { title: r.title, icon: r.icon, medal_key: r.medal_key, season, count: 1, last_at: r.created_at });
       else {
         g.count++;
         if (r.created_at > g.last_at) g.last_at = r.created_at;

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "nota": "Medallas de CM League con brillo solo en el marco. 'archivo' es relativo a /medallas/; la bloqueada es bloqueada_<archivo>. 'nivel' es el metal del marco (bronce a diamante).",
+ "nota": "Medallas de CM League con brillo solo en el marco. 'archivo' es relativo a /medallas/; la bloqueada es bloqueada_<archivo>. 'nivel' es el metal del marco (bronce a diamante). 'temporada': true si la medalla muestra la temporada en la etiqueta de arriba (la web reemplaza el texto 'S1').",
  "medallas": [
   {
    "archivo": "mejoradas/progresion_10_mixes.svg",
@@ -9,7 +9,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": null,
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/progresion_50_mixes.svg",
@@ -18,7 +19,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": null,
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/progresion_100_mixes.svg",
@@ -27,7 +29,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": null,
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/progresion_250_mixes.svg",
@@ -36,7 +39,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": null,
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/progresion_500_mixes.svg",
@@ -45,7 +49,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": null,
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/progresion_1000_mixes.svg",
@@ -54,7 +59,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": null,
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/podio_puesto_3.svg",
@@ -63,7 +69,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/podio_puesto_2.svg",
@@ -72,7 +79,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "mejoradas/podio_puesto_1.svg",
@@ -81,7 +89,8 @@
    "categoria": "Mixes y podio",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "perfil/victorias_10.svg",
@@ -90,7 +99,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/victorias_50.svg",
@@ -99,7 +109,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/victorias_100.svg",
@@ -108,7 +119,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/victorias_250.svg",
@@ -117,7 +129,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "platino",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/victorias_500.svg",
@@ -126,7 +139,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "diamante",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/racha_5.svg",
@@ -135,7 +149,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/racha_10.svg",
@@ -144,7 +159,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/racha_15.svg",
@@ -153,7 +169,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/veterano_2.svg",
@@ -162,7 +179,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/veterano_3.svg",
@@ -171,7 +189,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/veterano_5.svg",
@@ -180,7 +199,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/fundador.svg",
@@ -189,7 +209,8 @@
    "categoria": "Trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/hs_35.svg",
@@ -198,7 +219,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/hs_45.svg",
@@ -207,7 +229,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/hs_55.svg",
@@ -216,7 +239,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/kda_1_2.svg",
@@ -225,7 +249,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/kda_1_5.svg",
@@ -234,7 +259,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/kda_2_0.svg",
@@ -243,7 +269,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/adr_70.svg",
@@ -252,7 +279,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/adr_85.svg",
@@ -261,7 +289,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/adr_100.svg",
@@ -270,7 +299,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/entry_50.svg",
@@ -279,7 +309,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/entry_250.svg",
@@ -288,7 +319,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/entry_500.svg",
@@ -297,7 +329,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/multikill_10.svg",
@@ -306,7 +339,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/multikill_50.svg",
@@ -315,7 +349,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/multikill_100.svg",
@@ -324,7 +359,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/clutch_10.svg",
@@ -333,7 +369,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/clutch_50.svg",
@@ -342,7 +379,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/clutch_100.svg",
@@ -351,7 +389,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/aces_5.svg",
@@ -360,7 +399,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/aces_25.svg",
@@ -369,7 +409,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/aces_100.svg",
@@ -378,7 +419,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/elo_1200.svg",
@@ -387,7 +429,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/elo_1500.svg",
@@ -396,7 +439,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/elo_1800.svg",
@@ -405,7 +449,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/elo_2000.svg",
@@ -414,7 +459,8 @@
    "categoria": "Habilidad",
    "grupo": "Entregadas",
    "nivel": "platino",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/awp_100.svg",
@@ -423,7 +469,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/awp_500.svg",
@@ -432,7 +479,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/awp_1000.svg",
@@ -441,7 +489,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/scout_50.svg",
@@ -450,7 +499,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/scout_250.svg",
@@ -459,7 +509,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/scout_500.svg",
@@ -468,7 +519,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/deagle_100.svg",
@@ -477,7 +529,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/deagle_500.svg",
@@ -486,7 +539,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/deagle_1000.svg",
@@ -495,7 +549,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/rifles_500.svg",
@@ -504,7 +559,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/rifles_2500.svg",
@@ -513,7 +569,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/rifles_5000.svg",
@@ -522,7 +579,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/cuchillo_5.svg",
@@ -531,7 +589,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/cuchillo_25.svg",
@@ -540,7 +599,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/cuchillo_100.svg",
@@ -549,7 +609,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/he_25.svg",
@@ -558,7 +619,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/he_100.svg",
@@ -567,7 +629,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/he_250.svg",
@@ -576,7 +639,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/pistolas_25.svg",
@@ -585,7 +649,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/pistolas_100.svg",
@@ -594,7 +659,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/pistolas_250.svg",
@@ -603,7 +669,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/plantadas_25.svg",
@@ -612,7 +679,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/plantadas_100.svg",
@@ -621,7 +689,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/plantadas_250.svg",
@@ -630,7 +699,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/desactivadas_10.svg",
@@ -639,7 +709,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/desactivadas_50.svg",
@@ -648,7 +719,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/desactivadas_100.svg",
@@ -657,7 +729,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_dust2_10.svg",
@@ -666,7 +739,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_dust2_50.svg",
@@ -675,7 +749,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_dust2_100.svg",
@@ -684,7 +759,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_inferno_10.svg",
@@ -693,7 +769,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_inferno_50.svg",
@@ -702,7 +779,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_inferno_100.svg",
@@ -711,7 +789,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_tuscan_10.svg",
@@ -720,7 +799,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_tuscan_50.svg",
@@ -729,7 +809,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_tuscan_100.svg",
@@ -738,7 +819,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_nuke_10.svg",
@@ -747,7 +829,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_nuke_50.svg",
@@ -756,7 +839,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_nuke_100.svg",
@@ -765,7 +849,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_season_10.svg",
@@ -774,7 +859,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_season_50.svg",
@@ -783,7 +869,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_season_100.svg",
@@ -792,7 +879,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cbble_10.svg",
@@ -801,7 +889,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cbble_50.svg",
@@ -810,7 +899,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cbble_100.svg",
@@ -819,7 +909,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cache_10.svg",
@@ -828,7 +919,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cache_50.svg",
@@ -837,7 +929,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cache_100.svg",
@@ -846,7 +939,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_train_10.svg",
@@ -855,7 +949,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_train_50.svg",
@@ -864,7 +959,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_train_100.svg",
@@ -873,7 +969,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cpl_mirage_10.svg",
@@ -882,7 +979,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cpl_mirage_50.svg",
@@ -891,7 +989,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/mapa_cpl_mirage_100.svg",
@@ -900,7 +999,8 @@
    "categoria": "Mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/campeon_torneo.svg",
@@ -909,7 +1009,8 @@
    "categoria": "Logros de temporada",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "perfil/finalista_torneo.svg",
@@ -918,7 +1019,8 @@
    "categoria": "Logros de temporada",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "perfil/mvp_temporada.svg",
@@ -927,7 +1029,8 @@
    "categoria": "Logros de temporada",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "perfil/top10_temporada.svg",
@@ -936,7 +1039,8 @@
    "categoria": "Logros de temporada",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "perfil/caster.svg",
@@ -945,7 +1049,8 @@
    "categoria": "Comunidad",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/staff.svg",
@@ -954,7 +1059,8 @@
    "categoria": "Comunidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/aniversario.svg",
@@ -963,7 +1069,8 @@
    "categoria": "Comunidad",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/prestigio_I.svg",
@@ -972,7 +1079,8 @@
    "categoria": "Prestigio",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/prestigio_II.svg",
@@ -981,7 +1089,8 @@
    "categoria": "Prestigio",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "perfil/prestigio_III.svg",
@@ -990,7 +1099,8 @@
    "categoria": "Prestigio",
    "grupo": "Entregadas",
    "nivel": "diamante",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_partidas_10.svg",
@@ -999,7 +1109,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_partidas_50.svg",
@@ -1008,7 +1119,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_partidas_100.svg",
@@ -1017,7 +1129,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_victorias_10.svg",
@@ -1026,7 +1139,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_victorias_50.svg",
@@ -1035,7 +1149,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_victorias_100.svg",
@@ -1044,7 +1159,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_victorias_250.svg",
@@ -1053,7 +1169,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "platino",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_racha_3.svg",
@@ -1062,7 +1179,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_racha_5.svg",
@@ -1071,7 +1189,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_racha_10.svg",
@@ -1080,7 +1199,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_antiguedad_2.svg",
@@ -1089,7 +1209,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_antiguedad_3.svg",
@@ -1098,7 +1219,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_antiguedad_5.svg",
@@ -1107,7 +1229,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_elo_1200.svg",
@@ -1116,7 +1239,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_elo_1500.svg",
@@ -1125,7 +1249,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_elo_1800.svg",
@@ -1134,7 +1259,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_elo_2000.svg",
@@ -1143,7 +1269,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "platino",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fundador.svg",
@@ -1152,7 +1279,8 @@
    "categoria": "Equipo - trayectoria",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_campeon.svg",
@@ -1161,7 +1289,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_finalista.svg",
@@ -1170,7 +1299,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_semifinalista.svg",
@@ -1179,7 +1309,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "bronce",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_participacion.svg",
@@ -1188,7 +1319,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_bicampeon.svg",
@@ -1197,7 +1329,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_tricampeon.svg",
@@ -1206,7 +1339,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "diamante",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_invicto.svg",
@@ -1215,7 +1349,8 @@
    "categoria": "Equipo - torneos",
    "grupo": "Entregadas",
    "nivel": "platino",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_barrida.svg",
@@ -1224,7 +1359,8 @@
    "categoria": "Equipo - hazañas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_remontada.svg",
@@ -1233,7 +1369,8 @@
    "categoria": "Equipo - hazañas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_matagigantes.svg",
@@ -1242,7 +1379,8 @@
    "categoria": "Equipo - hazañas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_muro_ct.svg",
@@ -1251,7 +1389,8 @@
    "categoria": "Equipo - hazañas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_asalto_t.svg",
@@ -1260,7 +1399,8 @@
    "categoria": "Equipo - hazañas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_top3.svg",
@@ -1269,7 +1409,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_top10.svg",
@@ -1278,7 +1419,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "equipos/equipo_fortaleza_dust2.svg",
@@ -1287,7 +1429,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_inferno.svg",
@@ -1296,7 +1439,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_tuscan.svg",
@@ -1305,7 +1449,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_nuke.svg",
@@ -1314,7 +1459,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_season.svg",
@@ -1323,7 +1469,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_cbble.svg",
@@ -1332,7 +1479,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_cache.svg",
@@ -1341,7 +1489,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_train.svg",
@@ -1350,7 +1499,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "equipos/equipo_fortaleza_cpl_mirage.svg",
@@ -1359,7 +1509,8 @@
    "categoria": "Equipo - ranking y mapas",
    "grupo": "Entregadas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/kills_1000.svg",
@@ -1368,7 +1519,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/kills_5000.svg",
@@ -1377,7 +1529,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/kills_10000.svg",
@@ -1386,7 +1539,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/dano_10k.svg",
@@ -1395,7 +1549,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/dano_50k.svg",
@@ -1404,7 +1559,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/dano_100k.svg",
@@ -1413,7 +1569,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/primer_mix.svg",
@@ -1422,7 +1579,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/primera_victoria.svg",
@@ -1431,7 +1589,8 @@
    "categoria": "Trayectoria",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/mvp_mix_10.svg",
@@ -1440,7 +1599,8 @@
    "categoria": "Habilidad",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/mvp_mix_50.svg",
@@ -1449,7 +1609,8 @@
    "categoria": "Habilidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/mvp_mix_100.svg",
@@ -1458,7 +1619,8 @@
    "categoria": "Habilidad",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/smg_100.svg",
@@ -1467,7 +1629,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/smg_500.svg",
@@ -1476,7 +1639,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/smg_1000.svg",
@@ -1485,7 +1649,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/escopetas_50.svg",
@@ -1494,7 +1659,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/escopetas_250.svg",
@@ -1503,7 +1669,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/escopetas_500.svg",
@@ -1512,7 +1679,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/eco_rifles_100.svg",
@@ -1521,7 +1689,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/eco_rifles_500.svg",
@@ -1530,7 +1699,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/eco_rifles_1000.svg",
@@ -1539,7 +1709,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/elites_10.svg",
@@ -1548,7 +1719,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/elites_50.svg",
@@ -1557,7 +1729,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/elites_100.svg",
@@ -1566,7 +1739,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/explotadas_10.svg",
@@ -1575,7 +1749,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/explotadas_50.svg",
@@ -1584,7 +1759,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/explotadas_100.svg",
@@ -1593,7 +1769,8 @@
    "categoria": "Arsenal y bomba",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/lado_ct_100.svg",
@@ -1602,7 +1779,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/lado_ct_500.svg",
@@ -1611,7 +1789,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/lado_ct_1000.svg",
@@ -1620,7 +1799,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/lado_t_100.svg",
@@ -1629,7 +1809,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/lado_t_500.svg",
@@ -1638,7 +1819,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/lado_t_1000.svg",
@@ -1647,7 +1829,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/eco_ganado_5.svg",
@@ -1656,7 +1839,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/eco_ganado_25.svg",
@@ -1665,7 +1849,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/eco_ganado_100.svg",
@@ -1674,7 +1859,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/sobreviviente_100.svg",
@@ -1683,7 +1869,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/sobreviviente_500.svg",
@@ -1692,7 +1879,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/sobreviviente_1000.svg",
@@ -1701,7 +1889,8 @@
    "categoria": "Rondas",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/top_fragger_temporada.svg",
@@ -1710,7 +1899,8 @@
    "categoria": "Premios de temporada",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "nuevas/perfil/rey_hs_temporada.svg",
@@ -1719,7 +1909,8 @@
    "categoria": "Premios de temporada",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "nuevas/perfil/mejor_awp_temporada.svg",
@@ -1728,7 +1919,8 @@
    "categoria": "Premios de temporada",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "nuevas/perfil/mas_mejorado_temporada.svg",
@@ -1737,7 +1929,8 @@
    "categoria": "Premios de temporada",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": true
   },
   {
    "archivo": "nuevas/perfil/fair_play.svg",
@@ -1746,7 +1939,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/reclutador.svg",
@@ -1755,7 +1949,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/supporter.svg",
@@ -1764,7 +1959,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/halloween.svg",
@@ -1773,7 +1969,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/navidad.svg",
@@ -1782,7 +1979,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/aniversario_2.svg",
@@ -1791,7 +1989,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/equipos/equipo_plantel_estable.svg",
@@ -1800,7 +1999,8 @@
    "categoria": "Equipo - nuevas",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "nuevas/equipos/equipo_pistolas_perfectas.svg",
@@ -1809,7 +2009,8 @@
    "categoria": "Equipo - nuevas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "nuevas/equipos/equipo_quimica.svg",
@@ -1818,7 +2019,8 @@
    "categoria": "Equipo - nuevas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "nuevas/equipos/equipo_rivalidad.svg",
@@ -1827,7 +2029,8 @@
    "categoria": "Equipo - nuevas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "nuevas/equipos/equipo_overtime.svg",
@@ -1836,7 +2039,8 @@
    "categoria": "Equipo - nuevas",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "nuevas/equipos/equipo_mejor_temporada.svg",
@@ -1845,7 +2049,8 @@
    "categoria": "Equipo - nuevas",
    "grupo": "Nuevas",
    "nivel": "diamante",
-   "equipo": true
+   "equipo": true,
+   "temporada": true
   },
   {
    "archivo": "nuevas/perfil/beta_tester.svg",
@@ -1854,7 +2059,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/pionero_primer_mix.svg",
@@ -1863,7 +2069,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium.svg",
@@ -1872,7 +2079,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip.svg",
@@ -1881,7 +2089,8 @@
    "categoria": "Comunidad",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_01.svg",
@@ -1890,7 +2099,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_02.svg",
@@ -1899,7 +2109,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_03.svg",
@@ -1908,7 +2119,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_04.svg",
@@ -1917,7 +2129,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_05.svg",
@@ -1926,7 +2139,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_06.svg",
@@ -1935,7 +2149,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_07.svg",
@@ -1944,7 +2159,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_08.svg",
@@ -1953,7 +2169,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_09.svg",
@@ -1962,7 +2179,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_10.svg",
@@ -1971,7 +2189,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_11.svg",
@@ -1980,7 +2199,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/premium_mes_12.svg",
@@ -1989,7 +2209,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_01.svg",
@@ -1998,7 +2219,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_02.svg",
@@ -2007,7 +2229,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_03.svg",
@@ -2016,7 +2239,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_04.svg",
@@ -2025,7 +2249,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_05.svg",
@@ -2034,7 +2259,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_06.svg",
@@ -2043,7 +2269,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_07.svg",
@@ -2052,7 +2279,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_08.svg",
@@ -2061,7 +2289,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_09.svg",
@@ -2070,7 +2299,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_10.svg",
@@ -2079,7 +2309,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_11.svg",
@@ -2088,7 +2319,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/vip_mes_12.svg",
@@ -2097,7 +2329,8 @@
    "categoria": "Premium y VIP por meses",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_completadas_10.svg",
@@ -2106,7 +2339,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_completadas_50.svg",
@@ -2115,7 +2349,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_completadas_100.svg",
@@ -2124,7 +2359,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_completadas_250.svg",
@@ -2133,7 +2369,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "platino",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/semanas_completas_4.svg",
@@ -2142,7 +2379,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/semanas_completas_12.svg",
@@ -2151,7 +2389,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/semanas_completas_26.svg",
@@ -2160,7 +2399,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/semanas_completas_52.svg",
@@ -2169,7 +2409,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "platino",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_dificiles_10.svg",
@@ -2178,7 +2419,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "bronce",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_dificiles_25.svg",
@@ -2187,7 +2429,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/misiones_dificiles_50.svg",
@@ -2196,7 +2439,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/semana_perfecta.svg",
@@ -2205,7 +2449,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "oro",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   },
   {
    "archivo": "nuevas/perfil/primeros_pasos_completos.svg",
@@ -2214,7 +2459,8 @@
    "categoria": "Misiones",
    "grupo": "Nuevas",
    "nivel": "plata",
-   "equipo": false
+   "equipo": false,
+   "temporada": false
   }
  ]
 }

@@ -50,6 +50,7 @@ import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
 import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
 import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
+import { Route as AppAdminMedalsRouteImport } from './routes/_app/admin.medals'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
 import { Route as AppAdminRankingRouteImport } from './routes/_app/admin.ranking'
 import { Route as AppAdminSeasonsRouteImport } from './routes/_app/admin.seasons'
@@ -282,6 +283,11 @@ const AppAdminMatchmakingRoute = AppAdminMatchmakingRouteImport.update({
   path: '/matchmaking',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminMedalsRoute = AppAdminMedalsRouteImport.update({
+  id: '/medals',
+  path: '/medals',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminPlayersRoute = AppAdminPlayersRouteImport.update({
   id: '/players',
   path: '/players',
@@ -463,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
+  '/admin/medals': typeof AppAdminMedalsRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
@@ -531,6 +538,7 @@ export interface FileRoutesByTo {
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
+  '/admin/medals': typeof AppAdminMedalsRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
@@ -603,6 +611,7 @@ export interface FileRoutesById {
   '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
+  '/_app/admin/medals': typeof AppAdminMedalsRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
   '/_app/admin/ranking': typeof AppAdminRankingRoute
   '/_app/admin/seasons': typeof AppAdminSeasonsRoute
@@ -674,6 +683,7 @@ export interface FileRouteTypes {
     | '/admin/clips'
     | '/admin/maps'
     | '/admin/matchmaking'
+    | '/admin/medals'
     | '/admin/players'
     | '/admin/ranking'
     | '/admin/seasons'
@@ -742,6 +752,7 @@ export interface FileRouteTypes {
     | '/admin/clips'
     | '/admin/maps'
     | '/admin/matchmaking'
+    | '/admin/medals'
     | '/admin/players'
     | '/admin/ranking'
     | '/admin/seasons'
@@ -813,6 +824,7 @@ export interface FileRouteTypes {
     | '/_app/admin/clips'
     | '/_app/admin/maps'
     | '/_app/admin/matchmaking'
+    | '/_app/admin/medals'
     | '/_app/admin/players'
     | '/_app/admin/ranking'
     | '/_app/admin/seasons'
@@ -1161,6 +1173,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminMatchmakingRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/medals': {
+      id: '/_app/admin/medals'
+      path: '/medals'
+      fullPath: '/admin/medals'
+      preLoaderRoute: typeof AppAdminMedalsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/players': {
       id: '/_app/admin/players'
       path: '/players'
@@ -1366,6 +1385,7 @@ interface AppAdminRouteChildren {
   AppAdminClipsRoute: typeof AppAdminClipsRoute
   AppAdminMapsRoute: typeof AppAdminMapsRoute
   AppAdminMatchmakingRoute: typeof AppAdminMatchmakingRoute
+  AppAdminMedalsRoute: typeof AppAdminMedalsRoute
   AppAdminPlayersRoute: typeof AppAdminPlayersRoute
   AppAdminRankingRoute: typeof AppAdminRankingRoute
   AppAdminSeasonsRoute: typeof AppAdminSeasonsRoute
@@ -1383,6 +1403,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminClipsRoute: AppAdminClipsRoute,
   AppAdminMapsRoute: AppAdminMapsRoute,
   AppAdminMatchmakingRoute: AppAdminMatchmakingRoute,
+  AppAdminMedalsRoute: AppAdminMedalsRoute,
   AppAdminPlayersRoute: AppAdminPlayersRoute,
   AppAdminRankingRoute: AppAdminRankingRoute,
   AppAdminSeasonsRoute: AppAdminSeasonsRoute,

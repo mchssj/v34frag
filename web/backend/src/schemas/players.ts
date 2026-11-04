@@ -78,8 +78,10 @@ export const Medal = z
     season: z
       .object({ id: z.uuid(), number: z.number().int(), name: z.string() })
       .nullable()
-      .openapi({ description: 'Temporada en la que la ganó; `null` en las medallas que da el admin a mano' }),
+      .openapi({ description: 'Temporada de la medalla; `null` en las de carrera' }),
     rank: z.number().int().nullable().openapi({ description: 'Puesto en esa temporada' }),
+    medal_key: z.string().nullable().openapi({ description: 'Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend); `null` en las viejas, que solo tienen emoji' }),
+    source: z.enum(['admin', 'auto', 'temporada']).openapi({ description: '`auto`: se dio sola por las stats; `temporada`: al cerrar una temporada; `admin`: a mano' }),
   })
   .openapi('Medal');
 export const MedalQuery = listQuery(['created_at', 'title'], { sort: 'created_at', order: 'desc' });
@@ -220,12 +222,14 @@ export const MedalSummary = z
   .object({
     title: z.string(),
     icon: z.string().nullable(),
+    medal_key: z.string().nullable().openapi({ description: 'Clave del catálogo de dibujos; `null` en las viejas' }),
+    season: z.object({ number: z.number().int(), name: z.string() }).nullable().openapi({ description: 'Temporada (para la etiqueta del dibujo); `null` en las de carrera' }),
     count: z.number().int(),
     last_at: z.string().openapi({ description: 'La más reciente' }),
   })
   .openapi('MedalSummary');
 export const MedalSummaryList = Envelope(MedalSummary).openapi('MedalSummaryList', {
-  description: 'Medallas agrupadas por título e icono, con la cantidad. El detalle de cada una está en `/players/{id}/medals`',
+  description: 'Medallas agrupadas por título, icono y clave, con la cantidad. El detalle de cada una está en `/players/{id}/medals`',
 });
 
 // ---------- ranking de jugadores y comparador ----------

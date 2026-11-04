@@ -55,6 +55,177 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/site/auth-image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Imagen del inicio de sesión
+         * @description La URL de la imagen del panel de Iniciar sesión, Registro y Bienvenida, o null (panel gris). Pública.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Imagen */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthImage"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/site/auth-image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Subir la imagen del inicio de sesión
+         * @description JPG, PNG o WebP de proporción 4:5, entre 800×1000 y 3200×4000 y hasta 4 MB. Reemplaza la anterior y la borra del bucket.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        file: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Imagen nueva */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthImage"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Quitar la imagen del inicio de sesión
+         * @description El panel vuelve a quedar gris. Borra el archivo del bucket.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sin imagen */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthImage"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/signup": {
         parameters: {
             query?: never;
@@ -4659,7 +4830,7 @@ export interface paths {
         head?: never;
         /**
          * Editar mi equipo
-         * @description El capitán o un admin: qué busca el equipo (`looking_for`), el nombre y la sigla. El nombre y la sigla siguen las reglas de la solicitud y no pueden repetir los de otro equipo activo. El capitán los cambia una vez cada 30 días (`409 CONFLICT` con `details.next_change_at`; el admin no espera) y no mientras el equipo juega un torneo en curso (`409`). Un equipo disuelto no se edita (`409`).
+         * @description El capitán o un admin: qué busca el equipo (`looking_for`), el nombre y la sigla. El nombre y la sigla siguen las reglas de la solicitud y no pueden repetir los de otro equipo activo. El capitán los cambia una vez cada `team_config.rename_days` días (`409 CONFLICT` con `details.next_change_at`; el admin no espera) y no mientras el equipo juega un torneo en curso (`409`). Un equipo disuelto no se edita (`409`).
          */
         patch: {
             parameters: {
@@ -6257,6 +6428,543 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/medals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Medallas otorgadas
+         * @description Todas las medallas dadas, con filtros por temporada (`none` = de carrera), clave, origen y alias del jugador.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at`, `title` */
+                    sort?: "created_at" | "title";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el alias del jugador */
+                    q?: string;
+                    /** @description id de la temporada, o `none` para las de carrera */
+                    season?: string;
+                    /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
+                    medal_key?: string;
+                    /** @description `admin`, `auto` o `temporada` */
+                    source?: "admin" | "auto" | "temporada";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Medallas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminMedalList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Dar una medalla a varios jugadores
+         * @description Saltea a los que ya la tienen en esa temporada (misma clave, o mismo título si no tiene clave). Cada jugador recibe el aviso.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalGrantBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalGrantResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Quitar una medalla */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar el título o la temporada de una medalla
+         * @description Solo las dadas a mano: las automáticas y las del cierre de temporada salen de los datos.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalPatchBody"];
+                };
+            };
+            responses: {
+                /** @description Medalla */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminMedal"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/medals/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar varias medallas
+         * @description Una automática vuelve a darse en el próximo mix del jugador si sigue cumpliendo la regla: para que no vuelva, desactivá la regla.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalIdsBody"];
+                };
+            };
+            responses: {
+                /** @description Quitadas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDeleted"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medal-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reglas de las medallas automáticas */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Reglas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalRuleList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medal-rules/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar una regla
+         * @description Umbral, mínimo de partidas, título o si está activa. Las ya dadas no cambian; para dar las nuevas, `POST /admin/medal-rules/recalculate`.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
+                    key: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalRulePatch"];
+                };
+            };
+            responses: {
+                /** @description Regla */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalRule"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/medal-rules/recalculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dar las automáticas que falten a todos
+         * @description Recorre a todos los jugadores con las reglas actuales, sin avisos. Nunca quita.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Resultado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalRecalc"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/players": {
         parameters: {
             query?: never;
@@ -6639,78 +7347,6 @@ export interface paths {
             };
         };
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/medals/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Quitar una medalla */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -8217,7 +8853,7 @@ export interface paths {
         };
         /**
          * Cambiar la configuración de los equipos
-         * @description `max_members` entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva (`409 ROSTER_FULL` al invitar o aceptar). `max_led` entre 1 y 10 (1 por defecto): de cuántos equipos oficiales activos puede ser capitán una persona al crear un equipo o recibir la capitanía (el admin no tiene tope). Bajarlo no saca a nadie de la capitanía.
+         * @description `max_members` entre 2 y 30 (10 por defecto), para todos los equipos oficiales. Si un equipo ya tiene más, nadie sale: solo no entra gente nueva (`409 ROSTER_FULL` al invitar o aceptar). `max_led` entre 1 y 10 (1 por defecto): de cuántos equipos oficiales activos puede ser capitán una persona al crear un equipo o recibir la capitanía (el admin no tiene tope). Bajarlo no saca a nadie de la capitanía. `rename_days` entre 0 y 365 (30 por defecto, 0 = sin espera): cada cuántos días el capitán puede cambiar el nombre o la sigla.
          */
         put: {
             parameters: {
@@ -15209,6 +15845,174 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Índice del manual
+         * @description Las secciones que ve la cuenta según su rol, con sus páginas en orden. Sin las páginas ocultas ni las secciones vacías.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Índice */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManualIndice"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/manual/{seccion}/img/{archivo}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Una captura del manual
+         * @description La imagen, con caché privada. 404 si no existe o si es de una sección que la cuenta no ve.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    seccion: string;
+                    archivo: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Captura */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "image/webp": string;
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/manual/{seccion}/{tarea}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Una página del manual
+         * @description El texto de la página. 404 si no existe, si está oculta o si es de una sección que la cuenta no ve.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    seccion: string;
+                    tarea: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Página */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManualPagina"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/seasons": {
         parameters: {
             query?: never;
@@ -17087,6 +17891,156 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista de clips
+         * @description Las jugadas que se muestran (las de `match_clip_list`), de la más nueva a la más vieja, para reprocesar varias a la vez. `can_reprocess` y `blocked_reason` repiten las reglas de `clip_reprocess`: con la demo todavía en R2, ya grabada (o fallida) y no grabándose.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo */
+                    status?: "done" | "failed" | "processing" | "queued" | "no_demo";
+                    type?: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
+                    /** @description Nick del jugador en el juego */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Clips */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminClipList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/reprocess": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reprocesar varios clips
+         * @description Como `/admin/clips/{id}/reprocess`, para cada uno de `ids` (de 1 a 50), uno por uno: uno que no se puede no frena a los demás. Devuelve el resultado de cada uno, con el motivo si no se pudo. Cada reprocesado pasa a "Para revisar".
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClipReprocessBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -20289,6 +21243,9 @@ export interface components {
                 requestId: string | null;
             };
         };
+        AuthImage: {
+            url: string | null;
+        };
         SignupResult: {
             session: components["schemas"]["Session"];
             needsConfirmation: boolean;
@@ -21282,7 +22239,7 @@ export interface components {
             title: string;
             icon: string | null;
             created_at: string;
-            /** @description Temporada en la que la ganó; `null` en las medallas que da el admin a mano */
+            /** @description Temporada de la medalla; `null` en las de carrera */
             season: {
                 /** Format: uuid */
                 id: string;
@@ -21291,6 +22248,13 @@ export interface components {
             } | null;
             /** @description Puesto en esa temporada */
             rank: number | null;
+            /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend); `null` en las viejas, que solo tienen emoji */
+            medal_key: string | null;
+            /**
+             * @description `auto`: se dio sola por las stats; `temporada`: al cerrar una temporada; `admin`: a mano
+             * @enum {string}
+             */
+            source: "admin" | "auto" | "temporada";
         };
         TeamStintList: {
             items: components["schemas"]["TeamStint"][];
@@ -21358,7 +22322,7 @@ export interface components {
             /** @description Fecha de la final (o del último partido, en una liga sin final) */
             at: string | null;
         };
-        /** @description Medallas agrupadas por título e icono, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
+        /** @description Medallas agrupadas por título, icono y clave, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
         MedalSummaryList: {
             items: components["schemas"]["MedalSummary"][];
             /** @description Total con los filtros aplicados */
@@ -21372,6 +22336,13 @@ export interface components {
         MedalSummary: {
             title: string;
             icon: string | null;
+            /** @description Clave del catálogo de dibujos; `null` en las viejas */
+            medal_key: string | null;
+            /** @description Temporada (para la etiqueta del dibujo); `null` en las de carrera */
+            season: {
+                number: number;
+                name: string;
+            } | null;
             count: number;
             /** @description La más reciente */
             last_at: string;
@@ -21669,6 +22640,98 @@ export interface components {
             /** Format: uuid */
             player_id: string;
         };
+        AdminMedalList: {
+            items: components["schemas"]["AdminMedal"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminMedal: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            icon: string | null;
+            medal_key: string | null;
+            /** @enum {string} */
+            source: "admin" | "auto" | "temporada";
+            created_at: string;
+            rank: number | null;
+            season: {
+                /** Format: uuid */
+                id: string;
+                number: number;
+                name: string;
+            } | null;
+            player: {
+                /** Format: uuid */
+                id: string;
+                nick: string;
+                photo_url: string | null;
+            };
+        };
+        MedalGrantResult: {
+            /** @description Medallas dadas */
+            given: number;
+            /** @description Jugadores que ya la tenían en esa temporada (no se repite) */
+            skipped: string[];
+        };
+        MedalGrantBody: {
+            title: string;
+            /**
+             * @description Un emoji (para la web vieja y si no hay dibujo)
+             * @default 🏅
+             */
+            icon: string;
+            /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
+            medal_key?: string;
+            /**
+             * Format: uuid
+             * @description Temporada; sin esto (o `null`), es de carrera
+             */
+            season_id?: string | null;
+            /** @description Jugadores (hasta 500) */
+            player_ids: string[];
+        };
+        MedalPatchBody: {
+            title?: string;
+            /**
+             * Format: uuid
+             * @description Otra temporada, o `null` para que sea de carrera
+             */
+            season_id?: string | null;
+        };
+        MedalDeleted: {
+            deleted: number;
+        };
+        MedalIdsBody: {
+            ids: string[];
+        };
+        MedalRuleList: {
+            items: components["schemas"]["MedalRule"][];
+        };
+        MedalRule: {
+            medal_key: string;
+            metric: string;
+            threshold: number;
+            title: string;
+            min_matches: number;
+            icon: string;
+            active: boolean;
+        };
+        MedalRulePatch: {
+            threshold?: number;
+            min_matches?: number;
+            title?: string;
+            active?: boolean;
+        };
+        MedalRecalc: {
+            /** @description Medallas automáticas nuevas */
+            given: number;
+        };
         AdminPlayer: {
             /** Format: uuid */
             id: string;
@@ -21729,10 +22792,17 @@ export interface components {
         MedalBody: {
             title: string;
             /**
-             * @description Un emoji
+             * @description Un emoji (para la web vieja y si no hay dibujo)
              * @default 🏆
              */
             icon: string;
+            /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
+            medal_key?: string;
+            /**
+             * Format: uuid
+             * @description Temporada de la medalla; sin esto, es de carrera
+             */
+            season_id?: string;
         };
         PlayerIpList: {
             items: components["schemas"]["PlayerIp"][];
@@ -21971,6 +23041,8 @@ export interface components {
             max_members: number;
             /** @description De cuántos equipos oficiales activos puede ser capitán una persona (1 por defecto) */
             max_led: number;
+            /** @description Días entre cambios de nombre o sigla del capitán (0 = sin espera; 30 por defecto). Replanteo 68 */
+            rename_days: number;
         };
         RankingConfig: {
             /** @description Puntos por partida de torneo ganada */
@@ -22686,6 +23758,32 @@ export interface components {
             /** @description Panel del streamer: servidor, jugador enfocado y qué se muestra */
             control_url: string;
             created_at: string;
+        };
+        ManualIndice: {
+            /**
+             * @description La sección con la que abre la ayuda: la del rol más alto de la cuenta.
+             * @enum {string}
+             */
+            inicio: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+            secciones: {
+                /** @enum {string} */
+                id: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+                titulo: string;
+                paginas: {
+                    tarea: string;
+                    titulo: string;
+                    resumen: string;
+                }[];
+            }[];
+        };
+        ManualPagina: {
+            /** @enum {string} */
+            seccion: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+            tarea: string;
+            titulo: string;
+            resumen: string;
+            /** @description El texto en Markdown (GFM), con los marcadores (`{{mm.aceptar}}`) ya reemplazados por los valores vigentes de la configuración. Las capturas van como `img/<archivo>`: se piden a `/api/v1/manual/{seccion}/img/{archivo}`. */
+            markdown: string;
         };
         SeasonList: {
             items: components["schemas"]["Season"][];
@@ -23423,6 +24521,45 @@ export interface components {
             reprocess_count: number;
             /** @description La última vez que se reprocesó */
             reprocessed_at: string;
+        };
+        AdminClipList: {
+            items: components["schemas"]["AdminClip"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminClip: {
+            clip: components["schemas"]["Clip"];
+            match: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                played_at: string | null;
+            };
+            /** @description Cuántas veces se reprocesó */
+            reprocess_count: number;
+            /** @description Si ya salió en Discord */
+            discord_posted: boolean;
+            can_reprocess: boolean;
+            /** @description Por qué no se puede reprocesar (null si se puede) */
+            blocked_reason: string | null;
+        };
+        ClipReprocessResult: {
+            results: {
+                /** Format: uuid */
+                id: string;
+                ok: boolean;
+                /** @description El motivo, si no se pudo */
+                error: string | null;
+            }[];
+        };
+        ClipReprocessBody: {
+            /** @description De 1 a 50 clips */
+            ids: string[];
         };
         /** @description Con el orden por defecto (`started_at` desc) los mixes en vivo van primero */
         MixList: {
