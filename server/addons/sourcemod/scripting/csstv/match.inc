@@ -41,7 +41,8 @@ int g_iLinkBestOf = 1;
 int g_iLinkScore[2];
 int g_iLinkMaxStandins;
 int g_iLinkMinRoster;
-int g_iLinkProposer;              // equipo (1 o 2) de quien propuso
+int g_iLinkMinTeam[2];            // mínimo de cada equipo si lo bajó el organizador (0 = g_iLinkMinRoster)
+int g_iLinkProposer;             // equipo (1 o 2) de quien propuso
 int g_iLinkCtTeam = 1;            // equipo de la partida (1 o 2) que juega de CT en el calentamiento
 
 // Consulta a la base en curso (una a la vez).
@@ -135,6 +136,14 @@ public Action Cmd_Match(int client, int args)
 		License_Reply(client);
 		return Plugin_Handled;
 	}
+	if (Mm_HasLobby())
+	{
+		if (Mm_IsBooking())
+			QolReply(client, "[%s] Este servidor está reservado para {#amarillo}%s{#normal}: el vínculo lo maneja la web.", g_sTag, g_sLinkTitle);
+		else
+			QolReply(client, "[%s] Es una sala del matchmaking: el vínculo lo maneja la web.", g_sTag);
+		return Plugin_Handled;
+	}
 
 	if (args == 0)
 	{
@@ -217,10 +226,12 @@ void Link_Clear()
 	g_iLinkCtTeam = 1;
 	for (int k = 0; k < 2; k++)
 	{
+		g_iLinkMinTeam[k] = 0;
 		g_sLinkTeamName[k][0] = '\0';
 		g_sLinkRoster[k][0] = '\0';
 		g_iLinkScore[k] = 0;
 	}
+	Match_SyncCoach();
 }
 
 // ---------------------------------------------------------------------------
@@ -422,6 +433,7 @@ void Link_OnProposal(int client, const char[] text)
 void Link_Activate(const char[] by)
 {
 	g_LinkState = Link_Active;
+	Match_SyncCoach();
 	g_iLinkProposer = 0;
 	g_iLinkCtTeam = 1;
 	Link_Arrange();
@@ -437,8 +449,9 @@ void Link_AnnounceSides()
 			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}",
 			g_iLinkMaxStandins, LINK_MAX_SIDE);
 	else
-		QolChatAll("%s {#amarillo}%s{#normal} juega de %s y {#amarillo}%s{#normal} de %s. Partida de torneo: solo juegan los inscritos de cada equipo.",
-			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}");
+		QolChatAll("%s {#amarillo}%s{#normal} juega de %s y {#amarillo}%s{#normal} de %s. %s: solo juegan los inscritos de cada equipo.",
+			PREFIX, g_sLinkTeamName[g_iLinkCtTeam - 1], "{#ct}CT{#normal}", g_sLinkTeamName[2 - g_iLinkCtTeam], "{#t}T{#normal}",
+			Mm_HasLobby() && !Mm_IsBooking() ? "Sala del matchmaking" : "Partida de torneo");
 }
 
 /**
@@ -522,6 +535,8 @@ public Action Timer_LinkGreet(Handle timer, int userid)
 	int k = Link_TeamOf(client);
 	if (k)
 		QolChat(client, "%s Partida vinculada: {#amarillo}%s{#normal}. Jugás con {#amarillo}%s{#normal}.", PREFIX, g_sLinkTitle, g_sLinkTeamName[k - 1]);
+	else if (Mm_WaitingClaim(client))
+		Mm_ClaimHint(client);
 	else
 		QolChat(client, "%s Partida vinculada: {#amarillo}%s{#normal}. Si sos stand-in, entrá al lado de tu equipo.", PREFIX, g_sLinkTitle);
 	return Plugin_Stop;
@@ -577,7 +592,7 @@ public Action Cmd_MatchJoinTeam(int client, const char[] command, int argc)
 	{
 		if (g_iLinkMaxStandins == 0)
 		{
-			QolChat(client, "%s Es una partida de torneo: solo juegan los inscritos de cada equipo.", PREFIX);
+			QolChat(client, "%s Es %s: solo juegan los inscritos de cada equipo.", PREFIX, Mm_HasLobby() ? "una sala del matchmaking" : "una partida de torneo");
 			return Plugin_Handled;
 		}
 		if (Link_SideCount(to, client, true) >= g_iLinkMaxStandins)
@@ -605,23 +620,43 @@ bool Match_SidesOk(char[] why, int maxlen)
 		return true;
 	for (int k = 1; k <= 2; k++)
 	{
-		int side = Link_SideOf(k);
-		int total = Link_SideCount(side);
-		int standins = Link_SideCount(side, 0, true);
-		int roster = total - standins;
-		// Cuenta solo a los del plantel que están jugando en ese lado: los suplentes que no juegan no importan.
 		char problem[128];
-		if (roster < g_iLinkMinRoster)
-			Format(problem, sizeof(problem), "necesita %s%d jugadores de su plantel en su lado (hay %d)",
-				g_iLinkMaxStandins ? "al menos " : "", g_iLinkMinRoster, roster);
-		else if (standins > g_iLinkMaxStandins)
-			Format(problem, sizeof(problem), g_iLinkMaxStandins ? "tiene demasiados stand-ins (máximo %d)" : "no puede tener stand-ins en un torneo", g_iLinkMaxStandins);
-		else if (total > LINK_MAX_SIDE)
-			Format(problem, sizeof(problem), "tiene más de %d jugadores", LINK_MAX_SIDE);
-		if (problem[0])
+		if (!Link_TeamOk(k, problem, sizeof(problem)))
 			Format(why, maxlen, "%s%s%s %s", why, why[0] ? " · " : "", g_sLinkTeamName[k - 1], problem);
 	}
 	return why[0] == '\0';
+}
+
+/** Mínimo del plantel del equipo k: el que bajó el organizador (reserva de la web, 2.9.0) o el de la partida. */
+int Link_MinRoster(int k)
+{
+	return g_iLinkMinTeam[k - 1] > 0 ? g_iLinkMinTeam[k - 1] : g_iLinkMinRoster;
+}
+
+/** ¿El equipo k de la partida cumple la regla en su lado? Si no, deja en problem qué le falta. */
+bool Link_TeamOk(int k, char[] problem, int maxlen)
+{
+	problem[0] = '\0';
+	int side = Link_SideOf(k);
+	int total = Link_SideCount(side);
+	int standins = Link_SideCount(side, 0, true);
+	int roster = total - standins;
+	int min = Link_MinRoster(k);
+	// Cuenta solo a los del plantel que están jugando en ese lado: los suplentes que no juegan no importan.
+	if (roster < min)
+		Format(problem, maxlen, "necesita %s%d jugadores de su plantel en su lado (hay %d)",
+			g_iLinkMaxStandins ? "al menos " : "", min, roster);
+	else if (standins > g_iLinkMaxStandins)
+		Format(problem, maxlen, g_iLinkMaxStandins ? "tiene demasiados stand-ins (máximo %d)" : "no puede tener stand-ins en un torneo", g_iLinkMaxStandins);
+	else if (total > LINK_MAX_SIDE)
+		Format(problem, maxlen, "tiene más de %d jugadores", LINK_MAX_SIDE);
+	return problem[0] == '\0';
+}
+
+/** Jugadores en el lado del equipo k (plantel y stand-ins). */
+int Link_TeamCount(int k)
+{
+	return Link_SideCount(Link_SideOf(k));
 }
 
 /** Para el inicio por !ready: con vínculo, cada lado tiene que cumplir. Avisa por qué no (cada 10 s como mucho). */
@@ -636,6 +671,50 @@ bool Match_ReadyAllows()
 		QolChatAll("%s Todos listos, pero la partida vinculada todavía no puede empezar: %s.", PREFIX, why);
 	}
 	return false;
+}
+
+/**
+ * Config propia del tipo de partida, después de csstv/live.cfg (StartMatch): csstv/live_official.cfg, live_pcw.cfg,
+ * live_mm.cfg o live_mix.cfg (sin vínculo, o con uno pendiente que se descarta al empezar). Lo que cambia una tiene que
+ * volver a su valor en las otras, porque los cvars quedan hasta el cambio de mapa.
+ */
+void Match_ExecKindCfg()
+{
+	char cfg[64];
+	Format(cfg, sizeof(cfg), "csstv/live_%s.cfg", g_LinkState == Link_Active && g_sLinkKind[0] ? g_sLinkKind : "mix");
+	ExecIfExists(cfg);
+}
+
+/**
+ * !coach (csstv_coach): no en una sala del matchmaking, donde los equipos son al azar. En lo demás vale lo de csstv_coach.cfg,
+ * que se vuelve a ejecutar en cada mapa (OnConfigsExecuted llama a Match_OnCoachCfg). El coach se pide en el calentamiento:
+ * por eso no alcanza con live_mm.cfg.
+ */
+int g_iCoachCfg = -1;   // valor de csstv_coach.cfg mientras está apagado por el matchmaking; -1 = no se tocó
+
+void Match_SyncCoach()
+{
+	ConVar cv = FindConVar("csstv_coach");
+	if (cv == null)
+		return;
+	bool mm = g_LinkState == Link_Active && StrEqual(g_sLinkKind, "mm");
+	if (mm && g_iCoachCfg == -1)
+	{
+		g_iCoachCfg = cv.IntValue;
+		cv.IntValue = 0;
+	}
+	else if (!mm && g_iCoachCfg != -1)
+	{
+		cv.IntValue = g_iCoachCfg;
+		g_iCoachCfg = -1;
+	}
+}
+
+/** Cambio de mapa: csstv_coach.cfg ya puso su valor; se vuelve a aplicar la regla con la sala que se retomó. */
+void Match_OnCoachCfg()
+{
+	g_iCoachCfg = -1;
+	Match_SyncCoach();
 }
 
 /** Al empezar la partida (StartMatch): fija lo que va en el resultado. */
@@ -683,13 +762,13 @@ void Match_OnMapReady()
 {
 	if (g_LinkState == Link_Pending)
 		Link_Clear();
-	else if (g_LinkState == Link_Active)
+	else if (g_LinkState == Link_Active && !Mm_HasLobby())
 		Link_Lookup(g_sLinkCode, 0);
 }
 
 public Action Timer_LinkRefresh(Handle timer)
 {
-	if (g_LinkState == Link_Active && g_State == State_Warmup)
+	if (g_LinkState == Link_Active && g_State == State_Warmup && !Mm_HasLobby())
 		Link_Lookup(g_sLinkCode, 0);
 	return Plugin_Stop;
 }

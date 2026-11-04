@@ -1,0 +1,5 @@
+CMLeague 2.5.0 --  Changelog
+
+Ahora cada partida guarda tus mejores jugadas: aces, 4k, 3k y clutches ganados (del 1v1 al 1v5).
+Las vas a ver en el detalle de cada partida en la web, con la ronda y el momento exacto, para que las busques en la demo.
+Se muestran las mejores primero: hasta 2 por jugador y 10 por partida.

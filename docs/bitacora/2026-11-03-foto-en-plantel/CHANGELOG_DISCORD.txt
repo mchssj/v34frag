@@ -1,0 +1,3 @@
+CMLeague 2.9.9 --  Changelog
+
+- En la página de un equipo, cada integrante aparece con su foto de perfil. Antes se veía solo la inicial si la habías subido desde tu cuenta.

@@ -1,0 +1,10 @@
+CMLeague --  Changelog
+
+Contraseña del servidor (admins y moderadores)
+- !pw contraseña: le pone esa contraseña al servidor. Ejemplo: !pw mix123
+- !rpw: le pone una contraseña al azar de 6 caracteres.
+- !npw: le saca la contraseña.
+- !pw solo: te dice si el servidor tiene contraseña y quién la puso.
+- La contraseña solo la ve quien la puso. Tú decides con quién la compartes.
+- El resto del servidor solo ve que le pusiste o le sacaste la contraseña. Lo que escribes no aparece en el chat.
+- La contraseña se mantiene aunque cambie el mapa.

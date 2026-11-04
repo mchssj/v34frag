@@ -1,11 +1,13 @@
 /**
  * Resumen al terminar la partida (también por !gg; no en una cancelada):
- *   [v34frag] Fin de la partida: Equipo daniloev 16 - 12 Equipo pepe. ¡Gana Equipo daniloev!
- *   [v34frag] MVP: daniloev (27 kills, 98 ADR)
- *   [v34frag] 1. daniloev  27/14/5  ADR 98  HS 52%
+ *   [CMLeague] Fin de la partida: Equipo daniloev 16 - 12 Equipo pepe. ¡Gana Equipo daniloev!
+ *   [CMLeague] MVP: daniloev (27 kills, 98 ADR)
+ *   [CMLeague] 1. daniloev  27/14/5  ADR 98  HS 52%
  *   (top 3)
  * y a cada jugador, en privado:
- *   [v34frag] Tu partida: 18/16/4 · ADR 82 · HS 44% · 3 primeras kills
+ *   [CMLeague] Tu partida: 18/16/4 · ADR 82 · HS 44% · 3 primeras kills
+ * y al final, a todos:
+ *   [CMLeague] ¡Gracias por jugar! Únete a nuestro Discord: dsc.gg/v34frag
  * El MVP es el de más kills; si empatan, el de más daño. ADR = daño / rondas jugadas.
  */
 
@@ -34,7 +36,10 @@ void Summary_Print()
 		order[b + 1] = r;
 	}
 	if (!n)
+	{
+		Summary_Discord();
 		return;
+	}
 
 	char name[MAX_NAME_LENGTH];
 	Summary_Name(order[0], name, sizeof(name));
@@ -62,6 +67,60 @@ void Summary_Print()
 		QolChat(i, "%s Tu partida: {#amarillo}%d/%d/%d{#normal} · ADR %d · HS %d%%%s", PREFIX,
 			g_Stats[r][ST_KILLS], g_Stats[r][ST_DEATHS], g_Stats[r][ST_ASSISTS], Summary_Adr(r), Summary_Hs(r), fk);
 	}
+	Summary_Discord();
+}
+
+/**
+ * Al terminar cada mitad (csstv_half_summary), con lo jugado hasta ahí:
+ *   [CMLeague] MVP hasta ahora: daniloev (14 kills, 101 ADR)
+ *   [CMLeague] Mejor ADR: 1. daniloev 101 · 2. pepe 88 · 3. juan 75
+ */
+public Action Timer_HalfSummary(Handle timer)
+{
+	Summary_Half();
+	return Plugin_Stop;
+}
+
+void Summary_Half()
+{
+	if (!g_cvHalfSummary.BoolValue)
+		return;
+	int order[MAX_REC], n, mvp = -1;
+	for (int p = 0; p < g_iRecCount; p++)
+	{
+		if (g_Stats[p][ST_ROUNDS] <= 0)
+			continue;
+		if (mvp < 0 || Summary_Better(p, mvp))
+			mvp = p;
+		int b = n - 1;
+		while (b >= 0 && Summary_Adr(p) > Summary_Adr(order[b]))
+		{
+			order[b + 1] = order[b];
+			b--;
+		}
+		order[b + 1] = p;
+		n++;
+	}
+	if (mvp < 0)
+		return;
+	char name[MAX_NAME_LENGTH], line[256];
+	Summary_Name(mvp, name, sizeof(name));
+	int kills = g_Stats[mvp][ST_KILLS];
+	QolChatAll("%s MVP hasta ahora: {#amarillo}%s{#normal} (%d %s, %d ADR)", PREFIX, name, kills, kills == 1 ? "kill" : "kills", Summary_Adr(mvp));
+	for (int i = 1; i <= MaxClients; i++)   // para quien mira la SourceTV, también en el centro
+		if (IsClientInGame(i) && IsClientSourceTV(i))
+			PrintCenterText(i, "MVP hasta ahora: %s (%d %s, %d ADR)", name, kills, kills == 1 ? "kill" : "kills", Summary_Adr(mvp));
+	for (int k = 0; k < n && k < 3; k++)
+	{
+		Summary_Name(order[k], name, sizeof(name));
+		Format(line, sizeof(line), "%s%s%d. %s {#amarillo}%d{#normal}", line, k ? " · " : "", k + 1, name, Summary_Adr(order[k]));
+	}
+	QolChatAll("%s Mejor ADR: %s", PREFIX, line);
+}
+
+void Summary_Discord()
+{
+	QolChatAll("%s ¡Gracias por jugar! Únete a nuestro Discord: {#amarillo}%s", PREFIX, DISCORD_INVITE);
 }
 
 /** Primera línea: el ganador primero. */

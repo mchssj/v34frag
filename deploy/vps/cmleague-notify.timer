@@ -1,0 +1,10 @@
+# Cada 10 minutos. Persistent: si el VPS estaba apagado a la hora, corre apenas arranca.
+[Unit]
+Description=CMLeague: notificaciones programadas cada 10 minutos
+
+[Timer]
+OnCalendar=*:0/10
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,7 @@
+v34frag 2.3.0 --  Changelog
+
+Para admins y moderadores: !whois
+- Escribe !whois y el nombre de un jugador para ver qué nicks usó en las partidas del servidor y si tiene perfil en la web.
+- Sirve con los que están conectados y también con los que no: busca por un nick viejo, el nombre de su perfil o su alias en la web.
+- Si hay varios parecidos, te muestra la lista con su SteamID. Usa !whois <SteamID> para ver uno.
+- La respuesta solo la ves tú.

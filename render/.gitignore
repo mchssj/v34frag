@@ -1,0 +1,4 @@
+config.json
+__pycache__/
+ultimo_render.log
+ultimo_procesar.log

@@ -15,17 +15,26 @@
 #define PAUSE_TIMED    1
 #define PAUSE_UNTIL    2
 #define PAUSE_BOTH     3
-#define PAUSE_BY_ADMIN 2       // g_iPauseBy: 0 = equipo A, 1 = equipo B, 2 = admin
+#define PAUSE_BY_ADMIN 2       // g_iPauseBy: 0 = equipo A, 1 = equipo B, 2 = admin, 3 = desconexión
+#define PAUSE_BY_AUTO  3
 #define PAUSE_HOLD     3600.0  // segundos que se alarga el freezetime en una pausa sin tiempo
 #define DEMO_DIR       "csstv_demos"
 
 ConVar g_cvRoundHeader;
+ConVar g_cvRoundSounds;
+ConVar g_cvHalfSummary;
+ConVar g_cvPauseHud;
+ConVar g_cvScoreTitle;
 ConVar g_cvDamageReport;
 ConVar g_cvTeamMoney;
 ConVar g_cvHpOnDeath;
 ConVar g_cvPauseMode;
 ConVar g_cvPauseMax;
 ConVar g_cvPauseTime;
+ConVar g_cvAutoPause;
+ConVar g_cvAutoPauseTime;
+ConVar g_cvHalfTalk;
+ConVar g_cvHalfTalkOff;
 ConVar g_cvDemo;
 ConVar g_cvDemoKeep;
 ConVar g_cvChatColors;
@@ -45,13 +54,26 @@ bool g_bPauseRequested;
 bool g_bPaused;
 int g_iPauseBy;
 bool g_bPauseTimed;
-float g_fPauseEnds;            // GetGameTime() en que termina una pausa con tiempo
+bool g_bPauseTech;             // la pausa (pedida o en curso) es técnica: !tech
+int g_iTechHalf[2] = { -1, -1 };   // mitad en que cada equipo (A, B) usó su pausa técnica
+ConVar g_cvTechTime;
+int g_iCountdown;              // cuenta atrás al terminar una pausa
+float g_fPauseEnds;           // GetGameTime() en que termina una pausa con tiempo
 bool g_bUnpauseReady[2];
 int g_iPauseTicks;
 Handle g_hPauseTimer;
+bool g_bAutoPauseUsed;         // una sola por partida
+bool g_bAutoPausePending;      // espera el inicio de la próxima ronda
+int g_iAutoPauseRec = -1;      // registro de stats del jugador que se fue
+bool g_bHalfTalk;
+int g_iHalfTalkSaved;
 
 // Demo
 bool g_bRecording;
+Handle g_hDemoStopTimer;       // corte pendiente de la demo al terminar el mix (Demo_StopLater)
+// Segundos que sigue grabando la demo después del final del mix. Sin ellos la demo terminaba en el tick de la
+// última kill y esa jugada no se veía en los clips (el juego dibuja 0,1 s atrás). docs/bitacora/2026-10-29-demo-segundos-finales
+#define DEMO_TAIL_SECONDS 5.0
 
 // Contador de vivos y créditos
 Handle g_hAliveSync;
@@ -69,6 +91,10 @@ int g_iRecTeam[MAX_REC];
 void Qol_Init()
 {
 	g_cvRoundHeader  = CreateConVar("csstv_round_header", "1", "Encabezado al empezar cada ronda y avisos de último round y match point.", _, true, 0.0, true, 1.0);
+	g_cvRoundSounds  = CreateConVar("csstv_round_sounds", "1", "Un pitido al empezar la última ronda antes del cambio de lado y tres en cada match point.", _, true, 0.0, true, 1.0);
+	g_cvHalfSummary  = CreateConVar("csstv_half_summary", "1", "Al terminar cada mitad: MVP hasta ahora y top 3 por ADR.", _, true, 0.0, true, 1.0);
+	g_cvPauseHud     = CreateConVar("csstv_pause_hud", "1", "Durante la pausa: tipo, tiempo que queda y pausas de cada equipo en pantalla.", _, true, 0.0, true, 1.0);
+	g_cvScoreTitle   = CreateConVar("csstv_score_title", "1", "Durante la partida: el marcador al final del nombre del servidor y del título de la SourceTV.", _, true, 0.0, true, 1.0);
 	g_cvDamageReport = CreateConVar("csstv_damage_report", "1", "Mostrar a cada jugador el daño de la ronda anterior.", _, true, 0.0, true, 1.0);
 	g_cvTeamMoney    = CreateConVar("csstv_team_money", "1", "Mostrar a cada equipo su plata al empezar la ronda.", _, true, 0.0, true, 1.0);
 	g_cvHpOnDeath    = CreateConVar("csstv_hp_on_death", "1", "Al morir, mostrar quién te mató y cuánta vida le quedó (y el comando !hp).", _, true, 0.0, true, 1.0);
@@ -78,7 +104,7 @@ void Qol_Init()
 	g_cvDemo         = CreateConVar("csstv_demo", "1", "Grabar un demo de SourceTV por partida (requiere tv_enable 1 al cargar el mapa).", _, true, 0.0, true, 1.0);
 	g_cvDemoKeep     = CreateConVar("csstv_demo_keep", "50", "Demos que se conservan en csstv_demos/ (0 = todos).", _, true, 0.0, true, 10000.0);
 	g_cvChatColors   = CreateConVar("csstv_chat_colors", "1", "Colores del chat: 0 solo básicos, 1 RGB para quien usa ClientMod (detectado con su API), 2 siempre RGB.", _, true, 0.0, true, 2.0);
-	g_cvChatTag      = CreateConVar("csstv_chat_tag", "v34frag", "Texto del prefijo de los mensajes: [v34frag].");
+	g_cvChatTag      = CreateConVar("csstv_chat_tag", "CMLeague", "Texto del prefijo de los mensajes: [CMLeague].");
 	g_cvChatTag.AddChangeHook(OnChatTagChanged);
 	g_cvLockTeams    = CreateConVar("csstv_lock_teams", "1", "Durante la partida: no se puede cambiar de equipo, y elegir modelo estando vivo no mata al jugador.", _, true, 0.0, true, 1.0);
 	g_cvAliveHud     = CreateConVar("csstv_alive_hud", "1", "Contador de vivos (CT 5 vs 4 T) fijo durante la partida: 0 no, 1 arriba al centro (HudMsg), 2 en el centro de la pantalla.", _, true, 0.0, true, 2.0);
@@ -96,7 +122,13 @@ void Qol_Init()
 	LoadTranslations("common.phrases");   // ProcessTargetString
 
 	RegConsoleCmd("sm_hp", Cmd_Hp, "Muestra quién te mató en esta ronda y cuánta vida le queda.");
+	g_cvAutoPause     = CreateConVar("csstv_autopause", "1", "Pausa automática si un jugador se va durante la partida (una por partida).", _, true, 0.0, true, 1.0);
+	g_cvAutoPauseTime = CreateConVar("csstv_autopause_time", "120", "Segundos de la pausa automática, si el jugador no vuelve antes.", _, true, 5.0, true, 600.0);
+	g_cvHalfTalk      = CreateConVar("csstv_half_alltalk", "10", "Segundos entre la última ronda de la mitad y la primera de la otra, con alltalk (0 = sin alltalk y sin espera extra).", _, true, 0.0, true, 60.0);
+	g_cvHalfTalkOff   = CreateConVar("csstv_half_alltalk_off", "10", "Segundos de freezetime que quedan cuando se apaga el alltalk del medio tiempo.", _, true, 0.0, true, 60.0);
 	RegConsoleCmd("sm_pause", Cmd_Pause, "Pide una pausa táctica para tu equipo.");
+	RegConsoleCmd("sm_tech", Cmd_Tech, "Pausa técnica (crash, conexión): una por equipo y por mitad, no gasta las tácticas.");
+	g_cvTechTime = CreateConVar("csstv_tech_time", "120", "Segundos de la pausa técnica (!tech). Termina antes si los dos equipos escriben !unpause.", _, true, 10.0, true, 600.0);
 	RegConsoleCmd("sm_unpause", Cmd_Unpause, "Seguir después de una pausa (o cancelar la que pediste).");
 	RegAdminCmd("sm_forcepause", Cmd_ForcePause, ADMFLAG_GENERIC, "Pausa de admin: dura hasta sm_forceunpause o !unpause de los dos equipos.");
 	RegAdminCmd("sm_forceunpause", Cmd_ForceUnpause, ADMFLAG_GENERIC, "Termina la pausa ahora.");
@@ -120,7 +152,7 @@ bool QolTarget(int client)
 
 public void OnChatTagChanged(ConVar cv, const char[] oldValue, const char[] newValue)
 {
-	strcopy(g_sTag, sizeof(g_sTag), newValue[0] ? newValue : "v34frag");
+	strcopy(g_sTag, sizeof(g_sTag), newValue[0] ? newValue : "CMLeague");
 	Format(g_sPrefix, sizeof(g_sPrefix), "\x04[%s]\x01", g_sTag);
 }
 
@@ -134,9 +166,9 @@ public void OnChatTagChanged(ConVar cv, const char[] oldValue, const char[] newV
  */
 native int CM_GetClientModAuth(int client);   // clientmod.inc: 2 = ClientMod, 3 = ClientMod desactualizado
 
-static const char g_sColorTag[][] = { "{#normal}", "{#verde}", "{#rojo}", "{#amarillo}", "{#ct}", "{#t}" };
-static const char g_sColorRgb[][] = { "\x01", "\x073EFF3E", "\x07FF4040", "\x07FFD700", "\x0799CCFF", "\x07EAB93D" };
-static const char g_sColorBasic[][] = { "\x01", "\x04", "\x01", "\x01", "\x01", "\x01" };
+static const char g_sColorTag[][] = { "{#normal}", "{#verde}", "{#rojo}", "{#amarillo}", "{#ct}", "{#t}", "{#gris}" };
+static const char g_sColorRgb[][] = { "\x01", "\x073EFF3E", "\x07FF4040", "\x07FFD700", "\x0799CCFF", "\x07EAB93D", "\x079A9A9A" };
+static const char g_sColorBasic[][] = { "\x01", "\x04", "\x01", "\x01", "\x01", "\x01", "\x01" };
 
 bool ChatUsesRgb(int client)
 {
@@ -168,6 +200,12 @@ void ColorSend(int client, const char[] text)
 	ApplyColorTags(plain, sizeof(plain), false, true);
 	LogMessage("[chat %N%s] %s", client, ChatUsesRgb(client) ? ", RGB" : "", plain);
 #endif
+	if (IsClientSourceTV(client))
+	{
+		ApplyColorTags(buf, sizeof(buf), false);   // la demo la mira cualquiera: colores básicos
+		PrintToChat(client, "%s", buf);
+		return;
+	}
 	if (IsFakeClient(client))
 		return;
 	if (!ChatUsesRgb(client))
@@ -224,7 +262,7 @@ void QolChatAll(const char[] fmt, any ...)
 	LogMessage("[chat todos] %s", plain);
 #endif
 	for (int i = 1; i <= MaxClients; i++)
-		if (IsClientInGame(i) && !IsFakeClient(i))
+		if (IsClientInGame(i) && (!IsFakeClient(i) || IsClientSourceTV(i)))   // la SourceTV también: queda en la demo
 			ColorSend(i, buf);
 	ApplyColorTags(buf, sizeof(buf), false, true);
 	PrintToServer("%s", buf);
@@ -250,6 +288,13 @@ void Qol_Reset()
 	Pause_Clear();
 	g_iPausesUsed[0] = 0;
 	g_iPausesUsed[1] = 0;
+	g_iTechHalf[0] = -1;
+	g_iTechHalf[1] = -1;
+	g_bAutoPauseUsed = false;
+	g_bAutoPausePending = false;
+	g_iAutoPauseRec = -1;
+	if (g_bHalfTalk)
+		HalfTalk_Stop();
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
 	Board_Reset();
@@ -373,6 +418,13 @@ void Qol_OnLiveRoundStart()
 {
 	for (int i = 0; i <= MaxClients; i++)
 		g_iKillerUserId[i] = 0;
+	if (g_bAutoPausePending)
+	{
+		g_bAutoPausePending = false;
+		g_iPauseBy = PAUSE_BY_AUTO;
+		g_bPauseTech = false;
+		g_bPauseRequested = true;   // si había una táctica pedida, esta la reemplaza
+	}
 	if (g_bPauseRequested)
 		CreateTimer(0.1, Timer_StartRequestedPause, _, TIMER_FLAG_NO_MAPCHANGE);
 	// La plata del inicio de ronda ya está acreditada medio segundo después.
@@ -419,50 +471,85 @@ void Qol_RoundHeader()
 			g_iSegment, g_iSegRound + 1, g_iSegLen, g_sTeam[0], sideA, g_iTotA, g_iTotB, g_sTeam[1], sideB);
 
 	int half = g_iSegLen / 2;
+	int beeps;
 	if (g_iSegA == half)
 		QolChatAll("%s {#amarillo}Match point para el %s.", PREFIX, g_sTeam[0]);
 	else if (g_iSegB == half)
 		QolChatAll("%s {#amarillo}Match point para el %s.", PREFIX, g_sTeam[1]);
+	if (g_iSegA == half || g_iSegB == half)
+		beeps = 3;
 	if (g_iSegRound + 1 == half)
+	{
 		QolChatAll("%s {#amarillo}Última ronda antes del cambio de lado.", PREFIX);
+		if (!beeps)
+			beeps = 1;
+	}
+	if (beeps && g_cvRoundSounds.BoolValue)
+	{
+		PlayBeep();
+		for (int b = 1; b < beeps; b++)
+			CreateTimer(0.3 * float(b), Timer_Beep, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+public Action Timer_Beep(Handle timer)
+{
+	PlayBeep();
+	return Plugin_Stop;
+}
+
+void PlayBeep()
+{
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && !IsFakeClient(i))
+			ClientCommand(i, "play buttons/blip1.wav");
 }
 
 /**
- * Daño de la ronda anterior, con el formato de la consola del juego:
- *   [v34frag] Damage Given to "Rival" - 54 in 2 hits      (verde)
- *   [v34frag] Damage Taken from "Rival" - 27 in 1 hit     (rojo)
- * Primero todo el daño dado y después el recibido; solo rivales con daño.
+ * Daño de la ronda anterior, una línea por jugador con daño en algún sentido:
+ *   — Daño de la ronda —                                        (gris)
+ *   Dado 117 en 1 · Recibido 11 en 1 · Dennis muerto
+ * Dado en verde, recibido en rojo, los ceros en gris; "vivo" (amarillo) o
+ * "muerto" (gris) según cómo terminó la ronda.
  */
 void Qol_DamageReport(int client)
 {
+	bool header;
+	char given[32], taken[32];
 	for (int j = 1; j <= MaxClients; j++)
 	{
-		if (j == client || !IsClientInGame(j) || g_iPrevDmg[client][j] <= 0)
+		if (j == client || !IsClientInGame(j) || (g_iPrevDmg[client][j] <= 0 && g_iPrevDmg[j][client] <= 0))
 			continue;
-		int hits = g_iPrevHits[client][j];
-		QolChat(client, "%s {#verde}Damage Given{#normal} to \"%N\" - {#verde}%d{#normal} in %d %s", PREFIX,
-			j, g_iPrevDmg[client][j], hits, hits == 1 ? "hit" : "hits");
+		if (!header)
+		{
+			QolChat(client, "{#gris}— Daño de la ronda —");
+			header = true;
+		}
+		DamageAmount(g_iPrevDmg[client][j], g_iPrevHits[client][j], "{#verde}", given, sizeof(given));
+		DamageAmount(g_iPrevDmg[j][client], g_iPrevHits[j][client], "{#rojo}", taken, sizeof(taken));
+		QolChat(client, "Dado %s · Recibido %s · %N %s", given, taken, j,
+			g_bPrevAlive[j] ? "{#amarillo}vivo" : "{#gris}muerto");
 	}
-	for (int j = 1; j <= MaxClients; j++)
-	{
-		if (j == client || !IsClientInGame(j) || g_iPrevDmg[j][client] <= 0)
-			continue;
-		int hits = g_iPrevHits[j][client];
-		QolChat(client, "%s {#rojo}Damage Taken{#normal} from \"%N\" - {#rojo}%d{#normal} in %d %s", PREFIX,
-			j, g_iPrevDmg[j][client], hits, hits == 1 ? "hit" : "hits");
-	}
+}
+
+/** "{#verde}117{#normal} en 1", o "{#gris}0{#normal}" si no hubo daño. */
+void DamageAmount(int dmg, int hits, const char[] color, char[] out, int len)
+{
+	if (dmg > 0)
+		Format(out, len, "%s%d{#normal} en %d", color, dmg, hits);
+	else
+		strcopy(out, len, "{#gris}0{#normal}");
 }
 
 void Qol_TeamMoney(int team)
 {
-	int clients[MAXPLAYERS], money[MAXPLAYERS], n, total;
+	int clients[MAXPLAYERS], money[MAXPLAYERS], n;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || GetClientTeam(i) != team)
 			continue;
 		clients[n] = i;
 		money[n] = GetEntProp(i, Prop_Send, "m_iAccount");
-		total += money[n];
 		n++;
 	}
 	if (!n)
@@ -481,42 +568,35 @@ void Qol_TeamMoney(int team)
 		money[b + 1] = m;
 	}
 
-	char line[256], part[96], name[MAX_NAME_LENGTH], amount[16];
-	FormatMoney(total, amount, sizeof(amount));
-	Format(line, sizeof(line), "%s Plata del equipo: {#verde}%s", PREFIX, amount);
-	PrintToTeam(team, line);
-	line[0] = '\0';
-	for (int k = 0; k < n; k++)
-	{
-		GetClientName(clients[k], name, sizeof(name));
-		TruncateUtf8(name, 14);
-		FormatMoney(money[k], amount, sizeof(amount));
-		Format(part, sizeof(part), "%s%s {#verde}%s{#normal}", line[0] ? " · " : "", name, amount);
-		// Con las etiquetas contadas: al convertirlas a color el texto queda más corto.
-		if (strlen(line) + strlen(part) > 190)
-		{
-			PrintTeamLine(team, line);
-			Format(part, sizeof(part), "%s {#verde}%s{#normal}", name, amount);
-			line[0] = '\0';
-		}
-		StrCat(line, sizeof(line), part);
-	}
-	if (line[0])
-		PrintTeamLine(team, line);
-}
-
-void PrintTeamLine(int team, const char[] text)
-{
-	char line[256];
-	Format(line, sizeof(line), "%s %s", PREFIX, text);
-	PrintToTeam(team, line);
-}
-
-void PrintToTeam(int team, const char[] text)
-{
+	// Una línea por jugador; la propia dice "Tú". El color dice qué le alcanza.
+	char name[MAX_NAME_LENGTH], amount[32];
 	for (int i = 1; i <= MaxClients; i++)
-		if (QolTarget(i) && GetClientTeam(i) == team)
-			QolChat(i, "%s", text);
+	{
+		if (!QolTarget(i) || GetClientTeam(i) != team)
+			continue;
+		for (int k = 0; k < n; k++)
+		{
+			if (clients[k] == i)
+				strcopy(name, sizeof(name), "Tú");
+			else
+				GetClientName(clients[k], name, sizeof(name));
+			ColoredMoney(money[k], amount, sizeof(amount));
+			QolChat(i, "%s %s", name, amount);
+		}
+	}
+}
+
+/** Verde: compra completa (desde $4.500); amarillo: media compra (desde $2.500); rojo: eco. */
+void ColoredMoney(int value, char[] out, int len)
+{
+	char money[16];
+	FormatMoney(value, money, sizeof(money));
+	if (value >= 4500)
+		Format(out, len, "{#verde}%s", money);
+	else if (value >= 2500)
+		Format(out, len, "{#amarillo}%s", money);
+	else
+		Format(out, len, "{#rojo}%s", money);
 }
 
 /** $21.350 */
@@ -590,6 +670,15 @@ public Action Cmd_Hp(int client, int args)
 // Pausa táctica (alargando el freezetime con m_fRoundStartTime)
 // ---------------------------------------------------------------------------
 
+native int CSSTV_CoachSide(int client);   // csstv_coach 1.1.0: lado que coachea (0 = no es coach)
+
+int CoachSide(int client)
+{
+	if (!LibraryExists("csstv_coach") || GetFeatureStatus(FeatureType_Native, "CSSTV_CoachSide") != FeatureStatus_Available)
+		return 0;
+	return CSSTV_CoachSide(client);
+}
+
 int TeamIndexOf(int client)
 {
 	return GetClientTeam(client) == g_iSideA ? 0 : 1;
@@ -624,20 +713,24 @@ public Action Cmd_Pause(int client, int args)
 		QolReply(client, "[%s] Las pausas están desactivadas en este servidor.", g_sTag);
 		return Plugin_Handled;
 	}
-	if (!IsTeamSide(GetClientTeam(client)))
+	int side = GetClientTeam(client);
+	if (!IsTeamSide(side))
+		side = CoachSide(client);   // el coach de csstv_coach pausa por su equipo
+	if (!IsTeamSide(side))
 	{
-		QolReply(client, "[%s] Solo los jugadores de un equipo pueden pausar.", g_sTag);
+		QolReply(client, "[%s] Solo los jugadores de un equipo (o su coach) pueden pausar.", g_sTag);
 		return Plugin_Handled;
 	}
 	if (!CanPauseNow(client))
 		return Plugin_Handled;
-	int t = TeamIndexOf(client), max = g_cvPauseMax.IntValue;
+	int t = side == g_iSideA ? 0 : 1, max = g_cvPauseMax.IntValue;
 	if (g_iPausesUsed[t] >= max)
 	{
 		QolReply(client, "[%s] Tu equipo ya usó %s.", g_sTag, max == 1 ? "su pausa" : "todas sus pausas");
 		return Plugin_Handled;
 	}
 	g_iPauseBy = t;
+	g_bPauseTech = false;
 	if (InFreezeTime())
 	{
 		Pause_Start();
@@ -651,11 +744,48 @@ public Action Cmd_Pause(int client, int args)
 	return Plugin_Handled;
 }
 
+/** Mitad de la partida (cada prórroga tiene dos): para la pausa técnica, una por equipo y por mitad. */
+int Tech_HalfKey()
+{
+	return g_iSegment * 2 + (g_iSegRound >= g_iSegLen / 2 ? 1 : 0);
+}
+
+public Action Cmd_Tech(int client, int args)
+{
+	if (client <= 0 || !IsClientInGame(client))
+		return Plugin_Handled;
+	if (!IsTeamSide(GetClientTeam(client)))
+	{
+		QolReply(client, "[%s] Solo los jugadores de un equipo pueden pedir pausa técnica.", g_sTag);
+		return Plugin_Handled;
+	}
+	if (!CanPauseNow(client))
+		return Plugin_Handled;
+	int t = TeamIndexOf(client);
+	if (g_iTechHalf[t] == Tech_HalfKey())
+	{
+		QolReply(client, "[%s] Tu equipo ya usó su pausa técnica en esta mitad.", g_sTag);
+		return Plugin_Handled;
+	}
+	g_iPauseBy = t;
+	g_bPauseTech = true;
+	if (InFreezeTime())
+		Pause_Start();
+	else
+	{
+		g_bPauseRequested = true;
+		QolChatAll("%s {#amarillo}%N pidió una pausa técnica para el %s.{#normal} Empieza al inicio de la próxima ronda (!unpause para cancelarla).",
+			PREFIX, client, g_sTeam[t]);
+	}
+	return Plugin_Handled;
+}
+
 public Action Cmd_ForcePause(int client, int args)
 {
 	if (!CanPauseNow(client))
 		return Plugin_Handled;
 	g_iPauseBy = PAUSE_BY_ADMIN;
+	g_bPauseTech = false;
 	if (InFreezeTime())
 		Pause_Start();
 	else
@@ -676,20 +806,32 @@ public Action Timer_StartRequestedPause(Handle timer)
 void Pause_Start()
 {
 	int mode = g_cvPauseMode.IntValue;
-	bool admin = g_iPauseBy == PAUSE_BY_ADMIN;
+	bool admin = g_iPauseBy == PAUSE_BY_ADMIN, auto = g_iPauseBy == PAUSE_BY_AUTO;
+	bool tech = g_bPauseTech && !admin && !auto;
 	g_bPauseRequested = false;
 	g_bPaused = true;
 	g_bUnpauseReady[0] = false;
 	g_bUnpauseReady[1] = false;
-	g_bPauseTimed = !admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH);
-	float secs = g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD;
+	g_bPauseTimed = auto || tech || (!admin && (mode == PAUSE_TIMED || mode == PAUSE_BOTH));
+	float secs = auto ? g_cvAutoPauseTime.FloatValue : (tech ? g_cvTechTime.FloatValue : (g_bPauseTimed ? g_cvPauseTime.FloatValue : PAUSE_HOLD));
 	g_fPauseEnds = GetGameTime() + secs;
 	g_iPauseTicks = 0;
 	GameRules_SetPropFloat("m_fRoundStartTime", g_fPauseEnds);
 
-	if (admin)
+	if (auto)
+	{
+		g_bAutoPauseUsed = true;
+		QolChatAll("%s {#amarillo}Pausa automática: se fue un jugador.{#normal} Sigue cuando vuelva, o en %d segundos.", PREFIX, RoundToFloor(secs));
+	}
+	else if (admin)
 	{
 		QolChatAll("%s {#amarillo}Pausa del admin.{#normal} Sigue con !forceunpause o cuando los dos equipos escriban !unpause.", PREFIX);
+	}
+	else if (tech)
+	{
+		g_iTechHalf[g_iPauseBy] = Tech_HalfKey();
+		QolChatAll("%s {#amarillo}Pausa técnica del %s.{#normal} Dura %d segundos, o menos si los dos equipos escriben !unpause. No gasta las pausas tácticas.",
+			PREFIX, g_sTeam[g_iPauseBy], RoundToFloor(secs));
 	}
 	else
 	{
@@ -714,6 +856,7 @@ public Action Timer_PauseTick(Handle timer)
 		return Plugin_Stop;
 	}
 	int left = RoundToCeil(g_fPauseEnds - GetGameTime());
+	Pause_Hud(left);
 	if (g_bPauseTimed)
 	{
 		if (left <= 0)
@@ -737,6 +880,76 @@ public Action Timer_PauseTick(Handle timer)
 			PrintUnpauseStatus();
 	}
 	return Plugin_Continue;
+}
+
+/**
+ * Mientras dura la pausa, en el cuadro de ayuda de todos (csstv_pause_hud):
+ *   Pausa táctica · 0:45
+ *   Pausas: Equipo A 1 · Equipo B 2
+ * Sin tiempo, en vez del reloj, quién falta escribir !unpause.
+ */
+void Pause_Hud(int left)
+{
+	if (!g_cvPauseHud.BoolValue)
+		return;
+	char text[192], kind[24];
+	if (g_iPauseBy == PAUSE_BY_ADMIN)
+		strcopy(kind, sizeof(kind), "Pausa del admin");
+	else if (g_iPauseBy == PAUSE_BY_AUTO)
+		strcopy(kind, sizeof(kind), "Pausa automática");
+	else if (g_bPauseTech)
+		strcopy(kind, sizeof(kind), "Pausa técnica");
+	else
+		strcopy(kind, sizeof(kind), "Pausa táctica");
+	if (g_bPauseTimed)
+		Format(text, sizeof(text), "%s · %d:%02d", kind, left / 60, left % 60);
+	else
+		Format(text, sizeof(text), "%s · !unpause: %s %s, %s %s", kind,
+			g_sTeam[0], g_bUnpauseReady[0] ? "listo" : "falta", g_sTeam[1], g_bUnpauseReady[1] ? "listo" : "falta");
+	int max = g_cvPauseMax.IntValue;
+	Format(text, sizeof(text), "%s\nPausas: %s %d · %s %d", text, g_sTeam[0], max - g_iPausesUsed[0], g_sTeam[1], max - g_iPausesUsed[1]);
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && (!IsFakeClient(i) || IsClientSourceTV(i)))
+			PrintHintText(i, "%s", text);
+}
+
+// ---------------------------------------------------------------------------
+// Marcador en el nombre del servidor y en el título de la SourceTV (csstv_score_title):
+// "CMLeague #1 | 7-4". Se actualiza cada segundo. Si alguien cambia el nombre (server.cfg,
+// un admin), ese pasa a ser el nombre base.
+// ---------------------------------------------------------------------------
+
+char g_sHostBase[128], g_sHostSet[128], g_sTvBase[128], g_sTvSet[128];
+
+void Titles_Update()
+{
+	bool show = g_cvScoreTitle.BoolValue && (g_State == State_Starting || g_State == State_Live || g_State == State_Halftime);
+	Title_Apply("hostname", g_sHostBase, g_sHostSet, show);
+	Title_Apply("tv_title", g_sTvBase, g_sTvSet, show);
+}
+
+void Titles_Restore()
+{
+	Title_Apply("hostname", g_sHostBase, g_sHostSet, false);
+	Title_Apply("tv_title", g_sTvBase, g_sTvSet, false);
+}
+
+void Title_Apply(const char[] name, char[] base, char[] set, bool show)
+{
+	ConVar cv = FindConVar(name);
+	if (cv == null)
+		return;
+	char cur[128], want[128];
+	cv.GetString(cur, sizeof(cur));
+	if (!StrEqual(cur, set))
+		strcopy(base, 128, cur);
+	if (show && base[0])
+		Format(want, sizeof(want), "%s | %d-%d", base, g_iTotA, g_iTotB);
+	else
+		strcopy(want, sizeof(want), base);
+	if (!StrEqual(cur, want))
+		cv.SetString(want);
+	strcopy(set, 128, want);
 }
 
 void PrintUnpauseStatus()
@@ -766,7 +979,7 @@ public Action Cmd_Unpause(int client, int args)
 		QolReply(client, "[%s] No hay ninguna pausa.", g_sTag);
 		return Plugin_Handled;
 	}
-	if (g_bPauseTimed && g_cvPauseMode.IntValue == PAUSE_TIMED)
+	if (g_bPauseTimed && g_cvPauseMode.IntValue == PAUSE_TIMED && !g_bPauseTech)   // la técnica siempre se puede terminar antes
 	{
 		QolReply(client, "[%s] Esta pausa termina sola en %d s.", g_sTag, RoundToCeil(g_fPauseEnds - GetGameTime()));
 		return Plugin_Handled;
@@ -800,10 +1013,136 @@ public Action Cmd_ForceUnpause(int client, int args)
 void Pause_End(const char[] reason)
 {
 	g_bPaused = false;
+	g_bPauseTech = false;
 	delete g_hPauseTimer;
 	if (g_State == State_Live && InFreezeTime())
 		GameRules_SetPropFloat("m_fRoundStartTime", GetGameTime() + 3.0);
 	QolChatAll("%s {#verde}%s Se sigue en 3 segundos.", PREFIX, reason);
+	g_iCountdown = 3;
+	PrintCenterTextAll("Sigue en 3");
+	CreateTimer(1.0, Timer_Countdown, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/** "3", "2", "1" en el centro y la campana al seguir. */
+public Action Timer_Countdown(Handle timer)
+{
+	if (g_bPaused || g_State != State_Live)
+		return Plugin_Stop;
+	if (--g_iCountdown > 0)
+	{
+		PrintCenterTextAll("Sigue en %d", g_iCountdown);
+		return Plugin_Continue;
+	}
+	PrintCenterTextAll("¡Sigue!");
+	PlayBell();
+	return Plugin_Stop;
+}
+
+/** Desde OnClientDisconnect, antes de Stats_ClientLeave: un jugador de la partida se va. */
+void AutoPause_OnLeave(int client)
+{
+	if (!g_cvAutoPause.BoolValue || !MatchRunning() || g_bAutoPauseUsed || g_bAutoPausePending
+		|| !IsClientInGame(client) || !IsTeamSide(GetClientTeam(client)))
+		return;
+	int rec = Stats_GetRec(client);
+	if (rec < 0)
+		return;
+	g_iAutoPauseRec = rec;
+	if (g_State == State_Live && !g_bRestarting && !g_bPaused && InFreezeTime())
+	{
+		g_iPauseBy = PAUSE_BY_AUTO;
+		Pause_Start();
+		return;
+	}
+	g_bAutoPausePending = true;
+	QolChatAll("%s {#amarillo}%N se fue.{#normal} Si no vuelve, hay pausa automática al inicio de la próxima ronda.", PREFIX, client);
+}
+
+/** Desde Recon_Place: volvió a su equipo. Solo cuenta el jugador por el que se pausó. */
+void AutoPause_OnReturn(int client)
+{
+	if (g_iAutoPauseRec < 0 || Stats_FindRec(client) != g_iAutoPauseRec)
+		return;
+	g_iAutoPauseRec = -1;
+	g_bAutoPausePending = false;
+	if (g_bPauseRequested && g_iPauseBy == PAUSE_BY_AUTO)
+		g_bPauseRequested = false;
+	if (g_bPaused && g_iPauseBy == PAUSE_BY_AUTO)
+		Pause_End("Volvió el jugador.");
+}
+
+/** Campana y texto para el que está esperando en otra cosa, al empezar el cuchillo o el LO3. */
+void Qol_StartAlert(const char[] text)
+{
+	PrintCenterTextAll("%s", text);
+	PlayBell();
+	CreateTimer(0.8, Timer_Bell, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.6, Timer_Bell, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_Bell(Handle timer)
+{
+	PlayBell();
+	return Plugin_Stop;
+}
+
+void PlayBell()
+{
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && !IsFakeClient(i))
+			ClientCommand(i, "play buttons/bell1.wav");
+}
+
+// ---------------------------------------------------------------------------
+// Charla del medio tiempo: alltalk desde el final de la mitad hasta que quedan
+// csstv_half_alltalk_off segundos del freezetime de la ronda siguiente
+// ---------------------------------------------------------------------------
+
+/** Al terminar la última ronda de una mitad. */
+void HalfTalk_Begin()
+{
+	if (g_cvHalfTalk.IntValue <= 0 || g_bHalfTalk)
+		return;
+	ConVar alltalk = FindConVar("sv_alltalk");
+	g_iHalfTalkSaved = alltalk.IntValue;
+	alltalk.SetInt(1, false, false);
+	g_bHalfTalk = true;
+	QolChatAll("%s {#amarillo}Medio tiempo:{#normal} alltalk hasta que queden %d segundos de freezetime.", PREFIX, g_cvHalfTalkOff.IntValue);
+}
+
+/** Segundos desde el final de la mitad hasta la ronda siguiente (0 = sin charla). */
+int HalfTalk_Gap()
+{
+	return g_bHalfTalk ? g_cvHalfTalk.IntValue : 0;
+}
+
+/** Desde OnRestartsDone, en la vuelta del medio tiempo: programa el final. */
+void HalfTalk_OnRoundStart()
+{
+	if (!g_bHalfTalk)
+		return;
+	float wait = FindConVar("mp_freezetime").FloatValue - g_cvHalfTalkOff.FloatValue;
+	if (wait <= 0.0)
+	{
+		Timer_HalfTalkEnd(null);
+		return;
+	}
+	CreateTimer(wait, Timer_HalfTalkEnd, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_HalfTalkEnd(Handle timer)
+{
+	if (!g_bHalfTalk)
+		return Plugin_Stop;
+	HalfTalk_Stop();
+	QolChatAll("%s Se terminó el alltalk: se vuelve a hablar solo con tu equipo.", PREFIX);
+	return Plugin_Stop;
+}
+
+void HalfTalk_Stop()
+{
+	g_bHalfTalk = false;
+	FindConVar("sv_alltalk").SetInt(g_iHalfTalkSaved, false, false);
 }
 
 /** Sin mensajes: al cancelar, terminar la partida o cambiar de mapa. */
@@ -811,6 +1150,7 @@ void Pause_Clear()
 {
 	g_bPauseRequested = false;
 	g_bPaused = false;
+	g_bPauseTech = false;
 	delete g_hPauseTimer;
 }
 
@@ -820,6 +1160,9 @@ void Pause_Clear()
 
 void Demo_Start()
 {
+	// La demo del mix anterior todavía en sus segundos finales: se corta ya.
+	if (g_hDemoStopTimer != null)
+		Demo_Stop();
 	if (!g_cvDemo.BoolValue || g_bRecording)
 		return;
 	ConVar tv = FindConVar("tv_enable");
@@ -838,11 +1181,28 @@ void Demo_Start()
 
 void Demo_Stop()
 {
+	delete g_hDemoStopTimer;
 	if (!g_bRecording)
 		return;
 	ServerCommand("tv_stoprecord");
 	g_bRecording = false;
 	CreateTimer(3.0, Timer_DemoCleanup);
+}
+
+/** Al terminar el mix: corta la demo DEMO_TAIL_SECONDS después. Si antes cambia el mapa, se cancela el mix o
+ *  empieza otro, Demo_Stop (OnMapEnd, CancelMatch, BackToWarmup o Demo_Start) corta en el acto. */
+void Demo_StopLater()
+{
+	if (!g_bRecording || g_hDemoStopTimer != null)
+		return;
+	g_hDemoStopTimer = CreateTimer(DEMO_TAIL_SECONDS, Timer_DemoStop);
+}
+
+public Action Timer_DemoStop(Handle timer)
+{
+	g_hDemoStopTimer = null;
+	Demo_Stop();
+	return Plugin_Stop;
 }
 
 public Action Timer_DemoCleanup(Handle timer)
@@ -1102,10 +1462,16 @@ int Recon_WantedSide(int client)
 bool Recon_Place(int client)
 {
 	int want = Recon_WantedSide(client);
-	if (!want || GetClientTeam(client) == want)
+	if (!want)
 		return false;
+	if (GetClientTeam(client) == want)
+	{
+		AutoPause_OnReturn(client);
+		return false;
+	}
 	MoveToTeam(client, want);
 	QolChatAll("%s {#amarillo}%N{#normal} volvió y sigue en el %s.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
+	AutoPause_OnReturn(client);
 	return true;
 }
 

@@ -1,0 +1,14 @@
+v34frag 1.2.0 --  Changelog
+
+Retake
+
+- Nuevas rondas force: después de las de pistola, algunas rondas son force en vez de full buy.
+- En !guns elegís tu arma de force: Galil o FAMAS, MP5 o solo Deagle.
+- La AWP y la Scout ahora son solo para los CT.
+- AWP en full buy y Scout en force: si hay más de un anotado en !guns, se sortea y a uno le toca seguro. Si hay uno solo, tiene 30 % de chances en la AWP y también en la Scout.
+- Los CT también pueden elegir la Scout como arma en full buy.
+- Cuando alguien gana un clutch de 1 contra 2 o más, se avisa a todos.
+- Se avisa cuando rotan los equipos, y los equipos se mezclan si los T ganan 3 rondas seguidas.
+- Corregido: ya no quedás esperando para siempre al entrar a un servidor vacío.
+- Corregido: la C4 ya no se puede tirar mientras se planta.
+- Corregido: la barra de desactivar ya no queda en pantalla.

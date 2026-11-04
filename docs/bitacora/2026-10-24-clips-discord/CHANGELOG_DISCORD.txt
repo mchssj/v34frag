@@ -1,0 +1,14 @@
+CMLeague 2.5.0 --  Changelog
+
+Clips automáticos: ahora el servidor detecta solo las mejores jugadas de cada mix y las graba en video.
+
+Qué cuenta como jugada destacada: ACE, 4K, 3K y clutches ganados, del 1v1 al 1v5.
+Un clutch cuenta si quedaste último vivo de tu equipo y tu equipo ganó la ronda, aunque no los hayas matado a todos.
+
+De cada mix salen las 5 mejores jugadas, con un máximo de 2 por jugador.
+Se graban en primera persona, como las viste en la partida, y se publican solas en el canal de clips unos minutos después de que termina el mix.
+
+Cada clip dice de quién es, qué jugada fue, el mapa, la ronda y el resultado.
+El video se ve ahí mismo en Discord, y con "Ver en 1080p" lo abres en la mejor calidad.
+
+Los clips quedan guardados para siempre.

@@ -1,0 +1,7 @@
+CMLeague --  Changelog
+
+HUD para las transmisiones
+- Las partidas del servidor #1 se van a poder transmitir con un HUD encima: vida, chaleco, plata, armas y granadas de los 10 jugadores, el marcador, el tiempo de la ronda, la bomba y las kills.
+- El HUD va con el mismo retraso que la SourceTV, así que no sirve para ver nada antes de tiempo.
+- En los torneos solo va a transmitir alguien que no juegue para ninguno de los dos equipos.
+- Todavía está en prueba: si ves algo raro en una transmisión, avísale a un admin.

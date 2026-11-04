@@ -1,0 +1,5 @@
+CMLeague 2.9.8 --  Changelog
+
+- Si eres capitán, ya puedes cambiar el nombre y la sigla de tu equipo desde Editar equipo. Se cambian una vez cada cierto tiempo (hoy, 30 días) y la web te dice desde qué día puedes hacerlo de nuevo. El logo lo cambias cuando quieras.
+- Los reportes que haces desde la sala de la partida ahora los revisa un admin.
+- Los clips que salen mal se vuelven a grabar más rápido: el staff puede mandar varios a la vez.

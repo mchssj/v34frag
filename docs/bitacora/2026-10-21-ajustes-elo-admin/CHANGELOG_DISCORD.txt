@@ -1,0 +1,5 @@
+v34frag --  Changelog
+
+Ajustes de ELO a la vista
+- Si un admin te corrige el ELO (por ejemplo, porque un mix se cayó y no se guardó), lo ves en tu perfil: cuánto te sumó o restó, o en cuánto te lo dejó, el motivo y la fecha.
+- Los admins ya no recalculan el ELO de todos de golpe: corrigen solo a los jugadores afectados.

@@ -1,0 +1,522 @@
+import { Link } from "@tanstack/react-router"
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { LegalLayout, Wip, type LegalSection } from "../components/LegalLayout"
+import { LEGAL_UPDATED } from "../lib/meta"
+
+function LegalTable({
+  head,
+  rows,
+}: {
+  head: [string, string]
+  rows: [string, string][]
+}) {
+  return (
+    <div className="overflow-hidden rounded-tile border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{head[0]}</TableHead>
+            <TableHead>{head[1]}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map(([a, b]) => (
+            <TableRow key={a}>
+              <TableCell className="align-top font-medium whitespace-normal text-foreground">
+                {a}
+              </TableCell>
+              <TableCell className="align-top whitespace-normal">{b}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+const PROVIDERS: [string, string][] = [
+  ["Cloudflare", "Demos y clips, y parte de la web"],
+  [
+    "OVH (servidor VPS)",
+    "La base de datos, las cuentas y los archivos (avatares, capturas, evidencia del anticheat), la API de la web, el matchmaking y el HUD de las transmisiones",
+  ],
+  ["Resend", "Envío de los correos de la cuenta"],
+  ["Google Drive", "Los videos de los clips"],
+  [
+    "Discord",
+    "Avisos de !calladmin al staff, el aviso de la cola del matchmaking en #avisos (con el tag de quien avisa) y publicación de clips en el canal de la liga",
+  ],
+  ["Hosting de la web", "Servir las páginas de la web"],
+]
+
+const RETENTION: [string, string][] = [
+  ["Cuenta y perfil", "Mientras tengas la cuenta"],
+  ["Estadísticas, resultados y ELO", "Sin plazo: son el historial de la liga"],
+  ["Demos", "90 días"],
+  ["Clips", "Mientras exista la jugada en la liga"],
+  ["Cada conexión a un servidor (IP, fecha y nick)", "90 días"],
+  ["Intentos de conexión por IP", "90 días"],
+  [
+    "Lista de IP usadas por cada SteamID",
+    "Mientras sea necesaria para detectar evasión de baneos",
+  ],
+  ["Baneos y sanciones", "Sin plazo: se levantan, no se borran"],
+  ["Historial de VIP", "Mientras tengas la cuenta"],
+  [
+    "Evidencia del anticheat",
+    "30 días desde que se cierra la sesión, salvo que forme parte de una sanción en curso",
+  ],
+]
+
+// Mismo texto que terms/privacidad.html (`terms/` de la raíz del repo): si cambia uno, cambia el otro. La sección de
+// Google Drive es la que revisa Google para «CMLeague clips»: no cambiarla sin avisar a Daniel.
+const SECTIONS: LegalSection[] = [
+  {
+    id: "responsable",
+    title: "Quién es responsable",
+    body: (
+      <p>
+        El responsable de tus datos es CMLeague, un proyecto independiente de
+        desarrollo de software con domicilio en la provincia de Buenos Aires,
+        República Argentina. Esta política se rige por la Ley 25.326 de
+        Protección de los Datos Personales y su reglamentación. Para cualquier
+        tema de privacidad, escríbenos a{" "}
+        <a href="mailto:cmleaguev34@gmail.com">cmleaguev34@gmail.com</a> o por
+        el canal de soporte del Discord (
+        <a href="https://dsc.gg/v34frag">dsc.gg/v34frag</a>).
+      </p>
+    ),
+  },
+  {
+    id: "datos",
+    title: "Qué datos usamos",
+    body: (
+      <>
+        <h3>Si creas una cuenta en la web</h3>
+        <ul>
+          <li>
+            Tu correo y tu contraseña. La contraseña se guarda cifrada: nadie
+            del staff puede ver la que elegiste. Si un admin te cambia la
+            contraseña por una aleatoria para ayudarte a entrar, la ve una sola
+            vez para pasártela y queda registrado quién lo hizo. Te recomendamos
+            cambiarla apenas entres.
+          </li>
+          <li>
+            Tu <em>tag</em> y lo que agregues a tu perfil: nombre real, país,
+            rol en el juego, links de Steam, FACEIT y Discord, avatar,
+            biografía, preferencias y nivel de privacidad del perfil.
+          </li>
+          <li>La fecha de tu última visita y tus notificaciones.</li>
+          <li>
+            Tus partidas favoritas y tus búsquedas guardadas <Wip />
+          </li>
+          <li>
+            Tu equipo, tus pedidos (de equipo, de vinculación de ficha) y tus
+            inscripciones a torneos y PCW.
+          </li>
+        </ul>
+
+        <h3>Si juegas en un servidor de la liga</h3>
+        <p>Aunque no tengas cuenta, el servidor registra:</p>
+        <ul>
+          <li>Tu SteamID y los nicks que usas.</li>
+          <li>
+            Tus estadísticas de cada partida: bajas, muertes, asistencias, daño,
+            headshots, rating, ELO, jugadas destacadas y resultados.
+          </li>
+          <li>
+            La grabación de la partida (demo de SourceTV), que muestra todo lo
+            que pasa en el juego, incluido el chat escrito.
+          </li>
+          <li>
+            <strong>Tu dirección IP</strong>, con la fecha, el servidor y el
+            nick con que te conectaste, y la cantidad de intentos de conexión de
+            cada IP. Se usa para la seguridad de los servidores (por ejemplo,
+            frenar ataques) y para detectar evasión de baneos y cuentas
+            duplicadas.
+          </li>
+          <li>
+            Los avisos que haces con <code>!calladmin</code> y los baneos o
+            sanciones que recibas.
+          </li>
+        </ul>
+
+        <h3>Lo que subes o escribes</h3>
+        <ul>
+          <li>Los mensajes del chat de las partidas en la web.</li>
+          <li>
+            Las capturas y notas de los reportes de resultados <Wip />
+          </li>
+          <li>
+            Tus configs del juego <Wip />. Al publicarlas quitamos las líneas
+            con contraseñas que encontramos.
+          </li>
+        </ul>
+
+        <h3>VIP, puntos y tienda</h3>
+        <ul>
+          <li>
+            Los períodos de VIP de tu cuenta (desde y hasta cuándo), quién los
+            dio y una nota interna.
+          </li>
+          <li>
+            El pago del VIP se hace hoy por fuera de la web:{" "}
+            <strong>no guardamos datos de tarjetas ni cuentas bancarias</strong>
+            . Cuando la web cobre sola, los pagos los va a procesar una
+            plataforma de pagos y no vamos a ver los datos de tu tarjeta.
+          </li>
+          <li>
+            Tus puntos, compras, cosméticos, misiones y si quieres aparecer en
+            los créditos <Wip />
+          </li>
+        </ul>
+
+        <h3>CMLeague Anticheat</h3>
+        <p>
+          Solo si instalas la aplicación y solo durante las sesiones de juego.
+          Lo detallamos en la <a href="#anticheat">sección 7</a>.
+        </p>
+
+        <h3>Lo que no usamos</h3>
+        <p>
+          No usamos herramientas de analítica, píxeles de publicidad ni cookies
+          de seguimiento. No vendemos tus datos ni los usamos para publicidad.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "para-que",
+    title: "Para qué los usamos",
+    body: (
+      <>
+        <ul>
+          <li>Darte la cuenta, el perfil y las funciones de la web.</li>
+          <li>
+            Registrar las partidas, calcular el ELO, los niveles, el ranking,
+            las temporadas, las medallas y los puntos.
+          </li>
+          <li>Organizar mixes, matchmaking, torneos y PCW.</li>
+          <li>
+            Moderar: revisar denuncias, aplicar baneos, detectar trampas,
+            cuentas duplicadas y ataques a los servidores.
+          </li>
+          <li>
+            Publicar demos, clips, transmisiones y el widget para streamers.
+          </li>
+          <li>
+            Mandarte los correos de la cuenta (confirmación y cambio de
+            contraseña) y las notificaciones de la web. No te mandamos
+            publicidad.
+          </li>
+          <li>Administrar el VIP y sus ventajas.</li>
+        </ul>
+        <p>
+          Lo hacemos porque es necesario para darte el servicio que pediste al
+          registrarte o jugar, por el interés de la liga en mantener el juego
+          limpio y los servidores seguros y, en el caso del anticheat, porque
+          das tu consentimiento al instalarlo.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "publico",
+    title: "Qué es público",
+    body: (
+      <>
+        <LegalTable
+          head={["Público para cualquiera", "Solo tú y el staff"]}
+          rows={[
+            [
+              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP.",
+              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes y la evidencia del anticheat.",
+            ],
+          ]}
+        />
+        <p>
+          El resto de tu perfil (nombre real, país, redes, biografía) se muestra
+          según el nivel de privacidad que elijas: público, solo miembros o
+          privado.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "terceros",
+    title: "Con quién los compartimos",
+    body: (
+      <>
+        <p>
+          Solo con los servicios que usamos para que CMLeague funcione, que
+          guardan los datos por nosotros:
+        </p>
+        <LegalTable head={["Servicio", "Para qué"]} rows={PROVIDERS} />
+        <ul>
+          <li>
+            Algunos servidores de la liga son de otras comunidades que usan
+            nuestros plugins. Sus dueños y admins pueden ver en su servidor lo
+            mismo que cualquier servidor de Counter-Strike: tu nick, tu SteamID
+            y tu IP.
+          </li>
+          <li>
+            Varios de estos servicios guardan los datos fuera de la Argentina:
+            la base de datos, las cuentas y los archivos están en nuestro
+            servidor VPS (OVH), en Beauharnois, Canadá. Hasta el 2026-11-03
+            estaban en Supabase, en el oeste de Estados Unidos (Oregón), que
+            guarda una copia de esa fecha hasta borrarla, como mucho el
+            2026-12-03. Cloudflare,
+            Google, Discord y Resend pueden guardarlos en otros países. Al usar
+            CMLeague prestas tu consentimiento para esa transferencia
+            internacional, en los términos del artículo 12 de la Ley 25.326.
+            Elegimos proveedores con medidas de seguridad reconocidas.
+          </li>
+          <li>Podemos entregar datos si una autoridad lo exige por ley.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "plazos",
+    title: "Cuánto tiempo los guardamos",
+    body: <LegalTable head={["Dato", "Plazo"]} rows={RETENTION} />,
+  },
+  {
+    id: "anticheat",
+    title: "CMLeague Anticheat",
+    body: (
+      <>
+        <p>
+          <Wip>Todavía no disponible</Wip> Cuando lo esté:
+        </p>
+        <ul>
+          <li>
+            Antes de empezar, la aplicación te muestra qué recopila y te pide tu
+            consentimiento. Si no aceptas, no recopila nada, pero no vas a poder
+            jugar las partidas que la exigen.
+          </li>
+          <li>
+            <strong>Solo recopila con una sesión abierta</strong>, mientras
+            juegas en un servidor de la liga que la exige. Durante la sesión
+            envía:
+            <ul>
+              <li>
+                La lista de procesos abiertos y sus cambios: nombre, ruta,
+                huella (SHA-256), firma y editor de cada programa. Tu carpeta de
+                usuario se reemplaza por <code>%USERPROFILE%</code>, así que no
+                se ve tu nombre de usuario de Windows.
+              </li>
+              <li>
+                Capturas de la pantalla del juego, solo cuando el juego está al
+                frente. Cuando el staff pide una, te avisa.
+              </li>
+              <li>
+                Un aviso cada 30 segundos para saber que la aplicación sigue
+                abierta.
+              </li>
+            </ul>
+          </li>
+          <li>
+            No lee la memoria del juego ni se inyecta en él, no abre tus
+            archivos personales, no usa tu micrófono ni tu cámara y no recopila
+            nada fuera de las sesiones.
+          </li>
+          <li>
+            Los datos de vinculación se guardan cifrados en tu PC, en{" "}
+            <code>%LOCALAPPDATA%\CMLeagueAC</code>.
+          </li>
+          <li>
+            La evidencia la ve solo el staff, en un almacenamiento privado, y se
+            borra a los 30 días. El sistema no decide ni sanciona solo: lo
+            revisa una persona.
+          </li>
+          <li>
+            Puedes desinstalar la aplicación cuando quieras y pedir que se borre
+            tu evidencia, salvo la que forme parte de una sanción en curso.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "clips",
+    title: "«CMLeague clips» y Google Drive",
+    body: (
+      <>
+        <p>
+          «CMLeague clips» es una herramienta interna de la liga. Corre en una
+          computadora del administrador y usa la API de Google Drive con el
+          permiso <code>drive.file</code>, que solo da acceso a los archivos que
+          la propia aplicación crea.
+        </p>
+        <ul>
+          <li>
+            Sube a la cuenta de Google Drive del administrador de la liga los
+            videos de las jugadas destacadas (aces, multikills y clutches),
+            grabados a partir de las demos de las partidas.
+          </li>
+          <li>
+            Comparte esos videos con «cualquiera con el enlace», para que se
+            puedan ver en la web de la liga.
+          </li>
+          <li>Borra los videos que ya no corresponden a ninguna jugada.</li>
+        </ul>
+        <p>
+          La aplicación{" "}
+          <strong>no lee, no modifica y no borra ningún otro archivo</strong> de
+          Google Drive, y no accede a otros datos de la cuenta de Google
+          (correo, contactos, calendario ni ningún otro servicio). Ningún
+          jugador ni visitante inicia sesión con Google en esta aplicación: la
+          usa solo el administrador. La aplicación no comparte con terceros
+          ningún dato obtenido de Google y no lo usa para publicidad.
+        </p>
+        <p>
+          Los videos son grabaciones del juego, en primera persona del jugador
+          que hizo la jugada. Muestran lo mismo que la demo de la partida: el
+          mapa, los nombres que los jugadores usaban dentro del juego y el
+          registro de eliminaciones. No incluyen voz, cámara ni ningún dato
+          personal fuera del juego. Las mejores jugadas también se publican en
+          el canal de clips del Discord de la liga.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "navegador",
+    title: "Lo que guarda tu navegador",
+    body: (
+      <p>
+        La web guarda en el almacenamiento local de tu navegador la sesión
+        iniciada, tu tema y algunas preferencias de la pantalla. Sirven solo
+        para que la web funcione: no te siguen por otros sitios. Si los borras,
+        se cierra la sesión.
+      </p>
+    ),
+  },
+  {
+    id: "seguridad",
+    title: "Seguridad",
+    body: (
+      <p>
+        Las contraseñas se guardan cifradas, las IP y la evidencia del anticheat
+        solo las leen los administradores, y el acceso a los datos está limitado
+        por reglas en la base de datos. Ningún sistema es perfecto: si
+        detectamos un problema de seguridad que afecte tus datos, te lo
+        avisamos.
+      </p>
+    ),
+  },
+  {
+    id: "menores",
+    title: "Menores de edad",
+    body: (
+      <p>
+        Para crear una cuenta necesitas tener al menos 13 años. Si eres menor de
+        edad en tu país, necesitas el permiso de tu madre, padre o tutor, sobre
+        todo para instalar el anticheat o pagar el VIP. Si nos enteramos de que
+        una cuenta es de alguien menor de esa edad, la cerramos.
+      </p>
+    ),
+  },
+  {
+    id: "derechos",
+    title: "Tus derechos",
+    body: (
+      <>
+        <p>Puedes pedirnos:</p>
+        <ul>
+          <li>
+            <strong>Ver</strong> qué datos tuyos tenemos.
+          </li>
+          <li>
+            <strong>Corregirlos</strong>: casi todo lo puedes cambiar tú mismo
+            desde tu perfil.
+          </li>
+          <li>
+            <strong>Borrarlos</strong>: borramos tu cuenta y tus datos
+            personales (correo, nombre real, redes, avatar, configs) y los
+            videos que pidas. Tus estadísticas y resultados quedan sin tu
+            cuenta, porque son parte del historial de la liga y de los otros
+            jugadores. Los baneos y lo necesario para que se cumplan también
+            quedan.
+          </li>
+          <li>
+            <strong>Oponerte</strong> a un uso o{" "}
+            <strong>retirar tu consentimiento</strong> del anticheat.
+          </li>
+        </ul>
+        <p>
+          Escríbenos a{" "}
+          <a href="mailto:cmleaguev34@gmail.com">cmleaguev34@gmail.com</a> desde
+          el correo de tu cuenta, o por el canal de soporte del Discord. Podemos
+          pedirte algo que confirme que la cuenta es tuya. Respondemos los
+          pedidos de acceso dentro de los 10 días corridos y los de corrección o
+          borrado dentro de los 5 días hábiles, como fija la Ley 25.326.
+        </p>
+        <p className="text-[13px]">
+          El titular de los datos personales tiene la facultad de ejercer el
+          derecho de acceso a los mismos en forma gratuita a intervalos no
+          inferiores a seis meses, salvo que se acredite un interés legítimo al
+          efecto conforme lo establecido en el artículo 14, inciso 3 de la Ley
+          N° 25.326. La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su
+          carácter de Órgano de Control de la Ley N° 25.326, tiene la atribución
+          de atender las denuncias y reclamos que interpongan quienes resulten
+          afectados en sus derechos por incumplimiento de las normas vigentes en
+          materia de protección de datos personales.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "cambios",
+    title: "Cambios y contacto",
+    body: (
+      <p>
+        Si cambiamos esta política, actualizamos la fecha de arriba y, si el
+        cambio es importante, lo avisamos en la web o en el Discord. Para
+        cualquier duda, escríbenos a{" "}
+        <a href="mailto:cmleaguev34@gmail.com">cmleaguev34@gmail.com</a> o por
+        el canal de soporte del Discord.
+      </p>
+    ),
+  },
+]
+
+export function PrivacyPage() {
+  return (
+    <LegalLayout
+      eyebrow="Legales"
+      title="Política de privacidad"
+      updated={LEGAL_UPDATED}
+      sections={SECTIONS}
+      intro={
+        <>
+          <p>
+            CMLeague es una liga comunitaria de Counter-Strike: Source v34. Esta
+            política explica qué datos tuyos usamos, para qué, quién los ve,
+            cuánto tiempo los guardamos y cómo pedir que los corrijamos o los
+            borremos. Vale para la web cmleague.lat, los servidores de la liga y
+            sus plugins, el Discord, la aplicación CMLeague Anticheat y la
+            aplicación «CMLeague clips». Junto con los{" "}
+            <Link to="/terminos">términos y condiciones</Link>, es lo que
+            aceptas al usar CMLeague.
+          </p>
+          <p>
+            Algunas funciones que se describen acá{" "}
+            <strong>todavía no están disponibles o están en prueba</strong>.
+            Están incluidas para que sepas desde ahora qué van a usar cuando
+            salgan.
+          </p>
+        </>
+      }
+    />
+  )
+}

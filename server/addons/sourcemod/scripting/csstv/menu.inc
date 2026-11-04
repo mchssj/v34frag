@@ -1,5 +1,5 @@
 /**
- * Categoría "v34frag" en el menú de admin de SourceMod (sm_admin): las mismas acciones que
+ * Categoría del servidor (csstv_chat_tag, hoy "CMLeague") en el menú de admin de SourceMod (sm_admin): las mismas acciones que
  * los comandos, sin escribir. Cada opción usa el permiso de su comando (sm_live, sm_team…),
  * así que respeta los overrides del servidor. Las opciones que no aplican en el momento
  * (por ejemplo, cancelar en el calentamiento) se ven deshabilitadas. Las respuestas van al
@@ -145,7 +145,7 @@ void Menu_BackToCategory(int client)
 		g_hAdminMenu.DisplayCategory(g_oMenuCat, client);
 }
 
-/** Atrás en un submenú: vuelve a la categoría v34frag. */
+/** Atrás en un submenú: vuelve a la categoría del servidor. */
 void Menu_HandleCancel(int client, int reason)
 {
 	if (reason == MenuCancel_ExitBack)

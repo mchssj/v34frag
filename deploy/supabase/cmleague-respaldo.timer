@@ -1,0 +1,11 @@
+# Todos los días a las 09:00 UTC (06:00 en Argentina, sin partidas). Persistent: si el VPS estaba apagado, corre al arrancar.
+[Unit]
+Description=CMLeague: respaldo diario de la base del VPS
+
+[Timer]
+OnCalendar=*-*-* 09:00:00 UTC
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

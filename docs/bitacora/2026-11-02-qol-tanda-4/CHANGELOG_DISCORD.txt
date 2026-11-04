@@ -1,0 +1,30 @@
+CMLeague 2.7.7 --  Changelog
+
+Durante la partida:
+- Si quedas último vivo de tu equipo, dejas de escuchar a tus compañeros muertos hasta que termina la ronda, para que puedas concentrarte. Si prefieres escucharlos, escribe !voz.
+- Suena un pitido al empezar la última ronda antes del cambio de lado, y tres en cada match point.
+- Al terminar cada mitad sale el MVP hasta ese momento y el top 3 por ADR.
+- Si alguien hace 4 kills o un ace en la ronda, sale en el chat.
+- Los T ven al empezar la ronda quién tiene la C4, y si muere con ella, en qué parte del mapa quedó.
+- Durante una pausa ves en pantalla cuánto falta y cuántas pausas le quedan a cada equipo.
+- Durante la partida no se puede cambiar el nombre, y si alguien se va, sale en el chat con su K/D.
+- Nuevo !admins: muestra qué admins están conectados.
+- Para repetir una ronda ya no hace falta un admin: si los capitanes de los dos equipos escriben !rr, se repite.
+- Durante la partida, kill y explode ya no sirven para suicidarse.
+
+Coach:
+- El coach mira solo en primera persona y ve a los rivales únicamente cuando el compañero que está mirando los ve.
+- En cada ronda el coach ve la plata de cada jugador de su equipo, y puede pedir la pausa táctica con !pause.
+
+Espectadores:
+- Al empezar cada ronda, los espectadores y la SourceTV ven la plata de cada equipo y si va a comprar todo, a medias o hacer eco.
+- Durante la partida, los espectadores no escriben en el chat general y los jugadores no los escuchan por voz.
+- El marcador aparece en el nombre del servidor y en el título de la SourceTV, y los avisos del servidor (ace, clutch, match point, pausas) quedan grabados en la demo. En el medio tiempo, la SourceTV muestra el MVP en el centro de la pantalla.
+
+Calentamiento:
+- Nuevo !faltan: muestra quiénes no escribieron !ready.
+- Los cuerpos y las armas tiradas desaparecen solos, así el mapa no se llena.
+- Mientras esperan a que entren todos, el calentamiento es un deathmatch: apareces con un rifle y chaleco con casco. Con !armas eliges con qué arma aparecer (por ejemplo !armas awp).
+
+Matchmaking:
+- Nuevo CMLeague Conectar: lo instalas una vez desde la sala y el botón Conectar abre el juego y entra solo a la partida, con la contraseña puesta.

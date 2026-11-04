@@ -1,0 +1,19 @@
+# Copia este archivo a .dev.vars (no se versiona). Lo leen "pnpm dev" (wrangler) y "pnpm dev:node".
+# Por defecto apunta a la Supabase LOCAL (pnpm db:start). La clave de abajo es la clave
+# pública de demostración que trae toda Supabase local: no sirve fuera de tu máquina.
+APP_ENV=development
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+CORS_ORIGINS=http://localhost:*,http://127.0.0.1:*
+FRONTEND_URL=http://localhost:5173
+GIT_SHA=dev
+# Header con la IP real del cliente. Vacío en local; en el VPS detrás de Caddy: x-forwarded-for.
+CLIENT_IP_HEADER=
+# Opcional en esta etapa:
+# SUPABASE_SERVICE_KEY=
+# URL pública del Worker de demos (sin barra final). Sin ella la API no arma demo_url.
+# DEMO_BASE_URL=https://<worker-de-demos>.workers.dev
+# URL pública del Worker de clips (sin barra final). Sin ella la API no arma video.url (queda el de Drive).
+# CLIPS_BASE_URL=https://cmleague-clips.cmleague.workers.dev
+# Dirección del relay del HUD: links de OBS de los streamers y csstv_hud_host del cfg. Sin ella, POST /me/hud-link da 501.
+# HUD_BASE_URL=https://hud.cmleague.lat

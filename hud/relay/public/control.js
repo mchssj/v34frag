@@ -1,0 +1,267 @@
+// Página de control del streamer: servidor (en el VPS), nombres de los equipos, jugador enfocado y qué partes del HUD
+// se ven. Todo con rutas relativas: sirve en / (modo local) y en /s/<token>/ (VPS).
+import { TEAM_CT, TEAM_T, connect, el, weaponName } from "./common.js";
+
+const TOGGLES = [
+  ["showScore", "Marcador"],
+  ["showPlayers", "Jugadores"],
+  ["showFocus", "Jugador enfocado"],
+  ["showKills", "Kills"],
+  ["showSeries", "Serie"],
+];
+
+// Sugerencias para el mapa: el mapcycle.txt de los servidores (es el mismo en todos). Se puede escribir otro.
+const MAPCYCLE = [
+  "de_cache", "de_cbble", "de_dust2_ob", "de_inferno", "de_inferno_classic", "de_mirage_rc1", "de_nuke_old_blue_ep",
+  "de_season", "de_tuscan", "de_strike_mirage",
+];
+document.getElementById("mapcycle").replaceChildren(...MAPCYCLE.map((m) => el("option", { value: m })));
+
+let state = null;
+let control = null;
+let order = []; // uid por tecla: 1-5 CT, 6-9 y 0 T
+
+const $ = (id) => document.getElementById(id);
+
+async function send(change) {
+  await fetch("api/control", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(change) });
+}
+
+function renderPlayers() {
+  const ct = (state?.players ?? []).filter((p) => p.team === TEAM_CT).slice(0, 5);
+  const t = (state?.players ?? []).filter((p) => p.team === TEAM_T).slice(0, 5);
+  order = [...ct.map((p) => p.uid), ...Array(5 - ct.length).fill(null), ...t.map((p) => p.uid)];
+  const button = (p, i) =>
+    el(
+      "button",
+      { class: `${control?.focus === p.uid ? "on" : ""}${p.alive ? "" : " dead"}`, onclick: () => send({ focus: p.uid }) },
+      el("span", { class: "key" }, String((i + 1) % 10)),
+      el("span", {}, `${p.name} · ${p.alive ? `${p.hp} HP · ${weaponName(p.active)}` : "muerto"}`),
+    );
+  $("players").replaceChildren(
+    el("div", { class: "ct" }, el("h3", {}, control?.teamCT || "CT"), ...ct.map((p, i) => button(p, i))),
+    el("div", { class: "t" }, el("h3", {}, control?.teamT || "T"), ...t.map((p, i) => button(p, i + 5))),
+  );
+}
+
+// Serie: el pick y el ganador van por lado (ct/t); el relay los da vuelta al intercambiar.
+const sendRow = (i, change) => send({ series: { maps: Array.from({ length: i + 1 }, (_, n) => (n === i ? change : {})) } });
+
+function sideOptions(value, withDecider) {
+  const opt = (v, label) => el("option", value === v ? { value: v, selected: "" } : { value: v }, label);
+  return [opt("", "—"), opt("ct", control.teamCT || "CT"), opt("t", control.teamT || "T"), withDecider ? opt("decider", "Decider") : null].filter(Boolean);
+}
+
+function renderSeries() {
+  const { bo, maps } = control.series;
+  $("bo").replaceChildren(
+    ...[1, 3, 5].map((n) =>
+      el("button", {
+        class: bo === n ? "on" : "",
+        onclick: () => {
+          // El último mapa de la serie es el decider si nadie lo eligió.
+          const last = n > 1 && !maps[n - 1].pick ? { pick: "decider" } : {};
+          send({ series: { bo: n, maps: Array.from({ length: n }, (_, i) => (i === n - 1 ? last : {})) } });
+        },
+      }, `BO${n}`),
+    ),
+  );
+  const won = (side) => maps.slice(0, bo).filter((m) => m.win === side).length;
+  $("series-score").textContent = bo > 1 ? `Serie: ${control.teamCT || "CT"} ${won("ct")} – ${won("t")} ${control.teamT || "T"}` : "";
+  // No pisar lo que el streamer está editando: la tabla se redibuja cuando sale de ella.
+  if ($("maps").contains(document.activeElement)) return;
+  const current = (state?.map ?? "").toLowerCase();
+  const rows = maps.slice(0, bo).map((m, i) => {
+    const now = m.map !== "" && m.map.toLowerCase() === current;
+    const input = el("input", { type: "text", list: "mapcycle", maxlength: "64", placeholder: "de_…" });
+    input.value = m.map;
+    let timer;
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => sendRow(i, { map: input.value }), 300);
+    });
+    input.addEventListener("change", () => {
+      clearTimeout(timer);
+      if (input.value.trim() !== m.map) sendRow(i, { map: input.value });
+    });
+    const select = (key, withDecider) =>
+      el("select", { onchange: (e) => sendRow(i, { [key]: e.target.value }) }, ...sideOptions(m[key], withDecider));
+    return el(
+      "tr",
+      { class: now ? "now" : "" },
+      el("td", { class: "n" }, `Mapa ${i + 1}${now ? " · en juego" : ""}`),
+      el("td", {}, input),
+      el("td", {}, select("pick", true)),
+      el("td", {}, select("win", false)),
+    );
+  });
+  $("maps").replaceChildren(...rows);
+}
+
+$("maps").addEventListener("focusout", () => setTimeout(() => !$("maps").contains(document.activeElement) && renderSeries()));
+
+function renderControl() {
+  // No pisar lo que el streamer está escribiendo.
+  for (const id of ["teamCT", "teamT"]) if (document.activeElement !== $(id)) $(id).value = control[id];
+  $("toggles").replaceChildren(
+    ...TOGGLES.map(([k, label]) => el("button", { class: control[k] ? "on" : "", onclick: () => send({ [k]: !control[k] }) }, label)),
+  );
+  renderSeries();
+  renderPlayers();
+}
+
+for (const id of ["teamCT", "teamT"]) {
+  let timer;
+  $(id).addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => send({ [id]: $(id).value }), 300);
+  });
+}
+$("swap").addEventListener("click", () => send({ swap: true }));
+$("nofocus").addEventListener("click", () => send({ focus: null }));
+
+document.addEventListener("keydown", (e) => {
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  if (e.key === "Escape") return void send({ focus: null });
+  if (!/^[0-9]$/.test(e.key)) return;
+  const uid = order[e.key === "0" ? 9 : Number(e.key) - 1];
+  if (uid) send({ focus: uid });
+});
+
+const receiving = (ago) =>
+  ago === null
+    ? el("b", { class: "bad" }, "todavía no llegó ningún paquete del servidor")
+    : ago > 15000
+      ? el("b", { class: "bad" }, `sin paquetes hace ${Math.round(ago / 1000)} s`)
+      : el("b", { class: "ok" }, "recibiendo datos del servidor");
+
+/** Modo VPS: un botón por servidor con HUD activo, quién más lo transmite y el connect de su SourceTV. */
+function renderServers(s) {
+  $("server-section").hidden = false;
+  if (!s.servers.length) {
+    $("servers").replaceChildren(el("div", { class: "hint" }, "Ningún servidor tiene el HUD activo. Pedile a un admin que lo active."));
+    return;
+  }
+  const chosen = s.servers.find((x) => x.id === s.selected);
+  $("servers").replaceChildren(
+    el(
+      "div",
+      { class: "toggles" },
+      ...s.servers.map((x) =>
+        el(
+          "button",
+          { class: x.id === s.selected ? "on" : "", onclick: () => send({ server: x.id }) },
+          `${x.receiving ? "● " : "○ "}${x.name}`,
+        ),
+      ),
+    ),
+    chosen?.streaming.length ? el("div", { class: "hint warn" }, `También lo está transmitiendo: ${chosen.streaming.join(", ")}.`) : null,
+    chosen?.tvAddress
+      ? el(
+          "div",
+          { class: "connect" },
+          el("code", {}, `connect ${chosen.tvAddress}`),
+          el("button", { onclick: (e) => copy(`connect ${chosen.tvAddress}`, e.currentTarget) }, "Copiar"),
+        )
+      : null,
+    chosen ? null : el("div", { class: "hint" }, "Elegí el servidor que vas a transmitir."),
+  );
+}
+
+async function copy(text, button) {
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Copiado";
+    setTimeout(() => (button.textContent = "Copiar"), 1500);
+  } catch {
+    // Sin permiso del portapapeles: el texto queda a la vista para copiarlo a mano.
+  }
+}
+
+/** Retraso del HUD para el servidor elegido: el tv_delay de la SourceTV, en vivo o fijo (se guarda por servidor). */
+function renderDelay(s) {
+  const server = s.mode === "vps" ? s.selected : "local";
+  $("delay-section").hidden = !server;
+  // No pisar los segundos que el streamer está escribiendo.
+  if (!server || $("delay").contains(document.activeElement)) return;
+  const set = (mode) => send({ delay: { server, mode } }).then(refreshStatus);
+  const off = s.delayLocked ? { disabled: "" } : {};
+  const tv = s.tvDelay ?? 0;
+  const fixed = typeof s.delayMode === "number";
+  const secs = el("input", { type: "number", min: "1", max: "300", step: "1", placeholder: "seg", "aria-label": "Segundos de retraso", ...off });
+  secs.value = fixed ? String(s.delayMode) : "";
+  const applySecs = () => {
+    const n = Math.round(Number(secs.value));
+    if (n >= 1 && n <= 300) set(n);
+    else secs.value = fixed ? String(s.delayMode) : "";
+  };
+  secs.addEventListener("change", applySecs);
+  secs.addEventListener("keydown", (e) => e.key === "Enter" && secs.blur());
+  const btn = (on, label, onclick) => el("button", { class: on ? "on" : "", onclick, ...off }, label);
+  $("delay").replaceChildren(
+    el(
+      "div",
+      { class: "delay" },
+      btn(s.delayMode === "tv", `SourceTV (${tv} s)`, () => set("tv")),
+      btn(s.delayMode === "live", "En vivo", () => set("live")),
+      btn(fixed, "Fijo", () => (secs.value ? applySecs() : secs.focus())),
+      secs,
+      el("span", { class: "hint" }, "segundos (1 a 300)"),
+    ),
+    el("div", { class: "hint" }, `Tu HUD va con ${s.delaySeconds ?? 0} s de retraso. Se guarda para este servidor.`),
+    s.delayLocked ? el("div", { class: "hint warn" }, `Fijado en la configuración del relay: ${s.delaySeconds} s para todos.`) : null,
+    (s.delaySeconds ?? 0) < tv
+      ? el("div", { class: "hint bad" }, "El HUD va adelantado a la SourceTV: muestra plata y vida en tiempo real. Usalo solo si transmitís desde adentro del juego.")
+      : null,
+  );
+}
+
+const delayLabel = (s) => (s.delayLocked ? " (fijo del relay)" : s.delayMode === "tv" ? " (SourceTV)" : s.delayMode === "live" ? " (en vivo)" : "");
+
+let connected = false;
+async function refreshStatus() {
+  const box = $("status");
+  if (!connected) {
+    box.replaceChildren(el("b", { class: "bad" }, "Sin conexión con el relay."), " ¿Está abierto el relay?");
+    return;
+  }
+  try {
+    const s = await (await fetch("api/status")).json();
+    if (s.mode === "vps") {
+      renderServers(s);
+      renderDelay(s);
+      const chosen = s.servers.find((x) => x.id === s.selected);
+      box.replaceChildren(
+        `Relay ${s.version} · ${s.alias} · `,
+        chosen ? receiving(chosen.lastPacketMsAgo) : el("b", { class: "bad" }, "sin servidor elegido"),
+        chosen ? ` · retraso ${s.delaySeconds} s${delayLabel(s)}` : "",
+        ` · tus HUD abiertos: ${s.hudOpen}`,
+      );
+    } else {
+      renderDelay(s);
+      box.replaceChildren(`Relay ${s.version} · `, receiving(s.lastPacketMsAgo), ` · retraso ${s.delaySeconds} s${delayLabel(s)} · HUD abiertos: ${s.hudOpen}`);
+    }
+  } catch {
+    box.replaceChildren(el("b", { class: "bad" }, "Sin conexión con el relay."));
+  }
+}
+setInterval(refreshStatus, 2000);
+
+connect({
+  page: "control",
+  onState: (s) => {
+    const mapChanged = s?.map !== state?.map;
+    state = s;
+    if (control) renderPlayers();
+    if (control && mapChanged) renderSeries();
+  },
+  onControl: (c) => {
+    control = c;
+    renderControl();
+    refreshStatus();
+  },
+  onStatus: (ok) => {
+    connected = ok;
+    refreshStatus();
+  },
+});

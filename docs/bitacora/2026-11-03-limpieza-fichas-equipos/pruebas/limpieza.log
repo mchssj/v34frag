@@ -1,0 +1,52 @@
+BEGIN
+SELECT 34
+SELECT 10
+DO
+ficha | 5296beb4-23c8-49a6-8099-e4eb1fc24257 | bigffy
+ficha | 1fa2cfd3-1f9f-4eb4-a0f7-9c990db09811 | brewley
+ficha | 33a75a38-8181-4667-8e7a-794545d99f03 | d0rfen
+ficha | 16ab8058-8c0d-496a-9f79-5d35b3606a6c | GTT
+ficha | e2f29ec5-97b5-49d3-943b-6a6f05ca320a | Hellokity
+ficha | 0ad1b5ab-9a4a-44da-9075-37313b9b66b3 | It Has Begun
+ficha | e3907362-1fb9-4ecc-84f5-ac0e82875f33 | Ivgm
+ficha | 92812082-4c0d-43ac-8577-742bf4824d05 | Koreq
+ficha | b1748284-4122-4329-b75e-a904c15f4f59 | krepz
+ficha | fcde6962-0734-4987-a218-53ed0b991ca3 | lgn
+ficha | 464cdc49-9d5a-4984-874c-c71e7279cf6a | luchov
+ficha | b375529f-297f-47a7-a76e-de89df608517 | mauro
+ficha | 6a0b8f81-2262-43e6-bc93-1b75d6dec56a | Musikk
+ficha | ae376754-4377-4268-89b9-10764b879223 | Nachinn
+ficha | 13a14b89-372e-4980-85dd-ce91ae0d39ae | Neijer
+ficha | 77d49818-9d8c-4897-a092-bc40a6f02286 | nizzz
+ficha | fde5c91b-f1de-4e6b-b98a-9a0ed73b01ec | punk
+ficha | f1656ca5-6b6f-4a6e-be1d-07bc7fa10ef2 | quir
+ficha | 774bc580-2c4a-4cc4-ab5f-9a1ed69f05c1 | s1
+ficha | aab14c2d-cf7a-49df-95b5-d58175a1d187 | Sanderz
+ficha | b65669fd-2feb-4a39-8acd-f6bb685bc5c3 | Sfp
+ficha | 2fb86856-6126-4d6d-b6a9-aa51cb79c632 | Sin1Rostro
+ficha | a5529472-dda9-4535-8652-0821bfea32d1 | slitenzz
+ficha | 90fcaf19-6bbb-4dd7-90da-906236dee23b | soniik
+ficha | 007b183d-4723-4a8d-bbfa-7f2dadf056f7 | swag
+ficha | e6213b87-d275-42a6-a9c3-76d4ff704b12 | Sxizo
+ficha | eb6fb0d5-0179-4295-a33b-d69a7685f800 | Tam
+ficha | c958030a-ab15-4729-bf62-8ef8d049bd24 | Tk
+ficha | 7a5e129d-0bcb-48f3-9703-621c3e51fdfa | tomika
+ficha | a48d50a4-0917-40f6-a2b8-1e58b7202423 | tomzinho
+ficha | 87e95cf4-565d-43fa-a629-e82f4b76cb79 | turabeek
+ficha | 5a03e716-7dda-41f4-bbad-7dfba1573d63 | Tz
+ficha | b9e8ce59-0277-4102-98f5-cbec44ee6529 | zcn
+ficha | 8af35088-c92a-4366-863d-3cdca5c9b3c4 | zgalactick
+equipo | f0ba0db9-4a51-451b-9321-c1a96e0774a4 | ACADEMY
+equipo | ea52babd-92bd-46d8-97e1-6b9631ec924a | CHILLZONE
+equipo | ef144b94-5a52-4f4c-b527-ffcd729e8e2f | EROMECOLOMBIA
+equipo | 22dad7b5-55dc-4611-8ce5-9b14589ca738 | LIVEMINT
+equipo | 2fbe6ba6-0642-45cf-98ea-67b4c6531a61 | LIVEONFIVE
+equipo | 0dee6102-772a-44e1-96a1-1a0125e73ae8 | New™  Server
+equipo | dd1f78a4-51b7-43b4-8b6e-16c57dfbb20e | Pentagram
+equipo | 2b096317-425f-424c-b1da-cfff9e589a2a | senkiu
+equipo | 9619cfa8-846b-44fe-9d80-497aa0301e7f | STRIX
+equipo | f65c1c11-16c2-4e7d-b1f1-e167c0cdba45 | TxT
+DELETE 34
+DELETE 10
+DO
+COMMIT

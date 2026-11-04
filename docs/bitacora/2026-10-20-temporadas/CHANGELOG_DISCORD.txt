@@ -1,0 +1,11 @@
+v34frag --  Changelog
+
+Temporadas
+- El ranking de jugadores ahora va por temporadas de 30 días. Cada una cierra a las 06:00 (hora de Argentina) del último día.
+- En la web ves cuánto falta para el cierre y tu puesto en la temporada.
+- Para entrar al ranking de la temporada tienes que jugar al menos 20 mixes en ella. Mientras tanto ves cuántos te faltan.
+- Al cerrar, el top 20 recibe una medalla para su perfil: Campeón, Subcampeón, Tercer puesto, Top 10 y Top 20.
+- Si terminas en nivel 10, empiezas la temporada siguiente cerca del inicio del nivel 10: conservas el 10% de lo que tenías por encima de 2001. Por ejemplo, con 2540 empiezas en 2055.
+- Si estás debajo del nivel 10, tu ELO no cambia.
+- Lo que jugaste antes de la primera temporada te cuenta para el ELO, pero no para las medallas.
+- En tu perfil queda el historial de cada temporada: puesto, ELO, tu mejor ELO y la medalla.

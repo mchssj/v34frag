@@ -171,6 +171,12 @@ bool Maps_CanVote(int client)
 			QolReply(client, "[%s] El mapa solo se puede votar en el calentamiento.", g_sTag);
 		return false;
 	}
+	if (Mm_HasLobby())
+	{
+		if (client > 0)
+			QolReply(client, "[%s] El mapa de esta sala ya se eligió en el veto.", g_sTag);
+		return false;
+	}
 	if (g_bMapChanging)
 	{
 		if (client > 0)
@@ -544,7 +550,7 @@ void Maps_ChangeTo(const char[] map)
 public Action Timer_MapsChange(Handle timer)
 {
 	if (g_bMapChanging && g_State == State_Warmup)
-		ForceChangeLevel(g_sNextMap, "v34frag: votación de mapa de los jugadores");
+		ForceChangeLevel(g_sNextMap, "CMLeague: votación de mapa de los jugadores");
 	else
 		g_bMapChanging = false;
 	return Plugin_Stop;

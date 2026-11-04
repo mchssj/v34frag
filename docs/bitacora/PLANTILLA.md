@@ -68,9 +68,22 @@ Describe el resultado final (no el proceso). Debe servirle a alguien que no part
 (reglas de negocio, estados con su diagrama, datos/tablas/columnas,
  funciones de Supabase, componentes, comandos del servidor, pantallas)
 
+## Qué cambia para cada rol
+(tabla | Rol | Qué cambia | Página del manual | con los roles del manual de usuario:
+ jugador, capitán, organizador, moderador, admin, streamer y dueño de un servidor externo.
+ Si no cambia nada para nadie, una línea: "Nada para los usuarios".)
+
+## Términos y privacidad
+(qué cambia en /terminos y /privacidad: un dato nuevo que se guarda o se publica, un servicio externo,
+ un plazo, una sanción, un pago, algo que sale de "En preparación". Si no cambia nada: "Sin cambios")
+
 ## Dónde está cada cosa
 (tabla | Qué | Archivo / ubicación |)
 ```
+
+La sección "Qué cambia para cada rol" es obligatoria. Al terminar el requerimiento, cada página que nombra se crea o se actualiza en `docs/manual/`, en el mismo commit que la web (el estilo está en [`docs/manual/README.md`](../manual/README.md)).
+
+La sección "Términos y privacidad" también es obligatoria. Si el requerimiento los cambia, se actualizan la página de la web (`web/frontend/src/features/legal/pages/`) y su `.html` de `terms/`, que dicen lo mismo, en el mismo commit. Lo que se describe pero todavía no está hecho lleva "En preparación" (`Wip` / `<span class="pending">`), y la marca se quita al implementarlo.
 
 ## GUIA_IMPLEMENTACION.md: cómo se implementó
 

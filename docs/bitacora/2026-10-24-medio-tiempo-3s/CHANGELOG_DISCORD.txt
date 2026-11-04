@@ -1,0 +1,4 @@
+CMLeague 2.5.0 --  Changelog
+
+Arreglamos el medio tiempo: el marcador ya no vuelve a 0 cuando se cambian los lados.
+Ahora el cambio de lados pasa a los 3 segundos de terminar la última ronda del primer tiempo, en los dos servidores.

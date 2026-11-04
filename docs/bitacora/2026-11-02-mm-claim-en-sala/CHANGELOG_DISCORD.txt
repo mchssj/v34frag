@@ -1,0 +1,9 @@
+CMLeague 2.8.2 --  Changelog
+
+Matchmaking:
+- Ya puedes buscar partida aunque todavía no hayas vinculado tu SteamID.
+- Si te falta, la sala de la web te muestra un comando !claim con tu código. Entra al servidor de la sala y escríbelo en el chat: quedas vinculado y el servidor te pasa a tu equipo.
+- Hasta que lo hagas, miras como espectador y el servidor te lo recuerda cada tanto.
+- Hazlo antes de que se acabe el tiempo para entrar: si no, cuenta como que no te presentaste.
+- Solo hace falta la primera vez.
+- En la sala ves quién todavía no se vinculó, así sabes por qué no arranca.

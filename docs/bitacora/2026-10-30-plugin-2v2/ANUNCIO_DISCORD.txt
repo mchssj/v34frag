@@ -1,0 +1,20 @@
+NUEVO SERVIDOR DE RETAKE Y MODO 2v2
+
+Ya podés jugar en nuestro server de retake:
+
+connect 45.235.98.57:27062
+
+RETAKE
+La ronda arranca con la bomba plantada: si sos T, la defendés; si sos CT, entrás a desactivarla.
+- Rondas de pistola y full buy. Elegí tus armas con !guns.
+- Si no quedan T y te alcanza el tiempo, desactivás al instante.
+- Partidas de 30 rondas, y en la 25 se vota el próximo mapa.
+
+2v2
+Como el Wingman de CS2: dos contra dos, un solo sitio, y gana el primero en llegar a 9. Lo prende un admin.
+- Arranca con ronda de cuchillo para elegir lado.
+- 2 pausas por equipo.
+
+En los dos modos hay ranking: mirá tu puesto con !rank y el top con !top.
+
+Todavía estamos ajustando detalles, así que si ves algo raro, avisanos.

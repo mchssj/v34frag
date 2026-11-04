@@ -1,5 +1,5 @@
 /**
- * !rr (admin): repite la ronda actual. Medio segundo después de cada inicio de ronda en vivo
+ * !rr (admin, o los dos capitanes desde la 2.7.7): repite la ronda actual. Medio segundo después de cada inicio de ronda en vivo
  * se saca una foto de la partida (marcador, estadísticas, TAB, pausas) y del equipamiento de
  * cada jugador (plata, armas, balas, chaleco, casco, kit). !rr vuelve el plugin a esa foto,
  * hace un mp_restartgame y, cuando los jugadores reaparecen, les devuelve plata y equipamiento.
@@ -18,7 +18,7 @@
 #define RR_MAX_AMMO    32
 
 bool g_bRrValid;               // hay foto de la ronda en curso (o de la que acaba de terminar)
-int g_iRrSegA, g_iRrSegB, g_iRrSegRound, g_iRrTotA, g_iRrTotB, g_iRrRoundLog;
+int g_iRrSegA, g_iRrSegB, g_iRrSegRound, g_iRrTotA, g_iRrTotB, g_iRrRoundLog, g_iRrClips;
 int g_iRrPauses[2];
 int g_iRrStats[MAX_REC][ST_COUNT];
 int g_iRrBoardFrags[MAX_REC];
@@ -39,7 +39,8 @@ int g_iRrAmmo[MAX_REC][RR_MAX_AMMO];
 
 void Rr_Init()
 {
-	RegAdminCmd("sm_rr", Cmd_Rr, ADMFLAG_GENERIC, "Repite la ronda actual: marcador, estadísticas, plata y armas vuelven a como estaban al empezarla.");
+	// Los admins (ADMFLAG_GENERIC, override "csstv_rr_admin") la repiten directo; sin admin, la piden los dos capitanes.
+	RegConsoleCmd("sm_rr", Cmd_RrEntry, "Repite la ronda actual: marcador, estadísticas, plata y armas vuelven a como estaban al empezarla. Sin admin, la piden los dos capitanes.");
 }
 
 void Rr_Reset()
@@ -62,6 +63,7 @@ void Rr_Snapshot()
 	g_iRrTotA = g_iTotA;
 	g_iRrTotB = g_iTotB;
 	g_iRrRoundLog = g_iRoundLogCount;
+	g_iRrClips = g_iClipCount;
 	g_iRrPauses[0] = g_iPausesUsed[0];
 	g_iRrPauses[1] = g_iPausesUsed[1];
 	Board_SaveAll();
@@ -115,6 +117,52 @@ void Rr_SaveEquipment(int client)
 		g_iRrAmmo[rec][a] = a < ammo ? GetEntProp(client, Prop_Send, "m_iAmmo", _, a) : 0;
 }
 
+/**
+ * Sin ser admin, !rr lo piden los dos capitanes (el que le dio nombre a cada equipo; si se fue,
+ * cualquiera de ese equipo). Vale para la ronda en curso: se repite cuando lo pidió el segundo.
+ */
+int g_iRrVoteRound = -1;       // ronda (g_iTotA + g_iTotB) de los pedidos
+bool g_bRrVote[2];
+
+public Action Cmd_RrEntry(int client, int args)
+{
+	// "csstv_rr_admin" y no "sm_rr": sm_rr ya es un comando para todos, y su nombre le daría acceso a cualquiera.
+	if (client <= 0 || CheckCommandAccess(client, "csstv_rr_admin", ADMFLAG_GENERIC, true))
+		return Cmd_Rr(client, args);
+	if (g_State != State_Live || g_bRestarting || !IsTeamSide(GetClientTeam(client)))
+	{
+		QolReply(client, "[%s] !rr solo funciona con la partida en vivo y lo piden los capitanes de los dos equipos.", g_sTag);
+		return Plugin_Handled;
+	}
+	int t = TeamIndexOf(client);
+	int captain = GetClientOfUserId(g_iCaptain[t]);
+	if (captain > 0 && captain != client && IsClientInGame(captain) && TeamIndexOf(captain) == t && IsTeamSide(GetClientTeam(captain)))
+	{
+		QolReply(client, "[%s] !rr lo pide el capitán de tu equipo: %N.", g_sTag, captain);
+		return Plugin_Handled;
+	}
+	int round = g_iTotA + g_iTotB;
+	if (g_iRrVoteRound != round)
+	{
+		g_iRrVoteRound = round;
+		g_bRrVote[0] = false;
+		g_bRrVote[1] = false;
+	}
+	if (g_bRrVote[t])
+	{
+		QolReply(client, "[%s] Ya lo pediste. Falta el capitán del %s.", g_sTag, g_sTeam[1 - t]);
+		return Plugin_Handled;
+	}
+	g_bRrVote[t] = true;
+	if (!g_bRrVote[1 - t])
+	{
+		QolChatAll("%s {#amarillo}%N{#normal} (%s) pide repetir la ronda. Para repetirla, el capitán del %s escribe {#verde}!rr{#normal}.", PREFIX, client, g_sTeam[t], g_sTeam[1 - t]);
+		return Plugin_Handled;
+	}
+	g_iRrVoteRound = -1;
+	return Cmd_Rr(client, args);
+}
+
 public Action Cmd_Rr(int client, int args)
 {
 	if (g_State != State_Live || g_bRestarting)
@@ -140,6 +188,8 @@ public Action Cmd_Rr(int client, int args)
 	g_iTotA = g_iRrTotA;
 	g_iTotB = g_iRrTotB;
 	g_iRoundLogCount = g_iRrRoundLog;
+	if (g_iClipCount > g_iRrClips)
+		g_iClipCount = g_iRrClips;   // los clips de la ronda anulada
 	Pause_Clear();
 	g_iPausesUsed[0] = g_iRrPauses[0];
 	g_iPausesUsed[1] = g_iRrPauses[1];

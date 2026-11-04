@@ -92,6 +92,7 @@ public Action Cmd_Gg(int client, int args)
 		return Plugin_Handled;
 	}
 	int t = TeamIndexOf(client);
+	minDiff = Mm_GgMinDiff(t, minDiff);
 	int mine = t == 0 ? g_iTotA : g_iTotB, theirs = t == 0 ? g_iTotB : g_iTotA;
 	if (theirs - mine < minDiff)
 	{

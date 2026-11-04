@@ -113,6 +113,23 @@ void J_KeyStr(const char[] key, const char[] value, bool comma = true)
 	J_Str(value);
 }
 
+/** ,"key":{"arma":n,...} con las armas que tienen algo. */
+void Json_WeaponCounts(const char[] key, int rec, int base)
+{
+	J_Char(',');
+	J_Str(key);
+	J_Raw(":{");
+	bool first = true;
+	for (int w = 0; w < WEAPON_COUNT; w++)
+	{
+		if (g_Stats[rec][base + w] <= 0)
+			continue;
+		J_KeyInt(g_sWeapons[w], g_Stats[rec][base + w], !first);
+		first = false;
+	}
+	J_Char('}');
+}
+
 /**
  * Arma el resultado en g_sJson. Con cancelled = true la partida se guarda como cancelada
  * (reason: "admin" o "map_change"; by: nick de quien la canceló).
@@ -188,6 +205,8 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 		J_KeyStr("winner", g_iRoundLogWinner[r] == 1 ? "a" : "b");
 		J_KeyStr("a_side", g_iRoundLogSideA[r] == TEAM_CT ? "CT" : "T");
 		J_KeyInt("reason", g_iRoundLogReason[r]);
+		J_KeyInt("a_eq", g_iRoundLogEqA[r]);
+		J_KeyInt("b_eq", g_iRoundLogEqB[r]);
 		J_Char('}');
 	}
 	J_Char(']');
@@ -221,7 +240,27 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 		J_KeyInt("defuses", g_Stats[p][ST_DEFUSES]);
 		J_KeyInt("teamkills", g_Stats[p][ST_TK]);
 		J_KeyInt("suicides", g_Stats[p][ST_SUICIDES]);
+		// 2.7.0: datos para las medallas (claves nuevas, mismo schema)
+		J_KeyInt("survived", g_Stats[p][ST_SURVIVED]);
+		J_KeyInt("won_ct", g_Stats[p][ST_WON_CT]);
+		J_KeyInt("won_t", g_Stats[p][ST_WON_T]);
+		J_KeyInt("pistol_won", g_Stats[p][ST_PISTOL_WON]);
+		J_KeyInt("eco_won", g_Stats[p][ST_ECO_WON]);
+		J_KeyInt("bombs_exploded", g_Stats[p][ST_BOMBS]);
+		J_Raw(",\"clutches\":{");
+		for (int c = 0; c < 5; c++)
+		{
+			char key[8];
+			Format(key, sizeof(key), "1v%d", c + 1);
+			J_KeyInt(key, g_Stats[p][ST_CLUTCH1 + c], c > 0);
+		}
+		J_Char('}');
+		J_KeyInt("clutch_tries", g_Stats[p][ST_CLUTCH_TRIES]);
+		Json_WeaponCounts("weapon_kills", p, ST_WKILLS);
+		Json_WeaponCounts("weapon_hs", p, ST_WHS);
 		J_Char('}');
 	}
-	J_Raw("]}");
+	J_Char(']');
+	Clips_WriteJson();   // al final: si no entran, se sacan sin cortar el resto
+	J_Char('}');
 }

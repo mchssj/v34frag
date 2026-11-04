@@ -1,0 +1,6 @@
+CMLeague 2.7.8 --  Changelog
+
+Cuenta:
+- Si te olvidaste la contraseña, ahora puedes recuperarla tú mismo desde la web. En el inicio de sesión toca "¿Olvidaste tu contraseña?", escribe tu email y te llega un enlace para elegir una nueva.
+- El enlace vence en una hora y sirve una sola vez. Si no te llega, revisa la carpeta de spam o pide otro.
+- Al elegir la contraseña nueva entras directo a la web, y se cierra tu sesión en cualquier otro dispositivo donde estuviera abierta.

@@ -1,0 +1,18 @@
+CMLeague --  Changelog
+
+Llega con la web nueva.
+
+Ranking por temporadas
+- El ranking de jugadores abre en la temporada en curso. Arriba ves cuánto falta para el cierre, cuántos entran al top con medalla y cuántos mixes necesitas para tener puesto.
+- La primera temporada es BETA y cuentan todos los mixes que jugaste desde el primero.
+- En cada fila ves tu ELO, tu mejor ELO de la temporada, tus mixes, victorias y derrotas, y qué medalla tendrías si la temporada cerrara hoy.
+- Si eres nivel 10, también ves con cuánto ELO empezarías la temporada siguiente.
+- Si todavía no llegas al mínimo, ves cuántos mixes llevas (por ejemplo, 12/20). Con "Solo con puesto" dejas solo a los que ya entraron.
+- En "Histórico" está el ranking de siempre, con todos los mixes: equipo, rating, K/D y tu tendencia en los últimos 30.
+
+Equipos
+- Tus equipos aparecen marcados con "TU EQUIPO", aunque estés en varios.
+- Con "Contar también PCW" suman las PCW jugadas como equipo oficial.
+
+Comparador
+- Desde "Comparar" eliges dos jugadores buscando por su alias. Por defecto, uno de los dos eres tú.
