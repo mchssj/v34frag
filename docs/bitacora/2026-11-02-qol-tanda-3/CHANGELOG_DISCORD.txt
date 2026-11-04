@@ -1,0 +1,16 @@
+CMLeague 2.7.6 --  Changelog
+
+Pausas:
+- Nueva pausa técnica con !tech, para un crash o un problema de conexión. Hay una por equipo en cada mitad, dura 2 minutos y no gasta las pausas tácticas. Se puede terminar antes si los dos equipos escriben !unpause.
+- Cuando termina una pausa, aparece una cuenta atrás de 3 segundos y suena la campana.
+
+Pedir armas:
+- En el freezetime, aprieta la R para pedir un arma. Tu equipo ve el pedido, y el primero que aprieta la E en la zona de compra te la compra con su plata.
+
+Durante la partida:
+- Antes de que termine el freezetime ves qué tiene cada uno de tu equipo: armas, chaleco, kit, granadas y plata. También con !eq.
+- Si alguien queda solo contra 2 o más, los muertos ven el clutch en pantalla, y si lo gana sale en el chat.
+- Si te caes y vuelves en la misma mitad, recuperas tu plata y tu equipo.
+
+Calentamiento:
+- Nuevo !nades para practicar granadas: son infinitas y se ve la trayectoria. Con !rethrow vuelves al lugar desde donde tiraste la última.

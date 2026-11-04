@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.9.1"
+#define PLUGIN_VERSION "2.9.3"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -96,6 +96,10 @@ bool g_bHalfSwap;   // el próximo reinicio es la vuelta del medio tiempo
 ConVar g_cvAbandonPlayers;
 ConVar g_cvAbandonSeconds;
 ConVar g_cvEndDelay;
+// Estado para los otros plugins (csstv_qol, csstv_coach, csstv_pedir…): leer esta ConVar no imprime
+// nada en la consola, a diferencia de sm_csstv_status con ServerCommandEx.
+ConVar g_cvStateOut;
+char g_sStateNames[][] = { "calentamiento", "iniciando (LO3)", "en vivo", "medio tiempo", "terminada", "ronda de cuchillo" };
 
 // Estado de la partida
 MatchState g_State = State_Warmup;
@@ -154,6 +158,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	// API de ClientMod (clientmod.smx): opcional, para saber quién acepta colores RGB.
 	MarkNativeAsOptional("CM_GetClientModAuth");
+	MarkNativeAsOptional("CSSTV_CoachSide");   // csstv_coach: el coach pide la pausa de su equipo
 	return APLRes_Success;
 }
 
@@ -182,6 +187,7 @@ public void OnPluginStart()
 	g_cvAbandonSeconds = CreateConVar("csstv_abandon_seconds", "180", "Segundos seguidos con pocos jugadores antes de cancelar por abandono.", _, true, 5.0, true, 1800.0);
 	g_cvEndDelay     = CreateConVar("csstv_end_delay", "15", "Segundos entre el fin de la partida y la vuelta al calentamiento.", _, true, 1.0, true, 60.0);
 	CreateConVar("csstv_reporter_version", PLUGIN_VERSION, "Versión de CSSTV Match Reporter.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	g_cvStateOut     = CreateConVar("csstv_state", "calentamiento", "Solo lectura: estado de la partida para los otros plugins (se actualiza cada segundo).", FCVAR_DONTRECORD);
 	AutoExecConfig(true, "csstv_reporter");
 
 	RegAdminCmd("sm_live", Cmd_Live, ADMFLAG_GENERIC, "Empieza la partida con los equipos como están. Uso: sm_live [knife] [mrN] (knife = ronda de cuchillo para elegir lado; mr3 = gana el primero en llegar a 4)");
@@ -193,6 +199,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ready", Cmd_Ready, "Marcarse listo.");
 	RegConsoleCmd("sm_unready", Cmd_Unready, "Quitar el listo.");
 	RegConsoleCmd("sm_notready", Cmd_Unready, "Quitar el listo.");
+	RegConsoleCmd("sm_faltan", Cmd_Faltan, "En el calentamiento: quiénes faltan escribir !ready.");
 	RegConsoleCmd("sm_score", Cmd_Score, "Muestra el marcador.");
 
 	CreateTimer(1.0, Timer_AbandonCheck, _, TIMER_REPEAT);
@@ -225,6 +232,28 @@ public void OnPluginStart()
 	Whois_Init();
 	Tips_Init();
 	Clips_Init();
+}
+
+/**
+ * csstv_state cambia en el mismo cuadro que el estado. Una vez por segundo no alcanza: csstv_qol daba las armas del
+ * calentamiento en la ronda de cuchillo porque todavía leía "calentamiento".
+ */
+public void OnGameFrame()
+{
+	static int published = -1;
+	int state = view_as<int>(g_State);
+	if (state != published)
+	{
+		published = state;
+		g_cvStateOut.SetString(g_sStateNames[state]);
+	}
+}
+
+/** La ConVar queda después de descargar el plugin: vacía quiere decir "sin reporter". */
+public void OnPluginEnd()
+{
+	g_cvStateOut.SetString("");
+	Titles_Restore();
 }
 
 public void OnMapStart()
@@ -459,8 +488,7 @@ public Action Cmd_Score(int client, int args)
 
 public Action Cmd_Status(int client, int args)
 {
-	static const char stateNames[][] = { "calentamiento", "iniciando (LO3)", "en vivo", "medio tiempo", "terminada", "ronda de cuchillo" };
-	ReplyToCommand(client, "[%s] v%s · estado: %s · partida: %s · %d-%d", g_sTag, PLUGIN_VERSION, stateNames[view_as<int>(g_State)],
+	ReplyToCommand(client, "[%s] v%s · estado: %s · partida: %s · %d-%d", g_sTag, PLUGIN_VERSION, g_sStateNames[view_as<int>(g_State)],
 		g_sMatchUid[0] ? g_sMatchUid : "-", g_iTotA, g_iTotB);
 	char mode[96];
 	Http_ModeText(mode, sizeof(mode));
@@ -521,17 +549,7 @@ public Action Timer_ReadyReminder(Handle timer)
 		return Plugin_Continue;
 	}
 	char names[256];
-	int missing;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (!IsCountedPlayer(i) || g_bReady[i])
-			continue;
-		char n[MAX_NAME_LENGTH];
-		GetClientName(i, n, sizeof(n));
-		if (missing < 6)
-			Format(names, sizeof(names), "%s%s%s", names, missing ? ", " : "", n);
-		missing++;
-	}
+	int missing = ReadyMissing(names, sizeof(names), 6);
 	PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
 	if (missing)
 		PrintToChatAll("%s Faltan: %s%s", PREFIX, names, missing > 6 ? "…" : "");
@@ -540,6 +558,41 @@ public Action Timer_ReadyReminder(Handle timer)
 	else if (g_LinkState == Link_Pending)
 		QolChatAll("%s Vínculo pendiente: {#amarillo}%s{#normal}. Falta que confirme alguien de %s con !match %s.", PREFIX, g_sLinkTitle, g_sLinkTeamName[2 - g_iLinkProposer], g_sLinkCode);
 	return Plugin_Continue;
+}
+
+/** Nombres de los que no escribieron !ready (hasta max) y cuántos son en total. */
+int ReadyMissing(char[] names, int len, int max)
+{
+	names[0] = '\0';
+	int missing;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsCountedPlayer(i) || g_bReady[i])
+			continue;
+		char n[MAX_NAME_LENGTH];
+		GetClientName(i, n, sizeof(n));
+		if (missing < max)
+			Format(names, len, "%s%s%s", names, missing ? ", " : "", n);
+		missing++;
+	}
+	return missing;
+}
+
+public Action Cmd_Faltan(int client, int args)
+{
+	if (!g_cvReadySystem.BoolValue || g_State != State_Warmup)
+	{
+		ReplyToCommand(client, "%s Solo en el calentamiento.", PREFIX);
+		return Plugin_Handled;
+	}
+	char names[256];
+	int total = CountTeamPlayers();
+	int missing = ReadyMissing(names, sizeof(names), 10);
+	if (!missing)
+		ReplyToCommand(client, "%s Están todos listos (%d/%d).", PREFIX, total, total);
+	else
+		ReplyToCommand(client, "%s Listos %d/%d. Faltan: %s%s", PREFIX, total - missing, total, names, missing > 10 ? "…" : "");
+	return Plugin_Handled;
 }
 
 void CheckReadyStart()
@@ -798,6 +851,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	{
 		g_State = State_Halftime;
 		PrintToChatAll("%s Medio tiempo. Se cambian los lados.", PREFIX);
+		CreateTimer(0.3, Timer_HalfSummary, _, TIMER_FLAG_NO_MAPCHANGE);   // en el mismo instante del fin de la ronda no queda en la demo
 		HalfTalk_Begin();
 		CreateTimer(g_cvHalftimeDelay.FloatValue, Timer_Halftime, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -978,6 +1032,8 @@ void CancelMatch(const char[] reason, const char[] by)
  */
 public Action Timer_AbandonCheck(Handle timer)
 {
+	g_cvStateOut.SetString(g_sStateNames[view_as<int>(g_State)]);
+	Titles_Update();
 	int min = Mm_AbandonMin(g_cvAbandonPlayers.IntValue);
 	if (min <= 0 || !(g_State == State_Starting || g_State == State_Live || g_State == State_Halftime || g_State == State_Knife))
 	{
