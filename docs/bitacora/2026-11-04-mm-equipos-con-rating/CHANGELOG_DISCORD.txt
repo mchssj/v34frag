@@ -1,0 +1,6 @@
+CMLeague 2.9.12 --  Changelog
+
+Matchmaking
+- Los equipos ahora quedan más parejos: además del ELO, el armado mira tu rating de las últimas partidas 5v5. Si juegas mejor de lo que dice tu ELO, ya no terminas en el equipo que ya era el más fuerte.
+- El ELO sigue siendo lo que más pesa, y lo que ganas o pierdes se calcula igual que siempre.
+- Si jugaste pocas partidas, tu rating cuenta menos hasta que juegues más.

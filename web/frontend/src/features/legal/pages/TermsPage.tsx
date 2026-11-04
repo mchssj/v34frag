@@ -256,8 +256,10 @@ const SECTIONS: LegalSection[] = [
           y no son tuyos: son una medida de la liga.
         </li>
         <li>
-          El matchmaking <Wip>En prueba</Wip> arma los equipos según el ELO, te
-          pide confirmar la partida y te asigna un servidor. Si confirmas, te
+          El matchmaking <Wip>En prueba</Wip> arma los equipos según el ELO (y,
+          si la liga lo enciende, también según el rating de tus partidas
+          recientes, para que queden parejos), te pide confirmar la partida y te
+          asigna un servidor. Si confirmas, te
           comprometes a jugarla entera.
         </li>
       </ul>

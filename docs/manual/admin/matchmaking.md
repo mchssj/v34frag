@@ -18,6 +18,7 @@ El matchmaking se configura en Administración › [Matchmaking](/admin/matchmak
 | **Grupos** | Tamaño máximo (1 = sin grupos; 2 = dúo) y la diferencia de ELO máxima dentro del grupo |
 | **Tiempos** | Para aceptar, por turno del veto, para conectarse, esperando servidor, para volver si se desconecta y el cierre de la cola antes de que termine la temporada |
 | **Ventana de ELO** | Con qué diferencia de ELO empieza a emparejar, cuánto se abre y cada cuánto, el tope y después de cuánto tiempo se empareja sin límite |
+| **Equipos parejos con el rating** | Encendido, los equipos se reparten con un ELO de armado: el ELO más un ajuste por el rating 5v5 de los últimos días. Se elige cuántos puntos da cada 1,00 de rating, el tope del ajuste, los mapas de corrección (acercan a 1,00 el rating de quien jugó poco) y los días que se miran. El formulario muestra un ejemplo con los valores. Quién entra a la sala, el capitán, el veto y el ELO que se gana o pierde siguen con el ELO. Apagado, todo queda como antes |
 | **Sanciones** | Los minutos de cada escalón, separados por coma. Se baja un escalón cada 7 días sin faltas |
 
 Guarda con **Guardar cambios**. Aquí también cambias la **imagen del MVP**, el fondo de la tarjeta del mejor jugador de cada partida.

@@ -889,6 +889,16 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. Probar con dos cuentas: B suma a A y A lo ve al instante; cambiar la foto y verla igual en el menú de la cuenta, la ficha, el ranking y Jugar.
 - **Bitácora:** [`2026-11-03-amigos-y-foto-perfil`](bitacora/2026-11-03-amigos-y-foto-perfil/)
 
+### 1.59 Equipos del matchmaking más parejos con el rating (replanteo `73`): en `main`, sin desplegar
+
+- **Qué es:** con `mm_config.balance_rating` encendido, los equipos se reparten con un ELO de armado: ELO + ajuste por el rating 5v5 reciente, con tope (±100 por defecto). Apagado (como viene), igual que antes. La ventana de la cola, el capitán, el veto y el ELO que se gana o pierde siguen con el ELO.
+- **Hecho el 2026-11-04 en `main`:** replanteo `73` con inversa, prueba en staging (`pruebas/probar_73.sh`, con rollback), el bloque del admin, el manual y los términos (sección 8). La API no cambió.
+- **Falta:**
+  1. Aplicar el `73` en producción **sin un mix en curso** (el `alter table mm_config` bloquea un instante al worker del matchmaking).
+  2. Desplegar la web desde `main`.
+  3. Encender el interruptor, revisar las primeras salas (consulta en la guía) y publicar el changelog.
+- **Bitácora:** [`2026-11-04-mm-equipos-con-rating`](bitacora/2026-11-04-mm-equipos-con-rating/)
+
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".
