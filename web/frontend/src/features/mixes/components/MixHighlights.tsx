@@ -1,5 +1,7 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 
+import { mapsOptions } from "@/features/maps/api/queries"
+import { mapImage } from "@/features/maps/lib/catalog"
 import { gameClipsOptions } from "@/features/series/api/queries"
 import { Highlights } from "@/features/matchmaking/room/Highlights"
 import { MvpAndLeaders } from "@/features/matchmaking/room/RoomStats"
@@ -78,6 +80,8 @@ function MixMvp({ room }: { room: Room }) {
 
 function MixClips({ matchId, map }: { matchId: string; map: string | null }) {
   const clips = useQuery(gameClipsOptions(matchId)).data?.items
+  // La foto del mapa del catálogo, para el video y las tarjetas (sin ella, el degradado).
+  const maps = useQuery(mapsOptions).data
   if (!clips?.length) return null
   const items: MmClip[] = clips.map((c) => ({
     id: c.id,
@@ -93,7 +97,7 @@ function MixClips({ matchId, map }: { matchId: string; map: string | null }) {
       clips={items}
       players={[]}
       mapName={map ? mapLabel(map) : null}
-      poster={null}
+      poster={mapImage(maps, map)}
     />
   )
 }

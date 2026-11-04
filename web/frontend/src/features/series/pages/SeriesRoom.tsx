@@ -3,21 +3,16 @@ import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DownloadIcon,
-  PlayIcon,
-  XIcon,
-} from "lucide-react"
+import { DownloadIcon, XIcon } from "lucide-react"
 import { BackButton } from "@/components/brand/BackButton"
-import { useRef, useState } from "react"
+import { Carousel } from "@/components/brand/Carousel"
+import { ClipCard, ClipCardPending } from "@/components/brand/ClipCard"
+import { useState } from "react"
 
 import { TeamCrest } from "@/components/brand/TeamCrest"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Spinner } from "@/components/ui/spinner"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapImage } from "@/features/maps/lib/catalog"
 import { RoomStats } from "@/features/mixes/components/MixRoom"
@@ -643,45 +638,18 @@ function Clips({ maps }: { maps: SeriesMap[] }) {
   const clips = carouselClips(maps, byGame)
   const waiting = clipsPending(maps)
   const [open, setOpen] = useState<SeriesClip | null>(null)
-  const strip = useRef<HTMLDivElement>(null)
+  const catalog = useQuery(mapsOptions).data
   if (ids.length === 0 || (pending && clips.length === 0)) return null
   if (clips.length === 0 && !waiting) return null
-  const scroll = (dir: 1 | -1) =>
-    strip.current?.scrollBy({ left: dir * 460, behavior: "smooth" })
   return (
     <section aria-label="Jugadas destacadas" className="flex flex-col gap-2.5">
-      <div className="flex items-center gap-2">
-        <Heading>Jugadas destacadas</Heading>
-        {clips.length > 2 && (
-          <span className="ml-auto flex gap-1.5">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label="Anteriores"
-              onClick={() => scroll(-1)}
-            >
-              <ChevronLeftIcon aria-hidden />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label="Siguientes"
-              onClick={() => scroll(1)}
-            >
-              <ChevronRightIcon aria-hidden />
-            </Button>
-          </span>
-        )}
-      </div>
       {open && <ClipPlayer clip={open} onClose={() => setOpen(null)} />}
-      <div
-        ref={strip}
-        className="flex snap-x gap-2.5 overflow-x-auto overflow-y-hidden pb-1.5"
-        tabIndex={0}
-        aria-label="Clips de la serie"
+      <Carousel
+        title={<Heading>Jugadas destacadas</Heading>}
+        label="Clips de la serie"
       >
         {clips.length === 0 && (
-          <ProcessingCard
+          <ClipCardPending
             text="Procesando clips…"
             sub="Aparecen cuando se graben"
           />
@@ -692,76 +660,28 @@ function Clips({ maps }: { maps: SeriesMap[] }) {
             c.video.status === "done" && !!(c.video.url || c.video.embed_url)
           if (!ready)
             return (
-              <ProcessingCard
+              <ClipCardPending
                 key={c.id}
                 text="Procesando clips…"
                 sub={`${who} · ${c.map ?? ""}, ronda ${c.round}`}
               />
             )
           return (
-            <Card
+            <ClipCard
               key={c.id}
-              variant="outline"
-              asChild
-              className={cn(
-                "w-[220px] flex-none snap-start overflow-hidden text-left",
-                open?.id === c.id && "border-primary ring-1 ring-primary"
-              )}
-            >
-              <button
-                type="button"
-                onClick={() => setOpen(c)}
-                aria-label={`Ver ${clipKind(c.type)} de ${who}`}
-              >
-                <span className="relative grid h-[118px] place-items-center bg-[linear-gradient(135deg,color-mix(in_oklch,var(--primary)_35%,#111),#111_70%)] text-white">
-                  <Badge
-                    variant="solid"
-                    shape="tag"
-                    size="sm"
-                    className="absolute top-2 left-2 font-mono font-bold"
-                  >
-                    {clipKind(c.type)}
-                  </Badge>
-                  <span className="grid size-9 place-items-center rounded-full bg-white/20">
-                    <PlayIcon aria-hidden className="size-4" />
-                  </span>
-                  {c.video.seconds != null && (
-                    <span className="absolute right-2 bottom-2 rounded bg-black/55 px-1 font-mono text-[11px]">
-                      0:{String(Math.round(c.video.seconds)).padStart(2, "0")}
-                    </span>
-                  )}
-                </span>
-                <span className="flex flex-col px-2.5 py-2 text-[13px]">
-                  <span className="truncate font-medium">{who}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {c.map} · ronda {c.round}
-                  </span>
-                </span>
-              </button>
-            </Card>
+              kind={clipKind(c.type)}
+              who={who}
+              detail={`${c.map ?? ""} · ronda ${c.round}`}
+              image={c.map ? mapImage(catalog, c.map) : null}
+              seconds={c.video.seconds}
+              selected={open?.id === c.id}
+              onSelect={() => setOpen(c)}
+              label={`Ver ${clipKind(c.type)} de ${who}`}
+            />
           )
         })}
-      </div>
+      </Carousel>
     </section>
-  )
-}
-
-function ProcessingCard({ text, sub }: { text: string; sub: string }) {
-  return (
-    <Card
-      variant="outline"
-      className="w-[220px] flex-none snap-start overflow-hidden"
-    >
-      <span className="grid h-[118px] place-items-center bg-[repeating-linear-gradient(45deg,var(--muted),var(--muted)_10px,var(--card)_10px,var(--card)_20px)] text-[13px] text-muted-foreground">
-        <span className="flex flex-col items-center gap-2">
-          <Spinner className="size-5" />
-          {text}
-        </span>
-      </span>
-      <span className="truncate px-2.5 py-2 text-xs text-muted-foreground">
-        {sub}
-      </span>
-    </Card>
   )
 }
 

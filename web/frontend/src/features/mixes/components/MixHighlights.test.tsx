@@ -68,8 +68,30 @@ const room = {
   },
 } as unknown as Room
 
+const DUST2 = "https://x.test/photos/maps/dust2.webp"
+
 function api(opts: { image?: string | null; clips?: unknown[] }) {
   server.use(
+    http.get(`${API}/api/v1/maps`, () =>
+      HttpResponse.json({
+        items: [
+          {
+            name: "de_dust2",
+            versions: ["de_dust2"],
+            active: true,
+            position: 1,
+            mixes: true,
+            veto_default: true,
+            image_url: DUST2,
+          },
+        ],
+        total: 1,
+        page: 1,
+        per: 100,
+        sort: "position",
+        order: "asc",
+      })
+    ),
     http.get(`${API}/api/v1/mm/mvp-image`, () =>
       HttpResponse.json({ url: opts.image ?? null })
     ),
@@ -154,11 +176,19 @@ describe("MixHighlights", () => {
         },
       ],
     })
-    render()
+    const { container } = render()
     expect(
       await screen.findByRole("region", {
         name: "Lo más destacado de la partida",
       })
     ).toBeInTheDocument()
+    // La tarjeta del clip lleva la foto del mapa del catálogo.
+    const card = screen.getByRole("button", { name: /Ver .*Ace de kyan/ })
+    await vi.waitFor(() =>
+      expect(card.querySelector(`img[src="${DUST2}"]`)).not.toBeNull()
+    )
+    expect(
+      container.querySelector("video, [data-carousel-track]")
+    ).not.toBeNull()
   })
 })
