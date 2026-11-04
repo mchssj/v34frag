@@ -18,7 +18,7 @@ Tu alias es tu nombre en toda la web: el ranking, los planteles y el chat. En el
 
 Te mandamos un enlace a tu email. Ábrelo y después inicia sesión.
 
-> **Ojo:** el enlace vence en 1 hora. Si no lo ves, revisa la carpeta de spam. Sin el correo confirmado no puedes buscar partida.
+> **Ojo:** el enlace vence en 1 hora. Si no lo ves, revisa la carpeta de spam. Si sigue sin llegar, un admin te lo puede reenviar. Sin el correo confirmado no puedes buscar partida.
 
 ## 3. Completar tu perfil
 
@@ -43,5 +43,5 @@ Todo se cambia en **Mi perfil**, desde el menú de tu cuenta:
 
 - **Alias:** lo puedes cambiar una vez cada 15 días.
 - **Foto:** JPEG, PNG o WebP de hasta 1 MB. Se recorta en cuadrado y se ve al instante en toda la web. Si un admin le pone otra foto a tu ficha, se ve esa hasta que subas una nueva.
-- **Contraseña:** al cambiarla se cierran tus otras sesiones abiertas.
+- **Contraseña:** al cambiarla se cierran tus otras sesiones abiertas. Si te la olvidaste, toca **¿Olvidaste tu contraseña?** al iniciar sesión.
 - **Privacidad:** tu alias, tus estadísticas y tus partidas son siempre públicos. Por ahora, para pasar tu perfil a privado, pídeselo a un admin.

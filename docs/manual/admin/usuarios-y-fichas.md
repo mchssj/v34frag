@@ -25,9 +25,22 @@ En **Cuentas** buscas y filtras por **Admins**, **Moderadores**, **Organizadores
   | Moderador | Además banea desde la web (no permanentes), modera equipos y gestiona torneos |
 
   El rol de admin no se da desde la web.
+- **Acceso:** ver si confirmó su correo y cuándo entró por última vez, y ayudarlo a entrar (ver abajo).
 - **VIP:** darlo hasta una fecha o de por vida, y ver hasta cuándo dura.
 - **Streamer del HUD:** con la marca, la cuenta puede generar su link de OBS desde Mi perfil y transmitir cualquier servidor con el HUD activo. Quitarla corta su link en 30 segundos. A la cuenta se le avisa en los dos casos.
 - **Banear** a su ficha (ver [Banear a un jugador](/help/moderador/banear-jugador)).
+
+## Ayudar a alguien a entrar
+
+En la sección **Acceso** de la cuenta tienes tres acciones. Todas piden confirmar y queda registrado quién las hizo.
+
+| Acción | Cuándo usarla | Qué pasa |
+|---|---|---|
+| **Reenviar activación** | No le llegó el correo de activación. Solo en cuentas sin confirmar | Le llega otro correo con el enlace |
+| **Enviar correo de contraseña** | Se olvidó la contraseña y tiene acceso a su correo | Le llega un enlace para elegir otra. La actual sigue valiendo hasta que la cambie |
+| **Contraseña aleatoria** | Se olvidó la contraseña y no puede usar su correo | La actual deja de valer y se cierran sus sesiones. La nueva se muestra **una sola vez** |
+
+> **Ojo:** pásale la contraseña aleatoria por un canal privado y recomiéndale cambiarla en Mi perfil. No se puede usar en tu propia cuenta ni en la de otro admin. La tuya se cambia en [Cuenta](/profile/account).
 
 ## Palabras bloqueadas
 

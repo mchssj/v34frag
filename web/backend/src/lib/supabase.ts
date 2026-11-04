@@ -20,6 +20,13 @@ export const userClient = (cfg: Config, token: string): Db =>
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
+/**
+ * Cliente con la clave de administrador: se salta las RLS. Solo para las acciones de cuenta de los admins (plan
+ * docs/bitacora/2026-11-03-admin-cuentas-usuarios), siempre detrás de requireAdmin. Null si la clave no está configurada.
+ */
+export const serviceClient = (cfg: Config): Db | null =>
+  cfg.SUPABASE_SERVICE_KEY ? createClient<Database>(cfg.SUPABASE_URL, cfg.SUPABASE_SERVICE_KEY, options) : null;
+
 // Para validar tokens se reutiliza un cliente por configuración: guarda en caché las claves
 // públicas (JWKS) y así cada request se valida sin ir a Supabase. Nunca se le inicia sesión.
 const verifiers = new WeakMap<Config, Db>();

@@ -40,7 +40,6 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   - **Publicar la privacidad actualizada** en el próximo despliegue de la web (no hace falta para la base).
   - **Sin relación con el corte:**
     - Dar de alta a los streamers en producción (Administración): hay 0.
-    - Rotar el webhook de la cola de Discord.
 - **Matchmaking en el #1, primeros intentos (2026-11-03, los dos cancelados):**
   - **`de_nuke_old_blue` no está en el #1** y sí en el pool del 5v5: la sala se cancela con "El servidor no tiene el mapa". Subir el mapa o sacarlo del pool.
   - **Sala de `de_inferno`:** el último jugador entró a las 22:45:47, 11 s antes del plazo de conexión (5 min), porque varios tuvieron que hacer `!claim` dentro del servidor. `mm_tick` la canceló a las 22:46:00 con los 10 conectados. Revisar si el plazo debe seguir contando con todos adentro, y que el `!claim` se pueda hacer antes de entrar a la cola.
@@ -49,20 +48,13 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **flow (#2):** `csstv_claim "1"` en su cfg desde el 2026-11-03; se carga en el próximo cambio de mapa.
 - **flow (#2) sin matchmaking desde el 2026-11-03 (21:25 UTC, Daniel):** `csstv_mm "0"` en su cfg y por consola, y `mm_enabled = false`. Se juega mix normal. Esa tarde tuvo `csstv_mm "1"` un rato.
 
-## Acciones de cuenta en Administración › Usuarios (2026-11-03): listas, sin desplegar
+## Recuperar la contraseña y acciones de cuenta (desplegado el 2026-11-04): falta unificar la rama de la API
 
-- Reenviar activación, correo de contraseña y contraseña aleatoria, solo admins ([`2026-11-03-admin-cuentas-usuarios`](bitacora/2026-11-03-admin-cuentas-usuarios/)). Replanteo `72` en staging, sin commit.
-- **Falta**, sin partidas y **después** de recuperar la contraseña: los pasos de su guía, incluida la clave de administrador en `api.env` y `sudo sb confirmar-correo on`.
-
-## Recuperar la contraseña (2026-11-03): traído a esta rama, sin desplegar
-
-- `777271fb` de Kyan está en `feat/frontend-fase-1`, sin commit y solo ese cambio. `schema.d.ts` y `routeTree.gen.ts` se regeneraron con el código de esta rama, no se copiaron de la suya ([`2026-11-03-recuperar-contrasena`](bitacora/2026-11-03-recuperar-contrasena/)).
-- **Falta, en este orden:**
-  1. **Sin mix, salas ni cola.** La API se despliega desde `0d573288` más las rutas de Kyan, nunca desde esta rama: a `feat/frontend-fase-1` le faltan el manual y el anticheat, y se borrarían de producción. Quedó preparada y probada (504 pruebas) en un worktree temporal del scratchpad de la sesión; si ya no está, se rehace con `git worktree add --detach <dir> 0d5732881cbe` y aplicando `web/backend` de `777271fb`.
-  2. Desplegar la API (`deploy/vps/desplegar.sh api` de ese worktree) y la web (`deploy/vps/desplegar.sh web` de esta rama; publica también la privacidad).
-  3. Plantillas en el VPS: copiar `deploy/auth/plantillas/` a `/srv/supabase/plantillas`, instalar el `Caddyfile` (`/plantillas/*`) y `cmleague.yml`, y `sudo sb up -d --no-deps auth`. **El paso de su guía con `configurar-auth.mjs` ya no sirve:** cambia la configuración de la nube.
-  4. Probarlo con un correo de prueba.
-- **Falta en su documentación:** las secciones "Qué cambia para cada rol" y "Términos y privacidad", y la página del manual.
+- **En producción:** recuperar la contraseña, las acciones de cuenta en Administración › Usuarios y la confirmación del correo encendida (`sudo sb confirmar-correo [on|off]`). Probado de punta a punta con cuentas temporales ([`2026-11-03-admin-cuentas-usuarios`](bitacora/2026-11-03-admin-cuentas-usuarios/), [`2026-11-03-recuperar-contrasena`](bitacora/2026-11-03-recuperar-contrasena/)).
+- **Falta:**
+  - **La API se despliega desde la rama local `deploy/api-produccion`** (`0d573288` más estos cambios y el manual), no desde `feat/frontend-fase-1`: a esa le faltan el manual y el anticheat. Falta unificar las ramas.
+  - Publicar `terms/privacidad.html` y el `CHANGELOG_DISCORD.txt` de los dos requerimientos.
+  - En la documentación de recuperar la contraseña: "Qué cambia para cada rol" y "Términos y privacidad".
 
 ## Corte a la base de producción (2026-11-03): base hecha, falta el VPS
 
@@ -515,7 +507,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - En producción, `game_servers.panel_server_id = 'edbee7d6'` para RBK.
   - En RBK (`SERVER1_*`), `csstv_demo "1"`, con la copia `csstv_reporter.cfg.bak_20261026`. Se aplica en el próximo cambio de mapa.
 - RBK ya tenía `+tv_enable 1 +tv_port 27063` en el arranque del panel. Nuestro servidor no cambia.
-- **Cancelado el 2026-10-29** (RBK dejó de usarse). Queda por limpiar el secreto `PTERO_KEY_edbee7d6` del Worker y la key de `cloudflare/demo-worker/scripts/dev-vars.py`. Lo que faltaba era, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
+- **Cancelado el 2026-10-29** (RBK dejó de usarse). **Limpiado el 2026-11-03:** se borró el secreto `PTERO_KEY_edbee7d6` del Worker, su key de `cloudflare/demo-worker/scripts/dev-vars.py` y las variables `SERVER1_*` del `.env`. Lo que faltaba era, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
 - **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
 
 ### 1.26 Equipo y Torneos en la API (replanteo `33`): falta el frontend
@@ -734,7 +726,8 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - **Producción:** `game_servers.panel_url = 'https://panel-mvzg.com'` para `96bb5060` (ya tenía `panel_server_id = '157703b5'`). Secreto `PTERO_KEY_157703b5` cargado en el Worker `v34frag-demos` (`wrangler secret put`, por stdin). Con eso, las demos del #1 bajan por la API del panel: no hace falta sumarlo a `demos-sftp.json` del VPS.
   - **Falta:**
     1. En la próxima partida del #1, ver `Grabando demo` en su log y la partida con `demo_status = uploaded`.
-    2. Sumar `PTERO_KEY_157703b5` a `cloudflare/demo-worker/scripts/dev-vars.py` (con `SFTP_CSS_API_KEY`) para `wrangler dev`.
+    2. ~~Sumar `PTERO_KEY_157703b5` a `cloudflare/demo-worker/scripts/dev-vars.py` (con `SFTP_CSS_API_KEY`) para `wrangler dev`.~~ Hecho el 2026-11-03.
+  - **Limpieza del `.env` (2026-11-03, Daniel):** se borraron `SERVER1_*` (RBK), `ENSAYO_*` (ensayo del corte) y `FLOW_CSSTV_SERVER_TOKEN` (token de la fila histórica `7b01c85b`). Staging (`STAGING_*`) se deja porque se sigue usando. Las `NUBE_*` y `SUPABASE_ACCESS_TOKEN_PROD` se pueden borrar después del 2026-12-03, cuando venza la vuelta atrás a la nube.
   - **Visto de paso en los logs del #1 (sin tocar):** `addons/sourcemod/configs/adminmenu_cfgs.txt` tiene un error de sintaxis en la línea 33, y `CM_PickupWeapon` no puede escribir su cfg (permisos).
 
 ### 1.45 API key del panel de flow en el Worker de demos: cargada, falta ver la primera demo (y pronto la del #1)
@@ -747,7 +740,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Hecho el 2026-11-02:** secreto `PTERO_KEY_f337a7d9` cargado en el Worker `v34frag-demos` de producción (`wrangler secret put`, por stdin). `wrangler secret list` lo muestra junto a `ADMIN_KEY`, `CRASH_KEY`, `DEMO_WORKER_TOKEN`, `PTERO_KEY_edbee7d6` y `PTERO_PANEL_API_KEY`. No se corrió `/run` a mano: lo toma el próximo cron.
 - **Falta:**
   1. Ver que la próxima demo de flow llegue a R2 por la API, sin `demo_via = sftp`.
-  2. **Cuando llegue la key del #1** (en el mismo panel, `panel-mvzg.com`; su `panel_server_id` es `157703b5`, el sufijo del usuario de SFTP): guardarla en el `.env` (por ejemplo, `SFTP_CSS_PANEL_API_KEY_MVZG`), probarla igual y sumarla a `dev-vars.py` como `PTERO_KEY_157703b5`. Ojo: el #1 manda a la Supabase de **staging** (punto 1.44) y el Worker de producción no ve sus partidas. Para tener sus demos haría falta un Worker apuntando a staging, o esperar a que el #1 pase a producción.
+  2. ~~**Cuando llegue la key del #1**~~ (hecho el 2026-11-03: ver "Demos del #1" en el punto 1.44) (en el mismo panel, `panel-mvzg.com`; su `panel_server_id` es `157703b5`, el sufijo del usuario de SFTP): guardarla en el `.env` (por ejemplo, `SFTP_CSS_PANEL_API_KEY_MVZG`), probarla igual y sumarla a `dev-vars.py` como `PTERO_KEY_157703b5`. Ojo: el #1 manda a la Supabase de **staging** (punto 1.44) y el Worker de producción no ve sus partidas. Para tener sus demos haría falta un Worker apuntando a staging, o esperar a que el #1 pase a producción.
 
 ### 1.46 Matchmaking sin SteamID vinculado (replanteos `49` a `52`, plugin 2.8.2): en staging y en el #1
 

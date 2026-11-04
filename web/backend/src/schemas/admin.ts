@@ -210,6 +210,19 @@ export const SteamUnlinkedQuery = listQuery(['last_played', 'matches', 'last_nic
 });
 export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedList');
 
+export const AdminAccountStatus = z
+  .object({
+    confirmed: z.boolean().openapi({ description: 'Confirmó su correo' }),
+    last_sign_in_at: z.string().nullable(),
+  })
+  .openapi('AdminAccountStatus');
+export const AdminRandomPassword = z
+  .object({
+    password: z.string().openapi({ description: 'Se muestra una sola vez: no se guarda en ningún lado' }),
+    sessions_closed: z.boolean().openapi({ description: 'Si se cerraron las sesiones que tenía abiertas' }),
+  })
+  .openapi('AdminRandomPassword');
+
 export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
   role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),

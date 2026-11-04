@@ -5,15 +5,19 @@ import { requireAdmin, requireUser } from '../lib/auth';
 import { inBackground } from '../lib/background';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
-import { AppError, fromPostgrest } from '../lib/errors';
+import { AppError, fromAuthError, fromPostgrest } from '../lib/errors';
+import { randomPassword } from '../lib/password';
+import { anonClient, serviceClient } from '../lib/supabase';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { AVATAR_MAX_BYTES, readImage, storageError } from '../lib/uploads';
 import {
+  AdminAccountStatus,
   AdminAliasBody,
   AdminPlayer,
   AdminPlayerCreate,
   AdminPlayerPatch,
+  AdminRandomPassword,
   AdminUserList,
   AdminUserQuery,
   BlockedHitList,
@@ -140,6 +144,34 @@ const userAlias = createRoute({
   description: 'Moderación: sin la espera de 15 días. Respeta la unicidad. Con una palabra bloqueada pide `force: true`.',
   request: { params: IdParam, body: { required: true, ...json(AdminAliasBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
+});
+
+// ---------- acciones de cuenta (plan docs/bitacora/2026-11-03-admin-cuentas-usuarios) ----------
+
+const accountStatus = createRoute({
+  method: 'get', path: '/api/v1/admin/users/{id}/account', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Estado de la cuenta', description: 'Si confirmó su correo y su último inicio de sesión.',
+  request: { params: IdParam },
+  responses: { 200: { description: 'Estado', ...json(AdminAccountStatus) }, ...errorResponses(401, 403, 404) },
+});
+const accountResend = createRoute({
+  method: 'post', path: '/api/v1/admin/users/{id}/resend-confirmation', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Reenviar el correo de activación', description: 'Solo a una cuenta que todavía no confirmó su correo (si no, 409).',
+  request: { params: IdParam },
+  responses: { ...done, ...errorResponses(401, 403, 404, 409, 429) },
+});
+const accountReset = createRoute({
+  method: 'post', path: '/api/v1/admin/users/{id}/send-password-reset', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Enviar el correo para cambiar la contraseña',
+  request: { params: IdParam },
+  responses: { ...done, ...errorResponses(401, 403, 404, 429) },
+});
+const accountRandom = createRoute({
+  method: 'post', path: '/api/v1/admin/users/{id}/random-password', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Cambiar la contraseña por una aleatoria',
+  description: 'La devuelve una sola vez y cierra las sesiones de la cuenta. No se puede usar sobre la cuenta propia ni sobre otro admin.',
+  request: { params: IdParam },
+  responses: { 200: { description: 'La contraseña nueva', ...json(AdminRandomPassword) }, ...errorResponses(401, 403, 404, 501) },
 });
 
 // ---------- palabras bloqueadas ----------
@@ -295,6 +327,37 @@ export const adminPlayers = createRouter()
     const { alias, force } = c.req.valid('json');
     must(await c.var.sb.rpc('set_user_tag', { p_user: c.req.valid('param').id, p_tag: alias, p_force: force }));
     return c.body(null, 204);
+  })
+  .openapi(accountStatus, async (c) => {
+    const data = must(await c.var.sb.rpc('admin_account_status', { p_user: c.req.valid('param').id }));
+    return c.json(data as z.infer<typeof AdminAccountStatus>, 200);
+  })
+  .openapi(accountResend, async (c) => {
+    const cfg = c.var.config;
+    const { email } = must(await c.var.sb.rpc('admin_account_action', { p_user: c.req.valid('param').id, p_action: 'resend_confirmation' })) as { email: string };
+    const { error } = await anonClient(cfg).auth.resend({ type: 'signup', email, options: { emailRedirectTo: cfg.FRONTEND_URL } });
+    if (error) throw fromAuthError(error);
+    return c.body(null, 204);
+  })
+  .openapi(accountReset, async (c) => {
+    const cfg = c.var.config;
+    const { email } = must(await c.var.sb.rpc('admin_account_action', { p_user: c.req.valid('param').id, p_action: 'password_reset_email' })) as { email: string };
+    const { error } = await anonClient(cfg).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
+    if (error) throw fromAuthError(error);
+    return c.body(null, 204);
+  })
+  .openapi(accountRandom, async (c) => {
+    const id = c.req.valid('param').id;
+    const admin = serviceClient(c.var.config);
+    if (!admin) throw new AppError(501, 'NOT_AVAILABLE', 'Falta configurar la clave de administrador en la API.');
+    must(await c.var.sb.rpc('admin_account_action', { p_user: id, p_action: 'random_password' }));
+    const password = randomPassword();
+    const { error } = await admin.auth.admin.updateUserById(id, { password });
+    if (error) throw fromAuthError(error);
+    // La contraseña ya cambió: si esto falla hay que entregarla igual, y el admin ve que las sesiones siguen abiertas.
+    const closed = await c.var.sb.rpc('admin_account_close_sessions', { p_user: id });
+    c.header('Cache-Control', 'no-store');
+    return c.json({ password, sessions_closed: !closed.error }, 200);
   })
   .openapi(words, async (c) => {
     const p = c.req.valid('query');

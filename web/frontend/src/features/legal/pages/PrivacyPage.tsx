@@ -43,14 +43,10 @@ function LegalTable({
 }
 
 const PROVIDERS: [string, string][] = [
-  [
-    "Supabase",
-    "Base de datos, cuentas y archivos (avatares, capturas, evidencia del anticheat)",
-  ],
   ["Cloudflare", "Demos y clips, y parte de la web"],
   [
     "OVH (servidor VPS)",
-    "La API de la web, el matchmaking y el HUD de las transmisiones",
+    "La base de datos, las cuentas y los archivos (avatares, capturas, evidencia del anticheat), la API de la web, el matchmaking y el HUD de las transmisiones",
   ],
   ["Resend", "Envío de los correos de la cuenta"],
   ["Google Drive", "Los videos de los clips"],
@@ -108,7 +104,10 @@ const SECTIONS: LegalSection[] = [
         <ul>
           <li>
             Tu correo y tu contraseña. La contraseña se guarda cifrada: nadie
-            del staff puede verla.
+            del staff puede ver la que elegiste. Si un admin te cambia la
+            contraseña por una aleatoria para ayudarte a entrar, la ve una sola
+            vez para pasártela y queda registrado quién lo hizo. Te recomendamos
+            cambiarla apenas entres.
           </li>
           <li>
             Tu <em>tag</em> y lo que agregues a tu perfil: nombre real, país,
@@ -270,8 +269,11 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             Varios de estos servicios guardan los datos fuera de la Argentina:
-            la base de datos (Supabase) está en el oeste de Estados Unidos
-            (Oregón) y el servidor VPS (OVH) en Beauharnois, Canadá. Cloudflare,
+            la base de datos, las cuentas y los archivos están en nuestro
+            servidor VPS (OVH), en Beauharnois, Canadá. Hasta el 2026-11-03
+            estaban en Supabase, en el oeste de Estados Unidos (Oregón), que
+            guarda una copia de esa fecha hasta borrarla, como mucho el
+            2026-12-03. Cloudflare,
             Google, Discord y Resend pueden guardarlos en otros países. Al usar
             CMLeague prestas tu consentimiento para esa transferencia
             internacional, en los términos del artículo 12 de la Ley 25.326.

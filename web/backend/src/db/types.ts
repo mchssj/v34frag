@@ -4368,6 +4368,15 @@ isOneToOne: false
               "first_seen_at": string,"ip": string,"last_nick": string,"last_seen_at": string,"others": Json,"others_unlinked": number,"steam_id": string,"times": number
             }[]
                            },
+"admin_account_action":
+{ Args: { "p_action": string; "p_user": string }; Returns: Json
+                           },
+"admin_account_close_sessions":
+{ Args: { "p_user": string }; Returns: undefined
+                           },
+"admin_account_status":
+{ Args: { "p_user": string }; Returns: Json
+                           },
 "admin_regenerate_hud_key":
 { Args: { "p_server": string }; Returns: string
                            },
