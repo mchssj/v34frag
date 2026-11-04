@@ -6025,7 +6025,7 @@ export interface paths {
         };
         /**
          * Estado de la cuenta
-         * @description Si confirmó su correo y su último inicio de sesión.
+         * @description Si confirmó su correo, su último inicio de sesión y el correo (solo lectura).
          */
         get: {
             parameters: {
@@ -14416,6 +14416,174 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Índice del manual
+         * @description Las secciones que ve la cuenta según su rol, con sus páginas en orden. Sin las páginas ocultas ni las secciones vacías.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Índice */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManualIndice"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/manual/{seccion}/img/{archivo}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Una captura del manual
+         * @description La imagen, con caché privada. 404 si no existe o si es de una sección que la cuenta no ve.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    seccion: string;
+                    archivo: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Captura */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "image/webp": string;
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/manual/{seccion}/{tarea}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Una página del manual
+         * @description El texto de la página. 404 si no existe, si está oculta o si es de una sección que la cuenta no ve.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    seccion: string;
+                    tarea: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Página */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManualPagina"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/seasons": {
         parameters: {
             query?: never;
@@ -20976,6 +21144,8 @@ export interface components {
             /** @description Confirmó su correo */
             confirmed: boolean;
             last_sign_in_at: string | null;
+            /** @description Correo de la cuenta, solo lectura. Dato personal: solo admin */
+            email: string | null;
         };
         AdminRandomPassword: {
             /** @description Se muestra una sola vez: no se guarda en ningún lado */
@@ -21859,6 +22029,32 @@ export interface components {
             /** @description Panel del streamer: servidor, jugador enfocado y qué se muestra */
             control_url: string;
             created_at: string;
+        };
+        ManualIndice: {
+            /**
+             * @description La sección con la que abre la ayuda: la del rol más alto de la cuenta.
+             * @enum {string}
+             */
+            inicio: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+            secciones: {
+                /** @enum {string} */
+                id: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+                titulo: string;
+                paginas: {
+                    tarea: string;
+                    titulo: string;
+                    resumen: string;
+                }[];
+            }[];
+        };
+        ManualPagina: {
+            /** @enum {string} */
+            seccion: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+            tarea: string;
+            titulo: string;
+            resumen: string;
+            /** @description El texto en Markdown (GFM), con los marcadores (`{{mm.aceptar}}`) ya reemplazados por los valores vigentes de la configuración. Las capturas van como `img/<archivo>`: se piden a `/api/v1/manual/{seccion}/img/{archivo}`. */
+            markdown: string;
         };
         SeasonList: {
             items: components["schemas"]["Season"][];

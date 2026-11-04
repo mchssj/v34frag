@@ -49,11 +49,12 @@ describe('acciones de cuenta', () => {
     expect(called(fn, '/auth/v1/admin').length).toBe(0);
   });
 
-  it('el estado de la cuenta', async () => {
-    backend((u) => (u.includes('rpc/admin_account_status') ? Response.json({ confirmed: false, last_sign_in_at: null }) : undefined));
+  it('el estado de la cuenta, con el correo y sin caché', async () => {
+    backend((u) => (u.includes('rpc/admin_account_status') ? Response.json({ confirmed: false, last_sign_in_at: null, email: 'a@b.co' }) : undefined));
     const res = await call(`${base}/account`, 'GET');
     expect(res.status).toBe(200);
-    expect(await json(res)).toEqual({ confirmed: false, last_sign_in_at: null });
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(await json(res)).toEqual({ confirmed: false, last_sign_in_at: null, email: 'a@b.co' });
   });
 
   it('reenvía la activación al correo de la cuenta', async () => {

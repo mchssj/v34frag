@@ -214,6 +214,7 @@ export const AdminAccountStatus = z
   .object({
     confirmed: z.boolean().openapi({ description: 'Confirmó su correo' }),
     last_sign_in_at: z.string().nullable(),
+    email: z.string().nullable().openapi({ description: 'Correo de la cuenta, solo lectura. Dato personal: solo admin' }),
   })
   .openapi('AdminAccountStatus');
 export const AdminRandomPassword = z

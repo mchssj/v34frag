@@ -48,6 +48,15 @@ export function AccountSection({ u }: { u: AdminUser }) {
         ) : undefined
       }
     >
+      {status.data?.email && (
+        <div className="flex flex-wrap items-baseline gap-x-2 text-[13px]">
+          <span className="text-muted-foreground">Correo</span>
+          {/* Solo lectura: el correo lo cambia el jugador desde su cuenta. */}
+          <span className="font-mono break-all select-all">
+            {status.data.email}
+          </span>
+        </div>
+      )}
       <span className="text-[13px] leading-relaxed text-muted-foreground">
         {status.isError
           ? errorMessage(status.error)
@@ -145,9 +154,7 @@ export function AccountSection({ u }: { u: AdminUser }) {
             ? "La contraseña cambió, pero no se pudieron cerrar sus sesiones abiertas. Pásasela y recomiéndale cambiarla en Mi perfil."
             : "Pásasela por un canal privado y recomiéndale cambiarla en Mi perfil."
         }
-        blocks={
-          secret ? [{ label: "Contraseña", text: secret.password }] : []
-        }
+        blocks={secret ? [{ label: "Contraseña", text: secret.password }] : []}
         onDone={() => setSecret(null)}
       />
     </PanelSection>

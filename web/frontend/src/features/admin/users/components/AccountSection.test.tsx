@@ -42,7 +42,11 @@ function api(confirmed: boolean, sessions_closed = true) {
   const base = `${API}/api/v1/admin/users/:id`
   server.use(
     http.get(`${base}/account`, () =>
-      HttpResponse.json({ confirmed, last_sign_in_at: null })
+      HttpResponse.json({
+        confirmed,
+        last_sign_in_at: null,
+        email: "jugador@ejemplo.com",
+      })
     ),
     http.post(`${base}/resend-confirmation`, () => {
       calls("resend")
@@ -54,7 +58,10 @@ function api(confirmed: boolean, sessions_closed = true) {
     }),
     http.post(`${base}/random-password`, () => {
       calls("random")
-      return HttpResponse.json({ password: "Abc23456789xyzQW", sessions_closed })
+      return HttpResponse.json({
+        password: "Abc23456789xyzQW",
+        sessions_closed,
+      })
     })
   )
 }
@@ -67,6 +74,13 @@ describe("acceso de la cuenta", () => {
     expect(await screen.findByText("Correo confirmado")).toBeInTheDocument()
     expect(button("Reenviar activación")).toBeDisabled()
     expect(button("Enviar correo de contraseña")).toBeEnabled()
+  })
+
+  it("muestra el correo de la cuenta, sin campo para editarlo", async () => {
+    api(true)
+    renderWithQuery(<AccountSection u={user()} />)
+    expect(await screen.findByText("jugador@ejemplo.com")).toBeInTheDocument()
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
   })
 
   it("sin confirmar: reenviar pide confirmación y llama a la API", async () => {
