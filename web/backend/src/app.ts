@@ -7,6 +7,7 @@ import { isAllowedOrigin } from './lib/cors';
 import { errorBody, onError } from './lib/errors';
 import { requestLog, withConfig } from './lib/middleware';
 import type { UdpExchange } from './lib/a2s';
+import { type Manual, manualVacio } from './lib/manual';
 import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
@@ -25,6 +26,7 @@ import { hud } from './routes/hud';
 import { elo } from './routes/elo';
 import { events } from './routes/events';
 import { live } from './routes/live';
+import { manual as manualRoutes } from './routes/manual';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
 import { mixes } from './routes/mixes';
@@ -50,11 +52,14 @@ export type AppOptions = {
   udp?: UdpExchange;
   // La API avisa al socket del matchmaking que una cuenta pidió su estado (presencia en la cola, replanteo 63).
   mmPolled?: (userId: string) => void;
+  // Manual de usuario, leído del disco por node.ts (lib/manual-node.ts). El Worker no lo tiene: queda vacío.
+  manual?: Manual;
 };
 
 export function createApp(options: AppOptions = {}) {
   const app = createRouter();
   const rateLimiter = options.rateLimiter ?? new MemoryRateLimiter();
+  const manual = options.manual ?? manualVacio();
 
   app.use('*', requestId());
   app.use('*', withConfig);
@@ -62,6 +67,7 @@ export function createApp(options: AppOptions = {}) {
     c.set('rateLimiter', rateLimiter);
     c.set('udp', options.udp);
     c.set('mmPolled', options.mmPolled);
+    c.set('manual', manual);
     await next();
   });
   app.use('*', requestLog);
@@ -99,6 +105,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', mm);
   app.route('/', bookings); // antes que servers: /servers/free no es un {id}
   app.route('/', hud);
+  app.route('/', manualRoutes);
   app.route('/', seasons);
   app.route('/', matches);
   app.route('/', clips);

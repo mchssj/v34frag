@@ -61,7 +61,7 @@ async function authenticate(c: Context<AppEnv>, token: string) {
 }
 
 /** Rol del usuario (lee profiles.role con su token), o null sin sesión. */
-async function userRole(c: Context<AppEnv>): Promise<string | null> {
+export async function userRole(c: Context<AppEnv>): Promise<string | null> {
   const user = currentUser(c);
   if (!user) return null;
   const { data, error } = await c.var.sb.from('profiles').select('role').eq('id', user.id).maybeSingle();
