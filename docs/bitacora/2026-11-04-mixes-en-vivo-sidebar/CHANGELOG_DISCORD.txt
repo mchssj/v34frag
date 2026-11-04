@@ -1,0 +1,5 @@
+CMLeague 2.9.11 --  Changelog
+
+En la web:
+- El punto rojo de "Partidas" en el menú ahora también cuenta los mixes y las partidas del matchmaking que se están jugando. Antes solo contaba las de torneo y PCW, así que con un mix en juego no aparecía.
+- La franja "EN VIVO" de arriba ahora también muestra un mix en juego cuando no hay ninguna partida de torneo: ves los equipos, el marcador, el mapa y la ronda, con "Ver en TV" y "Ver sala".

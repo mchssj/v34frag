@@ -7,7 +7,7 @@ import {
 import { api, unwrap } from "@/api/client"
 import { errorFromResponse, networkError } from "@/api/errors"
 import { authFetch } from "@/auth/authFetch"
-import { shellKeys } from "@/features/shell/api/queries"
+import { shellKeys } from "@/features/shell/api/keys"
 import { env } from "@/lib/env"
 import { syncServerClock } from "@/features/matchmaking/serverClock"
 import { isOpen } from "../lib/booking"

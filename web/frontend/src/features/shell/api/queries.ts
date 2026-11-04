@@ -17,14 +17,15 @@ import { sideName } from "@/features/public/lib/format"
 import { eventDetailOptions } from "@/features/events/api/queries"
 import { manualIndexOptions } from "@/features/help/api/queries"
 import { teamDetailOptions } from "@/features/teams/api/queries"
+import { liveMixesOptions } from "@/features/mixes/api/queries"
+import type { MixItem } from "@/features/mixes/types"
+import type { MatchSummary } from "@/features/matches/types"
 import type { BadgeKey, CrumbData } from "../lib/nav"
+import { shellKeys } from "./keys"
+
+export { shellKeys }
 
 const MINUTE = 60_000
-
-export const shellKeys = {
-  pcwOpen: ["shell", "pcw-open"] as const,
-  match: (id: string) => ["match", id] as const,
-}
 
 const pcwOpenOptions = queryOptions({
   queryKey: shellKeys.pcwOpen,
@@ -42,7 +43,17 @@ const pcwOpenOptions = queryOptions({
 export function useBadgeCounts(
   user: AuthUser
 ): Partial<Record<BadgeKey, number>> {
-  const live = useQuery(liveCountOptions).data
+  // Partidas oficiales y PCW (/matches) más mixes y matchmaking (/mixes, la misma consulta
+  // que el bloque "En vivo" de Partidas).
+  const liveMatches = useQuery(liveCountOptions).data
+  const liveMixes = useQuery({
+    ...liveMixesOptions,
+    select: (items) => items.length,
+  }).data
+  const live =
+    liveMatches === undefined && liveMixes === undefined
+      ? undefined
+      : (liveMatches ?? 0) + (liveMixes ?? 0)
   const pcw = useQuery(pcwOpenOptions).data
   const adminBans = useQuery({
     ...activeBanCountOptions,
@@ -78,20 +89,40 @@ export function matchDetailOptions(id: string) {
   })
 }
 
-/** Partida destacada en vivo para la NowBar, con su servidor (null si no hay ninguna). */
-export function useFeaturedLive() {
-  // Misma consulta que el badge "en vivo" del sidebar: no se pide dos veces.
+export type FeaturedLive =
+  | { kind: "match"; match: MatchSummary; address: string | null }
+  | { kind: "mix"; mix: MixItem & { live_uid: string } }
+
+/** El mix que destaca la NowBar: el primero con novedades del servidor, o el primero. */
+export function pickFeaturedMix(items: MixItem[]) {
+  const withUid = items.filter(
+    (x): x is MixItem & { live_uid: string } => !!x.live_uid
+  )
+  return withUid.find((x) => !x.stale) ?? withUid[0] ?? null
+}
+
+/**
+ * Lo destacado en vivo para la NowBar: una partida oficial o PCW con su servidor y, si no hay
+ * ninguna, un mix (null si no hay nada).
+ */
+export function useFeaturedLive(): FeaturedLive | null {
+  // Mismas consultas que el badge "en vivo" del sidebar: no se piden dos veces.
   const featured = useQuery({
     ...liveMatchesOptions,
     select: (page) => page.items[0] ?? null,
   }).data
+  const mix = useQuery({ ...liveMixesOptions, select: pickFeaturedMix }).data
   const detail = useQuery({
     ...matchDetailOptions(featured?.id ?? ""),
     enabled: !!featured,
   }).data
-  return featured
-    ? { match: featured, address: detail?.server?.address ?? null }
-    : null
+  if (featured)
+    return {
+      kind: "match",
+      match: featured,
+      address: detail?.server?.address ?? null,
+    }
+  return mix ? { kind: "mix", mix } : null
 }
 
 /** Nombres de equipo, torneo o partida para los breadcrumbs y el ítem activo. */
