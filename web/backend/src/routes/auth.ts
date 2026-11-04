@@ -211,6 +211,13 @@ export const auth = createRouter()
       options: { data: { tag }, emailRedirectTo: cfg.FRONTEND_URL },
     });
     if (error) throw fromAuthError(error);
+    // Con la confirmación del correo encendida, GoTrue no da error si el email ya tiene una cuenta confirmada:
+    // devuelve un usuario falso, sin sesión y con identities vacío. Una cuenta sin confirmar llega con su identidad
+    // (GoTrue le reenvía el correo) y sigue como needsConfirmation.
+    if (Array.isArray(data.user?.identities) && data.user.identities.length === 0) {
+      const message = 'Ya hay una cuenta con ese email.';
+      throw new AppError(409, 'CONFLICT', message, [{ path: 'email', message }]);
+    }
 
     if (!data.session) return c.json({ session: null, needsConfirmation: true }, 201);
 
