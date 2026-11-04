@@ -1,4 +1,4 @@
--- Pruebas del replanteo 73 (correr después de aplicarlo). Termina con un raise para deshacer todo y devolver el resultado
+-- Pruebas del replanteo 74 (correr después de aplicarlo). Termina con un raise para deshacer todo y devolver el resultado
 -- como mensaje. No muestra ningún correo: solo compara.
 do $$
 declare

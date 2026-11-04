@@ -25,7 +25,7 @@ sequenceDiagram
 
 | Pieza | Qué devuelve |
 |---|---|
-| `admin_account_status(p_user)` (replanteo `73`) | `{ confirmed, last_sign_in_at, email }`. Solo admins (`42501` para los demás). `P0002` si la cuenta no existe |
+| `admin_account_status(p_user)` (replanteo `74`) | `{ confirmed, last_sign_in_at, email }`. Solo admins (`42501` para los demás). `P0002` si la cuenta no existe |
 | `GET /api/v1/admin/users/{id}/account` | Lo mismo, con `Cache-Control: no-store`. `requireAdmin` |
 | `AdminAccountStatus` | `email: string \| null` |
 
@@ -46,7 +46,7 @@ Sin cambios. `/privacidad` (sección "Qué es público") ya dice que el correo l
 
 | Qué | Archivo / ubicación |
 |---|---|
-| Migración | `supabase/replanteo/73_correo_en_usuarios.sql` |
+| Migración | `supabase/replanteo/74_correo_en_usuarios.sql` |
 | Inversa y pruebas SQL | `docs/bitacora/2026-11-04-correo-en-usuarios/pruebas/` |
 | Ruta y esquema | `web/backend/src/routes/admin-players.ts`, `web/backend/src/schemas/admin.ts` |
 | Sección Acceso | `web/frontend/src/features/admin/users/components/AccountSection.tsx` |
