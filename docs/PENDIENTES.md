@@ -36,7 +36,7 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   - **Con matchmaking** (`csstv_mm "1"`, `mm_enabled = true`). Toma salas cuando cargue el cfg.
   - Reiniciado: consulta la base nueva cada 5 s (2.9.2).
 - **Falta:**
-  - **R2:** configurado (2026-11-03). Comprobar que el respaldo automático de las 09:00 UTC del 2026-11-04 llegó a `cmleague-respaldos`. El bucket está en la cuenta de agusb06.
+  - ~~**R2:** comprobar el respaldo automático del 2026-11-04~~: llegó a `cmleague-respaldos` a las 09:01 UTC, según el log del VPS. El bucket está en la cuenta de agusb06.
   - **Publicar la privacidad actualizada** en el próximo despliegue de la web (no hace falta para la base).
   - **Sin relación con el corte:**
     - Dar de alta a los streamers en producción (Administración): hay 0.
@@ -52,9 +52,19 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 
 - **En producción:** recuperar la contraseña, las acciones de cuenta en Administración › Usuarios y la confirmación del correo encendida (`sudo sb confirmar-correo [on|off]`). Probado de punta a punta con cuentas temporales ([`2026-11-03-admin-cuentas-usuarios`](bitacora/2026-11-03-admin-cuentas-usuarios/), [`2026-11-03-recuperar-contrasena`](bitacora/2026-11-03-recuperar-contrasena/)).
 - **Falta:**
-  - **La API se despliega desde la rama local `deploy/api-produccion`** (`0d573288` más estos cambios y el manual), no desde `feat/frontend-fase-1`: a esa le faltan el manual y el anticheat. Falta unificar las ramas.
+  - ~~Unificar la rama de la API~~: desde el 2026-11-04, `feat/frontend-fase-1` tiene el manual (sin el anticheat, que no está en producción). **Falta desplegarla** con `deploy/vps/desplegar.sh api` y hacer el merge en `main`: ver [`2026-11-04-rama-igual-a-produccion`](bitacora/2026-11-04-rama-igual-a-produccion/GUIA_IMPLEMENTACION.md). Hasta entonces, producción corre `0d5732881cbe-local11040226`, de la rama local `deploy/api-produccion`.
   - Publicar `terms/privacidad.html` y el `CHANGELOG_DISCORD.txt` de los dos requerimientos.
   - En la documentación de recuperar la contraseña: "Qué cambia para cada rol" y "Términos y privacidad".
+
+## La rama del frontend igual a producción (2026-11-04): falta desplegar la API y el merge en `main`
+
+- **Hecho:** `feat/frontend-fase-1` tiene el manual en la API, el reporter 2.9.3 y los plugins que corren en los servidores, con sus binarios exactos ([`2026-11-04-rama-igual-a-produccion`](bitacora/2026-11-04-rama-igual-a-produccion/)). A los servidores no se les subió nada.
+- **Revisado el 2026-11-04:** reporter 2.9.3 en el #1 (genérico, no licenciado) y en el #2 (licenciado); en el #3 está en `disabled/`. Los puntos viejos que dicen 2.7.3 o 2.9.2 quedan como historia.
+- **Falta:**
+  1. Desplegar la API desde la rama.
+  2. Decidir qué se hace con los cambios sin commit de `v34frag-main` (no están en esta rama) y hacer el merge.
+  3. Decidir si `live.cfg` del #3 queda con `mp_friendlyfire 1` y `mp_flashlight 1`. El #1 y el #2 tienen `0` y el repo copia a esos dos; `CLAUDE.md` pide lo mismo en todos.
+  4. `feat/mm-claim-en-sala` sigue con el reporter 2.9.1: el cambio a la 2.9.3 no es del matchmaking y no se llevó ahí.
 
 ## Corte a la base de producción (2026-11-03): base hecha, falta el VPS
 
