@@ -81,6 +81,38 @@ Kyan eligió dos ideas más (12 y 13 de la lista de "el mejor matchmaking").
 - Las pruebas con bots ahora mandan la ventana del srcds al segundo monitor (`pruebas/segundo_monitor.ps1`, pedido de Kyan).
 - **Subido el 2026-11-03:** `csstv_qol` 1.3.0 (34646 bytes) a flow, MVZG y `aurav34`, comprobando antes que estaba la 1.2.1. Respaldo en `plugins/disabled/csstv_qol_1.2.1.smx` y `cfg/sourcemod/csstv_qol.cfg.bak_130`; `csstv_qol_warmup_guns "1"` en los tres.
 
+### La ronda de cuchillo con las armas del calentamiento (2026-11-03)
+
+- **Problema (Kyan):** con `csstv_qol` 1.3.0, al empezar la ronda de cuchillo los jugadores seguían con las armas del calentamiento.
+- **Causa:** el reporter saca las armas 0,1 s después de aparecer, y `csstv_qol` daba las del calentamiento a los 0,2 s porque para él el estado seguía siendo "calentamiento". El reporter publicaba `csstv_state` una vez por segundo y `csstv_qol` lo leía otra vez por segundo.
+- **Arreglo:** el reporter publica `csstv_state` en el mismo cuadro en que cambia (`OnGameFrame`), y `csstv_qol` 1.3.1 se entera en el momento con un aviso de cambio de la ConVar. También el fin de la partida liberando el servidor deja de restar 1 s de atraso.
+- **Prueba (`pruebas/cuchillo.sh`):** en el calentamiento Bert con M4A1 y Albert con AK-47; en la ronda de cuchillo los cinco sin armas ni chaleco. Igual con la 2.9.3 y con la 2.7.8.
+
+**Versiones.** Al ir a subir apareció que Daniel había subido el 2026-11-03 a las 15:56 nuestra **2.9.2** a flow y a MVZG, para producción. La configuración de los dos ahora va contra `db.cmleague.lat`; en flow `csstv_mm "0"` y en MVZG `csstv_mm "1"`.
+- **flow:** 2.9.2 licenciada con un ID de servidor nuevo, `cedf12a8-62ef-4360-9899-c928c3832eba`. Nuestra 2.7.7 quedó como `plugins/disabled/csstv_reporter_pre_prod.smx`.
+- **MVZG:** 2.9.2 genérica, sin licencia.
+- Por eso flow y MVZG pasan a la línea 2.9 y reciben la **2.9.3**: licenciada con el mismo ID en flow y genérica en MVZG. `aurav34` también recibe la 2.9.3 genérica en `plugins/disabled/` (sigue desactivada). La 2.7.8 (`pruebas/reporter-2.7.8.patch`, sobre la 2.7.7) quedó armada y probada, pero no está en ningún servidor.
+
+| Servidor | Reporter | `csstv_qol` | Respaldo en `plugins/disabled/` |
+|---|---|---|---|
+| flow | 2.9.3 licenciada (`cedf12a8…`), 146529 bytes | 1.3.1 | `csstv_reporter_2.9.2.smx`, `csstv_qol_1.3.0.smx` |
+| MVZG | 2.9.3 genérica, 146498 bytes | 1.3.1 | Los mismos |
+| `aurav34` | 2.9.3 genérica en `disabled/csstv_reporter.smx` | 1.3.1 | `csstv_reporter_2.7.8.smx`, `csstv_qol_1.3.0.smx` |
+
+**Inventario (2026-11-03):** se bajó cada plugin de los tres servidores que tiene su código en el repo y se comparó la versión que lleva adentro con la del código. Todo al día salvo `csstv_password`, que estaba en 1.0.0 en flow y `aurav34`. Se subió la 1.1.0 (con `csstv_mm 1` deja la contraseña a la web; con `csstv_mm 0` o sin reporter funciona igual), con respaldo `plugins/disabled/csstv_password_1.0.0.smx`.
+
+| Plugin | Repo | flow | MVZG | `aurav34` |
+|---|---|---|---|---|
+| `csstv_reporter` | 2.9.3 | 2.9.3 | 2.9.3 | 2.9.3 en `disabled/` |
+| `csstv_qol` | 1.3.1 | ✓ | ✓ | ✓ |
+| `csstv_coach` | 1.1.1 | ✓ | ✓ | ✓ |
+| `csstv_pedir` | 1.0.1 | ✓ | ✓ | ✓ |
+| `csstv_password` | 1.1.0 | ✓ (subida) | ✓ | ✓ (subida) |
+| `csstv_allchat`, `csstv_calladmin`, `csstv_perf`, `csstv_sell`, `csstv_silencer` | — | ✓ | ✓ | ✓ |
+| `csstv_hud` | 1.1.0 | ✓ | ✓ | no lo tiene |
+| `v34_dm` | 1.0.1 | ✓ | ✓ | no lo tiene |
+| `v34_retake`, `v34_wingman` | 1.0.1 | no los tiene | no los tiene | ✓ |
+
 ## Pruebas con bots (`cssds`, 2026-11-02)
 
 `pruebas/qol4.sh <carpeta con los .smx>`, con `-condebug`, el reporter de depuración, `v34_dm` y `v34_retake` cargados y `qol_prueba.smx` de la tercera tanda. Se corrió con la 2.8.7 y con la 2.7.7.

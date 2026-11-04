@@ -45,7 +45,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.3.0"
+#define PLUGIN_VERSION "1.3.1"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -115,6 +115,7 @@ ConVar g_cvGoodbye;
 ConVar g_cvBlockKill;
 ConVar g_cvCleanup;
 ConVar g_cvWarmGuns;
+bool g_bStateHooked;
 int g_iWarmGun[MAXPLAYERS + 1];                    // !armas: 0 = la de su lado
 int g_iCleaned;                                    // cuerpos y armas borrados en el calentamiento, para sm_qol_status
 int g_iRoundKills[MAXPLAYERS + 1];                 // kills a rivales en esta ronda, para el ace
@@ -194,6 +195,28 @@ public Action Cmd_Status(int client, int args)
 /** ServerCommandEx desde un timer y no desde los eventos. */
 public Action Timer_State(Handle timer)
 {
+	State_Refresh();
+	return Plugin_Continue;
+}
+
+/** Desde la 1.3.1 el estado se lee apenas cambia csstv_state, no hasta un segundo después: la ronda de cuchillo empezaba con las armas del calentamiento. */
+public void OnStateChanged(ConVar cv, const char[] oldValue, const char[] newValue)
+{
+	State_Refresh();
+}
+
+void State_Hook()
+{
+	ConVar cv = FindConVar("csstv_state");
+	if (cv != null && !g_bStateHooked)
+	{
+		cv.AddChangeHook(OnStateChanged);
+		g_bStateHooked = true;
+	}
+}
+
+void State_Refresh()
+{
 	bool wasOver = StrEqual(g_sState, "terminada");
 	bool wasHalf = StrEqual(g_sState, "medio tiempo");
 	ReporterState(g_sState, sizeof(g_sState));
@@ -202,14 +225,13 @@ public Action Timer_State(Handle timer)
 	if (!StrEqual(g_sState, "en vivo") && !StrEqual(g_sState, "medio tiempo"))
 		g_hSaved.Clear();   // fuera de una partida no hay nada que devolver
 	if (!wasOver && StrEqual(g_sState, "terminada") && g_cvEndKick.IntValue > 0)
-		CreateTimer(g_cvEndKick.FloatValue - 1.0, Timer_EndKick, _, TIMER_FLAG_NO_MAPCHANGE);   // el estado se lee con hasta 1 s de atraso
+		CreateTimer(g_cvEndKick.FloatValue, Timer_EndKick, _, TIMER_FLAG_NO_MAPCHANGE);
 	g_bOtherMode = ModeOn("sm_retake") || ModeOn("sm_2v2") || ModeOn("sm_dm");
 	SpecVoice_Update();
 	if (!InWarmup())
 		for (int i = 1; i <= MaxClients; i++)
 			if (g_bNades[i])
 				Nades_Off(i, true);
-	return Plugin_Continue;
 }
 
 public void OnMapStart()
@@ -241,6 +263,12 @@ public void OnClientDisconnect(int client)
 public void OnConfigsExecuted()
 {
 	g_cvTag = FindConVar("csstv_chat_tag");
+	State_Hook();
+}
+
+public void OnAllPluginsLoaded()
+{
+	State_Hook();   // el reporter puede cargar después
 }
 
 // ---------------------------------------------------------------------------

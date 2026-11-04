@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.9.2"
+#define PLUGIN_VERSION "2.9.3"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -232,6 +232,21 @@ public void OnPluginStart()
 	Whois_Init();
 	Tips_Init();
 	Clips_Init();
+}
+
+/**
+ * csstv_state cambia en el mismo cuadro que el estado. Una vez por segundo no alcanza: csstv_qol daba las armas del
+ * calentamiento en la ronda de cuchillo porque todavía leía "calentamiento".
+ */
+public void OnGameFrame()
+{
+	static int published = -1;
+	int state = view_as<int>(g_State);
+	if (state != published)
+	{
+		published = state;
+		g_cvStateOut.SetString(g_sStateNames[state]);
+	}
 }
 
 /** La ConVar queda después de descargar el plugin: vacía quiere decir "sin reporter". */
