@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as PrivacidadRouteImport } from './routes/privacidad'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
@@ -21,6 +22,7 @@ import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
 import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
@@ -76,6 +78,11 @@ const PrivacidadRoute = PrivacidadRouteImport.update({
   path: '/privacidad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TerminosRoute = TerminosRouteImport.update({
   id: '/terminos',
   path: '/terminos',
@@ -115,6 +122,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => AppRoute,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
@@ -300,6 +312,7 @@ const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/privacidad': typeof PrivacidadRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
@@ -308,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/pcw': typeof AppPcwRoute
   '/play': typeof AppPlayRoute
   '/profile': typeof AppProfileRouteWithChildren
+  '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
@@ -348,6 +362,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/privacidad': typeof PrivacidadRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
@@ -355,6 +370,7 @@ export interface FileRoutesByTo {
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
   '/play': typeof AppPlayRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
@@ -398,6 +414,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/privacidad': typeof PrivacidadRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
@@ -406,6 +423,7 @@ export interface FileRoutesById {
   '/_app/pcw': typeof AppPcwRoute
   '/_app/play': typeof AppPlayRoute
   '/_app/profile': typeof AppProfileRouteWithChildren
+  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
@@ -448,6 +466,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/privacidad'
+    | '/reset-password'
     | '/terminos'
     | '/welcome'
     | '/admin'
@@ -456,6 +475,7 @@ export interface FileRouteTypes {
     | '/pcw'
     | '/play'
     | '/profile'
+    | '/forgot-password'
     | '/login'
     | '/register'
     | '/demo/matchmaking'
@@ -496,6 +516,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/privacidad'
+    | '/reset-password'
     | '/terminos'
     | '/welcome'
     | '/admin'
@@ -503,6 +524,7 @@ export interface FileRouteTypes {
     | '/myteam'
     | '/pcw'
     | '/play'
+    | '/forgot-password'
     | '/login'
     | '/register'
     | '/demo/matchmaking'
@@ -545,6 +567,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/privacidad'
+    | '/reset-password'
     | '/terminos'
     | '/welcome'
     | '/_app/admin'
@@ -553,6 +576,7 @@ export interface FileRouteTypes {
     | '/_app/pcw'
     | '/_app/play'
     | '/_app/profile'
+    | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
     | '/demo/matchmaking'
@@ -596,6 +620,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   PrivacidadRoute: typeof PrivacidadRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
@@ -629,6 +654,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidad'
       fullPath: '/privacidad'
       preLoaderRoute: typeof PrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terminos': {
@@ -686,6 +718,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_auth/login': {
       id: '/_auth/login'
@@ -1049,11 +1088,13 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AuthRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
 }
@@ -1065,6 +1106,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   PrivacidadRoute: PrivacidadRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,

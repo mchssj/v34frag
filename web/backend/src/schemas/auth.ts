@@ -31,6 +31,19 @@ export const PasswordChangeBody = z
   })
   .openapi('PasswordChangeBody');
 
+export const ForgotPasswordBody = z.object({ email }).openapi('ForgotPasswordBody');
+
+export const ForgotPasswordResult = z
+  .object({ ok: z.literal(true) })
+  .openapi('ForgotPasswordResult', { description: 'Siempre igual, haya o no una cuenta con ese correo' });
+
+export const ResetPasswordBody = z
+  .object({
+    token_hash: z.string().min(1).max(256).openapi({ description: 'El `token_hash` del link del correo de recuperación' }),
+    new_password: z.string().min(6).max(72).openapi({ description: 'Las mismas reglas del registro: de 6 a 72 caracteres' }),
+  })
+  .openapi('ResetPasswordBody');
+
 export const RefreshBody = z
   .object({ refresh_token: z.string().min(1).max(512) })
   .openapi('RefreshBody');

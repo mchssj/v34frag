@@ -46,3 +46,17 @@ export const signupSchema = z.object({
   tag: aliasField,
 })
 export type SignupValues = z.infer<typeof signupSchema>
+
+export const forgotPasswordSchema = z.object({ email: emailField })
+export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>
+
+export const resetPasswordSchema = z
+  .object({
+    password: newPasswordField,
+    confirm: z.string().min(1, "Repite la contraseña."),
+  })
+  .refine((v) => v.password === v.confirm, {
+    path: ["confirm"],
+    message: "Las contraseñas no coinciden.",
+  })
+export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>

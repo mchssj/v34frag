@@ -1,4 +1,5 @@
 import { cn } from "cn"
+import { CircleAlertIcon, CircleCheckIcon } from "lucide-react"
 
 import type { ComponentProps, ReactNode } from "react"
 
@@ -101,5 +102,30 @@ export function StepButton({
       )}
       {...props}
     />
+  )
+}
+
+/** Aviso arriba de un formulario de Login o Recuperación (mismo aspecto que el de la cuenta confirmada). */
+export function AuthNotice({
+  tone,
+  children,
+}: {
+  tone: "ok" | "error"
+  children: ReactNode
+}) {
+  const Icon = tone === "ok" ? CircleCheckIcon : CircleAlertIcon
+  return (
+    <p
+      role={tone === "ok" ? "status" : "alert"}
+      className={cn(
+        "flex gap-2.5 rounded-lg border px-3 py-2.5 text-[13px]",
+        tone === "ok"
+          ? "border-win/40 bg-win/8 text-win"
+          : "border-destructive/40 bg-destructive/8 text-destructive"
+      )}
+    >
+      <Icon className="mt-px size-4 shrink-0" aria-hidden />
+      <span>{children}</span>
+    </p>
   )
 }

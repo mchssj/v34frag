@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | "INVALID_CREDENTIALS"
   | "WRONG_PASSWORD"
   | "SAME_PASSWORD"
+  | "INVALID_LINK"
   | "EMAIL_NOT_CONFIRMED"
   | "FORBIDDEN"
   | "NOT_FOUND"
@@ -61,6 +62,7 @@ const KNOWN_CODES = new Set<string>([
   "INVALID_CREDENTIALS",
   "WRONG_PASSWORD",
   "SAME_PASSWORD",
+  "INVALID_LINK",
   "EMAIL_NOT_CONFIRMED",
   "FORBIDDEN",
   "NOT_FOUND",
@@ -155,6 +157,8 @@ export function errorMessage(
       return "La contraseña actual no es correcta."
     case "SAME_PASSWORD":
       return "Tiene que ser distinta de la actual."
+    case "INVALID_LINK":
+      return "El enlace no es válido o venció. Pide otro correo."
     case "EMAIL_NOT_CONFIRMED":
       return "Confirma tu email. Te enviamos un link al registrarte."
     case "RATE_LIMITED": {

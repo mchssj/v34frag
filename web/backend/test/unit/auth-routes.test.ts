@@ -264,3 +264,123 @@ describe('POST /api/v1/me/password', () => {
     expect(String(log.mock.calls[0]?.[0])).toContain('otras sesiones');
   });
 });
+
+describe('POST /auth/password/forgot', () => {
+  const recoverCall = (fetch: ReturnType<typeof gotrue>) => fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/recover'));
+
+  it('pide el correo a Supabase con el redirect a /reset-password y responde 202', async () => {
+    const fetch = gotrue((url) => (url.includes('/auth/v1/recover') ? Response.json({}) : undefined));
+    const res = await post('/auth/password/forgot', { email: 'a@b.co' });
+    expect(res.status).toBe(202);
+    expect(await json(res)).toEqual({ ok: true });
+    await vi.waitFor(() => expect(recoverCall(fetch)).toBeTruthy());
+    const [url, init] = recoverCall(fetch)!;
+    expect(String(url)).toContain('redirect_to=https%3A%2F%2Fcsstv.pages.dev%2Freset-password');
+    expect(JSON.parse(String(init?.body))).toMatchObject({ email: 'a@b.co' });
+  });
+
+  it.each([
+    ['límite de correos de Supabase', () => authError(429, 'over_email_send_rate_limit')],
+    ['Supabase caído', () => new Response('error', { status: 500 })],
+  ])('con %s responde lo mismo (no deja ver si la cuenta existe) y lo registra', async (_, fail) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    gotrue((url) => (url.includes('/auth/v1/recover') ? fail() : undefined));
+    const res = await post('/auth/password/forgot', { email: 'a@b.co' });
+    expect(res.status).toBe(202);
+    expect(await json(res)).toEqual({ ok: true });
+    await vi.waitFor(() => expect(String(log.mock.calls[0]?.[0])).toContain('correo de recuperación'));
+  });
+
+  it('400 si el email no es válido, sin llamar a Supabase', async () => {
+    const fetch = gotrue(() => undefined);
+    const res = await post('/auth/password/forgot', { email: 'no-es-email' });
+    expect(res.status).toBe(400);
+    expect((await json(res)).error.code).toBe('VALIDATION_ERROR');
+    expect(recoverCall(fetch)).toBeUndefined();
+  });
+
+  it('429 después de 5 pedidos por minuto de la misma IP, sin gastar el contador del login', async () => {
+    gotrue((url) => (url.includes('/auth/v1/recover') ? Response.json({}) : undefined));
+    const app = makeApp();
+    const env = testEnv({ CLIENT_IP_HEADER: 'x-forwarded-for' });
+    const req = (path: string, body: unknown) =>
+      app.request(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '1.1.1.1' }, body: JSON.stringify(body) }, env);
+    for (let i = 0; i < 5; i++) expect((await req('/auth/password/forgot', { email: `a${i}@b.co` })).status).toBe(202);
+    const res = await req('/auth/password/forgot', { email: 'otra@b.co' });
+    expect(res.status).toBe(429);
+    expect((await json(res)).error.code).toBe('RATE_LIMITED');
+    // El login sigue con su propio contador: llega a Supabase (que acá no está simulado) en lugar de dar 429.
+    expect((await req('/auth/login', { email: 'a@b.co', password: 'x' })).status).not.toBe(429);
+  });
+});
+
+describe('POST /auth/password/reset', () => {
+  // GoTrue simulado: verify da la sesión de recuperación; `verify`, `put` y `logout` responden lo que diga cada caso.
+  async function reset(opts: { verify?: () => Response; put?: () => Response; logout?: () => Response } = {}) {
+    const access = await signToken(key, userClaims(USER));
+    const fetch = gotrue((url, init) => {
+      if (url.includes('/auth/v1/verify'))
+        return (
+          opts.verify?.() ??
+          Response.json({
+            access_token: access, refresh_token: 'r-recuperacion', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, token_type: 'bearer',
+            user: { id: USER, aud: 'authenticated', email: 'a@b.co', created_at: '2026-10-14T00:00:00Z' },
+          })
+        );
+      if (url.includes('/auth/v1/user') && init.method === 'PUT') return opts.put?.() ?? Response.json({ id: USER });
+      if (url.includes('/auth/v1/logout')) return opts.logout?.() ?? new Response(null, { status: 204 });
+      if (url.includes('/rest/v1/profiles')) return Response.json([{ role: 'user', tag: 'Tag1', password_changed_at: '2026-11-03T20:00:00+00:00' }]);
+      return undefined;
+    });
+    const res = await post('/auth/password/reset', { token_hash: 'hash-del-correo', new_password: 'nueva-456' });
+    return { res, fetch, access };
+  }
+
+  it('canjea el token_hash, cambia la contraseña con esa sesión, cierra las otras y devuelve la sesión', async () => {
+    const { res, fetch, access } = await reset();
+    expect(res.status).toBe(200);
+    expect(await json(res)).toMatchObject({ access_token: access, refresh_token: 'r-recuperacion', user: { id: USER, tag: 'Tag1' } });
+    const verify = fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/verify'))!;
+    expect(JSON.parse(String(verify[1]?.body))).toMatchObject({ type: 'recovery', token_hash: 'hash-del-correo' });
+    const put = fetch.mock.calls.find(([u, i]) => String(u).includes('/auth/v1/user') && i?.method === 'PUT')!;
+    expect(JSON.parse(String(put[1]?.body))).toEqual({ password: 'nueva-456' });
+    expect((put[1]?.headers as Record<string, string>).Authorization).toBe(`Bearer ${access}`);
+    const out = fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/logout'))!;
+    expect(String(out[0])).toContain('scope=others');
+  });
+
+  it.each([
+    ['otp_expired', 403],
+    ['otp_disabled', 403],
+    ['validation_failed', 400],
+  ])('link vencido o usado (%s): 400 INVALID_LINK, sin tocar la contraseña', async (error_code, status) => {
+    const { res, fetch } = await reset({ verify: () => authError(status, error_code) });
+    expect(res.status).toBe(400);
+    expect((await json(res)).error.code).toBe('INVALID_LINK');
+    expect(fetch.mock.calls.some(([u, i]) => String(u).includes('/auth/v1/user') && i?.method === 'PUT')).toBe(false);
+  });
+
+  it('límite de Supabase al verificar: 429', async () => {
+    const { res } = await reset({ verify: () => authError(429, 'over_request_rate_limit') });
+    expect(res.status).toBe(429);
+  });
+
+  it.each([
+    ['same_password', 'SAME_PASSWORD'],
+    ['weak_password', 'VALIDATION_ERROR'],
+  ])('Auth rechaza la nueva (%s): 400 %s', async (error_code, code) => {
+    const { res } = await reset({ put: () => authError(422, error_code) });
+    expect(res.status).toBe(400);
+    expect((await json(res)).error.code).toBe(code);
+  });
+
+  it('400 si falta el token o la contraseña es corta, sin llamar a Supabase', async () => {
+    const fetch = gotrue(() => undefined);
+    for (const body of [{ new_password: 'nueva-456' }, { token_hash: 'x', new_password: '123' }]) {
+      const res = await post('/auth/password/reset', body);
+      expect(res.status).toBe(400);
+      expect((await json(res)).error.code).toBe('VALIDATION_ERROR');
+    }
+    expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/verify'))).toBe(false);
+  });
+});

@@ -82,6 +82,39 @@ export function useSignup() {
   })
 }
 
+/** Pide el correo de recuperación. La API responde lo mismo haya o no una cuenta con ese email. */
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      await unwrap(api.POST("/auth/password/forgot", { body: { email } }))
+    },
+  })
+}
+
+/** Pone la contraseña nueva con el token_hash del correo y entra con la sesión que devuelve la API. */
+export function useResetPassword() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      tokenHash,
+      password,
+    }: {
+      tokenHash: string
+      password: string
+    }) => {
+      const session = await unwrap(
+        api.POST("/auth/password/reset", {
+          body: { token_hash: tokenHash, new_password: password },
+        })
+      )
+      if (!session) throw missingSession()
+      queryClient.setQueryData(authKeys.me, session.user)
+      tokenStore.setSession(toSession(session), true)
+      return session.user
+    },
+  })
+}
+
 export function useLogout() {
   return useMutation({
     mutationFn: async () => {
