@@ -7,7 +7,7 @@
 | Replanteo `72` | **Aplicado en la base local** el 2026-11-04 (con la migración `20261029210000_medallas_datos.sql`, que a esa base le faltaba). Sin aplicar en staging ni en producción |
 | API | Hecha y probada en local. Sin desplegar |
 | Web (perfil y Administración › Medallas) | Hecha y probada en el navegador en local. Sin desplegar |
-| Commit | Ninguno todavía |
+| Commit | `b9df74d` en `kyan/pruebas` (2026-11-04), sin push. La demo `/demo/admin-medallas` (datos de ejemplo) quedó fuera |
 
 ## Cómo se hizo
 
