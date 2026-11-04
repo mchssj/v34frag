@@ -69,7 +69,10 @@ export async function skipWelcome(
 
 export async function expectHome(page: Page, alias: string) {
   await expect(page).toHaveURL(/\/home$/)
-  await expect(page.getByText(`Hola, ${alias}`)).toBeVisible()
+  // "Buenos días", "Buenas tardes" o "Buenas noches", según la hora (Para ti).
+  await expect(
+    page.getByRole("heading", { level: 1, name: new RegExp(`, ${alias}$`) })
+  ).toBeVisible()
 }
 
 /** Cerrar sesión: menú de cuenta del pie del sidebar y confirmación. */
