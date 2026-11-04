@@ -15,6 +15,7 @@ const SIZES = {
   24: "size-6 rounded-[6px] text-xs font-semibold",
   26: "size-[26px] rounded-[6px] text-xs font-bold",
   30: "size-[30px] rounded-[7px] text-sm font-bold",
+  48: "size-12 rounded-xl font-mono text-[22px] font-semibold",
 } as const
 
 export function LevelBadge({

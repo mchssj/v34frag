@@ -99,7 +99,9 @@ test("el sidebar se colapsa y recuerda el estado al recargar", async ({
 test("⌘K busca páginas y navega con el teclado", async ({ page }) => {
   await page.goto("/home")
   // El atajo se escucha cuando el shell ya está montado.
-  await expect(page.getByText(/^Hola,/)).toBeVisible()
+  await expect(
+    page.getByRole("heading", { level: 1, name: /^Buen(os|as) / })
+  ).toBeVisible()
   await page.keyboard.press("Control+k")
   const dialog = page.getByRole("dialog", { name: "Buscar" })
   await expect(dialog).toBeVisible()
