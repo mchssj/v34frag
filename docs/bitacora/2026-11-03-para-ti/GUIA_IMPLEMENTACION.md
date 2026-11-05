@@ -2,7 +2,9 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-03 en `feat/frontend-fase-1`, sin commit. Typecheck, lint, unitarias y la e2e de "Para ti" en verde, y revisado en el navegador (claro, oscuro, 1440 y 375 px, tooltip de la gráfica).
+Implementado y probado en local el 2026-11-03 en `feat/frontend-fase-1` (`25c4517b` y `9f8d3dae`). Typecheck, lint, unitarias y la e2e de "Para ti" en verde, y revisado en el navegador (claro, oscuro, 1440 y 375 px, tooltip de la gráfica).
+
+**Desplegado el 2026-11-05:** los dos commits pasaron a `main` con cherry-pick (`3c768726` y `06c2da7b`, sin conflictos; typecheck, lint y 608 pruebas en verde) y Daniel desplegó la web `06c2da7b` desde `v34frag-deploy` con `desplegar.sh web --sin-pruebas`. `https://cmleague.lat` sirve el bundle nuevo (`index-EOKaxRgg.js`; antes `b3bdc2f9ffcb`).
 
 ## Archivos
 
@@ -19,9 +21,12 @@ Implementado y probado en local el 2026-11-03 en `feat/frontend-fase-1`, sin com
 | `web/frontend/e2e/helpers.ts`, `e2e/shell.spec.ts` | El saludo pasa de "Hola, …" a "Buenos días/tardes/noches, …" |
 | `docs/manual/jugador/para-ti.md` | Nueva página del manual |
 
-## Despliegue
+## Despliegue (hecho el 2026-11-05, web `06c2da7b`)
 
-No toca la base, la API ni los servidores. Sale con el próximo despliegue del frontend.
+No toca la base, la API ni los servidores. Solo la web, desde `main`.
+
+- Dos corridas de `desplegar.sh web` con pruebas se frenaron por una prueba de Jugar que pasó el límite de 5 s con toda la suite corriendo (`PlayPage.test.tsx` › "en la sala: chat, reportar y desconexión de un compañero"). Sola pasa, y la suite completa del mismo commit había pasado una vez. Por eso Daniel desplegó con `--sin-pruebas`.
+- El primer intento de Daniel no llegó a correr el script: la terminal mostraba el registro de VS Code. Se corrió en una ventana de Git Bash, con `VPS_HOST` tomado del `.env` de `v34frag` (`v34frag-deploy` no tiene `.env`).
 
 ## Pruebas
 
