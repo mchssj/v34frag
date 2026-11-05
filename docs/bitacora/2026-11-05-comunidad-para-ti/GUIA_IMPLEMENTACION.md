@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho en `main` el 2026-11-05. Typecheck, lint y toda la suite en verde (612 pruebas, 101 archivos). **Despliegue pendiente** (junto con [`2026-11-05-tooltip-elo-perfil`](../2026-11-05-tooltip-elo-perfil/)).
+Hecho en `main` el 2026-11-05. Typecheck, lint y toda la suite en verde (612 pruebas, 101 archivos). **Desplegado el 2026-11-05:** web `ac5d6202b2d2` desde `main` (antes `06c2da7b23db`), con las 612 pruebas en verde dentro de `desplegar.sh web`. `https://cmleague.lat` responde 200 y el chunk de `config/site.ts` en producción trae los dos links nuevos y ya no `dsc.gg/v34frag`. Salió junto con [`2026-11-05-tooltip-elo-perfil`](../2026-11-05-tooltip-elo-perfil/). **Falta:** mirarlo en el navegador y publicar el changelog.
 
 ## Archivos
 
@@ -17,7 +17,7 @@ Hecho en `main` el 2026-11-05. Typecheck, lint y toda la suite en verde (612 pru
 | `terms/terminos.html` y `terms/privacidad.html` | El link del Discord y la fecha |
 | `docs/manual/jugador/para-ti.md` | Un párrafo en "Al costado" |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-05, web `ac5d6202b2d2`)
 
 Solo la web, desde `main`. No toca la base, la API ni los servidores de juego (#1, #2 y #3).
 

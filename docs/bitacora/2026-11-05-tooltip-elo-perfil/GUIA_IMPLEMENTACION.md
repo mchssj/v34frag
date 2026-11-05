@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho en `main` el 2026-11-05. Typecheck, lint y toda la suite en verde (611 pruebas, 100 archivos). **Despliegue pendiente** (junto con [`2026-11-05-comunidad-para-ti`](../2026-11-05-comunidad-para-ti/)) y **sin revisar en el navegador**.
+Hecho en `main` el 2026-11-05. Typecheck, lint y toda la suite en verde (611 pruebas, 100 archivos). **Desplegado el 2026-11-05:** web `ac5d6202b2d2` desde `main` (antes `06c2da7b23db`), con las 612 pruebas en verde dentro de `desplegar.sh web`. `https://cmleague.lat` responde 200, junto con [`2026-11-05-comunidad-para-ti`](../2026-11-05-comunidad-para-ti/). **Falta:** mirarlo en el navegador y publicar el changelog.
 
 ## Archivos
 
@@ -15,7 +15,7 @@ Hecho en `main` el 2026-11-05. Typecheck, lint y toda la suite en verde (611 pru
 | `web/frontend/src/features/player/pages/PlayerProfile.tsx` | `EloCard` deja de guardar y mostrar el texto gris; sale el `useState` que ya no se usa |
 | `docs/manual/jugador/elo-y-estadisticas.md` | Una línea sobre la gráfica en "Dónde ves tus números" |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-05, web `ac5d6202b2d2`)
 
 Solo la web, desde `main`, como el de "Para ti" ([`2026-11-03-para-ti`](../2026-11-03-para-ti/)). No toca la base, la API ni los servidores de juego (#1, #2 y #3).
 
