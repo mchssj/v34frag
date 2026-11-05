@@ -4,7 +4,7 @@
 
 - **Aprobado por Daniel el 2026-11-04** ("empieza el plan del 1"), con los valores por defecto del plan: no se discutieron otros.
 - **Hecho en `main`:** el replanteo 73 con su inversa, el formulario del admin, el manual y los términos.
-- **Sin desplegar.** No toca la API ni el plugin.
+- **Desplegado el 2026-11-04 desde `main` (`124db682`)**, sin mixes en vivo ni salas activas (6 en la cola): replanteo 73 en la base del VPS (comprobado: `f | 200 | 100 | 5 | 60` y `mm_balance_elos` creada) y web `124db6829ada` (antes `c8fb3662f9ac`; `https://cmleague.lat` responde 200). No toca la API ni el plugin. **Falta:** encender el interruptor (paso 3) y publicar el changelog (paso 4).
 
 ## Pruebas
 

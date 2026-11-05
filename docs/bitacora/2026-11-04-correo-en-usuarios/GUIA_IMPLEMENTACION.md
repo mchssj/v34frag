@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-04 (pruebas de la API y de la web). **Pendiente:** probar y aplicar la `74` en la base del VPS, y desplegar la API y la web.
+Hecho y probado en local el 2026-11-04 (pruebas de la API y de la web). **Desplegado el 2026-11-04** desde `main`, sin salas ni mixes en curso: la `74` en la base del VPS (`prueba74.sql`: correo igual al de `auth.users`, moderador y usuario `42501`), la API `b3bdc2f9ffcb` (518 pruebas; antes `c8fb3662f9ac`) y la web `b3bdc2f9ffcb` (599 pruebas). **Falta:** verlo en Administración › Usuarios.
 
 ## Archivos
 
@@ -18,7 +18,7 @@ Hecho y probado en local el 2026-11-04 (pruebas de la API y de la web). **Pendie
 | `web/frontend/src/features/admin/users/components/AccountSection.test.tsx` | Prueba del correo |
 | `docs/manual/admin/usuarios-y-fichas.md` | La sección Acceso nombra el correo |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-04)
 
 En este orden, para que la web nunca pida un campo que la base no da (si la base va primero, la API vieja ignora el campo nuevo):
 

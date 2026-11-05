@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho en `main` y probado en local el 2026-11-04 (598 pruebas, lint, typecheck y build). **Pendiente:** desplegar la web y mirarlo en el navegador: no se revisó a ojo con datos reales.
+Hecho en `main` y probado en local el 2026-11-04 (598 pruebas, lint, typecheck y build). **Desplegado el 2026-11-04 (23:44 UTC):** web `b3bdc2f9ffcb` desde `main` (599 pruebas). **Falta:** mirarlo en el navegador con datos reales.
 
 ## Archivos
 
@@ -18,7 +18,7 @@ Hecho en `main` y probado en local el 2026-11-04 (598 pruebas, lint, typecheck y
 | `web/frontend/src/features/series/pages/SeriesRoom.tsx` | `Carousel`, `ClipCard` y `ClipCardPending` en lugar de sus flechas y tarjetas; la foto del mapa de cada clip |
 | `web/frontend/src/features/teams/components/TournamentHistory.tsx` | `CarouselTrack`, con las flechas en el `aside` del panel |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-04, web `b3bdc2f9ffcb`)
 
 Solo la web, desde `main`, como el último despliegue (`fc72b2ea`). No toca la API, la base ni los servidores.
 
