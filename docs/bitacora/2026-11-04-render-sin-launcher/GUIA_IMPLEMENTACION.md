@@ -10,6 +10,7 @@ Implementado y commiteado el 2026-11-04 en `feat/frontend-fase-1`. El modo `"cli
 |---|---|
 | `render/render_clip.py` | `Game` elige el cliente por `client`: `params()`, `find()`, `launch_v34()`, `running()` por `CMLauncher.exe` o `hl2.exe`, `taskkill` en `quit()` para `"v34"`, el respaldo del registro tolerante en `"v34"`. `find_window` acepta la clase de ventana |
 | `render/config.example.json` | `"client": "clientmod"` |
+| `render/probar_jugada.py` | Nuevo: graba una jugada por su id igual que `procesar.py`, pero solo en local (sin escribir en la base ni subir a R2, Drive o Discord). Para probar el v34 con el `clutch_3` de Matía en cache (`8c6db893-dd0c-4417-8e4d-517c69d490e0`), que había salido mal |
 | `render/CONFIGURAR_PORTATIL.md` | Paso 3b (el v34 normal), `client` en la tabla del paso 5, dos filas en "Si algo falla" y el script de mapas que faltan sin exigir `cstrike_dir.vpk` |
 | `docs/PENDIENTES.md` | Una línea en el punto 1.17 |
 
