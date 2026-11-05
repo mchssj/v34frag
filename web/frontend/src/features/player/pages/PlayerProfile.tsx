@@ -12,7 +12,6 @@ import {
   LockIcon,
   ShieldIcon,
 } from "lucide-react"
-import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
@@ -453,14 +452,10 @@ function EloCard({
   onRange: (r: 10 | 20 | 30) => void
 }) {
   const q = useQuery(eloHistoryOptions(nick, range))
-  const [label, setLabel] = useState<string | null>(null)
   return (
     <Card variant="outline" className="flex min-w-0 flex-col gap-2.5 px-5 py-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex-1 text-sm font-semibold">Evolución de ELO</span>
-        <span className="min-h-4 font-mono text-xs font-medium text-muted-foreground">
-          {label}
-        </span>
         <Segmented
           size="sm"
           label="Partidas del gráfico"
@@ -476,7 +471,6 @@ function EloCard({
           points={q.data ?? []}
           level={level}
           floor={level === null ? null : LEVEL_FLOORS[level - 1]}
-          onHover={setLabel}
         />
       )}
     </Card>
