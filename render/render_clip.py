@@ -240,7 +240,10 @@ class Game:
         self.exe = "CMLauncher.exe" if self.client == "clientmod" else "hl2.exe"
         self.cstrike = os.path.join(cfg["client_dir"], "cstrike")
         self.steps = os.path.join(self.cstrike, "cfg", "cmleague")
-        self.logfile = os.path.join(self.cstrike, "cmleague", "render.log")
+        # El log de la consola: con ClientMod, con_logfile (en cmleague_render.cfg); el motor de la v34 normal no tiene
+        # con_logfile (2026-11-04, el portátil: no se creaba ningún log) y escribe la consola con -condebug en
+        # cstrike/console.log.
+        self.logfile = os.path.join(self.cstrike, *(("cmleague", "render.log") if self.client == "clientmod" else ("console.log",)))
         self.ini = os.path.join(cfg["client_dir"], "clientmod.ini")
         self.reg_backup = os.path.join(cfg["work_dir"], "registro.reg")
         self.n = 0
@@ -291,7 +294,7 @@ class Game:
         probar si la gráfica integrada deja de deformar el mapa; con "v34", los del acceso directo)."""
         c = self.cfg
         extra = f" {c['launch_params']}" if c.get("launch_params") else ""
-        base = "-game cstrike " if self.client == "v34" else ""
+        base = "-game cstrike -condebug " if self.client == "v34" else ""
         return f"{base}-novid -windowed -noborder -w {c['width']} -h {c['height']}{extra} +exec cmleague_render"
 
     def restore(self):
@@ -428,7 +431,34 @@ class Game:
             self.wait_log(f"CML_PASO_{self.n}", timeout, retry=send)
 
     def log_text(self, since):
+        if not os.path.exists(self.logfile):
+            return ""
         return open(self.logfile, "rb").read()[since:].decode("utf-8", "replace")
+
+    LOADED = "Redownloading all lightmaps"  # lo que escribe ClientMod al terminar de cargar la demo
+
+    def wait_loaded(self, since=0, timeout=600):
+        """Espera a que termine de cargar la demo (al abrir el juego o después de un reinicio de la demo).
+
+        Con ClientMod, la línea LOADED. La v34 normal puede no escribirla (no se sabe todavía): se espera "Playing
+        demo from" (el playdemo arrancó), LOADED hasta 30 s y, si no aparece, un paso de prueba por la consola, que
+        solo responde cuando la carga terminó. El aviso copia al log las últimas líneas, para ver qué escribe."""
+        if self.client == "clientmod":  # como siempre
+            return self.wait_log(self.LOADED, timeout) if since == 0 else self.wait_text(self.LOADED, since, timeout)
+        t0 = time.time()
+        while not os.path.exists(self.logfile):
+            if time.time() - t0 > 120:
+                raise TimeoutError(f"el juego no escribe el log de la consola ({self.logfile}): ¿falta -condebug?")
+            time.sleep(0.5)
+        self.wait_text("Playing demo from", since, timeout)
+        try:
+            self.wait_text(self.LOADED, since, 30)
+            return
+        except TimeoutError:
+            pass
+        tail = [l for l in self.log_text(since).splitlines() if l.strip()][-8:]
+        log("Aviso: no apareció '" + self.LOADED + "'; pruebo la consola. Últimas líneas del log: " + " | ".join(tail))
+        self.step(["demo_pause", "hideconsole"], timeout=timeout)
 
     def wait_text(self, text, since, timeout):
         """Espera a que el texto aparezca en el log desde la posición since (sin depender de lo ya leído)."""
@@ -588,7 +618,7 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
         game.prepare(f"cmleague/demos/{demo_name}")
         try:
             game.launch()
-            game.wait_log("Redownloading all lightmaps", 600)
+            game.wait_loaded()
             log(f"Demo cargada (pasada {n_pass} de {len(passes)}).")
             prev_end, since = -1, None
             for j0, (t0, t1), job, i in plan:
@@ -621,7 +651,7 @@ def record_session(cfg, demo_path, d, jobs, frames_dir):
                         # en pausa: se espera la carga y se pausa y se salta otra vez, como al abrir el juego. Las
                         # kills se vuelven a escribir desde el principio.
                         log(f"Aviso: el salto a {j0} reinició la demo; vuelvo a saltar desde el principio.")
-                        game.wait_text("Redownloading all lightmaps", game.step_pos, 600)
+                        game.wait_loaded(game.step_pos)
                         game.step(goto)
                         if game.restarted():
                             raise RuntimeError(f"{job['key']} tramo {i}: la demo se reinició dos veces")

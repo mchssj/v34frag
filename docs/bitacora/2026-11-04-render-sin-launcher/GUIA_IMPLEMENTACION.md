@@ -41,6 +41,10 @@ Pendiente.
 
 Ninguno.
 
+## Incidentes durante las pruebas
+
+- **2026-11-04, primera prueba en el portátil** (`probar_jugada.py` con el `clutch_3` de Matía en cache): el juego abrió y cargó la demo (cache quieto en el primer cuadro, por el `demo_pause` del cfg), pero el script se quedó esperando `Redownloading all lightmaps`. No se creó ningún log de la consola: ni `cstrike\cmleague\render.log` ni su copia en `VirtualStore`. El motor de la v34 normal no tiene `con_logfile`, que es de ClientMod. Arreglo: con `"v34"`, `-condebug` en la línea de comandos y el log en `cstrike\console.log`. Además, `wait_loaded` ya no depende solo de esa línea: espera `Playing demo from`, la línea de ClientMod hasta 30 s y, si no aparece, un paso de prueba por la consola, y copia al log del script las últimas líneas de la consola para ver qué escribe la v34.
+
 ## Cómo revertir
 
 Poner `"client": "clientmod"` (o quitar la clave) en `config.json` y las claves de ClientMod. Para sacar el código, revertir el commit en `render/`.
