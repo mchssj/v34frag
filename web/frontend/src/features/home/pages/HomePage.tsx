@@ -10,6 +10,7 @@ import { RecentCard, UpcomingCard } from "../components/MatchLists"
 import { PendingCard } from "../components/PendingCard"
 import { PlayCard } from "../components/PlayCard"
 import {
+  CommunityCard,
   EventsCard,
   TopPlayersCard,
   TopTeamsCard,
@@ -61,6 +62,7 @@ export function HomePage({ name }: { name: string }) {
           <EventsCard />
           <TopTeamsCard />
           <TopPlayersCard />
+          <CommunityCard />
         </aside>
       </div>
     </div>

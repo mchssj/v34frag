@@ -1,0 +1,5 @@
+CMLeague 2.9.15 --  Changelog
+
+En la web:
+- En "Para ti" hay una tarjeta nueva, "Comunidad", con los links a nuestro Discord y al grupo de Steam. Súmate a los dos para enterarte de todo.
+- El botón de Discord de la página de inicio y los términos ahora llevan al link nuevo del Discord.

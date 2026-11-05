@@ -259,8 +259,7 @@ const SECTIONS: LegalSection[] = [
           El matchmaking <Wip>En prueba</Wip> arma los equipos según el ELO (y,
           si la liga lo enciende, también según el rating de tus partidas
           recientes, para que queden parejos), te pide confirmar la partida y te
-          asigna un servidor. Si confirmas, te
-          comprometes a jugarla entera.
+          asigna un servidor. Si confirmas, te comprometes a jugarla entera.
         </li>
       </ul>
     ),
@@ -659,9 +658,9 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Discord oficial:</strong>{" "}
-            <a href="https://dsc.gg/v34frag">dsc.gg/v34frag</a>, en el canal de
-            soporte. Sirve para consultas rápidas y para hablar con un
-            administrador.
+            <a href="https://discord.gg/bn5Yxsh9tc">discord.gg/bn5Yxsh9tc</a>,
+            en el canal de soporte. Sirve para consultas rápidas y para hablar
+            con un administrador.
           </li>
         </ul>
         <p>

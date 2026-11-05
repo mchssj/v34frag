@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
+import { ExternalLinkIcon } from "lucide-react"
 
+import { BrandTile, type Brand } from "@/components/brand/BrandTile"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { TeamCrest } from "@/components/brand/TeamCrest"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import { COMMUNITY } from "@/config/site"
 import { myProfileOptions } from "@/features/profile/api/queries"
 import { topPlayersOptions } from "@/features/public/api/queries"
 import { activeEventsOptions, topTeamsOptions } from "../api/queries"
@@ -136,6 +139,59 @@ export function TopPlayersCard() {
           ))}
         </ol>
       )}
+    </Box>
+  )
+}
+
+const COMMUNITY_LINKS: {
+  brand: Brand
+  name: string
+  sub: string
+  href: string
+}[] = [
+  {
+    brand: "discord",
+    name: "Discord",
+    sub: "Avisos, buscar equipo y soporte",
+    href: COMMUNITY.discordUrl,
+  },
+  {
+    brand: "steam",
+    name: "Grupo de Steam",
+    sub: "ClientMod League en Steam",
+    href: COMMUNITY.steamGroupUrl,
+  },
+]
+
+/** Links al Discord y al grupo de Steam, que abren en otra pestaña. */
+export function CommunityCard() {
+  return (
+    <Box title="Comunidad">
+      <ul>
+        {COMMUNITY_LINKS.map((l) => (
+          <li key={l.brand} className="border-t">
+            <a
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+            >
+              <BrandTile brand={l.brand} className="size-8" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-[13px] font-medium">{l.name}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {l.sub}
+                </span>
+              </span>
+              <ExternalLinkIcon
+                aria-hidden
+                className="size-3.5 shrink-0 text-muted-foreground"
+              />
+              <span className="sr-only">(abre en otra pestaña)</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </Box>
   )
 }
