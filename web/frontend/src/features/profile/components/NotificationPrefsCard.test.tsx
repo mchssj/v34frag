@@ -12,7 +12,7 @@ import {
 } from "vitest"
 
 import { authKeys } from "@/auth/queries"
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import { NotificationPrefsCard } from "./NotificationPrefsCard"
 
 const API = "http://api.test"
@@ -75,6 +75,9 @@ async function renderCard(role: "user" | "admin") {
   })
   return r
 }
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("preferencias de notificaciones", () => {
   it("muestra lo guardado, aclara las obligatorias y oculta Administración a un usuario", async () => {

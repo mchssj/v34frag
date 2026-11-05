@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { describe, expect, it, vi } from "vitest"
 
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import { API, profile, server, setupApi } from "../test/fixtures"
 import { Compare } from "./Compare"
 
@@ -11,6 +11,9 @@ vi.mock("@tanstack/react-router", async (orig) =>
 )
 
 setupApi()
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("Comparador", () => {
   const side = (alias: string, elo: number) => ({

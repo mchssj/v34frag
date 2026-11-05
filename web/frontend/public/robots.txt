@@ -1,0 +1,17 @@
+# CM League (bitácora 2026-11-03-seo-web). Las páginas de la cuenta y de Administración piden sesión:
+# no tienen nada para indexar.
+User-agent: *
+Disallow: /admin
+Disallow: /profile
+Disallow: /home
+Disallow: /play
+Disallow: /myteam
+Disallow: /pcw
+Disallow: /help
+Disallow: /welcome
+Disallow: /login
+Disallow: /register
+Disallow: /demo
+Disallow: /mixes/live/
+
+Sitemap: https://cmleague.lat/sitemap.xml

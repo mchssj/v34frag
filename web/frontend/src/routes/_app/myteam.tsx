@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 
+import { requireAuth } from "@/auth/guards"
 import { Spinner } from "@/components/ui/spinner"
 import { CreateTeam } from "@/features/teams/pages/CreateTeam"
 import { FindTeam } from "@/features/teams/pages/FindTeam"
@@ -20,6 +21,7 @@ const searchSchema = z.object({
 })
 
 export const Route = createFileRoute("/_app/myteam")({
+  beforeLoad: requireAuth,
   validateSearch: searchSchema,
   component: MyTeamPage,
 })

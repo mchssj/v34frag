@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { requireAuth } from "@/auth/guards"
+
 import { MixLiveRoom } from "@/features/mixes/pages/MixRoomPages"
 import { roomSearchSchema } from "@/features/mixes/lib/search"
 
 export const Route = createFileRoute("/_app/mixes/live/$uid")({
+  beforeLoad: requireAuth,
   validateSearch: roomSearchSchema,
   component: LiveMixPage,
 })

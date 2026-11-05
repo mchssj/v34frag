@@ -13,7 +13,7 @@ import {
 } from "vitest"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import { DeleteMixDialog } from "./DeleteMixDialog"
 import { MixLiveRoom, MixMatchRoom } from "../pages/MixRoomPages"
 import { fetchLiveMix } from "../api/queries"
@@ -151,6 +151,9 @@ function profileAnswer() {
 }
 
 const wrap = (ui: ReactNode) => <TooltipProvider>{ui}</TooltipProvider>
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("sala de un mix terminado", () => {
   it("marcador, demo, Δ ELO, MVP, invitado y la fila del usuario", async () => {

@@ -32,7 +32,14 @@ const isMac =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
 export const SEARCH_SHORTCUT = isMac ? "⌘K" : "Ctrl K"
 
-export function Topbar({ onSearch }: { onSearch: () => void }) {
+/** Sin sesión, en lugar de las notificaciones va el botón para entrar. */
+export function Topbar({
+  onSearch,
+  signedIn,
+}: {
+  onSearch: () => void
+  signedIn: boolean
+}) {
   return (
     <header className="sticky top-0 z-10 flex h-[52px] shrink-0 items-center gap-2 rounded-t-[inherit] border-b bg-background pr-3 pl-2.5">
       <SidebarTrigger className="size-7" />
@@ -56,7 +63,13 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
         </Kbd>
       </Button>
       <ThemeMenu />
-      <NotificationsMenu />
+      {signedIn ? (
+        <NotificationsMenu />
+      ) : (
+        <Button asChild size="sm" className="h-8">
+          <Link to="/login">Iniciar sesión</Link>
+        </Button>
+      )}
     </header>
   )
 }

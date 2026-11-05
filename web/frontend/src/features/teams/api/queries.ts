@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap, type Schemas } from "@/api/client"
+import { tokenStore } from "@/auth/tokenStore"
 import { profileKeys } from "@/features/profile/api/queries"
 import type { TeamDetail, TeamSummary, RosterStatusValue } from "../types"
 
@@ -197,6 +198,8 @@ export const myTeamsOptions = queryOptions({
   queryKey: teamKeys.mine,
   queryFn: ({ signal }) => unwrap(api.GET("/api/v1/me/teams", { signal })),
   staleTime: MINUTE,
+  // Lo usa la página pública de un torneo: sin sesión no se pide.
+  enabled: () => !!tokenStore.getState().session,
 })
 
 /** Torneos en los que participó el equipo, del más reciente al más viejo (sin cancelados). */
@@ -533,7 +536,15 @@ export function useSetLookingFor() {
 export function useRenameTeam() {
   const invalidate = useInvalidateTeam()
   return useMutation({
-    mutationFn: ({ teamId, name, tag }: { teamId: string; name: string; tag: string }) =>
+    mutationFn: ({
+      teamId,
+      name,
+      tag,
+    }: {
+      teamId: string
+      name: string
+      tag: string
+    }) =>
       unwrap(
         api.PATCH("/api/v1/teams/{id}", {
           params: { path: { id: teamId } },

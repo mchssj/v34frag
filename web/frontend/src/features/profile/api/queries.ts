@@ -15,6 +15,8 @@ export const profileKeys = {
 export const myProfileOptions = queryOptions({
   queryKey: profileKeys.mine,
   queryFn: ({ signal }) => unwrap(api.GET("/api/v1/me/profile", { signal })),
+  // Las páginas públicas también lo usan (¿es mi perfil?): sin sesión no se pide.
+  enabled: () => !!tokenStore.getState().session,
 })
 
 export function useUpdateProfile() {

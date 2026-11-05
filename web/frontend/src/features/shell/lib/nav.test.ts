@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 
-import { activeNavKey, breadcrumbsFor, NAV_GROUPS, type CrumbData } from "./nav"
+import {
+  activeNavKey,
+  breadcrumbsFor,
+  canSeeNavItem,
+  NAV_GROUPS,
+  type CrumbData,
+} from "./nav"
 
 const mix = {
   kind: "mix" as const,
@@ -156,5 +162,29 @@ describe("Ayuda en el menú", () => {
       label: "Ayuda",
       to: "/help",
     })
+  })
+})
+
+describe("canSeeNavItem", () => {
+  const items = NAV_GROUPS.flatMap((g) => g.items)
+  const visible = (role: Parameters<typeof canSeeNavItem>[1]) =>
+    items.filter((i) => canSeeNavItem(i, role)).map((i) => i.key)
+
+  it("sin sesión quedan solo las páginas públicas", () => {
+    expect(visible(null)).toEqual(["matches", "events", "ranking"])
+  })
+
+  it("con sesión suma las de la cuenta, y Administración según el rol", () => {
+    expect(visible("user")).toEqual([
+      "home",
+      "play",
+      "matches",
+      "events",
+      "pcw",
+      "myteam",
+      "ranking",
+      "help",
+    ])
+    expect(visible("admin")).toContain("admin-events")
   })
 })

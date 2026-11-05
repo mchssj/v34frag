@@ -13,7 +13,7 @@ import {
 } from "vitest"
 
 import type { AuthUser } from "@/auth/queries"
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import { WelcomeFlow } from "./WelcomeFlow"
 
 const navigate = vi.fn()
@@ -95,6 +95,9 @@ function given(details: Details, steamIds: string[]) {
 
 const label = (text: string) =>
   screen.findByText(`Completa tu perfil · ${text}`)
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("WelcomeFlow", () => {
   it("solo falta el estilo: un paso y 'Guardar y terminar'", async () => {

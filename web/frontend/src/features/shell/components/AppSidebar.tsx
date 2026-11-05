@@ -3,9 +3,9 @@ import { cn } from "cn"
 import { useQuery } from "@tanstack/react-query"
 
 import type { AuthUser } from "@/auth/queries"
-import { canAccessAdminSection } from "@/auth/permissions"
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Sidebar,
   SidebarContent,
@@ -20,14 +20,20 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/api/queries"
-import { activeNavKey, NAV_GROUPS, type BadgeKey } from "../lib/nav"
+import {
+  activeNavKey,
+  canSeeNavItem,
+  NAV_GROUPS,
+  type BadgeKey,
+} from "../lib/nav"
 import { AccountMenu } from "./AccountMenu"
 import { useBadgeCounts } from "../api/queries"
 
 const itemClass =
   "gap-2.5 px-2 rounded-lg data-active:font-semibold [&_svg]:size-4"
 
-export function AppSidebar({ user }: { user: AuthUser }) {
+/** Sin sesión (`user` null) quedan las páginas públicas y, al pie, entrar o crear cuenta. */
+export function AppSidebar({ user }: { user: AuthUser | null }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const myNick = useQuery(myProfileOptions).data?.player?.nick
   const active = activeNavKey(pathname, myNick)
@@ -38,9 +44,7 @@ export function AppSidebar({ user }: { user: AuthUser }) {
 
   const groups = NAV_GROUPS.map((g) => ({
     ...g,
-    items: g.items.filter(
-      (i) => !i.admin || canAccessAdminSection(user.role, i.admin)
-    ),
+    items: g.items.filter((i) => canSeeNavItem(i, user?.role ?? null)),
   })).filter((g) => g.items.length > 0)
 
   return (
@@ -57,7 +61,7 @@ export function AppSidebar({ user }: { user: AuthUser }) {
             >
               {/* El logo es una imagen decorativa: el link necesita su propio nombre. */}
               <Link
-                to="/home"
+                to={user ? "/home" : "/"}
                 onClick={closeMobile}
                 aria-label="CM League, ir al inicio"
               >
@@ -122,13 +126,37 @@ export function AppSidebar({ user }: { user: AuthUser }) {
       </SidebarContent>
 
       <SidebarFooter className={cn("p-0 pt-2", isMobile && "px-2 pb-2")}>
-        <AccountMenu
-          user={user}
-          active={active === "profile"}
-          onNavigate={closeMobile}
-        />
+        {user ? (
+          <AccountMenu
+            user={user}
+            active={active === "profile"}
+            onNavigate={closeMobile}
+          />
+        ) : (
+          <GuestActions onNavigate={closeMobile} />
+        )}
       </SidebarFooter>
     </Sidebar>
+  )
+}
+
+/** Pie del sidebar sin sesión. Plegado (solo íconos) no hay lugar: se entra desde la topbar. */
+function GuestActions({ onNavigate }: { onNavigate: () => void }) {
+  const { state, isMobile } = useSidebar()
+  if (state === "collapsed" && !isMobile) return null
+  return (
+    <div className="flex flex-col gap-2">
+      <Button asChild>
+        <Link to="/register" onClick={onNavigate}>
+          Crear cuenta
+        </Link>
+      </Button>
+      <Button asChild variant="outline">
+        <Link to="/login" onClick={onNavigate}>
+          Iniciar sesión
+        </Link>
+      </Button>
+    </div>
   )
 }
 

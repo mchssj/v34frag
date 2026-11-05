@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { requireAuth } from "@/auth/guards"
+
 import { useMe } from "@/auth/queries"
 import { ProfileBanner } from "@/features/onboarding/components/ProfileBanner"
 
 export const Route = createFileRoute("/_app/home")({
+  beforeLoad: requireAuth,
   component: HomePage,
 })
 

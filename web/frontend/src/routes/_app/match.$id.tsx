@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { MixMatchRoom } from "@/features/mixes/pages/MixRoomPages"
 import { roomSearchSchema } from "@/features/mixes/lib/search"
+import { usePageMeta } from "@/lib/seo"
 
 export const Route = createFileRoute("/_app/match/$id")({
   validateSearch: roomSearchSchema,
@@ -13,6 +14,7 @@ function MatchPage() {
   const { id } = Route.useParams()
   const { stats, map } = Route.useSearch()
   const navigate = Route.useNavigate()
+  usePageMeta({ title: "Partida" })
   return (
     <MixMatchRoom
       id={id}

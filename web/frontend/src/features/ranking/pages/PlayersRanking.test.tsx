@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw"
 import { describe, expect, it, vi } from "vitest"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import {
   API,
   beta,
@@ -32,6 +32,9 @@ function renderPlayers(search = {}) {
   )
   return { ...r, onChange }
 }
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("Ranking → Jugadores", () => {
   it("abre la temporada activa: franja, puesto, medalla y los sin puesto con su avance", async () => {

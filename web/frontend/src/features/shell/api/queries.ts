@@ -40,17 +40,17 @@ const pcwOpenOptions = queryOptions({
 
 /** Contadores de los badges. Un contador que falla o vale 0 no muestra badge. */
 export function useBadgeCounts(
-  user: AuthUser
+  user: AuthUser | null
 ): Partial<Record<BadgeKey, number>> {
   const live = useQuery(liveCountOptions).data
   const pcw = useQuery(pcwOpenOptions).data
   const adminBans = useQuery({
     ...activeBanCountOptions,
-    enabled: canAccessAdminSection(user.role, "bans"),
+    enabled: !!user && canAccessAdminSection(user.role, "bans"),
   }).data
   const adminClips = useQuery({
     ...clipReviewCountOptions,
-    enabled: canAccessAdminSection(user.role, "clips"),
+    enabled: !!user && canAccessAdminSection(user.role, "clips"),
   }).data
   return { live, pcw, adminBans, adminClips }
 }

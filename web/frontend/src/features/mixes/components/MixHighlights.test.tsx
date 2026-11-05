@@ -12,7 +12,7 @@ import {
   vi,
 } from "vitest"
 
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import type { Room, RoomPlayer } from "../lib/room"
 import { mixHighlights } from "./MixHighlights"
 
@@ -90,6 +90,9 @@ function render() {
 }
 
 describe("MixHighlights", () => {
+  // La imagen del MVP sale de una ruta del matchmaking que pide sesión.
+  withSession()
+
   it("MVP con la imagen del admin y los destacados", async () => {
     api({ image: MVP })
     const { container } = render()
@@ -160,5 +163,22 @@ describe("MixHighlights", () => {
         name: "Lo más destacado de la partida",
       })
     ).toBeInTheDocument()
+  })
+})
+
+describe("MixHighlights sin sesión", () => {
+  it("no pide la imagen del MVP y la tarjeta queda lisa", async () => {
+    let asked = false
+    api({ image: MVP })
+    server.use(
+      http.get(`${API}/api/v1/mm/mvp-image`, () => {
+        asked = true
+        return HttpResponse.json({ url: MVP })
+      })
+    )
+    const { container } = render()
+    await screen.findByRole("region", { name: "MVP" })
+    expect(container.querySelector(`img[src="${MVP}"]`)).toBeNull()
+    expect(asked).toBe(false)
   })
 })

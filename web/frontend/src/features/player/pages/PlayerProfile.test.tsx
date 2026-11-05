@@ -13,7 +13,7 @@ import {
 } from "vitest"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import { PlayerProfile } from "./PlayerProfile"
 import type { PlayerSearch } from "../lib/search"
 
@@ -281,6 +281,9 @@ function renderProfile(search: PlayerSearch = {}) {
   )
   return { ...r, onChange }
 }
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("Perfil público", () => {
   it("cabecera, nivel, tiles y resumen de un perfil público", async () => {

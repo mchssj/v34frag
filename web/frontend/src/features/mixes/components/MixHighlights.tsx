@@ -1,5 +1,6 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 
+import { tokenStore } from "@/auth/tokenStore"
 import { gameClipsOptions } from "@/features/series/api/queries"
 import { Highlights } from "@/features/matchmaking/room/Highlights"
 import { MvpAndLeaders } from "@/features/matchmaking/room/RoomStats"
@@ -16,6 +17,8 @@ const mvpImageOptions = {
   queryKey: ["mm", "mvp-image"] as const,
   queryFn: ({ signal }: { signal: AbortSignal }) => fetchMvpImage(signal),
   staleTime: 5 * 60_000,
+  // GET /mm/mvp-image pide sesión: un visitante ve la tarjeta lisa.
+  enabled: () => !!tokenStore.getState().session,
 }
 
 /** "de_dust2" → "Dust2", como el pool del veto de la sala. */

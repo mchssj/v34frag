@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Solo las páginas fijas. Jugadores, equipos y torneos llegan con el sitemap dinámico de la API (pendiente del backend). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://cmleague.lat/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://cmleague.lat/ranking</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://cmleague.lat/ranking/teams</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://cmleague.lat/matches</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://cmleague.lat/events</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://cmleague.lat/players/compare</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://cmleague.lat/terminos</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://cmleague.lat/privacidad</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+</urlset>

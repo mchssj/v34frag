@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { PlayerProfile } from "@/features/player/pages/PlayerProfile"
 import { playerSearchSchema } from "@/features/player/lib/search"
+import { usePageMeta } from "@/lib/seo"
 
 export const Route = createFileRoute("/_app/player/$nick")({
   validateSearch: playerSearchSchema,
@@ -12,6 +13,10 @@ function PlayerPage() {
   const { nick } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
+  usePageMeta({
+    title: nick,
+    description: `Perfil de ${nick} en CM League: ELO, nivel, estadísticas por mapa y últimas partidas de Counter-Strike: Source.`,
+  })
   return (
     <PlayerProfile
       // Al cambiar de jugador se arma de nuevo (vuelve el estado del gráfico).

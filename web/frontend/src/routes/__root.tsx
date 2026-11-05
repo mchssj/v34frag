@@ -4,6 +4,7 @@ import {
   Link,
   Outlet,
   createRootRouteWithContext,
+  useRouterState,
 } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { RouteError } from "@/components/RouteError"
+import { useCanonical } from "@/lib/seo"
 
 export interface RouterContext {
   queryClient: QueryClient
@@ -24,6 +26,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootLayout() {
+  useCanonical(useRouterState({ select: (s) => s.location.pathname }))
   return (
     <TooltipProvider>
       <AuthSync />

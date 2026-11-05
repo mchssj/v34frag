@@ -36,6 +36,18 @@ export async function requireAuth({ context, location }: GuardArgs) {
   return { user }
 }
 
+/**
+ * Páginas públicas: carga el usuario si hay sesión y si no, `user: null` (sin redirigir). Las
+ * privadas de adentro suman `requireAuth`. Un error de red se relanza, igual que en `requireAuth`.
+ */
+export async function loadSession({
+  context,
+}: {
+  context: { queryClient: QueryClient }
+}): Promise<{ user: AuthUser | null }> {
+  return { user: await loadUser(context.queryClient) }
+}
+
 /** Páginas de cuenta: con sesión, se sale a `redirect` o al inicio. */
 export async function requireGuest({
   context,

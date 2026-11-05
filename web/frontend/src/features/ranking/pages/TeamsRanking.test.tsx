@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw"
 import { describe, expect, it, vi } from "vitest"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { renderWithQuery } from "@/test/render"
+import { renderWithQuery, withSession } from "@/test/render"
 import { API, page, profile, server, setupApi } from "../test/fixtures"
 import { TeamsRanking } from "./TeamsRanking"
 
@@ -12,6 +12,9 @@ vi.mock("@tanstack/react-router", async (orig) =>
 )
 
 setupApi()
+
+// Las pruebas miran lo que ve el usuario con sesión (su fila, su perfil, su equipo).
+withSession()
 
 describe("Ranking → Equipos", () => {
   const team = (name: string, id: string, o: Record<string, unknown> = {}) => ({

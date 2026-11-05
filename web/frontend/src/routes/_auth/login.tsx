@@ -11,6 +11,7 @@ import {
   mixesTotalOptions,
 } from "@/features/public/api/queries"
 import { mixesCopy, sideName } from "@/features/public/lib/format"
+import { usePageMeta } from "@/lib/seo"
 
 const searchSchema = z.object({
   aviso: z
@@ -42,6 +43,7 @@ function useLoginSide(): SideCopy {
 function LoginPage() {
   const { redirect, aviso } = Route.useSearch()
   const side = useLoginSide()
+  usePageMeta({ title: "Iniciar sesión", noindex: true })
 
   const notice =
     aviso === "cuenta-confirmada" ? (

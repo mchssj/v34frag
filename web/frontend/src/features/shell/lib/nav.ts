@@ -19,7 +19,12 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-import { adminSectionOf, type AdminSection } from "@/auth/permissions"
+import {
+  adminSectionOf,
+  canAccessAdminSection,
+  type AdminSection,
+} from "@/auth/permissions"
+import type { Role } from "@/auth/queries"
 import type { FileRouteTypes } from "@/routeTree.gen"
 
 export type AppPath = FileRouteTypes["to"]
@@ -37,14 +42,34 @@ export type NavItem = {
   admin?: AdminSection
   /** Sección sin terminar: se ve en el menú, gris y sin link, con "Pronto". */
   soon?: boolean
+  /** Página de la cuenta: sin sesión no se muestra. */
+  auth?: boolean
+}
+
+/** Si el ítem se muestra: los de la cuenta piden sesión y los de Administración, además, el rol. */
+export function canSeeNavItem(item: NavItem, role: Role | null) {
+  if (item.admin) return !!role && canAccessAdminSection(role, item.admin)
+  return !item.auth || !!role
 }
 
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Jugar",
     items: [
-      { key: "home", label: "Para ti", to: "/home", icon: HouseIcon },
-      { key: "play", label: "Jugar", to: "/play", icon: Gamepad2Icon },
+      {
+        key: "home",
+        label: "Para ti",
+        to: "/home",
+        icon: HouseIcon,
+        auth: true,
+      },
+      {
+        key: "play",
+        label: "Jugar",
+        to: "/play",
+        icon: Gamepad2Icon,
+        auth: true,
+      },
       {
         key: "matches",
         label: "Partidas",
@@ -54,8 +79,21 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       },
       { key: "events", label: "Torneos", to: "/events", icon: TrophyIcon },
       // Desactivado hasta que PCW esté listo (Daniel, 2026-11-02).
-      { key: "pcw", label: "PCW", to: "/pcw", icon: CrosshairIcon, soon: true },
-      { key: "myteam", label: "Mi equipo", to: "/myteam", icon: ShieldIcon },
+      {
+        key: "pcw",
+        label: "PCW",
+        to: "/pcw",
+        icon: CrosshairIcon,
+        soon: true,
+        auth: true,
+      },
+      {
+        key: "myteam",
+        label: "Mi equipo",
+        to: "/myteam",
+        icon: ShieldIcon,
+        auth: true,
+      },
     ],
   },
   {
@@ -68,7 +106,14 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         icon: ListOrderedIcon,
       },
       // El manual de usuario, filtrado por rol (docs/bitacora/2026-11-02-manual-usuario).
-      { key: "help", label: "Ayuda", to: "/help", icon: LifeBuoyIcon },
+      // Con sesión: la API del manual todavía no responde a visitantes.
+      {
+        key: "help",
+        label: "Ayuda",
+        to: "/help",
+        icon: LifeBuoyIcon,
+        auth: true,
+      },
     ],
   },
   {

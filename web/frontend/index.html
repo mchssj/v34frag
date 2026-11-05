@@ -8,6 +8,45 @@
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href="https://cmleague.lat/" />
+    <meta name="theme-color" content="#f54900" />
+    <!-- Tarjeta al compartir (Discord, WhatsApp, X). Cada página cambia título, descripción y URL (src/lib/seo.ts). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CM League" />
+    <meta property="og:locale" content="es_LA" />
+    <meta property="og:url" content="https://cmleague.lat/" />
+    <meta property="og:title" content="CM League · Liga competitiva de Counter-Strike: Source" />
+    <meta property="og:description" content="Juega mixes en nuestros servidores y tu ELO se actualiza solo. Arma tu equipo, busca prácticas y compite en torneos." />
+    <meta property="og:image" content="https://cmleague.lat/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="CM League, la liga competitiva de Counter-Strike: Source" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CM League · Liga competitiva de Counter-Strike: Source" />
+    <meta name="twitter:description" content="Juega mixes en nuestros servidores y tu ELO se actualiza solo. Arma tu equipo, busca prácticas y compite en torneos." />
+    <meta name="twitter:image" content="https://cmleague.lat/og.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://cmleague.lat/#org",
+            "name": "CM League",
+            "url": "https://cmleague.lat/",
+            "logo": "https://cmleague.lat/apple-touch-icon.png",
+            "sameAs": ["https://dsc.gg/v34frag"]
+          },
+          {
+            "@type": "WebSite",
+            "name": "CM League",
+            "url": "https://cmleague.lat/",
+            "inLanguage": "es",
+            "publisher": { "@id": "https://cmleague.lat/#org" }
+          }
+        ]
+      }
+    </script>
     <!-- Aplica el tema guardado antes del primer render (evita el destello). -->
     <script src="/theme-init.js"></script>
   </head>

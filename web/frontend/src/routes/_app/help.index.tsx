@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
+import { requireAuth } from "@/auth/guards"
 import { HelpIndex } from "@/features/help/pages/HelpIndex"
 
 // Ayuda: el manual de usuario (plan docs/bitacora/2026-11-02-manual-usuario). La API manda solo las
-// secciones del rol de la cuenta; _app ya exige sesión.
+// secciones del rol de la cuenta y pide sesión (GET /api/v1/manual responde 401 sin ella).
 const SECCIONES = [
   "jugador",
   "capitan",
@@ -16,6 +17,7 @@ const SECCIONES = [
 ] as const
 
 export const Route = createFileRoute("/_app/help/")({
+  beforeLoad: requireAuth,
   validateSearch: z.object({
     seccion: z.enum(SECCIONES).optional().catch(undefined),
   }),

@@ -9,7 +9,6 @@ import { defaultFilter } from "cmdk"
 import { useState } from "react"
 
 import type { AuthUser } from "@/auth/queries"
-import { canAccessAdminSection } from "@/auth/permissions"
 import {
   Command,
   CommandDialog,
@@ -21,7 +20,7 @@ import {
 } from "@/components/ui/command"
 import { Kbd } from "@/components/ui/kbd"
 import { LogoutDialog } from "./AccountMenu"
-import { NAV_GROUPS, type AppPath } from "../lib/nav"
+import { canSeeNavItem, NAV_GROUPS, type AppPath } from "../lib/nav"
 
 type Page = { label: string; to: AppPath; icon: LucideIcon; hint: string }
 
@@ -60,7 +59,7 @@ export function CommandMenu({
   open,
   onOpenChange,
 }: {
-  user: AuthUser
+  user: AuthUser | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -72,7 +71,7 @@ export function CommandMenu({
     ...NAV_GROUPS.flatMap((g) =>
       g.items
         .filter((i) => !i.soon)
-        .filter((i) => !i.admin || canAccessAdminSection(user.role, i.admin))
+        .filter((i) => canSeeNavItem(i, user?.role ?? null))
         .map((i) => ({
           label: i.label,
           to: i.to,
@@ -80,7 +79,7 @@ export function CommandMenu({
           hint: g.label,
         }))
     ),
-    ...EXTRA_PAGES,
+    ...EXTRA_PAGES.filter((p) => user || p.to !== "/profile"),
   ]
 
   function go(to: AppPath) {
@@ -93,10 +92,11 @@ export function CommandMenu({
   // id y el atributo tiene el título), así que el orden de los grupos se decide acá con el mismo
   // puntaje: si "Cerrar sesión" es lo que mejor coincide, va primero y Enter lo elige.
   const accountFirst =
+    !!user &&
     query.trim() !== "" &&
     filter(LOGOUT_VALUE, query) >
       Math.max(0, ...pages.map((p) => filter(pageValue(p), query)))
-  const account = (
+  const account = user && (
     <CommandGroup heading="Cuenta">
       <CommandItem
         value={LOGOUT_VALUE}
