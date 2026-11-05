@@ -404,6 +404,16 @@ export type MmAdminConfig = {
   min_mixes: number
   min_account_days: number
   season_queue_close_minutes: number
+  /** Repartir los equipos con el ELO de armado: ELO + ajuste por el rating reciente (replanteo 73). */
+  balance_rating: boolean
+  /** Puntos de ELO de armado por cada 1,00 de rating sobre o bajo 1,00. */
+  balance_rating_weight: number
+  /** Máximo que el rating sube o baja el ELO de armado. */
+  balance_rating_cap: number
+  /** Mapas con rating 1,00 que se suman para corregir el de los que jugaron poco. */
+  balance_rating_prior_maps: number
+  /** Días de partidas 5v5 que se miran. */
+  balance_rating_days: number
   /** Imagen de la tarjeta del MVP; se sube y se quita aparte (no viaja en saveConfig). */
   mvp_image_url?: string | null
 }

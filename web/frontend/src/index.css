@@ -56,6 +56,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -93,6 +94,8 @@
 }
 
 .dark {
+  /* Sin esto el navegador dibuja claras las barras de desplazamiento y los controles nativos. */
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -145,6 +148,32 @@
   }
   ::selection {
     background: color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+}
+
+/* Barra de desplazamiento fina, del color del texto con poca opacidad (carruseles). */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent)
+    transparent;
+}
+
+/* Carrusel (components/brand/Carousel.tsx): el borde se desvanece del lado donde hay más. */
+@layer components {
+  [data-carousel-track][data-more="end"] {
+    mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  }
+  [data-carousel-track][data-more="start"] {
+    mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+  }
+  [data-carousel-track][data-more="both"] {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 48px,
+      #000 calc(100% - 48px),
+      transparent
+    );
   }
 }
 

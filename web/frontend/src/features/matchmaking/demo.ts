@@ -117,6 +117,11 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   min_mixes: 5,
   min_account_days: 7,
   season_queue_close_minutes: 15,
+  balance_rating: false,
+  balance_rating_weight: 200,
+  balance_rating_cap: 100,
+  balance_rating_prior_maps: 5,
+  balance_rating_days: 60,
 }
 
 /** Mapas del veto de cada modo al empezar la demo. */

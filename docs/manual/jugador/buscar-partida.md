@@ -24,6 +24,8 @@ Para seguir buscando, la web tiene que quedar abierta, en cualquier página y en
 
 ### En grupo
 
+Los equipos se reparten para que queden lo más parejos posible. Se mira el ELO de los diez, y si un admin lo encendió, también el rating de sus partidas 5v5 recientes: así alguien que juega mejor de lo que dice su ELO no termina en el equipo más fuerte. El ELO sigue pesando más, y el que ganas o pierdes se calcula igual que siempre.
+
 Puedes buscar con un amigo: invítalo con **Invitar al grupo**. Juegan en el mismo equipo. El grupo puede ser de hasta {{mm.grupo_max}} personas, con hasta {{mm.grupo_dif_elo}} de diferencia de ELO entre ustedes.
 
 ## 2. Aceptar

@@ -111,6 +111,25 @@ describe("Administración › Matchmaking", () => {
     expect(cfg.modes.find((m) => m.mode === "2v2")!.affects_elo).toBe(true)
   })
 
+  it("General: equipos parejos con el rating, apagado por defecto; encenderlo y cambiar el tope", async () => {
+    const { user, source } = setup()
+    const sw = await screen.findByRole("switch", { name: "Apagado" })
+    expect(sw).not.toBeChecked()
+    expect(screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+64/)).toBeInTheDocument()
+
+    await user.click(sw)
+    const cap = screen.getByLabelText("Tope del ajuste (±)")
+    await user.clear(cap)
+    await user.type(cap, "50")
+    expect(screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+50/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
+    const cfg = await source.adminConfig()
+    expect(cfg.balance_rating).toBe(true)
+    expect(cfg.balance_rating_cap).toBe(50)
+    expect(cfg.balance_rating_weight).toBe(200)
+  })
+
   it("Reportes: excluir crea la exclusión; las sanciones se levantan en Baneos", async () => {
     const { user, source } = setup()
     await user.click(screen.getByRole("tab", { name: "Reportes" }))
