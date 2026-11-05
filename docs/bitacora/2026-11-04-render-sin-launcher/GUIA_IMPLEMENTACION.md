@@ -44,6 +44,7 @@ Ninguno.
 ## Incidentes durante las pruebas
 
 - **2026-11-04, primera prueba en el portátil** (`probar_jugada.py` con el `clutch_3` de Matía en cache): el juego abrió y cargó la demo (cache quieto en el primer cuadro, por el `demo_pause` del cfg), pero el script se quedó esperando `Redownloading all lightmaps`. No se creó ningún log de la consola: ni `cstrike\cmleague\render.log` ni su copia en `VirtualStore`. El motor de la v34 normal no tiene `con_logfile`, que es de ClientMod. Arreglo: con `"v34"`, `-condebug` en la línea de comandos y el log en `cstrike\console.log`. Además, `wait_loaded` ya no depende solo de esa línea: espera `Playing demo from`, la línea de ClientMod hasta 30 s y, si no aparece, un paso de prueba por la consola, y copia al log del script las últimas líneas de la consola para ver qué escribe la v34.
+- **2026-11-04, segunda prueba:** con `-condebug` el log ya aparece y la demo carga (`Playing demo from` y muchas líneas `hit surface has no samples`), pero la v34 no escribe `Redownloading all lightmaps` y el paso de prueba por la consola no respondía: la tecla no abría la consola. Arreglo: `-console` en la línea de comandos. El juego abre con la consola abierta; el primer paso la cierra con su tecla y se reenvía a los 5 s.
 
 ## Cómo revertir
 

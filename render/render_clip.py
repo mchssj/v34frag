@@ -294,7 +294,10 @@ class Game:
         probar si la gráfica integrada deja de deformar el mapa; con "v34", los del acceso directo)."""
         c = self.cfg
         extra = f" {c['launch_params']}" if c.get("launch_params") else ""
-        base = "-game cstrike -condebug " if self.client == "v34" else ""
+        # -console: en la v34 normal, con_enable 1 del cfg no alcanza para que la tecla abra la consola (2026-11-04, el
+        # portátil: el paso de prueba no respondía). Abre el juego con la consola abierta: el primer paso la cierra con
+        # su tecla y se pierde, y lo reenvía step a los 5 s.
+        base = "-game cstrike -console -condebug " if self.client == "v34" else ""
         return f"{base}-novid -windowed -noborder -w {c['width']} -h {c['height']}{extra} +exec cmleague_render"
 
     def restore(self):
