@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/input-group"
 import { Skeleton } from "@/components/ui/skeleton"
 import { manualIndexOptions } from "../api/queries"
+import { fragmento, type Fragmento } from "../lib/fragmento"
 import { normalize } from "../lib/links"
 import type {
   ManualIndice,
@@ -119,12 +120,17 @@ function Sections({
 function Results({ index, q }: { index: ManualIndice; q: string }) {
   const n = normalize(q.trim())
   const found = index.secciones
-    .map((s) => ({
-      ...s,
-      paginas: s.paginas.filter((p) =>
+    .map((s) => {
+      // Primero lo que coincide en el título o el resumen; después, lo que coincide solo en el texto, con el fragmento.
+      const enTitulo = s.paginas.filter((p) =>
         normalize(`${p.titulo} ${p.resumen}`).includes(n)
-      ),
-    }))
+      )
+      const enTexto = s.paginas
+        .filter((p) => !enTitulo.includes(p))
+        .map((p) => ({ ...p, fragmento: fragmento(p.texto ?? "", n) }))
+        .filter((p) => p.fragmento !== null)
+      return { ...s, paginas: [...enTitulo, ...enTexto] }
+    })
     .filter((s) => s.paginas.length > 0)
   if (found.length === 0)
     return (
@@ -147,7 +153,7 @@ function PageList({
   paginas,
 }: {
   seccion: ManualSeccionId
-  paginas: ManualPaginaResumen[]
+  paginas: (ManualPaginaResumen & { fragmento?: Fragmento | null })[]
 }) {
   return (
     <ul className="flex flex-col gap-2">
@@ -162,6 +168,15 @@ function PageList({
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{p.titulo}</p>
                 <p className="text-sm text-muted-foreground">{p.resumen}</p>
+                {p.fragmento && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {p.fragmento.antes}
+                    <mark className="rounded-sm bg-primary/15 px-0.5 text-foreground">
+                      {p.fragmento.match}
+                    </mark>
+                    {p.fragmento.despues}
+                  </p>
+                )}
               </div>
               <ChevronRightIcon
                 aria-hidden

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../../src/app';
 import {
-  aplicarMarcadores, armarManual, duracion, indiceDe, leerEncabezado, MARCADORES, type ManualArchivo, seccionesDe,
+  aplicarMarcadores, armarManual, duracion, indiceDe, leerEncabezado, MARCADORES, type ManualArchivo, seccionesDe, textoPlano,
 } from '../../src/lib/manual';
 import { olvidarValores } from '../../src/routes/manual';
 import { cargarManual } from '../../src/lib/manual-node';
@@ -122,13 +122,33 @@ describe('armarManual', () => {
         id: 'jugador',
         titulo: 'Jugador',
         paginas: [
-          { tarea: 'vincular-steamid', titulo: 'Vincular tu SteamID', resumen: 'Resumen de Vincular tu SteamID' },
-          { tarea: 'buscar-partida', titulo: 'Buscar partida', resumen: 'Resumen de Buscar partida' },
+          { tarea: 'vincular-steamid', titulo: 'Vincular tu SteamID', resumen: 'Resumen de Vincular tu SteamID', texto: 'Texto.' },
+          { tarea: 'buscar-partida', titulo: 'Buscar partida', resumen: 'Resumen de Buscar partida', texto: 'Ver vincular.' },
         ],
       }],
     });
     expect(indiceDe(manual, 'admin').inicio).toBe('admin');
+    expect(indiceDe(manual, 'admin').secciones.flatMap((s) => s.paginas.map((p) => p.tarea))).not.toContain('jugar-pcw');
     expect(indiceDe(manual, 'moderator').secciones.map((s) => s.id)).toEqual(['jugador', 'organizador', 'moderador']);
+  });
+});
+
+describe('textoPlano (buscador de la ayuda)', () => {
+  it('saca el Markdown y deja los comandos y el texto de los links', () => {
+    const md = [
+      '## Pausas',
+      '',
+      '| Comando | Qué hace |',
+      '|---|---|',
+      '| `!pause` | Pausa **táctica** |',
+      '',
+      '> **Ojo:** tienes {{mm.aceptar}} para [aceptar](/help/jugador/buscar-partida).',
+      '',
+      '![Botón](img/x.webp)',
+      '1. Escribe `!2v2_start`.',
+      '- Uno',
+    ].join('\n');
+    expect(textoPlano(md)).toBe('Pausas Comando Qué hace !pause Pausa táctica Ojo: tienes para aceptar. Escribe !2v2_start. Uno');
   });
 });
 

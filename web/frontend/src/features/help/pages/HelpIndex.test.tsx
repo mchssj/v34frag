@@ -62,6 +62,25 @@ describe("Ayuda", () => {
     expect(screen.getByText("Sin resultados")).toBeInTheDocument()
   })
 
+  it("busca también en el texto: primero lo del título y después el fragmento", async () => {
+    server.use(handlers.indice())
+    const { user } = renderWithQuery(
+      <HelpIndex seccion={undefined} onSeccion={vi.fn()} />
+    )
+    const box = await screen.findByLabelText("Buscar en la ayuda")
+
+    await user.type(box, "!callreplace")
+    const link = screen.getByRole("link", { name: /Buscar partida/ })
+    expect(within(link).getByText("!callreplace").tagName).toBe("MARK")
+    expect(link.textContent).toContain("escribe !callreplace en el chat")
+
+    // "claim" está en el resumen de una y en el texto de la misma: sale una sola vez y sin fragmento.
+    await user.clear(box)
+    await user.type(box, "claim")
+    expect(screen.getAllByRole("listitem")).toHaveLength(1)
+    expect(document.querySelector("mark")).toBeNull()
+  })
+
   it("sin páginas, lo dice", async () => {
     server.use(handlers.indice({ inicio: "jugador", secciones: [] }))
     renderWithQuery(<HelpIndex seccion={undefined} onSeccion={vi.fn()} />)

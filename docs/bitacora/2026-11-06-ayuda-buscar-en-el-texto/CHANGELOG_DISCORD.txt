@@ -1,0 +1,5 @@
+CMLeague 2.9.21 --  Changelog
+
+Ayuda
+- El buscador de Ayuda ahora busca también dentro de las páginas. Escribe un comando como !pause o !calladmin y te muestra dónde está, con el texto resaltado.
+- Página nueva con todos los comandos del jugador en el servidor, ordenados por momento: para arrancar, en el calentamiento, durante la partida y en cualquier momento.

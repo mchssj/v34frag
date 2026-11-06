@@ -13,6 +13,8 @@ export type ManualPaginaResumen = {
   tarea: string
   titulo: string
   resumen: string
+  /** El cuerpo en texto plano, para el buscador. Solo viene en el índice. */
+  texto?: string
 }
 
 export type ManualIndice = {

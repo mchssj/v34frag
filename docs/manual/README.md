@@ -108,7 +108,7 @@ Todo plugin nuevo, y todo comando nuevo o cambiado de un plugin, documenta su us
 
 | Quién lo usa | Permiso en el servidor | Página |
 |---|---|---|
-| Cualquier jugador | Ninguno | `jugador/jugar-en-el-servidor.md`; deathmatch, retake y 2v2 en `jugador/otros-modos.md` |
+| Cualquier jugador | Ninguno | `jugador/comandos-en-el-servidor.md` (y, si cambia cómo se juega, `jugador/jugar-en-el-servidor.md`); deathmatch, retake y 2v2 en `jugador/otros-modos.md` |
 | El capitán del equipo en el juego | Ninguno, pero solo le responde al capitán | `capitan/comandos-en-el-servidor.md` |
 | Moderador (grupo `Moderador`) | `b`, `c`, `d`, `f` o `j` | `moderador/comandos-en-el-servidor.md` |
 | Admin | Los demás (`g`, `m`, `z`…) o un override que lo pase a uno de ellos | `admin/comandos-en-el-servidor.md` |

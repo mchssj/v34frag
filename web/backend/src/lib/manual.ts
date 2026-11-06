@@ -163,8 +163,27 @@ function revisarLinks(p: ManualPagina, paginas: Map<string, ManualPagina>, image
 
 export type ManualIndice = {
   inicio: SeccionId;
-  secciones: { id: SeccionId; titulo: string; paginas: { tarea: string; titulo: string; resumen: string }[] }[];
+  secciones: { id: SeccionId; titulo: string; paginas: { tarea: string; titulo: string; resumen: string; texto: string }[] }[];
 };
+
+/**
+ * El cuerpo de una página en texto plano, para el buscador de la ayuda (plan docs/bitacora/2026-11-06-ayuda-buscar-en-el-texto):
+ * sin encabezados, negritas, citas, capturas ni tablas, los links con su texto y sin los marcadores ({{…}}), que el índice no
+ * reemplaza porque no lee la base. El código en línea queda con su contenido (`!pause` → !pause).
+ */
+export function textoPlano(markdown: string): string {
+  return markdown
+    .replace(/```[^\n]*\n([\s\S]*?)```/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(MARCADOR_RE, ' ')
+    .replace(/^\s*\|?(\s*:?-{3,}:?\s*\|)+\s*:?-*:?\s*$/gm, ' ')
+    .replace(/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/gm, '')
+    .replace(/[*`]/g, '')
+    .replace(/\|/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 /** El índice de lo que ve ese rol, sin las páginas ocultas ni las secciones vacías. */
 export function indiceDe(manual: Manual, role: string | null | undefined): ManualIndice {
@@ -176,7 +195,7 @@ export function indiceDe(manual: Manual, role: string | null | undefined): Manua
       paginas: [...manual.paginas.values()]
         .filter((p) => p.seccion === s.id && !p.oculta)
         .sort((a, b) => a.orden - b.orden || a.titulo.localeCompare(b.titulo, 'es'))
-        .map(({ tarea, titulo, resumen }) => ({ tarea, titulo, resumen })),
+        .map(({ tarea, titulo, resumen, markdown }) => ({ tarea, titulo, resumen, texto: textoPlano(markdown) })),
     }))
     .filter((s) => s.paginas.length > 0);
   const inicio = inicioDe(role);
