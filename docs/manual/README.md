@@ -101,3 +101,16 @@ Se lee "Tienes **20 segundos** para tocar **Aceptar**." El marcador ya trae la u
 Cada `DOCUMENTACION.md` de la bitácora tiene la sección **Qué cambia para cada rol**, con la página del manual que corresponde. Al terminar el requerimiento, esas páginas se crean o se actualizan en el mismo commit que la web (ver [`docs/bitacora/PLANTILLA.md`](../bitacora/PLANTILLA.md)).
 
 Antes de escribir una regla, se comprueba en el código o en la base: la bitácora puede haber quedado vieja.
+
+### Comandos del servidor
+
+Todo plugin nuevo, y todo comando nuevo o cambiado de un plugin, documenta su uso acá, en el mismo commit (Daniel, 2026-11-06). Va en la página del rol que lo usa, según el permiso del comando:
+
+| Quién lo usa | Permiso en el servidor | Página |
+|---|---|---|
+| Cualquier jugador | Ninguno | `jugador/jugar-en-el-servidor.md`; deathmatch, retake y 2v2 en `jugador/otros-modos.md` |
+| El capitán del equipo en el juego | Ninguno, pero solo le responde al capitán | `capitan/comandos-en-el-servidor.md` |
+| Moderador (grupo `Moderador`) | `b`, `c`, `d`, `f` o `j` | `moderador/comandos-en-el-servidor.md` |
+| Admin | Los demás (`g`, `m`, `z`…) o un override que lo pase a uno de ellos | `admin/comandos-en-el-servidor.md` |
+
+Los comandos de depuración (los que solo existen en las builds de prueba) no van. Organizador, streamer y dueño de un servidor externo no tienen comandos en el juego.

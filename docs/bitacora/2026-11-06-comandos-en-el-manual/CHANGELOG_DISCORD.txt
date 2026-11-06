@@ -1,0 +1,7 @@
+CMLeague 2.9.20 --  Changelog
+
+Ayuda
+- Ahora en Ayuda están todos los comandos del chat del servidor: los del calentamiento, las pausas, pedir un arma, !eq, !voz, !admins y más.
+- Página nueva con el deathmatch, el retake y el 2v2: cómo se juega cada uno y sus comandos.
+- Página nueva para el capitán: elegir lado después del cuchillo, repetir una ronda con !rr y el coach.
+- Los moderadores y admins tienen su guía de comandos en la web, al día.

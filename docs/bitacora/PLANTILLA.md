@@ -81,7 +81,7 @@ Describe el resultado final (no el proceso). Debe servirle a alguien que no part
 (tabla | Qué | Archivo / ubicación |)
 ```
 
-La sección "Qué cambia para cada rol" es obligatoria. Al terminar el requerimiento, cada página que nombra se crea o se actualiza en `docs/manual/`, en el mismo commit que la web (el estilo está en [`docs/manual/README.md`](../manual/README.md)).
+La sección "Qué cambia para cada rol" es obligatoria. Al terminar el requerimiento, cada página que nombra se crea o se actualiza en `docs/manual/`, en el mismo commit que la web (el estilo está en [`docs/manual/README.md`](../manual/README.md)). Si el requerimiento suma o cambia un plugin o un comando del servidor, la tabla nombra la página de comandos del rol que lo usa (ver "Comandos del servidor" en ese README).
 
 La sección "Términos y privacidad" también es obligatoria. Si el requerimiento los cambia, se actualizan la página de la web (`web/frontend/src/features/legal/pages/`) y su `.html` de `terms/`, que dicen lo mismo, en el mismo commit. Lo que se describe pero todavía no está hecho lleva "En preparación" (`Wip` / `<span class="pending">`), y la marca se quita al implementarlo.
 
