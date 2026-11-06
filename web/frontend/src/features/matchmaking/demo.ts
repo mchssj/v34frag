@@ -128,8 +128,8 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   replace_vote_pct: 80,
   replace_vote_seconds: 30,
   replace_vote_cooldown_s: 60,
-  abandon_win_min: 1,
-  abandon_win_max: 5,
+  abandon_win_min: 10,
+  abandon_win_max: 15,
   abandon_loss_min: 6,
   abandon_loss_max: 10,
 }

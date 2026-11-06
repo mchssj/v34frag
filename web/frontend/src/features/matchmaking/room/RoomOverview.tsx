@@ -358,7 +358,6 @@ function GoneRow({
     mode === "detail"
       ? lobby.match?.stats.find((s) => s.key === p.player_id)?.delta
       : null
-  const by = rep?.by_nick ?? "otro jugador"
   return (
     <li className="flex items-center gap-2.5 bg-destructive/8 px-3 py-2">
       <Avatar className="size-7 rounded-lg">
@@ -371,8 +370,9 @@ function GoneRow({
         {p.nick}
       </span>
       <span className="min-w-0 text-xs text-destructive">
-        Abandonó: pierde ELO y{" "}
-        {rep?.status === "taken" ? `${by} tomó su lugar` : `entró ${by}`}
+        {rep?.left_round
+          ? `Abandonó en la ronda ${rep.left_round}`
+          : "Abandonó"}
       </span>
       {delta != null && (
         <span className="ml-auto">

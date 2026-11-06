@@ -1,7 +1,7 @@
 CMLeague 2.9.19 --  Changelog
 
-ABANDONAR CUESTA MENOS ELO (PERO NO SALE GRATIS)
-- Si abandonas un mix del matchmaking y tu equipo gana igual, ahora pierdes entre 1 y 5 de ELO, no una derrota completa.
+EL ELO DEL QUE ABANDONA
+- Si abandonas un mix del matchmaking y tu equipo gana igual, ahora pierdes entre 10 y 15 de ELO, no una derrota completa.
 - Si tu equipo pierde, pierdes al menos lo mismo que en una derrota normal: irse nunca sale más barato que perder.
 - Cuanto antes te vas, más pierdes. El castigo fuerte sigue siendo la espera para volver a buscar partida.
 

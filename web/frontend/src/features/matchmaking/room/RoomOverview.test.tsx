@@ -179,9 +179,7 @@ describe("RoomOverview con reemplazos (replanteo 78)", () => {
     expect(rows[1]).toHaveTextContent(
       "Reemplaza a Moe · todavía no entró al servidor"
     )
-    expect(rows.at(-1)).toHaveTextContent(
-      "Abandonó: pierde ELO y Albert tomó su lugar"
-    )
+    expect(rows.at(-1)).toHaveTextContent("Abandonó en la ronda 14")
     expect(screen.getByText("Cambios en la partida")).toBeInTheDocument()
   })
 

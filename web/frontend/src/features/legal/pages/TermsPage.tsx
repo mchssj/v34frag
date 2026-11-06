@@ -216,8 +216,9 @@ const SECTIONS: LegalSection[] = [
           mostrar a quién, desde cuándo, hasta cuándo y el motivo.
         </li>
         <li>
-          En el matchmaking, abandonar una partida te resta ELO (poco si tu
-          equipo gana; si pierde, al menos lo que cuesta una derrota) y puede
+          En el matchmaking, abandonar una partida te resta ELO (menos que una
+          derrota si tu equipo gana; si pierde, al menos lo que cuesta una
+          derrota) y puede
           sumar escalones de espera antes de volver a buscar partida. Si te
           desconectas, tu equipo puede votar en el servidor para
           darte por abandonado sin esperar a que se termine tu plazo para
