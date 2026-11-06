@@ -130,8 +130,8 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   replace_vote_cooldown_s: 60,
   abandon_win_min: 10,
   abandon_win_max: 15,
-  abandon_loss_min: 6,
-  abandon_loss_max: 10,
+  abandon_loss_min: 15,
+  abandon_loss_max: 20,
 }
 
 /** Mapas del veto de cada modo al empezar la demo. */
