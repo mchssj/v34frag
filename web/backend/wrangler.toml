@@ -39,6 +39,12 @@ name = "RL_PASSWORD"
 namespace_id = "1003"
 simple = { limit = 5, period = 60 }
 
+# Link de reemplazo del matchmaking: 10 por minuto por cuenta (regla "replace").
+[[ratelimits]]
+name = "RL_REPLACE"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
+
 # Entorno de previsualización (PRs): otro Worker, misma base.
 [env.preview]
 name = "v34frag-api-preview"
@@ -66,6 +72,11 @@ simple = { limit = 10, period = 60 }
 name = "RL_PASSWORD"
 namespace_id = "1004"
 simple = { limit = 5, period = 60 }
+
+[[env.preview.ratelimits]]
+name = "RL_REPLACE"
+namespace_id = "1008"
+simple = { limit = 10, period = 60 }
 
 # Secretos (no van en este archivo):
 #   en desarrollo: .dev.vars (ver .dev.vars.example)

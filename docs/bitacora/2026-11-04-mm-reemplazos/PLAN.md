@@ -1,6 +1,6 @@
 # Plan: llamar reemplazos cuando alguien abandona un mix del matchmaking
 
-> Planeación original. Estado: **propuesta**, pendiente de aprobación. Pedido por Daniel el 2026-11-04 (punto 2 de 3).
+> Planeación original. Pedido por Daniel el 2026-11-04 (punto 2 de 3). **Aprobado el 2026-11-05**, con las decisiones de la sección "Lo que decidió Daniel".
 
 ## Qué pasa hoy
 
@@ -31,6 +31,25 @@ Si un jugador de una sala en vivo se desconecta, tiene `reconnect_minutes` (3) p
 - Si pasa: el desconectado queda `abandoned` en el acto (sanción y ELO de abandono) y sale el aviso a Discord.
 - Si no pasa, o el jugador vuelve durante el voto: no pasa nada. Un nuevo `!callreplace` del mismo equipo queda en espera `replace_vote_cooldown_s` (60 s).
 - **Pregunta para Daniel:** ¿votan los dos equipos (propuesta) o solo el equipo del que falta?
+
+## Lo que decidió Daniel (2026-11-05)
+
+Estas respuestas mandan sobre lo que propone la tabla de arriba:
+
+| Pregunta | Respuesta |
+|---|---|
+| ¿Quién vota en `!callreplace`? | **Solo el equipo del que falta** (los compañeros conectados). Sigue haciendo falta más del 80 % |
+| ¿Se protege el ELO del reemplazo si su equipo pierde? | **No: ELO normal**, con el peso por rondas jugadas de siempre. No hay `replace_protect_loss` |
+| ¿Por dónde sale el aviso? | **Igual que el aviso de la cola:** el mismo webhook (`DISCORD_QUEUE_WEBHOOK_URL`) y el mismo rol (`@player`) |
+| Valores por defecto | Los de este plan (10 min de link, 4 rondas, 80 %, 30 s de voto, 60 s de espera), configurables en Administración › Matchmaking |
+| Rama | Se trabaja sobre `feat/frontend-fase-1` después de traer `main` (la `73`); la base, la API, el VPS y el plugin también van en `feat/mm-claim-en-sala`. El replanteo es el `75` |
+
+Precisiones de la implementación, sin cambiar lo decidido:
+
+- El aviso a Discord lo publica el worker del matchmaking (`mm-worker`), no la API: el abandono lo confirma `mm_tick`, sin nadie que haga un pedido. El worker necesita las dos variables de Discord y `FRONTEND_URL`.
+- El token del link se genera en la base. Se guarda en claro solo hasta que el worker lo publica; después queda solo su hash.
+- Un abandono cuenta como **cubierto** (no suma para la derrota automática ni para el ajuste de ELO del equipo) cuando el reemplazo **entró al servidor**, no cuando tomó el link.
+- El voto de `!callreplace` llega a la base como un evento más de `csstv_mm_report` (`callreplace`), con la clave del servidor.
 
 ## 1. El flujo
 
