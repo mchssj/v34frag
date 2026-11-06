@@ -216,9 +216,10 @@ const SECTIONS: LegalSection[] = [
           mostrar a quién, desde cuándo, hasta cuándo y el motivo.
         </li>
         <li>
-          En el matchmaking, abandonar una partida tiene una sanción automática
-          de ELO y puede sumar escalones de espera antes de volver a buscar
-          partida. Si te desconectas, tu equipo puede votar en el servidor para
+          En el matchmaking, abandonar una partida te resta ELO (poco si tu
+          equipo gana; si pierde, al menos lo que cuesta una derrota) y puede
+          sumar escalones de espera antes de volver a buscar partida. Si te
+          desconectas, tu equipo puede votar en el servidor para
           darte por abandonado sin esperar a que se termine tu plazo para
           volver, y la liga puede llamar a otro jugador para que entre en tu
           lugar. Si vuelves después de que entró, quedas de espectador. Irte en
@@ -273,7 +274,9 @@ const SECTIONS: LegalSection[] = [
           jugadores. Si entras como reemplazo, ganas o pierdes ELO como
           cualquier jugador, según las rondas que juegues. Si tomas el lugar y
           no te conectas a tiempo, recibes la misma sanción que quien no se
-          conecta a su partida.
+          conecta a su partida. Con tu sesión iniciada, la página del link
+          muestra la sala con los nombres de los jugadores; la IP y la
+          contraseña del servidor, solo a quien toma el lugar.
         </li>
       </ul>
     ),

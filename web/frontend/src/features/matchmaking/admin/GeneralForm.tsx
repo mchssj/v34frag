@@ -71,6 +71,11 @@ const schema = z
     replace_vote_pct: int(50, 100),
     replace_vote_seconds: int(10, 120),
     replace_vote_cooldown_s: int(0, 600),
+    // (replanteo 78) ELO que pierde el que abandona.
+    abandon_win_min: int(0, 50),
+    abandon_win_max: int(0, 50),
+    abandon_loss_min: int(0, 50),
+    abandon_loss_max: int(0, 50),
     // "5, 15, 60, 1440": minutos de cada escalón.
     penalty_ladder: z
       .string()
@@ -83,6 +88,14 @@ const schema = z
   .refine((v) => v.elo_window_max >= v.elo_window_start, {
     path: ["elo_window_max"],
     message: "No puede ser menor que el inicio",
+  })
+  .refine((v) => v.abandon_win_max >= v.abandon_win_min, {
+    path: ["abandon_win_max"],
+    message: "No puede ser menor que el mínimo",
+  })
+  .refine((v) => v.abandon_loss_max >= v.abandon_loss_min, {
+    path: ["abandon_loss_max"],
+    message: "No puede ser menor que el mínimo",
   })
 
 type Values = z.input<typeof schema>
@@ -400,6 +413,34 @@ function Form({ initial }: { initial: MmAdminConfig }) {
             control={c}
             name="replace_vote_cooldown_s"
             label="Espera entre votos (s)"
+          />
+        </Grid>
+      </Section>
+
+      <Section
+        title="ELO del que abandona"
+        description="Lo que pierde quien abandona, según la parte de la partida que no jugó: irse al principio da el máximo y cerca del final, el mínimo. Si su equipo perdió o empató, nunca pierde menos que una derrota normal. La sanción fuerte es la espera de Sanciones."
+      >
+        <Grid>
+          <NumberField
+            control={c}
+            name="abandon_win_min"
+            label="Su equipo ganó: mínimo"
+          />
+          <NumberField
+            control={c}
+            name="abandon_win_max"
+            label="Su equipo ganó: máximo"
+          />
+          <NumberField
+            control={c}
+            name="abandon_loss_min"
+            label="Perdió o empató: mínimo"
+          />
+          <NumberField
+            control={c}
+            name="abandon_loss_max"
+            label="Perdió o empató: máximo"
           />
         </Grid>
       </Section>

@@ -1,0 +1,16 @@
+CMLeague 2.9.19 --  Changelog
+
+ABANDONAR CUESTA MENOS ELO (PERO NO SALE GRATIS)
+- Si abandonas un mix del matchmaking y tu equipo gana igual, ahora pierdes entre 1 y 5 de ELO, no una derrota completa.
+- Si tu equipo pierde, pierdes al menos lo mismo que en una derrota normal: irse nunca sale más barato que perder.
+- Cuanto antes te vas, más pierdes. El castigo fuerte sigue siendo la espera para volver a buscar partida.
+
+EL LINK DE REEMPLAZO MUESTRA LA SALA
+- Al abrir el link de #avisos ves la sala de la partida: el marcador, los dos equipos y el lugar libre que dice "Aquí entrarías tú".
+- La IP y la contraseña aparecen recién cuando tomas el lugar.
+- Ya en la sala, tu fila ocupa el lugar del que se fue y arriba ves cuánto te queda para entrar al servidor.
+
+LA PARTIDA COMO SALA
+- Al abrir una partida del matchmaking en Partidas ves su sala, como en "Tu última partida": los equipos con lo que hizo cada uno y cuánto ELO ganó o perdió.
+- Las tablas de estadísticas de siempre siguen en la pestaña Estadísticas.
+- Si hubo reemplazos, "Cambios en la partida" muestra quién se fue y quién entró, con la ronda.

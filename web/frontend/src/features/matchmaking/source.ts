@@ -19,6 +19,7 @@ import type {
   MmChatMessage,
   MmEvent,
   MmFeed,
+  MmLobby,
   MmMatch,
   MmPasswordEntry,
   MmPlayerHit,
@@ -52,6 +53,8 @@ export type MmSource = {
   queuePing(): Promise<QueuePingStatus>
   /** Link de reemplazo de Discord: la partida y si lo puedo tomar. */
   replaceInfo(token: string, signal?: AbortSignal): Promise<MmReplaceInfo>
+  /** La sala de una partida del matchmaking terminada (el detalle de la partida); null si no es de una sala. */
+  gameRoom(gameId: string, signal?: AbortSignal): Promise<MmLobby | null>
   /** Entrar como reemplazo: devuelve el estado con la sala. */
   replaceTake(token: string): Promise<MmState>
   accept(): Promise<MmState>
@@ -227,6 +230,8 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       call(`/api/v1/mm/replace/${encodeURIComponent(token)}`, { signal }),
     replaceTake: (token) =>
       post(`/api/v1/mm/replace/${encodeURIComponent(token)}`),
+    gameRoom: (id, signal) =>
+      call(`/api/v1/mm/games/${encodeURIComponent(id)}/room`, { signal }),
     accept: () => post("/api/v1/mm/lobby/accept"),
     decline: () => post("/api/v1/mm/lobby/decline"),
     // Veto y chat: las rutas de partida que ya existen (la partida se crea al empezar el veto).

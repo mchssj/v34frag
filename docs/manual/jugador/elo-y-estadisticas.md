@@ -34,7 +34,9 @@ Cuenta la parte de la partida que jugaste:
 
 ### Si alguien abandona en el matchmaking
 
-- **Quien abandona** pierde como en una derrota completa, más un castigo extra, y se lleva una sanción (ver [Buscar partida en el matchmaking](/help/jugador/buscar-partida)).
+- **Quien abandona** pierde ELO y se lleva una sanción de espera, que es el castigo fuerte (ver [Buscar partida en el matchmaking](/help/jugador/buscar-partida)). Cuánto ELO pierde depende de cuándo se fue: irse al principio cuesta más que irse cerca del final.
+  - Si su equipo **gana**: pierde entre {{mm.abandono_ganado_min}} y {{mm.abandono_ganado_max}} de ELO.
+  - Si su equipo **pierde** (o empatan): pierde entre {{mm.abandono_perdido_min}} y {{mm.abandono_perdido_max}}, pero **nunca menos que una derrota normal**. Irse no sale más barato que perder.
 - **Su equipo** pierde menos si pierde, y gana más si gana igual. Si se rinden con `!gg`, pierden menos de lo normal.
 - **El equipo rival** gana menos, porque jugó con ventaja.
 - Si abandonan 2 o más del mismo equipo, ese equipo pierde la partida.

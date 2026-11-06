@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapImage } from "@/features/maps/lib/catalog"
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { gameRoomOptions } from "@/features/matchmaking/queries"
+import { MatchRoom } from "@/features/matchmaking/room/MatchRoom"
+import { MmSourceContext } from "@/features/matchmaking/source"
 import { myProfileOptions } from "@/features/profile/api/queries"
 import { matchDetailOptions } from "@/features/shell/api/queries"
 import { SeriesRoom } from "@/features/series/pages/SeriesRoom"
@@ -43,8 +47,17 @@ export function MixMatchRoom({
   const me = useMyPlayerId()
   const maps = useQuery(mapsOptions).data
   const role = useMe().data?.role
+  // (replanteo 78) Un juego con serie puede ser de una sala del matchmaking: entonces el detalle es la sala, con las
+  // estadísticas en su segunda pestaña. Si la base dice que no (null) o falla, queda la sala de mix de siempre.
+  const withParent =
+    match.data?.kind === "mix" &&
+    !!(match.data as { parent_match_id?: string | null }).parent_match_id
+  const room = useQuery({
+    ...gameRoomOptions(apiMmSource, id),
+    enabled: withParent,
+  })
 
-  if (match.isPending) return <RoomSkeleton />
+  if (match.isPending || (withParent && room.isPending)) return <RoomSkeleton />
   if (match.isError)
     return (
       <RoomMessage
@@ -79,16 +92,32 @@ export function MixMatchRoom({
       />
     )
 
-  const room = roomFromMatch(m, me)
+  if (room.data)
+    return (
+      <MmSourceContext value={apiMmSource}>
+        <MatchRoom
+          lobby={{
+            ...room.data,
+            server: null,
+            reported: room.data.reported ?? [],
+            commended: room.data.commended ?? null,
+            elo_stake: room.data.elo_stake ?? null,
+          }}
+          mode="detail"
+        />
+      </MmSourceContext>
+    )
+
+  const mixRoom = roomFromMatch(m, me)
   // La API no borra un mix vinculado con !match a un torneo o PCW.
   const canDelete = !!role && canDeleteMix(role) && !m.parent_match_id
   return (
     <MixRoom
-      room={room}
+      room={mixRoom}
       mapImage={mapImage(maps, m.map)}
       highlights={
-        room.status === "finished"
-          ? mixHighlights(m.id, room, m.map)
+        mixRoom.status === "finished"
+          ? mixHighlights(m.id, mixRoom, m.map)
           : undefined
       }
       tab={tab}
@@ -97,7 +126,7 @@ export function MixMatchRoom({
         canDelete ? (
           <DeleteMixDialog
             matchId={m.id}
-            movedElo={room.status === "finished"}
+            movedElo={mixRoom.status === "finished"}
           />
         ) : undefined
       }

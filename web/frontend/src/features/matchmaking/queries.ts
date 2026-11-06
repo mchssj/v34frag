@@ -64,6 +64,15 @@ export function lobbyMatchOptions(source: MmSource, lobbyId: string) {
   })
 }
 
+/** La sala de una partida del matchmaking terminada (el detalle de la partida, replanteo 78). Tampoco cambia. */
+export function gameRoomOptions(source: MmSource, gameId: string) {
+  return queryOptions({
+    queryKey: ["mm", "game-room", gameId] as const,
+    queryFn: ({ signal }) => source.gameRoom(gameId, signal),
+    staleTime: Infinity,
+  })
+}
+
 /**
  * El estado de siempre, armado con el liviano (cola, sala, grupo) y lo que casi no cambia (en caché 2 minutos). Las
  * estadísticas de la última partida se piden aparte, al abrir su pestaña (`lobbyMatchOptions`).

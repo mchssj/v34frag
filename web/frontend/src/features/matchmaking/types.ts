@@ -181,6 +181,24 @@ export type MmLobby = {
   commended: string | null
   /** ELO en juego para el que mira; null si el modo no da ELO. */
   elo_stake: { win: number; loss: number } | null
+  /** Reemplazos de la sala: buscando, tomados y los que entraron (replanteo 78). */
+  replacements?: MmReplacement[]
+}
+
+/** Un reemplazo de la sala (`mm_lobby_replacements`, replanteo 78). */
+export type MmReplacement = {
+  team: 1 | 2
+  /** open: se busca; taken: lo tomó y todavía no entró al servidor; connected: entró. */
+  status: "open" | "taken" | "connected"
+  replaced_player_id: string | null
+  replaced_nick: string | null
+  by_player_id: string | null
+  by_nick: string | null
+  /** La ronda en que se pidió y en la que entró; null si no se sabe. */
+  left_round: number | null
+  joined_round: number | null
+  /** Hasta cuándo tiene para entrar al servidor (solo tomado). */
+  connect_deadline: string | null
 }
 
 export type MmQueue = {
@@ -399,6 +417,12 @@ export type MmReplaceInfo = {
   expires_at: string
   /** Por qué no lo puedo tomar (la misma regla que para entrar a la cola); null si puedo. */
   reason: string | null
+  /** El que se fue y la ronda en que se pidió (replanteo 78). */
+  replaced_player_id?: string | null
+  replaced_nick?: string | null
+  left_round?: number | null
+  /** La sala en vista previa, sin el servidor; solo mientras se puede tomar (replanteo 78). */
+  room?: MmLobby | null
 }
 
 /** Administración › Matchmaking › General (`mm_config` más los modos). */
@@ -445,6 +469,12 @@ export type MmAdminConfig = {
   replace_vote_pct: number
   replace_vote_seconds: number
   replace_vote_cooldown_s: number
+  /** ELO que pierde el que abandona (replanteo 78): si su equipo ganó, de min a max según la parte que no jugó. */
+  abandon_win_min: number
+  abandon_win_max: number
+  /** Si su equipo perdió o empató: de min a max, pero nunca menos que una derrota normal. */
+  abandon_loss_min: number
+  abandon_loss_max: number
   /** Imagen de la tarjeta del MVP; se sube y se quita aparte (no viaja en saveConfig). */
   mvp_image_url?: string | null
 }
