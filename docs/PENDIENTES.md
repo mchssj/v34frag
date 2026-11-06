@@ -71,6 +71,7 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Reglas del 2026-11-06 (Daniel):** el progreso de las bloqueadas solo lo ve el dueño de la ficha (y el admin); las stats de la BETA no cuentan (todo desde la temporada 2; Fundador y Pionero salen de la BETA, pero llegan al abrirse la temporada 2); el podio y el top de la BETA sí se dan al cerrarla; sin el aviso "Cuenta desde el 2026-10-29".
 - **Urgente: la BETA de producción cierra el 2026-11-09 a las 09:00 UTC** (en la base; los documentos decían 2026-12-03). El despliegue tiene que estar antes.
 - **Desplegado el 2026-11-06 (18:53-19:00 UTC)** desde `main` (`1b4d517c`): respaldo `20261106T185310Z`, la `79` y las definiciones en la base del VPS, API y web `1b4d517c2de7` y `cmleague-medals.timer`.
+- **2026-11-06 (Daniel):** el ranking de jugadores ya no muestra "(sin diseño propio)" junto a la medalla del Top 20 (`8469ee86`, web `8469ee8631e6` desplegada desde `main`). En Administración › Temporadas el selector de tramos lo sigue diciendo.
 - **Falta:**
   1. Después del cierre de la BETA (2026-11-09 09:00 UTC): comprobar que el cierre dio el podio y el top con medalla y que el cron dio Fundador y Pionero.
   2. Avisar en Discord antes del cierre de la BETA (unos 130 avisos de Fundador y Pionero al abrirse la temporada 2) y publicar el `CHANGELOG_DISCORD.txt`.
