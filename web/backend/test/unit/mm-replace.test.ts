@@ -18,6 +18,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// Una sola llave para todo el archivo: la API guarda el JWKS que bajó primero.
+let keyOnce: Promise<TestKey> | undefined;
+const sharedKey = () => (keyOnce ??= makeKey());
+
 describe('replaceText', () => {
   it('abierto: menciona al rol, lleva el link y cuándo vence', () => {
     expect(replaceText(OPEN, CFG)).toBe(
@@ -94,7 +98,7 @@ describe('rutas /api/v1/mm/replace/{token}', () => {
   const USER = '75757575-7575-4575-8575-757575757575';
   let key: TestKey;
   beforeAll(async () => {
-    key = await makeKey();
+    key = await sharedKey();
   });
 
   const stub = (takeError?: { code: string; message: string }) => {
@@ -147,5 +151,58 @@ describe('rutas /api/v1/mm/replace/{token}', () => {
     stub();
     const res = await makeApp().request(`/api/v1/mm/replace/${TOKEN}`, {}, testEnv());
     expect(res.status).toBe(401);
+  });
+});
+
+describe('ruta /api/v1/mm/games/{id}/room (replanteo 78)', () => {
+  const USER = '78787878-7878-4878-8878-787878787878';
+  const GAME = '11111111-2222-4333-8444-555555555555';
+  let key: TestKey;
+  beforeAll(async () => {
+    key = await sharedKey();
+  });
+
+  const stub = (room: unknown) => {
+    const bodies: Record<string, unknown>[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+        const url = decodeURIComponent(String(input instanceof Request ? input.url : input));
+        if (url.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
+        if (typeof init.body === 'string') bodies.push(JSON.parse(init.body));
+        if (url.includes('/rpc/mm_game_room')) return Response.json(room);
+        if (url.includes('/rest/v1/matches')) return Response.json({ kind: 'mix', external_id: null, demo_status: 'none' });
+        if (url.includes('/rest/v1/match_clip_list')) return Response.json([]);
+        return new Response('no simulado: ' + url, { status: 599 });
+      }),
+    );
+    return bodies;
+  };
+  const call = async (id = GAME) =>
+    makeApp().request(`/api/v1/mm/games/${id}/room`, { headers: { Authorization: `Bearer ${await signToken(key, userClaims(USER))}` } }, testEnv());
+
+  it('devuelve la sala con el demo y los clips de la partida', async () => {
+    const bodies = stub({ id: 'lobby-1', status: 'finished', players: [], replacements: [], match: { game_id: GAME, demo_url: null, clips: [] } });
+    const res = await call();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ id: 'lobby-1', match: { game_id: GAME, clips: [] } });
+    expect(bodies).toContainEqual({ p_game: GAME });
+  });
+
+  it('un mix sin sala: null', async () => {
+    stub(null);
+    const res = await call();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toBeNull();
+  });
+
+  it('un id que no es uuid no llega a la base', async () => {
+    stub(null);
+    expect((await call('nada')).status).toBe(400);
+  });
+
+  it('sin sesión, 401', async () => {
+    stub(null);
+    expect((await makeApp().request(`/api/v1/mm/games/${GAME}/room`, {}, testEnv())).status).toBe(401);
   });
 });
