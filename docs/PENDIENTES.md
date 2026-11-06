@@ -65,18 +65,17 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **flow (#2):** `csstv_claim "1"` en su cfg desde el 2026-11-03; se carga en el próximo cambio de mapa.
 - **flow (#2) sin matchmaking desde el 2026-11-03 (21:25 UTC, Daniel):** `csstv_mm "0"` en su cfg y por consola, y `mm_enabled = false`. Se juega mix normal. Esa tarde tuvo `csstv_mm "1"` un rato.
 
-## La sala en el link de reemplazo, el detalle como sala y el ELO del abandono (2026-11-06): con commit en `main`, falta desplegar
+## La sala en el link de reemplazo, el detalle como sala y el ELO del abandono (2026-11-06): desplegado
 
 - **Hecho y probado en local:** replanteo `78`, la ruta `/api/v1/mm/games/{id}/room`, la sala en el link de reemplazo y en el detalle de la partida, y los topes del ELO del abandono en Administración › Matchmaking ([`2026-11-06-reemplazo-sala-y-abandono`](bitacora/2026-11-06-reemplazo-sala-y-abandono/)). Base: 12 comprobaciones y la inversa; API: 547 pruebas; web: 631. Diseño: https://claude.ai/artifact/Ndp1drqtYpRVGVcohLewjU
-- **Falta:**
-  1. `probar_78.sh` contra la base del VPS con `cmleague-mm` parado, y la `78` desde el archivo commiteado (LF).
-  2. La API y la web.
-  3. Mirarlo en el navegador (el link con un reemplazo abierto, la sala del reemplazo y el detalle de una partida) y publicar el `CHANGELOG_DISCORD.txt` (2.9.19) y los términos.
+- **Desplegado el 2026-11-06 (14:56-15:02 UTC)** desde `main` (`8670768b`), sin salas, cola ni mixes en vivo, después del respaldo `20261106T145627Z` (también en R2): la `78` en la base del VPS (antes, `probar_78.sh` contra producción con `cmleague-mm` parado: 12 comprobaciones y la inversa), y la API y la web `8670768b56ef`. Topes: 10 a 15 si ganan, 15 a 20 si pierden.
+- **Falta:** mirarlo en el navegador (el link con un reemplazo abierto, la sala del reemplazo y el detalle de una partida) y publicar el `CHANGELOG_DISCORD.txt` (2.9.19) y los términos.
 
-## Irse en la última ronda no es abandono (2026-11-06): con commit en `main`, falta desplegar
+## Irse en la última ronda no es abandono (2026-11-06): desplegado
 
 - **Hecho y probado en local** (Daniel, 2026-11-06): replanteo `77`. En el matchmaking, quien sigue desconectado al terminar pero le faltó como mucho la última ronda ya no queda como abandono: sin sanción y con ELO normal. Manual y términos actualizados ([`2026-11-06-abandono-ultima-ronda`](bitacora/2026-11-06-abandono-ultima-ronda/)). Commiteado en `main` y en `feat/frontend-fase-1`; la base, también en `feat/mm-claim-en-sala`.
-- **Falta:** respaldo y `77` en la base del VPS (antes, `probar_77.sh` por el túnel); build de la web (términos); publicar el changelog.
+- **Desplegado el 2026-11-06 (14:56-15:02 UTC)** desde `main` (`8670768b`), sin salas, cola ni mixes en vivo, después del respaldo `20261106T145627Z` (también en R2): la `77` en la base del VPS (antes, `probar_77.sh` contra producción: 5 de 5 y la inversa) y la web `8670768b56ef`, en la misma tanda que la `78`.
+- **Falta:** publicar el changelog.
 - Los dos casos del 2026-11-04 (mew y musul) quedan como están (Daniel).
 
 ## Recuperar la contraseña y acciones de cuenta (desplegado el 2026-11-04): falta unificar la rama de la API

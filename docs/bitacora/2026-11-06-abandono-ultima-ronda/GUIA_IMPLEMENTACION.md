@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-06 (base local con la copia de producción). Commiteado el 2026-11-06 en `main` (la rama principal, por decisión de Daniel) y en `feat/frontend-fase-1`, y la base en `feat/mm-claim-en-sala`. Sin desplegar: falta aplicar la `77` en la base del VPS y el build de la web.
+Hecho y probado en local el 2026-11-06 (base local con la copia de producción). Commiteado el 2026-11-06 en `main` (la rama principal, por decisión de Daniel) y en `feat/frontend-fase-1`, y la base en `feat/mm-claim-en-sala`. **Desplegado el 2026-11-06 (14:56-15:02 UTC)** desde `main` (`8670768b`), sin salas, cola ni mixes en vivo, después del respaldo `20261106T145627Z` (también en R2)**, en la misma tanda que la `78`: `probar_77.sh` contra producción (5 de 5 y la inversa), la `77` desde `main` y la web `8670768b56ef`.
 
 ## Archivos
 
@@ -16,7 +16,7 @@ Hecho y probado en local el 2026-11-06 (base local con la copia de producción).
 | `web/frontend/src/features/legal/pages/TermsPage.tsx`, `terms/terminos.html` | Sección 7: irse en la última ronda no es abandono |
 | `docs/bitacora/README.md`, `docs/PENDIENTES.md` | Fila e ítem |
 
-## Despliegue (no hecho)
+## Despliegue (hecho el 2026-11-06, salvo el changelog)
 
 1. **Ramas (hecho el 2026-11-06):** `main` es la principal (Daniel); el mismo commit en `feat/frontend-fase-1`, y el replanteo, su inversa y las pruebas en `feat/mm-claim-en-sala`. La web (términos) no va en `feat/mm-claim-en-sala`.
 2. **Base del VPS:** respaldo, `./probar_77.sh "<conexión por el túnel>"` (corre todo en una transacción que se deshace), y después la `77` desde el archivo commiteado (LF), por el túnel o con `sudo sb psql`. Va después de la `75` y la `76`, que ya están. No necesita parar el matchmaking: solo reemplaza una función y suma otra.

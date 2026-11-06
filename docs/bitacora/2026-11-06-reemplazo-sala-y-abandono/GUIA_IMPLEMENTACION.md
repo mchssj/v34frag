@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-06 (la base con la copia de producción, la API y la web). Commiteado en `main` (copia en `feat/frontend-fase-1`; la base y la API en `feat/mm-claim-en-sala`). **Sin desplegar.** No se miró en el navegador con datos reales.
+Hecho y probado en local el 2026-11-06 (la base con la copia de producción, la API y la web). Commiteado en `main` (copia en `feat/frontend-fase-1`; la base y la API en `feat/mm-claim-en-sala`). **Desplegado el 2026-11-06 (14:56-15:02 UTC)** desde `main` (`8670768b`), sin salas, cola ni mixes en vivo, después del respaldo `20261106T145627Z` (también en R2).** No se miró en el navegador con datos reales.
 
 ## Archivos
 
@@ -21,7 +21,11 @@ Hecho y probado en local el 2026-11-06 (la base con la copia de producción, la 
 | Pruebas de la web | `room/RoomOverview.test.tsx` (nuevo), `ReplacePage.test.tsx`, `mixes/components/MixRoom.test.tsx` |
 | `docs/manual/...`, `terms/terminos.html`, `TermsPage.tsx`, `lib/meta.ts` | Manual y términos |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-06, salvo el paso 3)
+
+Cómo quedó: respaldo `20261106T145627Z`; `cmleague-mm` parado; `probar_77.sh` (5 de 5) y `probar_78.sh` (12 y la inversa) contra producción; la `77` y la `78` desde `main` (LF, sin `` en las funciones); la API `8670768b56ef` (547 pruebas) y `cmleague-mm` prendido de nuevo; la web `8670768b56ef` (631 pruebas). `mm_game_room` sobre la última partida real: 10 jugadores con sus estadísticas y sin el servidor.
+
+Los pasos:
 
 Sin un mix en curso. No toca el plugin ni los servidores.
 
