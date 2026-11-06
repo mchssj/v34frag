@@ -221,7 +221,9 @@ const SECTIONS: LegalSection[] = [
           partida. Si te desconectas, tu equipo puede votar en el servidor para
           darte por abandonado sin esperar a que se termine tu plazo para
           volver, y la liga puede llamar a otro jugador para que entre en tu
-          lugar. Si vuelves después de que entró, quedas de espectador.
+          lugar. Si vuelves después de que entró, quedas de espectador. Irte en
+          la última ronda, o cuando ya terminó la partida, no cuenta como
+          abandono.
         </li>
         <li>
           Los servidores de la liga registran tu IP, tu SteamID y tu nick al

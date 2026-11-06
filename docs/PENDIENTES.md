@@ -65,6 +65,12 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **flow (#2):** `csstv_claim "1"` en su cfg desde el 2026-11-03; se carga en el próximo cambio de mapa.
 - **flow (#2) sin matchmaking desde el 2026-11-03 (21:25 UTC, Daniel):** `csstv_mm "0"` en su cfg y por consola, y `mm_enabled = false`. Se juega mix normal. Esa tarde tuvo `csstv_mm "1"` un rato.
 
+## Irse en la última ronda no es abandono (2026-11-06): con commit en `main`, falta desplegar
+
+- **Hecho y probado en local** (Daniel, 2026-11-06): replanteo `77`. En el matchmaking, quien sigue desconectado al terminar pero le faltó como mucho la última ronda ya no queda como abandono: sin sanción y con ELO normal. Manual y términos actualizados ([`2026-11-06-abandono-ultima-ronda`](bitacora/2026-11-06-abandono-ultima-ronda/)). Commiteado en `main` y en `feat/frontend-fase-1`; la base, también en `feat/mm-claim-en-sala`.
+- **Falta:** respaldo y `77` en la base del VPS (antes, `probar_77.sh` por el túnel); build de la web (términos); publicar el changelog.
+- Los dos casos del 2026-11-04 (mew y musul) quedan como están (Daniel).
+
 ## Recuperar la contraseña y acciones de cuenta (desplegado el 2026-11-04): falta unificar la rama de la API
 
 - **En producción:** recuperar la contraseña, las acciones de cuenta en Administración › Usuarios y la confirmación del correo encendida (`sudo sb confirmar-correo [on|off]`). Probado de punta a punta con cuentas temporales ([`2026-11-03-admin-cuentas-usuarios`](bitacora/2026-11-03-admin-cuentas-usuarios/), [`2026-11-03-recuperar-contrasena`](bitacora/2026-11-03-recuperar-contrasena/)).

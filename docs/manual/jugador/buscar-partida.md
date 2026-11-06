@@ -61,6 +61,7 @@ Tienes **{{mm.conectar}}** para conectarte; la sala muestra cuánto queda y qui�
 
 - Si te desconectas, tienes **{{mm.volver}}** para volver. La sala muestra cuánto te queda.
 - Si no vuelves, cuenta como abandono: pierdes ELO y te llevas una sanción. Tu equipo puede rendirse con `!gg` sin perder ELO.
+- Irte en la última ronda, o cuando ya terminó la partida, no cuenta como abandono: no hay sanción y tu ELO se calcula normal.
 - Si abandonan 2 o más jugadores de un equipo, ese equipo pierde la partida. Si pasa en los dos equipos, la partida se anula.
 
 ### Reemplazos
