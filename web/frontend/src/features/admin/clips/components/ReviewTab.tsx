@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { CheckIcon } from "lucide-react"
+import { BanIcon, CheckIcon } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -14,6 +16,7 @@ import { clipLabel } from "../lib/clips"
 import {
   clipReviewOptions,
   useApproveClip,
+  useRejectClip,
   useReprocessClip,
 } from "../api/queries"
 import type { ClipReview } from "../types"
@@ -25,7 +28,9 @@ export function ReviewTab() {
       <p className="max-w-[760px] text-[13px] leading-relaxed text-muted-foreground">
         Clips que se volvieron a grabar porque el video salió mal. Míralo: si
         está bien, sale en Discord (otra vez, si ya había salido). Si no,
-        mándalo a grabar de nuevo. Del más viejo al más nuevo.
+        mándalo a grabar de nuevo. Si sigue saliendo mal,{" "}
+        <b className="font-semibold text-foreground">recházalo</b>: deja de
+        verse en la web y no se vuelve a grabar. Del más viejo al más nuevo.
       </p>
       {list.isError ? (
         <QueryError error={list.error} onRetry={() => void list.refetch()} />
@@ -52,12 +57,17 @@ export function ReviewTab() {
 function ReviewCard({ r }: { r: ClipReview }) {
   const approve = useApproveClip()
   const again = useReprocessClip()
+  const reject = useRejectClip()
+  const [asking, setAsking] = useState(false)
   const { clip, match } = r
   const video = clip.video
   const ready = video.status === "done" && !!(video.url || video.embed_url)
   const who = clip.player?.alias ?? clip.game_nick
   const error = approve.error ?? again.error
-  const busy = approve.isPending || again.isPending
+  const busy = approve.isPending || again.isPending || reject.isPending
+  const recording = video.status === "pending" || video.status === "processing"
+  // Tres reprocesos o más: se avisa, porque probablemente no tenga arreglo.
+  const stubborn = r.reprocess_count >= 3
 
   return (
     <Card variant="outline" asChild className="flex flex-col overflow-hidden">
@@ -108,11 +118,18 @@ function ReviewCard({ r }: { r: ClipReview }) {
               Ver la partida
             </Link>
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span
+            className={
+              stubborn
+                ? "text-xs text-destructive"
+                : "text-xs text-muted-foreground"
+            }
+          >
             {r.reprocess_count === 1
               ? "Reprocesado una vez"
               : `Reprocesado ${r.reprocess_count} veces`}
             , {ago(r.reprocessed_at)}
+            {stubborn && " · sigue saliendo mal"}
           </span>
           {error && (
             <p role="alert" className="text-[13px] text-destructive">
@@ -133,11 +150,7 @@ function ReviewCard({ r }: { r: ClipReview }) {
             </Button>
             <Button
               variant="outline"
-              disabled={
-                busy ||
-                video.status === "pending" ||
-                video.status === "processing"
-              }
+              disabled={busy || recording}
               onClick={() =>
                 again.mutate(clip.id, {
                   onSuccess: () => toast.success("Se va a grabar de nuevo."),
@@ -146,8 +159,46 @@ function ReviewCard({ r }: { r: ClipReview }) {
             >
               Reprocesar otra vez
             </Button>
+            <Button
+              variant="outline"
+              className="border-destructive/45 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              disabled={busy || video.status === "processing"}
+              title={
+                video.status === "processing"
+                  ? "Se está grabando ahora: espera a que termine"
+                  : undefined
+              }
+              onClick={() => setAsking(true)}
+            >
+              <BanIcon aria-hidden />
+              Rechazar clip
+            </Button>
           </div>
         </div>
+        <ConfirmDialog
+          open={asking}
+          onOpenChange={setAsking}
+          danger
+          title={`¿Rechazar el ${clipLabel(clip.type)} de ${who}?`}
+          description="Deja de verse en la partida, en la sala y en los perfiles, no sale en Discord y no se vuelve a grabar. El video se borra esta noche. Se puede recuperar desde la lista mientras la demo siga guardada."
+          reason={{ label: "Motivo (opcional)", required: false }}
+          confirmLabel="Rechazar el clip"
+          pending={reject.isPending}
+          error={reject.error}
+          onConfirm={(reason) =>
+            reject.mutate(
+              { id: clip.id, reason: reason.trim() || undefined },
+              {
+                onSuccess: () => {
+                  setAsking(false)
+                  toast.success(
+                    "Clip rechazado. Si te equivocaste, lo recuperas en Clips › Rechazados."
+                  )
+                },
+              }
+            )
+          }
+        />
       </article>
     </Card>
   )

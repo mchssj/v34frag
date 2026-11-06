@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useRouterState } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
+  ClapperboardIcon,
   ExternalLinkIcon,
   LinkIcon,
   LockIcon,
@@ -24,6 +25,7 @@ export const PROFILE_SECTIONS: {
   { to: "/profile", label: "Perfil", icon: UserIcon },
   { to: "/profile/privacy", label: "Privacidad", icon: LockIcon },
   { to: "/profile/link", label: "Vinculación", icon: LinkIcon },
+  { to: "/profile/clips", label: "Clips", icon: ClapperboardIcon },
   {
     to: "/profile/preferences",
     label: "Preferencias",

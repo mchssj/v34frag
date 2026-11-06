@@ -16499,8 +16499,8 @@ export interface paths {
                     sort?: "created_at";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    /** @description `done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo */
-                    status?: "done" | "failed" | "processing" | "queued" | "no_demo";
+                    /** @description `done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo, `rejected` los rechazados (replanteo 76; los demás filtros no los muestran) */
+                    status?: "done" | "failed" | "processing" | "queued" | "no_demo" | "rejected";
                     type?: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
                     /** @description Nick del jugador en el juego */
                     q?: string;
@@ -16698,6 +16698,395 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rechazar un clip
+         * @description Deja de verse en la web (la partida, la sala y los perfiles), no sale en Discord y no se vuelve a grabar. El video va a la papelera. No entra otro clip en su lugar. No se puede mientras se graba (`BUSINESS_RULE`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ClipRejectBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rechazar varios clips
+         * @description Como `/admin/clips/{id}/reject`, para cada uno de `ids`, uno por uno, con el mismo motivo.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClipRejectManyBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recuperar clips rechazados
+         * @description Cada uno se vuelve a grabar y pasa a "Para revisar". Solo con la demo todavía guardada (si no, el motivo en su resultado).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClipReprocessBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/clips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis clips y los destacados de mi ficha
+         * @description El modo (automático o elegidos), el tope, los elegidos, los que se ven hoy y mis clips con video.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mis clips */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyClips"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/clips/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir mis clips destacados
+         * @description El modo y los elegidos en orden. 409 `CONFLICT` si pasan el tope (con `details.max`); 400 si uno no es mío o no tiene video.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MyClipsPut"];
+                };
+            };
+            responses: {
+                /** @description Guardado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyClips"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/clips/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clips destacados de un jugador
+         * @description Los que se ven en su ficha, en orden: los que eligió o, en automático, sus mejores. Vacío si no tiene.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Destacados */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FeaturedClipList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -22682,10 +23071,10 @@ export interface components {
             /** @description Entró por ser de un VIP (cuando se jugó el mix): va después del top */
             vip: boolean;
             /**
-             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `null` si nunca se reprocesó
+             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `rejected` si un admin lo rechazó (replanteo 76; solo en Administración), `null` si nunca se reprocesó
              * @enum {string|null}
              */
-            review: "pending" | "approved" | null;
+            review: "pending" | "approved" | "rejected" | null;
         };
         ClipVideo: {
             /**
@@ -22723,6 +23112,10 @@ export interface components {
             post_seconds: number;
             /** @description Clips de cada VIP en cada partida, aparte del top (0 los apaga) */
             vip_per_match: number;
+            /** @description Clips destacados en la ficha de un jugador (replanteo 76) */
+            featured_max: number;
+            /** @description Clips destacados en la ficha de un VIP (replanteo 76) */
+            featured_max_vip: number;
         };
         ClipPriorities: {
             /** @description Prioridad de `ace` (1 es lo más valioso) */
@@ -22775,6 +23168,10 @@ export interface components {
             post_seconds?: number;
             /** @description Clips de cada VIP en cada partida, aparte del top (0 los apaga) */
             vip_per_match?: number;
+            /** @description Clips destacados en la ficha de un jugador (replanteo 76) */
+            featured_max?: number;
+            /** @description Clips destacados en la ficha de un VIP (replanteo 76) */
+            featured_max_vip?: number;
         };
         ClipReviewList: {
             items: components["schemas"]["ClipReview"][];
@@ -22824,6 +23221,18 @@ export interface components {
             can_reprocess: boolean;
             /** @description Por qué no se puede reprocesar (null si se puede) */
             blocked_reason: string | null;
+            /** @description Quién lo rechazó, cuándo y por qué (replanteo 76). `null` si no está rechazado */
+            rejected: {
+                at: string;
+                by: {
+                    /** Format: uuid */
+                    id: string;
+                    alias: string | null;
+                } | null;
+                reason: string | null;
+                /** @description Si se puede recuperar: con la demo todavía guardada */
+                can_restore: boolean;
+            } | null;
         };
         ClipReprocessResult: {
             results: {
@@ -22837,6 +23246,50 @@ export interface components {
         ClipReprocessBody: {
             /** @description De 1 a 50 clips */
             ids: string[];
+        };
+        ClipRejectBody: {
+            /** @description Motivo, opcional: queda en la lista de rechazados */
+            reason?: string;
+        };
+        ClipRejectManyBody: components["schemas"]["ClipReprocessBody"] & {
+            /** @description Motivo, opcional: queda en la lista de rechazados */
+            reason?: string;
+        };
+        MyClips: {
+            /**
+             * @description `auto`: se muestran solos los mejores; `manual`: los que elegí
+             * @enum {string}
+             */
+            mode: "auto" | "manual";
+            vip: boolean;
+            /** @description Cuántos se ven en mi ficha (el tope de VIP si lo soy) */
+            max: number;
+            /** @description El tope con VIP, para el aviso */
+            max_vip: number;
+            /** @description Los que elegí, en orden (se guardan aunque esté en automático) */
+            picked: string[];
+            /** @description Los que se ven hoy en mi ficha, en orden */
+            shown: string[];
+            /** @description Mis clips con video, del más nuevo al más viejo */
+            clips: components["schemas"]["FeaturedClip"][];
+        };
+        FeaturedClip: {
+            clip: components["schemas"]["Clip"];
+            match: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                played_at: string | null;
+            };
+        };
+        MyClipsPut: {
+            /** @enum {string} */
+            mode: "auto" | "manual";
+            /** @description Los elegidos, en orden (en `auto` se guardan para cuando vuelva a `manual`) */
+            ids: string[];
+        };
+        FeaturedClipList: {
+            items: components["schemas"]["FeaturedClip"][];
         };
         /** @description Con el orden por defecto (`started_at` desc) los mixes en vivo van primero */
         MixList: {

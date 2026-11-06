@@ -5,6 +5,7 @@ import { z } from "zod"
 
 export const TABS = [
   "resumen",
+  "clips",
   "mapas",
   "partidas",
   "equipos",

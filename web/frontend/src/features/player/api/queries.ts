@@ -24,6 +24,8 @@ export const playerKeys = {
   teams: (nick: string) => ["public-player", k(nick), "teams"] as const,
   seasons: (nick: string) => ["public-player", k(nick), "seasons"] as const,
   titles: (nick: string) => ["public-player", k(nick), "titles"] as const,
+  // Por id: la ruta de los destacados no acepta el nick (replanteo 76).
+  featured: (id: string) => ["public-player", "featured", id] as const,
 }
 
 export function playerOptions(nick: string) {
@@ -184,5 +186,22 @@ export function titlesOptions(nick: string) {
         )
       ).items,
     staleTime: 5 * MINUTE,
+  })
+}
+
+/** Los clips destacados de la ficha (elegidos o, en automático, los mejores), en orden. */
+export function featuredClipsOptions(playerId: string) {
+  return queryOptions({
+    queryKey: playerKeys.featured(playerId),
+    queryFn: async ({ signal }) =>
+      (
+        await unwrap(
+          api.GET("/api/v1/players/{id}/clips/featured", {
+            params: path(playerId),
+            signal,
+          })
+        )
+      ).items,
+    staleTime: MINUTE,
   })
 }

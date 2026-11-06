@@ -49,10 +49,10 @@ export const Clip = z
     demo_seconds: z.number().nullable().openapi({ description: 'Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate' }),
     video: ClipVideo,
     vip: z.boolean().openapi({ description: 'Entró por ser de un VIP (cuando se jugó el mix): va después del top' }),
-    review: z.enum(['pending', 'approved']).nullable().openapi({
+    review: z.enum(['pending', 'approved', 'rejected']).nullable().openapi({
       description:
         'Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), ' +
-        '`approved` si se aprobó, `null` si nunca se reprocesó',
+        '`approved` si se aprobó, `rejected` si un admin lo rechazó (replanteo 76; solo en Administración), `null` si nunca se reprocesó',
     }),
   })
   .openapi('Clip');
@@ -79,6 +79,8 @@ export const ClipConfigValues = z
     pre_seconds: int(0, 15, 'Para el video (fase C): segundos antes de la primera kill'),
     post_seconds: int(0, 15, 'Para el video (fase C): segundos después de la última kill'),
     vip_per_match: int(0, 10, 'Clips de cada VIP en cada partida, aparte del top (0 los apaga)'),
+    featured_max: int(1, 50, 'Clips destacados en la ficha de un jugador (replanteo 76)'),
+    featured_max_vip: int(1, 50, 'Clips destacados en la ficha de un VIP (replanteo 76)'),
   })
   .openapi('ClipConfigValues');
 
@@ -99,6 +101,8 @@ export const ClipConfigPatch = z
     pre_seconds: ClipConfigValues.shape.pre_seconds.optional(),
     post_seconds: ClipConfigValues.shape.post_seconds.optional(),
     vip_per_match: ClipConfigValues.shape.vip_per_match.optional(),
+    featured_max: ClipConfigValues.shape.featured_max.optional(),
+    featured_max_vip: ClipConfigValues.shape.featured_max_vip.optional(),
   })
   .strict()
   .refine((v) => Object.keys(v).length > 0, 'Mandá al menos un valor')
@@ -119,10 +123,12 @@ export const ClipReviewList = Envelope(ClipReview).openapi('ClipReviewList');
 export const ClipReviewQuery = listQuery(['reprocessed_at'], { sort: 'reprocessed_at', order: 'asc' });
 
 // Lista de clips para reprocesar varios a la vez (plan docs/bitacora/2026-11-03-reportes-clips-nombre-equipo).
-export const ADMIN_CLIP_STATUS = ['done', 'failed', 'processing', 'queued', 'no_demo'] as const;
+export const ADMIN_CLIP_STATUS = ['done', 'failed', 'processing', 'queued', 'no_demo', 'rejected'] as const;
 export const AdminClipQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' }).extend({
   status: z.enum(ADMIN_CLIP_STATUS).optional().openapi({
-    description: '`done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo',
+    description:
+      '`done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo, ' +
+      '`rejected` los rechazados (replanteo 76; los demás filtros no los muestran)',
   }),
   type: z.enum(CLIP_TYPES).optional(),
   q: z.string().trim().max(60).optional().openapi({ description: 'Nick del jugador en el juego' }),
@@ -135,6 +141,15 @@ export const AdminClip = z
     discord_posted: z.boolean().openapi({ description: 'Si ya salió en Discord' }),
     can_reprocess: z.boolean(),
     blocked_reason: z.string().nullable().openapi({ description: 'Por qué no se puede reprocesar (null si se puede)' }),
+    rejected: z
+      .object({
+        at: z.string(),
+        by: z.object({ id: z.uuid(), alias: z.string().nullable() }).nullable(),
+        reason: z.string().nullable(),
+        can_restore: z.boolean().openapi({ description: 'Si se puede recuperar: con la demo todavía guardada' }),
+      })
+      .nullable()
+      .openapi({ description: 'Quién lo rechazó, cuándo y por qué (replanteo 76). `null` si no está rechazado' }),
   })
   .openapi('AdminClip');
 export const AdminClipList = Envelope(AdminClip).openapi('AdminClipList');
@@ -148,3 +163,36 @@ export const ClipReprocessResult = z
     ),
   })
   .openapi('ClipReprocessResult');
+
+// Rechazar y recuperar un clip (replanteo 76, plan docs/bitacora/2026-11-04-clips-destacados-perfil).
+export const ClipRejectBody = z
+  .object({ reason: z.string().trim().max(300).optional().openapi({ description: 'Motivo, opcional: queda en la lista de rechazados' }) })
+  .openapi('ClipRejectBody');
+export const ClipRejectManyBody = ClipReprocessBody.extend({ reason: ClipRejectBody.shape.reason }).openapi('ClipRejectManyBody');
+
+// Clips destacados en el perfil (replanteo 76).
+export const FeaturedClip = z
+  .object({
+    clip: Clip,
+    match: z.object({ id: z.uuid(), map: z.string().nullable(), played_at: z.string().nullable() }),
+  })
+  .openapi('FeaturedClip');
+export const FEATURED_MODES = ['auto', 'manual'] as const;
+export const MyClips = z
+  .object({
+    mode: z.enum(FEATURED_MODES).openapi({ description: '`auto`: se muestran solos los mejores; `manual`: los que elegí' }),
+    vip: z.boolean(),
+    max: z.number().int().openapi({ description: 'Cuántos se ven en mi ficha (el tope de VIP si lo soy)' }),
+    max_vip: z.number().int().openapi({ description: 'El tope con VIP, para el aviso' }),
+    picked: z.array(z.uuid()).openapi({ description: 'Los que elegí, en orden (se guardan aunque esté en automático)' }),
+    shown: z.array(z.uuid()).openapi({ description: 'Los que se ven hoy en mi ficha, en orden' }),
+    clips: z.array(FeaturedClip).openapi({ description: 'Mis clips con video, del más nuevo al más viejo' }),
+  })
+  .openapi('MyClips');
+export const MyClipsPut = z
+  .object({
+    mode: z.enum(FEATURED_MODES),
+    ids: z.array(z.uuid()).max(50).openapi({ description: 'Los elegidos, en orden (en `auto` se guardan para cuando vuelva a `manual`)' }),
+  })
+  .openapi('MyClipsPut');
+export const FeaturedClipList = z.object({ items: z.array(FeaturedClip) }).openapi('FeaturedClipList');

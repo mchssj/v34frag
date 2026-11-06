@@ -48,6 +48,7 @@ import { Route as AppPlayersIndexRouteImport } from './routes/_app/players.index
 import { Route as AppPlayersCompareRouteImport } from './routes/_app/players.compare'
 import { Route as AppProfileIndexRouteImport } from './routes/_app/profile.index'
 import { Route as AppProfileAccountRouteImport } from './routes/_app/profile.account'
+import { Route as AppProfileClipsRouteImport } from './routes/_app/profile.clips'
 import { Route as AppProfileLinkRouteImport } from './routes/_app/profile.link'
 import { Route as AppProfilePreferencesRouteImport } from './routes/_app/profile.preferences'
 import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.privacy'
@@ -253,6 +254,11 @@ const AppProfileAccountRoute = AppProfileAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AppProfileRoute,
 } as any)
+const AppProfileClipsRoute = AppProfileClipsRouteImport.update({
+  id: '/clips',
+  path: '/clips',
+  getParentRoute: () => AppProfileRoute,
+} as any)
 const AppProfileLinkRoute = AppProfileLinkRouteImport.update({
   id: '/link',
   path: '/link',
@@ -341,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/player/$nick': typeof AppPlayerNickRoute
   '/players/compare': typeof AppPlayersCompareRoute
   '/profile/account': typeof AppProfileAccountRoute
+  '/profile/clips': typeof AppProfileClipsRoute
   '/profile/link': typeof AppProfileLinkRoute
   '/profile/preferences': typeof AppProfilePreferencesRoute
   '/profile/privacy': typeof AppProfilePrivacyRoute
@@ -390,6 +397,7 @@ export interface FileRoutesByTo {
   '/player/$nick': typeof AppPlayerNickRoute
   '/players/compare': typeof AppPlayersCompareRoute
   '/profile/account': typeof AppProfileAccountRoute
+  '/profile/clips': typeof AppProfileClipsRoute
   '/profile/link': typeof AppProfileLinkRoute
   '/profile/preferences': typeof AppProfilePreferencesRoute
   '/profile/privacy': typeof AppProfilePrivacyRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/_app/player/$nick': typeof AppPlayerNickRoute
   '/_app/players/compare': typeof AppPlayersCompareRoute
   '/_app/profile/account': typeof AppProfileAccountRoute
+  '/_app/profile/clips': typeof AppProfileClipsRoute
   '/_app/profile/link': typeof AppProfileLinkRoute
   '/_app/profile/preferences': typeof AppProfilePreferencesRoute
   '/_app/profile/privacy': typeof AppProfilePrivacyRoute
@@ -495,6 +504,7 @@ export interface FileRouteTypes {
     | '/player/$nick'
     | '/players/compare'
     | '/profile/account'
+    | '/profile/clips'
     | '/profile/link'
     | '/profile/preferences'
     | '/profile/privacy'
@@ -544,6 +554,7 @@ export interface FileRouteTypes {
     | '/player/$nick'
     | '/players/compare'
     | '/profile/account'
+    | '/profile/clips'
     | '/profile/link'
     | '/profile/preferences'
     | '/profile/privacy'
@@ -596,6 +607,7 @@ export interface FileRouteTypes {
     | '/_app/player/$nick'
     | '/_app/players/compare'
     | '/_app/profile/account'
+    | '/_app/profile/clips'
     | '/_app/profile/link'
     | '/_app/profile/preferences'
     | '/_app/profile/privacy'
@@ -901,6 +913,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileAccountRouteImport
       parentRoute: typeof AppProfileRoute
     }
+    '/_app/profile/clips': {
+      id: '/_app/profile/clips'
+      path: '/clips'
+      fullPath: '/profile/clips'
+      preLoaderRoute: typeof AppProfileClipsRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
     '/_app/profile/link': {
       id: '/_app/profile/link'
       path: '/link'
@@ -1019,6 +1038,7 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 
 interface AppProfileRouteChildren {
   AppProfileAccountRoute: typeof AppProfileAccountRoute
+  AppProfileClipsRoute: typeof AppProfileClipsRoute
   AppProfileLinkRoute: typeof AppProfileLinkRoute
   AppProfilePreferencesRoute: typeof AppProfilePreferencesRoute
   AppProfilePrivacyRoute: typeof AppProfilePrivacyRoute
@@ -1027,6 +1047,7 @@ interface AppProfileRouteChildren {
 
 const AppProfileRouteChildren: AppProfileRouteChildren = {
   AppProfileAccountRoute: AppProfileAccountRoute,
+  AppProfileClipsRoute: AppProfileClipsRoute,
   AppProfileLinkRoute: AppProfileLinkRoute,
   AppProfilePreferencesRoute: AppProfilePreferencesRoute,
   AppProfilePrivacyRoute: AppProfilePrivacyRoute,

@@ -232,6 +232,9 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'equipo.dias_nombre': { formato: { tipo: 'cantidad', singular: 'día', plural: 'días' }, defecto: 30 },
   'clips.por_partida': { formato: { tipo: 'numero' }, defecto: 10 },
   'clips.por_jugador': { formato: { tipo: 'numero' }, defecto: 2 },
+  // (replanteo 76) Clips destacados en la ficha.
+  'clips.destacados': { formato: { tipo: 'numero' }, defecto: 3 },
+  'clips.destacados_vip': { formato: { tipo: 'numero' }, defecto: 10 },
   'elo.min_pct': { formato: { tipo: 'porcentaje' }, defecto: 35 },
   'elo.full_pct': { formato: { tipo: 'porcentaje' }, defecto: 90 },
   'claim.max_steam_ids': { formato: { tipo: 'numero' }, defecto: 3 },

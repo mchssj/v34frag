@@ -40,6 +40,7 @@ Todo se cambia en **Mi perfil**, desde el menú de tu cuenta:
 | [Perfil](/profile) | Alias, foto, nombre real, país, puesto y contactos |
 | [Privacidad](/profile/privacy) | Si tu nombre real y tus redes son públicos o privados |
 | [Vinculación](/profile/link) | Tus cuentas de Steam |
+| [Clips](/profile/clips) | Los clips destacados de tu ficha (ver [Clips, demos y lo más destacado](/help/jugador/clips-y-demos)) |
 | [Preferencias](/profile/preferences) | Tema claro u oscuro, efectos y notificaciones |
 | [Cuenta](/profile/account) | Contraseña y cerrar sesión |
 

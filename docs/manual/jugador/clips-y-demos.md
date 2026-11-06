@@ -1,6 +1,6 @@
 ---
 titulo: Clips, demos y lo más destacado
-resumen: Qué jugadas se graban solas, cuándo está el video, dónde verlo y cómo bajar la demo de una partida.
+resumen: Qué jugadas se graban solas, cuándo está el video, dónde verlo, tus clips destacados y cómo bajar la demo de una partida.
 orden: 6
 ---
 
@@ -21,6 +21,15 @@ De cada partida se eligen las mejores, hasta {{clips.por_partida}} por partida y
 - En el canal de clips del Discord de CMLeague.
 
 Cuando una jugada tuya ya tiene video, te avisamos en la campana. Desde la jugada puedes copiar su link para compartirla.
+
+## Tus clips destacados
+
+Tu ficha pública tiene una pestaña **Clips** con tus mejores jugadas: hasta {{clips.destacados}} (hasta {{clips.destacados_vip}} con VIP). Los eliges en **Mi perfil** › [Clips](/profile/clips):
+
+- **Automático** (el de entrada): se muestran solos tus mejores clips con video. Van primero los más valiosos (ace, después los clutch más difíciles, 4k y 3k) y, entre dos iguales, el más nuevo.
+- **Elijo yo:** marcas con la estrella los que quieras y los ordenas con las flechas. El primero va arriba, en grande. Toca **Guardar**.
+
+Si en "Elijo yo" no marcas ninguno, tu ficha no muestra la pestaña Clips. Si dejas de ser VIP, no se borra nada: se ven los primeros {{clips.destacados}}.
 
 ## Cuánto tarda el video
 

@@ -353,6 +353,15 @@ const SECTIONS: LegalSection[] = [
         <li>
           Puedes pedir que se borre un clip tuyo por el Discord de la liga.
         </li>
+        <li>
+          Tu ficha pública muestra tus clips destacados: los que elijas en tu
+          perfil o, si no eliges, tus mejores clips, hasta el tope de la liga
+          (más con VIP).
+        </li>
+        <li>
+          La liga puede rechazar un clip que salió mal: deja de verse en la
+          web, no se publica y su video se borra.
+        </li>
       </ul>
     ),
   },

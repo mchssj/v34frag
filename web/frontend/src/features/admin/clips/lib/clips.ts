@@ -50,6 +50,20 @@ export const CAPS = [
     min: 0,
     max: 10,
   },
+  {
+    key: "featured_max",
+    label: "Destacados en el perfil",
+    help: "Los que muestra la ficha de cada jugador.",
+    min: 1,
+    max: 50,
+  },
+  {
+    key: "featured_max_vip",
+    label: "Destacados con VIP",
+    help: "Los que muestra la ficha de un VIP.",
+    min: 1,
+    max: 50,
+  },
 ] as const
 
 const inRange = (v: number, min: number, max: number) =>

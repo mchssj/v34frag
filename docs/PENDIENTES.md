@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-03**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-05**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
@@ -21,6 +21,14 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## Clips destacados en el perfil y rechazar un clip (2026-11-05): commiteado, sin desplegar
+
+- **Hecho:** replanteo `76`, Mi perfil › Clips (automático o elegidos; 3, 10 con VIP), la pestaña Clips de la ficha, y en Administración › Clips: **Rechazar clip**, el filtro Rechazados con **Recuperar** y los topes en Reglas ([`2026-11-04-clips-destacados-perfil`](bitacora/2026-11-04-clips-destacados-perfil/)). Probado en la base local (31 comprobaciones y la inversa), la API (543 pruebas) y la web (621 pruebas). La `76` quedó aplicada en la base local. Diseño: https://claude.ai/artifact/JtGZqvaTqnKzmSRxy7bgjA
+- **Commiteado** en `feat/frontend-fase-1` el 2026-11-05 (no va en `feat/mm-claim-en-sala`: no es del matchmaking), sin los reemplazos.
+- **Falta:**
+  1. Desplegar la `76` en la base del VPS (desde el archivo commiteado, en LF) y la API y la web juntas. Nada en el render ni en los servidores.
+  2. Mirarlo con datos reales en el navegador y publicar el `CHANGELOG_DISCORD.txt` y los términos.
 
 ## Supabase en el VPS (2026-11-03): hecho; faltan pruebas y el relay del HUD
 

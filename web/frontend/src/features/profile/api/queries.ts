@@ -10,6 +10,7 @@ import { tokenStore, toSession } from "@/auth/tokenStore"
 
 export const profileKeys = {
   mine: ["profile", "mine"] as const,
+  clips: ["profile", "clips"] as const,
 }
 
 export const myProfileOptions = queryOptions({
@@ -96,5 +97,24 @@ export function useNewHudLink() {
     mutationFn: () => unwrap(api.POST("/api/v1/me/hud-link")),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: profileKeys.mine }),
+  })
+}
+
+// Mi Perfil › Clips (replanteo 76): el modo, el tope, los elegidos y mis clips con video.
+export const myClipsOptions = queryOptions({
+  queryKey: profileKeys.clips,
+  queryFn: ({ signal }) => unwrap(api.GET("/api/v1/me/clips", { signal })),
+})
+
+export function useSaveMyClips() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas["MyClipsPut"]) =>
+      unwrap(api.PUT("/api/v1/me/clips/featured", { body })),
+    onSuccess: (data) => {
+      queryClient.setQueryData(profileKeys.clips, data)
+      // La ficha pública muestra los destacados: se vuelve a pedir.
+      return queryClient.invalidateQueries({ queryKey: ["public-player"] })
+    },
   })
 }

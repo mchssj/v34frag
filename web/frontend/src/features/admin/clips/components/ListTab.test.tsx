@@ -65,6 +65,7 @@ const clip = (
   discord_posted: false,
   can_reprocess: blocked === null,
   blocked_reason: blocked,
+  rejected: null,
 })
 
 const ID_A = "11111111-1111-4111-8111-111111111111"
@@ -73,12 +74,7 @@ const ID_C = "33333333-3333-4333-8333-333333333333"
 const ITEMS = [
   clip(ID_A, "alfa", "failed", null),
   clip(ID_B, "bravo", "done", null),
-  clip(
-    ID_C,
-    "charlie",
-    "unavailable",
-    "La demo ya no está: no se puede volver a grabar"
-  ),
+  clip(ID_C, "charlie", "processing", "Se está grabando ahora"),
 ]
 
 function list() {
@@ -88,7 +84,7 @@ function list() {
 }
 
 describe("ListTab", () => {
-  it("apaga la casilla de los que no se pueden reprocesar y elegir la página toma solo los demás", async () => {
+  it("apaga la casilla del que se está grabando y elegir la página toma solo los demás", async () => {
     server.use(list())
     const { user } = renderWithQuery(<ListTab />)
     const blocked = await screen.findByRole("checkbox", {
@@ -134,5 +130,85 @@ describe("ListTab", () => {
     expect(alert).toHaveTextContent("Se está grabando ahora")
     expect(sent).toHaveBeenCalledWith([ID_A, ID_B])
     expect(screen.getByText("1 clip elegido")).toBeInTheDocument()
+  })
+
+  it("Rechazar manda los elegidos con el motivo", async () => {
+    const sent = vi.fn()
+    server.use(
+      list(),
+      http.post(`${API}/api/v1/admin/clips/reject`, async ({ request }) => {
+        sent(await request.json())
+        return HttpResponse.json({
+          results: [{ id: ID_A, ok: true, error: null }],
+        })
+      })
+    )
+    const { user } = renderWithQuery(<ListTab />)
+    await user.click(
+      await screen.findByRole("checkbox", { name: /Elegir el clip de alfa/ })
+    )
+    await user.click(screen.getByRole("button", { name: "Rechazar" }))
+    const dialog = await screen.findByRole("alertdialog")
+    await user.type(
+      within(dialog).getByRole("textbox"),
+      "la cámara no lo sigue"
+    )
+    await user.click(within(dialog).getByRole("button", { name: "Rechazar" }))
+    await vi.waitFor(() =>
+      expect(sent).toHaveBeenCalledWith({
+        ids: [ID_A],
+        reason: "la cámara no lo sigue",
+      })
+    )
+  })
+
+  it("Rechazados: muestra quién y por qué, y Recuperar los devuelve", async () => {
+    const sent = vi.fn()
+    const rejected = {
+      ...clip(
+        ID_A,
+        "alfa",
+        "pending",
+        "Está rechazado: recupéralo para volver a grabarlo"
+      ),
+      rejected: {
+        at: new Date().toISOString(),
+        by: { id: ID_B, alias: "Daniel" },
+        reason: "mal",
+        can_restore: true,
+      },
+    }
+    const old = {
+      ...clip(ID_B, "bravo", "unavailable", "Está rechazado"),
+      rejected: {
+        at: new Date().toISOString(),
+        by: null,
+        reason: null,
+        can_restore: false,
+      },
+    }
+    server.use(
+      http.get(`${API}/api/v1/admin/clips`, ({ request }) =>
+        HttpResponse.json(
+          new URL(request.url).searchParams.get("status") === "rejected"
+            ? { items: [rejected, old], total: 2, page: 1, per: 25 }
+            : { items: ITEMS, total: ITEMS.length, page: 1, per: 25 }
+        )
+      ),
+      http.post(`${API}/api/v1/admin/clips/restore`, async ({ request }) => {
+        sent(await request.json())
+        return HttpResponse.json({
+          results: [{ id: ID_A, ok: true, error: null }],
+        })
+      })
+    )
+    const { user } = renderWithQuery(<ListTab />)
+    await user.click(await screen.findByRole("radio", { name: "Rechazados" }))
+    expect(await screen.findByText("mal")).toBeInTheDocument()
+    expect(screen.getByText("Sin motivo")).toBeInTheDocument()
+    const buttons = screen.getAllByRole("button", { name: "Recuperar" })
+    expect(buttons[1]).toBeDisabled()
+    await user.click(buttons[0]!)
+    await vi.waitFor(() => expect(sent).toHaveBeenCalledWith({ ids: [ID_A] }))
   })
 })

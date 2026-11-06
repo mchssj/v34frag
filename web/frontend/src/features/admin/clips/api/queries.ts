@@ -99,11 +99,20 @@ export type ClipListFilters = {
 
 export function clipListOptions(f: ClipListFilters, page: number, per: number) {
   return queryOptions({
-    queryKey: [...clipKeys.list, f.status ?? "", f.type ?? "", f.q ?? "", page, per] as const,
+    queryKey: [
+      ...clipKeys.list,
+      f.status ?? "",
+      f.type ?? "",
+      f.q ?? "",
+      page,
+      per,
+    ] as const,
     queryFn: ({ signal }) =>
       unwrap(
         api.GET("/api/v1/admin/clips", {
-          params: { query: { page, per, sort: "created_at", order: "desc", ...f } },
+          params: {
+            query: { page, per, sort: "created_at", order: "desc", ...f },
+          },
           signal,
         })
       ),
@@ -123,5 +132,50 @@ export function useReprocessClips() {
       void qc.invalidateQueries({ queryKey: clipKeys.list })
       return touched(qc)
     },
+  })
+}
+
+// Rechazar y recuperar (replanteo 76): un clip que sigue saliendo mal deja de verse y de grabarse.
+const touchedAll = (qc: ReturnType<typeof useQueryClient>) => {
+  void qc.invalidateQueries({ queryKey: clipKeys.list })
+  return touched(qc)
+}
+
+/** Rechazar uno (desde Para revisar), con el motivo opcional. */
+export function useRejectClip() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      unwrap(
+        api.POST("/api/v1/admin/clips/{id}/reject", {
+          params: { path: { id } },
+          body: reason ? { reason } : {},
+        })
+      ),
+    onSuccess: () => touchedAll(qc),
+  })
+}
+
+/** Rechazar varios (desde la lista): uno por uno, con el resultado de cada uno. */
+export function useRejectClips() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ ids, reason }: { ids: string[]; reason?: string }) =>
+      unwrap(
+        api.POST("/api/v1/admin/clips/reject", {
+          body: reason ? { ids, reason } : { ids },
+        })
+      ),
+    onSuccess: () => touchedAll(qc),
+  })
+}
+
+/** Recuperar rechazados: se vuelven a grabar y pasan a Para revisar. */
+export function useRestoreClips() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      unwrap(api.POST("/api/v1/admin/clips/restore", { body: { ids } })),
+    onSuccess: () => touchedAll(qc),
   })
 }
