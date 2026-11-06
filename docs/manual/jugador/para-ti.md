@@ -39,3 +39,5 @@ Tus últimas 5 partidas, con el marcador, tu rating y cuánto ELO ganaste o perd
 ## Al costado
 
 Los torneos en curso y con inscripciones abiertas, el top 5 del ranking de equipos (el tuyo, resaltado) y el top 5 de jugadores.
+
+Al final, **Comunidad** tiene los links a nuestro [Discord](https://discord.gg/bn5Yxsh9tc) (avisos, buscar equipo y soporte) y al [grupo de Steam](https://steamcommunity.com/groups/clientmodleague). Se abren en otra pestaña.

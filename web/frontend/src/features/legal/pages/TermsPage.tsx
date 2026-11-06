@@ -679,9 +679,9 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Discord oficial:</strong>{" "}
-            <a href="https://dsc.gg/v34frag">dsc.gg/v34frag</a>, en el canal de
-            soporte. Sirve para consultas rápidas y para hablar con un
-            administrador.
+            <a href="https://discord.gg/bn5Yxsh9tc">discord.gg/bn5Yxsh9tc</a>,
+            en el canal de soporte. Sirve para consultas rápidas y para hablar
+            con un administrador.
           </li>
         </ul>
         <p>

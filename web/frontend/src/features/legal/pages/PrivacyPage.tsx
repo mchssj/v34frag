@@ -91,7 +91,7 @@ const SECTIONS: LegalSection[] = [
         tema de privacidad, escríbenos a{" "}
         <a href="mailto:cmleaguev34@gmail.com">cmleaguev34@gmail.com</a> o por
         el canal de soporte del Discord (
-        <a href="https://dsc.gg/v34frag">dsc.gg/v34frag</a>).
+        <a href="https://discord.gg/bn5Yxsh9tc">discord.gg/bn5Yxsh9tc</a>).
       </p>
     ),
   },
@@ -273,11 +273,11 @@ const SECTIONS: LegalSection[] = [
             servidor VPS (OVH), en Beauharnois, Canadá. Hasta el 2026-11-03
             estaban en Supabase, en el oeste de Estados Unidos (Oregón), que
             guarda una copia de esa fecha hasta borrarla, como mucho el
-            2026-12-03. Cloudflare,
-            Google, Discord y Resend pueden guardarlos en otros países. Al usar
-            CMLeague prestas tu consentimiento para esa transferencia
-            internacional, en los términos del artículo 12 de la Ley 25.326.
-            Elegimos proveedores con medidas de seguridad reconocidas.
+            2026-12-03. Cloudflare, Google, Discord y Resend pueden guardarlos
+            en otros países. Al usar CMLeague prestas tu consentimiento para esa
+            transferencia internacional, en los términos del artículo 12 de la
+            Ley 25.326. Elegimos proveedores con medidas de seguridad
+            reconocidas.
           </li>
           <li>Podemos entregar datos si una autoridad lo exige por ley.</li>
         </ul>

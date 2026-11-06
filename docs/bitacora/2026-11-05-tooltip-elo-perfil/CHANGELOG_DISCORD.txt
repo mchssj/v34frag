@@ -1,0 +1,5 @@
+CMLeague 2.9.14 --  Changelog
+
+En la web:
+- En tu perfil, la gráfica "Evolución de ELO" ahora muestra lo mismo que la de "Para ti": pasa el mouse (o toca) sobre la línea y ves con cuánto ELO quedaste en esa partida, cuánto ganaste o perdiste (en verde o en rojo), la fecha y el mapa.
+- En el celular alcanza con tocar la gráfica, ya no hace falta arrastrar el dedo.
