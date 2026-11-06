@@ -4,7 +4,7 @@
 
 > **Número:** primero fue la `75`, después la `78` y el 2026-11-06 quedó en la **`79`**: la `75` (reemplazos), la `76` (clips destacados), la `77` (abandono en la última ronda) y la `78` (sala en el link de reemplazo) ya están en producción. Los cambios se pasaron a la rama `feat/medallas`, que sale de `main`.
 
-Fase 1 del plan hecha y probada **en local** el 2026-11-04/05, en el worktree `v34frag-main`, rama `feat-missions-badges`. El 2026-11-06 (Daniel: "solo las medallas, sin Montserrat por ahora") se pasó a la rama **`feat/medallas`**, que sale de `main` (worktree `v34frag-medallas`), sin `badges/`, misiones, el `.rar` ni las insignias VIP. Se ensayó sobre una copia completa de producción del 2026-11-06 (`~/.v34frag/prod-copy/2026-11-06`). Sin desplegar.
+Fase 1 del plan hecha y probada **en local** el 2026-11-04/05, en el worktree `v34frag-main`, rama `feat-missions-badges`. El 2026-11-06 (Daniel: "solo las medallas, sin Montserrat por ahora") se pasó a la rama **`feat/medallas`**, que sale de `main` (worktree `v34frag-medallas`), sin `badges/`, misiones, el `.rar` ni las insignias VIP. Se ensayó sobre una copia completa de producción del 2026-11-06 (`~/.v34frag/prod-copy/2026-11-06`). Commit `1b4d517c` en `main`. **Desplegado el 2026-11-06 (18:53-19:00 UTC).**
 
 > **La BETA de producción cierra el 2026-11-09 a las 09:00 UTC** (leído en la base el 2026-11-06), no el 2026-12-03: la 79, la API y el timer tienen que estar antes, para que el cierre dé las medallas de puesto con dibujo y la apertura de la temporada 2 reparta Fundador y Pionero.
 
@@ -32,7 +32,10 @@ Fase 1 del plan hecha y probada **en local** el 2026-11-04/05, en el worktree `v
 | `docs/manual/admin/medallas.md`, `jugador/logros.md` (nuevas); `admin/temporadas.md`, `admin/usuarios-y-fichas.md`, `jugador/elo-y-estadisticas.md`, `jugador/notificaciones.md` | Manual |
 | `docs/frontend/contrato/` | Rutas y campos nuevos |
 
-## Despliegue (no hecho)
+## Despliegue (hecho el 2026-11-06, salvo el paso 8)
+
+Cómo quedó: sin mixes en vivo (la única partida `live` era la `0d42d09a…` del #1, cuya sala se canceló a las 03:24 UTC y quedó colgada) y con 3 jugadores en la cola; respaldo `20261106T185310Z` (también en R2); `cmleague-mm` parado; `probar_79.sh` contra producción, todo `t` y la inversa igual a antes; la `79` y las definiciones (152 activas, 0 medallas del motor, 0 avisos, las 18 manuales con definición, los 5 tramos de la BETA con medalla); la API `1b4d517c2de7` y `cmleague-mm` prendido de nuevo; `cmleague-medals.timer` instalado (primera vuelta sin errores); la web `1b4d517c2de7` (648 pruebas).
+
 
 Sin un mix en curso ni salas abiertas. No toca el plugin ni los servidores de juego. La fuente Montserrat queda para después (Daniel, 2026-11-06): hasta entonces los textos de las medallas caen en Arial.
 
