@@ -5,7 +5,7 @@
 - **El link de reemplazo de Discord muestra la sala** de la partida en vista previa: la cabecera con el marcador, los dos equipos y, en el equipo del que se fue, un lugar libre "Aquí entrarías tú". La IP y la contraseña del servidor llegan recién al tomar el lugar.
 - **En la sala, el reemplazo ocupa el lugar del que se fue**, con la etiqueta **Reemplazo**. El que se fue queda en una línea tachada al final de su equipo. Mientras el reemplazo no entró al servidor, ve arriba **Entra al servidor** con la cuenta regresiva.
 - **El detalle de una partida del matchmaking (`/match/<id>`) es su sala**, con las pestañas **Descripción general** (la que abre) y **Estadísticas** (las tablas de siempre), como "Tu última partida". Los mixes sin sala del matchmaking siguen abriendo la sala de mix.
-- **El que abandona pierde poco ELO**: de 1 a 5 si su equipo ganó; si perdió o empató, de 6 a 10 pero nunca menos que una derrota normal. Dentro de cada rango, según la parte de la partida que no jugó.
+- **El que abandona pierde menos ELO si su equipo gana**: de 10 a 15 si su equipo ganó; si perdió o empató, de 6 a 10 pero nunca menos que una derrota normal. Dentro de cada rango, según la parte de la partida que no jugó.
 
 ```mermaid
 flowchart LR
@@ -22,7 +22,7 @@ flowchart LR
 
 | Su equipo | Pierde |
 |---|---|
-| Ganó | `abandon_win_min + (abandon_win_max − abandon_win_min) · f`: de 1 (se fue al final) a 5 (al principio) |
+| Ganó | `abandon_win_min + (abandon_win_max − abandon_win_min) · f`: de 10 (se fue al final) a 15 (al principio) |
 | Perdió o empató | El mayor entre `abandon_loss_min + (abandon_loss_max − abandon_loss_min) · f` (de 6 a 10) y una **derrota normal** (`2 · base · prob`, la de antes sin el extra) |
 
 - Con equipos parejos y la base de 25, la derrota normal es −25: pierde 25. Si su equipo era muy favorito y perdió, la derrota normal es chica y gana el rango (6 a 10).
@@ -47,14 +47,14 @@ flowchart LR
 
 | Rol | Qué cambia |
 |---|---|
-| Jugador | Ve la sala en el link de reemplazo, su fila en el lugar del que se fue y la cuenta regresiva; el detalle de sus partidas del matchmaking es la sala; quien abandona pierde poco ELO si su equipo gana |
+| Jugador | Ve la sala en el link de reemplazo, su fila en el lugar del que se fue y la cuenta regresiva; el detalle de sus partidas del matchmaking es la sala; quien abandona pierde de 10 a 15 si su equipo gana |
 | Admin | En Administración › Matchmaking, **ELO del que abandona**: los cuatro topes |
 
 Manual actualizado: `jugador/buscar-partida.md`, `jugador/elo-y-estadisticas.md` y `admin/matchmaking.md`.
 
 ## Términos y privacidad
 
-- Sección 7: abandonar resta ELO (poco si tu equipo gana; si pierde, al menos lo de una derrota).
+- Sección 7: abandonar resta ELO (menos que una derrota si tu equipo gana; si pierde, al menos lo de una derrota).
 - Sección 8: con sesión, la página del link muestra la sala con los nombres; la IP y la contraseña, solo a quien toma el lugar.
 - Fecha: 6 de noviembre de 2026.
 

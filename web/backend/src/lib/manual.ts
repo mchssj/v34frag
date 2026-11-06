@@ -229,8 +229,8 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'mm.reemplazo_voto': { formato: { tipo: 'porcentaje' }, defecto: 80 },
   'mm.reemplazo_rondas': { formato: { tipo: 'cantidad', singular: 'ronda', plural: 'rondas' }, defecto: 4 },
   // (replanteo 78) ELO que pierde el que abandona: si su equipo ganó y si perdió o empató.
-  'mm.abandono_ganado_min': { formato: { tipo: 'numero' }, defecto: 1 },
-  'mm.abandono_ganado_max': { formato: { tipo: 'numero' }, defecto: 5 },
+  'mm.abandono_ganado_min': { formato: { tipo: 'numero' }, defecto: 10 },
+  'mm.abandono_ganado_max': { formato: { tipo: 'numero' }, defecto: 15 },
   'mm.abandono_perdido_min': { formato: { tipo: 'numero' }, defecto: 6 },
   'mm.abandono_perdido_max': { formato: { tipo: 'numero' }, defecto: 10 },
   'mm.sanciones': { formato: { tipo: 'duraciones' }, defecto: ESCALERA },

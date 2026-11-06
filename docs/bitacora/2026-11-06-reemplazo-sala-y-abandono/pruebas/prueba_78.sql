@@ -18,7 +18,7 @@ declare
   i int;
   ok int := 0;
 begin
-  update mm_config set abandon_win_min = 1, abandon_win_max = 5, abandon_loss_min = 6, abandon_loss_max = 10 where id = 1;
+  update mm_config set abandon_win_min = 10, abandon_win_max = 15, abandon_loss_min = 6, abandon_loss_max = 10 where id = 1;
   insert into auth.users (id, email, email_confirmed_at, created_at, aud, role)
     select z, z || '@prueba78.local', now(), now() - interval '30 days', 'authenticated', 'authenticated' from unnest(u) z;
   for i in 1 .. 3 loop
@@ -42,9 +42,9 @@ begin
   insert into match_player_stats (match_id, steam_id, player_id, team, rounds)
     values (v_game, st[1], p[1], 1, 7), (v_game, st[2], p[2], 1, 28), (v_game, st[3], p[3], 2, 28);
 
-  -- 1. Su equipo ganó: de 1 a 5 según la parte que no jugó. 1 + round(4 · 0,75) = 4.
+  -- 1. Su equipo ganó: de 10 a 15 según la parte que no jugó. 10 + round(5 · 0,75) = 14.
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 1, 0.5, 20);
-  if d <> -4 then raise exception 'FALLA 1: ganó y se fue temprano = % (esperaba -4)', d; end if;
+  if d <> -14 then raise exception 'FALLA 1: ganó y se fue temprano = % (esperaba -14)', d; end if;
   ok := ok + 1;
 
   -- 2. Perdió, equipos parejos: la derrota normal (2 · base · −0,5) es mayor que 6 a 10 y gana esa.
@@ -67,13 +67,13 @@ begin
   -- 5. Se fue cerca del final (27 de 28): el mínimo de cada rango.
   update match_player_stats set rounds = 27 where match_id = v_game and steam_id = st[1];
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 1, 0.5, 20);
-  if d <> -1 then raise exception 'FALLA 5: ganó y se fue al final = %', d; end if;
+  if d <> -10 then raise exception 'FALLA 5: ganó y se fue al final = %', d; end if;
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 0, 0.05, -3);
   if d <> least(round(2 * base * (0 - 0.05))::int, -6) then raise exception 'FALLA 5b: perdió y se fue al final = %', d; end if;
   -- Sin estadísticas suyas en el juego: el máximo.
   delete from match_player_stats where match_id = v_game and steam_id = st[1];
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 1, 0.5, 20);
-  if d <> -5 then raise exception 'FALLA 5c: sin estadísticas = %', d; end if;
+  if d <> -15 then raise exception 'FALLA 5c: sin estadísticas = %', d; end if;
   insert into match_player_stats (match_id, steam_id, player_id, team, rounds) values (v_game, st[1], p[1], 1, 7);
   ok := ok + 1;
 
@@ -85,7 +85,7 @@ begin
     raise exception 'FALLA 6b: aceptó min > max';
   exception when check_violation then null;
   end;
-  update mm_config set abandon_win_min = 1, abandon_win_max = 5 where id = 1;
+  update mm_config set abandon_win_min = 10, abandon_win_max = 15 where id = 1;
   ok := ok + 1;
 
   -- 7. El compañero que no abandonó sigue con su regla (gana más porque jugaron con uno menos): no es la del abandono.
@@ -147,7 +147,7 @@ begin
   ok := ok + 1;
 
   -- 12. El manual y los permisos.
-  if (manual_valores()->>'mm.abandono_perdido_max')::int <> 10 or (manual_valores()->>'mm.abandono_ganado_min')::int <> 1 then
+  if (manual_valores()->>'mm.abandono_perdido_max')::int <> 10 or (manual_valores()->>'mm.abandono_ganado_min')::int <> 10 then
     raise exception 'FALLA 12: manual_valores';
   end if;
   if has_function_privilege('anon', 'public.mm_game_room(uuid)', 'execute')

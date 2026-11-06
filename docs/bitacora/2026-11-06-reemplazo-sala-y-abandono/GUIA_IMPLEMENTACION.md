@@ -33,7 +33,7 @@ Sin un mix en curso. No toca el plugin ni los servidores.
 
 ### Base (Supabase local con la copia de producción)
 
-- `probar_78.sh docker`: **12 comprobaciones** y la inversa, en una transacción con rollback. La inversa deja las siete funciones exactamente como estaban (md5) y no quedan las columnas ni las funciones nuevas. Cubre: ganó y se fue temprano (−4), perdió parejo (la derrota normal), perdió siendo muy favorito el rival (el rango: −9), empate (como derrota), se fue al final (el mínimo de cada rango), sin estadísticas (el máximo), los topes de la configuración y que no se crucen, el compañero sigue con su regla, las rondas del reemplazo (se pide en la 6 y entra en la 11), la sala del link sin el servidor ni lo privado, el plazo para conectarse mientras está tomado, la sala del detalle (cualquiera con sesión, null para un mix sin sala y para la serie, sin sesión no), el manual y los permisos.
+- `probar_78.sh docker`: **12 comprobaciones** y la inversa, en una transacción con rollback. La inversa deja las siete funciones exactamente como estaban (md5) y no quedan las columnas ni las funciones nuevas. Cubre: ganó y se fue temprano (−14), perdió parejo (la derrota normal), perdió siendo muy favorito el rival (el rango: −9), empate (como derrota), se fue al final (el mínimo de cada rango), sin estadísticas (el máximo), los topes de la configuración y que no se crucen, el compañero sigue con su regla, las rondas del reemplazo (se pide en la 6 y entra en la 11), la sala del link sin el servidor ni lo privado, el plazo para conectarse mientras está tomado, la sala del detalle (cualquiera con sesión, null para un mix sin sala y para la serie, sin sesión no), el manual y los permisos.
 - `mm_game_room` sobre partidas reales de la copia: 10 jugadores, sus estadísticas y sin el servidor.
 
 ### API
@@ -49,6 +49,8 @@ Sin un mix en curso. No toca el plugin ni los servidores.
 
 - **El detalle no lleva la pestaña en la URL**: la sala guarda la pestaña como "Tu última partida" (abre siempre en Descripción general).
 - **La ronda del abandono es la del pedido de reemplazo**, no la del momento en que se desconectó (eso no se guarda): por eso la sala dice "se pidió en la ronda N".
+- **Si su equipo ganó, de 10 a 15** (Daniel, 2026-11-06, después del plan, que decía de 1 a 5: le pareció muy poco).
+- **La línea del que se fue dice solo "Abandonó en la ronda N"** (Daniel, 2026-11-06), sin "pierde ELO y X entró".
 - **Los marcadores del manual son cuatro números** (`mm.abandono_ganado_min`…), no dos rangos de texto.
 
 ## Incidentes durante las pruebas
