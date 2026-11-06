@@ -314,6 +314,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Moderadores** (en `configs/admins_simple.ini` de **los dos servidores**, `"STEAM_0:X:Y" "@Moderador"`; se aplica con `sm_reloadadmins` o en el cambio de mapa):
   - **Juanma** (2026-10-19): `STEAM_0:0:1500257138` y `STEAM_0:0:1113757173`. En el servidor real reemplaza su entrada anterior `"bce"` (pierde `e`, desbanear). Copias `admins_simple.ini.bak_20261019`.
   - **traica** (2026-10-19): `STEAM_0:0:829553320`. Agregado en el **servidor real** (`SFTP_CSS_*`) y en **RBK** (`SERVER1_*`), verificado bajando el archivo de nuevo. Copias `admins_simple.ini.bak_20261019_traica`. No se corrió `sm_reloadadmins`: se aplica en el próximo cambio de mapa.
+  - **cype-thor** (2026-11-06, ficha `shoxmeister`): `STEAM_0:0:697913072`, sacada de un log del servidor (`L20261029.log`). Agregado en **#1**, **#2 (flow)** y **#3** por la API del panel, verificado bajando el archivo de nuevo. Copias `admins_simple.ini.bak_20261106`. No se corrió `sm_reloadadmins`: se aplica en el próximo cambio de mapa. Falta ver en la base si su ficha tiene otros SteamID.
 - **Si algo falla:** `csstv_calladmin_enabled 0` corta `!calladmin` y `csstv_calladmin_modmap 0` corta el `!map` del moderador.
 - Publicar el changelog: `bitacora/2026-10-19-calladmin-moderadores/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-19-calladmin-moderadores`](bitacora/2026-10-19-calladmin-moderadores/)
