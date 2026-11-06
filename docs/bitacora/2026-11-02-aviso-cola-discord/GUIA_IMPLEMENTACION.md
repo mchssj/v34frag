@@ -39,7 +39,7 @@ Con el visto bueno de Daniel, desde el VPS contra la API de staging (`127.0.0.1:
 
 ## Falta
 
-1. Con el aviso andando, regenerar el webhook en Discord (se pegó en el chat) y actualizarlo en el `.env` y en `/etc/cmleague/api.env`.
+1. ~~Regenerar el webhook~~: hecho el 2026-11-03. El nuevo ("Avisos", canal #avisos) está en el `.env` y en `/etc/cmleague/api.env` (respaldo `api.env.bak_antes_webhook_avisos_202611031915`); `cmleague-api` reiniciada. El viejo ya no existe en Discord. Se cargó por la entrada estándar del SSH, sin dejar la URL en ningún comando del VPS.
 3. Producción, con el corte.
 
 ## Cómo revertir
