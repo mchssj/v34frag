@@ -1,0 +1,5 @@
+CMLeague 2.9.18 --  Changelog
+
+Matchmaking
+- Si te vas en la última ronda, o cuando la partida ya terminó, ya no cuenta como abandono: no te llevas sanción y tu ELO se calcula normal, como el de todos.
+- Irte antes sigue contando como abandono, igual que siempre.
