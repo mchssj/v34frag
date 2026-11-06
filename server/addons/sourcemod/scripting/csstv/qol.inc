@@ -1291,7 +1291,19 @@ public Action Cmd_JoinTeam(int client, const char[] command, int argc)
 	if (client <= 0 || !IsClientInGame(client) || !TeamsLocked())
 		return Plugin_Continue;
 	if (!IsTeamSide(GetClientTeam(client)))
-		return Recon_Place(client) ? Plugin_Handled : Plugin_Continue;   // si se reconectó, va a su equipo
+	{
+		if (Recon_Place(client))   // si se reconectó, va a su equipo
+			return Plugin_Handled;
+		// (2.10.0) Sala del matchmaking en vivo: solo juegan los de la sala y sus reemplazos.
+		char arg[8];
+		GetCmdArg(1, arg, sizeof(arg));
+		if (Mm_LiveSide(client) == 0 && StringToInt(arg) != TEAM_SPEC)
+		{
+			QolChat(client, "%s Es una sala del matchmaking: solo juegan los de la sala. Un admin puede moverte con !team.", PREFIX);
+			return Plugin_Handled;
+		}
+		return Plugin_Continue;
+	}
 	QolChat(client, "%s Durante la partida no se puede cambiar de equipo. Un admin puede moverte con !team.", PREFIX);
 	return Plugin_Handled;
 }
@@ -1452,6 +1464,10 @@ public Action Timer_ReconPlace(Handle timer, int userid)
 /** Lado (CT o T) donde juega ahora el equipo del jugador; 0 si no jugaba esta partida. */
 int Recon_WantedSide(int client)
 {
+	// (2.10.0) En una sala del matchmaking en vivo manda el plantel de la sala: entra el reemplazo y no vuelve el reemplazado.
+	int mm = Mm_LiveSide(client);
+	if (mm >= 0)
+		return mm;
 	int rec = Stats_FindRec(client);
 	if (rec < 0 || !g_iRecTeam[rec])
 		return 0;
@@ -1470,7 +1486,10 @@ bool Recon_Place(int client)
 		return false;
 	}
 	MoveToTeam(client, want);
-	QolChatAll("%s {#amarillo}%N{#normal} volvió y sigue en el %s.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
+	if (Mm_IsReplacement(client))
+		QolChatAll("%s {#amarillo}%N{#normal} entró de reemplazo en {#amarillo}%s{#normal}.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
+	else
+		QolChatAll("%s {#amarillo}%N{#normal} volvió y sigue en el %s.", PREFIX, client, g_sTeam[want == g_iSideA ? 0 : 1]);
 	AutoPause_OnReturn(client);
 	return true;
 }

@@ -130,6 +130,21 @@ describe("Administración › Matchmaking", () => {
     expect(cfg.balance_rating_weight).toBe(200)
   })
 
+  it("General: reemplazos apagados por defecto; encenderlos y cambiar el porcentaje del voto", async () => {
+    const { user, source } = setup()
+    const sw = await screen.findByRole("switch", { name: "Reemplazos" })
+    expect(sw).not.toBeChecked()
+    await user.click(sw)
+    const pct = screen.getByLabelText("!callreplace pasa con más del (%)")
+    await user.clear(pct)
+    await user.type(pct, "90")
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
+    const cfg = await source.adminConfig()
+    expect(cfg.replace_enabled).toBe(true)
+    expect(cfg.replace_vote_pct).toBe(90)
+    expect(cfg.replace_link_minutes).toBe(10)
+  })
+
   it("Reportes: excluir crea la exclusión; las sanciones se levantan en Baneos", async () => {
     const { user, source } = setup()
     await user.click(screen.getByRole("tab", { name: "Reportes" }))

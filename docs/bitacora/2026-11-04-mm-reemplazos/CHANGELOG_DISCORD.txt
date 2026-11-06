@@ -1,0 +1,16 @@
+CMLeague 2.9.16 --  Changelog
+
+REEMPLAZOS EN EL MATCHMAKING
+- Si alguien abandona un mix del matchmaking, sale un aviso en #avisos con un link para entrar en su lugar. Ya no hace falta jugar 4 contra 5 hasta el final.
+- El primero que toca "Entrar como reemplazo" se queda con el lugar y entra directo al equipo del que se fue. Para tomarlo tienes que poder buscar partida (SteamID vinculado y sin sanciones).
+- El link dura 10 minutos. Si lo tomas, conéctate rápido: si no entras a tiempo, te llevas la sanción de no conectarte.
+- Como reemplazo ganas o pierdes ELO como cualquiera, según las rondas que juegues.
+
+!CALLREPLACE
+- Si un compañero se desconectó y no va a volver, escribe !callreplace en el servidor y elige quién falta.
+- Vota solo tu equipo y tiene que estar de acuerdo más del 80 %. Si pasa, el reemplazo se pide al instante, sin esperar los minutos para volver.
+
+OTROS
+- Si un reemplazo cubre un abandono, ese abandono ya no cuenta para perder la partida por abandonos.
+- El que abandona igual pierde ELO y se lleva su sanción. Si vuelve después de que entró el reemplazo, queda de espectador.
+- Cuando quedan pocas rondas para el final no se piden reemplazos.

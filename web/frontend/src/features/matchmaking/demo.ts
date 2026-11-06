@@ -122,6 +122,12 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   balance_rating_cap: 100,
   balance_rating_prior_maps: 5,
   balance_rating_days: 60,
+  replace_enabled: false,
+  replace_link_minutes: 10,
+  replace_min_rounds_left: 4,
+  replace_vote_pct: 80,
+  replace_vote_seconds: 30,
+  replace_vote_cooldown_s: 60,
 }
 
 /** Mapas del veto de cada modo al empezar la demo. */
@@ -1018,6 +1024,25 @@ export function createDemoSource({
         next_at: next,
         can_ping: !!queue && !next,
       }
+    },
+    // La demo no tiene reemplazos: el link siempre está vencido.
+    async replaceInfo() {
+      return {
+        status: "expired" as const,
+        mine: false,
+        lobby_id: null,
+        mode: "5v5",
+        map: "de_dust2",
+        team: 1 as const,
+        team_name: null,
+        score: null,
+        rounds_left: null,
+        expires_at: new Date().toISOString(),
+        reason: null,
+      }
+    },
+    async replaceTake(): Promise<MmState> {
+      throw new Error("Este link ya venció")
     },
     async queuePing() {
       if (!queue)

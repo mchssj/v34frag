@@ -41,6 +41,7 @@ En el matchmaking, si un compañero abandonó, rendirse con `!gg` les hace perde
 
 | Comando | Qué hace |
 |---|---|
+| `!callreplace` | En el matchmaking, con un compañero desconectado: abre un voto en tu equipo para pedir un reemplazo sin esperar a que se termine su tiempo para volver (ver [Buscar partida](/help/jugador/buscar-partida)) |
 | `!claim <código>` | Vincula tu SteamID con tu cuenta (ver [Vincular tu SteamID](/help/jugador/vincular-steamid)) |
 | `!hp` | Quién te mató en la ronda y cuánta vida le queda |
 | `!sell` | Vende lo que compraste en la ronda, durante la compra. `!sell all` vende todo |

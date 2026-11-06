@@ -1,6 +1,6 @@
 ---
 titulo: Configurar el matchmaking
-resumen: Abrir y cerrar la cola, los modos, quién puede jugar, los grupos, los tiempos, la ventana de ELO, las sanciones, los mapas, las contraseñas y las salas.
+resumen: Abrir y cerrar la cola, los modos, quién puede jugar, los grupos, los tiempos, la ventana de ELO, los reemplazos, las sanciones, los mapas, las contraseñas y las salas.
 orden: 3
 ---
 
@@ -19,6 +19,7 @@ El matchmaking se configura en Administración › [Matchmaking](/admin/matchmak
 | **Tiempos** | Para aceptar, por turno del veto, para conectarse, esperando servidor, para volver si se desconecta y el cierre de la cola antes de que termine la temporada |
 | **Ventana de ELO** | Con qué diferencia de ELO empieza a emparejar, cuánto se abre y cada cuánto, el tope y después de cuánto tiempo se empareja sin límite |
 | **Equipos parejos con el rating** | Encendido, los equipos se reparten con un ELO de armado: el ELO más un ajuste por el rating 5v5 de los últimos días. Se elige cuántos puntos da cada 1,00 de rating, el tope del ajuste, los mapas de corrección (acercan a 1,00 el rating de quien jugó poco) y los días que se miran. El formulario muestra un ejemplo con los valores. Quién entra a la sala, el capitán, el veto y el ELO que se gana o pierde siguen con el ELO. Apagado, todo queda como antes |
+| **Reemplazos** | Encendido, cuando alguien abandona una sala en vivo sale un aviso en #avisos (el mismo webhook y rol `@player` que el aviso de la cola) con un link de un solo uso para entrar en su lugar. Se elige cuántos minutos dura el link, con cuántas rondas por jugar ya no se llama, y el voto de `!callreplace`: el porcentaje que hace falta (más de), cuánto dura y cuánto espera un equipo entre dos votos. Apagado, el abandono funciona como antes y `!callreplace` no se puede usar |
 | **Sanciones** | Los minutos de cada escalón, separados por coma. Se baja un escalón cada 7 días sin faltas |
 
 Guarda con **Guardar cambios**. Aquí también cambias la **imagen del MVP**, el fondo de la tarjeta del mejor jugador de cada partida.

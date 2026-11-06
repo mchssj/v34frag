@@ -224,6 +224,10 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'mm.conectar': { formato: MINUTOS, defecto: 5 },
   'mm.espera_servidor': { formato: MINUTOS, defecto: 3 },
   'mm.volver': { formato: MINUTOS, defecto: 3 },
+  // (replanteo 75) Reemplazos.
+  'mm.reemplazo_link': { formato: MINUTOS, defecto: 10 },
+  'mm.reemplazo_voto': { formato: { tipo: 'porcentaje' }, defecto: 80 },
+  'mm.reemplazo_rondas': { formato: { tipo: 'cantidad', singular: 'ronda', plural: 'rondas' }, defecto: 4 },
   'mm.sanciones': { formato: { tipo: 'duraciones' }, defecto: ESCALERA },
   'mm.sancion_min': { clave: 'mm.sanciones', formato: { tipo: 'primera_duracion' }, defecto: ESCALERA },
   'mm.sancion_max': { clave: 'mm.sanciones', formato: { tipo: 'ultima_duracion' }, defecto: ESCALERA },

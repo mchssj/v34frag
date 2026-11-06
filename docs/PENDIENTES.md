@@ -30,6 +30,16 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   1. Desplegar la `76` en la base del VPS (desde el archivo commiteado, en LF) y la API y la web juntas. Nada en el render ni en los servidores.
   2. Mirarlo con datos reales en el navegador y publicar el `CHANGELOG_DISCORD.txt` y los términos.
 
+## Reemplazos en el matchmaking (2026-11-05): hecho en local, sin commit ni desplegar
+
+- **Hecho:** replanteo `75`, rutas `/api/v1/mm/replace/{token}`, aviso en Discord desde el worker del matchmaking, página `/mm/reemplazo/<token>`, bloque **Reemplazos** en Administración › Matchmaking y reporter **2.10.0** con `!callreplace` ([`2026-11-04-mm-reemplazos`](bitacora/2026-11-04-mm-reemplazos/)). Probado en la base local (44 comprobaciones, la inversa y los dos clics a la vez), la API (531 pruebas), la web (614 pruebas) y el plugin con bots en el servidor local (26 de 26, `e2e_bots_75.sh`). La `75` quedó aplicada en la base local.
+- **Falta:**
+  1. Con jugadores de verdad, en el primer mix con **Reemplazos** encendido: el menú y el voto de `!callreplace`, el bloqueo de `jointeam` y el `!gg` con un abandono cubierto (con bots no se puede).
+  2. Commitear en `feat/frontend-fase-1` y llevar la base, la API, el worker, el VPS y el plugin a `feat/mm-claim-en-sala` (sin la web).
+  3. Desplegar sin un mix en curso: la `75` en la base del VPS, las variables de Discord y `FRONTEND_URL` en `/etc/cmleague/season.env`, la API (con el worker) y la web, y el plugin en los tres servidores en la misma tanda: #1 (genérico), #2 flow (licenciado) y #3 (genérico, en `disabled/`).
+  4. Encender **Reemplazos** recién cuando el #1 tenga la 2.10.0, y probarlo en un mix.
+  5. Publicar el `CHANGELOG_DISCORD.txt` y los términos actualizados.
+
 ## Supabase en el VPS (2026-11-03): hecho; faltan pruebas y el relay del HUD
 
 - **Desde el 2026-11-03 a las 20:50 UTC, la base de producción está en el VPS** (`deploy/supabase/`, `https://db.cmleague.lat`).

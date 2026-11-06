@@ -22,6 +22,7 @@ import type {
   MmMatch,
   MmPasswordEntry,
   MmPlayerHit,
+  MmReplaceInfo,
   MmSound,
   MmState,
   MmStatsDay,
@@ -49,6 +50,10 @@ export type MmSource = {
   /** Aviso de la cola en Discord (#avisos). */
   queuePingStatus(signal?: AbortSignal): Promise<QueuePingStatus>
   queuePing(): Promise<QueuePingStatus>
+  /** Link de reemplazo de Discord: la partida y si lo puedo tomar. */
+  replaceInfo(token: string, signal?: AbortSignal): Promise<MmReplaceInfo>
+  /** Entrar como reemplazo: devuelve el estado con la sala. */
+  replaceTake(token: string): Promise<MmState>
   accept(): Promise<MmState>
   decline(): Promise<MmState>
   veto(matchId: string, map: string): Promise<MmState>
@@ -218,6 +223,10 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     leave: () => call("/api/v1/mm/queue", { method: "DELETE" }),
     queuePingStatus: (signal) => call("/api/v1/mm/queue/ping", { signal }),
     queuePing: () => call("/api/v1/mm/queue/ping", { method: "POST" }),
+    replaceInfo: (token, signal) =>
+      call(`/api/v1/mm/replace/${encodeURIComponent(token)}`, { signal }),
+    replaceTake: (token) =>
+      post(`/api/v1/mm/replace/${encodeURIComponent(token)}`),
     accept: () => post("/api/v1/mm/lobby/accept"),
     decline: () => post("/api/v1/mm/lobby/decline"),
     // Veto y chat: las rutas de partida que ya existen (la partida se crea al empezar el veto).

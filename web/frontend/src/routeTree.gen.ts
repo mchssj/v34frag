@@ -60,6 +60,7 @@ import { Route as AppAdminEventsIdRouteImport } from './routes/_app/admin.events
 import { Route as AppAdminEventsNewRouteImport } from './routes/_app/admin.events.new'
 import { Route as AppHelpSeccionTareaRouteImport } from './routes/_app/help.$seccion.$tarea'
 import { Route as AppMixesLiveUidRouteImport } from './routes/_app/mixes.live.$uid'
+import { Route as AppMmReemplazoTokenRouteImport } from './routes/_app/mm.reemplazo.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -314,6 +315,11 @@ const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
   path: '/mixes/live/$uid',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMmReemplazoTokenRoute = AppMmReemplazoTokenRouteImport.update({
+  id: '/mm/reemplazo/$token',
+  path: '/mm/reemplazo/$token',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/admin/events/new': typeof AppAdminEventsNewRoute
   '/help/$seccion/$tarea': typeof AppHelpSeccionTareaRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -414,6 +421,7 @@ export interface FileRoutesByTo {
   '/admin/events/new': typeof AppAdminEventsNewRoute
   '/help/$seccion/$tarea': typeof AppHelpSeccionTareaRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/admin/events': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesById {
@@ -468,6 +476,7 @@ export interface FileRoutesById {
   '/_app/admin/events/new': typeof AppAdminEventsNewRoute
   '/_app/help/$seccion/$tarea': typeof AppHelpSeccionTareaRoute
   '/_app/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/_app/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/_app/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRouteTypes {
@@ -521,6 +530,7 @@ export interface FileRouteTypes {
     | '/admin/events/new'
     | '/help/$seccion/$tarea'
     | '/mixes/live/$uid'
+    | '/mm/reemplazo/$token'
     | '/admin/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -571,6 +581,7 @@ export interface FileRouteTypes {
     | '/admin/events/new'
     | '/help/$seccion/$tarea'
     | '/mixes/live/$uid'
+    | '/mm/reemplazo/$token'
     | '/admin/events'
   id:
     | '__root__'
@@ -624,6 +635,7 @@ export interface FileRouteTypes {
     | '/_app/admin/events/new'
     | '/_app/help/$seccion/$tarea'
     | '/_app/mixes/live/$uid'
+    | '/_app/mm/reemplazo/$token'
     | '/_app/admin/events/'
   fileRoutesById: FileRoutesById
 }
@@ -997,6 +1009,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMixesLiveUidRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/mm/reemplazo/$token': {
+      id: '/_app/mm/reemplazo/$token'
+      path: '/mm/reemplazo/$token'
+      fullPath: '/mm/reemplazo/$token'
+      preLoaderRoute: typeof AppMmReemplazoTokenRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -1080,6 +1099,7 @@ interface AppRouteChildren {
   AppRankingIndexRoute: typeof AppRankingIndexRoute
   AppHelpSeccionTareaRoute: typeof AppHelpSeccionTareaRoute
   AppMixesLiveUidRoute: typeof AppMixesLiveUidRoute
+  AppMmReemplazoTokenRoute: typeof AppMmReemplazoTokenRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1104,6 +1124,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRankingIndexRoute: AppRankingIndexRoute,
   AppHelpSeccionTareaRoute: AppHelpSeccionTareaRoute,
   AppMixesLiveUidRoute: AppMixesLiveUidRoute,
+  AppMmReemplazoTokenRoute: AppMmReemplazoTokenRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

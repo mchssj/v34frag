@@ -218,7 +218,10 @@ const SECTIONS: LegalSection[] = [
         <li>
           En el matchmaking, abandonar una partida tiene una sanción automática
           de ELO y puede sumar escalones de espera antes de volver a buscar
-          partida.
+          partida. Si te desconectas, tu equipo puede votar en el servidor para
+          darte por abandonado sin esperar a que se termine tu plazo para
+          volver, y la liga puede llamar a otro jugador para que entre en tu
+          lugar. Si vuelves después de que entró, quedas de espectador.
         </li>
         <li>
           Los servidores de la liga registran tu IP, tu SteamID y tu nick al
@@ -259,8 +262,16 @@ const SECTIONS: LegalSection[] = [
           El matchmaking <Wip>En prueba</Wip> arma los equipos según el ELO (y,
           si la liga lo enciende, también según el rating de tus partidas
           recientes, para que queden parejos), te pide confirmar la partida y te
-          asigna un servidor. Si confirmas, te
-          comprometes a jugarla entera.
+          asigna un servidor. Si confirmas, te comprometes a jugarla entera.
+        </li>
+        <li>
+          Si alguien abandona una partida del matchmaking, la liga puede
+          publicar en su Discord un aviso con un link para entrar en su lugar.
+          El aviso muestra el modo, el mapa y el marcador, no los nombres de los
+          jugadores. Si entras como reemplazo, ganas o pierdes ELO como
+          cualquier jugador, según las rondas que juegues. Si tomas el lugar y
+          no te conectas a tiempo, recibes la misma sanción que quien no se
+          conecta a su partida.
         </li>
       </ul>
     ),

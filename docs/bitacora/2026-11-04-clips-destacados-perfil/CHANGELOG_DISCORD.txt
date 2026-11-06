@@ -1,4 +1,4 @@
-CMLeague 2.9.15 --  Changelog
+CMLeague 2.9.17 --  Changelog
 
 CLIPS DESTACADOS EN TU PERFIL
 - Tu ficha tiene una pestaña nueva, Clips, con tus mejores jugadas: la primera en grande y las demás en un carrusel.

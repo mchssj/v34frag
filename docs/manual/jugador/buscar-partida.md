@@ -1,6 +1,6 @@
 ---
 titulo: Buscar partida en el matchmaking
-resumen: Solo o en grupo, aceptar la partida, el veto de mapas, conectarte al servidor y qué pasa si no llegas.
+resumen: Solo o en grupo, aceptar la partida, el veto de mapas, conectarte al servidor, qué pasa si no llegas y los reemplazos.
 orden: 3
 ---
 
@@ -62,6 +62,25 @@ Tienes **{{mm.conectar}}** para conectarte; la sala muestra cuánto queda y qui�
 - Si te desconectas, tienes **{{mm.volver}}** para volver. La sala muestra cuánto te queda.
 - Si no vuelves, cuenta como abandono: pierdes ELO y te llevas una sanción. Tu equipo puede rendirse con `!gg` sin perder ELO.
 - Si abandonan 2 o más jugadores de un equipo, ese equipo pierde la partida. Si pasa en los dos equipos, la partida se anula.
+
+### Reemplazos
+
+Cuando alguien abandona, puede salir un aviso en el Discord de la liga con un link para que otro jugador entre en su lugar. Así tu equipo no juega con uno menos el resto de la partida.
+
+- **Sin esperar:** si un compañero se desconectó y no va a volver, escribe `!callreplace` en el chat del servidor y elige quién falta. Vota solo tu equipo y pasa con más del {{mm.reemplazo_voto}} de los compañeros conectados. El que no vota cuenta como "No". Si pasa, el que se fue queda como abandono en el momento.
+- **Si no hacen nada:** al terminar sus {{mm.volver}} para volver, se llama a un reemplazo solo.
+- No se llama a nadie si faltan menos de {{mm.reemplazo_rondas}} para el final del tiempo reglamentario.
+- Un abandono cubierto por un reemplazo no cuenta para los 2 que hacen perder la partida.
+- El que abandonó se lleva igual su sanción y pierde ELO. Si vuelve después de que entró el reemplazo, queda de espectador.
+
+### Entrar como reemplazo
+
+1. Abre el link del aviso de Discord. Tienes que haber iniciado sesión y poder buscar partida: SteamID vinculado, sin sanciones y sin otra sala.
+2. Toca **Entrar como reemplazo**. El link es de un solo uso: si otro llegó antes, la página te lo dice. Vence a los {{mm.reemplazo_link}}.
+3. Te lleva a la sala, con el servidor y la contraseña. Tienes {{mm.conectar}} para entrar. Si no entras, se te sanciona como a quien no se conecta a su partida y se busca otro reemplazo.
+4. En el servidor entras directo al equipo del que abandonó.
+
+Ganas o pierdes ELO como cualquiera, según las rondas que juegues: si entras muy tarde y juegas pocas, la partida no te cuenta.
 
 Al terminar, la sala muestra el resultado, el MVP, los destacados y los clips.
 

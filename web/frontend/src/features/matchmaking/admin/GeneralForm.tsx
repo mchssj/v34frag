@@ -65,6 +65,12 @@ const schema = z
     balance_rating_cap: int(0, 500),
     balance_rating_prior_maps: int(0, 100),
     balance_rating_days: int(1, 365),
+    replace_enabled: z.boolean(),
+    replace_link_minutes: int(1, 60),
+    replace_min_rounds_left: int(0, 30),
+    replace_vote_pct: int(50, 100),
+    replace_vote_seconds: int(10, 120),
+    replace_vote_cooldown_s: int(0, 600),
     // "5, 15, 60, 1440": minutos de cada escalón.
     penalty_ladder: z
       .string()
@@ -352,6 +358,53 @@ function Form({ initial }: { initial: MmAdminConfig }) {
       </Section>
 
       <Section
+        title="Reemplazos"
+        description="Encendido, cuando alguien abandona una sala en vivo sale un aviso en Discord con un link de un solo uso para entrar en su lugar. Con !callreplace, su equipo puede votar para no esperar los minutos de reconexión."
+      >
+        <Controller
+          control={c}
+          name="replace_enabled"
+          render={({ field }) => (
+            <label className="flex items-center gap-3 text-sm">
+              <Switch
+                aria-label="Reemplazos"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+              {field.value ? "Encendido" : "Apagado"}
+            </label>
+          )}
+        />
+        <Grid>
+          <NumberField
+            control={c}
+            name="replace_link_minutes"
+            label="El link vence a los (min)"
+          />
+          <NumberField
+            control={c}
+            name="replace_min_rounds_left"
+            label="No llamar si quedan menos rondas que"
+          />
+          <NumberField
+            control={c}
+            name="replace_vote_pct"
+            label="!callreplace pasa con más del (%)"
+          />
+          <NumberField
+            control={c}
+            name="replace_vote_seconds"
+            label="Duración del voto (s)"
+          />
+          <NumberField
+            control={c}
+            name="replace_vote_cooldown_s"
+            label="Espera entre votos (s)"
+          />
+        </Grid>
+      </Section>
+
+      <Section
         title="Sanciones"
         description="Minutos de cada escalón; baja uno cada 7 días sin faltas."
       >
@@ -463,6 +516,7 @@ type NumberName = Exclude<
   | "require_anticheat"
   | "blocks_vip_only"
   | "balance_rating"
+  | "replace_enabled"
 >
 
 function NumberField({

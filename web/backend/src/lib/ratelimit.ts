@@ -16,6 +16,8 @@ export const RATE_RULES = {
   password: { name: 'password', limit: 5, windowSec: 60, binding: 'RL_PASSWORD' },
   // Pedir el correo de recuperación: 5 por minuto por IP (frena a quien llena de correos una casilla ajena).
   recovery: { name: 'recovery', limit: 5, windowSec: 60, binding: 'RL_RECOVERY' },
+  // Tomar o mirar un link de reemplazo del matchmaking: 10 por minuto por cuenta (replanteo 75; frena a quien prueba tokens).
+  replace: { name: 'replace', limit: 10, windowSec: 60, binding: 'RL_REPLACE' },
 } as const satisfies Record<string, RateRule>;
 
 export type RateResult = { ok: boolean; retryAfter: number };

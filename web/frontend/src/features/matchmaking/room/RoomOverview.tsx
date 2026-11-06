@@ -200,7 +200,16 @@ function PlayerCard({
         </FormLine>
       )}
       {(p.left_until || p.abandoned) && (
-        <LeftNotice until={p.left_until} abandoned={p.abandoned} />
+        <LeftNotice
+          until={p.left_until}
+          abandoned={p.abandoned}
+          replaced={p.replaced === true}
+        />
+      )}
+      {p.replacement && (
+        <span className="text-xs text-muted-foreground">
+          Entró de reemplazo
+        </span>
       )}
       {r ? (
         <dl className="grid grid-cols-6 gap-x-2">
@@ -314,16 +323,20 @@ function ConnectionDot({ p }: { p: MmPlayer }) {
 function LeftNotice({
   until,
   abandoned,
+  replaced,
 }: {
   until: string | null
   abandoned: boolean
+  replaced: boolean
 }) {
   const now = useNow(!abandoned)
   return (
     <span className="text-xs text-destructive">
-      {abandoned
-        ? "Abandonó: pierde ELO y su equipo se puede rendir con !gg sin perder"
-        : `Se desconectó · ${fmtClock(secondsLeft(until, now) * 1000)} para volver`}
+      {replaced
+        ? "Abandonó: pierde ELO y entró un reemplazo en su lugar"
+        : abandoned
+          ? "Abandonó: pierde ELO y su equipo se puede rendir con !gg sin perder"
+          : `Se desconectó · ${fmtClock(secondsLeft(until, now) * 1000)} para volver`}
     </span>
   )
 }

@@ -36,6 +36,10 @@ export type MmPlayer = MmVip & {
   left_until: string | null
   /** No volvió a tiempo (plan, decisión "Abandono"). */
   abandoned: boolean
+  /** Entró a la partida en vivo en lugar de uno que abandonó (replanteo 75). */
+  replacement?: boolean
+  /** Abandonó y su reemplazo ya entró al servidor. */
+  replaced?: boolean
   is_me: boolean
   /** Si su ficha tiene SteamID; sin vincular hace !claim en el servidor de la sala. Sin el campo, vinculado. */
   linked?: boolean
@@ -379,6 +383,24 @@ export type QueuePingStatus = {
   can_ping: boolean
 }
 
+/** La página del link de un reemplazo (`mm_replace_info`, replanteo 75). */
+export type MmReplaceInfo = {
+  /** expired: venció o la partida terminó; cancelled: el que lo tomó no entró. */
+  status: "open" | "taken" | "connected" | "expired" | "cancelled"
+  /** Lo tomé yo: lleva a la sala. */
+  mine: boolean
+  lobby_id: string | null
+  mode: string
+  map: string | null
+  team: 1 | 2
+  team_name: string | null
+  score: { a: number; b: number } | null
+  rounds_left: number | null
+  expires_at: string
+  /** Por qué no lo puedo tomar (la misma regla que para entrar a la cola); null si puedo. */
+  reason: string | null
+}
+
 /** Administración › Matchmaking › General (`mm_config` más los modos). */
 export type MmAdminConfig = {
   open: boolean
@@ -414,6 +436,15 @@ export type MmAdminConfig = {
   balance_rating_prior_maps: number
   /** Días de partidas 5v5 que se miran. */
   balance_rating_days: number
+  /** Llamar reemplazos en Discord cuando alguien abandona una sala en vivo, y !callreplace (replanteo 75). */
+  replace_enabled: boolean
+  replace_link_minutes: number
+  /** No se llama si quedan menos rondas que esto para el fin del tiempo reglamentario. */
+  replace_min_rounds_left: number
+  /** !callreplace pasa con más de este porcentaje de los compañeros conectados. */
+  replace_vote_pct: number
+  replace_vote_seconds: number
+  replace_vote_cooldown_s: number
   /** Imagen de la tarjeta del MVP; se sube y se quita aparte (no viaja en saveConfig). */
   mvp_image_url?: string | null
 }

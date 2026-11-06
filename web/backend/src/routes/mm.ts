@@ -2,6 +2,7 @@ import { createRoute, z } from '@hono/zod-openapi';
 import type { Context, MiddlewareHandler } from 'hono';
 import { requireAdmin, requireModerator, requireUser } from '../lib/auth';
 import { must, mustHave } from '../lib/db';
+import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
@@ -151,6 +152,19 @@ add(route('post', '/api/v1/mm/queue/ping', { summary: 'Avisar en Discord (#aviso
     throw new AppError(502, 'NOT_AVAILABLE', 'Discord no recibió el aviso. Probá de nuevo en un rato.');
   }
   return c.json((await rpc(c, 'mm_queue_ping_status')) as never, 200);
+});
+// Reemplazos (replanteo 75): la página del link que sale en Discord. La base decide si se puede tomar y solo uno lo consigue.
+const TokenParam = z.object({ token: z.string().regex(/^[0-9a-f]{32}$/) });
+const token = (c: C) => (c.req as unknown as { valid(t: 'param'): { token: string } }).valid('param').token;
+const replaceRoute = (method: 'get' | 'post', summary: string) => {
+  const def = route(method, '/api/v1/mm/replace/{token}', { summary, request: { params: TokenParam } });
+  return { ...def, middleware: [requireUser, rateLimit(RATE_RULES.replace, (c: C) => `user:${c.var.user.id}`)] } as typeof def;
+};
+add(replaceRoute('get', 'La partida de un link de reemplazo y si lo puedo tomar'), async (c) =>
+  c.json((await rpc(c, 'mm_replace_info', { p_token: token(c) })) as never, 200));
+add(replaceRoute('post', 'Entrar como reemplazo: devuelve el estado con la sala'), async (c) => {
+  await rpc(c, 'mm_replace_take', { p_token: token(c) });
+  return liveState(c);
 });
 add(route('post', '/api/v1/mm/lobby/accept', { summary: 'Aceptar la partida' }), action('mm_accept', undefined, 'live'));
 add(route('post', '/api/v1/mm/lobby/decline', { summary: 'Rechazar la partida' }), action('mm_decline', undefined, 'live'));
