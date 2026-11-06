@@ -5,7 +5,7 @@
 - **El link de reemplazo de Discord muestra la sala** de la partida en vista previa: la cabecera con el marcador, los dos equipos y, en el equipo del que se fue, un lugar libre "Aquí entrarías tú". La IP y la contraseña del servidor llegan recién al tomar el lugar.
 - **En la sala, el reemplazo ocupa el lugar del que se fue**, con la etiqueta **Reemplazo**. El que se fue queda en una línea tachada al final de su equipo. Mientras el reemplazo no entró al servidor, ve arriba **Entra al servidor** con la cuenta regresiva.
 - **El detalle de una partida del matchmaking (`/match/<id>`) es su sala**, con las pestañas **Descripción general** (la que abre) y **Estadísticas** (las tablas de siempre), como "Tu última partida". Los mixes sin sala del matchmaking siguen abriendo la sala de mix.
-- **El que abandona pierde menos ELO si su equipo gana**: de 10 a 15 si su equipo ganó; si perdió o empató, de 6 a 10 pero nunca menos que una derrota normal. Dentro de cada rango, según la parte de la partida que no jugó.
+- **El que abandona pierde menos ELO si su equipo gana**: de 10 a 15 si su equipo ganó; si perdió o empató, de 15 a 20 pero nunca menos que una derrota normal. Dentro de cada rango, según la parte de la partida que no jugó.
 
 ```mermaid
 flowchart LR
@@ -23,9 +23,9 @@ flowchart LR
 | Su equipo | Pierde |
 |---|---|
 | Ganó | `abandon_win_min + (abandon_win_max − abandon_win_min) · f`: de 10 (se fue al final) a 15 (al principio) |
-| Perdió o empató | El mayor entre `abandon_loss_min + (abandon_loss_max − abandon_loss_min) · f` (de 6 a 10) y una **derrota normal** (`2 · base · prob`, la de antes sin el extra) |
+| Perdió o empató | El mayor entre `abandon_loss_min + (abandon_loss_max − abandon_loss_min) · f` (de 15 a 20) y una **derrota normal** (`2 · base · prob`, la de antes sin el extra) |
 
-- Con equipos parejos y la base de 25, la derrota normal es −25: pierde 25. Si su equipo era muy favorito y perdió, la derrota normal es chica y gana el rango (6 a 10).
+- Con equipos parejos y la base de 25, la derrota normal es −25: pierde 25. Si su equipo era muy poco favorito y perdió, la derrota normal es chica y gana el rango (15 a 20): el rango de cuando pierden empieza donde termina el de cuando ganan, para que abandonar nunca cueste menos con el equipo perdiendo que ganando.
 - Así irse nunca sale más barato que perder, que era el riesgo de la regla "como mucho 10".
 - El extra fijo de antes (`abandon_extra_elo`) deja de usarse; la columna queda por compatibilidad.
 - Lo de sus compañeros y el rival no cambia (ganan más o pierden menos según cuánto faltó).

@@ -18,7 +18,7 @@ declare
   i int;
   ok int := 0;
 begin
-  update mm_config set abandon_win_min = 10, abandon_win_max = 15, abandon_loss_min = 6, abandon_loss_max = 10 where id = 1;
+  update mm_config set abandon_win_min = 10, abandon_win_max = 15, abandon_loss_min = 15, abandon_loss_max = 20 where id = 1;
   insert into auth.users (id, email, email_confirmed_at, created_at, aud, role)
     select z, z || '@prueba78.local', now(), now() - interval '30 days', 'authenticated', 'authenticated' from unnest(u) z;
   for i in 1 .. 3 loop
@@ -47,21 +47,21 @@ begin
   if d <> -14 then raise exception 'FALLA 1: ganó y se fue temprano = % (esperaba -14)', d; end if;
   ok := ok + 1;
 
-  -- 2. Perdió, equipos parejos: la derrota normal (2 · base · −0,5) es mayor que 6 a 10 y gana esa.
+  -- 2. Perdió, equipos parejos: la derrota normal (2 · base · −0,5) es mayor que 15 a 20 y gana esa.
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 0, 0.5, -20);
-  if d <> least(round(2 * base * (0 - 0.5))::int, -9) then raise exception 'FALLA 2: perdió = % (base %)', d, base; end if;
-  if d > -9 then raise exception 'FALLA 2b: perdió y pierde menos que el rango: %', d; end if;
+  if d <> least(round(2 * base * (0 - 0.5))::int, -19) then raise exception 'FALLA 2: perdió = % (base %)', d, base; end if;
+  if d > -19 then raise exception 'FALLA 2b: perdió y pierde menos que el rango: %', d; end if;
   ok := ok + 1;
 
-  -- 3. Perdió siendo muy favorito el rival (la derrota normal es chica): pierde lo del rango, 6 + round(4 · 0,75) = 9.
+  -- 3. Perdió siendo muy favorito el rival (la derrota normal es chica): pierde lo del rango, 15 + round(5 · 0,75) = 19.
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 0, 0.05, -3);
-  if d <> least(round(2 * base * (0 - 0.05))::int, -9) then raise exception 'FALLA 3: perdió de punto = %', d; end if;
-  if d > -9 then raise exception 'FALLA 3b: menos de 9: %', d; end if;
+  if d <> least(round(2 * base * (0 - 0.05))::int, -19) then raise exception 'FALLA 3: perdió de punto = %', d; end if;
+  if d > -19 then raise exception 'FALLA 3b: menos de 19: %', d; end if;
   ok := ok + 1;
 
   -- 4. Empate: como derrota.
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 0.5, 0.5, 0);
-  if d <> least(round(2 * base * (0 - 0.5))::int, -9) then raise exception 'FALLA 4: empate = %', d; end if;
+  if d <> least(round(2 * base * (0 - 0.5))::int, -19) then raise exception 'FALLA 4: empate = %', d; end if;
   ok := ok + 1;
 
   -- 5. Se fue cerca del final (27 de 28): el mínimo de cada rango.
@@ -69,7 +69,7 @@ begin
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 1, 0.5, 20);
   if d <> -10 then raise exception 'FALLA 5: ganó y se fue al final = %', d; end if;
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 0, 0.05, -3);
-  if d <> least(round(2 * base * (0 - 0.05))::int, -6) then raise exception 'FALLA 5b: perdió y se fue al final = %', d; end if;
+  if d <> least(round(2 * base * (0 - 0.05))::int, -15) then raise exception 'FALLA 5b: perdió y se fue al final = %', d; end if;
   -- Sin estadísticas suyas en el juego: el máximo.
   delete from match_player_stats where match_id = v_game and steam_id = st[1];
   d := mm_elo_delta(v_game, elo_key(st[1]), 1, 1, 0.5, 20);
@@ -81,7 +81,7 @@ begin
   update mm_config set abandon_win_min = 2, abandon_win_max = 2 where id = 1;
   if mm_elo_delta(v_game, elo_key(st[1]), 1, 1, 0.5, 20) <> -2 then raise exception 'FALLA 6: tope de la configuración'; end if;
   begin
-    update mm_config set abandon_loss_min = 11, abandon_loss_max = 10 where id = 1;
+    update mm_config set abandon_loss_min = 21, abandon_loss_max = 20 where id = 1;
     raise exception 'FALLA 6b: aceptó min > max';
   exception when check_violation then null;
   end;
@@ -147,7 +147,7 @@ begin
   ok := ok + 1;
 
   -- 12. El manual y los permisos.
-  if (manual_valores()->>'mm.abandono_perdido_max')::int <> 10 or (manual_valores()->>'mm.abandono_ganado_min')::int <> 10 then
+  if (manual_valores()->>'mm.abandono_perdido_max')::int <> 20 or (manual_valores()->>'mm.abandono_ganado_min')::int <> 10 then
     raise exception 'FALLA 12: manual_valores';
   end if;
   if has_function_privilege('anon', 'public.mm_game_room(uuid)', 'execute')

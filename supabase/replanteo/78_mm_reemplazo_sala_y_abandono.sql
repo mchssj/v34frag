@@ -1,8 +1,8 @@
 -- 78: la sala en el link de reemplazo, el detalle de la partida como sala y el ELO del abandono
 -- (bitácora docs/bitacora/2026-11-06-reemplazo-sala-y-abandono, Daniel 2026-11-06).
 --
---   1. mm_config: abandon_win_min/max (10 a 15) y abandon_loss_min/max (6 a 10). abandon_extra_elo deja de usarse.
---   2. mm_elo_delta: el que abandona pierde de 10 a 15 si su equipo ganó; si perdió o empató, de 6 a 10 pero nunca menos
+--   1. mm_config: abandon_win_min/max (10 a 15) y abandon_loss_min/max (15 a 20). abandon_extra_elo deja de usarse.
+--   2. mm_elo_delta: el que abandona pierde de 10 a 15 si su equipo ganó; si perdió o empató, de 15 a 20 pero nunca menos
 --      que una derrota normal (irse no puede salir más barato que perder). Dentro de cada rango, según la parte de la
 --      partida que no jugó. La sanción de espera no cambia.
 --   3. mm_replacements.left_round y joined_round: la ronda en que se pidió el reemplazo y en la que entró.
@@ -39,8 +39,8 @@ end $$;
 alter table public.mm_config
   add column abandon_win_min integer not null default 10 check (abandon_win_min between 0 and 50),
   add column abandon_win_max integer not null default 15 check (abandon_win_max between 0 and 50),
-  add column abandon_loss_min integer not null default 6 check (abandon_loss_min between 0 and 50),
-  add column abandon_loss_max integer not null default 10 check (abandon_loss_max between 0 and 50),
+  add column abandon_loss_min integer not null default 15 check (abandon_loss_min between 0 and 50),
+  add column abandon_loss_max integer not null default 20 check (abandon_loss_max between 0 and 50),
   add constraint mm_config_abandon_ranges check (abandon_win_min <= abandon_win_max and abandon_loss_min <= abandon_loss_max);
 comment on column public.mm_config.abandon_win_min is 'ELO que pierde quien abandona si su equipo ganó: mínimo (se fue cerca del final). Replanteo 78';
 comment on column public.mm_config.abandon_win_max is 'ELO que pierde quien abandona si su equipo ganó: máximo (se fue al principio). Replanteo 78';
