@@ -22,23 +22,22 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Clips destacados en el perfil y rechazar un clip (2026-11-05): commiteado, sin desplegar
+## Clips destacados en el perfil y rechazar un clip (2026-11-05): desplegado el 2026-11-06
 
 - **Hecho:** replanteo `76`, Mi perfil › Clips (automático o elegidos; 3, 10 con VIP), la pestaña Clips de la ficha, y en Administración › Clips: **Rechazar clip**, el filtro Rechazados con **Recuperar** y los topes en Reglas ([`2026-11-04-clips-destacados-perfil`](bitacora/2026-11-04-clips-destacados-perfil/)). Probado en la base local (31 comprobaciones y la inversa), la API (543 pruebas) y la web (621 pruebas). La `76` quedó aplicada en la base local. Diseño: https://claude.ai/artifact/JtGZqvaTqnKzmSRxy7bgjA
 - **Commiteado** en `feat/frontend-fase-1` el 2026-11-05 (no va en `feat/mm-claim-en-sala`: no es del matchmaking), sin los reemplazos.
-- **Falta:**
-  1. Desplegar la `76` en la base del VPS (desde el archivo commiteado, en LF) y la API y la web juntas. Nada en el render ni en los servidores.
-  2. Mirarlo con datos reales en el navegador y publicar el `CHANGELOG_DISCORD.txt` y los términos.
+- **Desplegado el 2026-11-06 (13:04-13:20 UTC)** desde `main` (`73d0e92e`), sin salas ni mixes en curso (la cola vacía; el #1 sin jugadores): la `76` en la base del VPS (antes, `probar_76.sh` contra producción: 31 comprobaciones y la inversa), la API y la web `73d0e92edcb8`.
+- **Falta:** mirarlo con datos reales en el navegador y publicar el `CHANGELOG_DISCORD.txt` (2.9.17) y los términos.
 
-## Reemplazos en el matchmaking (2026-11-05): hecho en local, sin commit ni desplegar
+## Reemplazos en el matchmaking (2026-11-05): desplegado el 2026-11-06, con el interruptor apagado
 
 - **Hecho:** replanteo `75`, rutas `/api/v1/mm/replace/{token}`, aviso en Discord desde el worker del matchmaking, página `/mm/reemplazo/<token>`, bloque **Reemplazos** en Administración › Matchmaking y reporter **2.10.0** con `!callreplace` ([`2026-11-04-mm-reemplazos`](bitacora/2026-11-04-mm-reemplazos/)). Probado en la base local (44 comprobaciones, la inversa y los dos clics a la vez), la API (531 pruebas), la web (614 pruebas) y el plugin con bots en el servidor local (26 de 26, `e2e_bots_75.sh`). La `75` quedó aplicada en la base local.
 - **Falta:**
   1. Con jugadores de verdad, en el primer mix con **Reemplazos** encendido: el menú y el voto de `!callreplace`, el bloqueo de `jointeam` y el `!gg` con un abandono cubierto (con bots no se puede).
-  2. Commitear en `feat/frontend-fase-1` y llevar la base, la API, el worker, el VPS y el plugin a `feat/mm-claim-en-sala` (sin la web).
-  3. Desplegar sin un mix en curso: la `75` en la base del VPS, las variables de Discord y `FRONTEND_URL` en `/etc/cmleague/season.env`, la API (con el worker) y la web, y el plugin en los tres servidores en la misma tanda: #1 (genérico), #2 flow (licenciado) y #3 (genérico, en `disabled/`).
-  4. Encender **Reemplazos** recién cuando el #1 tenga la 2.10.0, y probarlo en un mix.
-  5. Publicar el `CHANGELOG_DISCORD.txt` y los términos actualizados.
+  2. Encender **Reemplazos** en Administración › Matchmaking cuando el #1 haya cambiado de mapa (carga la 2.10.0), y probarlo en un mix.
+  3. Publicar el `CHANGELOG_DISCORD.txt` (2.9.16) y los términos actualizados.
+- **Commiteado** en `feat/frontend-fase-1` (`7c889be5`) y, sin la web ni el plugin, en `feat/mm-claim-en-sala` (`5592b98a`; esa rama sigue en el reporter 2.9.1).
+- **Desplegado el 2026-11-06 (13:04-13:20 UTC)** desde `main` (`73d0e92e`), sin salas ni mixes en curso (la cola vacía; el #1 sin jugadores): la `75` en la base del VPS (antes, `probar_75.sh` contra producción con `cmleague-mm` parado: 44 comprobaciones y la inversa), las variables de Discord y `FRONTEND_URL` en `/etc/cmleague/season.env` (respaldo `season.env.bak-20261106`), la API con el worker y la web `73d0e92edcb8`, y el reporter 2.10.0 por la API de cada panel, comparado byte a byte: #1 genérico, #2 flow licenciado y #3 genérico en `disabled/`. La 2.9.3 quedó en `plugins/disabled/csstv_reporter_2.9.3.smx` en los tres (`pruebas/subir_2_10_0.py`). Entra en el próximo cambio de mapa.
 
 ## Supabase en el VPS (2026-11-03): hecho; faltan pruebas y el relay del HUD
 

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-05: la base (con la copia de producción, en una transacción con rollback, y los dos clics a la vez con dos sesiones), la API, el worker, la web y el plugin 2.10.0 **con bots en el servidor local** (26 de 26). **Sin commit y sin desplegar.**
+Hecho y probado en local el 2026-11-05: la base (con la copia de producción, en una transacción con rollback, y los dos clics a la vez con dos sesiones), la API, el worker, la web y el plugin 2.10.0 **con bots en el servidor local** (26 de 26). **Commiteado** (`7c889be5` en `feat/frontend-fase-1`, `5592b98a` en `feat/mm-claim-en-sala` sin la web ni el plugin) y **Desplegado el 2026-11-06 (13:04-13:20 UTC)** desde `main` (`73d0e92e`), sin salas ni mixes en curso (la cola vacía; el #1 sin jugadores). **Reemplazos sigue apagado.**
 
 ## Archivos
 
@@ -34,9 +34,15 @@ Hecho y probado en local el 2026-11-05: la base (con la copia de producción, en
 - `feat/frontend-fase-1`: todo. Antes se hizo merge de `main` (`9bcb65bc`), que traía la `73` (equipos con rating), porque los reemplazos tocan las mismas funciones.
 - `feat/mm-claim-en-sala`: la base, la API, el worker, el VPS y el plugin, **no la web** (convención de ramas del matchmaking). Ya tiene la `73` (`0f6bf7cf`, solo la base). Falta llevar este requerimiento cuando se commitee.
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-06, salvo el paso 5)
 
 Sin un mix en curso. Con `replace_enabled` apagado hasta probar un mix.
+
+Cómo quedó:
+- **Base:** `probar_75.sh` contra producción falló primero en la comprobación 2b: el worker (`cmleague-mm`) tiene el candado de `mm_tick` mientras espera el `mm_config` que bloquea la prueba, y la vuelta de la prueba se salta. Con `cmleague-mm` parado pasó entera (44 y la inversa). Se aplicó la `75` desde `main` (LF): sin `` en las funciones.
+- **Worker:** las tres variables copiadas de `api.env` (respaldo `/etc/cmleague/season.env.bak-20261106`); `cmleague-mm` prendido después de la API.
+- **API y web:** `73d0e92edcb8` (API: 543 pruebas; web: 625). `/mm/reemplazo/<token>` responde.
+- **Plugin:** `pruebas/subir_2_10_0.py`, por la API de cada panel; los tres tenían la 2.9.3, que quedó en `plugins/disabled/csstv_reporter_2.9.3.smx`.
 
 1. **Base del VPS:** `75_mm_reemplazos.sql` (después de la `73` y la `74`, que ya están), desde el archivo commiteado (LF). Cargado desde Windows con CRLF (`core.autocrlf`), el `\r` queda dentro de las funciones nuevas: si hace falta, `tr -d '\r'`. Antes, `probar_75.sh` contra la base por el túnel.
 2. **Worker:** sumar a `/etc/cmleague/season.env` `DISCORD_QUEUE_WEBHOOK_URL` y `DISCORD_QUEUE_ROLE_ID` (los mismos de `api.env`) y `FRONTEND_URL=https://cmleague.lat`. Desplegar la API (el worker va en el mismo paquete) y reiniciar `cmleague-mm` y `cmleague-api`.

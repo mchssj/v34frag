@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-05 (la base con la copia de producción, la API y la web). **Commiteado el 2026-11-05 en `feat/frontend-fase-1`, sin desplegar.** Va solo en esa rama: no es del matchmaking. El commit no lleva los reemplazos (replanteo `75`), que siguen sin commitear en el mismo árbol.
+Hecho y probado en local el 2026-11-05 (la base con la copia de producción, la API y la web). **Commiteado el 2026-11-05 en `feat/frontend-fase-1`** y **Desplegado el 2026-11-06 (13:04-13:20 UTC)** desde `main` (`73d0e92e`), sin salas ni mixes en curso (la cola vacía; el #1 sin jugadores). Va solo en esa rama: no es del matchmaking. El commit no lleva los reemplazos (replanteo `75`), que siguen sin commitear en el mismo árbol.
 
 ## Archivos
 
@@ -23,7 +23,11 @@ Hecho y probado en local el 2026-11-05 (la base con la copia de producción, la 
 | `docs/manual/...`, `terms/terminos.html`, `TermsPage.tsx` | Manual y términos |
 | `PLAN.md` | Las decisiones del 2026-11-05 (modo automático y rechazo), antes de implementar |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-06)
+
+La `76` desde `main` (antes, `probar_76.sh` contra producción: 31 comprobaciones y la inversa), y la API y la web `73d0e92edcb8`. La ficha devuelve los destacados en automático.
+
+Los pasos:
 
 1. **Base del VPS:** `76_clips_destacados_y_rechazo.sql`, después de la `75` (o antes, no dependen entre sí). Desde el archivo commiteado (LF): cargado desde Windows con CRLF, el `\r` queda dentro de las funciones (ver Incidentes). Antes, `probar_76.sh` contra la base por el túnel.
 2. **API y web**, juntas: la web nueva llama a rutas que la API vieja no tiene.
