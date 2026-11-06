@@ -2,7 +2,7 @@
 
 ## Estado
 
-Escrito y validado con el build de la API el 2026-11-06 (42 páginas, sin errores). **Sin desplegar:** la web lo muestra después del próximo despliegue de la API, que copia `docs/manual` a `dist/manual` en el VPS. Sin commit.
+Escrito y validado con el build de la API el 2026-11-06 (42 páginas, sin errores). **Desplegado el 2026-11-06 (16:28 UTC)**: API `b0642f948a7e` desde `main` (antes `8670768b56ef`). La web no se redespliega: **Ayuda** pide el manual a la API. No se miró en el navegador.
 
 ## Archivos
 
@@ -18,9 +18,11 @@ Escrito y validado con el build de la API el 2026-11-06 (42 páginas, sin errore
 | `CLAUDE.md` | La regla en Convenciones |
 | `docs/bitacora/README.md` | Fila nueva |
 
-## Despliegue
+## Despliegue (hecho el 2026-11-06)
 
-Pendiente. Con el próximo despliegue de la API (desde `main`), el build valida el manual y lo copia a `dist/manual`. No hace falta tocar los servidores de juego.
+1. Commits `67bc65db` (manual y regla) y `b0642f94` (moderador cype-thor en `PENDIENTES.md`) en `feat/frontend-fase-1`, y `main` adelantado a ese commit (fast-forward).
+2. Desde el worktree de `main`: `deploy/vps/desplegar.sh api`. Pruebas, build (el manual, 42 páginas, va a `dist/manual`), `build:check`, subida y `/api/health` con `b0642f948a7e`.
+3. Ni la web ni los servidores de juego.
 
 ## Pruebas
 
