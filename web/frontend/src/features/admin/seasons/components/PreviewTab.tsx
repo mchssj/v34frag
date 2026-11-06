@@ -14,6 +14,7 @@ import {
 import { seasonPreviewOptions } from "../api/queries"
 import type { PreviewFilter, SeasonPreviewRow } from "../types"
 import { LIMITS, type SeasonForm } from "../lib/seasons"
+import { SeasonMedal } from "@/features/medals/Medal"
 
 const ok = (v: number, [min, max]: readonly [number, number]) =>
   Number.isInteger(v) && v >= min && v <= max
@@ -45,7 +46,14 @@ function previewColumns(minMatches: number): DataColumn<SeasonPreviewRow>[] {
       id: "medal",
       header: "Medalla",
       cell: ({ row: { original: r } }) =>
-        r.medal ? `${r.medal.icon} ${r.medal.name}` : "—",
+        r.medal ? (
+          <span className="inline-flex items-center gap-1.5">
+            <SeasonMedal medal={r.medal} size={24} />
+            {r.medal.name}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       id: "elo",

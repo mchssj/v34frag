@@ -65,6 +65,18 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **flow (#2):** `csstv_claim "1"` en su cfg desde el 2026-11-03; se carga en el próximo cambio de mapa.
 - **flow (#2) sin matchmaking desde el 2026-11-03 (21:25 UTC, Daniel):** `csstv_mm "0"` en su cfg y por consola, y `mm_enabled = false`. Se juega mix normal. Esa tarde tuvo `csstv_mm "1"` un rato.
 
+## Medallas configurables (2026-11-04): listo para desplegar, falta todo el despliegue
+
+- **Hecho y probado en local** (Daniel, 2026-11-05, "sigue el plan"); el 2026-11-06 pasó a la rama `feat/medallas` (sale de `main`, worktree `v34frag-medallas`), solo con las medallas: replanteo **`79`** (era la `78`, que ya es del matchmaking), API, motor `pnpm medals:tick`, `<Medal>` con los SVG de Kyan, Administración › Medallas y la pestaña Logros. Ensayado sobre una copia de producción del 2026-11-06 ([guía](bitacora/2026-11-04-medallas-configurables/GUIA_IMPLEMENTACION.md)).
+- **Reglas del 2026-11-06 (Daniel):** el progreso de las bloqueadas solo lo ve el dueño de la ficha (y el admin); las stats de la BETA no cuentan (todo desde la temporada 2; Fundador y Pionero salen de la BETA, pero llegan al abrirse la temporada 2); el podio y el top de la BETA sí se dan al cerrarla; sin el aviso "Cuenta desde el 2026-10-29".
+- **Urgente: la BETA de producción cierra el 2026-11-09 a las 09:00 UTC** (en la base; los documentos decían 2026-12-03). El despliegue tiene que estar antes.
+- **Falta:**
+  1. Desplegar (pasos en la guía): respaldo, `probar_79.sh` contra producción, la `79` y las definiciones, API, `cmleague-medals.timer` y web.
+  2. Avisar en Discord antes del cierre de la BETA (unos 130 avisos de Fundador y Pionero al abrirse la temporada 2) y publicar el `CHANGELOG_DISCORD.txt`.
+  3. Más adelante: `@fontsource/montserrat` (lo instala Daniel; hasta entonces, Arial).
+  4. Con Kyan: diseño del Top 20 (hoy, el círculo del Top 10 en bronce), si en tamaño chico va la versión plana (pregunta 4) y que `brillo_solo_marco` sea la versión final; revisar las respuestas de Daniel a las preguntas del plan (abierta: la 8, "más mejorado").
+  5. `badges/`, las misiones semanales y las insignias VIP siguen sin commit en `v34frag-main` (`feat-missions-badges`): no salen con las medallas.
+
 ## La sala en el link de reemplazo, el detalle como sala y el ELO del abandono (2026-11-06): desplegado
 
 - **Hecho y probado en local:** replanteo `78`, la ruta `/api/v1/mm/games/{id}/room`, la sala en el link de reemplazo y en el detalle de la partida, y los topes del ELO del abandono en Administración › Matchmaking ([`2026-11-06-reemplazo-sala-y-abandono`](bitacora/2026-11-06-reemplazo-sala-y-abandono/)). Base: 12 comprobaciones y la inversa; API: 547 pruebas; web: 631. Diseño: https://claude.ai/artifact/Ndp1drqtYpRVGVcohLewjU
@@ -990,6 +1002,7 @@ Daniel quiere que el director automático de la SourceTV siga mostrando las kill
 
 | Plan | Qué propone | Qué falta |
 |---|---|---|
+| [`2026-11-04-medallas-configurables`](bitacora/2026-11-04-medallas-configurables/PLAN.md) | Medallas configurables: plantillas base de `badges/nuevas` + definiciones (objetivo, métrica y diseño) desde Administración › Medallas, motor con `medals:tick` y sin emoji en ninguna parte | Aprobación y las 13 preguntas de la sección 14. Pedirle a Kyan el Top 20 y `generar_medallas_perfil.py`. **La fase 1 tiene que estar antes del cierre de la BETA (2026-12-03 06:00 de Argentina)**, o esas medallas se otorgan con emoji |
 | [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS (OVH desde el 2026-10-25). La parte de despliegue hay que replanearla para el VPS |
 | [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS (OVH VPS-1 en Hillsboro, Ubuntu 26.04, desde el 2026-10-25; el plan dice Hostinger y los cambios están en su guía): servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
 

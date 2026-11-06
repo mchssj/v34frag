@@ -11,6 +11,7 @@ import {
 } from "../../api/queries"
 import type { PlayerDetail } from "../../types"
 import { Delta, RESULT_CHIP, useOpenMatch } from "./shared"
+import { Medal } from "@/features/medals/Medal"
 
 // ---------- Resumen ----------
 
@@ -100,15 +101,10 @@ export function Summary({
               ) : (
                 items.map((m) => (
                   <div
-                    key={`${m.title}-${m.icon}`}
+                    key={`${m.title}-${m.design.id}`}
                     className="flex items-center gap-3"
                   >
-                    <span
-                      aria-hidden
-                      className="grid size-9 place-items-center rounded-lg bg-primary/12 text-lg"
-                    >
-                      {m.icon ?? "🏅"}
-                    </span>
+                    <Medal look={m.design} size={36} title={m.design.title} />
                     <span className="flex-1 text-sm font-medium">
                       {m.title}
                     </span>

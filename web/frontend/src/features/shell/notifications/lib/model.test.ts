@@ -157,7 +157,17 @@ group("notificaciones", () => {
             eligible: true,
             elo: 2210,
             elo_after: 2022,
-            medal: { name: "Top 10", icon: "🏅" },
+            medal: {
+              name: "Top 10",
+              design: {
+                template: "top_temporada",
+                title: "Top 10 de la temporada",
+                label: "S1",
+                band: "TOP 10",
+                metal: "plata",
+                accent: "top10",
+              },
+            },
           },
         }),
         "Zeta"
@@ -165,8 +175,18 @@ group("notificaciones", () => {
     ).toEqual({
       kind: "medal",
       title: "Cerró BETA: terminaste 4.º",
-      body: "🏅 Top 10 · empiezas la próxima con 2022",
+      body: "Top 10 · empiezas la próxima con 2022",
       link: { to: "/player/$nick", params: { nick: "Zeta" } },
+      // (replanteo 79) La medalla dibujada, sin emoji.
+      medal: {
+        template: "top_temporada",
+        title: "Top 10 de la temporada",
+        number: null,
+        label: "S1",
+        band: "TOP 10",
+        metal: "plata",
+        accent: "top10",
+      },
     })
     expect(
       describe(

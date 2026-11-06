@@ -76,10 +76,12 @@ beforeAll(async () => {
     uid: liveUid, server_id: serverId, server_name: `Mpr ${sfx}`, seq: 3, map: 'de_nuke', score_a: 2, score_b: 1, max_rounds: 24, started_at: new Date().toISOString(),
     payload: { team_names: { a: `Vivo${sfx}`, b: '' }, players: [{ steamid: steam(1), name: `vivo1${sfx}`, team: 'a', kills: 7, deaths: 1, rounds: 3 }] },
   }]);
+  // (replanteo 79) Las medallas manuales llevan una definición (sin emoji).
+  const campeon = (await admin().from('medal_definitions').select('id').eq('key', 'campeon_torneo').single()).data!.id as string;
   await insert('player_medals', [
-    { player_id: playerIds[0], title: `MVP ${sfx}`, icon: '⭐' },
-    { player_id: playerIds[0], title: `MVP ${sfx}`, icon: '⭐' },
-    { player_id: playerIds[0], title: `Top ${sfx}`, icon: '🏆' },
+    { player_id: playerIds[0], title: `MVP ${sfx}`, definition_id: campeon },
+    { player_id: playerIds[0], title: `MVP ${sfx}`, definition_id: campeon },
+    { player_id: playerIds[0], title: `Top ${sfx}`, definition_id: campeon },
   ]);
   // Torneo: la final la gana el equipo 0 (ficha 0 inscrita); la base marca el campeón sola.
   await insert('teams', teamIds.map((id, i) => ({ id, name: `MprT${i}${sfx}`, tag: `M${i}`, kind: 'official' })));
@@ -213,8 +215,8 @@ describe('perfil público', () => {
 
     const medals = await get(`/api/v1/players/${nick(0)}/medals/summary`);
     expect(medals.body.items).toEqual([
-      { title: `MVP ${sfx}`, icon: '⭐', count: 2, last_at: expect.any(String) },
-      { title: `Top ${sfx}`, icon: '🏆', count: 1, last_at: expect.any(String) },
+      { title: `MVP ${sfx}`, count: 2, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }) },
+      { title: `Top ${sfx}`, count: 1, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }) },
     ]);
     expect((await get(`/api/v1/players/${nick(0)}/medals/summary?sort=title&order=desc&per=1`)).body).toMatchObject({ total: 2, items: [{ title: `Top ${sfx}` }] });
     expect((await get(`/api/v1/players/${nick(0)}/medals`)).body.total).toBe(3);

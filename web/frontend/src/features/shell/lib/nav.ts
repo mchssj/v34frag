@@ -1,4 +1,5 @@
 import {
+  AwardIcon,
   BanIcon,
   CalendarRangeIcon,
   ChartColumnIcon,
@@ -117,6 +118,13 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         admin: "seasons",
       },
       {
+        key: "admin-medals",
+        label: "Medallas",
+        to: "/admin/medals",
+        icon: AwardIcon,
+        admin: "medals",
+      },
+      {
         key: "admin-clips",
         label: "Clips",
         to: "/admin/clips",
@@ -167,6 +175,7 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
   servers: "Servidores y ELO",
   matchmaking: "Matchmaking",
   seasons: "Temporadas",
+  medals: "Medallas",
   clips: "Clips",
   ranking: "Ranking de equipos",
   maps: "Mapas",

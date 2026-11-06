@@ -37,6 +37,7 @@ import { bearer, errorResponses, json } from '../schemas/common';
 import { AvatarResult, AvatarUpload } from '../schemas/profile';
 import { Medal } from '../schemas/players';
 import { vipStatusOf } from '../services/vip';
+import { designOf, loadDefinitions } from '../services/medals';
 
 type C = Context<AppEnv>;
 const PLAYER = 'id, nick, user_id, steam_id, photo_url, privacy, bio, achievements, team_history';
@@ -95,8 +96,10 @@ const uploadPhoto = createRoute({
 });
 const addMedal = createRoute({
   method: 'post', path: '/api/v1/admin/players/{id}/medals', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Dar una medalla', request: { params: IdParam, body: { required: true, ...json(MedalBody) } },
-  responses: { 201: { description: 'Medalla', ...json(Medal) }, ...errorResponses(400, 401, 403) },
+  summary: 'Dar una medalla',
+  description: 'Una definición manual (Comunidad: staff, caster, campeón de torneo…). El título, si no viene, es el de la definición.',
+  request: { params: IdParam, body: { required: true, ...json(MedalBody) } },
+  responses: { 201: { description: 'Medalla', ...json(Medal) }, ...errorResponses(400, 401, 403, 404) },
 });
 const deleteMedal = createRoute({
   method: 'delete', path: '/api/v1/admin/medals/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -258,8 +261,18 @@ export const adminPlayers = createRouter()
   })
   .openapi(addMedal, async (c) => {
     const { id } = c.req.valid('param');
-    const row = mustHave(await c.var.sb.from('player_medals').insert({ player_id: id, ...c.req.valid('json') }).select('id, title, icon, created_at').single());
-    return c.json({ ...row, season: null, rank: null }, 201);
+    const b = c.req.valid('json');
+    const def = (await loadDefinitions(c.var.sb, [b.definition_id])).get(b.definition_id);
+    if (!def || def.status !== 'active') throw notFound('esa medalla');
+    if (def.aggregation !== 'manual') throw new AppError(400, 'BUSINESS_RULE', 'Esa medalla la da el juego o el cierre de temporada, no un admin.');
+    const row = mustHave(
+      await c.var.sb
+        .from('player_medals')
+        .insert({ player_id: id, definition_id: def.id, title: b.title ?? def.title, icon: null, source: 'admin' })
+        .select('id, title, created_at')
+        .single(),
+    );
+    return c.json({ ...row, source: 'admin' as const, season: null, rank: null, design: designOf(def) }, 201);
   })
   .openapi(deleteMedal, async (c) => {
     const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', c.req.valid('param').id).select('id'));

@@ -163,3 +163,7 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-10-28 | Roles de juego | IGL, AWPer, etc. son el `game_role` del perfil de cada jugador y se pueden repetir; no hay roles por equipo | Daniel |
 | 2026-10-28 | Logo y banner | El frontend recorta (cuadrado y 4:1); la API valida tipo, peso y medidas; errores `INVALID_FILE` y `FILE_TOO_LARGE` | Daniel |
 | 2026-10-28 | Aviso a los inscritos | `event_lineup` a cada jugador inscrito, cambiado o sacado (no al capitán) | Daniel |
+| 2026-11-05 | Medallas: cuándo llegan | Al guardar cada mix (no ronda a ronda); el cron queda de respaldo. Falta que lo revise Kyan | Daniel |
+| 2026-11-05 | Medallas: alcance | Cuentan todas las partidas terminadas (mixes, PCW y torneo); clutchs desde 1v1; ninguna se quita sola; el objetivo de una otorgada no se edita | Daniel |
+| 2026-11-05 | Medallas: dibujo | Paleta fija de Kyan; en tamaño chico, la de brillo achicada; Top 20 con el Top 10 en bronce hasta que el admin la cambie | Daniel |
+| 2026-11-05 | Medallas: VIP por meses | Meses acumulados; no existe Premium (fase 2) | Daniel |

@@ -2633,6 +2633,615 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/medals/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Medallas activas
+         * @description Las medallas que se pueden ganar hoy, con su dibujo y cuántos la tienen. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Medallas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinitionList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Todas las medallas (admin)
+         * @description Borradores, activas y archivadas, con cuántos la tienen y desde cuándo hay datos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Medallas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinitionList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Crear una medalla (borrador)
+         * @description Plantilla del manifiesto, objetivo y dibujo. La métrica, la agregación y los filtros salen de la plantilla. Queda en borrador hasta activarla. La clave es la plantilla y el objetivo (409 si ya existe).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalDefinitionCreate"];
+                };
+            };
+            responses: {
+                /** @description Creada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinition"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quiénes la recibirían hoy
+         * @description Cuántos jugadores ya cumplen esa plantilla y ese objetivo, sin otorgar nada. `null` en las de temporada y las manuales.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalPreviewBody"];
+                };
+            };
+            responses: {
+                /** @description Cantidad */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalPreview"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar un borrador
+         * @description Solo los borradores. Una medalla activa se archiva.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Borrada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Editar una medalla
+         * @description El dibujo, el título y la descripción se cambian siempre; el objetivo y el mínimo de mixes, solo en un borrador.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalDefinitionPatch"];
+                };
+            };
+            responses: {
+                /** @description Medalla */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinition"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activar una medalla
+         * @description Desde ahora el motor la revisa después de cada mix. Con `retroactive`, se la da ya a quienes la cumplen (con aviso).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalActivate"];
+                };
+            };
+            responses: {
+                /** @description Activada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalActivated"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archivar una medalla
+         * @description Deja de otorgarse; quien la tiene la conserva. Una medalla de un tramo de temporada no se archiva.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Archivada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinition"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/medals/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Progreso en las medallas
+         * @description Cada medalla activa del motor con lo que lleva el jugador y si ya la ganó. El progreso solo lo ven el dueño de la ficha y el admin: los demás (y sin sesión) ven solo las ganadas (`hidden`). Acepta el id o el nick. Las de temporada y las manuales están en `/players/{id}/medals`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Progreso */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalProgressList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players": {
         parameters: {
             query?: never;
@@ -5490,7 +6099,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Dar una medalla */
+        /**
+         * Dar una medalla
+         * @description Una definición manual (Comunidad: staff, caster, campeón de torneo…). El título, si no viene, es el de la definición.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -5502,7 +6114,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["MedalBody"];
+                    "application/json": components["schemas"]["MedalGrant"];
                 };
             };
             responses: {
@@ -5535,6 +6147,15 @@ export interface paths {
                 };
                 /** @description Sin permiso */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -21104,6 +21725,125 @@ export interface components {
             /** @description ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo */
             elo_history: number[];
         };
+        MedalDefinitionList: {
+            items: components["schemas"]["MedalDefinition"][];
+        };
+        MedalDefinition: {
+            /** Format: uuid */
+            id: string;
+            key: string;
+            template: string;
+            scope: string;
+            title: string;
+            description: string | null;
+            metric: string;
+            /** @enum {string} */
+            aggregation: "total" | "avg_min_matches" | "max" | "streak" | "once" | "season_rank" | "manual";
+            filters: {
+                [key: string]: unknown;
+            };
+            target: number;
+            series: string | null;
+            series_order: number | null;
+            /** @enum {string} */
+            status: "draft" | "active" | "archived";
+            retroactive: boolean;
+            /** @description Desde cuándo hay datos de la métrica */
+            data_since: string | null;
+            activated_at: string | null;
+            created_at: string;
+            /** @description Cuántos jugadores la tienen */
+            holders: number;
+            design: components["schemas"]["MedalDesign"];
+        };
+        /** @description Lo necesario para dibujar una medalla con <Medal> */
+        MedalDesign: {
+            /**
+             * Format: uuid
+             * @description La definición
+             */
+            id: string;
+            key: string;
+            /** @description Id de la plantilla del manifiesto (el SVG) */
+            template: string;
+            title: string;
+            /** @description El número del dibujo */
+            number: string | null;
+            /** @description La etiqueta. En las de temporada, `S` y el número de la temporada */
+            label: string | null;
+            /** @description Texto de la banda */
+            band: string | null;
+            /** @enum {string|null} */
+            metal: "bronce" | "plata" | "oro" | "platino" | "diamante" | null;
+            /** @description Acento de la paleta del manifiesto */
+            accent: string | null;
+        };
+        MedalPreview: {
+            /** @description Quiénes la recibirían hoy; null en las de temporada y las manuales */
+            players: number | null;
+        };
+        MedalPreviewBody: {
+            template: string;
+            target: number;
+            min_matches?: number;
+        };
+        MedalDefinitionCreate: {
+            template: string;
+            target: number;
+            /** @description Por defecto, el formato de la plantilla con el objetivo */
+            title?: string;
+            description?: string | null;
+            /** @description Solo las de promedio (% HS, KDA, ADR): mínimo de mixes */
+            min_matches?: number;
+            design?: components["schemas"]["MedalDesignInput"];
+        };
+        /**
+         * @description Solo lo que la plantilla deja editar; lo demás se descarta
+         * @default {}
+         */
+        MedalDesignInput: {
+            number?: string | null;
+            label?: string | null;
+            band?: string | null;
+            /** @enum {string} */
+            metal?: "bronce" | "plata" | "oro" | "platino" | "diamante";
+            accent?: string | null;
+        };
+        MedalDefinitionPatch: {
+            /** @description Solo en un borrador */
+            target?: number;
+            title?: string;
+            description?: string | null;
+            min_matches?: number;
+            design?: components["schemas"]["MedalDesignInput"];
+        };
+        MedalActivated: {
+            definition: components["schemas"]["MedalDefinition"];
+            /** @description A cuántos se la dio al activarla */
+            awarded: number;
+        };
+        MedalActivate: {
+            /** @description Dársela ya a quienes la cumplen */
+            retroactive: boolean;
+        };
+        MedalProgressList: {
+            items: components["schemas"]["MedalProgress"][];
+            /** @description Quien mira no es el dueño de la ficha (ni el admin): no ve el progreso de las bloqueadas */
+            hidden: boolean;
+            /** @description Desde cuándo cuentan las stats: el inicio de la temporada 2. null durante la BETA, que no da medallas */
+            stats_since: string | null;
+        };
+        MedalProgress: {
+            design: components["schemas"]["MedalDesign"];
+            series: string | null;
+            series_order: number | null;
+            target: number;
+            /** @description Lo que lleva el jugador */
+            value: number;
+            data_since: string | null;
+            /** @description Cuándo la ganó; null = bloqueada */
+            earned_at: string | null;
+        };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
             /** @description Total con los filtros aplicados */
@@ -21203,7 +21943,6 @@ export interface components {
             /** Format: uuid */
             id: string;
             title: string;
-            icon: string | null;
             created_at: string;
             /** @description Temporada en la que la ganó; `null` en las medallas que da el admin a mano */
             season: {
@@ -21214,6 +21953,12 @@ export interface components {
             } | null;
             /** @description Puesto en esa temporada */
             rank: number | null;
+            /**
+             * @description Quién la dio: un admin, el motor o el cierre de temporada
+             * @enum {string}
+             */
+            source: "admin" | "auto" | "season";
+            design: components["schemas"]["MedalDesign"] & unknown;
         };
         TeamStintList: {
             items: components["schemas"]["TeamStint"][];
@@ -21281,7 +22026,7 @@ export interface components {
             /** @description Fecha de la final (o del último partido, en una liga sin final) */
             at: string | null;
         };
-        /** @description Medallas agrupadas por título e icono, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
+        /** @description Medallas agrupadas por título y definición, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
         MedalSummaryList: {
             items: components["schemas"]["MedalSummary"][];
             /** @description Total con los filtros aplicados */
@@ -21294,8 +22039,8 @@ export interface components {
         };
         MedalSummary: {
             title: string;
-            icon: string | null;
             count: number;
+            design: components["schemas"]["MedalDesign"];
             /** @description La más reciente */
             last_at: string;
         };
@@ -21649,13 +22394,14 @@ export interface components {
              */
             force: boolean;
         };
-        MedalBody: {
-            title: string;
+        MedalGrant: {
             /**
-             * @description Un emoji
-             * @default 🏆
+             * Format: uuid
+             * @description Una definición manual (Comunidad: staff, caster, campeón de torneo…)
              */
-            icon: string;
+            definition_id: string;
+            /** @description Por defecto, el de la definición (por ejemplo, el nombre del torneo) */
+            title?: string;
         };
         PlayerIpList: {
             items: components["schemas"]["PlayerIp"][];
@@ -22700,8 +23446,10 @@ export interface components {
             to: number | null;
             /** @description Nombre de la medalla. `{top}` se reemplaza por el top N ("Top {top}" → "Top 20") */
             name: string;
-            /** @description Un emoji */
-            icon: string;
+            /** @description Clave de la medalla de temporada que reciben (replanteo 79). Reemplaza al emoji */
+            definition?: string | null;
+            /** @description Emoji de los tramos viejos; no se muestra */
+            icon?: string | null;
         };
         SeasonStandingList: {
             items: components["schemas"]["SeasonStanding"][];
@@ -22736,7 +23484,7 @@ export interface components {
             /** @description `null`: sin medalla */
             medal: {
                 name: string;
-                icon: string;
+                design: components["schemas"]["MedalDesign"] | null;
             } | null;
             /** @description Equipos oficiales actuales (también en las temporadas cerradas) */
             teams: components["schemas"]["TeamRef"][];
@@ -22772,7 +23520,7 @@ export interface components {
             /** @description `null`: sin medalla */
             medal: {
                 name: string;
-                icon: string;
+                design: components["schemas"]["MedalDesign"] | null;
             } | null;
             season: {
                 /** Format: uuid */
@@ -22887,7 +23635,7 @@ export interface components {
             /** @description `null`: sin medalla */
             medal: {
                 name: string;
-                icon: string;
+                design: components["schemas"]["MedalDesign"] | null;
             } | null;
             elo_after: number;
             /** @description El reinicio le cambia el ELO (está sobre el piso o, con `reset_all`, no está en el piso) */

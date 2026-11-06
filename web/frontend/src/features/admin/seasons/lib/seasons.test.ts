@@ -18,9 +18,9 @@ import {
 } from "./seasons"
 
 const TIERS = [
-  { from: 1, to: 1, name: "Campeón", icon: "🏆" },
-  { from: 2, to: 10, name: "Top 10", icon: "🎖️" },
-  { from: 11, to: null, name: "Top {top}", icon: "🏅" },
+  { from: 1, to: 1, name: "Campeón", definition: "season_podio_1" },
+  { from: 2, to: 10, name: "Top 10", definition: "season_top10" },
+  { from: 11, to: null, name: "Top {top}", definition: "season_top20" },
 ]
 
 const season: Season = {

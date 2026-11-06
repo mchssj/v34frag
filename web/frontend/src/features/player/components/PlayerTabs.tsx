@@ -22,10 +22,12 @@ import { Teams } from "./tabs/TeamsTab"
 import { Seasons } from "./tabs/SeasonsTab"
 import { Bio } from "./tabs/BioTab"
 import { Clips } from "./tabs/ClipsTab"
+import { Achievements } from "./tabs/AchievementsTab"
 
 const LABELS: Record<Tab, string> = {
   resumen: "Resumen",
   clips: "Clips",
+  logros: "Logros",
   mapas: "Mapas",
   partidas: "Partidas",
   equipos: "Equipos",
@@ -150,6 +152,7 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
           />
         )}
         {tab === "clips" && <Clips playerId={player.id} alias={player.alias} />}
+        {tab === "logros" && <Achievements nick={nick} />}
         {tab === "mapas" && <Maps nick={nick} />}
         {tab === "partidas" && (
           <Matches nick={nick} search={search} onChange={onChange} />

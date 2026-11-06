@@ -52,7 +52,7 @@ En **Inicio de sesión** cambias la imagen que se ve al lado del formulario de e
 
 ## Fichas
 
-En Administración › Jugadores, pestaña **Fichas**, buscas por nick o SteamID y filtras por **Con cuenta**, **Sin cuenta** y **Sin SteamID**. En el detalle de una ficha editas su nick (si tiene cuenta, manda el alias de la cuenta), la foto, la biografía, los logros, sus SteamID, la cuenta vinculada y las medallas. La foto de la ficha se ve en toda la web hasta que el jugador sube una suya: gana la última que se subió.
+En Administración › Jugadores, pestaña **Fichas**, buscas por nick o SteamID y filtras por **Con cuenta**, **Sin cuenta** y **Sin SteamID**. En el detalle de una ficha editas su nick (si tiene cuenta, manda el alias de la cuenta), la foto, la biografía, los logros, sus SteamID, la cuenta vinculada y las medallas. En **Medallas** das una de Comunidad (staff, caster, campeón de torneo…) y, si quieres, le pones un título, como el nombre del torneo; las demás las da el juego (ver [Medallas](/help/admin/medallas)). La foto de la ficha se ve en toda la web hasta que el jugador sube una suya: gana la última que se subió.
 
 **Nueva ficha** crea un jugador sin cuenta, al que después le sumas SteamID o una cuenta.
 

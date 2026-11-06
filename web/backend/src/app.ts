@@ -27,6 +27,7 @@ import { elo } from './routes/elo';
 import { events } from './routes/events';
 import { live } from './routes/live';
 import { manual as manualRoutes } from './routes/manual';
+import { medals } from './routes/medals';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
 import { mixes } from './routes/mixes';
@@ -92,6 +93,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', account);
   app.route('/', claim); // antes que players: /players/unclaimed no es un {id}
   app.route('/', ranking); // antes que players: /players/compare no es un {id}
+  app.route('/', medals); // antes que players: /players/{id}/medals/progress
   app.route('/', players);
   app.route('/', teams);
   app.route('/', roster);

@@ -1660,15 +1660,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"player_medals": {
+                },"medal_definitions": {
                   Row: {
-                    "created_at": string,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"tier": string | null,"title": string
+                    "activated_at": string | null,"aggregation": string,"created_at": string,"created_by": string | null,"data_since": string | null,"description": string | null,"design": Json,"filters": Json,"id": string,"key": string,"metric": string,"retroactive": boolean,"scope": string,"series": string | null,"series_order": number | null,"status": string,"target": number,"template": string,"title": string,"updated_at": string,"updated_by": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"tier"?: string | null,"title": string
+                    "activated_at"?: string | null,"aggregation": string,"created_at"?: string,"created_by"?: string | null,"data_since"?: string | null,"description"?: string | null,"design"?: Json,"filters"?: Json,"id"?: string,"key": string,"metric": string,"retroactive"?: boolean,"scope"?: string,"series"?: string | null,"series_order"?: number | null,"status"?: string,"target": number,"template": string,"title": string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"tier"?: string | null,"title"?: string
+                    "activated_at"?: string | null,"aggregation"?: string,"created_at"?: string,"created_by"?: string | null,"data_since"?: string | null,"description"?: string | null,"design"?: Json,"filters"?: Json,"id"?: string,"key"?: string,"metric"?: string,"retroactive"?: boolean,"scope"?: string,"series"?: string | null,"series_order"?: number | null,"status"?: string,"target"?: number,"template"?: string,"title"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: []
+                },"player_medals": {
+                  Row: {
+                    "created_at": string,"definition_id": string | null,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"source": string,"tier": string | null,"title": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"definition_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title": string
+                  }
+                  Update: {
+                    "created_at"?: string,"definition_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -1719,6 +1730,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "vip_status"
       referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "player_medals_definition_id_fkey"
+      columns: ["definition_id"]
+isOneToOne: false
+      referencedRelation: "medal_definitions"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "player_medals_season_id_fkey"
       columns: ["season_id"]
@@ -2462,7 +2479,12 @@ isOneToOne: false
                   ]
                 }
           }
-          Views: {
+          Views: {"medal_holders": {
+                  Row: {
+                    "definition_id": string | null,"holders": number | null
+                  }
+                  Relationships: []
+                },
             "admin_claim_log": {
                   Row: {
                     "alias": string | null,"code": string | null,"created_at": string | null,"id": number | null,"nick": string | null,"ok": boolean | null,"player_id": string | null,"player_nick": string | null,"result": string | null,"search": string | null,"server_id": string | null,"server_name": string | null,"steam_id": string | null,"user_id": string | null

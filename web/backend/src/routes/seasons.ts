@@ -7,6 +7,7 @@ import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { IdParam, type TeamRef } from '../schemas/players';
+import { designOf, loadDefinitionsByKey, tierDefinition } from '../services/medals';
 import { resolvePlayer } from '../services/players';
 import {
   PlayerSeasonList,
@@ -68,8 +69,20 @@ type StandingRow = {
   elo: number | null; peak_elo: number | null; matches: number | null; wins: number | null; losses: number | null;
   elo_after: number | null; tier: string | null; icon: string | null;
 };
-const medal = (tier: string | null, icon: string | null) => (tier ? { name: tier, icon: icon ?? '🏅' } : null);
-const stats = (r: Omit<StandingRow, 'player_id' | 'nick' | 'photo_url'>) => ({
+type Design = ReturnType<typeof designOf> | null;
+const medal = (tier: string | null, _icon: string | null, design: Design = null) => (tier ? { name: tier, design } : null);
+
+/** El dibujo de la medalla de cada puesto según los tramos de su temporada (replanteo 79). */
+async function designs(c: C, items: { tiers: Tier[]; top_n: number; number: number; rank: number | null; tier: string | null }[]) {
+  const ids = items.map((x) => (x.tier ? tierDefinition(x.tiers, x.rank, x.top_n) : null));
+  const defs = await loadDefinitionsByKey(c.var.sb, ids);
+  return items.map((x, i) => {
+    const d = ids[i] ? defs.get(ids[i]!) : undefined;
+    return d ? designOf(d, x.rank, x.number) : null;
+  });
+}
+
+const stats = (r: Omit<StandingRow, 'player_id' | 'nick' | 'photo_url'>, design: Design = null) => ({
   rank: r.rank,
   eligible: !!r.eligible,
   elo: r.elo ?? 0,
@@ -79,7 +92,7 @@ const stats = (r: Omit<StandingRow, 'player_id' | 'nick' | 'photo_url'>) => ({
   wins: r.wins ?? 0,
   losses: r.losses ?? 0,
   elo_after: r.elo_after ?? r.elo ?? 0,
-  medal: medal(r.tier, r.icon),
+  medal: medal(r.tier, r.icon, design),
 });
 
 async function readSeason(c: C, id: string) {
@@ -193,7 +206,7 @@ export const seasons = createRouter()
   .openapi(standings, async (c) => {
     const { id } = c.req.valid('param');
     const p = c.req.valid('query');
-    await readSeason(c, id);
+    const season = await readSeason(c, id);
     let q = c.var.sb.from('season_standings_list').select(STANDING, { count: 'exact' }).eq('season_id', id);
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
@@ -204,11 +217,12 @@ export const seasons = createRouter()
     if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
     type Row = StandingRow & { teams: unknown; rating: number | null; kd: number | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id');
+    const ds = await designs(c, rows.map((r) => ({ ...season, rank: r.rank, tier: r.tier })));
     return c.json(
       envelope(
-        rows.map(({ player_id, nick, photo_url, teams, rating, kd, ...r }) => ({
+        rows.map(({ player_id, nick, photo_url, teams, rating, kd, ...r }, i) => ({
           player: { id: player_id!, alias: nick ?? '', photo_url },
-          ...stats(r),
+          ...stats(r, ds[i]),
           teams: Array.isArray(teams) ? (teams as z.infer<typeof TeamRef>[]) : [],
           rating: rating === null ? null : Number(rating),
           kd: kd === null ? null : Number(kd),
@@ -230,11 +244,22 @@ export const seasons = createRouter()
       season_id: string | null; number: number | null; name: string | null; ended_at: string | null; players: number | null;
     };
     const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'season_id');
+    const ids = rows.map((r) => r.season_id!).filter(Boolean);
+    const frozen = new Map(
+      (ids.length ? mustHave(await c.var.sb.from('seasons').select('id, tiers, top_n').in('id', ids)) : []).map((x) => [x.id, x] as const),
+    );
+    const ds = await designs(
+      c,
+      rows.map((r) => {
+        const f = frozen.get(r.season_id!);
+        return { tiers: toTiers(f?.tiers), top_n: f?.top_n ?? 0, number: r.number ?? 0, rank: r.rank, tier: r.tier };
+      }),
+    );
     return c.json(
       envelope(
-        rows.map(({ season_id, number, name, ended_at, players, ...r }) => ({
+        rows.map(({ season_id, number, name, ended_at, players, ...r }, i) => ({
           season: { id: season_id!, number: number!, name: name ?? '', ended_at, players: players ?? 0 },
-          ...stats(r),
+          ...stats(r, ds[i]),
         })),
         total,
         p,
@@ -290,16 +315,21 @@ export const seasons = createRouter()
       player_id: string; nick: string | null; rank: number | null; eligible: boolean; elo: number; matches: number;
       tier: string | null; icon: string | null; elo_after: number; reset: boolean;
     };
-    const [{ rows, total }, summary] = await Promise.all([
+    const [{ rows, total }, summary, active] = await Promise.all([
       runList<Row, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id'),
       c.var.sb.rpc('season_preview_summary', args).then(mustHave),
+      c.var.sb.from('seasons').select('number, tiers').eq('status', 'active').maybeSingle().then(must),
     ]);
+    const ds = await designs(
+      c,
+      rows.map((r) => ({ tiers: toTiers(active?.tiers), top_n: p.top_n, number: active?.number ?? 0, rank: r.rank, tier: r.tier })),
+    );
     return c.json(
       {
         ...envelope(
-          rows.map((r) => ({
+          rows.map((r, i) => ({
             rank: r.rank, player: { id: r.player_id, alias: r.nick ?? '' }, eligible: r.eligible, elo: r.elo, matches: r.matches,
-            medal: medal(r.tier, r.icon), elo_after: r.elo_after, reset: r.reset,
+            medal: medal(r.tier, r.icon, ds[i]), elo_after: r.elo_after, reset: r.reset,
           })),
           total,
           p,

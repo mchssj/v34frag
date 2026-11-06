@@ -66,7 +66,7 @@ Cuando cambias de nivel te avisamos en la campana.
 El ranking se divide en temporadas de alrededor de un mes. En [Ranking](/ranking) ves la temporada en curso, las anteriores y el **Histórico**.
 
 - Para entrar en el ranking de la temporada tienes que jugar una cantidad mínima de mixes en ella. El ranking te muestra cuántos.
-- Al cerrar, los mejores puestos reciben una **medalla** que queda en su perfil, en la pestaña **Temporadas**. Mientras la temporada sigue abierta, el ranking te muestra qué medalla te tocaría si cerrara hoy.
+- Al cerrar, los mejores puestos reciben una **medalla** que queda en su perfil, en las pestañas **Logros** y **Temporadas**. Mientras la temporada sigue abierta, el ranking te muestra qué medalla te tocaría si cerrara hoy.
 - Al empezar una temporada nueva, el ELO puede reiniciarse, del todo o en parte. Cuánto, lo define la administración en cada temporada.
 
 ## Dónde ves tus números
@@ -76,6 +76,7 @@ En tu perfil público (desde **Mi perfil** › **Ver perfil público**, o tocand
 - **Resumen:** tu ELO, tu nivel y tus estadísticas (rating, K/D, HS %, ADR, porcentaje de victorias). En **Evolución de ELO**, pasa el mouse (o toca) sobre la línea para ver, en cada partida, el ELO con el que quedaste, cuánto ganaste o perdiste, la fecha y el mapa.
 - **Partidas:** cada partida, con cuánto ELO te dio o te quitó.
 - **Mapas:** cómo te va en cada mapa.
+- **Logros:** tus medallas y lo que te falta para las que todavía no tienes. Más en [Medallas y logros](/help/jugador/logros).
 - **Temporadas:** tu puesto y tus medallas en cada temporada.
 
 En [Ranking](/ranking) puedes filtrar por nivel y buscar a cualquier jugador. Con **Comparar** pones a dos jugadores lado a lado.

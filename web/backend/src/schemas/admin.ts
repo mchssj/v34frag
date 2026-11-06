@@ -58,12 +58,8 @@ export const AdminPlayer = z
   })
   .openapi('AdminPlayer');
 
-export const MedalBody = z
-  .object({
-    title: z.string().trim().min(1).max(80),
-    icon: z.string().trim().min(1).max(8).default('🏆').openapi({ description: 'Un emoji' }),
-  })
-  .openapi('MedalBody');
+// (replanteo 79) Ya no lleva emoji: una definición manual y, si hace falta, su título (el nombre del torneo).
+export { MedalGrant as MedalBody } from './medals';
 
 export const SteamUnlinked = z
   .object({ steam_id: z.string(), last_nick: z.string().nullable(), matches: z.number().int(), last_played: z.string().nullable() })

@@ -109,7 +109,7 @@ describe('temporadas: respuestas', () => {
     const body = await json(await call('GET', `/api/v1/seasons/${SEASON}/standings?q=Álfa&eligible=true`));
     expect(body.items[0]).toEqual({
       rank: 1, player: { id: PLAYER, alias: 'Alfa', photo_url: null }, eligible: true, elo: 2540, level: 10, peak_elo: 2600,
-      matches: 25, wins: 15, losses: 10, elo_after: 2055, medal: { name: 'Campeón', icon: '🏆' },
+      matches: 25, wins: 15, losses: 10, elo_after: 2055, medal: { name: 'Campeón', design: null },
       teams: [{ id: SEASON, name: 'Equipo', tag: 'EQ' }], rating: 1.12, kd: 1.3,
     });
     expect(body.items[1]).toMatchObject({ rank: null, player: { alias: '' }, level: 3, peak_elo: 900, matches: 0, elo_after: 900, medal: null,
@@ -150,7 +150,7 @@ describe('temporadas: respuestas', () => {
     expect(res.status).toBe(200);
     const body = await json(res);
     expect(body.items).toEqual([
-      { rank: 1, player: { id: PLAYER, alias: 'Alfa' }, eligible: true, elo: 2540, matches: 25, medal: { name: 'Campeón', icon: '🏆' }, elo_after: 2001, reset: true },
+      { rank: 1, player: { id: PLAYER, alias: 'Alfa' }, eligible: true, elo: 2540, matches: 25, medal: { name: 'Campeón', design: null }, elo_after: 2001, reset: true },
     ]);
     expect(body.summary).toEqual({ players: 10, eligible: 4, medals: 4, reset: 1, avg_drop: 539, max_drop: 539 });
     const rpc = calls.find((x) => x.url.pathname.endsWith('/rpc/season_preview'))!;
@@ -180,21 +180,32 @@ describe('temporadas: respuestas', () => {
     expect(season.reset_all).toBe(true);
   });
 
-  it('medallas de un jugador: las manuales sin temporada', async () => {
+  it('medallas de un jugador: con su dibujo, las manuales sin temporada', async () => {
+    const DEF = { id: PLAYER, key: 'campeon_torneo', template: 'campeon_torneo', scope: 'player', title: 'Campeón de torneo', description: null,
+      design: { label: 'CM LEAGUE', band: 'CAMPEÓN', metal: 'oro', accent: 'campeon' }, metric: 'manual', aggregation: 'manual', filters: {},
+      target: 1, series: null, series_order: null, status: 'active', retroactive: false, data_since: null, activated_at: null, created_at: '' };
+    const POD = { ...DEF, id: USER, key: 'season_podio_1', template: 'podio', title: 'Podio · puesto 1', aggregation: 'season_rank', metric: 'season_rank',
+      design: { number: '1', metal: 'oro' } };
     postgrest((url) =>
       url.pathname.endsWith('/player_medals')
         ? Response.json([
-            { id: SEASON, title: 'MVP', icon: '⭐', created_at: '2026-10-01T00:00:00+00:00', rank: null, season: null },
-            { id: USER, title: 'Temporada 1 · #1', icon: '🏆', created_at: '2026-11-20T09:00:00+00:00', rank: 1, season: { id: SEASON, number: 1, name: 'Temporada 1' } },
+            { id: SEASON, title: 'Torneo X', created_at: '2026-10-01T00:00:00+00:00', rank: null, source: 'admin', definition_id: PLAYER, season: null },
+            { id: USER, title: 'Temporada 1 · #1', created_at: '2026-11-20T09:00:00+00:00', rank: 1, source: 'season', definition_id: USER,
+              season: { id: SEASON, number: 1, name: 'Temporada 1' } },
           ])
-        : url.pathname.endsWith('/players')
-          ? Response.json({ id: PLAYER })
-          : undefined,
+        : url.pathname.endsWith('/medal_definitions')
+          ? Response.json([DEF, POD])
+          : url.pathname.endsWith('/players')
+            ? Response.json({ id: PLAYER })
+            : undefined,
     );
     const body = await json(await call('GET', `/api/v1/players/${PLAYER}/medals`));
     expect(body.items.map((m: { season: unknown; rank: unknown }) => [m.season, m.rank])).toEqual([
       [null, null],
       [{ id: SEASON, number: 1, name: 'Temporada 1' }, 1],
     ]);
+    expect(body.items[0].design).toMatchObject({ template: 'campeon_torneo', band: 'CAMPEÓN' });
+    expect(body.items[1].design).toMatchObject({ template: 'podio', number: '1', label: 'S1' });
+    expect(body.items[0]).not.toHaveProperty('icon');
   });
 });

@@ -106,8 +106,8 @@ export function tiersError(tiers: SeasonTier[], top: number): string | null {
   if (tiers.length === 0) return "Tiene que haber al menos un tramo."
   for (const [i, t] of tiers.entries()) {
     const last = i === tiers.length - 1
-    if (!t.name.trim() || !t.icon.trim())
-      return "Cada tramo necesita ícono y nombre."
+    if (!t.name.trim() || !(t.definition || t.icon?.trim()))
+      return "Cada tramo necesita medalla y nombre."
     if (t.from !== (i === 0 ? 1 : (tiers[i - 1].to ?? 0) + 1))
       return "Los tramos tienen que seguirse sin huecos, desde el puesto 1."
     if (!last && (t.to === null || t.to < t.from))
@@ -151,11 +151,17 @@ export function setTierEnd(tiers: SeasonTier[], i: number, to: number) {
 /** Suma un tramo al final: el último pasa a terminar en su primer puesto. */
 export function addTier(tiers: SeasonTier[]): SeasonTier[] {
   const last = tiers.at(-1)
-  if (!last) return [{ from: 1, to: null, name: "Top {top}", icon: "🏅" }]
+  if (!last) return [{ from: 1, to: null, name: "Top {top}", definition: null }]
+  // El tramo nuevo arranca con la misma medalla que el último; se cambia con "Cambiar medalla".
   return [
     ...tiers.slice(0, -1),
     { ...last, to: last.from },
-    { from: last.from + 1, to: null, name: "Top {top}", icon: "🏅" },
+    {
+      from: last.from + 1,
+      to: null,
+      name: "Top {top}",
+      definition: last.definition ?? null,
+    },
   ]
 }
 

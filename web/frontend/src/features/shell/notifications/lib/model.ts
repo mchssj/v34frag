@@ -9,6 +9,7 @@ import { es } from "date-fns/locale"
 
 import type { Schemas } from "@/api/client"
 import type { AppPath } from "../../lib/nav"
+import { templateOf, type MedalLook } from "@/features/medals/templates"
 
 // Notificaciones de la API (contrato notificaciones.md, sección 12). La base guarda `type` y `data`
 // con los nombres del momento; el texto, el icono y el link se arman acá.
@@ -37,6 +38,8 @@ export type Described = {
   title: string
   body: string
   link?: NotificationLink
+  /** La medalla dibujada en lugar del ícono (replanteo 79). */
+  medal?: MedalLook & { title: string }
 }
 
 /** Pendiente de aceptar o rechazar desde la lista. */
@@ -67,6 +70,22 @@ const obj = (v: unknown): Data =>
 const str = (v: unknown, fallback = "") =>
   typeof v === "string" && v.trim() ? v : fallback
 const num = (v: unknown) => (typeof v === "number" ? v : null)
+
+/** El dibujo de una medalla que viene en el aviso, si es de una plantilla conocida. */
+function medalOf(v: unknown): (MedalLook & { title: string }) | undefined {
+  const m = obj(v)
+  if (!templateOf(str(m.template))) return undefined
+  const text = (x: unknown) => (typeof x === "string" ? x : null)
+  return {
+    template: str(m.template),
+    title: str(m.title),
+    number: text(m.number),
+    label: text(m.label),
+    band: text(m.band),
+    metal: text(m.metal),
+    accent: text(m.accent),
+  }
+}
 /** Nombre de un equipo, bando, torneo o temporada: `{ name }` o el texto directo. */
 const nameOf = (v: unknown, fallback = "") =>
   typeof v === "string" ? str(v, fallback) : str(obj(v).name, fallback)
@@ -436,9 +455,10 @@ export function describe(n: Notification, me?: string | null): Described {
       }
     case "season_closed": {
       const medal = obj(d.medal)
+      const drawn = medalOf(medal.design)
       const after = num(d.elo_after)
       const parts = [
-        str(medal.name) && `${str(medal.icon)} ${str(medal.name)}`.trim(),
+        str(medal.name),
         after !== null &&
           after !== num(d.elo) &&
           `empiezas la próxima con ${after}`,
@@ -455,15 +475,19 @@ export function describe(n: Notification, me?: string | null): Described {
             ? "Gracias por jugar."
             : "No llegaste al mínimo de mixes para tener puesto.",
         link: profile,
+        medal: drawn,
       }
     }
-    case "medal_granted":
+    case "medal_granted": {
+      const drawn = medalOf(d.medal)
       return {
         kind: "medal",
-        title: `Nueva medalla: ${`${str(d.icon)} ${str(d.title)}`.trim()}`,
+        title: `Nueva medalla: ${str(d.title)}`,
         body: "Ya está en tu perfil.",
         link: profile,
+        medal: drawn,
       }
+    }
 
     // ---------- cuenta ----------
     case "steam_claimed":

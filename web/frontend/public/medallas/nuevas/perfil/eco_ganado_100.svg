@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="300" viewBox="0 0 260 300">
+  <title>CM League - Rondas eco ganadas 100</title>
+  <desc>CM League. Medalla de perfil, vector editable con capas nombradas. Textos vivos: fuente Montserrat (ExtraBold/Black). Versión plana con brillo solo en el marco.</desc>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF1B8" /><stop offset=".28" stop-color="#E6A927" />
+      <stop offset=".5" stop-color="#6B4A12" /><stop offset=".68" stop-color="#E6A927" />
+      <stop offset=".82" stop-color="#FFF1B8" stop-opacity=".9" /><stop offset="1" stop-color="#6B4A12" />
+    </linearGradient>
+    <clipPath id="recorte-forma"><path d="M130 26 L232 100 L194 252 H66 L28 100 Z" /></clipPath>
+  <filter id="resplandor-marco" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" /></filter></defs>
+  <g id="cinta">
+    <path d="M76 8 L184 8 L198 30 L184 50 L76 50 L62 30 Z" fill="#14532D" stroke="#0B0C10" stroke-width="3" stroke-linejoin="round" />
+    <path d="M90 9 L110 9 L114 49 L94 49 Z" fill="#22C55E" />
+    <path d="M150 9 L170 9 L166 49 L146 49 Z" fill="#22C55E" />
+    <path d="M119 9 L141 9 L139 49 L121 49 Z" fill="#0F1014" />
+    <path d="M128 9 L132 9 L131.5 49 L128.5 49 Z" fill="#22C55E" opacity=".8" />
+    <rect id="pasador" x="96" y="44" width="68" height="9" rx="4" fill="#E6A927" stroke="#0B0C10" stroke-width="2" />
+  </g>
+  <g id="forma-pentagono">
+    <path id="resplandor-marco" d="M130 26 L232 100 L194 252 H66 L28 100 Z" fill="none" stroke="#E6A927" stroke-width="26" stroke-linejoin="round" opacity=".55" filter="url(#resplandor-marco)" /><path id="borde-exterior" d="M130 26 L232 100 L194 252 H66 L28 100 Z" fill="#0B0C10" stroke="#0B0C10" stroke-width="18" stroke-linejoin="round" />
+    <path id="marco-metal" d="M130 26 L232 100 L194 252 H66 L28 100 Z" fill="url(#metal)" stroke="url(#metal)" stroke-width="10" stroke-linejoin="round" />
+    <path id="filete-claro" d="M130 26 L232 100 L194 252 H66 L28 100 Z" transform="translate(7.80 8.46) scale(0.94)" fill="none" stroke="#FFF1B8" stroke-width="1.6" opacity=".55" />
+    <path id="cara" d="M130 26 L232 100 L194 252 H66 L28 100 Z" transform="translate(11.70 12.69) scale(0.91)" fill="#16301F" stroke="#0B0C10" stroke-width="3" />
+    <path id="filete-acento" d="M130 26 L232 100 L194 252 H66 L28 100 Z" transform="translate(19.50 21.15) scale(0.85)" fill="none" stroke="#22C55E" stroke-width="1.5" opacity=".5" />
+    </g>
+  <g id="textos-editables" font-family="Montserrat, Arial, sans-serif" text-anchor="middle">
+    <g id="etiqueta">
+      <rect x="101.5" y="72" width="57.1" height="22" rx="11" fill="#121318" stroke="#22C55E" stroke-width="2" />
+      <text x="130" y="88.5" font-size="15" font-weight="800" letter-spacing=".8" fill="#BBF7D0">ECO</text>
+    </g>
+    <text id="numero" x="130" y="148" font-size="58" font-weight="900" letter-spacing="-2" fill="#FFFFFF">100</text>
+  </g>
+  <g id="puntos-nivel"><path d="M117.0 160 L122.0 165 L117.0 170 L112.0 165 Z" fill="#E6A927" stroke="#0B0C10" stroke-width="1.5" /><path d="M130.0 160 L135.0 165 L130.0 170 L125.0 165 Z" fill="#E6A927" stroke="#0B0C10" stroke-width="1.5" /><path d="M143.0 160 L148.0 165 L143.0 170 L138.0 165 Z" fill="#E6A927" stroke="#0B0C10" stroke-width="1.5" /></g>
+  <g id="icono" opacity="1" transform="translate(130 203) scale(1.12) translate(-130 -204)">
+    <g id="silueta-dinero"><path d="M773 -658 Q779 -645 781.5 -631.0 Q784 -617 784 -603 Q784 -536 742 -493 Q704 -453 648 -446 L648 -417 L585 -417 L585 -447 Q566 -450 550.5 -454.5 Q535 -459 524 -467 Q494 -480 471 -516 Q450 -550 446 -599 L446 -612 L531 -626 L534 -612 Q540 -570 555 -550 Q569 -533 585 -526 L585 -679 Q555 -688 521 -706 Q488 -725 474 -754 Q465 -769 461.0 -786.5 Q457 -804 457 -822 Q457 -890 505 -934 Q532 -958 585 -966 L585 -996 L640 -996 L648 -996 L648 -966 Q694 -960 722 -936 Q764 -901 772 -841 L775 -826 L687 -815 L685 -829 Q680 -860 668 -872 Q663 -876 658.5 -879.5 Q654 -883 648 -885 L648 -750 Q684 -741 698 -735 Q712 -729 724.0 -721.0 Q736 -713 745 -703 Q764 -683 773 -658 Z M696 -599 Q696 -624 685 -641 Q682 -645 673.5 -650.5 Q665 -656 648 -662 L648 -526 Q657 -528 664.5 -533.5 Q672 -539 678 -546 Q696 -568 696 -599 Z M545 -828 Q545 -815 547.5 -805.0 Q550 -795 558 -787 Q565 -776 585 -767 L585 -887 Q572 -882 560 -870 Q545 -852 545 -828 Z" transform="translate(76.89 265.01) scale(0.08636 0.08636)" fill="#0B0C10" stroke="#0B0C10" stroke-width="55.6" stroke-linejoin="round" /><path d="M773 -658 Q779 -645 781.5 -631.0 Q784 -617 784 -603 Q784 -536 742 -493 Q704 -453 648 -446 L648 -417 L585 -417 L585 -447 Q566 -450 550.5 -454.5 Q535 -459 524 -467 Q494 -480 471 -516 Q450 -550 446 -599 L446 -612 L531 -626 L534 -612 Q540 -570 555 -550 Q569 -533 585 -526 L585 -679 Q555 -688 521 -706 Q488 -725 474 -754 Q465 -769 461.0 -786.5 Q457 -804 457 -822 Q457 -890 505 -934 Q532 -958 585 -966 L585 -996 L640 -996 L648 -996 L648 -966 Q694 -960 722 -936 Q764 -901 772 -841 L775 -826 L687 -815 L685 -829 Q680 -860 668 -872 Q663 -876 658.5 -879.5 Q654 -883 648 -885 L648 -750 Q684 -741 698 -735 Q712 -729 724.0 -721.0 Q736 -713 745 -703 Q764 -683 773 -658 Z M696 -599 Q696 -624 685 -641 Q682 -645 673.5 -650.5 Q665 -656 648 -662 L648 -526 Q657 -528 664.5 -533.5 Q672 -539 678 -546 Q696 -568 696 -599 Z M545 -828 Q545 -815 547.5 -805.0 Q550 -795 558 -787 Q565 -776 585 -767 L585 -887 Q572 -882 560 -870 Q545 -852 545 -828 Z" transform="translate(76.89 265.01) scale(0.08636 0.08636)" fill="#22C55E" /></g>
+  </g>
+</svg>

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { pickPlayerOptions } from "../../players/api/queries"
+import { TierMedal } from "./TierMedal"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 
 import {
@@ -123,7 +124,9 @@ export function SeasonFormView({
             <h2 className="text-[17px] font-bold">Medallas por tramo</h2>
             <span className="text-[13px] leading-relaxed text-muted-foreground">
               Desde el puesto 1, sin huecos. El último tramo llega hasta el top.
-              En el nombre, {"{top}"} se reemplaza por el top.
+              En el nombre, {"{top}"} se reemplaza por el top. Cada tramo elige
+              una medalla de temporada; al cerrar, la cinta dice el número de la
+              temporada.
             </span>
           </div>
           <ul className="flex flex-col gap-1.5">
@@ -161,18 +164,17 @@ export function SeasonFormView({
                       />
                     </label>
                   )}
-                  <Input
-                    aria-label={`Ícono del tramo ${i + 1}`}
-                    value={t.icon}
-                    maxLength={8}
-                    onChange={(e) =>
+                  <TierMedal
+                    definition={t.definition}
+                    season={seasonNumber}
+                    index={i}
+                    onChange={(definition) =>
                       set({
                         tiers: f.tiers.map((x, j) =>
-                          j === i ? { ...x, icon: e.target.value } : x
+                          j === i ? { ...x, definition } : x
                         ),
                       })
                     }
-                    className="h-8 w-12 text-center text-base"
                   />
                   <Input
                     aria-label={`Nombre del tramo ${i + 1}`}
@@ -188,8 +190,8 @@ export function SeasonFormView({
                     className="h-8 min-w-0 flex-[1_1_160px]"
                   />
                   <span className="min-w-[150px] text-xs text-muted-foreground">
-                    {t.icon} {tierName(t, f.top_n)} · Temporada {seasonNumber} ·
-                    #{t.from}
+                    {tierName(t, f.top_n)} · Temporada {seasonNumber} · #
+                    {t.from}
                   </span>
                   <Button
                     variant="ghost"

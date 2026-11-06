@@ -210,7 +210,17 @@ function api(
         page([
           {
             title: "CAMPEÓN TORNEO TITAN 2",
-            icon: "🏆",
+            design: {
+              id: "00000000-0000-4000-8000-000000000001",
+              key: "campeon_torneo",
+              template: "campeon_torneo",
+              title: "Campeón de torneo",
+              number: null,
+              label: "CM LEAGUE",
+              band: "CAMPEÓN",
+              metal: "oro",
+              accent: "campeon",
+            },
             count: 1,
             last_at: "",
           },

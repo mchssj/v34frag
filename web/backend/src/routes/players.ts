@@ -31,6 +31,7 @@ import { vipPlayers } from '../services/vip';
 import { resolvePlayer } from '../services/players';
 import { stageLabel } from '../services/stages';
 import { clutchesOf } from '../services/matches';
+import { designOf, loadDefinitions } from '../services/medals';
 
 const OVERVIEW = 'id, nick, has_account, has_steam, photo_url, privacy, elo, peak_elo, elo_matches, maps, rating, kd, wins, losses, teams';
 const MATCH_FIELDS =
@@ -290,12 +291,29 @@ export const players = createRouter()
     const p = c.req.valid('query');
     const q = c.var.sb
       .from('player_medals')
-      .select('id, title, icon, created_at, rank, season:seasons(id, number, name)', { count: 'exact' })
-      .eq('player_id', id);
-    type Row = { id: string; title: string; icon: string | null; created_at: string; rank: number | null;
+      .select('id, title, created_at, rank, source, definition_id, season:seasons(id, number, name)', { count: 'exact' })
+      .eq('player_id', id)
+      .not('definition_id', 'is', null);
+    type Row = { id: string; title: string; created_at: string; rank: number | null; source: string; definition_id: string | null;
                  season: { id: string; number: number; name: string } | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
-    return c.json(envelope(rows.map((r) => ({ ...r, season: r.season ?? null, rank: r.rank ?? null })), total, p), 200);
+    const defs = await loadDefinitions(c.var.sb, rows.map((r) => r.definition_id));
+    return c.json(
+      envelope(
+        rows
+          .filter((r) => defs.has(r.definition_id!))
+          .map(({ definition_id, ...r }) => ({
+            ...r,
+            source: r.source as 'admin' | 'auto' | 'season',
+            season: r.season ?? null,
+            rank: r.rank ?? null,
+            design: designOf(defs.get(definition_id!)!, r.rank, r.season?.number),
+          })),
+        total,
+        p,
+      ),
+      200,
+    );
   })
   .openapi(teams, async (c) => {
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
@@ -372,13 +390,18 @@ export const players = createRouter()
   .openapi(medalSummary, async (c) => {
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
     const p = c.req.valid('query');
-    // Son pocas por jugador: se agrupan, ordenan y paginan acá.
-    const rows = mustHave(await c.var.sb.from('player_medals').select('title, icon, created_at').eq('player_id', id));
-    const groups = new Map<string, { title: string; icon: string | null; count: number; last_at: string }>();
+    // Son pocas por jugador: se agrupan (título y definición), ordenan y paginan acá.
+    const rows = mustHave(
+      await c.var.sb.from('player_medals').select('title, created_at, rank, definition_id, season:seasons(number)').eq('player_id', id).not('definition_id', 'is', null),
+    ) as { title: string; created_at: string; rank: number | null; definition_id: string; season: { number: number } | null }[];
+    const defs = await loadDefinitions(c.var.sb, rows.map((r) => r.definition_id));
+    const groups = new Map<string, { title: string; count: number; last_at: string; design: ReturnType<typeof designOf> }>();
     for (const r of rows) {
-      const k = JSON.stringify([r.title, r.icon]);
+      const d = defs.get(r.definition_id);
+      if (!d) continue;
+      const k = JSON.stringify([r.title, r.definition_id, r.rank]);
       const g = groups.get(k);
-      if (!g) groups.set(k, { title: r.title, icon: r.icon, count: 1, last_at: r.created_at });
+      if (!g) groups.set(k, { title: r.title, count: 1, last_at: r.created_at, design: designOf(d, r.rank, r.season?.number) });
       else {
         g.count++;
         if (r.created_at > g.last_at) g.last_at = r.created_at;

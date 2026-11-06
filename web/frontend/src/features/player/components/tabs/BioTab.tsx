@@ -24,6 +24,7 @@ import { TeamCrest } from "@/components/brand/TeamCrest"
 import { fmtAgo, fmtLong, fmtMonthShort } from "../../lib/labels"
 import { medalsOptions, titlesOptions } from "../../api/queries"
 import type { PlayerDetail, Title } from "../../types"
+import { Medal } from "@/features/medals/Medal"
 
 // ---------- Bio y torneos ----------
 
@@ -199,20 +200,17 @@ function Palmares({ nick }: { nick: string }) {
                           <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
                             {given.map((m) => (
                               <div
-                                key={`${m.title}-${m.icon}`}
+                                key={`${m.title}-${m.design.id}`}
                                 className={cn(
                                   "flex items-center gap-2.5 rounded-[10px] bg-muted",
                                   won.length ? "p-2.5" : "p-3.5"
                                 )}
                               >
-                                <span
-                                  aria-hidden
-                                  className={
-                                    won.length ? "text-xl" : "text-[26px]"
-                                  }
-                                >
-                                  {m.icon ?? "🏅"}
-                                </span>
+                                <Medal
+                                  look={m.design}
+                                  size={won.length ? 36 : 48}
+                                  title={m.design.title}
+                                />
                                 <span className="flex min-w-0 flex-col">
                                   <span className="text-[12.5px] font-semibold break-words">
                                     {m.title}

@@ -312,8 +312,10 @@ describe('admin de jugadores', () => {
     const nick = `Ren${rnd()}`;
     expect((await req('PATCH', `/api/v1/admin/players/${id}`, { token: adm.token, body: { nick, bio: '' } })).body).toMatchObject({ nick, bio: null });
 
-    const medal = await req('POST', `/api/v1/admin/players/${id}/medals`, { token: adm.token, body: { title: 'Campeón' } });
-    expect(medal.body).toMatchObject({ title: 'Campeón', icon: '🏆' });
+    // (replanteo 79) Una definición manual, sin emoji.
+    const def = (await admin().from('medal_definitions').select('id').eq('key', 'campeon_torneo').single()).data!.id as string;
+    const medal = await req('POST', `/api/v1/admin/players/${id}/medals`, { token: adm.token, body: { definition_id: def, title: 'Campeón' } });
+    expect(medal.body).toMatchObject({ title: 'Campeón', design: { template: 'campeon_torneo' } });
     expect((await req('GET', `/api/v1/players/${id}/medals`)).body.total).toBe(1);
     expect((await req('DELETE', `/api/v1/admin/medals/${medal.body.id}`, { token: adm.token })).status).toBe(204);
 

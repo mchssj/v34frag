@@ -1,0 +1,2107 @@
+{
+  "acentos": {
+    "victorias": {
+      "light": "#86EFAC",
+      "mid": "#22C55E",
+      "dark": "#14532D",
+      "face": "#16301F"
+    },
+    "veterano": {
+      "light": "#B9D3F0",
+      "mid": "#5B8DC9",
+      "dark": "#1E3A5F",
+      "face": "#16233A"
+    },
+    "fundador": {
+      "light": "#FDA4AF",
+      "mid": "#BE123C",
+      "dark": "#4C0519",
+      "face": "#2E0E16"
+    },
+    "hs": {
+      "light": "#FCA5A5",
+      "mid": "#EF4444",
+      "dark": "#5F1414",
+      "face": "#311416"
+    },
+    "kda": {
+      "light": "#A5F3FC",
+      "mid": "#06B6D4",
+      "dark": "#0E4A57",
+      "face": "#0F2A31"
+    },
+    "clutch": {
+      "light": "#F9A8D4",
+      "mid": "#EC4899",
+      "dark": "#5B1238",
+      "face": "#2F1224"
+    },
+    "aces": {
+      "light": "#FDE68A",
+      "mid": "#F59E0B",
+      "dark": "#5C3A06",
+      "face": "#2E2210"
+    },
+    "elo": {
+      "light": "#DDD6FE",
+      "mid": "#8B5CF6",
+      "dark": "#3B1F7A",
+      "face": "#221A3A"
+    },
+    "campeon": {
+      "light": "#FFF1B8",
+      "mid": "#E6A927",
+      "dark": "#6B4A12",
+      "face": "#2A2214"
+    },
+    "finalista": {
+      "light": "#F1F3F7",
+      "mid": "#AEB4BF",
+      "dark": "#3E434D",
+      "face": "#1E2128"
+    },
+    "mvp": {
+      "light": "#BFDBFE",
+      "mid": "#2563EB",
+      "dark": "#172F6B",
+      "face": "#141F3A"
+    },
+    "top10": {
+      "light": "#99F6E4",
+      "mid": "#14B8A6",
+      "dark": "#114E48",
+      "face": "#10292A"
+    },
+    "prestigio": {
+      "light": "#E9D5FF",
+      "mid": "#C026D3",
+      "dark": "#3F0D52",
+      "face": "#24112E"
+    },
+    "entry": {
+      "light": "#FED7AA",
+      "mid": "#F97316",
+      "dark": "#5A2508",
+      "face": "#2E1A10"
+    },
+    "adr": {
+      "light": "#A7F3D0",
+      "mid": "#10B981",
+      "dark": "#064E3B",
+      "face": "#0F2A22"
+    },
+    "multikill": {
+      "light": "#BFDBFE",
+      "mid": "#3B82F6",
+      "dark": "#14306B",
+      "face": "#131E36"
+    },
+    "awp": {
+      "light": "#D9F99D",
+      "mid": "#65A30D",
+      "dark": "#1F3A0B",
+      "face": "#18240F"
+    },
+    "scout": {
+      "light": "#BAE6FD",
+      "mid": "#38BDF8",
+      "dark": "#0C3A5A",
+      "face": "#10222F"
+    },
+    "deagle": {
+      "light": "#FDE7B0",
+      "mid": "#D6A35C",
+      "dark": "#5A3C14",
+      "face": "#2A2116"
+    },
+    "rifles": {
+      "light": "#FDBA74",
+      "mid": "#B45309",
+      "dark": "#4A2306",
+      "face": "#2A1A10"
+    },
+    "cuchillo": {
+      "light": "#FECACA",
+      "mid": "#DC2626",
+      "dark": "#4C0D0D",
+      "face": "#2C1213"
+    },
+    "he": {
+      "light": "#FEF08A",
+      "mid": "#EAB308",
+      "dark": "#544006",
+      "face": "#2A2510"
+    },
+    "pistolas": {
+      "light": "#E2E8F0",
+      "mid": "#94A3B8",
+      "dark": "#334155",
+      "face": "#1C222B"
+    },
+    "plantadas": {
+      "light": "#FED7AA",
+      "mid": "#EA580C",
+      "dark": "#4F1D05",
+      "face": "#2C1810"
+    },
+    "desactivadas": {
+      "light": "#BFDBFE",
+      "mid": "#3B82F6",
+      "dark": "#14306B",
+      "face": "#131E36"
+    },
+    "racha": {
+      "light": "#FEF08A",
+      "mid": "#FACC15",
+      "dark": "#5A4506",
+      "face": "#2C2610"
+    },
+    "dust2": {
+      "light": "#FDE7B0",
+      "mid": "#D9A85B",
+      "dark": "#5C4016",
+      "face": "#2B2318"
+    },
+    "inferno": {
+      "light": "#FDBA9A",
+      "mid": "#C2410C",
+      "dark": "#4A1806",
+      "face": "#2B1610"
+    },
+    "nuke": {
+      "light": "#D9F99D",
+      "mid": "#A3E635",
+      "dark": "#365314",
+      "face": "#1F2810"
+    },
+    "train": {
+      "light": "#BFDBFE",
+      "mid": "#60A5FA",
+      "dark": "#1E3A6B",
+      "face": "#141F33"
+    },
+    "cbble": {
+      "light": "#E7E5E4",
+      "mid": "#A8A29E",
+      "dark": "#44403C",
+      "face": "#22201E"
+    },
+    "tuscan": {
+      "light": "#D9E3A0",
+      "mid": "#8A9A3B",
+      "dark": "#33400F",
+      "face": "#1F2412"
+    },
+    "season": {
+      "light": "#DDD6FE",
+      "mid": "#A78BFA",
+      "dark": "#3B2A73",
+      "face": "#211B36"
+    },
+    "cache": {
+      "light": "#FEF08A",
+      "mid": "#FACC15",
+      "dark": "#5A4506",
+      "face": "#2A2510"
+    },
+    "cpl_mirage": {
+      "light": "#99F6E4",
+      "mid": "#2DD4BF",
+      "dark": "#0F4D45",
+      "face": "#10292A"
+    },
+    "caster": {
+      "light": "#DDD6FE",
+      "mid": "#9146FF",
+      "dark": "#2E1065",
+      "face": "#1E1533"
+    },
+    "staff": {
+      "light": "#A7F3D0",
+      "mid": "#10B981",
+      "dark": "#064E3B",
+      "face": "#0F2A22"
+    },
+    "aniversario": {
+      "light": "#FBCFE8",
+      "mid": "#F472B6",
+      "dark": "#5B1838",
+      "face": "#2C1622"
+    },
+    "eq_partidas": {
+      "light": "#BFDBFE",
+      "mid": "#3B82F6",
+      "dark": "#14306B",
+      "face": "#131E36"
+    },
+    "eq_semifinal": {
+      "light": "#FFD1A1",
+      "mid": "#C8792B",
+      "dark": "#55301A",
+      "face": "#271B15"
+    },
+    "eq_participacion": {
+      "light": "#E2E8F0",
+      "mid": "#94A3B8",
+      "dark": "#334155",
+      "face": "#1C222B"
+    },
+    "eq_invicto": {
+      "light": "#FFFFFF",
+      "mid": "#CBD5E1",
+      "dark": "#334155",
+      "face": "#1E232B"
+    },
+    "eq_barrida": {
+      "light": "#FECACA",
+      "mid": "#EF4444",
+      "dark": "#5F1414",
+      "face": "#311416"
+    },
+    "eq_remontada": {
+      "light": "#D9F99D",
+      "mid": "#84CC16",
+      "dark": "#365314",
+      "face": "#1F2810"
+    },
+    "eq_matagigantes": {
+      "light": "#FDE68A",
+      "mid": "#F59E0B",
+      "dark": "#5C3A06",
+      "face": "#2E2210"
+    },
+    "bloqueada": {
+      "light": "#B5B9C2",
+      "mid": "#5E626C",
+      "dark": "#2A2C33",
+      "face": "#191A1F"
+    },
+    "primer_mix": {
+      "light": "#E0F2FE",
+      "mid": "#7DD3FC",
+      "dark": "#0C4A6E",
+      "face": "#10222F"
+    },
+    "primera_victoria": {
+      "light": "#E0F2FE",
+      "mid": "#7DD3FC",
+      "dark": "#0C4A6E",
+      "face": "#10222F"
+    },
+    "pionero": {
+      "light": "#C7D2FE",
+      "mid": "#6366F1",
+      "dark": "#25236B",
+      "face": "#1A1A36"
+    },
+    "escopetas": {
+      "light": "#FECDD3",
+      "mid": "#F43F5E",
+      "dark": "#5B1325",
+      "face": "#2E1219"
+    },
+    "sobreviviente": {
+      "light": "#A5F3FC",
+      "mid": "#22D3EE",
+      "dark": "#0E4A57",
+      "face": "#0F2A31"
+    },
+    "supporter": {
+      "light": "#FECDD3",
+      "mid": "#F43F5E",
+      "dark": "#5B1325",
+      "face": "#2E1219"
+    }
+  },
+  "metales": {
+    "bronce": {
+      "light": "#FFD1A1",
+      "mid": "#C8792B",
+      "dark": "#55301A"
+    },
+    "plata": {
+      "light": "#FFFFFF",
+      "mid": "#BFC4CD",
+      "dark": "#4A505B"
+    },
+    "oro": {
+      "light": "#FFF1B8",
+      "mid": "#E6A927",
+      "dark": "#6B4A12"
+    },
+    "platino": {
+      "light": "#F2FBFF",
+      "mid": "#9FC3DA",
+      "dark": "#2F4A5E"
+    },
+    "diamante": {
+      "light": "#E6FDFF",
+      "mid": "#4FD8FF",
+      "dark": "#16467A"
+    },
+    "bloqueada": {
+      "light": "#9DA1AB",
+      "mid": "#5E626C",
+      "dark": "#2A2C33"
+    }
+  },
+  "plantillas": [
+    {
+      "id": "mixes_jugados",
+      "title": "Mixes jugados",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "mejoradas/progresion_10_mixes.svg",
+      "scope": "player",
+      "accent": null,
+      "metal": null,
+      "metalColors": ["#FFB088", "#FF5722", "#5A2412"],
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": false
+      },
+      "defaults": {
+        "label": "MIXES",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "mixes_played",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100, 250, 500, 1000],
+      "titleFmt": "{n} mixes jugados",
+      "dataSince": null
+    },
+    {
+      "id": "victorias",
+      "title": "Victorias",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "perfil/victorias_10.svg",
+      "scope": "player",
+      "accent": "victorias",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "VICTORIAS",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "mixes_won",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100, 250, 500],
+      "titleFmt": "{n} victorias",
+      "dataSince": null
+    },
+    {
+      "id": "racha",
+      "title": "Racha de victorias",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "perfil/racha_5.svg",
+      "scope": "player",
+      "accent": "racha",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "RACHA",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "win_streak",
+      "aggregation": "streak",
+      "filters": {},
+      "steps": [5, 10, 15],
+      "titleFmt": "Racha de {n} victorias",
+      "dataSince": null
+    },
+    {
+      "id": "kills",
+      "title": "Kills totales",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "nuevas/perfil/kills_1000.svg",
+      "scope": "player",
+      "accent": "pistolas",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "KILLS",
+        "number": "{k}",
+        "band": null
+      },
+      "metric": "kills",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [1000, 5000, 10000],
+      "titleFmt": "{n} kills",
+      "dataSince": null
+    },
+    {
+      "id": "dano",
+      "title": "Daño total",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "nuevas/perfil/dano_10k.svg",
+      "scope": "player",
+      "accent": "hs",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "DAÑO",
+        "number": "{k}",
+        "band": null
+      },
+      "metric": "damage",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10000, 50000, 100000],
+      "titleFmt": "{n} de daño",
+      "dataSince": null
+    },
+    {
+      "id": "primer_mix",
+      "title": "Primer mix",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "nuevas/perfil/primer_mix.svg",
+      "scope": "player",
+      "accent": "primer_mix",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "PRIMER MIX",
+        "number": null,
+        "band": null
+      },
+      "metric": "mixes_played",
+      "aggregation": "once",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Primer mix",
+      "dataSince": null
+    },
+    {
+      "id": "primera_victoria",
+      "title": "Primera victoria",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "nuevas/perfil/primera_victoria.svg",
+      "scope": "player",
+      "accent": "primera_victoria",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "1RA VICTORIA",
+        "number": null,
+        "band": null
+      },
+      "metric": "mixes_won",
+      "aggregation": "once",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Primera victoria",
+      "dataSince": null
+    },
+    {
+      "id": "veterano",
+      "title": "Veterano",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "perfil/veterano_2.svg",
+      "scope": "player",
+      "accent": "veterano",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "TEMPORADAS",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "seasons_played",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [2, 3, 5],
+      "titleFmt": "{n} temporadas jugadas",
+      "dataSince": null
+    },
+    {
+      "id": "fundador",
+      "title": "Fundador",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "perfil/fundador.svg",
+      "scope": "player",
+      "accent": "fundador",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "FUNDADOR",
+        "number": null,
+        "band": null
+      },
+      "metric": "played_season",
+      "aggregation": "once",
+      "filters": {
+        "season": 1
+      },
+      "steps": [1],
+      "titleFmt": "Fundador: jugó la temporada 1",
+      "dataSince": null
+    },
+    {
+      "id": "pionero",
+      "title": "Pionero",
+      "category": "Trayectoria",
+      "shape": "escudo",
+      "svg": "nuevas/perfil/pionero_primer_mix.svg",
+      "scope": "player",
+      "accent": "pionero",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "PIONERO",
+        "number": null,
+        "band": "MIX #1"
+      },
+      "metric": "first_match",
+      "aggregation": "once",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Pionero: jugó el primer mix",
+      "dataSince": null
+    },
+    {
+      "id": "hs_pct",
+      "title": "Porcentaje de HS",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/hs_35.svg",
+      "scope": "player",
+      "accent": "hs",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "HS",
+        "number": "{n}%",
+        "band": null
+      },
+      "metric": "hs_pct",
+      "aggregation": "avg_min_matches",
+      "filters": {
+        "min_matches": 20
+      },
+      "steps": [35, 45, 55],
+      "titleFmt": "{n} % de headshots",
+      "dataSince": null
+    },
+    {
+      "id": "kda",
+      "title": "KDA",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/kda_1_2.svg",
+      "scope": "player",
+      "accent": "kda",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "KDA",
+        "number": "{d}",
+        "band": null
+      },
+      "metric": "kda",
+      "aggregation": "avg_min_matches",
+      "filters": {
+        "min_matches": 20
+      },
+      "steps": [1.2, 1.5, 2.0],
+      "titleFmt": "KDA {n}",
+      "dataSince": null
+    },
+    {
+      "id": "adr",
+      "title": "ADR",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/adr_70.svg",
+      "scope": "player",
+      "accent": "adr",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ADR",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "adr",
+      "aggregation": "avg_min_matches",
+      "filters": {
+        "min_matches": 20
+      },
+      "steps": [70, 85, 100],
+      "titleFmt": "ADR {n}",
+      "dataSince": null
+    },
+    {
+      "id": "entry",
+      "title": "Entry kills",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/entry_50.svg",
+      "scope": "player",
+      "accent": "entry",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ENTRY",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "first_kills",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [50, 250, 500],
+      "titleFmt": "{n} entry kills",
+      "dataSince": null
+    },
+    {
+      "id": "multikill",
+      "title": "Rondas de 4 kills",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/multikill_10.svg",
+      "scope": "player",
+      "accent": "multikill",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "4K",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "k4",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} rondas de 4 kills",
+      "dataSince": null
+    },
+    {
+      "id": "aces",
+      "title": "Aces",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/aces_5.svg",
+      "scope": "player",
+      "accent": "aces",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ACES",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "k5",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [5, 25, 100],
+      "titleFmt": "{n} aces",
+      "dataSince": null
+    },
+    {
+      "id": "elo",
+      "title": "ELO máximo",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/elo_1200.svg",
+      "scope": "player",
+      "accent": "elo",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ELO",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "elo_peak",
+      "aggregation": "max",
+      "filters": {},
+      "steps": [1200, 1500, 1800, 2000],
+      "titleFmt": "ELO máximo {n}",
+      "dataSince": null
+    },
+    {
+      "id": "mvp_mix",
+      "title": "MVP del mix",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "nuevas/perfil/mvp_mix_10.svg",
+      "scope": "player",
+      "accent": "eq_invicto",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "MVP MIX",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "mvp_mixes",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100],
+      "titleFmt": "MVP en {n} mixes",
+      "dataSince": null
+    },
+    {
+      "id": "clutch",
+      "title": "Clutchs",
+      "category": "Habilidad",
+      "shape": "hexagono",
+      "svg": "perfil/clutch_10.svg",
+      "scope": "player",
+      "accent": "clutch",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CLUTCH",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "clutches",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} clutchs ganados",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "awp",
+      "title": "Kills con AWP",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/awp_100.svg",
+      "scope": "player",
+      "accent": "awp",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "AWP",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["awp"]
+      },
+      "steps": [100, 500, 1000],
+      "titleFmt": "{n} kills con AWP",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "scout",
+      "title": "Kills con Scout",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/scout_50.svg",
+      "scope": "player",
+      "accent": "scout",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "SCOUT",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["scout"]
+      },
+      "steps": [50, 250, 500],
+      "titleFmt": "{n} kills con Scout",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "deagle",
+      "title": "Kills con Deagle",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/deagle_100.svg",
+      "scope": "player",
+      "accent": "deagle",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "DEAGLE",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["deagle"]
+      },
+      "steps": [100, 500, 1000],
+      "titleFmt": "{n} kills con Deagle",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "rifles",
+      "title": "Kills con AK-47 o M4A1",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/rifles_500.svg",
+      "scope": "player",
+      "accent": "rifles",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "AK / M4",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["ak47", "m4a1"]
+      },
+      "steps": [500, 2500, 5000],
+      "titleFmt": "{n} kills con AK-47 o M4A1",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "cuchillo",
+      "title": "Kills con cuchillo",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/cuchillo_5.svg",
+      "scope": "player",
+      "accent": "cuchillo",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CUCHILLO",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["knife"]
+      },
+      "steps": [5, 25, 100],
+      "titleFmt": "{n} kills con cuchillo",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "he",
+      "title": "Kills con HE",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/he_25.svg",
+      "scope": "player",
+      "accent": "he",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "HE",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["hegrenade"]
+      },
+      "steps": [25, 100, 250],
+      "titleFmt": "{n} kills con HE",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "smg",
+      "title": "Kills con subfusiles",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "nuevas/perfil/smg_100.svg",
+      "scope": "player",
+      "accent": "elo",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "SMG",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["mp5navy", "p90", "ump45", "tmp", "mac10"]
+      },
+      "steps": [100, 500, 1000],
+      "titleFmt": "{n} kills con subfusiles",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "escopetas",
+      "title": "Kills con escopeta",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "nuevas/perfil/escopetas_50.svg",
+      "scope": "player",
+      "accent": "escopetas",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ESCOPETAS",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["m3", "xm1014"]
+      },
+      "steps": [50, 250, 500],
+      "titleFmt": "{n} kills con escopeta",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "eco_rifles",
+      "title": "Kills con Famas o Galil",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "nuevas/perfil/eco_rifles_100.svg",
+      "scope": "player",
+      "accent": "cpl_mirage",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "FAMAS / GALIL",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["famas", "galil"]
+      },
+      "steps": [100, 500, 1000],
+      "titleFmt": "{n} kills con Famas o Galil",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "elites",
+      "title": "Kills con Dual Elites",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "nuevas/perfil/elites_10.svg",
+      "scope": "player",
+      "accent": "clutch",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ELITES",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "weapon_kills",
+      "aggregation": "total",
+      "filters": {
+        "weapons": ["elite"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} kills con Dual Elites",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "pistolas",
+      "title": "Pistolas ganadas",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/pistolas_25.svg",
+      "scope": "player",
+      "accent": "pistolas",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "PISTOLAS",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "pistol_won",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [25, 100, 250],
+      "titleFmt": "{n} rondas de pistola ganadas",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "explotadas",
+      "title": "Bombas explotadas",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "nuevas/perfil/explotadas_10.svg",
+      "scope": "player",
+      "accent": "hs",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "EXPLOTADAS",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "bombs_exploded",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} bombas explotadas",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "plantadas",
+      "title": "Bombas plantadas",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/plantadas_25.svg",
+      "scope": "player",
+      "accent": "plantadas",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "PLANTADAS",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "plants",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [25, 100, 250],
+      "titleFmt": "{n} bombas plantadas",
+      "dataSince": null
+    },
+    {
+      "id": "desactivadas",
+      "title": "Bombas desactivadas",
+      "category": "Arsenal y bomba",
+      "shape": "octagono",
+      "svg": "perfil/desactivadas_10.svg",
+      "scope": "player",
+      "accent": "multikill",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "DEFUSES",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "defuses",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} bombas desactivadas",
+      "dataSince": null
+    },
+    {
+      "id": "lado_ct",
+      "title": "Rondas ganadas de CT",
+      "category": "Rondas",
+      "shape": "pentagono",
+      "svg": "nuevas/perfil/lado_ct_100.svg",
+      "scope": "player",
+      "accent": "multikill",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CT",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "rounds_won_ct",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [100, 500, 1000],
+      "titleFmt": "{n} rondas ganadas de CT",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "lado_t",
+      "title": "Rondas ganadas de T",
+      "category": "Rondas",
+      "shape": "pentagono",
+      "svg": "nuevas/perfil/lado_t_100.svg",
+      "scope": "player",
+      "accent": "aces",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "T",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "rounds_won_t",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [100, 500, 1000],
+      "titleFmt": "{n} rondas ganadas de T",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "eco_ganado",
+      "title": "Ecos ganados",
+      "category": "Rondas",
+      "shape": "pentagono",
+      "svg": "nuevas/perfil/eco_ganado_5.svg",
+      "scope": "player",
+      "accent": "victorias",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "ECO",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "eco_won",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [5, 25, 100],
+      "titleFmt": "{n} ecos ganados",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "sobreviviente",
+      "title": "Rondas sobrevividas",
+      "category": "Rondas",
+      "shape": "pentagono",
+      "svg": "nuevas/perfil/sobreviviente_100.svg",
+      "scope": "player",
+      "accent": "sobreviviente",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "VIVO",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "rounds_survived",
+      "aggregation": "total",
+      "filters": {},
+      "steps": [100, 500, 1000],
+      "titleFmt": "Sobrevivió {n} rondas",
+      "dataSince": "2026-10-29"
+    },
+    {
+      "id": "mapa_dust2",
+      "title": "Maestro de Dust2",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_dust2_10.svg",
+      "scope": "player",
+      "accent": "dust2",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "DUST2",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["dust2"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Dust2",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_inferno",
+      "title": "Maestro de Inferno",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_inferno_10.svg",
+      "scope": "player",
+      "accent": "inferno",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "INFERNO",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["inferno"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Inferno",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_nuke",
+      "title": "Maestro de Nuke",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_nuke_10.svg",
+      "scope": "player",
+      "accent": "nuke",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "NUKE",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["nuke"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Nuke",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_train",
+      "title": "Maestro de Train",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_train_10.svg",
+      "scope": "player",
+      "accent": "train",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "TRAIN",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["train"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Train",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_cbble",
+      "title": "Maestro de Cobblestone",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_cbble_10.svg",
+      "scope": "player",
+      "accent": "cbble",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CBBLE",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["cbble"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Cobblestone",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_tuscan",
+      "title": "Maestro de Tuscan",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_tuscan_10.svg",
+      "scope": "player",
+      "accent": "tuscan",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "TUSCAN",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["tuscan"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Tuscan",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_season",
+      "title": "Maestro de Season",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_season_10.svg",
+      "scope": "player",
+      "accent": "season",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "SEASON",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["season"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Season",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_cache",
+      "title": "Maestro de Cache",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_cache_10.svg",
+      "scope": "player",
+      "accent": "racha",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CACHE",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["cache"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Cache",
+      "dataSince": null
+    },
+    {
+      "id": "mapa_cpl_mirage",
+      "title": "Maestro de Mirage",
+      "category": "Mapas",
+      "shape": "placa",
+      "svg": "perfil/mapa_cpl_mirage_10.svg",
+      "scope": "player",
+      "accent": "cpl_mirage",
+      "metal": "bronce",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": true,
+        "band": false,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CPL_MIRAGE",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "map_wins",
+      "aggregation": "total",
+      "filters": {
+        "maps": ["cpl_mirage", "mirage"]
+      },
+      "steps": [10, 50, 100],
+      "titleFmt": "{n} victorias en Mirage",
+      "dataSince": null
+    },
+    {
+      "id": "podio",
+      "title": "Podio de temporada",
+      "category": "Temporada",
+      "shape": "escudo con laureles",
+      "svg": "mejoradas/podio_puesto_1.svg",
+      "scope": "player",
+      "accent": "campeon",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": true,
+        "label": false,
+        "band": false,
+        "metal": true,
+        "accent": false
+      },
+      "defaults": {
+        "label": "S1",
+        "number": "{n}",
+        "band": null
+      },
+      "metric": "season_rank",
+      "aggregation": "season_rank",
+      "filters": {},
+      "steps": [1, 2, 3],
+      "titleFmt": "Podio · puesto {n}",
+      "dataSince": null
+    },
+    {
+      "id": "top_temporada",
+      "title": "Top de temporada",
+      "category": "Temporada",
+      "shape": "círculo con banda",
+      "svg": "perfil/top10_temporada.svg",
+      "scope": "player",
+      "accent": "top10",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": false,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "S1",
+        "number": null,
+        "band": "TOP 10"
+      },
+      "metric": "season_rank",
+      "aggregation": "season_rank",
+      "filters": {},
+      "steps": [10, 20],
+      "titleFmt": "Top {n} de la temporada",
+      "dataSince": null
+    },
+    {
+      "id": "campeon_torneo",
+      "title": "Campeón de torneo",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "perfil/campeon_torneo.svg",
+      "scope": "player",
+      "accent": "campeon",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "S1",
+        "number": null,
+        "band": "CAMPEÓN"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Campeón de torneo",
+      "dataSince": null
+    },
+    {
+      "id": "finalista_torneo",
+      "title": "Finalista de torneo",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "perfil/finalista_torneo.svg",
+      "scope": "player",
+      "accent": "finalista",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "S1",
+        "number": null,
+        "band": "FINALISTA"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Finalista de torneo",
+      "dataSince": null
+    },
+    {
+      "id": "staff",
+      "title": "Staff",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "perfil/staff.svg",
+      "scope": "player",
+      "accent": "adr",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "STAFF"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Staff",
+      "dataSince": null
+    },
+    {
+      "id": "caster",
+      "title": "Caster",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "perfil/caster.svg",
+      "scope": "player",
+      "accent": "caster",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "CASTER"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Caster",
+      "dataSince": null
+    },
+    {
+      "id": "aniversario",
+      "title": "Aniversario",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "perfil/aniversario.svg",
+      "scope": "player",
+      "accent": "aniversario",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "1 AÑO"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Aniversario",
+      "dataSince": null
+    },
+    {
+      "id": "beta_tester",
+      "title": "Beta tester",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "nuevas/perfil/beta_tester.svg",
+      "scope": "player",
+      "accent": "eq_remontada",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "BETA TESTER"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Beta tester",
+      "dataSince": null
+    },
+    {
+      "id": "fair_play",
+      "title": "Fair play",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "nuevas/perfil/fair_play.svg",
+      "scope": "player",
+      "accent": "scout",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "FAIR PLAY"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Fair play",
+      "dataSince": null
+    },
+    {
+      "id": "reclutador",
+      "title": "Reclutador",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "nuevas/perfil/reclutador.svg",
+      "scope": "player",
+      "accent": "racha",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "RECLUTADOR"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Reclutador",
+      "dataSince": null
+    },
+    {
+      "id": "supporter",
+      "title": "Supporter",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "nuevas/perfil/supporter.svg",
+      "scope": "player",
+      "accent": "supporter",
+      "metal": "oro",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "CM LEAGUE",
+        "number": null,
+        "band": "SUPPORTER"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Supporter",
+      "dataSince": null
+    },
+    {
+      "id": "halloween",
+      "title": "Halloween",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "nuevas/perfil/halloween.svg",
+      "scope": "player",
+      "accent": "entry",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "2026",
+        "number": null,
+        "band": "HALLOWEEN"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Halloween",
+      "dataSince": null
+    },
+    {
+      "id": "navidad",
+      "title": "Navidad",
+      "category": "Comunidad",
+      "shape": "sello",
+      "svg": "nuevas/perfil/navidad.svg",
+      "scope": "player",
+      "accent": "cuchillo",
+      "metal": "plata",
+      "metalColors": null,
+      "editable": {
+        "number": false,
+        "label": true,
+        "band": true,
+        "metal": true,
+        "accent": true
+      },
+      "defaults": {
+        "label": "2026",
+        "number": null,
+        "band": "NAVIDAD"
+      },
+      "metric": "manual",
+      "aggregation": "manual",
+      "filters": {},
+      "steps": [1],
+      "titleFmt": "Navidad",
+      "dataSince": null
+    }
+  ]
+}

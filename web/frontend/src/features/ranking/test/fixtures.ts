@@ -53,7 +53,7 @@ export const standing = (alias: string, o: Record<string, unknown> = {}) => ({
   wins: 12,
   losses: 10,
   elo_after: 1100,
-  medal: { name: "Campeón", icon: "🏆" },
+  medal: { name: "Campeón", design: null },
   teams: [],
   rating: 1.21,
   kd: 1.15,

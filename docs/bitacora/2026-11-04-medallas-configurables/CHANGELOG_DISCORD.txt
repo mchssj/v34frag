@@ -1,0 +1,19 @@
+CMLeague 2.9.22 --  Changelog
+
+LLEGAN LAS MEDALLAS
+- Ahora las medallas se ganan jugando: mixes jugados y ganados, rachas, kills, daño, % de HS, KDA, ADR, aces, clutchs, kills con cada arma, rondas ganadas de CT y de T, ecos, victorias en cada mapa y tu ELO máximo.
+- Cada medalla tiene su dibujo, y el metal del marco dice el nivel: bronce, plata, oro, platino y diamante.
+- Nueva pestaña Logros en tu perfil: tu vitrina, las que ya tienes y cuánto te falta para las que todavía no (por ejemplo, 73 / 100).
+- La campana te avisa con la medalla dibujada.
+
+EMPIEZAN A CONTAR EN LA PRÓXIMA TEMPORADA
+- La Temporada BETA no da medallas de juego: lo que jugaste en ella no suma.
+- Todo empieza a contar desde la próxima temporada, que arranca cuando cierra la BETA: el lunes 9 de noviembre a las 06:00 de Argentina (04:00 de Colombia).
+- Mientras tanto ya puedes ver en Logros todas las medallas que vas a poder ganar.
+
+LA BETA TAMBIÉN TIENE SUS MEDALLAS
+- Al cerrar la BETA, el podio y el Top 20 reciben su medalla de temporada.
+- Al empezar la próxima temporada, todos los que jugaron la BETA reciben la medalla Fundador, y los que jugaron el primer mix, la de Pionero.
+
+TU PROGRESO ES TUYO
+- Lo que te falta para cada medalla solo lo ves tú. Los demás ven solo las medallas que ya tienes.

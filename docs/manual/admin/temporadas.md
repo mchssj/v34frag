@@ -16,7 +16,7 @@ La pestaña **Temporada activa** muestra cuánto falta y cuántos jugadores entr
 | **Termina el** | A las 06:00 de Argentina. Si hay un mix en vivo, espera a que termine |
 | **Top con medalla** | Cuántos puestos reciben medalla |
 | **Mínimo para el ranking** | Mixes que hay que jugar en la temporada para entrar al ranking |
-| **Tramos de medallas** | Nombre e ícono de cada tramo de puestos (campeón, top 10…) |
+| **Tramos de medallas** | Nombre y medalla de cada tramo de puestos (campeón, top 10…). Con **Cambiar medalla** eliges una medalla de temporada (Podio o Top) de [Medallas](/help/admin/medallas); al cerrar, su cinta dice el número de la temporada |
 | **Reinicio** | El piso y el porcentaje que conserva cada jugador de lo que tiene por encima del piso. Con la opción de reiniciar también a los de abajo, todos se acercan al piso; con 0 %, quedan todos en el piso (reinicio total) |
 
 Cambiar las reglas de la activa no cambia las temporadas cerradas.

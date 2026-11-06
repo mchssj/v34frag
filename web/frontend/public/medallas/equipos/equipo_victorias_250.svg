@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="300" viewBox="0 0 260 300">
+  <title>CM League - Equipo: victorias 250</title>
+  <desc>CM League. Medalla de perfil, vector editable con capas nombradas. Textos vivos: fuente Montserrat (ExtraBold/Black). Versión plana con brillo solo en el marco.</desc>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2FBFF" /><stop offset=".28" stop-color="#9FC3DA" />
+      <stop offset=".5" stop-color="#2F4A5E" /><stop offset=".68" stop-color="#9FC3DA" />
+      <stop offset=".82" stop-color="#F2FBFF" stop-opacity=".9" /><stop offset="1" stop-color="#2F4A5E" />
+    </linearGradient>
+    <clipPath id="recorte-forma"><path d="M42 32 H218 V262 L130 234 L42 262 Z" /></clipPath>
+    
+    <filter id="resplandor-marco" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" /></filter></defs>
+  <g id="asta">
+    <g id="borlas-color-equipo"><path d="M28 28 V60" stroke="#0B0C10" stroke-width="5" /><path d="M28 28 V60" stroke="#FFB088" stroke-width="2.5" /><path d="M28 57 Q20 72 22 84 H34 Q36 72 28 57 Z" fill="#FFB088" stroke="#0B0C10" stroke-width="2" /><path d="M25 72 V82 M31 72 V82" stroke="#0B0C10" stroke-width="1.2" opacity=".5" /><path d="M232 28 V60" stroke="#0B0C10" stroke-width="5" /><path d="M232 28 V60" stroke="#FFB088" stroke-width="2.5" /><path d="M232 57 Q224 72 226 84 H238 Q240 72 232 57 Z" fill="#FFB088" stroke="#0B0C10" stroke-width="2" /><path d="M229 72 V82 M235 72 V82" stroke="#0B0C10" stroke-width="1.2" opacity=".5" /></g>
+    <rect x="22" y="19" width="216" height="10" rx="5" fill="#9FC3DA" stroke="#0B0C10" stroke-width="2.5" />
+    <circle cx="20" cy="24" r="7.5" fill="#9FC3DA" stroke="#0B0C10" stroke-width="2.5" />
+    <circle cx="240" cy="24" r="7.5" fill="#9FC3DA" stroke="#0B0C10" stroke-width="2.5" />
+  </g>
+  <g id="forma-banderin">
+    <path id="resplandor-marco" d="M42 32 H218 V262 L130 234 L42 262 Z" fill="none" stroke="#9FC3DA" stroke-width="26" stroke-linejoin="round" opacity=".55" filter="url(#resplandor-marco)" /><path id="borde-exterior" d="M42 32 H218 V262 L130 234 L42 262 Z" fill="#0B0C10" stroke="#0B0C10" stroke-width="18" stroke-linejoin="round" />
+    <path id="marco-metal" d="M42 32 H218 V262 L130 234 L42 262 Z" fill="url(#metal)" stroke="url(#metal)" stroke-width="10" stroke-linejoin="round" />
+    <path id="filete-claro" d="M42 32 H218 V262 L130 234 L42 262 Z" transform="translate(7.80 8.46) scale(0.94)" fill="none" stroke="#F2FBFF" stroke-width="1.6" opacity=".55" />
+    <path id="cara" d="M42 32 H218 V262 L130 234 L42 262 Z" transform="translate(11.70 12.69) scale(0.91)" fill="#16301F" stroke="#0B0C10" stroke-width="3" />
+    <path id="filete-acento" d="M42 32 H218 V262 L130 234 L42 262 Z" transform="translate(19.50 21.15) scale(0.85)" fill="none" stroke="#22C55E" stroke-width="1.5" opacity=".5" />
+    </g>
+  <g id="franjas-color-equipo" clip-path="url(#recorte-forma)" opacity=".9">
+    <rect x="56" y="30" width="7" height="240" fill="#FFB088" />
+    <rect x="197" y="30" width="7" height="240" fill="#FFB088" />
+  </g>
+  <g id="logo-equipo">
+    
+    <circle cx="130" cy="98" r="24.5" fill="#0B0C10" />
+    <circle cx="130" cy="98" r="21" fill="#121318" stroke="#FFB088" stroke-width="3" />
+    <text id="iniciales-equipo" x="130" y="103.0" font-family="Montserrat, Arial, sans-serif" font-size="14" font-weight="900" text-anchor="middle" fill="#FFFFFF">TAG</text>
+  </g>
+  <g id="textos-editables" font-family="Montserrat, Arial, sans-serif" text-anchor="middle">
+    <g id="etiqueta">
+      <rect x="78.6" y="44" width="102.7" height="22" rx="11" fill="#121318" stroke="#22C55E" stroke-width="2" />
+      <text x="130" y="59.3" font-size="11.5" font-weight="800" letter-spacing=".8" fill="#86EFAC">VICTORIAS</text>
+    </g>
+    <text id="numero" x="130" y="164" font-size="45" font-weight="900" letter-spacing="-2" fill="#FFFFFF">250</text>
+  </g>
+  <g id="puntos-nivel"><path d="M110.5 172 L115.5 177 L110.5 182 L105.5 177 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /><path d="M123.5 172 L128.5 177 L123.5 182 L118.5 177 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /><path d="M136.5 172 L141.5 177 L136.5 182 L131.5 177 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /><path d="M149.5 172 L154.5 177 L149.5 182 L144.5 177 Z" fill="#9FC3DA" stroke="#0B0C10" stroke-width="1.5" /></g>
+  <g id="icono" opacity="1" transform="translate(130 203) scale(0.86) translate(-130 -204)">
+    <rect x="106" y="182" width="6" height="46" rx="2" fill="#22C55E" stroke="#0B0C10" stroke-width="2.5" stroke-linejoin="round" />
+    <circle cx="109" cy="180" r="4.5" fill="#22C55E" stroke="#0B0C10" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M112 185 Q125 177 138 185 Q150 193 160 186 V209 Q150 216 138 208 Q125 200 112 208 Z" fill="#22C55E" stroke="#0B0C10" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M124 183 V203 M136 185 V206 M148 190 V211 M112 196 Q125 188 138 196 Q150 204 160 197" fill="none" stroke="#0B0C10" stroke-width="1.5" opacity=".45" />
+  </g>
+</svg>

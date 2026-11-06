@@ -10,6 +10,7 @@ export const ADMIN_SECTIONS = [
   "servers",
   "matchmaking",
   "seasons",
+  "medals",
   "clips",
   "ranking",
   "maps",

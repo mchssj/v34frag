@@ -47,6 +47,7 @@ import {
   useResolveRequest,
 } from "../api/queries"
 import type { Resolution } from "../types"
+import { Medal } from "@/features/medals/Medal"
 
 const ICONS: Record<NotificationKind, LucideIcon> = {
   invite: UserPlusIcon,
@@ -285,14 +286,18 @@ function NotificationRow({
         onClick={onOpen}
         className="flex items-start gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <span
-          className={cn(
-            "grid size-8 shrink-0 place-items-center rounded-full",
-            isUrgent(item) ? "bg-primary/16 text-primary" : "bg-muted"
-          )}
-        >
-          <Icon className="size-4" aria-hidden />
-        </span>
+        {d.medal ? (
+          <Medal look={d.medal} size={32} title={d.medal.title} />
+        ) : (
+          <span
+            className={cn(
+              "grid size-8 shrink-0 place-items-center rounded-full",
+              isUrgent(item) ? "bg-primary/16 text-primary" : "bg-muted"
+            )}
+          >
+            <Icon className="size-4" aria-hidden />
+          </span>
+        )}
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="flex items-baseline justify-between gap-2">
             <span

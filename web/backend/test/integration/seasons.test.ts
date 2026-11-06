@@ -170,20 +170,21 @@ describe('temporadas', () => {
     expect(cur).toMatchObject({ id: r.next_season_id, number: 2, name: 'Temporada 2', top_n: 20, min_matches: 20 });
 
     const foto = await (await call('GET', `/api/v1/seasons/${seasonId}/standings?q=${seed}`, undefined, '')).json();
-    expect(foto.items[0]).toMatchObject({ rank: 1, elo: elo[0], elo_after: 2001 + Math.round((elo[0]! - 2001) * 0.1), medal: { name: 'Campeón', icon: '🏆' }, kd: 2 });
+    expect(foto.items[0]).toMatchObject({ rank: 1, elo: elo[0], elo_after: 2001 + Math.round((elo[0]! - 2001) * 0.1), medal: { name: 'Campeón', design: { template: 'podio', number: '1', label: 'S1' } }, kd: 2 });
   });
 
   it('el jugador: medalla con su temporada e historial', async () => {
     const medals = await (await call('GET', `/api/v1/players/${players[0]}/medals`, undefined, '')).json();
     expect(medals.items).toEqual([
-      expect.objectContaining({ title: 'Temporada 1 · #1', icon: '🏆', rank: 1, season: { id: seasonId, number: 1, name: 'Temporada 1' } }),
+      expect.objectContaining({ title: 'Temporada 1 · #1', source: 'season', design: expect.objectContaining({ key: 'season_podio_1' }), rank: 1, season: { id: seasonId, number: 1, name: 'Temporada 1' } }),
     ]);
     const hist = await (await call('GET', `/api/v1/players/${players[1]}/seasons`, undefined, '')).json();
     expect(hist.items).toEqual([
       expect.objectContaining({
         season: { id: seasonId, number: 1, name: 'Temporada 1', ended_at: expect.any(String), players: expect.any(Number) },
         rank: 2,
-        medal: { name: 'Subcampeón', icon: '🥈' },
+        // (replanteo 79) con el dibujo de la medalla del tramo: podio 2, cinta S1.
+        medal: { name: 'Subcampeón', design: expect.objectContaining({ template: 'podio', number: '2', label: 'S1', metal: 'plata' }) },
       }),
     ]);
     // (E20) "#2 de N": N cuenta a los que tuvieron puesto, así que no puede ser menos que el puesto.

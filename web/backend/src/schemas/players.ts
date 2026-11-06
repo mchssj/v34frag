@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi';
+import { MedalDesign } from './medals';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { Clutches } from './common';
 
@@ -73,13 +74,14 @@ export const Medal = z
   .object({
     id: z.uuid(),
     title: z.string(),
-    icon: z.string().nullable(),
     created_at: z.string(),
     season: z
       .object({ id: z.uuid(), number: z.number().int(), name: z.string() })
       .nullable()
       .openapi({ description: 'Temporada en la que la ganó; `null` en las medallas que da el admin a mano' }),
     rank: z.number().int().nullable().openapi({ description: 'Puesto en esa temporada' }),
+    source: z.enum(['admin', 'auto', 'season']).openapi({ description: 'Quién la dio: un admin, el motor o el cierre de temporada' }),
+    design: MedalDesign.openapi({ description: 'El dibujo (replanteo 79). Sin emoji' }),
   })
   .openapi('Medal');
 export const MedalQuery = listQuery(['created_at', 'title'], { sort: 'created_at', order: 'desc' });
@@ -219,13 +221,13 @@ export const MedalSummaryQuery = listQuery(['count', 'last_at', 'title'], { sort
 export const MedalSummary = z
   .object({
     title: z.string(),
-    icon: z.string().nullable(),
     count: z.number().int(),
+    design: MedalDesign,
     last_at: z.string().openapi({ description: 'La más reciente' }),
   })
   .openapi('MedalSummary');
 export const MedalSummaryList = Envelope(MedalSummary).openapi('MedalSummaryList', {
-  description: 'Medallas agrupadas por título e icono, con la cantidad. El detalle de cada una está en `/players/{id}/medals`',
+  description: 'Medallas agrupadas por título y definición, con la cantidad. El detalle de cada una está en `/players/{id}/medals`',
 });
 
 // ---------- ranking de jugadores y comparador ----------

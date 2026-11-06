@@ -180,12 +180,12 @@ export function useUploadPlayerPhoto(id: string) {
 export function useAddMedal(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (body: { title: string; icon?: string }) =>
+    // (replanteo 79) Una medalla manual de Comunidad; sin título, el de la medalla.
+    mutationFn: (body: { definition_id: string; title?: string }) =>
       unwrap(
         api.POST("/api/v1/admin/players/{id}/medals", {
           params: { path: { id } },
-          // Sin ícono, el mismo que pone la API por defecto.
-          body: { title: body.title, icon: body.icon ?? "🏆" },
+          body,
         })
       ),
     onSuccess: () => touched(qc, id),

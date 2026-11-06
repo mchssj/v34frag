@@ -26,10 +26,12 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-pa
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
+import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
 import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
 import { Route as AppAdminMatchmakingRouteImport } from './routes/_app/admin.matchmaking'
+import { Route as AppAdminMedalsRouteImport } from './routes/_app/admin.medals'
 import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players'
 import { Route as AppAdminRankingRouteImport } from './routes/_app/admin.ranking'
 import { Route as AppAdminSeasonsRouteImport } from './routes/_app/admin.seasons'
@@ -145,6 +147,11 @@ const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   path: '/demo/matchmaking',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoMedallasRoute = DemoMedallasRouteImport.update({
+  id: '/demo/medallas',
+  path: '/demo/medallas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppAdminBansRoute = AppAdminBansRouteImport.update({
   id: '/bans',
   path: '/bans',
@@ -163,6 +170,11 @@ const AppAdminMapsRoute = AppAdminMapsRouteImport.update({
 const AppAdminMatchmakingRoute = AppAdminMatchmakingRouteImport.update({
   id: '/matchmaking',
   path: '/matchmaking',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminMedalsRoute = AppAdminMedalsRouteImport.update({
+  id: '/medals',
+  path: '/medals',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminPlayersRoute = AppAdminPlayersRouteImport.update({
@@ -337,10 +349,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
+  '/admin/medals': typeof AppAdminMedalsRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
@@ -388,10 +402,12 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
   '/admin/matchmaking': typeof AppAdminMatchmakingRoute
+  '/admin/medals': typeof AppAdminMedalsRoute
   '/admin/players': typeof AppAdminPlayersRoute
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
@@ -443,10 +459,12 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
+  '/demo/medallas': typeof DemoMedallasRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
+  '/_app/admin/medals': typeof AppAdminMedalsRoute
   '/_app/admin/players': typeof AppAdminPlayersRoute
   '/_app/admin/ranking': typeof AppAdminRankingRoute
   '/_app/admin/seasons': typeof AppAdminSeasonsRoute
@@ -497,10 +515,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/demo/matchmaking'
+    | '/demo/medallas'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
     | '/admin/matchmaking'
+    | '/admin/medals'
     | '/admin/players'
     | '/admin/ranking'
     | '/admin/seasons'
@@ -548,10 +568,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/demo/matchmaking'
+    | '/demo/medallas'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
     | '/admin/matchmaking'
+    | '/admin/medals'
     | '/admin/players'
     | '/admin/ranking'
     | '/admin/seasons'
@@ -602,10 +624,12 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/demo/matchmaking'
+    | '/demo/medallas'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
     | '/_app/admin/maps'
     | '/_app/admin/matchmaking'
+    | '/_app/admin/medals'
     | '/_app/admin/players'
     | '/_app/admin/ranking'
     | '/_app/admin/seasons'
@@ -648,6 +672,7 @@ export interface RootRouteChildren {
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
+  DemoMedallasRoute: typeof DemoMedallasRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -771,6 +796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoMatchmakingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/medallas': {
+      id: '/demo/medallas'
+      path: '/demo/medallas'
+      fullPath: '/demo/medallas'
+      preLoaderRoute: typeof DemoMedallasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/admin/bans': {
       id: '/_app/admin/bans'
       path: '/bans'
@@ -797,6 +829,13 @@ declare module '@tanstack/react-router' {
       path: '/matchmaking'
       fullPath: '/admin/matchmaking'
       preLoaderRoute: typeof AppAdminMatchmakingRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/medals': {
+      id: '/_app/admin/medals'
+      path: '/medals'
+      fullPath: '/admin/medals'
+      preLoaderRoute: typeof AppAdminMedalsRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/players': {
@@ -1024,6 +1063,7 @@ interface AppAdminRouteChildren {
   AppAdminClipsRoute: typeof AppAdminClipsRoute
   AppAdminMapsRoute: typeof AppAdminMapsRoute
   AppAdminMatchmakingRoute: typeof AppAdminMatchmakingRoute
+  AppAdminMedalsRoute: typeof AppAdminMedalsRoute
   AppAdminPlayersRoute: typeof AppAdminPlayersRoute
   AppAdminRankingRoute: typeof AppAdminRankingRoute
   AppAdminSeasonsRoute: typeof AppAdminSeasonsRoute
@@ -1040,6 +1080,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminClipsRoute: AppAdminClipsRoute,
   AppAdminMapsRoute: AppAdminMapsRoute,
   AppAdminMatchmakingRoute: AppAdminMatchmakingRoute,
+  AppAdminMedalsRoute: AppAdminMedalsRoute,
   AppAdminPlayersRoute: AppAdminPlayersRoute,
   AppAdminRankingRoute: AppAdminRankingRoute,
   AppAdminSeasonsRoute: AppAdminSeasonsRoute,
@@ -1152,6 +1193,7 @@ const rootRouteChildren: RootRouteChildren = {
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
+  DemoMedallasRoute: DemoMedallasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
