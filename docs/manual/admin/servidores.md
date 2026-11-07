@@ -10,7 +10,9 @@ Los servidores se manejan en Administración › [Servidores y ELO](/admin/serve
 
 1. Toca **Nuevo servidor**.
 2. Completa los datos:
-   - **Nombre** (de 2 a 40 caracteres), por ejemplo "CMLeague #4".
+   - **Nombre público** (de 2 a 40 caracteres), por ejemplo "CM League #4". Lo ve todo el mundo: el inicio, la sala de la partida y los avisos. Usa siempre un nombre genérico.
+   - **Nombre interno** (opcional, de 2 a 60), por ejemplo "flow" o "MVZG": cómo lo llamamos nosotros. Solo se ve en Administración, y el buscador de la lista también lo encuentra.
+   - **Mostrar en el inicio**: si sale en "Ahora en los servidores" de la página de inicio. Viene prendido.
    - **Dirección para conectarse**, la que usa el botón **Conectar**.
    - **Modo** y **Región**.
    - **Puerto de SourceTV**.
@@ -29,6 +31,7 @@ Toca un servidor de la lista para ver sus datos, la licencia, el token, la IP pe
 - **Guardar** cambios en sus datos.
 - **Generar token nuevo:** el viejo deja de andar. Reemplázalo en el `csstv_reporter.cfg` y cambia de mapa.
 - **Revocar** el servidor: deja de poder subir partidas. Un servidor con partidas no se borra: se revoca.
+- **Mostrar en el inicio:** apágalo en los servidores que ya no se usan pero conservan sus partidas (los históricos). Siguen con su nombre en las partidas viejas, pero no salen en la página de inicio. En la lista llevan la marca **Oculto en el inicio**.
 
 La lista se filtra por **En línea**, **Con avisos** y **Revocados**.
 

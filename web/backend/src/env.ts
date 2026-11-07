@@ -28,6 +28,12 @@ const EnvSchema = z.object({
     .url()
     .transform((s) => s.replace(/\/+$/, ''))
     .optional(),
+  // Código de la invitación de Discord de la comunidad (el de COMMUNITY.discordUrl en la web): los números de la tarjeta del
+  // inicio (replanteo 83).
+  DISCORD_INVITE_CODE: z
+    .string()
+    .regex(/^[A-Za-z0-9-]{2,32}$/)
+    .default('bn5Yxsh9tc'),
   // Dirección pública del relay del HUD (https://hud.cmleague.lat): links de OBS de los streamers y csstv_hud_host del cfg.
   HUD_BASE_URL: z
     .url()

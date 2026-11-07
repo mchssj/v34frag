@@ -114,7 +114,11 @@ export function NotificationsMenu() {
       setInvite(item)
     } else if (d.link) {
       setOpen(false)
-      void navigate({ to: d.link.to, params: d.link.params } as never)
+      void navigate({
+        to: d.link.to,
+        params: d.link.params,
+        search: d.link.search,
+      } as never)
     }
   }
 

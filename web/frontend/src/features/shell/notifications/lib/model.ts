@@ -31,7 +31,11 @@ export type NotificationKind =
   | "news"
   | "admin"
 
-export type NotificationLink = { to: AppPath; params?: Record<string, string> }
+export type NotificationLink = {
+  to: AppPath
+  params?: Record<string, string>
+  search?: Record<string, string>
+}
 
 export type Described = {
   kind: NotificationKind
@@ -123,6 +127,35 @@ const CATEGORY: Record<NotificationCategory, [NotificationKind, string]> = {
   account: ["account", "Cuenta"],
   news: ["news", "Novedades"],
   admin: ["admin", "Administración"],
+}
+
+const KILL_LABEL: Record<number, string> = {
+  3: "3 kills",
+  4: "4 kills",
+  5: "ace",
+}
+
+/** "2 rondas de 4 kills y un clutch 1v2": las jugadas de una partida, juntas por tipo. */
+export function clipsSummary(kills: number[], clutches: number[]): string {
+  const parts: string[] = []
+  for (const k of [5, 4, 3]) {
+    const n = kills.filter((x) => x === k).length
+    if (n === 1)
+      parts.push(k === 5 ? "un ace" : `una ronda de ${KILL_LABEL[k]}`)
+    else if (n > 1)
+      parts.push(k === 5 ? `${n} aces` : `${n} rondas de ${KILL_LABEL[k]}`)
+  }
+  for (const vs of [...new Set(clutches)].sort((a, b) => b - a)) {
+    const n = clutches.filter((x) => x === vs).length
+    parts.push(n === 1 ? `un clutch 1v${vs}` : `${n} clutches 1v${vs}`)
+  }
+  if (parts.length === 0)
+    return "Mira cómo te fue en las estadísticas de la partida."
+  const text =
+    parts.length === 1
+      ? parts[0]!
+      : `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}`
+  return text.charAt(0).toUpperCase() + text.slice(1) + "."
 }
 
 const matchLink = (id: string): NotificationLink | undefined =>
@@ -460,6 +493,28 @@ export function describe(n: Notification, me?: string | null): Described {
             : `Un admin te ajustó el ELO: ${signed(num(d.delta) ?? 0)}`,
         body: str(d.reason),
         link: profile,
+      }
+    }
+    case "clips_detected": {
+      // (replanteo 83) Un solo aviso por partida, con todas las jugadas del jugador.
+      const count = num(d.count) ?? 0
+      const kills = (Array.isArray(d.kills) ? d.kills : []).filter(
+        (k): k is number => typeof k === "number"
+      )
+      const clutches = (Array.isArray(d.clutches) ? d.clutches : []).filter(
+        (k): k is number => typeof k === "number"
+      )
+      const id = str(d.match_id)
+      return {
+        kind: "elo",
+        title:
+          count === 1
+            ? `Tienes una jugada destacada${str(d.map) ? ` en ${str(d.map)}` : ""}`
+            : `Tienes ${count || "varias"} jugadas destacadas${str(d.map) ? ` en ${str(d.map)}` : ""}`,
+        body: clipsSummary(kills, clutches),
+        link: id
+          ? { to: "/match/$id", params: { id }, search: { view: "stats" } }
+          : undefined,
       }
     }
     case "clip_ready":

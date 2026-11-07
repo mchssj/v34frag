@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 import { SecretDialog } from "../../components/dialogs"
 import { HudSection } from "./HudSection"
 import { UsesSection } from "./UsesSection"
@@ -258,7 +259,13 @@ function ServerRow({
           <span className="flex items-center gap-2 text-[15px] font-semibold">
             <Dot tone={!s.active ? "muted" : s.online ? "win" : "warn"} />
             {s.name}
+            {!s.listed && <Chip>Oculto en el inicio</Chip>}
           </span>
+          {s.internal_name && s.internal_name !== s.name && (
+            <span className="text-xs text-muted-foreground">
+              Interno: {s.internal_name}
+            </span>
+          )}
           <span className="text-xs text-muted-foreground">
             {[s.mode ? MODES[s.mode] : null, s.region]
               .filter(Boolean)
@@ -329,6 +336,9 @@ function Cell({
 
 type Draft = {
   name: string
+  internal_name: string
+  /** (replanteo 83) Sale en la lista de servidores del inicio. */
+  listed: boolean
   connect_address: string
   mode: Mode | ""
   region: string
@@ -340,6 +350,8 @@ type Draft = {
 
 const toDraft = (s: AdminServer | null): Draft => ({
   name: s?.name ?? "",
+  internal_name: s?.internal_name ?? "",
+  listed: s?.listed ?? true,
   connect_address: s?.connect_address ?? "",
   mode: s?.mode ?? "mix",
   region: s?.region ?? "",
@@ -355,6 +367,8 @@ function toBody(d: Draft): ServerCreate {
   const port = d.tv_port.trim() ? Number(d.tv_port) : null
   return {
     name: d.name.trim(),
+    internal_name: text(d.internal_name),
+    listed: d.listed,
     connect_address: text(d.connect_address),
     mode: d.mode || null,
     region: text(d.region),
@@ -368,6 +382,9 @@ function toBody(d: Draft): ServerCreate {
 function draftError(d: Draft): string | null {
   const n = d.name.trim().length
   if (n > 0 && (n < 2 || n > 40)) return "El nombre va de 2 a 40 caracteres."
+  const i = d.internal_name.trim().length
+  if (i > 0 && (i < 2 || i > 60))
+    return "El nombre interno va de 2 a 60 caracteres."
   if (d.tv_port.trim()) {
     const p = Number(d.tv_port)
     if (!Number.isInteger(p) || p < 1 || p > 65535)
@@ -403,7 +420,8 @@ function ServerForm({
   const update = useUpdateServer()
   const rotate = useRotateServerToken()
   const del = useDeleteServer()
-  const set = (k: keyof Draft) => (v: string) => setD((p) => ({ ...p, [k]: v }))
+  const set = (k: Exclude<keyof Draft, "listed">) => (v: string) =>
+    setD((p) => ({ ...p, [k]: v }))
 
   const err = draftError(d)
   const dirty =
@@ -425,7 +443,7 @@ function ServerForm({
   }
 
   const field = (
-    key: keyof Draft,
+    key: Exclude<keyof Draft, "listed">,
     label: string,
     props: React.ComponentProps<typeof Input> = {}
   ) => (
@@ -476,10 +494,40 @@ function ServerForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          {field("name", "Nombre", {
+          {field("name", "Nombre público", {
             maxLength: 40,
-            placeholder: "CMLeague #4",
+            placeholder: "CM League #4",
           })}
+          <span className="mt-1 block text-xs text-muted-foreground">
+            Lo ve todo el mundo: el inicio, la sala de la partida y los avisos.
+            Usa un nombre genérico.
+          </span>
+        </div>
+        <div className="col-span-2">
+          {field("internal_name", "Nombre interno", {
+            maxLength: 60,
+            placeholder: "flow, MVZG…",
+          })}
+          <span className="mt-1 block text-xs text-muted-foreground">
+            Solo se ve en Administración.
+          </span>
+        </div>
+        <div className="col-span-2 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5">
+          <Label
+            htmlFor={`${id}-listed`}
+            className="flex flex-col items-start gap-0.5"
+          >
+            <span>Mostrar en el inicio</span>
+            <span className="text-xs font-normal text-muted-foreground">
+              Sale en "Ahora en los servidores". Apágalo en los servidores que
+              ya no se usan.
+            </span>
+          </Label>
+          <Switch
+            id={`${id}-listed`}
+            checked={d.listed}
+            onCheckedChange={(v) => setD((p) => ({ ...p, listed: v }))}
+          />
         </div>
         <div className="col-span-2">
           {field("connect_address", "Dirección para conectarse", {

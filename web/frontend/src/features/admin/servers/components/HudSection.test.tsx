@@ -30,6 +30,8 @@ const CFG =
 const srv = (hud: Partial<AdminServer["hud"]> = {}): AdminServer => ({
   id: "11111111-1111-4111-8111-111111111111",
   name: "flow",
+  internal_name: null,
+  listed: true,
   active: true,
   license_state: "ok",
   license_expires_at: null,

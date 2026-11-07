@@ -7,10 +7,9 @@ export const COMMUNITY = {
   steamGroupUrl: "https://steamcommunity.com/groups/clientmodleague",
 }
 
+/** La tarjeta del Discord en el inicio. Los números (en línea y miembros) los da la API: GET /api/v1/community/discord. */
 export const DISCORD = {
   inviteUrl: COMMUNITY.discordUrl,
-  online: 214,
-  members: 1386,
   channels: ["buscar-equipo", "pcw", "torneos", "soporte"],
 }
 

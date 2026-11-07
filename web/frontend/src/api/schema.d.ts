@@ -8235,7 +8235,7 @@ export interface paths {
                     sort?: "name" | "created_at" | "last_seen_at" | "license_expires_at" | "matches";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    /** @description Busca en el nombre, la dirección, las IPs, la versión del plugin y la región */
+                    /** @description Busca en el nombre público y el interno, la dirección, las IPs, la versión del plugin y la región */
                     q?: string;
                     /** @description Activos o revocados */
                     active?: "true" | "false";
@@ -21543,6 +21543,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/community/discord": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Números del Discord de la comunidad
+         * @description Conectados y miembros, de la invitación pública de Discord (`invites/<código>?with_counts=true`), para la tarjeta del inicio. La respuesta se guarda 10 minutos. Si Discord no responde, los dos números van en `null` y la web muestra la tarjeta sin ellos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Números */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DiscordCounts"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/servers/status": {
         parameters: {
             query?: never;
@@ -21552,7 +21591,7 @@ export interface paths {
         };
         /**
          * Estado de los servidores
-         * @description Los servidores activos con licencia vigente, consultados con A2S (la consulta del navegador de servidores del juego): si están prendidos, latencia, mapa y jugadores conectados, con su modo, su región y los mixes en vivo, más los totales. La respuesta se guarda 20 s. Con `ETag` (`304` si no cambió). No es un listado paginado: son pocos servidores y es una foto completa.
+         * @description Los servidores activos con licencia vigente que salen en el inicio (`listed`), con su nombre público, consultados con A2S (la consulta del navegador de servidores del juego): si están prendidos, latencia, mapa y jugadores conectados, con su modo, su región y los mixes en vivo, más los totales y la cola del matchmaking (cuántos hay y si está abierta). La respuesta se guarda 20 s. Con `ETag` (`304` si no cambió). No es un listado paginado: son pocos servidores y es una foto completa.
          */
         get: {
             parameters: {
@@ -23279,7 +23318,12 @@ export interface components {
         AdminServer: {
             /** Format: uuid */
             id: string;
+            /** @description Nombre público: el que se ve en el inicio, la sala y los avisos */
             name: string;
+            /** @description Nombre interno, solo para Administración */
+            internal_name: string | null;
+            /** @description Sale en la lista de servidores del inicio */
+            listed: boolean;
             active: boolean;
             /**
              * @description `ok`; `expiring`: vence en 7 días o menos; `expired`: vencida; `revoked`: revocado
@@ -23344,7 +23388,7 @@ export interface components {
             build_command: string;
         };
         AdminServerCreate: {
-            /** @description Único, sin distinguir mayúsculas */
+            /** @description Nombre público (el que ve todo el mundo). Único, sin distinguir mayúsculas */
             name: string;
             /** @description Dirección para el botón "Conectar" (`host:puerto`). `null` o `""` lo borra */
             connect_address?: string | "" | null;
@@ -23360,6 +23404,10 @@ export interface components {
             region?: string | "" | null;
             /** @description Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo. `null` o `""` lo borra */
             tv_port?: number | "" | null;
+            /** @description Nombre interno (flow, MVZG…), solo para Administración. Único, sin distinguir mayúsculas. `null` o `""` lo borra */
+            internal_name?: string | "" | null;
+            /** @description Sale en la lista de servidores del inicio (por defecto, sí) */
+            listed?: boolean;
         };
         AdminServerPatch: {
             name?: string;
@@ -23377,6 +23425,10 @@ export interface components {
             region?: string | "" | null;
             /** @description Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo. `null` o `""` lo borra */
             tv_port?: number | "" | null;
+            /** @description Nombre interno (flow, MVZG…), solo para Administración. Único, sin distinguir mayúsculas. `null` o `""` lo borra */
+            internal_name?: string | "" | null;
+            /** @description Sale en la lista de servidores del inicio (por defecto, sí) */
+            listed?: boolean;
             /** @description `false` revoca (el token deja de funcionar), `true` reactiva */
             active?: boolean;
             /** @description Si el matchmaking puede usar este servidor */
@@ -25672,6 +25724,14 @@ export interface components {
             /** @enum {string} */
             role: "user" | "organizer" | "moderator";
         };
+        DiscordCounts: {
+            /** @description Conectados ahora. null si Discord no respondió */
+            online: number | null;
+            /** @description Miembros del servidor. null si Discord no respondió */
+            members: number | null;
+            /** @description La invitación de la comunidad */
+            invite_url: string;
+        };
         ServersStatus: {
             servers: components["schemas"]["ServerStatusItem"][];
             totals: {
@@ -25683,7 +25743,11 @@ export interface components {
                 players: number;
                 /** @description Mixes en vivo entre todos */
                 live_matches: number;
+                /** @description Jugadores en la cola del matchmaking, de cualquier modo (replanteo 83) */
+                in_queue: number;
             };
+            /** @description Si la cola del matchmaking está abierta (replanteo 83) */
+            mm_open: boolean;
             /** @description Cuándo se consultó (la respuesta se guarda 20 s) */
             checked_at: string;
         };

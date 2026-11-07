@@ -9,5 +9,7 @@ export const roomSearchSchema = z.object({
   stats: z.enum(STATS_TABS).optional().catch(undefined),
   /** Serie de torneo o PCW: el juego (mapa) de las estadísticas; vacío = todos los mapas. */
   map: z.uuid().optional().catch(undefined),
+  /** (replanteo 83) Partida del matchmaking: abrir la sala en Estadísticas (el aviso de jugadas destacadas). */
+  view: z.enum(["stats"]).optional().catch(undefined),
 })
 export type RoomSearch = z.infer<typeof roomSearchSchema>

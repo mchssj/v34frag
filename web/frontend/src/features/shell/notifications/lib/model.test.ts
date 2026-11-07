@@ -3,6 +3,7 @@ import { describe as group, expect, it } from "vitest"
 
 import { sampleNotifications } from "./mock"
 import {
+  clipsSummary,
   describe,
   filterByTab,
   isPending,
@@ -55,6 +56,7 @@ const TYPES: [string, Notification["category"]][] = [
   ["mix_deleted", "elo"],
   ["elo_adjusted", "elo"],
   ["clip_ready", "elo"],
+  ["clips_detected", "elo"],
   ["season_ranked", "season"],
   ["season_closed", "season"],
   ["medal_granted", "season"],
@@ -307,5 +309,55 @@ group("team_staff_action", () => {
         })
       ).title
     ).toBe("2 mixes vinculados por aprobar")
+  })
+})
+
+group("clips_detected (replanteo 83)", () => {
+  it("un solo aviso con todas las jugadas, que lleva a las estadísticas", () => {
+    expect(
+      describe(
+        base({
+          type: "clips_detected",
+          category: "elo",
+          data: {
+            match_id: "g1",
+            map: "de_mirage_rc1",
+            count: 3,
+            kills: [4, 4],
+            clutches: [2],
+          },
+        })
+      )
+    ).toEqual({
+      kind: "elo",
+      title: "Tienes 3 jugadas destacadas en de_mirage_rc1",
+      body: "2 rondas de 4 kills y un clutch 1v2.",
+      link: {
+        to: "/match/$id",
+        params: { id: "g1" },
+        search: { view: "stats" },
+      },
+    })
+  })
+
+  it("una sola jugada, sin mapa", () => {
+    const d = describe(
+      base({
+        type: "clips_detected",
+        category: "elo",
+        data: { match_id: "g1", count: 1, kills: [5], clutches: [] },
+      })
+    )
+    expect(d.title).toBe("Tienes una jugada destacada")
+    expect(d.body).toBe("Un ace.")
+  })
+
+  it("el resumen junta por tipo", () => {
+    expect(clipsSummary([3, 5, 3, 4], [3, 1, 3])).toBe(
+      "Un ace, una ronda de 4 kills, 2 rondas de 3 kills, 2 clutches 1v3 y un clutch 1v1."
+    )
+    expect(clipsSummary([], [])).toBe(
+      "Mira cómo te fue en las estadísticas de la partida."
+    )
   })
 })

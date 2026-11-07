@@ -22,7 +22,8 @@ export type ServerStatusItem = {
 };
 export type ServersStatus = {
   servers: ServerStatusItem[];
-  totals: { servers: number; online: number; players: number; live_matches: number };
+  totals: { servers: number; online: number; players: number; live_matches: number; in_queue: number };
+  mm_open: boolean;
   checked_at: string;
 };
 
@@ -37,16 +38,19 @@ export function tvAddress(connect: string | null | undefined, tvPort: number | n
 }
 
 /**
- * Los servidores activos con licencia vigente, consultados a la vez. Uno que no responde no frena a los demás.
+ * Los servidores activos con licencia vigente que salen en el inicio (`listed`, replanteo 83), consultados a la vez. Uno que no responde no frena a los demás.
  * live_matches: mixes con foto en los últimos 10 minutos (los mismos que GET /api/v1/mixes/live muestra en curso).
  */
 export async function serversStatus(sb: Db, udp: UdpExchange, timeoutMs = STATUS_TIMEOUT_MS): Promise<ServersStatus> {
-  const [srv, live] = await Promise.all([
-    sb.from('game_servers_public').select('id, name, connect_address, mode, region, tv_port').order('name'),
+  const [srv, live, mm] = await Promise.all([
+    sb.from('game_servers_public').select('id, name, connect_address, mode, region, tv_port').eq('listed', true).order('name'),
     sb.from('live_match_list').select('server_id').eq('stale', false),
+    sb.rpc('mm_public_counts'),
   ]);
   if (srv.error) throw srv.error;
   if (live.error) throw live.error;
+  if (mm.error) throw mm.error;
+  const counts = (mm.data ?? {}) as { open?: boolean; in_queue?: number };
   const rows = (srv.data ?? []) as Row[];
   const liveBy = new Map<string, number>();
   for (const l of live.data ?? []) if (l.server_id) liveBy.set(l.server_id, (liveBy.get(l.server_id) ?? 0) + 1);
@@ -88,7 +92,9 @@ export async function serversStatus(sb: Db, udp: UdpExchange, timeoutMs = STATUS
       online: servers.filter((s) => s.online).length,
       players: servers.reduce((n, s) => n + (s.players ?? 0), 0),
       live_matches: servers.reduce((n, s) => n + s.live_matches, 0),
+      in_queue: counts.in_queue ?? 0,
     },
+    mm_open: counts.open ?? false,
     checked_at: new Date().toISOString(),
   };
 }

@@ -116,7 +116,7 @@ describe('admin de servidores', () => {
 
     res = await call('PATCH', `/api/v1/admin/servers/${t.id}`, { name: `otro ${sfx}` });
     expect(res.status).toBe(409);
-    expect((await res.json()).error.message).toBe('Ya hay un servidor con ese nombre.');
+    expect((await res.json()).error.message).toBe('Ya hay un servidor con ese nombre (público o interno).');
     expect((await call('PATCH', `/api/v1/admin/servers/${t.id}`, {})).status).toBe(400);
     expect((await call('PATCH', '/api/v1/admin/servers/00000000-0000-4000-8000-000000000000', { active: false })).status).toBe(404);
 
