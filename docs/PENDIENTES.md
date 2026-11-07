@@ -32,6 +32,14 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   3. Ver en las próximas partidas del matchmaking si los equipos quedan más parejos.
 - **Aparte:** `web/backend/test/integration/hud.test.ts` falla contra la copia de producción (elige el puerto 27501, que usa el #2). No es de este cambio.
 
+## El moderador crea torneos y el premio con monto y divisa (2026-11-07): hecho en local, sin commit ni despliegue
+
+- **Hecho:** replanteo `84`, la API y la web ([`2026-11-07-moderador-crea-torneos-y-divisa`](bitacora/2026-11-07-moderador-crea-torneos-y-divisa/)), en la copia de `main` (`v34frag-mainwt`). Lo que crea un moderador (normal o histórico) queda pendiente y lo aprueba solo un admin; el premio con monto, divisa y detalle. Probado en la base local (12 bloques y la inversa), la API y la web; no en el navegador. Manual y términos al día. La `84` quedó aplicada en la base local.
+- **Falta:**
+  1. Que Daniel lo revise en el navegador y pida el commit (en `main`, con la copia en `feat/frontend-fase-1`).
+  2. Desplegar sin un mix en curso: respaldo, `probar_84.sh` contra producción, la `84`, y la API y la web juntas desde `main`.
+  3. Publicar el `CHANGELOG_DISCORD.txt` (2.9.24) y los términos.
+
 ## Torneos históricos, aprobación de organizadores y fase de testing (2026-11-06): desplegado el 2026-11-07
 
 - **Hecho:** replanteo `80`, la API y la web ([`2026-11-06-torneos-historicos-y-testing`](bitacora/2026-11-06-torneos-historicos-y-testing/)). Probado en la base local (todas las pruebas SQL y la inversa), la API (548 pruebas; de integración pasan todas las de torneos) y la web (636 pruebas), y recorrido en el navegador con admin, moderador, organizador y jugador. Manual (3 páginas nuevas y 2 actualizadas), términos y privacidad al día. La `80` quedó aplicada en la base local de pruebas. Diseño: https://claude.ai/artifact/2iA9sTaDhZrd2LUG3N3dsu

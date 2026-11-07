@@ -27,7 +27,7 @@ export function SummaryTab({ event }: { event: EventDetail }) {
     ["Partidas", boText(event) ?? "Por definir"],
     ["Estado", STATUS_LABEL[event.status]],
     ["Fechas", dateRange(event.starts_on, event.ends_on)],
-    ["Premio", prizeText(event.prize)],
+    ["Premio", prizeText(event)],
     [
       "Cupo",
       event.max_teams

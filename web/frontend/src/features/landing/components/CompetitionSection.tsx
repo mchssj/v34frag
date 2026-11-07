@@ -21,6 +21,7 @@ import {
   nextEventOptions,
   topPlayersOptions,
 } from "@/features/public/api/queries"
+import { prizeOrNull } from "@/features/events/lib/model"
 import type { EventSummary } from "@/features/public/types"
 
 const TEMPLATE: Record<EventSummary["template"], string> = {
@@ -106,7 +107,7 @@ function NextTournament() {
           </div>
           <dl className="grid grid-cols-3 gap-3">
             {[
-              ["Premio", event.prize ?? "—"],
+              ["Premio", prizeOrNull(event) ?? "—"],
               ["Equipos", `${event.teams}/${event.max_teams ?? "—"}`],
               // Provisorio: la API no tiene fecha de cierre de inscripciones ("Cierra en").
               ["Empieza en", event.starts_on ? startsIn(event.starts_on) : "—"],

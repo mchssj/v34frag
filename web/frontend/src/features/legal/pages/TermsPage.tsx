@@ -305,8 +305,9 @@ const SECTIONS: LegalSection[] = [
         <li>
           Los torneos que crea un organizador y los mixes que vincula a sus
           partidas se publican después de que los aprueba un administrador o un
-          moderador de la liga. Mientras tanto no se muestran y no suman al
-          ranking.
+          moderador de la liga. Los torneos que crea un moderador se publican
+          después de que los aprueba un administrador. Mientras tanto no se
+          muestran y no suman al ranking.
         </li>
         <li>
           La liga puede publicar el registro de torneos jugados antes o fuera de

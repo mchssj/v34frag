@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { gameModesOptions, poolMapsOptions } from "../api/queries"
+import { CURRENCY_LABEL, prizeOrNull } from "@/features/events/lib/model"
 import {
   presetOf,
   SWISS_PRESETS,
@@ -32,6 +33,7 @@ import {
 } from "../lib/model"
 
 export type EventFormValues = Schemas["EventCreate"]
+type Currency = "USD" | "ARS" | "other"
 
 const TEMPLATES: Template[] = [
   "single",
@@ -87,14 +89,15 @@ export type KindChoice = "both" | "historic-only" | "normal-only"
 /**
  * Crear o editar un torneo. `locked`: el fixture ya se generó y el formato no se cambia.
  * `kinds` (solo al crear): normal o histórico, que después no se cambia. `canTesting`: admin o
- * moderador ven la casilla "En fase de testing". `needsApproval`: lo crea un organizador.
+ * moderador ven la casilla "En fase de testing". `approver`: quién aprueba lo que se crea (organizador:
+ * un admin o moderador; moderador: un admin).
  */
 export function EventForm({
   initial,
   locked = false,
   kinds,
   canTesting = false,
-  needsApproval = false,
+  approver = "none",
   submitLabel,
   pending,
   error,
@@ -105,7 +108,7 @@ export function EventForm({
   locked?: boolean
   kinds?: KindChoice
   canTesting?: boolean
-  needsApproval?: boolean
+  approver?: "none" | "staff" | "admin"
   submitLabel: string | ((historic: boolean) => string)
   pending: boolean
   error: unknown
@@ -124,6 +127,18 @@ export function EventForm({
     toLocalInput(initial?.registration_closes_at)
   )
   const [prize, setPrize] = useState(initial?.prize ?? "")
+  // (replanteo 84) monto y divisa del premio; el texto de arriba queda como detalle
+  const [amount, setAmount] = useState(
+    initial?.prize_amount != null ? String(initial.prize_amount) : ""
+  )
+  const [currency, setCurrency] = useState<Currency>(
+    initial?.prize_currency ?? "ARS"
+  )
+  const [currencyOther, setCurrencyOther] = useState(
+    initial?.prize_currency_other ?? ""
+  )
+  const amountNum =
+    amount.trim() === "" ? null : Number(amount.replace(",", "."))
   // Un torneo nuevo arranca en suizo: el cupo viene con los equipos que pide.
   const [maxTeams, setMaxTeams] = useState<number | "">(
     initial?.max_teams !== undefined
@@ -185,7 +200,13 @@ export function EventForm({
           ? "El torneo no puede terminar antes de empezar."
           : pool && pool.length < maxBo
             ? `El pool necesita al menos ${maxBo} mapas (el BO más alto).`
-            : null
+            : amountNum !== null && !(amountNum > 0)
+              ? "El monto del premio tiene que ser mayor que 0."
+              : amountNum !== null &&
+                  currency === "other" &&
+                  !currencyOther.trim()
+                ? "Escribe el nombre de la divisa (por ejemplo BRL)."
+                : null
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -202,6 +223,12 @@ export function EventForm({
       registration_closes_at:
         !historic && closes ? new Date(closes).toISOString() : null,
       prize: prize.trim() || null,
+      prize_amount: amountNum,
+      prize_currency: amountNum === null ? null : currency,
+      prize_currency_other:
+        amountNum !== null && currency === "other"
+          ? currencyOther.trim()
+          : null,
       max_teams: historic || maxTeams === "" ? null : maxTeams,
       rules: rules.trim() || null,
       ...(pool ? { map_pool: pool } : {}),
@@ -312,15 +339,78 @@ export function EventForm({
             />
           </Labeled>
         )}
-        <Labeled id={`${id}-prize`} label="Premio">
-          <Input
-            id={`${id}-prize`}
-            value={prize}
-            maxLength={200}
-            onChange={(e) => setPrize(e.target.value)}
-            placeholder="USD 500"
-          />
-        </Labeled>
+        <div className="flex flex-col gap-2 sm:col-span-2 lg:col-span-3">
+          <span className="text-sm font-medium">Premio</span>
+          <div className="grid gap-3 sm:grid-cols-[10rem_12rem_minmax(0,1fr)]">
+            <Labeled
+              id={`${id}-prize-amount`}
+              label="Monto"
+              hint="Vacío: sin monto."
+            >
+              <Input
+                id={`${id}-prize-amount`}
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9.,]/g, ""))
+                }
+                placeholder="50000"
+                className="font-mono"
+              />
+            </Labeled>
+            <Labeled id={`${id}-prize-currency`} label="Divisa">
+              <div className="flex flex-col gap-2">
+                <Select
+                  value={currency}
+                  onValueChange={(v) => setCurrency(v as Currency)}
+                  disabled={amount.trim() === ""}
+                >
+                  <SelectTrigger id={`${id}-prize-currency`} className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["USD", "ARS", "other"] as const).map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {CURRENCY_LABEL[c]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {currency === "other" && amount.trim() !== "" && (
+                  <Input
+                    aria-label="Nombre de la divisa"
+                    value={currencyOther}
+                    maxLength={12}
+                    onChange={(e) => setCurrencyOther(e.target.value)}
+                    placeholder="BRL"
+                  />
+                )}
+              </div>
+            </Labeled>
+            <Labeled
+              id={`${id}-prize`}
+              label="Detalle"
+              hint={
+                prizeOrNull({
+                  prize,
+                  prize_amount: amountNum,
+                  prize_currency: currency,
+                  prize_currency_other: currencyOther,
+                })
+                  ? `Se ve: ${prizeOrNull({ prize, prize_amount: amountNum, prize_currency: currency, prize_currency_other: currencyOther })}`
+                  : "Lo que no es plata: medallas, roles, etc."
+              }
+            >
+              <Input
+                id={`${id}-prize`}
+                value={prize}
+                maxLength={200}
+                onChange={(e) => setPrize(e.target.value)}
+                placeholder="+ rol en Discord"
+              />
+            </Labeled>
+          </div>
+        </div>
         {!historic && (
           <Labeled
             id={`${id}-max`}
@@ -490,11 +580,12 @@ export function EventForm({
         </Card>
       )}
 
-      {needsApproval && (
+      {approver !== "none" && (
         <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
           Tu torneo queda <b>pendiente de aprobación</b>. Lo puedes preparar
-          entero; cuando un admin o moderador lo apruebe, se publica. Te
-          avisamos por notificación.
+          entero; cuando{" "}
+          {approver === "admin" ? "un admin" : "un admin o moderador"} lo
+          apruebe, se publica. Te avisamos por notificación.
         </p>
       )}
 

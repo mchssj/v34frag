@@ -10,6 +10,9 @@ export const Template = z.enum(['single', 'double', 'groups', 'swiss', 'groups_d
     '`groups_double` grupos de doble eliminación + playoffs',
 });
 export const EventStatus = z.enum(['registration', 'in_progress', 'finished', 'cancelled']);
+export const PrizeCurrency = z.enum(['USD', 'ARS', 'other']).openapi({
+  description: 'Divisa del premio: `USD`, `ARS` (pesos argentinos) u `other` (con `prize_currency_other`, por ejemplo `BRL`)',
+});
 export const EventApproval = z.enum(['pending', 'approved', 'rejected']).openapi({
   description: '`pending`: lo creó un organizador y espera a un admin o moderador; `approved`; `rejected` (con `approval_note`). Solo lo aprobado se ve para todos',
 });
@@ -54,6 +57,7 @@ export const EventListQuery = listQuery(['starts_on', 'name', 'status'], { sort:
   testing: boolParam('Solo los que están en fase de testing (`true`) o los que no (`false`). Los en testing los ven solo admins y moderadores'),
   approval: EventApproval.optional(),
   pending_games: boolParam('Solo los que tienen mixes vinculados por aprobar'),
+  admin_review: boolParam('Solo los que aprueba un admin (`true`: los creó un moderador) o los que aprueba el staff (`false`)'),
 });
 
 export const EventSummary = z
@@ -65,7 +69,10 @@ export const EventSummary = z
     starts_on: z.string().nullable(),
     ends_on: z.string().nullable().openapi({ description: 'Fin tentativo que pone el organizador: el torneo puede terminar antes o después' }),
     finished_at: z.string().nullable().openapi({ description: 'Cuándo terminó de verdad: la última partida jugada. null mientras no terminó (o si sus partidas no tienen fecha)' }),
-    prize: z.string().nullable(),
+    prize: z.string().nullable().openapi({ description: 'Detalle del premio en texto libre (por ejemplo "+ rol en Discord")' }),
+    prize_amount: z.number().nullable().openapi({ description: 'Monto del premio (con `prize_currency`); null: sin monto' }),
+    prize_currency: PrizeCurrency.nullable(),
+    prize_currency_other: z.string().nullable().openapi({ description: 'Nombre de la divisa si `prize_currency` es `other`' }),
     teams: z.number().int().openapi({ description: 'Equipos inscritos' }),
     max_teams: z.number().int().nullable(),
     champion: TeamRef.nullable(),
@@ -87,6 +94,7 @@ export const EventSummary = z
     approval: EventApproval,
     approval_note: z.string().nullable().openapi({ description: 'Motivo del rechazo (lo ven el organizador y el staff)' }),
     pending_games: z.number().int().openapi({ description: 'Mixes vinculados que esperan aprobación' }),
+    admin_review: z.boolean().openapi({ description: 'Lo creó un moderador: lo aprueba o lo rechaza solo un admin' }),
   })
   .openapi('EventSummary');
 
@@ -184,8 +192,9 @@ export const EventDetail = EventSummary.extend({
   viewer: z
     .object({
       can_manage: z.boolean().openapi({ description: 'Gestiona el torneo: admin, moderador u organizador dueño' }),
-      can_own: z.boolean().openapi({ description: 'Además lo cancela y lo borra: admin u organizador dueño (el moderador no)' }),
-      can_review: z.boolean().openapi({ description: 'Aprueba o rechaza el torneo y sus mixes, y cambia la fase de testing: admin o moderador' }),
+      can_own: z.boolean().openapi({ description: 'Además lo cancela y lo borra: admin, u organizador o moderador que lo creó' }),
+      can_review: z.boolean().openapi({ description: 'Es del staff: aprueba los mixes vinculados y cambia la fase de testing (admin o moderador)' }),
+      can_approve: z.boolean().openapi({ description: 'Aprueba o rechaza este torneo: admin; moderador si no lo creó un moderador (`admin_review`)' }),
     })
     .nullable(),
 }).openapi('EventDetail', {
@@ -206,7 +215,12 @@ export const EventCreate = z
       .openapi({ description: 'Cierre de inscripciones (fecha y hora). Después, solo el organizador o un admin cambian las inscripciones. null: hasta generar el fixture' }),
     starts_on: z.iso.date().nullable().optional(),
     ends_on: z.iso.date().nullable().optional().openapi({ description: 'Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`' }),
-    prize: z.string().trim().max(200).nullable().optional(),
+    prize: z.string().trim().max(200).nullable().optional().openapi({ description: 'Detalle del premio en texto libre' }),
+    prize_amount: z.number().positive().max(9999999999.99).multipleOf(0.01).nullable().optional()
+      .openapi({ description: 'Monto del premio (pide `prize_currency`). null: sin monto' }),
+    prize_currency: PrizeCurrency.nullable().optional().openapi({ description: 'Divisa del monto (pide `prize_amount`)' }),
+    prize_currency_other: z.string().trim().min(1).max(12).nullable().optional()
+      .openapi({ description: 'Nombre de la divisa, solo con `prize_currency` = `other`' }),
     rules: z.string().trim().max(5000).nullable().optional(),
     min_teams: z.number().int().min(2).max(256).nullable().optional(),
     max_teams: z.number().int().min(2).max(256).nullable().optional(),
@@ -215,7 +229,9 @@ export const EventCreate = z
     testing: z.boolean().optional().openapi({ description: 'En fase de testing (solo admin o moderador; por defecto `false`)' }),
   })
   .openapi('EventCreate', {
-    description: 'Lo que crea un organizador queda pendiente de aprobación (`approval`); lo de un admin o moderador, aprobado. Un moderador crea solo históricos',
+    description:
+      'Lo que crea un organizador o un moderador queda pendiente de aprobación (`approval`); lo de un admin, aprobado. Lo de un moderador lo ' +
+      'aprueba solo un admin (`admin_review`). El premio: `prize_amount` y `prize_currency` van juntos, y `prize_currency_other` solo con `other`',
   });
 
 export const EventPatch = EventCreate.omit({ historic: true })

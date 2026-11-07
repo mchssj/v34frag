@@ -74,6 +74,9 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
     case '23503':
       return new AppError(400, 'VALIDATION_ERROR', 'Hace referencia a algo que no existe.');
     case '23514':
+      // (replanteo 84) el premio: monto y divisa van juntos, y "Otra" lleva su nombre
+      if (/events_prize_/.test(err.message))
+        return new AppError(400, 'VALIDATION_ERROR', 'El premio necesita el monto y la divisa juntos (y el nombre de la divisa si eliges "Otra").');
       return new AppError(400, 'VALIDATION_ERROR', 'Algún dato no cumple las reglas de la base.');
     case 'P0001': // raise exception de una función SQL: el mensaje es para el usuario
       return new AppError(400, 'BUSINESS_RULE', err.message);

@@ -18052,6 +18052,8 @@ export interface paths {
                     approval?: "pending" | "approved" | "rejected";
                     /** @description Solo los que tienen mixes vinculados por aprobar */
                     pending_games?: "true" | "false";
+                    /** @description Solo los que aprueba un admin (`true`: los creó un moderador) o los que aprueba el staff (`false`) */
+                    admin_review?: "true" | "false";
                 };
                 header?: never;
                 path?: never;
@@ -24393,7 +24395,17 @@ export interface components {
             ends_on: string | null;
             /** @description Cuándo terminó de verdad: la última partida jugada. null mientras no terminó (o si sus partidas no tienen fecha) */
             finished_at: string | null;
+            /** @description Detalle del premio en texto libre (por ejemplo "+ rol en Discord") */
             prize: string | null;
+            /** @description Monto del premio (con `prize_currency`); null: sin monto */
+            prize_amount: number | null;
+            /**
+             * @description Divisa del premio: `USD`, `ARS` (pesos argentinos) u `other` (con `prize_currency_other`, por ejemplo `BRL`)
+             * @enum {string|null}
+             */
+            prize_currency: "USD" | "ARS" | "other" | null;
+            /** @description Nombre de la divisa si `prize_currency` es `other` */
+            prize_currency_other: string | null;
             /** @description Equipos inscritos */
             teams: number;
             max_teams: number | null;
@@ -24437,6 +24449,8 @@ export interface components {
             approval_note: string | null;
             /** @description Mixes vinculados que esperan aprobación */
             pending_games: number;
+            /** @description Lo creó un moderador: lo aprueba o lo rechaza solo un admin */
+            admin_review: boolean;
         };
         /** @description Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings */
         EventDetail: components["schemas"]["EventSummary"] & {
@@ -24465,10 +24479,12 @@ export interface components {
             viewer: {
                 /** @description Gestiona el torneo: admin, moderador u organizador dueño */
                 can_manage: boolean;
-                /** @description Además lo cancela y lo borra: admin u organizador dueño (el moderador no) */
+                /** @description Además lo cancela y lo borra: admin, u organizador o moderador que lo creó */
                 can_own: boolean;
-                /** @description Aprueba o rechaza el torneo y sus mixes, y cambia la fase de testing: admin o moderador */
+                /** @description Es del staff: aprueba los mixes vinculados y cambia la fase de testing (admin o moderador) */
                 can_review: boolean;
+                /** @description Aprueba o rechaza este torneo: admin; moderador si no lo creó un moderador (`admin_review`) */
+                can_approve: boolean;
             } | null;
         };
         /** @description La primera partida en vivo del torneo; null si no hay ninguna */
@@ -24597,7 +24613,7 @@ export interface components {
             /** @description Suizo: fase en la que empieza (solo el organizador) */
             start_stage?: number;
         };
-        /** @description Lo que crea un organizador queda pendiente de aprobación (`approval`); lo de un admin o moderador, aprobado. Un moderador crea solo históricos */
+        /** @description Lo que crea un organizador o un moderador queda pendiente de aprobación (`approval`); lo de un admin, aprobado. Lo de un moderador lo aprueba solo un admin (`admin_review`). El premio: `prize_amount` y `prize_currency` van juntos, y `prize_currency_other` solo con `other` */
         EventCreate: {
             name: string;
             /**
@@ -24622,7 +24638,17 @@ export interface components {
              * @description Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`
              */
             ends_on?: string | null;
+            /** @description Detalle del premio en texto libre */
             prize?: string | null;
+            /** @description Monto del premio (pide `prize_currency`). null: sin monto */
+            prize_amount?: number | null;
+            /**
+             * @description Divisa del monto (pide `prize_amount`)
+             * @enum {string|null}
+             */
+            prize_currency?: "USD" | "ARS" | "other" | null;
+            /** @description Nombre de la divisa, solo con `prize_currency` = `other` */
+            prize_currency_other?: string | null;
             rules?: string | null;
             min_teams?: number | null;
             max_teams?: number | null;
@@ -24689,7 +24715,17 @@ export interface components {
              * @description Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`
              */
             ends_on?: string | null;
+            /** @description Detalle del premio en texto libre */
             prize?: string | null;
+            /** @description Monto del premio (pide `prize_currency`). null: sin monto */
+            prize_amount?: number | null;
+            /**
+             * @description Divisa del monto (pide `prize_amount`)
+             * @enum {string|null}
+             */
+            prize_currency?: "USD" | "ARS" | "other" | null;
+            /** @description Nombre de la divisa, solo con `prize_currency` = `other` */
+            prize_currency_other?: string | null;
             rules?: string | null;
             min_teams?: number | null;
             max_teams?: number | null;

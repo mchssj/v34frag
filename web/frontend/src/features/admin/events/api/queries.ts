@@ -25,6 +25,8 @@ export type AdminEventFilters = {
   historic?: boolean
   testing?: boolean
   pending_games?: boolean
+  /** (replanteo 84) true: los que aprueba solo un admin (los creó un moderador); false: los que aprueba el staff. */
+  admin_review?: boolean
   q?: string
   /** El organizador ve solo los suyos (id de usuario). */
   organizer?: string
@@ -48,6 +50,7 @@ export function adminEventsOptions(f: AdminEventFilters) {
               historic: flag(f.historic),
               testing: flag(f.testing),
               pending_games: flag(f.pending_games),
+              admin_review: flag(f.admin_review),
               q: f.q || undefined,
               organizer: f.organizer,
               page: f.page,

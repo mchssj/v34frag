@@ -11,18 +11,23 @@ Los torneos se manejan en Administración › [Torneos](/admin/events). Como org
 1. Toca **Crear torneo**.
 2. Elige el **formato** primero. A la derecha ves el resumen de cómo se va a jugar.
 3. Completa los datos.
-4. Toca **Crear torneo** (como organizador, **Crear y enviar a aprobación**). Las inscripciones quedan abiertas en ese momento.
+4. Toca **Crear torneo** (como organizador o moderador, **Crear y enviar a aprobación**). Las inscripciones quedan abiertas en ese momento.
 
 En **Tipo de torneo** eliges **Normal** (se juega en la plataforma) o **Histórico** (ya se jugó: ver [Subir un torneo histórico](/help/organizador/subir-torneo-historico)).
 
 ## La aprobación
 
-Si eres organizador, tu torneo queda **pendiente de aprobación**. Mientras tanto solo lo ven tú, los moderadores y los admins, y lo puedes preparar entero. Cuando un admin o un moderador lo revisa, te llega un aviso:
+Si eres organizador o moderador, tu torneo queda **pendiente de aprobación**. Mientras tanto solo lo ven tú, los moderadores y los admins, y lo puedes preparar entero. Lo revisa:
+
+- el de un **organizador**, un admin o un moderador;
+- el de un **moderador**, solo un admin.
+
+Cuando lo revisan, te llega un aviso:
 
 - **Aprobado:** se publica y se anuncia como torneo nuevo.
 - **Rechazado:** el aviso y la página del torneo dicen el motivo. Corrígelo y toca **Volver a enviar**.
 
-Después de aprobado lo sigues gestionando como siempre. Los mixes que vincules a una partida también esperan aprobación (ver [Resultados y la llave](/help/organizador/resultados-y-llave)). Lo que crea un admin o un moderador queda aprobado al instante.
+Después de aprobado lo sigues gestionando como siempre. Los mixes que vincule un organizador a una partida también esperan aprobación (ver [Resultados y la llave](/help/organizador/resultados-y-llave)); los que vincula un moderador o un admin, no. Lo que crea un admin queda aprobado al instante.
 
 | Campo | Qué es |
 |---|---|
@@ -31,7 +36,7 @@ Después de aprobado lo sigues gestionando como siempre. Los mixes que vincules 
 | **Suplentes por equipo** | De 0 a 4 |
 | **Empieza** y **Termina (aproximado)** | El fin es tentativo: el torneo termina cuando se juega la última partida |
 | **Cierran las inscripciones** | Vacío: quedan abiertas hasta que generes el fixture |
-| **Premio** | Texto libre |
+| **Premio** | Tres partes, todas opcionales: el **Monto**, la **Divisa** (USD, Pesos argentinos u **Otra**, con su nombre, por ejemplo BRL) y el **Detalle**, en texto libre, para lo que no es plata (medallas, roles…). Debajo ves cómo se va a mostrar, por ejemplo "$ 50.000 ARS + rol en Discord" |
 | **Cupo de equipos** | Vacío: sin cupo. El suizo pide un cupo exacto y la web te lo dice |
 | **Pool de mapas** | Sin tocar, usa el pool por defecto. Necesita al menos tantos mapas como el BO más alto |
 | **Reglamento** | Texto libre, hasta 5000 caracteres. Los equipos lo ven en el **Resumen** del torneo |

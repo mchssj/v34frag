@@ -126,20 +126,19 @@ const COLUMNS: DataColumn<EventSummary>[] = [
     headClassName: "pr-4",
     cellClassName: "pr-4",
     cell: ({ row: { original: e } }) => {
+      if (e.approval === "pending") return <PendingStep event={e} />
       const s =
-        e.approval === "pending"
-          ? { text: "Revisar y aprobar", tone: "warn" as const }
-          : e.approval === "rejected"
+        e.approval === "rejected"
+          ? {
+              text: "Rechazado: corregir y volver a enviar",
+              tone: "warn" as const,
+            }
+          : e.pending_games > 0
             ? {
-                text: "Rechazado: corregir y volver a enviar",
+                text: `${e.pending_games} mix${e.pending_games === 1 ? "" : "es"} por aprobar`,
                 tone: "warn" as const,
               }
-            : e.pending_games > 0
-              ? {
-                  text: `${e.pending_games} mix${e.pending_games === 1 ? "" : "es"} por aprobar`,
-                  tone: "warn" as const,
-                }
-              : nextStep(e)
+            : nextStep(e)
       return (
         <span
           className={cn(
@@ -155,6 +154,27 @@ const COLUMNS: DataColumn<EventSummary>[] = [
     },
   },
 ]
+
+/**
+ * Qué falta en un torneo pendiente, según quién mira (replanteo 84): quien lo puede aprobar lo revisa; quien lo
+ * creó espera; un moderador, ante lo de otro moderador, espera a un admin.
+ */
+function PendingStep({ event: e }: { event: EventSummary }) {
+  const me = useMe().data
+  const text =
+    me?.role === "admin" || (me?.role === "moderator" && !e.admin_review)
+      ? "Revisar y aprobar"
+      : e.organizer?.user_id === me?.id
+        ? e.admin_review
+          ? "Espera a un admin"
+          : "Espera aprobación"
+        : "Espera a un admin"
+  return (
+    <span className="text-[13px] font-medium text-amber-700 dark:text-amber-400">
+      {text}
+    </span>
+  )
+}
 
 /** Administración › Torneos: todos (admin y moderador) o los propios (organizador). */
 export function AdminEventsPage({
@@ -196,7 +216,12 @@ export function AdminEventsPage({
   })
   // Aviso del staff: torneos y mixes que esperan aprobación.
   const pendingEvents = useQuery({
-    ...adminEventsOptions({ approval: "pending", page: 1 }),
+    // Al moderador no le cuentan los que aprueba solo un admin (replanteo 84).
+    ...adminEventsOptions({
+      approval: "pending",
+      page: 1,
+      admin_review: me?.role === "moderator" ? false : undefined,
+    }),
     enabled: staff,
   })
   const pendingGames = useQuery({ ...pendingGamesOptions({}), enabled: staff })

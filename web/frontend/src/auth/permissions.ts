@@ -50,13 +50,20 @@ export const canDeleteMix = (role: Role) => role === "admin"
 export const getsAdminNotifications = (role: Role) =>
   role === "admin" || role === "moderator"
 
-/** Crear un torneo normal: admin u organizador (el del organizador queda pendiente de aprobación). */
+/** Crear un torneo normal: admin, moderador u organizador (lo de los dos últimos queda pendiente de aprobación). */
 export const canCreateEvent = (role: Role) =>
-  role === "admin" || role === "organizer"
+  role === "admin" || role === "moderator" || role === "organizer"
 
-/** Subir un torneo histórico: admin, moderador u organizador (el del organizador queda pendiente). */
+/** Subir un torneo histórico: admin, moderador u organizador (lo de los dos últimos queda pendiente). */
 export const canCreateHistoricEvent = (role: Role) =>
   role === "admin" || role === "moderator" || role === "organizer"
+
+/**
+ * Quién aprueba lo que crea cada rol (replanteo 84): lo del admin nace aprobado, lo del organizador lo aprueba
+ * un admin o un moderador, y lo del moderador, solo un admin.
+ */
+export const eventApprover = (role: Role): "none" | "staff" | "admin" =>
+  role === "admin" ? "none" : role === "moderator" ? "admin" : "staff"
 
 /** Aprobar torneos y mixes vinculados, y la fase de testing: moderador y admin. */
 export const canReviewEvents = (role: Role) =>

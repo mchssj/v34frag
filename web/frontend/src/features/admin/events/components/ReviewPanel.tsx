@@ -5,6 +5,7 @@ import { errorMessage } from "@/api/errors"
 import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { Button } from "@/components/ui/button"
+import { useMe } from "@/auth/queries"
 import type { EventDetail } from "@/features/events/types"
 import {
   useResubmitEvent,
@@ -15,7 +16,7 @@ import {
 /**
  * Lo que espera aprobación y la fase de testing (replanteo 80): el torneo pendiente o rechazado,
  * los mixes vinculados por aprobar y si está en testing. Aprueba y rechaza el staff
- * (`viewer.can_review`); el organizador vuelve a enviar un rechazado.
+ * (`viewer.can_approve`: lo de un moderador, solo un admin); quien lo creó vuelve a enviar un rechazado.
  */
 export function ReviewPanel({
   event,
@@ -24,7 +25,11 @@ export function ReviewPanel({
   event: EventDetail
   onTab: (t: "matches") => void
 }) {
+  const meId = useMe().data?.id
   const staff = !!event.viewer?.can_review
+  // (replanteo 84) lo que creó un moderador lo aprueba solo un admin
+  const approves = !!event.viewer?.can_approve
+  const own = event.organizer?.user_id === meId
   const review = useReviewEvent(event.id)
   const resubmit = useResubmitEvent(event.id)
   const update = useUpdateEvent(event.id)
@@ -37,11 +42,13 @@ export function ReviewPanel({
       <Block key="pending" tone="amber">
         <p>
           <b>Pendiente de aprobación.</b>{" "}
-          {staff
-            ? "Lo creó un organizador: solo lo ven él, los moderadores y los admins. Revísalo y apruébalo o recházalo con un motivo. Aprobarlo aprueba también los mixes que dejó vinculados."
-            : "Lo puedes preparar entero; cuando un admin o moderador lo apruebe, se publica. Te avisamos por notificación."}
+          {approves
+            ? `Lo creó ${event.admin_review ? "un moderador" : "un organizador"}: solo lo ven quien lo creó, los moderadores y los admins. Revísalo y apruébalo o recházalo con un motivo. Aprobarlo aprueba también los mixes que dejó vinculados.`
+            : own
+              ? `Lo puedes preparar entero; cuando ${event.admin_review ? "un admin" : "un admin o moderador"} lo apruebe, se publica. Te avisamos por notificación.`
+              : "Lo creó un moderador: lo aprueba o lo rechaza un admin."}
         </p>
-        {staff && (
+        {approves && (
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -74,9 +81,9 @@ export function ReviewPanel({
       <Block key="rejected" tone="red">
         <p>
           <b>Rechazado.</b> {event.approval_note}
-          {!staff && " Corrígelo y vuelve a enviarlo."}
+          {own && " Corrígelo y vuelve a enviarlo."}
         </p>
-        {!staff && (
+        {own && (
           <Button
             size="sm"
             disabled={resubmit.isPending}
