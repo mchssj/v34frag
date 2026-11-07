@@ -137,7 +137,7 @@ function EventCard({ event }: { event: EventSummary }) {
             </div>
             <div className="flex flex-col gap-0.5">
               <dt className="text-muted-foreground">Premio</dt>
-              <dd className="font-medium">{prizeText(event.prize)}</dd>
+              <dd className="font-medium">{prizeText(event)}</dd>
             </div>
           </dl>
           <div className="flex flex-col gap-1.5">

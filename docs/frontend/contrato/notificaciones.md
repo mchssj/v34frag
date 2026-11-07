@@ -152,7 +152,7 @@ Todo con sesión (`401` sin ella).
 | `admin_demo_failed` | `match_id`, `map` | "No se pudo subir la demo del mix en {map}" | Admin → Demos |
 | `admin_season_delayed` | `season_id` | "El cierre de la temporada espera a que termine un mix en vivo" | Admin → Temporadas |
 | `match_no_result` | `match` (desde el 2026-10-29). Les llega a los admins y al organizador del torneo | "{team1} vs {team2} ({event.name}) sigue sin resultado: era a las {starts_at}" | `/match/{match_id}` |
-| `admin_event_review` | `event` (`id`, `name`), `historic`, `resubmitted` (desde el 2026-11-06). Les llega a admins **y moderadores** | "{organizador} creó el torneo {event.name}: espera aprobación" (o "lo volvió a enviar") | Admin → Torneos (pendientes) |
+| `admin_event_review` | `event` (`id`, `name`), `historic`, `resubmitted` (desde el 2026-11-06). Les llega a admins **y moderadores**; el de un torneo que creó un moderador (`admin_review`), solo a los admins (desde el 2026-11-07) | "{organizador} creó el torneo {event.name}: espera aprobación" (o "lo volvió a enviar") | Admin → Torneos (pendientes) |
 | `admin_game_review` | `match_id`, `team1`, `team2`, `event`, `games` (desde el 2026-11-06). Admins y moderadores | "Hay {games} mix(es) vinculado(s) por aprobar en {team1} vs {team2}" | `/admin/events/{event.id}?tab=matches` |
 
 ### Avisos programados (segunda etapa, desde el 2026-10-29)

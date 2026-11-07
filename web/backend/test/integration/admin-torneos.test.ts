@@ -65,9 +65,9 @@ describe('moderadores y siembra', () => {
     for (let i = 0; i < 12; i++) ts.push(await team());
     for (const t of ts) await register(ev, t);
 
-    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: false, can_review: true });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: false, can_review: true, can_approve: true });
     expect((await req('GET', '/api/v1/servers', { token: mod.token })).status).toBe(200);
-    expect((await req('GET', `/api/v1/events/${ev}`, { token: org.token })).body.viewer).toEqual({ can_manage: true, can_own: true, can_review: false });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: org.token })).body.viewer).toEqual({ can_manage: true, can_own: true, can_review: false, can_approve: false });
 
     const s = await req('POST', `/api/v1/events/${ev}/seeds/ranking`, { token: mod.token });
     expect(s.status).toBe(200);

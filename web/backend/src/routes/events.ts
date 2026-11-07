@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { currentUser, isModerator, optionalUser, requireAdmin, requireModerator, requireUser } from '../lib/auth';
+import { currentUser, isAdmin, isModerator, optionalUser, requireAdmin, requireModerator, requireUser } from '../lib/auth';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { notModified } from '../lib/etag';
 import { AppError, fromPostgrest } from '../lib/errors';
@@ -51,7 +51,8 @@ type C = Context<AppEnv>;
 const LIST =
   'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, ' +
   'champion_logo_url, teams, game_mode, players_per_team, subs_max, bo, bo_final, progress_played, progress_total, current_match_id, banner_url, ' +
-  'registration_closes_at, finished_at, historic, testing, approval, approval_note, pending_games';
+  'registration_closes_at, finished_at, historic, testing, approval, approval_note, pending_games, admin_review, prize_amount, prize_currency, ' +
+  'prize_currency_other';
 const EXTRA = 'id, rules, min_teams, config, tie_pending, drawn_at, drawn_by, map_pool';
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -62,6 +63,7 @@ type EventRow = {
   players_per_team: number | null; subs_max: number; bo: number | null; bo_final: number | null; progress_played: number | null;
   progress_total: number | null; current_match_id: string | null; banner_url: string | null; registration_closes_at: string | null;
   finished_at: string | null; historic: boolean; testing: boolean; approval: string; approval_note: string | null; pending_games: number;
+  admin_review: boolean; prize_amount: number | string | null; prize_currency: string | null; prize_currency_other: string | null;
 };
 
 type BoValue = 1 | 3 | 5;
@@ -76,6 +78,9 @@ const summary = (e: EventRow, stage: string | null = null, hist?: Set<string>): 
   ends_on: e.ends_on,
   finished_at: e.finished_at,
   prize: e.prize,
+  prize_amount: e.prize_amount === null || e.prize_amount === undefined ? null : Number(e.prize_amount),
+  prize_currency: (e.prize_currency ?? null) as z.infer<typeof EventSummary>['prize_currency'],
+  prize_currency_other: e.prize_currency_other ?? null,
   teams: e.teams ?? 0,
   max_teams: e.max_teams,
   champion: e.champion_id
@@ -96,6 +101,7 @@ const summary = (e: EventRow, stage: string | null = null, hist?: Set<string>): 
   approval: (e.approval ?? 'approved') as z.infer<typeof EventSummary>['approval'],
   approval_note: e.approval_note,
   pending_games: e.pending_games ?? 0,
+  admin_review: !!e.admin_review,
 });
 
 /** Fase de la partida actual de cada torneo en curso (una consulta para toda la página). */
@@ -409,6 +415,7 @@ export const events = createRouter()
     if (p.testing !== undefined) q = q.eq('testing', p.testing);
     if (p.approval) q = q.eq('approval', p.approval);
     if (p.pending_games !== undefined) q = p.pending_games ? q.gt('pending_games', 0) : q.eq('pending_games', 0);
+    if (p.admin_review !== undefined) q = q.eq('admin_review', p.admin_review);
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     const { rows, total } = await runList<EventRow, typeof q>(q, p, {});
@@ -429,7 +436,14 @@ export const events = createRouter()
           sb.rpc('can_manage_event', { p_event: id }).then(must),
           sb.rpc('can_own_event', { p_event: id }).then(must),
           isModerator(c),
-        ]).then(([manage, own, staff]) => ({ can_manage: !!manage, can_own: !!own, can_review: staff }))
+          isAdmin(c),
+        ]).then(([manage, own, staff, adm]) => ({
+          can_manage: !!manage,
+          can_own: !!own,
+          can_review: staff,
+          // (replanteo 84) lo de un moderador lo aprueba solo un admin
+          can_approve: adm || (staff && !(e as unknown as EventRow).admin_review),
+        }))
       : null;
     const row = e as unknown as EventRow;
     const [stages, live, hist] = await Promise.all([currentStages(c, [row]), liveMatch(c, id), historicTeams(sb, [row.champion_id])]);

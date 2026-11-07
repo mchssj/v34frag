@@ -99,7 +99,7 @@ export function EventView({
                   event.game_mode,
                   TEMPLATE_LABEL[event.template],
                   boText(event),
-                  prizeText(event.prize),
+                  prizeText(event),
                 ]
                   .filter(Boolean)
                   .join(" · ")}

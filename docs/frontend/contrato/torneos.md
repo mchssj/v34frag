@@ -138,3 +138,13 @@ Bitácora: [`2026-11-06-torneos-historicos-y-testing`](../../bitacora/2026-11-06
 
 **Avisos nuevos:** `admin_event_review` (a admins y moderadores: torneo por aprobar), `admin_game_review` (mix por aprobar), `event_reviewed` y `game_reviewed` (al organizador, con `approved` y, en el torneo, `note`).
 
+## 8d. El moderador crea torneos y el premio con monto y divisa (desde el 2026-11-07)
+
+Bitácora: [`2026-11-07-moderador-crea-torneos-y-divisa`](../../bitacora/2026-11-07-moderador-crea-torneos-y-divisa/). Replanteo `84`. Cambia lo de la sección 8c:
+
+- `POST /api/v1/events`: lo crean el **organizador, el moderador** (normal o histórico) **y el admin**. Lo del organizador y lo del moderador nace `pending`; lo del admin, `approved`.
+- **`admin_review`** (nuevo en `EventSummary`): lo creó un moderador. Ese torneo lo aprueba o lo rechaza **solo un admin** (`POST /events/{id}/review` responde `403` a un moderador), y su `admin_event_review` les llega solo a los admins. Filtro `admin_review` en `GET /api/v1/events`.
+- **`viewer.can_approve`** (nuevo): quien mira puede aprobar o rechazar **ese** torneo. `viewer.can_review` sigue siendo "es del staff" (mixes por aprobar y testing). `viewer.can_own` incluye al moderador en lo que creó (cancelar y borrar).
+- `POST /api/v1/events/{id}/resubmit`: quien lo creó (organizador o moderador; el moderador, también en testing).
+- **Premio:** `prize_amount` (número, mayor que 0), `prize_currency` (`USD`, `ARS` u `other`) y `prize_currency_other` (el nombre, hasta 12 caracteres, solo con `other`), en `EventCreate`, `EventPatch` y `EventSummary`. `prize` sigue como el detalle en texto libre. Monto y divisa van juntos; si no, `400 VALIDATION_ERROR` con un mensaje sobre el premio. La web lo muestra como "US$ 100", "$ 50.000 ARS" o "200 BRL", más el detalle.
+

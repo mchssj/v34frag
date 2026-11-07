@@ -8,6 +8,7 @@ import {
   canCreateEvent,
   canCreateHistoricEvent,
   canReviewEvents,
+  eventApprover,
 } from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
 import { Badge } from "@/components/ui/badge"
@@ -44,8 +45,9 @@ export function AdminEventNewPage({
     : canCreateHistoricEvent(role)
       ? "both"
       : "normal-only"
-  // Lo que crea un organizador espera la aprobación de un admin o moderador.
-  const needsApproval = !canReviewEvents(role)
+  // Lo que crea un organizador espera a un admin o moderador; lo de un moderador, a un admin (replanteo 84).
+  const approver = eventApprover(role)
+  const needsApproval = approver !== "none"
   return (
     <section className="flex flex-col gap-5">
       <BackLink />
@@ -60,8 +62,8 @@ export function AdminEventNewPage({
       <EventForm
         initial={{ historic: historic || !normal }}
         kinds={kinds}
-        canTesting={!needsApproval}
-        needsApproval={needsApproval}
+        canTesting={canReviewEvents(role)}
+        approver={approver}
         submitLabel={(h) =>
           needsApproval
             ? "Crear y enviar a aprobación"

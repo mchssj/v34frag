@@ -58,7 +58,7 @@ describe('aprobación de lo que crea un organizador', () => {
     expect((await req('GET', `/api/v1/events/${ev}`, { token: user.token })).status).toBe(404);
     const pend = await req('GET', '/api/v1/events?approval=pending&per=100', { token: mod.token });
     expect(pend.body.items.some((e: { id: string }) => e.id === ev)).toBe(true);
-    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: false, can_review: true });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: false, can_review: true, can_approve: true });
 
     expect((await req('POST', `/api/v1/events/${ev}/review`, { token: org.token, body: { approve: true } })).status).toBe(403);
     expect((await req('POST', `/api/v1/events/${ev}/review`, { token: mod.token, body: { approve: false } })).status).toBe(400);
@@ -71,14 +71,74 @@ describe('aprobación de lo que crea un organizador', () => {
     expect((await req('GET', `/api/v1/events/${ev}`)).body).toMatchObject({ approval: 'approved', approval_note: null });
   });
 
-  it('el moderador crea solo históricos (con fechas), que nacen aprobados', async () => {
-    expect((await req('POST', '/api/v1/events', { token: mod.token, body: { name: `M ${rnd()}`, template: 'single' } })).status).toBe(403);
+  it('(replanteo 84) el moderador crea normales e históricos, pendientes de un admin: otro moderador no los aprueba', async () => {
+    const mod2 = await createUser({ tag: `Mod2${rnd()}` });
+    expect((await req('PUT', `/api/v1/admin/users/${mod2.id}/role`, { token: adm.token, body: { role: 'moderator' } })).status).toBe(204);
+    const normal = await req('POST', '/api/v1/events', { token: mod.token, body: { name: `M ${rnd()}`, template: 'single' } });
+    expect(normal.status).toBe(201);
     expect((await req('POST', '/api/v1/events', { token: mod.token, body: { name: `M ${rnd()}`, template: 'single', historic: true } })).status).toBe(400);
-    const r = await req('POST', '/api/v1/events', {
+    const hist = await req('POST', '/api/v1/events', {
       token: mod.token, body: { name: `M ${rnd()}`, template: 'single', historic: true, starts_on: '2025-03-01', ends_on: '2025-03-02' },
     });
-    expect(r.status).toBe(201);
-    expect((await req('GET', `/api/v1/events/${r.body.id}`)).body).toMatchObject({ historic: true, approval: 'approved' });
+    expect(hist.status).toBe(201);
+    for (const id of [normal.body.id, hist.body.id]) {
+      expect((await req('GET', `/api/v1/events/${id}`, { token: mod.token })).body).toMatchObject({ approval: 'pending', admin_review: true });
+      expect((await req('GET', `/api/v1/events/${id}`)).status).toBe(404);
+    }
+    const ev = normal.body.id as string;
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: true, can_review: true, can_approve: false });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod2.token })).body.viewer).toEqual({ can_manage: true, can_own: false, can_review: true, can_approve: false });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: adm.token })).body.viewer).toMatchObject({ can_approve: true });
+    const forAdmin = await req('GET', '/api/v1/events?approval=pending&admin_review=true&per=100', { token: mod2.token });
+    expect(forAdmin.body.items.some((e: { id: string }) => e.id === ev)).toBe(true);
+    const forStaff = await req('GET', '/api/v1/events?approval=pending&admin_review=false&per=100', { token: mod2.token });
+    expect(forStaff.body.items.some((e: { id: string }) => e.id === ev)).toBe(false);
+
+    expect((await req('POST', `/api/v1/events/${ev}/review`, { token: mod.token, body: { approve: true } })).status).toBe(403);
+    expect((await req('POST', `/api/v1/events/${ev}/review`, { token: mod2.token, body: { approve: false, note: 'No' } })).status).toBe(403);
+    expect((await req('POST', `/api/v1/events/${ev}/review`, { token: adm.token, body: { approve: false, note: 'Falta el premio' } })).status).toBe(204);
+    expect((await req('POST', `/api/v1/events/${ev}/resubmit`, { token: mod.token })).status).toBe(204);
+    expect((await req('POST', `/api/v1/events/${ev}/review`, { token: adm.token, body: { approve: true } })).status).toBe(204);
+    expect((await req('GET', `/api/v1/events/${ev}`)).body).toMatchObject({ approval: 'approved', admin_review: true });
+
+    // Avisos de revisión: solo a los admins
+    const sb = admin();
+    const notes = await sb.from('notifications').select('user_id').eq('type', 'admin_event_review').eq('data->event->>id', hist.body.id);
+    expect(notes.data?.some((n) => n.user_id === adm.id)).toBe(true);
+    expect(notes.data?.some((n) => n.user_id === mod2.id)).toBe(false);
+    // El moderador borra lo suyo; otro moderador no
+    expect((await req('DELETE', `/api/v1/events/${hist.body.id}`, { token: mod2.token })).status).toBeGreaterThanOrEqual(403);
+    expect((await req('DELETE', `/api/v1/events/${hist.body.id}`, { token: mod.token })).status).toBe(204);
+  });
+
+  it('(replanteo 84) el premio con monto y divisa', async () => {
+    const ok = await req('POST', '/api/v1/events', {
+      token: adm.token, body: { name: `P ${rnd()}`, template: 'single', prize: '+ rol en Discord', prize_amount: 50000, prize_currency: 'ARS' },
+    });
+    expect(ok.status).toBe(201);
+    expect((await req('GET', `/api/v1/events/${ok.body.id}`)).body).toMatchObject({
+      prize: '+ rol en Discord', prize_amount: 50000, prize_currency: 'ARS', prize_currency_other: null,
+    });
+    const list = await req('GET', `/api/v1/events?q=${encodeURIComponent('P ')}&per=100`);
+    expect(list.body.items.find((e: { id: string }) => e.id === ok.body.id)).toMatchObject({ prize_amount: 50000, prize_currency: 'ARS' });
+    expect((await req('PATCH', `/api/v1/events/${ok.body.id}`, {
+      token: adm.token, body: { prize_amount: 200.5, prize_currency: 'other', prize_currency_other: 'BRL' },
+    })).status).toBe(204);
+    expect((await req('GET', `/api/v1/events/${ok.body.id}`)).body).toMatchObject({ prize_amount: 200.5, prize_currency: 'other', prize_currency_other: 'BRL' });
+    expect((await req('PATCH', `/api/v1/events/${ok.body.id}`, {
+      token: adm.token, body: { prize_amount: null, prize_currency: null, prize_currency_other: null },
+    })).status).toBe(204);
+    for (const body of [
+      { prize_amount: 10 },
+      { prize_currency: 'USD' },
+      { prize_amount: 10, prize_currency: 'other' },
+      { prize_amount: 10, prize_currency: 'USD', prize_currency_other: 'BRL' },
+    ]) {
+      const r = await req('POST', '/api/v1/events', { token: adm.token, body: { name: `P ${rnd()}`, template: 'single', ...body } });
+      expect(r.status).toBe(400);
+      expect(r.body.error.message).toMatch(/premio/);
+    }
+    expect((await req('POST', '/api/v1/events', { token: adm.token, body: { name: `P ${rnd()}`, template: 'single', prize_amount: 0, prize_currency: 'USD' } })).status).toBe(400);
   });
 });
 

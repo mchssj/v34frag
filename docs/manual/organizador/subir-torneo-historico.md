@@ -6,7 +6,7 @@ orden: 6
 
 Un torneo **histórico** es el registro de un torneo que ya se jugó, dentro o fuera de la plataforma. Usa los mismos formatos y la misma llave que uno normal, pero nadie se inscribe, no hay horarios ni veto y no se manda ningún aviso.
 
-Lo pueden subir los admins, los moderadores y los organizadores. El de un organizador queda **pendiente de aprobación** hasta que lo revise un admin o un moderador (ver [Crear y configurar un torneo](/help/organizador/crear-torneo)).
+Lo pueden subir los admins, los moderadores y los organizadores. El de un organizador queda **pendiente de aprobación** hasta que lo revise un admin o un moderador; el de un moderador, hasta que lo revise un admin (ver [Crear y configurar un torneo](/help/organizador/crear-torneo)).
 
 ## Crearlo
 

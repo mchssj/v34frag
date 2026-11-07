@@ -9,6 +9,7 @@ import {
   formatText,
   liveText,
   modeText,
+  prizeText,
   progressRatio,
   registrationClosed,
   qualifies,
@@ -402,5 +403,43 @@ describe("ctaFor", () => {
         now,
       })
     ).toMatchObject({ kind: "champion", on: "2025-07-30T22:10:00Z" })
+  })
+})
+
+describe("prizeText (replanteo 84)", () => {
+  it("monto con divisa y el detalle", () => {
+    const n = (s: string) => s.replaceAll(String.fromCharCode(160), " ")
+    expect(
+      n(
+        prizeText({
+          prize: "rol en Discord",
+          prize_amount: 50000,
+          prize_currency: "ARS",
+        })
+      )
+    ).toBe("$ 50.000 ARS + rol en Discord")
+    expect(
+      n(
+        prizeText({
+          prize: "+ medalla",
+          prize_amount: 100,
+          prize_currency: "USD",
+        })
+      )
+    ).toBe("US$ 100 + medalla")
+    expect(
+      n(
+        prizeText({
+          prize: null,
+          prize_amount: 200.5,
+          prize_currency: "other",
+          prize_currency_other: "BRL",
+        })
+      )
+    ).toBe("200,5 BRL")
+    expect(prizeText({ prize: "Medalla" })).toBe("Medalla")
+    expect(
+      prizeText({ prize: null, prize_amount: null, prize_currency: null })
+    ).toBe("Sin premio")
   })
 })
