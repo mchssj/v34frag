@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-07, en la copia de `main` (`v34frag-mainwt`), sobre la base local con la copia de producción. **Sin commit ni despliegue.** La `84` quedó aplicada en la base local.
+Implementado y probado en local el 2026-11-07, en la copia de `main` (`v34frag-mainwt`), sobre la base local con la copia de producción. Daniel lo revisó en el navegador. Commit `2e298676` en `main` y su copia `0c3577c4` en `feat/frontend-fase-1`. **Desplegado el 2026-11-07 (19:25-19:48 UTC)** desde `main`: la `84` en la base del VPS, API y web `2e29867643a6`. Falta publicar el `CHANGELOG_DISCORD.txt`.
 
 ## Archivos
 
@@ -22,7 +22,14 @@ Implementado y probado en local el 2026-11-07, en la copia de `main` (`v34frag-m
 | `web/frontend/src/features/legal/pages/TermsPage.tsx`, `terms/terminos.html` | Lo que crea un moderador lo aprueba un admin |
 | `docs/frontend/contrato/torneos.md` (sección 8d), `notificaciones.md` | El contrato |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-07, salvo el paso 4)
+
+Cómo quedó: sin mixes en vivo (la única partida `live` seguía siendo la `0d42d09a…` colgada del #1), sin salas en las 6 horas anteriores y 2 jugadores en la cola; respaldo `20261107T192554Z` (también en R2); `cmleague-mm` parado; `probar_84.sh` contra producción, los 12 bloques ok y la inversa igual a antes; la `84` desde el archivo commiteado y `notify pgrst, 'reload schema'`; la API `2e29867643a6` (555 pruebas, `/api/health` con el commit) y `cmleague-mm` prendido de nuevo; la web `2e29867643a6`. La base ya tenía la `83` y la API y la web eran `4480fbc4cd92` (desplegadas por la sesión de las jugadas).
+
+Dos incidentes:
+
+- **El primer intento de la `84` falló y se deshizo entero** (no quedó nada a medias): el `psql` de Windows se conectó con `client_encoding` WIN1252, y el texto con acento que busca `pg_temp.reemplazar` ("históricos") no coincidió. Se reaplicó con `PGCLIENTENCODING=UTF8`. Antes se comprobó que en producción no hay ninguna función ni comentario con texto mal codificado (la `80` de esta mañana quedó bien). **Para la próxima: aplicar siempre con `PGCLIENTENCODING=UTF8`.**
+- **La web se desplegó con `--sin-pruebas`.** `desplegar.sh web` corta si falla una prueba, y dos de `PlayPage` (Jugar, que no se tocó) se cortaban a los 5 s porque la máquina estaba cargada: la API y la web locales seguían corriendo y no se pudieron cerrar desde la sesión. Con `vitest run --maxWorkers=2` sobre el mismo commit pasaron las 656, y recién entonces se subió sin volver a correrlas. Entre la API y la web hubo unos 18 minutos con la API nueva y la web vieja, que es compatible.
 
 No toca el matchmaking ni el plugin: va en `main` y su copia en `feat/frontend-fase-1`. Sin un mix en curso.
 
