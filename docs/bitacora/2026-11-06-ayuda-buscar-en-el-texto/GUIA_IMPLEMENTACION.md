@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Desplegado el 2026-11-06 (16:39-16:42 UTC)** desde `main` (`2214bc52`): API y web `2214bc52b233`. No se miró en el navegador.
+**Desplegado el 2026-11-06 (16:39-16:42 UTC)** desde `main` (`2214bc52`): API y web `2214bc52b233`. Daniel lo revisó en el navegador el mismo día: funciona bien.
 
 ## Archivos
 

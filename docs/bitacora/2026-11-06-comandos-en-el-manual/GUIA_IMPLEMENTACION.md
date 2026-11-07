@@ -2,7 +2,7 @@
 
 ## Estado
 
-Escrito y validado con el build de la API el 2026-11-06 (42 páginas, sin errores). **Desplegado el 2026-11-06 (16:28 UTC)**: API `b0642f948a7e` desde `main` (antes `8670768b56ef`). La web no se redespliega: **Ayuda** pide el manual a la API. No se miró en el navegador.
+Escrito y validado con el build de la API el 2026-11-06 (42 páginas, sin errores). **Desplegado el 2026-11-06 (16:28 UTC)**: API `b0642f948a7e` desde `main` (antes `8670768b56ef`). La web no se redespliega: **Ayuda** pide el manual a la API. Daniel lo revisó en el navegador el mismo día.
 
 ## Archivos
 
