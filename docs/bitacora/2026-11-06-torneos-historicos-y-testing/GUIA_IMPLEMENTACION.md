@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-06 (base, API y web, con un recorrido en el navegador por rol). **Sin commit ni despliegue**: falta que Daniel lo revise y pida el commit. La `80` quedó aplicada en la base local de pruebas (Docker).
+Implementado y probado en local el 2026-11-06 (base, API y web, con un recorrido en el navegador por rol). Commit `b79c62b6` en `main` y su copia `072bf468` en `feat/frontend-fase-1` (2026-11-07). **Desplegado el 2026-11-07 (17:16-17:21 UTC)** desde `main`: la `80` en la base del VPS, API y web `b79c62b67d88`. Falta publicar el `CHANGELOG_DISCORD.txt`.
 
 ## Archivos
 
@@ -39,7 +39,9 @@ Implementado y probado en local el 2026-11-06 (base, API y web, con un recorrido
 
 `web/frontend/package.json`, `pnpm-lock.yaml` (`@fontsource/montserrat`) y `AdminClipsPage.tsx` aparecen modificados en la copia de trabajo pero no son de este requerimiento: no van en su commit.
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-07, salvo el paso 4)
+
+Cómo quedó: sin mixes en vivo (la única partida `live` seguía siendo la `0d42d09a…` del #1, colgada desde el 2026-11-06), sin salas abiertas y sin nadie en la cola; respaldo `20261107T171646Z` (también en R2); `cmleague-mm` parado; `probar_80.sh` contra producción, todas las pruebas ok y la inversa igual a antes; la `80` desde el archivo commiteado y `notify pgrst, 'reload schema'`; la API `b79c62b67d88` (548 pruebas, `/api/health` con el commit) y `cmleague-mm` prendido de nuevo; la web `b79c62b67d88` (649 pruebas). Producción no tenía ningún torneo, así que no hubo nada que aprobar ni que ocultar.
 
 No toca el matchmaking ni el plugin: va solo en `main` (y su copia en `feat/frontend-fase-1`), no en `feat/mm-claim-en-sala`. Sin un mix en curso.
 
