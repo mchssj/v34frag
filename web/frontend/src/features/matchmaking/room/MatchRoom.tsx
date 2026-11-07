@@ -20,13 +20,16 @@ export function MatchRoom({
   lobby,
   onBack,
   mode = "live",
+  initialTab = "overview",
 }: {
   lobby: MmLobby
   onBack?: () => void
   /** detail: el detalle de una partida terminada (`/match/<id>`, replanteo 78), con "Partidas" para volver. */
   mode?: "live" | "detail"
+  /** La pestaña con que abre (replanteo 83: el aviso de jugadas lleva a Estadísticas). */
+  initialTab?: Tab
 }) {
-  const [tab, setTab] = useState<Tab>("overview")
+  const [tab, setTab] = useState<Tab>(initialTab)
   const map = lobby.veto?.pool.find((m) => m.name === lobby.map) ?? null
   const backdrop = map?.image_url ?? heroImage
   // Las estadísticas son postpartido: con la partida en vivo solo se ve el marcador.

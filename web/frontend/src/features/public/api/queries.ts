@@ -103,6 +103,14 @@ export const topPlayersOptions = queryOptions({
  * Estado de los servidores (A2S desde el backend). Lo comparten el pill del hero, la sección
  * Servidores y el paso de Vinculación. El backend lo guarda 20 s, así que no conviene más seguido.
  */
+/** Números del Discord de la comunidad (la API los guarda 10 minutos; replanteo 83). */
+export const discordCountsOptions = queryOptions({
+  queryKey: ["public", "discord"] as const,
+  queryFn: ({ signal }) =>
+    unwrap(api.GET("/api/v1/community/discord", { signal })),
+  staleTime: 10 * 60_000,
+})
+
 export const serverStatusOptions = queryOptions({
   queryKey: ["public", "servers-status"] as const,
   queryFn: ({ signal }) =>

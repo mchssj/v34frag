@@ -759,13 +759,13 @@ isOneToOne: false
                   ]
                 },"game_servers": {
                   Row: {
-                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"hud_enabled": boolean,"hud_key": string | null,"hud_port": number | null,"hud_seen_at": string | null,"id": string,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"mm_enabled": boolean,"mode": string | null,"name": string,"official_enabled": boolean,"panel_server_id": string | null,"panel_url": string | null,"pcw_enabled": boolean,"plugin_version": string | null,"region": string | null,"token_hash": string,"tv_port": number | null
+                    "active": boolean,"allowed_ip": string | null,"connect_address": string | null,"created_at": string,"hud_enabled": boolean,"hud_key": string | null,"hud_port": number | null,"hud_seen_at": string | null,"id": string,"internal_name": string | null,"last_ip": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"listed": boolean,"mm_enabled": boolean,"mode": string | null,"name": string,"official_enabled": boolean,"panel_server_id": string | null,"panel_url": string | null,"pcw_enabled": boolean,"plugin_version": string | null,"region": string | null,"token_hash": string,"tv_port": number | null
                   }
                   Insert: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"hud_enabled"?: boolean,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mm_enabled"?: boolean,"mode"?: string | null,"name": string,"official_enabled"?: boolean,"panel_server_id"?: string | null,"panel_url"?: string | null,"pcw_enabled"?: boolean,"plugin_version"?: string | null,"region"?: string | null,"token_hash": string,"tv_port"?: number | null
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"hud_enabled"?: boolean,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"id"?: string,"internal_name"?: string | null,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"listed"?: boolean,"mm_enabled"?: boolean,"mode"?: string | null,"name": string,"official_enabled"?: boolean,"panel_server_id"?: string | null,"panel_url"?: string | null,"pcw_enabled"?: boolean,"plugin_version"?: string | null,"region"?: string | null,"token_hash": string,"tv_port"?: number | null
                   }
                   Update: {
-                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"hud_enabled"?: boolean,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"id"?: string,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"mm_enabled"?: boolean,"mode"?: string | null,"name"?: string,"official_enabled"?: boolean,"panel_server_id"?: string | null,"panel_url"?: string | null,"pcw_enabled"?: boolean,"plugin_version"?: string | null,"region"?: string | null,"token_hash"?: string,"tv_port"?: number | null
+                    "active"?: boolean,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string,"hud_enabled"?: boolean,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"id"?: string,"internal_name"?: string | null,"last_ip"?: string | null,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"listed"?: boolean,"mm_enabled"?: boolean,"mode"?: string | null,"name"?: string,"official_enabled"?: boolean,"panel_server_id"?: string | null,"panel_url"?: string | null,"pcw_enabled"?: boolean,"plugin_version"?: string | null,"region"?: string | null,"token_hash"?: string,"tv_port"?: number | null
                   }
                   Relationships: [
                     
@@ -3921,13 +3921,13 @@ isOneToOne: false
                   ]
                 },"admin_server_list": {
                   Row: {
-                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"hud_enabled": boolean | null,"hud_key": string | null,"hud_port": number | null,"hud_seen_at": string | null,"hud_streaming": Json | null,"id": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"matches": number | null,"mode": string | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"search": string | null,"tv_port": number | null
+                    "active": boolean | null,"allowed_ip": string | null,"connect_address": string | null,"created_at": string | null,"has_panel": boolean | null,"hud_enabled": boolean | null,"hud_key": string | null,"hud_port": number | null,"hud_seen_at": string | null,"hud_streaming": Json | null,"id": string | null,"internal_name": string | null,"last_ip": string | null,"last_match_at": string | null,"last_seen_at": string | null,"license_expires_at": string | null,"license_state": string | null,"listed": boolean | null,"matches": number | null,"mode": string | null,"name": string | null,"online": boolean | null,"panel_server_id": string | null,"plugin_version": string | null,"region": string | null,"search": string | null,"tv_port": number | null
                   }
                   Insert: {
-                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"hud_enabled"?: boolean | null,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"hud_streaming"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"hud_enabled"?: boolean | null,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"hud_streaming"?: never,"id"?: string | null,"internal_name"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"listed"?: boolean | null,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
                          }
                         Update: {
-                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"hud_enabled"?: boolean | null,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"hud_streaming"?: never,"id"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
+                           "active"?: boolean | null,"allowed_ip"?: string | null,"connect_address"?: string | null,"created_at"?: string | null,"has_panel"?: never,"hud_enabled"?: boolean | null,"hud_key"?: string | null,"hud_port"?: number | null,"hud_seen_at"?: string | null,"hud_streaming"?: never,"id"?: string | null,"internal_name"?: string | null,"last_ip"?: string | null,"last_match_at"?: never,"last_seen_at"?: string | null,"license_expires_at"?: string | null,"license_state"?: never,"listed"?: boolean | null,"matches"?: never,"mode"?: string | null,"name"?: string | null,"online"?: never,"panel_server_id"?: string | null,"plugin_version"?: string | null,"region"?: string | null,"search"?: never,"tv_port"?: number | null
                          }
                         Relationships: [
                     
@@ -4300,13 +4300,13 @@ isOneToOne: false
                   ]
                 },"game_servers_public": {
                   Row: {
-                    "connect_address": string | null,"id": string | null,"mode": string | null,"name": string | null,"region": string | null,"tv_port": number | null
+                    "connect_address": string | null,"id": string | null,"listed": boolean | null,"mode": string | null,"name": string | null,"region": string | null,"tv_port": number | null
                   }
                   Insert: {
-                           "connect_address"?: string | null,"id"?: string | null,"mode"?: string | null,"name"?: string | null,"region"?: string | null,"tv_port"?: number | null
+                           "connect_address"?: string | null,"id"?: string | null,"listed"?: boolean | null,"mode"?: string | null,"name"?: string | null,"region"?: string | null,"tv_port"?: number | null
                          }
                         Update: {
-                           "connect_address"?: string | null,"id"?: string | null,"mode"?: string | null,"name"?: string | null,"region"?: string | null,"tv_port"?: number | null
+                           "connect_address"?: string | null,"id"?: string | null,"listed"?: boolean | null,"mode"?: string | null,"name"?: string | null,"region"?: string | null,"tv_port"?: number | null
                          }
                         Relationships: [
                     
@@ -6000,6 +6000,9 @@ isOneToOne: false
 "clip_unreject":
 { Args: { "p_clip": string }; Returns: string
                            },
+"clips_notify_detected":
+{ Args: { "p_match": string }; Returns: undefined
+                           },
 "crash_min_rounds":
 { Args: { "p_max_rounds": number }; Returns: number
                            },
@@ -6681,6 +6684,9 @@ isOneToOne: false
                            },
 "mm_player_photo":
 { Args: { "p_player": string }; Returns: string
+                           },
+"mm_public_counts":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "mm_queue_away":
 { Args: { "p_user": string }; Returns: boolean

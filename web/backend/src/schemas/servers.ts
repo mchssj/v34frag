@@ -31,6 +31,7 @@ export const ServerMode = z.enum(SERVER_MODES).openapi({
 });
 const Region = z.string().trim().min(2, 'Entre 2 y 30 caracteres').max(30, 'Entre 2 y 30 caracteres');
 const TvPort = z.number().int().min(1, 'Un puerto entre 1 y 65535').max(65535, 'Un puerto entre 1 y 65535');
+const InternalName = z.string().trim().min(2, 'Entre 2 y 60 caracteres').max(60, 'Entre 2 y 60 caracteres');
 
 const fields = {
   connect_address: nullable(Address, 'Dirección para el botón "Conectar" (`host:puerto`)'),
@@ -40,10 +41,13 @@ const fields = {
   mode: nullable(ServerMode, 'Modo de juego'),
   region: nullable(Region, 'Región para mostrar en la web, texto libre (por ejemplo "Argentina")'),
   tv_port: nullable(TvPort, 'Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo'),
+  // (replanteo 83) El nombre de siempre (`name`) es el público; este, cómo lo llamamos nosotros.
+  internal_name: nullable(InternalName, 'Nombre interno (flow, MVZG…), solo para Administración. Único, sin distinguir mayúsculas'),
+  listed: z.boolean().optional().openapi({ description: 'Sale en la lista de servidores del inicio (por defecto, sí)' }),
 };
 
 export const ServerCreate = z
-  .object({ name: Name.openapi({ description: 'Único, sin distinguir mayúsculas' }), ...fields })
+  .object({ name: Name.openapi({ description: 'Nombre público (el que ve todo el mundo). Único, sin distinguir mayúsculas' }), ...fields })
   .openapi('AdminServerCreate');
 
 export const ServerPatch = z
@@ -61,7 +65,9 @@ export const LICENSE_STATES = ['ok', 'expiring', 'expired', 'revoked'] as const;
 export const AdminServer = z
   .object({
     id: z.uuid(),
-    name: z.string(),
+    name: z.string().openapi({ description: 'Nombre público: el que se ve en el inicio, la sala y los avisos' }),
+    internal_name: z.string().nullable().openapi({ description: 'Nombre interno, solo para Administración' }),
+    listed: z.boolean().openapi({ description: 'Sale en la lista de servidores del inicio' }),
     active: z.boolean(),
     license_state: z.enum(LICENSE_STATES).openapi({
       description: '`ok`; `expiring`: vence en 7 días o menos; `expired`: vencida; `revoked`: revocado',
@@ -97,7 +103,7 @@ export const AdminServerQuery = listQuery(['name', 'created_at', 'last_seen_at',
   sort: 'name',
   order: 'asc',
 }).extend({
-  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la dirección, las IPs, la versión del plugin y la región' }),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre público y el interno, la dirección, las IPs, la versión del plugin y la región' }),
   active: boolParam('Activos o revocados'),
   license: z.enum(LICENSE_STATES).optional().openapi({ description: 'Estado de la licencia' }),
   online: boolParam('En línea (validó la licencia en los últimos 35 minutos)'),

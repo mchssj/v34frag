@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/match/$id")({
 // Un mix abre su sala; una serie de torneo o PCW, la página de la serie.
 function MatchPage() {
   const { id } = Route.useParams()
-  const { stats, map } = Route.useSearch()
+  const { stats, map, view } = Route.useSearch()
   const navigate = Route.useNavigate()
   return (
     <MixMatchRoom
@@ -26,6 +26,7 @@ function MatchPage() {
         })
       }
       map={map}
+      view={view}
       onMap={(g) =>
         void navigate({
           search: (s) => ({ ...s, map: g }),

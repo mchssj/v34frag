@@ -39,9 +39,12 @@ export function MixMatchRoom({
   onTab,
   map,
   onMap,
+  view,
 }: { id: string } & TabProps & {
     map?: string
     onMap?: (gameId: string | undefined) => void
+    /** (replanteo 83) "stats": la sala del matchmaking abre en Estadísticas. */
+    view?: "stats"
   }) {
   const match = useQuery(matchDetailOptions(id))
   const me = useMyPlayerId()
@@ -104,6 +107,7 @@ export function MixMatchRoom({
             elo_stake: room.data.elo_stake ?? null,
           }}
           mode="detail"
+          initialTab={view === "stats" ? "stats" : "overview"}
         />
       </MmSourceContext>
     )

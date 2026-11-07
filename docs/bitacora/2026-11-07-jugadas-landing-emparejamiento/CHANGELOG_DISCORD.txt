@@ -1,0 +1,16 @@
+CMLeague 2.9.23 --  Changelog
+
+Jugadas destacadas
+- Ahora te llega un solo aviso por partida cuando el servidor detecta tus jugadas destacadas, con cuántas son y de qué tipo (por ejemplo, 2 rondas de 4 kills y un clutch 1v2).
+- Al tocar el aviso vas directo a las estadísticas de esa partida.
+- Ya no te llega un aviso por cada video: los videos van apareciendo solos en la partida.
+
+Equipos más parejos en el matchmaking
+- El rating de tus partidas recientes ahora pesa más al repartir los equipos. Si juegas mejor (o peor) de lo que dice tu ELO, el reparto lo tiene más en cuenta.
+- Lo probamos con todos los mixes jugados: así se adivina mejor quién va a ganar, que es justo lo que hay que emparejar.
+- El ELO que ganas o pierdes se calcula igual que siempre.
+
+Página de inicio
+- La sección de servidores ahora se llama "Juega": muestra cuántos están en la cola, las partidas en vivo y cómo buscar partida desde la web en tres pasos.
+- Los servidores aparecen con nombres genéricos (CM League #1, #2, #3) y ya no se muestran los que dejamos de usar.
+- La tarjeta del Discord muestra los conectados y miembros reales.

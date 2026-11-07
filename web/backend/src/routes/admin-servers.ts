@@ -18,7 +18,7 @@ import { hudHost, toServerHud } from '../services/hud';
 
 type C = Context<AppEnv>;
 const COLUMNS =
-  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, tv_port, matches, last_match_at, created_at, hud_port, hud_enabled, hud_key, hud_seen_at, hud_streaming';
+  'id, name, active, license_state, license_expires_at, allowed_ip, online, last_seen_at, last_ip, plugin_version, connect_address, panel_server_id, mode, region, tv_port, matches, last_match_at, created_at, hud_port, hud_enabled, hud_key, hud_seen_at, hud_streaming, internal_name, listed';
 
 /** Nombre corto para `server/build_licenciado.sh`: minúsculas, sin tildes, letras, números y guiones. */
 export function shortName(name: string): string {
@@ -51,7 +51,7 @@ function sameName<T>(fn: () => T): T {
   try {
     return fn();
   } catch (e) {
-    if (e instanceof AppError && e.code === 'CONFLICT') throw new AppError(409, 'CONFLICT', 'Ya hay un servidor con ese nombre.');
+    if (e instanceof AppError && e.code === 'CONFLICT') throw new AppError(409, 'CONFLICT', 'Ya hay un servidor con ese nombre (público o interno).');
     throw e;
   }
 }
@@ -133,6 +133,12 @@ export const adminServers = createRouter()
       }),
     )[0];
     if (!row) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió el servidor.');
+    // (replanteo 83) admin_create_server no los recibe: van en un segundo paso, con la misma RLS del admin.
+    if (b.internal_name != null || b.listed !== undefined) {
+      const extra = { internal_name: b.internal_name ?? null, ...(b.listed === undefined ? {} : { listed: b.listed }) };
+      const res = await c.var.sb.from('game_servers').update(extra).eq('id', row.id).select('id');
+      sameName(() => must(res));
+    }
     return c.json(tokenResponse(c, row.id, b.name, row.token), 201);
   })
   .openapi(patch, async (c) => {
@@ -161,6 +167,8 @@ export function toServer(c: C, s: ServerRow) {
   return {
     id: s.id!,
     name: s.name ?? '',
+    internal_name: s.internal_name ?? null,
+    listed: s.listed ?? true,
     active: s.active ?? false,
     license_state: (s.license_state ?? 'revoked') as 'ok' | 'expiring' | 'expired' | 'revoked',
     license_expires_at: s.license_expires_at ?? null,

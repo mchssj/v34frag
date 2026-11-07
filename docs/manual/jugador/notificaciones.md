@@ -30,7 +30,7 @@ En **Mi perfil** › [Preferencias](/profile/preferences), en **Notificaciones**
 |---|---|
 | **Equipos** | Invitaciones, pedidos para entrar, altas y bajas del plantel |
 | **Torneos** | Inscripciones, fixture, veto y resultados, y cuando tu partida empieza en menos de una hora |
-| **Mixes y ELO** | Cambios de nivel, mixes interrumpidos o borrados, ajustes de ELO y videos de tus jugadas |
+| **Mixes y ELO** | Cambios de nivel, mixes interrumpidos o borrados, ajustes de ELO y tus jugadas destacadas (un aviso por partida, que lleva a sus estadísticas) |
 | **Temporadas** | Tu puesto, el cierre de la temporada y las medallas |
 | **Cuenta** | SteamID vinculados, cambios de alias y de rol |
 | **Novedades** | Torneos nuevos y temporadas nuevas. Viene apagada: préndela si quieres enterarte |

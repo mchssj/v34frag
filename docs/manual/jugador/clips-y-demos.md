@@ -20,7 +20,9 @@ De cada partida se eligen las mejores, hasta {{clips.por_partida}} por partida y
 - En la sala de la partida, en **Lo más destacado de la partida**, debajo del resultado.
 - En el canal de clips del Discord de CMLeague.
 
-Cuando una jugada tuya ya tiene video, te avisamos en la campana. Desde la jugada puedes copiar su link para compartirla.
+Cuando el servidor detecta una o más jugadas tuyas en una partida, te llega **un solo aviso** en la campana con cuántas son (por ejemplo, "Tienes 3 jugadas destacadas en de_mirage_rc1"). Al tocarlo vas a las estadísticas de esa partida. Desde la jugada puedes copiar su link para compartirla.
+
+El video de cada jugada tarda un rato más (ver abajo): no llega otro aviso cuando está listo. Solo si un admin aprueba un clip que se volvió a grabar, te avisamos de ese clip.
 
 ## Tus clips destacados
 
