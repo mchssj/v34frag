@@ -72,6 +72,10 @@ const TYPES: [string, Notification["category"]][] = [
   ["admin_mix_review", "admin"],
   ["admin_demo_failed", "admin"],
   ["admin_season_delayed", "admin"],
+  ["event_reviewed", "tournament"],
+  ["game_reviewed", "tournament"],
+  ["admin_event_review", "admin"],
+  ["admin_game_review", "admin"],
 ]
 
 const match = {
@@ -237,5 +241,51 @@ group("team_staff_action", () => {
     )
     expect(k.title).toBe("Un admin sacó a vex de Kraken")
     expect(k.body).toBe("Sin motivo indicado.")
+  })
+
+  it("aprobación de torneos y mixes (replanteo 80)", () => {
+    const ev = { id: "e1", name: "Copa CM" }
+    const rejected = describe(
+      base({
+        type: "event_reviewed",
+        category: "tournament",
+        data: { event: ev, approved: false, note: "Faltan las fechas." },
+      })
+    )
+    expect(rejected.title).toBe("Rechazaron tu torneo Copa CM")
+    expect(rejected.body).toBe(
+      "Faltan las fechas. Corrígelo y vuelve a enviarlo."
+    )
+    expect(rejected.link).toEqual({
+      to: "/admin/events/$id",
+      params: { id: "e1" },
+    })
+    const game = describe(
+      base({
+        type: "game_reviewed",
+        category: "tournament",
+        data: { ...match, approved: true, map: "de_dust2" },
+      })
+    )
+    expect(game.title).toBe("Aprobaron el mix de de_dust2 en Furia Sur vs RBK")
+    const staff = describe(
+      base({
+        type: "admin_event_review",
+        category: "admin",
+        data: { event: ev, historic: true, resubmitted: true },
+        actor: { id: "u2", alias: "Kova" },
+      })
+    )
+    expect(staff.title).toBe("Volvieron a enviar el torneo histórico Copa CM")
+    expect(staff.body).toBe("Kova espera que lo apruebes o lo rechaces.")
+    expect(
+      describe(
+        base({
+          type: "admin_game_review",
+          category: "admin",
+          data: { ...match, games: 2 },
+        })
+      ).title
+    ).toBe("2 mixes vinculados por aprobar")
   })
 })

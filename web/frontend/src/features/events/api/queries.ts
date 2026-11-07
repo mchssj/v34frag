@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
+import { ApiError } from "@/api/errors"
 import type { EventSummary, EventDetail, EventMatch } from "../types"
 
 const MINUTE = 60_000
@@ -38,6 +39,8 @@ export function eventDetailOptions(id: string) {
         api.GET("/api/v1/events/{id}", { params: { path: { id } }, signal })
       ),
     staleTime: MINUTE,
+    // Un torneo pendiente, rechazado o en testing es un 404 para quien no lo puede ver: no se reintenta.
+    retry: (n, e) => !(e instanceof ApiError && e.status === 404) && n < 3,
   })
 }
 

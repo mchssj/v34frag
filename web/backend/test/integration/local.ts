@@ -57,3 +57,12 @@ export async function createUser(opts: { tag?: string; role?: 'admin' | 'user' }
   if (s.error || !s.data.session) throw s.error ?? new Error('login sin sesión');
   return { id: data.user.id, email, password, token: s.data.session.access_token, refresh: s.data.session.refresh_token };
 }
+
+/**
+ * (replanteo 80) Lo que crea un organizador nace pendiente de aprobación y solo lo ven él y el staff.
+ * Las pruebas que no prueban la aprobación lo aprueban con service_role, como si lo hubiera aprobado un admin.
+ */
+export async function approveEvent(id: string) {
+  const r = await admin().from('events').update({ approval: 'approved' } as never).eq('id', id);
+  if (r.error) throw r.error;
+}

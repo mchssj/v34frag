@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-05**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-06**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
@@ -21,6 +21,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## Torneos históricos, aprobación de organizadores y fase de testing (2026-11-06): hecho en local, sin commit ni despliegue
+
+- **Hecho:** replanteo `80`, la API y la web ([`2026-11-06-torneos-historicos-y-testing`](bitacora/2026-11-06-torneos-historicos-y-testing/)). Probado en la base local (todas las pruebas SQL y la inversa), la API (548 pruebas; de integración pasan todas las de torneos) y la web (636 pruebas), y recorrido en el navegador con admin, moderador, organizador y jugador. Manual (3 páginas nuevas y 2 actualizadas), términos y privacidad al día. La `80` quedó aplicada en la base local de pruebas. Diseño: https://claude.ai/artifact/2iA9sTaDhZrd2LUG3N3dsu
+- **Falta:**
+  1. Que Daniel lo mire y pida el commit (en `main`, con la copia en `feat/frontend-fase-1`; no va en `feat/mm-claim-en-sala`). Sin `package.json`, `pnpm-lock.yaml` ni `AdminClipsPage.tsx`, que son de otro trabajo.
+  2. Desplegar sin un mix en curso: `probar_80.sh` contra producción, la `80` en la base del VPS, y la API y la web juntas desde `main`.
+  3. Publicar el `CHANGELOG_DISCORD.txt` (2.9.22) y los términos.
+  4. Opcional: el filtro Históricos en Administración › Equipos, que quedó fuera (los equipos históricos se corrigen desde las inscripciones del torneo).
+- **Después:** [`2026-11-06-vista-previa-llave`](bitacora/2026-11-06-vista-previa-llave/) (planeado, pendiente de aprobación; replanteo `81`).
 
 ## Clips destacados en el perfil y rechazar un clip (2026-11-05): desplegado el 2026-11-06
 

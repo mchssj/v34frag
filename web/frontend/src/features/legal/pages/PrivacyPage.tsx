@@ -247,6 +247,13 @@ const SECTIONS: LegalSection[] = [
           según el nivel de privacidad que elijas: público, solo miembros o
           privado.
         </p>
+        <p>
+          En un torneo histórico (el registro de un torneo jugado antes o fuera
+          de la plataforma) publicamos el nombre, la sigla y el logo de los
+          equipos, sus resultados y, si quien lo sube los carga, los jugadores
+          de cada equipo: el torneo aparece en su perfil. Si apareces en uno y
+          quieres que corrijamos o quitemos tu nombre, escríbenos.
+        </p>
       </>
     ),
   },

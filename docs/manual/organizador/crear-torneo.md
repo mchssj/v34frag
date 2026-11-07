@@ -11,7 +11,18 @@ Los torneos se manejan en Administración › [Torneos](/admin/events). Como org
 1. Toca **Crear torneo**.
 2. Elige el **formato** primero. A la derecha ves el resumen de cómo se va a jugar.
 3. Completa los datos.
-4. Toca **Crear torneo**. Las inscripciones quedan abiertas en ese momento.
+4. Toca **Crear torneo** (como organizador, **Crear y enviar a aprobación**). Las inscripciones quedan abiertas en ese momento.
+
+En **Tipo de torneo** eliges **Normal** (se juega en la plataforma) o **Histórico** (ya se jugó: ver [Subir un torneo histórico](/help/organizador/subir-torneo-historico)).
+
+## La aprobación
+
+Si eres organizador, tu torneo queda **pendiente de aprobación**. Mientras tanto solo lo ven tú, los moderadores y los admins, y lo puedes preparar entero. Cuando un admin o un moderador lo revisa, te llega un aviso:
+
+- **Aprobado:** se publica y se anuncia como torneo nuevo.
+- **Rechazado:** el aviso y la página del torneo dicen el motivo. Corrígelo y toca **Volver a enviar**.
+
+Después de aprobado lo sigues gestionando como siempre. Los mixes que vincules a una partida también esperan aprobación (ver [Resultados y la llave](/help/organizador/resultados-y-llave)). Lo que crea un admin o un moderador queda aprobado al instante.
 
 | Campo | Qué es |
 |---|---|

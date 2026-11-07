@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
-import { admin, createUser, localEnv } from './local';
+import { admin, createUser, localEnv, approveEvent } from './local';
 
 // E21 (stats de la serie) y E22 (a qué partida pasa cada lado) contra la Supabase local.
 const app = createApp();
@@ -51,6 +51,7 @@ beforeAll(async () => {
   org = await createUser({ tag: `Org${rnd()}` });
   expect((await req('PUT', `/api/v1/admin/users/${org.id}/role`, { token: adm.token, body: { role: 'organizer' } })).status).toBe(204);
   ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Doble ${rnd()}`, template: 'double' } })).body.id;
+  await approveEvent(ev);
   teams = await Promise.all([team(), team(), team(), team()]);
   for (const t of teams) {
     expect((await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { active: t.players.map((p) => p.id) } })).status).toBe(204);

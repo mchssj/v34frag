@@ -218,9 +218,8 @@ const SECTIONS: LegalSection[] = [
         <li>
           En el matchmaking, abandonar una partida te resta ELO (menos que una
           derrota si tu equipo gana; si pierde, al menos lo que cuesta una
-          derrota) y puede
-          sumar escalones de espera antes de volver a buscar partida. Si te
-          desconectas, tu equipo puede votar en el servidor para
+          derrota) y puede sumar escalones de espera antes de volver a buscar
+          partida. Si te desconectas, tu equipo puede votar en el servidor para
           darte por abandonado sin esperar a que se termine tu plazo para
           volver, y la liga puede llamar a otro jugador para que entre en tu
           lugar. Si vuelves después de que entró, quedas de espectador. Irte en
@@ -304,6 +303,19 @@ const SECTIONS: LegalSection[] = [
           descalificación.
         </li>
         <li>
+          Los torneos que crea un organizador y los mixes que vincula a sus
+          partidas se publican después de que los aprueba un administrador o un
+          moderador de la liga. Mientras tanto no se muestran y no suman al
+          ranking.
+        </li>
+        <li>
+          La liga puede publicar el registro de torneos jugados antes o fuera de
+          la plataforma (torneos históricos): el nombre, la sigla y el logo de
+          los equipos, sus resultados y, si se cargan, sus jugadores. Si
+          apareces en uno y quieres que corrijamos o quitemos tu nombre,
+          escríbenos.
+        </li>
+        <li>
           Los premios los entrega quien organiza el torneo, como diga el
           reglamento. Para cobrar un premio puede hacer falta demostrar tu
           identidad y que jugaste limpio. Un premio se puede retener si hay una
@@ -376,8 +388,8 @@ const SECTIONS: LegalSection[] = [
           (más con VIP).
         </li>
         <li>
-          La liga puede rechazar un clip que salió mal: deja de verse en la
-          web, no se publica y su video se borra.
+          La liga puede rechazar un clip que salió mal: deja de verse en la web,
+          no se publica y su video se borra.
         </li>
       </ul>
     ),

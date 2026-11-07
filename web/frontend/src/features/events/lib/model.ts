@@ -391,7 +391,11 @@ export type Cta =
   | { kind: "no-team" }
   | { kind: "live"; match: LiveMatch }
   | { kind: "matches"; stage: string | null }
-  | { kind: "champion"; team: { id: string; name: string }; on: string | null }
+  | {
+      kind: "champion"
+      team: { id: string; name: string; historic?: boolean }
+      on: string | null
+    }
   | { kind: "none" }
 
 /** Botón de la cabecera según el estado del torneo y los equipos del usuario. */

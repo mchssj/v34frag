@@ -3803,7 +3803,7 @@ export interface paths {
         get?: never;
         /**
          * Subir el logo
-         * @description `multipart/form-data`, campo `file`. El capitán o un admin. Reemplaza al anterior. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
+         * @description `multipart/form-data`, campo `file`. El capitán o un admin (un equipo histórico: quien gestiona su torneo histórico). Reemplaza al anterior. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
          */
         put: {
             parameters: {
@@ -16049,7 +16049,7 @@ export interface paths {
         put?: never;
         /**
          * Resultado a mano de una partida de torneo
-         * @description El organizador del torneo o un admin, cuando el resultado no llegó del servidor (caída, W.O. o corrección). Mandar `maps` (rondas de cada mapa; no puede haber mapas empatados), `walkover` (id del equipo que gana) o `clear: true`. Si cambia el ganador, la llave se corrige sola; falla si ya se jugaron partidas que dependían de esta.
+         * @description El organizador del torneo o un admin, cuando el resultado no llegó del servidor (caída, W.O. o corrección). Mandar `maps` (rondas de cada mapa; no puede haber mapas empatados), `walkover` (id del equipo que gana) o `clear: true`. `played_at`, con `maps` o `walkover`: la fecha en que se jugó (por ejemplo, en un torneo histórico). Si cambia el ganador, la llave se corrige sola; falla si ya se jugaron partidas que dependían de esta.
          */
         post: {
             parameters: {
@@ -16117,11 +16117,28 @@ export interface paths {
         };
         /**
          * Mixes para vincular a una partida de torneo
-         * @description Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta partida), jugados por al menos un inscrito de alguno de los dos equipos. Primero los vinculados y después los que más inscritos tienen. `side1` dice qué bando del mix fue el equipo 1. Hasta 20.
+         * @description Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta partida), jugados por al menos un inscrito de alguno de los dos equipos. En un torneo histórico, cualquier mix terminado y sin vincular. Primero los vinculados y después los que más inscritos tienen. `side1` dice qué bando del mix fue el equipo 1 (sin inscritos que lo decidan, lo elige quien vincula). Filtros por fecha, mapa y servidor, y paginado (hasta 100 por página).
          */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `relevance` */
+                    sort?: "relevance";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Jugados desde esta fecha */
+                    from?: string;
+                    /** @description Jugados hasta esta fecha (exclusivo) */
+                    to?: string;
+                    /** @description Parte del nombre del mapa */
+                    map?: string;
+                    /** @description Servidor */
+                    server?: string;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -16136,7 +16153,16 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GameCandidate"][];
+                        "application/json": components["schemas"]["GameCandidateList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
                     };
                 };
                 /** @description Sin sesión o sesión vencida */
@@ -16186,7 +16212,7 @@ export interface paths {
         get?: never;
         /**
          * Mapas de una serie de torneo: mix vinculado o resultado a mano
-         * @description Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la partida dice "Sin detalle de la partida" en ese mapa). Si la serie queda definida, se cierra y la llave avanza; si no, queda en curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.
+         * @description Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la partida dice "Sin detalle de la partida" en ese mapa; `played_at` opcional). Lo que vincula un organizador queda por aprobar: cuenta en la llave, pero sus stats no se ven hasta que lo apruebe un admin o moderador. Si la serie queda definida, se cierra y la llave avanza; si no, queda en curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.
          */
         put: {
             parameters: {
@@ -16258,6 +16284,95 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matches/{id}/games/{gameId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar o rechazar un mix vinculado
+         * @description Admin o moderador, para un mix que vinculó un organizador. Aprobado: sus stats se ven y la serie puede sumar al ranking. Rechazado: se desvincula y el mapa queda con el mismo marcador como resultado a mano (la llave no cambia). Al organizador le llega el aviso `game_reviewed`. `409` si ya estaba aprobado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    gameId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GameReviewBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -17903,7 +18018,7 @@ export interface paths {
         };
         /**
          * Torneos
-         * @description Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle).
+         * @description Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle). Solo aparecen los que quien consulta puede ver: un torneo en testing lo ven admins y moderadores; uno pendiente o rechazado, además su organizador.
          */
         get: {
             parameters: {
@@ -17929,6 +18044,14 @@ export interface paths {
                     from?: string;
                     /** @description Empiezan hasta esta fecha */
                     to?: string;
+                    /** @description Solo los históricos (`true`) o solo los normales (`false`) */
+                    historic?: "true" | "false";
+                    /** @description Solo los que están en fase de testing (`true`) o los que no (`false`). Los en testing los ven solo admins y moderadores */
+                    testing?: "true" | "false";
+                    /** @description `pending`: lo creó un organizador y espera a un admin o moderador; `approved`; `rejected` (con `approval_note`). Solo lo aprobado se ve para todos */
+                    approval?: "pending" | "approved" | "rejected";
+                    /** @description Solo los que tienen mixes vinculados por aprobar */
+                    pending_games?: "true" | "false";
                 };
                 header?: never;
                 path?: never;
@@ -17968,7 +18091,7 @@ export interface paths {
         put?: never;
         /**
          * Crear un torneo
-         * @description Un organizador o un admin. Queda como organizador quien lo crea.
+         * @description Un organizador o un admin; un moderador, solo históricos (`historic`). Queda como organizador quien lo crea. Lo de un organizador queda pendiente de aprobación (lo ven él y el staff hasta que un admin o moderador lo apruebe). `testing`, solo admin o moderador.
          */
         post: {
             parameters: {
@@ -18591,6 +18714,485 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar o rechazar un torneo pendiente
+         * @description Admin o moderador. Aprobado, se ve para todos (y si tiene las inscripciones abiertas, se anuncia); también quedan aprobados los mixes que vinculó el organizador. Rechazado, con `note` obligatoria: lo ve el organizador, que lo corrige y lo vuelve a enviar. Al organizador le llega el aviso `event_reviewed`. `409` si el torneo no espera aprobación.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReviewBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/resubmit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Volver a enviar un torneo rechazado
+         * @description El organizador del torneo. Vuelve a pendiente y les llega el aviso `admin_event_review` a admins y moderadores.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/historic-teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cargar un equipo que no está en la plataforma
+         * @description Solo en un torneo histórico, antes de generar el fixture; quien gestiona el torneo. Crea un equipo histórico (sin capitán, plantel ni página; no aparece en Buscar equipo ni en el ranking) y lo inscribe. Los jugadores, opcionales, con PUT /registrations/{teamId}. El logo, con PUT /teams/{id}/logo. Antes conviene mirar GET /events/{id}/similar-teams por si ya existe.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HistoricTeamBody"];
+                };
+            };
+            responses: {
+                /** @description Creado e inscrito */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Created"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/similar-teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Equipos con un nombre parecido
+         * @description Quien gestiona el torneo. Equipos de la plataforma e históricos ya cargados con un nombre o sigla parecidos (hasta 10), para no duplicar uno.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 10) */
+                    per?: number;
+                    /** @description Campo de orden: `name` */
+                    sort?: "name";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Nombre o sigla del equipo que se va a cargar */
+                    q: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Equipos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SimilarTeamList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/historic-teams/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Corregir un equipo histórico
+         * @description Nombre y sigla. Admin, moderador o quien gestiona un torneo histórico donde está inscrito.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HistoricTeamBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/pending-games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mixes vinculados por aprobar
+         * @description Admin o moderador. Los mixes que vinculó un organizador a una partida de torneo y esperan aprobación, con la partida. Se aprueban o se rechazan con POST /matches/{id}/games/{gameId}/review. Los torneos pendientes salen en GET /events?approval=pending.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `played_at` */
+                    sort?: "played_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Solo los de una partida */
+                    match?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mixes por aprobar */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PendingGameList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -21062,6 +21664,8 @@ export interface components {
             tag: string | null;
             /** @description Logo del equipo (null: sin logo, se muestra la sigla). Viene en los listados y el detalle de equipos, el ranking de equipos, las inscripciones y el campeón de un torneo, los lados de una partida y las invitaciones; en el resto puede faltar */
             logo_url?: string | null;
+            /** @description `true`: equipo histórico (no está en la plataforma y no tiene página). Viene en los torneos (inscripciones, partidas y campeón) y en el detalle de una partida de torneo */
+            historic?: boolean;
         };
         Compare: {
             a: components["schemas"]["ComparePlayer"];
@@ -23000,8 +23604,15 @@ export interface components {
                 map: string | null;
                 r1: number | null;
                 r2: number | null;
-                /** Format: uuid */
+                /**
+                 * Format: uuid
+                 * @description Mix vinculado. null: resultado a mano, o un mix por aprobar visto por quien no gestiona el torneo
+                 */
                 game_id: string | null;
+                /** @description Mix vinculado: si ya lo aprobó un admin o moderador (los que vincula un organizador esperan aprobación). null: resultado a mano */
+                approved: boolean | null;
+                /** @description Cuándo se jugó el mapa (la del mix, o la que se cargó a mano). null si no la tiene */
+                played_at: string | null;
             }[];
             /** @description Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle) */
             games: components["schemas"]["GameRef"][];
@@ -23186,6 +23797,18 @@ export interface components {
              * @enum {boolean}
              */
             clear?: true;
+            /** @description Con `walkover` o `maps`: cuándo se jugó (por ejemplo, el W.O. de un torneo histórico) */
+            played_at?: string;
+        };
+        GameCandidateList: {
+            items: components["schemas"]["GameCandidate"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
         };
         GameCandidate: {
             /** Format: uuid */
@@ -23204,6 +23827,8 @@ export interface components {
             side1: number;
             /** @description Ya está vinculado a esta partida */
             linked: boolean;
+            /** @description Vinculado a esta partida: si ya está aprobado. null si no está vinculado */
+            approved: boolean | null;
         };
         SeriesMapsBody: {
             /** @description Los mapas de la serie en orden. Lista vacía: sin resultado */
@@ -23222,6 +23847,12 @@ export interface components {
             /** @description Resultado a mano: rondas del equipo 1 */
             r1?: number;
             r2?: number;
+            /** @description Resultado a mano: cuándo se jugó (AAAA-MM-DD o fecha y hora). En un histórico, si falta, la del comienzo del torneo */
+            played_at?: string;
+        };
+        GameReviewBody: {
+            /** @description `true` aprueba el mix vinculado; `false` lo rechaza: se desvincula y el mapa queda con su marcador como resultado a mano */
+            approve: boolean;
         };
         ClipList: {
             items: components["schemas"]["Clip"][];
@@ -23741,6 +24372,19 @@ export interface components {
             banner_url: string | null;
             /** @description Cierre de inscripciones. null: hasta que se genera el fixture */
             registration_closes_at: string | null;
+            /** @description Torneo histórico: el registro de un torneo ya jugado (sin inscripciones de los capitanes ni avisos) */
+            historic: boolean;
+            /** @description En fase de testing: solo lo ven y lo gestionan admins y moderadores */
+            testing: boolean;
+            /**
+             * @description `pending`: lo creó un organizador y espera a un admin o moderador; `approved`; `rejected` (con `approval_note`). Solo lo aprobado se ve para todos
+             * @enum {string}
+             */
+            approval: "pending" | "approved" | "rejected";
+            /** @description Motivo del rechazo (lo ven el organizador y el staff) */
+            approval_note: string | null;
+            /** @description Mixes vinculados que esperan aprobación */
+            pending_games: number;
         };
         /** @description Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings */
         EventDetail: components["schemas"]["EventSummary"] & {
@@ -23771,6 +24415,8 @@ export interface components {
                 can_manage: boolean;
                 /** @description Además lo cancela y lo borra: admin u organizador dueño (el moderador no) */
                 can_own: boolean;
+                /** @description Aprueba o rechaza el torneo y sus mixes, y cambia la fase de testing: admin o moderador */
+                can_review: boolean;
             } | null;
         };
         /** @description La primera partida en vivo del torneo; null si no hay ninguna */
@@ -23889,7 +24535,7 @@ export interface components {
             state: "active" | "qualified" | "eliminated" | null;
         };
         RegistrationBody: {
-            /** @description Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID */
+            /** @description Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID. En un histórico, de 0 a 10 fichas cualesquiera (sin plantel ni SteamID) */
             active: string[];
             /**
              * @description Suplentes: hasta `subs_max` del torneo. El coach no se inscribe
@@ -23899,6 +24545,7 @@ export interface components {
             /** @description Suizo: fase en la que empieza (solo el organizador) */
             start_stage?: number;
         };
+        /** @description Lo que crea un organizador queda pendiente de aprobación (`approval`); lo de un admin o moderador, aprobado. Un moderador crea solo históricos */
         EventCreate: {
             name: string;
             /**
@@ -23929,6 +24576,10 @@ export interface components {
             max_teams?: number | null;
             /** @description Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto */
             map_pool?: string[] | null;
+            /** @description Torneo histórico (pide `starts_on` y `ends_on`). Lo crean admins, moderadores y organizadores. No se cambia después */
+            historic?: boolean;
+            /** @description En fase de testing (solo admin o moderador; por defecto `false`) */
+            testing?: boolean;
         };
         /** @description Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3; groups_double 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5. 3.er puesto apagado. */
         EventConfig: {
@@ -23992,6 +24643,63 @@ export interface components {
             max_teams?: number | null;
             /** @description Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto */
             map_pool?: string[] | null;
+            /** @description En fase de testing (solo admin o moderador; por defecto `false`) */
+            testing?: boolean;
+        };
+        ReviewBody: {
+            approve: boolean;
+            /** @description Motivo del rechazo (obligatorio al rechazar; lo ve el organizador) */
+            note?: string;
+        };
+        /** @description Equipo que no está en la plataforma: nombre y sigla. El logo, con PUT /teams/{id}/logo */
+        HistoricTeamBody: {
+            name: string;
+            tag: string;
+        };
+        SimilarTeamList: {
+            items: components["schemas"]["SimilarTeam"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        SimilarTeam: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            tag: string | null;
+            logo_url: string | null;
+            /**
+             * @description `official`: está en la plataforma; `historic`: equipo histórico ya cargado
+             * @enum {string}
+             */
+            kind: "official" | "historic";
+        };
+        PendingGameList: {
+            items: components["schemas"]["PendingGame"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        PendingGame: {
+            /** @description El mix vinculado (las rondas ya en el orden de los equipos de la partida) */
+            game: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                /** @description Rondas del equipo 1 de la partida */
+                score1: number | null;
+                score2: number | null;
+                played_at: string | null;
+            };
+            match: components["schemas"]["MatchSummary"] & unknown;
         };
         SeedsBody: {
             teams: string[];

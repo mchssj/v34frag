@@ -1,11 +1,18 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
-import { ArrowLeftRightIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import {
+  ArrowLeftRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
 import type { Schemas } from "@/api/client"
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,12 +36,15 @@ import type { EventDetail, EventMatch } from "@/features/events/types"
 import { matchDetailOptions } from "@/features/shell/api/queries"
 import { fmtDateTime } from "../../lib/format"
 import {
+  CANDIDATES_PER,
   gameCandidatesOptions,
   poolMapsOptions,
   serversOptions,
   useMatchResult,
+  useReviewGame,
   useScheduleMatch,
   useSeriesMaps,
+  type CandidateFilters,
 } from "../api/queries"
 import { mapsProblem, seriesScore, type SeriesMapDraft } from "../lib/model"
 
@@ -202,8 +212,15 @@ const draftsOf = (d: Detail): SeriesMapDraft[] =>
           map: m.map,
           r1: m.r1 ?? 0,
           r2: m.r2 ?? 0,
+          ...(m.approved === false ? { pending: true } : {}),
         }
-      : { kind: "manual", map: m.map ?? "", r1: m.r1, r2: m.r2 }
+      : {
+          kind: "manual",
+          map: m.map ?? "",
+          r1: m.r1,
+          r2: m.r2,
+          played_at: m.played_at?.slice(0, 10) ?? "",
+        }
   )
 
 function Maps({
@@ -217,7 +234,13 @@ function Maps({
 }) {
   const save = useSeriesMaps(event.id)
   const result = useMatchResult(event.id)
-  const candidates = useQuery(gameCandidatesOptions(match.id))
+  const reviewGame = useReviewGame(event.id)
+  const staff = !!event.viewer?.can_review
+  const [filters, setFilters] = useState<CandidateFilters>({ page: 1 })
+  const [rejecting, setRejecting] = useState<string | null>(null)
+  const [woDate, setWoDate] = useState(event.starts_on ?? "")
+  const candidates = useQuery(gameCandidatesOptions(match.id, filters))
+  const servers = useQuery(serversOptions)
   const pool = useQuery(poolMapsOptions).data ?? []
   const mapNames =
     event.map_pool ?? pool.filter((m) => m.veto_default).map((m) => m.name)
@@ -255,7 +278,7 @@ function Maps({
     if (m.kind !== "mix") return
     const current =
       m.side1 ??
-      (candidates.data?.find((c) => c.game_id === m.game_id)?.side1 === 2
+      (candidates.data?.items.find((c) => c.game_id === m.game_id)?.side1 === 2
         ? 2
         : 1)
     set(i, { ...m, side1: current === 1 ? 2 : 1, r1: m.r2, r2: m.r1 })
@@ -267,7 +290,12 @@ function Maps({
         maps: maps.map((m) =>
           m.kind === "mix"
             ? { game_id: m.game_id, ...(m.side1 ? { side1: m.side1 } : {}) }
-            : { map: m.map || null, r1: m.r1 ?? 0, r2: m.r2 ?? 0 }
+            : {
+                map: m.map || null,
+                r1: m.r1 ?? 0,
+                r2: m.r2 ?? 0,
+                ...(m.played_at ? { played_at: m.played_at } : {}),
+              }
         ),
       },
       {
@@ -282,6 +310,27 @@ function Maps({
   const linked = new Set(
     maps.flatMap((m) => (m.kind === "mix" ? [m.game_id] : []))
   )
+  // En un histórico la serie suma al ranking solo con todos sus mapas con un mix aprobado.
+  const counts =
+    maps.length > 0 && maps.every((m) => m.kind === "mix" && !m.pending)
+  const savedIds = new Set(
+    saved.flatMap((m) => (m.kind === "mix" ? [m.game_id] : []))
+  )
+  const review = (gameId: string, approve: boolean) =>
+    reviewGame.mutate(
+      { matchId: match.id, gameId, approve },
+      {
+        onSuccess: () => {
+          setRejecting(null)
+          toast.success(
+            approve
+              ? "Mix aprobado: ya se ven sus stats."
+              : "Mix rechazado: el mapa quedó con su marcador a mano."
+          )
+        },
+      }
+    )
+  const woBody = event.historic && woDate ? { played_at: woDate } : {}
 
   return (
     <section className="flex flex-col gap-3">
@@ -308,7 +357,11 @@ function Maps({
                 Mapa {i + 1}
               </span>
               {m.kind === "mix" ? (
-                <Badge variant="win">Mix vinculado</Badge>
+                m.pending ? (
+                  <Badge variant="warn">Mix por aprobar</Badge>
+                ) : (
+                  <Badge variant="win">Mix vinculado</Badge>
+                )
               ) : (
                 <Badge variant="warn">Resultado a mano · sin detalle</Badge>
               )}
@@ -332,6 +385,35 @@ function Maps({
                   <ArrowLeftRightIcon aria-hidden />
                   Invertir bandos
                 </Button>
+                {m.pending && staff && savedIds.has(m.game_id) && (
+                  <span className="flex w-full flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      Lo vinculó el organizador: cuenta en la llave, pero sus
+                      stats no se ven hasta que lo apruebes.
+                    </span>
+                    <Button
+                      size="sm"
+                      disabled={reviewGame.isPending || dirty}
+                      onClick={() => review(m.game_id, true)}
+                    >
+                      Aprobar mix
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={reviewGame.isPending || dirty}
+                      onClick={() => setRejecting(m.game_id)}
+                    >
+                      Rechazar
+                    </Button>
+                  </span>
+                )}
+                {m.pending && !staff && (
+                  <span className="w-full text-xs text-muted-foreground">
+                    Espera la aprobación de un admin o moderador: ya cuenta en
+                    la llave, pero sus stats no se ven hasta entonces.
+                  </span>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-[minmax(0,1fr)_72px_72px] items-end gap-2">
@@ -387,6 +469,22 @@ function Maps({
                     className="font-mono"
                   />
                 </label>
+                <label className="col-span-3 flex items-center gap-2 text-xs font-medium">
+                  Jugado el
+                  <Input
+                    type="date"
+                    className="w-44"
+                    value={m.played_at ?? ""}
+                    onChange={(e) =>
+                      set(i, { ...m, played_at: e.target.value })
+                    }
+                    title={
+                      event.historic
+                        ? "Sin fecha, queda la del inicio del torneo"
+                        : "Opcional"
+                    }
+                  />
+                </label>
               </div>
             )}
           </li>
@@ -429,22 +527,80 @@ function Maps({
       {adding === "mix" && (
         <div className="flex flex-col gap-2 rounded-lg bg-muted p-2.5">
           <p className="text-xs text-muted-foreground">
-            Mixes terminados en los últimos 14 días, sin vincular, con jugadores
-            inscritos de los dos equipos. Primero los que tienen más.
+            {event.historic
+              ? "Cualquier mix terminado y sin vincular, sin límite de fecha. Si no hay inscritos que decidan el bando, elígelo con «Invertir bandos»."
+              : "Mixes terminados en los últimos 14 días, sin vincular, con jugadores inscritos de los dos equipos. Primero los que tienen más."}
           </p>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs font-medium">
+              Desde
+              <Input
+                type="date"
+                value={filters.from ?? ""}
+                onChange={(e) =>
+                  setFilters({ ...filters, from: e.target.value, page: 1 })
+                }
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-medium">
+              Hasta
+              <Input
+                type="date"
+                value={filters.to ?? ""}
+                onChange={(e) =>
+                  setFilters({ ...filters, to: e.target.value, page: 1 })
+                }
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-medium">
+              Mapa
+              <Input
+                placeholder="dust2"
+                value={filters.map ?? ""}
+                onChange={(e) =>
+                  setFilters({ ...filters, map: e.target.value, page: 1 })
+                }
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-medium">
+              Servidor
+              <Select
+                value={filters.server ?? "all"}
+                onValueChange={(v) =>
+                  setFilters({
+                    ...filters,
+                    server: v === "all" ? undefined : v,
+                    page: 1,
+                  })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {(servers.data ?? []).map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+          </div>
           {candidates.isPending ? (
             <Skeleton className="h-24 rounded-lg" />
           ) : candidates.isError ? (
             <ErrorAlert message={errorMessage(candidates.error)} />
           ) : (
             <ul className="flex flex-col gap-1.5">
-              {candidates.data.filter((c) => !linked.has(c.game_id)).length ===
-                0 && (
+              {candidates.data.items.filter((c) => !linked.has(c.game_id))
+                .length === 0 && (
                 <li className="text-sm text-muted-foreground">
                   No hay mixes para vincular.
                 </li>
               )}
-              {candidates.data
+              {candidates.data.items
                 .filter((c) => !linked.has(c.game_id))
                 .map((c) => {
                   const k1 = c.side1 === 2 ? c.score2 : c.score1
@@ -484,14 +640,54 @@ function Maps({
                 })}
             </ul>
           )}
+          {candidates.data && candidates.data.total > CANDIDATES_PER && (
+            <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+              Página {candidates.data.page} de{" "}
+              {Math.ceil(candidates.data.total / CANDIDATES_PER)}
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label="Página anterior"
+                disabled={candidates.data.page <= 1}
+                onClick={() =>
+                  setFilters({ ...filters, page: (filters.page ?? 1) - 1 })
+                }
+              >
+                <ChevronLeftIcon aria-hidden />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label="Página siguiente"
+                disabled={
+                  candidates.data.page * CANDIDATES_PER >= candidates.data.total
+                }
+                onClick={() =>
+                  setFilters({ ...filters, page: (filters.page ?? 1) + 1 })
+                }
+              >
+                <ChevronRightIcon aria-hidden />
+              </Button>
+            </div>
+          )}
         </div>
+      )}
+
+      {event.historic && maps.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {counts
+            ? "Esta serie suma al ranking: todos sus mapas tienen un mix aprobado."
+            : "Esta serie no suma al ranking: en un histórico solo suman las series con todos sus mapas con un mix aprobado."}
+        </p>
       )}
 
       {problem && maps.length > 0 && (
         <p className="text-sm text-destructive">{problem}</p>
       )}
-      {(save.isError || result.isError) && (
-        <ErrorAlert message={errorMessage(save.error ?? result.error)} />
+      {(save.isError || result.isError || reviewGame.isError) && (
+        <ErrorAlert
+          message={errorMessage(save.error ?? result.error ?? reviewGame.error)}
+        />
       )}
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -511,13 +707,24 @@ function Maps({
         <span className="w-full text-xs text-muted-foreground">
           Otras acciones
         </span>
+        {event.historic && (
+          <label className="flex w-full items-center gap-2 text-xs font-medium">
+            Fecha del W.O.
+            <Input
+              type="date"
+              className="w-40"
+              value={woDate}
+              onChange={(e) => setWoDate(e.target.value)}
+            />
+          </label>
+        )}
         <Button
           variant="outline"
           size="sm"
           disabled={result.isPending}
           onClick={() =>
             result.mutate(
-              { matchId: match.id, walkover: t1.id },
+              { matchId: match.id, walkover: t1.id, ...woBody },
               { onSuccess: () => toast.success(`W.O. para ${t1.name}.`) }
             )
           }
@@ -530,7 +737,7 @@ function Maps({
           disabled={result.isPending}
           onClick={() =>
             result.mutate(
-              { matchId: match.id, walkover: t2.id },
+              { matchId: match.id, walkover: t2.id, ...woBody },
               { onSuccess: () => toast.success(`W.O. para ${t2.name}.`) }
             )
           }
@@ -551,6 +758,17 @@ function Maps({
           Anular resultado
         </Button>
       </div>
+      <ConfirmDialog
+        open={!!rejecting}
+        onOpenChange={(o) => !o && setRejecting(null)}
+        title="¿Rechazar el mix vinculado?"
+        description="Se desvincula y el mapa queda con el mismo marcador como resultado a mano. La llave no cambia. Al organizador le llega el aviso."
+        confirmLabel="Rechazar"
+        danger
+        pending={reviewGame.isPending}
+        error={reviewGame.error}
+        onConfirm={() => rejecting && review(rejecting, false)}
+      />
     </section>
   )
 }

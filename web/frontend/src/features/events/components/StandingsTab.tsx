@@ -13,7 +13,10 @@ import {
   standingTables,
   type StandingTable,
 } from "../lib/model"
-import { eventStandingsOptions } from "../api/queries"
+import {
+  eventRegistrationsOptions,
+  eventStandingsOptions,
+} from "../api/queries"
 import type { EventDetail, Standing } from "../types"
 import { EmptyBox } from "./ui"
 
@@ -80,6 +83,14 @@ const COLUMNS: Record<Standing["stage"], Col[]> = {
 /** Posiciones: una tabla por grupo o fase suiza. */
 export function StandingsTab({ event }: { event: EventDetail }) {
   const rows = useQuery(eventStandingsOptions(event.id)).data
+  // Los equipos históricos no tienen página: en un histórico se sacan de las inscripciones.
+  const regs = useQuery({
+    ...eventRegistrationsOptions(event.id),
+    enabled: event.historic,
+  }).data
+  const noPage = new Set(
+    (regs ?? []).filter((r) => r.team.historic).map((r) => r.team.id)
+  )
 
   if (!rows) return <Skeleton className="h-[220px] rounded-hero" />
   const tables = standingTables(rows)
@@ -104,14 +115,22 @@ export function StandingsTab({ event }: { event: EventDetail }) {
       )}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,420px),1fr))] gap-4">
         {tables.map((t) => (
-          <Table key={t.key} table={t} advance={advance} />
+          <Table key={t.key} table={t} advance={advance} noPage={noPage} />
         ))}
       </div>
     </div>
   )
 }
 
-function Table({ table, advance }: { table: StandingTable; advance: number }) {
+function Table({
+  table,
+  advance,
+  noPage,
+}: {
+  table: StandingTable
+  advance: number
+  noPage: ReadonlySet<string>
+}) {
   const cols = COLUMNS[table.stage]
   return (
     <Card variant="outline" asChild className="min-w-0 overflow-hidden">
@@ -173,13 +192,17 @@ function Table({ table, advance }: { table: StandingTable; advance: number }) {
                     </td>
                     <td className="px-2 py-[9px] font-medium">
                       <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <Link
-                          to="/teams/$id"
-                          params={{ id: r.team.id }}
-                          className="rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                        >
-                          {r.team.name}
-                        </Link>
+                        {noPage.has(r.team.id) ? (
+                          <span>{r.team.name}</span>
+                        ) : (
+                          <Link
+                            to="/teams/$id"
+                            params={{ id: r.team.id }}
+                            className="rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                          >
+                            {r.team.name}
+                          </Link>
+                        )}
                         {adv && (
                           <span className="text-[11px] font-medium text-primary">
                             Clasifica
