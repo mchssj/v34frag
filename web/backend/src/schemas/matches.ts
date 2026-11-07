@@ -168,7 +168,16 @@ export const MatchDetail = MatchSummary.extend({
   link_code: z.string().nullable().openapi({ description: 'Código de !match: solo para los dos equipos, el organizador y los admins' }),
   roster1: z.array(RosterPlayer),
   roster2: z.array(RosterPlayer),
-  maps_detail: z.array(z.object({ map: z.string().nullable(), r1: num, r2: num, game_id: z.uuid().nullable() })).openapi({ description: 'Torneo o PCW: mapas de la serie' }),
+  maps_detail: z
+    .array(
+      z.object({
+        map: z.string().nullable(), r1: num, r2: num,
+        game_id: z.uuid().nullable().openapi({ description: 'Mix vinculado. null: resultado a mano, o un mix por aprobar visto por quien no gestiona el torneo' }),
+        approved: z.boolean().nullable().openapi({ description: 'Mix vinculado: si ya lo aprobó un admin o moderador (los que vincula un organizador esperan aprobación). null: resultado a mano' }),
+        played_at: z.string().nullable().openapi({ description: 'Cuándo se jugó el mapa (la del mix, o la que se cargó a mano). null si no la tiene' }),
+      }),
+    )
+    .openapi({ description: 'Torneo o PCW: mapas de la serie' }),
   games: z.array(GameRef).openapi({ description: 'Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle)' }),
   players: z.array(PlayerLine).openapi({ description: 'Mix: stats de cada jugador' }),
   series_players: z.array(PlayerLine).openapi({ description: 'Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` sumado (cada juego mueve el ELO) y `clutches` sumados de los juegos con datos de clutch (null si ninguno tiene). Vacío en los mixes y si no se terminó ningún juego' }),
@@ -225,6 +234,7 @@ export const ResultBody = z
     maps: z.array(MapScore).min(1).max(5).optional().openapi({ description: 'Mapas jugados con las rondas de cada equipo' }),
     walkover: z.uuid().optional().openapi({ description: 'W.O.: id del equipo que gana (el que se presentó)' }),
     clear: z.literal(true).optional().openapi({ description: 'Anula el resultado y la partida vuelve a pendiente' }),
+    played_at: z.iso.date().or(z.iso.datetime({ offset: true })).optional().openapi({ description: 'Con `walkover` o `maps`: cuándo se jugó (por ejemplo, el W.O. de un torneo histórico)' }),
   })
   .refine((b) => [b.maps, b.walkover, b.clear].filter((x) => x !== undefined).length === 1, { message: 'Mandá maps, walkover o clear (uno solo).' })
   .openapi('ResultBody');
@@ -241,8 +251,18 @@ export const GameCandidate = z
     registered: z.number().int().openapi({ description: 'Cuántos de ellos son inscritos de alguno de los dos equipos' }),
     side1: z.number().int().openapi({ description: 'Bando del mix que jugó como el equipo 1 (deducido por los inscritos, o el guardado si ya está vinculado)' }),
     linked: z.boolean().openapi({ description: 'Ya está vinculado a esta partida' }),
+    approved: z.boolean().nullable().openapi({ description: 'Vinculado a esta partida: si ya está aprobado. null si no está vinculado' }),
   })
   .openapi('GameCandidate');
+
+// `relevance`: primero los ya vinculados, después los que más inscritos tienen y después los más nuevos.
+export const GameCandidateQuery = listQuery(['relevance'], { sort: 'relevance', order: 'desc' }, 100).extend({
+  from: dateParam('Jugados desde esta fecha'),
+  to: dateParam('Jugados hasta esta fecha (exclusivo)'),
+  map: z.string().max(40).optional().openapi({ description: 'Parte del nombre del mapa' }),
+  server: z.uuid().optional().openapi({ description: 'Servidor' }),
+});
+export const GameCandidateList = Envelope(GameCandidate).openapi('GameCandidateList');
 
 export const SeriesMap = z
   .object({
@@ -251,6 +271,7 @@ export const SeriesMap = z
     map: z.string().max(40).nullable().optional().openapi({ description: 'Resultado a mano: el mapa' }),
     r1: z.number().int().min(0).max(99).optional().openapi({ description: 'Resultado a mano: rondas del equipo 1' }),
     r2: z.number().int().min(0).max(99).optional(),
+    played_at: z.iso.date().or(z.iso.datetime({ offset: true })).optional().openapi({ description: 'Resultado a mano: cuándo se jugó (AAAA-MM-DD o fecha y hora). En un histórico, si falta, la del comienzo del torneo' }),
   })
   .refine((x) => (x.game_id ? x.r1 === undefined && x.r2 === undefined : x.r1 !== undefined && x.r2 !== undefined), {
     message: 'Cada mapa lleva `game_id` (mix vinculado) o `r1` y `r2` (resultado a mano).',
@@ -262,4 +283,8 @@ export const SeriesMapsBody = z
   .openapi('SeriesMapsBody');
 
 export const MatchParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
+export const MatchGameParam = MatchParam.extend({ gameId: z.uuid().openapi({ param: { name: 'gameId', in: 'path' } }) });
+export const GameReviewBody = z
+  .object({ approve: z.boolean().openapi({ description: '`true` aprueba el mix vinculado; `false` lo rechaza: se desvincula y el mapa queda con su marcador como resultado a mano' }) })
+  .openapi('GameReviewBody');
 export const ChatParam = z.object({ id: z.coerce.number().int().openapi({ param: { name: 'id', in: 'path' } }) });

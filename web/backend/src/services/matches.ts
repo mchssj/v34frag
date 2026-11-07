@@ -1,6 +1,8 @@
 import type { z } from '@hono/zod-openapi';
 import type { Config } from '../env';
 import type { MatchSummary, MixReview, VetoState } from '../schemas/matches';
+import { fromPostgrest } from '../lib/errors';
+import type { Db } from '../lib/supabase';
 import { stageLabel, type StageInfo } from './stages';
 
 // Columnas de la vista match_list (replanteo 11) que arman un MatchSummary.
@@ -160,4 +162,24 @@ export function sumSeries(
     a.line.nick = r.nick ?? a.line.nick;
   }
   return [...acc.values()].map(({ line, weighted, rated }) => ({ ...line, rating: rated ? Math.round((weighted / rated) * 100) / 100 : null }));
+}
+
+type TeamLike = { id: string; historic?: boolean } | null;
+type WithSides = { side1: { team: TeamLike }; side2: { team: TeamLike } };
+
+/** Ids de los equipos históricos (replanteo 80: no están en la plataforma y no tienen página) entre los dados. */
+export async function historicTeams(sb: Db, ids: (string | null | undefined)[]): Promise<Set<string>> {
+  const unique = [...new Set(ids.filter((x): x is string => !!x))];
+  if (!unique.length) return new Set();
+  const { data, error } = await sb.from('teams').select('id').eq('kind', 'historic').in('id', unique);
+  if (error) throw fromPostgrest(error);
+  return new Set((data ?? []).map((t) => t.id));
+}
+
+/** Marca `historic: true` en los equipos históricos de los lados de cada partida. */
+export async function markHistoricSides<T extends WithSides>(sb: Db, rows: T[]): Promise<T[]> {
+  const hist = await historicTeams(sb, rows.flatMap((r) => [r.side1.team?.id, r.side2.team?.id]));
+  if (!hist.size) return rows;
+  for (const r of rows) for (const t of [r.side1.team, r.side2.team]) if (t && hist.has(t.id)) t.historic = true;
+  return rows;
 }

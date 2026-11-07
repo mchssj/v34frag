@@ -15,6 +15,9 @@ export const TeamRef = z
         'Logo del equipo (null: sin logo, se muestra la sigla). Viene en los listados y el detalle de equipos, el ranking de equipos, ' +
         'las inscripciones y el campeón de un torneo, los lados de una partida y las invitaciones; en el resto puede faltar',
     }),
+    historic: z.boolean().optional().openapi({
+      description: '`true`: equipo histórico (no está en la plataforma y no tiene página). Viene en los torneos (inscripciones, partidas y campeón) y en el detalle de una partida de torneo',
+    }),
   })
   .openapi('TeamRef');
 

@@ -31,6 +31,7 @@ import {
 import { BannerCard } from "./BannerCard"
 import { VetoTurnCard } from "./VetoTurnCard"
 import { EventForm } from "./EventForm"
+import { HistoricRegistrations } from "./HistoricRegistrations"
 
 const active = (r: Registration) =>
   r.players.filter((p) => p.role === "active").length
@@ -58,7 +59,8 @@ export function SummaryTab({
         tone: "bad",
         text: `Hacen falta al menos ${Math.max(2, event.min_teams ?? 2)} equipos inscritos (hay ${regs.length}).`,
       })
-    for (const r of short)
+    // Un histórico no pide activos: los jugadores son opcionales.
+    for (const r of event.historic ? [] : short)
       issues.push({
         tone: "bad",
         text: `${r.team.name} tiene ${active(r)} de ${event.players_per_team} activos inscritos: tiene que completarlo o darse de baja.`,
@@ -305,6 +307,11 @@ function TieResolver({ event, grp }: { event: EventDetail; grp: number }) {
 // ---- Inscripciones ----
 
 export function RegistrationsTab({ event }: { event: EventDetail }) {
+  if (event.historic) return <HistoricRegistrations event={event} />
+  return <PlatformRegistrations event={event} />
+}
+
+function PlatformRegistrations({ event }: { event: EventDetail }) {
   const regs = useQuery(eventRegistrationsOptions(event.id))
   const remove = useRemoveRegistration(event.id)
   const [target, setTarget] = useState<Registration | null>(null)
@@ -420,7 +427,7 @@ export function ConfigTab({ event }: { event: EventDetail }) {
   return (
     <div className="flex flex-col gap-6">
       <BannerCard event={event} />
-      <VetoTurnCard eventId={event.id} />
+      {!event.historic && <VetoTurnCard eventId={event.id} />}
       <EventForm
         initial={{
           name: event.name,
@@ -435,7 +442,10 @@ export function ConfigTab({ event }: { event: EventDetail }) {
           max_teams: event.max_teams,
           rules: event.rules,
           map_pool: event.map_pool,
+          historic: event.historic,
+          testing: event.testing,
         }}
+        canTesting={!!event.viewer?.can_review}
         locked={event.status !== "registration"}
         submitLabel="Guardar cambios"
         pending={update.isPending}
@@ -454,6 +464,7 @@ export function ConfigTab({ event }: { event: EventDetail }) {
                   max_teams: v.max_teams,
                   rules: v.rules,
                   ...(v.map_pool ? { map_pool: v.map_pool } : {}),
+                  ...(v.testing !== undefined ? { testing: v.testing } : {}),
                 }
           update.mutate(body, {
             onSuccess: () => toast.success("Torneo guardado."),

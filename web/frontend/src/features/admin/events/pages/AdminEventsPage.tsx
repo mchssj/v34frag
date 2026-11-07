@@ -1,9 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { cn } from "cn"
-import { PlusIcon } from "lucide-react"
+import { HistoryIcon, PlusIcon } from "lucide-react"
 import { z } from "zod"
 
+import {
+  canCreateEvent,
+  canCreateHistoricEvent,
+  canReviewEvents,
+} from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { SearchBox } from "@/components/brand/SearchBox"
@@ -17,7 +22,12 @@ import {
 import type { EventSummary } from "@/features/events/types"
 import { AdminHeader, AdminTable } from "../../components/ui"
 import { fmtDate } from "../../lib/format"
-import { ADMIN_EVENTS_PER, adminEventsOptions } from "../api/queries"
+import {
+  ADMIN_EVENTS_PER,
+  adminEventsOptions,
+  pendingGamesOptions,
+} from "../api/queries"
+import { EventMarks } from "@/features/events/components/EventMarks"
 import {
   nextStep,
   STATUS_LABEL,
@@ -25,11 +35,15 @@ import {
   type EventStatus,
 } from "../lib/model"
 
+const MARKS = ["pending", "games", "historic", "testing", "rejected"] as const
+type Mark = (typeof MARKS)[number]
+
 export const adminEventsSearch = z.object({
   status: z
     .enum(["registration", "in_progress", "finished", "cancelled"])
     .optional()
     .catch(undefined),
+  mark: z.enum(MARKS).optional().catch(undefined),
   q: z.string().max(60).optional().catch(undefined),
   page: z.number().int().min(1).optional().catch(undefined),
 })
@@ -56,9 +70,12 @@ const COLUMNS: DataColumn<EventSummary>[] = [
     headClassName: "pl-4",
     cellClassName: "py-2 pl-2",
     cell: ({ row: { original: e } }) => (
-      <SelectButton>
-        <span className="font-semibold">{e.name}</span>
-      </SelectButton>
+      <div className="flex flex-col gap-1">
+        <SelectButton>
+          <span className="font-semibold">{e.name}</span>
+        </SelectButton>
+        <EventMarks event={e} />
+      </div>
     ),
   },
   {
@@ -109,7 +126,20 @@ const COLUMNS: DataColumn<EventSummary>[] = [
     headClassName: "pr-4",
     cellClassName: "pr-4",
     cell: ({ row: { original: e } }) => {
-      const s = nextStep(e)
+      const s =
+        e.approval === "pending"
+          ? { text: "Revisar y aprobar", tone: "warn" as const }
+          : e.approval === "rejected"
+            ? {
+                text: "Rechazado: corregir y volver a enviar",
+                tone: "warn" as const,
+              }
+            : e.pending_games > 0
+              ? {
+                  text: `${e.pending_games} mix${e.pending_games === 1 ? "" : "es"} por aprobar`,
+                  tone: "warn" as const,
+                }
+              : nextStep(e)
       return (
         <span
           className={cn(
@@ -137,18 +167,43 @@ export function AdminEventsPage({
   const me = useMe().data
   const navigate = useNavigate()
   const organizer = me?.role === "organizer" ? me.id : undefined
-  // El moderador opera torneos, pero no los crea.
-  const canCreate = me?.role === "admin" || me?.role === "organizer"
+  // El moderador no crea torneos normales, pero sí sube históricos.
+  const canCreate = !!me && canCreateEvent(me.role)
+  const canHistoric = !!me && canCreateHistoricEvent(me.role)
+  const staff = !!me && canReviewEvents(me.role)
   const page = search.page ?? 1
+  const mark: Mark | undefined =
+    !staff && (search.mark === "testing" || search.mark === "games")
+      ? undefined
+      : search.mark
   const list = useQuery({
     ...adminEventsOptions({
       status: search.status,
       q: search.q,
       organizer,
       page,
+      approval:
+        mark === "pending"
+          ? "pending"
+          : mark === "rejected"
+            ? "rejected"
+            : undefined,
+      historic: mark === "historic" ? true : undefined,
+      testing: mark === "testing" ? true : undefined,
+      pending_games: mark === "games" ? true : undefined,
     }),
     enabled: !!me,
   })
+  // Aviso del staff: torneos y mixes que esperan aprobación.
+  const pendingEvents = useQuery({
+    ...adminEventsOptions({ approval: "pending", page: 1 }),
+    enabled: staff,
+  })
+  const pendingGames = useQuery({ ...pendingGamesOptions({}), enabled: staff })
+  const waiting = {
+    events: pendingEvents.data?.total ?? 0,
+    games: pendingGames.data?.total ?? 0,
+  }
   const table = useServerTable({
     columns: COLUMNS,
     data: list.data?.items as EventSummary[] | undefined,
@@ -171,17 +226,68 @@ export function AdminEventsPage({
             : "Todos los torneos: inscripciones, siembra, fixture, horarios y resultados. La columna «Qué falta» dice el siguiente paso de cada uno."
         }
         action={
-          canCreate && (
-            <Button
-              size="md"
-              onClick={() => void navigate({ to: "/admin/events/new" })}
-            >
-              <PlusIcon aria-hidden />
-              Crear torneo
-            </Button>
+          (canCreate || canHistoric) && (
+            <div className="flex flex-wrap gap-2">
+              {canHistoric && (
+                <Button
+                  size="md"
+                  variant="outline"
+                  onClick={() =>
+                    void navigate({
+                      to: "/admin/events/new",
+                      search: { historic: true },
+                    })
+                  }
+                >
+                  <HistoryIcon aria-hidden />
+                  Subir torneo histórico
+                </Button>
+              )}
+              {canCreate && (
+                <Button
+                  size="md"
+                  onClick={() => void navigate({ to: "/admin/events/new" })}
+                >
+                  <PlusIcon aria-hidden />
+                  Crear torneo
+                </Button>
+              )}
+            </div>
           )
         }
       />
+      {staff && waiting.events + waiting.games > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
+          <p>
+            <b className="text-amber-900 dark:text-amber-200">
+              {[
+                waiting.events > 0 &&
+                  `${waiting.events} torneo${waiting.events === 1 ? "" : "s"}`,
+                waiting.games > 0 &&
+                  `${waiting.games} mix${waiting.games === 1 ? "" : "es"} vinculado${waiting.games === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" y ")}{" "}
+              {waiting.events + waiting.games === 1 ? "espera" : "esperan"}{" "}
+              aprobación.
+            </b>{" "}
+            <span className="text-muted-foreground">
+              Los torneos pendientes solo los ven su organizador, los
+              moderadores y los admins. Los mixes ya cuentan en la llave, pero
+              no en el ranking.
+            </span>
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              filter({ mark: waiting.events > 0 ? "pending" : "games" })
+            }
+          >
+            Ver pendientes
+          </Button>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <FilterChips
           label="Estado"
@@ -193,6 +299,23 @@ export function AdminEventsPage({
             { value: "in_progress", label: STATUS_LABEL.in_progress },
             { value: "finished", label: STATUS_LABEL.finished },
             { value: "cancelled", label: STATUS_LABEL.cancelled },
+          ]}
+        />
+        <FilterChips
+          label="Marca"
+          value={mark}
+          onChange={(v) => filter({ mark: v })}
+          options={[
+            { value: undefined, label: "Todas" },
+            { value: "pending", label: "Pendientes" },
+            ...(staff
+              ? [{ value: "games" as const, label: "Mixes por aprobar" }]
+              : []),
+            { value: "historic", label: "Históricos" },
+            ...(staff
+              ? [{ value: "testing" as const, label: "En testing" }]
+              : []),
+            { value: "rejected", label: "Rechazados" },
           ]}
         />
         <div className="w-full sm:ml-auto sm:w-64">
@@ -209,7 +332,7 @@ export function AdminEventsPage({
         query={list}
         className="min-w-[860px]"
         empty={
-          search.status || search.q
+          search.status || search.q || mark
             ? "Ningún torneo con esos filtros."
             : "Todavía no hay torneos."
         }

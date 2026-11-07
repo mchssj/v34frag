@@ -1,0 +1,14 @@
+CMLeague 2.9.22 --  Changelog
+
+Torneos históricos
+- Ahora se pueden subir torneos que ya se jugaron, dentro o fuera de CMLeague, con su llave y cómo terminó cada partida.
+- Los equipos que no están en la plataforma se cargan solo con su nombre, sigla y logo.
+- Si te cargan como jugador de un torneo histórico, lo vas a ver en tu perfil, y el título si tu equipo salió campeón.
+- Los torneos históricos tienen la etiqueta "Histórico" y no se pueden inscribir: los carga la liga o un organizador.
+
+Torneos de organizadores
+- Los torneos que crea un organizador se publican cuando los aprueba un admin o un moderador.
+- Los mixes que un organizador vincula a una partida también se revisan: mientras tanto cuentan en la llave, pero sus estadísticas aparecen cuando se aprueban.
+
+Ranking de equipos
+- En un torneo histórico solo suman al ranking las series con todos sus mapas jugados en nuestros servidores.

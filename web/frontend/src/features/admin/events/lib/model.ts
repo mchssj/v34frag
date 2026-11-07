@@ -277,8 +277,17 @@ export type SeriesMapDraft =
       map: string | null
       r1: number
       r2: number
+      /** Lo vinculó un organizador y espera aprobación (replanteo 80). Solo en los ya guardados. */
+      pending?: boolean
     }
-  | { kind: "manual"; map: string; r1: number | null; r2: number | null }
+  | {
+      kind: "manual"
+      map: string
+      r1: number | null
+      r2: number | null
+      /** AAAA-MM-DD en que se jugó (vacío: la API pone la del inicio en un histórico). */
+      played_at?: string
+    }
 
 /** Mapas ganados por cada lado (con el mapa de ventaja) y si la serie queda definida. */
 export function seriesScore(

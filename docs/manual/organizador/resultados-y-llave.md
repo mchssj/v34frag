@@ -17,9 +17,16 @@ Si la partida se jugó como un mix común (sin iniciarla desde la web), puedes v
 
 El mapa queda con sus estadísticas, con la etiqueta **Mix vinculado**.
 
+Si eres organizador, el mix queda **Mix por aprobar** hasta que lo revise un admin o un moderador. Mientras tanto ya cuenta en la llave (la serie avanza igual), pero sus estadísticas no se ven. Te llega un aviso cuando lo deciden:
+
+- **Aprobado:** se ven sus estadísticas.
+- **Rechazado:** el mix se desvincula y el mapa queda con el mismo marcador como resultado a mano. La llave no cambia.
+
+En un torneo histórico la lista no tiene límite de fecha y trae los filtros **Desde**, **Hasta**, **Mapa** y **Servidor** (ver [Subir un torneo histórico](/help/organizador/subir-torneo-historico)).
+
 ## Resultado a mano
 
-Si no hay mix (se jugó fuera de nuestros servidores, por ejemplo), toca **Resultado a mano** y carga el mapa y el marcador. Queda con la etiqueta **Resultado a mano · sin detalle**: sin estadísticas de los jugadores.
+Si no hay mix (se jugó fuera de nuestros servidores, por ejemplo), toca **Resultado a mano** y carga el mapa, el marcador y, si quieres, **Jugado el**. Queda con la etiqueta **Resultado a mano · sin detalle**: sin estadísticas de los jugadores.
 
 - Si con los mapas cargados la serie queda definida, el botón dice **Guardar resultado** y la llave avanza.
 - Si todavía no, dice **Guardar mapas** y la serie queda en curso.

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
-import { admin, createUser, localEnv } from './local';
+import { admin, createUser, localEnv, approveEvent } from './local';
 
 // Plantilla groups_double y sorteo contra la Supabase local (replanteo 17).
 const app = createApp();
@@ -52,6 +52,7 @@ describe('grupos de doble eliminación + playoffs', () => {
     // Por defecto: el formato del plan (2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5).
     const def = await req('POST', '/api/v1/events', { token: org.token, body: { name: `GD def ${rnd()}`, template: 'groups_double' } });
     expect(def.status).toBe(201);
+    await approveEvent(def.body.id);
     const dd = await req('GET', `/api/v1/events/${def.body.id}`);
     expect(dd.body.config).toMatchObject({ groups: 2, advance: 3, bo_group: 3, playoffs: { bo: 3, bo_semi: 3, bo_final: 5, third_place: false } });
     expect(dd.body.draw).toBeNull();
@@ -64,6 +65,7 @@ describe('grupos de doble eliminación + playoffs', () => {
     });
     expect(created.status).toBe(201);
     const ev = created.body.id as string;
+    await approveEvent(ev);
     const teams = await Promise.all(Array.from({ length: 8 }, () => team()));
     for (const t of teams) expect((await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { active: t.players } })).status).toBe(204);
 

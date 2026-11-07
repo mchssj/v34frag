@@ -131,6 +131,10 @@ const teamLink = (team: unknown): NotificationLink | undefined =>
   idOf(team) ? { to: "/teams/$id", params: { id: idOf(team) } } : undefined
 const eventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event) ? { to: "/events/$id", params: { id: idOf(event) } } : undefined
+const adminEventLink = (event: unknown): NotificationLink | undefined =>
+  idOf(event)
+    ? { to: "/admin/events/$id", params: { id: idOf(event) } }
+    : undefined
 
 /** Texto, icono y link de una notificación. `me` es el alias propio (link al perfil público). */
 export function describe(n: Notification, me?: string | null): Described {
@@ -336,6 +340,29 @@ export function describe(n: Notification, me?: string | null): Described {
         title: `Se canceló ${nameOf(d.event, "el torneo")}`,
         body: "El torneo no se juega.",
       }
+    // (replanteo 80) Aprobación de lo que hace un organizador.
+    case "event_reviewed":
+      return {
+        kind: "tournament",
+        title: d.approved
+          ? `Aprobaron tu torneo ${nameOf(d.event)}`
+          : `Rechazaron tu torneo ${nameOf(d.event)}`,
+        body: d.approved
+          ? "Ya está publicado."
+          : `${str(d.note, "Sin motivo.")} Corrígelo y vuelve a enviarlo.`,
+        link: adminEventLink(d.event),
+      }
+    case "game_reviewed": {
+      const pair = `${nameOf(d.team1, "Equipo 1")} vs ${nameOf(d.team2, "Equipo 2")}`
+      return {
+        kind: "tournament",
+        title: `${d.approved ? "Aprobaron" : "Rechazaron"} el mix de ${map} en ${pair}`,
+        body: d.approved
+          ? "Ya se ven sus stats."
+          : "Se desvinculó: el mapa quedó con su marcador como resultado a mano.",
+        link: adminEventLink(d.event),
+      }
+    }
     // Reserva del servidor (replanteo 56): el texto de la partida llega en `title`.
     case "match_server_ready":
       return {
@@ -604,6 +631,24 @@ export function describe(n: Notification, me?: string | null): Described {
         title: "El cierre de la temporada espera",
         body: "Hay un mix en vivo: cierra cuando termine.",
       }
+    case "admin_event_review":
+      return {
+        kind: "admin",
+        title: d.resubmitted
+          ? `Volvieron a enviar ${d.historic ? "el torneo histórico" : "el torneo"} ${nameOf(d.event)}`
+          : `${d.historic ? "Torneo histórico" : "Torneo"} por aprobar: ${nameOf(d.event)}`,
+        body: `${actor || "Un organizador"} espera que lo apruebes o lo rechaces.`,
+        link: adminEventLink(d.event),
+      }
+    case "admin_game_review": {
+      const games = num(d.games) ?? 1
+      return {
+        kind: "admin",
+        title: `${games === 1 ? "Un mix vinculado" : `${games} mixes vinculados`} por aprobar`,
+        body: `${nameOf(d.team1, "Equipo 1")} vs ${nameOf(d.team2, "Equipo 2")}${nameOf(d.event) ? ` (${nameOf(d.event)})` : ""}.`,
+        link: adminEventLink(d.event),
+      }
+    }
   }
 
   // Un tipo nuevo que esta versión de la web todavía no conoce.

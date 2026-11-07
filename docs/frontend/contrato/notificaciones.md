@@ -93,6 +93,8 @@ Todo con sesión (`401` sin ella).
 | `match_result` | Roster de los dos | `match` + `score1`, `score2`, `winner`, `walkover`, `corrected` | "Resultado: {team1} {score1}-{score2} {team2}" ("corregido" o "W.O.") | `/match/{match_id}` |
 | `event_progress` | Roster | `event`, `team`, `result` (`champion` o `runner_up`) | "¡{team.name} es campeón de {event.name}!" | `/events/{event.id}` |
 | `event_cancelled` | Roster inscrito | `event` | "Se canceló {event.name}" | — |
+| `event_reviewed` | El organizador (desde el 2026-11-06) | `event`, `approved`, `note` | Aprobado: "Aprobaron tu torneo {event.name}: ya está publicado". Rechazado: "Rechazaron tu torneo {event.name}: {note}" | `/admin/events/{event.id}` |
+| `game_reviewed` | El organizador (desde el 2026-11-06) | `match_id`, `team1`, `team2`, `event`, `approved`, `map` | "Aprobaron (o rechazaron) el mix de {map} en {team1} vs {team2}"; rechazado: "quedó como resultado a mano" | `/admin/events/{event.id}?tab=matches` |
 | `match_soon` | Roster de los dos (desde el 2026-10-29) | `match` | "{team1} vs {team2} empieza en menos de 1 hora ({starts_at})" | `/match/{match_id}` |
 
 #### PCW (`pcw`)
@@ -141,7 +143,7 @@ Todo con sesión (`401` sin ella).
 | `event_new` | `event`, `starts_on` | "Nuevo torneo: {event.name}" | `/events/{event.id}` |
 | `season_started` | `season`, `ends_at` | "Empezó la temporada {season.name}" | `/ranking` |
 
-#### Administración (`admin`, solo admins; `match_no_result` también al organizador)
+#### Administración (`admin`, solo admins; `match_no_result` también al organizador; `admin_event_review` y `admin_game_review` también a los moderadores)
 | `type` | `data` | Texto sugerido | Link |
 |---|---|---|---|
 | `admin_steam_request` | `kind`, `player` | "Pedido de {kind} un SteamID de {player.alias}" | Admin → Jugadores |
@@ -150,6 +152,8 @@ Todo con sesión (`401` sin ella).
 | `admin_demo_failed` | `match_id`, `map` | "No se pudo subir la demo del mix en {map}" | Admin → Demos |
 | `admin_season_delayed` | `season_id` | "El cierre de la temporada espera a que termine un mix en vivo" | Admin → Temporadas |
 | `match_no_result` | `match` (desde el 2026-10-29). Les llega a los admins y al organizador del torneo | "{team1} vs {team2} ({event.name}) sigue sin resultado: era a las {starts_at}" | `/match/{match_id}` |
+| `admin_event_review` | `event` (`id`, `name`), `historic`, `resubmitted` (desde el 2026-11-06). Les llega a admins **y moderadores** | "{organizador} creó el torneo {event.name}: espera aprobación" (o "lo volvió a enviar") | Admin → Torneos (pendientes) |
+| `admin_game_review` | `match_id`, `team1`, `team2`, `event`, `games` (desde el 2026-11-06). Admins y moderadores | "Hay {games} mix(es) vinculado(s) por aprobar en {team1} vs {team2}" | `/admin/events/{event.id}?tab=matches` |
 
 ### Avisos programados (segunda etapa, desde el 2026-10-29)
 
