@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-07 (la base con la copia de producción, la API y la web). **Sin commit y sin desplegar.** La `83` quedó aplicada en la base local de pruebas. No se recorrió en el navegador: la API local que estaba corriendo en el puerto 8787 tenía el código viejo y no se tocó.
+Hecho y probado en local el 2026-11-07. Commiteado en `feat/frontend-fase-1` (`0da727e7`), en `main` (`4480fbc4`, fast-forward que hizo la otra sesión desde `v34frag-mainwt`, porque tenía ahí trabajo sin commit de la `84`) y, solo la base, en `feat/mm-claim-en-sala` (`4d9deabe`). **Desplegado el 2026-11-07 (19:03-19:17 UTC)** desde `main` (`4480fbc4cd92`). No se recorrió en el navegador.
 
 ## Archivos
 
@@ -33,7 +33,19 @@ Hecho y probado en local el 2026-11-07 (la base con la copia de producción, la 
 - `feat/frontend-fase-1`: todo.
 - `feat/mm-claim-en-sala` (worktree `v34frag-mmclaim`): la base y la API, porque la `83` cambia `mm_config` (regla de las ramas del matchmaking). La web no.
 
-## Despliegue
+## Despliegue (hecho el 2026-11-07, salvo el paso 6)
+
+Cómo quedó:
+
+- Sin mixes en vivo ni salas. Había 2 personas en la cola, que siguieron ahí. La única partida `live` es la `0d42d09a…` del #1, colgada desde el 2026-11-06.
+- Respaldo `20261107T190306Z` (también en R2).
+- `probar_83.sh` contra producción: el primer intento chocó en un deadlock con otro proceso y Postgres lo canceló sin cambiar nada. Con `cmleague-mm` parado unos segundos (el worker solo llama a `mm_tick`; la presencia de la cola es de la API, así que nadie salió de la cola): 8 de 8 y la inversa igual a antes.
+- La `83` desde el archivo commiteado, con `cmleague-mm` parado de nuevo unos segundos, y los nombres públicos (los cinco servidores como se esperaba). El armado quedó en 400, 200 y 3.
+- La API `4480fbc4cd92` (555 pruebas, `/api/health` con el commit). El estado devuelve `CM League #1`, `#2` y `#3`, con `in_queue` y `mm_open`. `/api/v1/community/discord` da 37 en línea y 140 miembros: los números fijos decían 214 y 1386.
+- La web `4480fbc4cd92`, con `--sin-pruebas`: en la corrida del script fallaron 3 pruebas de `PlayPage.test.tsx` por tiempo (la máquina estaba cargada con otra sesión). Solas pasan las 32, y la suite completa ya había pasado sobre el mismo commit. Producción sirve el mismo `index.html` que el build.
+- Se desplegó desde un worktree limpio en `main` (`deploy/jugadas-83`) y no desde `v34frag-mainwt`, que tiene cambios sin commit de otro requerimiento.
+
+Los pasos:
 
 Sin un mix en curso. No toca el plugin ni los servidores del juego.
 

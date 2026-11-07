@@ -22,14 +22,14 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Jugadas en un solo aviso, la sección Juega del inicio y equipos más parejos (2026-11-07): hecho en local, sin desplegar
+## Jugadas en un solo aviso, la sección Juega del inicio y equipos más parejos (2026-11-07): desplegado el 2026-11-07
 
 - **Hecho:** replanteo `83`, la API y la web ([`2026-11-07-jugadas-landing-emparejamiento`](bitacora/2026-11-07-jugadas-landing-emparejamiento/)). Probado en la base local (8 comprobaciones y la inversa), la API (555 pruebas) y la web (641 pruebas). La `83` quedó aplicada en la base local. Diseño: https://claude.ai/artifact/LsFJh5Q1zPyTFqVpoJSvii
+- **Desplegado el 2026-11-07 (19:03-19:17 UTC)** desde `main` (`4480fbc4`; copia `0da727e7` en `feat/frontend-fase-1` y la base en `feat/mm-claim-en-sala`, `4d9deabe`): respaldo `20261107T190306Z`, `probar_83.sh` contra producción en verde, la `83` y los nombres públicos en la base del VPS (armado en 400, 200 y 3), y la API y la web `4480fbc4cd92`.
 - **Falta:**
-  1. Commit cuando Daniel lo pida: todo en `feat/frontend-fase-1`, y la base y la API también en `feat/mm-claim-en-sala` (la `83` cambia `mm_config`).
-  2. Mirarlo en el navegador (no se hizo: la API local corriendo tenía el código viejo).
-  3. Desplegar sin un mix en curso: respaldo, `probar_83.sh` y la `83` en el VPS (con `cmleague-mm` parado), `pruebas/nombres_publicos_produccion.sql`, y la API y la web juntas. No toca los servidores del juego.
-  4. Publicar el `CHANGELOG_DISCORD.txt` (2.9.23).
+  1. Mirarlo en el navegador: el inicio, la campana con la próxima partida que tenga jugadas y Administración › Servidores.
+  2. Publicar el `CHANGELOG_DISCORD.txt` (2.9.23).
+  3. Ver en las próximas partidas del matchmaking si los equipos quedan más parejos.
 - **Aparte:** `web/backend/test/integration/hud.test.ts` falla contra la copia de producción (elige el puerto 27501, que usa el #2). No es de este cambio.
 
 ## Torneos históricos, aprobación de organizadores y fase de testing (2026-11-06): desplegado el 2026-11-07
