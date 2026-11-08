@@ -1,0 +1,33 @@
+import type { Booking } from "../types/booking"
+
+/** Reserva de prueba (para las pruebas del módulo). */
+export const booking = (b: Partial<Booking> = {}): Booking => ({
+  id: "b1",
+  status: "assigned",
+  kind: "official",
+  server: { id: "s1", name: "CMLeague #1", region: "Sudamerica" },
+  map: "de_dust2",
+  map_no: 1,
+  veto_deadline: null,
+  wait_started_at: null,
+  wait_deadline: null,
+  wait_expired: false,
+  wait_minutes: 10,
+  min_roster1: null,
+  min_roster2: null,
+  ready1: true,
+  ready2: true,
+  taken: true,
+  side_ok1: null,
+  side_ok2: null,
+  side_n1: null,
+  side_n2: null,
+  queue_position: null,
+  lost_at: null,
+  created_at: "2026-11-02T19:50:00Z",
+  ended_at: null,
+  end_reason: null,
+  abandoned_side: null,
+  connection: null,
+  ...b,
+})

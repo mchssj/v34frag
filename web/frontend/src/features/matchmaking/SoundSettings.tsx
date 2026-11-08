@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { VipBadge } from "@/features/shop/cosmetics"
+import { Badge } from "@/components/ui/badge"
 import { previewSound } from "./alert"
 import { useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -78,7 +78,7 @@ function SoundSettings({ sounds }: { sounds: MmState["sounds"] }) {
       </ul>
       <div className="flex flex-col gap-2 border-t pt-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
-          Tu sonido <VipBadge />
+          Tu sonido <Badge variant="vip">VIP</Badge>
         </h3>
         {!sounds.can_upload ? (
           <p className="inline-flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-[13px]">

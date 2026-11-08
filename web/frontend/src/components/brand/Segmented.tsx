@@ -65,7 +65,7 @@ export function Segmented<T extends string | number>({
       }}
       disabled={disabled}
       className={cn(
-        "max-w-full gap-0.5 overflow-x-auto bg-muted",
+        "max-w-full gap-0.5 overflow-x-auto overflow-y-hidden bg-muted",
         SIZES[size].group,
         disabled && "opacity-50",
         className

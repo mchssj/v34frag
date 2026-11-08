@@ -25,8 +25,10 @@ if os.path.exists(out_path):
 
 vals = {
     'PTERO_PANEL_API_KEY': env.get('PTERO_PANEL_API_KEY', ''),
-    # Key del panel de RBK (otra cuenta): el Worker la usa para su servidor (docs/bitacora/2026-10-26-demos-rbk).
-    'PTERO_KEY_edbee7d6': env.get('SERVER1_PANEL_API_KEY', ''),
+    # Key del panel del #1 (MVZG, panel-mvzg.com), desde el 2026-11-03.
+    'PTERO_KEY_157703b5': env.get('SFTP_CSS_API_KEY', ''),
+    # Key del panel de flow (#2, panel-mvzg.com), desde el 2026-11-02. Sin ella, sus demos van por SFTP.
+    'PTERO_KEY_f337a7d9': env.get('SERVER2_PANEL_API_KEY', ''),
     'ADMIN_KEY': old.get('ADMIN_KEY') or old.get('PROBE_KEY') or secrets.token_urlsafe(24),
     'DEMO_WORKER_TOKEN': env.get('DEMO_WORKER_TOKEN', ''),
 }

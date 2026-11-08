@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 
+import { ApiError } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -39,6 +40,7 @@ import {
 } from "../components/RegisterDialog"
 import { StandingsTab } from "../components/StandingsTab"
 import { SummaryTab } from "../components/SummaryTab"
+import { EventMarks } from "../components/EventMarks"
 import { EmptyBox, EventBanner, StatusChip } from "../components/ui"
 
 export type EventTab = "bracket" | "standings" | "matches"
@@ -65,7 +67,14 @@ export function EventView({
 }) {
   const { data: event, error } = useQuery(eventDetailOptions(eventId))
 
-  if (error) return <EmptyBox>No se pudo cargar el torneo.</EmptyBox>
+  if (error)
+    return (
+      <EmptyBox>
+        {error instanceof ApiError && error.status === 404
+          ? "Ese torneo no existe o todavía no está publicado."
+          : "No se pudo cargar el torneo."}
+      </EmptyBox>
+    )
   if (!event) return <Skeleton className="h-[290px] rounded-hero" />
 
   return (
@@ -77,6 +86,7 @@ export function EventView({
             <div className="flex min-w-[min(100%,240px)] flex-1 flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusChip status={event.status} />
+                <EventMarks event={event} />
                 <span className="text-[13px] text-muted-foreground">
                   {dateRange(event.starts_on, event.ends_on)}
                 </span>
@@ -89,7 +99,7 @@ export function EventView({
                   event.game_mode,
                   TEMPLATE_LABEL[event.template],
                   boText(event),
-                  prizeText(event.prize),
+                  prizeText(event),
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -97,9 +107,10 @@ export function EventView({
             </div>
             <EventCta event={event} />
           </div>
+          <EventStrip event={event} />
           <nav
             aria-label="Secciones del torneo"
-            className="flex gap-1 overflow-x-auto border-t px-4"
+            className="flex gap-1 overflow-x-auto overflow-y-hidden border-t px-4"
           >
             {TABS.map((t) => (
               <Link
@@ -163,6 +174,8 @@ function EventCta({ event }: { event: EventDetail }) {
   const registrations = useQuery(eventRegistrationsOptions(event.id)).data
   const [dialog, setDialog] = useState<Dialog>(null)
 
+  // Un histórico ya se jugó: nadie se inscribe (lo carga quien lo gestiona).
+  if (event.historic && event.status === "registration") return null
   // Hasta saber quién está inscripto, el botón de inscribir no se puede decidir.
   if (event.status === "registration" && !registrations) return null
   const cta = ctaFor({
@@ -311,7 +324,12 @@ function CtaButtons({
         </Button>
       )
     case "champion":
-      return (
+      return cta.team.historic ? (
+        <Button size="lg" variant="outline" className="px-4" disabled>
+          <TrophyIcon aria-hidden />
+          Campeón: {cta.team.name}
+        </Button>
+      ) : (
         <Button asChild size="lg" variant="outline" className="px-4">
           <Link to="/teams/$id" params={{ id: cta.team.id }}>
             <TrophyIcon aria-hidden />
@@ -368,4 +386,43 @@ function CtaNote({
       {text}
     </span>
   ) : null
+}
+
+/** Franjas de lo que todavía no es público, para quien puede ver el torneo así (replanteo 80). */
+function EventStrip({ event }: { event: EventDetail }) {
+  const strips: { key: string; className: string; text: string }[] = []
+  if (event.testing)
+    strips.push({
+      key: "testing",
+      className: "bg-violet-500/10 text-violet-800 dark:text-violet-200",
+      text: "En fase de testing: solo lo ven admins y moderadores. No suma al ranking ni manda avisos.",
+    })
+  if (event.approval === "pending")
+    strips.push({
+      key: "pending",
+      className: "bg-amber-500/10 text-amber-800 dark:text-amber-200",
+      text: "Pendiente de aprobación: solo lo ven su organizador, los moderadores y los admins.",
+    })
+  if (event.approval === "rejected")
+    strips.push({
+      key: "rejected",
+      className: "bg-destructive/10 text-destructive",
+      text: "Rechazado: solo lo ven su organizador, los moderadores y los admins.",
+    })
+  if (event.historic)
+    strips.push({
+      key: "historic",
+      className: "bg-sky-500/10 text-sky-800 dark:text-sky-200",
+      text: "Torneo histórico: el registro de un torneo que ya se jugó. Los mapas sin mix dicen «Sin detalle de la partida».",
+    })
+  if (!strips.length) return null
+  return (
+    <div className="flex flex-col border-t">
+      {strips.map((s) => (
+        <p key={s.key} className={cn("px-5 py-2 text-[13px]", s.className)}>
+          {s.text}
+        </p>
+      ))}
+    </div>
+  )
 }

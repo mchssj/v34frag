@@ -212,13 +212,19 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           Un baneo alcanza a tu ficha y a todos sus SteamID, también a los que
-          sumes después. La lista de baneos es pública: muestra a quién, desde
-          cuándo, hasta cuándo y el motivo.
+          sumes después. La lista de baneos <Wip /> va a ser pública y va a
+          mostrar a quién, desde cuándo, hasta cuándo y el motivo.
         </li>
         <li>
-          En el matchmaking, abandonar una partida tiene una sanción automática
-          de ELO y puede sumar escalones de espera antes de volver a buscar
-          partida.
+          En el matchmaking, abandonar una partida te resta ELO (menos que una
+          derrota si tu equipo gana; si pierde, al menos lo que cuesta una
+          derrota) y puede sumar escalones de espera antes de volver a buscar
+          partida. Si te desconectas, tu equipo puede votar en el servidor para
+          darte por abandonado sin esperar a que se termine tu plazo para
+          volver, y la liga puede llamar a otro jugador para que entre en tu
+          lugar. Si vuelves después de que entró, quedas de espectador. Irte en
+          la última ronda, o cuando ya terminó la partida, no cuenta como
+          abandono.
         </li>
         <li>
           Los servidores de la liga registran tu IP, tu SteamID y tu nick al
@@ -245,19 +251,32 @@ const SECTIONS: LegalSection[] = [
           se publican en la web.
         </li>
         <li>
-          El ELO y los niveles se calculan con las reglas publicadas en la web.
-          Podemos cambiar esas reglas, recalcular el ELO de todos, borrar un mix
-          (por ejemplo, si hubo trampa o se cayó el servidor) o ajustar el ELO a
-          mano. Las temporadas pueden reiniciar el ranking.
+          El ELO y los niveles se calculan con las reglas de la liga, que vamos
+          a publicar en la web <Wip />. Podemos cambiar esas reglas, recalcular
+          el ELO de todos, borrar un mix (por ejemplo, si hubo trampa o se cayó
+          el servidor) o ajustar el ELO a mano. Las temporadas pueden reiniciar
+          el ranking.
         </li>
         <li>
           El ELO, los puntos, los niveles y el ranking no tienen valor económico
           y no son tuyos: son una medida de la liga.
         </li>
         <li>
-          El matchmaking <Wip>En prueba</Wip> arma los equipos según el ELO, te
-          pide confirmar la partida y te asigna un servidor. Si confirmas, te
-          comprometes a jugarla entera.
+          El matchmaking <Wip>En prueba</Wip> arma los equipos según el ELO (y,
+          si la liga lo enciende, también según el rating de tus partidas
+          recientes, para que queden parejos), te pide confirmar la partida y te
+          asigna un servidor. Si confirmas, te comprometes a jugarla entera.
+        </li>
+        <li>
+          Si alguien abandona una partida del matchmaking, la liga puede
+          publicar en su Discord un aviso con un link para entrar en su lugar.
+          El aviso muestra el modo, el mapa y el marcador, no los nombres de los
+          jugadores. Si entras como reemplazo, ganas o pierdes ELO como
+          cualquier jugador, según las rondas que juegues. Si tomas el lugar y
+          no te conectas a tiempo, recibes la misma sanción que quien no se
+          conecta a su partida. Con tu sesión iniciada, la página del link
+          muestra la sala con los nombres de los jugadores; la IP y la
+          contraseña del servidor, solo a quien toma el lugar.
         </li>
       </ul>
     ),
@@ -278,9 +297,24 @@ const SECTIONS: LegalSection[] = [
           términos. Un jugador no puede estar en dos equipos del mismo torneo.
         </li>
         <li>
-          Los capitanes reportan los resultados con capturas. Reportar algo
-          falso es motivo de descalificación. Si los reportes no coinciden,
-          decide un administrador.
+          El resultado de cada partida lo registra el servidor de la liga al
+          terminar. Si el servidor no pudo registrarlo o hay un problema, decide
+          un administrador. Mentir sobre un resultado es motivo de
+          descalificación.
+        </li>
+        <li>
+          Los torneos que crea un organizador y los mixes que vincula a sus
+          partidas se publican después de que los aprueba un administrador o un
+          moderador de la liga. Los torneos que crea un moderador se publican
+          después de que los aprueba un administrador. Mientras tanto no se
+          muestran y no suman al ranking.
+        </li>
+        <li>
+          La liga puede publicar el registro de torneos jugados antes o fuera de
+          la plataforma (torneos históricos): el nombre, la sigla y el logo de
+          los equipos, sus resultados y, si se cargan, sus jugadores. Si
+          apareces en uno y quieres que corrijamos o quitemos tu nombre,
+          escríbenos.
         </li>
         <li>
           Los premios los entrega quien organiza el torneo, como diga el
@@ -290,8 +324,9 @@ const SECTIONS: LegalSection[] = [
           quien lo recibe.
         </li>
         <li>
-          Las PCW (prácticas entre equipos) no cuentan para el ranking, pero se
-          rigen por las mismas reglas de conducta.
+          Las PCW (prácticas entre equipos) <Wip /> no mueven el ELO de los
+          jugadores, pero cuentan para el ranking de equipos y se rigen por las
+          mismas reglas de conducta.
         </li>
       </ul>
     ),
@@ -347,6 +382,15 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           Puedes pedir que se borre un clip tuyo por el Discord de la liga.
+        </li>
+        <li>
+          Tu ficha pública muestra tus clips destacados: los que elijas en tu
+          perfil o, si no eliges, tus mejores clips, hasta el tope de la liga
+          (más con VIP).
+        </li>
+        <li>
+          La liga puede rechazar un clip que salió mal: deja de verse en la web,
+          no se publica y su video se borra.
         </li>
       </ul>
     ),
@@ -654,9 +698,9 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Discord oficial:</strong>{" "}
-            <a href="https://dsc.gg/v34frag">dsc.gg/v34frag</a>, en el canal de
-            soporte. Sirve para consultas rápidas y para hablar con un
-            administrador.
+            <a href="https://discord.gg/bn5Yxsh9tc">discord.gg/bn5Yxsh9tc</a>,
+            en el canal de soporte. Sirve para consultas rápidas y para hablar
+            con un administrador.
           </li>
         </ul>
         <p>

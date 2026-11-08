@@ -1,4 +1,5 @@
 {
+  "client": "clientmod",
   "client_dir": "D:\\CMLeague_Render\\ClientMod",
   "work_dir": "D:\\CMLeague_Render\\trabajo",
   "out_dir": "D:\\CMLeague_Render\\videos",

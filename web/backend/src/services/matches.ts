@@ -1,6 +1,8 @@
 import type { z } from '@hono/zod-openapi';
 import type { Config } from '../env';
 import type { MatchSummary, MixReview, VetoState } from '../schemas/matches';
+import { fromPostgrest } from '../lib/errors';
+import type { Db } from '../lib/supabase';
 import { stageLabel, type StageInfo } from './stages';
 
 // Columnas de la vista match_list (replanteo 11) que arman un MatchSummary.
@@ -135,9 +137,12 @@ export type StatRow = {
 /**
  * Stats de una serie (E21): suma por jugador los juegos vinculados, con el lado de la serie
  * (`flipped` dice qué juegos tienen los bandos invertidos, `parent_side1 = 2`) y el rating
- * ponderado por rondas. Sin `elo_delta`: la serie no mueve el ELO.
+ * ponderado por rondas. Cada juego es un mix con su ELO: `elo_delta` es la suma (null si ningún juego lo movió).
  */
-export function sumSeries(rows: (Omit<StatRow, 'elo_delta'> & { match_id: string | null })[], flipped: Map<string, boolean>): StatRow[] {
+export function sumSeries(
+  rows: (Omit<StatRow, 'elo_delta'> & { elo_delta?: number | null; match_id: string | null })[],
+  flipped: Map<string, boolean>,
+): StatRow[] {
   const acc = new Map<string, { line: StatRow; weighted: number; rated: number }>();
   for (const r of rows) {
     const side = r.match_id && flipped.get(r.match_id) ? 3 - r.team : r.team;
@@ -149,6 +154,7 @@ export function sumSeries(rows: (Omit<StatRow, 'elo_delta'> & { match_id: string
       acc.set(key, a);
     }
     for (const k of SUMMED) a.line[k] = (a.line[k] ?? 0) + (r[k] ?? 0);
+    if (r.elo_delta != null) a.line.elo_delta = (a.line.elo_delta ?? 0) + r.elo_delta;
     if (r.rating !== null && (r.rounds ?? 0) > 0) {
       a.weighted += r.rating * (r.rounds ?? 0);
       a.rated += r.rounds ?? 0;
@@ -156,4 +162,24 @@ export function sumSeries(rows: (Omit<StatRow, 'elo_delta'> & { match_id: string
     a.line.nick = r.nick ?? a.line.nick;
   }
   return [...acc.values()].map(({ line, weighted, rated }) => ({ ...line, rating: rated ? Math.round((weighted / rated) * 100) / 100 : null }));
+}
+
+type TeamLike = { id: string; historic?: boolean } | null;
+type WithSides = { side1: { team: TeamLike }; side2: { team: TeamLike } };
+
+/** Ids de los equipos históricos (replanteo 80: no están en la plataforma y no tienen página) entre los dados. */
+export async function historicTeams(sb: Db, ids: (string | null | undefined)[]): Promise<Set<string>> {
+  const unique = [...new Set(ids.filter((x): x is string => !!x))];
+  if (!unique.length) return new Set();
+  const { data, error } = await sb.from('teams').select('id').eq('kind', 'historic').in('id', unique);
+  if (error) throw fromPostgrest(error);
+  return new Set((data ?? []).map((t) => t.id));
+}
+
+/** Marca `historic: true` en los equipos históricos de los lados de cada partida. */
+export async function markHistoricSides<T extends WithSides>(sb: Db, rows: T[]): Promise<T[]> {
+  const hist = await historicTeams(sb, rows.flatMap((r) => [r.side1.team?.id, r.side2.team?.id]));
+  if (!hist.size) return rows;
+  for (const r of rows) for (const t of [r.side1.team, r.side2.team]) if (t && hist.has(t.id)) t.historic = true;
+  return rows;
 }

@@ -78,10 +78,10 @@ export function StatsPanel() {
   const summary = data && summarize(data)
 
   return (
-    <Card>
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <CardHeader>
-        <CardTitle>Métricas</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[15px] font-semibold">Métricas</CardTitle>
+        <CardDescription className="text-[13px] leading-relaxed">
           Para ajustar la ventana de ELO y los tiempos con números.
         </CardDescription>
       </CardHeader>

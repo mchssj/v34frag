@@ -1,0 +1,21 @@
+CMLeague 2.9.0 --  Changelog
+
+Torneos y PCW con servidor automático
+
+TORNEOS
+- El organizador inicia tu partida desde la web: elige un servidor libre y el servidor queda reservado para toda la serie.
+- El veto tiene reloj: 30 segundos por turno (cada torneo puede cambiarlo). Si tu capitán no veta a tiempo, se elige un mapa al azar.
+- Cuando termina el veto, en la página de la partida ves el servidor, la contraseña y el botón "Conectarse". Solo la ven los planteles, los streamers y el staff.
+- El organizador elige cuánto se espera a los equipos (hasta 20 minutos). Si falta alguien, puede dejar que tu equipo empiece con 4.
+- En una serie al mejor de 3 o de 5, el mapa siguiente se carga solo, un minuto y medio después del anterior.
+
+PCW
+- Cuando los dos equipos tocan "Estamos listos", se hace el veto y la PCW entra a la fila de servidores. Te avisamos cuando hay uno libre.
+- Desde ese momento tienen 15 minutos para entrar (5 minutos entre mapas). Si están los dos equipos y nadie escribe !ready, la partida arranca sola.
+- Si tu equipo no se presenta, o se queda con menos de 4 jugadores durante 10 minutos, la PCW se da por abandonada: no cuenta para nadie y tu equipo no puede crear ni aceptar PCW por 3 días (7 si vuelve a pasar en el mes).
+- Mientras no haya servidor, pueden dejar de estar listos sin sanción.
+- Si juega un stand-in, pásale tú la contraseña.
+
+SERVIDORES
+- Si el servidor se cae, la partida espera a que vuelva unos minutos. Si no vuelve, se libera y nadie recibe sanción.
+- !match sigue funcionando como siempre para las partidas que se arman a mano.

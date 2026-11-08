@@ -4,7 +4,7 @@ Recibe los paquetes UDP del plugin `csstv_hud`, los retrasa igual que la SourceT
 
 ```mermaid
 flowchart LR
-  P["Servidor #1<br/>csstv_hud"] -- UDP --> T["playit.gg"] --> A["agente de playit<br/>(PC del streamer)"] --> R["relay.exe<br/>127.0.0.1:27500"]
+  P["Servidor (#1, #2 o #3)<br/>csstv_hud"] -- UDP --> T["playit.gg"] --> A["agente de playit<br/>(PC del streamer)"] --> R["relay.exe<br/>127.0.0.1:27500"]
   R -- "con el retraso de tv_delay" --> O["OBS: localhost:8090/hud"]
   C["navegador: localhost:8090/control"] --> R
 ```
@@ -28,7 +28,7 @@ flowchart LR
 3. Abrir `relay.json` con el Bloc de notas y reemplazar `PEGAR_ACA_LA_CLAVE` por la clave que pasa Daniel. No tocar lo demás.
    - **Íconos del HUD** (feed de kills y tarjetas de los jugadores): el relay usa la fuente del kill feed de ClientMod (`cstrike\resource\clientmodkillfeed.ttf`) y `cstrike\resource\cs.ttf` (el kit), y las busca solo en `C:\CSSv34_ClientMod` a `F:\CSSv34_ClientMod`. Si ClientMod está en otra carpeta, ponerla en `"gameDir"`, con la barra doble: `"gameDir": "D:\\Juegos\\CSSv34_ClientMod"`. Al abrir, la consola dice "Íconos: …" si la encontró.
 4. **OBS**, en la escena de la transmisión:
-   - Una *Captura de juego* de CS:S, conectado a la SourceTV del servidor #1. Mejor con el juego en 1920×1080.
+   - Una *Captura de juego* de CS:S, conectado a la SourceTV del servidor que se transmite (#1, #2 o #3). Mejor con el juego en 1920×1080.
    - **Encima**, una fuente *Navegador*:
      - URL `http://localhost:8090/hud`
      - Ancho `1920` y alto `1080`

@@ -52,7 +52,17 @@ export function sampleNotifications(now = new Date()): Notification[] {
       id: 4,
       type: "medal_granted",
       category: "season",
-      data: { title: "BETA · Top 10", icon: "🏅" },
+      data: {
+        title: "100 headshots",
+        medal: {
+          template: "hs_pct",
+          title: "100 headshots",
+          number: "45%",
+          label: "HS",
+          metal: "plata",
+          accent: "hs",
+        },
+      },
       actionable: false,
       resolution: null,
       actor: null,

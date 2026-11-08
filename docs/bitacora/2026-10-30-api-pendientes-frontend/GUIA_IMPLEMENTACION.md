@@ -32,7 +32,7 @@ Implementado y probado en local el 2026-10-30, commit del 2026-11-01 en `feat/ba
 ## Despliegue (pendiente)
 
 1. Commit en `feat/backend-api-fase-1` cuando Daniel lo pida, y llevarlo a `feat/frontend-fase-1`.
-2. Staging: aplicar `supabase/replanteo/39_pendientes_frontend.sql` (después de la `38`) y redesplegar la API del VPS. **La API nueva necesita la `39`:** lee `player_search`, `dissolved_at`, `name_changed_at`, `ended_at` y `players`.
+2. Staging: la `39` **se cargó el 2026-11-01** (junto con la 40 a la 44). La API del VPS se redesplegó el mismo día (`714ec78ae865`). **La API nueva necesita la `39`:** lee `player_search`, `dissolved_at`, `name_changed_at`, `ended_at` y `players`.
 3. Corte: la `39` va después de la `38` (`docs/PENDIENTES.md`, punto 1.5).
 4. Frontend: regenerar `src/api/schema.d.ts` y activar lo que estaba deshabilitado.
 

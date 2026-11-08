@@ -18,6 +18,7 @@
 | Torneos | Lo mismo que el organizador, sobre todos los torneos | Disponible |
 | Jugadores | Alta, edición y baja (`/api/v1/admin/players`). El nick solo se edita en jugadores sin cuenta (en los vinculados manda el alias). Vincular una cuenta es `PATCH` con `user_id`. La baja falla con mensaje si tiene partidas | Disponible |
 | Foto y medallas | `POST /api/v1/admin/players/{id}/photo` (mismas reglas que el avatar), `POST …/{id}/medals`, `DELETE /api/v1/admin/medals/{id}` | Disponible |
+| Medallas configurables (2026-11-04, replanteo `79`) | `GET/POST /api/v1/admin/medals/definitions`, `PATCH/DELETE …/{id}` (borrar solo un borrador), `POST …/{id}/activate` (`{ retroactive }`, responde `awarded`), `POST …/{id}/archive` y `POST /api/v1/admin/medals/preview` (`{ template, target, min_matches? }` → `players`). Público: `GET /api/v1/medals/definitions`. `POST /api/v1/admin/players/{id}/medals` pide `{ definition_id, title? }` (solo manuales) | Disponible en local |
 | IPs de una ficha | `GET /api/v1/admin/players/{id}/ips`: `items` con `ip`, `steam_id` (de la ficha), `first_seen_at`, `last_seen_at`, `times`, `last_nick`, `others` (otras fichas que entraron desde esa IP: `id` y `alias`) y `others_unlinked` (SteamID sin ficha). La más reciente primero. Las registra el reporter 2.6.0 al entrar al servidor. Dato personal: solo admin, nunca en vistas públicas. Replanteo `38` | Disponible (2026-10-29) |
 | SteamID sin vincular | `GET /api/v1/admin/steam/unlinked`, `POST /api/v1/admin/steam/link` (suma el SteamID a la ficha: principal si no tiene, adicional si ya tiene; hasta 4; `player_id: null` lo quita) | Disponible |
 | SteamID de las fichas | Ver "SteamID y `!claim` (admin)" abajo | Disponible |
@@ -33,7 +34,7 @@
 
 ### Baneos (moderadores y admins)
 
-Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-web/PLAN.md). Un baneo vale en **todos los servidores** (también RBK), se aplica al conectarse y, a quien ya está jugando (aunque sea un mix), lo echa la sincronización de cada 3 minutos y de cada cambio de mapa, o al momento si un moderador o admin escribe `!syncbans` en el servidor (conviene decirlo en el formulario de "Banear") y no avisa por Discord ni por notificación. Los servidores lo aplican cuando tengan el plugin `csstv_bans` (después del corte).
+Plan: [`docs/bitacora/2026-10-25-baneos-web/`](../../bitacora/2026-10-25-baneos-web/PLAN.md). Un baneo vale en **todos los servidores** (también los externos, como flow), se aplica al conectarse y, a quien ya está jugando (aunque sea un mix), lo echa la sincronización de cada 3 minutos y de cada cambio de mapa, o al momento si un moderador o admin escribe `!syncbans` en el servidor (conviene decirlo en el formulario de "Banear") y no avisa por Discord ni por notificación. Los servidores lo aplican cuando tengan el plugin `csstv_bans` (después del corte).
 
 | Acción | Endpoint | Reglas |
 |---|---|---|
@@ -70,7 +71,7 @@ Plan: [`docs/bitacora/2026-10-28-vip-fase-0/`](../../bitacora/2026-10-28-vip-fas
 | `DELETE /api/v1/admin/servers/{id}` | Solo sin partidas. Con partidas, `400 BUSINESS_RULE`: ofrecer "Revocar" |
 
 - **El token se muestra una sola vez** (la base guarda su hash). Mostrar `cfg` en un cuadro con "Copiar" y avisar que no se vuelve a ver; si se pierde, se genera otro.
-- **`build_command`:** para servidores externos (como RBK), que llevan el build licenciado. Mostrarlo junto al token.
+- **`build_command`:** para servidores externos (como flow), que llevan el build licenciado. Mostrarlo junto al token.
 - **`license_state`:** `ok`; `expiring` (vence en 7 días o menos: aviso amarillo); `expired` (el servidor no puede jugar mixes ni subir resultados: aviso rojo); `revoked`.
 - **`online`:** el servidor validó su licencia en los últimos 35 minutos (lo hace al cargar cada mapa y cada 30 minutos).
 - **IP permitida:** `last_ip` es la IP de la última conexión válida; ofrecer "Usar la última IP" para cargarla en `allowed_ip`.

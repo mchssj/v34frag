@@ -43,20 +43,16 @@ function LegalTable({
 }
 
 const PROVIDERS: [string, string][] = [
-  [
-    "Supabase",
-    "Base de datos, cuentas y archivos (avatares, capturas, evidencia del anticheat)",
-  ],
   ["Cloudflare", "Demos y clips, y parte de la web"],
   [
     "OVH (servidor VPS)",
-    "La API de la web, el matchmaking y el HUD de las transmisiones",
+    "La base de datos, las cuentas y los archivos (avatares, capturas, evidencia del anticheat), la API de la web, el matchmaking y el HUD de las transmisiones",
   ],
   ["Resend", "Envío de los correos de la cuenta"],
   ["Google Drive", "Los videos de los clips"],
   [
     "Discord",
-    "Avisos de !calladmin al staff y publicación de clips en el canal de la liga",
+    "Avisos de !calladmin al staff, el aviso de la cola del matchmaking en #avisos (con el tag de quien avisa) y publicación de clips en el canal de la liga",
   ],
   ["Hosting de la web", "Servir las páginas de la web"],
 ]
@@ -95,7 +91,7 @@ const SECTIONS: LegalSection[] = [
         tema de privacidad, escríbenos a{" "}
         <a href="mailto:cmleaguev34@gmail.com">cmleaguev34@gmail.com</a> o por
         el canal de soporte del Discord (
-        <a href="https://dsc.gg/v34frag">dsc.gg/v34frag</a>).
+        <a href="https://discord.gg/bn5Yxsh9tc">discord.gg/bn5Yxsh9tc</a>).
       </p>
     ),
   },
@@ -108,16 +104,19 @@ const SECTIONS: LegalSection[] = [
         <ul>
           <li>
             Tu correo y tu contraseña. La contraseña se guarda cifrada: nadie
-            del staff puede verla.
+            del staff puede ver la que elegiste. Si un admin te cambia la
+            contraseña por una aleatoria para ayudarte a entrar, la ve una sola
+            vez para pasártela y queda registrado quién lo hizo. Te recomendamos
+            cambiarla apenas entres.
           </li>
           <li>
             Tu <em>tag</em> y lo que agregues a tu perfil: nombre real, país,
             rol en el juego, links de Steam, FACEIT y Discord, avatar,
             biografía, preferencias y nivel de privacidad del perfil.
           </li>
+          <li>La fecha de tu última visita y tus notificaciones.</li>
           <li>
-            La fecha de tu última visita, tus notificaciones, tus partidas
-            favoritas y tus búsquedas guardadas.
+            Tus partidas favoritas y tus búsquedas guardadas <Wip />
           </li>
           <li>
             Tu equipo, tus pedidos (de equipo, de vinculación de ficha) y tus
@@ -153,7 +152,9 @@ const SECTIONS: LegalSection[] = [
         <h3>Lo que subes o escribes</h3>
         <ul>
           <li>Los mensajes del chat de las partidas en la web.</li>
-          <li>Las capturas y notas de los reportes de resultados.</li>
+          <li>
+            Las capturas y notas de los reportes de resultados <Wip />
+          </li>
           <li>
             Tus configs del juego <Wip />. Al publicarlas quitamos las líneas
             con contraseñas que encontramos.
@@ -246,6 +247,13 @@ const SECTIONS: LegalSection[] = [
           según el nivel de privacidad que elijas: público, solo miembros o
           privado.
         </p>
+        <p>
+          En un torneo histórico (el registro de un torneo jugado antes o fuera
+          de la plataforma) publicamos el nombre, la sigla y el logo de los
+          equipos, sus resultados y, si quien lo sube los carga, los jugadores
+          de cada equipo: el torneo aparece en su perfil. Si apareces en uno y
+          quieres que corrijamos o quitemos tu nombre, escríbenos.
+        </p>
       </>
     ),
   },
@@ -268,12 +276,15 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             Varios de estos servicios guardan los datos fuera de la Argentina:
-            la base de datos (Supabase) está en el oeste de Estados Unidos
-            (Oregón) y el servidor VPS (OVH) en Beauharnois, Canadá. Cloudflare,
-            Google, Discord y Resend pueden guardarlos en otros países. Al usar
-            CMLeague prestas tu consentimiento para esa transferencia
-            internacional, en los términos del artículo 12 de la Ley 25.326.
-            Elegimos proveedores con medidas de seguridad reconocidas.
+            la base de datos, las cuentas y los archivos están en nuestro
+            servidor VPS (OVH), en Beauharnois, Canadá. Hasta el 2026-11-03
+            estaban en Supabase, en el oeste de Estados Unidos (Oregón), que
+            guarda una copia de esa fecha hasta borrarla, como mucho el
+            2026-12-03. Cloudflare, Google, Discord y Resend pueden guardarlos
+            en otros países. Al usar CMLeague prestas tu consentimiento para esa
+            transferencia internacional, en los términos del artículo 12 de la
+            Ley 25.326. Elegimos proveedores con medidas de seguridad
+            reconocidas.
           </li>
           <li>Podemos entregar datos si una autoridad lo exige por ley.</li>
         </ul>

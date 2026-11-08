@@ -10,6 +10,12 @@ export const Template = z.enum(['single', 'double', 'groups', 'swiss', 'groups_d
     '`groups_double` grupos de doble eliminación + playoffs',
 });
 export const EventStatus = z.enum(['registration', 'in_progress', 'finished', 'cancelled']);
+export const PrizeCurrency = z.enum(['USD', 'ARS', 'other']).openapi({
+  description: 'Divisa del premio: `USD`, `ARS` (pesos argentinos) u `other` (con `prize_currency_other`, por ejemplo `BRL`)',
+});
+export const EventApproval = z.enum(['pending', 'approved', 'rejected']).openapi({
+  description: '`pending`: lo creó un organizador y espera a un admin o moderador; `approved`; `rejected` (con `approval_note`). Solo lo aprobado se ve para todos',
+});
 
 const Bo = z.union([z.literal(1), z.literal(3), z.literal(5)]);
 const Playoffs = z
@@ -47,6 +53,11 @@ export const EventListQuery = listQuery(['starts_on', 'name', 'status'], { sort:
   game_mode: z.string().max(5).optional().openapi({ description: 'Modo de juego (`5v5`, `2v2`…)' }),
   from: dateParam('Empiezan desde esta fecha'),
   to: dateParam('Empiezan hasta esta fecha'),
+  historic: boolParam('Solo los históricos (`true`) o solo los normales (`false`)'),
+  testing: boolParam('Solo los que están en fase de testing (`true`) o los que no (`false`). Los en testing los ven solo admins y moderadores'),
+  approval: EventApproval.optional(),
+  pending_games: boolParam('Solo los que tienen mixes vinculados por aprobar'),
+  admin_review: boolParam('Solo los que aprueba un admin (`true`: los creó un moderador) o los que aprueba el staff (`false`)'),
 });
 
 export const EventSummary = z
@@ -58,7 +69,10 @@ export const EventSummary = z
     starts_on: z.string().nullable(),
     ends_on: z.string().nullable().openapi({ description: 'Fin tentativo que pone el organizador: el torneo puede terminar antes o después' }),
     finished_at: z.string().nullable().openapi({ description: 'Cuándo terminó de verdad: la última partida jugada. null mientras no terminó (o si sus partidas no tienen fecha)' }),
-    prize: z.string().nullable(),
+    prize: z.string().nullable().openapi({ description: 'Detalle del premio en texto libre (por ejemplo "+ rol en Discord")' }),
+    prize_amount: z.number().nullable().openapi({ description: 'Monto del premio (con `prize_currency`); null: sin monto' }),
+    prize_currency: PrizeCurrency.nullable(),
+    prize_currency_other: z.string().nullable().openapi({ description: 'Nombre de la divisa si `prize_currency` es `other`' }),
     teams: z.number().int().openapi({ description: 'Equipos inscritos' }),
     max_teams: z.number().int().nullable(),
     champion: TeamRef.nullable(),
@@ -75,6 +89,12 @@ export const EventSummary = z
       .openapi({ description: 'Partidas terminadas y armadas hasta ahora (sin libres). null antes de generar el fixture. `total` crece a medida que se arman las rondas siguientes' }),
     banner_url: z.string().nullable().openapi({ description: 'Banner; null: patrón por defecto' }),
     registration_closes_at: z.string().nullable().openapi({ description: 'Cierre de inscripciones. null: hasta que se genera el fixture' }),
+    historic: z.boolean().openapi({ description: 'Torneo histórico: el registro de un torneo ya jugado (sin inscripciones de los capitanes ni avisos)' }),
+    testing: z.boolean().openapi({ description: 'En fase de testing: solo lo ven y lo gestionan admins y moderadores' }),
+    approval: EventApproval,
+    approval_note: z.string().nullable().openapi({ description: 'Motivo del rechazo (lo ven el organizador y el staff)' }),
+    pending_games: z.number().int().openapi({ description: 'Mixes vinculados que esperan aprobación' }),
+    admin_review: z.boolean().openapi({ description: 'Lo creó un moderador: lo aprueba o lo rechaza solo un admin' }),
   })
   .openapi('EventSummary');
 
@@ -172,7 +192,9 @@ export const EventDetail = EventSummary.extend({
   viewer: z
     .object({
       can_manage: z.boolean().openapi({ description: 'Gestiona el torneo: admin, moderador u organizador dueño' }),
-      can_own: z.boolean().openapi({ description: 'Además lo cancela y lo borra: admin u organizador dueño (el moderador no)' }),
+      can_own: z.boolean().openapi({ description: 'Además lo cancela y lo borra: admin, u organizador o moderador que lo creó' }),
+      can_review: z.boolean().openapi({ description: 'Es del staff: aprueba los mixes vinculados y cambia la fase de testing (admin o moderador)' }),
+      can_approve: z.boolean().openapi({ description: 'Aprueba o rechaza este torneo: admin; moderador si no lo creó un moderador (`admin_review`)' }),
     })
     .nullable(),
 }).openapi('EventDetail', {
@@ -193,21 +215,33 @@ export const EventCreate = z
       .openapi({ description: 'Cierre de inscripciones (fecha y hora). Después, solo el organizador o un admin cambian las inscripciones. null: hasta generar el fixture' }),
     starts_on: z.iso.date().nullable().optional(),
     ends_on: z.iso.date().nullable().optional().openapi({ description: 'Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`' }),
-    prize: z.string().trim().max(200).nullable().optional(),
+    prize: z.string().trim().max(200).nullable().optional().openapi({ description: 'Detalle del premio en texto libre' }),
+    prize_amount: z.number().positive().max(9999999999.99).multipleOf(0.01).nullable().optional()
+      .openapi({ description: 'Monto del premio (pide `prize_currency`). null: sin monto' }),
+    prize_currency: PrizeCurrency.nullable().optional().openapi({ description: 'Divisa del monto (pide `prize_amount`)' }),
+    prize_currency_other: z.string().trim().min(1).max(12).nullable().optional()
+      .openapi({ description: 'Nombre de la divisa, solo con `prize_currency` = `other`' }),
     rules: z.string().trim().max(5000).nullable().optional(),
     min_teams: z.number().int().min(2).max(256).nullable().optional(),
     max_teams: z.number().int().min(2).max(256).nullable().optional(),
     map_pool: MapPoolNames.optional().openapi({ description: 'Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto' }),
+    historic: z.boolean().optional().openapi({ description: 'Torneo histórico (pide `starts_on` y `ends_on`). Lo crean admins, moderadores y organizadores. No se cambia después' }),
+    testing: z.boolean().optional().openapi({ description: 'En fase de testing (solo admin o moderador; por defecto `false`)' }),
   })
-  .openapi('EventCreate');
+  .openapi('EventCreate', {
+    description:
+      'Lo que crea un organizador o un moderador queda pendiente de aprobación (`approval`); lo de un admin, aprobado. Lo de un moderador lo ' +
+      'aprueba solo un admin (`admin_review`). El premio: `prize_amount` y `prize_currency` van juntos, y `prize_currency_other` solo con `other`',
+  });
 
-export const EventPatch = EventCreate.partial()
+export const EventPatch = EventCreate.omit({ historic: true })
+  .partial()
   .refine((o) => Object.values(o).some((v) => v !== undefined), { message: 'No hay nada para actualizar.' })
   .openapi('EventPatch');
 
 export const RegistrationBody = z
   .object({
-    active: z.array(z.uuid()).min(1).max(5).openapi({ description: 'Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID' }),
+    active: z.array(z.uuid()).max(10).openapi({ description: 'Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID. En un histórico, de 0 a 10 fichas cualesquiera (sin plantel ni SteamID)' }),
     subs: z.array(z.uuid()).max(4).default([]).openapi({ description: 'Suplentes: hasta `subs_max` del torneo. El coach no se inscribe' }),
     start_stage: z.number().int().min(1).max(3).optional().openapi({ description: 'Suizo: fase en la que empieza (solo el organizador)' }),
   })
@@ -255,3 +289,48 @@ export const GameMode = z
 export const GameModeBody = z
   .object({ code: z.string().max(5), active: z.boolean() })
   .openapi('GameModeBody', { description: 'Habilitar o deshabilitar un modo. Tiene que quedar al menos uno habilitado' });
+
+// ---------- aprobación y torneos históricos ----------
+
+export const ReviewBody = z
+  .object({
+    approve: z.boolean(),
+    note: z.string().trim().max(500).optional().openapi({ description: 'Motivo del rechazo (obligatorio al rechazar; lo ve el organizador)' }),
+  })
+  .refine((b) => b.approve || !!b.note, { message: 'Para rechazarlo escribí el motivo.', path: ['note'] })
+  .openapi('ReviewBody');
+
+export const HistoricTeamBody = z
+  .object({
+    name: z.string().trim().min(2).max(40),
+    tag: z.string().trim().min(1).max(6),
+  })
+  .openapi('HistoricTeamBody', { description: 'Equipo que no está en la plataforma: nombre y sigla. El logo, con PUT /teams/{id}/logo' });
+
+export const SimilarTeamQuery = listQuery(['name'], { sort: 'name', order: 'asc' }, 10).extend({
+  q: z.string().trim().min(2).max(40).openapi({ description: 'Nombre o sigla del equipo que se va a cargar' }),
+});
+export const SimilarTeam = z
+  .object({
+    id: z.uuid(), name: z.string(), tag: z.string().nullable(), logo_url: z.string().nullable(),
+    kind: z.enum(['official', 'historic']).openapi({ description: '`official`: está en la plataforma; `historic`: equipo histórico ya cargado' }),
+  })
+  .openapi('SimilarTeam');
+export const SimilarTeamList = Envelope(SimilarTeam).openapi('SimilarTeamList');
+
+export const PendingGameQuery = listQuery(['played_at'], { sort: 'played_at', order: 'desc' }).extend({
+  match: z.uuid().optional().openapi({ description: 'Solo los de una partida' }),
+});
+export const PendingGame = z
+  .object({
+    game: z
+      .object({
+        id: z.uuid(), map: z.string().nullable(),
+        score1: z.number().int().nullable().openapi({ description: 'Rondas del equipo 1 de la partida' }), score2: z.number().int().nullable(),
+        played_at: z.string().nullable(),
+      })
+      .openapi({ description: 'El mix vinculado (las rondas ya en el orden de los equipos de la partida)' }),
+    match: MatchSummary.openapi({ description: 'La partida de torneo a la que está vinculado' }),
+  })
+  .openapi('PendingGame');
+export const PendingGameList = Envelope(PendingGame).openapi('PendingGameList');

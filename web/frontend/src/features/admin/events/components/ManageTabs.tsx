@@ -22,12 +22,16 @@ import {
 import type { EventDetail, Registration } from "@/features/events/types"
 import { EmptyState, QueryError, TableBox } from "../../components/ui"
 import { fmtDateTime } from "../../lib/format"
+import { teamsIssue } from "../lib/model"
 import {
   useEventAction,
   useRemoveRegistration,
   useUpdateEvent,
 } from "../api/queries"
+import { BannerCard } from "./BannerCard"
+import { VetoTurnCard } from "./VetoTurnCard"
 import { EventForm } from "./EventForm"
+import { HistoricRegistrations } from "./HistoricRegistrations"
 
 const active = (r: Registration) =>
   r.players.filter((p) => p.role === "active").length
@@ -48,12 +52,15 @@ export function SummaryTab({
   const short = regs.filter((r) => active(r) < event.players_per_team)
   const issues: { tone: "bad" | "warn"; text: string }[] = []
   if (event.status === "registration") {
-    if (regs.length < Math.max(2, event.min_teams ?? 2))
+    const format = teamsIssue(event.template, event.config, regs.length)
+    if (format) issues.push({ tone: "bad", text: format })
+    else if (regs.length < Math.max(2, event.min_teams ?? 2))
       issues.push({
         tone: "bad",
         text: `Hacen falta al menos ${Math.max(2, event.min_teams ?? 2)} equipos inscritos (hay ${regs.length}).`,
       })
-    for (const r of short)
+    // Un histórico no pide activos: los jugadores son opcionales.
+    for (const r of event.historic ? [] : short)
       issues.push({
         tone: "bad",
         text: `${r.team.name} tiene ${active(r)} de ${event.players_per_team} activos inscritos: tiene que completarlo o darse de baja.`,
@@ -300,6 +307,11 @@ function TieResolver({ event, grp }: { event: EventDetail; grp: number }) {
 // ---- Inscripciones ----
 
 export function RegistrationsTab({ event }: { event: EventDetail }) {
+  if (event.historic) return <HistoricRegistrations event={event} />
+  return <PlatformRegistrations event={event} />
+}
+
+function PlatformRegistrations({ event }: { event: EventDetail }) {
   const regs = useQuery(eventRegistrationsOptions(event.id))
   const remove = useRemoveRegistration(event.id)
   const [target, setTarget] = useState<Registration | null>(null)
@@ -323,7 +335,7 @@ export function RegistrationsTab({ event }: { event: EventDetail }) {
         {event.subs_max > 0 && ` y hasta ${event.subs_max} suplentes`}.
       </p>
       <TableBox>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground">
@@ -414,6 +426,8 @@ export function ConfigTab({ event }: { event: EventDetail }) {
   const config = event.config as Record<string, unknown>
   return (
     <div className="flex flex-col gap-6">
+      <BannerCard event={event} />
+      {!event.historic && <VetoTurnCard eventId={event.id} />}
       <EventForm
         initial={{
           name: event.name,
@@ -425,10 +439,16 @@ export function ConfigTab({ event }: { event: EventDetail }) {
           ends_on: event.ends_on,
           registration_closes_at: event.registration_closes_at,
           prize: event.prize,
+          prize_amount: event.prize_amount,
+          prize_currency: event.prize_currency,
+          prize_currency_other: event.prize_currency_other,
           max_teams: event.max_teams,
           rules: event.rules,
           map_pool: event.map_pool,
+          historic: event.historic,
+          testing: event.testing,
         }}
+        canTesting={!!event.viewer?.can_review}
         locked={event.status !== "registration"}
         submitLabel="Guardar cambios"
         pending={update.isPending}
@@ -444,9 +464,13 @@ export function ConfigTab({ event }: { event: EventDetail }) {
                   ends_on: v.ends_on,
                   registration_closes_at: v.registration_closes_at,
                   prize: v.prize,
+                  prize_amount: v.prize_amount,
+                  prize_currency: v.prize_currency,
+                  prize_currency_other: v.prize_currency_other,
                   max_teams: v.max_teams,
                   rules: v.rules,
                   ...(v.map_pool ? { map_pool: v.map_pool } : {}),
+                  ...(v.testing !== undefined ? { testing: v.testing } : {}),
                 }
           update.mutate(body, {
             onSuccess: () => toast.success("Torneo guardado."),

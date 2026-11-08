@@ -1,0 +1,10 @@
+CMLeague 2.9.17 --  Changelog
+
+CLIPS DESTACADOS EN TU PERFIL
+- Tu ficha tiene una pestaña nueva, Clips, con tus mejores jugadas: la primera en grande y las demás en un carrusel.
+- En Mi perfil › Clips eliges cómo se arman: en automático se muestran solos tus mejores clips, o con "Elijo yo" marcas con la estrella los que quieras y los ordenas.
+- Puedes destacar hasta 3. Con VIP, hasta 10.
+- También ves los destacados de cualquier jugador en su ficha.
+
+OTROS
+- Los clips que salen mal una y otra vez ahora se pueden quitar de la web, así no quedan videos rotos.

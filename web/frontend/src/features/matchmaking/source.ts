@@ -6,22 +6,28 @@ import type { Schemas } from "@/api/client"
 import { mapImage } from "@/features/maps/lib/catalog"
 import type { MapEntry } from "@/features/maps/types"
 import { env } from "@/lib/env"
+import { syncServerClock } from "./serverClock"
 import type {
   InvitePref,
   MmAdminConfig,
   MmAdminLobby,
   MmAdminBan,
   MmAdminMap,
+  MmAdminPenalty,
   MmAdminReport,
   MmAdminServer,
   MmChatMessage,
   MmEvent,
   MmFeed,
+  MmLobby,
+  MmMatch,
   MmPasswordEntry,
   MmPlayerHit,
+  MmReplaceInfo,
   MmSound,
   MmState,
   MmStatsDay,
+  QueuePingStatus,
   ReportReason,
 } from "./types"
 
@@ -30,11 +36,27 @@ import type {
  * `subscribe` es el socket: avisa que algo cambió y devuelve cómo cortar.
  */
 export type MmSource = {
+  /** El estado completo, como antes (lo usan la demo y las acciones). */
   state(signal?: AbortSignal): Promise<MmState>
+  /** Lo que cambia rápido: cola, sala (sin las estadísticas de la partida), grupo y contadores. */
+  stateLive(signal?: AbortSignal): Promise<Partial<MmState>>
+  /** Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones. */
+  profile(signal?: AbortSignal): Promise<Partial<MmState>>
+  /** La partida de una sala terminada, con las estadísticas y los clips. */
+  lobbyMatch(lobbyId: string, signal?: AbortSignal): Promise<MmMatch | null>
   feed(signal?: AbortSignal): Promise<MmFeed>
   join(mode: string, region: string | null): Promise<MmState>
   setInvitePref(pref: InvitePref): Promise<MmState>
   leave(): Promise<MmState>
+  /** Aviso de la cola en Discord (#avisos). */
+  queuePingStatus(signal?: AbortSignal): Promise<QueuePingStatus>
+  queuePing(): Promise<QueuePingStatus>
+  /** Link de reemplazo de Discord: la partida y si lo puedo tomar. */
+  replaceInfo(token: string, signal?: AbortSignal): Promise<MmReplaceInfo>
+  /** La sala de una partida del matchmaking terminada (el detalle de la partida); null si no es de una sala. */
+  gameRoom(gameId: string, signal?: AbortSignal): Promise<MmLobby | null>
+  /** Entrar como reemplazo: devuelve el estado con la sala. */
+  replaceTake(token: string): Promise<MmState>
   accept(): Promise<MmState>
   decline(): Promise<MmState>
   veto(matchId: string, map: string): Promise<MmState>
@@ -74,6 +96,9 @@ export type MmSource = {
   rotatePassword(serverId: string): Promise<MmPasswordEntry>
   adminConfig(signal?: AbortSignal): Promise<MmAdminConfig>
   saveConfig(config: MmAdminConfig): Promise<MmAdminConfig>
+  /** Imagen de la tarjeta del MVP (4:1). */
+  uploadMvpImage(file: Blob): Promise<{ url: string }>
+  deleteMvpImage(): Promise<{ url: null }>
   adminMaps(mode: string, signal?: AbortSignal): Promise<MmAdminMap[]>
   /** Los mapas del veto de ese modo, en orden. */
   saveMaps(mode: string, names: string[]): Promise<MmAdminMap[]>
@@ -85,6 +110,9 @@ export type MmSource = {
   ): Promise<void>
   adminBans(signal?: AbortSignal): Promise<MmAdminBan[]>
   unban(userId: string): Promise<void>
+  adminPenalties(signal?: AbortSignal): Promise<MmAdminPenalty[]>
+  /** Corta la espera y baja un nivel de la escalera (replanteo 61). */
+  liftPenalty(userId: string, reason: string): Promise<void>
   adminStats(days: number, signal?: AbortSignal): Promise<MmStatsDay[]>
   setServerEnabled(serverId: string, enabled: boolean): Promise<MmAdminServer>
   adminLobbies(signal?: AbortSignal): Promise<MmAdminLobby[]>
@@ -102,6 +130,7 @@ async function call<T>(
   init?: RequestInit & { signal?: AbortSignal }
 ): Promise<T> {
   let res: Response
+  const started = Date.now()
   try {
     res = await authFetch(`${env.apiUrl}${path}`, init)
   } catch (e) {
@@ -110,6 +139,8 @@ async function call<T>(
   }
   const body: unknown = await res.json().catch(() => undefined)
   if (!res.ok) throw errorFromResponse(res, body)
+  if (body && typeof body === "object" && "server_now" in body)
+    syncServerClock(body.server_now, Date.now() - started)
   return body as T
 }
 
@@ -121,8 +152,21 @@ const send = <T>(path: string, body: unknown, method = "POST") =>
     body: JSON.stringify(body),
   })
 
+/** Imagen de la tarjeta del MVP, para el detalle de un mix (fuera de /play). */
+export const fetchMvpImage = (signal?: AbortSignal) =>
+  call<{ url: string | null }>("/api/v1/mm/mvp-image", { signal }).then(
+    (r) => r.url
+  )
+
 export function createApiSource(openSocket: MmSocketFactory): MmSource {
   return {
+    uploadMvpImage: (file) => {
+      const body = new FormData()
+      body.set("file", file, "mvp.webp")
+      return call("/api/v1/admin/mm/mvp-image", { method: "PUT", body })
+    },
+    deleteMvpImage: () =>
+      call("/api/v1/admin/mm/mvp-image", { method: "DELETE" }),
     state: (signal) => call("/api/v1/mm/state", { signal }),
     // Rutas que ya existen. Cada una puede fallar sola (sin sesión no hay "mis partidas").
     feed: async (signal) => {
@@ -175,7 +219,19 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       await send("/api/v1/me/profile", { preferences: { mm_invites } }, "PATCH")
       return call("/api/v1/mm/state")
     },
+    stateLive: (signal) => call("/api/v1/mm/state/live", { signal }),
+    profile: (signal) => call("/api/v1/mm/profile", { signal }),
+    lobbyMatch: (id, signal) =>
+      call(`/api/v1/mm/lobbies/${id}/match`, { signal }),
     leave: () => call("/api/v1/mm/queue", { method: "DELETE" }),
+    queuePingStatus: (signal) => call("/api/v1/mm/queue/ping", { signal }),
+    queuePing: () => call("/api/v1/mm/queue/ping", { method: "POST" }),
+    replaceInfo: (token, signal) =>
+      call(`/api/v1/mm/replace/${encodeURIComponent(token)}`, { signal }),
+    replaceTake: (token) =>
+      post(`/api/v1/mm/replace/${encodeURIComponent(token)}`),
+    gameRoom: (id, signal) =>
+      call(`/api/v1/mm/games/${encodeURIComponent(id)}/room`, { signal }),
     accept: () => post("/api/v1/mm/lobby/accept"),
     decline: () => post("/api/v1/mm/lobby/decline"),
     // Veto y chat: las rutas de partida que ya existen (la partida se crea al empezar el veto).
@@ -298,6 +354,11 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     unban: (user) =>
       call(`/api/v1/admin/mm/bans/${encodeURIComponent(user)}`, {
         method: "DELETE",
+      }),
+    adminPenalties: (signal) => call("/api/v1/admin/mm/penalties", { signal }),
+    liftPenalty: (user, reason) =>
+      send(`/api/v1/admin/mm/penalties/${encodeURIComponent(user)}/lift`, {
+        reason,
       }),
     adminStats: (days, signal) =>
       call(`/api/v1/admin/mm/stats?days=${days}`, { signal }),

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
-export const STATUS_TABS = ["active", "expired", "lifted", "all"] as const
+// "mm": las sanciones del matchmaking (cola y exclusiones), que no son baneos de los servidores.
+export const STATUS_TABS = ["active", "expired", "lifted", "all", "mm"] as const
 
 /** Filtros de la URL de `/admin/bans` (todos opcionales; sin estado = Activos). */
 export const banSearchSchema = z.object({

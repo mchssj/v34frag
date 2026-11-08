@@ -40,6 +40,7 @@ import {
   userVipOptions,
 } from "../api/queries"
 import type { AccountFilter, AdminUser, SettableRole, VipGrant } from "../types"
+import { AccountSection } from "./AccountSection"
 import { StreamerSection } from "./StreamerSection"
 
 const ROLE_TONE: Record<string, Tone> = {
@@ -177,7 +178,7 @@ export function AccountsTab({
         ) : (
           <PickHint
             title="Elige una cuenta"
-            text="Acá cambias el alias, el rol, el VIP y la marca de streamer."
+            text="Acá cambias el alias, el rol, el acceso, el VIP y la marca de streamer."
           />
         )
       }
@@ -344,6 +345,8 @@ function AccountPanel({ u, onClose }: { u: AdminUser; onClose: () => void }) {
           </div>
         )}
       </PanelSection>
+
+      <AccountSection u={u} />
 
       <VipSection u={u} />
 

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
-import { Controller, useForm, type Control } from "react-hook-form"
+import { Controller, useForm, useWatch, type Control } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -19,6 +19,8 @@ import { Switch } from "@/components/ui/switch"
 import { adminConfigOptions, useMmAdminMutation } from "../queries"
 import { useMmSource } from "../source"
 import type { MmAdminConfig } from "../types"
+import { balanceAdjust } from "./balance"
+import { MvpImageCard } from "./MvpImageCard"
 
 // Administración › Matchmaking › General: todo `mm_config` y los modos (plan, sección 7).
 
@@ -58,6 +60,22 @@ const schema = z
     elo_window_every_s: int(5, 300),
     elo_window_max: int(0, 3000),
     elo_unlimited_after_s: int(30, 3600),
+    balance_rating: z.boolean(),
+    balance_rating_weight: int(0, 1000),
+    balance_rating_cap: int(0, 500),
+    balance_rating_prior_maps: int(0, 100),
+    balance_rating_days: int(1, 365),
+    replace_enabled: z.boolean(),
+    replace_link_minutes: int(1, 60),
+    replace_min_rounds_left: int(0, 30),
+    replace_vote_pct: int(50, 100),
+    replace_vote_seconds: int(10, 120),
+    replace_vote_cooldown_s: int(0, 600),
+    // (replanteo 78) ELO que pierde el que abandona.
+    abandon_win_min: int(0, 50),
+    abandon_win_max: int(0, 50),
+    abandon_loss_min: int(0, 50),
+    abandon_loss_max: int(0, 50),
     // "5, 15, 60, 1440": minutos de cada escalón.
     penalty_ladder: z
       .string()
@@ -71,6 +89,14 @@ const schema = z
     path: ["elo_window_max"],
     message: "No puede ser menor que el inicio",
   })
+  .refine((v) => v.abandon_win_max >= v.abandon_win_min, {
+    path: ["abandon_win_max"],
+    message: "No puede ser menor que el mínimo",
+  })
+  .refine((v) => v.abandon_loss_max >= v.abandon_loss_min, {
+    path: ["abandon_loss_max"],
+    message: "No puede ser menor que el mínimo",
+  })
 
 type Values = z.input<typeof schema>
 
@@ -83,7 +109,12 @@ export function GeneralForm() {
   const source = useMmSource()
   const { data } = useQuery(adminConfigOptions(source))
   if (!data) return <Skeleton className="h-96 w-full rounded-xl" />
-  return <Form initial={data} />
+  return (
+    <div className="flex flex-col gap-4">
+      <MvpImageCard url={data.mvp_image_url ?? null} />
+      <Form initial={data} />
+    </div>
+  )
 }
 
 function Form({ initial }: { initial: MmAdminConfig }) {
@@ -301,6 +332,120 @@ function Form({ initial }: { initial: MmAdminConfig }) {
       </Section>
 
       <Section
+        title="Equipos parejos con el rating"
+        description="Encendido, los equipos se reparten con el ELO más un ajuste por el rating de las partidas 5v5 recientes. Quién entra a la sala y el ELO que se gana o pierde siguen con el ELO. Apagado, se reparten solo con el ELO."
+      >
+        <Controller
+          control={c}
+          name="balance_rating"
+          render={({ field }) => (
+            <label className="flex items-center gap-3 text-sm">
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
+              {field.value ? "Encendido" : "Apagado"}
+            </label>
+          )}
+        />
+        <Grid>
+          <NumberField
+            control={c}
+            name="balance_rating_weight"
+            label="Puntos por cada 1,00 de rating"
+          />
+          <NumberField
+            control={c}
+            name="balance_rating_cap"
+            label="Tope del ajuste (±)"
+          />
+          <NumberField
+            control={c}
+            name="balance_rating_prior_maps"
+            label="Mapas de corrección"
+          />
+          <NumberField
+            control={c}
+            name="balance_rating_days"
+            label="Días que se miran"
+          />
+        </Grid>
+        <BalanceExample control={c} />
+      </Section>
+
+      <Section
+        title="Reemplazos"
+        description="Encendido, cuando alguien abandona una sala en vivo sale un aviso en Discord con un link de un solo uso para entrar en su lugar. Con !callreplace, su equipo puede votar para no esperar los minutos de reconexión."
+      >
+        <Controller
+          control={c}
+          name="replace_enabled"
+          render={({ field }) => (
+            <label className="flex items-center gap-3 text-sm">
+              <Switch
+                aria-label="Reemplazos"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+              {field.value ? "Encendido" : "Apagado"}
+            </label>
+          )}
+        />
+        <Grid>
+          <NumberField
+            control={c}
+            name="replace_link_minutes"
+            label="El link vence a los (min)"
+          />
+          <NumberField
+            control={c}
+            name="replace_min_rounds_left"
+            label="No llamar si quedan menos rondas que"
+          />
+          <NumberField
+            control={c}
+            name="replace_vote_pct"
+            label="!callreplace pasa con más del (%)"
+          />
+          <NumberField
+            control={c}
+            name="replace_vote_seconds"
+            label="Duración del voto (s)"
+          />
+          <NumberField
+            control={c}
+            name="replace_vote_cooldown_s"
+            label="Espera entre votos (s)"
+          />
+        </Grid>
+      </Section>
+
+      <Section
+        title="ELO del que abandona"
+        description="Lo que pierde quien abandona, según la parte de la partida que no jugó: irse al principio da el máximo y cerca del final, el mínimo. Si su equipo perdió o empató, nunca pierde menos que una derrota normal. La sanción fuerte es la espera de Sanciones."
+      >
+        <Grid>
+          <NumberField
+            control={c}
+            name="abandon_win_min"
+            label="Su equipo ganó: mínimo"
+          />
+          <NumberField
+            control={c}
+            name="abandon_win_max"
+            label="Su equipo ganó: máximo"
+          />
+          <NumberField
+            control={c}
+            name="abandon_loss_min"
+            label="Perdió o empató: mínimo"
+          />
+          <NumberField
+            control={c}
+            name="abandon_loss_max"
+            label="Perdió o empató: máximo"
+          />
+        </Grid>
+      </Section>
+
+      <Section
         title="Sanciones"
         description="Minutos de cada escalón; baja uno cada 7 días sin faltas."
       >
@@ -360,10 +505,14 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <Card size="sm">
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+        <CardTitle className="text-[15px] font-semibold">{title}</CardTitle>
+        {description && (
+          <CardDescription className="text-[13px] leading-relaxed">
+            {description}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">{children}</CardContent>
     </Card>
@@ -376,9 +525,39 @@ function Grid({ children }: { children: React.ReactNode }) {
   )
 }
 
+const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0")
+
+/** Dos casos con los valores del formulario, para ver cuánto pesa. */
+function BalanceExample({ control }: { control: Control<Values> }) {
+  const [weight, cap, prior] = useWatch({
+    control,
+    name: [
+      "balance_rating_weight",
+      "balance_rating_cap",
+      "balance_rating_prior_maps",
+    ],
+  }).map(Number)
+  if (![weight, cap, prior].every(Number.isFinite)) return null
+  const cfg = { weight, cap, prior }
+  return (
+    <p className="text-xs text-muted-foreground">
+      Ejemplo: con 1,40 de rating en 20 mapas, el ELO de armado es{" "}
+      {signed(balanceAdjust(1.4, 20, cfg))}; con 0,80 en 20 mapas,{" "}
+      {signed(balanceAdjust(0.8, 20, cfg))}; con 1,90 en 2 mapas,{" "}
+      {signed(balanceAdjust(1.9, 2, cfg))}. Sin partidas, 0.
+    </p>
+  )
+}
+
 type NumberName = Exclude<
   keyof Values,
-  "open" | "modes" | "penalty_ladder" | "require_anticheat" | "blocks_vip_only"
+  | "open"
+  | "modes"
+  | "penalty_ladder"
+  | "require_anticheat"
+  | "blocks_vip_only"
+  | "balance_rating"
+  | "replace_enabled"
 >
 
 function NumberField({

@@ -1,10 +1,15 @@
 // Valores fijos: la API todavía no los expone (ver "Pedidos al backend" en la bitácora
 // 2026-10-16-frontend-diseno-landing-auth). Reemplazar por datos reales cuando existan.
 
+/** Links de la comunidad (Daniel, 2026-11-05): la tarjeta "Comunidad" de "Para ti" y la landing. */
+export const COMMUNITY = {
+  discordUrl: "https://discord.gg/bn5Yxsh9tc",
+  steamGroupUrl: "https://steamcommunity.com/groups/clientmodleague",
+}
+
+/** La tarjeta del Discord en el inicio. Los números (en línea y miembros) los da la API: GET /api/v1/community/discord. */
 export const DISCORD = {
-  inviteUrl: "https://dsc.gg/v34frag",
-  online: 214,
-  members: 1386,
+  inviteUrl: COMMUNITY.discordUrl,
   channels: ["buscar-equipo", "pcw", "torneos", "soporte"],
 }
 

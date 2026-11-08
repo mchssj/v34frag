@@ -33,6 +33,10 @@
     .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
     .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
     .hint.warn { color: var(--t); }
+    .hint.bad { color: var(--bad); }
+    .delay { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .delay input[type=number] { width: 80px; padding: 8px 10px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; font-size: 15px; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     .connect { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
     .connect code { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; font-size: 14px; }
     .fmt { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
@@ -58,6 +62,11 @@
       <h2>Servidor</h2>
       <section id="servers"></section>
       <div class="hint">● recibiendo datos · ○ sin datos. Conectate a la SourceTV con el connect de abajo.</div>
+    </div>
+
+    <div id="delay-section" hidden>
+      <h2>Retraso</h2>
+      <section id="delay"></section>
     </div>
 
     <h2>Equipos</h2>

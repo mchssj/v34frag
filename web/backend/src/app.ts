@@ -14,7 +14,6 @@ import { account } from './routes/account';
 import { anticheat } from './routes/anticheat';
 import { anticheatEvidence } from './routes/anticheat-evidence';
 import { adminDemos } from './routes/admin-demos';
-import { adminMedals } from './routes/admin-medals';
 import { adminPlayers } from './routes/admin-players';
 import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
@@ -30,6 +29,7 @@ import { elo } from './routes/elo';
 import { events } from './routes/events';
 import { live } from './routes/live';
 import { manual as manualRoutes } from './routes/manual';
+import { medals } from './routes/medals';
 import { matches } from './routes/matches';
 import { me } from './routes/me';
 import { mixes } from './routes/mixes';
@@ -97,10 +97,10 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', anticheatEvidence);
   app.route('/', claim); // antes que players: /players/unclaimed no es un {id}
   app.route('/', ranking); // antes que players: /players/compare no es un {id}
+  app.route('/', medals); // antes que players: /players/{id}/medals/progress
   app.route('/', players);
   app.route('/', teams);
   app.route('/', roster);
-  app.route('/', adminMedals);
   app.route('/', adminPlayers);
   app.route('/', adminTeams);
   app.route('/', adminServers);

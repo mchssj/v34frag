@@ -16,6 +16,7 @@ import {
 } from "../lib/model"
 import { eventListOptions } from "../api/queries"
 import type { EventSummary } from "../types"
+import { EventMarks } from "../components/EventMarks"
 import { EmptyBox, EventBanner, StatusChip } from "../components/ui"
 
 export type ListFilter = "registration" | "in_progress" | "finished"
@@ -118,7 +119,10 @@ function EventCard({ event }: { event: EventSummary }) {
         </EventBanner>
         <div className="flex flex-col gap-2.5 px-4 py-3.5">
           <div className="flex flex-col gap-0.5">
-            <span className="text-base font-semibold">{event.name}</span>
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="text-base font-semibold">{event.name}</span>
+              <EventMarks event={event} />
+            </span>
             <span className="text-[13px] text-muted-foreground">
               {event.game_mode} · {TEMPLATE_LABEL[event.template]}
               {bo && ` · ${bo}`}
@@ -133,7 +137,7 @@ function EventCard({ event }: { event: EventSummary }) {
             </div>
             <div className="flex flex-col gap-0.5">
               <dt className="text-muted-foreground">Premio</dt>
-              <dd className="font-medium">{prizeText(event.prize)}</dd>
+              <dd className="font-medium">{prizeText(event)}</dd>
             </div>
           </dl>
           <div className="flex flex-col gap-1.5">

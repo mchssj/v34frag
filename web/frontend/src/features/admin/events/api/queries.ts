@@ -16,15 +16,26 @@ export const adminEventKeys = {
   list: (f: object) => ["admin", "events", "list", f] as const,
   candidates: (matchId: string) =>
     ["admin", "events", "candidates", matchId] as const,
+  pendingGames: (f: object) => ["admin", "events", "pending-games", f] as const,
 }
 
 export type AdminEventFilters = {
   status?: EventStatus
+  approval?: "pending" | "approved" | "rejected"
+  historic?: boolean
+  testing?: boolean
+  pending_games?: boolean
+  /** (replanteo 84) true: los que aprueba solo un admin (los creó un moderador); false: los que aprueba el staff. */
+  admin_review?: boolean
   q?: string
   /** El organizador ve solo los suyos (id de usuario). */
   organizer?: string
   page: number
 }
+
+// Los filtros booleanos viajan como texto en la URL.
+const flag = (v: boolean | undefined) =>
+  v === undefined ? undefined : v ? ("true" as const) : ("false" as const)
 
 export function adminEventsOptions(f: AdminEventFilters) {
   return queryOptions({
@@ -35,6 +46,11 @@ export function adminEventsOptions(f: AdminEventFilters) {
           params: {
             query: {
               status: f.status,
+              approval: f.approval,
+              historic: flag(f.historic),
+              testing: flag(f.testing),
+              pending_games: flag(f.pending_games),
+              admin_review: flag(f.admin_review),
               q: f.q || undefined,
               organizer: f.organizer,
               page: f.page,
@@ -79,16 +95,70 @@ export const serversOptions = queryOptions({
   staleTime: 5 * 60_000,
 })
 
-export function gameCandidatesOptions(matchId: string) {
+export type CandidateFilters = {
+  from?: string
+  to?: string
+  map?: string
+  server?: string
+  page?: number
+}
+export const CANDIDATES_PER = 20
+
+/** Mixes para vincular a una partida (en un histórico, sin el límite de 14 días y con filtros). */
+export function gameCandidatesOptions(
+  matchId: string,
+  f: CandidateFilters = {}
+) {
   return queryOptions({
-    queryKey: adminEventKeys.candidates(matchId),
+    queryKey: [...adminEventKeys.candidates(matchId), f] as const,
     queryFn: ({ signal }) =>
       unwrap(
         api.GET("/api/v1/matches/{id}/games/candidates", {
-          params: { path: { id: matchId } },
+          params: {
+            path: { id: matchId },
+            query: {
+              from: f.from || undefined,
+              to: f.to || undefined,
+              map: f.map || undefined,
+              server: f.server || undefined,
+              page: f.page ?? 1,
+              per: CANDIDATES_PER,
+            },
+          },
           signal,
         })
       ),
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** Mixes vinculados por un organizador que esperan aprobación (admin o moderador). */
+export function pendingGamesOptions(f: { match?: string; page?: number }) {
+  return queryOptions({
+    queryKey: adminEventKeys.pendingGames(f),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/pending-games", {
+          params: { query: { match: f.match, page: f.page ?? 1, per: 50 } },
+          signal,
+        })
+      ),
+  })
+}
+
+/** Equipos con un nombre parecido, antes de cargar uno histórico. */
+export function similarTeamsOptions(eventId: string, q: string) {
+  return queryOptions({
+    queryKey: ["admin", "events", "similar", eventId, q] as const,
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/events/{id}/similar-teams", {
+          params: { path: { id: eventId }, query: { q } },
+          signal,
+        })
+      ),
+    enabled: q.trim().length >= 2,
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -120,6 +190,38 @@ export function useUpdateEvent(id: string) {
     mutationFn: (body: Schemas["EventPatch"]) =>
       unwrap(
         api.PATCH("/api/v1/events/{id}", { params: { path: { id } }, body })
+      ),
+    onSuccess: () => invalidate(id),
+  })
+}
+
+/** Banner del torneo, ya recortado a 4:1 (quien gestiona el torneo). */
+export function useUploadBanner(id: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: (blob: Blob) => {
+      const form = new FormData()
+      form.append("file", blob, "banner.jpg")
+      return unwrap(
+        api.PUT("/api/v1/events/{id}/banner", {
+          params: { path: { id } },
+          // El schema tipa el archivo como string (binary): el multipart se arma a mano.
+          body: { file: "" },
+          bodySerializer: () => form,
+        })
+      )
+    },
+    onSuccess: () => invalidate(id),
+  })
+}
+
+/** Quita el banner: vuelve el patrón por defecto. */
+export function useRemoveBanner(id: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.DELETE("/api/v1/events/{id}/banner", { params: { path: { id } } })
       ),
     onSuccess: () => invalidate(id),
   })
@@ -243,6 +345,108 @@ export function useMatchResult(eventId: string) {
         api.POST("/api/v1/matches/{id}/result", {
           params: { path: { id: matchId } },
           body,
+        })
+      ),
+    onSuccess: (_, { matchId }) => {
+      invalidate(eventId)
+      void qc.invalidateQueries({ queryKey: ["match", matchId] })
+    },
+  })
+}
+
+/** Aprobar o rechazar un torneo pendiente (admin o moderador). */
+export function useReviewEvent(id: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: (body: Schemas["ReviewBody"]) =>
+      unwrap(
+        api.POST("/api/v1/events/{id}/review", {
+          params: { path: { id } },
+          body,
+        })
+      ),
+    onSuccess: () => invalidate(id),
+  })
+}
+
+/** El organizador vuelve a enviar un torneo rechazado. */
+export function useResubmitEvent(id: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.POST("/api/v1/events/{id}/resubmit", { params: { path: { id } } })
+      ),
+    onSuccess: () => invalidate(id),
+  })
+}
+
+/** Inscribir (o cambiar los jugadores de) un equipo: en un histórico, de 0 a 10 fichas cualesquiera. */
+export function useRegisterTeam(eventId: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: ({ teamId, players }: { teamId: string; players: string[] }) =>
+      unwrap(
+        api.PUT("/api/v1/events/{id}/registrations/{teamId}", {
+          params: { path: { id: eventId, teamId } },
+          body: { active: players, subs: [] },
+        })
+      ),
+    onSuccess: () => invalidate(eventId),
+  })
+}
+
+/** Cargar un equipo que no está en la plataforma (torneo histórico). */
+export function useCreateHistoricTeam(eventId: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: (body: Schemas["HistoricTeamBody"]) =>
+      unwrap(
+        api.POST("/api/v1/events/{id}/historic-teams", {
+          params: { path: { id: eventId } },
+          body,
+        })
+      ),
+    onSuccess: () => invalidate(eventId),
+  })
+}
+
+/** Corregir el nombre y la sigla de un equipo histórico. */
+export function useUpdateHistoricTeam(eventId: string) {
+  const invalidate = useInvalidateEvent()
+  return useMutation({
+    mutationFn: ({
+      teamId,
+      ...body
+    }: { teamId: string } & Schemas["HistoricTeamBody"]) =>
+      unwrap(
+        api.PATCH("/api/v1/historic-teams/{id}", {
+          params: { path: { id: teamId } },
+          body,
+        })
+      ),
+    onSuccess: () => invalidate(eventId),
+  })
+}
+
+/** Aprobar o rechazar un mix vinculado (admin o moderador). Rechazado, queda el marcador a mano. */
+export function useReviewGame(eventId: string) {
+  const invalidate = useInvalidateEvent()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      matchId,
+      gameId,
+      approve,
+    }: {
+      matchId: string
+      gameId: string
+      approve: boolean
+    }) =>
+      unwrap(
+        api.POST("/api/v1/matches/{id}/games/{gameId}/review", {
+          params: { path: { id: matchId, gameId } },
+          body: { approve },
         })
       ),
     onSuccess: (_, { matchId }) => {

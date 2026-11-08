@@ -546,3 +546,86 @@ describe("pestañas de estadísticas", () => {
     expect(screen.queryByRole("region", { name: "Bando Zeta" })).toBeNull()
   })
 })
+
+describe("partida del matchmaking (replanteo 78)", () => {
+  const mmPlayer = (id: string, team: 1 | 2) => ({
+    player_id: id,
+    nick: id,
+    level: 5,
+    elo: 1000,
+    team,
+    party_id: null,
+    is_captain: true,
+    accepted: true,
+    connected: true,
+    left_until: null,
+    abandoned: false,
+    is_me: false,
+    photo_url: null,
+    country: null,
+    anticheat: false,
+    form: [],
+    fav_map: null,
+    meetings: { with: [], against: [] },
+    elo_trend: null,
+    recent: null,
+  })
+  const room = {
+    id: "lobby-1",
+    mode: "5v5",
+    region: null,
+    status: "finished",
+    map: "de_tuscan",
+    accept_deadline: null,
+    veto: null,
+    connect_deadline: null,
+    players: [mmPlayer("Zeta", 1), mmPlayer("Vasco", 2)],
+    match_id: "serie-1",
+    end_reason: null,
+    replacements: [],
+    match: {
+      score1: 16,
+      score2: 12,
+      halves: null,
+      rounds: 28,
+      winner: 1,
+      played_at: "2026-11-06T21:40:00Z",
+      demo_url: null,
+      clips: [],
+      stats: [],
+    },
+  }
+
+  it("un juego de una sala abre la sala, con las pestañas", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(detail({ parent_match_id: "serie-1" }))
+      ),
+      http.get(`${API}/api/v1/mm/games/m-1/room`, () => HttpResponse.json(room))
+    )
+    renderWithQuery(wrap(<MixMatchRoom id="m-1" />))
+
+    expect(await screen.findByText("Partida del matchmaking")).toBeVisible()
+    expect(
+      screen.getByRole("tab", { name: "Descripción general" })
+    ).toHaveAttribute("aria-selected", "true")
+    expect(screen.getByRole("tab", { name: "Estadísticas" })).toBeEnabled()
+    expect(screen.getAllByText("Esta partida")).toHaveLength(2)
+  })
+
+  it("si no es de una sala (null), la sala de mix de siempre", async () => {
+    profileAnswer()
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(detail({ parent_match_id: "torneo-1" }))
+      ),
+      http.get(`${API}/api/v1/mm/games/m-1/room`, () => HttpResponse.json(null))
+    )
+    renderWithQuery(wrap(<MixMatchRoom id="m-1" />))
+
+    expect(await screen.findByText("FINAL")).toBeVisible()
+    expect(screen.getByRole("region", { name: "Bando Zeta" })).toBeVisible()
+    expect(screen.queryByText("Partida del matchmaking")).toBeNull()
+  })
+})

@@ -1,15 +1,17 @@
-import { cn } from "cn"
 import { LoaderIcon, PlayIcon, Share2Icon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { Carousel } from "@/components/brand/Carousel"
+import { ClipCard } from "@/components/brand/ClipCard"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { clipKind } from "@/features/series/lib/series"
 import type { MmClip, MmPlayer } from "../types"
 import { clipTitle } from "./roomData"
 
 // Lo más destacado de la partida: los clips (GET /matches/{id}/clips), ya ordenados por la base. El
-// elegido va grande; los demás, en una fila que se desplaza (plan, sección 7).
+// elegido va grande; todos, en un Carousel con la foto del mapa (plan docs/bitacora/2026-11-04-carrusel-unico).
 
 export function Highlights({
   clips,
@@ -18,7 +20,8 @@ export function Highlights({
   poster,
 }: {
   clips: MmClip[]
-  players: MmPlayer[]
+  /** Para la foto de quien hizo la jugada. */
+  players: Pick<MmPlayer, "player_id" | "photo_url">[]
   mapName: string | null
   poster: string | null
 }) {
@@ -71,37 +74,39 @@ export function Highlights({
           </Button>
         </div>
       </div>
-      <ul aria-label="Más jugadas" className="flex gap-3 overflow-x-auto pb-2">
-        {clips.map((c) => (
-          <li key={c.id} className="shrink-0">
-            <button
-              type="button"
-              aria-pressed={c.id === clip.id}
-              onClick={() => setCurrent(c.id)}
-              className={cn(
-                "relative flex h-28 w-48 flex-col justify-start overflow-hidden rounded-xl border bg-muted p-3 text-left text-white",
-                c.id === clip.id && "ring-2 ring-primary"
-              )}
-            >
-              {poster && (
-                <img
-                  src={poster}
-                  alt=""
-                  aria-hidden
-                  className="absolute inset-0 -z-0 size-full object-cover opacity-70"
-                />
-              )}
-              <span className="relative text-sm font-semibold drop-shadow">
-                {clipTitle(c, mapName)}
-              </span>
-              <span className="relative text-xs text-white/80 drop-shadow">
-                {c.nick}
-                {c.video.status !== "done" && " · grabando"}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <Carousel
+        label="Más jugadas"
+        as="ul"
+        title={<h3 className="text-[15px] font-semibold">Más jugadas</h3>}
+      >
+        {clips.map((c, i) => {
+          const recording =
+            c.video.status === "pending" || c.video.status === "processing"
+          const ready = c.video.status === "done"
+          return (
+            <li key={c.id}>
+              <ClipCard
+                kind={clipKind(c.type)}
+                who={c.nick}
+                detail={[
+                  mapName,
+                  `ronda ${c.round}`,
+                  recording ? "grabando" : !ready ? "sin video" : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+                image={poster}
+                seconds={c.video.seconds}
+                state={recording ? "recording" : ready ? "ready" : "none"}
+                featured={i === 0}
+                selected={c.id === clip.id}
+                onSelect={() => setCurrent(c.id)}
+                label={`Ver ${clipTitle(c, mapName)} de ${c.nick}`}
+              />
+            </li>
+          )
+        })}
+      </Carousel>
     </section>
   )
 }

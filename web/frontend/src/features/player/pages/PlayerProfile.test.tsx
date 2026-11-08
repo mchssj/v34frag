@@ -176,6 +176,10 @@ function api(
     http.get(`${API}/api/v1/players/Zeta`, () =>
       HttpResponse.json(o.detail ?? detail())
     ),
+    // Clips destacados (replanteo 76): por id, sin destacados salvo que el caso los pida.
+    http.get(`${API}/api/v1/players/:id/clips/featured`, () =>
+      HttpResponse.json({ items: [] })
+    ),
     http.get(`${API}/api/v1/players/Zeta/elo-history`, () =>
       HttpResponse.json(
         page([
@@ -206,7 +210,17 @@ function api(
         page([
           {
             title: "CAMPEÓN TORNEO TITAN 2",
-            icon: "🏆",
+            design: {
+              id: "00000000-0000-4000-8000-000000000001",
+              key: "campeon_torneo",
+              template: "campeon_torneo",
+              title: "Campeón de torneo",
+              number: null,
+              label: "CM LEAGUE",
+              band: "CAMPEÓN",
+              metal: "oro",
+              accent: "campeon",
+            },
             count: 1,
             last_at: "",
           },
@@ -283,6 +297,62 @@ function renderProfile(search: PlayerSearch = {}) {
 }
 
 describe("Perfil público", () => {
+  it("la pestaña Clips aparece solo con destacados y muestra el primero", async () => {
+    const featured = {
+      clip: {
+        id: "c1",
+        position: 1,
+        type: "ace",
+        priority: 1,
+        round: 14,
+        round_seconds: 20,
+        round_won: true,
+        player: null,
+        game_nick: "Zeta",
+        steam_id: null,
+        kills: 5,
+        kill_ticks: [],
+        clutch_vs: null,
+        clutch_start_tick: null,
+        end_tick: null,
+        tickrate: 66,
+        demo_seconds: 1,
+        video: {
+          status: "done",
+          url: "https://clips.test/a.mp4",
+          embed_url: null,
+          seconds: 21,
+        },
+        vip: false,
+        review: null,
+      },
+      match: { id: "m1", map: "de_dust2", played_at: "2026-11-02T20:00:00Z" },
+    }
+    api({
+      extra: [
+        http.get(`${API}/api/v1/players/:id/clips/featured`, () =>
+          HttpResponse.json({ items: [featured] })
+        ),
+      ],
+    })
+    renderProfile({ tab: "clips" })
+    expect(
+      await screen.findByRole("tab", { name: /Clips/ })
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole("heading", { name: "ACE en de_dust2" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("Destacado 1 de 1")).toBeInTheDocument()
+  })
+
+  it("sin destacados no hay pestaña Clips", async () => {
+    api()
+    renderProfile()
+    await screen.findByRole("heading", { name: "Zeta" })
+    await screen.findByRole("tab", { name: /Resumen/ })
+    expect(screen.queryByRole("tab", { name: /Clips/ })).not.toBeInTheDocument()
+  })
+
   it("cabecera, nivel, tiles y resumen de un perfil público", async () => {
     api()
     renderProfile()

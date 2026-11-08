@@ -17,6 +17,8 @@ const cfg: ClipConfig = {
   split_gap_seconds: 8,
   pre_seconds: 2,
   post_seconds: 2,
+  featured_max: 3,
+  featured_max_vip: 10,
 }
 
 describe("Clips", () => {

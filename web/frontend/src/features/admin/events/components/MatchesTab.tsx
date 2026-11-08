@@ -69,7 +69,7 @@ export function MatchesTab({ event }: { event: EventDetail }) {
         </EmptyState>
       ) : (
         <TableBox>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-foreground">

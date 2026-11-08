@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react"
 
 import { cn } from "cn"
-import { ChevronDownIcon, CheckIcon, HistoryIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  CheckIcon,
+  HistoryIcon,
+  TrophyIcon,
+} from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -70,8 +75,8 @@ export function SeasonBar({
             </span>
           )}
           {season.champion && (
-            <span className="text-[13px]">
-              <span aria-hidden>🏆 </span>
+            <span className="inline-flex items-center gap-1 text-[13px]">
+              <TrophyIcon aria-hidden className="size-3.5 text-amber-500" />
               <span className="sr-only">Campeón: </span>
               {season.champion.alias}
             </span>
@@ -129,7 +134,7 @@ function SeasonPicker({
     <div
       role="group"
       aria-label="Temporada"
-      className="inline-flex max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-muted p-[3px]"
+      className="inline-flex max-w-full gap-0.5 overflow-x-auto overflow-y-hidden rounded-[9px] bg-muted p-[3px]"
     >
       {active && (
         <button

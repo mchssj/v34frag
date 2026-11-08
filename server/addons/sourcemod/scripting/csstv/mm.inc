@@ -27,6 +27,13 @@
  * sumó (cancelado, reinicio o resultado rechazado) se avisa con "mapover" y se vuelve a jugar. En cada poll va el estado de
  * cada equipo (p_state "ok1,ok2,n1,n2"): con eso la base decide el abandono de una PCW. Con auto_start=1 (PCW con la
  * espera vencida y los dos equipos en regla) el mapa arranca sin !ready.
+ *
+ * Reemplazos (2.10.0, bitácora 2026-11-04-mm-reemplazos): en vivo, el poll trae el plantel (t1/t2, sin los reemplazados y con
+ * el reemplazo), si se puede pedir un reemplazo en cada equipo (replace=), el voto (replace_vote=porcentaje,segundos,espera)
+ * y los desconectados (away=SteamID|equipo|nick;…). El reemplazo que entra va al lado de su equipo y el reemplazado, si
+ * vuelve, queda de espectador (Mm_LiveSide, que usa Recon). !callreplace abre un voto entre los compañeros conectados del que
+ * falta; si pasa con más del porcentaje (el que no vota cuenta como No), se avisa "callreplace" y la base lo da por abandonado
+ * y llama al reemplazo en Discord.
  */
 
 #if defined _csstv_mm_included
@@ -77,6 +84,20 @@ char g_sMmIdlePw[33];
 char g_sMmIdleUid[64];
 bool g_bMmIdlePending;
 bool g_bMmIdleQueued;
+// Reemplazos (2.10.0).
+bool g_bMmReplaceOk[2];        // la base deja pedir un reemplazo para el equipo 1 o 2 de la sala
+char g_sMmAway[1024];          // desconectados: "STEAM_0:X:Y|equipo|nick;…"
+char g_sMmJoined[256];         // los que entraron al plantel con la partida en vivo (los reemplazos): ",STEAM_0:X:Y,…"
+int g_iMmVotePct = 80;
+int g_iMmVoteSeconds = 30;
+int g_iMmVoteCooldown = 60;
+int g_iMmVoteNextAt[2];        // hasta cuándo espera cada equipo para otro voto
+bool g_bMmVoteActive;
+int g_iMmVoteTeam;
+int g_iMmVoteVoters;
+int g_iMmVoteBots;             // solo en la build de pruebas: bots del equipo, que votan Sí solos
+char g_sMmVoteKey[40];
+char g_sMmVoteNick[32];
 
 void Mm_Init()
 {
@@ -84,6 +105,11 @@ void Mm_Init()
 	g_cvMmPoll = CreateConVar("csstv_mm_poll", "5", "Segundos entre consultas a la web cuando el servidor está libre.", _, true, 2.0, true, 60.0);
 	g_cvSeriesDelay = CreateConVar("csstv_series_next_delay", "90", "Reserva de torneo o PCW: segundos entre el fin de un mapa y el mapa siguiente de la serie (para SourceTV).", _, true, 60.0, true, 120.0);
 	g_hMmOut = new ArrayList(ByteCountToCells(MM_OUT_MAX));
+	RegConsoleCmd("sm_callreplace", Cmd_MmCallReplace, "Matchmaking: votar con tu equipo para pedir un reemplazo de un compañero desconectado.");
+#if defined CSSTV_DEBUG
+	RegAdminCmd("sm_mm_sides", Cmd_MmSides, ADMFLAG_ROOT, "Pruebas: el lado de cada jugador (nombre=lado;…, 2 T, 3 CT, 1 espectador).");
+	RegAdminCmd("sm_callreplace_as", Cmd_MmCallReplaceAs, ADMFLAG_ROOT, "Pruebas: sm_callreplace_as <bot> <nick o SteamID del desconectado>.");
+#endif
 	CreateTimer(1.0, Timer_MmTick, _, TIMER_REPEAT);
 }
 
@@ -320,6 +346,7 @@ public Action Timer_MmTick(Handle timer)
 		Mm_Queue("csstv_mm_password", args);
 	}
 	Mm_FlushOut();
+	Mm_LiveEnforce();
 	Mm_ClaimNag();
 	Mm_WaitNag();
 	// Un mix o un !match en curso: la web lo ve fuera de línea y no le asigna nada. Una sala en vivo sí
@@ -464,6 +491,8 @@ void Mm_OnLivePoll(const char[] text)
 	}
 	if (Mm_IsBooking())
 		return;
+	Mm_ReadReplace(text);
+	Mm_LiveRoster(text);
 	Link_Field(text, "abandons", num, sizeof(num));
 	if (ExplodeString(num, ",", parts, 2, 8) == 2)
 	{
@@ -858,6 +887,7 @@ void Mm_Forget()
 	g_bMmBetween = false;
 	g_bMmMapOverSent = false;
 	g_iMmWaitUntil = 0;
+	Mm_ReplaceReset();
 	Mm_SaveLobby();
 }
 
@@ -880,9 +910,402 @@ void Mm_Close(const char[] reason)
 	g_sMmKind[0] = '\0';
 	g_bMmBetween = false;
 	g_iMmWaitUntil = 0;
+	Mm_ReplaceReset();
 	Mm_SaveLobby();
 	Link_Clear();
 	Mm_RotatePassword();
+}
+
+// ---------------------------------------------------------------------------
+// Reemplazos (2.10.0, bitácora 2026-11-04-mm-reemplazos)
+// ---------------------------------------------------------------------------
+
+void Mm_ReplaceReset()
+{
+	g_bMmReplaceOk[0] = false;
+	g_bMmReplaceOk[1] = false;
+	g_sMmAway[0] = '\0';
+	g_sMmJoined[0] = '\0';
+	g_iMmVoteNextAt[0] = 0;
+	g_iMmVoteNextAt[1] = 0;
+	g_bMmVoteActive = false;
+}
+
+/** Cuenta como jugador para los reemplazos: los de verdad y, en la build de pruebas, también los bots. */
+bool Mm_Counts(int client)
+{
+#if defined CSSTV_DEBUG
+	return IsClientInGame(client) && !IsClientSourceTV(client);
+#else
+	return IsClientInGame(client) && !IsFakeClient(client);
+#endif
+}
+
+/**
+ * Con la sala en vivo, alguien con un SteamID válido que no es de la sala (de afuera, o el que abandonó y ya tiene
+ * reemplazo). Sin SteamID válido (Steam todavía no lo validó) no se lo toca: podría ser uno de la sala.
+ */
+bool Mm_IsOutsider(int client)
+{
+	char key[40];
+	return Mm_LiveSide(client) == 0 && Link_ClientKey(client, key, sizeof(key));
+}
+
+/** Cada segundo, con la sala en vivo: los que no son de la sala no juegan (un bot entra directo a un lado, sin jointeam). */
+void Mm_LiveEnforce()
+{
+	if (Mm_LiveSide(0) == -1)
+		return;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!Mm_Counts(i) || !IsTeamSide(GetClientTeam(i)) || !Mm_IsOutsider(i))
+			continue;
+		ChangeClientTeam(i, TEAM_SPEC);
+		LogMessage("Matchmaking: %L no es de la sala %s, pasa a espectador.", i, g_sMmLobby);
+		QolChat(i, "%s Es una sala del matchmaking: solo juegan los de la sala.", PREFIX);
+	}
+}
+
+/** Del poll en vivo: si se puede pedir un reemplazo en cada equipo, cómo es el voto y quiénes están desconectados. */
+void Mm_ReadReplace(const char[] text)
+{
+	char num[32], parts[3][8];
+	Link_Field(text, "replace", num, sizeof(num));
+	if (ExplodeString(num, ",", parts, 2, 8) == 2)
+	{
+		g_bMmReplaceOk[0] = StringToInt(parts[0]) == 1;
+		g_bMmReplaceOk[1] = StringToInt(parts[1]) == 1;
+	}
+	else
+	{
+		// Base sin el replanteo 75: no hay reemplazos.
+		g_bMmReplaceOk[0] = false;
+		g_bMmReplaceOk[1] = false;
+	}
+	Link_Field(text, "replace_vote", num, sizeof(num));
+	if (ExplodeString(num, ",", parts, 3, 8) == 3)
+	{
+		g_iMmVotePct = StringToInt(parts[0]);
+		g_iMmVoteSeconds = StringToInt(parts[1]);
+		g_iMmVoteCooldown = StringToInt(parts[2]);
+	}
+	Link_Field(text, "away", g_sMmAway, sizeof(g_sMmAway));
+}
+
+/**
+ * En vivo, en una sala del matchmaking: el lado (CT o T) donde juega ahora el equipo de la sala del jugador, o 0 si no es de
+ * la sala (alguien de afuera, o el que abandonó y ya tiene reemplazo). -1 si no aplica (no hay sala en vivo).
+ */
+int Mm_LiveSide(int client)
+{
+	if (!Mm_On() || !g_bMmLive || !Mm_HasLobby() || Mm_IsBooking() || g_LinkState != Link_Active || !g_iMatchLinkSideA
+		|| !MatchInProgress())
+		return -1;
+	if (client <= 0)
+		return 0;   // Mm_LiveSide(0): solo pregunta si hay sala en vivo
+	int k = Link_TeamOf(client);
+	if (!k)
+		return 0;
+	return k == g_iMatchLinkSideA ? g_iSideA : OtherSide(g_iSideA);
+}
+
+/**
+ * Poll en vivo: si el plantel cambió (entró un reemplazo), se actualiza sin mp_restartgame. El reemplazo que ya está en el
+ * servidor va al lado de su equipo y se avisa a la base; el reemplazado que volvió pasa a espectador.
+ */
+void Mm_LiveRoster(const char[] text)
+{
+	char t1[1024], t2[1024], r1[1024], r2[1024];
+	Link_Field(text, "t1", t1, sizeof(t1));
+	Link_Field(text, "t2", t2, sizeof(t2));
+	if (!t1[0] || !t2[0])
+		return;   // base vieja o respuesta incompleta: el plantel no se toca
+	Format(r1, sizeof(r1), ",%s,", t1);
+	Format(r2, sizeof(r2), ",%s,", t2);
+	if (StrEqual(r1, g_sLinkRoster[0], false) && StrEqual(r2, g_sLinkRoster[1], false))
+		return;
+	Mm_NoteJoined(t1, g_sLinkRoster[0]);
+	Mm_NoteJoined(t2, g_sLinkRoster[1]);
+	strcopy(g_sLinkRoster[0], sizeof(g_sLinkRoster[]), r1);
+	strcopy(g_sLinkRoster[1], sizeof(g_sLinkRoster[]), r2);
+	// (Puede ser el mismo plantel en otro orden: entonces nadie se mueve y no se anota nada.)
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!Mm_Counts(i))
+			continue;
+		int side = Mm_LiveSide(i), team = GetClientTeam(i);
+		if (side > 0 && !IsTeamSide(team))
+		{
+			MoveToTeam(i, side);
+			LogMessage("Matchmaking: %L entró de reemplazo en la sala %s.", i, g_sMmLobby);
+			QolChatAll("%s {#amarillo}%N{#normal} entró de reemplazo en {#amarillo}%s{#normal}.", PREFIX, i, g_sTeam[side == g_iSideA ? 0 : 1]);
+			Mm_ReportClient("back", i);
+		}
+		else if (IsTeamSide(team) && Mm_IsOutsider(i))
+		{
+			ChangeClientTeam(i, TEAM_SPEC);
+			LogMessage("Matchmaking: %L ya tiene reemplazo en la sala %s, pasa a espectador.", i, g_sMmLobby);
+			QolChat(i, "%s Entró un reemplazo en tu lugar: quedás de espectador.", PREFIX);
+		}
+	}
+}
+
+/** Anota los SteamID de list que no estaban en el plantel anterior (old: ",a,b,"): son reemplazos. */
+void Mm_NoteJoined(const char[] list, const char[] old)
+{
+	char keys[12][40], needle[48];
+	int n = ExplodeString(list, ",", keys, sizeof(keys), sizeof(keys[]));
+	for (int i = 0; i < n; i++)
+	{
+		Format(needle, sizeof(needle), ",%s,", keys[i]);
+		if (keys[i][0] && StrContains(old, needle, false) == -1 && StrContains(g_sMmJoined, needle, false) == -1)
+			Format(g_sMmJoined, sizeof(g_sMmJoined), "%s%s,", g_sMmJoined[0] ? g_sMmJoined : ",", keys[i]);
+	}
+}
+
+/** ¿Entró a la sala con la partida en vivo (un reemplazo)? */
+bool Mm_IsReplacement(int client)
+{
+	char key[40], needle[48];
+	if (!g_sMmJoined[0] || !Link_ClientKey(client, key, sizeof(key)))
+		return false;
+	Format(needle, sizeof(needle), ",%s,", key);
+	return StrContains(g_sMmJoined, needle, false) != -1;
+}
+
+/** ¿Hay alguien en el servidor con este SteamID (STEAM_0:X:Y)? */
+bool Mm_KeyInGame(const char[] key)
+{
+	char k[40];
+	for (int i = 1; i <= MaxClients; i++)
+		if (Mm_Counts(i) && Link_ClientKey(i, k, sizeof(k)) && StrEqual(k, key, false))
+			return true;
+	return false;
+}
+
+/** Suma al menú los compañeros desconectados del equipo k de la sala. Devuelve cuántos. */
+int Mm_AwayItems(int k, Menu menu)
+{
+	char entries[10][96], f[3][40];
+	int n, count = ExplodeString(g_sMmAway, ";", entries, sizeof(entries), sizeof(entries[]));
+	for (int e = 0; e < count; e++)
+	{
+		if (ExplodeString(entries[e], "|", f, 3, sizeof(f[])) != 3 || StringToInt(f[1]) != k || Mm_KeyInGame(f[0]))
+			continue;
+		ReplaceString(f[2], sizeof(f[]), "{", "(");
+		menu.AddItem(f[0], f[2][0] ? f[2] : f[0]);
+		n++;
+	}
+	return n;
+}
+
+/** Mensaje a los compañeros del equipo k de la sala que están en el servidor. */
+void Mm_TeamChat(int k, const char[] fmt, any ...)
+{
+	char buf[256];
+	VFormat(buf, sizeof(buf), fmt, 3);
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && !IsFakeClient(i) && Link_TeamOf(i) == k)
+			QolChat(i, "%s", buf);
+}
+
+/** ¿Este jugador puede pedir un voto ahora? Si no, le dice por qué. Devuelve el equipo de la sala (0 si no puede). */
+int Mm_CanCallReplace(int client)
+{
+	if (!Mm_On() || !Mm_HasLobby() || Mm_IsBooking() || !g_bMmLive || !MatchInProgress())
+	{
+		QolChat(client, "%s {#amarillo}!callreplace{#normal} sirve en una sala del matchmaking en juego.", PREFIX);
+		return 0;
+	}
+	int k = Link_TeamOf(client);
+	if (!k || !IsTeamSide(GetClientTeam(client)))
+	{
+		QolChat(client, "%s Solo los jugadores de la sala pueden pedir un reemplazo.", PREFIX);
+		return 0;
+	}
+	if (!g_bMmReplaceOk[k - 1])
+	{
+		QolChat(client, "%s Ahora no se puede pedir un reemplazo para tu equipo: ya hay uno pedido, falta poco para el final o los reemplazos están apagados.", PREFIX);
+		return 0;
+	}
+	if (g_bMmVoteActive || IsVoteInProgress())
+	{
+		QolChat(client, "%s Ya hay un voto en curso.", PREFIX);
+		return 0;
+	}
+	int wait = g_iMmVoteNextAt[k - 1] - GetTime();
+	if (wait > 0)
+	{
+		QolChat(client, "%s Tu equipo tiene que esperar %d s para otro voto.", PREFIX, wait);
+		return 0;
+	}
+	return k;
+}
+
+public Action Cmd_MmCallReplace(int client, int args)
+{
+	if (client <= 0 || !IsClientInGame(client))
+		return Plugin_Handled;
+	int k = Mm_CanCallReplace(client);
+	if (!k)
+		return Plugin_Handled;
+	Menu menu = new Menu(Menu_MmCallReplace);
+	menu.SetTitle("¿A quién hay que reemplazar?");
+	if (!Mm_AwayItems(k, menu))
+	{
+		delete menu;
+		QolChat(client, "%s No hay ningún compañero desconectado.", PREFIX);
+		return Plugin_Handled;
+	}
+	menu.Display(client, 20);
+	return Plugin_Handled;
+}
+
+public int Menu_MmCallReplace(Menu menu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_End)
+		delete menu;
+	else if (action == MenuAction_Select)
+	{
+		char key[40], nick[40];
+		menu.GetItem(item, key, sizeof(key), _, nick, sizeof(nick));
+		Mm_StartReplaceVote(client, key, nick);
+	}
+	return 0;
+}
+
+#if defined CSSTV_DEBUG
+/** Pruebas: "lados=Arnold=3;Albert=3;…" con el equipo actual de cada uno. */
+public Action Cmd_MmSides(int client, int args)
+{
+	char out[512];
+	strcopy(out, sizeof(out), "lados=");
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsClientInGame(i) && !IsClientSourceTV(i))
+			Format(out, sizeof(out), "%s%N=%d;", out, i, GetClientTeam(i));
+	ReplyToCommand(client, "%s", out);
+	return Plugin_Handled;
+}
+
+/** Pruebas: un bot pide el reemplazo de un compañero desconectado, como si hubiera elegido en el menú. */
+public Action Cmd_MmCallReplaceAs(int client, int args)
+{
+	char who[MAX_NAME_LENGTH], target[40], entries[10][96], f[3][40];
+	GetCmdArg(1, who, sizeof(who));
+	GetCmdArg(2, target, sizeof(target));
+	int bot = FindTarget(client, who, false, false);
+	if (bot <= 0)
+		return Plugin_Handled;
+	int count = ExplodeString(g_sMmAway, ";", entries, sizeof(entries), sizeof(entries[]));
+	for (int e = 0; e < count; e++)
+	{
+		if (ExplodeString(entries[e], "|", f, 3, sizeof(f[])) == 3 && (StrEqual(f[2], target, false) || StrEqual(f[0], target, false)))
+		{
+			Mm_StartReplaceVote(bot, f[0], f[2]);
+			return Plugin_Handled;
+		}
+	}
+	ReplyToCommand(client, "[csstv] %s no está entre los desconectados (away=%s).", target, g_sMmAway);
+	return Plugin_Handled;
+}
+#endif
+
+/** El voto Sí/No entre los compañeros conectados del que falta (Daniel, 2026-11-05: solo su equipo). */
+void Mm_StartReplaceVote(int client, const char[] key, const char[] nick)
+{
+	int k = Mm_CanCallReplace(client);
+	if (!k)
+		return;
+	if (Mm_KeyInGame(key))
+	{
+		QolChat(client, "%s {#amarillo}%s{#normal} ya volvió.", PREFIX, nick);
+		return;
+	}
+	int voters[MAXPLAYERS], n, bots;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!Mm_Counts(i) || Link_TeamOf(i) != k || !IsTeamSide(GetClientTeam(i)))
+			continue;
+		if (IsFakeClient(i))
+			bots++;   // solo en la build de pruebas (Mm_Counts): votan Sí solos
+		else
+			voters[n++] = i;
+	}
+	g_iMmVoteTeam = k;
+	g_iMmVoteBots = bots;
+	// La espera del equipo corre desde que se pide el voto, pase o no (también con solo bots, en la build de pruebas).
+	g_iMmVoteNextAt[k - 1] = GetTime() + g_iMmVoteSeconds + g_iMmVoteCooldown;
+	strcopy(g_sMmVoteKey, sizeof(g_sMmVoteKey), key);
+	strcopy(g_sMmVoteNick, sizeof(g_sMmVoteNick), nick);
+	if (!n)
+	{
+		if (bots)
+			Mm_ReplaceVoteEnd(bots, bots);   // build de pruebas: solo bots en el equipo
+		return;
+	}
+	Menu vote = new Menu(Menu_MmReplaceVote, MENU_ACTIONS_DEFAULT);
+	vote.VoteResultCallback = Mm_ReplaceVoteResult;
+	vote.SetTitle("¿Pedir un reemplazo para %s?", nick);
+	vote.AddItem("yes", "Sí");
+	vote.AddItem("no", "No");
+	vote.ExitButton = false;
+	g_bMmVoteActive = true;
+	g_iMmVoteVoters = n;
+	if (!vote.DisplayVote(voters, n, g_iMmVoteSeconds > 0 ? g_iMmVoteSeconds : 30))
+	{
+		delete vote;
+		g_bMmVoteActive = false;
+		QolChat(client, "%s No se pudo abrir el voto.", PREFIX);
+		return;
+	}
+	Mm_TeamChat(k, "%s {#amarillo}%N{#normal} pidió un reemplazo para {#amarillo}%s{#normal}. Votá en el menú: hace falta más del %d %% del equipo.",
+		PREFIX, client, nick, g_iMmVotePct);
+}
+
+public int Menu_MmReplaceVote(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_VoteCancel && g_bMmVoteActive)
+	{
+		g_bMmVoteActive = false;
+		Mm_ReplaceVoteEnd(g_iMmVoteBots, g_iMmVoteVoters + g_iMmVoteBots);   // nadie votó: todos cuentan como No
+	}
+	else if (action == MenuAction_End)
+		delete menu;
+	return 0;
+}
+
+public void Mm_ReplaceVoteResult(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
+{
+	if (!g_bMmVoteActive)
+		return;
+	g_bMmVoteActive = false;
+	int yes;
+	for (int i = 0; i < num_items; i++)
+		if (item_info[i][VOTEINFO_ITEM_INDEX] == 0)
+			yes = item_info[i][VOTEINFO_ITEM_VOTES];
+	Mm_ReplaceVoteEnd(yes + g_iMmVoteBots, (num_clients > g_iMmVoteVoters ? num_clients : g_iMmVoteVoters) + g_iMmVoteBots);
+}
+
+/** Pasa con más de replace_vote_pct de los que podían votar; el que no votó cuenta como No. */
+void Mm_ReplaceVoteEnd(int yes, int voters)
+{
+	int k = g_iMmVoteTeam;
+	if (!g_bMmLive || !Mm_HasLobby() || k < 1 || k > 2)
+		return;
+	if (voters <= 0 || yes * 100 <= g_iMmVotePct * voters)
+	{
+		Mm_TeamChat(k, "%s No pasó el voto para reemplazar a {#amarillo}%s{#normal} (%d de %d).", PREFIX, g_sMmVoteNick, yes, voters);
+		return;
+	}
+	if (Mm_KeyInGame(g_sMmVoteKey))
+	{
+		Mm_TeamChat(k, "%s {#amarillo}%s{#normal} volvió: no se pide el reemplazo.", PREFIX, g_sMmVoteNick);
+		return;
+	}
+	Mm_Report("callreplace", g_sMmVoteKey);
+	g_bMmReplaceOk[k - 1] = false;
+	g_iMmLastPoll = 0;   // el poll siguiente trae el estado nuevo
+	QolChatAll("%s Pasó el voto: se busca un reemplazo para {#amarillo}%s{#normal}. Si alguien toma el link, entra a este equipo.", PREFIX, g_sMmVoteNick);
 }
 
 // ---------------------------------------------------------------------------
@@ -898,6 +1321,7 @@ void Mm_OnMatchStart()
 	g_bMmBetween = false;
 	g_iMmAbandons[0] = 0;
 	g_iMmAbandons[1] = 0;
+	Mm_ReplaceReset();
 	Mm_Report("live", "");
 }
 

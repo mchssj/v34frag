@@ -3,6 +3,7 @@ import { describe as group, expect, it } from "vitest"
 
 import { sampleNotifications } from "./mock"
 import {
+  clipsSummary,
   describe,
   filterByTab,
   isPending,
@@ -32,6 +33,7 @@ const TYPES: [string, Notification["category"]][] = [
   ["team_join_answered", "team"],
   ["team_captain", "team"],
   ["team_removed", "team"],
+  ["team_staff_action", "team"],
   ["team_member_left", "team"],
   ["team_role_changed", "team"],
   ["team_added", "team"],
@@ -54,6 +56,7 @@ const TYPES: [string, Notification["category"]][] = [
   ["mix_deleted", "elo"],
   ["elo_adjusted", "elo"],
   ["clip_ready", "elo"],
+  ["clips_detected", "elo"],
   ["season_ranked", "season"],
   ["season_closed", "season"],
   ["medal_granted", "season"],
@@ -71,6 +74,10 @@ const TYPES: [string, Notification["category"]][] = [
   ["admin_mix_review", "admin"],
   ["admin_demo_failed", "admin"],
   ["admin_season_delayed", "admin"],
+  ["event_reviewed", "tournament"],
+  ["game_reviewed", "tournament"],
+  ["admin_event_review", "admin"],
+  ["admin_game_review", "admin"],
 ]
 
 const match = {
@@ -156,7 +163,17 @@ group("notificaciones", () => {
             eligible: true,
             elo: 2210,
             elo_after: 2022,
-            medal: { name: "Top 10", icon: "🏅" },
+            medal: {
+              name: "Top 10",
+              design: {
+                template: "top_temporada",
+                title: "Top 10 de la temporada",
+                label: "S1",
+                band: "TOP 10",
+                metal: "plata",
+                accent: "top10",
+              },
+            },
           },
         }),
         "Zeta"
@@ -164,8 +181,18 @@ group("notificaciones", () => {
     ).toEqual({
       kind: "medal",
       title: "Cerró BETA: terminaste 4.º",
-      body: "🏅 Top 10 · empiezas la próxima con 2022",
+      body: "Top 10 · empiezas la próxima con 2022",
       link: { to: "/player/$nick", params: { nick: "Zeta" } },
+      // (replanteo 79) La medalla dibujada, sin emoji.
+      medal: {
+        template: "top_temporada",
+        title: "Top 10 de la temporada",
+        number: null,
+        label: "S1",
+        band: "TOP 10",
+        metal: "plata",
+        accent: "top10",
+      },
     })
     expect(
       describe(
@@ -201,5 +228,136 @@ group("notificaciones", () => {
     expect(timeAgo(ago(180), now)).toBe("hace 3 horas")
     expect(timeAgo(ago(60 * 24), now)).toBe("ayer")
     expect(timeAgo(ago(60 * 24 * 4), now)).toBe("hace 4 días")
+  })
+})
+
+group("team_staff_action", () => {
+  it("dice quién, qué y el motivo", () => {
+    const d = describe(
+      base({
+        type: "team_staff_action",
+        category: "team",
+        data: {
+          team: { id: "t1", name: "Kraken" },
+          action: "renamed",
+          by: "moderator",
+          name: "Halcones",
+          reason: "Palabra no permitida",
+        },
+      })
+    )
+    expect(d.title).toBe("Un moderador cambió el nombre del equipo a Halcones")
+    expect(d.body).toBe("Motivo: Palabra no permitida")
+    const k = describe(
+      base({
+        type: "team_staff_action",
+        category: "team",
+        data: {
+          team: { id: "t1", name: "Kraken" },
+          action: "member_removed",
+          by: "admin",
+          player: { id: "p", alias: "vex" },
+          reason: null,
+        },
+      })
+    )
+    expect(k.title).toBe("Un admin sacó a vex de Kraken")
+    expect(k.body).toBe("Sin motivo indicado.")
+  })
+
+  it("aprobación de torneos y mixes (replanteo 80)", () => {
+    const ev = { id: "e1", name: "Copa CM" }
+    const rejected = describe(
+      base({
+        type: "event_reviewed",
+        category: "tournament",
+        data: { event: ev, approved: false, note: "Faltan las fechas." },
+      })
+    )
+    expect(rejected.title).toBe("Rechazaron tu torneo Copa CM")
+    expect(rejected.body).toBe(
+      "Faltan las fechas. Corrígelo y vuelve a enviarlo."
+    )
+    expect(rejected.link).toEqual({
+      to: "/admin/events/$id",
+      params: { id: "e1" },
+    })
+    const game = describe(
+      base({
+        type: "game_reviewed",
+        category: "tournament",
+        data: { ...match, approved: true, map: "de_dust2" },
+      })
+    )
+    expect(game.title).toBe("Aprobaron el mix de de_dust2 en Furia Sur vs RBK")
+    const staff = describe(
+      base({
+        type: "admin_event_review",
+        category: "admin",
+        data: { event: ev, historic: true, resubmitted: true },
+        actor: { id: "u2", alias: "Kova" },
+      })
+    )
+    expect(staff.title).toBe("Volvieron a enviar el torneo histórico Copa CM")
+    expect(staff.body).toBe("Kova espera que lo apruebes o lo rechaces.")
+    expect(
+      describe(
+        base({
+          type: "admin_game_review",
+          category: "admin",
+          data: { ...match, games: 2 },
+        })
+      ).title
+    ).toBe("2 mixes vinculados por aprobar")
+  })
+})
+
+group("clips_detected (replanteo 83)", () => {
+  it("un solo aviso con todas las jugadas, que lleva a las estadísticas", () => {
+    expect(
+      describe(
+        base({
+          type: "clips_detected",
+          category: "elo",
+          data: {
+            match_id: "g1",
+            map: "de_mirage_rc1",
+            count: 3,
+            kills: [4, 4],
+            clutches: [2],
+          },
+        })
+      )
+    ).toEqual({
+      kind: "elo",
+      title: "Tienes 3 jugadas destacadas en de_mirage_rc1",
+      body: "2 rondas de 4 kills y un clutch 1v2.",
+      link: {
+        to: "/match/$id",
+        params: { id: "g1" },
+        search: { view: "stats" },
+      },
+    })
+  })
+
+  it("una sola jugada, sin mapa", () => {
+    const d = describe(
+      base({
+        type: "clips_detected",
+        category: "elo",
+        data: { match_id: "g1", count: 1, kills: [5], clutches: [] },
+      })
+    )
+    expect(d.title).toBe("Tienes una jugada destacada")
+    expect(d.body).toBe("Un ace.")
+  })
+
+  it("el resumen junta por tipo", () => {
+    expect(clipsSummary([3, 5, 3, 4], [3, 1, 3])).toBe(
+      "Un ace, una ronda de 4 kills, 2 rondas de 3 kills, 2 clutches 1v3 y un clutch 1v1."
+    )
+    expect(clipsSummary([], [])).toBe(
+      "Mira cómo te fue en las estadísticas de la partida."
+    )
   })
 })

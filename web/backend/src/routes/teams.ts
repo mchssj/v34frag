@@ -161,7 +161,7 @@ const putLogo = createRoute({
   path: '/api/v1/teams/{id}/logo',
   tags: ['Equipos'],
   summary: 'Subir el logo',
-  description: `\`multipart/form-data\`, campo \`file\`. El capitán o un admin. Reemplaza al anterior. ${LOGO_HELP}`,
+  description: `\`multipart/form-data\`, campo \`file\`. El capitán o un admin (un equipo histórico: quien gestiona su torneo histórico). Reemplaza al anterior. ${LOGO_HELP}`,
   security: bearer,
   middleware: [requireUser, logoLimit] as const,
   request: { params: TeamParam, body: { required: true, content: { 'multipart/form-data': { schema: LogoUpload } } } },
@@ -243,7 +243,8 @@ export const teams = createRouter()
     const { id } = c.req.valid('param');
     const sb = c.var.sb;
     const team = must(await sb.from('team_overview').select(OVERVIEW).eq('id', id).maybeSingle());
-    if (!team) throw notFound('ese equipo');
+    // (replanteo 80) Un equipo histórico no está en la plataforma: no tiene página.
+    if (!team || team.kind === 'historic') throw notFound('ese equipo');
     const [s, modes, cfg] = await Promise.all([
       sb.from('team_standings').select('*').eq('team_id', id).maybeSingle().then(must),
       team.kind === 'official' ? sb.rpc('team_eligible_modes', { p_team: id }).then(mustHave) : Promise.resolve([]),
@@ -315,10 +316,13 @@ export const teams = createRouter()
     const { id } = c.req.valid('param');
     const sb = c.var.sb;
     const team = must(await sb.from('teams').select('captain_id, kind, logo_url').eq('id', id).maybeSingle());
-    if (!team || team.kind !== 'official') throw notFound('ese equipo');
-    if (team.captain_id !== c.var.user.id && !(await isAdmin(c))) throw new AppError(403, 'FORBIDDEN', 'Solo el capitán o un admin cambia el logo.');
+    if (!team || (team.kind !== 'official' && team.kind !== 'historic')) throw notFound('ese equipo');
+    const historic = team.kind === 'historic';
+    if (historic ? !must(await sb.rpc('historic_team_can_edit', { p_team: id })) : team.captain_id !== c.var.user.id && !(await isAdmin(c))) {
+      throw new AppError(403, 'FORBIDDEN', historic ? 'Solo quien gestiona su torneo histórico cambia el logo.' : 'Solo el capitán o un admin cambia el logo.');
+    }
     const { url, path } = await savePhoto(c, `teams/${id}`, c.req.valid('form').file, LOGO_MAX_BYTES, LOGO_SHAPE);
-    const saved = await sb.rpc('team_set_logo', { p_team: id, p_url: url });
+    const saved = await sb.rpc(historic ? 'historic_team_set_logo' : 'team_set_logo', { p_team: id, p_url: url });
     if (saved.error) {
       await dropPhoto(c, path);
       throw fromPostgrest(saved.error);
@@ -328,10 +332,10 @@ export const teams = createRouter()
   })
   .openapi(deleteLogo, async (c) => {
     const { id } = c.req.valid('param');
-    const team = must(await c.var.sb.from('teams').select('logo_url').eq('id', id).maybeSingle());
+    const team = must(await c.var.sb.from('teams').select('logo_url, kind').eq('id', id).maybeSingle());
     if (!team) throw notFound('ese equipo');
     // p_url null quita el logo (los tipos generados no admiten null en los argumentos).
-    must(await c.var.sb.rpc('team_set_logo', { p_team: id, p_url: null as unknown as string }));
+    must(await c.var.sb.rpc(team.kind === 'historic' ? 'historic_team_set_logo' : 'team_set_logo', { p_team: id, p_url: null as unknown as string }));
     removePhoto(c, team.logo_url);
     return c.body(null, 204);
   })

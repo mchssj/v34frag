@@ -8,6 +8,7 @@ import type {
   MmAdminBan,
   MmAdminLobby,
   MmAdminMap,
+  MmAdminPenalty,
   MmAdminReport,
   MmAdminServer,
   MmChatMessage,
@@ -15,7 +16,7 @@ import type {
   MmFeed,
   MmInvite,
   MmClip,
-  MmCosmetics,
+  MmVip,
   MmLobby,
   MmMatch,
   MmMeeting,
@@ -53,9 +54,6 @@ const FRIENDS: MmPlayerHit[] = [
     nick: "maxi",
     level: 8,
     elo: 1750,
-    background_url: "/cosmetics/fondos/serie-luna-roja.svg",
-    frame_url: "/cosmetics/marcos/serie-ninja.svg",
-    name_class: "nombre-chakra",
     vip: true,
   },
   { player_id: "p-colo", nick: "colo", level: 6, elo: 1480 },
@@ -65,9 +63,6 @@ const FRIENDS: MmPlayerHit[] = [
     nick: "nico.dlr",
     level: 10,
     elo: 2310,
-    background_url: "/cosmetics/fondos/arma-oro.svg",
-    frame_url: "/cosmetics/marcos/pais-br.svg",
-    name_class: "nombre-pais-br",
   },
 ]
 
@@ -84,14 +79,7 @@ export const DEMO_POOL = [
   "de_mirage",
 ]
 
-/** Lo equipado en la tienda, como lo devolvería la API (rutas de public/cosmetics). */
-const COS = "/cosmetics/"
-const ME_COS: MmCosmetics = {
-  background_url: COS + "fondos/neon.svg",
-  frame_url: COS + "marcos/fuego.svg",
-  name_class: "nombre-fuego",
-  vip: true,
-}
+const ME_COS: MmVip = { vip: true }
 const ME = { player_id: "me", nick: "tu.nick", level: 8, elo: 1610, ...ME_COS }
 const ME_CARD = {
   nick: ME.nick,
@@ -129,6 +117,21 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   min_mixes: 5,
   min_account_days: 7,
   season_queue_close_minutes: 15,
+  balance_rating: false,
+  balance_rating_weight: 200,
+  balance_rating_cap: 100,
+  balance_rating_prior_maps: 5,
+  balance_rating_days: 60,
+  replace_enabled: false,
+  replace_link_minutes: 10,
+  replace_min_rounds_left: 4,
+  replace_vote_pct: 80,
+  replace_vote_seconds: 30,
+  replace_vote_cooldown_s: 60,
+  abandon_win_min: 10,
+  abandon_win_max: 15,
+  abandon_loss_min: 15,
+  abandon_loss_max: 20,
 }
 
 /** Mapas del veto de cada modo al empezar la demo. */
@@ -198,6 +201,8 @@ export type DemoControls = {
   someoneDeclines(): void
   /** Termina el mix en vivo (rota la contraseña del servidor). */
   finish(): void
+  /** Cierras la web buscando: a los 10 s la API te saca de la cola (replanteo 63). */
+  closeWeb(): void
   /** Llega una invitación al dúo de otro jugador. */
   receiveInvite(): void
   /** Un compañero de equipo se desconecta durante la partida. */
@@ -224,10 +229,14 @@ export function createDemoSource({
 
   let queueSize = 6
   let queue: MmState["queue"] = null
+  let lastPing = 0 // último aviso de la cola en Discord (demo)
   let lobby: MmLobby | null = null
+  /** La última sala terminada ("Tu última partida"). */
+  let lastLobby: MmLobby | null = null
   let party: MmParty | null = null
   let invites: MmInvite[] = []
   let penalty: MmState["penalty"] = null
+  let queueDroppedAt: string | null = null
   const flags: Record<DemoFlag, boolean> = {
     captain: true,
     newcomer: false,
@@ -238,6 +247,7 @@ export function createDemoSource({
   }
   let reports: MmAdminReport[] = []
   let bans: MmAdminBan[] = []
+  let otherPenalties = seedPenalties(now())
   let invitesPref: InvitePref = "public"
   let config = structuredClone(DEFAULT_CONFIG)
   let modeMaps = structuredClone(DEFAULT_MODE_MAPS)
@@ -346,8 +356,8 @@ export function createDemoSource({
   }
   reports = seedReports()
 
-  const emit = (t: string, friend?: MmEvent["friend"]) => {
-    for (const fn of listeners) fn({ t, lobby: lobby?.id, friend })
+  const emit = (t: string, friend?: MmEvent["friend"], d?: unknown) => {
+    for (const fn of listeners) fn({ t, lobby: lobby?.id, friend, d })
   }
 
   function addPenalty(reason: string) {
@@ -501,7 +511,7 @@ export function createDemoSource({
     for (const team of [1, 2] as const) {
       const list = lobby.players.filter((p) => p.team === team)
       const me = list.find((p) => p.is_me)
-      // Capitán: el de más ELO del equipo; en la demo se puede forzar que seas vos.
+      // Capitán: el de más ELO del equipo; en la demo se puede forzar que seas tú.
       const captain =
         me && flags.captain ? me : [...list].sort((a, b) => b.elo - a.elo)[0]!
       captain.is_captain = true
@@ -601,7 +611,7 @@ export function createDemoSource({
     // Los que aceptaron vuelven con su lugar original (joined_at no cambia).
     if (backToQueue && accepted && queue) queue = { ...queue, position: 1 }
     else queue = null
-    emit("lobby.cancelled")
+    emit("lobby.cancelled", undefined, { reason, requeue: backToQueue })
   }
 
   function setServer(state: MmAdminServer["state"]) {
@@ -671,6 +681,7 @@ export function createDemoSource({
         return
       case "finished":
       case "cancelled":
+        if (lobby.status === "finished") lastLobby = lobby
         lobby = null
         phaseAt = null
         emit("state")
@@ -903,9 +914,13 @@ export function createDemoSource({
       elo_window: eloWindow(now() - Date.parse(queue.joined_at)),
     },
     lobby: lobby && structuredClone(lobby),
+    last_lobby: structuredClone(
+      lobby?.status === "finished" ? lobby : lastLobby
+    ),
     party: party && structuredClone(party),
     invites: structuredClone(invites),
     penalty: penalized() ? penalty : null,
+    queue_dropped_at: queue ? null : queueDroppedAt,
     blocks: {
       list: blocks,
       max: config.max_blocks,
@@ -960,13 +975,25 @@ export function createDemoSource({
     async state() {
       return snapshot()
     },
+    // La demo no separa el estado: las dos partes son el completo.
+    async stateLive() {
+      return snapshot()
+    },
+    async profile() {
+      return snapshot()
+    },
+    async lobbyMatch() {
+      const last = lobby?.status === "finished" ? lobby : lastLobby
+      return structuredClone(last?.match ?? lobby?.match ?? null)
+    },
     async feed() {
       return DEMO_FEED()
     },
     async join(mode, region) {
-      if (penalized()) throw new DemoError("Tenés una sanción vigente")
+      if (penalized()) throw new DemoError("Tienes una sanción vigente")
+      queueDroppedAt = null
       if (config.require_anticheat && flags.noAgent)
-        throw new DemoError("Para jugar tenés que tener el anticheat activo")
+        throw new DemoError("Para jugar tienes que tener el anticheat activo")
       if (flags.newcomer)
         throw new DemoError("Te faltan 2 mixes para jugar matchmaking")
       if (!amLeader())
@@ -977,7 +1004,10 @@ export function createDemoSource({
       if (!size) throw new DemoError("Ese modo no está habilitado")
       if ((party?.members.length ?? 1) > size)
         throw new DemoError(`Tu grupo no entra en un equipo de ${mode}`)
-      if (lobby?.status === "finished") lobby = null
+      if (lobby?.status === "finished") {
+        lastLobby = lobby
+        lobby = null
+      }
       joinQueue(mode, region)
       return snapshot()
     },
@@ -986,6 +1016,52 @@ export function createDemoSource({
       if (pref === "private") invites = []
       emit("state")
       return snapshot()
+    },
+    async queuePingStatus() {
+      const next =
+        lastPing && lastPing + 15 * 60_000 > Date.now()
+          ? new Date(lastPing + 15 * 60_000).toISOString()
+          : null
+      return {
+        staff: false,
+        queued: !!queue,
+        next_at: next,
+        can_ping: !!queue && !next,
+      }
+    },
+    // La demo no tiene reemplazos: el link siempre está vencido.
+    async replaceInfo() {
+      return {
+        status: "expired" as const,
+        mine: false,
+        lobby_id: null,
+        mode: "5v5",
+        map: "de_dust2",
+        team: 1 as const,
+        team_name: null,
+        score: null,
+        rounds_left: null,
+        expires_at: new Date().toISOString(),
+        reason: null,
+      }
+    },
+    async replaceTake(): Promise<MmState> {
+      throw new Error("Este link ya venció")
+    },
+    // La demo no tiene partidas guardadas: el detalle muestra la sala de mix.
+    async gameRoom() {
+      return null
+    },
+    async queuePing() {
+      if (!queue)
+        throw new Error("Tenés que estar buscando partida para avisar")
+      lastPing = Date.now()
+      return {
+        staff: false,
+        queued: true,
+        next_at: new Date(lastPing + 15 * 60_000).toISOString(),
+        can_ping: false,
+      }
     },
     async leave() {
       if (lobby?.status === "accepting") {
@@ -1197,6 +1273,16 @@ export function createDemoSource({
     async adminConfig() {
       return structuredClone(config)
     },
+    async uploadMvpImage(file) {
+      config = { ...config, mvp_image_url: URL.createObjectURL(file) }
+      emit("mm.config")
+      return { url: config.mvp_image_url! }
+    },
+    async deleteMvpImage() {
+      config = { ...config, mvp_image_url: null }
+      emit("mm.config")
+      return { url: null }
+    },
     async saveConfig(next) {
       if (!next.modes.some((m) => m.enabled))
         throw new DemoError("Tiene que quedar al menos un modo habilitado")
@@ -1271,6 +1357,45 @@ export function createDemoSource({
     },
     async unban(userId) {
       bans = bans.filter((b) => b.user_id !== userId)
+    },
+    async adminPenalties() {
+      const t = now()
+      const mine: MmAdminPenalty[] =
+        penalty && penalized()
+          ? [
+              {
+                user_id: "me",
+                player_id: ME.player_id,
+                nick: ME.nick,
+                level: penalty.level,
+                max_level: config.penalty_ladder.length,
+                reason:
+                  sanctions.find((x) => x.kind === "penalty")?.reason ?? null,
+                since:
+                  sanctions.find((x) => x.kind === "penalty")?.created_at ??
+                  null,
+                until: penalty.until,
+              },
+            ]
+          : []
+      return [
+        ...mine,
+        ...otherPenalties.filter((x) => Date.parse(x.until) > t),
+      ].sort((a, b) => Date.parse(a.until) - Date.parse(b.until))
+    },
+    async liftPenalty(userId, reason) {
+      if (reason.trim().length < 3)
+        throw new DemoError(
+          "El motivo tiene que tener entre 3 y 300 caracteres"
+        )
+      if (userId === "me" && penalty && penalized()) {
+        penalty = null
+        emit("penalty.lifted")
+        return
+      }
+      if (!otherPenalties.some((x) => x.user_id === userId))
+        throw new DemoError("No tiene una sanción vigente")
+      otherPenalties = otherPenalties.filter((x) => x.user_id !== userId)
     },
     async adminStats(days) {
       return demoStats(days, now())
@@ -1351,6 +1476,13 @@ export function createDemoSource({
         cancel("Un jugador no aceptó a tiempo", true)
     },
     finish: finishMix,
+    closeWeb() {
+      if (!queue) return
+      queue = null
+      partyAt = null
+      queueDroppedAt = iso(now())
+      emit("party.changed")
+    },
     receiveInvite() {
       // Con invitaciones en Privado no le llega nada, como en la API.
       if (invitesPref === "private") return
@@ -1384,9 +1516,11 @@ export function createDemoSource({
     reset() {
       queue = null
       lobby = null
+      lastLobby = null
       party = null
       invites = []
       penalty = null
+      queueDroppedAt = null
       phaseAt = null
       partyAt = null
       config = structuredClone(DEFAULT_CONFIG)
@@ -1400,6 +1534,7 @@ export function createDemoSource({
       sanctions = seedSanctions(now())
       reports = seedReports()
       bans = []
+      otherPenalties = seedPenalties(now())
       invitesPref = "public"
       queueSize = 6
       servers.forEach((s) => (s.state = "free"))
@@ -1449,18 +1584,9 @@ export function demoStats(days: number, now: number): MmStatsDay[] {
   return out
 }
 
-/** Algunos rivales con cosméticos, para ver cómo quedan en la sala. */
-const COS_OF: Record<string, MmCosmetics> = {
-  "kz.flick": {
-    frame_url: COS + "marcos/arma-awp.svg",
-    name_class: "nombre-arma-awp",
-    vip: true,
-  },
-  nacho: {
-    frame_url: COS + "marcos/pais-ar.svg",
-    name_class: "nombre-pais-ar",
-  },
-  rata: { frame_url: COS + "marcos/c4.svg" },
+/** Algunos rivales VIP, para ver la insignia en la sala. */
+const COS_OF: Record<string, MmVip> = {
+  "kz.flick": { vip: true },
 }
 
 const COUNTRY_OF: Record<string, MmPlayer["country"]> = {
@@ -1682,6 +1808,21 @@ function seedFriends(): MmFriend[] {
     level: f.level,
     status: status[i]!,
   }))
+}
+
+function seedPenalties(t: number): MmAdminPenalty[] {
+  return [
+    {
+      user_id: "u-colo",
+      player_id: "p-colo",
+      nick: "colo",
+      level: 2,
+      max_level: DEFAULT_CONFIG.penalty_ladder.length,
+      reason: "No aceptaste una partida",
+      since: new Date(t - 3 * 60_000).toISOString(),
+      until: new Date(t + 12 * 60_000).toISOString(),
+    },
+  ]
 }
 
 function seedSanctions(t: number): MmSanction[] {

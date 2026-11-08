@@ -1,80 +1,125 @@
 import { z } from '@hono/zod-openapi';
-import { Envelope, listQuery } from '../lib/list';
-import { MedalKey } from './admin';
 
-// Administración › Medallas (replanteo 72, docs/bitacora/2026-11-04-medallas-automaticas).
+// Medallas configurables (replanteo 79, plan docs/bitacora/2026-11-04-medallas-configurables). Las plantillas (el SVG de
+// Kyan, la métrica y qué se edita) están en web/frontend/src/features/medals/templates.json.
 
-const Source = z.enum(['admin', 'auto', 'temporada']);
+export const MEDAL_METALS = ['bronce', 'plata', 'oro', 'platino', 'diamante'] as const;
+export const MEDAL_STATUS = ['draft', 'active', 'archived'] as const;
+export const MEDAL_AGGREGATIONS = ['total', 'avg_min_matches', 'max', 'streak', 'once', 'season_rank', 'manual'] as const;
 
-export const AdminMedalQuery = listQuery(['created_at', 'title'], { sort: 'created_at', order: 'desc' }).extend({
-  q: z.string().max(60).optional().openapi({ description: 'Busca en el alias del jugador' }),
-  season: z.string().max(40).optional().openapi({ description: 'id de la temporada, o `none` para las de carrera' }),
-  medal_key: MedalKey.optional(),
-  source: Source.optional().openapi({ description: '`admin`, `auto` o `temporada`' }),
-});
+export const MedalDesign = z
+  .object({
+    id: z.uuid().openapi({ description: 'La definición' }),
+    key: z.string(),
+    template: z.string().openapi({ description: 'Id de la plantilla del manifiesto (el SVG)' }),
+    title: z.string(),
+    number: z.string().nullable().openapi({ description: 'El número del dibujo' }),
+    label: z.string().nullable().openapi({ description: 'La etiqueta. En las de temporada, `S` y el número de la temporada' }),
+    band: z.string().nullable().openapi({ description: 'Texto de la banda' }),
+    metal: z.enum(MEDAL_METALS).nullable(),
+    accent: z.string().nullable().openapi({ description: 'Acento de la paleta del manifiesto' }),
+  })
+  .openapi('MedalDesign', { description: 'Lo necesario para dibujar una medalla con <Medal>' });
 
-export const AdminMedal = z
+const DesignInput = z
+  .object({
+    number: z.string().trim().max(5, 'El número: hasta 5 caracteres.').nullable().optional(),
+    label: z.string().trim().max(14, 'La etiqueta: hasta 14 caracteres.').nullable().optional(),
+    band: z.string().trim().max(14, 'La banda: hasta 14 caracteres.').nullable().optional(),
+    metal: z.enum(MEDAL_METALS).optional(),
+    accent: z.string().max(40).nullable().optional(),
+  })
+  .openapi('MedalDesignInput', { description: 'Solo lo que la plantilla deja editar; lo demás se descarta' });
+
+export const MedalDefinition = z
   .object({
     id: z.uuid(),
+    key: z.string(),
+    template: z.string(),
+    scope: z.string(),
     title: z.string(),
-    icon: z.string().nullable(),
-    medal_key: z.string().nullable(),
-    source: Source,
-    created_at: z.string(),
-    rank: z.number().int().nullable(),
-    season: z.object({ id: z.uuid(), number: z.number().int(), name: z.string() }).nullable(),
-    player: z.object({ id: z.uuid(), nick: z.string(), photo_url: z.string().nullable() }),
-  })
-  .openapi('AdminMedal');
-export const AdminMedalList = Envelope(AdminMedal).openapi('AdminMedalList');
-
-export const MedalGrantBody = z
-  .object({
-    title: z.string().trim().min(1).max(80),
-    icon: z.string().trim().min(1).max(8).default('🏅').openapi({ description: 'Un emoji (para la web vieja y si no hay dibujo)' }),
-    medal_key: MedalKey.optional(),
-    season_id: z.uuid().nullable().optional().openapi({ description: 'Temporada; sin esto (o `null`), es de carrera' }),
-    player_ids: z.array(z.uuid()).min(1).max(500).openapi({ description: 'Jugadores (hasta 500)' }),
-  })
-  .openapi('MedalGrantBody');
-export const MedalGrantResult = z
-  .object({
-    given: z.number().int().openapi({ description: 'Medallas dadas' }),
-    skipped: z.array(z.uuid()).openapi({ description: 'Jugadores que ya la tenían en esa temporada (no se repite)' }),
-  })
-  .openapi('MedalGrantResult');
-
-export const MedalPatchBody = z
-  .object({
-    title: z.string().trim().min(1).max(80).optional(),
-    season_id: z.uuid().nullable().optional().openapi({ description: 'Otra temporada, o `null` para que sea de carrera' }),
-  })
-  .refine((b) => b.title !== undefined || b.season_id !== undefined, { message: 'Mandá title o season_id' })
-  .openapi('MedalPatchBody');
-
-export const MedalIdsBody = z.object({ ids: z.array(z.uuid()).min(1).max(500) }).openapi('MedalIdsBody');
-export const MedalDeleted = z.object({ deleted: z.number().int() }).openapi('MedalDeleted');
-
-export const MedalRule = z
-  .object({
-    medal_key: z.string(),
+    description: z.string().nullable(),
     metric: z.string(),
-    threshold: z.number(),
-    title: z.string(),
-    min_matches: z.number().int(),
-    icon: z.string(),
-    active: z.boolean(),
+    aggregation: z.enum(MEDAL_AGGREGATIONS),
+    filters: z.record(z.string(), z.unknown()),
+    target: z.number(),
+    series: z.string().nullable(),
+    series_order: z.number().int().nullable(),
+    status: z.enum(MEDAL_STATUS),
+    retroactive: z.boolean(),
+    data_since: z.string().nullable().openapi({ description: 'Desde cuándo hay datos de la métrica' }),
+    activated_at: z.string().nullable(),
+    created_at: z.string(),
+    holders: z.number().int().openapi({ description: 'Cuántos jugadores la tienen' }),
+    design: MedalDesign,
   })
-  .openapi('MedalRule');
-export const MedalRuleList = z.object({ items: z.array(MedalRule) }).openapi('MedalRuleList');
-export const MedalRuleParam = z.object({ key: MedalKey.openapi({ param: { name: 'key', in: 'path' } }) });
-export const MedalRulePatch = z
+  .openapi('MedalDefinition');
+export const MedalDefinitionList = z.object({ items: z.array(MedalDefinition) }).openapi('MedalDefinitionList');
+
+export const MedalDefinitionCreate = z
   .object({
-    threshold: z.number().positive().optional(),
-    min_matches: z.number().int().min(0).max(10000).optional(),
-    title: z.string().trim().min(1).max(80).optional(),
-    active: z.boolean().optional(),
+    template: z.string().min(2).max(40),
+    target: z.number().positive().max(1_000_000),
+    title: z.string().trim().min(1).max(80).optional().openapi({ description: 'Por defecto, el formato de la plantilla con el objetivo' }),
+    description: z.string().trim().min(1).max(200).nullable().optional(),
+    min_matches: z.number().int().min(1).max(1000).optional().openapi({ description: 'Solo las de promedio (% HS, KDA, ADR): mínimo de mixes' }),
+    design: DesignInput.default({}),
   })
-  .refine((b) => Object.values(b).some((v) => v !== undefined), { message: 'Mandá al menos un campo' })
-  .openapi('MedalRulePatch');
-export const MedalRecalc = z.object({ given: z.number().int().openapi({ description: 'Medallas automáticas nuevas' }) }).openapi('MedalRecalc');
+  .openapi('MedalDefinitionCreate');
+
+export const MedalDefinitionPatch = z
+  .object({
+    target: z.number().positive().max(1_000_000).optional().openapi({ description: 'Solo en un borrador' }),
+    title: z.string().trim().min(1).max(80).optional(),
+    description: z.string().trim().min(1).max(200).nullable().optional(),
+    min_matches: z.number().int().min(1).max(1000).optional(),
+    design: DesignInput.optional(),
+  })
+  .openapi('MedalDefinitionPatch');
+
+export const MedalActivate = z
+  .object({ retroactive: z.boolean().openapi({ description: 'Dársela ya a quienes la cumplen' }) })
+  .openapi('MedalActivate');
+export const MedalActivated = z
+  .object({ definition: MedalDefinition, awarded: z.number().int().openapi({ description: 'A cuántos se la dio al activarla' }) })
+  .openapi('MedalActivated');
+
+export const MedalPreviewBody = z
+  .object({
+    template: z.string().min(2).max(40),
+    target: z.number().positive().max(1_000_000),
+    min_matches: z.number().int().min(1).max(1000).optional(),
+  })
+  .openapi('MedalPreviewBody');
+export const MedalPreview = z
+  .object({ players: z.number().int().nullable().openapi({ description: 'Quiénes la recibirían hoy; null en las de temporada y las manuales' }) })
+  .openapi('MedalPreview');
+
+export const MedalProgress = z
+  .object({
+    design: MedalDesign,
+    series: z.string().nullable(),
+    series_order: z.number().int().nullable(),
+    target: z.number(),
+    value: z.number().openapi({ description: 'Lo que lleva el jugador' }),
+    data_since: z.string().nullable(),
+    earned_at: z.string().nullable().openapi({ description: 'Cuándo la ganó; null = bloqueada' }),
+  })
+  .openapi('MedalProgress');
+export const MedalProgressList = z
+  .object({
+    items: z.array(MedalProgress),
+    hidden: z.boolean().openapi({ description: 'Quien mira no es el dueño de la ficha (ni el admin): no ve el progreso de las bloqueadas' }),
+    stats_since: z.string().nullable().openapi({
+      description: 'Desde cuándo cuentan las stats: el inicio de la temporada 2. null durante la BETA, que no da medallas',
+    }),
+  })
+  .openapi('MedalProgressList');
+
+/** Dar una medalla manual (Administración › Jugadores › Fichas). */
+export const MedalGrant = z
+  .object({
+    definition_id: z.uuid().openapi({ description: 'Una definición manual (Comunidad: staff, caster, campeón de torneo…)' }),
+    title: z.string().trim().min(1).max(80).optional().openapi({ description: 'Por defecto, el de la definición (por ejemplo, el nombre del torneo)' }),
+  })
+  .openapi('MedalGrant');

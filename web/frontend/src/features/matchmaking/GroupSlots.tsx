@@ -8,30 +8,26 @@ import { errorMessage } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  CardBackground,
-  FramedAvatar,
-  NameFx,
-  VipBadge,
-} from "@/features/shop/cosmetics"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtClock, secondsLeft } from "./labels"
 import { LeavePartyButton, PartyMenu, usePartyNotices } from "./PartyMenu"
 import { playerSearchOptions, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
-import type { Country, MmCosmetics, MmState } from "./types"
+import type { Country, MmState } from "./types"
 import { useNow } from "./useNow"
 
 // "Tu equipo" (plan, sección 7): una tarjeta por lugar del equipo. En el medio, el jugador; al lado,
 // el grupo; después, los lugares que el grupo puede llenar (se invita) y los que llena la cola.
 
-type Card = MmCosmetics & {
+type Card = {
+  vip?: boolean
   player_id: string
   nick: string
   country: Country | null
@@ -76,7 +72,7 @@ export function buildSlots(state: MmState, teamSize: number): Slot[] {
             : {
                 ...m,
                 country: null,
-                photo_url: null,
+                photo_url: m.photo_url ?? null,
               }
         )
     : [{ ...state.me, player_id: "me", is_me: true, is_leader: false }]
@@ -159,15 +155,11 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
     <div
       className={cn(
         "relative isolate flex size-full flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border p-3",
-        card.background_url
-          ? "border-white/15 text-white"
-          : card.is_me
-            ? "bg-card shadow-[inset_0_0_0_2px_var(--primary)]"
-            : "bg-card"
+        card.is_me
+          ? "bg-card shadow-[inset_0_0_0_2px_var(--primary)]"
+          : "bg-card"
       )}
     >
-      {/* Fondo de miniperfil de la tienda, detrás de todo. */}
-      <CardBackground src={card.background_url} />
       {menu}
       {card.is_leader && (
         <CrownIcon
@@ -175,36 +167,21 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
           className="absolute top-2.5 right-2.5 size-4 text-primary"
         />
       )}
-      {card.frame_url ? (
-        <FramedAvatar
-          src={card.photo_url}
-          alias={card.nick}
-          frameSrc={card.frame_url}
-          size={88}
-        />
-      ) : (
-        <Avatar className="size-16 ring-2 ring-foreground/10">
-          {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
-          <AvatarFallback className="text-base font-semibold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      )}
+      <Avatar className="size-16 ring-2 ring-foreground/10">
+        {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
+        <AvatarFallback className="text-base font-semibold">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
       <span className="flex max-w-full items-center gap-1.5 text-sm font-semibold">
         {card.country && <CountryFlag country={card.country} />}
-        <NameFx
-          text={card.nick}
-          effect={{ css_class: card.name_class ?? null }}
-          className="truncate"
-        />
-        {card.vip && <VipBadge />}
+        <span className="truncate">{card.nick}</span>
+        {card.vip && <Badge variant="vip">VIP</Badge>}
       </span>
       <span
         className={cn(
           "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs font-semibold tabular-nums",
-          card.background_url
-            ? "border-white/20 bg-black/40"
-            : "bg-background/40"
+          "bg-background/40"
         )}
       >
         <LevelBadge level={card.level} size={20} className="rounded-full" />
@@ -276,7 +253,7 @@ function InviteSlot({ disabled }: { disabled: boolean }) {
         <ul className="mt-2 flex max-h-56 flex-col overflow-y-auto">
           {term.trim().length < 2 && (
             <li className="px-2 py-1.5 text-xs text-muted-foreground">
-              Escribí al menos 2 letras.
+              Escribe al menos 2 letras.
             </li>
           )}
           {term.trim().length >= 2 && !isFetching && hits?.length === 0 && (

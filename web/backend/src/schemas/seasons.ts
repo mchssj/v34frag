@@ -1,6 +1,7 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
 import { confirmField } from './common';
+import { MedalDesign } from './medals';
 import { LEVEL_RANGES, TeamRef } from './players';
 
 // Temporadas: ranking, medallas por tramo y reinicio del nivel 10 (plan docs/bitacora/2026-10-20-temporadas).
@@ -14,8 +15,15 @@ export const SeasonTier = z
     from: z.number().int().min(1).openapi({ description: 'Desde este puesto' }),
     to: z.number().int().min(1).nullable().openapi({ description: 'Hasta este puesto; `null` en el último tramo (llega hasta el top N)' }),
     name: z.string().trim().min(1).max(40).openapi({ description: 'Nombre de la medalla. `{top}` se reemplaza por el top N ("Top {top}" → "Top 20")' }),
-    icon: z.string().trim().min(1).max(8).openapi({ description: 'Un emoji' }),
+    definition: z
+      .string()
+      .regex(/^[a-z0-9_]{2,60}$/)
+      .nullable()
+      .optional()
+      .openapi({ description: 'Clave de la medalla de temporada que reciben (replanteo 79). Reemplaza al emoji' }),
+    icon: z.string().trim().min(1).max(8).nullable().optional().openapi({ description: 'Emoji de los tramos viejos; no se muestra' }),
   })
+  .refine((t) => !!t.definition || !!t.icon, { message: 'Cada tramo lleva una medalla', path: ['definition'] })
   .openapi('SeasonTier');
 
 /** Lo mismo que season_tiers_ok: en orden desde el puesto 1, sin huecos, y solo el último sin `to`. */
@@ -78,7 +86,15 @@ export const SeasonQuery = listQuery(['number'], { sort: 'number', order: 'desc'
 });
 export const SeasonList = Envelope(Season).openapi('SeasonList');
 
-const Medal = z.object({ name: z.string(), icon: z.string() }).nullable().openapi({ description: '`null`: sin medalla' });
+const Medal = z
+  .object({
+    name: z.string(),
+    // El dibujo de la medalla del tramo (replanteo 79); null si el tramo no tiene definición. Unión para que el tipo
+    // generado sea "X | null".
+    design: z.union([MedalDesign, z.null()]),
+  })
+  .nullable()
+  .openapi({ description: '`null`: sin medalla' });
 
 export const Standing = z
   .object({

@@ -2,13 +2,13 @@ import {
   AwardIcon,
   BanIcon,
   CalendarRangeIcon,
-  MedalIcon,
   ChartColumnIcon,
   ClapperboardIcon,
   CrosshairIcon,
   Gamepad2Icon,
   GavelIcon,
   HouseIcon,
+  LifeBuoyIcon,
   ListOrderedIcon,
   MapIcon,
   ServerIcon,
@@ -36,6 +36,8 @@ export type NavItem = {
   badge?: BadgeKey
   /** Ítem de Administración: visible solo si el rol puede entrar a esa sección. */
   admin?: AdminSection
+  /** Sección sin terminar: se ve en el menú, gris y sin link, con "Pronto". */
+  soon?: boolean
 }
 
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
@@ -52,13 +54,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         badge: "live",
       },
       { key: "events", label: "Torneos", to: "/events", icon: TrophyIcon },
-      {
-        key: "pcw",
-        label: "PCW",
-        to: "/pcw",
-        icon: CrosshairIcon,
-        badge: "pcw",
-      },
+      // Desactivado hasta que PCW esté listo (Daniel, 2026-11-02).
+      { key: "pcw", label: "PCW", to: "/pcw", icon: CrosshairIcon, soon: true },
       { key: "myteam", label: "Mi equipo", to: "/myteam", icon: ShieldIcon },
     ],
   },
@@ -71,12 +68,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         to: "/ranking",
         icon: ListOrderedIcon,
       },
-      {
-        key: "hall-of-fame",
-        label: "Palmarés",
-        to: "/hall-of-fame",
-        icon: AwardIcon,
-      },
+      // El manual de usuario, filtrado por rol (docs/bitacora/2026-11-02-manual-usuario).
+      { key: "help", label: "Ayuda", to: "/help", icon: LifeBuoyIcon },
     ],
   },
   {
@@ -128,7 +121,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         key: "admin-medals",
         label: "Medallas",
         to: "/admin/medals",
-        icon: MedalIcon,
+        icon: AwardIcon,
         admin: "medals",
       },
       {
@@ -193,7 +186,7 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
   clips: "Clips",
   ranking: "Ranking de equipos",
   maps: "Mapas",
-  users: "Usuarios y moderación",
+  users: "Usuarios",
   bans: "Baneos",
   anticheat: "Anticheat",
 }
@@ -209,6 +202,8 @@ const PROFILE_TITLES: Record<string, string> = {
 /** Datos de la vista que necesitan los breadcrumbs (vienen de la API; mientras cargan, faltan). */
 export type CrumbData = {
   team?: string
+  /** Página del manual: su sección y su título. */
+  help?: { section: string; title: string }
   event?: string
   match?: {
     kind: "mix" | "pcw" | "official"
@@ -303,6 +298,15 @@ export function breadcrumbsFor(
         { label: m ? `${m.a} vs ${m.b}` : "Partida" },
       ]
     }
+    case "help":
+      return second
+        ? [
+            { label: "Ayuda", to: "/help" },
+            ...(data.help
+              ? [{ label: data.help.section }, { label: data.help.title }]
+              : []),
+          ]
+        : [{ label: "Ayuda" }]
     case "profile": {
       const section = PROFILE_TITLES[second]
       return section

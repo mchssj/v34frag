@@ -104,13 +104,15 @@ function MapsEditor({
     })
 
   return (
-    <Card>
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <CardHeader>
-        <CardTitle>Mapas del veto en {mode}</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[15px] font-semibold">
+          Mapas del veto en {mode}
+        </CardTitle>
+        <CardDescription className="text-[13px] leading-relaxed">
           Los marcados entran al veto de capitanes de este modo, en este orden.
           Son aparte de los de Mixes. Mínimo 2. Para sumar un mapa o cambiar su
-          imagen, andá a{" "}
+          imagen, ve a{" "}
           <Link to="/admin/maps" className="underline underline-offset-4">
             Administración › Mapas
           </Link>

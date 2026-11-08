@@ -6,6 +6,7 @@ import { useMine } from "@/features/ranking/components/parts"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
+  featuredClipsOptions,
   mapStatsOptions,
   playerMatchesOptions,
   seasonsOptions,
@@ -20,9 +21,13 @@ import { Matches } from "./tabs/MatchesTab"
 import { Teams } from "./tabs/TeamsTab"
 import { Seasons } from "./tabs/SeasonsTab"
 import { Bio } from "./tabs/BioTab"
+import { Clips } from "./tabs/ClipsTab"
+import { Achievements } from "./tabs/AchievementsTab"
 
 const LABELS: Record<Tab, string> = {
   resumen: "Resumen",
+  clips: "Clips",
+  logros: "Logros",
   mapas: "Mapas",
   partidas: "Partidas",
   equipos: "Equipos",
@@ -39,12 +44,17 @@ type Props = {
 }
 
 /** Cuántos hay en cada pestaña de lista (sin filtros); mientras carga, nada. */
-function useTabCounts(nick: string): Partial<Record<Tab, number>> {
+function useTabCounts(
+  nick: string,
+  playerId: string
+): Partial<Record<Tab, number>> {
+  const clips = useQuery(featuredClipsOptions(playerId)).data
   const maps = useQuery(mapStatsOptions(nick)).data
   const matches = useQuery(playerMatchesOptions(nick, {})).data
   const teams = useQuery(teamsOptions(nick)).data
   const seasons = useQuery(seasonsOptions(nick)).data
   return {
+    clips: clips?.length,
     mapas: maps?.length,
     partidas: matches?.total,
     equipos: teams?.length,
@@ -87,7 +97,11 @@ function useTabRow(tab: Tab) {
 
 export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
   const tab = search.tab ?? "resumen"
-  const counts = useTabCounts(nick)
+  const counts = useTabCounts(nick, player.id)
+  // (replanteo 76) Sin destacados, la pestaña Clips no aparece; si la URL la pide, se ve el aviso vacío.
+  const tabs = TABS.filter(
+    (t) => t !== "clips" || (counts.clips ?? 0) > 0 || tab === "clips"
+  )
   const owner = useMine().playerId === player.id
   const { ref: rowRef, more } = useTabRow(tab)
   // "contents": la barra y el panel siguen siendo hijos de la sección (con su gap).
@@ -103,9 +117,9 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
           ref={rowRef}
           variant="line"
           aria-label="Secciones del perfil"
-          className="flex h-auto w-full [scrollbar-width:none] justify-start gap-1 overflow-x-auto rounded-none border-b p-0 group-data-horizontal/tabs:h-auto"
+          className="flex h-auto w-full [scrollbar-width:none] justify-start gap-1 overflow-x-auto overflow-y-hidden rounded-none border-b p-0 group-data-horizontal/tabs:h-auto"
         >
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -137,6 +151,8 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
             onAll={() => onTab("partidas")}
           />
         )}
+        {tab === "clips" && <Clips playerId={player.id} alias={player.alias} />}
+        {tab === "logros" && <Achievements nick={nick} />}
         {tab === "mapas" && <Maps nick={nick} />}
         {tab === "partidas" && (
           <Matches nick={nick} search={search} onChange={onChange} />

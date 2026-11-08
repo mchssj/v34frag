@@ -1,6 +1,6 @@
-import { cn } from "cn"
 import { useState } from "react"
 
+import { AdminHeader, AdminTabs } from "@/features/admin/components/ui"
 import { GeneralForm } from "./GeneralForm"
 import { LobbiesPanel } from "./LobbiesPanel"
 import { MapsPanel } from "./MapsPanel"
@@ -27,37 +27,17 @@ export function AdminMatchmaking() {
   const [tab, setTab] = useState<Tab>("general")
   return (
     <section className="flex flex-col gap-5">
-      <h1 className="text-2xl font-semibold tracking-[-0.5px]">Matchmaking</h1>
-      <div
-        role="tablist"
-        aria-label="Secciones del matchmaking"
-        className="flex gap-1 border-b"
-      >
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            role="tab"
-            id={`mm-tab-${t.key}`}
-            aria-selected={tab === t.key}
-            aria-controls={`mm-panel-${t.key}`}
-            onClick={() => setTab(t.key)}
-            className={cn(
-              "-mb-px border-b-2 px-3 py-2 text-sm font-medium text-muted-foreground transition",
-              tab === t.key
-                ? "border-primary text-foreground"
-                : "border-transparent hover:text-foreground"
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div
-        role="tabpanel"
-        id={`mm-panel-${tab}`}
-        aria-labelledby={`mm-tab-${tab}`}
-      >
+      <AdminHeader
+        title="Matchmaking"
+        subtitle="La cola, los mapas y los sonidos de Jugar, las contraseñas de los servidores, las salas en curso, los reportes y las métricas."
+      />
+      <AdminTabs
+        label="Secciones del matchmaking"
+        value={tab}
+        onChange={setTab}
+        tabs={[...TABS]}
+      />
+      <div>
         {tab === "general" && <GeneralForm />}
         {tab === "maps" && <MapsPanel />}
         {tab === "sounds" && <SoundsPanel />}

@@ -27,7 +27,7 @@ export function SummaryTab({ event }: { event: EventDetail }) {
     ["Partidas", boText(event) ?? "Por definir"],
     ["Estado", STATUS_LABEL[event.status]],
     ["Fechas", dateRange(event.starts_on, event.ends_on)],
-    ["Premio", prizeText(event.prize)],
+    ["Premio", prizeText(event)],
     [
       "Cupo",
       event.max_teams
@@ -62,15 +62,18 @@ export function SummaryTab({ event }: { event: EventDetail }) {
           ))}
         </dl>
       </SectionCard>
-      <SectionCard title="Reglas">
-        <ol className="flex list-decimal flex-col gap-2 pl-[18px] text-sm leading-normal">
-          {rulesOf(event.rules).map((rule, i) => (
-            <li key={i}>
-              <Rule text={rule} />
-            </li>
-          ))}
-        </ol>
-      </SectionCard>
+      {/* Un histórico ya se jugó: las reglas de la liga por defecto no aplican, solo las que cargue. */}
+      {!(event.historic && !event.rules?.trim()) && (
+        <SectionCard title="Reglas">
+          <ol className="flex list-decimal flex-col gap-2 pl-[18px] text-sm leading-normal">
+            {rulesOf(event.rules).map((rule, i) => (
+              <li key={i}>
+                <Rule text={rule} />
+              </li>
+            ))}
+          </ol>
+        </SectionCard>
+      )}
       <Entrants event={event} />
     </div>
   )
@@ -115,17 +118,31 @@ function Entrants({ event }: { event: EventDetail }) {
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
           {registrations.map((r) => (
             <li key={r.team.id}>
-              <Link
-                to="/teams/$id"
-                params={{ id: r.team.id }}
-                className="flex items-center gap-2 rounded-[calc(var(--radius)-2px)] border bg-background p-2 text-[13px] transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                <span className="w-4 shrink-0 font-mono text-[11px] font-medium text-muted-foreground">
-                  {r.seed}
+              {r.team.historic ? (
+                // Equipo histórico: no está en la plataforma y no tiene página.
+                <span
+                  title="Equipo que no está en la plataforma"
+                  className="flex items-center gap-2 rounded-[calc(var(--radius)-2px)] border bg-background p-2 text-[13px]"
+                >
+                  <span className="w-4 shrink-0 font-mono text-[11px] font-medium text-muted-foreground">
+                    {r.seed}
+                  </span>
+                  <TagBox team={r.team} />
+                  <span className="truncate font-medium">{r.team.name}</span>
                 </span>
-                <TagBox team={r.team} />
-                <span className="truncate font-medium">{r.team.name}</span>
-              </Link>
+              ) : (
+                <Link
+                  to="/teams/$id"
+                  params={{ id: r.team.id }}
+                  className="flex items-center gap-2 rounded-[calc(var(--radius)-2px)] border bg-background p-2 text-[13px] transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <span className="w-4 shrink-0 font-mono text-[11px] font-medium text-muted-foreground">
+                    {r.seed}
+                  </span>
+                  <TagBox team={r.team} />
+                  <span className="truncate font-medium">{r.team.name}</span>
+                </Link>
+              )}
             </li>
           ))}
           {Array.from({ length: slots }, (_, i) => (

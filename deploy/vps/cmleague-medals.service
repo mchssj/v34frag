@@ -1,0 +1,32 @@
+# Motor de las medallas configurables (bitácora docs/bitacora/2026-11-04-medallas-configurables). Lo lanza cmleague-medals.timer.
+[Unit]
+Description=CMLeague: motor de medallas
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/srv/cmleague/api/current/medals-tick.mjs
+
+[Service]
+Type=oneshot
+User=cmleague
+Group=cmleague
+WorkingDirectory=/srv/cmleague/api/current
+EnvironmentFile=/etc/cmleague/season.env
+ExecStart=/usr/bin/node --enable-source-maps /srv/cmleague/api/current/medals-tick.mjs
+TimeoutStartSec=120
+MemoryMax=256M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadOnlyPaths=/srv/cmleague
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native

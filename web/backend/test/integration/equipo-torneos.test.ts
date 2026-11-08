@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
-import { admin, createUser, localEnv } from './local';
+import { admin, createUser, localEnv, approveEvent } from './local';
 
 // Equipo y Torneos (replanteo 33, bitácora 2026-10-28-equipo-torneos-api) contra la Supabase local.
 const app = createApp();
@@ -201,6 +201,7 @@ describe('torneos', () => {
     });
     expect(created.status).toBe(201);
     const ev = created.body.id as string;
+    await approveEvent(ev);
     const t = await team(1);
     const sub = await player();
     const coach = await player();
@@ -242,6 +243,7 @@ describe('torneos', () => {
 
   it('banner: lo sube el organizador, con medidas 4:1, y sale en el listado', async () => {
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Banner ${rnd()}`, template: 'single' } })).body.id as string;
+    await approveEvent(ev);
     expect((await req('PUT', `/api/v1/events/${ev}/banner`, { token: org.token, form: form({ file: png(800, 400) }) })).status).toBe(400);
     const otro = await player();
     expect((await req('PUT', `/api/v1/events/${ev}/banner`, { token: otro.token, form: form({ file: png(1600, 400) }) })).status).toBe(403);

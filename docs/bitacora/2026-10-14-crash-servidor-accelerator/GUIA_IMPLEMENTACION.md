@@ -68,3 +68,15 @@ Ninguno.
 - **RBK:** lo mismo que en el servidor real (sus tres archivos y `configs/core.cfg.bak-accelerator`).
 - **Servidor local:** lo mismo con `accelerator.ext.dll`, y sacar las dos líneas `Minidump…` de `core.cfg`.
 - **Worker:** quitar la ruta `/crash` y `saveCrash`, volver a desplegar y `npx wrangler secret delete CRASH_KEY`.
+
+## Retiro temporal del #3 (2026-10-15)
+
+Se anota el 2026-11-04, desde los cambios sin commit que había en `v34frag-main`. El servidor real de ExtremeHost se llamaba "#1" en esa fecha y hoy es el #3.
+
+Hubo lag para algunos jugadores en los mixes del 2026-10-14 por la noche, y Daniel pidió retirar Accelerator de ese servidor para descartarlo. Accelerator no hace nada mientras el servidor funciona, así que era poco probable que fuera la causa.
+
+- Al terminar el mix (00:23, hora del servidor), se movieron `extensions/accelerator.ext.so`, `extensions/accelerator.autoload` y `gamedata/accelerator.games.txt` a `addons/sourcemod/accelerator_retirado/`. `core.cfg` quedó igual.
+- **El panel quedó en "stopping":** `srcds_run` vuelve a lanzar el juego cuando se cierra, así que el contenedor nunca se detiene.
+- **Incidente:** a las 00:34, 10 minutos después del pedido de reinicio por la API, el panel mató el contenedor a la fuerza. Se perdió el mix `srv1-20261015T002733-453e` (ronda 5 de 30, 1-3). La forma correcta de reiniciar está en `CLAUDE.md` (Cuidados).
+
+**Estado el 2026-11-04:** los archivos volvieron a `extensions/` y `gamedata/` (visto por SFTP) y queda una copia en `accelerator_retirado/`. No se encontró cuándo volvieron. Falta confirmar con `sm exts list` que cargue.

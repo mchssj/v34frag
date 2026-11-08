@@ -1,4 +1,5 @@
 import type { Schemas } from "@/api/client"
+import type { paths } from "@/api/schema"
 
 // Tipos del módulo (los de la API y los propios).
 
@@ -12,3 +13,12 @@ export type ClipConfigPatch = Schemas["ClipConfigPatch"]
 export type ClipReview = Schemas["ClipReview"]
 
 export type ClipType = Schemas["Clip"]["type"]
+
+export type AdminClip = Schemas["AdminClip"]
+
+/** Filtro de estado del video en la lista de clips (los mismos valores que la API). */
+export type AdminClipStatus = NonNullable<
+  NonNullable<
+    paths["/api/v1/admin/clips"]["get"]["parameters"]["query"]
+  >["status"]
+>

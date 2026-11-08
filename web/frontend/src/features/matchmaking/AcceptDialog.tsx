@@ -48,7 +48,7 @@ export function AcceptDialog({
             {lobby.map ?? "Mapa al azar"} · 5v5 ·{" "}
             {meAccepted
               ? "esperando al resto"
-              : "aceptá antes de que termine el tiempo"}
+              : "acepta antes de que termine el tiempo"}
           </DialogDescription>
         </DialogHeader>
 

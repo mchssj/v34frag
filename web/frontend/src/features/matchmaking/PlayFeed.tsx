@@ -7,6 +7,7 @@ import type { ReactNode } from "react"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card } from "@/components/ui/card"
 import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
 import { LiveChip } from "@/features/mixes/components/parts"
 import { BlockPanel } from "./BlockPanel"
@@ -51,16 +52,19 @@ function Panel({
   children: ReactNode
 }) {
   return (
-    <section
-      aria-label={title}
-      className="overflow-hidden rounded-xl border bg-card"
+    <Card
+      variant="outline"
+      asChild
+      className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
     >
-      <div className="flex items-center justify-between border-b px-4 py-2.5">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        {action}
-      </div>
-      {children}
-    </section>
+      <section aria-label={title}>
+        <div className="flex items-center justify-between border-b px-4 py-3.5">
+          <h2 className="text-sm font-semibold">{title}</h2>
+          {action}
+        </div>
+        {children}
+      </section>
+    </Card>
   )
 }
 
@@ -96,11 +100,11 @@ function Sanctions({ sanctions }: { sanctions: MmState["sanctions"] }) {
         {sanctions.level > 0 && sanctions.level_resets_at && (
           <p className="text-xs text-muted-foreground">
             Escalón {sanctions.level}: baja el{" "}
-            {fmtDateTime(sanctions.level_resets_at)} si no volvés a faltar.
+            {fmtDateTime(sanctions.level_resets_at)} si no vuelves a faltar.
           </p>
         )}
         {sanctions.items.length === 0 ? (
-          <p className="text-muted-foreground">No tenés sanciones.</p>
+          <p className="text-muted-foreground">No tienes sanciones.</p>
         ) : (
           <ul className="flex max-h-44 flex-col gap-2 overflow-y-auto">
             {sanctions.items.map((s) => (
@@ -125,29 +129,32 @@ function Sanctions({ sanctions }: { sanctions: MmState["sanctions"] }) {
 function Highlight({ item }: { item: MmFeed["highlight"] }) {
   if (!item) return null
   return (
-    <section
-      aria-label="Jugada de la semana"
-      className="overflow-hidden rounded-xl border bg-card"
+    <Card
+      variant="outline"
+      asChild
+      className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
     >
-      <Link
-        to="/match/$id"
-        params={{ id: item.match_id }}
-        className="block h-full transition-opacity hover:opacity-85"
-      >
-        <MapBackdrop image={item.image_url} className="h-full py-0">
-          <div className="flex h-full min-h-24 flex-col justify-end gap-0.5 p-4">
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <PlayIcon aria-hidden className="size-3" />
-              Jugada de la semana
-            </span>
-            <span className="text-lg font-semibold">{item.title}</span>
-            <span className="text-[13px] text-muted-foreground">
-              {item.nick}
-            </span>
-          </div>
-        </MapBackdrop>
-      </Link>
-    </section>
+      <section aria-label="Jugada de la semana">
+        <Link
+          to="/match/$id"
+          params={{ id: item.match_id }}
+          className="block h-full transition-opacity hover:opacity-85"
+        >
+          <MapBackdrop image={item.image_url} className="h-full py-0">
+            <div className="flex h-full min-h-24 flex-col justify-end gap-0.5 p-4">
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <PlayIcon aria-hidden className="size-3" />
+                Jugada de la semana
+              </span>
+              <span className="text-lg font-semibold">{item.title}</span>
+              <span className="text-[13px] text-muted-foreground">
+                {item.nick}
+              </span>
+            </div>
+          </MapBackdrop>
+        </Link>
+      </section>
+    </Card>
   )
 }
 

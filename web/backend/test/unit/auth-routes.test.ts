@@ -55,6 +55,30 @@ describe('POST /auth/signup', () => {
     expect(JSON.parse(String(call[1]?.body))).toMatchObject({ email: 'a@b.co', data: { tag: 'Tag1' } });
   });
 
+  it('email con una cuenta confirmada (identities vacío): 409 CONFLICT en el campo email', async () => {
+    gotrue((url) =>
+      url.includes('/auth/v1/signup')
+        ? Response.json({ id: USER, aud: 'authenticated', email: 'a@b.co', identities: [], created_at: '2026-10-14T00:00:00Z' })
+        : undefined,
+    );
+    const res = await post('/auth/signup', { email: 'a@b.co', password: 'secreta1', tag: 'Tag1' });
+    expect(res.status).toBe(409);
+    const body = await json(res);
+    expect(body.error.code).toBe('CONFLICT');
+    expect(body.error.details).toEqual([{ path: 'email', message: 'Ya hay una cuenta con ese email.' }]);
+  });
+
+  it('email con una cuenta sin confirmar (con identidad): sigue pidiendo confirmar', async () => {
+    gotrue((url) =>
+      url.includes('/auth/v1/signup')
+        ? Response.json({ id: USER, aud: 'authenticated', email: 'a@b.co', identities: [{ id: USER, provider: 'email' }] })
+        : undefined,
+    );
+    const res = await post('/auth/signup', { email: 'a@b.co', password: 'secreta1', tag: 'Tag1' });
+    expect(res.status).toBe(201);
+    expect(await json(res)).toEqual({ session: null, needsConfirmation: true });
+  });
+
   it.each([
     ['taken', 409, 'CONFLICT'],
     ['blocked', 400, 'VALIDATION_ERROR'],

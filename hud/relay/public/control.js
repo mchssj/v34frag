@@ -178,6 +178,46 @@ async function copy(text, button) {
   }
 }
 
+/** Retraso del HUD para el servidor elegido: el tv_delay de la SourceTV, en vivo o fijo (se guarda por servidor). */
+function renderDelay(s) {
+  const server = s.mode === "vps" ? s.selected : "local";
+  $("delay-section").hidden = !server;
+  // No pisar los segundos que el streamer está escribiendo.
+  if (!server || $("delay").contains(document.activeElement)) return;
+  const set = (mode) => send({ delay: { server, mode } }).then(refreshStatus);
+  const off = s.delayLocked ? { disabled: "" } : {};
+  const tv = s.tvDelay ?? 0;
+  const fixed = typeof s.delayMode === "number";
+  const secs = el("input", { type: "number", min: "1", max: "300", step: "1", placeholder: "seg", "aria-label": "Segundos de retraso", ...off });
+  secs.value = fixed ? String(s.delayMode) : "";
+  const applySecs = () => {
+    const n = Math.round(Number(secs.value));
+    if (n >= 1 && n <= 300) set(n);
+    else secs.value = fixed ? String(s.delayMode) : "";
+  };
+  secs.addEventListener("change", applySecs);
+  secs.addEventListener("keydown", (e) => e.key === "Enter" && secs.blur());
+  const btn = (on, label, onclick) => el("button", { class: on ? "on" : "", onclick, ...off }, label);
+  $("delay").replaceChildren(
+    el(
+      "div",
+      { class: "delay" },
+      btn(s.delayMode === "tv", `SourceTV (${tv} s)`, () => set("tv")),
+      btn(s.delayMode === "live", "En vivo", () => set("live")),
+      btn(fixed, "Fijo", () => (secs.value ? applySecs() : secs.focus())),
+      secs,
+      el("span", { class: "hint" }, "segundos (1 a 300)"),
+    ),
+    el("div", { class: "hint" }, `Tu HUD va con ${s.delaySeconds ?? 0} s de retraso. Se guarda para este servidor.`),
+    s.delayLocked ? el("div", { class: "hint warn" }, `Fijado en la configuración del relay: ${s.delaySeconds} s para todos.`) : null,
+    (s.delaySeconds ?? 0) < tv
+      ? el("div", { class: "hint bad" }, "El HUD va adelantado a la SourceTV: muestra plata y vida en tiempo real. Usalo solo si transmitís desde adentro del juego.")
+      : null,
+  );
+}
+
+const delayLabel = (s) => (s.delayLocked ? " (fijo del relay)" : s.delayMode === "tv" ? " (SourceTV)" : s.delayMode === "live" ? " (en vivo)" : "");
+
 let connected = false;
 async function refreshStatus() {
   const box = $("status");
@@ -189,15 +229,17 @@ async function refreshStatus() {
     const s = await (await fetch("api/status")).json();
     if (s.mode === "vps") {
       renderServers(s);
+      renderDelay(s);
       const chosen = s.servers.find((x) => x.id === s.selected);
       box.replaceChildren(
         `Relay ${s.version} · ${s.alias} · `,
         chosen ? receiving(chosen.lastPacketMsAgo) : el("b", { class: "bad" }, "sin servidor elegido"),
-        chosen ? ` · retraso ${s.delaySeconds} s` : "",
+        chosen ? ` · retraso ${s.delaySeconds} s${delayLabel(s)}` : "",
         ` · tus HUD abiertos: ${s.hudOpen}`,
       );
     } else {
-      box.replaceChildren(`Relay ${s.version} · `, receiving(s.lastPacketMsAgo), ` · retraso ${s.delaySeconds} s · HUD abiertos: ${s.hudOpen}`);
+      renderDelay(s);
+      box.replaceChildren(`Relay ${s.version} · `, receiving(s.lastPacketMsAgo), ` · retraso ${s.delaySeconds} s${delayLabel(s)} · HUD abiertos: ${s.hudOpen}`);
     }
   } catch {
     box.replaceChildren(el("b", { class: "bad" }, "Sin conexión con el relay."));

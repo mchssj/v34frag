@@ -95,7 +95,7 @@ describe("campana de notificaciones", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("Te toca vetar")).toBeInTheDocument()
     expect(
-      screen.getByText("Nueva medalla: 🏅 BETA · Top 10")
+      screen.getByText("Nueva medalla: 100 headshots")
     ).toBeInTheDocument()
     // Un pedido ya resuelto muestra cómo quedó, sin botones.
     const done = screen

@@ -50,6 +50,15 @@ import {
   useUploadPlayerPhoto,
 } from "../api/queries"
 import type { FichaFilter, PlayerDetail, PlayerSummary } from "../types"
+import { Medal } from "@/features/medals/Medal"
+import { activeMedalsOptions } from "../../medals/api/queries"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const COLUMNS: DataColumn<PlayerSummary>[] = [
   {
@@ -895,9 +904,11 @@ function Ips({ p, onOpen }: { p: PlayerDetail; onOpen: (id: string) => void }) {
 function Medals({ playerId }: { playerId: string }) {
   const id = useId()
   const medals = useQuery(medalsOptions(playerId))
+  const defs = useQuery(activeMedalsOptions)
+  const manual = (defs.data ?? []).filter((d) => d.aggregation === "manual")
   const add = useAddMedal(playerId)
   const del = useDeleteMedal(playerId)
-  const [icon, setIcon] = useState("")
+  const [definition, setDefinition] = useState<string | undefined>(undefined)
   const [title, setTitle] = useState("")
 
   return (
@@ -908,18 +919,15 @@ function Medals({ playerId }: { playerId: string }) {
       <ul className="flex flex-col gap-2">
         {medals.data?.items.map((m) => (
           <li key={m.id} className="flex items-center gap-2.5">
-            <span
-              aria-hidden
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-[15px]"
-            >
-              {m.icon ?? "·"}
-            </span>
+            <Medal look={m.design} size={32} title={m.design.title} />
             <span className="flex flex-1 flex-col gap-0.5">
               <span className="font-medium">{m.title}</span>
               <span className="text-xs text-muted-foreground">
                 {m.season
                   ? `Por la ${m.season.name}${m.rank ? ` (puesto ${m.rank})` : ""}`
-                  : `Dada a mano el ${fmtDate(m.created_at)}`}
+                  : m.source === "auto"
+                    ? `La dio el juego el ${fmtDate(m.created_at)}`
+                    : `Dada a mano el ${fmtDate(m.created_at)}`}
               </span>
             </span>
             <Button
@@ -939,29 +947,33 @@ function Medals({ playerId }: { playerId: string }) {
           </li>
         ))}
       </ul>
-      <div className="grid grid-cols-[72px_minmax(0,1fr)_auto] items-end gap-2">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-2">
         <div className="flex flex-col gap-1">
           <Label
-            htmlFor={`${id}-icon`}
+            htmlFor={`${id}-def`}
             className="text-xs font-normal text-muted-foreground"
           >
-            Ícono
+            Medalla
           </Label>
-          <Input
-            id={`${id}-icon`}
-            value={icon}
-            maxLength={8}
-            placeholder="Emoji"
-            className="text-center"
-            onChange={(e) => setIcon(e.target.value)}
-          />
+          <Select value={definition} onValueChange={setDefinition}>
+            <SelectTrigger id={`${id}-def`} className="h-9 w-full">
+              <SelectValue placeholder="Elegir" />
+            </SelectTrigger>
+            <SelectContent>
+              {manual.map((d) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {d.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <Label
             htmlFor={`${id}-title`}
             className="text-xs font-normal text-muted-foreground"
           >
-            Título
+            Título (opcional)
           </Label>
           <Input
             id={`${id}-title`}
@@ -974,16 +986,17 @@ function Medals({ playerId }: { playerId: string }) {
         <Button
           variant="outline"
           className="h-9"
-          disabled={!title.trim() || add.isPending}
+          disabled={!definition || add.isPending}
           onClick={() =>
+            definition &&
             add.mutate(
               {
-                title: title.trim(),
-                ...(icon.trim() ? { icon: icon.trim() } : {}),
+                definition_id: definition,
+                ...(title.trim() ? { title: title.trim() } : {}),
               },
               {
                 onSuccess: () => {
-                  setIcon("")
+                  setDefinition(undefined)
                   setTitle("")
                   toast.success("Medalla dada.")
                 },
@@ -995,6 +1008,10 @@ function Medals({ playerId }: { playerId: string }) {
           Dar
         </Button>
       </div>
+      <span className="text-xs text-muted-foreground">
+        Solo las de Comunidad (staff, caster, campeón de torneo…). Las demás las
+        da el juego. Se crean en Administración › Medallas.
+      </span>
     </PanelSection>
   )
 }

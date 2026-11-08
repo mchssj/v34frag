@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
+import {
+  CarouselArrows,
+  CarouselTrack,
+  useCarousel,
+} from "@/components/brand/Carousel"
 import { Skeleton } from "@/components/ui/skeleton"
 import { dateRange } from "@/features/events/lib/model"
 import { RESULT_LABEL, resultText } from "../lib/model"
@@ -27,9 +32,13 @@ const TONE: Record<"win" | "live" | "mid", { dot: string; chip: string }> = {
 /** Línea de tiempo de los torneos del equipo, con hasta dónde llegó en cada uno. */
 export function TournamentHistory({ teamId }: { teamId: string }) {
   const events = useQuery(teamEventsOptions(teamId)).data
+  const carousel = useCarousel()
 
   return (
-    <Panel title="Torneos en los que participó">
+    <Panel
+      title="Torneos en los que participó"
+      aside={<CarouselArrows carousel={carousel} />}
+    >
       {!events ? (
         <div className="flex gap-4 p-[18px]">
           {Array.from({ length: 3 }, (_, i) => (
@@ -41,9 +50,11 @@ export function TournamentHistory({ teamId }: { teamId: string }) {
           Todavía no jugó ningún torneo.
         </p>
       ) : (
-        <ol
-          aria-label="Torneos en los que participó"
-          className="flex overflow-x-auto p-[18px]"
+        <CarouselTrack
+          carousel={carousel}
+          as="ol"
+          label="Torneos en los que participó"
+          className="m-0 gap-0 rounded-none p-[18px] focus-visible:ring-inset"
         >
           {events.map((e) => {
             const tone = TONE[RESULT_LABEL[e.result].tone]
@@ -83,7 +94,7 @@ export function TournamentHistory({ teamId }: { teamId: string }) {
               </li>
             )
           })}
-        </ol>
+        </CarouselTrack>
       )}
     </Panel>
   )

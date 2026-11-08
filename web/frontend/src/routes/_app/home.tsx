@@ -1,23 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import { useMe } from "@/auth/queries"
-import { ProfileBanner } from "@/features/onboarding/components/ProfileBanner"
+import { HomePage } from "@/features/home/pages/HomePage"
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { MmSourceContext } from "@/features/matchmaking/source"
 
 export const Route = createFileRoute("/_app/home")({
-  component: HomePage,
+  component: Home,
 })
 
-// Provisorio: el resto del Home llega con su propio handoff.
-function HomePage() {
+function Home() {
   const initial = Route.useRouteContext({ select: (c) => c.user })
   const user = useMe().data ?? initial
-
+  // Pendientes y Jugar leen el estado del matchmaking, como /play.
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-[-0.5px]">
-        Hola, {user.tag ?? "jugador"}
-      </h1>
-      <ProfileBanner />
-    </div>
+    <MmSourceContext value={apiMmSource}>
+      <HomePage name={user.tag ?? "jugador"} />
+    </MmSourceContext>
   )
 }

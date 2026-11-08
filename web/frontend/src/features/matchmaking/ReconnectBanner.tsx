@@ -1,19 +1,19 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "cn"
 import { PlayIcon, WifiOffIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
-import { cmleagueConnectUrl, fmtClock } from "./labels"
+import { fmtClock, steamConnectUrl } from "./labels"
 import { mmStateOptions, useMmSocket } from "./queries"
 import { useMmSource } from "./source"
 import { useNow } from "./useNow"
 
-// Si te caés de una partida en curso, el aviso te sigue por toda la web hasta que vuelvas o venza
+// Si te caes de una partida en curso, el aviso te sigue por toda la web hasta que vuelvas o venza
 // el tiempo (plan, decisión "Reconexión visible"). Va en el layout `_app`, arriba de cada página.
 export function ReconnectBanner() {
   const source = useMmSource()
   const socketUp = useMmSocket(source)
-  const { data } = useQuery(mmStateOptions(source, socketUp))
+  const { data } = useQuery(mmStateOptions(source, socketUp, useQueryClient()))
   const lobby = data?.lobby
   const until = lobby?.players.find((p) => p.is_me)?.left_until ?? null
   const away = lobby?.status === "live" && !!until
@@ -28,15 +28,15 @@ export function ReconnectBanner() {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold">Te desconectaste de la partida</p>
         <p className="text-[13px] text-muted-foreground">
-          Volvé antes de{" "}
+          Vuelve antes de{" "}
           <span className="font-mono font-semibold text-foreground tabular-nums">
             {fmtClock(Date.parse(until) - now)}
           </span>{" "}
-          o queda como abandono y recibís una sanción.
+          o queda como abandono y recibes una sanción.
         </p>
       </div>
       <a
-        href={cmleagueConnectUrl(lobby.server.address, lobby.server.password)}
+        href={steamConnectUrl(lobby.server.address, lobby.server.password)}
         className={cn(buttonVariants({ size: "md" }))}
       >
         <PlayIcon aria-hidden />

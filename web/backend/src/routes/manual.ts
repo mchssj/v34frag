@@ -18,7 +18,14 @@ const Indice = z
       z.object({
         id: SeccionId,
         titulo: z.string(),
-        paginas: z.array(z.object({ tarea: z.string(), titulo: z.string(), resumen: z.string() })),
+        paginas: z.array(
+          z.object({
+            tarea: z.string(),
+            titulo: z.string(),
+            resumen: z.string(),
+            texto: z.string().openapi({ description: 'El cuerpo de la página en texto plano, para buscar: sin Markdown y sin los marcadores ({{…}}).' }),
+          }),
+        ),
       }),
     ),
   })

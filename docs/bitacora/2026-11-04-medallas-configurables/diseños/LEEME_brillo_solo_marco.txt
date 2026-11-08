@@ -1,0 +1,15 @@
+CM LEAGUE — TODAS LAS MEDALLAS CON BRILLO SOLO EN EL MARCO
+
+Versión elegida por Kyan el 30/10/2026: el mismo diseño de siempre, pero el único brillo es el del
+marco (degradado metálico, filete claro y un resplandor suave pegado al borde, capa
+"resplandor-marco"). Todo lo demás es plano: sin halo, rayos, destellos, sombras ni degradados.
+
+233 medallas con su versión bloqueada (466 SVG), en la misma estructura que las originales:
+  mejoradas/                        mixes y podio
+  perfil/  y  equipos/              las entregadas a Esteban
+  nuevas/perfil/ y nuevas/equipos/  la tanda nueva (incluye Premium y VIP por meses)
+  catalogo_brillo_solo_marco.png    todas juntas, por categoría
+
+Las carpetas originales no se tocaron. Para regenerar desde las originales:
+  python aplanar.py <carpeta_con_las_originales> <carpeta_destino> --marco
+Para dejar solo el degradado del marco sin el resplandor: borrar la capa "resplandor-marco".

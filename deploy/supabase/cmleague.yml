@@ -1,0 +1,70 @@
+# CMLeague: ajustes sobre el compose oficial de Supabase (plan docs/bitacora/2026-11-03-supabase-en-vps).
+# Se usa encima de docker-compose.yml y docker-compose.kong.yml del repo oficial (commit fijado en instalar.sh),
+# siempre con el comando `sb` (instalar.sh), que levanta solo los servicios de SERVICIOS.
+#
+#   - Todo escucha solo en 127.0.0.1: Docker se saltea ufw, así que nunca se publica un puerto en 0.0.0.0.
+#     Desde afuera se entra por Caddy (db.cmleague.lat, solo /rest, /auth y /storage).
+#   - Sin Realtime, Edge Functions, Analytics, Vector, Supavisor ni imgproxy: la plataforma no los usa.
+#   - Límite de memoria por contenedor, para no quitarle RAM a la API, al socket ni al relay del HUD.
+
+services:
+  db:
+    mem_limit: 1200m
+    ports:
+      - 127.0.0.1:5432:5432/tcp
+    # Solo las contraseñas de los roles internos y el jwt_exp. Sin los scripts de Realtime, Analytics, Supavisor ni
+    # webhooks (instala pg_net), que producción no tiene. roles.sql es el nuestro: el oficial nombra un rol que
+    # crea webhooks.sql y, sin él, corta el arranque de la base a la mitad.
+    volumes: !override
+      - /srv/supabase/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      - ./volumes/db/data:/var/lib/postgresql/data:Z
+      - db-config:/etc/postgresql-custom
+    command: !override
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal
+      # Producción las tiene (pg_stat_statements) y las consultas de diagnóstico las usan.
+      - -c
+      - pg_stat_statements.track=top
+
+  rest:
+    mem_limit: 256m
+
+  auth:
+    mem_limit: 128m
+    # Plantillas de deploy/auth/plantillas/: GoTrue las pide por URL y Caddy las sirve desde /srv/supabase/plantillas
+    # (no tienen secretos). Los asuntos son los mismos de deploy/auth/configurar-auth.mjs.
+    environment:
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: https://db.cmleague.lat/plantillas/recuperacion.html
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: https://db.cmleague.lat/plantillas/confirmacion.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: https://db.cmleague.lat/plantillas/cambio-email.html
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: Cambia tu contraseña de CMLeague
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Confirma tu cuenta de CMLeague
+      GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: Confirma tu nuevo correo en CMLeague
+
+  storage:
+    mem_limit: 256m
+    depends_on: !override
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    environment:
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+
+  meta:
+    mem_limit: 192m
+
+  # Studio no se levanta con `sb up`: se prende a mano cuando se necesita (`sb up -d studio`) y se entra por
+  # túnel SSH a 127.0.0.1:8000 con DASHBOARD_USERNAME y DASHBOARD_PASSWORD.
+  studio:
+    mem_limit: 384m
+
+  api-gw:
+    mem_limit: 512m
+    depends_on: !reset []
+    ports: !override
+      - 127.0.0.1:8000:8000/tcp

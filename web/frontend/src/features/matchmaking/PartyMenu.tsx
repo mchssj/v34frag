@@ -169,7 +169,7 @@ function ConfirmDialog({
       : `¿Sacar a ${confirm.nick} del grupo?`
   const body =
     confirm.kind === "leave"
-      ? `Dejás de jugar con ${others.map((m) => m.nick).join(" y ") || "tu grupo"}.`
+      ? `Dejas de jugar con ${others.map((m) => m.nick).join(" y ") || "tu grupo"}.`
       : `${confirm.nick} deja de estar en tu grupo y le llega un aviso.`
 
   const run = () => {

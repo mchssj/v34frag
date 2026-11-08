@@ -1,7 +1,9 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "cn"
 import {
   InfoIcon,
   LoaderIcon,
+  MegaphoneIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
 } from "lucide-react"
@@ -33,7 +35,7 @@ import {
 import { askNotificationPermission } from "./alert"
 import { EloMeter } from "./EloMeter"
 import { fmtClock, isCountry } from "./labels"
-import { useMmAction, useMmMutation } from "./queries"
+import { mmKeys, useMmAction, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { InvitePref, MmState } from "./types"
 import { useNow } from "./useNow"
@@ -71,7 +73,7 @@ export function PlayBar({
   const noServer = state.servers.free === 0
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border bg-card/95 p-4">
+    <div className="flex flex-col gap-4">
       <EloMeter elo={state.me.elo} level={state.me.level} />
       <Column title="Modo">
         <Segmented
@@ -188,6 +190,7 @@ export function PlayBar({
             >
               Cancelar
             </Button>
+            <QueuePing now={now} />
           </div>
         ) : (
           <Button
@@ -228,6 +231,54 @@ export function PlayBar({
   )
 }
 
+/**
+ * "Avisar en Discord" (replanteo 57): publica en #avisos que hay gente en la cola, mencionando al rol @player. Uno cada
+ * 15 minutos para todo el servidor; los moderadores y admins, siempre.
+ */
+function QueuePing({ now }: { now: number }) {
+  const source = useMmSource()
+  const qc = useQueryClient()
+  const key = ["mm", "queue-ping"] as const
+  const status = useQuery({
+    queryKey: key,
+    queryFn: ({ signal }) => source.queuePingStatus(signal),
+    refetchInterval: 30_000,
+  })
+  const ping = useMutation({
+    mutationFn: () => source.queuePing(),
+    onSuccess: (s) => {
+      qc.setQueryData(key, s)
+      toast.success("Listo: avisamos en Discord que hay gente buscando.")
+    },
+    onError: (e) => {
+      toast.error(errorMessage(e))
+      void qc.invalidateQueries({ queryKey: key })
+    },
+  })
+  const s = status.data
+  if (!s) return null
+  const wait = !s.staff && s.next_at ? Date.parse(s.next_at) - now : 0
+  return (
+    <div className="flex w-full flex-col items-center gap-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full"
+        disabled={ping.isPending || wait > 0 || (!s.staff && !s.queued)}
+        onClick={() => ping.mutate()}
+      >
+        <MegaphoneIcon aria-hidden />
+        Avisar en Discord
+      </Button>
+      <span className="text-center text-xs text-muted-foreground">
+        {wait > 0
+          ? `Ya se avisó hace poco: el próximo aviso, en ${fmtClock(wait)}`
+          : "Le avisa al rol @player que hay gente buscando"}
+      </span>
+    </div>
+  )
+}
+
 /** Círculo con la i: al pasar el ratón, cuánta gente hay buscando; con un clic, quiénes son. */
 function QueueInfo({
   activity,
@@ -237,6 +288,7 @@ function QueueInfo({
   searching: number
 }) {
   const [detail, setDetail] = useState(false)
+  const queryClient = useQueryClient()
   return (
     <>
       <Tooltip>
@@ -244,7 +296,11 @@ function QueueInfo({
           <button
             type="button"
             aria-label="Ver quiénes están buscando partida"
-            onClick={() => setDetail(true)}
+            onClick={() => {
+              setDetail(true)
+              // La lista no viaja por el socket: se pide al abrirla.
+              void queryClient.invalidateQueries({ queryKey: mmKeys.state })
+            }}
             className="rounded-full hover:text-foreground"
           >
             <InfoIcon aria-hidden className="size-3.5" />

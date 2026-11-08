@@ -9,6 +9,7 @@ import { es } from "date-fns/locale"
 
 import type { Schemas } from "@/api/client"
 import type { AppPath } from "../../lib/nav"
+import { templateOf, type MedalLook } from "@/features/medals/templates"
 
 // Notificaciones de la API (contrato notificaciones.md, sección 12). La base guarda `type` y `data`
 // con los nombres del momento; el texto, el icono y el link se arman acá.
@@ -30,13 +31,19 @@ export type NotificationKind =
   | "news"
   | "admin"
 
-export type NotificationLink = { to: AppPath; params?: Record<string, string> }
+export type NotificationLink = {
+  to: AppPath
+  params?: Record<string, string>
+  search?: Record<string, string>
+}
 
 export type Described = {
   kind: NotificationKind
   title: string
   body: string
   link?: NotificationLink
+  /** La medalla dibujada en lugar del ícono (replanteo 79). */
+  medal?: MedalLook & { title: string }
 }
 
 /** Pendiente de aceptar o rechazar desde la lista. */
@@ -67,6 +74,22 @@ const obj = (v: unknown): Data =>
 const str = (v: unknown, fallback = "") =>
   typeof v === "string" && v.trim() ? v : fallback
 const num = (v: unknown) => (typeof v === "number" ? v : null)
+
+/** El dibujo de una medalla que viene en el aviso, si es de una plantilla conocida. */
+function medalOf(v: unknown): (MedalLook & { title: string }) | undefined {
+  const m = obj(v)
+  if (!templateOf(str(m.template))) return undefined
+  const text = (x: unknown) => (typeof x === "string" ? x : null)
+  return {
+    template: str(m.template),
+    title: str(m.title),
+    number: text(m.number),
+    label: text(m.label),
+    band: text(m.band),
+    metal: text(m.metal),
+    accent: text(m.accent),
+  }
+}
 /** Nombre de un equipo, bando, torneo o temporada: `{ name }` o el texto directo. */
 const nameOf = (v: unknown, fallback = "") =>
   typeof v === "string" ? str(v, fallback) : str(obj(v).name, fallback)
@@ -82,6 +105,13 @@ const ROLE: Record<string, string> = {
   player: "Activo",
   sub: "Suplente",
   coach: "Coach",
+}
+const BOOKING_ATTENTION: Record<string, string> = {
+  wait_expired: "Se terminó la espera: decide qué hacer",
+  server_lost: "El servidor de la partida no responde",
+  server_abort: "El servidor no pudo tomar la partida",
+  between_long: "Más de 30 minutos entre mapas",
+  too_long: "La partida pasó el tiempo máximo",
 }
 const ACCOUNT_ROLE: Record<string, string> = {
   user: "usuario",
@@ -99,12 +129,45 @@ const CATEGORY: Record<NotificationCategory, [NotificationKind, string]> = {
   admin: ["admin", "Administración"],
 }
 
+const KILL_LABEL: Record<number, string> = {
+  3: "3 kills",
+  4: "4 kills",
+  5: "ace",
+}
+
+/** "2 rondas de 4 kills y un clutch 1v2": las jugadas de una partida, juntas por tipo. */
+export function clipsSummary(kills: number[], clutches: number[]): string {
+  const parts: string[] = []
+  for (const k of [5, 4, 3]) {
+    const n = kills.filter((x) => x === k).length
+    if (n === 1)
+      parts.push(k === 5 ? "un ace" : `una ronda de ${KILL_LABEL[k]}`)
+    else if (n > 1)
+      parts.push(k === 5 ? `${n} aces` : `${n} rondas de ${KILL_LABEL[k]}`)
+  }
+  for (const vs of [...new Set(clutches)].sort((a, b) => b - a)) {
+    const n = clutches.filter((x) => x === vs).length
+    parts.push(n === 1 ? `un clutch 1v${vs}` : `${n} clutches 1v${vs}`)
+  }
+  if (parts.length === 0)
+    return "Mira cómo te fue en las estadísticas de la partida."
+  const text =
+    parts.length === 1
+      ? parts[0]!
+      : `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}`
+  return text.charAt(0).toUpperCase() + text.slice(1) + "."
+}
+
 const matchLink = (id: string): NotificationLink | undefined =>
   id ? { to: "/match/$id", params: { id } } : undefined
 const teamLink = (team: unknown): NotificationLink | undefined =>
   idOf(team) ? { to: "/teams/$id", params: { id: idOf(team) } } : undefined
 const eventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event) ? { to: "/events/$id", params: { id: idOf(event) } } : undefined
+const adminEventLink = (event: unknown): NotificationLink | undefined =>
+  idOf(event)
+    ? { to: "/admin/events/$id", params: { id: idOf(event) } }
+    : undefined
 
 /** Texto, icono y link de una notificación. `me` es el alias propio (link al perfil público). */
 export function describe(n: Notification, me?: string | null): Described {
@@ -174,8 +237,31 @@ export function describe(n: Notification, me?: string | null): Described {
       return {
         kind: "team",
         title: `Te sacaron de ${team}`,
-        body: "Ya no eres parte del plantel.",
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}`
+          : "Ya no eres parte del plantel.",
       }
+    case "team_staff_action": {
+      // Acción de un moderador o un admin sobre el equipo; le llega siempre al líder.
+      const who = d.by === "admin" ? "Un admin" : "Un moderador"
+      const what: Record<string, string> = {
+        renamed: `cambió el nombre del equipo a ${str(d.name, team)}`,
+        logo_removed: `quitó el logo de ${team}`,
+        member_removed: `sacó a ${player} de ${team}`,
+        captain_changed: `pasó el liderazgo de ${team} a ${player}`,
+        member_added: `sumó a ${player} a ${team}`,
+        role_changed: `cambió el rol de ${player} en ${team}`,
+        dissolved: `disolvió ${team}`,
+      }
+      return {
+        kind: "team",
+        title: `${who} ${what[str(d.action)] ?? `hizo un cambio en ${team}`}`,
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}`
+          : "Sin motivo indicado.",
+        link: d.action === "dissolved" ? undefined : teamLink(d.team),
+      }
+    }
     case "team_member_left":
       return {
         kind: "roster",
@@ -187,7 +273,9 @@ export function describe(n: Notification, me?: string | null): Described {
       return {
         kind: "team",
         title: `Ahora eres ${ROLE[str(d.role)] ?? "parte del plantel"} en ${team}`,
-        body: "Cambió tu rol en el plantel.",
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}`
+          : "Cambió tu rol en el plantel.",
         link: teamLink(d.team),
       }
     case "team_added":
@@ -285,6 +373,45 @@ export function describe(n: Notification, me?: string | null): Described {
         title: `Se canceló ${nameOf(d.event, "el torneo")}`,
         body: "El torneo no se juega.",
       }
+    // (replanteo 80) Aprobación de lo que hace un organizador.
+    case "event_reviewed":
+      return {
+        kind: "tournament",
+        title: d.approved
+          ? `Aprobaron tu torneo ${nameOf(d.event)}`
+          : `Rechazaron tu torneo ${nameOf(d.event)}`,
+        body: d.approved
+          ? "Ya está publicado."
+          : `${str(d.note, "Sin motivo.")} Corrígelo y vuelve a enviarlo.`,
+        link: adminEventLink(d.event),
+      }
+    case "game_reviewed": {
+      const pair = `${nameOf(d.team1, "Equipo 1")} vs ${nameOf(d.team2, "Equipo 2")}`
+      return {
+        kind: "tournament",
+        title: `${d.approved ? "Aprobaron" : "Rechazaron"} el mix de ${map} en ${pair}`,
+        body: d.approved
+          ? "Ya se ven sus stats."
+          : "Se desvinculó: el mapa quedó con su marcador como resultado a mano.",
+        link: adminEventLink(d.event),
+      }
+    }
+    // Reserva del servidor (replanteo 56): el texto de la partida llega en `title`.
+    case "match_server_ready":
+      return {
+        kind: "tournament",
+        title: `Hay servidor: ${str(d.title, vs)}`,
+        body: `Entra a ${str(d.server, "el servidor")}: la conexión está en la partida.`,
+        link: matchLink(matchId),
+      }
+    case "booking_attention":
+      return {
+        kind: "tournament",
+        title:
+          BOOKING_ATTENTION[str(d.reason)] ?? "La partida necesita atención",
+        body: str(d.title, vs),
+        link: matchLink(matchId),
+      }
 
     // ---------- PCW ----------
     case "pcw_accepted":
@@ -299,6 +426,24 @@ export function describe(n: Notification, me?: string | null): Described {
         kind: "pcw",
         title: "Se canceló la PCW",
         body: vs,
+      }
+    case "pcw_server_ready":
+      return {
+        kind: "pcw",
+        title: `Hay servidor para tu PCW: ${str(d.title, vs)}`,
+        body: `Entren a ${str(d.server, "el servidor")} en los próximos 15 minutos.`,
+        link: matchLink(matchId),
+      }
+    case "pcw_abandoned":
+      return {
+        kind: "pcw",
+        title: d.banned
+          ? "Tu equipo abandonó la PCW"
+          : "El rival abandonó la PCW",
+        body: d.banned
+          ? `${str(d.title, vs)}. No pueden crear ni aceptar PCW hasta el ${day(d.until) || "fin de la sanción"}.`
+          : `${str(d.title, vs)}. No cuenta para ninguno de los dos.`,
+        link: matchLink(matchId),
       }
     case "pcw_result":
       return {
@@ -350,6 +495,28 @@ export function describe(n: Notification, me?: string | null): Described {
         link: profile,
       }
     }
+    case "clips_detected": {
+      // (replanteo 83) Un solo aviso por partida, con todas las jugadas del jugador.
+      const count = num(d.count) ?? 0
+      const kills = (Array.isArray(d.kills) ? d.kills : []).filter(
+        (k): k is number => typeof k === "number"
+      )
+      const clutches = (Array.isArray(d.clutches) ? d.clutches : []).filter(
+        (k): k is number => typeof k === "number"
+      )
+      const id = str(d.match_id)
+      return {
+        kind: "elo",
+        title:
+          count === 1
+            ? `Tienes una jugada destacada${str(d.map) ? ` en ${str(d.map)}` : ""}`
+            : `Tienes ${count || "varias"} jugadas destacadas${str(d.map) ? ` en ${str(d.map)}` : ""}`,
+        body: clipsSummary(kills, clutches),
+        link: id
+          ? { to: "/match/$id", params: { id }, search: { view: "stats" } }
+          : undefined,
+      }
+    }
     case "clip_ready":
       return {
         kind: "elo",
@@ -370,9 +537,10 @@ export function describe(n: Notification, me?: string | null): Described {
       }
     case "season_closed": {
       const medal = obj(d.medal)
+      const drawn = medalOf(medal.design)
       const after = num(d.elo_after)
       const parts = [
-        str(medal.name) && `${str(medal.icon)} ${str(medal.name)}`.trim(),
+        str(medal.name),
         after !== null &&
           after !== num(d.elo) &&
           `empiezas la próxima con ${after}`,
@@ -389,15 +557,19 @@ export function describe(n: Notification, me?: string | null): Described {
             ? "Gracias por jugar."
             : "No llegaste al mínimo de mixes para tener puesto.",
         link: profile,
+        medal: drawn,
       }
     }
-    case "medal_granted":
+    case "medal_granted": {
+      const drawn = medalOf(d.medal)
       return {
         kind: "medal",
-        title: `Nueva medalla: ${`${str(d.icon)} ${str(d.title)}`.trim()}`,
+        title: `Nueva medalla: ${str(d.title)}`,
         body: "Ya está en tu perfil.",
         link: profile,
+        medal: drawn,
       }
+    }
 
     // ---------- cuenta ----------
     case "steam_claimed":
@@ -479,6 +651,14 @@ export function describe(n: Notification, me?: string | null): Described {
         body: player,
         link: { to: "/admin/players" },
       }
+    // (replanteo 58) El !claim de un SteamID nuevo se suma al instante: el aviso es para revisarlo después.
+    case "admin_steam_linked":
+      return {
+        kind: "admin",
+        title: `${player} sumó un SteamID con !claim`,
+        body: `${str(d.steam_id)}${str(d.nick) ? ` (${str(d.nick)})` : ""}. Revísalo en Administración › Jugadores.`,
+        link: { to: "/admin/players" },
+      }
     case "admin_team_request":
       return {
         kind: "admin",
@@ -506,6 +686,24 @@ export function describe(n: Notification, me?: string | null): Described {
         title: "El cierre de la temporada espera",
         body: "Hay un mix en vivo: cierra cuando termine.",
       }
+    case "admin_event_review":
+      return {
+        kind: "admin",
+        title: d.resubmitted
+          ? `Volvieron a enviar ${d.historic ? "el torneo histórico" : "el torneo"} ${nameOf(d.event)}`
+          : `${d.historic ? "Torneo histórico" : "Torneo"} por aprobar: ${nameOf(d.event)}`,
+        body: `${actor || "Un organizador"} espera que lo apruebes o lo rechaces.`,
+        link: adminEventLink(d.event),
+      }
+    case "admin_game_review": {
+      const games = num(d.games) ?? 1
+      return {
+        kind: "admin",
+        title: `${games === 1 ? "Un mix vinculado" : `${games} mixes vinculados`} por aprobar`,
+        body: `${nameOf(d.team1, "Equipo 1")} vs ${nameOf(d.team2, "Equipo 2")}${nameOf(d.event) ? ` (${nameOf(d.event)})` : ""}.`,
+        link: adminEventLink(d.event),
+      }
+    }
   }
 
   // Un tipo nuevo que esta versión de la web todavía no conoce.

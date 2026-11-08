@@ -4,6 +4,8 @@ import type { AdminServer } from "../types"
 export const server = (o: Partial<AdminServer> = {}): AdminServer => ({
   id: "s1",
   name: "CMLeague #1",
+  internal_name: null,
+  listed: true,
   active: true,
   license_state: "ok",
   license_expires_at: null,

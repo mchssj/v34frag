@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
-import { admin, createUser, localEnv } from './local';
+import { admin, createUser, localEnv, approveEvent } from './local';
 
 // Gestión de torneos (replanteo 41): moderadores, siembra por ranking con etapas del suizo y mapas de una serie.
 const app = createApp();
@@ -59,14 +59,15 @@ beforeAll(async () => {
 describe('moderadores y siembra', () => {
   it('el moderador siembra por ranking y las etapas del suizo salen de la siembra; no cancela ni borra', async () => {
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Suizo AT ${rnd()}`, template: 'swiss', game_mode: '1v1', config: { stages: 2, size: 8, wins: 2 } } })).body.id;
+    await approveEvent(ev);
     expect(ev).toBeTruthy();
     const ts = [];
     for (let i = 0; i < 12; i++) ts.push(await team());
     for (const t of ts) await register(ev, t);
 
-    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: false });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: mod.token })).body.viewer).toEqual({ can_manage: true, can_own: false, can_review: true, can_approve: true });
     expect((await req('GET', '/api/v1/servers', { token: mod.token })).status).toBe(200);
-    expect((await req('GET', `/api/v1/events/${ev}`, { token: org.token })).body.viewer).toEqual({ can_manage: true, can_own: true });
+    expect((await req('GET', `/api/v1/events/${ev}`, { token: org.token })).body.viewer).toEqual({ can_manage: true, can_own: true, can_review: false, can_approve: false });
 
     const s = await req('POST', `/api/v1/events/${ev}/seeds/ranking`, { token: mod.token });
     expect(s.status).toBe(200);
@@ -90,6 +91,7 @@ describe('mapas de una serie', () => {
   it('vincular un mix y cargar el resultado a mano, mapa por mapa', async () => {
     const sb = admin();
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Serie AT ${rnd()}`, template: 'single', game_mode: '1v1', config: { bo: 3, bo_semi: 3, bo_final: 3 } } })).body.id;
+    await approveEvent(ev);
     const [a, b] = [await team(), await team()];
     await register(ev, a);
     await register(ev, b);
@@ -107,7 +109,7 @@ describe('mapas de una serie', () => {
 
     expect((await req('GET', `/api/v1/matches/${final.id}/games/candidates`, { token: (await createUser()).token })).status).toBe(403);
     const cands = await req('GET', `/api/v1/matches/${final.id}/games/candidates`, { token: mod.token });
-    expect(cands.body).toContainEqual(expect.objectContaining({ game_id: g, registered: 2, side1: sideOf(a.id), linked: false }));
+    expect(cands.body.items).toContainEqual(expect.objectContaining({ game_id: g, registered: 2, side1: sideOf(a.id), linked: false, approved: null }));
 
     // Mapa 1 con el mix, mapa 2 a mano a favor del equipo 1 de la partida: serie 2-0 (o 1-1 si a es el equipo 2).
     const put = await req('PUT', `/api/v1/matches/${final.id}/maps`, {
@@ -117,8 +119,8 @@ describe('mapas de una serie', () => {
     expect(put.status).toBe(204);
     const d = await req('GET', `/api/v1/matches/${final.id}`);
     expect(d.body.maps_detail).toEqual([
-      { map: 'de_dust2_ob', r1: sideOf(a.id) === 1 ? 16 : 10, r2: sideOf(a.id) === 1 ? 10 : 16, game_id: g },
-      { map: 'de_inferno', r1: 16, r2: 12, game_id: null },
+      { map: 'de_dust2_ob', r1: sideOf(a.id) === 1 ? 16 : 10, r2: sideOf(a.id) === 1 ? 10 : 16, game_id: g, approved: true, played_at: expect.any(String) },
+      { map: 'de_inferno', r1: 16, r2: 12, game_id: null, approved: null, played_at: null },
     ]);
     expect(d.body.games.map((x: { id: string }) => x.id)).toEqual([g]);
     expect(d.body.series_players).toHaveLength(2);

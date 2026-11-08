@@ -31,11 +31,11 @@ export const LOBBY_TITLE: Record<LobbyStatus, string> = {
 }
 
 export const LOBBY_HINT: Record<LobbyStatus, string> = {
-  accepting: "Aceptá antes de que termine el tiempo.",
+  accepting: "Acepta antes de que termine el tiempo.",
   veto: "Los capitanes banean por turnos hasta que queda un mapa.",
   waiting_server: "Los 10 aceptaron. Estamos eligiendo un servidor libre.",
   assigned: "El servidor está cambiando de mapa y poniendo la contraseña.",
-  connecting: "Entrá con la contraseña. La partida empieza con !ready.",
+  connecting: "Entra con la contraseña. La partida empieza con !ready.",
   live: "Suerte. El resultado se carga solo al terminar.",
   finished: "El ELO se actualiza en unos segundos.",
   cancelled: "",
@@ -44,15 +44,6 @@ export const LOBBY_HINT: Record<LobbyStatus, string> = {
 /** Link de Steam que conecta con la contraseña puesta. */
 export const steamConnectUrl = (address: string, password: string) =>
   `steam://connect/${address}/${encodeURIComponent(password)}`
-
-/**
- * Link de CMLeague Conectar (hud/conectar): abre el CS:S v34 de ClientMod y entra con la contraseña. El de Steam abre
- * el CS:S de Steam, no el v34. Hace falta instalarlo una vez (CONECTAR_DESCARGA).
- */
-export const cmleagueConnectUrl = (address: string, password: string) =>
-  `cmleague://connect/${address}/${encodeURIComponent(password)}`
-
-export const CONECTAR_DESCARGA = "/descargas/cmleague-conectar.zip"
 
 export const connectCommand = (address: string, password: string) =>
   `connect ${address}; password ${password}`

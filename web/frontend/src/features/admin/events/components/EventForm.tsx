@@ -18,10 +18,12 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { gameModesOptions, poolMapsOptions } from "../api/queries"
+import { CURRENCY_LABEL, prizeOrNull } from "@/features/events/lib/model"
 import {
   presetOf,
   SWISS_PRESETS,
   swissMatches,
+  swissCupo,
   swissTeams,
   TEMPLATE_HINT,
   TEMPLATE_LABEL,
@@ -31,6 +33,7 @@ import {
 } from "../lib/model"
 
 export type EventFormValues = Schemas["EventCreate"]
+type Currency = "USD" | "ARS" | "other"
 
 const TEMPLATES: Template[] = [
   "single",
@@ -80,10 +83,21 @@ const toLocalInput = (iso: string | null | undefined) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-/** Crear o editar un torneo. `locked`: el fixture ya se generó y el formato no se cambia. */
+/** Qué tipos de torneo puede elegir quien crea: un moderador sube solo históricos. */
+export type KindChoice = "both" | "historic-only" | "normal-only"
+
+/**
+ * Crear o editar un torneo. `locked`: el fixture ya se generó y el formato no se cambia.
+ * `kinds` (solo al crear): normal o histórico, que después no se cambia. `canTesting`: admin o
+ * moderador ven la casilla "En fase de testing". `approver`: quién aprueba lo que se crea (organizador:
+ * un admin o moderador; moderador: un admin).
+ */
 export function EventForm({
   initial,
   locked = false,
+  kinds,
+  canTesting = false,
+  approver = "none",
   submitLabel,
   pending,
   error,
@@ -92,7 +106,10 @@ export function EventForm({
 }: {
   initial?: Partial<EventFormValues>
   locked?: boolean
-  submitLabel: string
+  kinds?: KindChoice
+  canTesting?: boolean
+  approver?: "none" | "staff" | "admin"
+  submitLabel: string | ((historic: boolean) => string)
   pending: boolean
   error: unknown
   onSubmit: (values: EventFormValues) => void
@@ -110,8 +127,23 @@ export function EventForm({
     toLocalInput(initial?.registration_closes_at)
   )
   const [prize, setPrize] = useState(initial?.prize ?? "")
+  // (replanteo 84) monto y divisa del premio; el texto de arriba queda como detalle
+  const [amount, setAmount] = useState(
+    initial?.prize_amount != null ? String(initial.prize_amount) : ""
+  )
+  const [currency, setCurrency] = useState<Currency>(
+    initial?.prize_currency ?? "ARS"
+  )
+  const [currencyOther, setCurrencyOther] = useState(
+    initial?.prize_currency_other ?? ""
+  )
+  const amountNum =
+    amount.trim() === "" ? null : Number(amount.replace(",", "."))
+  // Un torneo nuevo arranca en suizo: el cupo viene con los equipos que pide.
   const [maxTeams, setMaxTeams] = useState<number | "">(
-    initial?.max_teams ?? ""
+    initial?.max_teams !== undefined
+      ? (initial.max_teams ?? "")
+      : (swissCupo("swiss", DEFAULTS.swiss) ?? "")
   )
   const [rules, setRules] = useState(initial?.rules ?? "")
   const [template, setTemplate] = useState<Template>(
@@ -124,14 +156,29 @@ export function EventForm({
   )
   // null = el pool por defecto del catálogo.
   const [pool, setPool] = useState<string[] | null>(initial?.map_pool ?? null)
+  const [historic, setHistoric] = useState(
+    initial?.historic ?? kinds === "historic-only"
+  )
+  const [testing, setTesting] = useState(initial?.testing ?? false)
 
-  const set = (patch: EventConfig) => setConfig((c) => ({ ...c, ...patch }))
+  // Solo el suizo pide un número exacto de equipos: al cambiar sus etapas o equipos por etapa, el
+  // cupo se completa solo (se puede cambiar a mano después).
+  const set = (patch: EventConfig) => {
+    const next = { ...config, ...patch }
+    setConfig(next)
+    const cupo = swissCupo(template, next)
+    if (cupo) setMaxTeams(cupo)
+  }
   const setPo = (patch: NonNullable<EventConfig["playoffs"]>) =>
     setConfig((c) => ({ ...c, playoffs: { ...c.playoffs, ...patch } }))
   const pickTemplate = (t: Template) => {
     if (locked || t === template) return
     setTemplate(t)
     setConfig(DEFAULTS[t])
+    const cupo = swissCupo(t, DEFAULTS[t])
+    // Al salir del suizo, el cupo que puso el suizo se borra; uno escrito a mano queda.
+    if (cupo) setMaxTeams(cupo)
+    else if (maxTeams === swissCupo(template, config)) setMaxTeams("")
   }
 
   // El BO más alto de la configuración (solo las claves bo*), para el mínimo del pool.
@@ -147,11 +194,19 @@ export function EventForm({
       ? name.trim()
         ? "El nombre tiene al menos 2 letras."
         : "Falta el nombre."
-      : endsOn && startsOn && endsOn < startsOn
-        ? "El torneo no puede terminar antes de empezar."
-        : pool && pool.length < maxBo
-          ? `El pool necesita al menos ${maxBo} mapas (el BO más alto).`
-          : null
+      : historic && (!startsOn || !endsOn)
+        ? "Un torneo histórico necesita la fecha en que empezó y la fecha en que terminó."
+        : endsOn && startsOn && endsOn < startsOn
+          ? "El torneo no puede terminar antes de empezar."
+          : pool && pool.length < maxBo
+            ? `El pool necesita al menos ${maxBo} mapas (el BO más alto).`
+            : amountNum !== null && !(amountNum > 0)
+              ? "El monto del premio tiene que ser mayor que 0."
+              : amountNum !== null &&
+                  currency === "other" &&
+                  !currencyOther.trim()
+                ? "Escribe el nombre de la divisa (por ejemplo BRL)."
+                : null
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -164,16 +219,35 @@ export function EventForm({
       subs_max: subs,
       starts_on: startsOn || null,
       ends_on: endsOn || null,
-      registration_closes_at: closes ? new Date(closes).toISOString() : null,
+      // Un histórico no tiene inscripciones de los capitanes: ni cierre ni cupo.
+      registration_closes_at:
+        !historic && closes ? new Date(closes).toISOString() : null,
       prize: prize.trim() || null,
-      max_teams: maxTeams === "" ? null : maxTeams,
+      prize_amount: amountNum,
+      prize_currency: amountNum === null ? null : currency,
+      prize_currency_other:
+        amountNum !== null && currency === "other"
+          ? currencyOther.trim()
+          : null,
+      max_teams: historic || maxTeams === "" ? null : maxTeams,
       rules: rules.trim() || null,
       ...(pool ? { map_pool: pool } : {}),
+      ...(kinds ? { historic } : {}),
+      ...(canTesting ? { testing } : {}),
     })
   }
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+      {kinds && (
+        <KindPicker kinds={kinds} historic={historic} onChange={setHistoric} />
+      )}
+      {!kinds && historic && (
+        <p className="text-[13px] text-muted-foreground">
+          Torneo histórico: el registro de un torneo ya jugado. El tipo no se
+          cambia.
+        </p>
+      )}
       <Card
         variant="outline"
         className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -207,25 +281,27 @@ export function EventForm({
             </SelectContent>
           </Select>
         </Labeled>
-        <Labeled
-          id={`${id}-subs`}
-          label="Suplentes por equipo"
-          hint="De 0 a 4."
-        >
-          <Input
+        {!historic && (
+          <Labeled
             id={`${id}-subs`}
-            type="number"
-            min={0}
-            max={4}
-            value={subs}
-            disabled={locked}
-            onChange={(e) =>
-              setSubs(Math.max(0, Math.min(4, Number(e.target.value))))
-            }
-            className="font-mono"
-          />
-        </Labeled>
-        <Labeled id={`${id}-start`} label="Empieza">
+            label="Suplentes por equipo"
+            hint="De 0 a 4."
+          >
+            <Input
+              id={`${id}-subs`}
+              type="number"
+              min={0}
+              max={4}
+              value={subs}
+              disabled={locked}
+              onChange={(e) =>
+                setSubs(Math.max(0, Math.min(4, Number(e.target.value))))
+              }
+              className="font-mono"
+            />
+          </Labeled>
+        )}
+        <Labeled id={`${id}-start`} label={historic ? "Empezó el" : "Empieza"}>
           <Input
             id={`${id}-start`}
             type="date"
@@ -233,7 +309,15 @@ export function EventForm({
             onChange={(e) => setStartsOn(e.target.value)}
           />
         </Labeled>
-        <Labeled id={`${id}-end`} label="Termina">
+        <Labeled
+          id={`${id}-end`}
+          label={historic ? "Terminó el" : "Termina (aproximado)"}
+          hint={
+            historic
+              ? "Los mapas cargados a mano sin fecha toman la del comienzo."
+              : "Fecha tentativa: puede terminar antes o después."
+          }
+        >
           <Input
             id={`${id}-end`}
             type="date"
@@ -241,44 +325,115 @@ export function EventForm({
             onChange={(e) => setEndsOn(e.target.value)}
           />
         </Labeled>
-        <Labeled
-          id={`${id}-close`}
-          label="Cierran las inscripciones"
-          hint="Vacío: hasta generar el fixture."
-        >
-          <Input
+        {!historic && (
+          <Labeled
             id={`${id}-close`}
-            type="datetime-local"
-            value={closes}
-            onChange={(e) => setCloses(e.target.value)}
-          />
-        </Labeled>
-        <Labeled id={`${id}-prize`} label="Premio">
-          <Input
-            id={`${id}-prize`}
-            value={prize}
-            maxLength={200}
-            onChange={(e) => setPrize(e.target.value)}
-            placeholder="USD 500"
-          />
-        </Labeled>
-        <Labeled
-          id={`${id}-max`}
-          label="Cupo de equipos"
-          hint="Vacío: sin cupo."
-        >
-          <Input
+            label="Cierran las inscripciones"
+            hint="Vacío: hasta generar el fixture."
+          >
+            <Input
+              id={`${id}-close`}
+              type="datetime-local"
+              value={closes}
+              onChange={(e) => setCloses(e.target.value)}
+            />
+          </Labeled>
+        )}
+        <div className="flex flex-col gap-2 sm:col-span-2 lg:col-span-3">
+          <span className="text-sm font-medium">Premio</span>
+          <div className="grid gap-3 sm:grid-cols-[10rem_12rem_minmax(0,1fr)]">
+            <Labeled
+              id={`${id}-prize-amount`}
+              label="Monto"
+              hint="Vacío: sin monto."
+            >
+              <Input
+                id={`${id}-prize-amount`}
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9.,]/g, ""))
+                }
+                placeholder="50000"
+                className="font-mono"
+              />
+            </Labeled>
+            <Labeled id={`${id}-prize-currency`} label="Divisa">
+              <div className="flex flex-col gap-2">
+                <Select
+                  value={currency}
+                  onValueChange={(v) => setCurrency(v as Currency)}
+                  disabled={amount.trim() === ""}
+                >
+                  <SelectTrigger id={`${id}-prize-currency`} className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["USD", "ARS", "other"] as const).map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {CURRENCY_LABEL[c]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {currency === "other" && amount.trim() !== "" && (
+                  <Input
+                    aria-label="Nombre de la divisa"
+                    value={currencyOther}
+                    maxLength={12}
+                    onChange={(e) => setCurrencyOther(e.target.value)}
+                    placeholder="BRL"
+                  />
+                )}
+              </div>
+            </Labeled>
+            <Labeled
+              id={`${id}-prize`}
+              label="Detalle"
+              hint={
+                prizeOrNull({
+                  prize,
+                  prize_amount: amountNum,
+                  prize_currency: currency,
+                  prize_currency_other: currencyOther,
+                })
+                  ? `Se ve: ${prizeOrNull({ prize, prize_amount: amountNum, prize_currency: currency, prize_currency_other: currencyOther })}`
+                  : "Lo que no es plata: medallas, roles, etc."
+              }
+            >
+              <Input
+                id={`${id}-prize`}
+                value={prize}
+                maxLength={200}
+                onChange={(e) => setPrize(e.target.value)}
+                placeholder="+ rol en Discord"
+              />
+            </Labeled>
+          </div>
+        </div>
+        {!historic && (
+          <Labeled
             id={`${id}-max`}
-            type="number"
-            min={2}
-            max={256}
-            value={maxTeams}
-            onChange={(e) =>
-              setMaxTeams(e.target.value === "" ? "" : Number(e.target.value))
+            label="Cupo de equipos"
+            hint={
+              template === "swiss"
+                ? `El suizo elegido necesita ${swissCupo(template, config) ?? "—"}.`
+                : "Vacío: sin cupo."
             }
-            className="font-mono"
-          />
-        </Labeled>
+          >
+            <Input
+              id={`${id}-max`}
+              type="number"
+              min={2}
+              max={256}
+              value={maxTeams}
+              onChange={(e) =>
+                setMaxTeams(e.target.value === "" ? "" : Number(e.target.value))
+              }
+              className="font-mono"
+            />
+          </Labeled>
+        )}
       </Card>
 
       <div className="flex flex-col gap-2.5">
@@ -398,6 +553,42 @@ export function EventForm({
         />
       </Labeled>
 
+      {canTesting && (
+        <Card
+          variant="outline"
+          className="flex flex-col gap-1.5 border-violet-500/40 p-4"
+        >
+          <label
+            htmlFor={`${id}-testing`}
+            className="flex items-start gap-3 text-sm"
+          >
+            <Checkbox
+              id={`${id}-testing`}
+              checked={testing}
+              onCheckedChange={(v) => setTesting(v === true)}
+              className="mt-0.5"
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="font-semibold">En fase de testing</span>
+              <span className="text-xs text-muted-foreground">
+                Solo lo ven y lo gestionan admins y moderadores. No suma al
+                ranking ni manda avisos. Se saca desde Configuración cuando esté
+                listo.
+              </span>
+            </span>
+          </label>
+        </Card>
+      )}
+
+      {approver !== "none" && (
+        <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
+          Tu torneo queda <b>pendiente de aprobación</b>. Lo puedes preparar
+          entero; cuando{" "}
+          {approver === "admin" ? "un admin" : "un admin o moderador"} lo
+          apruebe, se publica. Te avisamos por notificación.
+        </p>
+      )}
+
       {/* Sin nombre todavía no se avisa: el botón ya queda deshabilitado. */}
       {problem && name.trim() && (
         <p className="text-sm text-destructive">{problem}</p>
@@ -410,10 +601,74 @@ export function EventForm({
           </Button>
         )}
         <Button type="submit" size="md" disabled={!!problem || pending}>
-          {submitLabel}
+          {typeof submitLabel === "function"
+            ? submitLabel(historic)
+            : submitLabel}
         </Button>
       </div>
     </form>
+  )
+}
+
+function KindPicker({
+  kinds,
+  historic,
+  onChange,
+}: {
+  kinds: KindChoice
+  historic: boolean
+  onChange: (historic: boolean) => void
+}) {
+  const options = [
+    {
+      value: false,
+      label: "Normal",
+      hint: "Se juega en la plataforma: inscripciones de los capitanes, horarios, servidores y avisos.",
+      off: kinds === "historic-only",
+    },
+    {
+      value: true,
+      label: "Histórico",
+      hint: "Ya se jugó. Cargas los equipos, la llave y cómo terminó. No se inscribe nadie ni se manda ningún aviso.",
+      off: kinds === "normal-only",
+    },
+  ].filter((o) => !o.off)
+  return (
+    <div className="flex flex-col gap-2.5">
+      <h2 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">
+        Tipo de torneo
+      </h2>
+      <div
+        role="radiogroup"
+        aria-label="Tipo de torneo"
+        className="grid gap-2.5 sm:grid-cols-2"
+      >
+        {options.map((o) => (
+          <button
+            key={o.label}
+            type="button"
+            role="radio"
+            aria-checked={historic === o.value}
+            onClick={() => onChange(o.value)}
+            className={cn(
+              "flex flex-col gap-1 rounded-xl border bg-card p-3 text-left transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+              historic === o.value
+                ? "border-primary ring-1 ring-primary"
+                : "hover:border-foreground/25"
+            )}
+          >
+            <span className="text-sm font-semibold">{o.label}</span>
+            <span className="text-xs text-muted-foreground">{o.hint}</span>
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {kinds === "historic-only"
+          ? "Un moderador sube solo torneos históricos. "
+          : ""}
+        El tipo no se cambia después de crearlo.
+      </p>
+    </div>
   )
 }
 

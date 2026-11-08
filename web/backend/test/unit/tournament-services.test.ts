@@ -76,6 +76,15 @@ describe('sumSeries (E21)', () => {
     expect(out).toHaveLength(2);
   });
 
+  it('suma el Δ ELO de los juegos; sin ELO en ninguno queda en null', () => {
+    const out = sumSeries(
+      [{ ...row('g1', 'p1', 's1', 1, 30, 1, 20), elo_delta: 12 }, { ...row('g2', 'p1', 's1', 1, 20, 1, 10), elo_delta: -7 }, row('g1', 'p2', 's2', 2, 30, 1, 5)],
+      new Map(),
+    );
+    expect(out.find((x) => x.player_id === 'p1')?.elo_delta).toBe(5);
+    expect(out.find((x) => x.player_id === 'p2')?.elo_delta).toBeNull();
+  });
+
   it('sin rating en ningún juego queda en null', () => {
     expect(sumSeries([row('g1', 'p1', 's1', 1, 0, null, 0)], new Map())[0]?.rating).toBeNull();
   });

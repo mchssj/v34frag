@@ -30,10 +30,12 @@ export function LobbiesPanel() {
   const cancel = useMmAdminMutation((id: string) => source.cancelLobby(id))
 
   return (
-    <Card>
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <CardHeader>
-        <CardTitle>Salas activas</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[15px] font-semibold">
+          Salas activas
+        </CardTitle>
+        <CardDescription className="text-[13px] leading-relaxed">
           Cancelar libera el servidor y no sanciona a nadie.
         </CardDescription>
       </CardHeader>

@@ -1,9 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { ArrowLeftIcon } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import {
+  canCreateEvent,
+  canCreateHistoricEvent,
+  canReviewEvents,
+  eventApprover,
+} from "@/auth/permissions"
+import { useMe } from "@/auth/queries"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,29 +25,70 @@ import {
 } from "../components/ManageTabs"
 import { MatchesTab } from "../components/MatchesTab"
 import { SeedingTab } from "../components/SeedingTab"
+import { EventMarks } from "@/features/events/components/EventMarks"
+import { ReviewPanel } from "../components/ReviewPanel"
 import { STATUS_LABEL, TEMPLATE_LABEL } from "../lib/model"
 
-/** Crear un torneo: el formulario y, al guardar, a gestionarlo. */
-export function AdminEventNewPage() {
+/** Crear un torneo (normal o histórico): el formulario y, al guardar, a gestionarlo. */
+export function AdminEventNewPage({
+  historic = false,
+}: {
+  historic?: boolean
+}) {
   const create = useCreateEvent()
   const navigate = useNavigate()
+  const role = useMe().data?.role
+  if (!role) return <Skeleton className="h-96 rounded-xl" />
+  const normal = canCreateEvent(role)
+  const kinds = !normal
+    ? "historic-only"
+    : canCreateHistoricEvent(role)
+      ? "both"
+      : "normal-only"
+  // Lo que crea un organizador espera a un admin o moderador; lo de un moderador, a un admin (replanteo 84).
+  const approver = eventApprover(role)
+  const needsApproval = approver !== "none"
   return (
     <section className="flex flex-col gap-5">
       <BackLink />
       <AdminHeader
-        title="Crear torneo"
-        subtitle="Formato primero: a la derecha, el resumen de cómo se va a jugar. Después se abren las inscripciones y se gestiona desde su página."
+        title={historic || !normal ? "Subir torneo histórico" : "Crear torneo"}
+        subtitle={
+          historic || !normal
+            ? "El registro de un torneo que ya se jugó: el formato, después los equipos y cómo terminó cada partida."
+            : "Formato primero: a la derecha, el resumen de cómo se va a jugar. Después se abren las inscripciones y se gestiona desde su página."
+        }
       />
       <EventForm
-        submitLabel="Crear torneo"
+        initial={{ historic: historic || !normal }}
+        kinds={kinds}
+        canTesting={canReviewEvents(role)}
+        approver={approver}
+        submitLabel={(h) =>
+          needsApproval
+            ? "Crear y enviar a aprobación"
+            : h
+              ? "Crear torneo histórico"
+              : "Crear torneo"
+        }
         pending={create.isPending}
         error={create.error}
         onCancel={() => void navigate({ to: "/admin/events" })}
         onSubmit={(v) =>
           create.mutate(v, {
             onSuccess: ({ id }) => {
-              toast.success("Torneo creado: las inscripciones están abiertas.")
-              void navigate({ to: "/admin/events/$id", params: { id } })
+              toast.success(
+                needsApproval
+                  ? "Torneo creado: queda pendiente de aprobación."
+                  : v.historic
+                    ? "Torneo histórico creado: ahora carga los equipos."
+                    : "Torneo creado: las inscripciones están abiertas."
+              )
+              void navigate({
+                to: "/admin/events/$id",
+                params: { id },
+                search: v.historic ? { tab: "regs" } : {},
+              })
             },
           })
         }
@@ -100,9 +148,10 @@ export function AdminEventPage({
       <BackLink />
       <AdminHeader
         title={event.name}
-        subtitle={`${TEMPLATE_LABEL[event.template]} · ${event.game_mode} · ${event.teams} equipos inscritos`}
+        subtitle={`${event.historic ? "Histórico · " : ""}${TEMPLATE_LABEL[event.template]} · ${event.game_mode} · ${event.teams} equipos inscritos`}
         action={
           <div className="flex items-center gap-2">
+            <EventMarks event={event} />
             <Badge
               variant={
                 event.status === "registration"
@@ -122,6 +171,7 @@ export function AdminEventPage({
           </div>
         }
       />
+      <ReviewPanel event={event} onTab={onTab} />
       <AdminTabs
         label="Gestionar torneo"
         value={current}
@@ -145,12 +195,10 @@ export function AdminEventPage({
 
 function BackLink() {
   return (
-    <Link
-      to="/admin/events"
+    <BackButton
+      fallback={{ to: "/admin/events" }}
+      label="Torneos"
       className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-    >
-      <ArrowLeftIcon className="size-4" aria-hidden />
-      Torneos
-    </Link>
+    />
   )
 }

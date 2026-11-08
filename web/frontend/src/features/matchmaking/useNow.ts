@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 
-/** Hora actual que se renueva cada `ms` mientras `on` (cuentas regresivas y tiempo en cola). */
+import { serverNow } from "./serverClock"
+
+/** Hora del servidor que se renueva cada `ms` mientras `on` (cuentas regresivas y tiempo en cola). */
 export function useNow(on: boolean, ms = 1000) {
-  const [now, setNow] = useState(() => Date.now())
+  const [now, setNow] = useState(() => serverNow())
   useEffect(() => {
     if (!on) return
-    const id = setInterval(() => setNow(Date.now()), ms)
+    const id = setInterval(() => setNow(serverNow()), ms)
     return () => clearInterval(id)
   }, [on, ms])
   return now

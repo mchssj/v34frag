@@ -27,7 +27,7 @@ export function LiveBlock() {
         />
         En vivo · {live.length}
       </span>
-      <div className="flex flex-col gap-1.5 overflow-x-auto">
+      <div className="flex flex-col gap-1.5 overflow-x-auto overflow-y-hidden">
         {live.map((x) => (
           <LiveRow
             key={x.live_uid ?? x.match_id}

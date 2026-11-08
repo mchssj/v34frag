@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -23,16 +24,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { REASON_TEXT, fmtDateTime } from "../labels"
-import {
-  adminBansOptions,
-  adminReportsOptions,
-  useMmAdminMutation,
-} from "../queries"
+import { adminReportsOptions, useMmAdminMutation } from "../queries"
 import { useMmSource } from "../source"
 import type { MmAdminReport, ReportStatus } from "../types"
 
-// Administración › Matchmaking › Reportes (plan, decisión "Reportes"): resolver los reportes y
-// ver o levantar las exclusiones del matchmaking.
+// Administración › Matchmaking › Reportes (plan, decisión "Reportes"): resolver los reportes. Las exclusiones y
+// las sanciones de la cola están en Baneos › Matchmaking (SanctionsPanel).
 
 const STATUS_TEXT: Record<ReportStatus, string> = {
   pending: "Pendiente",
@@ -49,10 +46,10 @@ export function ReportsPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card variant="outline" className="flex flex-col gap-3 p-4">
         <CardHeader>
-          <CardTitle>Reportes</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-[15px] font-semibold">Reportes</CardTitle>
+          <CardDescription className="text-[13px] leading-relaxed">
             Los mandan los jugadores desde la sala, hasta 24 h después de la
             partida. Excluir saca al jugador solo del matchmaking.
           </CardDescription>
@@ -98,7 +95,18 @@ export function ReportsPanel() {
           )}
         </CardContent>
       </Card>
-      <BansCard />
+      <p className="text-[13px] text-muted-foreground">
+        Las sanciones de la cola y las exclusiones del matchmaking se ven y se
+        levantan en{" "}
+        <Link
+          to="/admin/bans"
+          search={{ status: "mm" }}
+          className="font-medium text-foreground underline underline-offset-4"
+        >
+          Baneos › Matchmaking
+        </Link>
+        .
+      </p>
     </div>
   )
 }
@@ -193,45 +201,5 @@ function ReportRow({ report: r }: { report: MmAdminReport }) {
         )}
       </TableCell>
     </TableRow>
-  )
-}
-
-function BansCard() {
-  const source = useMmSource()
-  const { data } = useQuery(adminBansOptions(source))
-  const unban = useMmAdminMutation((userId: string) => source.unban(userId))
-  return (
-    <Card size="sm">
-      <CardHeader>
-        <CardTitle>Excluidos del matchmaking</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {data?.length === 0 && (
-          <p className="text-sm text-muted-foreground">Nadie excluido.</p>
-        )}
-        <ul className="flex flex-col divide-y">
-          {data?.map((b) => (
-            <li
-              key={b.user_id}
-              className="flex items-center gap-3 py-2 text-sm"
-            >
-              <span className="font-medium">{b.nick}</span>
-              <span className="text-muted-foreground">
-                {b.reason} · hasta {fmtDateTime(b.until)}
-              </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="ml-auto"
-                disabled={unban.isPending}
-                onClick={() => unban.mutate(b.user_id)}
-              >
-                Levantar
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
   )
 }

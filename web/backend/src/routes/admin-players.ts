@@ -5,15 +5,19 @@ import { requireAdmin, requireUser } from '../lib/auth';
 import { inBackground } from '../lib/background';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
-import { AppError, fromPostgrest } from '../lib/errors';
+import { AppError, fromAuthError, fromPostgrest } from '../lib/errors';
+import { randomPassword } from '../lib/password';
+import { anonClient, serviceClient } from '../lib/supabase';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { AVATAR_MAX_BYTES, readImage, storageError } from '../lib/uploads';
 import {
+  AdminAccountStatus,
   AdminAliasBody,
   AdminPlayer,
   AdminPlayerCreate,
   AdminPlayerPatch,
+  AdminRandomPassword,
   AdminUserList,
   AdminUserQuery,
   BlockedHitList,
@@ -33,6 +37,7 @@ import { bearer, errorResponses, json } from '../schemas/common';
 import { AvatarResult, AvatarUpload } from '../schemas/profile';
 import { Medal } from '../schemas/players';
 import { vipStatusOf } from '../services/vip';
+import { designOf, loadDefinitions } from '../services/medals';
 
 type C = Context<AppEnv>;
 const PLAYER = 'id, nick, user_id, steam_id, photo_url, privacy, bio, achievements, team_history';
@@ -91,8 +96,10 @@ const uploadPhoto = createRoute({
 });
 const addMedal = createRoute({
   method: 'post', path: '/api/v1/admin/players/{id}/medals', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
-  summary: 'Dar una medalla', request: { params: IdParam, body: { required: true, ...json(MedalBody) } },
-  responses: { 201: { description: 'Medalla', ...json(Medal) }, ...errorResponses(400, 401, 403) },
+  summary: 'Dar una medalla',
+  description: 'Una definición manual (Comunidad: staff, caster, campeón de torneo…). El título, si no viene, es el de la definición.',
+  request: { params: IdParam, body: { required: true, ...json(MedalBody) } },
+  responses: { 201: { description: 'Medalla', ...json(Medal) }, ...errorResponses(400, 401, 403, 404) },
 });
 const deleteMedal = createRoute({
   method: 'delete', path: '/api/v1/admin/medals/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -140,6 +147,34 @@ const userAlias = createRoute({
   description: 'Moderación: sin la espera de 15 días. Respeta la unicidad. Con una palabra bloqueada pide `force: true`.',
   request: { params: IdParam, body: { required: true, ...json(AdminAliasBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
+});
+
+// ---------- acciones de cuenta (plan docs/bitacora/2026-11-03-admin-cuentas-usuarios) ----------
+
+const accountStatus = createRoute({
+  method: 'get', path: '/api/v1/admin/users/{id}/account', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Estado de la cuenta', description: 'Si confirmó su correo, su último inicio de sesión y el correo (solo lectura).',
+  request: { params: IdParam },
+  responses: { 200: { description: 'Estado', ...json(AdminAccountStatus) }, ...errorResponses(401, 403, 404) },
+});
+const accountResend = createRoute({
+  method: 'post', path: '/api/v1/admin/users/{id}/resend-confirmation', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Reenviar el correo de activación', description: 'Solo a una cuenta que todavía no confirmó su correo (si no, 409).',
+  request: { params: IdParam },
+  responses: { ...done, ...errorResponses(401, 403, 404, 409, 429) },
+});
+const accountReset = createRoute({
+  method: 'post', path: '/api/v1/admin/users/{id}/send-password-reset', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Enviar el correo para cambiar la contraseña',
+  request: { params: IdParam },
+  responses: { ...done, ...errorResponses(401, 403, 404, 429) },
+});
+const accountRandom = createRoute({
+  method: 'post', path: '/api/v1/admin/users/{id}/random-password', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Cambiar la contraseña por una aleatoria',
+  description: 'La devuelve una sola vez y cierra las sesiones de la cuenta. No se puede usar sobre la cuenta propia ni sobre otro admin.',
+  request: { params: IdParam },
+  responses: { 200: { description: 'La contraseña nueva', ...json(AdminRandomPassword) }, ...errorResponses(401, 403, 404, 501) },
 });
 
 // ---------- palabras bloqueadas ----------
@@ -226,9 +261,18 @@ export const adminPlayers = createRouter()
   })
   .openapi(addMedal, async (c) => {
     const { id } = c.req.valid('param');
-    const row = mustHave(await c.var.sb.from('player_medals').insert({ player_id: id, ...c.req.valid('json'), source: 'admin' })
-      .select('id, title, icon, created_at, rank, medal_key, source, season:seasons(id, number, name)').single());
-    return c.json({ ...row, season: row.season ?? null, rank: row.rank ?? null, source: 'admin' as const }, 201);
+    const b = c.req.valid('json');
+    const def = (await loadDefinitions(c.var.sb, [b.definition_id])).get(b.definition_id);
+    if (!def || def.status !== 'active') throw notFound('esa medalla');
+    if (def.aggregation !== 'manual') throw new AppError(400, 'BUSINESS_RULE', 'Esa medalla la da el juego o el cierre de temporada, no un admin.');
+    const row = mustHave(
+      await c.var.sb
+        .from('player_medals')
+        .insert({ player_id: id, definition_id: def.id, title: b.title ?? def.title, icon: null, source: 'admin' })
+        .select('id, title, created_at')
+        .single(),
+    );
+    return c.json({ ...row, source: 'admin' as const, season: null, rank: null, design: designOf(def) }, 201);
   })
   .openapi(deleteMedal, async (c) => {
     const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', c.req.valid('param').id).select('id'));
@@ -296,6 +340,38 @@ export const adminPlayers = createRouter()
     const { alias, force } = c.req.valid('json');
     must(await c.var.sb.rpc('set_user_tag', { p_user: c.req.valid('param').id, p_tag: alias, p_force: force }));
     return c.body(null, 204);
+  })
+  .openapi(accountStatus, async (c) => {
+    const data = must(await c.var.sb.rpc('admin_account_status', { p_user: c.req.valid('param').id }));
+    c.header('Cache-Control', 'no-store');
+    return c.json(data as z.infer<typeof AdminAccountStatus>, 200);
+  })
+  .openapi(accountResend, async (c) => {
+    const cfg = c.var.config;
+    const { email } = must(await c.var.sb.rpc('admin_account_action', { p_user: c.req.valid('param').id, p_action: 'resend_confirmation' })) as { email: string };
+    const { error } = await anonClient(cfg).auth.resend({ type: 'signup', email, options: { emailRedirectTo: cfg.FRONTEND_URL } });
+    if (error) throw fromAuthError(error);
+    return c.body(null, 204);
+  })
+  .openapi(accountReset, async (c) => {
+    const cfg = c.var.config;
+    const { email } = must(await c.var.sb.rpc('admin_account_action', { p_user: c.req.valid('param').id, p_action: 'password_reset_email' })) as { email: string };
+    const { error } = await anonClient(cfg).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
+    if (error) throw fromAuthError(error);
+    return c.body(null, 204);
+  })
+  .openapi(accountRandom, async (c) => {
+    const id = c.req.valid('param').id;
+    const admin = serviceClient(c.var.config);
+    if (!admin) throw new AppError(501, 'NOT_AVAILABLE', 'Falta configurar la clave de administrador en la API.');
+    must(await c.var.sb.rpc('admin_account_action', { p_user: id, p_action: 'random_password' }));
+    const password = randomPassword();
+    const { error } = await admin.auth.admin.updateUserById(id, { password });
+    if (error) throw fromAuthError(error);
+    // La contraseña ya cambió: si esto falla hay que entregarla igual, y el admin ve que las sesiones siguen abiertas.
+    const closed = await c.var.sb.rpc('admin_account_close_sessions', { p_user: id });
+    c.header('Cache-Control', 'no-store');
+    return c.json({ password, sessions_closed: !closed.error }, 200);
   })
   .openapi(words, async (c) => {
     const p = c.req.valid('query');

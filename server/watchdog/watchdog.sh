@@ -1,5 +1,5 @@
 #!/bin/bash
-# Watchdog del servidor real (#1): si el juego deja de contestar A2S_INFO por 30 s seguidos, le manda SIGABRT para
+# Watchdog del servidor real de ExtremeHost (#3; hasta el 2026-11-02 se llamaba #1): si el juego deja de contestar A2S_INFO por 30 s seguidos, le manda SIGABRT para
 # que Accelerator escriba un volcado con la pila de todos los hilos (dónde estaba trabado). srcds_run lo reinicia y
 # Accelerator sube el volcado al arrancar. Plan: docs/bitacora/2026-10-27-watchdog-congelamiento/PLAN.md
 #

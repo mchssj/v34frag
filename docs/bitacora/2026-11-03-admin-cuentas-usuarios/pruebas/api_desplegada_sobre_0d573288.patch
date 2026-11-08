@@ -1,0 +1,740 @@
+diff --git a/web/backend/src/db/types.ts b/web/backend/src/db/types.ts
+index 16b3df9c..fd98eecc 100644
+--- a/web/backend/src/db/types.ts
++++ b/web/backend/src/db/types.ts
+@@ -4368,6 +4368,15 @@ isOneToOne: false
+               "first_seen_at": string,"ip": string,"last_nick": string,"last_seen_at": string,"others": Json,"others_unlinked": number,"steam_id": string,"times": number
+             }[]
+                            },
++"admin_account_action":
++{ Args: { "p_action": string; "p_user": string }; Returns: Json
++                           },
++"admin_account_close_sessions":
++{ Args: { "p_user": string }; Returns: undefined
++                           },
++"admin_account_status":
++{ Args: { "p_user": string }; Returns: Json
++                           },
+ "admin_regenerate_hud_key":
+ { Args: { "p_server": string }; Returns: string
+                            },
+diff --git a/web/backend/src/lib/errors.ts b/web/backend/src/lib/errors.ts
+index f7b0a824..5b7f5e45 100644
+--- a/web/backend/src/lib/errors.ts
++++ b/web/backend/src/lib/errors.ts
+@@ -10,6 +10,7 @@ export type ErrorCode =
+   | 'INVALID_CREDENTIALS'
+   | 'WRONG_PASSWORD'
+   | 'SAME_PASSWORD'
++  | 'INVALID_LINK'
+   | 'EMAIL_NOT_CONFIRMED'
+   | 'FORBIDDEN'
+   | 'NOT_FOUND'
+diff --git a/web/backend/src/lib/password.ts b/web/backend/src/lib/password.ts
+new file mode 100644
+index 00000000..4be9a0ec
+--- /dev/null
++++ b/web/backend/src/lib/password.ts
+@@ -0,0 +1,14 @@
++/** Contraseña aleatoria para que un admin se la pase a un jugador: sin caracteres que se confunden (0/O, 1/l/I). */
++const ALPHABET = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
++
++export function randomPassword(length = 16): string {
++  // Se descartan los bytes que no entran justo en el alfabeto: así cada carácter es igual de probable.
++  const limit = 256 - (256 % ALPHABET.length);
++  let out = '';
++  while (out.length < length) {
++    for (const b of crypto.getRandomValues(new Uint8Array(length * 2))) {
++      if (b < limit && out.length < length) out += ALPHABET[b % ALPHABET.length];
++    }
++  }
++  return out;
++}
+diff --git a/web/backend/src/lib/ratelimit.ts b/web/backend/src/lib/ratelimit.ts
+index 20be8487..225da06f 100644
+--- a/web/backend/src/lib/ratelimit.ts
++++ b/web/backend/src/lib/ratelimit.ts
+@@ -14,6 +14,8 @@ export const RATE_RULES = {
+   auth: { name: 'auth', limit: 10, windowSec: 60, binding: 'RL_AUTH' },
+   // Cambio de contraseña: 5 intentos por minuto por cuenta (frena a quien prueba claves con una sesión robada).
+   password: { name: 'password', limit: 5, windowSec: 60, binding: 'RL_PASSWORD' },
++  // Pedir el correo de recuperación: 5 por minuto por IP (frena a quien llena de correos una casilla ajena).
++  recovery: { name: 'recovery', limit: 5, windowSec: 60, binding: 'RL_RECOVERY' },
+   // Anticheat: empezar una vinculación, y consultar o renovar (el agente consulta cada 5 segundos).
+   acLink: { name: 'ac_link', limit: 10, windowSec: 60, binding: 'RL_AC_LINK' },
+   acClaim: { name: 'ac_claim', limit: 60, windowSec: 60, binding: 'RL_AC_CLAIM' },
+diff --git a/web/backend/src/lib/supabase.ts b/web/backend/src/lib/supabase.ts
+index e76a57e4..f8a26777 100644
+--- a/web/backend/src/lib/supabase.ts
++++ b/web/backend/src/lib/supabase.ts
+@@ -20,6 +20,13 @@ export const userClient = (cfg: Config, token: string): Db =>
+     global: { headers: { Authorization: `Bearer ${token}` } },
+   });
+ 
++/**
++ * Cliente con la clave de administrador: se salta las RLS. Solo para las acciones de cuenta de los admins (plan
++ * docs/bitacora/2026-11-03-admin-cuentas-usuarios), siempre detrás de requireAdmin. Null si la clave no está configurada.
++ */
++export const serviceClient = (cfg: Config): Db | null =>
++  cfg.SUPABASE_SERVICE_KEY ? createClient<Database>(cfg.SUPABASE_URL, cfg.SUPABASE_SERVICE_KEY, options) : null;
++
+ // Para validar tokens se reutiliza un cliente por configuración: guarda en caché las claves
+ // públicas (JWKS) y así cada request se valida sin ir a Supabase. Nunca se le inicia sesión.
+ const verifiers = new WeakMap<Config, Db>();
+diff --git a/web/backend/src/routes/admin-players.ts b/web/backend/src/routes/admin-players.ts
+index 53863aea..c9a36160 100644
+--- a/web/backend/src/routes/admin-players.ts
++++ b/web/backend/src/routes/admin-players.ts
+@@ -5,15 +5,19 @@ import { requireAdmin, requireUser } from '../lib/auth';
+ import { inBackground } from '../lib/background';
+ import { must, mustHave, notFound, searchTerm } from '../lib/db';
+ import { envelope, runList } from '../lib/list';
+-import { AppError, fromPostgrest } from '../lib/errors';
++import { AppError, fromAuthError, fromPostgrest } from '../lib/errors';
++import { randomPassword } from '../lib/password';
++import { anonClient, serviceClient } from '../lib/supabase';
+ import { createRouter } from '../lib/router';
+ import type { AppEnv } from '../lib/types';
+ import { AVATAR_MAX_BYTES, readImage, storageError } from '../lib/uploads';
+ import {
++  AdminAccountStatus,
+   AdminAliasBody,
+   AdminPlayer,
+   AdminPlayerCreate,
+   AdminPlayerPatch,
++  AdminRandomPassword,
+   AdminUserList,
+   AdminUserQuery,
+   BlockedHitList,
+@@ -142,6 +146,34 @@ const userAlias = createRoute({
+   responses: { ...done, ...errorResponses(400, 401, 403, 409) },
+ });
+ 
++// ---------- acciones de cuenta (plan docs/bitacora/2026-11-03-admin-cuentas-usuarios) ----------
++
++const accountStatus = createRoute({
++  method: 'get', path: '/api/v1/admin/users/{id}/account', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
++  summary: 'Estado de la cuenta', description: 'Si confirmó su correo y su último inicio de sesión.',
++  request: { params: IdParam },
++  responses: { 200: { description: 'Estado', ...json(AdminAccountStatus) }, ...errorResponses(401, 403, 404) },
++});
++const accountResend = createRoute({
++  method: 'post', path: '/api/v1/admin/users/{id}/resend-confirmation', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
++  summary: 'Reenviar el correo de activación', description: 'Solo a una cuenta que todavía no confirmó su correo (si no, 409).',
++  request: { params: IdParam },
++  responses: { ...done, ...errorResponses(401, 403, 404, 409, 429) },
++});
++const accountReset = createRoute({
++  method: 'post', path: '/api/v1/admin/users/{id}/send-password-reset', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
++  summary: 'Enviar el correo para cambiar la contraseña',
++  request: { params: IdParam },
++  responses: { ...done, ...errorResponses(401, 403, 404, 429) },
++});
++const accountRandom = createRoute({
++  method: 'post', path: '/api/v1/admin/users/{id}/random-password', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
++  summary: 'Cambiar la contraseña por una aleatoria',
++  description: 'La devuelve una sola vez y cierra las sesiones de la cuenta. No se puede usar sobre la cuenta propia ni sobre otro admin.',
++  request: { params: IdParam },
++  responses: { 200: { description: 'La contraseña nueva', ...json(AdminRandomPassword) }, ...errorResponses(401, 403, 404, 501) },
++});
++
+ // ---------- palabras bloqueadas ----------
+ 
+ const words = createRoute({
+@@ -296,6 +328,37 @@ export const adminPlayers = createRouter()
+     must(await c.var.sb.rpc('set_user_tag', { p_user: c.req.valid('param').id, p_tag: alias, p_force: force }));
+     return c.body(null, 204);
+   })
++  .openapi(accountStatus, async (c) => {
++    const data = must(await c.var.sb.rpc('admin_account_status', { p_user: c.req.valid('param').id }));
++    return c.json(data as z.infer<typeof AdminAccountStatus>, 200);
++  })
++  .openapi(accountResend, async (c) => {
++    const cfg = c.var.config;
++    const { email } = must(await c.var.sb.rpc('admin_account_action', { p_user: c.req.valid('param').id, p_action: 'resend_confirmation' })) as { email: string };
++    const { error } = await anonClient(cfg).auth.resend({ type: 'signup', email, options: { emailRedirectTo: cfg.FRONTEND_URL } });
++    if (error) throw fromAuthError(error);
++    return c.body(null, 204);
++  })
++  .openapi(accountReset, async (c) => {
++    const cfg = c.var.config;
++    const { email } = must(await c.var.sb.rpc('admin_account_action', { p_user: c.req.valid('param').id, p_action: 'password_reset_email' })) as { email: string };
++    const { error } = await anonClient(cfg).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
++    if (error) throw fromAuthError(error);
++    return c.body(null, 204);
++  })
++  .openapi(accountRandom, async (c) => {
++    const id = c.req.valid('param').id;
++    const admin = serviceClient(c.var.config);
++    if (!admin) throw new AppError(501, 'NOT_AVAILABLE', 'Falta configurar la clave de administrador en la API.');
++    must(await c.var.sb.rpc('admin_account_action', { p_user: id, p_action: 'random_password' }));
++    const password = randomPassword();
++    const { error } = await admin.auth.admin.updateUserById(id, { password });
++    if (error) throw fromAuthError(error);
++    // La contraseña ya cambió: si esto falla hay que entregarla igual, y el admin ve que las sesiones siguen abiertas.
++    const closed = await c.var.sb.rpc('admin_account_close_sessions', { p_user: id });
++    c.header('Cache-Control', 'no-store');
++    return c.json({ password, sessions_closed: !closed.error }, 200);
++  })
+   .openapi(words, async (c) => {
+     const p = c.req.valid('query');
+     let q = c.var.sb.from('blocked_words').select('id, word, created_at', { count: 'exact' });
+diff --git a/web/backend/src/routes/auth.ts b/web/backend/src/routes/auth.ts
+index 3a098692..781667bb 100644
+--- a/web/backend/src/routes/auth.ts
++++ b/web/backend/src/routes/auth.ts
+@@ -9,7 +9,19 @@ import { RATE_RULES, rateLimit } from '../lib/ratelimit';
+ import { createRouter } from '../lib/router';
+ import { anonClient, userClient } from '../lib/supabase';
+ import type { AppEnv } from '../lib/types';
+-import { AuthUser, LoginBody, PasswordChangeBody, RefreshBody, Session, SignupBody, SignupResult, type SessionT } from '../schemas/auth';
++import {
++  AuthUser,
++  ForgotPasswordBody,
++  ForgotPasswordResult,
++  LoginBody,
++  PasswordChangeBody,
++  RefreshBody,
++  ResetPasswordBody,
++  Session,
++  SignupBody,
++  SignupResult,
++  type SessionT,
++} from '../schemas/auth';
+ import { toAuthUser } from '../services/account';
+ import { bearer, errorResponses, json } from '../schemas/common';
+ 
+@@ -38,6 +50,26 @@ function touchLastSeen(c: Context<AppEnv>, token: string, id: string) {
+   );
+ }
+ 
++// Pone la contraseña con la sesión dada y cierra todas las demás. Lo usan el cambio y la recuperación.
++async function setPassword(c: Context<AppEnv>, accessToken: string, password: string, sameMessage: string) {
++  const cfg = c.var.config;
++  const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
++  const upd = await fetch(`${cfg.SUPABASE_URL}/auth/v1/user`, { method: 'PUT', headers, body: JSON.stringify({ password }) });
++  if (!upd.ok) {
++    const body = (await upd.json().catch(() => ({}))) as { code?: string; error_code?: string; msg?: string; message?: string };
++    const code = body.error_code ?? body.code;
++    if (code === 'same_password') throw new AppError(400, 'SAME_PASSWORD', sameMessage);
++    if (code === 'weak_password') throw new AppError(400, 'VALIDATION_ERROR', body.msg ?? body.message ?? 'La contraseña es demasiado débil.', [{ path: 'new_password', message: 'Es demasiado débil.' }]);
++    throw new AppError(500, 'INTERNAL', 'No se pudo cambiar la contraseña.');
++  }
++  // Todas las demás sesiones (otras PCs, el celular, la que hizo el pedido) dejan de valer; queda solo esta.
++  const out = await fetch(`${cfg.SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers });
++  if (!out.ok) logError(c, new Error(`logout de las otras sesiones tras cambiar la contraseña: HTTP ${out.status}`));
++}
++
++// Errores de verifyOtp que significan "este link no sirve": vencido, ya usado o mal copiado.
++const INVALID_LINK_CODES = new Set(['otp_expired', 'otp_disabled', 'invalid_credentials', 'validation_failed']);
++
+ // ---------- rutas ----------
+ 
+ const signup = createRoute({
+@@ -114,6 +146,40 @@ const changePassword = createRoute({
+   },
+ });
+ 
++const forgotPassword = createRoute({
++  method: 'post',
++  path: '/auth/password/forgot',
++  tags: ['Auth'],
++  summary: 'Pedir el correo para recuperar la contraseña',
++  description:
++    'Si hay una cuenta con ese correo, Supabase le manda un link a `/reset-password` del frontend (vence en una hora). ' +
++    'La respuesta es siempre `202` y el pedido sale en segundo plano, así que no deja ver si la cuenta existe. ' +
++    'Hasta 5 pedidos por minuto por IP; Supabase además manda como mucho un correo por minuto a cada dirección.',
++  middleware: [rateLimit(RATE_RULES.recovery)] as const,
++  request: { body: { required: true, ...json(ForgotPasswordBody) } },
++  responses: {
++    202: { description: 'Pedido recibido (haya o no una cuenta)', ...json(ForgotPasswordResult) },
++    ...errorResponses(400, 429),
++  },
++});
++
++const resetPassword = createRoute({
++  method: 'post',
++  path: '/auth/password/reset',
++  tags: ['Auth'],
++  summary: 'Poner una contraseña nueva con el link del correo',
++  description:
++    'Canjea el `token_hash` del correo de recuperación (de un solo uso), pone la contraseña nueva y cierra todas las demás ' +
++    'sesiones de la cuenta. Devuelve una sesión nueva. `400 INVALID_LINK` si el link venció o ya se usó (hay que pedir otro) y ' +
++    '`400 SAME_PASSWORD` si la nueva es igual a la anterior (el link queda gastado igual).',
++  middleware: [rateLimit(RATE_RULES.auth)] as const,
++  request: { body: { required: true, ...json(ResetPasswordBody) } },
++  responses: {
++    200: { description: 'Contraseña cambiada: la sesión nueva', ...json(Session) },
++    ...errorResponses(400, 429),
++  },
++});
++
+ const me = createRoute({
+   method: 'get',
+   path: '/auth/me',
+@@ -210,21 +276,34 @@ export const auth = createRouter()
+     if (fresh.error) throw fromAuthError(fresh.error);
+     if (!fresh.data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
+     const session = fresh.data.session;
+-    const headers = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' };
+-
+-    const upd = await fetch(`${cfg.SUPABASE_URL}/auth/v1/user`, { method: 'PUT', headers, body: JSON.stringify({ password: new_password }) });
+-    if (!upd.ok) {
+-      const body = (await upd.json().catch(() => ({}))) as { code?: string; error_code?: string; msg?: string; message?: string };
+-      const code = body.error_code ?? body.code;
+-      if (code === 'same_password') throw new AppError(400, 'SAME_PASSWORD', 'La contraseña nueva tiene que ser distinta de la actual.');
+-      if (code === 'weak_password') throw new AppError(400, 'VALIDATION_ERROR', body.msg ?? body.message ?? 'La contraseña es demasiado débil.', [{ path: 'new_password', message: 'Es demasiado débil.' }]);
+-      throw new AppError(500, 'INTERNAL', 'No se pudo cambiar la contraseña.');
+-    }
+-    // Todas las demás sesiones (incluida la que hizo el pedido) dejan de valer; queda solo la nueva.
+-    const out = await fetch(`${cfg.SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers });
+-    if (!out.ok) logError(c, new Error(`logout de las otras sesiones tras cambiar la contraseña: HTTP ${out.status}`));
++    await setPassword(c, session.access_token, new_password, 'La contraseña nueva tiene que ser distinta de la actual.');
+     return c.json(await toSession(cfg, session), 200);
+   })
++  .openapi(forgotPassword, async (c) => {
++    const cfg = c.var.config;
++    const { email } = c.req.valid('json');
++    // En segundo plano y sin mirar el resultado: la respuesta y su demora son iguales con o sin cuenta.
++    inBackground(
++      c,
++      (async () => {
++        const { error } = await anonClient(cfg).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
++        if (error) throw new Error(`correo de recuperación: ${error.code ?? error.status} ${error.message}`);
++      })(),
++    );
++    return c.json({ ok: true as const }, 202);
++  })
++  .openapi(resetPassword, async (c) => {
++    const cfg = c.var.config;
++    const { token_hash, new_password } = c.req.valid('json');
++    const { data, error } = await anonClient(cfg).auth.verifyOtp({ type: 'recovery', token_hash });
++    if (error && (INVALID_LINK_CODES.has(error.code ?? '') || error.status === 403 || error.status === 404)) {
++      throw new AppError(400, 'INVALID_LINK', 'El enlace no es válido o venció. Pide otro correo.');
++    }
++    if (error) throw fromAuthError(error);
++    if (!data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
++    await setPassword(c, data.session.access_token, new_password, 'La contraseña nueva tiene que ser distinta de la anterior. Pide otro correo para elegir una.');
++    return c.json(await toSession(cfg, data.session), 200);
++  })
+   .openapi(me, async (c) => {
+     const cfg = c.var.config;
+     const { token, id } = c.var.user;
+diff --git a/web/backend/src/schemas/admin.ts b/web/backend/src/schemas/admin.ts
+index 932a7d3b..8979dc9e 100644
+--- a/web/backend/src/schemas/admin.ts
++++ b/web/backend/src/schemas/admin.ts
+@@ -210,6 +210,19 @@ export const SteamUnlinkedQuery = listQuery(['last_played', 'matches', 'last_nic
+ });
+ export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedList');
+ 
++export const AdminAccountStatus = z
++  .object({
++    confirmed: z.boolean().openapi({ description: 'Confirmó su correo' }),
++    last_sign_in_at: z.string().nullable(),
++  })
++  .openapi('AdminAccountStatus');
++export const AdminRandomPassword = z
++  .object({
++    password: z.string().openapi({ description: 'Se muestra una sola vez: no se guarda en ningún lado' }),
++    sessions_closed: z.boolean().openapi({ description: 'Si se cerraron las sesiones que tenía abiertas' }),
++  })
++  .openapi('AdminRandomPassword');
++
+ export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
+   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
+   role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),
+diff --git a/web/backend/src/schemas/auth.ts b/web/backend/src/schemas/auth.ts
+index 801664f5..ebc06a55 100644
+--- a/web/backend/src/schemas/auth.ts
++++ b/web/backend/src/schemas/auth.ts
+@@ -31,6 +31,19 @@ export const PasswordChangeBody = z
+   })
+   .openapi('PasswordChangeBody');
+ 
++export const ForgotPasswordBody = z.object({ email }).openapi('ForgotPasswordBody');
++
++export const ForgotPasswordResult = z
++  .object({ ok: z.literal(true) })
++  .openapi('ForgotPasswordResult', { description: 'Siempre igual, haya o no una cuenta con ese correo' });
++
++export const ResetPasswordBody = z
++  .object({
++    token_hash: z.string().min(1).max(256).openapi({ description: 'El `token_hash` del link del correo de recuperación' }),
++    new_password: z.string().min(6).max(72).openapi({ description: 'Las mismas reglas del registro: de 6 a 72 caracteres' }),
++  })
++  .openapi('ResetPasswordBody');
++
+ export const RefreshBody = z
+   .object({ refresh_token: z.string().min(1).max(512) })
+   .openapi('RefreshBody');
+diff --git a/web/backend/test/integration/auth.test.ts b/web/backend/test/integration/auth.test.ts
+index 1c38f45d..6622d8c3 100644
+--- a/web/backend/test/integration/auth.test.ts
++++ b/web/backend/test/integration/auth.test.ts
+@@ -199,3 +199,63 @@ describe('POST /api/v1/me/password', () => {
+     expect(res.headers.get('retry-after')).toBeTruthy();
+   });
+ });
++
++describe('Recuperar la contraseña', () => {
++  // App propia: la del archivo ya gastó el contador "auth" (10 por minuto, todos con la IP "unknown").
++  const propia = createApp();
++  const post = (path: string, body?: unknown) =>
++    propia.request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, env);
++  const getMe = (token: string) => propia.request('/auth/me', { headers: { Authorization: `Bearer ${token}` } }, env);
++  // El link del correo lleva el token_hash: acá se saca con generateLink, sin pasar por Mailpit (la base local manda 2 correos por hora).
++  async function tokenHash(email: string) {
++    const { data, error } = await admin().auth.admin.generateLink({ type: 'recovery', email });
++    if (error || !data.properties?.hashed_token) throw error ?? new Error('generateLink sin hashed_token');
++    return data.properties.hashed_token;
++  }
++
++  it('POST /auth/password/forgot responde lo mismo con y sin cuenta', async () => {
++    const u = await createUser();
++    const conCuenta = await post('/auth/password/forgot', { email: u.email });
++    const sinCuenta = await post('/auth/password/forgot', { email: nuevoEmail() });
++    expect(conCuenta.status).toBe(202);
++    expect(sinCuenta.status).toBe(202);
++    expect(await conCuenta.json()).toEqual(await sinCuenta.json());
++  });
++
++  it('POST /auth/password/reset pone la nueva, cierra las sesiones de antes y el link no sirve dos veces', async () => {
++    const u = await createUser();
++    const otraPc = await (await post('/auth/login', { email: u.email, password: u.password })).json();
++    const hash = await tokenHash(u.email);
++
++    const res = await post('/auth/password/reset', { token_hash: hash, new_password: 'recuperada-789' });
++    expect(res.status).toBe(200);
++    const s = await res.json();
++    expect(s.user).toMatchObject({ id: u.id, email: u.email });
++    expect(Date.now() - Date.parse(s.user.password_changed_at)).toBeLessThan(60_000);
++    expect((await getMe(s.access_token)).status).toBe(200);
++
++    expect((await post('/auth/login', { email: u.email, password: u.password })).status).toBe(401);
++    expect((await post('/auth/login', { email: u.email, password: 'recuperada-789' })).status).toBe(200);
++    expect((await post('/auth/refresh', { refresh_token: u.refresh })).status).toBe(401);
++    expect((await post('/auth/refresh', { refresh_token: otraPc.refresh_token })).status).toBe(401);
++
++    const otraVez = await post('/auth/password/reset', { token_hash: hash, new_password: 'otra-mas-012' });
++    expect(otraVez.status).toBe(400);
++    expect((await otraVez.json()).error.code).toBe('INVALID_LINK');
++    expect((await post('/auth/login', { email: u.email, password: 'otra-mas-012' })).status).toBe(401);
++  });
++
++  it('400 INVALID_LINK con un token_hash inventado', async () => {
++    const res = await post('/auth/password/reset', { token_hash: 'a'.repeat(56), new_password: 'recuperada-789' });
++    expect(res.status).toBe(400);
++    expect((await res.json()).error.code).toBe('INVALID_LINK');
++  });
++
++  it('un link viejo deja de servir cuando se pide otro', async () => {
++    const u = await createUser();
++    const viejo = await tokenHash(u.email);
++    const nuevo = await tokenHash(u.email);
++    expect((await (await post('/auth/password/reset', { token_hash: viejo, new_password: 'recuperada-789' })).json()).error?.code).toBe('INVALID_LINK');
++    expect((await post('/auth/password/reset', { token_hash: nuevo, new_password: 'recuperada-789' })).status).toBe(200);
++  });
++});
+diff --git a/web/backend/test/unit/admin-account.test.ts b/web/backend/test/unit/admin-account.test.ts
+new file mode 100644
+index 00000000..d2232ff0
+--- /dev/null
++++ b/web/backend/test/unit/admin-account.test.ts
+@@ -0,0 +1,139 @@
++import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
++import { randomPassword } from '../../src/lib/password';
++import { json, makeApp, testEnv } from '../helpers';
++import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
++
++const ADMIN = '11111111-1111-4111-8111-111111111111';
++const USER = '22222222-2222-4222-8222-222222222222';
++const base = `/api/v1/admin/users/${USER}`;
++let key: TestKey;
++beforeAll(async () => {
++  key = await makeKey();
++});
++afterEach(() => vi.unstubAllGlobals());
++
++type Route = (url: string, init: RequestInit) => Response | undefined;
++function backend(route: Route, role = 'admin') {
++  const fn = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
++    const url = String(input instanceof Request ? input.url : input);
++    if (url.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
++    if (url.includes('/rest/v1/profiles')) return Response.json({ role });
++    return route(url, init) ?? new Response('no simulado: ' + url, { status: 599 });
++  });
++  vi.stubGlobal('fetch', fn);
++  return fn;
++}
++const pgError = (status: number, code: string, message: string) =>
++  Response.json({ code, message, details: null, hint: null }, { status });
++const call = async (path: string, method = 'POST', env = {}) =>
++  makeApp().request(path, { method, headers: { Authorization: `Bearer ${await signToken(key, userClaims(ADMIN))}` } }, testEnv(env));
++const SERVICE = { SUPABASE_SERVICE_KEY: 'clave-de-administrador-de-prueba' };
++const called = (fn: ReturnType<typeof backend>, part: string) =>
++  fn.mock.calls.filter(([u]) => String(u instanceof Request ? u.url : u).includes(part));
++
++describe('randomPassword', () => {
++  it('tiene el largo pedido, sin caracteres confusos y no se repite', () => {
++    const a = randomPassword();
++    expect(a).toMatch(/^[a-km-np-zA-HJ-NP-Z2-9]{16}$/);
++    expect(randomPassword()).not.toBe(a);
++  });
++});
++
++describe('acciones de cuenta', () => {
++  it('un moderador no puede usar ninguna', async () => {
++    const fn = backend(() => undefined, 'moderator');
++    for (const p of ['resend-confirmation', 'send-password-reset', 'random-password']) {
++      expect((await call(`${base}/${p}`, 'POST', SERVICE)).status).toBe(403);
++    }
++    expect(called(fn, '/rest/v1/rpc/').length).toBe(0);
++    expect(called(fn, '/auth/v1/admin').length).toBe(0);
++  });
++
++  it('el estado de la cuenta', async () => {
++    backend((u) => (u.includes('rpc/admin_account_status') ? Response.json({ confirmed: false, last_sign_in_at: null }) : undefined));
++    const res = await call(`${base}/account`, 'GET');
++    expect(res.status).toBe(200);
++    expect(await json(res)).toEqual({ confirmed: false, last_sign_in_at: null });
++  });
++
++  it('reenvía la activación al correo de la cuenta', async () => {
++    const fn = backend((u) => {
++      if (u.includes('rpc/admin_account_action')) return Response.json({ email: 'a@b.co' });
++      if (u.includes('/auth/v1/resend')) return Response.json({});
++      return undefined;
++    });
++    expect((await call(`${base}/resend-confirmation`)).status).toBe(204);
++    const [, init] = called(fn, '/auth/v1/resend')[0]!;
++    expect(JSON.parse(String(init!.body))).toMatchObject({ type: 'signup', email: 'a@b.co' });
++  });
++
++  it('una cuenta ya confirmada da 409 y no se envía nada', async () => {
++    const fn = backend((u) => (u.includes('rpc/admin_account_action') ? pgError(409, '23505', 'Esa cuenta ya confirmó su correo.') : undefined));
++    expect((await call(`${base}/resend-confirmation`)).status).toBe(409);
++    expect(called(fn, '/auth/v1/resend').length).toBe(0);
++  });
++
++  it('envía el correo de contraseña con el link a la web', async () => {
++    const fn = backend((u) => {
++      if (u.includes('rpc/admin_account_action')) return Response.json({ email: 'a@b.co' });
++      if (u.includes('/auth/v1/recover')) return Response.json({});
++      return undefined;
++    });
++    expect((await call(`${base}/send-password-reset`)).status).toBe(204);
++    expect(String(called(fn, '/auth/v1/recover')[0]![0])).toContain(encodeURIComponent('https://csstv.pages.dev/reset-password'));
++  });
++
++  it('el límite de correos de GoTrue llega como 429', async () => {
++    backend((u) => {
++      if (u.includes('rpc/admin_account_action')) return Response.json({ email: 'a@b.co' });
++      if (u.includes('/auth/v1/recover')) return Response.json({ code: 429, error_code: 'over_email_send_rate_limit', msg: 'x' }, { status: 429 });
++      return undefined;
++    });
++    expect((await call(`${base}/send-password-reset`)).status).toBe(429);
++  });
++
++  it('la aleatoria usa la clave de administrador, cierra sesiones y no se guarda en caché', async () => {
++    const fn = backend((u) => {
++      if (u.includes('rpc/admin_account_action')) return Response.json({ email: 'a@b.co' });
++      if (u.includes(`/auth/v1/admin/users/${USER}`)) return Response.json({ id: USER });
++      if (u.includes('rpc/admin_account_close_sessions')) return new Response(null, { status: 204 });
++      return undefined;
++    });
++    const res = await call(`${base}/random-password`, 'POST', SERVICE);
++    expect(res.status).toBe(200);
++    expect(res.headers.get('cache-control')).toBe('no-store');
++    const body = await json(res);
++    expect(body.password).toHaveLength(16);
++    expect(body.sessions_closed).toBe(true);
++    const [, init] = called(fn, `/auth/v1/admin/users/${USER}`)[0]!;
++    expect(new Headers(init!.headers).get('apikey')).toBe(SERVICE.SUPABASE_SERVICE_KEY);
++    expect(JSON.parse(String(init!.body)).password).toBe(body.password);
++    expect(called(fn, 'rpc/admin_account_close_sessions').length).toBe(1);
++  });
++
++  it('la regla de la base (cuenta propia u otro admin) corta antes de cambiar nada', async () => {
++    const fn = backend((u) => (u.includes('rpc/admin_account_action') ? pgError(403, '42501', 'No se le puede cambiar la contraseña a otro admin.') : undefined));
++    expect((await call(`${base}/random-password`, 'POST', SERVICE)).status).toBe(403);
++    expect(called(fn, '/auth/v1/admin').length).toBe(0);
++  });
++
++  it('sin la clave de administrador responde 501 y no registra nada', async () => {
++    const fn = backend(() => undefined);
++    expect((await call(`${base}/random-password`)).status).toBe(501);
++    expect(called(fn, 'rpc/admin_account_action').length).toBe(0);
++  });
++
++  it('si no se pudieron cerrar las sesiones, entrega igual la contraseña y lo avisa', async () => {
++    backend((u) => {
++      if (u.includes('rpc/admin_account_action')) return Response.json({ email: 'a@b.co' });
++      if (u.includes(`/auth/v1/admin/users/${USER}`)) return Response.json({ id: USER });
++      if (u.includes('rpc/admin_account_close_sessions')) return pgError(500, 'XX000', 'falló');
++      return undefined;
++    });
++    const res = await call(`${base}/random-password`, 'POST', SERVICE);
++    expect(res.status).toBe(200);
++    const body = await json(res);
++    expect(body.sessions_closed).toBe(false);
++    expect(body.password).toHaveLength(16);
++  });
++});
+diff --git a/web/backend/test/unit/auth-routes.test.ts b/web/backend/test/unit/auth-routes.test.ts
+index 123b8933..5788b210 100644
+--- a/web/backend/test/unit/auth-routes.test.ts
++++ b/web/backend/test/unit/auth-routes.test.ts
+@@ -264,3 +264,123 @@ describe('POST /api/v1/me/password', () => {
+     expect(String(log.mock.calls[0]?.[0])).toContain('otras sesiones');
+   });
+ });
++
++describe('POST /auth/password/forgot', () => {
++  const recoverCall = (fetch: ReturnType<typeof gotrue>) => fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/recover'));
++
++  it('pide el correo a Supabase con el redirect a /reset-password y responde 202', async () => {
++    const fetch = gotrue((url) => (url.includes('/auth/v1/recover') ? Response.json({}) : undefined));
++    const res = await post('/auth/password/forgot', { email: 'a@b.co' });
++    expect(res.status).toBe(202);
++    expect(await json(res)).toEqual({ ok: true });
++    await vi.waitFor(() => expect(recoverCall(fetch)).toBeTruthy());
++    const [url, init] = recoverCall(fetch)!;
++    expect(String(url)).toContain('redirect_to=https%3A%2F%2Fcsstv.pages.dev%2Freset-password');
++    expect(JSON.parse(String(init?.body))).toMatchObject({ email: 'a@b.co' });
++  });
++
++  it.each([
++    ['límite de correos de Supabase', () => authError(429, 'over_email_send_rate_limit')],
++    ['Supabase caído', () => new Response('error', { status: 500 })],
++  ])('con %s responde lo mismo (no deja ver si la cuenta existe) y lo registra', async (_, fail) => {
++    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
++    gotrue((url) => (url.includes('/auth/v1/recover') ? fail() : undefined));
++    const res = await post('/auth/password/forgot', { email: 'a@b.co' });
++    expect(res.status).toBe(202);
++    expect(await json(res)).toEqual({ ok: true });
++    await vi.waitFor(() => expect(String(log.mock.calls[0]?.[0])).toContain('correo de recuperación'));
++  });
++
++  it('400 si el email no es válido, sin llamar a Supabase', async () => {
++    const fetch = gotrue(() => undefined);
++    const res = await post('/auth/password/forgot', { email: 'no-es-email' });
++    expect(res.status).toBe(400);
++    expect((await json(res)).error.code).toBe('VALIDATION_ERROR');
++    expect(recoverCall(fetch)).toBeUndefined();
++  });
++
++  it('429 después de 5 pedidos por minuto de la misma IP, sin gastar el contador del login', async () => {
++    gotrue((url) => (url.includes('/auth/v1/recover') ? Response.json({}) : undefined));
++    const app = makeApp();
++    const env = testEnv({ CLIENT_IP_HEADER: 'x-forwarded-for' });
++    const req = (path: string, body: unknown) =>
++      app.request(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '1.1.1.1' }, body: JSON.stringify(body) }, env);
++    for (let i = 0; i < 5; i++) expect((await req('/auth/password/forgot', { email: `a${i}@b.co` })).status).toBe(202);
++    const res = await req('/auth/password/forgot', { email: 'otra@b.co' });
++    expect(res.status).toBe(429);
++    expect((await json(res)).error.code).toBe('RATE_LIMITED');
++    // El login sigue con su propio contador: llega a Supabase (que acá no está simulado) en lugar de dar 429.
++    expect((await req('/auth/login', { email: 'a@b.co', password: 'x' })).status).not.toBe(429);
++  });
++});
++
++describe('POST /auth/password/reset', () => {
++  // GoTrue simulado: verify da la sesión de recuperación; `verify`, `put` y `logout` responden lo que diga cada caso.
++  async function reset(opts: { verify?: () => Response; put?: () => Response; logout?: () => Response } = {}) {
++    const access = await signToken(key, userClaims(USER));
++    const fetch = gotrue((url, init) => {
++      if (url.includes('/auth/v1/verify'))
++        return (
++          opts.verify?.() ??
++          Response.json({
++            access_token: access, refresh_token: 'r-recuperacion', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, token_type: 'bearer',
++            user: { id: USER, aud: 'authenticated', email: 'a@b.co', created_at: '2026-10-14T00:00:00Z' },
++          })
++        );
++      if (url.includes('/auth/v1/user') && init.method === 'PUT') return opts.put?.() ?? Response.json({ id: USER });
++      if (url.includes('/auth/v1/logout')) return opts.logout?.() ?? new Response(null, { status: 204 });
++      if (url.includes('/rest/v1/profiles')) return Response.json([{ role: 'user', tag: 'Tag1', password_changed_at: '2026-11-03T20:00:00+00:00' }]);
++      return undefined;
++    });
++    const res = await post('/auth/password/reset', { token_hash: 'hash-del-correo', new_password: 'nueva-456' });
++    return { res, fetch, access };
++  }
++
++  it('canjea el token_hash, cambia la contraseña con esa sesión, cierra las otras y devuelve la sesión', async () => {
++    const { res, fetch, access } = await reset();
++    expect(res.status).toBe(200);
++    expect(await json(res)).toMatchObject({ access_token: access, refresh_token: 'r-recuperacion', user: { id: USER, tag: 'Tag1' } });
++    const verify = fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/verify'))!;
++    expect(JSON.parse(String(verify[1]?.body))).toMatchObject({ type: 'recovery', token_hash: 'hash-del-correo' });
++    const put = fetch.mock.calls.find(([u, i]) => String(u).includes('/auth/v1/user') && i?.method === 'PUT')!;
++    expect(JSON.parse(String(put[1]?.body))).toEqual({ password: 'nueva-456' });
++    expect((put[1]?.headers as Record<string, string>).Authorization).toBe(`Bearer ${access}`);
++    const out = fetch.mock.calls.find(([u]) => String(u).includes('/auth/v1/logout'))!;
++    expect(String(out[0])).toContain('scope=others');
++  });
++
++  it.each([
++    ['otp_expired', 403],
++    ['otp_disabled', 403],
++    ['validation_failed', 400],
++  ])('link vencido o usado (%s): 400 INVALID_LINK, sin tocar la contraseña', async (error_code, status) => {
++    const { res, fetch } = await reset({ verify: () => authError(status, error_code) });
++    expect(res.status).toBe(400);
++    expect((await json(res)).error.code).toBe('INVALID_LINK');
++    expect(fetch.mock.calls.some(([u, i]) => String(u).includes('/auth/v1/user') && i?.method === 'PUT')).toBe(false);
++  });
++
++  it('límite de Supabase al verificar: 429', async () => {
++    const { res } = await reset({ verify: () => authError(429, 'over_request_rate_limit') });
++    expect(res.status).toBe(429);
++  });
++
++  it.each([
++    ['same_password', 'SAME_PASSWORD'],
++    ['weak_password', 'VALIDATION_ERROR'],
++  ])('Auth rechaza la nueva (%s): 400 %s', async (error_code, code) => {
++    const { res } = await reset({ put: () => authError(422, error_code) });
++    expect(res.status).toBe(400);
++    expect((await json(res)).error.code).toBe(code);
++  });
++
++  it('400 si falta el token o la contraseña es corta, sin llamar a Supabase', async () => {
++    const fetch = gotrue(() => undefined);
++    for (const body of [{ new_password: 'nueva-456' }, { token_hash: 'x', new_password: '123' }]) {
++      const res = await post('/auth/password/reset', body);
++      expect(res.status).toBe(400);
++      expect((await json(res)).error.code).toBe('VALIDATION_ERROR');
++    }
++    expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/verify'))).toBe(false);
++  });
++});
+diff --git a/web/backend/wrangler.toml b/web/backend/wrangler.toml
+index bce2680c..64f31947 100644
+--- a/web/backend/wrangler.toml
++++ b/web/backend/wrangler.toml
+@@ -39,6 +39,12 @@ name = "RL_PASSWORD"
+ namespace_id = "1003"
+ simple = { limit = 5, period = 60 }
+ 
++# Correo de recuperación de contraseña: 5 por minuto por IP (regla "recovery").
++[[ratelimits]]
++name = "RL_RECOVERY"
++namespace_id = "1005"
++simple = { limit = 5, period = 60 }
++
+ # Entorno de previsualización (PRs): otro Worker, misma base.
+ [env.preview]
+ name = "v34frag-api-preview"
+@@ -67,6 +73,11 @@ name = "RL_PASSWORD"
+ namespace_id = "1004"
+ simple = { limit = 5, period = 60 }
+ 
++[[env.preview.ratelimits]]
++name = "RL_RECOVERY"
++namespace_id = "1006"
++simple = { limit = 5, period = 60 }
++
+ # Secretos (no van en este archivo):
+ #   en desarrollo: .dev.vars (ver .dev.vars.example)
+ #   en producción: pnpm exec wrangler secret put SUPABASE_SERVICE_KEY  (y --env preview)

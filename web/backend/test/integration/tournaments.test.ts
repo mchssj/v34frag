@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
-import { admin, createUser, localEnv } from './local';
+import { admin, createUser, localEnv, approveEvent } from './local';
 
 // Partidas, torneos y PCW contra la Supabase local (con el replanteo 10 aplicado).
 const app = createApp();
@@ -78,6 +78,7 @@ describe('torneo de punta a punta', () => {
     const created = await req('POST', '/api/v1/events', { token: org.token, body: { name: evName, template: 'single', config: { bo: 1, bo_semi: 1, bo_final: 1 } } });
     expect(created.status).toBe(201);
     const ev = created.body.id as string;
+    await approveEvent(ev);
     expect((await req('PATCH', `/api/v1/events/${ev}`, { token: nadie.token, body: { name: 'Robado' } })).status).toBe(403);
 
     const teams = await Promise.all([team(), team(), team()]);
@@ -138,6 +139,7 @@ describe('torneo de punta a punta', () => {
 
   it('un jugador no se inscribe con dos equipos en el mismo torneo', async () => {
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Doble ${rnd()}`, template: 'double' } })).body.id;
+    await approveEvent(ev);
     const [a, b] = await Promise.all([team(), team()]);
     const shared = a.players[1]!;
     await admin().from('team_members').insert({ team_id: b.id, player_id: shared, joined_at: new Date().toISOString() });
@@ -154,6 +156,7 @@ describe('torneo de punta a punta', () => {
 describe('tablas de grupos y stats por mapa', () => {
   it('grupos: tabla con posición, filtros y ETag', async () => {
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Grupos ${rnd()}`, template: 'groups', config: { groups: 1, advance: 1 } } })).body.id;
+    await approveEvent(ev);
     const ts = await Promise.all([team(), team(), team()]);
     for (const t of ts) await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { active: t.players } });
     expect((await req('POST', `/api/v1/events/${ev}/generate`, { token: org.token })).status).toBe(204);
@@ -185,6 +188,7 @@ describe('tablas de grupos y stats por mapa', () => {
 describe('partida: detalle, veto, chat y código', () => {
   it('veto por turnos con versión de Inferno, chat de participantes y código solo para ellos', async () => {
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { name: `Veto ${rnd()}`, template: 'single', config: { bo_final: 3 } } })).body.id;
+    await approveEvent(ev);
     const [a, b] = await Promise.all([team(), team()]);
     for (const t of [a, b]) await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { active: t.players } });
     await req('POST', `/api/v1/events/${ev}/generate`, { token: org.token });
@@ -330,6 +334,7 @@ describe('catálogo de mapas: pools propios y foto', () => {
     const body = { name: `Pool ${rnd()}`, template: 'single', config: { bo: 1, bo_semi: 1, bo_final: 1, bo_third: 1 } };
     expect((await req('POST', '/api/v1/events', { token: org.token, body: { ...body, map_pool: ['de_russka', 'de_nope'] } })).body.error.message).toBe('El mapa de_nope no está disponible');
     const ev = (await req('POST', '/api/v1/events', { token: org.token, body: { ...body, map_pool: ['de_russka', 'de_cache', 'de_tuscan'] } })).body.id;
+    await approveEvent(ev);
     expect((await req('GET', `/api/v1/events/${ev}`)).body.map_pool).toEqual(['de_russka', 'de_cache', 'de_tuscan']);
     const [a, b] = await Promise.all([team(), team()]);
     for (const t of [a, b]) await req('PUT', `/api/v1/events/${ev}/registrations/${t.id}`, { token: t.cap.token, body: { active: t.players } });

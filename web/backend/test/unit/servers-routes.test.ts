@@ -74,6 +74,14 @@ describe('esquemas', () => {
   ])('rechaza %j', (body) => expect(ServerCreate.safeParse(body).success).toBe(false));
 
   it('PATCH vacío no es válido', () => expect(ServerPatch.safeParse({}).success).toBe(false));
+
+  it('nombre interno: de 2 a 60, "" lo borra; listed es booleano (replanteo 83)', () => {
+    expect(ServerPatch.parse({ internal_name: '' })).toEqual({ internal_name: null });
+    expect(ServerPatch.parse({ listed: false })).toEqual({ listed: false });
+    expect(ServerPatch.safeParse({ internal_name: 'x' }).success).toBe(false);
+    expect(ServerPatch.safeParse({ internal_name: 'x'.repeat(61) }).success).toBe(false);
+    expect(ServerPatch.safeParse({ listed: 'si' }).success).toBe(false);
+  });
 });
 
 describe('rutas', () => {
@@ -100,6 +108,28 @@ describe('rutas', () => {
     expect(JSON.parse(calls.find((c) => c.url.includes('/rpc/'))!.body!)).toEqual({ p_name: 'Servidor RBK' });
   });
 
+  it('alta con nombre interno y fuera del inicio: segundo paso a game_servers (replanteo 83)', async () => {
+    const calls = postgrest((url) =>
+      url.pathname.endsWith('/rpc/admin_create_server')
+        ? Response.json([{ id: SID, token: 'csstv_abc' }])
+        : url.pathname.endsWith('/game_servers')
+          ? Response.json([{ id: SID }])
+          : undefined,
+    );
+    const res = await call('POST', '/api/v1/admin/servers', { name: 'CM League #4', internal_name: ' flow ', listed: false });
+    expect(res.status).toBe(201);
+    expect(JSON.parse(calls.find((c) => c.url.includes('/rpc/'))!.body!)).toEqual({ p_name: 'CM League #4' });
+    const patch = calls.find((c) => c.method === 'PATCH')!;
+    expect(patch.url).toContain(`id=eq.${SID}`);
+    expect(JSON.parse(patch.body!)).toEqual({ internal_name: 'flow', listed: false });
+  });
+
+  it('alta sin nombre interno ni listed: un solo paso', async () => {
+    const calls = postgrest((url) => (url.pathname.endsWith('/rpc/admin_create_server') ? Response.json([{ id: SID, token: 'csstv_abc' }]) : undefined));
+    expect((await call('POST', '/api/v1/admin/servers', { name: 'CM League #4' })).status).toBe(201);
+    expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
+  });
+
   it('alta sin fila: 500', async () => {
     postgrest((url) => (url.pathname.endsWith('/rpc/admin_create_server') ? Response.json([]) : undefined));
     expect((await call('POST', '/api/v1/admin/servers', { name: 'ab' })).status).toBe(500);
@@ -113,7 +143,7 @@ describe('rutas', () => {
     );
     const res = await call('PATCH', `/api/v1/admin/servers/${SID}`, { name: 'Otro' });
     expect(res.status).toBe(409);
-    expect((await json(res)).error.message).toBe('Ya hay un servidor con ese nombre.');
+    expect((await json(res)).error.message).toBe('Ya hay un servidor con ese nombre (público o interno).');
   });
 
   it('editar otro error de la base: pasa tal cual', async () => {
@@ -133,6 +163,6 @@ describe('rutas', () => {
 
   it('valores nulos de la vista: por defecto', async () => {
     postgrest((url) => (url.pathname.endsWith('/admin_server_list') ? Response.json([{ id: SID }]) : undefined));
-    expect(await json(await call('GET', `/api/v1/admin/servers/${SID}`))).toMatchObject({ name: '', active: false, license_state: 'revoked', online: false, matches: 0, created_at: '' });
+    expect(await json(await call('GET', `/api/v1/admin/servers/${SID}`))).toMatchObject({ name: '', internal_name: null, listed: true, active: false, license_state: 'revoked', online: false, matches: 0, created_at: '' });
   });
 });

@@ -1,0 +1,49 @@
+CM LEAGUE — MEDALLAS NUEVAS (tanda del 29/10/2026)
+
+Mismo sistema que las de perfil/ y equipos/ (que ya se entregaron y no se tocaron).
+82 medallas, cada una con su versión bloqueada (prefijo "bloqueada_"): 164 SVG.
+  perfil/   76 medallas (152 SVG) + catálogos por categoría
+  equipos/   6 medallas (12 SVG) + catálogo
+
+PERFIL
+  Escudo (trayectoria)
+    Kills totales 1000/5000/10000 (mira, plomo)      Daño total 10k/50k/100k (corazón roto, rojo)
+    Primer mix (huellas, celeste)                     Primera victoria (bandera, celeste)
+  Hexágono (habilidad)
+    MVP del mix 10/50/100 (estrella, blanco)
+  Octágono (arsenal y bomba)  — siluetas originales del juego (csd.ttf)
+    SMG 100/500/1000 (MP5, violeta)                   Escopetas 50/250/500 (M3 y XM1014, rojo cartucho)
+    Famas/Galil 100/500/1000 (turquesa)               Dual Elites 10/50/100 (rosa)
+    Bombas explotadas 10/50/100 (explosión con C4, rojo)
+  Pentágono (RONDAS, forma nueva)
+    Rondas ganadas de CT 100/500/1000 (M4A1, azul CT)
+    Rondas ganadas de T 100/500/1000 (AK-47, naranja T)
+    Ecos ganados 5/25/100 ($ del juego, verde billete)
+    Rondas sobrevividas 100/500/1000 (cruz de vida del juego, cian)
+  Círculo (premios de temporada, llevan "S1")
+    Top fragger (calavera, carmesí)   Rey del HS (headshot con corona, naranja)
+    Mejor AWP (AWP, verde)            Más mejorado (flecha, violeta)
+  Sello (comunidad)
+    Fair play (apretón de manos)  Reclutador (megáfono)  Supporter (corazón)
+    Halloween 2026 (calabaza)     Navidad 2026 (árbol)   Aniversario 2 años (torta)
+    Beta tester (bicho con β, lima)   Pionero: jugó el mix #1 de la plataforma (cohete, índigo, marco oro)
+    Premium (corona de platino, marco plata) -> VIP (corona dorada con joyas, negro y oro, rayos y destellos)
+      Ninguna de las dos lleva texto: Premium tiene corona lisa y dos estrellas en la banda;
+      VIP, corona con gemas y tres estrellas.
+      VIP es el nivel máximo; Premium es el paso anterior.
+
+  Sello (PREMIUM Y VIP POR MESES)
+    premium_mes_01 … premium_mes_12 y vip_mes_01 … vip_mes_12.
+    Mismo diseño que las insignias Premium y VIP (corona lisa con marco plata / corona con gemas,
+    marco oro, rayos y destellos). La banda lleva el mes en números romanos (I a XII) entre dos estrellas.
+    Cada mes tiene su color, de frío a cálido, y el año termina en dorado:
+      I verde · II turquesa · III cian · IV azul · V índigo · VI violeta
+      VII púrpura · VIII fucsia · IX rosa · X rojo · XI naranja · XII dorado
+
+EQUIPOS (banderín con logo "TAG" y degradado "color-equipo" editables)
+  Plantel estable (5 jugadores)   Pistolas 2-0 (Glock y USP)   Química (matraz)
+  Rivalidad (VS)                  Overtime (cronómetro del juego)
+  Mejor equipo de la temporada (estrella, marco diamante)
+
+Umbrales, temporada y año de los eventos son texto vivo: cambialos si querés otros.
+Regenerar solo esta tanda:  python generar_medallas_nuevas.py <carpeta_nuevas>

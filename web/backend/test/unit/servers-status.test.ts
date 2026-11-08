@@ -88,11 +88,18 @@ describe('A2S', () => {
 });
 
 type ServerRow = { id: string; name: string; connect_address: string | null; mode?: string | null; region?: string | null; tv_port?: number | null };
-/** Supabase simulado: game_servers_public y los server_id de live_match_list (ya filtrados por stale = false). */
-function db(rows: ServerRow[], live: { server_id: string }[] = []) {
+/**
+ * Supabase simulado: game_servers_public (solo con el filtro listed, replanteo 83), los server_id de live_match_list (ya
+ * filtrados por stale = false) y la cola (mm_public_counts).
+ */
+function db(rows: ServerRow[], live: { server_id: string }[] = [], counts: { open: boolean; in_queue: number } = { open: true, in_queue: 4 }) {
   const fetch = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input instanceof Request ? input.url : input);
-    if (url.includes('/rest/v1/game_servers_public')) return Response.json(rows.map((r) => ({ mode: null, region: null, ...r })));
+    if (url.includes('/rest/v1/game_servers_public')) {
+      if (!url.includes('listed=eq.true')) return new Response('falta el filtro listed', { status: 599 });
+      return Response.json(rows.map((r) => ({ mode: null, region: null, ...r })));
+    }
+    if (url.includes('/rest/v1/rpc/mm_public_counts')) return Response.json(counts);
     if (url.includes('/rest/v1/live_match_list')) {
       if (!url.includes('stale=eq.false')) return new Response('falta el filtro stale', { status: 599 });
       return Response.json(live);
@@ -137,7 +144,8 @@ describe('GET /api/v1/servers/status', () => {
       { id: C, name: 'Sin dirección', address: null, tv_address: null, mode: null, region: null, online: false, ping_ms: null,
         map: null, players: null, max_players: null, bots: null, live_matches: 0 },
     ]);
-    expect(body.totals).toEqual({ servers: 3, online: 1, players: 10, live_matches: 3 });
+    expect(body.totals).toEqual({ servers: 3, online: 1, players: 10, live_matches: 3, in_queue: 4 });
+    expect(body.mm_open).toBe(true);
     expect(calls).toHaveLength(2); // al de sin dirección no se le pregunta
   });
 
@@ -164,6 +172,59 @@ describe('GET /api/v1/servers/status', () => {
     expect((await get(app)).status).toBe(500);
     db(ROWS);
     expect((await get(app)).status).toBe(200);
+  });
+});
+
+describe('la cola en el estado (replanteo 83)', () => {
+  it('cola cerrada y vacía', async () => {
+    db(ROWS, [], { open: false, in_queue: 0 });
+    const res = await createApp({ udp: servers().udp }).request('/api/v1/servers/status', {}, testEnv());
+    const body = await json(res);
+    expect(body.totals.in_queue).toBe(0);
+    expect(body.mm_open).toBe(false);
+  });
+});
+
+describe('GET /api/v1/community/discord', () => {
+  afterEach(async () => (await import('../../src/services/discord')).clearDiscordCache());
+  const get = () => createApp().request('/api/v1/community/discord', {}, testEnv());
+
+  it('los números de la invitación pública, sin datos del visitante', async () => {
+    const fetch = vi.fn(async (_url: string, _init?: RequestInit) =>
+      Response.json({ approximate_presence_count: 180, approximate_member_count: 1500, guild: { name: 'x' } }));
+    vi.stubGlobal('fetch', fetch);
+    const res = await get();
+    expect(res.status).toBe(200);
+    expect(await json(res)).toEqual({ online: 180, members: 1500, invite_url: 'https://discord.gg/bn5Yxsh9tc' });
+    expect(String(fetch.mock.calls[0]![0])).toBe('https://discord.com/api/v9/invites/bn5Yxsh9tc?with_counts=true');
+    // Una segunda visita sale de la caché.
+    await get();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('si Discord no responde, sin números (y 200)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('rate limited', { status: 429 })));
+    const res = await get();
+    expect(res.status).toBe(200);
+    expect(await json(res)).toEqual({ online: null, members: null, invite_url: 'https://discord.gg/bn5Yxsh9tc' });
+  });
+
+  it('la caché: 10 minutos con números, 1 minuto sin ellos', async () => {
+    const { cachedDiscordCounts, DISCORD_CACHE_MS } = await import('../../src/services/discord');
+    const ok = vi.fn(async () => Response.json({ approximate_presence_count: 1, approximate_member_count: 2 }));
+    const t0 = 5_000_000;
+    await cachedDiscordCounts('abc', ok, t0);
+    await cachedDiscordCounts('abc', ok, t0 + DISCORD_CACHE_MS - 1);
+    expect(ok).toHaveBeenCalledTimes(1);
+    await cachedDiscordCounts('abc', ok, t0 + DISCORD_CACHE_MS);
+    expect(ok).toHaveBeenCalledTimes(2);
+    const falla = vi.fn(async () => new Response('', { status: 500 }));
+    await cachedDiscordCounts('def', falla, t0);
+    await new Promise((r) => setTimeout(r, 0));
+    await cachedDiscordCounts('def', falla, t0 + 59_999);
+    expect(falla).toHaveBeenCalledTimes(1);
+    await cachedDiscordCounts('def', falla, t0 + 60_000);
+    expect(falla).toHaveBeenCalledTimes(2);
   });
 });
 

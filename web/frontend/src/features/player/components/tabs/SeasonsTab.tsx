@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { bestSeasonId } from "../../lib/labels"
 import { seasonsOptions } from "../../api/queries"
 import type { PlayerSeason } from "../../types"
+import { SeasonMedal } from "@/features/medals/Medal"
 
 // ---------- Temporadas ----------
 
@@ -89,17 +90,16 @@ function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
         </span>
       )}
       <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className={cn(
-            "grid size-[52px] shrink-0 place-items-center rounded-full border text-[26px]",
-            s.medal
-              ? "border-amber-400/45 bg-amber-400/15"
-              : "bg-muted text-lg text-muted-foreground"
-          )}
-        >
-          {s.medal?.icon ?? "—"}
-        </span>
+        {s.medal?.design ? (
+          <SeasonMedal medal={s.medal} size={52} />
+        ) : (
+          <span
+            aria-hidden
+            className="grid size-[52px] shrink-0 place-items-center rounded-full border bg-muted text-lg text-muted-foreground"
+          >
+            —
+          </span>
+        )}
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-[15px] font-semibold">
             {s.season.name}

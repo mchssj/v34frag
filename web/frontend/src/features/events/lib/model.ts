@@ -123,7 +123,41 @@ export function dateRange(from: string | null, to: string | null) {
   return "Fechas por definir"
 }
 
-export const prizeText = (prize: string | null) => prize?.trim() || "Sin premio"
+/** Lo que hace falta para mostrar el premio (replanteo 84): monto, divisa y el detalle en texto libre. */
+export type PrizeFields = {
+  prize: string | null
+  prize_amount?: number | null
+  prize_currency?: "USD" | "ARS" | "other" | null
+  prize_currency_other?: string | null
+}
+
+export const CURRENCY_LABEL = {
+  USD: "USD",
+  ARS: "Pesos argentinos",
+  other: "Otra",
+} as const
+
+/** "US$ 100", "$ 50.000 ARS" o "200 BRL"; null sin monto. */
+export function prizeAmountText(e: PrizeFields): string | null {
+  if (e.prize_amount == null || !e.prize_currency) return null
+  const n = new Intl.NumberFormat("es-AR", {
+    maximumFractionDigits: 2,
+  }).format(e.prize_amount)
+  if (e.prize_currency === "USD") return `US$ ${n}`
+  if (e.prize_currency === "ARS") return `$ ${n} ARS`
+  return `${n} ${e.prize_currency_other?.trim() ?? ""}`.trim()
+}
+
+/** El premio para mostrar: el monto y el detalle ("$ 50.000 ARS + rol en Discord"); null si no tiene. */
+export function prizeOrNull(e: PrizeFields): string | null {
+  const amount = prizeAmountText(e)
+  const detail = e.prize?.trim() || null
+  if (amount && detail)
+    return `${amount} ${detail.startsWith("+") ? detail : `+ ${detail}`}`
+  return amount ?? detail
+}
+
+export const prizeText = (e: PrizeFields) => prizeOrNull(e) ?? "Sin premio"
 
 /** Cupos libres; null si el torneo no tiene máximo. */
 export const freeSlots = (e: Pick<EventSummary, "teams" | "max_teams">) =>
@@ -391,7 +425,11 @@ export type Cta =
   | { kind: "no-team" }
   | { kind: "live"; match: LiveMatch }
   | { kind: "matches"; stage: string | null }
-  | { kind: "champion"; team: { id: string; name: string }; on: string | null }
+  | {
+      kind: "champion"
+      team: { id: string; name: string; historic?: boolean }
+      on: string | null
+    }
   | { kind: "none" }
 
 /** Botón de la cabecera según el estado del torneo y los equipos del usuario. */
@@ -408,6 +446,7 @@ export function ctaFor({
     | "max_teams"
     | "champion"
     | "ends_on"
+    | "finished_at"
     | "registration_closes_at"
     | "live_match"
     | "current_stage"
@@ -444,6 +483,11 @@ export function ctaFor({
       : { kind: "matches", stage: event.current_stage }
   }
   if (event.status === "finished" && event.champion)
-    return { kind: "champion", team: event.champion, on: event.ends_on }
+    // El fin real (última partida); ends_on es solo el tentativo del organizador.
+    return {
+      kind: "champion",
+      team: event.champion,
+      on: event.finished_at ?? event.ends_on,
+    }
   return { kind: "none" }
 }

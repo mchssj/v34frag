@@ -58,16 +58,8 @@ export const AdminPlayer = z
   })
   .openapi('AdminPlayer');
 
-export const MedalKey = z.string().regex(/^[a-z0-9_]{1,60}$/).openapi({ description: 'Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend)' });
-
-export const MedalBody = z
-  .object({
-    title: z.string().trim().min(1).max(80),
-    icon: z.string().trim().min(1).max(8).default('🏆').openapi({ description: 'Un emoji (para la web vieja y si no hay dibujo)' }),
-    medal_key: MedalKey.optional(),
-    season_id: z.uuid().optional().openapi({ description: 'Temporada de la medalla; sin esto, es de carrera' }),
-  })
-  .openapi('MedalBody');
+// (replanteo 79) Ya no lleva emoji: una definición manual y, si hace falta, su título (el nombre del torneo).
+export { MedalGrant as MedalBody } from './medals';
 
 export const SteamUnlinked = z
   .object({ steam_id: z.string(), last_nick: z.string().nullable(), matches: z.number().int(), last_played: z.string().nullable() })
@@ -213,6 +205,20 @@ export const SteamUnlinkedQuery = listQuery(['last_played', 'matches', 'last_nic
   q: z.string().max(60).optional().openapi({ description: 'Busca en el último nombre y en el SteamID' }),
 });
 export const SteamUnlinkedList = Envelope(SteamUnlinked).openapi('SteamUnlinkedList');
+
+export const AdminAccountStatus = z
+  .object({
+    confirmed: z.boolean().openapi({ description: 'Confirmó su correo' }),
+    last_sign_in_at: z.string().nullable(),
+    email: z.string().nullable().openapi({ description: 'Correo de la cuenta, solo lectura. Dato personal: solo admin' }),
+  })
+  .openapi('AdminAccountStatus');
+export const AdminRandomPassword = z
+  .object({
+    password: z.string().openapi({ description: 'Se muestra una sola vez: no se guarda en ningún lado' }),
+    sessions_closed: z.boolean().openapi({ description: 'Si se cerraron las sesiones que tenía abiertas' }),
+  })
+  .openapi('AdminRandomPassword');
 
 export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),

@@ -1,0 +1,4 @@
+CMLeague 2.9.4 --  Changelog
+
+- Si te cayó una sanción del matchmaking que no fue tu culpa (por ejemplo, se cayó Steam justo cuando apareció la partida), un moderador ahora la puede levantar.
+- Cuando la levanta, puedes volver a buscar partida enseguida, sin recargar la página, y tu contador de faltas baja un escalón, como si esa falta no hubiera pasado.

@@ -44,6 +44,7 @@ import type { MmAdminServer } from "../types"
 const STATE_LABEL: Record<MmAdminServer["state"], string> = {
   free: "Libre",
   lobby: "Sala asignada",
+  booking: "Reservado (torneo o PCW)",
   live: "Mix en vivo",
   offline: "Sin conexión",
 }
@@ -51,6 +52,7 @@ const STATE_LABEL: Record<MmAdminServer["state"], string> = {
 const STATE_TONE: Record<MmAdminServer["state"], string> = {
   free: "bg-win",
   lobby: "bg-sidebar-primary",
+  booking: "bg-sidebar-primary",
   live: "bg-destructive",
   offline: "bg-muted-foreground/40",
 }
@@ -65,10 +67,12 @@ export function ServerPasswords() {
   const [historyOf, setHistoryOf] = useState<MmAdminServer | null>(null)
 
   return (
-    <Card>
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
       <CardHeader>
-        <CardTitle>Contraseñas de los servidores</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[15px] font-semibold">
+          Contraseñas de los servidores
+        </CardTitle>
+        <CardDescription className="text-[13px] leading-relaxed">
           Al terminar cada mix el servidor pone una contraseña al azar. Solo los
           admins la ven.
         </CardDescription>

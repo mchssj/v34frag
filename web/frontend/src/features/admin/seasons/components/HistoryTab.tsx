@@ -42,7 +42,7 @@ export function HistoryTab() {
             <span className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Campeón</span>
               <span className="font-semibold">
-                {s.champion ? `🏆 ${s.champion.alias}` : "—"}
+                {s.champion ? s.champion.alias : "—"}
               </span>
             </span>
             <span className="flex flex-col gap-0.5">

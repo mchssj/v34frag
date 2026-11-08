@@ -528,3 +528,18 @@ export function useSetLookingFor() {
     onSuccess: (_, { teamId }) => invalidate(teamId),
   })
 }
+
+/** Nombre y sigla. El líder, una vez cada `team_config.rename_days` días (409 si no puede); el admin, sin espera. */
+export function useRenameTeam() {
+  const invalidate = useInvalidateTeam()
+  return useMutation({
+    mutationFn: ({ teamId, name, tag }: { teamId: string; name: string; tag: string }) =>
+      unwrap(
+        api.PATCH("/api/v1/teams/{id}", {
+          params: { path: { id: teamId } },
+          body: { name, tag },
+        })
+      ),
+    onSuccess: (_, { teamId }) => invalidate(teamId),
+  })
+}

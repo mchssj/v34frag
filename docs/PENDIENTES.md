@@ -1,9 +1,140 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-30**.
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-10-25**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
-Si retomas el proyecto en una sesión nueva, empieza por acá. Lo que le toca a cada uno de los prototipos VIP y las misiones del 2026-10-29 está juntado en [`RESUMEN_PROTOTIPOS_VIP.md`](RESUMEN_PROTOTIPOS_VIP.md). El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+> **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
+
+> **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
+
+## Términos y condiciones y política de privacidad (borradores, sin publicar)
+
+- **Estado:** `terms/terminos.html` escrito y `terms/privacidad.html` reescrita el 2026-11-03, pedidos por Kyan. Cubren toda la plataforma, también lo que no está implementado, con la ley argentina (CCyC, Ley 24.240 y Ley 25.326). No tocan los servidores (ni `aurav34`, flow ni MVZG).
+- **Falta:**
+  - Aprobación de Daniel o Kyan y revisión de un abogado.
+  - Datos completados el 2026-11-03 (Kyan): provincia de Buenos Aires, `cmleaguev34@gmail.com`, `https://dsc.gg/v34frag`, 13 años y los precios del VIP. Regiones (Kyan, 2026-11-03): Supabase en el oeste de Estados Unidos (Oregón) y el VPS de OVH en Beauharnois (Canadá). Es la **provincia** de Buenos Aires, no la Ciudad Autónoma (Kyan, 2026-11-03). Ya no queda ningún dato marcado en los textos.
+  - Inscribir la base en el Registro Nacional de Bases de Datos de la AAIP.
+  - Las dos páginas están en `terms/`. Google tiene cargada `https://csstv.gamer.gd/privacidad.html` para «CMLeague clips»: al publicar, subir la nueva también ahí o cambiar la URL en la consola de Google.
+  - Ponerle un plazo a `player_ips`, que hoy no tiene.
+  - Publicar las dos juntas y enlazarlas desde la web vieja. En el frontend nuevo ya están las rutas `/terminos` y `/privacidad`, con links en el pie y en el registro ([`2026-11-03-frontend-legales`](bitacora/2026-11-03-frontend-legales/)). Falta avisarle a Esteban y, si se quiere, una casilla de aceptación obligatoria en el registro. Los textos están en dos copias (`.html` y `features/legal/`): se cambian juntas.
+  - **Cobro del VIP:** cobrar sin estar inscripto en ARCA (ex AFIP) es un tema impositivo aparte de estos textos.
+- **Revisados contra la plataforma el 2026-11-03** (Daniel): lo planteado y no hecho quedó con "En preparación", y se corrigieron los resultados de torneos, las PCW y el aviso de la cola en Discord. Sin commit. Desde ahora, cada requerimiento revisa estos textos y el manual ([`2026-11-03-legales-al-dia`](bitacora/2026-11-03-legales-al-dia/)).
+- **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
+
+Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## Jugadas en un solo aviso, la sección Juega del inicio y equipos más parejos (2026-11-07): desplegado el 2026-11-07
+
+- **Hecho:** replanteo `83`, la API y la web ([`2026-11-07-jugadas-landing-emparejamiento`](bitacora/2026-11-07-jugadas-landing-emparejamiento/)). Probado en la base local (8 comprobaciones y la inversa), la API (555 pruebas) y la web (641 pruebas). La `83` quedó aplicada en la base local. Diseño: https://claude.ai/artifact/LsFJh5Q1zPyTFqVpoJSvii
+- **Desplegado el 2026-11-07 (19:03-19:17 UTC)** desde `main` (`4480fbc4`; copia `0da727e7` en `feat/frontend-fase-1` y la base en `feat/mm-claim-en-sala`, `4d9deabe`): respaldo `20261107T190306Z`, `probar_83.sh` contra producción en verde, la `83` y los nombres públicos en la base del VPS (armado en 400, 200 y 3), y la API y la web `4480fbc4cd92`.
+- **Falta:**
+  1. Mirarlo en el navegador: el inicio, la campana con la próxima partida que tenga jugadas y Administración › Servidores.
+  2. Publicar el `CHANGELOG_DISCORD.txt` (2.9.23).
+  3. Ver en las próximas partidas del matchmaking si los equipos quedan más parejos.
+- **Aparte:** `web/backend/test/integration/hud.test.ts` falla contra la copia de producción (elige el puerto 27501, que usa el #2). No es de este cambio.
+
+## El moderador crea torneos y el premio con monto y divisa (2026-11-07): desplegado el 2026-11-07
+
+- **Hecho:** replanteo `84`, la API y la web ([`2026-11-07-moderador-crea-torneos-y-divisa`](bitacora/2026-11-07-moderador-crea-torneos-y-divisa/)), en la copia de `main` (`v34frag-mainwt`). Lo que crea un moderador (normal o histórico) queda pendiente y lo aprueba solo un admin; el premio con monto, divisa y detalle. Probado en la base local (12 bloques y la inversa), la API y la web; no en el navegador. Manual y términos al día. La `84` quedó aplicada en la base local.
+- **Desplegado el 2026-11-07 (19:25-19:48 UTC)** desde `main` (`2e298676`, copia `0c3577c4` en `feat/frontend-fase-1`): respaldo `20261107T192554Z`, `probar_84.sh` en verde, la `84` en la base del VPS, API y web `2e29867643a6`. La web, con `--sin-pruebas` después de pasar las 656 con dos procesos (detalle en la guía). Al aplicar migraciones desde Windows, usar `PGCLIENTENCODING=UTF8`.
+- **Falta:**
+  1. Publicar el `CHANGELOG_DISCORD.txt` (2.9.24) y los términos estáticos (`terms/terminos.html`; los de la web ya están).
+
+## Torneos históricos, aprobación de organizadores y fase de testing (2026-11-06): desplegado el 2026-11-07
+
+- **Hecho:** replanteo `80`, la API y la web ([`2026-11-06-torneos-historicos-y-testing`](bitacora/2026-11-06-torneos-historicos-y-testing/)). Probado en la base local (todas las pruebas SQL y la inversa), la API (548 pruebas; de integración pasan todas las de torneos) y la web (636 pruebas), y recorrido en el navegador con admin, moderador, organizador y jugador. Manual (3 páginas nuevas y 2 actualizadas), términos y privacidad al día. La `80` quedó aplicada en la base local de pruebas. Diseño: https://claude.ai/artifact/2iA9sTaDhZrd2LUG3N3dsu
+- **Desplegado el 2026-11-07 (17:16-17:21 UTC)** desde `main` (`b79c62b6`, copia `072bf468` en `feat/frontend-fase-1`): respaldo `20261107T171646Z`, `probar_80.sh` contra producción en verde, la `80` en la base del VPS, API y web `b79c62b67d88`.
+- **Falta:**
+  1. Publicar el `CHANGELOG_DISCORD.txt` (2.9.22) y los términos estáticos (`terms/*.html`; los de la web ya están en producción).
+  2. Opcional: el filtro Históricos en Administración › Equipos, que quedó fuera (los equipos históricos se corrigen desde las inscripciones del torneo).
+- **Después:** [`2026-11-06-vista-previa-llave`](bitacora/2026-11-06-vista-previa-llave/) (planeado, pendiente de aprobación; replanteo `81`).
+
+## Clips destacados en el perfil y rechazar un clip (2026-11-05): desplegado el 2026-11-06
+
+- **Hecho:** replanteo `76`, Mi perfil › Clips (automático o elegidos; 3, 10 con VIP), la pestaña Clips de la ficha, y en Administración › Clips: **Rechazar clip**, el filtro Rechazados con **Recuperar** y los topes en Reglas ([`2026-11-04-clips-destacados-perfil`](bitacora/2026-11-04-clips-destacados-perfil/)). Probado en la base local (31 comprobaciones y la inversa), la API (543 pruebas) y la web (621 pruebas). La `76` quedó aplicada en la base local. Diseño: https://claude.ai/artifact/JtGZqvaTqnKzmSRxy7bgjA
+- **Commiteado** en `feat/frontend-fase-1` el 2026-11-05 (no va en `feat/mm-claim-en-sala`: no es del matchmaking), sin los reemplazos.
+- **Desplegado el 2026-11-06 (13:04-13:20 UTC)** desde `main` (`73d0e92e`), sin salas ni mixes en curso (la cola vacía; el #1 sin jugadores): la `76` en la base del VPS (antes, `probar_76.sh` contra producción: 31 comprobaciones y la inversa), la API y la web `73d0e92edcb8`.
+- **Falta:** mirarlo con datos reales en el navegador y publicar el `CHANGELOG_DISCORD.txt` (2.9.17) y los términos.
+
+## Reemplazos en el matchmaking (2026-11-05): desplegado el 2026-11-06, con el interruptor apagado
+
+- **Hecho:** replanteo `75`, rutas `/api/v1/mm/replace/{token}`, aviso en Discord desde el worker del matchmaking, página `/mm/reemplazo/<token>`, bloque **Reemplazos** en Administración › Matchmaking y reporter **2.10.0** con `!callreplace` ([`2026-11-04-mm-reemplazos`](bitacora/2026-11-04-mm-reemplazos/)). Probado en la base local (44 comprobaciones, la inversa y los dos clics a la vez), la API (531 pruebas), la web (614 pruebas) y el plugin con bots en el servidor local (26 de 26, `e2e_bots_75.sh`). La `75` quedó aplicada en la base local.
+- **Falta:**
+  1. Con jugadores de verdad, en el primer mix con **Reemplazos** encendido: el menú y el voto de `!callreplace`, el bloqueo de `jointeam` y el `!gg` con un abandono cubierto (con bots no se puede).
+  2. Encender **Reemplazos** en Administración › Matchmaking cuando el #1 haya cambiado de mapa (carga la 2.10.0), y probarlo en un mix.
+  3. Publicar el `CHANGELOG_DISCORD.txt` (2.9.16) y los términos actualizados.
+- **Commiteado** en `feat/frontend-fase-1` (`7c889be5`) y, sin la web ni el plugin, en `feat/mm-claim-en-sala` (`5592b98a`; esa rama sigue en el reporter 2.9.1).
+- **Desplegado el 2026-11-06 (13:04-13:20 UTC)** desde `main` (`73d0e92e`), sin salas ni mixes en curso (la cola vacía; el #1 sin jugadores): la `75` en la base del VPS (antes, `probar_75.sh` contra producción con `cmleague-mm` parado: 44 comprobaciones y la inversa), las variables de Discord y `FRONTEND_URL` en `/etc/cmleague/season.env` (respaldo `season.env.bak-20261106`), la API con el worker y la web `73d0e92edcb8`, y el reporter 2.10.0 por la API de cada panel, comparado byte a byte: #1 genérico, #2 flow licenciado y #3 genérico en `disabled/`. La 2.9.3 quedó en `plugins/disabled/csstv_reporter_2.9.3.smx` en los tres (`pruebas/subir_2_10_0.py`). Entra en el próximo cambio de mapa.
+
+## Supabase en el VPS (2026-11-03): hecho; faltan pruebas y el relay del HUD
+
+- **Desde el 2026-11-03 a las 20:50 UTC, la base de producción está en el VPS** (`deploy/supabase/`, `https://db.cmleague.lat`).
+  - La web estuvo caída 2 min 41 s.
+  - La copia es idéntica a la nube, fila a fila.
+  - Ya la usan la API, el socket, los timers, el relay del HUD, flow (#2), el #3 y el Worker de demos.
+  - La nube (`wmzfwsizashpszxlvpeb`) queda sin uso, como vuelta atrás hasta el 2026-12-03: no escribirle.
+  - Detalle en [`2026-11-03-supabase-en-vps`](bitacora/2026-11-03-supabase-en-vps/).
+- **#1 MVZG en producción** (21:10 UTC):
+  - Fila nueva `96bb5060` "Server CM League #1", con el id de su build licenciado; la vieja `7b01c85b` quedó como "flow (histórico)".
+  - Su cfg ya tiene la URL, la clave y el token de producción.
+  - **Con matchmaking** (`csstv_mm "1"`, `mm_enabled = true`). Toma salas cuando cargue el cfg.
+  - Reiniciado: consulta la base nueva cada 5 s (2.9.2).
+- **Falta:**
+  - ~~**R2:** comprobar el respaldo automático del 2026-11-04~~: llegó a `cmleague-respaldos` a las 09:01 UTC, según el log del VPS. El bucket está en la cuenta de agusb06.
+  - **Publicar la privacidad actualizada** en el próximo despliegue de la web (no hace falta para la base).
+  - **Sin relación con el corte:**
+    - Dar de alta a los streamers en producción (Administración): hay 0.
+- **Matchmaking en el #1, primeros intentos (2026-11-03, los dos cancelados):**
+  - **`de_nuke_old_blue` no está en el #1** y sí en el pool del 5v5: la sala se cancela con "El servidor no tiene el mapa". Subir el mapa o sacarlo del pool.
+  - **Sala de `de_inferno`:** el último jugador entró a las 22:45:47, 11 s antes del plazo de conexión (5 min), porque varios tuvieron que hacer `!claim` dentro del servidor. `mm_tick` la canceló a las 22:46:00 con los 10 conectados. Revisar si el plazo debe seguir contando con todos adentro, y que el `!claim` se pueda hacer antes de entrar a la cola.
+- **Primer mix completo en la base nueva (2026-11-03):** guardado y con su demo en R2, tras corregir el `panel_server_id` de flow. ~~El #1 no tiene `panel_server_id`: sus demos no se suben.~~ Arreglado el 2026-11-03: ver "Demos del #1" en el punto 1.44.
+- **Ajustar Kong sin partidas en curso** (usa ~240 MB; Daniel lo deja para después).
+- **flow (#2):** `csstv_claim "1"` en su cfg desde el 2026-11-03; se carga en el próximo cambio de mapa.
+- **flow (#2) sin matchmaking desde el 2026-11-03 (21:25 UTC, Daniel):** `csstv_mm "0"` en su cfg y por consola, y `mm_enabled = false`. Se juega mix normal. Esa tarde tuvo `csstv_mm "1"` un rato.
+
+## Medallas configurables (2026-11-04): desplegado, falta el cierre de la BETA
+
+- **Hecho y probado en local** (Daniel, 2026-11-05, "sigue el plan"); el 2026-11-06 pasó a la rama `feat/medallas` (sale de `main`, worktree `v34frag-medallas`), solo con las medallas: replanteo **`79`** (era la `78`, que ya es del matchmaking), API, motor `pnpm medals:tick`, `<Medal>` con los SVG de Kyan, Administración › Medallas y la pestaña Logros. Ensayado sobre una copia de producción del 2026-11-06 ([guía](bitacora/2026-11-04-medallas-configurables/GUIA_IMPLEMENTACION.md)).
+- **Reglas del 2026-11-06 (Daniel):** el progreso de las bloqueadas solo lo ve el dueño de la ficha (y el admin); las stats de la BETA no cuentan (todo desde la temporada 2; Fundador y Pionero salen de la BETA, pero llegan al abrirse la temporada 2); el podio y el top de la BETA sí se dan al cerrarla; sin el aviso "Cuenta desde el 2026-10-29".
+- **Urgente: la BETA de producción cierra el 2026-11-09 a las 09:00 UTC** (en la base; los documentos decían 2026-12-03). El despliegue tiene que estar antes.
+- **Desplegado el 2026-11-06 (18:53-19:00 UTC)** desde `main` (`1b4d517c`): respaldo `20261106T185310Z`, la `79` y las definiciones en la base del VPS, API y web `1b4d517c2de7` y `cmleague-medals.timer`.
+- **2026-11-06 (Daniel):** el ranking de jugadores ya no muestra "(sin diseño propio)" junto a la medalla del Top 20 (`8469ee86`, web `8469ee8631e6` desplegada desde `main`). En Administración › Temporadas el selector de tramos lo sigue diciendo.
+- **Falta:**
+  1. Después del cierre de la BETA (2026-11-09 09:00 UTC): comprobar que el cierre dio el podio y el top con medalla y que el cron dio Fundador y Pionero.
+  2. Avisar en Discord antes del cierre de la BETA (unos 130 avisos de Fundador y Pionero al abrirse la temporada 2) y publicar el `CHANGELOG_DISCORD.txt`.
+  3. Más adelante: `@fontsource/montserrat` (lo instala Daniel; hasta entonces, Arial).
+  4. Con Kyan: diseño del Top 20 (hoy, el círculo del Top 10 en bronce), si en tamaño chico va la versión plana (pregunta 4) y que `brillo_solo_marco` sea la versión final; revisar las respuestas de Daniel a las preguntas del plan (abierta: la 8, "más mejorado").
+  5. `badges/`, las misiones semanales y las insignias VIP siguen sin commit en `v34frag-main` (`feat-missions-badges`): no salen con las medallas.
+
+## La sala en el link de reemplazo, el detalle como sala y el ELO del abandono (2026-11-06): desplegado
+
+- **Hecho y probado en local:** replanteo `78`, la ruta `/api/v1/mm/games/{id}/room`, la sala en el link de reemplazo y en el detalle de la partida, y los topes del ELO del abandono en Administración › Matchmaking ([`2026-11-06-reemplazo-sala-y-abandono`](bitacora/2026-11-06-reemplazo-sala-y-abandono/)). Base: 12 comprobaciones y la inversa; API: 547 pruebas; web: 631. Diseño: https://claude.ai/artifact/Ndp1drqtYpRVGVcohLewjU
+- **Desplegado el 2026-11-06 (14:56-15:02 UTC)** desde `main` (`8670768b`), sin salas, cola ni mixes en vivo, después del respaldo `20261106T145627Z` (también en R2): la `78` en la base del VPS (antes, `probar_78.sh` contra producción con `cmleague-mm` parado: 12 comprobaciones y la inversa), y la API y la web `8670768b56ef`. Topes: 10 a 15 si ganan, 15 a 20 si pierden.
+- **Falta:** mirarlo en el navegador (el link con un reemplazo abierto, la sala del reemplazo y el detalle de una partida) y publicar el `CHANGELOG_DISCORD.txt` (2.9.19) y los términos.
+
+## Irse en la última ronda no es abandono (2026-11-06): desplegado
+
+- **Hecho y probado en local** (Daniel, 2026-11-06): replanteo `77`. En el matchmaking, quien sigue desconectado al terminar pero le faltó como mucho la última ronda ya no queda como abandono: sin sanción y con ELO normal. Manual y términos actualizados ([`2026-11-06-abandono-ultima-ronda`](bitacora/2026-11-06-abandono-ultima-ronda/)). Commiteado en `main` y en `feat/frontend-fase-1`; la base, también en `feat/mm-claim-en-sala`.
+- **Desplegado el 2026-11-06 (14:56-15:02 UTC)** desde `main` (`8670768b`), sin salas, cola ni mixes en vivo, después del respaldo `20261106T145627Z` (también en R2): la `77` en la base del VPS (antes, `probar_77.sh` contra producción: 5 de 5 y la inversa) y la web `8670768b56ef`, en la misma tanda que la `78`.
+- **Falta:** publicar el changelog.
+- Los dos casos del 2026-11-04 (mew y musul) quedan como están (Daniel).
+
+## Recuperar la contraseña y acciones de cuenta (desplegado el 2026-11-04): falta unificar la rama de la API
+
+- **En producción:** recuperar la contraseña, las acciones de cuenta en Administración › Usuarios y la confirmación del correo encendida (`sudo sb confirmar-correo [on|off]`). Probado de punta a punta con cuentas temporales ([`2026-11-03-admin-cuentas-usuarios`](bitacora/2026-11-03-admin-cuentas-usuarios/), [`2026-11-03-recuperar-contrasena`](bitacora/2026-11-03-recuperar-contrasena/)).
+- **Falta:**
+  - ~~Unificar la rama de la API~~: hecho el 2026-11-04. La API `15a357169528` sale de `feat/frontend-fase-1`, con el manual y sin el anticheat ([`2026-11-04-rama-igual-a-produccion`](bitacora/2026-11-04-rama-igual-a-produccion/GUIA_IMPLEMENTACION.md)). No hace falta volver a usar `deploy/api-produccion`.
+  - Publicar `terms/privacidad.html` y el `CHANGELOG_DISCORD.txt` de los dos requerimientos.
+  - En la documentación de recuperar la contraseña: "Qué cambia para cada rol" y "Términos y privacidad".
+
+## La rama del frontend igual a producción (2026-11-04): hecho
+
+- **Hecho:** `feat/frontend-fase-1` tiene el manual en la API, el reporter 2.9.3 y los plugins que corren en los servidores, con sus binarios exactos ([`2026-11-04-rama-igual-a-produccion`](bitacora/2026-11-04-rama-igual-a-produccion/)). API `15a357169528` desplegada desde la rama y merge en `main`. A los servidores no se les subió nada.
+- **Revisado el 2026-11-04:** reporter 2.9.3 en el #1 (genérico, no licenciado) y en el #2 (licenciado); en el #3 está en `disabled/`. Los puntos viejos que dicen 2.7.3 o 2.9.2 quedan como historia.
+- **Falta:**
+  1. Abrir `/help` con una sesión iniciada.
+  2. `feat/mm-claim-en-sala` sigue con el reporter 2.9.1: el cambio a la 2.9.3 no es del matchmaking y no se llevó ahí.
+- **Excepción decidida por Daniel (2026-11-04):** el `live.cfg` del #3 queda con `mp_friendlyfire 1` y `mp_flashlight 1`. El #1 y el #2 tienen `0`, y el repo copia a esos dos.
+- **Accelerator en el #3:** se retiró el 2026-10-15 ([guía](bitacora/2026-10-14-crash-servidor-accelerator/GUIA_IMPLEMENTACION.md)), pero el 2026-11-04 sus archivos están otra vez en `extensions/` y `gamedata/` (visto por SFTP), con una copia en `accelerator_retirado/`. Falta confirmar con `sm exts list` que cargue. Ese día la API del panel del #3 daba `DaemonConnectionException` y el SFTP funcionaba.
 
 ## Corte a la base de producción (2026-11-03): base hecha, falta el VPS
 
@@ -20,19 +151,6 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. Lo que le toca a 
   - Servidores: **#1 MVZG** a producción; **#2 flow** y **#3 `aurav34`** con el reporter nuevo.
   - Verificar la ingesta de flow, el Worker de demos y el render de clips.
 - **Staging está más abierto que producción:** `anon` y `authenticated` pueden ejecutar 12 funciones internas (19 permisos) (`csstv_ingest`, `csstv_auth`, `create_server_token`, `rotate_server_token`…). En producción solo las ejecuta `service_role`. Hay que cerrarlas en staging.
-
-## Términos y condiciones y política de privacidad (borradores, sin publicar)
-
-- **Estado:** `terms/terminos.html` escrito y `terms/privacidad.html` reescrita el 2026-11-03, pedidos por Kyan. Cubren toda la plataforma, también lo que no está implementado, con la ley argentina (CCyC, Ley 24.240 y Ley 25.326). No tocan los servidores (ni `aurav34`, flow ni MVZG).
-- **Falta:**
-  - Aprobación de Daniel o Kyan y revisión de un abogado.
-  - Datos completados el 2026-11-03 (Kyan): provincia de Buenos Aires, `cmleaguev34@gmail.com`, `https://dsc.gg/v34frag`, 13 años y los precios del VIP. Regiones (Kyan, 2026-11-03): Supabase en el oeste de Estados Unidos (Oregón) y el VPS de OVH en Beauharnois (Canadá). Es la **provincia** de Buenos Aires, no la Ciudad Autónoma (Kyan, 2026-11-03). Ya no queda ningún dato marcado en los textos.
-  - Inscribir la base en el Registro Nacional de Bases de Datos de la AAIP.
-  - Las dos páginas están en `terms/`. Google tiene cargada `https://csstv.gamer.gd/privacidad.html` para «CMLeague clips»: al publicar, subir la nueva también ahí o cambiar la URL en la consola de Google.
-  - Ponerle un plazo a `player_ips`, que hoy no tiene.
-  - Publicar las dos juntas y enlazarlas desde la web vieja. En el frontend nuevo ya están las rutas `/terminos` y `/privacidad`, con links en el pie y en el registro ([`2026-11-03-frontend-legales`](bitacora/2026-11-03-frontend-legales/)). Falta avisarle a Esteban y, si se quiere, una casilla de aceptación obligatoria en el registro. Los textos están en dos copias (`.html` y `features/legal/`): se cambian juntas.
-  - **Cobro del VIP:** cobrar sin estar inscripto en ARCA (ex AFIP) es un tema impositivo aparte de estos textos.
-- **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 ## Anticheat FRAG (rama `kyan/anticheat-backend`, sin merge)
 
@@ -58,8 +176,8 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 - **Excepción:** consejos de comandos en el chat cada 3 minutos y el Discord al terminar la partida (reporter **2.4.0**), pedido por Daniel el 2026-10-20. Aprobado, hecho, probado con bots y **desplegado el 2026-10-20** en los dos servidores (punto 1.12).
 - **Excepción:** clips automáticos (reporter **2.5.0**), pedido por Daniel el 2026-10-23 para que los clips se vayan juntando antes de la web nueva. Aprobado, hecho, probado con bots y **desplegado el 2026-10-23** en la base y los dos servidores (punto 1.16).
 - **Excepción:** contraseña del servidor con `!pw`, `!npw` y `!rpw` para admins y moderadores (`csstv_password` 1.0.0), pedido por Daniel el 2026-10-25 como plugin aparte. Aprobado, hecho, probado con bots y **subido a los dos servidores el 2026-10-25** (punto 1.19).
-- **Excepción:** silenciador automático en la M4A1 y la USP con menú `!as` (`csstv_silencer` 1.0.0), pedido por Kyan el 2026-11-02 como plugin aparte. Probado en local y **subido el 2026-11-02 a `aurav34`, flow y MVZG**. Kyan confirmó que funciona. RBK quedó afuera porque ya no se usa ([`2026-11-02-plugin-silenciador`](bitacora/2026-11-02-plugin-silenciador/)).
-- **Excepción:** aviso de arranque, pausa automática por desconexión y charla del medio tiempo (reporter **2.7.3**, y 2.8.1 en `kyan/pruebas`), pedido por Kyan el 2026-11-02. Probado con bots y **subido el 2026-11-02 a flow y MVZG, y a `disabled/` en `aurav34`**. La **2.7.4** (2.8.3 en `kyan/pruebas`) rehace la charla del medio tiempo, porque en la 2.7.3 casi no se podía comprar. Está probada con bots y **subida el 2026-11-02 a flow, MVZG y `disabled/` en `aurav34`**. En MVZG reemplazó al 2.8.2 de matchmaking de Daniel por decisión de Kyan (respaldo en `plugins/disabled/csstv_reporter_2.8.2_mm.smx`): **MVZG queda sin matchmaking** hasta que se arme un 2.8.x con este cambio. **Falta la prueba con jugadores** ([`2026-11-02-aviso-y-pausa-automatica`](bitacora/2026-11-02-aviso-y-pausa-automatica/)).
+- **Excepción:** silenciador automático en la M4A1 y la USP con menú `!as` (`csstv_silencer` 1.0.0), pedido por Kyan el 2026-11-02 como plugin aparte. Probado en local y **subido el 2026-11-02 a los tres servidores** (#1 MVZG, #2 flow y #3 `aurav34`; md5 `81c2ef6d…`; verificado por SFTP en el #1 y el #3 el 2026-11-02, flow no se revisó). RBK ya no se usa. Traído a `feat/frontend-fase-1` el 2026-11-02 ([`2026-11-02-plugin-silenciador`](bitacora/2026-11-02-plugin-silenciador/)).
+- **Excepción:** aviso de arranque, pausa automática por desconexión y charla del medio tiempo (reporter **2.7.3**, y 2.8.1 en `kyan/pruebas`, sobre la línea con matchmaking), pedido por Kyan el 2026-11-02. Probado con bots y **subido el 2026-11-02 al #1 (MVZG) y a flow (#2), licenciados, y a `disabled/` en el #3 (`aurav34`, genérico md5 `6f3c543c…`)**. La 2.7.3 se trajo a `feat/frontend-fase-1` el 2026-11-02 (sin el matchmaking del plugin, decisión de Daniel). **Falta la prueba con jugadores** ([`2026-11-02-aviso-y-pausa-automatica`](bitacora/2026-11-02-aviso-y-pausa-automatica/)).
 - **Matchmaking apagado en todos los servidores** (Kyan, 2026-11-02). Se probó poner `aurav34` como servidor de prueba y se deshizo el mismo día: ningún servidor tiene `mm_enabled` en staging, MVZG tiene `csstv_mm "0"` y `csstv_claim "0"`, y `aurav34` volvió a solo retake, con el reporter en `disabled/` y el retake automático. **MVZG sigue reportando a staging** (`csstv_api_url`), así que sus partidas no llegan a la web real: para eso falta lo del punto 1.36. Cómo volver a armarlo: [`2026-11-02-servidor-pruebas-mm`](bitacora/2026-11-02-servidor-pruebas-mm/).
 - **Excepción:** QOL, segunda tanda (`csstv_qol` 1.0.0, `csstv_coach` 1.0.0 y el capitán elige lado en el reporter 2.7.5, 2.8.5 en `aurav34`), pedido por Kyan el 2026-11-02. Probado con bots y **subido el 2026-11-02 a flow, MVZG y `aurav34`**. Liberar el servidor al terminar (contraseña al azar, expulsar y cambiar de mapa a los 40 s) **solo está prendido en MVZG**, para las pruebas; en flow y `aurav34` `csstv_qol_end_kick "0"`. En `aurav34` el reporter volvió a `disabled/` (2.7.5). **Falta la prueba con jugadores** ([`2026-11-02-qol-tanda-2`](bitacora/2026-11-02-qol-tanda-2/)).
 - **Excepción:** QOL, tercera tanda (`!tech` y cuenta atrás en el reporter 2.7.6, `csstv_qol` 1.1.0 y `csstv_pedir` 1.0.0), pedido por Kyan el 2026-11-02. Probado con bots y **subido el 2026-11-02 a flow, MVZG y `aurav34`**. Probado con jugadores por Kyan: funciona ([`2026-11-02-qol-tanda-3`](bitacora/2026-11-02-qol-tanda-3/)).
@@ -68,10 +186,6 @@ Lo que está pendiente del lado del plugin, congelado hasta entonces:
 
 ## Decisiones anotadas para planes futuros
 
-- **Repetición 2D y mapa de calor** (Kyan, 2026-11-03: le gustan, pero no se hacen todavía):
-  - Repetición 2D de cada ronda en la web: el servidor guarda las posiciones de los jugadores cada segundo y la web muestra el mapa con los puntos moviéndose.
-  - Mapa de calor de dónde mata y dónde muere cada jugador, por mapa.
-  - Las dos necesitan que el reporter mande posiciones (hoy solo manda los ticks de las kills, para los clips) y una imagen de radar por mapa.
 - **Torneos** (cuando se planee la creación de torneos):
   - El creador del torneo define cuántos jugadores del plantel puede inscribir cada equipo, con un máximo de 10. El plantel de un equipo admite hasta 10.
   - El creador también decide el formato (BO1, BO3, BO5) de las partidas.
@@ -165,179 +279,15 @@ Ordenado por urgencia.
 - Opcional: reemplazar los plugins base de 1.8 por los de 1.10.
 - **Detalle y reversión:** [guía de RBK](bitacora/2026-10-13-servidor-rbk/GUIA_IMPLEMENTACION.md)
 
-### 1.5 Widget para streamers (OBS)
-
-- **Qué falta:**
-  1. Correr `supabase/migrations/20261029120000_widget_streamers.sql` en el SQL Editor.
-  2. Subir **juntos** `index.html`, `niveles.js` y `widget.html` a la web. `index.html` sin `niveles.js` rompe los niveles y el perfil.
-  3. Probarlo en OBS.
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Al hacer el corte al backend nuevo:** portar `widget_player` al replanteo usando `elo_key()` (varios SteamID por ficha) y excluir `mix_deletions`.
-- Sin commit, en `kyan/pruebas`.
-- **Bitácora:** [`2026-10-29-widget-streamers`](bitacora/2026-10-29-widget-streamers/). Pasos en la guía; changelog para Discord en la carpeta.
-
-### 1.6 Tienda de cosméticos en la web
-
-- **Qué falta:**
-  1. Correr `supabase/migrations/20261028120000_vip.sql` (VIP del backend; si ya se corrió, es re-ejecutable) y después `supabase/migrations/20261029180000_tienda.sql` en el SQL Editor. **No se probaron en ningún Postgres**: conviene correrlas antes en un proyecto de prueba o en la base local del backend.
-  2. Publicar **juntos** `index.html` y la carpeta `assets/perfil/`.
-  3. Probar comprar, equipar, la portada y Admin → Tienda (puntos, regalos y VIP).
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Al hacer el corte:** el replanteo `34_tienda.sql` parte de esta migración, con `elo_key()`, `mix_deletions` y los avisos con `notify()`.
-- **Bitácora:** [`2026-10-29-tienda-web`](bitacora/2026-10-29-tienda-web/). Pasos en la guía; changelog para Discord en la carpeta.
-
-### 1.7 Fondo de miniperfil y progresión VIP (sin commit)
-
-- **Qué es:**
-  - **Fondos:** 24 fondos animados, del tipo nuevo `background`.
-  - **Matchmaking:** el lobby y la sala muestran marco, efecto de nombre e insignia VIP.
-  - **VIP:** ser VIP da solo el Marco Oro VIP. Lo demás se compra con monedas VIP, que se ganan en mixes jugados siendo VIP y son configurables. Si se vence el VIP, el saldo y lo comprado quedan congelados.
-- **Dónde se ve:** solo en los demos del frontend nuevo, en `/demo/tienda` y `/demo/matchmaking` (`kyan/ejemplo-matchmaking`).
-- **Qué falta:**
-  1. Probar y correr `20261029200000_fondo_miniperfil.sql` y `20261029210000_vip_progresion.sql`, después de las dos de 1.6. **No se probaron en ningún Postgres.**
-  2. **No correr `20261029210000_vip_progresion.sql` con la tienda de `index.html` publicada:** esa tienda todavía trata lo VIP como gratis.
-  3. Rutas de la API para monedas VIP y cosméticos del matchmaking (`MmCosmetics`).
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Bitácora:** [`2026-10-29-fondo-miniperfil`](bitacora/2026-10-29-fondo-miniperfil/) y [`2026-10-29-vip-progresion`](bitacora/2026-10-29-vip-progresion/).
-
-### 1.8 Prototipos VIP: exportar stats y buscador avanzado
-
-- **Qué es:** dos prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
-  - `/demo/exportar`: tarjeta de stats en PNG o PDF.
-  - `/demo/buscador`: filtros avanzados de jugadores y partidas.
-- **Qué falta:**
-  - **Daniel:**
-    - La ruta de stats por período.
-    - Los filtros nuevos en `ranking/players` y `mixes`, con chequeo de VIP.
-    - Que `levelBounds` acepte cualquier rango de niveles.
-  - **Esteban:** llevar los dos prototipos al perfil, a `/players` y al listado de mixes.
-- **Niveles:** usan los mismos pisos que el backend. `features/search/levels.test.ts` avisa si se desincronizan.
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Bitácora:** [`2026-10-29-exportar-stats`](bitacora/2026-10-29-exportar-stats/) y [`2026-10-29-buscador-avanzado`](bitacora/2026-10-29-buscador-avanzado/).
-
-### 1.9 Prototipos VIP: ELO, recálculo, comparador y widget para la bio
-
-- **Qué es:** cuatro prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
-  - `/demo/elo`: el desglose de la fórmula de ELO.
-  - `/demo/recalculo`: la vista previa del cierre de temporada.
-  - `/demo/comparador`: hasta 5 jugadores.
-  - `/demo/bio`: panel de Twitch, firma y tarjeta del link.
-- **Cuidado:** `features/elo/formula.ts` y `features/season/preview.ts` copian las reglas de `elo_apply_match` y de `24_temporadas.sql`. Si cambian en la base, hay que cambiarlas ahí. Los tests ayudan a darse cuenta.
-- **Qué falta:**
-  - **Daniel:**
-    - El desglose por mix.
-    - Tu fila de `season_live_standings` con los vecinos.
-    - `players/compare` con 5 jugadores.
-    - Para el widget de la bio: la imagen dinámica `card.png`, Open Graph en el perfil y la página del iframe.
-    - El chequeo de VIP en todo eso.
-  - **Esteban:** llevar los cuatro al perfil y al ranking.
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Bitácora:** [`2026-10-29-desglose-elo`](bitacora/2026-10-29-desglose-elo/), [`2026-10-29-proximo-recalculo`](bitacora/2026-10-29-proximo-recalculo/), [`2026-10-29-comparador-5`](bitacora/2026-10-29-comparador-5/) y [`2026-10-29-widget-bio`](bitacora/2026-10-29-widget-bio/).
-
-### 1.10 Prototipos VIP: favoritas, créditos y stats de torneo
-
-- **Qué es:** tres prototipos más en el frontend nuevo (`kyan/ejemplo-matchmaking`), con lo que quedaba de la lista VIP fuera del perfil:
-  - `/demo/favoritas`
-  - `/demo/creditos`
-  - `/demo/torneo-stats`
-- **Quedaron afuera, a propósito:**
-  - Firma o banner, galería, pestañas extra y el regalo de bienvenida, porque **son del perfil y los está haciendo Esteban**.
-  - Los puntos VIP canjeables, porque ya están en la progresión VIP (1.7).
-  - El ícono y borde VIP en el ranking, el verificado y el Top VIP del mes: se hizo un prototipo (`/demo/ranking-vip`) y Kyan lo descartó el 2026-10-29.
-- **Qué falta:**
-  - **Daniel:**
-    - Las rutas que pide cada bitácora, con el chequeo de VIP.
-    - Los clutches de las stats del torneo llegan con el plugin nuevo (schema 2); las entradas ya están.
-  - **Esteban:** llevarlos a la web.
-  - Confirmar los roles de "Hecho por" en los créditos.
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Bitácora:** [`2026-10-29-partidas-favoritas`](bitacora/2026-10-29-partidas-favoritas/), [`2026-10-29-creditos`](bitacora/2026-10-29-creditos/) y [`2026-10-29-stats-torneo`](bitacora/2026-10-29-stats-torneo/).
-
-### 1.11 Misiones semanales y Primeros pasos (prototipo)
-
-- **Qué es:** `/demo/misiones` del frontend nuevo (`kyan/ejemplo-matchmaking`). Tiene un popout en la barra de arriba (pestañas "Esta semana" y "Primeros pasos"), una página y la vista de admin.
-- **Semanales:** de juego y comunidad.
-  - Cada semana salen 6 para todos y 3 VIP, al azar.
-  - Una que salió no vuelve hasta dentro de 2 semanas, y en una semana no se repite la misma stat.
-- **Primeros pasos:** las de la web (votar o subir clips, entrar a la web, comparar, tienda…). Se hacen una sola vez desde que te registrás.
-- **Datos:** usan los mismos datos del servidor que las medallas. 12 de las 55 semanales esperan:
-  - 9, el plugin nuevo (schema 2, ver `MEDALLAS_DATOS_REPORTER.md`).
-  - 3, otros sistemas (grupos del matchmaking y referidos).
-- **Qué falta:**
-  - **Daniel:**
-    - Las tablas `missions`, `mission_weeks` y `mission_progress` (con `week` en null para Primeros pasos).
-    - Sumar el progreso con cada mix y cada evento.
-    - El cron del lunes 06:00 y las rutas, con chequeo de VIP.
-  - **Esteban:** el popout, la página y el admin.
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK. El plugin nuevo, cuando se haga, sí va a los dos servidores.
-- **Bitácora:** [`2026-10-29-misiones-semanales`](bitacora/2026-10-29-misiones-semanales/).
-
-### 1.12 Página Hacete VIP y configs de los jugadores (prototipos)
-
-- **Qué es:**
-  - `/demo/vip`: los planes (precios de ejemplo), la tabla de beneficios con y sin VIP, el estado de tu VIP y qué pasa con cada beneficio cuando se vence. Los candados de todos los demos VIP llevan ahí.
-  - `/demo/configs`: la pestaña Config del perfil. Cualquiera sube su carpeta `cfg` (`.rar`, `.zip` o la carpeta) y solo los VIP ven el contenido y descargan.
-- **La revisión de las configs:**
-  - Solo se aceptan `.cfg`, `.vdf`, `.scr`, `.rc` y `.txt`. Un comprimido con un `.exe` se rechaza entero.
-  - Las contraseñas (`rcon_password`…) se sacan antes de publicar.
-  - Los scripts dejan la config en revisión, y así no se puede descargar.
-- **Qué falta:**
-  - **Kyan:**
-    - Los precios, si Premium y VIP son dos niveles, los días de gracia y lo propuesto de la tabla de vencimiento.
-    - Qué scripts están prohibidos.
-  - **Daniel:**
-    - El medio de pago, la tabla de suscripciones, la función única "¿es VIP?" y el alta manual.
-    - Para las configs: storage, revisión en el servidor (que abra los `.rar`), rutas y cola de moderación.
-  - **Esteban:** la página `/vip`, "Mi suscripción" en la cuenta y la pestaña Config del perfil.
-- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
-- **Bitácora:** [`2026-10-29-hacete-vip`](bitacora/2026-10-29-hacete-vip/) y [`2026-10-29-configs-jugadores`](bitacora/2026-10-29-configs-jugadores/).
-
-### 1.13 Plugin de retake (`v34_retake`, sin licencia)
-
-- **Estado:** subido el 2026-10-30 a `aurav34` (`45.235.98.57:27062`, `SFTP_CSS_*`), que queda como servidor solo de retake, con `sm_retake_autostart "1"`. Solo tiene spawns de `de_dust2_ob`. **No está en RBK ni en `FLOW_SERVER`**: fue una decisión de Kyan. Sin commit.
-- **Qué falta:**
-  - Cargar spawns de otros mapas: sin eso la votación de la ronda 25 no tiene opciones.
-  - Confirmar con jugadores: `!guns` guardado, `!top` y `!rank`, menú de modelos, barra de desactivar, votación con votos reales, VIP y AFK.
-  - Revisar el sorteo de AWP con un solo anotado, que en la prueba dio 50 % en vez de 30 % (22 sorteos).
-  - `csstv_reporter` se movió a `plugins/disabled/` en `aurav34` el 2026-10-31. Hay que revisar que `csstv_sell`, `csstv_perf`, `csstv_password`, `csstv_calladmin` y `csstv_allchat` sigan bien sin él.
-  - Revisar los otros `csstv_*` de ese servidor y la convivencia con el reporter 1.8.0.
-  - Borrar `cfg/server.cfg.bak_pw` si no hace falta: tiene la contraseña vieja.
-- **Pruebas:** los plugins del servidor se prueban en `C:\Users\Agus\Downloads\cssds`, el ambiente de Agus, antes de ir a producción.
-- **VIP, se hace al finalizar:** hoy el plugin reconoce a un VIP por el flag `o` de SourceMod, que se carga a mano en `admins_simple.ini`. Falta sincronizar esa lista con el VIP de la web, que todavía es un prototipo (ver 1.7 y 1.12).
-- **Bitácora:** [`2026-10-30-plugin-retake`](bitacora/2026-10-30-plugin-retake/). Changelog para Discord en la carpeta.
-
-### 1.15 Plugin 2v2 (`v34_wingman`)
-
-- **Estado:** probado con bots en `cssds` y subido el 2026-10-30, inactivo, a `aurav34` y a RBK. En `aurav34` se prende con `sm_2v2 1`; el retake se tiene que apagar antes y, por su autostart, vuelve en cada cambio de mapa. **RBK no tiene `de_dust2_ob`**, y Kyan dijo que probablemente dejen de pagar ese servidor. No está en `FLOW_SERVER`.
-- **Qué falta:**
-  - Subir `de_dust2_ob` a RBK o cargar los puntos de otro mapa.
-  - Cargar sitio, 2 spawns y zonas de `de_inferno` (sitio A). `de_dust2_ob` ya está cargado (3 zonas) y en el repo.
-  - Probar con jugadores: antes que nada la compra fuera de la zona, porque los bots no compran por comando y en `de_dust2_ob` el spawn cae dentro de la zona. También el bloqueo de zonas, la cámara en primera persona, la voz por equipo y `!admin`.
-- **Bitácora:** [`2026-10-30-plugin-2v2`](bitacora/2026-10-30-plugin-2v2/). Changelog para Discord en la carpeta.
-
-### 1.16 Plugin de deathmatch (`v34_dm`)
-
-- **Estado:** probado con bots en `cssds` y subido a ethereal (`FLOW_SERVER`, SFTP `190.104.34.3:2022`) el 2026-10-31. Solo funciona en `$2000$`, al que se llega porque un admin cambia el mapa.
-- **Qué falta:** probar con un jugador, y que se confirme con el reporter 1.8.0 de ese servidor.
-- **Bitácora:** [`2026-10-31-plugin-deathmatch`](bitacora/2026-10-31-plugin-deathmatch/). Changelog para Discord en la carpeta.
-
-### 1.14 Spam de grafitis
-
-- `decalfrequency` pasó de `0.1` a `60` en `aurav34` y RBK el 2026-10-30, con respaldo en `cfg/server.cfg.bak_decal`.
-- `FLOW_SERVER` (ethereal) ya lo tenía en `60`, comprobado el 2026-10-31.
-
-### 1.16 Anticheat v34FRAGNATION
-
-- **Estado:** auditoría de la etapa 0 entregada el 2026-10-30. Nada implementado ni desplegado, ni en el servidor real ni en RBK.
-- **Decidido por Kyan:** FRAG es independiente del EAC de ClientMod, y las pruebas de campo van al final.
-- **Captura:** funciona en pantalla completa exclusiva sin hooks, probada en una PC.
-- **Qué falta:** las 6 decisiones abiertas de la guía y, al final, las pruebas de campo: tirones, Alt+Tab, modos ventana y sin bordes, otras PC.
-- **Bitácora:** [`2026-10-30-anticheat-etapa-0-auditoria`](bitacora/2026-10-30-anticheat-etapa-0-auditoria/) y [`2026-10-30-anticheat-captura`](bitacora/2026-10-30-anticheat-captura/).
 ### 1.5 Corte del replanteo: migraciones 01 a 21 y plugin 2.0.0 (`!match` y `!status`) con 2.1.0 (mixes en vivo) y 2.2.0 (`!claim`)
+
+> **Desactualizado (2026-11-03):** el corte ahora es con los replanteos `01` a `69` y lo describe [`2026-11-03-corte-produccion`](bitacora/2026-11-03-corte-produccion/PLAN.md). Lo de abajo queda como historia y como lista de chequeos sueltos.
+>
+> **Temporada BETA creada en producción el 2026-11-03** (Daniel, paso 2.5 del PLAN): número 1, desde el 2026-10-13 00:00 UTC (antes del primer mix, así cuentan los 95), fin el 2026-12-03 06:00 de Argentina, parámetros de `season_config`. Script: [`pruebas/temporada_beta.sql`](bitacora/2026-11-03-corte-produccion/pruebas/temporada_beta.sql).
 
 Nada de esto se despliega antes del corte: la web vieja sigue usando la base de producción.
 
-**Plugins que esperan la web nueva** (salen o se prenden en el corte, en el servidor real y en RBK en la misma tanda):
+**Plugins que esperan la web nueva** (salen o se prenden en el corte, en el servidor real y en flow en la misma tanda):
 
 | Plugin | Estado | Qué falta en el corte |
 |---|---|---|
@@ -416,6 +366,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Moderadores** (en `configs/admins_simple.ini` de **los dos servidores**, `"STEAM_0:X:Y" "@Moderador"`; se aplica con `sm_reloadadmins` o en el cambio de mapa):
   - **Juanma** (2026-10-19): `STEAM_0:0:1500257138` y `STEAM_0:0:1113757173`. En el servidor real reemplaza su entrada anterior `"bce"` (pierde `e`, desbanear). Copias `admins_simple.ini.bak_20261019`.
   - **traica** (2026-10-19): `STEAM_0:0:829553320`. Agregado en el **servidor real** (`SFTP_CSS_*`) y en **RBK** (`SERVER1_*`), verificado bajando el archivo de nuevo. Copias `admins_simple.ini.bak_20261019_traica`. No se corrió `sm_reloadadmins`: se aplica en el próximo cambio de mapa.
+  - **cype-thor** (2026-11-06, ficha `shoxmeister`): `STEAM_0:0:697913072`, sacada de un log del servidor (`L20261029.log`). Agregado en **#1**, **#2 (flow)** y **#3** por la API del panel, verificado bajando el archivo de nuevo. Copias `admins_simple.ini.bak_20261106`. No se corrió `sm_reloadadmins`: se aplica en el próximo cambio de mapa. Falta ver en la base si su ficha tiene otros SteamID.
 - **Si algo falla:** `csstv_calladmin_enabled 0` corta `!calladmin` y `csstv_calladmin_modmap 0` corta el `!map` del moderador.
 - Publicar el changelog: `bitacora/2026-10-19-calladmin-moderadores/CHANGELOG_DISCORD.txt`.
 - **Bitácora:** [`2026-10-19-calladmin-moderadores`](bitacora/2026-10-19-calladmin-moderadores/)
@@ -486,14 +437,14 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - si se quiere, cambiar el nombre de los archivos de las demos (`v34frag_…dem`) con el próximo deploy del Worker (punto 1.1).
 - **Bitácora:** [`2026-10-22-nombre-cmleague`](bitacora/2026-10-22-nombre-cmleague/)
 
-### 1.14 RBK igual al servidor real (con Stripper) y prórroga y medio tiempo nuevos: falta reiniciar RBK
+### 1.14 RBK igual al servidor real (con Stripper) y prórroga y medio tiempo nuevos: cancelado (RBK dado de baja el 2026-10-29)
 
 - **Qué es:**
   - RBK queda igual a nuestro servidor. Le faltaba Stripper:Source, que les saca la niebla a los mapas, y tenía otros valores de partida y otros plugins.
   - En los dos servidores: `csstv_ot_startmoney "12000"` y `csstv_halftime_delay "5.0"` (bajado a `"3.0"` el 2026-10-24, punto 1.18).
 - **Subido el 2026-10-22.**
   - Servidor real: se carga en el próximo cambio de mapa.
-  - **RBK: falta que Daniel lo reinicie desde el panel.** Metamod y las extensiones solo cargan al arrancar.
+  - ~~RBK: falta que Daniel lo reinicie desde el panel~~: cancelado, RBK dejó de usarse el 2026-10-29.
 - **Después del reinicio**, verificar por SFTP:
   - logs de errores sin nada nuevo;
   - `license.txt` actualizado;
@@ -509,7 +460,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **2026-10-29: el relay pasa al VPS** (relay 2.0.0, plan [`2026-10-29-hud-relay-vps`](bitacora/2026-10-29-hud-relay-vps/GUIA_IMPLEMENTACION.md)): un relay para todos los servidores, administrado desde la web. Desplegado en el VPS contra staging (`hud.cmleague.lat`). **flow** ya tiene `csstv_hud` 1.1.0 (no lo tenía) apuntando al relay, en el puerto `27501`, como prueba autorizada por Daniel. Falta:
   - ~~confirmar la prueba con flow~~: **funcionó el 2026-10-29** (paquetes con la clave correcta, el HUD y el panel con datos, y la sesión en staging). Queda **prendido en flow** por decisión de Daniel (por consola está en `csstv_hud 0` desde el congelamiento del 2026-10-29, que fue por los bots y no por el HUD: ver la guía, "Incidentes"; volver a `csstv_hud 1`). Falta que kyan confirme si existe `maps/de_dust2_ob.nav` y, si no, generarlo. Cómo apagarlo si laguea: `GUIA_IMPLEMENTACION.md`, "Cómo apagar el HUD de un servidor";
   - ~~el frontend~~: hecho el 2026-10-29 ([`2026-10-29-frontend-hud`](bitacora/2026-10-29-frontend-hud/GUIA_IMPLEMENTACION.md)); falta desplegarlo con `desplegar.sh web`;
-  - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real, RBK y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
+  - en el corte: la `36` en producción, el relay leyendo producción (`hud.json`) y el `.cfg` del HUD en **el real y flow** en la misma tanda, con el puerto y la clave de cada uno. El real necesita volver a tener `csstv_hud.smx` (avisarle a kyan).
 - **2026-10-30: HUD versión 2** (relay 2.1.0, plan [`2026-10-30-hud-version-2`](bitacora/2026-10-30-hud-version-2/GUIA_IMPLEMENTACION.md)): el diseño del torneo de CS2 (marcador con siglas, vivos y clutch, tarjetas con foto y número de tecla, la vida que oscurece la tarjeta y la flash y el humo con franja y borde). Solo cambia lo que dibuja OBS; el plugin no. **Desplegado en el VPS el 2026-10-30** (build `ea72879c8f86-local10301427`, con cambios sin commit). Falta verlo con la SourceTV real en OBS y, después del commit, volver a desplegar para que el build lleve el nombre del commit.
 - **2026-10-30: serie de mapas en el HUD** (relay 2.2.0, plan [`2026-10-30-hud-serie-mapas`](bitacora/2026-10-30-hud-serie-mapas/GUIA_IMPLEMENTACION.md)): en `/control`, BO1/BO3/BO5 y por mapa el pick y el ganador; el HUD muestra `CMLEAGUE | BO3 | Jugando en … | Pick de …` y las rayitas de mapas ganados. Probado en local y **desplegado en el VPS el 2026-10-30** (build `7b6540df4295-local10301756`, con cambios sin commit). Falta verlo en OBS y, después del commit, volver a desplegar. No toca el plugin.
 
@@ -570,6 +521,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
     5. el portátil (Daniel instaló un ClientMod limpio): copiar los mapas de la liga, `render/`, Python de python.org, FFmpeg, un `.env` reducido (`RENDER_*`, `CF_*_CLIPS`, `GOOGLE_*`) y `config.json` con sus rutas; abrir el juego una vez a mano; medir una jugada a 1080p;
     6. `instalar_tarea.ps1` en el portátil (no en la PC: `render/config.json` de la PC ya está en 1080p con Drive, para pruebas).
   - **Después:** el primer mix real con la 2.5.0 (clips detectados por el plugin, clutches reales, el desfase real con `tv_delay`) y su video por el Worker y en Drive.
+- **Grabar con el CS:S v34 normal (2026-11-04, commiteado en `feat/frontend-fase-1`):** `"client": "v34"` en `render/config.json` abre `hl2.exe` directo, sin el launcher de ClientMod (Daniel sospecha que el launcher es lo que hace fallar los clips). Instalado en el portátil en `C:\Program Files (x86)\CSS v34 eXpandedCS`. **Falta:** llevar `render/` al portátil, configurarlo (paso 3b de `render/CONFIGURAR_PORTATIL.md`) y grabar una jugada. No se pudo probar en la PC (no hay un v34 normal). Bitácora [`2026-11-04-render-sin-launcher`](bitacora/2026-11-04-render-sin-launcher/).
 - **Cuentas:** los videos de los clips van al R2 de la **cuenta de Cloudflare de Daniel** (variables `CF_*_CLIPS` en el `.env`, conexión probada); las demos se quedan en la cuenta de kyan. YouTube se descartó.
 - **Bitácora:** [`2026-10-23-clips-video`](bitacora/2026-10-23-clips-video/) y [`2026-10-23-clips-render-automatico`](bitacora/2026-10-23-clips-render-automatico/)
 
@@ -605,19 +557,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:** después del cambio de mapa, ver en la consola de cada servidor que las cuatro cvars dan 100, 101, 100 y 101.
 - **Bitácora:** [`2026-10-27-tasas-coherentes`](bitacora/2026-10-27-tasas-coherentes/)
 
-### 1.36 Servidor nuevo de MVZG (`CMLeague #1`): falta darle identidad propia
-
-- **Qué es:** `190.104.34.3:27022`, en el mismo nodo de MVZG que flow pero con otra cuenta SFTP (`SERVER3_*` en el `.env`, puerto 2022). Sumado por Kyan el 2026-11-02. El SFTP funciona con OpenSSH; `curl` (libssh2) no logra negociar el cifrado. No hay clave de panel.
-- **Estado, revisado solo por lectura el 2026-11-02:** es una copia de flow. `csstv_reporter.smx` y `csstv_reporter.cfg` son idénticos a los de flow: mismo build licenciado, mismo token, `csstv_server_tag "flow"` y `csstv_send "1"`. Lo demás revisado de `server.cfg` coincide con la regla de configuración.
-- **Numeración, cambiada el 2026-11-02 por decisión de Kyan:** este servidor es `#1` y `aurav34` es `#3`. Se cambió `tv_title` y `csstv_calladmin_server` en los dos, `csstv_calladmin_address` en este y `hostname` en `aurav34` (`Retake CMLeague #3 By ExtremeHost`). Respaldos en `*.bak_nombre`. Toma efecto en el próximo cambio de mapa; `csstv_calladmin` puede necesitar que recargue su cfg.
-- **Identidad, 2026-11-02:** ya tiene token y tag propios (`MVZG`) y su build licenciado del reporter 2.7.2 (UUID `96bb5060-a639-483a-94ef-f15135c57b1b`), compilado desde `6898c05`, la misma versión que flow. Respaldo del build anterior en `addons/sourcemod/csstv_reporter.smx.bak_flow`. Entra en el próximo cambio de mapa; falta confirmar con `sm_csstv_status`.
-- **Qué falta:**
-  1. Crearlo en Administración › Servidores, para tener token, tag, licencia, `csstv_hud_port` y `csstv_hud_key` propios.
-  2. Subir su build (decidir si es el genérico, por ser ahora el nuestro, o uno licenciado) y corregir el cfg del reporter.
-  3. Comparar con `aurav34` o con flow usando `comparar.py`, porque `aurav34` es solo de retake.
-- **Flow pasó a `#2`** el 2026-11-02, por decisión de Kyan: `tv_title` y `csstv_calladmin_server`, con respaldos en `*.bak_nombre`. Su `hostname` sigue siendo `ETHEREAL TEAM`. Las bitácoras anteriores lo siguen llamando `#3`.
-
-### 1.22 Servidor de flow (CMLeague #3): pasarle el paquete
+### 1.22 Servidor de flow (CMLeague #3, hoy #2): pasarle el paquete
 
 - **Armado el 2026-10-27** en `flow/` (raíz del repo, fuera de git): SourceMod 1.10, Metamod, Stripper, los plugins del #1 más los que solo tiene RBK, los cfgs de partida, `LEEME.txt` y el reporter 2.5.0 **licenciado** (UUID `7b01c85b-bc3e-4aa3-9ab5-3c2044157034`, md5 `0697263ae530ab2cf4ae2a3e7ce92281`). Sin Accelerator, sin los plugins de Extreme Host y sin mapas.
 - **Instalado por flow** (verificado por SFTP el 2026-10-28: `csstv_reporter.smx` de 116417 bytes, el licenciado). Falta verificar que `game_servers.last_seen_at` de flow se actualice.
@@ -654,14 +594,14 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Reprocesar antes de la web nueva:** desde el SQL Editor, con las consultas de la guía. La web vieja no lo tiene.
 - **Bitácora:** [`2026-10-28-clips-vip-y-reprocesar`](bitacora/2026-10-28-clips-vip-y-reprocesar/)
 
-### 1.25 Demos de RBK a R2: verificar con el primer mix de RBK
+### 1.25 Demos de RBK a R2: cancelado (RBK dado de baja el 2026-10-29)
 
 - **Desplegado el 2026-10-26:**
   - Worker `v34frag-demos` versión `1475d128`, con el secreto `PTERO_KEY_edbee7d6` (la key del panel de RBK, `SERVER1_PANEL_API_KEY` en el `.env`).
   - En producción, `game_servers.panel_server_id = 'edbee7d6'` para RBK.
   - En RBK (`SERVER1_*`), `csstv_demo "1"`, con la copia `csstv_reporter.cfg.bak_20261026`. Se aplica en el próximo cambio de mapa.
 - RBK ya tenía `+tv_enable 1 +tv_port 27063` en el arranque del panel. Nuestro servidor no cambia.
-- **Falta**, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
+- **Cancelado el 2026-10-29** (RBK dejó de usarse). **Limpiado el 2026-11-03:** se borró el secreto `PTERO_KEY_edbee7d6` del Worker, su key de `cloudflare/demo-worker/scripts/dev-vars.py` y las variables `SERVER1_*` del `.env`. Lo que faltaba era, con el primer mix de RBK: ver `Grabando demo` en su log, `demo_status = 'uploaded'` y la descarga desde la partida. Con el siguiente del real, que su demo suba como siempre. Publicar `bitacora/2026-10-26-demos-rbk/CHANGELOG_DISCORD.txt`.
 - **Si algo falla:** `csstv_demo "0"` en RBK. Pasos completos en la [guía](bitacora/2026-10-26-demos-rbk/GUIA_IMPLEMENTACION.md).
 
 ### 1.26 Equipo y Torneos en la API (replanteo `33`): falta el frontend
@@ -725,7 +665,67 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. **Reporter 2.6.1** (pico y copia a disco de los intentos): desplegado el 2026-10-29. La migración `20261029200000_ips_intentos_hora.sql` está en producción y en staging, y el plugin en **el real, RBK y flow**. Falta verificar en cada uno, después de su cambio de mapa, que el log diga 2.6.1 y que no aparezca `IPs: no se pudieron registrar`.
 - **Bitácora:** [`2026-10-29-ips-jugadores`](bitacora/2026-10-29-ips-jugadores/)
 
-### 1.31 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
+### 1.31 Datos para las medallas (reporter 2.7.0): desplegado, falta verificar
+
+- **Qué es:** el reporter cuenta kills y HS por arma, clutchs (1v1 a 1v5 e intentos), rondas sobrevividas, ganadas de CT y de T, pistolas, ecos, bombas explotadas y el equipamiento de cada ronda. La base de producción lo guarda en `match_round_log` y `match_player_extra` para que la web nueva tenga datos desde antes del corte. La web vieja no cambia.
+- **Hecho el 2026-10-29:** migración `supabase/migrations/20261029210000_medallas_datos.sql`, **aplicada en producción, staging y local** (17 pruebas en las tres). Reporter 2.7.0 probado con bots en el servidor local.
+- **Desplegado el 2026-10-29** en **el real y flow** (genérico md5 `1f74ced7`, flow licenciado `f02def68`; la 2.6.1 en `plugins/disabled/`). RBK no, porque dejó de usarse. Se carga en el próximo cambio de mapa.
+- **Falta:**
+  1. Verificar el primer mix de cada servidor (consulta en la guía) y publicar el changelog.
+  2. Lo que sigue de las medallas está en `INVESTIGACION.md`: el motor que las otorga, el modelo (clave y nivel) y las preguntas abiertas (MVP, clutch desde 1v1, umbrales de eco, cuándo se calculan).
+- **Bitácora:** [`2026-10-29-medallas-datos`](bitacora/2026-10-29-medallas-datos/)
+
+### 1.32 Clips con la cámara en otro jugador y el menú al final: falta el portátil y el reproceso
+
+- **Qué pasaba:** los dos 3k de "New™ always" en de_cbble (mix de flow del 2026-10-29) salieron desde los ojos de Vodka, y el de la última ronda terminaba con el menú del juego.
+- **Hecho el 2026-10-29 (sin commit):** `render/leer_demo.py` (el largo de `svc_UpdateStringTable` es de 16 bits: con 20 no veía a los que se reconectan), `render/render_clip.py` y `render/procesar.py` (los tramos no pasan del final de la demo). Probado con la demo; sin probar en el juego.
+- **Falta:**
+  1. Llevar `render/` al portátil (con la tarea desactivada).
+  2. Después, y no antes, reprocesar los dos clips con `bitacora/2026-10-29-clips-pov-y-final-demo/pruebas/reprocesar_cbble.sql`, revisarlos en Drive y aprobarlos.
+     - El primer reproceso (2026-10-30) dejó bien la cámara, pero el 3k de la ronda 29 no mostraba la última kill.
+     - Con el render que llega al último tick y congela el cuadro: aprobar el de la ronda 18 y reprocesar otra vez el de la 29 (final del mismo `.sql`).
+  3. ~~Plugin: que la demo siga grabando después del final~~: hecho en la 2.7.0 (punto 1.33). Los dos clips se aprobaron así: el de la ronda 29 queda sin la última kill.
+- **Bitácora:** [`2026-10-29-clips-pov-y-final-demo`](bitacora/2026-10-29-clips-pov-y-final-demo/)
+
+### 1.33 La demo sigue grabando 5 s después del final del mix (reporter 2.7.1): desplegado, falta verificar
+
+- **Qué es:** `FinishMatch` corta la demo 5 s después (`Demo_StopLater`), para que la última kill del mix se vea en los clips.
+- **Desplegado el 2026-10-30 como 2.7.1** en **el real y flow** (genérico md5 `9418edaa`, flow licenciado `087ffe0b`; la 2.7.0 en `plugins/disabled/`). La 2.7.0 se había desplegado con builds anteriores a este cambio: Daniel lo notó en su clutch de la última ronda del mix de tuscan en flow (2026-10-30). Se carga en el próximo cambio de mapa.
+- **Falta:**
+  1. Verificar el primer mix de cada servidor: el log dice 2.7.1 y la demo llega unos 5 s después del final.
+  2. Publicar el changelog.
+  3. El clip de ese mix (`569f24cc`, daniloev, ronda 29) necesita el render nuevo del punto 1.32 y un reproceso: su demo ya quedó cortada.
+- **Bitácora:** [`2026-10-29-demo-segundos-finales`](bitacora/2026-10-29-demo-segundos-finales/)
+
+### 1.34 Clips de nuke que fallaron por una kill justo después del salto: falta el portátil y el reproceso
+
+- **Qué pasaba:** los 6 clips de nuke_old_blue_ep (`flow-20261029T210433-5ce4`, 2026-10-30) quedaron `failed` con "la demo pasó de largo el tick 70272 (3 veces)". El control miraba la primera kill de cualquiera después del salto, y había una 1,5 s después.
+- **Hecho el 2026-10-30 (sin commit):** `render/render_clip.py` mira la primera kill desde 2,5 s después del salto (`SEEK_SLACK_SECONDS`). Probado con la demo; sin probar en el juego.
+- **Falta:**
+  1. Llevar `render/` al portátil.
+  2. Con la confirmación de Daniel, devolver los clips a la cola con `bitacora/2026-10-30-render-kill-cerca-del-salto/pruebas/reprocesar_nuke.sql` y revisar que queden `done`.
+- **Bitácora:** [`2026-10-30-render-kill-cerca-del-salto`](bitacora/2026-10-30-render-kill-cerca-del-salto/)
+
+### 1.35 Clips de dust2 que fallaron por una línea de consola larga: falta el portátil y el reproceso
+
+- **Qué pasaba:** los 5 clips del mix de dust2_ob de GO TO KNOW contra New™ (`flow-20261029T234042-496d`) fallaron dos veces con "no apareció 'CML_PASO_14'": la consola corta la línea en unos 255 caracteres y ese paso medía 259 (la cámara llega a «New™ CH1LI» desde un jugador de nombre largo).
+- **Hecho el 2026-10-30 (sin commit):** `render/render_clip.py` parte en varias líneas los pasos de más de 250 caracteres (`console_lines`). Probado con la demo; sin probar en el juego.
+- **Falta:**
+  1. Llevar `render/` al portátil.
+  2. Con la confirmación de Daniel, devolver los clips a la cola con `bitacora/2026-10-30-render-linea-consola-larga/pruebas/reprocesar_dust2.sql` y revisar que queden `done`.
+- **Bitácora:** [`2026-10-30-render-linea-consola-larga`](bitacora/2026-10-30-render-linea-consola-larga/)
+
+### 1.36 Colores del chat: reporte de daño y plata del equipo (reporter 2.7.2): desplegado, falta verificar
+
+- **Qué es:** la paleta del artifact "Colores del chat de CMLeague" (aprobada por Daniel el 2026-10-30). El reporte de daño sale en español, una línea por jugador con dado, recibido y vivo o muerto. La plata del equipo sale sin total, una línea por compañero, con el color según lo que le alcanza. Etiqueta nueva `{#gris}`.
+- **Hecho el 2026-10-30 (sin commit):** `qol.inc`, `stats.inc` y la versión 2.7.2. Compila sin avisos; `plugins/csstv_reporter.smx` ya es la 2.7.2.
+- **Falta:**
+  1. ~~Probar con bots~~: **hecho el 2026-10-30** (el texto sale bien; ver la guía).
+  2. ~~Desplegar~~: **hecho el 2026-10-30** en **el real** (`.smx` genérico, md5 `5d2136e7`) y **flow** (build licenciado, md5 `ba676761`). La 2.7.1 quedó en `plugins/disabled/` de los dos. Falta ver en el primer mix de cada uno que el log diga 2.7.2 y que los colores se vean bien, con ClientMod y sin él, y publicar el `CHANGELOG_DISCORD.txt`.
+  3. Pasarle el artifact a kyan para que ajuste los colores del retake.
+- **Bitácora:** [`2026-10-30-colores-chat`](bitacora/2026-10-30-colores-chat/)
+
+### 1.37 Pendientes de la API para el frontend (replanteo `39`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** lo que pidió el frontend en `pendientes-backend-cmleague.md` (E9 a E18 y E20): filtros, contadores y MVP en `GET /matches`, cancelar la solicitud de equipo con su fecha y el motivo del rechazo, disolver un equipo, nombre y sigla editables por el capitán, biografía del jugador, logos en el historial y los títulos, y cierre y total de jugadores en las temporadas.
 - **Hecho el 2026-10-30 en local y commiteado el 2026-11-01** (en `feat/backend-api-fase-1`): replanteo `39` con su inversa y sus pruebas SQL, API, tipos, pruebas unitarias y de integración, y el contrato del frontend.
@@ -738,14 +738,14 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real ni a flow.
 - **Bitácora:** [`2026-10-30-api-pendientes-frontend`](bitacora/2026-10-30-api-pendientes-frontend/)
 
-### 1.32 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
+### 1.38 Rating de la serie y enlaces de la llave (E21 y E22): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** lo que pidió la Llave por formato del frontend: `next_win`, `next_win_slot`, `next_lose` y `next_lose_slot` en `GET /events/{id}/matches`, y `series_players` (stats de la serie con el rating ponderado por rondas) en `GET /matches/{id}` de torneo y PCW.
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` (sin migración) y llevado a `feat/frontend-fase-1` con merge. El frontend ya los usa: rating de la serie en el detalle resumido, y origen y destino de cada lado en la Llave.
-- **Falta:** redesplegar la API del VPS junto con lo del punto 1.31. No toca la base ni el plugin.
+- **Falta:** redesplegar la API del VPS junto con lo del punto 1.37. No toca la base ni el plugin.
 - **Bitácora:** [`2026-11-01-api-llave-serie`](bitacora/2026-11-01-api-llave-serie/)
 
-### 1.33 Crear un equipo al instante (replanteo `40`): commit del 2026-11-01, sin desplegar
+### 1.39 Crear un equipo al instante (replanteo `40`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** cualquier usuario con SteamID crea su equipo sin aprobación (`POST /api/v1/teams`). Tope de equipos por capitán configurable (`max_led`, 1 por defecto), aptitud por modo en la ficha (`eligible_modes`) y el ranking de equipos solo con los que tienen 5 jugadores o suplentes. Se borran la aprobación, el rechazo y la cancelación de solicitudes.
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
@@ -755,7 +755,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin: nada que subir al servidor real ni a flow.
 - **Bitácora:** [`2026-11-01-equipo-al-instante`](bitacora/2026-11-01-equipo-al-instante/)
 
-### 1.34 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
+### 1.40 Gestión de torneos (replanteo `41`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** Administración › Torneos. Moderadores que operan todos los torneos (sin cancelar ni borrar), siembra por ranking (torneos y PCW) con la etapa de entrada del suizo según la siembra, y cada mapa de una serie con un mix vinculado a mano o el resultado a mano ("Sin detalle de la partida").
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
@@ -765,7 +765,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-admin-torneos`](bitacora/2026-11-01-admin-torneos/)
 
-### 1.35 Moderar equipos (replanteo `43`): commit del 2026-11-01, sin desplegar
+### 1.41 Moderar equipos (replanteo `43`): commit del 2026-11-01, sin desplegar
 
 - **Qué es:** Administración › Equipos con "Moderar equipos" (moderadores y admins: lista, historial, renombrar, quitar logo y miembros; admin además líder, sumar, rol, disolver) y "Configuración equipo" (admin). Motivo opcional y aviso obligatorio al líder (`team_staff_action`).
 - **Hecho el 2026-11-01** en `feat/backend-api-fase-1` y llevado a `feat/frontend-fase-1` con merge.
@@ -775,18 +775,383 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin.
 - **Bitácora:** [`2026-11-01-moderar-equipos`](bitacora/2026-11-01-moderar-equipos/)
 
-### 1.37 Medallas automáticas (replanteo `72`): hecho en local, sin desplegar
+### 1.42 Retraso del HUD por streamer y por servidor (relay 2.3.0): desplegado, falta verlo con flow
 
-- **Qué es:** las medallas de las stats se dan solas al terminar cada mix y las de temporada al cerrarla; Administración › Medallas para dar las manuales (con temporada y a varios jugadores), corregir y ajustar las reglas; el perfil muestra el dibujo de cada medalla.
-- **Hecho el 2026-11-04** en `kyan/pruebas` (commit `b9df74d`, sin push), probado en la base local.
+- **Qué es:** en `/control`, cada streamer elige para cada servidor SourceTV (`tv_delay`), en vivo o un retraso fijo de 1 a 300 s. El relay arma una vía por retraso; el servidor de CS manda lo mismo de siempre.
+- **Solución urgente del 2026-11-01, sacada el 2026-11-02:** `"delay"` volvió a `null` en `/etc/cmleague/hud.json` (respaldos `hud.json.bak_20261101` y `hud.json.bak_20261101_delay0`).
+- **Hecho el 2026-11-01:** relay 2.3.0, 47 pruebas en verde, prueba de humo con `pnpm simular` y desplegado en el VPS (`e0aa0ccc791d`).
 - **Falta:**
-  1. Staging: `20261029210000_medallas_datos.sql` si falta, la `72` y `select medals_award_all();`.
-  2. Redesplegar la API y la web.
-  3. Producción en el mismo orden, con respaldo de `player_medals`.
-  4. Avisarle a Daniel (base y API) y a Esteban (perfil y admin).
-- **Bitácora:** [`2026-11-04-medallas-automaticas`](bitacora/2026-11-04-medallas-automaticas/)
+  1. Verlo en `/control` con flow.
+- No toca el plugin ni los servidores de juego.
+- **Bitácora:** [`2026-11-01-hud-retraso-por-servidor`](bitacora/2026-11-01-hud-retraso-por-servidor/)
 
-### 1.38 Widget para streamers con stats y personalizable (prototipo)
+### 1.43 Frontend del matchmaking (`/play`): web desplegada en staging, con commit
+
+- **Qué es:** `/play`, `/admin/matchmaking` y el aviso de reconexión, traídos de `kyan/pruebas` con el diseño de la web y sin los cosméticos de la tienda.
+- **Hecho el 2026-11-01:** web `e0aa0ccc791d-local11020314` en el VPS (`cmleague.lat`), desde `feat/frontend-fase-1` con los cambios sin commit. La API de staging (`4079c8a22757`) ya tenía las rutas `/mm`, el WebSocket y el worker `cmleague-mm`.
+- **Falta:**
+  1. ~~Commit del frontend~~: **hecho el 2026-11-02** en `feat/frontend-fase-1`, con push (pedido por Daniel).
+  2. Abrir la cola en Administración › Matchmaking (`mm_config.open` está en `false`) y decidir si se apaga `require_anticheat`.
+  3. Un servidor que tome las salas. **Decidido por Daniel el 2026-11-01: por ahora no se toca el plugin de ningún servidor.** El plugin consulta la base de su `csstv_api_url`, y nuestro servidor real apunta a producción, que no tiene el matchmaking.
+  4. ~~Redesplegar la API de staging con `6c56bd84`~~: **hecho el 2026-11-02**. API `c7a329085628`: `kyan/pruebas` más `feat/backend-api-fase-1`, armada en una rama temporal local para no sacar el matchmaking. Web `6d228f93b4dc-local11020706` desde la carpeta de siempre (con `/play`). Ver la guía de [`2026-11-01-pagina-serie`](bitacora/2026-11-01-pagina-serie/GUIA_IMPLEMENTACION.md).
+- **Incidente del 2026-11-01:** el panel de Administración › Matchmaking daba 500 por tres errores de la `48`. Corregidos en staging y en `kyan/pruebas` (`a6ca687c`). Ver la guía de la bitácora.
+- **Bitácora:** [`2026-11-01-frontend-matchmaking`](bitacora/2026-11-01-frontend-matchmaking/)
+
+### 1.44 Servidor #1 nuevo (`SFTP_CSS_*_MVZG`): dejarlo igual al #3
+
+- **Qué es:** el servidor "MVZG", nuestro, que Daniel sumó a la documentación el 2026-11-02. Pasa a ser el **#1**; flow es el **#2** y el servidor real de ExtremeHost ("aurav34"), el **#3**. Su acceso SFTP está en el `.env` como `SFTP_CSS_SERVER_MVZG`, `SFTP_CSS_SERVER_PORT_MVZG`, `SFTP_CSS_USER_MVZG` y `SFTP_CSS_PASSWORD_MVZG`. Desde el 2026-11-03 tiene API key del panel: `SFTP_CSS_API_KEY` (servidor `157703b5`). Está en **el mismo panel y la misma máquina que flow** (`190.104.34.3`), como otro servidor. Lo armó kyan el 2026-10-27 copiando el de flow: hasta el 2026-11-02 tenía el token y el tag de flow (`csstv_reporter.cfg.bak`) y sus dos demos se llaman `flow-…`.
+- **Revisado por SFTP el 2026-11-02** (solo lectura), comparado contra el #3:
+  - **Ya está bien:** `hostname "CMLeague #1"`, `tv_title`, `csstv_server_tag "MVZG"` con token propio, `csstv_calladmin_server "CMLeague #1"` y `_address "190.104.34.3:27022"`, HUD prendido contra `hud.cmleague.lat:27501` con clave, FastDL propio, `csstv_demo "1"`, Stripper igual (con `global_filters.cfg` y `maps/`), `mapcycle.txt` igual, `warmup.cfg` y `end.cfg` iguales, el resto de `server.cfg` y de `csstv_reporter.cfg` igual (MR3 12000, medio tiempo 3 s, `sv_pure`, `phys_timescale`, humo, tasas), `kacr_eyes_antiwall "0"`, `csstv_perf` y los mismos admins.
+  - **Reporter:** la **2.7.3 licenciada** (`96bb5060-…`, 126814 bytes) que subió kyan el 2026-11-02 (bitácora `2026-11-02-aviso-y-pausa-automatica` en `kyan/pruebas`). Daniel dice que puede llevar el genérico; no hace falta cambiarlo mientras el licenciado funcione con su token.
+- **Decisiones de Daniel (2026-11-02) sobre las diferencias:**
+  1. **El #1 es para probar el matchmaking:** por eso manda a staging (`csstv_api_url` = `STAGING_SUPABASE_URL`, `edaljnirzvisiaathitt`). El #3 apunta a producción (`wmzfwsizashpszxlvpeb`). Queda así.
+  2. **`live.cfg` del #1 con `mp_friendlyfire 0` y `mp_flashlight 0`** (el #3 y el repo tienen `1`): queda así por ahora.
+  3. **`Anti_Wallhack_Lite` en `disabled/` en el #1:** se sacó para ver si arreglaba el error del sonido. Todavía no se sabe si lo arregló. Excepción temporal a `CLAUDE.md`.
+  4. **El #3 es el servidor de retake y 2vs2** (`v34_retake`, `v34_wingman`); por eso no tiene los mismos plugins que el #1. **Falta versionar esos plugins en esta rama:** los fuentes (`v34_retake.sp`, `v34_wingman.sp`, `v34_dm.sp`, sus `.inc`, `configs/retake/`) y la bitácora `2026-10-30-plugin-retake` están en `origin/kyan/pruebas`; hay que traerlos.
+  5. `sv_allowupload 0` en el #1 y `1` en el #3: está bien.
+  6. **Demos del #1:** seguramente no tiene cargados los datos de SFTP en Administración, porque es para el matchmaking. Sin cambios.
+- **Hecho el 2026-11-02:** `csstv_server_tag "MVZG"` → `"srv1"` en el `csstv_reporter.cfg` del #1, para que las partidas y las demos nuevas se llamen `srv1-…` (las dos `flow-…` que hay son de antes). Respaldo `csstv_reporter.cfg.bak_tag`, verificado bajándolo de nuevo. Se aplica en el próximo cambio de mapa; no se recargó nada. El tag solo da el prefijo del `match_uid` (el servidor se identifica por el token).
+- **Hecho el 2026-11-02:** en el #3, `csstv_server_tag "srv1"` → `"srv3"` (pedido por Daniel), con el respaldo `csstv_reporter.cfg.bak_tag` y verificado bajándolo de nuevo. El reporter del #3 está en `disabled/`, así que se usa recién cuando se vuelva a activar. Las partidas y demos viejas del #3 siguen como `srv1-…`.
+- **Demos del #1 (2026-11-03, Daniel): hecho, falta verlo con una partida.**
+  - **Problema:** las partidas del #1 en producción quedaban con `demo_status = none`. El log decía `Demo no grabado: tv_enable está en 0`: el `server.cfg` tenía los demás `tv_*` pero no `tv_enable`, y la línea de arranque tampoco (venía de la copia de flow).
+  - **`server.cfg` del #1, subido por SFTP y verificado bajándolo de nuevo:** `tv_enable 1` agregado, y `tv_port 27064` → `27065`. El arranque del panel y `game_servers.tv_port` usan 27065, y el `server.cfg` (que corre después) lo pisaba. Respaldo: `cstrike/cfg/server.cfg.bak_20261103`. No se reinició ni se recargó nada: se toma en el próximo cambio de mapa. El arranque hace `+exec server.cfg` antes de `+map`, así que también vale tras un reinicio.
+  - **La línea de arranque no se toca:** la API del cliente solo deja editar variables, y la única libre (`Boot_Custom_Command`, máximo 20 caracteres) ya la usa `tv_password`.
+  - **API key del panel del #1:** Daniel la creó el 2026-11-03 y está en el `.env` como `SFTP_CSS_API_KEY`. Probada: entra a `https://panel-mvzg.com`, ve el #1 (`157703b5`) y también flow (`f337a7d9`), y `files/list` de `/cstrike/csstv_demos` da 200.
+  - **Producción:** `game_servers.panel_url = 'https://panel-mvzg.com'` para `96bb5060` (ya tenía `panel_server_id = '157703b5'`). Secreto `PTERO_KEY_157703b5` cargado en el Worker `v34frag-demos` (`wrangler secret put`, por stdin). Con eso, las demos del #1 bajan por la API del panel: no hace falta sumarlo a `demos-sftp.json` del VPS.
+  - **Falta:**
+    1. En la próxima partida del #1, ver `Grabando demo` en su log y la partida con `demo_status = uploaded`.
+    2. ~~Sumar `PTERO_KEY_157703b5` a `cloudflare/demo-worker/scripts/dev-vars.py` (con `SFTP_CSS_API_KEY`) para `wrangler dev`.~~ Hecho el 2026-11-03.
+  - **Limpieza del `.env` (2026-11-03, Daniel):** se borraron `SERVER1_*` (RBK), `ENSAYO_*` (ensayo del corte) y `FLOW_CSSTV_SERVER_TOKEN` (token de la fila histórica `7b01c85b`). Staging (`STAGING_*`) se deja porque se sigue usando. Las `NUBE_*` y `SUPABASE_ACCESS_TOKEN_PROD` se pueden borrar después del 2026-12-03, cuando venza la vuelta atrás a la nube.
+  - **Visto de paso en los logs del #1 (sin tocar):** `addons/sourcemod/configs/adminmenu_cfgs.txt` tiene un error de sintaxis en la línea 33, y `CM_PickupWeapon` no puede escribir su cfg (permisos).
+
+### 1.45 API key del panel de flow en el Worker de demos: cargada, falta ver la primera demo (y pronto la del #1)
+
+- **Qué es:** desde el 2026-11-02 tenemos la API key del panel de flow (`SERVER2_PANEL_API_KEY` en el `.env`). Con ella, el Worker baja las demos de flow por la API del panel en vez de por SFTP desde el VPS, que va a 52-60 KB/s (punto 1.27).
+- **Probada el 2026-11-02, solo lectura:** `GET https://panel-mvzg.com/api/client` da HTTP 200 y ve **solo** el servidor `f337a7d9` (flow, propietario), no el #1. `files/list` de `/cstrike/csstv_demos` también da 200: lista `flow-20261028T222354-0bbb.dem`, que ya está en R2 desde el 2026-10-29 y no se borró a mano.
+- **No hace falta código ni migración:** el Worker ya usa `PTERO_KEY_<panel_server_id>` (`cloudflare/demo-worker/src/index.js`, `panelFor`), y flow ya tiene `panel_server_id = 'f337a7d9'` y `panel_url` en `game_servers` (punto 1.27). Si la API falla, la demo sigue yendo por SFTP.
+- **Hecho:** `cloudflare/demo-worker/scripts/dev-vars.py` arma `PTERO_KEY_f337a7d9` con `SERVER2_PANEL_API_KEY` para `wrangler dev`.
+- **Criterio (Daniel, 2026-11-02):** el estándar es trabajar siempre con la API key del panel; el SFTP queda solo para cuando no se pueda por API.
+- **Hecho el 2026-11-02:** secreto `PTERO_KEY_f337a7d9` cargado en el Worker `v34frag-demos` de producción (`wrangler secret put`, por stdin). `wrangler secret list` lo muestra junto a `ADMIN_KEY`, `CRASH_KEY`, `DEMO_WORKER_TOKEN`, `PTERO_KEY_edbee7d6` y `PTERO_PANEL_API_KEY`. No se corrió `/run` a mano: lo toma el próximo cron.
+- **Falta:**
+  1. Ver que la próxima demo de flow llegue a R2 por la API, sin `demo_via = sftp`.
+  2. ~~**Cuando llegue la key del #1**~~ (hecho el 2026-11-03: ver "Demos del #1" en el punto 1.44) (en el mismo panel, `panel-mvzg.com`; su `panel_server_id` es `157703b5`, el sufijo del usuario de SFTP): guardarla en el `.env` (por ejemplo, `SFTP_CSS_PANEL_API_KEY_MVZG`), probarla igual y sumarla a `dev-vars.py` como `PTERO_KEY_157703b5`. Ojo: el #1 manda a la Supabase de **staging** (punto 1.44) y el Worker de producción no ve sus partidas. Para tener sus demos haría falta un Worker apuntando a staging, o esperar a que el #1 pase a producción.
+
+### 1.46 Matchmaking sin SteamID vinculado (replanteos `49` a `52`, plugin 2.8.2): en staging y en el #1
+
+- **Qué es:** se puede entrar a la cola sin SteamID y se vincula con `!claim` en el servidor de la primera sala. Mientras tanto queda de espectador. Decidido por Daniel el 2026-11-02 (opción A), en lugar de esperar 5 partidas sin vincular.
+- **Dónde:** base y plugin en la rama nueva `feat/mm-claim-en-sala` (worktree `E:\Css V34 Web\v34frag-mmclaim`, sale de `origin/kyan/pruebas`). Web en `feat/frontend-fase-1`.
+- **Falta:**
+  1. Probar el plugin con un servidor y dos clientes, uno sin vincular.
+  2. ~~Commit de las dos ramas~~: hecho el 2026-11-02.
+  3. ~~Aplicar la `49` en staging (`edaljnirzvisiaathitt`) y desplegar la web de staging~~: hecho el 2026-11-02 (web `b7a10ff39137`).
+  4. **#1: subido el 2026-11-02** (pedido por Daniel, solo ahí): 2.8.2 licenciada `96bb5060-…`, `csstv_password` de la línea del matchmaking y en el cfg `csstv_claim "1"` y `csstv_mm "1"`. Respaldos `.bak_2.7.3`, `.bak_pre_mm` y `.bak_mm`. Entra en el próximo cambio de mapa: **confirmar que `mm_server_state` muestre `plugin_version = 2.8.2`**. Desde entonces la contraseña del #1 la maneja la web. #2 (flow, licenciado `7b01c85b-…`) y #3 (`aurav34`, genérico) reciben la 2.8.2 cuando se abra el matchmaking, en la misma tanda.
+  5. ~~Decidir `min_mixes`~~: en 0 (Daniel, 2026-11-02), replanteo `50`, aplicado en staging.
+  6. ~~Decidir `min_account_days`~~: en 0 (Daniel, 2026-11-02), replanteo `51`, aplicado en staging.
+  7. **Replanteo `52` (2026-11-02, aplicado en staging):** las cuentas nuevas no tienen ficha y la `49` sola no las dejaba entrar a la cola. Ahora `mm_join` les crea una, y el `!claim` la une con la ficha vieja del jugador si la tiene, con su historial y su ELO. **Va en el corte junto con la `48`**, porque producción tiene miles de fichas viejas sin cuenta.
+- **Bitácora:** [`2026-11-02-mm-claim-en-sala`](bitacora/2026-11-02-mm-claim-en-sala/)
+
+### 1.47 Ajustes después del primer matchmaking (replanteos `53` a `55`): en staging, con commit
+
+- **Qué es:** la serie del matchmaking fuera de Partidas, la flecha de volver, el detalle del mix con el MVP y los clips, la imagen fija del MVP (Administración › Matchmaking › General) la respuesta inmediata en Aceptar y en el veto, y la foto de cada jugador en Jugar (`55`).
+- **Dónde:** base y API en `feat/mm-claim-en-sala`; web en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-02:** `53` a `55` en staging, API `8e78f7650291-local11021850` (rama temporal: `feat/mm-claim-en-sala` más `feat/backend-api-fase-1`, ya borrada) y web `7f7ca3e0f8f4-local11021851`, que también lleva lo de Palmarés y PCW.
+- **Falta:** subir la imagen del MVP y mirarlo en el navegador. ~~El commit~~: hecho el 2026-11-02 (`67bc65bb` en `feat/mm-claim-en-sala` y `26fa9a71` en `feat/frontend-fase-1`, junto con Palmarés). Con el corte, junto con la `48`.
+- **Segunda etapa del rendimiento (pendiente):** que el aviso del socket traiga el cambio en sí (quién aceptó, qué mapa), para no pedir el estado completo.
+- **Bitácora:** [`2026-11-02-ajustes-primer-mm`](bitacora/2026-11-02-ajustes-primer-mm/)
+
+## 2. Investigaciones abiertas
+
+
+### 1.48 Iniciar partidas de torneo y PCW (replanteo `56`, plugin 2.9.0): con commit y en staging, sin plugin en ningún servidor
+
+- **Qué es:** el organizador inicia una partida de torneo en un servidor libre y apto (Administración › Servidores › Usos del servidor); en una PCW, los dos equipos se marcan listos y entran a la fila. La reserva dura toda la serie, el veto tiene reloj (30 s, al azar si vence), la espera es la del organizador (máximo 20 min) o 15 y 5 min en PCW, y una PCW abandonada sanciona 3 o 7 días. El servidor queda ocupado en el acto, también para el matchmaking.
+- **Dónde:** base, plugin y API en `feat/mm-claim-en-sala` (worktree `E:\Css V34 Web\v34frag-mmclaim`); web en `feat/frontend-fase-1`.
+- **Falta:**
+  1. ~~Commit de las dos ramas~~: **hecho el 2026-11-02** (`d4c407b2`, `6f22bf43` y `421cc8a3` en `feat/mm-claim-en-sala`; `60b16f3d` en `feat/frontend-fase-1`). Sin push.
+  2. ~~Staging~~: **hecho el 2026-11-02**: `56` aplicada, API `3c6a8b357cd1` y web `60b16f3db869`.
+  3. Elegir con Kyan el servidor de prueba (el matchmaking está apagado en todos), prender ahí Torneos y PCW y subirle el reporter 2.9.0, `csstv_mm "1"` y las cfg `live_*.cfg`.
+  4. Probar con clientes en el #1: una BO3 de torneo y una PCW con abandono.
+  5. La lista de partidas listas para iniciar y en curso en Administración › Torneos (no se hizo).
+  6. Que la página de la serie escuche `booking.update` por el socket (hoy se refresca cada 5 s).
+  7. Producción con el corte, junto con la `48`; el plugin a los tres servidores en la misma tanda (#1, flow licenciado `7b01c85b-…` y #3).
+  8. El manual de usuario por rol: en curso, ver 1.49 (sus páginas de capitán y organizador cubren lo de este punto).
+- **Bitácora:** [`2026-11-02-iniciar-torneo-pcw`](bitacora/2026-11-02-iniciar-torneo-pcw/)
+
+### 1.50 Aviso de la cola en Discord (replanteo `57`): en staging y probado en #avisos
+
+- **Qué es:** "Avisar en Discord" en la barra de "Buscando": publica en #avisos "@player Hay gente en la queue, ¡mándate!". Uno cada 15 min para todos; moderadores y admins, siempre.
+- **Hecho el 2026-11-02:** commit, `57` en staging, el webhook y el rol en `/etc/cmleague/api.env` (respaldo `.bak_antes_discord`), API `51b2127f7777` y web `21dc2fb36f7e`.
+- **Probado en #avisos el 2026-11-02** (con el visto bueno de Daniel).
+- ~~**Falta:** regenerar el webhook~~: regenerado en Discord ("Avisos") y cargado el 2026-11-03 en el `.env` y en `/etc/cmleague/api.env` (respaldo `api.env.bak_antes_webhook_avisos_202611031915`), con `cmleague-api` reiniciada (`/api/health` bien, producción). El nuevo también se pegó en el chat. Producción ya tiene la `57` (corte).
+- **Bitácora:** [`2026-11-02-aviso-cola-discord`](bitacora/2026-11-02-aviso-cola-discord/)
+
+### 1.51 `!claim` en la primera partida y varios SteamID (replanteo `58`, reporter 2.9.1): en staging y el 2.9.1 en el #1
+
+- **Qué es:** un SteamID nuevo se suma al instante a la ficha con `!claim` (opción A de Daniel), con aviso a los admins; el plantel del matchmaking usa todos los SteamID; los textos ya no dicen "entra al servidor".
+- **Hecho el 2026-11-02:** commit, `58` en staging y la web `21dc2fb36f7e`.
+- **Hecho el 2026-11-02:** el 2.9.1 licenciado en el #1 (entra en el próximo cambio de mapa; el 2.9.0 en `disabled/`).
+- **Falta:** probarlo con alguien que entre desde otra PC. Producción con el corte, junto con la `48`.
+- **Bitácora:** [`2026-11-02-claim-varios-steamid`](bitacora/2026-11-02-claim-varios-steamid/)
+
+### 1.52 Matchmaking con avisos que traen el dato y estado liviano (replanteo `59`): con commit y en staging
+
+- **Qué es:** `queue.changed` actualiza el contador sin pedir nada, "Partida encontrada" se abre con el aviso, el estado se parte en liviano (`/mm/state/live`) y perfil (`/mm/profile`), y cada aviso pide solo lo suyo. Sin cambios en el plugin (nada que subir al #1, #2 ni #3).
+- **Hecho el 2026-11-02:** `59` con inversa y 11 pruebas SQL; API (440 pruebas) y web (524 pruebas).
+- **Hecho el 2026-11-02:** commit, `59` en staging, API `4225068507f9` y web `f11f1952fd60`.
+- **Falta:** medir con jugadores (logs de la API) y comparar con la tabla del plan. Producción con el corte.
+- **Bitácora:** [`2026-11-02-mm-avisos-livianos`](bitacora/2026-11-02-mm-avisos-livianos/)
+
+### 1.53 El flujo de la sala del matchmaking (replanteo `60`): con commit y en staging
+
+- **Qué es:** aceptar sin la carrera con el tick (sancionaba a quien aceptó en el último instante), 3 s de pausa antes de otra sala para quien vuelve a la cola, aviso de cancelación con el motivo, Jugar como principal con la pestaña "Tu última partida", y la pantalla al día cuando otro actúa durante una acción propia. Sin cambios en la API ni en el plugin.
+- **Hecho el 2026-11-02:** `60` con inversa y 17 pruebas SQL; web (530 pruebas).
+- **Hecho el 2026-11-02:** commit, `60` en staging y la web `8049dc993a51`.
+- **Falta:** probarlo con jugadores; actualizar `docs/manual/jugador/buscar-partida.md` cuando se suba el manual. Producción con el corte.
+- **Bitácora:** [`2026-11-02-mm-flujo-sala`](bitacora/2026-11-02-mm-flujo-sala/)
+
+### 1.54 El matchmaking de staging en la rama del frontend: con commit y push
+
+- **Qué es:** `feat/frontend-fase-1` ya tiene la base (replanteos `45` a `62`; los `45` a `47` del anticheat solo porque el `48` los exige), la API (`mm`, `bookings`, socket y worker), el VPS (`cmleague-mm`) y el reporter 2.9.1 de `feat/mm-claim-en-sala`, sin lo demás de kyan. Desde ahora, todo cambio del matchmaking fuera de la web se commitea en las dos ramas (regla en `CLAUDE.md`).
+- **Hecho el 2026-11-02:** commit `55ad155e` (rama `merge/mm-en-frontend`, worktree `v34frag-mmfront`) y fast-forward de `feat/frontend-fase-1`. API: typecheck, 437 pruebas y build bien. Reporter 2.9.1 y `csstv_password` 1.1.0 compilan sin avisos.
+- **Hecho el 2026-11-03:** push de `feat/frontend-fase-1` y de `feat/mm-claim-en-sala` (las dos al día con `origin`).
+- **Falta:** borrar el worktree `v34frag-mmfront` y la rama `merge/mm-en-frontend`. El `.smx` del repo en esta rama sigue siendo el 2.7.3.
+- **Bitácora:** [`2026-11-02-mm-en-rama-frontend`](bitacora/2026-11-02-mm-en-rama-frontend/)
+
+### 1.49 Manual de usuario por rol: con commit y en staging (2026-11-03); faltan las capturas
+
+- **Qué es:** la sección Ayuda (`/help`) con el manual (`docs/manual/`), solo con sesión y filtrado por rol en la API (`/api/v1/manual`). Desde ahora cada `DOCUMENTACION.md` lleva "Qué cambia para cada rol" y se actualiza la página del manual al terminar (`docs/bitacora/PLANTILLA.md`).
+- **Dónde:** manual, web y bitácora en `feat/frontend-fase-1`; API en `feat/mm-claim-en-sala` (worktree `E:\Css V34 Web\v34frag-mmclaim`).
+- **Hecho:** la regla, la API, la web y los textos de las 7 secciones (37 páginas, 3 ocultas por PCW; 2026-11-03), sin capturas. La API se probó en local contra staging con tokens reales.
+- **Falta:**
+  1. Que Daniel revise las páginas. Los tres puntos "Para revisar" de la guía (reportes solo para admin, "Reprocesar" y el nombre del equipo) los resolvió el punto 1.56.
+  2. Las capturas, desde staging (`daniloev`, `kyan` y `adminprueba`, credenciales `STAGING_TEST_*`).
+  3. Los links "¿Cómo funciona?" en Jugar, la página de una serie y Administración › Torneos.
+  4. ~~Commit y despliegue en staging~~: hecho el 2026-11-03 (`ebaecd9c`, `c4b004a4`, API `0d5732881cbe` y web `e53200f83840`).
+- **Valores reales (2026-11-03):** los números configurables del manual van con marcadores (`{{mm.aceptar}}`) que la API reemplaza con `manual_valores()`, replanteo `65`, **aplicado en staging**. Sale con la API del manual ([`2026-11-03-manual-valores-reales`](bitacora/2026-11-03-manual-valores-reales/)).
+- **Bitácora:** [`2026-11-02-manual-usuario`](bitacora/2026-11-02-manual-usuario/)
+
+### 1.55 Imagen del inicio de sesión configurable (replanteo `67`): con commit y en staging (2026-11-03)
+
+- **Qué es:** el panel derecho de Iniciar sesión, Registro y Bienvenida muestra la imagen que sube un admin en Administración › Usuarios › Inicio de sesión (4:5, 1600 × 2000, bucket `photos/site/`). Sin imagen, queda gris (Daniel, 2026-11-03).
+- **Dónde:** base, API y web en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-03:** replanteo `67` con inversa y 10 pruebas SQL (corridas en local con `pg_safeupdate`), API (466 pruebas) y web (553 pruebas).
+- **Falta:**
+  1. ~~Correr las pruebas SQL~~: hecho el 2026-11-03.
+  2. ~~Commit~~: hecho el 2026-11-03 en `feat/frontend-fase-1`. La base y la API también en `feat/mm-claim-en-sala` (`95942673`, 2026-11-03).
+  3. ~~Staging: la `67`, la API y la web~~: hecho el 2026-11-03. Falta subir una imagen y mirarla en 1440, 1920 y un teléfono.
+  4. La página del manual de Admin (`docs/manual/admin/imagen-inicio-sesion.md`), con el resto de la sección Admin (punto 1.49).
+  5. Producción con el corte.
+- **Bitácora:** [`2026-11-03-imagen-login`](bitacora/2026-11-03-imagen-login/)
+
+### 1.56 Reportes solo para el admin, lista de clips y nombre del equipo (replanteo `68`): con commit y en staging (2026-11-03)
+
+- **Qué es:** los reportes del matchmaking los resuelve solo un admin (web, API y base); pestaña **Clips** en Administración › Clips para reprocesar varios a la vez; el capitán cambia el nombre y la sigla desde **Editar equipo** cada `team_config.rename_days` días (30 por defecto, configurable en Configuración equipo). Pedido por Daniel el 2026-11-03.
+- **Dónde:** base en las dos ramas; API en `feat/mm-claim-en-sala`; web, manual y bitácora en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-03:** replanteo `68` con inversa y 5 pruebas SQL (pasaron en staging, deshechas), API (481 pruebas unitarias), web (557 pruebas) y las 6 páginas del manual.
+- **Falta:**
+  1. ~~Pruebas SQL y `68` en staging~~: el `68` ya estaba aplicado (lo hizo la sesión anterior sin anotarlo) y las pruebas pasaron el 2026-11-03.
+  2. ~~Commit~~: `034d280a` en `feat/mm-claim-en-sala` y `e53200f8` en `feat/frontend-fase-1` (base y API en las dos), sin push.
+  3. ~~Staging~~: API `0d5732881cbe` y web `e53200f83840`, el 2026-11-03. Falta mirarlo en el navegador (la web de staging pide la contraseña de Caddy).
+  4. Producción con el corte. No toca a los servidores de juego.
+- **Bitácora:** [`2026-11-03-reportes-clips-nombre-equipo`](bitacora/2026-11-03-reportes-clips-nombre-equipo/)
+
+### 1.57 La foto de cada integrante en el plantel (replanteo `69`): en staging, sin commit
+
+- **Qué es:** `team_members_view` usa la foto de la cuenta si la ficha no tiene (como `player_overview`). Roles de equipo y el plantel mostraban la inicial (Daniel, 2026-11-03).
+- **Falta:** commit (la `69` en las dos ramas) y producción con el corte. `vip_status` tiene el mismo problema (lista de VIP de Administración), sin tocar.
+- **Bitácora:** [`2026-11-03-foto-en-plantel`](bitacora/2026-11-03-foto-en-plantel/)
+
+### 1.58 Amigos al instante y la misma foto de perfil (replanteo `71`): desplegado (2026-11-03)
+
+- **Qué es:** sumar o sacar a un amigo avisa `friend.changed` por el socket, y la otra persona lo ve sin recargar. En la foto, gana la última que se subió (Daniel, 2026-11-03): al subir la suya, el jugador deja de ver la de su ficha. Antes, el menú de la cuenta mostraba la foto nueva y el resto de la web la de la ficha.
+- **Dónde:** base en `feat/frontend-fase-1` y en `feat/mm-claim-en-sala` (es del matchmaking); web en `feat/frontend-fase-1`.
+- **Hecho el 2026-11-03:** replanteo `71` (era el `70`: el `70` es el de Kyan) con inversa y 11 pruebas SQL (en local con `pg_safeupdate` y en staging, deshechas), web (560 pruebas), commit en las dos ramas y la base aplicada en staging.
+- **Falta:**
+  1. ~~Staging~~: aplicada y con el respaldo renombrado a `replanteo71_fotos_ficha` (2026-11-03).
+  2. ~~Producción~~: aplicada el 2026-11-03 (kyan y saiko pasaron a la foto de su cuenta; las de ficha, en el respaldo).
+  3. ~~Web~~: `507a9d528e2b` en el VPS el 2026-11-03. La API no cambió.
+  4. Probar con dos cuentas: B suma a A y A lo ve al instante; cambiar la foto y verla igual en el menú de la cuenta, la ficha, el ranking y Jugar.
+- **Bitácora:** [`2026-11-03-amigos-y-foto-perfil`](bitacora/2026-11-03-amigos-y-foto-perfil/)
+
+### 1.59 Equipos del matchmaking más parejos con el rating (replanteo `73`): en `main`, sin desplegar
+
+- **Qué es:** con `mm_config.balance_rating` encendido, los equipos se reparten con un ELO de armado: ELO + ajuste por el rating 5v5 reciente, con tope (±100 por defecto). Apagado (como viene), igual que antes. La ventana de la cola, el capitán, el veto y el ELO que se gana o pierde siguen con el ELO.
+- **Hecho el 2026-11-04 en `main`:** replanteo `73` con inversa, prueba en staging (`pruebas/probar_73.sh`, con rollback), el bloque del admin, el manual y los términos (sección 8). La API no cambió.
+- **Falta:**
+  1. Aplicar el `73` en producción **sin un mix en curso** (el `alter table mm_config` bloquea un instante al worker del matchmaking).
+  2. Desplegar la web desde `main`.
+  3. Encender el interruptor, revisar las primeras salas (consulta en la guía) y publicar el changelog.
+- **Bitácora:** [`2026-11-04-mm-equipos-con-rating`](bitacora/2026-11-04-mm-equipos-con-rating/)
+
+### 1.60 Widget para streamers (OBS)
+
+- **Qué falta:**
+  1. Correr `supabase/migrations/20261029120000_widget_streamers.sql` en el SQL Editor.
+  2. Subir **juntos** `index.html`, `niveles.js` y `widget.html` a la web. `index.html` sin `niveles.js` rompe los niveles y el perfil.
+  3. Probarlo en OBS.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Al hacer el corte al backend nuevo:** portar `widget_player` al replanteo usando `elo_key()` (varios SteamID por ficha) y excluir `mix_deletions`.
+- Sin commit, en `kyan/pruebas`.
+- **Bitácora:** [`2026-10-29-widget-streamers`](bitacora/2026-10-29-widget-streamers/). Pasos en la guía; changelog para Discord en la carpeta.
+
+### 1.61 Tienda de cosméticos en la web
+
+- **Qué falta:**
+  1. Correr `supabase/migrations/20261028120000_vip.sql` (VIP del backend; si ya se corrió, es re-ejecutable) y después `supabase/migrations/20261029180000_tienda.sql` en el SQL Editor. **No se probaron en ningún Postgres**: conviene correrlas antes en un proyecto de prueba o en la base local del backend.
+  2. Publicar **juntos** `index.html` y la carpeta `assets/perfil/`.
+  3. Probar comprar, equipar, la portada y Admin → Tienda (puntos, regalos y VIP).
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Al hacer el corte:** el replanteo `34_tienda.sql` parte de esta migración, con `elo_key()`, `mix_deletions` y los avisos con `notify()`.
+- **Bitácora:** [`2026-10-29-tienda-web`](bitacora/2026-10-29-tienda-web/). Pasos en la guía; changelog para Discord en la carpeta.
+
+### 1.62 Fondo de miniperfil y progresión VIP (sin commit)
+
+- **Qué es:**
+  - **Fondos:** 24 fondos animados, del tipo nuevo `background`.
+  - **Matchmaking:** el lobby y la sala muestran marco, efecto de nombre e insignia VIP.
+  - **VIP:** ser VIP da solo el Marco Oro VIP. Lo demás se compra con monedas VIP, que se ganan en mixes jugados siendo VIP y son configurables. Si se vence el VIP, el saldo y lo comprado quedan congelados.
+- **Dónde se ve:** solo en los demos del frontend nuevo, en `/demo/tienda` y `/demo/matchmaking` (`kyan/ejemplo-matchmaking`).
+- **Qué falta:**
+  1. Probar y correr `20261029200000_fondo_miniperfil.sql` y `20261029210000_vip_progresion.sql`, después de las dos de 1.6. **No se probaron en ningún Postgres.**
+  2. **No correr `20261029210000_vip_progresion.sql` con la tienda de `index.html` publicada:** esa tienda todavía trata lo VIP como gratis.
+  3. Rutas de la API para monedas VIP y cosméticos del matchmaking (`MmCosmetics`).
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-fondo-miniperfil`](bitacora/2026-10-29-fondo-miniperfil/) y [`2026-10-29-vip-progresion`](bitacora/2026-10-29-vip-progresion/).
+
+### 1.63 Prototipos VIP: exportar stats y buscador avanzado
+
+- **Qué es:** dos prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
+  - `/demo/exportar`: tarjeta de stats en PNG o PDF.
+  - `/demo/buscador`: filtros avanzados de jugadores y partidas.
+- **Qué falta:**
+  - **Daniel:**
+    - La ruta de stats por período.
+    - Los filtros nuevos en `ranking/players` y `mixes`, con chequeo de VIP.
+    - Que `levelBounds` acepte cualquier rango de niveles.
+  - **Esteban:** llevar los dos prototipos al perfil, a `/players` y al listado de mixes.
+- **Niveles:** usan los mismos pisos que el backend. `features/search/levels.test.ts` avisa si se desincronizan.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-exportar-stats`](bitacora/2026-10-29-exportar-stats/) y [`2026-10-29-buscador-avanzado`](bitacora/2026-10-29-buscador-avanzado/).
+
+### 1.64 Prototipos VIP: ELO, recálculo, comparador y widget para la bio
+
+- **Qué es:** cuatro prototipos de Kyan en el frontend nuevo (`kyan/ejemplo-matchmaking`), con datos en memoria:
+  - `/demo/elo`: el desglose de la fórmula de ELO.
+  - `/demo/recalculo`: la vista previa del cierre de temporada.
+  - `/demo/comparador`: hasta 5 jugadores.
+  - `/demo/bio`: panel de Twitch, firma y tarjeta del link.
+- **Cuidado:** `features/elo/formula.ts` y `features/season/preview.ts` copian las reglas de `elo_apply_match` y de `24_temporadas.sql`. Si cambian en la base, hay que cambiarlas ahí. Los tests ayudan a darse cuenta.
+- **Qué falta:**
+  - **Daniel:**
+    - El desglose por mix.
+    - Tu fila de `season_live_standings` con los vecinos.
+    - `players/compare` con 5 jugadores.
+    - Para el widget de la bio: la imagen dinámica `card.png`, Open Graph en el perfil y la página del iframe.
+    - El chequeo de VIP en todo eso.
+  - **Esteban:** llevar los cuatro al perfil y al ranking.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-desglose-elo`](bitacora/2026-10-29-desglose-elo/), [`2026-10-29-proximo-recalculo`](bitacora/2026-10-29-proximo-recalculo/), [`2026-10-29-comparador-5`](bitacora/2026-10-29-comparador-5/) y [`2026-10-29-widget-bio`](bitacora/2026-10-29-widget-bio/).
+
+### 1.65 Prototipos VIP: favoritas, créditos y stats de torneo
+
+- **Qué es:** tres prototipos más en el frontend nuevo (`kyan/ejemplo-matchmaking`), con lo que quedaba de la lista VIP fuera del perfil:
+  - `/demo/favoritas`
+  - `/demo/creditos`
+  - `/demo/torneo-stats`
+- **Quedaron afuera, a propósito:**
+  - Firma o banner, galería, pestañas extra y el regalo de bienvenida, porque **son del perfil y los está haciendo Esteban**.
+  - Los puntos VIP canjeables, porque ya están en la progresión VIP (1.7).
+  - El ícono y borde VIP en el ranking, el verificado y el Top VIP del mes: se hizo un prototipo (`/demo/ranking-vip`) y Kyan lo descartó el 2026-10-29.
+- **Qué falta:**
+  - **Daniel:**
+    - Las rutas que pide cada bitácora, con el chequeo de VIP.
+    - Los clutches de las stats del torneo llegan con el plugin nuevo (schema 2); las entradas ya están.
+  - **Esteban:** llevarlos a la web.
+  - Confirmar los roles de "Hecho por" en los créditos.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-partidas-favoritas`](bitacora/2026-10-29-partidas-favoritas/), [`2026-10-29-creditos`](bitacora/2026-10-29-creditos/) y [`2026-10-29-stats-torneo`](bitacora/2026-10-29-stats-torneo/).
+
+### 1.66 Misiones semanales y Primeros pasos (prototipo)
+
+- **Qué es:** `/demo/misiones` del frontend nuevo (`kyan/ejemplo-matchmaking`). Tiene un popout en la barra de arriba (pestañas "Esta semana" y "Primeros pasos"), una página y la vista de admin.
+- **Semanales:** de juego y comunidad.
+  - Cada semana salen 6 para todos y 3 VIP, al azar.
+  - Una que salió no vuelve hasta dentro de 2 semanas, y en una semana no se repite la misma stat.
+- **Primeros pasos:** las de la web (votar o subir clips, entrar a la web, comparar, tienda…). Se hacen una sola vez desde que te registrás.
+- **Datos:** usan los mismos datos del servidor que las medallas. 12 de las 55 semanales esperan:
+  - 9, el plugin nuevo (schema 2, ver `MEDALLAS_DATOS_REPORTER.md`).
+  - 3, otros sistemas (grupos del matchmaking y referidos).
+- **Qué falta:**
+  - **Daniel:**
+    - Las tablas `missions`, `mission_weeks` y `mission_progress` (con `week` en null para Primeros pasos).
+    - Sumar el progreso con cada mix y cada evento.
+    - El cron del lunes 06:00 y las rutas, con chequeo de VIP.
+  - **Esteban:** el popout, la página y el admin.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK. El plugin nuevo, cuando se haga, sí va a los dos servidores.
+- **Bitácora:** [`2026-10-29-misiones-semanales`](bitacora/2026-10-29-misiones-semanales/).
+
+### 1.67 Página Hacete VIP y configs de los jugadores (prototipos)
+
+- **Qué es:**
+  - `/demo/vip`: los planes (precios de ejemplo), la tabla de beneficios con y sin VIP, el estado de tu VIP y qué pasa con cada beneficio cuando se vence. Los candados de todos los demos VIP llevan ahí.
+  - `/demo/configs`: la pestaña Config del perfil. Cualquiera sube su carpeta `cfg` (`.rar`, `.zip` o la carpeta) y solo los VIP ven el contenido y descargan.
+- **La revisión de las configs:**
+  - Solo se aceptan `.cfg`, `.vdf`, `.scr`, `.rc` y `.txt`. Un comprimido con un `.exe` se rechaza entero.
+  - Las contraseñas (`rcon_password`…) se sacan antes de publicar.
+  - Los scripts dejan la config en revisión, y así no se puede descargar.
+- **Qué falta:**
+  - **Kyan:**
+    - Los precios, si Premium y VIP son dos niveles, los días de gracia y lo propuesto de la tabla de vencimiento.
+    - Qué scripts están prohibidos.
+  - **Daniel:**
+    - El medio de pago, la tabla de suscripciones, la función única "¿es VIP?" y el alta manual.
+    - Para las configs: storage, revisión en el servidor (que abra los `.rar`), rutas y cola de moderación.
+  - **Esteban:** la página `/vip`, "Mi suscripción" en la cuenta y la pestaña Config del perfil.
+- No toca el plugin, así que no hay nada que subir al servidor real ni a RBK.
+- **Bitácora:** [`2026-10-29-hacete-vip`](bitacora/2026-10-29-hacete-vip/) y [`2026-10-29-configs-jugadores`](bitacora/2026-10-29-configs-jugadores/).
+
+### 1.68 Plugin de retake (`v34_retake`, sin licencia)
+
+- **Estado:** subido el 2026-10-30 a `aurav34` (`45.235.98.57:27062`, `SFTP_CSS_*`), que queda como servidor solo de retake, con `sm_retake_autostart "1"`. Solo tiene spawns de `de_dust2_ob`. **No está en RBK ni en `FLOW_SERVER`**: fue una decisión de Kyan. Sin commit.
+- **Qué falta:**
+  - Cargar spawns de otros mapas: sin eso la votación de la ronda 25 no tiene opciones.
+  - Confirmar con jugadores: `!guns` guardado, `!top` y `!rank`, menú de modelos, barra de desactivar, votación con votos reales, VIP y AFK.
+  - Revisar el sorteo de AWP con un solo anotado, que en la prueba dio 50 % en vez de 30 % (22 sorteos).
+  - `csstv_reporter` se movió a `plugins/disabled/` en `aurav34` el 2026-10-31. Hay que revisar que `csstv_sell`, `csstv_perf`, `csstv_password`, `csstv_calladmin` y `csstv_allchat` sigan bien sin él.
+  - Revisar los otros `csstv_*` de ese servidor y la convivencia con el reporter 1.8.0.
+  - Borrar `cfg/server.cfg.bak_pw` si no hace falta: tiene la contraseña vieja.
+- **Pruebas:** los plugins del servidor se prueban en `C:\Users\Agus\Downloads\cssds`, el ambiente de Agus, antes de ir a producción.
+- **VIP, se hace al finalizar:** hoy el plugin reconoce a un VIP por el flag `o` de SourceMod, que se carga a mano en `admins_simple.ini`. Falta sincronizar esa lista con el VIP de la web, que todavía es un prototipo (ver 1.7 y 1.12).
+- **Bitácora:** [`2026-10-30-plugin-retake`](bitacora/2026-10-30-plugin-retake/). Changelog para Discord en la carpeta.
+
+### 1.69 Plugin 2v2 (`v34_wingman`)
+
+- **Estado:** probado con bots en `cssds` y subido el 2026-10-30, inactivo, a `aurav34` y a RBK. En `aurav34` se prende con `sm_2v2 1`; el retake se tiene que apagar antes y, por su autostart, vuelve en cada cambio de mapa. **RBK no tiene `de_dust2_ob`**, y Kyan dijo que probablemente dejen de pagar ese servidor. No está en `FLOW_SERVER`.
+- **Qué falta:**
+  - Subir `de_dust2_ob` a RBK o cargar los puntos de otro mapa.
+  - Cargar sitio, 2 spawns y zonas de `de_inferno` (sitio A). `de_dust2_ob` ya está cargado (3 zonas) y en el repo.
+  - Probar con jugadores: antes que nada la compra fuera de la zona, porque los bots no compran por comando y en `de_dust2_ob` el spawn cae dentro de la zona. También el bloqueo de zonas, la cámara en primera persona, la voz por equipo y `!admin`.
+- **Bitácora:** [`2026-10-30-plugin-2v2`](bitacora/2026-10-30-plugin-2v2/). Changelog para Discord en la carpeta.
+
+### 1.70 Plugin de deathmatch (`v34_dm`)
+
+- **Estado:** probado con bots en `cssds` y subido a ethereal (`FLOW_SERVER`, SFTP `190.104.34.3:2022`) el 2026-10-31. Solo funciona en `$2000$`, al que se llega porque un admin cambia el mapa.
+- **Qué falta:** probar con un jugador, y que se confirme con el reporter 1.8.0 de ese servidor.
+- **Bitácora:** [`2026-10-31-plugin-deathmatch`](bitacora/2026-10-31-plugin-deathmatch/). Changelog para Discord en la carpeta.
+
+### 1.71 Spam de grafitis
+
+- `decalfrequency` pasó de `0.1` a `60` en `aurav34` y RBK el 2026-10-30, con respaldo en `cfg/server.cfg.bak_decal`.
+- `FLOW_SERVER` (ethereal) ya lo tenía en `60`, comprobado el 2026-10-31.
+
+### 1.72 Anticheat v34FRAGNATION
+
+- **Estado:** auditoría de la etapa 0 entregada el 2026-10-30. Nada implementado ni desplegado, ni en el servidor real ni en RBK.
+- **Decidido por Kyan:** FRAG es independiente del EAC de ClientMod, y las pruebas de campo van al final.
+- **Captura:** funciona en pantalla completa exclusiva sin hooks, probada en una PC.
+- **Qué falta:** las 6 decisiones abiertas de la guía y, al final, las pruebas de campo: tirones, Alt+Tab, modos ventana y sin bordes, otras PC.
+- **Bitácora:** [`2026-10-30-anticheat-etapa-0-auditoria`](bitacora/2026-10-30-anticheat-etapa-0-auditoria/) y [`2026-10-30-anticheat-captura`](bitacora/2026-10-30-anticheat-captura/).
+### 1.73 Widget para streamers con stats y personalizable (prototipo)
 
 - **Qué es:** `/demo/widget` del frontend de `repo` (`kyan/pruebas`).
   - Tres diseños nuevos: Stats (como la tarjeta que pasó Kyan), Barra y Vertical.
@@ -799,9 +1164,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin, así que no hay nada que subir a los servidores.
 - **Bitácora:** [`2026-11-08-widget-streamers-stats`](bitacora/2026-11-08-widget-streamers-stats/).
 
-## 2. Investigaciones abiertas
-
-### 2.0 Tirones y sonido en el servidor real (#1)
+### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".
 - **Hallazgos:**
@@ -860,6 +1223,7 @@ Daniel quiere que el director automático de la SourceTV siga mostrando las kill
 
 | Plan | Qué propone | Qué falta |
 |---|---|---|
+| [`2026-11-04-medallas-configurables`](bitacora/2026-11-04-medallas-configurables/PLAN.md) | Medallas configurables: plantillas base de `badges/nuevas` + definiciones (objetivo, métrica y diseño) desde Administración › Medallas, motor con `medals:tick` y sin emoji en ninguna parte | Aprobación y las 13 preguntas de la sección 14. Pedirle a Kyan el Top 20 y `generar_medallas_perfil.py`. **La fase 1 tiene que estar antes del cierre de la BETA (2026-12-03 06:00 de Argentina)**, o esas medallas se otorgan con emoji |
 | [`2026-10-14-web-pages-worker`](bitacora/2026-10-14-web-pages-worker/PLAN.md) | Plan general: API REST (Hono + OpenAPI) por la que pase todo lo que hoy hace el navegador contra Supabase, motor de torneos en el backend, frontend nuevo y despliegue con GitHub Actions | **Parcialmente superado:** el backend avanza con su propio plan (sección 6) y el hosting pasó de Cloudflare Pages y Workers a un VPS (OVH desde el 2026-10-25). La parte de despliegue hay que replanearla para el VPS |
 | [`2026-10-16-despliegue-vps`](bitacora/2026-10-16-despliegue-vps/PLAN.md) | Despliegue de la web nueva en el VPS (OVH VPS-1 en Hillsboro, Ubuntu 26.04, desde el 2026-10-25; el plan dice Hostinger y los cambios están en su guía): servidor, Caddy, servicio de la API, pipeline, DNS, SMTP de Auth, ensayo en staging y orden del corte | Aprobación de Daniel y los requisitos de su sección 9 (dominio, VPS, Resend, Supabase de staging, permisos en GitHub). Daniel pidió no implementarlo todavía |
 
@@ -881,7 +1245,7 @@ No bloquean nada, pero quedaron anotadas como pendientes.
 - `configs/adminmenu_cfgs.txt` tiene una sección sin cerrar (línea 33) y `basecommands` lo reporta en cada mapa.
 - `CM_PickupWeapon.smx` no puede escribir su cfg por permisos.
 - En `extensions/` hay archivos de CSS:DM (13/10, 22:50) sin ningún plugin que los use. Habría que preguntar quién los subió y si se pueden borrar.
-- `start.sh` en la raíz no es lo que usa el panel: el arranque real lo define Pterodactyl (el puerto 27062 era el de ExtremeHost; en MVZG es 27016). Ver la nota de `+tv_enable 1` en la bitácora `2026-10-11-qol-servidor`.
+- `start.sh` en la raíz no es lo que usa el panel: el arranque real lo define Pterodactyl (puerto 27062 en la consola). Ver la nota de `+tv_enable 1` en la bitácora `2026-10-11-qol-servidor`.
 
 ## 6. Backend API (`web/backend`)
 
@@ -913,7 +1277,7 @@ Primera fase (base, Auth y Mi perfil; Node 24 + Hono + TypeScript) **terminada e
 - **Baneos gestionados desde la web** (plan aprobado el 2026-10-26): **base y API hechas el 2026-10-26**, solo en local (replanteo `31`, rama `feat/backend-api-fase-1`). Tabla `bans` (lista única para todos los servidores, incluido RBK), rol `moderator` (permanente solo admin; el moderador cambia o levanta cualquiera que no sea permanente), funciones del plugin (`csstv_ban_check`, `csstv_bans_since`, `csstv_ban_add`, `csstv_ban_lift`) y `/api/v1/bans`, `/api/v1/players/{id}/bans` y `/api/v1/admin/bans*`. Ver [`2026-10-25-baneos-web`](bitacora/2026-10-25-baneos-web/DOCUMENTACION.md). Falta, en este orden:
   - el frontend: página pública "Baneos", Administración › Baneos, el botón "Banear", el aviso en la ficha y `moderator` en los roles de Administración;
   - el plugin `csstv_bans` (congelado hasta el final, o como excepción si Daniel la pide): consulta al conectarse, sincronización cada 3 minutos y al empezar cada mapa (no cada 30 s, para no cargar el #1; Daniel, 2026-10-26) y `!syncbans` para moderadores y admins. También la importación de los `banned_user.cfg` del real y de RBK;
-  - el despliegue con la web nueva (Daniel, 2026-10-26): el plugin, en el servidor real y en RBK (build licenciado) en la misma tanda. Está en la lista de plugins que esperan la web nueva (punto 1.5).
+  - el despliegue con la web nueva (Daniel, 2026-10-26): el plugin, en el servidor real y en flow (build licenciado) en la misma tanda. Está en la lista de plugins que esperan la web nueva (punto 1.5).
 - ~~**Maestra de mapas**~~ (pedido por Daniel el 2026-10-24): **backend hecho el 2026-10-25**, solo en local (replanteo `30`). Es el catálogo `map_pool`:
   - un mapa disponible o retirado (no se borra);
   - `mixes`: el select de Mixes;
@@ -964,16 +1328,19 @@ Daniel definió el 2026-10-16 (opción B): **en el calentamiento se escuchan tod
   - Cada requerimiento va en `docs/bitacora/AAAA-MM-DD-slug/` con `PLAN.md` (no se edita después), `DOCUMENTACION.md`, `GUIA_IMPLEMENTACION.md` y `pruebas/` opcional, más una fila en el índice. Formato en [`bitacora/PLANTILLA.md`](bitacora/PLANTILLA.md).
   - Todo en español, con diagramas Mermaid.
   - Changelog para jugadores: `CHANGELOG_DISCORD.txt` en la carpeta del requerimiento. Texto plano, primera línea `v34frag X.Y.Z --  Changelog` (dos espacios después de `--`), con tuteo y sin detalles técnicos.
-- **Credenciales:** todas en el `.env` de la raíz, que no se versiona. `SFTP_CSS_*` es el servidor real, `SERVER1_*` es RBK, `FTP_WEB_*` es la web, `PTERO_PANEL_*` es la API del panel, y además `DEMO_WORKER_TOKEN` y `ACCELERATOR_CRASH_KEY`. Para SFTP se usó `paramiko` en un entorno virtual aparte.
+- **Credenciales:** todas en el `.env` de la raíz, que no se versiona. `SFTP_CSS_*_MVZG` es el #1 (nuevo, desde el 2026-11-02), `SERVER2_*` es flow (#2), `SFTP_CSS_*` sin sufijo es el servidor real de ExtremeHost (#3) (`SERVER1_*` era RBK, dado de baja el 2026-10-29), `FTP_WEB_*` es la web, `PTERO_PANEL_*` es la API del panel, y además `DEMO_WORKER_TOKEN` y `ACCELERATOR_CRASH_KEY`. Para SFTP se usó `paramiko` en un entorno virtual aparte.
 - **Servidor local de pruebas:**
   - Está en `E:\CSS DEDICATED SERVER\server`: SourceMod 1.10, Accelerator, puerto 27016, RCON con la clave de `cstrike\cfg\server.cfg`.
   - Las pruebas se hacen con bots en `$2000$` y equipos desparejos (3 contra 1), con la build de depuración (`spcomp csstv_reporter.sp CSSTV_DEBUG=`) y `csstv_debug_fakecmd <userid> <comando>`.
   - **Envía a la Supabase real:** poner `csstv_send 0` después de cada carga del cfg y vaciar `data/csstv/queue/` antes de reiniciar.
   - Scripts en `docs/bitacora/2026-10-13-plugin-1-6-0/pruebas/lib.sh`.
-- **Servidor real:** MVZG desde octubre de 2026, antes ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. IP 190.104.34.3, puerto 27016. El TCP del puerto del juego está bloqueado en el nodo por un DDoS al RCON: ver [`DDOS_SERVIDOR.md`](DDOS_SERVIDOR.md) y pedirle lo mismo a cualquier host nuevo. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (RBK) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (RBK) en la misma tanda (ver `CLAUDE.md`).
   - **Con la Supabase local corriendo** (Docker), srcds toma la interfaz de Docker (`172.24.0.1`): RCON va por esa dirección.
   - **Bots:**
     - `bot_add_ct <nombre>` solo acepta nombres de `BotProfile.db`. Para otros nombres se usa `sm_rename`; con `CSSTV_DEBUG`, el SteamID falso sale del nombre actual.
     - Un `jointeam` de un bot que procesa el motor **tira el servidor**, aun sin nuestro plugin. Para moverlos se usa `!team` / `sm_team`.
-- **Servidor real:** ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP. Los servidores de terceros (RBK) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue al servidor real se hace también a los externos (RBK) en la misma tanda (ver `CLAUDE.md`).
+- **Servidores (numeración del 2026-11-02):**
+  - **#1:** "MVZG", nuestro, en el mismo panel y la misma máquina que flow, acceso `SFTP_CSS_*_MVZG`. Revisado el 2026-11-02 (punto 1.44).
+  - **#2:** flow, externo, build licenciado, acceso `SERVER2_*` sin panel ni consola.
+  - **#3:** el servidor real de siempre ("servidor real" o "#1" en todo lo anterior al 2026-11-02). ExtremeHost (Pterodactyl, Linux), SourceMod 1.10. No tenemos RCON: se verifica con la consola del panel o con logs por SFTP.
+  - Los servidores de terceros (flow) llevan build licenciado, nunca el `.smx` genérico. **Regla:** todo despliegue va al #1, al #2 y al #3 en la misma tanda (ver `CLAUDE.md`).
 - **Pruebas de SQL:** PostgreSQL 18 local (`initdb` + `pg_ctl` en un puerto libre), `docs/bitacora/2026-10-11-elo-jugadores/pruebas/stub_supabase.sql`, todas las migraciones en orden y después los `pruebas_*.sql`.

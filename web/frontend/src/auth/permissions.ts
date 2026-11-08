@@ -24,11 +24,12 @@ export type AdminSection = (typeof ADMIN_SECTIONS)[number]
 export const canSeeAdmin = (role: Role) =>
   role === "admin" || role === "organizer" || role === "moderator"
 
-/** Admin entra a todo; el organizador solo a Torneos (los suyos) y el moderador a Torneos y Baneos. */
+/** Admin entra a todo; el organizador solo a Torneos (los suyos) y el moderador a Torneos, Equipos y Baneos. */
 export const canAccessAdminSection = (role: Role, section: AdminSection) =>
   role === "admin" ||
   (role === "organizer" && section === "events") ||
-  (role === "moderator" && (section === "bans" || section === "events"))
+  (role === "moderator" &&
+    (section === "bans" || section === "events" || section === "teams"))
 
 /** Primera sección de Administración a la que entra cada rol. */
 export const homeAdminSection = (role: Role): AdminSection =>
@@ -47,8 +48,28 @@ export function adminSectionOf(pathname: string): AdminSection | null {
 /** Borrar un mix desde su sala: solo admin (contrato, admin.md). */
 export const canDeleteMix = (role: Role) => role === "admin"
 
-/** Las notificaciones de Administración solo les llegan a los admins (contrato notificaciones.md). */
-export const getsAdminNotifications = (role: Role) => role === "admin"
+/** Las notificaciones de Administración: admins, y moderadores para las de torneos y mixes por aprobar (contrato notificaciones.md). */
+export const getsAdminNotifications = (role: Role) =>
+  role === "admin" || role === "moderator"
+
+/** Crear un torneo normal: admin, moderador u organizador (lo de los dos últimos queda pendiente de aprobación). */
+export const canCreateEvent = (role: Role) =>
+  role === "admin" || role === "moderator" || role === "organizer"
+
+/** Subir un torneo histórico: admin, moderador u organizador (lo de los dos últimos queda pendiente). */
+export const canCreateHistoricEvent = (role: Role) =>
+  role === "admin" || role === "moderator" || role === "organizer"
+
+/**
+ * Quién aprueba lo que crea cada rol (replanteo 84): lo del admin nace aprobado, lo del organizador lo aprueba
+ * un admin o un moderador, y lo del moderador, solo un admin.
+ */
+export const eventApprover = (role: Role): "none" | "staff" | "admin" =>
+  role === "admin" ? "none" : role === "moderator" ? "admin" : "staff"
+
+/** Aprobar torneos y mixes vinculados, y la fase de testing: moderador y admin. */
+export const canReviewEvents = (role: Role) =>
+  role === "admin" || role === "moderator"
 
 /** Baneos permanentes (poner, cambiar o levantar uno): solo admin. */
 export const canBanPermanent = (role: Role) => role === "admin"

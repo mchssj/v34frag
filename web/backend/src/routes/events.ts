@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { currentUser, optionalUser, requireAdmin, requireUser } from '../lib/auth';
+import { currentUser, isAdmin, isModerator, optionalUser, requireAdmin, requireModerator, requireUser } from '../lib/auth';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { notModified } from '../lib/etag';
 import { AppError, fromPostgrest } from '../lib/errors';
@@ -18,6 +18,12 @@ import {
   SeedsResult,
   GameMode,
   GameModeBody,
+  HistoricTeamBody,
+  PendingGameList,
+  PendingGameQuery,
+  ReviewBody,
+  SimilarTeamList,
+  SimilarTeamQuery,
   EventCreate,
   EventDetail,
   EventList,
@@ -37,7 +43,7 @@ import {
   type EventSummary,
 } from '../schemas/events';
 import { Created } from '../schemas/teams';
-import { MATCH_LIST, toSummary, type MatchRow } from '../services/matches';
+import { historicTeams, markHistoricSides, MATCH_LIST, toSummary, type MatchRow } from '../services/matches';
 import { dropPhoto, removePhoto, savePhoto } from '../services/photos';
 
 type C = Context<AppEnv>;
@@ -45,7 +51,8 @@ type C = Context<AppEnv>;
 const LIST =
   'id, name, template, status, starts_on, ends_on, prize, max_teams, organizer_id, organizer_alias, champion_id, champion_name, champion_tag, ' +
   'champion_logo_url, teams, game_mode, players_per_team, subs_max, bo, bo_final, progress_played, progress_total, current_match_id, banner_url, ' +
-  'registration_closes_at, finished_at';
+  'registration_closes_at, finished_at, historic, testing, approval, approval_note, pending_games, admin_review, prize_amount, prize_currency, ' +
+  'prize_currency_other';
 const EXTRA = 'id, rules, min_teams, config, tie_pending, drawn_at, drawn_by, map_pool';
 const done = { 204: { description: 'Hecho' } } as const;
 
@@ -55,13 +62,14 @@ type EventRow = {
   champion_name: string | null; champion_tag: string | null; champion_logo_url: string | null; teams: number; game_mode: string;
   players_per_team: number | null; subs_max: number; bo: number | null; bo_final: number | null; progress_played: number | null;
   progress_total: number | null; current_match_id: string | null; banner_url: string | null; registration_closes_at: string | null;
-  finished_at: string | null;
+  finished_at: string | null; historic: boolean; testing: boolean; approval: string; approval_note: string | null; pending_games: number;
+  admin_review: boolean; prize_amount: number | string | null; prize_currency: string | null; prize_currency_other: string | null;
 };
 
 type BoValue = 1 | 3 | 5;
 const bo = (n: number | null): BoValue | null => (n === 1 || n === 3 || n === 5 ? n : null);
 
-const summary = (e: EventRow, stage: string | null = null): z.infer<typeof EventSummary> => ({
+const summary = (e: EventRow, stage: string | null = null, hist?: Set<string>): z.infer<typeof EventSummary> => ({
   id: e.id,
   name: e.name,
   template: e.template as z.infer<typeof EventSummary>['template'],
@@ -70,9 +78,14 @@ const summary = (e: EventRow, stage: string | null = null): z.infer<typeof Event
   ends_on: e.ends_on,
   finished_at: e.finished_at,
   prize: e.prize,
+  prize_amount: e.prize_amount === null || e.prize_amount === undefined ? null : Number(e.prize_amount),
+  prize_currency: (e.prize_currency ?? null) as z.infer<typeof EventSummary>['prize_currency'],
+  prize_currency_other: e.prize_currency_other ?? null,
   teams: e.teams ?? 0,
   max_teams: e.max_teams,
-  champion: e.champion_id ? { id: e.champion_id, name: e.champion_name ?? '', tag: e.champion_tag, logo_url: e.champion_logo_url } : null,
+  champion: e.champion_id
+    ? { id: e.champion_id, name: e.champion_name ?? '', tag: e.champion_tag, logo_url: e.champion_logo_url, ...(hist?.has(e.champion_id) ? { historic: true } : {}) }
+    : null,
   organizer: e.organizer_id ? { user_id: e.organizer_id, alias: e.organizer_alias } : null,
   game_mode: e.game_mode,
   players_per_team: e.players_per_team ?? 5,
@@ -83,6 +96,12 @@ const summary = (e: EventRow, stage: string | null = null): z.infer<typeof Event
   progress: e.progress_total === null ? null : { played: e.progress_played ?? 0, total: e.progress_total },
   banner_url: e.banner_url,
   registration_closes_at: e.registration_closes_at,
+  historic: !!e.historic,
+  testing: !!e.testing,
+  approval: (e.approval ?? 'approved') as z.infer<typeof EventSummary>['approval'],
+  approval_note: e.approval_note,
+  pending_games: e.pending_games ?? 0,
+  admin_review: !!e.admin_review,
 });
 
 /** Fase de la partida actual de cada torneo en curso (una consulta para toda la página). */
@@ -130,7 +149,9 @@ async function liveMatch(c: C, eventId: string): Promise<z.infer<typeof EventDet
 const list = createRoute({
   method: 'get', path: '/api/v1/events', tags: ['Torneos'], middleware: [optionalUser] as const,
   summary: 'Torneos',
-  description: 'Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle).',
+  description:
+    'Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle). ' +
+    'Solo aparecen los que quien consulta puede ver: un torneo en testing lo ven admins y moderadores; uno pendiente o rechazado, además su organizador.',
   request: { query: EventListQuery },
   responses: { 200: { description: 'Torneos', ...json(EventList) }, ...errorResponses(400, 401) },
 });
@@ -197,7 +218,10 @@ const unregister = createRoute({
 
 const create = createRoute({
   method: 'post', path: '/api/v1/events', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Crear un torneo', description: 'Un organizador o un admin. Queda como organizador quien lo crea.',
+  summary: 'Crear un torneo',
+  description:
+    'Un organizador o un admin; un moderador, solo históricos (`historic`). Queda como organizador quien lo crea. Lo de un organizador ' +
+    'queda pendiente de aprobación (lo ven él y el staff hasta que un admin o moderador lo apruebe). `testing`, solo admin o moderador.',
   request: { body: { required: true, ...json(EventCreate) } },
   responses: { 201: { description: 'Creado', ...json(Created) }, ...errorResponses(400, 401, 403) },
 });
@@ -316,6 +340,65 @@ const putGameMode = createRoute({
   responses: { 200: { description: 'Modos', ...json(z.array(GameMode)) }, ...errorResponses(400, 401, 403) },
 });
 
+
+// ---------- aprobación (admin o moderador) y torneos históricos ----------
+
+const review = createRoute({
+  method: 'post', path: '/api/v1/events/{id}/review', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Aprobar o rechazar un torneo pendiente',
+  description:
+    'Admin o moderador. Aprobado, se ve para todos (y si tiene las inscripciones abiertas, se anuncia); también quedan aprobados los ' +
+    'mixes que vinculó el organizador. Rechazado, con `note` obligatoria: lo ve el organizador, que lo corrige y lo vuelve a enviar. ' +
+    'Al organizador le llega el aviso `event_reviewed`. `409` si el torneo no espera aprobación.',
+  request: { params: EventParam, body: { required: true, ...json(ReviewBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
+});
+
+const resubmit = createRoute({
+  method: 'post', path: '/api/v1/events/{id}/resubmit', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Volver a enviar un torneo rechazado',
+  description: 'El organizador del torneo. Vuelve a pendiente y les llega el aviso `admin_event_review` a admins y moderadores.',
+  request: { params: EventParam },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
+});
+
+const historicTeam = createRoute({
+  method: 'post', path: '/api/v1/events/{id}/historic-teams', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Cargar un equipo que no está en la plataforma',
+  description:
+    'Solo en un torneo histórico, antes de generar el fixture; quien gestiona el torneo. Crea un equipo histórico (sin capitán, plantel ' +
+    'ni página; no aparece en Buscar equipo ni en el ranking) y lo inscribe. Los jugadores, opcionales, con PUT /registrations/{teamId}. ' +
+    'El logo, con PUT /teams/{id}/logo. Antes conviene mirar GET /events/{id}/similar-teams por si ya existe.',
+  request: { params: EventParam, body: { required: true, ...json(HistoricTeamBody) } },
+  responses: { 201: { description: 'Creado e inscrito', ...json(Created) }, ...errorResponses(400, 401, 403, 404) },
+});
+
+const similarTeams = createRoute({
+  method: 'get', path: '/api/v1/events/{id}/similar-teams', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Equipos con un nombre parecido',
+  description: 'Quien gestiona el torneo. Equipos de la plataforma e históricos ya cargados con un nombre o sigla parecidos (hasta 10), para no duplicar uno.',
+  request: { params: EventParam, query: SimilarTeamQuery },
+  responses: { 200: { description: 'Equipos', ...json(SimilarTeamList) }, ...errorResponses(400, 401, 403) },
+});
+
+const patchHistoricTeam = createRoute({
+  method: 'patch', path: '/api/v1/historic-teams/{id}', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Corregir un equipo histórico',
+  description: 'Nombre y sigla. Admin, moderador o quien gestiona un torneo histórico donde está inscrito.',
+  request: { params: EventParam, body: { required: true, ...json(HistoricTeamBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403) },
+});
+
+const pendingGames = createRoute({
+  method: 'get', path: '/api/v1/admin/pending-games', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  summary: 'Mixes vinculados por aprobar',
+  description:
+    'Admin o moderador. Los mixes que vinculó un organizador a una partida de torneo y esperan aprobación, con la partida. Se aprueban ' +
+    'o se rechazan con POST /matches/{id}/games/{gameId}/review. Los torneos pendientes salen en GET /events?approval=pending.',
+  request: { query: PendingGameQuery },
+  responses: { 200: { description: 'Mixes por aprobar', ...json(PendingGameList) }, ...errorResponses(400, 401, 403) },
+});
+
 const GAME_MODE = 'code, name, players_per_team, active';
 
 export const events = createRouter()
@@ -328,11 +411,16 @@ export const events = createRouter()
     if (p.game_mode) q = q.eq('game_mode', p.game_mode);
     if (p.from) q = q.gte('starts_on', p.from.slice(0, 10));
     if (p.to) q = q.lte('starts_on', p.to.slice(0, 10));
+    if (p.historic !== undefined) q = q.eq('historic', p.historic);
+    if (p.testing !== undefined) q = q.eq('testing', p.testing);
+    if (p.approval) q = q.eq('approval', p.approval);
+    if (p.pending_games !== undefined) q = p.pending_games ? q.gt('pending_games', 0) : q.eq('pending_games', 0);
+    if (p.admin_review !== undefined) q = q.eq('admin_review', p.admin_review);
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     const { rows, total } = await runList<EventRow, typeof q>(q, p, {});
-    const stages = await currentStages(c, rows);
-    return c.json(envelope(rows.map((e) => summary(e, stages.get(e.id) ?? null)), total, p), 200);
+    const [stages, hist] = await Promise.all([currentStages(c, rows), historicTeams(c.var.sb, rows.map((e) => e.champion_id))]);
+    return c.json(envelope(rows.map((e) => summary(e, stages.get(e.id) ?? null, hist)), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');
@@ -344,14 +432,23 @@ export const events = createRouter()
     if (!e || !extra) throw notFound('ese torneo');
     const user = currentUser(c);
     const viewer = user
-      ? await Promise.all([sb.rpc('can_manage_event', { p_event: id }).then(must), sb.rpc('can_own_event', { p_event: id }).then(must)]).then(
-          ([manage, own]) => ({ can_manage: !!manage, can_own: !!own }),
-        )
+      ? await Promise.all([
+          sb.rpc('can_manage_event', { p_event: id }).then(must),
+          sb.rpc('can_own_event', { p_event: id }).then(must),
+          isModerator(c),
+          isAdmin(c),
+        ]).then(([manage, own, staff, adm]) => ({
+          can_manage: !!manage,
+          can_own: !!own,
+          can_review: staff,
+          // (replanteo 84) lo de un moderador lo aprueba solo un admin
+          can_approve: adm || (staff && !(e as unknown as EventRow).admin_review),
+        }))
       : null;
     const row = e as unknown as EventRow;
-    const [stages, live] = await Promise.all([currentStages(c, [row]), liveMatch(c, id)]);
+    const [stages, live, hist] = await Promise.all([currentStages(c, [row]), liveMatch(c, id), historicTeams(sb, [row.champion_id])]);
     const body = {
-      ...summary(row, stages.get(id) ?? null),
+      ...summary(row, stages.get(id) ?? null, hist),
       rules: extra.rules,
       min_teams: extra.min_teams,
       live_match: live,
@@ -390,8 +487,9 @@ export const events = createRouter()
             .in('team_id', rows.map((r) => r.team_id)),
         )
       : [];
+    const hist = await historicTeams(c.var.sb, rows.map((r) => r.team_id));
     const items = rows.map((r) => ({
-      team: { id: r.team_id, name: r.name, tag: r.tag, logo_url: r.logo_url },
+      team: { id: r.team_id, name: r.name, tag: r.tag, logo_url: r.logo_url, ...(hist.has(r.team_id) ? { historic: true } : {}) },
       seed: r.seed,
       start_stage: r.start_stage,
       players: players
@@ -419,7 +517,8 @@ export const events = createRouter()
           mustHave(await c.var.sb.from('matches').select('id, next_win, next_win_slot, next_lose, next_lose_slot').in('id', rows.map((m) => m.id))).map((l) => [l.id, l]),
         )
       : new Map();
-    const body = envelope(
+    const items = await markHistoricSides(
+      c.var.sb,
       rows.map((m) => {
         const l = links.get(m.id);
         return {
@@ -427,9 +526,8 @@ export const events = createRouter()
           next_win: l?.next_win ?? null, next_win_slot: l?.next_win_slot ?? null, next_lose: l?.next_lose ?? null, next_lose_slot: l?.next_lose_slot ?? null,
         };
       }),
-      total,
-      p,
     );
+    const body = envelope(items, total, p);
     if (await notModified(c, body)) return c.body(null, 304);
     return c.json(body, 200);
   })
@@ -473,7 +571,9 @@ export const events = createRouter()
   .openapi(create, async (c) => {
     const body = c.req.valid('json');
     const r = await c.var.sb.from('events').insert({ ...body, config: (body.config ?? {}) as never }).select('id').single();
-    if (r.error?.code === '42501') throw new AppError(403, 'FORBIDDEN', 'Solo un organizador o un admin puede crear torneos.');
+    if (r.error?.code === '42501') {
+      throw new AppError(403, 'FORBIDDEN', r.error.message.includes('testing') ? r.error.message : 'Solo un organizador o un admin crea torneos (un moderador, solo históricos).');
+    }
     return c.json({ id: mustHave(r).id }, 201);
   })
   .openapi(patch, async (c) => {
@@ -482,6 +582,62 @@ export const events = createRouter()
     const rows = mustHave(await c.var.sb.from('events').update({ ...body, config: body.config as never }).eq('id', id).select('id'));
     if (!rows.length) throw new AppError(403, 'FORBIDDEN', 'Solo el organizador del torneo o un admin puede editarlo.');
     return c.body(null, 204);
+  })
+  .openapi(review, async (c) => {
+    const { approve, note } = c.req.valid('json');
+    must(await c.var.sb.rpc('event_review', { p_event: c.req.valid('param').id, p_approve: approve, p_note: note ?? undefined }));
+    return c.body(null, 204);
+  })
+  .openapi(resubmit, async (c) => {
+    must(await c.var.sb.rpc('event_resubmit', { p_event: c.req.valid('param').id }));
+    return c.body(null, 204);
+  })
+  .openapi(historicTeam, async (c) => {
+    const { name, tag } = c.req.valid('json');
+    const id = mustHave(await c.var.sb.rpc('event_create_historic_team', { p_event: c.req.valid('param').id, p_name: name, p_tag: tag })) as string;
+    return c.json({ id }, 201);
+  })
+  .openapi(similarTeams, async (c) => {
+    const { id } = c.req.valid('param');
+    const p = c.req.valid('query');
+    if (!must(await c.var.sb.rpc('can_manage_event', { p_event: id }))) throw new AppError(403, 'FORBIDDEN', 'Solo quien gestiona el torneo.');
+    type Row = { team_id: string; name: string; tag: string | null; kind: string; logo_url: string | null };
+    const rows = mustHave(await c.var.sb.rpc('historic_team_similar', { p_name: p.q })) as Row[];
+    const sorted = [...rows].sort((a, b) => a.name.localeCompare(b.name) * (p.order === 'desc' ? -1 : 1));
+    const items = sorted.slice((p.page - 1) * p.per, p.page * p.per).map((r) => ({
+      id: r.team_id, name: r.name, tag: r.tag, logo_url: r.logo_url, kind: r.kind === 'historic' ? ('historic' as const) : ('official' as const),
+    }));
+    return c.json(envelope(items, rows.length, p), 200);
+  })
+  .openapi(patchHistoricTeam, async (c) => {
+    const { name, tag } = c.req.valid('json');
+    must(await c.var.sb.rpc('historic_team_update', { p_team: c.req.valid('param').id, p_name: name, p_tag: tag }));
+    return c.body(null, 204);
+  })
+  .openapi(pendingGames, async (c) => {
+    const p = c.req.valid('query');
+    const sb = c.var.sb;
+    let q = sb
+      .from('matches')
+      .select('id, map, score1, score2, played_at, parent_match_id, parent_side1', { count: 'exact' })
+      .eq('parent_approved', false);
+    if (p.match) q = q.eq('parent_match_id', p.match);
+    type Row = { id: string; map: string | null; score1: number | null; score2: number | null; played_at: string | null; parent_match_id: string; parent_side1: number | null };
+    const { rows, total } = await runList<Row, typeof q>(q, p, {});
+    const parents = rows.length
+      ? (mustHave(await sb.from('match_list').select(MATCH_LIST).in('id', [...new Set(rows.map((r) => r.parent_match_id))])) as unknown as MatchRow[])
+      : [];
+    const byId = new Map((await markHistoricSides(sb, parents.map(toSummary))).map((m) => [m.id, m]));
+    const items = rows
+      .filter((r) => byId.has(r.parent_match_id))
+      .map((r) => {
+        const flip = r.parent_side1 === 2;
+        return {
+          game: { id: r.id, map: r.map, score1: flip ? r.score2 : r.score1, score2: flip ? r.score1 : r.score2, played_at: r.played_at },
+          match: byId.get(r.parent_match_id)!,
+        };
+      });
+    return c.json(envelope(items, total, p), 200);
   })
   .openapi(remove, async (c) => {
     const rows = mustHave(await c.var.sb.from('events').delete().eq('id', c.req.valid('param').id).select('id'));

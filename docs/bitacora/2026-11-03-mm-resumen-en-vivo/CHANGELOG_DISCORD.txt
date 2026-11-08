@@ -1,0 +1,5 @@
+CMLeague 2.9.7 --  Changelog
+
+- En Jugar, los jugadores activos, las partidas en vivo, los servidores libres y los niveles de los que buscan ahora se actualizan solos, sin recargar la página.
+- La lista de quiénes están buscando muestra a los de ese momento cuando la abres.
+- "Buscar partida" ya no se habilita cuando el único servidor está reservado para un torneo o una PCW.

@@ -12,7 +12,9 @@ import {
   snakeGroups,
   swissMatches,
   swissRound1,
+  swissCupo,
   swissTeams,
+  teamsIssue,
 } from "./model"
 
 describe("nextStep", () => {
@@ -163,5 +165,35 @@ describe("mapas de una serie", () => {
     expect(mapsProblem([mix, mix], 3)).toMatch(/mismo mix/)
     expect(mapsProblem([mix, mix, mix, mix], 3)).toMatch(/Hasta 3/)
     expect(mapsProblem([mix], 1)).toBeNull()
+  })
+})
+
+describe("cupo y equipos por formato", () => {
+  it("solo el suizo completa el cupo", () => {
+    expect(swissCupo("swiss", { stages: 2, size: 16 })).toBe(24)
+    expect(swissCupo("swiss", { stages: 3, size: 16 })).toBe(32)
+    expect(swissCupo("swiss", { stages: 1, size: 8 })).toBe(8)
+    expect(swissCupo("groups", { groups: 4 })).toBeNull()
+    expect(swissCupo("single", {})).toBeNull()
+  })
+
+  it("avisa si los inscritos no entran en el formato", () => {
+    expect(teamsIssue("swiss", { stages: 2, size: 16 }, 21)).toBe(
+      "El suizo necesita 24 equipos y hay 21: faltan 3."
+    )
+    expect(teamsIssue("swiss", { stages: 2, size: 16 }, 26)).toBe(
+      "El suizo necesita 24 equipos y hay 26: sobran 2."
+    )
+    expect(teamsIssue("swiss", { stages: 2, size: 16 }, 24)).toBeNull()
+    expect(teamsIssue("groups", { groups: 4 }, 7)).toBe(
+      "Con 4 grupos hacen falta al menos 8 equipos y hay 7: faltan 1."
+    )
+    expect(teamsIssue("groups_double", { groups: 2 }, 17)).toBe(
+      "Con 2 grupos hacen falta entre 8 y 16 equipos y hay 17: sobran 1."
+    )
+    expect(teamsIssue("single", {}, 5)).toBeNull()
+    expect(teamsIssue("double", {}, 1)).toBe(
+      "Hacen falta al menos 2 equipos y hay 1: faltan 1."
+    )
   })
 })

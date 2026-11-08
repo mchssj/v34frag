@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   ArrowDownIcon,
-  ArrowLeftIcon,
   ArrowUpIcon,
   BanIcon,
   CircleAlertIcon,
@@ -11,6 +10,7 @@ import {
   LoaderIcon,
   ServerIcon,
 } from "lucide-react"
+import { BackButton } from "@/components/brand/BackButton"
 import { useState, type ReactNode } from "react"
 
 import { Badge, type BadgeVariant } from "@/components/ui/badge"
@@ -60,11 +60,14 @@ export function MixRoom({
   room,
   mapImage,
   adminAction,
+  highlights,
   tab = "general",
   onTab,
 }: {
   room: Room
   mapImage: string | null
+  /** Mix terminado: MVP y destacados arriba de las tablas, y los clips debajo (`MixHighlights`). */
+  highlights?: { top: ReactNode; bottom: ReactNode }
   /** "Borrar este mix" (solo admin, solo terminados o cancelados). */
   adminAction?: ReactNode
   /** Pestaña de estadísticas (en la URL, `?stats=`). */
@@ -72,28 +75,17 @@ export function MixRoom({
   onTab?: (tab: StatsTab) => void
 }) {
   const live = room.status === "live"
-  // El orden por columna es del componente; con las dos tablas a la vez, como las pestañas.
-  const [sort, setSort] = useState<StatsSort>(null)
-  const cols = columnsFor(tab, room.status)
-  const best = bestValues(cols, [...room.side1.players, ...room.side2.players])
-  const pickTab = (t: StatsTab) => {
-    setSort(null)
-    onTab?.(t)
-  }
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link
-          to="/matches"
-          search={{ kind: "mix" }}
+        <BackButton
+          fallback={{ to: "/matches", search: { kind: "mix" } }}
+          label="Partidas"
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
             "h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
           )}
-        >
-          <ArrowLeftIcon aria-hidden className="size-4" />
-          Volver
-        </Link>
+        />
         <span className="text-[13px] text-muted-foreground">
           {live ? "Mix en vivo" : "Mix"} · reportado por el servidor
         </span>
@@ -148,6 +140,37 @@ export function MixRoom({
         </Notice>
       )}
 
+      {highlights?.top}
+      <RoomStats room={room} tab={tab} onTab={onTab} />
+      {highlights?.bottom}
+    </section>
+  )
+}
+
+/**
+ * Pestañas de estadísticas y una tabla por bando. La usan la sala del mix y la página de la
+ * serie (con un mapa o la suma de todos).
+ */
+export function RoomStats({
+  room,
+  tab = "general",
+  onTab,
+}: {
+  room: Pick<Room, "status" | "clutchData" | "side1" | "side2">
+  tab?: StatsTab
+  onTab?: (tab: StatsTab) => void
+}) {
+  const live = room.status === "live"
+  // El orden por columna es del componente; con las dos tablas a la vez, como las pestañas.
+  const [sort, setSort] = useState<StatsSort>(null)
+  const cols = columnsFor(tab, room.status)
+  const best = bestValues(cols, [...room.side1.players, ...room.side2.players])
+  const pickTab = (t: StatsTab) => {
+    setSort(null)
+    onTab?.(t)
+  }
+  return (
+    <>
       <StatsTabs value={tab} onChange={pickTab} />
       {tab === "clutch" && room.clutchData !== true ? (
         <Card
@@ -183,7 +206,7 @@ export function MixRoom({
           />
         ))
       )}
-    </section>
+    </>
   )
 }
 

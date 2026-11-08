@@ -1,0 +1,6 @@
+CMLeague 2.9.3 --  Changelog
+
+- Al entrar a Jugar ves Jugar. Tu última partida queda en su propia pestaña, al lado.
+- Si una partida se cancela porque alguien no aceptó, te avisamos. Si aceptaste, vuelves a la cola con tu lugar, y la próxima partida tarda al menos 3 segundos en salir para que veas qué pasó.
+- Si aceptas justo en el último segundo, o cuenta o te dice que se terminó el tiempo. Ya no te queda una sanción por aceptar a último momento.
+- La pantalla de la sala se mantiene al día aunque otros jugadores hagan algo al mismo tiempo que tú.

@@ -1,164 +1,223 @@
 import { useQuery } from "@tanstack/react-query"
-import { cn } from "cn"
-import { useId, useState } from "react"
-import { toast } from "sonner"
+import { z } from "zod"
 
-import { errorMessage } from "@/api/errors"
-import { Card } from "@/components/ui/card"
+import { useMe } from "@/auth/queries"
+import { FilterChips } from "@/components/brand/FilterChips"
+import { SearchBox } from "@/components/brand/SearchBox"
+import { TeamCrest } from "@/components/brand/TeamCrest"
+import { Badge } from "@/components/ui/badge"
+import { SelectButton } from "@/components/data-table/DataTable"
 import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import { AdminHeader, QueryError, SaveBar } from "../../components/ui"
+  useServerTable,
+  type DataColumn,
+} from "@/components/data-table/useServerTable"
 import {
-  teamConfigOptions,
-  useSaveTeamConfig,
-  type TeamConfig,
+  AdminHeader,
+  AdminTable,
+  AdminTabs,
+  PickHint,
+  SplitLayout,
+} from "../../components/ui"
+import { ago } from "../../lib/format"
+import {
+  ADMIN_TEAMS_PER,
+  adminTeamsOptions,
+  type AdminTeam,
 } from "../api/queries"
+import { PcwBansTab } from "../components/PcwBansTab"
+import { TeamConfigTab } from "../components/TeamConfigTab"
+import { TeamPanel } from "../components/TeamPanel"
 
-// Mismos rangos que la API (TeamConfig).
-const RANGE: Record<keyof TeamConfig, [number, number]> = {
-  max_members: [2, 30],
-  max_led: [1, 10],
-  rename_days: [0, 365],
-}
-const valid = (k: keyof TeamConfig, n: number) =>
-  Number.isInteger(n) && n >= RANGE[k][0] && n <= RANGE[k][1]
+export const adminTeamsSearch = z.object({
+  tab: z.enum(["moderate", "pcw_bans", "config"]).optional().catch(undefined),
+  filter: z
+    .enum(["blocked", "incomplete", "no_leader", "in_event"])
+    .optional()
+    .catch(undefined),
+  q: z.string().max(60).optional().catch(undefined),
+  page: z.number().int().min(1).optional().catch(undefined),
+  team: z.string().optional().catch(undefined),
+})
+export type AdminTeamsSearch = z.infer<typeof adminTeamsSearch>
 
-/** Administración › Equipos: reglas de los equipos oficiales. Los equipos se crean al instante, sin aprobación. */
-export function AdminTeamsPage() {
-  const id = useId()
-  const config = useQuery(teamConfigOptions)
-  const save = useSaveTeamConfig()
-  const [draft, setDraft] = useState<TeamConfig | null>(null)
-  const current = draft ?? config.data
-  const dirty =
-    !!draft &&
-    !!config.data &&
-    (draft.max_members !== config.data.max_members ||
-      draft.max_led !== config.data.max_led)
-  const ok =
-    !!current &&
-    valid("max_members", current.max_members) &&
-    valid("max_led", current.max_led)
+const COLUMNS: DataColumn<AdminTeam>[] = [
+  {
+    id: "team",
+    header: "Equipo",
+    headClassName: "pl-4",
+    cellClassName: "py-1.5 pl-2",
+    cell: ({ row: { original: t } }) => (
+      <SelectButton>
+        <span className="flex min-w-0 items-center gap-2">
+          <TeamCrest team={t} size="xs" />
+          <span className="truncate font-semibold">{t.name}</span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {t.tag}
+          </span>
+          {t.blocked && <Badge variant="danger">palabra bloqueada</Badge>}
+        </span>
+      </SelectButton>
+    ),
+  },
+  {
+    id: "leader",
+    header: "Líder",
+    cell: ({ row: { original: t } }) =>
+      t.captain ? t.captain.alias : <Badge variant="warn">sin líder</Badge>,
+  },
+  {
+    id: "members",
+    header: "Plantel",
+    cellClassName: "font-mono text-xs",
+    cell: ({ row: { original: t } }) => `${t.members}/10`,
+  },
+  {
+    id: "five",
+    header: "5v5",
+    cell: ({ row: { original: t } }) =>
+      t.players >= 5 ? (
+        <Badge variant="win">apto</Badge>
+      ) : (
+        <Badge variant="muted">faltan {5 - t.players}</Badge>
+      ),
+  },
+  {
+    id: "events",
+    header: "Torneos",
+    cellClassName: "font-mono text-xs",
+    cell: ({ row: { original: t } }) => t.events_active || "—",
+  },
+  {
+    id: "change",
+    header: "Último cambio",
+    headClassName: "pr-4",
+    cellClassName: "pr-4 text-muted-foreground",
+    cell: ({ row: { original: t } }) =>
+      t.last_change_at ? ago(t.last_change_at) : "—",
+  },
+]
 
-  const field = (k: keyof TeamConfig) => (v: string) =>
-    current && setDraft({ ...current, [k]: v === "" ? -1 : Number(v) })
-
+/** Administración › Equipos: Moderar equipos y Sanciones de PCW (moderadores y admins) y Configuración equipo (admin). */
+export function AdminTeamsPage({
+  search,
+  onSearch,
+}: {
+  search: AdminTeamsSearch
+  onSearch: (patch: Partial<AdminTeamsSearch>) => void
+}) {
+  const isAdmin = useMe().data?.role === "admin"
+  const tab =
+    search.tab === "config" && !isAdmin
+      ? "moderate"
+      : (search.tab ?? "moderate")
   return (
-    <section className={cn("flex flex-col gap-5", dirty && "pb-24")}>
+    <section className="flex flex-col gap-5">
       <AdminHeader
         title="Equipos"
-        subtitle="Cualquier usuario con SteamID crea su equipo al instante y queda como líder. Acá van las reglas que valen para todos los equipos oficiales."
+        subtitle={
+          isAdmin
+            ? "Corregir equipos a mano y las reglas de todos. Cada cambio del staff le avisa al líder y queda en el historial."
+            : "Corregir nombres, logos y planteles. Cada cambio le avisa al líder y queda en el historial."
+        }
       />
-      {config.isError ? (
-        <QueryError
-          error={config.error}
-          onRetry={() => void config.refetch()}
-        />
-      ) : !current ? (
-        <Skeleton className="h-48 max-w-[560px] rounded-xl" />
+      <AdminTabs
+        label="Equipos"
+        value={tab}
+        onChange={(t) => onSearch({ tab: t === "moderate" ? undefined : t })}
+        tabs={[
+          { key: "moderate", label: "Moderar equipos" },
+          { key: "pcw_bans", label: "Sanciones de PCW" },
+          ...(isAdmin
+            ? [{ key: "config" as const, label: "Configuración equipo" }]
+            : []),
+        ]}
+      />
+      {tab === "pcw_bans" ? (
+        <PcwBansTab />
+      ) : tab === "config" ? (
+        <TeamConfigTab />
       ) : (
-        <Card
-          variant="outline"
-          className="flex max-w-[560px] flex-col gap-4 p-4"
-        >
-          <h2 className="text-[17px] font-bold">Plantel y líderes</h2>
-          <NumberField
-            id={`${id}-m`}
-            label="Máximo de miembros"
-            help="Jugadores, suplentes y coach. Bajarlo no saca a nadie: solo no entra gente nueva."
-            value={current.max_members}
-            range={RANGE.max_members}
-            onChange={field("max_members")}
-          />
-          <NumberField
-            id={`${id}-l`}
-            label="Equipos por líder"
-            help="De cuántos equipos activos puede ser líder una persona (al crear uno o al recibir el liderazgo). Bajarlo no le quita el liderazgo a nadie."
-            value={current.max_led}
-            range={RANGE.max_led}
-            onChange={field("max_led")}
-          />
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Para inscribirse en un torneo, cada equipo necesita los jugadores
-            activos que pide el modo. En el ranking de equipos solo aparecen los
-            que tienen al menos 5 jugadores o suplentes.
-          </p>
-        </Card>
-      )}
-
-      {dirty && (
-        <SaveBar
-          title="Cambios sin guardar"
-          hint={
-            !ok
-              ? `Miembros: de ${RANGE.max_members[0]} a ${RANGE.max_members[1]}. Equipos por líder: de ${RANGE.max_led[0]} a ${RANGE.max_led[1]}.`
-              : save.isError
-                ? errorMessage(save.error)
-                : "Vale para todos los equipos desde ahora."
-          }
-          error={!ok || save.isError}
-          pending={save.isPending}
-          disabled={!ok}
-          onDiscard={() => {
-            setDraft(null)
-            save.reset()
-          }}
-          onSave={() =>
-            draft &&
-            save.mutate(draft, {
-              onSuccess: () => {
-                setDraft(null)
-                toast.success("Reglas de los equipos guardadas.")
-              },
-            })
-          }
-        />
+        <Moderate search={search} onSearch={onSearch} isAdmin={isAdmin} />
       )}
     </section>
   )
 }
 
-function NumberField({
-  id,
-  label,
-  help,
-  value,
-  range,
-  onChange,
+function Moderate({
+  search,
+  onSearch,
+  isAdmin,
 }: {
-  id: string
-  label: string
-  help: string
-  value: number
-  range: [number, number]
-  onChange: (v: string) => void
+  search: AdminTeamsSearch
+  onSearch: (patch: Partial<AdminTeamsSearch>) => void
+  isAdmin: boolean
 }) {
+  const page = search.page ?? 1
+  const list = useQuery(
+    adminTeamsOptions({ filter: search.filter, q: search.q, page })
+  )
+  const table = useServerTable({
+    columns: COLUMNS,
+    data: list.data?.items,
+    total: list.data?.total,
+    page,
+    per: ADMIN_TEAMS_PER,
+    onPage: (p) => onSearch({ page: p === 1 ? undefined : p }),
+    getRowId: (t) => t.id,
+  })
+  const filter = (patch: Partial<AdminTeamsSearch>) =>
+    onSearch({ ...patch, page: undefined })
+  const selected = list.data?.items.find((t) => t.id === search.team)
+
   return (
-    <Field
-      orientation="horizontal"
-      className="gap-3 has-[>[data-slot=field-content]]:items-center"
-    >
-      <FieldContent className="leading-normal">
-        <FieldLabel htmlFor={id} className="text-sm leading-none">
-          {label}
-        </FieldLabel>
-        <FieldDescription>{help}</FieldDescription>
-      </FieldContent>
-      <Input
-        id={id}
-        type="number"
-        min={range[0]}
-        max={range[1]}
-        value={value < 0 ? "" : value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-24 text-center font-mono"
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <FilterChips
+          label="Filtrar equipos"
+          value={search.filter}
+          onChange={(v) => filter({ filter: v })}
+          options={[
+            { value: undefined, label: "Todos" },
+            { value: "blocked", label: "Palabra bloqueada" },
+            { value: "incomplete", label: "Incompletos" },
+            { value: "no_leader", label: "Sin líder" },
+            { value: "in_event", label: "En un torneo" },
+          ]}
+        />
+        <div className="w-full sm:ml-auto sm:w-72">
+          <SearchBox
+            value={search.q}
+            placeholder="Nombre, sigla o jugador"
+            label="Buscar equipo"
+            onChange={(q) => filter({ q })}
+          />
+        </div>
+      </div>
+      <SplitLayout
+        asideLabel="Equipo elegido"
+        main={
+          <AdminTable
+            table={table}
+            query={list}
+            className="min-w-[680px]"
+            empty="Ningún equipo con esos filtros."
+            selection={{
+              isSelected: (t) => t.id === search.team,
+              onSelect: (t) => onSearch({ team: t.id }),
+            }}
+          />
+        }
+        aside={
+          selected ? (
+            <TeamPanel key={selected.id} team={selected} isAdmin={isAdmin} />
+          ) : (
+            <PickHint
+              title="Elige un equipo"
+              text="Verás su plantel, las acciones que puedes hacer y el historial de cambios."
+            />
+          )
+        }
       />
-    </Field>
+    </div>
   )
 }

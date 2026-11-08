@@ -5,6 +5,7 @@ import type {
   MmMatch,
   MmPlayer,
   MmRecent,
+  MmReplacement,
   MmVeto,
 } from "../types"
 
@@ -19,6 +20,48 @@ export function teamPlayers(lobby: MmLobby, team: Team) {
   return lobby.players
     .filter((p) => p.team === team)
     .sort((a, b) => b.elo - a.elo)
+}
+
+/** Si el jugador entró de reemplazo (tomado o ya en el servidor), su pedido (replanteo 78). */
+export function replacementOf(
+  lobby: MmLobby,
+  playerId: string
+): MmReplacement | undefined {
+  return lobby.replacements?.find(
+    (r) => r.status !== "open" && r.by_player_id === playerId
+  )
+}
+
+/**
+ * Las filas de un equipo (replanteo 78): el reemplazo ocupa el lugar del que se fue, y los que se fueron con reemplazo
+ * van al final en una línea. En la vista previa del link, el que se fue sin reemplazo deja su lugar libre (`open`).
+ */
+export function roomRows(lobby: MmLobby, team: Team, preview = false) {
+  const players = teamPlayers(lobby, team)
+  const reps = (lobby.replacements ?? []).filter((r) => r.team === team)
+  const open = preview ? reps.find((r) => r.status === "open") : undefined
+  const byReplaced = new Map(
+    reps
+      .filter((r) => r.status !== "open" && r.by_player_id)
+      .map((r) => [r.replaced_player_id, r.by_player_id])
+  )
+  const replacements = new Set(byReplaced.values())
+  const main: MmPlayer[] = []
+  const gone: MmPlayer[] = []
+  for (const p of players) {
+    if (replacements.has(p.player_id)) continue
+    if (open && p.player_id === open.replaced_player_id) continue
+    const by = byReplaced.get(p.player_id)
+    const sub = by ? players.find((x) => x.player_id === by) : undefined
+    if (sub) {
+      main.push(sub)
+      gone.push(p)
+    } else main.push(p)
+  }
+  // Un reemplazo cuyo reemplazado no está en la lista (no debería pasar): igual se muestra.
+  for (const p of players)
+    if (replacements.has(p.player_id) && !main.includes(p)) main.push(p)
+  return { main, gone, open }
 }
 
 /** "team_<capitán>", como en el veto; sin capitán todavía, "Equipo A/B". */

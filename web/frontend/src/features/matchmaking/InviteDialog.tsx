@@ -40,7 +40,7 @@ export function InviteDialog({ invite }: { invite: MmInvite }) {
         <DialogHeader>
           <DialogTitle>Te invitaron a un grupo</DialogTitle>
           <DialogDescription>
-            Si aceptás, salís de la cola y de tu grupo actual.
+            Si aceptas, sales de la cola y de tu grupo actual.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center gap-3 rounded-xl border p-3">

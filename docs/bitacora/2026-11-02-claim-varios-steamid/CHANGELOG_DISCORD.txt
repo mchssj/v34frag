@@ -1,0 +1,5 @@
+CMLeague 2.9.1 --  Changelog
+
+- Vinculas tu SteamID en tu primera partida: busca partida en Jugar y escribe !claim con tu código en el chat.
+- ¿Juegas desde otra PC? Genera un código en Mi perfil › Vinculación y escribe !claim en la partida: el SteamID nuevo se suma a tu cuenta al instante, sin esperar a un admin.
+- Ya no te quedas de espectador si entras a tu partida con otra cuenta de Steam: el servidor te recuerda el !claim y, cuando lo haces, te pasa a tu equipo.

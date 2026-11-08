@@ -19,11 +19,17 @@ export const playerKeys = {
     ["public-player", k(nick), "matches", toMatchesQuery(s)] as const,
   maps: (nick: string) => ["public-player", k(nick), "maps"] as const,
   medals: (nick: string) => ["public-player", k(nick), "medals"] as const,
+  medalList: (nick: string) =>
+    ["public-player", k(nick), "medals", "list"] as const,
+  medalProgress: (nick: string) =>
+    ["public-player", k(nick), "medals", "progress"] as const,
   adjustments: (nick: string) =>
     ["public-player", k(nick), "adjustments"] as const,
   teams: (nick: string) => ["public-player", k(nick), "teams"] as const,
   seasons: (nick: string) => ["public-player", k(nick), "seasons"] as const,
   titles: (nick: string) => ["public-player", k(nick), "titles"] as const,
+  // Por id: la ruta de los destacados no acepta el nick (replanteo 76).
+  featured: (id: string) => ["public-player", "featured", id] as const,
 }
 
 export function playerOptions(nick: string) {
@@ -123,6 +129,38 @@ export function medalsOptions(nick: string) {
   })
 }
 
+/** Todas sus medallas, con el dibujo (replanteo 79), para Logros. */
+export function medalListOptions(nick: string) {
+  return queryOptions({
+    queryKey: playerKeys.medalList(nick),
+    queryFn: async ({ signal }) =>
+      (
+        await unwrap(
+          api.GET("/api/v1/players/{id}/medals", {
+            params: { ...path(nick), query: { per: 100 } },
+            signal,
+          })
+        )
+      ).items,
+    staleTime: 5 * MINUTE,
+  })
+}
+
+/** Cada medalla activa con su progreso (las bloqueadas de Logros). */
+export function medalProgressOptions(nick: string) {
+  return queryOptions({
+    queryKey: playerKeys.medalProgress(nick),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/players/{id}/medals/progress", {
+          params: path(nick),
+          signal,
+        })
+      ),
+    staleTime: 5 * MINUTE,
+  })
+}
+
 export function adjustmentsOptions(nick: string) {
   return queryOptions({
     queryKey: playerKeys.adjustments(nick),
@@ -184,5 +222,22 @@ export function titlesOptions(nick: string) {
         )
       ).items,
     staleTime: 5 * MINUTE,
+  })
+}
+
+/** Los clips destacados de la ficha (elegidos o, en automático, los mejores), en orden. */
+export function featuredClipsOptions(playerId: string) {
+  return queryOptions({
+    queryKey: playerKeys.featured(playerId),
+    queryFn: async ({ signal }) =>
+      (
+        await unwrap(
+          api.GET("/api/v1/players/{id}/clips/featured", {
+            params: path(playerId),
+            signal,
+          })
+        )
+      ).items,
+    staleTime: MINUTE,
   })
 }

@@ -70,7 +70,7 @@ export function previewSound(url: string | null) {
 
 export function alertMatchFound(soundUrl?: string | null) {
   playSound(soundUrl)
-  notify("Partida encontrada", "Tenés 20 segundos para aceptar.", "mm-found")
+  notify("Partida encontrada", "Tienes 20 segundos para aceptar.", "mm-found")
 }
 
 export function alertInvite(from: string) {
@@ -110,7 +110,7 @@ export function alertServerReady() {
   tones([520, 780, 1040], 0.16)
   notify(
     "Tu servidor está listo",
-    "Entrá antes de que venza el tiempo.",
+    "Entra antes de que venza el tiempo.",
     "mm-server"
   )
 }

@@ -1,0 +1,6 @@
+CMLeague 2.9.24 --  Changelog
+
+Torneos
+
+- Los moderadores ahora también pueden crear torneos, normales o históricos. Como los de los organizadores, quedan pendientes hasta que un admin los aprueba.
+- El premio de un torneo ahora puede tener monto y divisa: dólares, pesos argentinos u otra que elijas, más un detalle para lo que no es plata (medallas, roles, etc.). Lo vas a ver así: "$ 50.000 ARS + rol en Discord".

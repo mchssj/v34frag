@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react"
+import { act, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { renderWithQuery } from "@/test/render"
@@ -39,6 +39,26 @@ describe("Administración › Matchmaking", () => {
       "2v2",
       "1v1",
     ])
+  })
+
+  it("General: imagen del MVP, sin imagen se ofrece subirla; con imagen, quitarla", async () => {
+    const { user, source, queryClient } = setup()
+    expect(
+      await screen.findByRole("button", { name: "Subir imagen" })
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Quitar" })).toBeNull()
+
+    // Subir pasa por el recorte (canvas): acá se sube por la fuente y se vuelve a pedir la configuración.
+    await source.uploadMvpImage(new Blob(["x"], { type: "image/webp" }))
+    await act(() => queryClient.invalidateQueries())
+    expect(
+      await screen.findByRole("img", { name: "Imagen actual del MVP" })
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Quitar" }))
+    expect(
+      await screen.findByRole("button", { name: "Subir imagen" })
+    ).toBeInTheDocument()
+    expect((await source.adminConfig()).mvp_image_url).toBeNull()
   })
 
   it("General: no deja apagar todos los modos", async () => {
@@ -91,14 +111,51 @@ describe("Administración › Matchmaking", () => {
     expect(cfg.modes.find((m) => m.mode === "2v2")!.affects_elo).toBe(true)
   })
 
-  it("Reportes: excluir crea la exclusión y se puede levantar", async () => {
+  it("General: equipos parejos con el rating, apagado por defecto; encenderlo y cambiar el tope", async () => {
+    const { user, source } = setup()
+    const sw = await screen.findByRole("switch", { name: "Apagado" })
+    expect(sw).not.toBeChecked()
+    expect(screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+64/)).toBeInTheDocument()
+
+    await user.click(sw)
+    const cap = screen.getByLabelText("Tope del ajuste (±)")
+    await user.clear(cap)
+    await user.type(cap, "50")
+    expect(screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+50/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
+    const cfg = await source.adminConfig()
+    expect(cfg.balance_rating).toBe(true)
+    expect(cfg.balance_rating_cap).toBe(50)
+    expect(cfg.balance_rating_weight).toBe(200)
+  })
+
+  it("General: reemplazos apagados por defecto; encenderlos y cambiar el porcentaje del voto", async () => {
+    const { user, source } = setup()
+    const sw = await screen.findByRole("switch", { name: "Reemplazos" })
+    expect(sw).not.toBeChecked()
+    await user.click(sw)
+    const pct = screen.getByLabelText("!callreplace pasa con más del (%)")
+    await user.clear(pct)
+    await user.type(pct, "90")
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
+    const cfg = await source.adminConfig()
+    expect(cfg.replace_enabled).toBe(true)
+    expect(cfg.replace_vote_pct).toBe(90)
+    expect(cfg.replace_link_minutes).toBe(10)
+  })
+
+  it("Reportes: excluir crea la exclusión; las sanciones se levantan en Baneos", async () => {
     const { user, source } = setup()
     await user.click(screen.getByRole("tab", { name: "Reportes" }))
     await user.click(await screen.findByRole("button", { name: "Excluir 3 d" }))
-    expect(await screen.findByText(/AFK · hasta/)).toBeInTheDocument()
-    expect((await source.adminBans())[0]!.nick).toBe("gordo")
-    await user.click(screen.getByRole("button", { name: "Levantar" }))
-    expect(await screen.findByText("Nadie excluido.")).toBeInTheDocument()
+    await vi.waitFor(async () =>
+      expect((await source.adminBans())[0]?.nick).toBe("gordo")
+    )
+    expect(
+      screen.getByRole("link", { name: "Baneos › Matchmaking" })
+    ).toHaveAttribute("href", "/admin/bans")
+    expect(screen.queryByText("Sanciones de la cola")).toBeNull()
   })
 
   it("Métricas: suma los días por modo", async () => {

@@ -16,6 +16,7 @@ await build({
   entryPoints: {
     server: 'src/node.ts',
     'season-tick': 'scripts/season-tick.mts',
+    'medals-tick': 'scripts/medals-tick.mts',
     'demos-sftp': 'scripts/demos-sftp.mts',
     'notify-tick': 'scripts/notify-tick.mts',
     'mm-worker': 'scripts/mm-worker.mts',

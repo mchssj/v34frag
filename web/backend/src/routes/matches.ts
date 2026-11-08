@@ -14,6 +14,10 @@ import {
   ChatParam,
   ChatQuery,
   GameCandidate,
+  GameCandidateList,
+  GameCandidateQuery,
+  GameReviewBody,
+  MatchGameParam,
   MatchDetail,
   MatchList,
   MatchListQuery,
@@ -27,7 +31,7 @@ import {
 } from '../schemas/matches';
 import type { MixMvp } from '../schemas/live';
 import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
-import { clutchesOf, demoUrl, MATCH_LIST, mixReview, sumSeries, toSummary, vetoState, type MatchRow, type StatRow } from '../services/matches';
+import { clutchesOf, demoUrl, markHistoricSides, MATCH_LIST, mixReview, sumSeries, toSummary, vetoState, type MatchRow, type StatRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
 
@@ -113,6 +117,7 @@ const result = createRoute({
   description:
     'El organizador del torneo o un admin, cuando el resultado no llegó del servidor (caída, W.O. o corrección). ' +
     'Mandar `maps` (rondas de cada mapa; no puede haber mapas empatados), `walkover` (id del equipo que gana) o `clear: true`. ' +
+    '`played_at`, con `maps` o `walkover`: la fecha en que se jugó (por ejemplo, en un torneo histórico). ' +
     'Si cambia el ganador, la llave se corrige sola; falla si ya se jugaron partidas que dependían de esta.',
   request: { params: MatchParam, body: { required: true, ...json(ResultBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403) },
@@ -123,10 +128,11 @@ const candidates = createRoute({
   summary: 'Mixes para vincular a una partida de torneo',
   description:
     'Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta ' +
-    'partida), jugados por al menos un inscrito de alguno de los dos equipos. Primero los vinculados y después los que más inscritos ' +
-    'tienen. `side1` dice qué bando del mix fue el equipo 1. Hasta 20.',
-  request: { params: MatchParam },
-  responses: { 200: { description: 'Mixes', ...json(z.array(GameCandidate)) }, ...errorResponses(401, 403, 404) },
+    'partida), jugados por al menos un inscrito de alguno de los dos equipos. En un torneo histórico, cualquier mix terminado y sin ' +
+    'vincular. Primero los vinculados y después los que más inscritos tienen. `side1` dice qué bando del mix fue el equipo 1 (sin ' +
+    'inscritos que lo decidan, lo elige quien vincula). Filtros por fecha, mapa y servidor, y paginado (hasta 100 por página).',
+  request: { params: MatchParam, query: GameCandidateQuery },
+  responses: { 200: { description: 'Mixes', ...json(GameCandidateList) }, ...errorResponses(400, 401, 403, 404) },
 });
 
 const seriesMaps = createRoute({
@@ -135,7 +141,8 @@ const seriesMaps = createRoute({
   description:
     'Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya ' +
     'jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la ' +
-    'partida dice "Sin detalle de la partida" en ese mapa). Si la serie queda definida, se cierra y la llave avanza; si no, queda en ' +
+    'partida dice "Sin detalle de la partida" en ese mapa; `played_at` opcional). Lo que vincula un organizador queda por aprobar: ' +
+    'cuenta en la llave, pero sus stats no se ven hasta que lo apruebe un admin o moderador. Si la serie queda definida, se cierra y la llave avanza; si no, queda en ' +
     'curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si ' +
     'un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.',
   request: { params: MatchParam, body: { required: true, ...json(SeriesMapsBody) } },
@@ -147,6 +154,17 @@ const resetVeto = createRoute({
   summary: 'Reiniciar el veto', description: 'El organizador del torneo o un admin.',
   request: { params: MatchParam },
   responses: { ...done, ...errorResponses(400, 401, 403) },
+});
+
+const gameReview = createRoute({
+  method: 'post', path: '/api/v1/matches/{id}/games/{gameId}/review', tags: ['Torneos'], security: bearer, middleware: [requireUser] as const,
+  summary: 'Aprobar o rechazar un mix vinculado',
+  description:
+    'Admin o moderador, para un mix que vinculó un organizador. Aprobado: sus stats se ven y la serie puede sumar al ranking. ' +
+    'Rechazado: se desvincula y el mapa queda con el mismo marcador como resultado a mano (la llave no cambia). Al organizador le ' +
+    'llega el aviso `game_reviewed`. `409` si ya estaba aprobado.',
+  request: { params: MatchGameParam, body: { required: true, ...json(GameReviewBody) } },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
 });
 
 const adminDelete = createRoute({
@@ -240,11 +258,19 @@ export const matches = createRouter()
     const m = { ...(base as unknown as MatchRow), ...(extra as unknown as DetailRow) };
     const user = currentUser(c);
     const series = m.kind !== 'mix';
+    // (replanteo 80) Quien gestiona el torneo ve también los mixes vinculados que esperan aprobación.
+    const canManage = user ? !!(m.event_id ? must(await sb.rpc('can_manage_event', { p_event: m.event_id })) : await isAdmin(c)) : false;
 
     const [ev, games, stats, vetos, pool, server, caps, liveGame] = await Promise.all([
       m.event_id ? sb.from('events').select('config').eq('id', m.event_id).maybeSingle().then(must) : Promise.resolve(null),
       series
-        ? sb.from('matches').select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, parent_side1').eq('parent_match_id', id).order('played_at').then(mustHave)
+        ? sb
+            .from('matches')
+            .select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, demo_size, parent_side1, parent_approved')
+            .eq('parent_match_id', id)
+            .order('played_at')
+            .then(mustHave)
+            .then((gs) => gs.filter((g) => canManage || (g as { parent_approved?: boolean | null }).parent_approved !== false))
         : Promise.resolve([]),
       series
         ? Promise.resolve([])
@@ -296,18 +322,23 @@ export const matches = createRouter()
     const clutchData = !series && !!clutchInfo?.clutch_data;
 
     // Torneo o PCW: stats de la serie, sumadas sobre los juegos terminados y en los lados de la serie (E21).
+    // Cada juego también por separado, con su Δ ELO y sus clutches (página de la serie, 2026-11-01).
     const finished = games.filter((g) => g.status === 'finished');
-    const seriesStats = finished.length
-      ? sumSeries(
-          mustHave(
-            await sb
-              .from('match_player_stats')
-              .select('match_id, player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses')
-              .in('match_id', finished.map((g) => g.id)),
-          ),
-          new Map(finished.map((g) => [g.id, g.parent_side1 === 2])),
-        )
-      : [];
+    const finishedIds = finished.map((g) => g.id);
+    const flipped = new Map(finished.map((g) => [g.id, g.parent_side1 === 2]));
+    const [gameRows, gameClutches, gameClutchInfo] = finished.length
+      ? await Promise.all([
+          sb
+            .from('match_player_stats')
+            .select('match_id, player_id, steam_id, nick, team, kills, deaths, assists, headshots, damage, rounds, rating, elo_delta, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses')
+            .in('match_id', finishedIds)
+            .then(mustHave),
+          sb.from('match_clutches').select('match_id, steam_id, vs, won').in('match_id', finishedIds).then(mustHave),
+          sb.from('match_clutch_data').select('match_id, clutch_data').in('match_id', finishedIds).then(mustHave),
+        ])
+      : [[], [], []];
+    const withClutches = new Set(gameClutchInfo.filter((x) => x.clutch_data).map((x) => x.match_id));
+    const seriesStats = finished.length ? sumSeries(gameRows, flipped) : [];
 
     // Stats del mix (o de la serie) con el alias y el ELO actual de cada jugador (con ficha, el de su SteamID principal).
     const linked = [...stats, ...seriesStats].map((s) => s.player_id).filter((x): x is string => !!x);
@@ -330,7 +361,29 @@ export const matches = createRouter()
     const players = stats
       .map((s) => lineOf(s, clutchData ? clutchesOf(clutchRows.filter((r) => r.steam_id === s.steam_id)) : null))
       .sort(bySideAndRating);
-    const series_players = seriesStats.map((s) => lineOf(s, null)).sort(bySideAndRating);
+    // Juego por juego, en los lados de la serie. La clave del jugador es la misma de sumSeries.
+    const keyOf = (s: { player_id: string | null; steam_id: string; team: number }) => `${s.player_id ?? s.steam_id}:${s.team}`;
+    const gamePlayers = new Map(
+      finished.map((g) => {
+        const rows = gameRows.filter((r) => r.match_id === g.id);
+        // Una ficha puede haber jugado con más de un SteamID: sus clutches se buscan por todos.
+        const steamsOf = (s: StatRow) => new Set(rows.filter((r) => (r.player_id ?? r.steam_id) === (s.player_id ?? s.steam_id)).map((r) => r.steam_id));
+        const lines = sumSeries(rows, flipped).map((s) => {
+          const steams = steamsOf(s);
+          return { key: keyOf(s), line: lineOf(s, withClutches.has(g.id) ? clutchesOf(gameClutches.filter((c) => c.match_id === g.id && c.steam_id && steams.has(c.steam_id))) : null) };
+        });
+        return [g.id, lines] as const;
+      }),
+    );
+    // Clutches de la serie: la suma de los juegos con datos de clutch (null si ninguno tiene).
+    const seriesClutches = (key: string) => {
+      const found = [...gamePlayers.values()].flat().filter((x) => x.key === key && x.line.clutches).map((x) => x.line.clutches!);
+      if (!found.length) return null;
+      const out = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+      for (const c of found) for (const k of Object.keys(out) as (keyof typeof out)[]) out[k] += c[k] ?? 0;
+      return out;
+    };
+    const series_players = seriesStats.map((s) => lineOf(s, withClutches.size ? seriesClutches(keyOf(s)) : null)).sort(bySideAndRating);
     const mvp = players.filter((p) => (p.rounds ?? 0) > 0).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0] ?? null;
 
     // Lo que puede hacer quien consulta.
@@ -340,10 +393,9 @@ export const matches = createRouter()
       ? vetoState(pool, vetos, m.best_of, m.team1_id, m.team2_id, ((ev?.config as Record<string, unknown> | undefined)?.decider_versions as Record<string, string>) ?? {})
       : null;
     if (user) {
-      const [code, canChat, canManage, participant] = await Promise.all([
+      const [code, canChat, participant] = await Promise.all([
         series ? sb.rpc('match_link_code', { p_match: id }).then(must) : Promise.resolve(null),
         sb.rpc('match_chat_can_write', { p_match: id }).then(must),
-        m.event_id ? sb.rpc('can_manage_event', { p_event: m.event_id }).then(must) : isAdmin(c),
         sb.rpc('is_match_participant', { p_match: id }).then(must),
       ]);
       link_code = (code as string | null) ?? null;
@@ -356,8 +408,11 @@ export const matches = createRouter()
       };
     }
 
+    const shown = new Set(games.map((g) => g.id));
+    const approvedOf = new Map(games.map((g) => [g.id, (g as { parent_approved?: boolean | null }).parent_approved ?? true]));
+    const [summaryWithHistoric] = await markHistoricSides(sb, [toSummary(m)]);
     const body = {
-      ...toSummary(m),
+      ...summaryWithHistoric,
       stage: m.stage,
       phase: m.phase,
       grp: m.grp,
@@ -372,12 +427,23 @@ export const matches = createRouter()
       roster1,
       roster2,
       maps_detail: Array.isArray(m.maps)
-        ? (m.maps as { map?: string; r1?: number; r2?: number; game_id?: string }[]).map((x) => ({ map: x.map ?? null, r1: x.r1 ?? null, r2: x.r2 ?? null, game_id: x.game_id ?? null }))
+        ? (m.maps as { map?: string; r1?: number; r2?: number; game_id?: string; played_at?: string }[]).map((x) => {
+            const game = x.game_id && shown.has(x.game_id) ? x.game_id : null;
+            return {
+              map: x.map ?? null, r1: x.r1 ?? null, r2: x.r2 ?? null, game_id: game,
+              approved: x.game_id ? (game ? (approvedOf.get(game) ?? true) : false) : null,
+              played_at: x.played_at ?? null,
+            };
+          })
         : [],
       games: games.map((g) => {
         // Las rondas del mix van en el orden de los bandos de la partida (parent_side1 dice cuál bando del mix es el equipo 1).
         const flip = g.parent_side1 === 2;
-        return { id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at, demo_url: demoUrl(config, g) };
+        return {
+          id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at,
+          demo_url: demoUrl(config, g), demo_size: g.demo_size ?? null, demo_status: g.demo_status,
+          players: (gamePlayers.get(g.id) ?? []).map((x) => x.line).sort(bySideAndRating),
+        };
       }),
       players,
       series_players,
@@ -447,22 +513,37 @@ export const matches = createRouter()
     return c.body(null, 204);
   })
   .openapi(result, async (c) => {
-    const { maps, walkover, clear } = c.req.valid('json');
+    const { maps, walkover, clear, played_at } = c.req.valid('json');
+    const id = c.req.valid('param').id;
     must(
       await c.var.sb.rpc('event_set_result', {
-        p_match: c.req.valid('param').id,
+        p_match: id,
         p_maps: (maps ?? null) as never,
         p_walkover_winner: walkover,
         p_clear: clear ?? false,
       }),
     );
+    if (played_at && !clear) must(await c.var.sb.rpc('match_set_played_at', { p_match: id, p_at: played_at }));
     return c.body(null, 204);
   })
   .openapi(candidates, async (c) => {
-    return c.json(mustHave(await c.var.sb.rpc('match_game_candidates', { p_match: c.req.valid('param').id })), 200);
+    const p = c.req.valid('query');
+    const rows = mustHave(
+      await c.var.sb.rpc('match_game_candidates', {
+        p_match: c.req.valid('param').id,
+        p_from: p.from ?? null, p_to: p.to ?? null, p_map: p.map ?? null, p_server: p.server ?? null,
+        p_limit: p.per, p_offset: (p.page - 1) * p.per,
+      } as never),
+    ) as unknown as (z.infer<typeof GameCandidate> & { total: number })[];
+    const total = rows[0]?.total ?? 0;
+    return c.json(envelope(rows.map(({ total: _t, ...r }) => r), Number(total), p), 200);
   })
   .openapi(seriesMaps, async (c) => {
     must(await c.var.sb.rpc('match_set_maps', { p_match: c.req.valid('param').id, p_maps: c.req.valid('json').maps as never }));
+    return c.body(null, 204);
+  })
+  .openapi(gameReview, async (c) => {
+    must(await c.var.sb.rpc('match_review_game', { p_game: c.req.valid('param').gameId, p_approve: c.req.valid('json').approve }));
     return c.body(null, 204);
   })
   .openapi(resetVeto, async (c) => {

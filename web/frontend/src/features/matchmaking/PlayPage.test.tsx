@@ -1,4 +1,4 @@
-import { act, screen, within } from "@testing-library/react"
+import { act, screen, waitFor, within } from "@testing-library/react"
 import type { AnchorHTMLAttributes, ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -12,7 +12,11 @@ import { ReconnectBanner } from "./ReconnectBanner"
 import { MmSourceContext } from "./source"
 
 vi.mock("sonner", () => ({
-  toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  }),
 }))
 vi.mock("./alert", () => ({
   alertMatchFound: vi.fn(),
@@ -102,6 +106,41 @@ describe("PlayPage (con la demo)", () => {
     ).toHaveLength(1)
   })
 
+  it("buscando, avisa en Discord y después espera los 15 minutos", async () => {
+    const { user } = setup()
+    await user.click(await searchButton())
+    const avisar = await screen.findByRole("button", {
+      name: "Avisar en Discord",
+    })
+    await waitFor(() => expect(avisar).toBeEnabled())
+    expect(
+      screen.getByText("Le avisa al rol @player que hay gente buscando")
+    ).toBeInTheDocument()
+    await user.click(avisar)
+    expect(
+      await screen.findByText(
+        /Ya se avisó hace poco: el próximo aviso, en 1[45]:/
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Avisar en Discord" })
+    ).toBeDisabled()
+  })
+
+  it("si cerró la web buscando, al volver Jugar le dice por qué ya no busca", async () => {
+    const { user, controls } = setup()
+    await user.click(await searchButton())
+    await screen.findByRole("button", { name: "Avisar en Discord" })
+    act(() => controls.closeWeb())
+    expect(
+      await screen.findByText("Te sacamos de la cola porque cerraste la web")
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Entendido" }))
+    expect(
+      screen.queryByText("Te sacamos de la cola porque cerraste la web")
+    ).toBeNull()
+  })
+
   it("entra a la cola, acepta y llega a la sala con el servidor", async () => {
     const { user, controls } = setup()
     await user.click(await searchButton())
@@ -131,13 +170,10 @@ describe("PlayPage (con la demo)", () => {
     ).toBeInTheDocument()
     expect(screen.getAllByText(/CM League #1/).length).toBeGreaterThan(0)
     expect(screen.getByLabelText("Contraseña oculta")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "Conectar" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Conectar/ })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^cmleague:\/\/connect\/45\.235\.98\.12:27062\//)
+      expect.stringMatching(/^steam:\/\/connect\/45\.235\.98\.12:27062\//)
     )
-    expect(
-      screen.getByRole("link", { name: "Instalá CMLeague Conectar" })
-    ).toHaveAttribute("href", "/descargas/cmleague-conectar.zip")
   })
 
   it("el capitán banea en su turno y el resto ve el veto", async () => {
@@ -156,7 +192,7 @@ describe("PlayPage (con la demo)", () => {
 
     await flush(4000)
     expect(
-      await screen.findByText("Tu turno: baneá un mapa.")
+      await screen.findByText("Tu turno: banea un mapa.")
     ).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Banear Nuke" }))
     expect(
@@ -260,7 +296,7 @@ describe("PlayPage (con la demo)", () => {
     expect(screen.getByText("Anticheat activo")).toBeInTheDocument()
     await act(async () => controls.setFlag("noAgent", true))
     expect(
-      await screen.findByText("Para jugar necesitás el anticheat activo")
+      await screen.findByText("Para jugar necesitas el anticheat activo")
     ).toBeInTheDocument()
     expect(await searchButton()).toBeDisabled()
 
@@ -344,9 +380,12 @@ describe("PlayPage (con la demo)", () => {
     const { user, controls } = setup()
     await user.click(await searchButton())
     await act(async () => {
-      for (let i = 0; i < 7; i++) controls.skip() // hasta la partida en vivo
+      for (let i = 0; i < 6; i++) controls.skip() // hasta la partida en vivo
     })
     await flush()
+    expect(
+      await screen.findByRole("region", { name: "Sala de la partida" })
+    ).toBeInTheDocument()
     await act(async () => controls.finish())
     await flush()
 
@@ -449,7 +488,7 @@ describe("PlayPage (con la demo)", () => {
       name: /^Jugaste \d+ (con|contra) nacho$/,
     })
     expect(nacho.length).toBeGreaterThan(0)
-    // Quien no jugó nunca con vos no muestra nada.
+    // Quien no jugó nunca contigo no muestra nada.
     expect(
       screen.queryByRole("button", { name: /^Jugaste \d+ (con|contra) gordo$/ })
     ).toBeNull()
@@ -529,7 +568,7 @@ describe("PlayPage (con la demo)", () => {
     expect(await screen.findByText("Exclusivo para VIP")).toBeInTheDocument()
   })
 
-  it("si te desconectás, el aviso aparece y se va cuando volvés", async () => {
+  it("si te desconectas, el aviso aparece y se va cuando vuelves", async () => {
     const demo = createDemoSource({ random: () => 0.5 })
     renderWithQuery(
       <MmSourceContext value={demo.source}>
@@ -601,6 +640,47 @@ describe("PlayPage (con la demo)", () => {
     expect((await source.state()).sounds.selected).toBeNull()
   })
 
+  it("si otro no acepta, avisa que se canceló y que volviste a la cola", async () => {
+    const { user, controls } = setup()
+    await user.click(await searchButton())
+    await act(async () => controls.skip())
+    await flush()
+    await user.click(await screen.findByRole("button", { name: "Aceptar" }))
+    await act(async () => controls.someoneDeclines())
+    await flush()
+    const { toast } = await import("sonner")
+    expect(toast.warning).toHaveBeenCalledWith(
+      "La partida se canceló: Un jugador no aceptó a tiempo",
+      { description: "Si aceptaste, volviste a la cola con tu lugar." }
+    )
+    expect(screen.queryByText("Partida encontrada")).toBeNull()
+  })
+
+  it("al volver a Jugar después de una partida: Jugar primero y la pestaña Tu última partida", async () => {
+    const demo = createDemoSource({ random: () => 0.5 })
+    await demo.source.join("5v5", null)
+    for (let i = 0; i < 10; i++) {
+      if ((await demo.source.state()).lobby?.status === "live") break
+      demo.controls.skip()
+    }
+    demo.controls.finish()
+    const { user } = renderWithQuery(
+      <TooltipProvider>
+        <MmSourceContext value={demo.source}>
+          <PlayPage />
+        </MmSourceContext>
+      </TooltipProvider>
+    )
+    expect(await searchButton()).toBeInTheDocument()
+    expect(
+      screen.queryByRole("region", { name: "Sala de la partida" })
+    ).toBeNull()
+    await user.click(screen.getByRole("tab", { name: "Tu última partida" }))
+    expect(await screen.findByText("Ganador")).toBeInTheDocument()
+    await user.click(screen.getByRole("tab", { name: "Jugar" }))
+    expect(await searchButton()).toBeInTheDocument()
+  })
+
   it("rechazar la partida deja una sanción", async () => {
     const { user, controls } = setup()
     await user.click(await searchButton())
@@ -608,7 +688,7 @@ describe("PlayPage (con la demo)", () => {
     await flush()
     await user.click(await screen.findByRole("button", { name: "Rechazar" }))
     expect(
-      await screen.findByText("No podés entrar a la cola por ahora")
+      await screen.findByText("No puedes entrar a la cola por ahora")
     ).toBeInTheDocument()
   })
 })

@@ -1,10 +1,11 @@
 import { toast } from "sonner"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   BanIcon,
   CalendarClockIcon,
+  LogOutIcon,
   ShieldAlertIcon,
   ClockIcon,
   Volume2Icon,
@@ -12,11 +13,12 @@ import {
 import { useEffect, useRef, useState } from "react"
 
 import { errorMessage } from "@/api/errors"
-import heroImage from "@/assets/landing-bg.webp"
 import { LiveDot } from "@/components/brand/LiveDot"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AcceptDialog } from "./AcceptDialog"
 import {
   alertInvite,
@@ -33,7 +35,12 @@ import { ANY_REGION, PlayBar } from "./PlayBar"
 import { PlayFeed } from "./PlayFeed"
 import { SoundSettingsDialog } from "./SoundSettings"
 import { MatchRoom } from "./room/MatchRoom"
-import { mmStateOptions, useMmAction, useMmSocket } from "./queries"
+import {
+  lobbyMatchOptions,
+  mmStateOptions,
+  useMmAction,
+  useMmSocket,
+} from "./queries"
 import { useMmSource } from "./source"
 import type { MmInvite, MmLobby, MmState } from "./types"
 import { useNow } from "./useNow"
@@ -48,6 +55,20 @@ export function PlayPage() {
   const socketUp = useMmSocket(source, (e) => {
     if (e.t === "lobby.found") alertMatchFound(soundUrl.current)
     if (e.t === "lobby.server") alertServerReady()
+    if (e.t === "lobby.cancelled") {
+      const d = (e.d ?? {}) as { reason?: string; requeue?: boolean }
+      // Si sale otra sala enseguida, que se note que es otra (bitácora 2026-11-02-mm-flujo-sala).
+      toast.warning(
+        d.reason
+          ? `La partida se canceló: ${d.reason}`
+          : "La partida se canceló",
+        {
+          description: d.requeue
+            ? "Si aceptaste, volviste a la cola con tu lugar."
+            : undefined,
+        }
+      )
+    }
     if (e.t === "friend.searching" && e.friend) {
       const { player_id, nick } = e.friend
       alertFriend(nick)
@@ -66,7 +87,7 @@ export function PlayPage() {
     data: state,
     isPending,
     error,
-  } = useQuery(mmStateOptions(source, socketUp))
+  } = useQuery(mmStateOptions(source, socketUp, useQueryClient()))
   const accept = useMmAction(source, "accept")
   const decline = useMmAction(source, "decline")
   useInviteSound(state?.invites)
@@ -75,14 +96,21 @@ export function PlayPage() {
     soundUrl.current = selectedSound
   }, [selectedSound])
 
-  // La sala sigue a la vista después del resultado hasta que el jugador vuelve a Jugar (en la app,
-  // además, queda en /match/$id). `kept` la guarda cuando la API ya no la devuelve.
-  const [kept, setKept] = useState<MmLobby | null>(null)
-  const [closed, setClosed] = useState<string | null>(null)
-  const live = state?.lobby ?? null
-  if (live?.status === "finished" && live !== kept) setKept(live)
-  const candidate = live && live.status !== "accepting" ? live : kept
-  const room = candidate && candidate.id !== closed ? candidate : null
+  // La principal es Jugar; la última partida terminada tiene su pestaña (Daniel, 2026-11-02). Solo se pasa sola a
+  // "Tu última partida" si quien mira estaba en la sala cuando terminó; entrar a la cola o a otra sala vuelve a Jugar.
+  const [view, setView] = useState<"play" | "last">("play")
+  const [watched, setWatched] = useState<string | null>(null)
+  const [droppedSeen, setDroppedSeen] = useState<string | null>(null)
+  const dropped = state?.queue_dropped_at ?? null
+  const lobby = state?.lobby ?? null
+  const last = state?.last_lobby ?? null
+  const room = lobby && lobby.status !== "accepting" ? lobby : null
+  if (room && watched !== room.id) setWatched(room.id)
+  if (!room && last && watched === last.id) {
+    setWatched(null)
+    setView("last")
+  }
+  if ((state?.queue || lobby) && view !== "play") setView("play")
 
   return (
     <section className="flex flex-col gap-6">
@@ -101,21 +129,43 @@ export function PlayPage() {
               <BanIcon />
               <AlertTitle>Estás excluido del matchmaking</AlertTitle>
               <AlertDescription>
-                {state.ban.reason}. Podés volver a jugar el{" "}
+                {state.ban.reason}. Puedes volver a jugar el{" "}
                 {fmtDateTime(state.ban.until)}.
               </AlertDescription>
             </Alert>
           )}
           {state.penalty && <PenaltyAlert until={state.penalty.until} />}
+          {dropped && dropped !== droppedSeen && (
+            <Alert>
+              <LogOutIcon />
+              <AlertTitle>
+                Te sacamos de la cola porque cerraste la web
+              </AlertTitle>
+              <AlertDescription>
+                <span>
+                  Si cierras la web o la sesión mientras buscas, sales de la
+                  cola sin sanción. Vuelve a buscar cuando quieras.
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="mt-1 -ml-2 w-fit"
+                  onClick={() => setDroppedSeen(dropped)}
+                >
+                  Entendido
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
           {state.anticheat.required && state.anticheat.status !== "ok" && (
             <Alert variant="destructive">
               <ShieldAlertIcon />
-              <AlertTitle>Para jugar necesitás el anticheat activo</AlertTitle>
+              <AlertTitle>Para jugar necesitas el anticheat activo</AlertTitle>
               <AlertDescription>
                 <span>
                   {state.anticheat.status === "stale"
-                    ? "Tu agente dejó de responder. Abrilo de nuevo en esta PC."
-                    : "Abrí el agente de CM League en tu PC y vinculá esta cuenta."}{" "}
+                    ? "Tu agente dejó de responder. Ábrelo de nuevo en esta PC."
+                    : "Abre el agente de CM League en tu PC y vincula esta cuenta."}{" "}
                   {/* La ruta está en la rama del anticheat: al mezclar, pasa a <Link>. */}
                   <a
                     href="/anticheat/vincular"
@@ -128,18 +178,31 @@ export function PlayPage() {
             </Alert>
           )}
           {room ? (
-            <MatchRoom
-              lobby={room}
-              onBack={() => {
-                setClosed(room.id)
-                setKept(null)
-              }}
-            />
+            <MatchRoom lobby={room} onBack={() => setView("play")} />
           ) : (
-            <GroupView state={state} socketUp={socketUp} />
+            <>
+              {last && (
+                <Tabs
+                  value={view}
+                  onValueChange={(v) => setView(v as "play" | "last")}
+                >
+                  <TabsList aria-label="Jugar o tu última partida">
+                    <TabsTrigger value="play">Jugar</TabsTrigger>
+                    <TabsTrigger value="last">Tu última partida</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
+              {view === "last" && last ? (
+                <LastMatch lobby={last} onBack={() => setView("play")} />
+              ) : (
+                <GroupView state={state} socketUp={socketUp} />
+              )}
+            </>
           )}
           {state.lobby?.status === "accepting" && (
             <AcceptDialog
+              // Una sala nueva es otra ventana: se nota que la anterior se canceló.
+              key={state.lobby.id}
               lobby={state.lobby}
               pending={accept.isPending || decline.isPending}
               onAccept={() => accept.mutate()}
@@ -155,6 +218,21 @@ export function PlayPage() {
   )
 }
 
+/** La última partida terminada: las estadísticas se piden al abrirla (una sola vez). */
+function LastMatch({ lobby, onBack }: { lobby: MmLobby; onBack: () => void }) {
+  const source = useMmSource()
+  const match = useQuery(lobbyMatchOptions(source, lobby.id))
+  if (match.isPending) return <Skeleton className="h-80 w-full rounded-xl" />
+  const full =
+    match.data && lobby.match
+      ? { ...lobby, match: { ...lobby.match, ...match.data } }
+      : lobby
+  // Sin las estadísticas (la API falló), la sala se muestra sin la pestaña Estadísticas.
+  if (!full.match?.stats)
+    return <MatchRoom lobby={{ ...full, match: null }} onBack={onBack} />
+  return <MatchRoom lobby={full} onBack={onBack} />
+}
+
 function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
   const [picked, setPicked] = useState<string | null>(null)
   const [region, setRegion] = useState(ANY_REGION)
@@ -168,56 +246,47 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
     state.modes.find((m) => m.mode === mode)?.players_per_team ?? 5
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative isolate overflow-hidden rounded-xl border bg-card p-4 sm:p-5">
-        <img
-          src={heroImage}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 -z-20 size-full object-cover opacity-25 dark:opacity-30"
-        />
-        <span
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-linear-to-t from-card via-card/70 to-primary/15"
-        />
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-xl font-semibold tracking-[-0.3px]">
-              Armá tu partida
-            </h1>
-            <p className="text-[13px] text-muted-foreground">
-              Entrá solo o invitá a un amigo. Equipos parejos por ELO, veto de
-              capitanes y servidor automático.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to="/mixes"
-              className="inline-flex items-center gap-2 text-[13px] font-medium hover:text-primary"
-            >
-              <LiveDot />
-              Partidas en vivo
-              <span className="font-mono text-xs tabular-nums">
-                {state.live_matches}
-              </span>
-            </Link>
-            <ConnectionChip up={socketUp} />
-            <SoundButton />
-            <SoundSettingsDialog sounds={state.sounds} />
-          </div>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-[-0.4px]">Jugar</h1>
+          <p className="max-w-[72ch] text-sm text-pretty text-muted-foreground">
+            Entra solo o invita a un amigo. Equipos parejos por ELO, veto de
+            capitanes y servidor automático.
+          </p>
         </div>
-        <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_21rem]">
-          <section aria-label="Tu equipo" className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold">
-              Tu equipo{" "}
-              <span className="font-mono text-xs font-normal text-muted-foreground">
-                {mode}
-              </span>
-            </h2>
-            <div className="flex-1">
-              <GroupSlots state={state} teamSize={teamSize} />
-            </div>
-          </section>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/mixes"
+            className="inline-flex items-center gap-2 text-[13px] font-medium hover:text-primary"
+          >
+            <LiveDot />
+            Partidas en vivo
+            <span className="font-mono text-xs tabular-nums">
+              {state.live_matches}
+            </span>
+          </Link>
+          <ConnectionChip up={socketUp} />
+          <SoundButton />
+          <SoundSettingsDialog sounds={state.sounds} />
+        </div>
+      </div>
+      <Card
+        variant="outline"
+        className="grid items-stretch overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)] lg:grid-cols-[minmax(0,1fr)_21rem]"
+      >
+        <section aria-label="Tu equipo" className="flex flex-col gap-3 p-4">
+          <h2 className="text-sm font-semibold">
+            Tu equipo{" "}
+            <span className="font-mono text-xs font-normal text-muted-foreground">
+              {mode}
+            </span>
+          </h2>
+          <div className="flex-1">
+            <GroupSlots state={state} teamSize={teamSize} />
+          </div>
+        </section>
+        <div className="border-t p-4 lg:border-t-0 lg:border-l">
           <PlayBar
             state={state}
             mode={mode}
@@ -226,7 +295,7 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
             onRegion={setRegion}
           />
         </div>
-      </div>
+      </Card>
       <PlayFeed state={state} />
     </div>
   )
@@ -307,9 +376,9 @@ function PenaltyAlert({ until }: { until: string }) {
   return (
     <Alert>
       <ClockIcon />
-      <AlertTitle>No podés entrar a la cola por ahora</AlertTitle>
+      <AlertTitle>No puedes entrar a la cola por ahora</AlertTitle>
       <AlertDescription>
-        No aceptaste o no entraste a una partida. Podés volver en{" "}
+        No aceptaste o no entraste a una partida. Puedes volver en{" "}
         <span className="font-mono tabular-nums">
           {fmtClock(secondsLeft(until, now) * 1000)}
         </span>

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useRouterState } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
+  ClapperboardIcon,
   ExternalLinkIcon,
   LinkIcon,
   LockIcon,
@@ -24,6 +25,7 @@ export const PROFILE_SECTIONS: {
   { to: "/profile", label: "Perfil", icon: UserIcon },
   { to: "/profile/privacy", label: "Privacidad", icon: LockIcon },
   { to: "/profile/link", label: "Vinculación", icon: LinkIcon },
+  { to: "/profile/clips", label: "Clips", icon: ClapperboardIcon },
   {
     to: "/profile/preferences",
     label: "Preferencias",
@@ -63,7 +65,7 @@ export function ProfileLayout() {
       <div className="grid items-start gap-5 md:grid-cols-[200px_minmax(0,1fr)] md:gap-7">
         <nav
           aria-label="Secciones de Mi perfil"
-          className="-mx-1 flex gap-0.5 overflow-x-auto px-1 md:sticky md:top-[70px] md:mx-0 md:flex-col md:overflow-visible md:px-0"
+          className="-mx-1 flex gap-0.5 overflow-x-auto overflow-y-hidden px-1 md:sticky md:top-[70px] md:mx-0 md:flex-col md:overflow-visible md:px-0"
         >
           {PROFILE_SECTIONS.map(({ to, label, icon: Icon }) => {
             const active = pathname === to

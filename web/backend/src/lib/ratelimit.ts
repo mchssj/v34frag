@@ -19,6 +19,8 @@ export const RATE_RULES = {
   // Anticheat: empezar una vinculación, y consultar o renovar (el agente consulta cada 5 segundos).
   acLink: { name: 'ac_link', limit: 10, windowSec: 60, binding: 'RL_AC_LINK' },
   acClaim: { name: 'ac_claim', limit: 60, windowSec: 60, binding: 'RL_AC_CLAIM' },
+  // Tomar o mirar un link de reemplazo del matchmaking: 10 por minuto por cuenta (replanteo 75; frena a quien prueba tokens).
+  replace: { name: 'replace', limit: 10, windowSec: 60, binding: 'RL_REPLACE' },
 } as const satisfies Record<string, RateRule>;
 
 export type RateResult = { ok: boolean; retryAfter: number };

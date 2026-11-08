@@ -1360,1271 +1360,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/anticheat/link": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Empezar la vinculación del agente
-         * @description Devuelve el código y la página que el agente abre en el navegador. Vale 10 minutos.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcLinkBody"];
-                };
-            };
-            responses: {
-                /** @description Código */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcLinkStart"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Demasiados intentos */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/link/claim": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Consultar si el jugador aprobó
-         * @description `pending`, `expired` o `approved`. Con `approved` llegan los tokens, **una sola vez**.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcClaimBody"];
-                };
-            };
-            responses: {
-                /** @description Estado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcClaimResult"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Demasiados intentos */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Renovar los tokens del agente
-         * @description El token de renovación rota: el anterior deja de valer.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcRefreshBody"];
-                };
-            };
-            responses: {
-                /** @description Tokens */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcTokens"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Demasiados intentos */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/heartbeat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Latido del agente
-         * @description Con el header `X-Agent-Token`. Registra la IP real de la conexión y devuelve la sesión abierta, si hay. **Sin sesión, el agente no recopila.**
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AcHeartbeatBody"];
-                };
-            };
-            responses: {
-                /** @description Estado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcHeartbeat"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/unlink": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Desvincular desde el agente
-         * @description Con el header `X-Agent-Token`. El token deja de valer y se cierra la sesión.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me/anticheat/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Aprobar un agente
-         * @description Vincula el equipo a mi cuenta. Hace falta tener el SteamID en la ficha: si no, `BUSINESS_RULE`.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcApproveBody"];
-                };
-            };
-            responses: {
-                /** @description Aprobado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcApproved"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me/anticheat/devices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Mis equipos con agente */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Equipos */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcDeviceList"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me/anticheat/devices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Desvincular un equipo
-         * @description Sus tokens dejan de valer y se cierra su sesión.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/players/{id}/anticheat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Estado del anticheat de un jugador
-         * @description Solo hechos: si tiene agente vinculado y sus sesiones. No es un veredicto. `{id}` acepta el id o el nick.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Estado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcPublicStatus"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/anticheat/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Sesiones del anticheat
-         * @description Cada consulta queda registrada en `ac_admin_actions`.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    status?: "open" | "closed" | "lost";
-                    limit?: number;
-                    offset?: number | null;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Sesiones */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcAdminSessionList"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/anticheat/open": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Abrir los mixes sin agente
-         * @description Para cuando el servicio tiene problemas: durante esos minutos no se expulsa a nadie. `minutes: 0` los vuelve a cerrar. Queda registrado.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcOpenBody"];
-                };
-            };
-            responses: {
-                /** @description Abierto */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcOpenResult"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/processes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Eventos de procesos
-         * @description Con `X-Agent-Token`. Idempotente por `client_id`. Se rechaza lo observado fuera de una sesión del equipo.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcProcessBatch"];
-                };
-            };
-            responses: {
-                /** @description Resultado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcProcessResult"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/screenshots": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Subir una captura
-         * @description Con `X-Agent-Token`. El cuerpo es el JPEG. Idempotente por `client_id`. Si el SHA-256 no coincide con el del archivo: `400`.
-         */
-        post: {
-            parameters: {
-                query: {
-                    session_id: string;
-                    client_id: string;
-                    sha256: string;
-                    width: number;
-                    height: number;
-                    method: "desktop_duplication" | "bitblt_screen";
-                    kind: "auto" | "manual";
-                    request_id?: string;
-                    taken_at: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Guardada */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcScreenshotResult"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/key": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Registrar la clave del equipo
-         * @description Con `X-Agent-Token`. Se fija una sola vez: otra clave da `409` y exige volver a vincular.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcKeyBody"];
-                };
-            };
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Conflicto con un registro existente */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/anticheat/sessions/{id}/hold": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Conservar una sesión
-         * @description Con un caso abierto, la evidencia no vence a los 30 días. Queda registrado.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcHoldBody"];
-                };
-            };
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/anticheat/sessions/{id}/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Verificar la integridad de una sesión
-         * @description Recalcula firmas, cadena, hashes y archivos, y registra el resultado. `verified` significa que nada cambió desde el envío; el origen sigue sin ser verificable.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Resultado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcIntegrity"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/anticheat/requests/{id}/result": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** La captura pedida no se pudo tomar */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcCaptureResult"];
-                };
-            };
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/anticheat/sessions/{id}/capture": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Pedir una captura
-         * @description El jugador ve el aviso en la aplicación y queda registrado. Una por minuto por sesión. Solo de la ventana del juego y con el juego al frente.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AcCaptureBody"];
-                };
-            };
-            responses: {
-                /** @description Pedida */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcCaptureCreated"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/anticheat/sessions/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Evidencia de una sesión
-         * @description Hechos observados, no conclusiones. Cada lectura queda registrada. Las URL de las capturas duran 5 minutos.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Evidencia */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AcEvidence"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/players/unclaimed": {
         parameters: {
             query?: never;
@@ -3898,6 +2633,615 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/medals/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Medallas activas
+         * @description Las medallas que se pueden ganar hoy, con su dibujo y cuántos la tienen. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Medallas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinitionList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Todas las medallas (admin)
+         * @description Borradores, activas y archivadas, con cuántos la tienen y desde cuándo hay datos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Medallas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinitionList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Crear una medalla (borrador)
+         * @description Plantilla del manifiesto, objetivo y dibujo. La métrica, la agregación y los filtros salen de la plantilla. Queda en borrador hasta activarla. La clave es la plantilla y el objetivo (409 si ya existe).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalDefinitionCreate"];
+                };
+            };
+            responses: {
+                /** @description Creada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinition"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quiénes la recibirían hoy
+         * @description Cuántos jugadores ya cumplen esa plantilla y ese objetivo, sin otorgar nada. `null` en las de temporada y las manuales.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalPreviewBody"];
+                };
+            };
+            responses: {
+                /** @description Cantidad */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalPreview"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar un borrador
+         * @description Solo los borradores. Una medalla activa se archiva.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Borrada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Editar una medalla
+         * @description El dibujo, el título y la descripción se cambian siempre; el objetivo y el mínimo de mixes, solo en un borrador.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalDefinitionPatch"];
+                };
+            };
+            responses: {
+                /** @description Medalla */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinition"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activar una medalla
+         * @description Desde ahora el motor la revisa después de cada mix. Con `retroactive`, se la da ya a quienes la cumplen (con aviso).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MedalActivate"];
+                };
+            };
+            responses: {
+                /** @description Activada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalActivated"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/definitions/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archivar una medalla
+         * @description Deja de otorgarse; quien la tiene la conserva. Una medalla de un tramo de temporada no se archiva.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Archivada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalDefinition"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/medals/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Progreso en las medallas
+         * @description Cada medalla activa del motor con lo que lleva el jugador y si ya la ganó. El progreso solo lo ven el dueño de la ficha y el admin: los demás (y sin sesión) ven solo las ganadas (`hidden`). Acepta el id o el nick. Las de temporada y las manuales están en `/players/{id}/medals`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Progreso */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MedalProgressList"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players": {
         parameters: {
             query?: never;
@@ -5068,7 +4412,7 @@ export interface paths {
         get?: never;
         /**
          * Subir el logo
-         * @description `multipart/form-data`, campo `file`. El capitán o un admin. Reemplaza al anterior. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
+         * @description `multipart/form-data`, campo `file`. El capitán o un admin (un equipo histórico: quien gestiona su torneo histórico). Reemplaza al anterior. JPEG, PNG o WebP de hasta 2 MB, cuadrado, entre 128×128 y 1024×1024 (el frontend lo recorta antes de subirlo).
          */
         put: {
             parameters: {
@@ -6428,543 +5772,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/medals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Medallas otorgadas
-         * @description Todas las medallas dadas, con filtros por temporada (`none` = de carrera), clave, origen y alias del jugador.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Página, desde 1 */
-                    page?: number;
-                    /** @description Elementos por página (máximo 100) */
-                    per?: number;
-                    /** @description Campo de orden: `created_at`, `title` */
-                    sort?: "created_at" | "title";
-                    /** @description `asc` o `desc` */
-                    order?: "asc" | "desc";
-                    /** @description Busca en el alias del jugador */
-                    q?: string;
-                    /** @description id de la temporada, o `none` para las de carrera */
-                    season?: string;
-                    /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
-                    medal_key?: string;
-                    /** @description `admin`, `auto` o `temporada` */
-                    source?: "admin" | "auto" | "temporada";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Medallas */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AdminMedalList"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Dar una medalla a varios jugadores
-         * @description Saltea a los que ya la tienen en esa temporada (misma clave, o mismo título si no tiene clave). Cada jugador recibe el aviso.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["MedalGrantBody"];
-                };
-            };
-            responses: {
-                /** @description Resultado */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MedalGrantResult"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/medals/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Quitar una medalla */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hecho */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Cambiar el título o la temporada de una medalla
-         * @description Solo las dadas a mano: las automáticas y las del cierre de temporada salen de los datos.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["MedalPatchBody"];
-                };
-            };
-            responses: {
-                /** @description Medalla */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AdminMedal"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/v1/admin/medals/delete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Quitar varias medallas
-         * @description Una automática vuelve a darse en el próximo mix del jugador si sigue cumpliendo la regla: para que no vuelva, desactivá la regla.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["MedalIdsBody"];
-                };
-            };
-            responses: {
-                /** @description Quitadas */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MedalDeleted"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/medal-rules": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Reglas de las medallas automáticas */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Reglas */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MedalRuleList"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/medal-rules/{key}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Cambiar una regla
-         * @description Umbral, mínimo de partidas, título o si está activa. Las ya dadas no cambian; para dar las nuevas, `POST /admin/medal-rules/recalculate`.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
-                    key: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["MedalRulePatch"];
-                };
-            };
-            responses: {
-                /** @description Regla */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MedalRule"];
-                    };
-                };
-                /** @description Datos inválidos */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description No existe */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/v1/admin/medal-rules/recalculate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Dar las automáticas que falten a todos
-         * @description Recorre a todos los jugadores con las reglas actuales, sin avisos. Nunca quita.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Resultado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MedalRecalc"];
-                    };
-                };
-                /** @description Sin sesión o sesión vencida */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-                /** @description Sin permiso */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Error"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/players": {
         parameters: {
             query?: never;
@@ -7292,7 +6099,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Dar una medalla */
+        /**
+         * Dar una medalla
+         * @description Una definición manual (Comunidad: staff, caster, campeón de torneo…). El título, si no viene, es el de la definición.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -7304,7 +6114,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["MedalBody"];
+                    "application/json": components["schemas"]["MedalGrant"];
                 };
             };
             responses: {
@@ -7344,9 +6154,90 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/medals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Quitar una medalla */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -7740,6 +6631,307 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estado de la cuenta
+         * @description Si confirmó su correo, su último inicio de sesión y el correo (solo lectura).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Estado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAccountStatus"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/resend-confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reenviar el correo de activación
+         * @description Solo a una cuenta que todavía no confirmó su correo (si no, 409).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Demasiados intentos */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/send-password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enviar el correo para cambiar la contraseña */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Demasiados intentos */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/random-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cambiar la contraseña por una aleatoria
+         * @description La devuelve una sola vez y cierra las sesiones de la cuenta. No se puede usar sobre la cuenta propia ni sobre otro admin.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description La contraseña nueva */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminRandomPassword"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No disponible en este despliegue */
+                501: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -9043,7 +8235,7 @@ export interface paths {
                     sort?: "name" | "created_at" | "last_seen_at" | "license_expires_at" | "matches";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    /** @description Busca en el nombre, la dirección, las IPs, la versión del plugin y la región */
+                    /** @description Busca en el nombre público y el interno, la dirección, las IPs, la versión del plugin y la región */
                     q?: string;
                     /** @description Activos o revocados */
                     active?: "true" | "false";
@@ -11457,6 +10649,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/mm/games/{id}/room": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** La sala de una partida del matchmaking terminada (el detalle de la partida) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mm/queue": {
         parameters: {
             query?: never;
@@ -11660,6 +10926,138 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mm/replace/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** La partida de un link de reemplazo y si lo puedo tomar */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    token: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Entrar como reemplazo: devuelve el estado con la sala */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    token: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -17272,7 +16670,7 @@ export interface paths {
         put?: never;
         /**
          * Resultado a mano de una partida de torneo
-         * @description El organizador del torneo o un admin, cuando el resultado no llegó del servidor (caída, W.O. o corrección). Mandar `maps` (rondas de cada mapa; no puede haber mapas empatados), `walkover` (id del equipo que gana) o `clear: true`. Si cambia el ganador, la llave se corrige sola; falla si ya se jugaron partidas que dependían de esta.
+         * @description El organizador del torneo o un admin, cuando el resultado no llegó del servidor (caída, W.O. o corrección). Mandar `maps` (rondas de cada mapa; no puede haber mapas empatados), `walkover` (id del equipo que gana) o `clear: true`. `played_at`, con `maps` o `walkover`: la fecha en que se jugó (por ejemplo, en un torneo histórico). Si cambia el ganador, la llave se corrige sola; falla si ya se jugaron partidas que dependían de esta.
          */
         post: {
             parameters: {
@@ -17340,11 +16738,28 @@ export interface paths {
         };
         /**
          * Mixes para vincular a una partida de torneo
-         * @description Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta partida), jugados por al menos un inscrito de alguno de los dos equipos. Primero los vinculados y después los que más inscritos tienen. `side1` dice qué bando del mix fue el equipo 1. Hasta 20.
+         * @description Admin, moderador u organizador del torneo. Mixes terminados de los últimos 14 días sin vincular (y los ya vinculados a esta partida), jugados por al menos un inscrito de alguno de los dos equipos. En un torneo histórico, cualquier mix terminado y sin vincular. Primero los vinculados y después los que más inscritos tienen. `side1` dice qué bando del mix fue el equipo 1 (sin inscritos que lo decidan, lo elige quien vincula). Filtros por fecha, mapa y servidor, y paginado (hasta 100 por página).
          */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `relevance` */
+                    sort?: "relevance";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Jugados desde esta fecha */
+                    from?: string;
+                    /** @description Jugados hasta esta fecha (exclusivo) */
+                    to?: string;
+                    /** @description Parte del nombre del mapa */
+                    map?: string;
+                    /** @description Servidor */
+                    server?: string;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -17359,7 +16774,16 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GameCandidate"][];
+                        "application/json": components["schemas"]["GameCandidateList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
                     };
                 };
                 /** @description Sin sesión o sesión vencida */
@@ -17409,7 +16833,7 @@ export interface paths {
         get?: never;
         /**
          * Mapas de una serie de torneo: mix vinculado o resultado a mano
-         * @description Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la partida dice "Sin detalle de la partida" en ese mapa). Si la serie queda definida, se cierra y la llave avanza; si no, queda en curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.
+         * @description Admin, moderador u organizador del torneo. Reemplaza los mapas de la serie, en orden. Cada uno lleva `game_id` (vincula un mix ya jugado: el mapa, las rondas y las stats salen de él; `side1` opcional) o `map`, `r1` y `r2` (resultado a mano: la página de la partida dice "Sin detalle de la partida" en ese mapa; `played_at` opcional). Lo que vincula un organizador queda por aprobar: cuenta en la llave, pero sus stats no se ven hasta que lo apruebe un admin o moderador. Si la serie queda definida, se cierra y la llave avanza; si no, queda en curso con esos mapas. Los mixes que salen de la lista se desvinculan. `409` si un mix ya está vinculado a otra partida; `400` si un mapa termina empatado, hay más mapas que el BO o ya se armó lo que dependía de esta partida.
          */
         put: {
             parameters: {
@@ -17481,6 +16905,95 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matches/{id}/games/{gameId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar o rechazar un mix vinculado
+         * @description Admin o moderador, para un mix que vinculó un organizador. Aprobado: sus stats se ven y la serie puede sumar al ranking. Rechazado: se desvincula y el mapa queda con el mismo marcador como resultado a mano (la llave no cambia). Al organizador le llega el aviso `game_reviewed`. `409` si ya estaba aprobado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    gameId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GameReviewBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -17928,8 +17441,8 @@ export interface paths {
                     sort?: "created_at";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
-                    /** @description `done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo */
-                    status?: "done" | "failed" | "processing" | "queued" | "no_demo";
+                    /** @description `done` con video, `failed` falló la grabación, `processing` grabándose, `queued` en la cola (sin video y con demo), `no_demo` sin video ni demo, `rejected` los rechazados (replanteo 76; los demás filtros no los muestran) */
+                    status?: "done" | "failed" | "processing" | "queued" | "no_demo" | "rejected";
                     type?: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
                     /** @description Nick del jugador en el juego */
                     q?: string;
@@ -18127,6 +17640,395 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rechazar un clip
+         * @description Deja de verse en la web (la partida, la sala y los perfiles), no sale en Discord y no se vuelve a grabar. El video va a la papelera. No entra otro clip en su lugar. No se puede mientras se graba (`BUSINESS_RULE`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ClipRejectBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rechazar varios clips
+         * @description Como `/admin/clips/{id}/reject`, para cada uno de `ids`, uno por uno, con el mismo motivo.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClipRejectManyBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clips/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recuperar clips rechazados
+         * @description Cada uno se vuelve a grabar y pasa a "Para revisar". Solo con la demo todavía guardada (si no, el motivo en su resultado).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ClipReprocessBody"];
+                };
+            };
+            responses: {
+                /** @description Resultado de cada uno */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClipReprocessResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/clips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis clips y los destacados de mi ficha
+         * @description El modo (automático o elegidos), el tope, los elegidos, los que se ven hoy y mis clips con video.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mis clips */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyClips"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/clips/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir mis clips destacados
+         * @description El modo y los elegidos en orden. 409 `CONFLICT` si pasan el tope (con `details.max`); 400 si uno no es mío o no tiene video.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MyClipsPut"];
+                };
+            };
+            responses: {
+                /** @description Guardado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyClips"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/clips/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clips destacados de un jugador
+         * @description Los que se ven en su ficha, en orden: los que eligió o, en automático, sus mejores. Vacío si no tiene.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Destacados */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FeaturedClipList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -18737,7 +18639,7 @@ export interface paths {
         };
         /**
          * Torneos
-         * @description Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle).
+         * @description Por defecto, el que empieza más tarde primero. Sin sesión. Cada torneo trae el modo, los BO, la fase actual y el progreso (sin pedir el detalle). Solo aparecen los que quien consulta puede ver: un torneo en testing lo ven admins y moderadores; uno pendiente o rechazado, además su organizador.
          */
         get: {
             parameters: {
@@ -18763,6 +18665,16 @@ export interface paths {
                     from?: string;
                     /** @description Empiezan hasta esta fecha */
                     to?: string;
+                    /** @description Solo los históricos (`true`) o solo los normales (`false`) */
+                    historic?: "true" | "false";
+                    /** @description Solo los que están en fase de testing (`true`) o los que no (`false`). Los en testing los ven solo admins y moderadores */
+                    testing?: "true" | "false";
+                    /** @description `pending`: lo creó un organizador y espera a un admin o moderador; `approved`; `rejected` (con `approval_note`). Solo lo aprobado se ve para todos */
+                    approval?: "pending" | "approved" | "rejected";
+                    /** @description Solo los que tienen mixes vinculados por aprobar */
+                    pending_games?: "true" | "false";
+                    /** @description Solo los que aprueba un admin (`true`: los creó un moderador) o los que aprueba el staff (`false`) */
+                    admin_review?: "true" | "false";
                 };
                 header?: never;
                 path?: never;
@@ -18802,7 +18714,7 @@ export interface paths {
         put?: never;
         /**
          * Crear un torneo
-         * @description Un organizador o un admin. Queda como organizador quien lo crea.
+         * @description Un organizador o un admin; un moderador, solo históricos (`historic`). Queda como organizador quien lo crea. Lo de un organizador queda pendiente de aprobación (lo ven él y el staff hasta que un admin o moderador lo apruebe). `testing`, solo admin o moderador.
          */
         post: {
             parameters: {
@@ -19425,6 +19337,485 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar o rechazar un torneo pendiente
+         * @description Admin o moderador. Aprobado, se ve para todos (y si tiene las inscripciones abiertas, se anuncia); también quedan aprobados los mixes que vinculó el organizador. Rechazado, con `note` obligatoria: lo ve el organizador, que lo corrige y lo vuelve a enviar. Al organizador le llega el aviso `event_reviewed`. `409` si el torneo no espera aprobación.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReviewBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/resubmit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Volver a enviar un torneo rechazado
+         * @description El organizador del torneo. Vuelve a pendiente y les llega el aviso `admin_event_review` a admins y moderadores.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/historic-teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cargar un equipo que no está en la plataforma
+         * @description Solo en un torneo histórico, antes de generar el fixture; quien gestiona el torneo. Crea un equipo histórico (sin capitán, plantel ni página; no aparece en Buscar equipo ni en el ranking) y lo inscribe. Los jugadores, opcionales, con PUT /registrations/{teamId}. El logo, con PUT /teams/{id}/logo. Antes conviene mirar GET /events/{id}/similar-teams por si ya existe.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HistoricTeamBody"];
+                };
+            };
+            responses: {
+                /** @description Creado e inscrito */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Created"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/similar-teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Equipos con un nombre parecido
+         * @description Quien gestiona el torneo. Equipos de la plataforma e históricos ya cargados con un nombre o sigla parecidos (hasta 10), para no duplicar uno.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 10) */
+                    per?: number;
+                    /** @description Campo de orden: `name` */
+                    sort?: "name";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Nombre o sigla del equipo que se va a cargar */
+                    q: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Equipos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SimilarTeamList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/historic-teams/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Corregir un equipo histórico
+         * @description Nombre y sigla. Admin, moderador o quien gestiona un torneo histórico donde está inscrito.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["HistoricTeamBody"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/pending-games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mixes vinculados por aprobar
+         * @description Admin o moderador. Los mixes que vinculó un organizador a una partida de torneo y esperan aprobación, con la partida. Se aprueban o se rechazan con POST /matches/{id}/games/{gameId}/review. Los torneos pendientes salen en GET /events?approval=pending.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `played_at` */
+                    sort?: "played_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Solo los de una partida */
+                    match?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Mixes por aprobar */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PendingGameList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -21154,6 +21545,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/community/discord": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Números del Discord de la comunidad
+         * @description Conectados y miembros, de la invitación pública de Discord (`invites/<código>?with_counts=true`), para la tarjeta del inicio. La respuesta se guarda 10 minutos. Si Discord no responde, los dos números van en `null` y la web muestra la tarjeta sin ellos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Números */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DiscordCounts"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/servers/status": {
         parameters: {
             query?: never;
@@ -21163,7 +21593,7 @@ export interface paths {
         };
         /**
          * Estado de los servidores
-         * @description Los servidores activos con licencia vigente, consultados con A2S (la consulta del navegador de servidores del juego): si están prendidos, latencia, mapa y jugadores conectados, con su modo, su región y los mixes en vivo, más los totales. La respuesta se guarda 20 s. Con `ETag` (`304` si no cambió). No es un listado paginado: son pocos servidores y es una foto completa.
+         * @description Los servidores activos con licencia vigente que salen en el inicio (`listed`), con su nombre público, consultados con A2S (la consulta del navegador de servidores del juego): si están prendidos, latencia, mapa y jugadores conectados, con su modo, su región y los mixes en vivo, más los totales y la cola del matchmaking (cuántos hay y si está abierta). La respuesta se guarda 20 s. Con `ETag` (`304` si no cambió). No es un listado paginado: son pocos servidores y es una foto completa.
          */
         get: {
             parameters: {
@@ -21577,206 +22007,6 @@ export interface components {
             /** @description Motivo del rechazo, si el admin escribió uno. null en el resto */
             reject_reason: string | null;
         } | null;
-        AcLinkStart: {
-            /** @description Secreto del agente, para `POST /link/claim` */
-            device_code: string;
-            /** @description Código que aprueba el jugador */
-            user_code: string;
-            /**
-             * Format: uri
-             * @description La página que abre el agente en el navegador
-             */
-            verification_url: string;
-            expires_in: number;
-            /** @description Segundos entre consultas a `POST /link/claim` */
-            interval: number;
-        };
-        AcLinkBody: {
-            /** @description Nombre del equipo que ve el jugador al aprobar */
-            device_name: string;
-            agent_version?: string;
-        };
-        AcClaimResult: {
-            /** @enum {string} */
-            status: "pending" | "approved" | "expired";
-            /** Format: uuid */
-            device_id?: string;
-            access_token?: string;
-            refresh_token?: string;
-            expires_in?: number;
-        };
-        AcClaimBody: {
-            device_code: string;
-        };
-        AcTokens: {
-            access_token: string;
-            refresh_token: string;
-            expires_in: number;
-        };
-        AcRefreshBody: {
-            refresh_token: string;
-        };
-        AcHeartbeat: {
-            /** @description La sesión abierta. Sin sesión, el agente no recopila nada. */
-            session: {
-                /** Format: uuid */
-                id: string;
-                /** Format: uuid */
-                server_id: string;
-                match_uid: string | null;
-                started_at: string;
-            } | null;
-        };
-        AcHeartbeatBody: {
-            agent_version?: string;
-        };
-        AcApproved: {
-            device_name: string;
-        };
-        AcApproveBody: {
-            user_code: string;
-        };
-        AcDeviceList: {
-            items: components["schemas"]["AcDevice"][];
-        };
-        AcDevice: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            agent_version: string | null;
-            last_seen_at: string | null;
-            revoked_at: string | null;
-            created_at: string;
-        };
-        AcPublicStatus: {
-            agent_linked: boolean;
-            sessions_30d: number;
-            last_session_at: string | null;
-        };
-        AcAdminSessionList: {
-            items: components["schemas"]["AcAdminSession"][];
-        };
-        AcAdminSession: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            player_id: string;
-            nick: string;
-            steam_id: string;
-            /** Format: uuid */
-            server_id: string;
-            server_name: string;
-            match_uid: string | null;
-            /** @enum {string} */
-            status: "open" | "closed" | "lost";
-            started_at: string;
-            last_contact_at: string;
-            ended_at: string | null;
-            end_reason: string | null;
-        };
-        AcOpenResult: {
-            open_until: string | null;
-        };
-        AcOpenBody: {
-            minutes: number;
-        };
-        AcProcessResult: {
-            accepted: number;
-            rejected: number;
-        };
-        AcProcessBatch: {
-            /** Format: uuid */
-            session_id: string;
-            events: {
-                client_id: string;
-                /** @enum {string} */
-                kind: "inventory" | "start" | "end";
-                pid: number;
-                name: string;
-                path?: string;
-                sha256?: string;
-                /** @enum {string} */
-                signature?: "valid" | "unsigned" | "invalid" | "unknown";
-                publisher?: string;
-                note?: string;
-                /** Format: date-time */
-                started_at?: string;
-                /** Format: date-time */
-                observed_at: string;
-            }[];
-        };
-        AcScreenshotResult: {
-            /** Format: uuid */
-            id: string;
-            already_stored: boolean;
-        };
-        AcKeyBody: {
-            public_key: string;
-        };
-        AcHoldBody: {
-            held: boolean;
-        };
-        AcIntegrity: {
-            /** @enum {string} */
-            result: "verified" | "failed" | "incomplete";
-            checked: number;
-            problems: {
-                seq: number | null;
-                problem: string;
-            }[];
-            /**
-             * @description El equipo es del jugador: se prueba que nada cambió desde el envío, no que sea verdad.
-             * @enum {string}
-             */
-            origin: "not_verifiable";
-        };
-        AcCaptureResult: {
-            /** @enum {string} */
-            result: "not_foreground" | "failed";
-        };
-        AcCaptureCreated: {
-            /** Format: uuid */
-            id: string;
-        };
-        AcCaptureBody: {
-            reason: string;
-        };
-        AcEvidence: {
-            screenshots: {
-                /** Format: uuid */
-                id: string;
-                kind: string;
-                method: string;
-                sha256: string;
-                size_bytes: number;
-                width: number;
-                height: number;
-                taken_at: string;
-                stored_at: string | null;
-                request_id: string | null;
-                url: string | null;
-            }[];
-            processes: {
-                kind: string;
-                pid: number;
-                name: string;
-                path: string | null;
-                sha256: string | null;
-                signature: string | null;
-                publisher: string | null;
-                note: string | null;
-                started_at: string | null;
-                observed_at: string;
-            }[];
-            requests: {
-                /** Format: uuid */
-                id: string;
-                reason: string;
-                status: string;
-                created_at: string;
-                resolved_at: string | null;
-            }[];
-        };
         UnclaimedList: {
             items: components["schemas"]["UnclaimedSummary"][];
             /** @description Total con los filtros aplicados */
@@ -22096,6 +22326,8 @@ export interface components {
             tag: string | null;
             /** @description Logo del equipo (null: sin logo, se muestra la sigla). Viene en los listados y el detalle de equipos, el ranking de equipos, las inscripciones y el campeón de un torneo, los lados de una partida y las invitaciones; en el resto puede faltar */
             logo_url?: string | null;
+            /** @description `true`: equipo histórico (no está en la plataforma y no tiene página). Viene en los torneos (inscripciones, partidas y campeón) y en el detalle de una partida de torneo */
+            historic?: boolean;
         };
         Compare: {
             a: components["schemas"]["ComparePlayer"];
@@ -22137,6 +22369,125 @@ export interface components {
             elo_matches: number;
             /** @description ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo */
             elo_history: number[];
+        };
+        MedalDefinitionList: {
+            items: components["schemas"]["MedalDefinition"][];
+        };
+        MedalDefinition: {
+            /** Format: uuid */
+            id: string;
+            key: string;
+            template: string;
+            scope: string;
+            title: string;
+            description: string | null;
+            metric: string;
+            /** @enum {string} */
+            aggregation: "total" | "avg_min_matches" | "max" | "streak" | "once" | "season_rank" | "manual";
+            filters: {
+                [key: string]: unknown;
+            };
+            target: number;
+            series: string | null;
+            series_order: number | null;
+            /** @enum {string} */
+            status: "draft" | "active" | "archived";
+            retroactive: boolean;
+            /** @description Desde cuándo hay datos de la métrica */
+            data_since: string | null;
+            activated_at: string | null;
+            created_at: string;
+            /** @description Cuántos jugadores la tienen */
+            holders: number;
+            design: components["schemas"]["MedalDesign"];
+        };
+        /** @description Lo necesario para dibujar una medalla con <Medal> */
+        MedalDesign: {
+            /**
+             * Format: uuid
+             * @description La definición
+             */
+            id: string;
+            key: string;
+            /** @description Id de la plantilla del manifiesto (el SVG) */
+            template: string;
+            title: string;
+            /** @description El número del dibujo */
+            number: string | null;
+            /** @description La etiqueta. En las de temporada, `S` y el número de la temporada */
+            label: string | null;
+            /** @description Texto de la banda */
+            band: string | null;
+            /** @enum {string|null} */
+            metal: "bronce" | "plata" | "oro" | "platino" | "diamante" | null;
+            /** @description Acento de la paleta del manifiesto */
+            accent: string | null;
+        };
+        MedalPreview: {
+            /** @description Quiénes la recibirían hoy; null en las de temporada y las manuales */
+            players: number | null;
+        };
+        MedalPreviewBody: {
+            template: string;
+            target: number;
+            min_matches?: number;
+        };
+        MedalDefinitionCreate: {
+            template: string;
+            target: number;
+            /** @description Por defecto, el formato de la plantilla con el objetivo */
+            title?: string;
+            description?: string | null;
+            /** @description Solo las de promedio (% HS, KDA, ADR): mínimo de mixes */
+            min_matches?: number;
+            design?: components["schemas"]["MedalDesignInput"];
+        };
+        /**
+         * @description Solo lo que la plantilla deja editar; lo demás se descarta
+         * @default {}
+         */
+        MedalDesignInput: {
+            number?: string | null;
+            label?: string | null;
+            band?: string | null;
+            /** @enum {string} */
+            metal?: "bronce" | "plata" | "oro" | "platino" | "diamante";
+            accent?: string | null;
+        };
+        MedalDefinitionPatch: {
+            /** @description Solo en un borrador */
+            target?: number;
+            title?: string;
+            description?: string | null;
+            min_matches?: number;
+            design?: components["schemas"]["MedalDesignInput"];
+        };
+        MedalActivated: {
+            definition: components["schemas"]["MedalDefinition"];
+            /** @description A cuántos se la dio al activarla */
+            awarded: number;
+        };
+        MedalActivate: {
+            /** @description Dársela ya a quienes la cumplen */
+            retroactive: boolean;
+        };
+        MedalProgressList: {
+            items: components["schemas"]["MedalProgress"][];
+            /** @description Quien mira no es el dueño de la ficha (ni el admin): no ve el progreso de las bloqueadas */
+            hidden: boolean;
+            /** @description Desde cuándo cuentan las stats: el inicio de la temporada 2. null durante la BETA, que no da medallas */
+            stats_since: string | null;
+        };
+        MedalProgress: {
+            design: components["schemas"]["MedalDesign"];
+            series: string | null;
+            series_order: number | null;
+            target: number;
+            /** @description Lo que lleva el jugador */
+            value: number;
+            data_since: string | null;
+            /** @description Cuándo la ganó; null = bloqueada */
+            earned_at: string | null;
         };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
@@ -22237,9 +22588,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             title: string;
-            icon: string | null;
             created_at: string;
-            /** @description Temporada de la medalla; `null` en las de carrera */
+            /** @description Temporada en la que la ganó; `null` en las medallas que da el admin a mano */
             season: {
                 /** Format: uuid */
                 id: string;
@@ -22248,13 +22598,12 @@ export interface components {
             } | null;
             /** @description Puesto en esa temporada */
             rank: number | null;
-            /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend); `null` en las viejas, que solo tienen emoji */
-            medal_key: string | null;
             /**
-             * @description `auto`: se dio sola por las stats; `temporada`: al cerrar una temporada; `admin`: a mano
+             * @description Quién la dio: un admin, el motor o el cierre de temporada
              * @enum {string}
              */
-            source: "admin" | "auto" | "temporada";
+            source: "admin" | "auto" | "season";
+            design: components["schemas"]["MedalDesign"] & unknown;
         };
         TeamStintList: {
             items: components["schemas"]["TeamStint"][];
@@ -22322,7 +22671,7 @@ export interface components {
             /** @description Fecha de la final (o del último partido, en una liga sin final) */
             at: string | null;
         };
-        /** @description Medallas agrupadas por título, icono y clave, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
+        /** @description Medallas agrupadas por título y definición, con la cantidad. El detalle de cada una está en `/players/{id}/medals` */
         MedalSummaryList: {
             items: components["schemas"]["MedalSummary"][];
             /** @description Total con los filtros aplicados */
@@ -22335,15 +22684,8 @@ export interface components {
         };
         MedalSummary: {
             title: string;
-            icon: string | null;
-            /** @description Clave del catálogo de dibujos; `null` en las viejas */
-            medal_key: string | null;
-            /** @description Temporada (para la etiqueta del dibujo); `null` en las de carrera */
-            season: {
-                number: number;
-                name: string;
-            } | null;
             count: number;
+            design: components["schemas"]["MedalDesign"];
             /** @description La más reciente */
             last_at: string;
         };
@@ -22640,98 +22982,6 @@ export interface components {
             /** Format: uuid */
             player_id: string;
         };
-        AdminMedalList: {
-            items: components["schemas"]["AdminMedal"][];
-            /** @description Total con los filtros aplicados */
-            total: number;
-            page: number;
-            per: number;
-            sort: string;
-            /** @enum {string} */
-            order: "asc" | "desc";
-        };
-        AdminMedal: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            icon: string | null;
-            medal_key: string | null;
-            /** @enum {string} */
-            source: "admin" | "auto" | "temporada";
-            created_at: string;
-            rank: number | null;
-            season: {
-                /** Format: uuid */
-                id: string;
-                number: number;
-                name: string;
-            } | null;
-            player: {
-                /** Format: uuid */
-                id: string;
-                nick: string;
-                photo_url: string | null;
-            };
-        };
-        MedalGrantResult: {
-            /** @description Medallas dadas */
-            given: number;
-            /** @description Jugadores que ya la tenían en esa temporada (no se repite) */
-            skipped: string[];
-        };
-        MedalGrantBody: {
-            title: string;
-            /**
-             * @description Un emoji (para la web vieja y si no hay dibujo)
-             * @default 🏅
-             */
-            icon: string;
-            /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
-            medal_key?: string;
-            /**
-             * Format: uuid
-             * @description Temporada; sin esto (o `null`), es de carrera
-             */
-            season_id?: string | null;
-            /** @description Jugadores (hasta 500) */
-            player_ids: string[];
-        };
-        MedalPatchBody: {
-            title?: string;
-            /**
-             * Format: uuid
-             * @description Otra temporada, o `null` para que sea de carrera
-             */
-            season_id?: string | null;
-        };
-        MedalDeleted: {
-            deleted: number;
-        };
-        MedalIdsBody: {
-            ids: string[];
-        };
-        MedalRuleList: {
-            items: components["schemas"]["MedalRule"][];
-        };
-        MedalRule: {
-            medal_key: string;
-            metric: string;
-            threshold: number;
-            title: string;
-            min_matches: number;
-            icon: string;
-            active: boolean;
-        };
-        MedalRulePatch: {
-            threshold?: number;
-            min_matches?: number;
-            title?: string;
-            active?: boolean;
-        };
-        MedalRecalc: {
-            /** @description Medallas automáticas nuevas */
-            given: number;
-        };
         AdminPlayer: {
             /** Format: uuid */
             id: string;
@@ -22789,20 +23039,14 @@ export interface components {
              */
             force: boolean;
         };
-        MedalBody: {
-            title: string;
-            /**
-             * @description Un emoji (para la web vieja y si no hay dibujo)
-             * @default 🏆
-             */
-            icon: string;
-            /** @description Clave del catálogo de dibujos (`/medallas/catalogo.json` del frontend) */
-            medal_key?: string;
+        MedalGrant: {
             /**
              * Format: uuid
-             * @description Temporada de la medalla; sin esto, es de carrera
+             * @description Una definición manual (Comunidad: staff, caster, campeón de torneo…)
              */
-            season_id?: string;
+            definition_id: string;
+            /** @description Por defecto, el de la definición (por ejemplo, el nombre del torneo) */
+            title?: string;
         };
         PlayerIpList: {
             items: components["schemas"]["PlayerIp"][];
@@ -22881,6 +23125,19 @@ export interface components {
              * @default false
              */
             force: boolean;
+        };
+        AdminAccountStatus: {
+            /** @description Confirmó su correo */
+            confirmed: boolean;
+            last_sign_in_at: string | null;
+            /** @description Correo de la cuenta, solo lectura. Dato personal: solo admin */
+            email: string | null;
+        };
+        AdminRandomPassword: {
+            /** @description Se muestra una sola vez: no se guarda en ningún lado */
+            password: string;
+            /** @description Si se cerraron las sesiones que tenía abiertas */
+            sessions_closed: boolean;
         };
         BlockedWordList: {
             items: components["schemas"]["BlockedWord"][];
@@ -23063,7 +23320,12 @@ export interface components {
         AdminServer: {
             /** Format: uuid */
             id: string;
+            /** @description Nombre público: el que se ve en el inicio, la sala y los avisos */
             name: string;
+            /** @description Nombre interno, solo para Administración */
+            internal_name: string | null;
+            /** @description Sale en la lista de servidores del inicio */
+            listed: boolean;
             active: boolean;
             /**
              * @description `ok`; `expiring`: vence en 7 días o menos; `expired`: vencida; `revoked`: revocado
@@ -23128,7 +23390,7 @@ export interface components {
             build_command: string;
         };
         AdminServerCreate: {
-            /** @description Único, sin distinguir mayúsculas */
+            /** @description Nombre público (el que ve todo el mundo). Único, sin distinguir mayúsculas */
             name: string;
             /** @description Dirección para el botón "Conectar" (`host:puerto`). `null` o `""` lo borra */
             connect_address?: string | "" | null;
@@ -23144,6 +23406,10 @@ export interface components {
             region?: string | "" | null;
             /** @description Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo. `null` o `""` lo borra */
             tv_port?: number | "" | null;
+            /** @description Nombre interno (flow, MVZG…), solo para Administración. Único, sin distinguir mayúsculas. `null` o `""` lo borra */
+            internal_name?: string | "" | null;
+            /** @description Sale en la lista de servidores del inicio (por defecto, sí) */
+            listed?: boolean;
         };
         AdminServerPatch: {
             name?: string;
@@ -23161,6 +23427,10 @@ export interface components {
             region?: string | "" | null;
             /** @description Puerto de SourceTV (`tv_port` del servidor, por ejemplo 27020): "Ver en TV" en los mixes en vivo. `null` o `""` lo borra */
             tv_port?: number | "" | null;
+            /** @description Nombre interno (flow, MVZG…), solo para Administración. Único, sin distinguir mayúsculas. `null` o `""` lo borra */
+            internal_name?: string | "" | null;
+            /** @description Sale en la lista de servidores del inicio (por defecto, sí) */
+            listed?: boolean;
             /** @description `false` revoca (el token deja de funcionar), `true` reactiva */
             active?: boolean;
             /** @description Si el matchmaking puede usar este servidor */
@@ -23773,6 +24043,8 @@ export interface components {
                     tarea: string;
                     titulo: string;
                     resumen: string;
+                    /** @description El cuerpo de la página en texto plano, para buscar: sin Markdown y sin los marcadores ({{…}}). */
+                    texto: string;
                 }[];
             }[];
         };
@@ -23832,8 +24104,10 @@ export interface components {
             to: number | null;
             /** @description Nombre de la medalla. `{top}` se reemplaza por el top N ("Top {top}" → "Top 20") */
             name: string;
-            /** @description Un emoji */
-            icon: string;
+            /** @description Clave de la medalla de temporada que reciben (replanteo 79). Reemplaza al emoji */
+            definition?: string | null;
+            /** @description Emoji de los tramos viejos; no se muestra */
+            icon?: string | null;
         };
         SeasonStandingList: {
             items: components["schemas"]["SeasonStanding"][];
@@ -23868,7 +24142,7 @@ export interface components {
             /** @description `null`: sin medalla */
             medal: {
                 name: string;
-                icon: string;
+                design: components["schemas"]["MedalDesign"] | null;
             } | null;
             /** @description Equipos oficiales actuales (también en las temporadas cerradas) */
             teams: components["schemas"]["TeamRef"][];
@@ -23904,7 +24178,7 @@ export interface components {
             /** @description `null`: sin medalla */
             medal: {
                 name: string;
-                icon: string;
+                design: components["schemas"]["MedalDesign"] | null;
             } | null;
             season: {
                 /** Format: uuid */
@@ -24019,7 +24293,7 @@ export interface components {
             /** @description `null`: sin medalla */
             medal: {
                 name: string;
-                icon: string;
+                design: components["schemas"]["MedalDesign"] | null;
             } | null;
             elo_after: number;
             /** @description El reinicio le cambia el ELO (está sobre el piso o, con `reset_all`, no está en el piso) */
@@ -24132,14 +24406,21 @@ export interface components {
                 map: string | null;
                 r1: number | null;
                 r2: number | null;
-                /** Format: uuid */
+                /**
+                 * Format: uuid
+                 * @description Mix vinculado. null: resultado a mano, o un mix por aprobar visto por quien no gestiona el torneo
+                 */
                 game_id: string | null;
+                /** @description Mix vinculado: si ya lo aprobó un admin o moderador (los que vincula un organizador esperan aprobación). null: resultado a mano */
+                approved: boolean | null;
+                /** @description Cuándo se jugó el mapa (la del mix, o la que se cargó a mano). null si no la tiene */
+                played_at: string | null;
             }[];
             /** @description Torneo o PCW: mixes vinculados con !match (cada uno con sus stats en su propio detalle) */
             games: components["schemas"]["GameRef"][];
             /** @description Mix: stats de cada jugador */
             players: components["schemas"]["PlayerLine"][];
-            /** @description Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` y `clutches` en null. Vacío en los mixes y si no se terminó ningún juego */
+            /** @description Torneo o PCW: stats de la serie, sumadas sobre los juegos vinculados terminados, en los lados de la serie; `rating` ponderado por rondas, `elo_delta` sumado (cada juego mueve el ELO) y `clutches` sumados de los juegos con datos de clutch (null si ninguno tiene). Vacío en los mixes y si no se terminó ningún juego */
             series_players: components["schemas"]["PlayerLine"][];
             /** @description Mix: si hay datos de clutch (los mixes anteriores al registro de jugadas no tienen) */
             clutch_data: boolean;
@@ -24173,6 +24454,12 @@ export interface components {
             score2: number | null;
             played_at: string | null;
             demo_url: string | null;
+            /** @description Tamaño de la demo en bytes (null si no hay) */
+            demo_size: number | null;
+            /** @description Estado de la demo del juego (`pending`, `uploaded`, `failed`…) */
+            demo_status: string;
+            /** @description Juego terminado: stats de cada jugador en ese mapa, en los lados de la serie, con su `elo_delta` y sus clutches. Vacío si no terminó */
+            players: components["schemas"]["PlayerLine"][];
         };
         PlayerLine: {
             /** Format: uuid */
@@ -24312,6 +24599,18 @@ export interface components {
              * @enum {boolean}
              */
             clear?: true;
+            /** @description Con `walkover` o `maps`: cuándo se jugó (por ejemplo, el W.O. de un torneo histórico) */
+            played_at?: string;
+        };
+        GameCandidateList: {
+            items: components["schemas"]["GameCandidate"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
         };
         GameCandidate: {
             /** Format: uuid */
@@ -24330,6 +24629,8 @@ export interface components {
             side1: number;
             /** @description Ya está vinculado a esta partida */
             linked: boolean;
+            /** @description Vinculado a esta partida: si ya está aprobado. null si no está vinculado */
+            approved: boolean | null;
         };
         SeriesMapsBody: {
             /** @description Los mapas de la serie en orden. Lista vacía: sin resultado */
@@ -24348,6 +24649,12 @@ export interface components {
             /** @description Resultado a mano: rondas del equipo 1 */
             r1?: number;
             r2?: number;
+            /** @description Resultado a mano: cuándo se jugó (AAAA-MM-DD o fecha y hora). En un histórico, si falta, la del comienzo del torneo */
+            played_at?: string;
+        };
+        GameReviewBody: {
+            /** @description `true` aprueba el mix vinculado; `false` lo rechaza: se desvincula y el mapa queda con su marcador como resultado a mano */
+            approve: boolean;
         };
         ClipList: {
             items: components["schemas"]["Clip"][];
@@ -24405,10 +24712,10 @@ export interface components {
             /** @description Entró por ser de un VIP (cuando se jugó el mix): va después del top */
             vip: boolean;
             /**
-             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `null` si nunca se reprocesó
+             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `rejected` si un admin lo rechazó (replanteo 76; solo en Administración), `null` si nunca se reprocesó
              * @enum {string|null}
              */
-            review: "pending" | "approved" | null;
+            review: "pending" | "approved" | "rejected" | null;
         };
         ClipVideo: {
             /**
@@ -24446,6 +24753,10 @@ export interface components {
             post_seconds: number;
             /** @description Clips de cada VIP en cada partida, aparte del top (0 los apaga) */
             vip_per_match: number;
+            /** @description Clips destacados en la ficha de un jugador (replanteo 76) */
+            featured_max: number;
+            /** @description Clips destacados en la ficha de un VIP (replanteo 76) */
+            featured_max_vip: number;
         };
         ClipPriorities: {
             /** @description Prioridad de `ace` (1 es lo más valioso) */
@@ -24498,6 +24809,10 @@ export interface components {
             post_seconds?: number;
             /** @description Clips de cada VIP en cada partida, aparte del top (0 los apaga) */
             vip_per_match?: number;
+            /** @description Clips destacados en la ficha de un jugador (replanteo 76) */
+            featured_max?: number;
+            /** @description Clips destacados en la ficha de un VIP (replanteo 76) */
+            featured_max_vip?: number;
         };
         ClipReviewList: {
             items: components["schemas"]["ClipReview"][];
@@ -24547,6 +24862,18 @@ export interface components {
             can_reprocess: boolean;
             /** @description Por qué no se puede reprocesar (null si se puede) */
             blocked_reason: string | null;
+            /** @description Quién lo rechazó, cuándo y por qué (replanteo 76). `null` si no está rechazado */
+            rejected: {
+                at: string;
+                by: {
+                    /** Format: uuid */
+                    id: string;
+                    alias: string | null;
+                } | null;
+                reason: string | null;
+                /** @description Si se puede recuperar: con la demo todavía guardada */
+                can_restore: boolean;
+            } | null;
         };
         ClipReprocessResult: {
             results: {
@@ -24560,6 +24887,50 @@ export interface components {
         ClipReprocessBody: {
             /** @description De 1 a 50 clips */
             ids: string[];
+        };
+        ClipRejectBody: {
+            /** @description Motivo, opcional: queda en la lista de rechazados */
+            reason?: string;
+        };
+        ClipRejectManyBody: components["schemas"]["ClipReprocessBody"] & {
+            /** @description Motivo, opcional: queda en la lista de rechazados */
+            reason?: string;
+        };
+        MyClips: {
+            /**
+             * @description `auto`: se muestran solos los mejores; `manual`: los que elegí
+             * @enum {string}
+             */
+            mode: "auto" | "manual";
+            vip: boolean;
+            /** @description Cuántos se ven en mi ficha (el tope de VIP si lo soy) */
+            max: number;
+            /** @description El tope con VIP, para el aviso */
+            max_vip: number;
+            /** @description Los que elegí, en orden (se guardan aunque esté en automático) */
+            picked: string[];
+            /** @description Los que se ven hoy en mi ficha, en orden */
+            shown: string[];
+            /** @description Mis clips con video, del más nuevo al más viejo */
+            clips: components["schemas"]["FeaturedClip"][];
+        };
+        FeaturedClip: {
+            clip: components["schemas"]["Clip"];
+            match: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                played_at: string | null;
+            };
+        };
+        MyClipsPut: {
+            /** @enum {string} */
+            mode: "auto" | "manual";
+            /** @description Los elegidos, en orden (en `auto` se guardan para cuando vuelva a `manual`) */
+            ids: string[];
+        };
+        FeaturedClipList: {
+            items: components["schemas"]["FeaturedClip"][];
         };
         /** @description Con el orden por defecto (`started_at` desc) los mixes en vivo van primero */
         MixList: {
@@ -24772,7 +25143,17 @@ export interface components {
             ends_on: string | null;
             /** @description Cuándo terminó de verdad: la última partida jugada. null mientras no terminó (o si sus partidas no tienen fecha) */
             finished_at: string | null;
+            /** @description Detalle del premio en texto libre (por ejemplo "+ rol en Discord") */
             prize: string | null;
+            /** @description Monto del premio (con `prize_currency`); null: sin monto */
+            prize_amount: number | null;
+            /**
+             * @description Divisa del premio: `USD`, `ARS` (pesos argentinos) u `other` (con `prize_currency_other`, por ejemplo `BRL`)
+             * @enum {string|null}
+             */
+            prize_currency: "USD" | "ARS" | "other" | null;
+            /** @description Nombre de la divisa si `prize_currency` es `other` */
+            prize_currency_other: string | null;
             /** @description Equipos inscritos */
             teams: number;
             max_teams: number | null;
@@ -24803,6 +25184,21 @@ export interface components {
             banner_url: string | null;
             /** @description Cierre de inscripciones. null: hasta que se genera el fixture */
             registration_closes_at: string | null;
+            /** @description Torneo histórico: el registro de un torneo ya jugado (sin inscripciones de los capitanes ni avisos) */
+            historic: boolean;
+            /** @description En fase de testing: solo lo ven y lo gestionan admins y moderadores */
+            testing: boolean;
+            /**
+             * @description `pending`: lo creó un organizador y espera a un admin o moderador; `approved`; `rejected` (con `approval_note`). Solo lo aprobado se ve para todos
+             * @enum {string}
+             */
+            approval: "pending" | "approved" | "rejected";
+            /** @description Motivo del rechazo (lo ven el organizador y el staff) */
+            approval_note: string | null;
+            /** @description Mixes vinculados que esperan aprobación */
+            pending_games: number;
+            /** @description Lo creó un moderador: lo aprueba o lo rechaza solo un admin */
+            admin_review: boolean;
         };
         /** @description Inscritos, partidas y tablas van en sus propios listados: /events/{id}/registrations, /matches y /standings */
         EventDetail: components["schemas"]["EventSummary"] & {
@@ -24831,8 +25227,12 @@ export interface components {
             viewer: {
                 /** @description Gestiona el torneo: admin, moderador u organizador dueño */
                 can_manage: boolean;
-                /** @description Además lo cancela y lo borra: admin u organizador dueño (el moderador no) */
+                /** @description Además lo cancela y lo borra: admin, u organizador o moderador que lo creó */
                 can_own: boolean;
+                /** @description Es del staff: aprueba los mixes vinculados y cambia la fase de testing (admin o moderador) */
+                can_review: boolean;
+                /** @description Aprueba o rechaza este torneo: admin; moderador si no lo creó un moderador (`admin_review`) */
+                can_approve: boolean;
             } | null;
         };
         /** @description La primera partida en vivo del torneo; null si no hay ninguna */
@@ -24951,7 +25351,7 @@ export interface components {
             state: "active" | "qualified" | "eliminated" | null;
         };
         RegistrationBody: {
-            /** @description Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID */
+            /** @description Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID. En un histórico, de 0 a 10 fichas cualesquiera (sin plantel ni SteamID) */
             active: string[];
             /**
              * @description Suplentes: hasta `subs_max` del torneo. El coach no se inscribe
@@ -24961,6 +25361,7 @@ export interface components {
             /** @description Suizo: fase en la que empieza (solo el organizador) */
             start_stage?: number;
         };
+        /** @description Lo que crea un organizador o un moderador queda pendiente de aprobación (`approval`); lo de un admin, aprobado. Lo de un moderador lo aprueba solo un admin (`admin_review`). El premio: `prize_amount` y `prize_currency` van juntos, y `prize_currency_other` solo con `other` */
         EventCreate: {
             name: string;
             /**
@@ -24985,12 +25386,26 @@ export interface components {
              * @description Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`
              */
             ends_on?: string | null;
+            /** @description Detalle del premio en texto libre */
             prize?: string | null;
+            /** @description Monto del premio (pide `prize_currency`). null: sin monto */
+            prize_amount?: number | null;
+            /**
+             * @description Divisa del monto (pide `prize_amount`)
+             * @enum {string|null}
+             */
+            prize_currency?: "USD" | "ARS" | "other" | null;
+            /** @description Nombre de la divisa, solo con `prize_currency` = `other` */
+            prize_currency_other?: string | null;
             rules?: string | null;
             min_teams?: number | null;
             max_teams?: number | null;
             /** @description Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto */
             map_pool?: string[] | null;
+            /** @description Torneo histórico (pide `starts_on` y `ends_on`). Lo crean admins, moderadores y organizadores. No se cambia después */
+            historic?: boolean;
+            /** @description En fase de testing (solo admin o moderador; por defecto `false`) */
+            testing?: boolean;
         };
         /** @description Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3; groups_double 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5. 3.er puesto apagado. */
         EventConfig: {
@@ -25048,12 +25463,79 @@ export interface components {
              * @description Fin tentativo (opcional): puede terminar antes o después. La API no lo valida (el formulario avisa si es anterior a `starts_on`); el fin real es `finished_at`
              */
             ends_on?: string | null;
+            /** @description Detalle del premio en texto libre */
             prize?: string | null;
+            /** @description Monto del premio (pide `prize_currency`). null: sin monto */
+            prize_amount?: number | null;
+            /**
+             * @description Divisa del monto (pide `prize_amount`)
+             * @enum {string|null}
+             */
+            prize_currency?: "USD" | "ARS" | "other" | null;
+            /** @description Nombre de la divisa, solo con `prize_currency` = `other` */
+            prize_currency_other?: string | null;
             rules?: string | null;
             min_teams?: number | null;
             max_teams?: number | null;
             /** @description Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto */
             map_pool?: string[] | null;
+            /** @description En fase de testing (solo admin o moderador; por defecto `false`) */
+            testing?: boolean;
+        };
+        ReviewBody: {
+            approve: boolean;
+            /** @description Motivo del rechazo (obligatorio al rechazar; lo ve el organizador) */
+            note?: string;
+        };
+        /** @description Equipo que no está en la plataforma: nombre y sigla. El logo, con PUT /teams/{id}/logo */
+        HistoricTeamBody: {
+            name: string;
+            tag: string;
+        };
+        SimilarTeamList: {
+            items: components["schemas"]["SimilarTeam"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        SimilarTeam: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            tag: string | null;
+            logo_url: string | null;
+            /**
+             * @description `official`: está en la plataforma; `historic`: equipo histórico ya cargado
+             * @enum {string}
+             */
+            kind: "official" | "historic";
+        };
+        PendingGameList: {
+            items: components["schemas"]["PendingGame"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        PendingGame: {
+            /** @description El mix vinculado (las rondas ya en el orden de los equipos de la partida) */
+            game: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                /** @description Rondas del equipo 1 de la partida */
+                score1: number | null;
+                score2: number | null;
+                played_at: string | null;
+            };
+            match: components["schemas"]["MatchSummary"] & unknown;
         };
         SeedsBody: {
             teams: string[];
@@ -25278,6 +25760,14 @@ export interface components {
             /** @enum {string} */
             role: "user" | "organizer" | "moderator";
         };
+        DiscordCounts: {
+            /** @description Conectados ahora. null si Discord no respondió */
+            online: number | null;
+            /** @description Miembros del servidor. null si Discord no respondió */
+            members: number | null;
+            /** @description La invitación de la comunidad */
+            invite_url: string;
+        };
         ServersStatus: {
             servers: components["schemas"]["ServerStatusItem"][];
             totals: {
@@ -25289,7 +25779,11 @@ export interface components {
                 players: number;
                 /** @description Mixes en vivo entre todos */
                 live_matches: number;
+                /** @description Jugadores en la cola del matchmaking, de cualquier modo (replanteo 83) */
+                in_queue: number;
             };
+            /** @description Si la cola del matchmaking está abierta (replanteo 83) */
+            mm_open: boolean;
             /** @description Cuándo se consultó (la respuesta se guarda 20 s) */
             checked_at: string;
         };

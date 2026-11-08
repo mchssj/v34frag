@@ -14,6 +14,7 @@ export const adminUserKeys = {
   list: (q: string, f: AccountFilter, page: number) =>
     ["admin", "users", "list", q, f, page] as const,
   vip: (id: string) => ["admin", "users", "vip", id] as const,
+  account: (id: string) => ["admin", "users", "account", id] as const,
   streamer: (alias: string) => ["admin", "users", "streamer", alias] as const,
   words: ["admin", "words", "list"] as const,
   hits: ["admin", "words", "hits"] as const,
@@ -46,6 +47,55 @@ export function usersOptions(q: string, f: AccountFilter, page: number) {
 
 const touchedUsers = (qc: ReturnType<typeof useQueryClient>) =>
   qc.invalidateQueries({ queryKey: ["admin", "users"] as const })
+
+/** Si confirmó el correo y su último inicio de sesión (plan docs/bitacora/2026-11-03-admin-cuentas-usuarios). */
+export function accountStatusOptions(id: string) {
+  return queryOptions({
+    queryKey: adminUserKeys.account(id),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/users/{id}/account", {
+          params: { path: { id } },
+          signal,
+        })
+      ),
+  })
+}
+
+export function useResendConfirmation(id: string) {
+  return useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.POST("/api/v1/admin/users/{id}/resend-confirmation", {
+          params: { path: { id } },
+        })
+      ),
+  })
+}
+
+export function useSendPasswordReset(id: string) {
+  return useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.POST("/api/v1/admin/users/{id}/send-password-reset", {
+          params: { path: { id } },
+        })
+      ),
+  })
+}
+
+/** La contraseña que devuelve se muestra una sola vez: no se guarda en la caché de consultas. */
+export function useRandomPassword(id: string) {
+  return useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.POST("/api/v1/admin/users/{id}/random-password", {
+          params: { path: { id } },
+        })
+      ),
+    gcTime: 0,
+  })
+}
 
 export function useSetAlias(id: string) {
   const qc = useQueryClient()

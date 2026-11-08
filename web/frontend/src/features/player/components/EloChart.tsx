@@ -3,8 +3,8 @@ import { useState, type PointerEvent } from "react"
 import { ChartLineIcon } from "lucide-react"
 
 import type { Schemas } from "@/api/client"
+import { EloTooltip } from "@/components/brand/EloTooltip"
 import { GhostChart } from "@/components/illustrations"
-import { fmtDay } from "../lib/labels"
 
 type Point = Schemas["EloPoint"]
 
@@ -13,19 +13,17 @@ const H = 200
 
 /**
  * Evolución de ELO (handoff 2): área y línea en `primary`, la línea punteada en el piso del nivel
- * actual y el punto bajo el puntero con su valor.
+ * actual y, bajo el puntero (o al tocar), el punto con su globo: ELO, cambio, fecha y mapa.
  */
 export function EloChart({
   points,
   floor,
   level,
-  onHover,
 }: {
   points: Point[]
   /** Piso del nivel actual (línea punteada); null sin nivel. */
   floor: number | null
   level: number | null
-  onHover: (label: string | null) => void
 }) {
   const [hover, setHover] = useState<number | null>(null)
   if (points.length < 2)
@@ -65,18 +63,7 @@ export function EloChart({
     const r = e.currentTarget.getBoundingClientRect()
     const i = Math.round(((e.clientX - r.left) / r.width) * (points.length - 1))
     const idx = Math.max(0, Math.min(points.length - 1, i))
-    if (idx === hover) return
     setHover(idx)
-    const p = points[idx]
-    onHover(
-      [p.elo_after, p.map, p.at ? fmtDay(p.at) : null]
-        .filter(Boolean)
-        .join(" · ")
-    )
-  }
-  const leave = () => {
-    setHover(null)
-    onHover(null)
   }
 
   const h = hover === null ? null : points[hover]
@@ -84,7 +71,8 @@ export function EloChart({
     <div
       className="relative min-h-[200px] flex-1 touch-none"
       onPointerMove={move}
-      onPointerLeave={leave}
+      onPointerDown={move}
+      onPointerLeave={() => setHover(null)}
     >
       <svg
         viewBox={`0 0 ${W} ${H}`}
@@ -130,6 +118,13 @@ export function EloChart({
           />
         )}
       </svg>
+      {h && hover !== null && (
+        <EloTooltip
+          point={h}
+          left={`${(x(hover) / W) * 100}%`}
+          frac={hover / (points.length - 1)}
+        />
+      )}
       {h && hover !== null && (
         <span
           aria-hidden

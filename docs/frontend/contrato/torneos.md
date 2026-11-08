@@ -104,3 +104,47 @@ stateDiagram-v2
 - **`stage`:** `ko`, `third`, `upper`, `lower`, `grand`, `group` o `swiss`.
 - **Posición:** `phase` (fase), `round` (columna) y `pos` (fila).
 - **Byes:** no vienen en el listado.
+
+## 8c. Torneos históricos, aprobación y fase de testing (desde el 2026-11-06)
+
+Bitácora: [`2026-11-06-torneos-historicos-y-testing`](../../bitacora/2026-11-06-torneos-historicos-y-testing/). Replanteo `80`.
+
+**Campos nuevos** en `EventSummary` (listado y detalle): `historic`, `testing`, `approval` (`pending`, `approved` o `rejected`), `approval_note` (motivo del rechazo) y `pending_games` (mixes vinculados por aprobar). `viewer.can_review` (admin o moderador). Los equipos históricos llevan `historic: true` en `TeamRef` (inscripciones, partidas del torneo, campeón y detalle de una partida): **no tienen página**, no se enlazan (`GET /teams/{id}` da `404`).
+
+**Quién ve qué.** Lo filtra la base: para quien no puede verlo, el torneo no existe (`404` en su página, y no sale en ningún listado, perfil, equipo, ranking ni en vivo).
+
+| Torneo | Lo ven |
+|---|---|
+| Aprobado, sin testing | Todos |
+| Pendiente o rechazado | Su organizador, moderadores y admins |
+| En testing | Solo moderadores y admins (tampoco su organizador, que no lo gestiona mientras tanto) |
+
+**Endpoints**
+
+| Endpoint | Quién | Qué hace |
+|---|---|---|
+| `POST /api/v1/events` | Organizador o admin; moderador solo con `historic` | `historic` (pide `starts_on` y `ends_on`; no se cambia después) y `testing` (solo admin o moderador). Lo de un organizador nace `pending` |
+| `PATCH /api/v1/events/{id}` | Quien gestiona | `testing` (solo admin o moderador). `historic` no se cambia |
+| `GET /api/v1/events` | Todos | Filtros `historic`, `testing`, `approval` y `pending_games` |
+| `POST /api/v1/events/{id}/review` | Admin o moderador | `{ approve, note? }` (`note` obligatoria al rechazar). Aprobar aprueba también los mixes que vinculó el organizador. `409` si no está pendiente |
+| `POST /api/v1/events/{id}/resubmit` | El organizador | Un rechazado vuelve a pendiente |
+| `POST /api/v1/events/{id}/historic-teams` | Quien gestiona un histórico | `{ name, tag }`: crea un equipo que no está en la plataforma y lo inscribe (`201 { id }`). El logo, con `PUT /teams/{id}/logo` |
+| `GET /api/v1/events/{id}/similar-teams?q=` | Quien gestiona | Equipos de la plataforma (`kind: official`) e históricos ya cargados con nombre o sigla parecidos |
+| `PATCH /api/v1/historic-teams/{id}` | Admin, moderador o quien gestiona un histórico donde está | `{ name, tag }` |
+| `PUT /api/v1/events/{id}/registrations/{teamId}` | Quien gestiona (en un histórico) | En un histórico: `active` de 0 a 10 fichas cualesquiera (sin plantel ni SteamID); el capitán no inscribe. Se pueden cambiar los jugadores aunque el torneo haya terminado |
+| `GET /api/v1/admin/pending-games` | Admin o moderador | Mixes vinculados por aprobar, con su partida (`match`). Filtro `match` |
+
+**Histórico:** se juega como un torneo normal (siembra, fixture, llave y campeón), pero no se inicia en el servidor, no avisa a nadie y cada mapa lleva su fecha (`played_at`; si falta, la del comienzo). Una serie de un histórico **suma al ranking de equipos solo si todos sus mapas tienen un mix aprobado**. Los torneos en testing, pendientes o rechazados nunca suman.
+
+**Avisos nuevos:** `admin_event_review` (a admins y moderadores: torneo por aprobar), `admin_game_review` (mix por aprobar), `event_reviewed` y `game_reviewed` (al organizador, con `approved` y, en el torneo, `note`).
+
+## 8d. El moderador crea torneos y el premio con monto y divisa (desde el 2026-11-07)
+
+Bitácora: [`2026-11-07-moderador-crea-torneos-y-divisa`](../../bitacora/2026-11-07-moderador-crea-torneos-y-divisa/). Replanteo `84`. Cambia lo de la sección 8c:
+
+- `POST /api/v1/events`: lo crean el **organizador, el moderador** (normal o histórico) **y el admin**. Lo del organizador y lo del moderador nace `pending`; lo del admin, `approved`.
+- **`admin_review`** (nuevo en `EventSummary`): lo creó un moderador. Ese torneo lo aprueba o lo rechaza **solo un admin** (`POST /events/{id}/review` responde `403` a un moderador), y su `admin_event_review` les llega solo a los admins. Filtro `admin_review` en `GET /api/v1/events`.
+- **`viewer.can_approve`** (nuevo): quien mira puede aprobar o rechazar **ese** torneo. `viewer.can_review` sigue siendo "es del staff" (mixes por aprobar y testing). `viewer.can_own` incluye al moderador en lo que creó (cancelar y borrar).
+- `POST /api/v1/events/{id}/resubmit`: quien lo creó (organizador o moderador; el moderador, también en testing).
+- **Premio:** `prize_amount` (número, mayor que 0), `prize_currency` (`USD`, `ARS` u `other`) y `prize_currency_other` (el nombre, hasta 12 caracteres, solo con `other`), en `EventCreate`, `EventPatch` y `EventSummary`. `prize` sigue como el detalle en texto libre. Monto y divisa van juntos; si no, `400 VALIDATION_ERROR` con un mensaje sobre el premio. La web lo muestra como "US$ 100", "$ 50.000 ARS" o "200 BRL", más el detalle.
+

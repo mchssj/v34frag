@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card"
 import { secondsLeft, teamName } from "./labels"
 import { suggestBan } from "./room/roomData"
-import { useMmMutation } from "./queries"
+import { banOptimistic, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby, MmVetoBan, MmVetoMap } from "./types"
 import { useNow } from "./useNow"
@@ -24,7 +24,10 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
   const source = useMmSource()
   const veto = lobby.veto!
   const now = useNow(veto.turn !== null, 250)
-  const ban = useMmMutation((map: string) => source.veto(lobby.match_id!, map))
+  const ban = useMmMutation(
+    (map: string) => source.veto(lobby.match_id!, map),
+    banOptimistic
+  )
 
   const me = lobby.players.find((p) => p.is_me)
   const captainOf = (team: 1 | 2) =>
@@ -43,7 +46,7 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
           {veto.turn === null
             ? `Se juega ${veto.pool.find((m) => m.name === lobby.map)?.label ?? lobby.map}.`
             : myTurn
-              ? "Tu turno: baneá un mapa."
+              ? "Tu turno: banea un mapa."
               : `Banea ${turnCaptain?.nick ?? "el capitán"} (${teamName(veto.turn)}).`}
         </CardDescription>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
@@ -57,7 +60,7 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
             >
               <CrownIcon aria-hidden className="size-3.5 text-primary" />
               {teamName(t)}: {captainOf(t)?.nick ?? "—"}
-              {captainOf(t)?.is_me && " (vos)"}
+              {captainOf(t)?.is_me && " (tú)"}
             </span>
           ))}
           {veto.turn !== null && (

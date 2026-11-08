@@ -163,8 +163,27 @@ function revisarLinks(p: ManualPagina, paginas: Map<string, ManualPagina>, image
 
 export type ManualIndice = {
   inicio: SeccionId;
-  secciones: { id: SeccionId; titulo: string; paginas: { tarea: string; titulo: string; resumen: string }[] }[];
+  secciones: { id: SeccionId; titulo: string; paginas: { tarea: string; titulo: string; resumen: string; texto: string }[] }[];
 };
+
+/**
+ * El cuerpo de una página en texto plano, para el buscador de la ayuda (plan docs/bitacora/2026-11-06-ayuda-buscar-en-el-texto):
+ * sin encabezados, negritas, citas, capturas ni tablas, los links con su texto y sin los marcadores ({{…}}), que el índice no
+ * reemplaza porque no lee la base. El código en línea queda con su contenido (`!pause` → !pause).
+ */
+export function textoPlano(markdown: string): string {
+  return markdown
+    .replace(/```[^\n]*\n([\s\S]*?)```/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(MARCADOR_RE, ' ')
+    .replace(/^\s*\|?(\s*:?-{3,}:?\s*\|)+\s*:?-*:?\s*$/gm, ' ')
+    .replace(/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/gm, '')
+    .replace(/[*`]/g, '')
+    .replace(/\|/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 /** El índice de lo que ve ese rol, sin las páginas ocultas ni las secciones vacías. */
 export function indiceDe(manual: Manual, role: string | null | undefined): ManualIndice {
@@ -176,7 +195,7 @@ export function indiceDe(manual: Manual, role: string | null | undefined): Manua
       paginas: [...manual.paginas.values()]
         .filter((p) => p.seccion === s.id && !p.oculta)
         .sort((a, b) => a.orden - b.orden || a.titulo.localeCompare(b.titulo, 'es'))
-        .map(({ tarea, titulo, resumen }) => ({ tarea, titulo, resumen })),
+        .map(({ tarea, titulo, resumen, markdown }) => ({ tarea, titulo, resumen, texto: textoPlano(markdown) })),
     }))
     .filter((s) => s.paginas.length > 0);
   const inicio = inicioDe(role);
@@ -224,6 +243,15 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'mm.conectar': { formato: MINUTOS, defecto: 5 },
   'mm.espera_servidor': { formato: MINUTOS, defecto: 3 },
   'mm.volver': { formato: MINUTOS, defecto: 3 },
+  // (replanteo 75) Reemplazos.
+  'mm.reemplazo_link': { formato: MINUTOS, defecto: 10 },
+  'mm.reemplazo_voto': { formato: { tipo: 'porcentaje' }, defecto: 80 },
+  'mm.reemplazo_rondas': { formato: { tipo: 'cantidad', singular: 'ronda', plural: 'rondas' }, defecto: 4 },
+  // (replanteo 78) ELO que pierde el que abandona: si su equipo ganó y si perdió o empató.
+  'mm.abandono_ganado_min': { formato: { tipo: 'numero' }, defecto: 10 },
+  'mm.abandono_ganado_max': { formato: { tipo: 'numero' }, defecto: 15 },
+  'mm.abandono_perdido_min': { formato: { tipo: 'numero' }, defecto: 15 },
+  'mm.abandono_perdido_max': { formato: { tipo: 'numero' }, defecto: 20 },
   'mm.sanciones': { formato: { tipo: 'duraciones' }, defecto: ESCALERA },
   'mm.sancion_min': { clave: 'mm.sanciones', formato: { tipo: 'primera_duracion' }, defecto: ESCALERA },
   'mm.sancion_max': { clave: 'mm.sanciones', formato: { tipo: 'ultima_duracion' }, defecto: ESCALERA },
@@ -232,6 +260,9 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'equipo.dias_nombre': { formato: { tipo: 'cantidad', singular: 'día', plural: 'días' }, defecto: 30 },
   'clips.por_partida': { formato: { tipo: 'numero' }, defecto: 10 },
   'clips.por_jugador': { formato: { tipo: 'numero' }, defecto: 2 },
+  // (replanteo 76) Clips destacados en la ficha.
+  'clips.destacados': { formato: { tipo: 'numero' }, defecto: 3 },
+  'clips.destacados_vip': { formato: { tipo: 'numero' }, defecto: 10 },
   'elo.min_pct': { formato: { tipo: 'porcentaje' }, defecto: 35 },
   'elo.full_pct': { formato: { tipo: 'porcentaje' }, defecto: 90 },
   'claim.max_steam_ids': { formato: { tipo: 'numero' }, defecto: 3 },

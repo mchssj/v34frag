@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { LockIcon, UserXIcon, XIcon } from "lucide-react"
+import { LockIcon, XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -7,7 +7,8 @@ import { errorMessage } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { VipBadge } from "@/features/shop/cosmetics"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { playerSearchOptions, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -23,78 +24,78 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
   const canAdd = blocks.allowed && blocks.list.length < blocks.max
 
   return (
-    <section
-      aria-label="Bloqueo"
-      className="flex flex-col overflow-hidden rounded-xl border bg-card"
+    <Card
+      variant="outline"
+      asChild
+      className="flex flex-col overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
     >
-      <div className="flex items-center gap-2 border-b px-4 py-2.5">
-        <UserXIcon aria-hidden className="size-4 text-muted-foreground" />
-        <h2 className="text-sm font-semibold">Bloqueo</h2>
-        {blocks.vip_only && <VipBadge />}
-        <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
-          {blocks.list.length}/{blocks.max}
-        </span>
-      </div>
-      <div className="flex flex-col gap-2 p-4">
-        <p className="text-[13px] text-muted-foreground">
-          No te toca en tu equipo. En contra, sí.
-        </p>
-        {!blocks.allowed ? (
-          <p className="inline-flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-[13px]">
-            <LockIcon aria-hidden className="size-4 text-muted-foreground" />
-            Exclusivo para VIP
+      <section aria-label="Bloqueo">
+        <div className="flex items-center gap-2 border-b px-4 py-3.5">
+          <h2 className="text-sm font-semibold">Bloqueo</h2>
+          {blocks.vip_only && <Badge variant="vip">VIP</Badge>}
+          <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
+            {blocks.list.length}/{blocks.max}
+          </span>
+        </div>
+        <div className="flex flex-col gap-2 p-4">
+          <p className="text-[13px] text-muted-foreground">
+            No te toca en tu equipo. En contra, sí.
           </p>
-        ) : (
-          <>
-            <ul className="flex flex-col gap-1">
-              {blocks.list.map((b) => (
-                <li
-                  key={b.player_id}
-                  className="flex items-center gap-2 rounded-lg bg-muted/60 py-1 pr-1 pl-3 text-[13px] font-medium"
-                >
-                  {b.nick}
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="ml-auto"
-                    aria-label={`Sacar el bloqueo a ${b.nick}`}
-                    disabled={remove.isPending}
-                    onClick={() => remove.mutate(b.player_id)}
+          {!blocks.allowed ? (
+            <p className="inline-flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-[13px]">
+              <LockIcon aria-hidden className="size-4 text-muted-foreground" />
+              Exclusivo para VIP
+            </p>
+          ) : (
+            <>
+              <ul className="flex flex-col gap-1">
+                {blocks.list.map((b) => (
+                  <li
+                    key={b.player_id}
+                    className="flex items-center gap-2 rounded-lg bg-muted/60 py-1 pr-1 pl-3 text-[13px] font-medium"
                   >
-                    <XIcon />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-            {canAdd && (
-              <PlayerPicker
-                label="Buscar a quién bloquear"
-                verb="Bloquear"
-                pending={block.isPending}
-                onPick={(id, done) =>
-                  block.mutate(id, {
-                    onSuccess: done,
-                    onError: (e) => toast.error(errorMessage(e)),
-                  })
-                }
-              />
-            )}
-          </>
-        )}
-      </div>
-    </section>
+                    {b.nick}
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="ml-auto"
+                      aria-label={`Sacar el bloqueo a ${b.nick}`}
+                      disabled={remove.isPending}
+                      onClick={() => remove.mutate(b.player_id)}
+                    >
+                      <XIcon />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              {canAdd && (
+                <PlayerPicker
+                  label="Buscar a quién bloquear"
+                  verb="Bloquear"
+                  pending={block.isPending}
+                  onPick={(id, done) =>
+                    block.mutate(id, {
+                      onSuccess: done,
+                      onError: (e) => toast.error(errorMessage(e)),
+                    })
+                  }
+                />
+              )}
+            </>
+          )}
+        </div>
+      </section>
+    </Card>
   )
 }
 
 export function PlayerPicker({
   label,
-  placeholder = "Buscar por nick",
   verb,
   pending,
   onPick,
 }: {
   label: string
-  placeholder?: string
   verb: string
   pending: boolean
   /** `done` limpia la búsqueda. */
@@ -108,7 +109,7 @@ export function PlayerPicker({
     <>
       <Input
         aria-label={label}
-        placeholder={placeholder}
+        placeholder="Buscar por nick"
         value={q}
         onChange={(e) => setQ(e.target.value)}
         className="h-8"

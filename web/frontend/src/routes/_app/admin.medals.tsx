@@ -1,30 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import {
-  AdminMedalsPage,
-  MEDAL_TABS,
-} from "@/features/admin/medals/pages/AdminMedalsPage"
+import { AdminMedalsPage } from "@/features/admin/medals/pages/AdminMedalsPage"
 
 export const Route = createFileRoute("/_app/admin/medals")({
   validateSearch: z.object({
-    tab: z.enum(MEDAL_TABS).optional().catch(undefined),
+    edit: z
+      .union([z.literal("new"), z.uuid()])
+      .optional()
+      .catch(undefined),
   }),
-  component: AdminMedalsPageRoute,
+  component: AdminMedalsRoute,
 })
 
-function AdminMedalsPageRoute() {
-  const { tab } = Route.useSearch()
+function AdminMedalsRoute() {
+  const { edit } = Route.useSearch()
   const navigate = Route.useNavigate()
   return (
     <AdminMedalsPage
-      tab={tab ?? "give"}
-      onTab={(t) =>
-        void navigate({
-          search: { tab: t === "give" ? undefined : t },
-          resetScroll: false,
-        })
-      }
+      edit={edit}
+      onEdit={(id) => void navigate({ search: { edit: id } })}
     />
   )
 }

@@ -3,10 +3,11 @@ import { useState } from "react"
 
 import { AdminHeader, AdminTabs } from "../../components/ui"
 import { AccountsTab } from "../components/AccountsTab"
+import { AuthImageTab } from "../components/AuthImageTab"
 import { hitsOptions } from "../api/queries"
 import { WordsTab } from "../components/WordsTab"
 
-export const USER_TABS = ["accounts", "words"] as const
+export const USER_TABS = ["accounts", "words", "login"] as const
 export type UserTab = (typeof USER_TABS)[number]
 
 export function AdminUsersPage({
@@ -25,7 +26,7 @@ export function AdminUsersPage({
     <section className="flex flex-col gap-5">
       <AdminHeader
         title="Usuarios"
-        subtitle="Las cuentas con las que la gente entra a la web: alias, rol y VIP. Y las palabras que nadie puede usar en su alias ni en un equipo."
+        subtitle="Las cuentas con las que la gente entra a la web: alias, rol y VIP. Las palabras que nadie puede usar en su alias ni en un equipo. Y la imagen de la pantalla de inicio de sesión."
       />
       <AdminTabs
         label="Secciones de Usuarios"
@@ -38,6 +39,7 @@ export function AdminUsersPage({
             label: "Palabras bloqueadas",
             badge: hits.data?.total,
           },
+          { key: "login", label: "Inicio de sesión" },
         ]}
       />
       {tab === "accounts" && (
@@ -48,6 +50,7 @@ export function AdminUsersPage({
           onSelect={setSelected}
         />
       )}
+      {tab === "login" && <AuthImageTab />}
       {tab === "words" && (
         <WordsTab
           onEditAlias={(h) => {

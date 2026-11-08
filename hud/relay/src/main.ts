@@ -8,13 +8,13 @@ import { dirname, join } from "node:path";
 import { isSea } from "node:sea";
 import { Channel } from "./channel.ts";
 import { type Config, configPath, loadConfig } from "./config.ts";
-import { ControlStore, loadControl, mergeControl, saveControl } from "./control.ts";
+import { ControlStore, delayModeOf, LOCAL_SERVER, loadControl, mergeControl, saveControl } from "./control.ts";
 import { findFont, loadFont } from "./font.ts";
 import { Hub, type Socket } from "./hub.ts";
 import { fetchRemote } from "./remote.ts";
 import { HttpServer } from "./server.ts";
 
-const VERSION = "2.2.0";
+const VERSION = "2.3.0";
 // El commit del build del VPS (scripts/build-node.mjs); con Node desde src/, "dev".
 const BUILD = process.env.BUILD_SHA || "dev";
 const RELEASE_MS = 50;
@@ -96,6 +96,7 @@ async function runVps(config: Config, cfgPath: string): Promise<void> {
   } catch (e) {
     fail(`No se pudo abrir el puerto ${config.httpPort}: ${(e as Error).message}`);
   }
+  log(config.delay === null ? "Retraso: el que elige cada streamer en /control." : `Retraso fijo para todos: ${config.delay} s (hud.json).`);
   log(`Modo VPS. HTTP en 127.0.0.1:${config.httpPort} (lo publica Caddy). Configuración desde ${remote.apiUrl}.`);
   log(fonts.killfeed ? `Íconos: ${fontPath}` : `Sin la fuente de ClientMod: el HUD muestra los nombres de las armas (revisá "gameDir").`);
 
@@ -126,25 +127,34 @@ async function runLocal(config: Config, cfgPath: string): Promise<void> {
   let control = loadControl(controlPath);
   const { path: fontPath, fonts } = loadFonts(config);
   const channel = new Channel(config.key, config.delay);
+  const mode = () => delayModeOf(control, LOCAL_SERVER);
 
   const http: HttpServer = new HttpServer({
     viewer: (token) => (token === null ? "local" : null),
     health: () => ({ status: "ok", version: VERSION, build: BUILD }),
     initial: () => [
-      { event: "state", data: channel.snapshot() },
+      { event: "state", data: channel.snapshot(mode(), Date.now()) },
       { event: "control", data: control },
     ],
     onControl: (_viewer, body) => {
+      const before = channel.laneKey(mode());
       control = mergeControl(control, body);
       saveControl(controlPath, control);
       http.broadcast("control", control);
+      if (channel.laneKey(mode()) !== before) {
+        log(`Retraso: ${channel.locked ? "fijado en relay.json" : mode() === "tv" ? "el tv_delay del servidor" : mode() === "live" ? "en vivo" : `${mode()} s`}.`);
+        http.broadcast("state", channel.snapshot(mode(), Date.now()));
+      }
     },
     status: () => ({
       mode: "local",
       version: VERSION,
       received: channel.received,
       lastPacketMsAgo: channel.lastPacketAt ? Date.now() - channel.lastPacketAt : null,
-      delaySeconds: channel.delaySeconds(),
+      delaySeconds: channel.delaySeconds(mode()),
+      delayMode: mode(),
+      delayLocked: channel.locked,
+      tvDelay: channel.tvDelay,
       queued: channel.queued,
       hudOpen: http.connections().filter((c) => c.page === "hud").length,
       killfeedIcons: fonts.killfeed !== null,
@@ -173,11 +183,16 @@ async function runLocal(config: Config, cfgPath: string): Promise<void> {
       ? `Íconos: ${fontPath}`
       : `No se encontró la fuente de ClientMod (cstrike/resource/clientmodkillfeed.ttf): el HUD muestra los nombres de las armas. Poné la carpeta de ClientMod en "gameDir" de relay.json.`,
   );
-  log(config.delay === null ? "Retraso: el tv_delay del servidor." : `Retraso fijo: ${config.delay} s (relay.json).`);
+  log(config.delay === null ? "Retraso: el que elijas en /control (por defecto, el tv_delay del servidor)." : `Retraso fijo: ${config.delay} s (relay.json).`);
 
   setInterval(() => {
-    if (channel.release(Date.now())) http.broadcast("state", channel.snapshot());
+    const now = Date.now();
+    if (channel.release(now).has(channel.laneKey(mode()))) http.broadcast("state", channel.snapshot(mode(), now));
   }, RELEASE_MS);
+  setInterval(() => {
+    channel.touch(mode(), Date.now());
+    channel.prune(Date.now());
+  }, REMOTE_MS);
 
   let lastLine = "";
   setInterval(() => {
@@ -187,7 +202,7 @@ async function runLocal(config: Config, cfgPath: string): Promise<void> {
     else if (Date.now() - last > 15000) line = `Sin paquetes hace ${Math.round((Date.now() - last) / 1000)} s (sin jugadores en el servidor o se cortó el túnel).`;
     else {
       const huds = http.connections().filter((c) => c.page === "hud").length;
-      line = `Recibiendo: ${(channel.receivedWindow / (STATUS_MS / 1000)).toFixed(1)} paquetes/s · retraso ${channel.delaySeconds()} s · ${channel.snapshot().players.length} jugadores · HUD abiertos: ${huds}`;
+      line = `Recibiendo: ${(channel.receivedWindow / (STATUS_MS / 1000)).toFixed(1)} paquetes/s · retraso ${channel.delaySeconds(mode())} s · ${channel.snapshot().players.length} jugadores · HUD abiertos: ${huds}`;
     }
     if (channel.badKey) line += ` · ${channel.badKey} con clave incorrecta (revisá "key" en relay.json)`;
     if (channel.badFormat) line += ` · ${channel.badFormat} con formato inválido`;

@@ -20,7 +20,6 @@ import { Route as SoporteRouteImport } from './routes/soporte'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
-import { Route as AppHallOfFameRouteImport } from './routes/_app/hall-of-fame'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
@@ -60,6 +59,7 @@ import { Route as AppAdminUsersRouteImport } from './routes/_app/admin.users'
 import { Route as AppAnticheatVincularRouteImport } from './routes/_app/anticheat.vincular'
 import { Route as AppEventsIndexRouteImport } from './routes/_app/events.index'
 import { Route as AppEventsIdRouteImport } from './routes/_app/events.$id'
+import { Route as AppHelpIndexRouteImport } from './routes/_app/help.index'
 import { Route as AppMatchIdRouteImport } from './routes/_app/match.$id'
 import { Route as AppMatchesIndexRouteImport } from './routes/_app/matches.index'
 import { Route as AppMatchesResultsRouteImport } from './routes/_app/matches.results'
@@ -69,6 +69,7 @@ import { Route as AppPlayersIndexRouteImport } from './routes/_app/players.index
 import { Route as AppPlayersCompareRouteImport } from './routes/_app/players.compare'
 import { Route as AppProfileIndexRouteImport } from './routes/_app/profile.index'
 import { Route as AppProfileAccountRouteImport } from './routes/_app/profile.account'
+import { Route as AppProfileClipsRouteImport } from './routes/_app/profile.clips'
 import { Route as AppProfileLinkRouteImport } from './routes/_app/profile.link'
 import { Route as AppProfilePreferencesRouteImport } from './routes/_app/profile.preferences'
 import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.privacy'
@@ -78,7 +79,9 @@ import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
 import { Route as AppAdminEventsIndexRouteImport } from './routes/_app/admin.events.index'
 import { Route as AppAdminEventsIdRouteImport } from './routes/_app/admin.events.$id'
 import { Route as AppAdminEventsNewRouteImport } from './routes/_app/admin.events.new'
+import { Route as AppHelpSeccionTareaRouteImport } from './routes/_app/help.$seccion.$tarea'
 import { Route as AppMixesLiveUidRouteImport } from './routes/_app/mixes.live.$uid'
+import { Route as AppMmReemplazoTokenRouteImport } from './routes/_app/mm.reemplazo.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -131,11 +134,6 @@ const WelcomeRoute = WelcomeRouteImport.update({
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHallOfFameRoute = AppHallOfFameRouteImport.update({
-  id: '/hall-of-fame',
-  path: '/hall-of-fame',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHomeRoute = AppHomeRouteImport.update({
@@ -333,6 +331,11 @@ const AppEventsIdRoute = AppEventsIdRouteImport.update({
   path: '/events/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHelpIndexRoute = AppHelpIndexRouteImport.update({
+  id: '/help/',
+  path: '/help/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMatchIdRoute = AppMatchIdRouteImport.update({
   id: '/match/$id',
   path: '/match/$id',
@@ -376,6 +379,11 @@ const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
 const AppProfileAccountRoute = AppProfileAccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppProfileClipsRoute = AppProfileClipsRouteImport.update({
+  id: '/clips',
+  path: '/clips',
   getParentRoute: () => AppProfileRoute,
 } as any)
 const AppProfileLinkRoute = AppProfileLinkRouteImport.update({
@@ -423,9 +431,19 @@ const AppAdminEventsNewRoute = AppAdminEventsNewRouteImport.update({
   path: '/events/new',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppHelpSeccionTareaRoute = AppHelpSeccionTareaRouteImport.update({
+  id: '/help/$seccion/$tarea',
+  path: '/help/$seccion/$tarea',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMixesLiveUidRoute = AppMixesLiveUidRouteImport.update({
   id: '/mixes/live/$uid',
   path: '/mixes/live/$uid',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMmReemplazoTokenRoute = AppMmReemplazoTokenRouteImport.update({
+  id: '/mm/reemplazo/$token',
+  path: '/mm/reemplazo/$token',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -439,7 +457,6 @@ export interface FileRoutesByFullPath {
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
-  '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
@@ -483,12 +500,14 @@ export interface FileRoutesByFullPath {
   '/player/$nick': typeof AppPlayerNickRoute
   '/players/compare': typeof AppPlayersCompareRoute
   '/profile/account': typeof AppProfileAccountRoute
+  '/profile/clips': typeof AppProfileClipsRoute
   '/profile/link': typeof AppProfileLinkRoute
   '/profile/preferences': typeof AppProfilePreferencesRoute
   '/profile/privacy': typeof AppProfilePrivacyRoute
   '/ranking/teams': typeof AppRankingTeamsRoute
   '/teams/$id': typeof AppTeamsIdRoute
   '/events/': typeof AppEventsIndexRoute
+  '/help/': typeof AppHelpIndexRoute
   '/matches/': typeof AppMatchesIndexRoute
   '/mixes/': typeof AppMixesIndexRoute
   '/players/': typeof AppPlayersIndexRoute
@@ -496,7 +515,9 @@ export interface FileRoutesByFullPath {
   '/ranking/': typeof AppRankingIndexRoute
   '/admin/events/$id': typeof AppAdminEventsIdRoute
   '/admin/events/new': typeof AppAdminEventsNewRoute
+  '/help/$seccion/$tarea': typeof AppHelpSeccionTareaRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -509,7 +530,6 @@ export interface FileRoutesByTo {
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
-  '/hall-of-fame': typeof AppHallOfFameRoute
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
@@ -552,12 +572,14 @@ export interface FileRoutesByTo {
   '/player/$nick': typeof AppPlayerNickRoute
   '/players/compare': typeof AppPlayersCompareRoute
   '/profile/account': typeof AppProfileAccountRoute
+  '/profile/clips': typeof AppProfileClipsRoute
   '/profile/link': typeof AppProfileLinkRoute
   '/profile/preferences': typeof AppProfilePreferencesRoute
   '/profile/privacy': typeof AppProfilePrivacyRoute
   '/ranking/teams': typeof AppRankingTeamsRoute
   '/teams/$id': typeof AppTeamsIdRoute
   '/events': typeof AppEventsIndexRoute
+  '/help': typeof AppHelpIndexRoute
   '/matches': typeof AppMatchesIndexRoute
   '/mixes': typeof AppMixesIndexRoute
   '/players': typeof AppPlayersIndexRoute
@@ -565,7 +587,9 @@ export interface FileRoutesByTo {
   '/ranking': typeof AppRankingIndexRoute
   '/admin/events/$id': typeof AppAdminEventsIdRoute
   '/admin/events/new': typeof AppAdminEventsNewRoute
+  '/help/$seccion/$tarea': typeof AppHelpSeccionTareaRoute
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/admin/events': typeof AppAdminEventsIndexRoute
 }
 export interface FileRoutesById {
@@ -581,7 +605,6 @@ export interface FileRoutesById {
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
-  '/_app/hall-of-fame': typeof AppHallOfFameRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
@@ -625,12 +648,14 @@ export interface FileRoutesById {
   '/_app/player/$nick': typeof AppPlayerNickRoute
   '/_app/players/compare': typeof AppPlayersCompareRoute
   '/_app/profile/account': typeof AppProfileAccountRoute
+  '/_app/profile/clips': typeof AppProfileClipsRoute
   '/_app/profile/link': typeof AppProfileLinkRoute
   '/_app/profile/preferences': typeof AppProfilePreferencesRoute
   '/_app/profile/privacy': typeof AppProfilePrivacyRoute
   '/_app/ranking/teams': typeof AppRankingTeamsRoute
   '/_app/teams/$id': typeof AppTeamsIdRoute
   '/_app/events/': typeof AppEventsIndexRoute
+  '/_app/help/': typeof AppHelpIndexRoute
   '/_app/matches/': typeof AppMatchesIndexRoute
   '/_app/mixes/': typeof AppMixesIndexRoute
   '/_app/players/': typeof AppPlayersIndexRoute
@@ -638,7 +663,9 @@ export interface FileRoutesById {
   '/_app/ranking/': typeof AppRankingIndexRoute
   '/_app/admin/events/$id': typeof AppAdminEventsIdRoute
   '/_app/admin/events/new': typeof AppAdminEventsNewRoute
+  '/_app/help/$seccion/$tarea': typeof AppHelpSeccionTareaRoute
   '/_app/mixes/live/$uid': typeof AppMixesLiveUidRoute
+  '/_app/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/_app/admin/events/': typeof AppAdminEventsIndexRoute
 }
 export interface FileRouteTypes {
@@ -653,7 +680,6 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/welcome'
     | '/admin'
-    | '/hall-of-fame'
     | '/home'
     | '/myteam'
     | '/pcw'
@@ -697,12 +723,14 @@ export interface FileRouteTypes {
     | '/player/$nick'
     | '/players/compare'
     | '/profile/account'
+    | '/profile/clips'
     | '/profile/link'
     | '/profile/preferences'
     | '/profile/privacy'
     | '/ranking/teams'
     | '/teams/$id'
     | '/events/'
+    | '/help/'
     | '/matches/'
     | '/mixes/'
     | '/players/'
@@ -710,7 +738,9 @@ export interface FileRouteTypes {
     | '/ranking/'
     | '/admin/events/$id'
     | '/admin/events/new'
+    | '/help/$seccion/$tarea'
     | '/mixes/live/$uid'
+    | '/mm/reemplazo/$token'
     | '/admin/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -723,7 +753,6 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/welcome'
     | '/admin'
-    | '/hall-of-fame'
     | '/home'
     | '/myteam'
     | '/pcw'
@@ -766,12 +795,14 @@ export interface FileRouteTypes {
     | '/player/$nick'
     | '/players/compare'
     | '/profile/account'
+    | '/profile/clips'
     | '/profile/link'
     | '/profile/preferences'
     | '/profile/privacy'
     | '/ranking/teams'
     | '/teams/$id'
     | '/events'
+    | '/help'
     | '/matches'
     | '/mixes'
     | '/players'
@@ -779,7 +810,9 @@ export interface FileRouteTypes {
     | '/ranking'
     | '/admin/events/$id'
     | '/admin/events/new'
+    | '/help/$seccion/$tarea'
     | '/mixes/live/$uid'
+    | '/mm/reemplazo/$token'
     | '/admin/events'
   id:
     | '__root__'
@@ -794,7 +827,6 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/welcome'
     | '/_app/admin'
-    | '/_app/hall-of-fame'
     | '/_app/home'
     | '/_app/myteam'
     | '/_app/pcw'
@@ -838,12 +870,14 @@ export interface FileRouteTypes {
     | '/_app/player/$nick'
     | '/_app/players/compare'
     | '/_app/profile/account'
+    | '/_app/profile/clips'
     | '/_app/profile/link'
     | '/_app/profile/preferences'
     | '/_app/profile/privacy'
     | '/_app/ranking/teams'
     | '/_app/teams/$id'
     | '/_app/events/'
+    | '/_app/help/'
     | '/_app/matches/'
     | '/_app/mixes/'
     | '/_app/players/'
@@ -851,7 +885,9 @@ export interface FileRouteTypes {
     | '/_app/ranking/'
     | '/_app/admin/events/$id'
     | '/_app/admin/events/new'
+    | '/_app/help/$seccion/$tarea'
     | '/_app/mixes/live/$uid'
+    | '/_app/mm/reemplazo/$token'
     | '/_app/admin/events/'
   fileRoutesById: FileRoutesById
 }
@@ -961,13 +997,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/hall-of-fame': {
-      id: '/_app/hall-of-fame'
-      path: '/hall-of-fame'
-      fullPath: '/hall-of-fame'
-      preLoaderRoute: typeof AppHallOfFameRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/home': {
@@ -1243,6 +1272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEventsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/help/': {
+      id: '/_app/help/'
+      path: '/help'
+      fullPath: '/help/'
+      preLoaderRoute: typeof AppHelpIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/match/$id': {
       id: '/_app/match/$id'
       path: '/match/$id'
@@ -1304,6 +1340,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/profile/account'
       preLoaderRoute: typeof AppProfileAccountRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/profile/clips': {
+      id: '/_app/profile/clips'
+      path: '/clips'
+      fullPath: '/profile/clips'
+      preLoaderRoute: typeof AppProfileClipsRouteImport
       parentRoute: typeof AppProfileRoute
     }
     '/_app/profile/link': {
@@ -1369,11 +1412,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminEventsNewRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/help/$seccion/$tarea': {
+      id: '/_app/help/$seccion/$tarea'
+      path: '/help/$seccion/$tarea'
+      fullPath: '/help/$seccion/$tarea'
+      preLoaderRoute: typeof AppHelpSeccionTareaRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/mixes/live/$uid': {
       id: '/_app/mixes/live/$uid'
       path: '/mixes/live/$uid'
       fullPath: '/mixes/live/$uid'
       preLoaderRoute: typeof AppMixesLiveUidRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/mm/reemplazo/$token': {
+      id: '/_app/mm/reemplazo/$token'
+      path: '/mm/reemplazo/$token'
+      fullPath: '/mm/reemplazo/$token'
+      preLoaderRoute: typeof AppMmReemplazoTokenRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -1421,6 +1478,7 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 
 interface AppProfileRouteChildren {
   AppProfileAccountRoute: typeof AppProfileAccountRoute
+  AppProfileClipsRoute: typeof AppProfileClipsRoute
   AppProfileLinkRoute: typeof AppProfileLinkRoute
   AppProfilePreferencesRoute: typeof AppProfilePreferencesRoute
   AppProfilePrivacyRoute: typeof AppProfilePrivacyRoute
@@ -1429,6 +1487,7 @@ interface AppProfileRouteChildren {
 
 const AppProfileRouteChildren: AppProfileRouteChildren = {
   AppProfileAccountRoute: AppProfileAccountRoute,
+  AppProfileClipsRoute: AppProfileClipsRoute,
   AppProfileLinkRoute: AppProfileLinkRoute,
   AppProfilePreferencesRoute: AppProfilePreferencesRoute,
   AppProfilePrivacyRoute: AppProfilePrivacyRoute,
@@ -1441,7 +1500,6 @@ const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
-  AppHallOfFameRoute: typeof AppHallOfFameRoute
   AppHomeRoute: typeof AppHomeRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
@@ -1456,16 +1514,18 @@ interface AppRouteChildren {
   AppRankingTeamsRoute: typeof AppRankingTeamsRoute
   AppTeamsIdRoute: typeof AppTeamsIdRoute
   AppEventsIndexRoute: typeof AppEventsIndexRoute
+  AppHelpIndexRoute: typeof AppHelpIndexRoute
   AppMatchesIndexRoute: typeof AppMatchesIndexRoute
   AppMixesIndexRoute: typeof AppMixesIndexRoute
   AppPlayersIndexRoute: typeof AppPlayersIndexRoute
   AppRankingIndexRoute: typeof AppRankingIndexRoute
+  AppHelpSeccionTareaRoute: typeof AppHelpSeccionTareaRoute
   AppMixesLiveUidRoute: typeof AppMixesLiveUidRoute
+  AppMmReemplazoTokenRoute: typeof AppMmReemplazoTokenRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
-  AppHallOfFameRoute: AppHallOfFameRoute,
   AppHomeRoute: AppHomeRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
@@ -1480,11 +1540,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppRankingTeamsRoute: AppRankingTeamsRoute,
   AppTeamsIdRoute: AppTeamsIdRoute,
   AppEventsIndexRoute: AppEventsIndexRoute,
+  AppHelpIndexRoute: AppHelpIndexRoute,
   AppMatchesIndexRoute: AppMatchesIndexRoute,
   AppMixesIndexRoute: AppMixesIndexRoute,
   AppPlayersIndexRoute: AppPlayersIndexRoute,
   AppRankingIndexRoute: AppRankingIndexRoute,
+  AppHelpSeccionTareaRoute: AppHelpSeccionTareaRoute,
   AppMixesLiveUidRoute: AppMixesLiveUidRoute,
+  AppMmReemplazoTokenRoute: AppMmReemplazoTokenRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

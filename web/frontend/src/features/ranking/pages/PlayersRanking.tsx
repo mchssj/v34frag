@@ -52,6 +52,7 @@ import {
   PER_OPTIONS,
   type PlayerRankingSearch,
 } from "../lib/search"
+import { SeasonMedal } from "@/features/medals/Medal"
 
 // Ranking → Jugadores (/ranking): una temporada (la activa por defecto) o el Histórico por ELO.
 
@@ -371,9 +372,7 @@ function seasonColumns(
       cell: ({ row }) =>
         row.original.medal ? (
           <span className="inline-flex items-center gap-1.5 text-xs">
-            <span aria-hidden className="text-sm leading-none">
-              {row.original.medal.icon}
-            </span>
+            <SeasonMedal medal={row.original.medal} size={28} />
             {row.original.medal.name}
           </span>
         ) : (

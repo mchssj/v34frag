@@ -1,0 +1,5 @@
+CMLeague 2.7.9 --  Changelog
+
+Cuenta:
+- Al registrarte ahora te llega un correo para activar tu cuenta. Abre el enlace y después inicia sesión. Si no lo ves, revisa la carpeta de spam.
+- Si no te llega el correo de activación o el de cambiar la contraseña, un admin te lo puede reenviar. Si no puedes usar tu correo, también te puede dar una contraseña nueva: cámbiala apenas entres.

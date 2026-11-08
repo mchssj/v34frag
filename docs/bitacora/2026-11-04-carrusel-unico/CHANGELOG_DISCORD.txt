@@ -1,0 +1,7 @@
+CMLeague 2.9.13 --  Changelog
+
+En la web:
+- Las filas de clips ("Lo más destacado de la partida" y "Jugadas destacadas") y la de torneos del equipo ahora tienen flechas arriba a la derecha cuando no entran todas, y el borde se desvanece del lado donde hay más.
+- Cada clip muestra la foto del mapa, el tipo de jugada, cuánto dura, quién la hizo y en qué ronda.
+- El clip que estás viendo queda marcado en naranja.
+- En el tema oscuro, las barras para desplazarte ya no son blancas.

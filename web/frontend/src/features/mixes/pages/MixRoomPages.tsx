@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
+import { Link, Navigate } from "@tanstack/react-router"
 import type { ReactNode } from "react"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
@@ -9,10 +9,15 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { mapsOptions } from "@/features/maps/api/queries"
 import { mapImage } from "@/features/maps/lib/catalog"
+import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { gameRoomOptions } from "@/features/matchmaking/queries"
+import { MatchRoom } from "@/features/matchmaking/room/MatchRoom"
+import { MmSourceContext } from "@/features/matchmaking/source"
 import { myProfileOptions } from "@/features/profile/api/queries"
-import { Placeholder } from "@/features/shell/components/Placeholder"
 import { matchDetailOptions } from "@/features/shell/api/queries"
+import { SeriesRoom } from "@/features/series/pages/SeriesRoom"
 import { DeleteMixDialog } from "../components/DeleteMixDialog"
+import { mixHighlights } from "../components/MixHighlights"
 import { MixRoom } from "../components/MixRoom"
 import { liveMixOptions } from "../api/queries"
 import { roomFromLive, roomFromMatch } from "../lib/room"
@@ -27,14 +32,35 @@ function useMyPlayerId() {
   return useQuery(myProfileOptions).data?.player?.id ?? null
 }
 
-/** /match/$id: la sala si es un mix; otra partida sigue con el placeholder. */
-export function MixMatchRoom({ id, tab, onTab }: { id: string } & TabProps) {
+/** /match/$id: la sala si es un mix; la página de la serie si es de torneo o PCW. */
+export function MixMatchRoom({
+  id,
+  tab,
+  onTab,
+  map,
+  onMap,
+  view,
+}: { id: string } & TabProps & {
+    map?: string
+    onMap?: (gameId: string | undefined) => void
+    /** (replanteo 83) "stats": la sala del matchmaking abre en Estadísticas. */
+    view?: "stats"
+  }) {
   const match = useQuery(matchDetailOptions(id))
   const me = useMyPlayerId()
   const maps = useQuery(mapsOptions).data
   const role = useMe().data?.role
+  // (replanteo 78) Un juego con serie puede ser de una sala del matchmaking: entonces el detalle es la sala, con las
+  // estadísticas en su segunda pestaña. Si la base dice que no (null) o falla, queda la sala de mix de siempre.
+  const withParent =
+    match.data?.kind === "mix" &&
+    !!(match.data as { parent_match_id?: string | null }).parent_match_id
+  const room = useQuery({
+    ...gameRoomOptions(apiMmSource, id),
+    enabled: withParent,
+  })
 
-  if (match.isPending) return <RoomSkeleton />
+  if (match.isPending || (withParent && room.isPending)) return <RoomSkeleton />
   if (match.isError)
     return (
       <RoomMessage
@@ -51,22 +77,60 @@ export function MixMatchRoom({ id, tab, onTab }: { id: string } & TabProps) {
     )
 
   const m = match.data
-  if (m.kind !== "mix") return <Placeholder title="Partida" />
+  // La serie del matchmaking (un contenedor de veto y chat): se muestra el mapa jugado.
+  if ((m.kind as string) === "mm") {
+    const game = (m as { games?: { id: string }[] }).games?.[0]
+    if (game)
+      return <Navigate to="/match/$id" params={{ id: game.id }} replace />
+  }
+  if (m.kind !== "mix")
+    return (
+      <SeriesRoom
+        match={m}
+        me={me}
+        tab={tab}
+        onTab={onTab}
+        map={map}
+        onMap={onMap}
+      />
+    )
 
-  const room = roomFromMatch(m, me)
+  if (room.data)
+    return (
+      <MmSourceContext value={apiMmSource}>
+        <MatchRoom
+          lobby={{
+            ...room.data,
+            server: null,
+            reported: room.data.reported ?? [],
+            commended: room.data.commended ?? null,
+            elo_stake: room.data.elo_stake ?? null,
+          }}
+          mode="detail"
+          initialTab={view === "stats" ? "stats" : "overview"}
+        />
+      </MmSourceContext>
+    )
+
+  const mixRoom = roomFromMatch(m, me)
   // La API no borra un mix vinculado con !match a un torneo o PCW.
   const canDelete = !!role && canDeleteMix(role) && !m.parent_match_id
   return (
     <MixRoom
-      room={room}
+      room={mixRoom}
       mapImage={mapImage(maps, m.map)}
+      highlights={
+        mixRoom.status === "finished"
+          ? mixHighlights(m.id, mixRoom, m.map)
+          : undefined
+      }
       tab={tab}
       onTab={onTab}
       adminAction={
         canDelete ? (
           <DeleteMixDialog
             matchId={m.id}
-            movedElo={room.status === "finished"}
+            movedElo={mixRoom.status === "finished"}
           />
         ) : undefined
       }

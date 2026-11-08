@@ -16,18 +16,12 @@ export type LobbyStatus =
   | "finished"
   | "cancelled"
 
-/** Lo equipado en la tienda (player_cosmetics_public), ya resuelto: sin lo VIP vencido. Ausente = nada. */
-export type MmCosmetics = {
-  /** Fondo de miniperfil, detrás de la tarjeta del grupo. */
-  background_url?: string | null
-  /** Marco del avatar (SVG de 256 × 256, el avatar va en el 75 % central). */
-  frame_url?: string | null
-  /** Clase del efecto de nombre de cosmeticos.css. */
-  name_class?: string | null
+/** Si la cuenta es VIP (`is_vip()`). Los cosméticos de la tienda llegan con la tienda. */
+export type MmVip = {
   vip?: boolean
 }
 
-export type MmPlayer = MmCosmetics & {
+export type MmPlayer = MmVip & {
   player_id: string
   nick: string
   level: number
@@ -42,7 +36,13 @@ export type MmPlayer = MmCosmetics & {
   left_until: string | null
   /** No volvió a tiempo (plan, decisión "Abandono"). */
   abandoned: boolean
+  /** Entró a la partida en vivo en lugar de uno que abandonó (replanteo 75). */
+  replacement?: boolean
+  /** Abandonó y su reemplazo ya entró al servidor. */
+  replaced?: boolean
   is_me: boolean
+  /** Si su ficha tiene SteamID; sin vincular hace !claim en el servidor de la sala. Sin el campo, vinculado. */
+  linked?: boolean
   photo_url: string | null
   country: Country | null
   /** Agente del anticheat activo (`ac_public_status`). */
@@ -162,6 +162,8 @@ export type ReportReason = "afk" | "toxic" | "cheat" | "abandon" | "other"
 export type MmLobby = {
   id: string
   mode: string
+  /** Imagen fija de la tarjeta del MVP (Administración › Matchmaking › General). */
+  mvp_image_url?: string | null
   region: string | null
   match: MmMatch | null
   status: LobbyStatus
@@ -179,6 +181,24 @@ export type MmLobby = {
   commended: string | null
   /** ELO en juego para el que mira; null si el modo no da ELO. */
   elo_stake: { win: number; loss: number } | null
+  /** Reemplazos de la sala: buscando, tomados y los que entraron (replanteo 78). */
+  replacements?: MmReplacement[]
+}
+
+/** Un reemplazo de la sala (`mm_lobby_replacements`, replanteo 78). */
+export type MmReplacement = {
+  team: 1 | 2
+  /** open: se busca; taken: lo tomó y todavía no entró al servidor; connected: entró. */
+  status: "open" | "taken" | "connected"
+  replaced_player_id: string | null
+  replaced_nick: string | null
+  by_player_id: string | null
+  by_nick: string | null
+  /** La ronda en que se pidió y en la que entró; null si no se sabe. */
+  left_round: number | null
+  joined_round: number | null
+  /** Hasta cuándo tiene para entrar al servidor (solo tomado). */
+  connect_deadline: string | null
 }
 
 export type MmQueue = {
@@ -192,9 +212,11 @@ export type MmQueue = {
   eta_s: number | null
 }
 
-export type MmPartyMember = MmCosmetics & {
+export type MmPartyMember = MmVip & {
   player_id: string
   nick: string
+  /** Foto de la ficha o, si no tiene, el avatar del perfil (replanteo 55). */
+  photo_url?: string | null
   level: number
   elo: number
   is_me: boolean
@@ -231,7 +253,7 @@ export type MmMode = {
 export type InvitePref = "private" | "public"
 
 /** La ficha del que mira: la tarjeta del medio y el ELO de arriba. */
-export type MmMe = MmCosmetics & {
+export type MmMe = MmVip & {
   nick: string
   country: Country | null
   photo_url: string | null
@@ -261,6 +283,8 @@ export type MmSanction = {
 }
 
 export type MmState = {
+  /** Hora del servidor: la usan las cuentas regresivas (`serverClock`). */
+  server_now?: string
   open: boolean
   me: MmMe
   /** Solo los habilitados. */
@@ -274,7 +298,12 @@ export type MmState = {
   active_players: number
   live_matches: number
   queue: MmQueue | null
+  /** La sala abierta (aceptando, veto, conectando o en vivo). */
   lobby: MmLobby | null
+  /** La última sala terminada, sin las estadísticas: la pestaña "Tu última partida" (replanteo 60). */
+  last_lobby?: MmLobby | null
+  /** Cuándo lo sacamos de la cola por cerrar la web, si fue en los últimos 10 min (replanteo 63). */
+  queue_dropped_at?: string | null
   party: MmParty | null
   invites: MmInvite[]
   penalty: MmPenalty | null
@@ -331,6 +360,8 @@ export type MmState = {
 export type MmEvent = {
   t: string
   lobby?: string
+  /** Lo que cambió (replanteo 59): tamaños de la cola, plazo de la sala encontrada, quién aceptó, el veto. */
+  d?: unknown
   /** En `friend.searching`: el amigo que entró a la cola. */
   friend?: { player_id: string; nick: string }
 }
@@ -353,10 +384,45 @@ export type MmAdminServer = {
   id: string
   name: string
   address: string
-  state: "free" | "lobby" | "live" | "offline"
+  state: "free" | "lobby" | "booking" | "live" | "offline"
   region: string | null
   mm_enabled: boolean
+  official_enabled?: boolean
+  pcw_enabled?: boolean
   password: MmPasswordEntry | null
+}
+
+/** Aviso de la cola en Discord (replanteo 57): uno cada 15 minutos para todos; el staff, siempre. */
+export type QueuePingStatus = {
+  staff: boolean
+  queued: boolean
+  /** Desde cuándo se puede volver a avisar; null si ya se puede. */
+  next_at: string | null
+  can_ping: boolean
+}
+
+/** La página del link de un reemplazo (`mm_replace_info`, replanteo 75). */
+export type MmReplaceInfo = {
+  /** expired: venció o la partida terminó; cancelled: el que lo tomó no entró. */
+  status: "open" | "taken" | "connected" | "expired" | "cancelled"
+  /** Lo tomé yo: lleva a la sala. */
+  mine: boolean
+  lobby_id: string | null
+  mode: string
+  map: string | null
+  team: 1 | 2
+  team_name: string | null
+  score: { a: number; b: number } | null
+  rounds_left: number | null
+  expires_at: string
+  /** Por qué no lo puedo tomar (la misma regla que para entrar a la cola); null si puedo. */
+  reason: string | null
+  /** El que se fue y la ronda en que se pidió (replanteo 78). */
+  replaced_player_id?: string | null
+  replaced_nick?: string | null
+  left_round?: number | null
+  /** La sala en vista previa, sin el servidor; solo mientras se puede tomar (replanteo 78). */
+  room?: MmLobby | null
 }
 
 /** Administración › Matchmaking › General (`mm_config` más los modos). */
@@ -384,6 +450,33 @@ export type MmAdminConfig = {
   min_mixes: number
   min_account_days: number
   season_queue_close_minutes: number
+  /** Repartir los equipos con el ELO de armado: ELO + ajuste por el rating reciente (replanteo 73). */
+  balance_rating: boolean
+  /** Puntos de ELO de armado por cada 1,00 de rating sobre o bajo 1,00. */
+  balance_rating_weight: number
+  /** Máximo que el rating sube o baja el ELO de armado. */
+  balance_rating_cap: number
+  /** Mapas con rating 1,00 que se suman para corregir el de los que jugaron poco. */
+  balance_rating_prior_maps: number
+  /** Días de partidas 5v5 que se miran. */
+  balance_rating_days: number
+  /** Llamar reemplazos en Discord cuando alguien abandona una sala en vivo, y !callreplace (replanteo 75). */
+  replace_enabled: boolean
+  replace_link_minutes: number
+  /** No se llama si quedan menos rondas que esto para el fin del tiempo reglamentario. */
+  replace_min_rounds_left: number
+  /** !callreplace pasa con más de este porcentaje de los compañeros conectados. */
+  replace_vote_pct: number
+  replace_vote_seconds: number
+  replace_vote_cooldown_s: number
+  /** ELO que pierde el que abandona (replanteo 78): si su equipo ganó, de min a max según la parte que no jugó. */
+  abandon_win_min: number
+  abandon_win_max: number
+  /** Si su equipo perdió o empató: de min a max, pero nunca menos que una derrota normal. */
+  abandon_loss_min: number
+  abandon_loss_max: number
+  /** Imagen de la tarjeta del MVP; se sube y se quita aparte (no viaja en saveConfig). */
+  mvp_image_url?: string | null
 }
 
 export type MmAdminMap = {
@@ -414,6 +507,18 @@ export type MmAdminBan = {
   nick: string
   until: string
   reason: string
+}
+
+/** Sanción automática de la cola vigente (replanteo 61): el motivo es el de la última falta. */
+export type MmAdminPenalty = {
+  user_id: string
+  player_id: string | null
+  nick: string | null
+  level: number
+  max_level: number
+  reason: string | null
+  since: string | null
+  until: string
 }
 
 /** Una fila de `mm_stats_daily`. */
