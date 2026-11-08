@@ -32,17 +32,19 @@ Todo eso ya está hecho y probado en la PC de Daniel. Esta sesión solo **instal
 
 ## 1. Repo al día
 
-Todo esto está en la rama `feat/backend-api-fase-1` (no en `main`):
+El portátil va en la rama `main`, que tiene todo lo del render (desde el 2026-11-08; antes estaba en `feat/backend-api-fase-1`, que quedó vieja):
 
 ```
 git fetch
-git checkout feat/backend-api-fase-1
+git checkout main
 git pull
 ```
 
+`git branch --show-current` tiene que decir `main`. `config.json` y los logs de `render/` no se versionan (`render/.gitignore`), así que no se pierden al cambiar de rama. Antes de cambiar de rama o hacer `git pull`, revisa que la tarea "CMLeague clips" no esté a mitad de una corrida.
+
 Comprueba que existan:
-- `render/procesar.py`, `render_clip.py`, `leer_demo.py`, `r2.py`, `drive.py`, `instalar_tarea.ps1` y `config.example.json`;
-- en `render/leer_demo.py`, el arreglo del intervalo de tick (busca `playback_ticks` en `leer_demo.py`: tiene que aparecer en un `if not self.tick_interval`). Sin ese arreglo, la demo del primer mix (cbble) graba tramos mal calculados. Si falta, avísale a Daniel: está en la PC, sin commitear.
+- `render/procesar.py`, `render_clip.py`, `leer_demo.py`, `r2.py`, `drive.py`, `instalar_tarea.ps1`, `probar_jugada.py` y `config.example.json`;
+- en `render/render_clip.py`, la función `check_targets` (el arreglo del 2026-11-08, bitácora `2026-11-08-render-unico-vivo`). Si falta, el repo no está al día.
 
 ## 2. Python y FFmpeg
 
