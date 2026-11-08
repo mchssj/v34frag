@@ -1,0 +1,10 @@
+CMLeague 2.9.26 --  Changelog
+
+Amigos
+
+- Ahora los amigos funcionan con solicitudes: le envías una a alguien, le llega un aviso y la acepta o la rechaza.
+- Puedes enviar la solicitud desde el panel Amigos de Jugar o desde el perfil del jugador, con el botón Agregar amigo.
+- Las solicitudes que te envían aparecen en la campana (pestaña Solicitudes), arriba del panel Amigos y en el perfil de quien te la envió.
+- Si rechazas una solicitud, a la otra persona no le avisamos.
+- Las marcas de amigo que habías hecho antes y la otra persona no te había devuelto pasaron a ser solicitudes pendientes.
+- Nueva categoría Amigos en tus preferencias de notificaciones.

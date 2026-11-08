@@ -70,6 +70,8 @@ const RETENTION: [string, string][] = [
   ],
   ["Baneos y sanciones", "Sin plazo: se levantan, no se borran"],
   ["Historial de VIP", "Mientras tengas la cuenta"],
+  ["Amigos y solicitudes de amistad", "Mientras tengas la cuenta"],
+  ["Visitas a perfiles", "30 días"],
   [
     "Evidencia del anticheat",
     "30 días desde que se cierra la sesión, salvo que forme parte de una sanción en curso",
@@ -121,6 +123,14 @@ const SECTIONS: LegalSection[] = [
           <li>
             Tu equipo, tus pedidos (de equipo, de vinculación de ficha) y tus
             inscripciones a torneos y PCW.
+          </li>
+          <li>
+            Tus amigos y las solicitudes de amistad que envías y recibes (si las
+            aceptaron, rechazaron o cancelaron).
+          </li>
+          <li>
+            Las visitas a perfiles: qué perfiles públicos abres con tu sesión, y
+            quién abre el tuyo.
           </li>
         </ul>
 
@@ -237,8 +247,8 @@ const SECTIONS: LegalSection[] = [
           head={["Público para cualquiera", "Solo tú y el staff"]}
           rows={[
             [
-              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP.",
-              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes y la evidencia del anticheat.",
+              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP. Si eres admin o moderador, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
+              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, y la evidencia del anticheat.",
             ],
           ]}
         />
@@ -246,6 +256,12 @@ const SECTIONS: LegalSection[] = [
           El resto de tu perfil (nombre real, país, redes, biografía) se muestra
           según el nivel de privacidad que elijas: público, solo miembros o
           privado.
+        </p>
+        <p>
+          Las visitas a tu perfil las ves solo tú: cuántos jugadores lo
+          visitaron y, si eres VIP, quiénes. Si visitas el perfil de alguien con
+          VIP, esa persona ve que lo visitaste, salvo que seas VIP y uses
+          «navegar sin dejar rastro» (hasta 15 perfiles por semana).
         </p>
         <p>
           En un torneo histórico (el registro de un torneo jugado antes o fuera

@@ -425,7 +425,9 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             El VIP da ventajas de comodidad y estética (cosméticos, estadísticas
-            avanzadas, comparador, favoritas, configs, créditos y similares).{" "}
+            avanzadas, comparador, favoritas, configs, créditos, ver quién
+            visitó tu perfil y visitar hasta 15 perfiles por semana sin dejar
+            rastro, y similares).{" "}
             <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
             ELO ni sobre las sanciones.
           </li>

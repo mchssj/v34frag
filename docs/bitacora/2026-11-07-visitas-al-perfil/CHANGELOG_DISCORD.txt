@@ -1,0 +1,7 @@
+CMLeague 2.9.26 --  Changelog
+
+Visitas a tu perfil
+
+- En tu perfil, pestaña Resumen, ahora ves cuántos jugadores visitaron tu perfil en los últimos 30 días. Solo lo ves tú.
+- Si eres VIP, ves también quiénes son y cuándo entraron.
+- Nuevo para VIP: navegar sin dejar rastro. Visita hasta 15 perfiles por semana sin aparecer en sus visitas.

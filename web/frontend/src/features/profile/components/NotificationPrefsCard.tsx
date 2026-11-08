@@ -50,6 +50,12 @@ const CATEGORIES: {
     description: "Tu puesto, el cierre de la temporada y las medallas.",
   },
   {
+    key: "friends",
+    title: "Amigos",
+    description: "Solicitudes de amistad y cuando alguien acepta la tuya.",
+    always: "Las solicitudes de amistad llegan siempre.",
+  },
+  {
     key: "account",
     title: "Cuenta",
     description: "SteamID vinculados, alias y rol.",

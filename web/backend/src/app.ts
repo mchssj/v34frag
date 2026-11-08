@@ -17,6 +17,7 @@ import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
 import { claim } from './routes/claim';
+import { community } from './routes/community';
 import { clips } from './routes/clips';
 import { bans } from './routes/bans';
 import { mm } from './routes/mm';
@@ -90,6 +91,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', notifications);
   app.route('/', pcw);
   app.route('/', account);
+  app.route('/', community); // (replanteo 86 y 87) visitas al perfil y la página del Equipo
   app.route('/', claim); // antes que players: /players/unclaimed no es un {id}
   app.route('/', ranking); // antes que players: /players/compare no es un {id}
   app.route('/', players);

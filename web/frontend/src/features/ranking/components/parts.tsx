@@ -21,6 +21,8 @@ import { myProfileOptions } from "@/features/profile/api/queries"
 export function useMine() {
   const profile = useQuery(myProfileOptions).data
   return {
+    /** Ya se sabe cuál es la ficha propia (o que no hay). */
+    ready: profile !== undefined,
     playerId: profile?.player?.id ?? null,
     teamIds: new Set(profile?.teams.map((t) => t.id) ?? []),
   }

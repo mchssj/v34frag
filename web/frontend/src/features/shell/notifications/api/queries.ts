@@ -103,7 +103,16 @@ export function useResolveRequest() {
       const id = String(item.data.invite_id ?? "")
       const params = { params: { path: { id } } }
       const verb = resolution === "accepted" ? "accept" : "reject"
-      if (item.type === "team_join_request") {
+      if (item.type === "friend_request") {
+        // (replanteo 85) La solicitud de amistad se responde por el jugador que la envió.
+        const player = (item.data.player ?? {}) as { id?: string }
+        const friend = { params: { path: { id: String(player.id ?? "") } } }
+        await unwrap(
+          verb === "accept"
+            ? api.POST("/api/v1/mm/friends/{id}/accept", friend)
+            : api.POST("/api/v1/mm/friends/{id}/reject", friend)
+        )
+      } else if (item.type === "team_join_request") {
         await unwrap(
           verb === "accept"
             ? api.POST("/api/v1/join-requests/{id}/accept", params)
@@ -131,6 +140,8 @@ export function useResolveRequest() {
       void queryClient.invalidateQueries({ queryKey: notificationKeys.all })
       // Aceptar cambia el equipo del usuario.
       void queryClient.invalidateQueries({ queryKey: profileKeys.mine })
+      // (replanteo 85) O sus amigos: el botón del perfil de esa persona.
+      void queryClient.invalidateQueries({ queryKey: ["friendship"] })
     },
   })
 }

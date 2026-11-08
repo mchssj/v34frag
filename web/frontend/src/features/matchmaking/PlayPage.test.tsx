@@ -207,7 +207,9 @@ describe("PlayPage (con la demo)", () => {
     )
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ma")
     await user.click(
-      await screen.findByRole("button", { name: /^(?!Invitar|Sacar).*maxi/ })
+      await screen.findByRole("button", {
+        name: /^(?!Invitar|Sacar|Eliminar).*maxi/,
+      })
     )
     expect(
       await screen.findByText("maxi", { selector: "strong" })
@@ -420,7 +422,9 @@ describe("PlayPage (con la demo)", () => {
     )
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ma")
     await user.click(
-      await screen.findByRole("button", { name: /^(?!Invitar|Sacar).*maxi/ })
+      await screen.findByRole("button", {
+        name: /^(?!Invitar|Sacar|Eliminar).*maxi/,
+      })
     )
     await flush(3500)
 
@@ -462,7 +466,9 @@ describe("PlayPage (con la demo)", () => {
     )
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ju")
     await user.click(
-      await screen.findByRole("button", { name: /^(?!Invitar|Sacar).*juanchi/ })
+      await screen.findByRole("button", {
+        name: /^(?!Invitar|Sacar|Eliminar).*juanchi/,
+      })
     )
     await flush(3500)
     await user.click(
@@ -592,7 +598,7 @@ describe("PlayPage (con la demo)", () => {
   })
 
   it("muestra la cola, las sanciones y avisa si un amigo busca", async () => {
-    const { controls } = setup()
+    const { controls, user } = setup()
     await act(async () =>
       (
         await screen.findByRole("button", {
@@ -608,7 +614,20 @@ describe("PlayPage (con la demo)", () => {
     expect(
       screen.getByRole("button", { name: "Invitar a maxi al grupo" })
     ).toBeInTheDocument()
-    expect(screen.getByText("Todavía no te marcó")).toBeInTheDocument()
+    // (replanteo 85) Todos los amigos muestran su estado, y la solicitud recibida se acepta desde el panel.
+    expect(screen.getByText("Desconectado")).toBeInTheDocument()
+    await act(async () => controls.friendRequest())
+    await flush()
+    const received = await screen.findByRole("group", {
+      name: "Solicitudes recibidas",
+    })
+    await user.click(
+      within(received).getByRole("button", { name: /^Aceptar la solicitud/ })
+    )
+    await flush()
+    expect(
+      screen.queryByRole("group", { name: "Solicitudes recibidas" })
+    ).not.toBeInTheDocument()
     await act(async () => controls.friendSearches())
     await flush()
     expect(alertFriend).toHaveBeenCalledWith("maxi")

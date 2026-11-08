@@ -197,6 +197,8 @@ export type DemoControls = {
   meLeaves(): void
   /** Un amigo entra a la cola. */
   friendSearches(): void
+  /** Te llega una solicitud de amistad (replanteo 85). */
+  friendRequest(): void
   /** Otro jugador rechaza la confirmación. */
   someoneDeclines(): void
   /** Termina el mix en vivo (rota la contraseña del servidor). */
@@ -254,6 +256,7 @@ export function createDemoSource({
   let chatLog: MmChatMessage[] = []
   let blocks: MmState["blocks"]["list"] = []
   let friends = seedFriends()
+  let friendRequests: MmState["friend_requests"] = { received: [], sent: [] }
   let soundCatalog = seedSounds()
   let selectedSound: string | null = null
   let mySound: MmSound | null = null
@@ -930,6 +933,7 @@ export function createDemoSource({
     sounds: soundsState(),
     queue_activity: queueActivity(),
     friends: structuredClone(friends),
+    friend_requests: structuredClone(friendRequests),
     sanctions: {
       items: [
         ...(banned()
@@ -1140,22 +1144,70 @@ export function createDemoSource({
     async addFriend(playerId) {
       const hit = KNOWN().find((f) => f.player_id === playerId)
       if (!hit) throw new DemoError("Ese jugador no existe")
-      if (friends.some((f) => f.player_id === playerId))
-        throw new DemoError(`${hit.nick} ya está en tus amigos`)
-      friends = [
-        ...friends,
-        {
-          player_id: hit.player_id,
-          nick: hit.nick,
-          level: hit.level,
-          status: null,
-        },
-      ]
+      if (friends.some((f) => f.player_id === playerId)) return snapshot()
+      // Ya te había enviado una: quedan amigos (replanteo 85).
+      const crossed = friendRequests.received.find(
+        (r) => r.player_id === playerId
+      )
+      if (crossed) {
+        friendRequests = {
+          ...friendRequests,
+          received: friendRequests.received.filter((r) => r !== crossed),
+        }
+        friends = [
+          ...friends,
+          {
+            player_id: hit.player_id,
+            nick: hit.nick,
+            level: hit.level,
+            status: "free",
+          },
+        ]
+        emit("state")
+        return snapshot()
+      }
+      if (!friendRequests.sent.some((r) => r.player_id === playerId))
+        friendRequests = {
+          ...friendRequests,
+          sent: [
+            {
+              player_id: hit.player_id,
+              nick: hit.nick,
+              level: hit.level,
+              created_at: new Date(now()).toISOString(),
+            },
+            ...friendRequests.sent,
+          ],
+        }
       emit("state")
       return snapshot()
     },
     async removeFriend(playerId) {
       friends = friends.filter((f) => f.player_id !== playerId)
+      friendRequests = {
+        ...friendRequests,
+        sent: friendRequests.sent.filter((r) => r.player_id !== playerId),
+      }
+      emit("state")
+      return snapshot()
+    },
+    async answerFriend(playerId, accept) {
+      const req = friendRequests.received.find((r) => r.player_id === playerId)
+      if (!req) throw new DemoError("Esa solicitud ya no está pendiente")
+      friendRequests = {
+        ...friendRequests,
+        received: friendRequests.received.filter((r) => r !== req),
+      }
+      if (accept)
+        friends = [
+          ...friends,
+          {
+            player_id: req.player_id,
+            nick: req.nick,
+            level: req.level,
+            status: "free",
+          },
+        ]
       emit("state")
       return snapshot()
     },
@@ -1471,6 +1523,10 @@ export function createDemoSource({
       f.status = "queue"
       emit("friend.searching", { player_id: f.player_id, nick: f.nick })
     },
+    friendRequest() {
+      friendRequests = seedFriendRequests()
+      emit("friend.changed")
+    },
     someoneDeclines() {
       if (lobby?.status === "accepting")
         cancel("Un jugador no aceptó a tiempo", true)
@@ -1528,6 +1584,7 @@ export function createDemoSource({
       chatLog = []
       blocks = []
       friends = seedFriends()
+      friendRequests = { received: [], sent: [] }
       soundCatalog = seedSounds()
       selectedSound = null
       mySound = null
@@ -1801,13 +1858,29 @@ function seedSounds(): MmSound[] {
 }
 
 function seedFriends(): MmFriend[] {
-  const status: MmFriend["status"][] = ["free", "playing", null]
+  const status: MmFriend["status"][] = ["free", "playing", "offline"]
   return FRIENDS.slice(0, 3).map((f, i) => ({
     player_id: f.player_id,
     nick: f.nick,
     level: f.level,
     status: status[i]!,
   }))
+}
+
+/** Una solicitud recibida para ver el panel con Aceptar / Rechazar. */
+function seedFriendRequests(): MmState["friend_requests"] {
+  const f = FRIENDS[3] ?? FRIENDS[0]!
+  return {
+    received: [
+      {
+        player_id: f.player_id,
+        nick: f.nick,
+        level: f.level,
+        created_at: new Date(Date.now() - 5 * 60_000).toISOString(),
+      },
+    ],
+    sent: [],
+  }
 }
 
 function seedPenalties(t: number): MmAdminPenalty[] {

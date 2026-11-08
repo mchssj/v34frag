@@ -11,6 +11,8 @@ import {
 } from "../../api/queries"
 import type { PlayerDetail } from "../../types"
 import { Delta, RESULT_CHIP, useOpenMatch } from "./shared"
+import { useMine } from "@/features/ranking/components/parts"
+import { ProfileVisitsCard } from "../ProfileVisitsCard"
 
 // ---------- Resumen ----------
 
@@ -27,6 +29,8 @@ export function Summary({
   const medals = useQuery(medalsOptions(nick))
   const adjustments = useQuery(adjustmentsOptions(nick))
   const open = useOpenMatch()
+  // (replanteo 86) Las visitas solo las ve el dueño, en su propio perfil.
+  const own = useMine().playerId === player.id
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-2">
@@ -89,6 +93,7 @@ export function Summary({
         </QueryState>
       </Card>
       <div className="flex flex-col gap-4">
+        {own && <ProfileVisitsCard />}
         <Card variant="outline" className="flex flex-col gap-3 p-4">
           <span className="text-sm font-semibold">Logros</span>
           <QueryState q={medals}>

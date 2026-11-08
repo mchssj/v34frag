@@ -78,8 +78,12 @@ export type MmSource = {
   adminSounds(signal?: AbortSignal): Promise<MmSound[]>
   uploadSound(name: string, file: File): Promise<MmSound>
   deleteSound(soundId: string): Promise<void>
+  /** Envía la solicitud (o la acepta, si esa persona ya te había enviado una). */
   addFriend(playerId: string): Promise<MmState>
+  /** Elimina de amigos o cancela la solicitud enviada. */
   removeFriend(playerId: string): Promise<MmState>
+  /** Acepta o rechaza (en silencio) la solicitud de ese jugador. */
+  answerFriend(playerId: string, accept: boolean): Promise<MmState>
   searchPlayers(q: string, signal?: AbortSignal): Promise<MmPlayerHit[]>
   invite(playerId: string): Promise<MmState>
   respondInvite(inviteId: string, accept: boolean): Promise<MmState>
@@ -308,6 +312,10 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
         method: "DELETE",
       }),
     addFriend: (player_id) => send("/api/v1/mm/friends", { player_id }),
+    answerFriend: (id, accept) =>
+      post(
+        `/api/v1/mm/friends/${encodeURIComponent(id)}/${accept ? "accept" : "reject"}`
+      ),
     removeFriend: (id) =>
       call(`/api/v1/mm/friends/${encodeURIComponent(id)}`, {
         method: "DELETE",

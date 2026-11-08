@@ -6,6 +6,7 @@ import {
   CrosshairIcon,
   Gamepad2Icon,
   GavelIcon,
+  HandHeartIcon,
   HouseIcon,
   LifeBuoyIcon,
   ListOrderedIcon,
@@ -66,6 +67,13 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         label: "Ranking",
         to: "/ranking",
         icon: ListOrderedIcon,
+      },
+      // (replanteo 87) Quiénes están detrás del proyecto y los VIP (docs/bitacora/2026-11-07-pagina-equipo).
+      {
+        key: "staff",
+        label: "Quiénes somos",
+        to: "/equipo",
+        icon: HandHeartIcon,
       },
       // El manual de usuario, filtrado por rol (docs/bitacora/2026-11-02-manual-usuario).
       { key: "help", label: "Ayuda", to: "/help", icon: LifeBuoyIcon },

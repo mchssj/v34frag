@@ -54,8 +54,9 @@ Todo con sesión (`401` sin ella).
 | `account` | Cuenta | Prendida |
 | `news` | Novedades (torneo nuevo y temporada nueva) | **Apagada** |
 | `admin` | Administración (solo la ven los admins) | Prendida |
+| `friends` | Amigos (desde el 2026-11-07, replanteo 85) | Prendida |
 
-- **Obligatorias:** `team_invite`, `team_join_request` y `password_changed` llegan aunque su categoría esté apagada. En la pantalla de preferencias, aclararlo debajo de Equipos y de Cuenta.
+- **Obligatorias:** `team_invite`, `team_join_request`, `friend_request` y `password_changed` llegan aunque su categoría esté apagada. En la pantalla de preferencias, aclararlo debajo de Equipos, de Amigos y de Cuenta.
 - Una categoría apagada **no guarda** las notificaciones: prenderla de nuevo no trae las de antes.
 
 ### Tipos (primera etapa)
@@ -122,6 +123,12 @@ Todo con sesión (`401` sin ella).
 | `season_closed` | Los que jugaron la temporada | `season`, `rank`, `eligible`, `elo`, `elo_after`, `medal` (`name`, `icon` o null) | "Cerró {season.name}: terminaste {rank}.º" + medalla; si `elo_after` ≠ `elo`, "empiezas la próxima con {elo_after}" | Perfil |
 | `medal_granted` | Jugador | `title`, `icon` | "Nueva medalla: {title}" | Perfil |
 | `season_ending` | Quien jugó en la temporada al menos la mitad de `min_matches` (desde el 2026-10-29) | `season`, `ends_at`, `position` (o `null` si todavía no entra al ranking), `matches`, `min_matches` | Con puesto: "{season.name} termina en menos de 24 horas: vas {position}.º". Sin puesto: "… te faltan {min_matches − matches} mixes para entrar al ranking" | `/ranking` |
+
+#### Amigos (`friends`, replanteo 85)
+| `type` | Le llega a | `data` | Texto sugerido | Link |
+|---|---|---|---|---|
+| `friend_request` | Jugador (obligatoria) | `player` | "{player.alias} te envió una solicitud de amistad" | Aceptar / Rechazar (`POST /api/v1/mm/friends/{player.id}/accept` o `/reject`). `ref` = `friend_request:{id}`; se resuelve con la solicitud (`accepted`, `rejected`, `cancelled` o `expired`) |
+| `friend_accepted` | Quien envió la solicitud | `player` | "{player.alias} aceptó tu solicitud" | `/player/{player.alias}` |
 
 #### Cuenta (`account`)
 | `type` | Le llega a | `data` | Texto sugerido | Link |

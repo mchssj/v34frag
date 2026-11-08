@@ -3,7 +3,7 @@ import { boolParam, Envelope, listQuery } from '../lib/list';
 
 // Notificaciones de la web (replanteo 28, plan docs/bitacora/2026-10-25-notificaciones).
 
-export const NOTIFICATION_CATEGORIES = ['team', 'tournament', 'pcw', 'elo', 'season', 'account', 'news', 'admin'] as const;
+export const NOTIFICATION_CATEGORIES = ['team', 'tournament', 'pcw', 'elo', 'season', 'account', 'news', 'admin', 'friends'] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
 /** Por defecto todas prendidas menos `news` (torneo nuevo y temporada nueva). */
@@ -16,6 +16,7 @@ export const NOTIFICATION_DEFAULTS: Record<NotificationCategory, boolean> = {
   account: true,
   news: false,
   admin: true,
+  friends: true, // (replanteo 85) solicitudes de amistad y "aceptó tu solicitud"
 };
 
 export const Notification = z
@@ -24,7 +25,7 @@ export const Notification = z
     type: z.string().openapi({ description: 'Tipo de evento (tabla en docs/frontend/contrato/notificaciones.md)', example: 'team_invite' }),
     category: z.enum(NOTIFICATION_CATEGORIES),
     data: z.record(z.string(), z.unknown()).openapi({ description: 'Ids y nombres del momento para armar el texto y el link' }),
-    actionable: z.boolean().openapi({ description: 'Se acepta o rechaza desde la lista (invitación o pedido para entrar)' }),
+    actionable: z.boolean().openapi({ description: 'Se acepta o rechaza desde la lista (invitación, pedido para entrar o solicitud de amistad)' }),
     resolution: z
       .enum(['accepted', 'rejected', 'cancelled', 'expired'])
       .nullable()
@@ -64,7 +65,7 @@ export const NotificationPrefs = z
   .openapi('NotificationPrefs', {
     description:
       'Categorías prendidas (`true`) o apagadas. Por defecto todas prendidas menos `news`. La invitación a un equipo, el pedido ' +
-      'para entrar a tu equipo y el cambio de contraseña llegan siempre.',
+      'para entrar a tu equipo, la solicitud de amistad y el cambio de contraseña llegan siempre.',
   });
 
 export const NotificationPrefsPatch = z

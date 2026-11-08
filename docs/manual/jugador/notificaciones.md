@@ -11,7 +11,7 @@ Las notificaciones son solo en la web: no te llegan por Discord ni por email.
 ## Leer tus notificaciones
 
 1. Toca la campana.
-2. Arriba puedes filtrar entre **Todas**, **Sin leer** y **Solicitudes** (las invitaciones y los pedidos que esperan tu respuesta).
+2. Arriba puedes filtrar entre **Todas**, **Sin leer** y **Solicitudes** (las invitaciones, los pedidos y las solicitudes de amistad que esperan tu respuesta).
 3. Toca una notificación para ir a lo que cuenta: el torneo, la partida, tu perfil. Al tocarla queda leída.
 
 Con **Marcar todo como leído** limpias el contador de una vez. La campana guarda tus últimas 100 notificaciones.
@@ -32,9 +32,10 @@ En **Mi perfil** › [Preferencias](/profile/preferences), en **Notificaciones**
 | **Torneos** | Inscripciones, fixture, veto y resultados, y cuando tu partida empieza en menos de una hora |
 | **Mixes y ELO** | Cambios de nivel, mixes interrumpidos o borrados, ajustes de ELO y tus jugadas destacadas (un aviso por partida, que lleva a sus estadísticas) |
 | **Temporadas** | Tu puesto, el cierre de la temporada y las medallas |
+| **Amigos** | Solicitudes de amistad y cuando alguien acepta la tuya ([Amigos](/help/jugador/amigos)) |
 | **Cuenta** | SteamID vinculados, cambios de alias y de rol |
 | **Novedades** | Torneos nuevos y temporadas nuevas. Viene apagada: préndela si quieres enterarte |
 
-Algunos avisos llegan siempre, aunque apagues su tipo: las invitaciones a un equipo, los pedidos para entrar al tuyo, los cambios que hace la moderación en tu equipo y el aviso de cambio de contraseña.
+Algunos avisos llegan siempre, aunque apagues su tipo: las invitaciones a un equipo, los pedidos para entrar al tuyo, las solicitudes de amistad, los cambios que hace la moderación en tu equipo y el aviso de cambio de contraseña.
 
 > **Ojo:** mientras un tipo está apagado, esos avisos no se guardan. Si lo prendes de nuevo, no aparecen los que te perdiste.
