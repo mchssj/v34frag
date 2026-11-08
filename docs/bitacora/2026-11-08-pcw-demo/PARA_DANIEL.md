@@ -14,7 +14,7 @@ El detalle completo está en [`DOCUMENTACION.md`](DOCUMENTACION.md) y [`GUIA_IMP
 | `c20f675` | Prototipo de la página de PCW, replanteo 88 (las PCW no dan ELO), chat del grupo, menú al tocar un nombre y lista de amigos con barra en Jugar |
 | `fc22c63` | La sala de la PCW es la sala del matchmaking, ofertas como en pracc.com y la partida encontrada en cualquier pantalla |
 | `1779fdd` | Tablón y Mis PCW como listas, la próxima PCW en grande, mapas fijos sin veto, avisos en la campana de la web, y elegir equipo o mix al publicar |
-| (sin commit todavía) | Publicar una PCW es solo para VIP, y este archivo |
+| `a405065` | Publicar una PCW es solo para VIP, y este archivo |
 
 **No se tocó:**
 - El plugin ni los servidores: no hay nada que subir a #1, #2 ni #3.
