@@ -1,0 +1,6 @@
+CMLeague 2.9.25 --  Changelog
+
+Niveles
+
+- Tu nivel ahora se ve como un anillo de 10 segmentos que se va llenando a medida que subes, con un color por tramo: verde del 2 al 3, amarillo del 4 al 7, naranja del 8 al 9 y rojo en el 10.
+- La barra de niveles de Jugar también toma el color de tu nivel.

@@ -1,6 +1,6 @@
 import { cn } from "cn"
 
-import { LevelBadge } from "@/components/brand/LevelBadge"
+import { LevelBadge, levelColor } from "@/components/brand/LevelBadge"
 import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 
 /** Tu ELO en el panel de partida: nivel, ELO, barra de los 10 niveles y cuánto falta. */
@@ -9,7 +9,7 @@ export function EloMeter({ elo, level }: { elo: number; level: number }) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="flex items-center gap-2">
-        <LevelBadge level={level} size={24} className="rounded-full" />
+        <LevelBadge level={level} size={24} />
         <span className="font-mono text-2xl font-bold tabular-nums">
           {elo.toLocaleString("es-AR")}
         </span>
@@ -19,10 +19,11 @@ export function EloMeter({ elo, level }: { elo: number; level: number }) {
         {Array.from({ length: 10 }, (_, i) => (
           <span
             key={i}
-            className={cn(
-              "h-1 flex-1 rounded-full",
-              i < level ? "bg-primary" : "bg-muted"
-            )}
+            className={cn("h-1 flex-1 rounded-full", i >= level && "bg-muted")}
+            // Encendidos con el color del nivel, como el anillo de LevelBadge.
+            style={
+              i < level ? { backgroundColor: levelColor(level) } : undefined
+            }
           />
         ))}
       </span>

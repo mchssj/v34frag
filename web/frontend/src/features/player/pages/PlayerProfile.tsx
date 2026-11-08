@@ -16,6 +16,7 @@ import { toast } from "sonner"
 
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { LevelBadge, levelColor } from "@/components/brand/LevelBadge"
 import { initialOf } from "@/components/brand/PlayerAvatar"
 import { Segmented } from "@/components/brand/Segmented"
 import { StatTile } from "@/components/brand/StatTile"
@@ -334,15 +335,6 @@ function DiscordChip({ user }: { user: string }) {
   )
 }
 
-const LEVEL_BG = (l: number) =>
-  l >= 10
-    ? "bg-primary text-primary-foreground"
-    : l >= 8
-      ? "bg-sidebar-primary text-primary-foreground"
-      : l >= 4
-        ? "bg-foreground text-background"
-        : "bg-muted-foreground text-background"
-
 function LevelCard({ p }: { p: PlayerDetail }) {
   const level = p.level
   return (
@@ -376,14 +368,7 @@ function LevelCard({ p }: { p: PlayerDetail }) {
       ) : (
         <>
           <div className="flex items-center gap-3.5">
-            <span
-              className={cn(
-                "grid size-[60px] place-items-center rounded-xl font-mono text-[28px] font-bold",
-                LEVEL_BG(level)
-              )}
-            >
-              {level}
-            </span>
+            <LevelBadge level={level} size={60} />
             <span className="flex flex-col gap-1">
               <span className="font-mono text-[30px] leading-none font-bold tracking-[-1px] tabular-nums">
                 {p.elo}
@@ -407,12 +392,14 @@ function LevelCard({ p }: { p: PlayerDetail }) {
                   title={`Nivel ${i + 1}`}
                   className={cn(
                     "h-2 rounded-[2px]",
-                    s === "done"
-                      ? "bg-foreground"
-                      : s === "current"
-                        ? "bg-primary"
-                        : "bg-muted"
+                    s === "next" && "bg-muted",
+                    s === "done" && "opacity-55"
                   )}
+                  style={
+                    s === "next"
+                      ? undefined
+                      : { backgroundColor: levelColor(level) }
+                  }
                 />
               )
             })}

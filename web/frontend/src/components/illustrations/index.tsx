@@ -1,32 +1,29 @@
 import { cn } from "cn"
 
+import { LEVEL_SEGMENTS } from "@/components/brand/LevelBadge"
+
 // Ilustraciones de estados vacíos, en SVG con los tokens del tema (se ven igual en claro y oscuro).
 
-/** Insignia de nivel sin número: un "?" dentro del hexágono, para "Sin nivel todavía". */
+/** Anillo de nivel vacío con un "?" (el mismo de `LevelBadge`), para "Sin nivel todavía". */
 export function NoLevelBadge({ className }: { className?: string }) {
   return (
-    <span
-      aria-hidden
-      className={cn("relative block h-[104px] w-[92px]", className)}
-    >
-      <svg viewBox="0 0 92 104" className="absolute inset-0 size-full">
-        <path
-          d="M46 3 87 26.5v51L46 101 5 77.5v-51Z"
-          className="fill-muted stroke-border"
-          strokeWidth="2"
-        />
-        <path
-          d="M46 15 76 32v40L46 89 16 72V32Z"
-          fill="none"
-          className="stroke-muted-foreground"
-          strokeWidth="1.5"
-          strokeDasharray="4 5"
-          opacity=".6"
-        />
+    <span aria-hidden className={cn("block size-[92px]", className)}>
+      <svg viewBox="0 0 240 240" className="size-full">
+        {LEVEL_SEGMENTS.map((d, i) => (
+          <path key={i} d={d} style={{ fill: "var(--level-off)" }} />
+        ))}
+        <text
+          x={120}
+          y={120}
+          dominantBaseline="central"
+          textAnchor="middle"
+          fontSize={118}
+          fontWeight={900}
+          className="fill-muted-foreground font-sans"
+        >
+          ?
+        </text>
       </svg>
-      <span className="absolute inset-0 grid place-items-center font-mono text-[34px] font-bold text-muted-foreground">
-        ?
-      </span>
     </span>
   )
 }
