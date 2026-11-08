@@ -269,8 +269,16 @@ export type MmFriend = {
   player_id: string
   nick: string
   level: number
-  /** null = todavía no te marcó, así que no se ve su estado. */
-  status: "free" | "queue" | "playing" | "offline" | null
+  /** (replanteo 85) Son amigos los dos: el estado se ve siempre. */
+  status: "free" | "queue" | "playing" | "offline"
+}
+
+/** Una solicitud de amistad pendiente (replanteo 85): la que te enviaron o la que enviaste. */
+export type MmFriendRequest = {
+  player_id: string
+  nick: string
+  level: number
+  created_at: string
 }
 
 export type MmSanction = {
@@ -334,8 +342,10 @@ export type MmState = {
     /** Qué reproducir; null = el predeterminado. */
     url: string | null
   }
-  /** A quiénes marcó como amigos. */
+  /** Sus amigos (aceptaron los dos). */
   friends: MmFriend[]
+  /** (replanteo 85) Solicitudes pendientes: las que le enviaron y las que envió. */
+  friend_requests: { received: MmFriendRequest[]; sent: MmFriendRequest[] }
   /** Historial propio: sanciones de la cola, exclusiones y baneos del servidor. */
   sanctions: {
     items: MmSanction[]

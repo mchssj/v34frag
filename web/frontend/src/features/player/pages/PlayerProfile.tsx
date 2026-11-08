@@ -12,9 +12,12 @@ import {
   LockIcon,
   ShieldIcon,
 } from "lucide-react"
+import { useEffect } from "react"
 import { toast } from "sonner"
 
+import { api } from "@/api/client"
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
+import { useMe } from "@/auth/queries"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { LevelBadge, levelColor } from "@/components/brand/LevelBadge"
 import { initialOf } from "@/components/brand/PlayerAvatar"
@@ -30,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
 import { EloChart } from "../components/EloChart"
+import { FriendButton } from "../components/FriendButton"
 import {
   LEVEL_FLOORS,
   faceitUrl,
@@ -124,6 +128,14 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
 function PlayerHeader({ p }: { p: PlayerDetail }) {
   const mine = useMine()
   const owner = mine.playerId === p.id
+  const signedIn = !!useMe().data
+  // (replanteo 86) Abrir el perfil de otro con sesión cuenta como una visita (una por día; la base decide si va oculta).
+  useEffect(() => {
+    if (signedIn && !owner && mine.ready)
+      void api.POST("/api/v1/players/{id}/visit", {
+        params: { path: { id: p.id } },
+      })
+  }, [signedIn, owner, mine.ready, p.id])
   const d = p.details
   const steam = steamUrl(d?.steam)
   const faceit = faceitUrl(d?.faceit)
@@ -270,17 +282,20 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
               Editar perfil
             </Link>
           ) : (
-            <Link
-              to="/players/compare"
-              search={{ b: p.alias }}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-8 gap-1.5 px-3 text-[13px]"
-              )}
-            >
-              <GitCompareIcon aria-hidden className="size-3.5" />
-              Comparar
-            </Link>
+            <>
+              {signedIn && <FriendButton playerId={p.id} nick={p.alias} />}
+              <Link
+                to="/players/compare"
+                search={{ b: p.alias }}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-8 gap-1.5 px-3 text-[13px]"
+                )}
+              >
+                <GitCompareIcon aria-hidden className="size-3.5" />
+                Comparar
+              </Link>
+            </>
           )}
         </div>
       </div>

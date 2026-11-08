@@ -1,0 +1,7 @@
+CMLeague 2.9.26 --  Changelog
+
+Quiénes somos
+
+- Nueva página Quiénes somos, en Comunidad: los admins y los moderadores detrás de CMLeague.
+- Un agradecimiento a los VIP, que sostienen los servidores. Si eres VIP y prefieres no aparecer, apágalo en Mi perfil, Privacidad.
+- ¿Quieres ser VIP? Toca Cómo ser VIP y escríbele a un administrador por Discord.

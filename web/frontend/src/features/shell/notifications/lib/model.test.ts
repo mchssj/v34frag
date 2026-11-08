@@ -39,6 +39,8 @@ const TYPES: [string, Notification["category"]][] = [
   ["team_added", "team"],
   ["team_deleted", "team"],
   ["team_request_answered", "team"],
+  ["friend_request", "friends"],
+  ["friend_accepted", "friends"],
   ["event_registration", "tournament"],
   ["event_fixture", "tournament"],
   ["match_scheduled", "tournament"],
@@ -359,5 +361,24 @@ group("clips_detected (replanteo 83)", () => {
     expect(clipsSummary([], [])).toBe(
       "Mira cómo te fue en las estadísticas de la partida."
     )
+  })
+})
+
+group("amigos (replanteo 85)", () => {
+  it("la solicitud y el aviso de aceptada, con el link al perfil", () => {
+    const player = { id: "p1", alias: "romanxz" }
+    const req = describe(
+      base({ type: "friend_request", category: "friends", data: { player } })
+    )
+    expect(req.title).toBe("romanxz te envió una solicitud de amistad")
+    expect(req.link).toEqual({
+      to: "/player/$nick",
+      params: { nick: "romanxz" },
+    })
+    expect(
+      describe(
+        base({ type: "friend_accepted", category: "friends", data: { player } })
+      ).title
+    ).toBe("romanxz aceptó tu solicitud")
   })
 })

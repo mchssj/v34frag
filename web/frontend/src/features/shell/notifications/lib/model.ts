@@ -30,6 +30,7 @@ export type NotificationKind =
   | "account"
   | "news"
   | "admin"
+  | "friend"
 
 export type NotificationLink = {
   to: AppPath
@@ -127,6 +128,7 @@ const CATEGORY: Record<NotificationCategory, [NotificationKind, string]> = {
   account: ["account", "Cuenta"],
   news: ["news", "Novedades"],
   admin: ["admin", "Administración"],
+  friends: ["friend", "Amigos"],
 }
 
 const KILL_LABEL: Record<number, string> = {
@@ -164,6 +166,11 @@ const teamLink = (team: unknown): NotificationLink | undefined =>
   idOf(team) ? { to: "/teams/$id", params: { id: idOf(team) } } : undefined
 const eventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event) ? { to: "/events/$id", params: { id: idOf(event) } } : undefined
+/** El perfil de un jugador ({ id, alias }); el link va por el nick. */
+const playerLink = (player: unknown): NotificationLink | undefined => {
+  const nick = str(obj(player).alias)
+  return nick ? { to: "/player/$nick", params: { nick } } : undefined
+}
 const adminEventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event)
     ? { to: "/admin/events/$id", params: { id: idOf(event) } }
@@ -603,6 +610,21 @@ export function describe(n: Notification, me?: string | null): Described {
         kind: "account",
         title: `Ahora eres ${ACCOUNT_ROLE[str(d.role)] ?? "usuario"}`,
         body: "Cambió tu rol en la web.",
+      }
+    // ---------- amigos (replanteo 85) ----------
+    case "friend_request":
+      return {
+        kind: "friend",
+        title: `${player} te envió una solicitud de amistad`,
+        body: "Acéptala para ver su estado e invitarse a jugar.",
+        link: playerLink(d.player),
+      }
+    case "friend_accepted":
+      return {
+        kind: "friend",
+        title: `${player} aceptó tu solicitud`,
+        body: "Ya son amigos.",
+        link: playerLink(d.player),
       }
     case "password_changed":
       return {

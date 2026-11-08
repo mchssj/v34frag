@@ -28,7 +28,10 @@ export function PlayFeed({ state }: { state: MmState }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid items-stretch gap-4 lg:grid-cols-3">
-        <FriendsPanel friends={state.friends} />
+        <FriendsPanel
+          friends={state.friends}
+          requests={state.friend_requests}
+        />
         <BlockPanel blocks={state.blocks} />
         <Sanctions sanctions={state.sanctions} />
       </div>

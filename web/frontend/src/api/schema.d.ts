@@ -915,7 +915,7 @@ export interface paths {
                     /** @description `true` solo las de aceptar o rechazar que siguen pendientes */
                     actionable?: "true" | "false";
                     /** @description Solo una categoría */
-                    category?: "team" | "tournament" | "pcw" | "elo" | "season" | "account" | "news" | "admin";
+                    category?: "team" | "tournament" | "pcw" | "elo" | "season" | "account" | "news" | "admin" | "friends";
                 };
                 header?: never;
                 path?: never;
@@ -1353,6 +1353,316 @@ export interface paths {
             };
         };
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/visit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar la visita a un perfil
+         * @description Una por visitante, perfil y día. No cuentan las propias, las de una cuenta sin ficha ni las de una ficha sin cuenta. Un VIP con el modo oculto prendido visita oculto hasta 15 perfiles por semana.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Registrada (o ignorada) */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/profile-visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Las visitas a mi perfil
+         * @description Cuántos jugadores visitaron tu perfil; si eres VIP, también quiénes y el estado del modo oculto.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Visitas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileVisits"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/profile-visits/incognito": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Navegar sin dejar rastro
+         * @description Prenderlo es solo para VIP (`403`). Apagarlo, para cualquiera.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileIncognito"];
+                };
+            };
+            responses: {
+                /** @description Visitas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileVisits"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * El equipo de CMLeague
+         * @description Los admins, los moderadores y los VIP (página del Equipo). Las cuentas sin ficha de jugador no salen.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Equipo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Staff"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/vip-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mi lugar en la lista de VIP */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Estado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["VipListMe"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /** Ocultarme o mostrarme en la lista de VIP */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VipListPatch"];
+                };
+            };
+            responses: {
+                /** @description Estado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["VipListMe"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -11873,7 +12183,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Sumar a amigos */
+        /** Enviar una solicitud de amistad */
         post: {
             parameters: {
                 query?: never;
@@ -11950,10 +12260,68 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** La amistad con un jugador: self, unavailable, friends, received, sent o none */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
-        /** Sacar de amigos */
+        /** Eliminar de amigos o cancelar la solicitud enviada */
         delete: {
             parameters: {
                 query?: never;
@@ -12012,6 +12380,154 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mm/friends/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Aceptar la solicitud de amistad de un jugador */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mm/friends/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rechazar la solicitud de amistad de un jugador (no se le avisa) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -21804,7 +22320,7 @@ export interface components {
             theme_fx: "full" | "silent" | "off" | null;
             notifications: components["schemas"]["NotificationPrefs"];
         };
-        /** @description Categorías prendidas (`true`) o apagadas. Por defecto todas prendidas menos `news`. La invitación a un equipo, el pedido para entrar a tu equipo y el cambio de contraseña llegan siempre. */
+        /** @description Categorías prendidas (`true`) o apagadas. Por defecto todas prendidas menos `news`. La invitación a un equipo, el pedido para entrar a tu equipo, la solicitud de amistad y el cambio de contraseña llegan siempre. */
         NotificationPrefs: {
             team: boolean;
             tournament: boolean;
@@ -21814,6 +22330,7 @@ export interface components {
             account: boolean;
             news: boolean;
             admin: boolean;
+            friends: boolean;
         };
         /** @description `null` si nunca fue VIP */
         VipStatus: {
@@ -21891,6 +22408,7 @@ export interface components {
             account?: boolean;
             news?: boolean;
             admin?: boolean;
+            friends?: boolean;
         };
         AvatarResult: {
             avatar_url: string;
@@ -21920,12 +22438,12 @@ export interface components {
              */
             type: string;
             /** @enum {string} */
-            category: "team" | "tournament" | "pcw" | "elo" | "season" | "account" | "news" | "admin";
+            category: "team" | "tournament" | "pcw" | "elo" | "season" | "account" | "news" | "admin" | "friends";
             /** @description Ids y nombres del momento para armar el texto y el link */
             data: {
                 [key: string]: unknown;
             };
-            /** @description Se acepta o rechaza desde la lista (invitación o pedido para entrar) */
+            /** @description Se acepta o rechaza desde la lista (invitación, pedido para entrar o solicitud de amistad) */
             actionable: boolean;
             /**
              * @description En una invitación o un pedido: cómo terminó. `null` mientras esté pendiente
@@ -22007,6 +22525,58 @@ export interface components {
             /** @description Motivo del rechazo, si el admin escribió uno. null en el resto */
             reject_reason: string | null;
         } | null;
+        ProfileVisits: {
+            vip: boolean;
+            /** @description Jugadores distintos que visitaron tu perfil en los últimos 30 días */
+            total: number;
+            /** @description Los de los últimos 7 días */
+            week: number;
+            /** @description Solo VIP: quiénes (hasta 100, el más reciente primero). Sin VIP, `null` */
+            items: components["schemas"]["ProfileVisitor"][] | null;
+            /** @description Solo VIP: navegar sin dejar rastro. Sin VIP, `null` */
+            incognito: {
+                enabled: boolean;
+                /** @description Perfiles distintos visitados ocultos esta semana */
+                used: number;
+                limit: number;
+                /** @description El lunes siguiente, 00:00 de Bogotá */
+                resets_at: string;
+            } | null;
+        };
+        ProfileVisitor: {
+            /** Format: uuid */
+            player_id: string;
+            nick: string;
+            photo_url: string | null;
+            level: number;
+            visited_at: string;
+        };
+        ProfileIncognito: {
+            enabled: boolean;
+        };
+        Staff: {
+            admins: components["schemas"]["StaffCard"][];
+            moderators: components["schemas"]["StaffCard"][];
+            /** @description VIP activos, sin los admins ni los que se ocultaron, por antigüedad */
+            vips: (components["schemas"]["StaffCard"] & {
+                since: string;
+            })[];
+        };
+        StaffCard: {
+            /** Format: uuid */
+            player_id: string;
+            nick: string;
+            photo_url: string | null;
+            level: number;
+        };
+        VipListMe: {
+            vip: boolean;
+            /** @description Si te ocultaste de la lista de VIP de la página del Equipo */
+            hidden: boolean;
+        };
+        VipListPatch: {
+            hidden: boolean;
+        };
         UnclaimedList: {
             items: components["schemas"]["UnclaimedSummary"][];
             /** @description Total con los filtros aplicados */

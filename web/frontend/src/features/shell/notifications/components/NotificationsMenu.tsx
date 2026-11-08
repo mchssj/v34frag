@@ -61,6 +61,7 @@ const ICONS: Record<NotificationKind, LucideIcon> = {
   account: KeyRoundIcon,
   news: MegaphoneIcon,
   admin: ShieldAlertIcon,
+  friend: UserPlusIcon,
 }
 
 const TABS: { value: NotificationTab; label: string }[] = [
@@ -127,15 +128,16 @@ export function NotificationsMenu() {
       { item, resolution },
       {
         onSuccess: () => {
-          const what = item.type === "team_invite" ? "Invitación" : "Pedido"
+          const feminine = item.type !== "team_join_request"
+          const what =
+            item.type === "team_invite"
+              ? "Invitación"
+              : item.type === "friend_request"
+                ? "Solicitud"
+                : "Pedido"
           const done =
-            resolution === "accepted"
-              ? item.type === "team_invite"
-                ? "aceptada"
-                : "aceptado"
-              : item.type === "team_invite"
-                ? "rechazada"
-                : "rechazado"
+            (resolution === "accepted" ? "aceptad" : "rechazad") +
+            (feminine ? "a" : "o")
           toast.success(`${what} ${done}`)
         },
         onError: (e) => toast.error(errorMessage(e)),

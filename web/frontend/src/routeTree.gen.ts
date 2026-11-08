@@ -17,6 +17,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppEquipoRouteImport } from './routes/_app/equipo'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
@@ -100,6 +101,11 @@ const WelcomeRoute = WelcomeRouteImport.update({
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEquipoRoute = AppEquipoRouteImport.update({
+  id: '/equipo',
+  path: '/equipo',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHomeRoute = AppHomeRouteImport.update({
@@ -340,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
+  '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
@@ -394,6 +401,7 @@ export interface FileRoutesByTo {
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/admin': typeof AppAdminRouteWithChildren
+  '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
@@ -450,6 +458,7 @@ export interface FileRoutesById {
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
+  '/_app/equipo': typeof AppEquipoRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
@@ -506,6 +515,7 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/welcome'
     | '/admin'
+    | '/equipo'
     | '/home'
     | '/myteam'
     | '/pcw'
@@ -560,6 +570,7 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/welcome'
     | '/admin'
+    | '/equipo'
     | '/home'
     | '/myteam'
     | '/pcw'
@@ -615,6 +626,7 @@ export interface FileRouteTypes {
     | '/terminos'
     | '/welcome'
     | '/_app/admin'
+    | '/_app/equipo'
     | '/_app/home'
     | '/_app/myteam'
     | '/_app/pcw'
@@ -731,6 +743,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/equipo': {
+      id: '/_app/equipo'
+      path: '/equipo'
+      fullPath: '/equipo'
+      preLoaderRoute: typeof AppEquipoRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/home': {
@@ -1120,6 +1139,7 @@ const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
+  AppEquipoRoute: typeof AppEquipoRoute
   AppHomeRoute: typeof AppHomeRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
@@ -1145,6 +1165,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
+  AppEquipoRoute: AppEquipoRoute,
   AppHomeRoute: AppHomeRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
