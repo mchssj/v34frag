@@ -254,6 +254,16 @@ def process_match(cfg, api, r2, drive, job):
             jobs.append(build_job(d, rounds, c, offset, seg_cfg))
         except Skip as e:
             final[c["id"]] = fail(api, c["id"], e, final=True)
+    # La cámara de cada jugada se revisa antes de abrir el juego: una que no puede llegar a su jugador falla sola (y
+    # sin reintentos, porque con la misma demo vuelve a pasar) en vez de cortar la sesión de todas.
+    lead_ticks = round(cfg.get("lead_seconds", 0.5) / d.tick_interval)
+    for j in list(jobs):
+        try:
+            render_clip.check_targets(d, j, lead_ticks)
+        except RuntimeError as e:
+            log(f"  {j['clip']['id'][:8]}: {e}")
+            final[j["clip"]["id"]] = fail(api, j["clip"]["id"], f"Cámara: {e}", final=True)
+            jobs.remove(j)
     if not jobs:
         return final
 
