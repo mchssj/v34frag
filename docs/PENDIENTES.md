@@ -32,6 +32,24 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   3. Ver en las próximas partidas del matchmaking si los equipos quedan más parejos.
 - **Aparte:** `web/backend/test/integration/hud.test.ts` falla contra la copia de producción (elige el puerto 27501, que usa el #2). No es de este cambio.
 
+## Amigos con solicitudes, visitas al perfil y Quiénes somos (2026-11-07): desplegado el 2026-11-08
+
+- **Hecho:** replanteos `85`, `86` y `87`, la API y la web. Diseños: https://claude.ai/artifact/LYtK8cKdjTrbxb7vibSgLm (amigos) y https://claude.ai/artifact/JMxKj64gm6q5Tvjd5zWPLy (Equipo y visitas).
+  - [`2026-11-07-amigos-con-solicitudes`](bitacora/2026-11-07-amigos-con-solicitudes/): solicitudes de amistad con aviso, Aceptar / Rechazar (en silencio) y el botón del perfil.
+  - [`2026-11-07-visitas-al-perfil`](bitacora/2026-11-07-visitas-al-perfil/): cuántos visitaron tu perfil; con VIP, quiénes, y navegar sin dejar rastro (15 por semana).
+  - [`2026-11-07-pagina-equipo`](bitacora/2026-11-07-pagina-equipo/): la página **Quiénes somos** (`/equipo`) con admins, moderadores y los VIP (sin los admins), y ocultarse de la lista.
+- **Desplegado el 2026-11-08 (05:47-06:00 UTC)** desde `main` (`8991457b`; copia `8428d9e5` en `feat/frontend-fase-1` y la base y la API de la `85` en `feat/mm-claim-en-sala`, `9a33cd81`): respaldo `20261108T054752Z`, `cmleague-mm` parado, las tres `probar_8x.sh` en verde contra producción, las tres migraciones, API y web `8991457b20f8`, `cmleague-mm` prendido. Quedaron 31 solicitudes pendientes y 9 amistades. La web, con `--sin-pruebas` después de pasar las 667 con dos procesos (detalle en la guía de amigos).
+- **Falta:**
+  1. Mirarlo en `https://cmleague.lat` con una cuenta real.
+  2. Publicar los tres `CHANGELOG_DISCORD.txt` (2.9.26) y los términos estáticos (`terms/`).
+  3. Push de `main`, `feat/frontend-fase-1` y `feat/mm-claim-en-sala` (los commits están solo en la PC).
+- **Visto al probar, sin tocar:** en la base de producción (y en la copia local) `notify_due` se puede ejecutar como `anon` y `authenticated`, y `anon` tiene permiso de `select` sobre `player_ips`. Por eso fallan `notify-due.test.ts` e `ips.test.ts`. Parece haber quedado de la mudanza al VPS (los `revoke` de las migraciones no están). Hay que revisarlo con Daniel.
+
+## El nivel con el anillo de 10 segmentos (2026-11-07): desplegado el 2026-11-08
+
+- **Hecho:** `LevelBadge` con el anillo y el color por tramo, y la barra de `EloMeter` ([`2026-11-07-niveles-con-anillo`](bitacora/2026-11-07-niveles-con-anillo/)). Commit `570f8163` en `main` (copia `abc6906b`), con la web `8991457b20f8`. El arreglo del diálogo de borrar torneo (el nombre con mayúsculas no activaba **Borrar**) salió en la misma web, en su propio commit (`f2a4149c`).
+- **Falta:** publicar el `CHANGELOG_DISCORD.txt` (2.9.25).
+
 ## El moderador crea torneos y el premio con monto y divisa (2026-11-07): desplegado el 2026-11-07
 
 - **Hecho:** replanteo `84`, la API y la web ([`2026-11-07-moderador-crea-torneos-y-divisa`](bitacora/2026-11-07-moderador-crea-torneos-y-divisa/)), en la copia de `main` (`v34frag-mainwt`). Lo que crea un moderador (normal o histórico) queda pendiente y lo aprueba solo un admin; el premio con monto, divisa y detalle. Probado en la base local (12 bloques y la inversa), la API y la web; no en el navegador. Manual y términos al día. La `84` quedó aplicada en la base local.

@@ -192,10 +192,18 @@ add(route('post', '/api/v1/mm/blocks', { summary: 'Bloquear a un jugador', reque
   action('mm_block', (c) => ({ p_player: body<{ player_id: string }>(c).player_id })));
 add(route('delete', '/api/v1/mm/blocks/{id}', { summary: 'Sacar un bloqueo', request: { params: IdParam } }),
   action('mm_unblock', (c) => ({ p_player: param(c) })));
-add(route('post', '/api/v1/mm/friends', { summary: 'Sumar a amigos', request: jsonBody(PlayerBody) }),
+// (replanteo 85) Amigos con solicitudes: enviar (o aceptar, si ya te había enviado), aceptar, rechazar (en silencio),
+// eliminar o cancelar la enviada, y el estado con un jugador para el botón de su perfil.
+add(route('post', '/api/v1/mm/friends', { summary: 'Enviar una solicitud de amistad', request: jsonBody(PlayerBody) }),
   action('mm_add_friend', (c) => ({ p_player: body<{ player_id: string }>(c).player_id })));
-add(route('delete', '/api/v1/mm/friends/{id}', { summary: 'Sacar de amigos', request: { params: IdParam } }),
+add(route('delete', '/api/v1/mm/friends/{id}', { summary: 'Eliminar de amigos o cancelar la solicitud enviada', request: { params: IdParam } }),
   action('mm_remove_friend', (c) => ({ p_player: param(c) })));
+add(route('post', '/api/v1/mm/friends/{id}/accept', { summary: 'Aceptar la solicitud de amistad de un jugador', request: { params: IdParam } }),
+  action('mm_friend_answer', (c) => ({ p_player: param(c), p_accept: true })));
+add(route('post', '/api/v1/mm/friends/{id}/reject', { summary: 'Rechazar la solicitud de amistad de un jugador (no se le avisa)', request: { params: IdParam } }),
+  action('mm_friend_answer', (c) => ({ p_player: param(c), p_accept: false })));
+add(route('get', '/api/v1/mm/friends/{id}', { summary: 'La amistad con un jugador: self, unavailable, friends, received, sent o none', request: { params: IdParam } }),
+  async (c) => c.json({ status: await rpc(c, 'mm_friendship', { p_player: param(c) }) } as never, 200));
 add(route('post', '/api/v1/mm/commends', { summary: 'Felicitar a un jugador', request: jsonBody(Commend) }), action('mm_commend', (c) => {
   const b = body<{ lobby_id: string; player_id: string }>(c);
   return { p_lobby: b.lobby_id, p_player: b.player_id };

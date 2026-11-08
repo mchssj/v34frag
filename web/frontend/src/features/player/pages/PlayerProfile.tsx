@@ -12,10 +12,14 @@ import {
   LockIcon,
   ShieldIcon,
 } from "lucide-react"
+import { useEffect } from "react"
 import { toast } from "sonner"
 
+import { api } from "@/api/client"
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
+import { useMe } from "@/auth/queries"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { LevelBadge, levelColor } from "@/components/brand/LevelBadge"
 import { initialOf } from "@/components/brand/PlayerAvatar"
 import { Segmented } from "@/components/brand/Segmented"
 import { StatTile } from "@/components/brand/StatTile"
@@ -29,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
 import { EloChart } from "../components/EloChart"
+import { FriendButton } from "../components/FriendButton"
 import {
   LEVEL_FLOORS,
   faceitUrl,
@@ -123,6 +128,14 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
 function PlayerHeader({ p }: { p: PlayerDetail }) {
   const mine = useMine()
   const owner = mine.playerId === p.id
+  const signedIn = !!useMe().data
+  // (replanteo 86) Abrir el perfil de otro con sesión cuenta como una visita (una por día; la base decide si va oculta).
+  useEffect(() => {
+    if (signedIn && !owner && mine.ready)
+      void api.POST("/api/v1/players/{id}/visit", {
+        params: { path: { id: p.id } },
+      })
+  }, [signedIn, owner, mine.ready, p.id])
   const d = p.details
   const steam = steamUrl(d?.steam)
   const faceit = faceitUrl(d?.faceit)
@@ -269,17 +282,20 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
               Editar perfil
             </Link>
           ) : (
-            <Link
-              to="/players/compare"
-              search={{ b: p.alias }}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-8 gap-1.5 px-3 text-[13px]"
-              )}
-            >
-              <GitCompareIcon aria-hidden className="size-3.5" />
-              Comparar
-            </Link>
+            <>
+              {signedIn && <FriendButton playerId={p.id} nick={p.alias} />}
+              <Link
+                to="/players/compare"
+                search={{ b: p.alias }}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-8 gap-1.5 px-3 text-[13px]"
+                )}
+              >
+                <GitCompareIcon aria-hidden className="size-3.5" />
+                Comparar
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -334,15 +350,6 @@ function DiscordChip({ user }: { user: string }) {
   )
 }
 
-const LEVEL_BG = (l: number) =>
-  l >= 10
-    ? "bg-primary text-primary-foreground"
-    : l >= 8
-      ? "bg-sidebar-primary text-primary-foreground"
-      : l >= 4
-        ? "bg-foreground text-background"
-        : "bg-muted-foreground text-background"
-
 function LevelCard({ p }: { p: PlayerDetail }) {
   const level = p.level
   return (
@@ -376,14 +383,7 @@ function LevelCard({ p }: { p: PlayerDetail }) {
       ) : (
         <>
           <div className="flex items-center gap-3.5">
-            <span
-              className={cn(
-                "grid size-[60px] place-items-center rounded-xl font-mono text-[28px] font-bold",
-                LEVEL_BG(level)
-              )}
-            >
-              {level}
-            </span>
+            <LevelBadge level={level} size={60} />
             <span className="flex flex-col gap-1">
               <span className="font-mono text-[30px] leading-none font-bold tracking-[-1px] tabular-nums">
                 {p.elo}
@@ -407,12 +407,14 @@ function LevelCard({ p }: { p: PlayerDetail }) {
                   title={`Nivel ${i + 1}`}
                   className={cn(
                     "h-2 rounded-[2px]",
-                    s === "done"
-                      ? "bg-foreground"
-                      : s === "current"
-                        ? "bg-primary"
-                        : "bg-muted"
+                    s === "next" && "bg-muted",
+                    s === "done" && "opacity-55"
                   )}
+                  style={
+                    s === "next"
+                      ? undefined
+                      : { backgroundColor: levelColor(level) }
+                  }
                 />
               )
             })}

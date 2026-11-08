@@ -242,7 +242,7 @@ function PlayerCard({
           )}
           {stat?.delta != null && <EloDelta value={stat.delta} />}
           <span className="font-mono text-sm tabular-nums">{p.elo}</span>
-          <LevelBadge level={p.level} size={22} className="rounded-full" />
+          <LevelBadge level={p.level} size={22} />
           {!p.is_me && <Encounters player={p} />}
           {!p.is_me && mode === "live" && (
             <ReportDialog

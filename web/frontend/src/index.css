@@ -91,6 +91,13 @@
   --sidebar-ring: oklch(0.708 0 0);
   /* Token propio del handoff: victorias, disponible, en línea. */
   --win: oklch(0.6 0.15 150);
+  /* Niveles (bitácora 2026-11-07-niveles-con-anillo): un color por tramo y el segmento apagado. */
+  --level-1: oklch(0.62 0.01 260);
+  --level-2: oklch(0.62 0.17 148);
+  --level-4: oklch(0.72 0.16 82);
+  --level-8: oklch(0.65 0.19 45);
+  --level-10: oklch(0.58 0.21 25);
+  --level-off: oklch(0.9 0.004 260);
 }
 
 .dark {
@@ -130,6 +137,12 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --win: oklch(0.72 0.15 150);
+  --level-1: oklch(0.93 0.005 260);
+  --level-2: oklch(0.78 0.2 145);
+  --level-4: oklch(0.85 0.16 88);
+  --level-8: oklch(0.74 0.18 50);
+  --level-10: oklch(0.66 0.22 27);
+  --level-off: oklch(0.3 0.008 265);
 }
 
 @layer base {

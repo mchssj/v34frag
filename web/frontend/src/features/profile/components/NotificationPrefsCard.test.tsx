@@ -33,6 +33,7 @@ const prefs = {
   account: true,
   news: false,
   admin: true,
+  friends: true,
 }
 const patched = vi.fn()
 

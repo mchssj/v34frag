@@ -22,17 +22,20 @@ export function PlayerAvatar({
   photo,
   size = "default",
   className,
+  imageClassName,
   fallbackClassName,
 }: {
   alias: string
   photo?: string | null
   size?: keyof typeof SIZES
   className?: string
+  /** Clases de la foto; con el mismo redondeo del contenedor, la foto rellena el cuadro. */
+  imageClassName?: string
   fallbackClassName?: string
 }) {
   return (
     <Avatar aria-hidden className={cn("shrink-0", SIZES[size].root, className)}>
-      {photo && <AvatarImage src={photo} alt="" />}
+      {photo && <AvatarImage src={photo} alt="" className={imageClassName} />}
       <AvatarFallback
         className={cn(
           "bg-secondary font-semibold",

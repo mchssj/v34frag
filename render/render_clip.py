@@ -546,8 +546,20 @@ def spec_target(d, steamid, tick):
         if best is None or steps < best[0]:
             best = (steps, anchor)
     if best is None:
+        # El único vivo (el final de un clutch, desactivando la bomba: mirage_rc1 del 2026-11-07, "New™ LescoSSJ"):
+        # spec_next lleva al siguiente vivo desde cualquier jugador, y no hay otro.
+        if slots == [target]:
+            return ["spec_next"]
         raise RuntimeError(f"no hay ningún jugador vivo con nombre escribible para llegar a {name!r}")
     return [f'spec_player "{best[1]}"'] + ["spec_next"] * best[0]
+
+
+def check_targets(d, job, lead_ticks):
+    """Que la cámara pueda llegar al jugador en cada tramo de la jugada, antes de abrir el juego (lanza el error de
+    spec_target). Si no, falla solo esa jugada: antes el error cortaba la sesión y fallaban todas las de la partida."""
+    if job.get("steamid"):
+        for seg in job["segs"]:
+            spec_target(d, job["steamid"], max(seg[0] - lead_ticks, 0))
 
 
 def lead_frames(cfg):
