@@ -55,6 +55,8 @@ begin
 end $$;
 reset role;
 do $$ begin assert not exists (select 1 from profile_visits where player_id = t86p('ficha')), 'las fichas sin cuenta no guardan visitas'; end $$;
+-- En una transacción now() no avanza: las dos visitas tienen la misma hora. La de a pasa a ser un minuto anterior.
+update profile_visits set visited_at = visited_at - interval '1 minute' where visitor = t86u('a');
 
 -- ===== 3. Con VIP: quiénes son =====
 select t86_como('duenovip'); set local role authenticated;

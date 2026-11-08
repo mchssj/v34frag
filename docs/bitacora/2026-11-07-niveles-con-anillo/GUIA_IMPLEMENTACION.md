@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-07, en la copia de `main` (`v34frag-mainwt`). **Sin commit ni despliegue.**
+Implementado y probado en local el 2026-11-07, en la copia de `main` (`v34frag-mainwt`). Commit en `main` el 2026-11-08 (`570f8163`; copia `abc6906b` en `feat/frontend-fase-1`).
 
 ## Archivos
 
@@ -18,7 +18,10 @@ Implementado y probado en local el 2026-11-07, en la copia de `main` (`v34frag-m
 | `web/frontend/src/components/illustrations/index.tsx` | `NoLevelBadge`: el anillo apagado con "?" |
 | `GroupSlots.tsx`, `RoomOverview.tsx` | Sin el `rounded-full` que ya no aplica |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-08)
+
+Salió con la web `8991457b20f8`, junto con amigos, visitas y Quiénes somos ([guía](../2026-11-07-amigos-con-solicitudes/GUIA_IMPLEMENTACION.md)).
+
 
 Solo la web, desde `main` (y la copia en `feat/frontend-fase-1`): `deploy/vps/desplegar.sh web`. No toca la base, la API ni los servidores.
 
