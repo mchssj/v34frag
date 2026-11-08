@@ -496,8 +496,8 @@ export function ConfigTab({ event }: { event: EventDetail }) {
             Borrar torneo
           </Button>
           <span className="text-xs text-muted-foreground">
-            Borrar solo funciona si no se jugó ninguna partida. Los moderadores
-            no cancelan ni borran.
+            Borrar solo funciona si no se jugó ninguna partida. Un moderador
+            cancela y borra solo los torneos que creó.
           </span>
         </Danger>
       )}
