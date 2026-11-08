@@ -10,6 +10,12 @@ describe("ConfirmDialog", () => {
     expect(matchesPhrase("estoy", "estoy seguro")).toBe(false)
   })
 
+  it("la frase con mayúsculas (el nombre de un torneo) también se acepta", () => {
+    expect(matchesPhrase("Test torneo", "Test torneo")).toBe(true)
+    expect(matchesPhrase("test  torneo ", "Test torneo")).toBe(true)
+    expect(matchesPhrase("Test", "Test torneo")).toBe(false)
+  })
+
   it("con frase, confirma solo después de escribirla y pasa el motivo", async () => {
     const user = userEvent.setup()
     const onConfirm = vi.fn()

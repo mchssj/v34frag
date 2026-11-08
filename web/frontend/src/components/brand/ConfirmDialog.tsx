@@ -18,9 +18,15 @@ import { Textarea } from "@/components/ui/textarea"
 
 type Reason = { label: string; help?: string; required: boolean }
 
-/** Sin distinguir mayúsculas ni espacios en los bordes, como la API. */
+// Sin mayúsculas ni espacios de más: los bordes y los repetidos en el medio.
+const normalize = (s: string) => s.trim().replace(/\s+/g, " ").toLowerCase()
+
+/**
+ * Sin distinguir mayúsculas ni espacios de más, como la API. Normaliza las dos partes: la frase
+ * puede venir con mayúsculas (el nombre de un torneo, "Test torneo").
+ */
 export const matchesPhrase = (text: string, phrase: string) =>
-  text.trim().toLowerCase() === phrase
+  normalize(text) === normalize(phrase)
 
 /**
  * Confirmación de una acción sobre el AlertDialog de shadcn. Con `typed` pide escribir esa frase
