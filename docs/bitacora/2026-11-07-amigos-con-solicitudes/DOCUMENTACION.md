@@ -60,7 +60,7 @@ La categoría nueva **Amigos** está en Mi perfil › Preferencias.
 
 ## Datos de antes
 
-Al aplicar la 85 en producción había 53 marcas: 9 pares mutuos (18 marcas), que siguen como amigos, y 35 de un solo lado. Esas pasan a solicitudes pendientes, con su notificación ya leída (no suben el número de la campana). Las marcas hacia fichas sin cuenta, o de cuentas sin ficha, se borran. En la copia local: 28 solicitudes pendientes y 16 filas de amistad.
+Al aplicar la 85 en producción (2026-11-08) había 54 marcas: 9 pares mutuos (18 marcas), que siguen como amigos, y 36 de un solo lado. De esas, 31 pasaron a solicitudes pendientes, con su notificación ya leída (no suben el número de la campana). Las otras 5 se borraron: 3 eran hacia fichas sin cuenta y 2 de cuentas sin ficha. En la copia local: 28 solicitudes pendientes y 16 filas de amistad.
 
 ## Qué cambia para cada rol
 
