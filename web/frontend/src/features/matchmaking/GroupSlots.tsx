@@ -184,7 +184,7 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
           "bg-background/40"
         )}
       >
-        <LevelBadge level={card.level} size={20} className="rounded-full" />
+        <LevelBadge level={card.level} size={20} />
         {card.elo.toLocaleString("es-AR")}
       </span>
     </div>

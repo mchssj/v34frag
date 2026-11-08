@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/api/queries"
 import { useShellIdentity } from "../api/queries"
+import { LevelBadge } from "@/components/brand/LevelBadge"
 
 function roleLabel(
   role: AuthUser["role"],
@@ -88,14 +89,7 @@ export function AccountMenu({
                   {roleLabel(user.role, team)}
                 </span>
               </span>
-              {level !== null && (
-                <span
-                  aria-label={`Nivel ${level}`}
-                  className="grid h-[22px] min-w-[22px] shrink-0 place-items-center rounded-md bg-foreground px-1 font-mono text-[11px] font-semibold text-background"
-                >
-                  {level}
-                </span>
-              )}
+              {level !== null && <LevelBadge level={level} size={22} />}
               <ChevronsUpDownIcon
                 aria-hidden
                 className="size-4 shrink-0 text-muted-foreground"

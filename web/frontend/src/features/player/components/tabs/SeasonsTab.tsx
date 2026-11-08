@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { bestSeasonId } from "../../lib/labels"
 import { seasonsOptions } from "../../api/queries"
 import type { PlayerSeason } from "../../types"
+import { LevelBadge } from "@/components/brand/LevelBadge"
 
 // ---------- Temporadas ----------
 
@@ -134,13 +135,7 @@ function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
         <SeasonKv label="ELO final">{s.elo}</SeasonKv>
         <SeasonKv label="Pico">{s.peak_elo}</SeasonKv>
         <SeasonKv label="Nivel">
-          {s.level !== null ? (
-            <span className="inline-grid h-[22px] min-w-[22px] place-items-center rounded-md bg-foreground px-1 text-[11px] text-background">
-              {s.level}
-            </span>
-          ) : (
-            "—"
-          )}
+          {s.level !== null ? <LevelBadge level={s.level} size={22} /> : "—"}
         </SeasonKv>
       </dl>
       <div className="flex flex-col gap-1.5">
