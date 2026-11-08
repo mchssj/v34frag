@@ -364,7 +364,7 @@ const SERVERS: PcwServer[] = [
 const FORMATS: BestOf[] = [1, 3, 5]
 
 export type DemoFlag =
-  "myPost" | "empty" | "banned" | "busy" | "short" | "noShow"
+  "myPost" | "empty" | "banned" | "busy" | "short" | "noShow" | "notVip"
 
 export const DEMO_FLAGS: { flag: DemoFlag; label: string }[] = [
   { flag: "myPost", label: "Tengo un anuncio abierto" },
@@ -373,6 +373,7 @@ export const DEMO_FLAGS: { flag: DemoFlag; label: string }[] = [
   { flag: "busy", label: "Servidores ocupados" },
   { flag: "short", label: "Me falta un jugador" },
   { flag: "noShow", label: "El rival no entra al servidor" },
+  { flag: "notVip", label: "No soy VIP" },
 ]
 
 export const BAN_TEXT =
@@ -419,6 +420,7 @@ export function usePcwDemo() {
     busy: false,
     short: false,
     noShow: false,
+    notVip: false,
   })
   // El reloj de la serie lee las marcas sin reiniciarse cada vez que cambian.
   const flagsRef = useRef(flags)

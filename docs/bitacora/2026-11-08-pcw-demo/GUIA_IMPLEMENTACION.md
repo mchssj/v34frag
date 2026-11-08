@@ -92,6 +92,8 @@ Las stats del mapa (K/D, rating), la demo y los puntos del ranking de equipos se
 
 **La sala de la PCW:** la página real usa `MatchRoom` igual que la demo, con `pcwToLobby` armado desde `match_booking` y el veto real (`veto_act` con picks). Hace falta que el veto de la base exponga si el turno es ban o pick.
 
+**Publicar es para VIP (Kyan, 2026-11-08):** `create_pcw_post` (y `POST /pcw/posts`) tiene que rechazar a quien no es VIP con `is_vip(auth.uid())`, con un código de error propio (por ejemplo `vip_required`) para que la web muestre "Hacete VIP". Ofertar no pide VIP. El VIP vencido con días de gracia cuenta como VIP.
+
 **Partida encontrada en toda la web:** es solo frontend y ya funciona con la API (`GlobalMatchAlerts` y `SearchingPill` en el layout): no necesita backend.
 
 | Idea | Qué hace falta |

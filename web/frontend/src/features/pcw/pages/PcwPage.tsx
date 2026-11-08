@@ -1,4 +1,5 @@
 import {
+  CrownIcon,
   CrosshairIcon,
   PlusIcon,
   SlidersHorizontalIcon,
@@ -22,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useNow } from "@/features/matchmaking/useNow"
+import { vipToast } from "@/features/vip/upsell"
 import {
   DEFAULT_POOL,
   DEMO_FRIENDS,
@@ -114,6 +116,14 @@ export function PcwPage({
     urgentMatch(demo.matches, new Date()) ? "mine" : "board"
   )
   const [side, setSide] = useState("servers")
+  // Publicar una PCW es para VIP (Kyan, 2026-11-08). Ofertar a un anuncio sigue siendo para todos.
+  const isVip = !demo.flags.notVip
+  const startPublish = (input: PublishInput) =>
+    isVip
+      ? setPublish(input)
+      : vipToast(
+          "Publicar una PCW es para VIP. Sin serlo, podés mandar ofertas a los anuncios del tablón."
+        )
 
   const myElo = avgElo(demo.last.roster)
   // Los desafíos a otro equipo no se ven; el mío va primero.
@@ -161,8 +171,8 @@ export function PcwPage({
             PCW
           </h1>
           <p className="max-w-[560px] text-sm text-muted-foreground">
-            Prácticas entre equipos o amigos. Publicá la tuya o aceptá una del
-            tablón.
+            Prácticas entre equipos o amigos. Publicá la tuya (VIP) o mandá una
+            oferta a una del tablón.
           </p>
         </div>
         <div className="flex items-center gap-2 max-sm:w-full">
@@ -174,9 +184,9 @@ export function PcwPage({
           <Button
             size="sm"
             className="h-8 max-sm:flex-1"
-            onClick={() => setPublish({ ...EMPTY_FORM, roster: [DEMO_ME] })}
+            onClick={() => startPublish({ ...EMPTY_FORM, roster: [DEMO_ME] })}
           >
-            <PlusIcon />
+            {isVip ? <PlusIcon /> : <CrownIcon />}
             Publicar una PCW
           </Button>
         </div>
@@ -358,7 +368,7 @@ export function PcwPage({
                         <Button
                           variant="outline"
                           onClick={() =>
-                            setPublish({ ...EMPTY_FORM, roster: [DEMO_ME] })
+                            startPublish({ ...EMPTY_FORM, roster: [DEMO_ME] })
                           }
                         >
                           Publicar la primera
@@ -420,7 +430,7 @@ export function PcwPage({
                       "Cancelar seguido baja la confiabilidad del equipo y puede traer una sanción de PCW.",
                   })
                 }}
-                onRepeat={() => setPublish(demo.last)}
+                onRepeat={() => startPublish(demo.last)}
                 series={{
                   onRoom,
                   onVeto: demo.veto,

@@ -1189,11 +1189,13 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:**
   - **Esteban:** la página real `/pcw` con la API, sacarle el "Pronto" del menú y Administración › PCW (formatos y resultado a mano).
   - **Daniel:** el backend de las ideas g a m (aviso en Discord, desafío directo, otra hora, avisos a medida, confiabilidad, suplentes y recordatorio).
+  - **Daniel:** que solo una cuenta VIP pueda publicar una PCW (`is_vip()` en `create_pcw_post`; ofertar sigue libre). Ya está en `/terminos`.
   - **Daniel:** que una PCW con los mapas fijos en el anuncio (tantos como el formato) no tenga veto.
   - **Daniel:** las ofertas de PCW (`pcw_offers`, mandar, retirar y elegir; reemplaza a aceptar el primero) y que el veto diga si el turno es ban o pick, para la sala de la PCW (la misma del matchmaking).
   - **Daniel:** el backend del chat del grupo en Jugar (prototipo en `/demo/matchmaking`, agregado el 2026-11-08): `/mm/party/chat` y el aviso `party.chat`, solo a los del grupo. Sin chat global (Kyan: no cargar el socket).
   - **Esteban:** la serie después de "los dos listos" dentro de Mis PCW (prototipo `SeriesPanel`), con `match_booking` del replanteo `56`.
   - **Daniel o Kyan:** aplicar en producción el replanteo `88_pcw_sin_elo.sql` (las PCW no dan ELO, Kyan 2026-11-08; probado en local). Al aplicarse recalcula el ELO de todos sin las PCW ya jugadas: avisar antes en el Discord y hacerlo sin un mix terminando. Decidir si va también a `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+- **Desde el 2026-11-08 Daniel hace también lo de Esteban:** el resumen de todo para él está en [`PARA_DANIEL.md`](bitacora/2026-11-08-pcw-demo/PARA_DANIEL.md).
 - **Bitácora:** [`2026-11-08-pcw-demo`](bitacora/2026-11-08-pcw-demo/)
 
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)

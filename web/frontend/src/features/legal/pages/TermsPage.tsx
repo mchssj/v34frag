@@ -326,7 +326,8 @@ const SECTIONS: LegalSection[] = [
         <li>
           Las PCW (prácticas entre equipos) <Wip /> no mueven el ELO de los
           jugadores, pero cuentan para el ranking de equipos y se rigen por las
-          mismas reglas de conducta.
+          mismas reglas de conducta. Publicar una PCW es para cuentas VIP;
+          mandar una oferta a una ya publicada, para todos.
         </li>
       </ul>
     ),

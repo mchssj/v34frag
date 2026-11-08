@@ -203,6 +203,13 @@ Al publicar y al mandar una oferta se elige **con quién se juega** (`SidePicker
 
 Además se ordenó la página: la campana y "Publicar una PCW" a la misma altura, la cantidad de anuncios a la derecha de los filtros y el encabezado "Oferta" alineado con sus botones.
 
+## Publicar es para VIP (agregado el 2026-11-08)
+
+Solo una cuenta VIP puede **publicar** una PCW (Kyan, 2026-11-08). Mandar una oferta a un anuncio del tablón sigue siendo para todos, así que cualquiera puede jugar una PCW.
+
+- Sin VIP, "Publicar una PCW" muestra una corona y, al tocarlo, no abre el panel: avisa "Publicar una PCW es para VIP…" con el botón "Hacete VIP" (`vipToast` de `features/vip/upsell.tsx`). Lo mismo con "Publicar la primera" y "Repetir la última".
+- En la barra "Demo", el interruptor "No soy VIP".
+
 ## La barra "Demo"
 
 | Interruptor | Qué muestra |
@@ -213,6 +220,7 @@ Además se ordenó la página: la campana y "Publicar una PCW" a la misma altura
 | Servidores ocupados | Los tres ocupados y dos PCW en la fila |
 | Me falta un jugador | El último roster con 3 con cuenta, para ver el aviso |
 | El rival no entra al servidor | El rival se queda en 3 de 5 y, al vencer la espera, la PCW queda abandonada |
+| No soy VIP | "Publicar una PCW" con corona: avisa que es para VIP en vez de abrir el panel |
 | Adelantar la espera (botón) | La espera para entrar vence en 5 segundos |
 
 En `/demo/matchmaking` se suma el botón "El compañero escribe" (un mensaje del compañero en el chat del grupo).
@@ -223,7 +231,7 @@ Nada para los usuarios: es un prototipo que no está en producción.
 
 ## Términos y privacidad
 
-Sin cambios. `/terminos` ya dice que las PCW no mueven el ELO: el replanteo 88 hace que la base lo cumpla. Cuando se haga de verdad, el aviso en Discord (g) y los avisos a medida (j) son datos y envíos nuevos para revisar en `/privacidad`.
+`/terminos` ya dice que las PCW no mueven el ELO: el replanteo 88 hace que la base lo cumpla. Se agregó que publicar una PCW es para cuentas VIP y ofertar es para todos, en `TermsPage.tsx` y en `terms/terminos.html` (en la sección de PCW, que sigue marcada "en preparación"). Cuando se haga de verdad, el aviso en Discord (g) y los avisos a medida (j) son datos y envíos nuevos para revisar en `/privacidad`.
 
 ## Dónde está cada cosa
 
