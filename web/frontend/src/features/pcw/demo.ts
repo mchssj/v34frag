@@ -6,17 +6,20 @@ import { demoArt, demoAvatar } from "@/features/matchmaking/demo"
 import type { MapEntry } from "@/features/maps/types"
 import {
   abandonSide,
+  fixedMaps,
   seriesScore,
   seriesWinner,
   VETO_TURN_S,
   vetoState,
   waitMinutes,
 } from "./lib/series"
+import type { SideChoice } from "./components/SidePicker"
 import type {
   BestOf,
   PcwBooking,
   PcwAlert,
   PcwMatch,
+  PcwNotice,
   PcwOffer,
   PcwPlayer,
   PcwPost,
@@ -43,20 +46,28 @@ const p = (alias: string, elo: number, guest = false): PcwPlayer => ({
   guest,
 })
 
-const team = (id: string, name: string, tag: string): PcwTeamRef => ({
+const team = (
+  id: string,
+  name: string,
+  tag: string,
+  rank: number | null = null
+): PcwTeamRef => ({
   id,
   name,
   tag,
+  rank,
 })
 
 export const DEMO_ME = p("kyan", 1240)
 
-export const MY_TEAM = team("t-vertigo", "Vértigo", "VTG")
-const NEXUS = team("t-nexus", "Nexus", "NXS")
-const RUIDO = team("t-ruido", "Ruido Blanco", "RB")
-const HALCONES = team("t-halcones", "Halcones", "HLC")
-const SINFRENO = team("t-sinfreno", "Sin Freno", "SF")
-const LOSPIBES = team("t-pibes", "Los Pibes", "LP")
+export const MY_TEAM = team("t-vertigo", "Vértigo", "VTG", 6)
+const NEXUS = team("t-nexus", "Nexus", "NXS", 4)
+const RUIDO = team("t-ruido", "Ruido Blanco", "RB", 9)
+const HALCONES = team("t-halcones", "Halcones", "HLC", 2)
+const SINFRENO = team("t-sinfreno", "Sin Freno", "SF", 5)
+const LOSPIBES = team("t-pibes", "Los Pibes", "LP", 14)
+/** El plantel de mi equipo: puede entrar cualquiera de ellos a una PCW como equipo. */
+export const PLANTEL = (): PcwPlayer[] => [DEMO_ME, ...TEAMMATES]
 export const DEMO_TEAMS = [NEXUS, RUIDO, HALCONES, SINFRENO, LOSPIBES]
 
 /** Amigos y compañeros de equipo que se pueden sumar al roster. */
@@ -71,12 +82,24 @@ export const DEMO_FRIENDS: (PcwPlayer & { team: boolean })[] = [
 ]
 
 /** Los compañeros de equipo, sin la marca de amigo. */
-const TEAMMATES: PcwPlayer[] = DEMO_FRIENDS.filter((f) => f.team).map((f) => ({
-  id: f.id,
-  alias: f.alias,
-  elo: f.elo,
-  photo: f.photo,
-}))
+export const TEAMMATES: PcwPlayer[] = DEMO_FRIENDS.filter((f) => f.team).map(
+  (f) => ({
+    id: f.id,
+    alias: f.alias,
+    elo: f.elo,
+    photo: f.photo,
+  })
+)
+
+/** El bando que elegí al publicar u ofertar: el equipo (con su plantel) o el mix con su nombre. */
+export const sideOf = (c: SideChoice): PcwSide =>
+  c.asTeam
+    ? { name: MY_TEAM.name, team: MY_TEAM, roster: PLANTEL() }
+    : {
+        name: c.name.trim() || `Pick de ${DEMO_ME.alias}`,
+        team: null,
+        roster: c.roster,
+      }
 
 const side = (
   name: string,
@@ -146,7 +169,8 @@ function initialPosts(now: number): PcwPost[] {
       starts_at: iso(5 * MIN),
       note: "Rápida, BO1 y a jugar.",
       created_at: iso(-12 * MIN),
-      map_pool: null,
+      // Mapa elegido en el anuncio: se juega directo, sin veto.
+      map_pool: ["de_dust2"],
       side: side("Pick de kira", [
         p("kira", 1105),
         p("tincho", 1060),
@@ -425,11 +449,8 @@ export function usePcwDemo() {
       note: input.note.trim() || null,
       created_at: new Date().toISOString(),
       map_pool: input.map_pool,
-      side: side(
-        input.name.trim() || `Pick de ${DEMO_ME.alias}`,
-        input.roster,
-        input.asTeam ? MY_TEAM : null
-      ),
+      // Como equipo, el plantel entero; como mix, su nombre y su roster.
+      side: sideOf(input),
       invited: input.invited,
       discord: input.discord,
       reliability: { played: 12, cancelled: 1, abandoned: 0, streak: 8 },
@@ -438,12 +459,20 @@ export function usePcwDemo() {
     setLast(input)
     setFlags((f) => ({ ...f, myPost: true }))
     // Las ofertas van llegando: dos equipos a los 4 y 9 s.
-    const arrive = (offer: PcwOffer) =>
+    const arrive = (offer: PcwOffer) => {
+      if (myPostId.current !== post.id) return
       setMyPost((x) =>
         x && x.id === post.id
           ? { ...x, offers: [...(x.offers ?? []), offer] }
           : x
       )
+      notify({
+        kind: "offer",
+        team: offer.side.name,
+        text: `${offer.side.name} mandó una oferta a tu anuncio`,
+        discord: true,
+      })
+    }
     setTimeout(
       () =>
         arrive({
@@ -489,8 +518,60 @@ export function usePcwDemo() {
     setFlags((f) => ({ ...f, myPost: false }))
   }
 
-  // Ofertas mandadas que todavía no eligieron (la demo elige la mía a los 6 s si no la retiro).
+  // Ofertas mandadas que todavía no eligieron (la demo decide a los 6 s si no la retiro).
   const pendingOffers = useRef(new Set<string>())
+
+  // ---------- avisos (campana y Discord) ----------
+  const [notices, setNotices] = useState<PcwNotice[]>([])
+  function notify(n: Omit<PcwNotice, "id" | "at" | "read">) {
+    setNotices((ns) => [
+      { ...n, id: uid("notice"), at: new Date().toISOString(), read: false },
+      ...ns,
+    ])
+    const show = n.kind === "rejected" ? toast.info : toast.success
+    show(
+      n.text,
+      n.discord ? { description: "También te llegó por Discord." } : undefined
+    )
+  }
+  /** Marca leídos los avisos (todos o los de esos ids). */
+  const markNoticesRead = (ids?: string[]) =>
+    setNotices((ns) =>
+      ns.map((n) => (!ids || ids.includes(n.id) ? { ...n, read: true } : n))
+    )
+
+  // Recordatorio 15 min antes (uno por práctica), como pcw_soon de notify_due().
+  const reminded = useRef(new Set<string>())
+  const matchesRef = useRef(matches)
+  useEffect(() => {
+    matchesRef.current = matches
+  }, [matches])
+  useEffect(() => {
+    const t = setInterval(() => {
+      const now = Date.now()
+      for (const m of matchesRef.current) {
+        if (!m.starts_at || reminded.current.has(m.id)) continue
+        if (!["waiting", "ready_us", "ready_both"].includes(m.status)) continue
+        const left = Date.parse(m.starts_at) - now
+        if (left > 15 * MIN || left < -5 * MIN) continue
+        reminded.current.add(m.id)
+        notify({
+          kind: "soon",
+          team: m.them.name,
+          minutes: Math.max(1, Math.round(left / MIN)),
+          text: `Tu PCW vs ${m.them.name} empieza en ${Math.max(1, Math.round(left / MIN))} min`,
+          discord: true,
+          match_id: m.id,
+        })
+      }
+    }, 3000)
+    return () => clearInterval(t)
+  }, [])
+  // El anuncio abierto, para que una oferta que llega tarde no aparezca en uno borrado.
+  const myPostId = useRef<string | null>(null)
+  useEffect(() => {
+    myPostId.current = myPost?.id ?? null
+  }, [myPost])
 
   /**
    * Manda una oferta a un anuncio (como en pracc): el que publicó elige. En la demo, a los 6 s te eligen y queda
@@ -498,7 +579,7 @@ export function usePcwDemo() {
    */
   function accept(
     post: PcwPost,
-    roster: PcwPlayer[],
+    choice: SideChoice,
     proposedAt: string | null
   ) {
     pendingOffers.current.add(post.id)
@@ -517,10 +598,24 @@ export function usePcwDemo() {
     )
     setTimeout(() => {
       if (!pendingOffers.current.delete(post.id)) return
-      chosen(post, roster, proposedAt)
-      toast.success(`${post.side.name} eligió tu oferta`, {
-        description: 'Quedó en Mis PCW. Marquen "Estamos listos" cuando estén.',
-      })
+      if (post.invited || Math.random() < 0.6) {
+        chosen(post, choice, proposedAt)
+        notify({
+          kind: "chosen",
+          team: post.side.name,
+          text: `${post.side.name} eligió tu oferta: quedó en Mis PCW`,
+          discord: true,
+        })
+      } else {
+        // Eligieron a otro: el anuncio se cierra.
+        setPosts((ps) => ps.filter((x) => x.id !== post.id))
+        notify({
+          kind: "rejected",
+          team: post.side.name,
+          text: `${post.side.name} eligió otra oferta`,
+          discord: false,
+        })
+      }
     }, 6000)
   }
 
@@ -542,6 +637,7 @@ export function usePcwDemo() {
         id: uid("match"),
         best_of: post.best_of,
         starts_at: offer.proposed_at ?? post.starts_at,
+        map_pool: post.map_pool,
         us: post.side,
         them: offer.side,
         status: "waiting",
@@ -558,7 +654,7 @@ export function usePcwDemo() {
   /** Te eligieron: sale del tablón y queda como práctica próxima. */
   function chosen(
     post: PcwPost,
-    roster: PcwPlayer[],
+    choice: SideChoice,
     proposedAt: string | null
   ) {
     setPosts((ps) => ps.filter((x) => x.id !== post.id))
@@ -567,7 +663,8 @@ export function usePcwDemo() {
         id: uid("match"),
         best_of: post.best_of,
         starts_at: post.starts_at,
-        us: side("Vértigo", roster, MY_TEAM),
+        map_pool: post.map_pool,
+        us: sideOf(choice),
         them: post.side,
         status: "waiting",
         score: null,
@@ -584,7 +681,11 @@ export function usePcwDemo() {
         if (m.id !== id) return m
         if (m.status === "waiting") return { ...m, status: "ready_us" }
         // Con los dos listos arranca el veto.
-        return { ...m, status: "ready_both", booking: newBooking(Date.now()) }
+        return {
+          ...m,
+          status: "ready_both",
+          booking: newBooking(Date.now(), m.map_pool ?? null, m.best_of),
+        }
       })
     )
   }
@@ -733,6 +834,7 @@ export function usePcwDemo() {
   const view = useMemo(
     () => ({
       posts: flags.empty ? [] : posts,
+      notices,
       myPost: flags.myPost ? myPost : null,
       matches,
       results,
@@ -750,7 +852,7 @@ export function usePcwDemo() {
         : last,
       flags,
     }),
-    [posts, myPost, matches, results, subs, alerts, flags, last]
+    [posts, myPost, matches, results, subs, alerts, flags, last, notices]
   )
 
   return {
@@ -765,6 +867,7 @@ export function usePcwDemo() {
     unready,
     finishMap,
     rush,
+    markNoticesRead,
     dismissSeries,
     answerProposal,
     cancelMatch,
@@ -782,12 +885,19 @@ export type PcwDemo = ReturnType<typeof usePcwDemo>
 
 const iso = (ms: number) => new Date(ms).toISOString()
 
-function newBooking(t: number): PcwBooking {
+function newBooking(
+  t: number,
+  mapPool: string[] | null,
+  bo: BestOf
+): PcwBooking {
+  const pool = mapPool ?? DEFAULT_POOL.slice(0, 7)
+  // Con los mapas fijos del anuncio no hay veto: la serie va directo a buscar servidor.
+  const fixed = !!fixedMaps(pool, bo)
   return {
-    step: "veto",
-    pool: DEFAULT_POOL.slice(0, 7),
+    step: fixed ? "queued" : "veto",
+    pool,
     actions: [],
-    deadline: iso(t + VETO_TURN_S * 1000),
+    deadline: iso(t + (fixed ? 4000 : VETO_TURN_S * 1000)),
     queue_ahead: 0,
     server: null,
     map_no: 1,

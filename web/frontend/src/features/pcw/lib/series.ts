@@ -39,8 +39,19 @@ export function vetoOrder(bo: BestOf, poolSize: number): VetoStep[] {
   return kinds.map((kind, i) => ({ kind, by: i % 2 === 0 ? "us" : "them" }))
 }
 
+/**
+ * Los mapas que fijó el anuncio, si son tantos como el formato (1 en BO1, 3 en BO3): se juegan en ese orden y sin
+ * veto (Kyan, 2026-11-08). Con más mapas que el formato, se vetan; null si hay veto.
+ */
+export function fixedMaps(pool: string[] | null | undefined, bo: BestOf) {
+  return pool && pool.length > 0 && pool.length <= bo ? pool : null
+}
+
 /** Cómo va el veto: el próximo paso, los mapas libres y, al terminar, los mapas de la serie en orden. */
 export function vetoState(pool: string[], bo: BestOf, actions: VetoAction[]) {
+  // Mapas fijos del anuncio: no hay veto.
+  if (fixedMaps(pool, bo))
+    return { next: null, remaining: [] as string[], done: true, maps: pool }
   const order = vetoOrder(bo, pool.length)
   const used = new Set(actions.map((a) => a.map))
   const remaining = pool.filter((m) => !used.has(m))

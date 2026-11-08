@@ -1189,6 +1189,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Falta:**
   - **Esteban:** la página real `/pcw` con la API, sacarle el "Pronto" del menú y Administración › PCW (formatos y resultado a mano).
   - **Daniel:** el backend de las ideas g a m (aviso en Discord, desafío directo, otra hora, avisos a medida, confiabilidad, suplentes y recordatorio).
+  - **Daniel:** que una PCW con los mapas fijos en el anuncio (tantos como el formato) no tenga veto.
   - **Daniel:** las ofertas de PCW (`pcw_offers`, mandar, retirar y elegir; reemplaza a aceptar el primero) y que el veto diga si el turno es ban o pick, para la sala de la PCW (la misma del matchmaking).
   - **Daniel:** el backend del chat del grupo en Jugar (prototipo en `/demo/matchmaking`, agregado el 2026-11-08): `/mm/party/chat` y el aviso `party.chat`, solo a los del grupo. Sin chat global (Kyan: no cargar el socket).
   - **Esteban:** la serie después de "los dos listos" dentro de Mis PCW (prototipo `SeriesPanel`), con `match_booking` del replanteo `56`.

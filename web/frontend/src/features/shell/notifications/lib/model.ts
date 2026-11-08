@@ -452,6 +452,45 @@ export function describe(n: Notification, me?: string | null): Described {
           : `${str(d.title, vs)}. No cuenta para ninguno de los dos.`,
         link: matchLink(matchId),
       }
+    // (bitácora 2026-11-08-pcw-demo) Ofertas: el que publica elige entre las que le llegan.
+    case "pcw_offer":
+      return {
+        kind: "pcw",
+        title: `${nameOf(d.team, str(d.side, "Un equipo"))} mandó una oferta a tu anuncio`,
+        body: d.proposed_at
+          ? `Propone ${day(d.proposed_at) || "otra hora"}. Elegí la que más te sirva.`
+          : "Elegí la que más te sirva en PCW.",
+        link: { to: "/pcw" },
+      }
+    case "pcw_offer_chosen":
+      return {
+        kind: "pcw",
+        title: `${nameOf(d.team, str(d.side, "El rival"))} eligió tu oferta`,
+        body: 'Quedó en Mis PCW. Marquen "Estamos listos" cuando estén.',
+        link: { to: "/pcw" },
+      }
+    case "pcw_offer_rejected":
+      return {
+        kind: "pcw",
+        title: `${nameOf(d.team, str(d.side, "El equipo"))} eligió otra oferta`,
+        body: "Hay más anuncios en el tablón.",
+        link: { to: "/pcw" },
+      }
+    // (replanteo 35) Recordatorio de notify_due() y anuncio vencido.
+    case "pcw_soon":
+      return {
+        kind: "pcw",
+        title: `Tu PCW empieza en ${num(d.minutes) ?? 15} min`,
+        body: str(d.title, vs),
+        link: matchLink(matchId),
+      }
+    case "pcw_expired":
+      return {
+        kind: "pcw",
+        title: "Tu anuncio de PCW venció",
+        body: "Nadie lo aceptó a tiempo. Podés publicarlo de nuevo.",
+        link: { to: "/pcw" },
+      }
     case "pcw_result":
       return {
         kind: "pcw",

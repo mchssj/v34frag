@@ -82,6 +82,14 @@ Las stats del mapa (K/D, rating), la demo y los puntos del ranking de equipos se
 
 **Ofertas (como en pracc):** tabla `pcw_offers` (anuncio, bando con su roster, hora propuesta, estado: abierta, elegida, rechazada, retirada); `POST /pcw/posts/{id}/offers` reemplaza a `accept_pcw` para mandar una; `DELETE` para retirarla; `POST /pcw/offers/{id}/choose` solo para el que publicó, que crea la partida y rechaza las demás; avisos al que publicó (llegó una oferta) y a los que ofertaron (te eligieron o no). Las reglas de hoy (4 con cuenta, sanción de PCW, plantel) pasan a la oferta.
 
+**Equipo sin roster:** como equipo, el anuncio y la oferta ya no llevan roster: `create_pcw_post` y la oferta con `p_team` validan solo que el plantel tenga 4 con cuenta, y el bando de la partida es el plantel entero (el plugin ya cuenta a los del plantel que entran). Como mix, un nombre (`p_name`) y el roster de siempre.
+
+**Avisos de PCW:** tipos nuevos en `notify()` (categoría `pcw`): `pcw_offer` (al que publicó, también por Discord), `pcw_offer_chosen` (al que ofertó, también por Discord) y `pcw_offer_rejected` (solo en la web). El recordatorio ya existe (`pcw_soon` de `notify_due()`, replanteo 35): falta que también vaya por Discord. En la web real van en la campana de arriba, no en una campana propia de PCW.
+
+**Ranking en el tablón:** `GET /pcw/posts` tiene que traer el puesto del equipo en el ranking de equipos (la vista `team_ranking`) en el bando; hoy no lo trae.
+
+**Mapas fijos del anuncio:** si `pcw_posts.map_pool` tiene tantos mapas como el formato, la reserva tiene que saltear el veto (`booking_after_veto` con `match_veto_done` verdadero desde el inicio) y la partida guarda esos mapas en orden. Hoy la base siempre veta.
+
 **La sala de la PCW:** la página real usa `MatchRoom` igual que la demo, con `pcwToLobby` armado desde `match_booking` y el veto real (`veto_act` con picks). Hace falta que el veto de la base exponga si el turno es ban o pick.
 
 **Partida encontrada en toda la web:** es solo frontend y ya funciona con la API (`GlobalMatchAlerts` y `SearchingPill` en el layout): no necesita backend.

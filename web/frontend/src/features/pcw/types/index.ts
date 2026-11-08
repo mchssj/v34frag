@@ -15,7 +15,13 @@ export type PcwPlayer = {
   guest?: boolean
 }
 
-export type PcwTeamRef = { id: string; name: string; tag: string | null }
+export type PcwTeamRef = {
+  id: string
+  name: string
+  tag: string | null
+  /** Puesto en el ranking de equipos (vista team_ranking); null sin puesto. */
+  rank?: number | null
+}
 
 /** Un bando: el equipo oficial con el que juega (o null si es un mix de amigos) y su roster. */
 export type PcwSide = {
@@ -54,6 +60,23 @@ export type PcwPost = {
   my_offer?: { created_at: string; proposed_at: string | null } | null
 }
 
+/** backend: un aviso de PCW en la campana (y por Discord si `discord`). */
+export type PcwNotice = {
+  id: string
+  kind: "offer" | "chosen" | "rejected" | "soon"
+  text: string
+  at: string
+  read: boolean
+  /** También llega por Discord (mensaje directo del bot). */
+  discord: boolean
+  /** La práctica a la que lleva, si hay. */
+  match_id?: string
+  /** El otro equipo (data.team de la notificación). */
+  team?: string
+  /** Minutos que faltan (pcw_soon). */
+  minutes?: number
+}
+
 /** backend: una oferta a un anuncio. El que publicó elige una y las demás quedan rechazadas. */
 export type PcwOffer = {
   id: string
@@ -80,6 +103,8 @@ export type PcwMatch = {
   /** backend: contraoferta de hora pendiente y quién la hizo. */
   proposed_at: string | null
   proposed_by: "us" | "them" | null
+  /** El pool del anuncio (null: el por defecto). Si tiene tantos mapas como el formato, se juega sin veto. */
+  map_pool?: string[] | null
   /** La serie después de "los dos listos" (GET /matches/{id}/booking, replanteo 56). */
   booking?: PcwBooking | null
 }

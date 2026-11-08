@@ -14,15 +14,18 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
+import { mapLabel } from "@/features/matchmaking/labels"
 import { avgElo, balance, rosterIssues, sideName, whenLabel } from "../lib/pcw"
-import type { PcwPlayer, PcwPost } from "../types"
-import { RosterPicker } from "./RosterPicker"
+import { fixedMaps } from "../lib/series"
+import type { PcwPlayer, PcwPost, PcwTeamRef } from "../types"
+import { SidePicker, type SideChoice } from "./SidePicker"
 
 /** Aceptar un anuncio con el roster propio y, si hace falta, proponer otra hora (idea i). */
 export function AcceptSheet({
   post,
   onClose,
-  initialRoster,
+  myTeam,
+  plantel,
   friends,
   me,
   banned,
@@ -31,14 +34,15 @@ export function AcceptSheet({
 }: {
   post: PcwPost | null
   onClose: () => void
-  initialRoster: PcwPlayer[]
+  myTeam: PcwTeamRef
+  plantel: PcwPlayer[]
   friends: (PcwPlayer & { team: boolean })[]
   me: PcwPlayer
   banned: string | null
   now: Date
   onAccept: (
     post: PcwPost,
-    roster: PcwPlayer[],
+    choice: SideChoice,
     proposedAt: string | null
   ) => void
 }) {
@@ -49,13 +53,14 @@ export function AcceptSheet({
           <AcceptForm
             key={post.id}
             post={post}
-            initialRoster={initialRoster}
+            myTeam={myTeam}
+            plantel={plantel}
             friends={friends}
             me={me}
             banned={banned}
             now={now}
-            onAccept={(r, at) => {
-              onAccept(post, r, at)
+            onAccept={(c, at) => {
+              onAccept(post, c, at)
               onClose()
             }}
           />
@@ -67,7 +72,8 @@ export function AcceptSheet({
 
 function AcceptForm({
   post,
-  initialRoster,
+  myTeam,
+  plantel,
   friends,
   me,
   banned,
@@ -75,17 +81,33 @@ function AcceptForm({
   onAccept,
 }: {
   post: PcwPost
-  initialRoster: PcwPlayer[]
+  myTeam: PcwTeamRef
+  plantel: PcwPlayer[]
   friends: (PcwPlayer & { team: boolean })[]
   me: PcwPlayer
   banned: string | null
   now: Date
-  onAccept: (roster: PcwPlayer[], proposedAt: string | null) => void
+  onAccept: (choice: SideChoice, proposedAt: string | null) => void
 }) {
-  const [roster, setRoster] = useState(initialRoster)
+  // Por defecto, como equipo: entra cualquiera del plantel.
+  const [choice, setChoice] = useState<SideChoice>({
+    asTeam: true,
+    name: "",
+    roster: plantel,
+  })
+  const roster = choice.roster
   const [propose, setPropose] = useState(false)
   const [when, setWhen] = useState("")
-  const issues = rosterIssues(roster, { banned })
+  const issues = choice.asTeam
+    ? [
+        ...(plantel.filter((p) => !p.guest).length < 4
+          ? [
+              `El plantel de ${myTeam.name} tiene menos de 4 jugadores con cuenta.`,
+            ]
+          : []),
+        ...(banned ? [banned] : []),
+      ]
+    : rosterIssues(roster, { banned: null })
   const bal = balance(avgElo(roster), avgElo(post.side.roster))
 
   return (
@@ -96,19 +118,33 @@ function AcceptForm({
           BO{post.best_of} · {whenLabel(post.starts_at, now)}. El que publicó
           elige entre las ofertas que le llegan; si te elige, la práctica queda
           en Mis PCW. Las PCW no suman ni restan ELO.
+          {fixedMaps(post.map_pool, post.best_of) && (
+            <>
+              {" "}
+              Se juega{" "}
+              <b>
+                {fixedMaps(post.map_pool, post.best_of)!
+                  .map(mapLabel)
+                  .join(", ")}
+              </b>
+              , sin veto.
+            </>
+          )}
         </SheetDescription>
       </SheetHeader>
 
       <div className="flex flex-col gap-5 p-4">
-        <RosterPicker
-          value={roster}
-          onChange={setRoster}
+        <SidePicker
+          value={choice}
+          onChange={setChoice}
+          myTeam={myTeam}
+          plantel={plantel}
           friends={friends}
           me={me}
         />
 
         <p className="text-sm">
-          Con este roster: ELO medio{" "}
+          {choice.asTeam ? "Con el plantel" : "Con este roster"}: ELO medio{" "}
           <b className="font-mono">{avgElo(roster)}</b> contra{" "}
           <b className="font-mono">{avgElo(post.side.roster)}</b> ·{" "}
           <b>{bal.label}</b>
@@ -158,7 +194,7 @@ function AcceptForm({
           disabled={issues.length > 0 || (propose && !when)}
           onClick={() =>
             onAccept(
-              roster,
+              choice,
               propose && when ? new Date(when).toISOString() : null
             )
           }

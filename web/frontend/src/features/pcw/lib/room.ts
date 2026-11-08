@@ -8,7 +8,7 @@ import type {
 } from "@/features/matchmaking/types"
 import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 import type { PcwBooking, PcwMatch, PcwPlayer } from "../types"
-import { sideName } from "./pcw"
+import { avgElo, sideName } from "./pcw"
 import {
   ENTRY_RULE,
   NEEDED,
@@ -40,6 +40,8 @@ function hint(m: PcwMatch): string {
   const b = m.booking!
   switch (b.step) {
     case "queued":
+      if (b.actions.length === 0 && vetoState(b.pool, m.best_of, []).done)
+        return `Se juegan los mapas del anuncio, sin veto. ${b.queue_ahead > 0 ? `Hay ${b.queue_ahead} PCW antes en la fila de servidores.` : "Estamos eligiendo un servidor libre para PCW."}`
       return b.queue_ahead > 0
         ? `Los dos están listos. Hay ${b.queue_ahead} PCW antes en la fila de servidores.`
         : "Los dos están listos. Estamos eligiendo un servidor libre para PCW."
@@ -70,11 +72,13 @@ export function pcwToLobby(
     team1_win_pct: null,
     team2_win_pct: null,
   }))
+  const guestElo = (team: 1 | 2) => avgElo((team === 1 ? m.us : m.them).roster)
   const player = (p: PcwPlayer, team: 1 | 2, i: number): MmPlayer => ({
     player_id: p.id,
     nick: p.alias,
-    level: p.guest ? 1 : levelOf(p.elo, LEVEL_FLOORS),
-    elo: p.elo,
+    level: levelOf(p.guest ? guestElo(team) : p.elo, LEVEL_FLOORS),
+    // Un invitado no tiene ELO: cuenta como el promedio de su lado, para no tirar abajo el de la sala.
+    elo: p.guest ? guestElo(team) : p.elo,
     team,
     party_id: null,
     // El primero de cada roster hace el veto, como el capitán del matchmaking.

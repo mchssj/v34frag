@@ -28,7 +28,7 @@ import type { MapEntry } from "@/features/maps/types"
 import type { PublishInput } from "../demo"
 import { rosterIssues } from "../lib/pcw"
 import type { BestOf, PcwPlayer, PcwTeamRef } from "../types"
-import { RosterPicker } from "./RosterPicker"
+import { SidePicker } from "./SidePicker"
 
 /** "datetime-local" en hora local ↔ ISO. */
 const toLocalInput = (iso: string | null) => {
@@ -49,6 +49,7 @@ export function PublishSheet({
   friends,
   me,
   myTeam,
+  plantel,
   teams,
   banned,
   onPublish,
@@ -61,6 +62,8 @@ export function PublishSheet({
   friends: (PcwPlayer & { team: boolean })[]
   me: PcwPlayer
   myTeam: PcwTeamRef
+  /** El plantel de mi equipo: como equipo puede entrar cualquiera. */
+  plantel: PcwPlayer[]
   teams: PcwTeamRef[]
   banned: string | null
   onPublish: (input: PublishInput) => void
@@ -78,6 +81,7 @@ export function PublishSheet({
             friends={friends}
             me={me}
             myTeam={myTeam}
+            plantel={plantel}
             teams={teams}
             banned={banned}
             onPublish={(i) => {
@@ -98,6 +102,7 @@ function PublishForm({
   friends,
   me,
   myTeam,
+  plantel,
   teams,
   banned,
   onPublish,
@@ -105,23 +110,20 @@ function PublishForm({
   const [v, setV] = useState(initial)
   const set = <K extends keyof PublishInput>(k: K, val: PublishInput[K]) =>
     setV((x) => ({ ...x, [k]: val }))
-  // Como equipo, todo el roster con cuenta tiene que ser del plantel (regla de la base).
-  const outsiders = v.asTeam
-    ? v.roster.filter(
-        (p) =>
-          !p.guest &&
-          p.id !== me.id &&
-          !friends.some((f) => f.id === p.id && f.team)
-      )
-    : []
-  const issues = [
-    ...rosterIssues(v.roster, {
-      banned: v.asTeam ? banned : null,
-      bo: v.best_of,
-      formats,
-    }),
-    ...outsiders.map((p) => `${p.alias} no es del plantel de ${myTeam.name}.`),
-  ]
+  // Como equipo entra cualquiera del plantel: alcanza con que tenga 4 con cuenta. El mix, las reglas del roster.
+  const issues = v.asTeam
+    ? [
+        ...(plantel.filter((p) => !p.guest).length < 4
+          ? [
+              `El plantel de ${myTeam.name} tiene menos de 4 jugadores con cuenta.`,
+            ]
+          : []),
+        ...(banned ? [banned] : []),
+        ...(formats.includes(v.best_of)
+          ? []
+          : [`BO${v.best_of} no está habilitado.`]),
+      ]
+    : rosterIssues(v.roster, { banned: null, bo: v.best_of, formats })
 
   return (
     <>
@@ -144,30 +146,23 @@ function PublishForm({
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="pub-team"
-              checked={v.asTeam}
-              onCheckedChange={(on) => set("asTeam", on)}
-            />
-            <Label htmlFor="pub-team">Jugar como {myTeam.name}</Label>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {v.asTeam
-              ? "Todo el roster con cuenta tiene que ser del plantel. Si ganan, suma al ranking de equipos."
-              : "Mix de amigos: no suma al ranking de equipos ni al ELO."}
-          </p>
-        </div>
-
-        <RosterPicker
-          value={v.roster}
-          onChange={(r) => set("roster", r)}
+        <SidePicker
+          value={{ asTeam: v.asTeam, name: v.name, roster: v.roster }}
+          onChange={(c) =>
+            setV((x) => ({
+              ...x,
+              asTeam: c.asTeam,
+              name: c.name,
+              roster: c.roster,
+            }))
+          }
+          myTeam={myTeam}
+          plantel={plantel}
           friends={friends}
           me={me}
         />
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="pub-when">Hora</Label>
             <Input
@@ -180,18 +175,12 @@ function PublishForm({
               Vacío: a convenir.
             </span>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="pub-name">Nombre del bando</Label>
-            <Input
-              id="pub-name"
-              value={v.name}
-              maxLength={24}
-              placeholder={`Pick de ${me.alias}`}
-              onChange={(e) => set("name", e.target.value)}
-            />
-          </div>
         </div>
 
+        <p className="-mb-3 text-xs text-muted-foreground">
+          Si elegís tantos mapas como el formato (1 en BO1, 3 en BO3), se juegan
+          esos, sin veto. Con más, se vetan.
+        </p>
         <MapPoolPicker
           maps={maps}
           value={v.map_pool}

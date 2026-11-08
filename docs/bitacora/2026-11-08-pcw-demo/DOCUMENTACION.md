@@ -163,6 +163,46 @@ Kyan tomó de referencia el buscador de scrims de pracc.com (lo público: el bus
 
 Otras ideas de pracc que quedan para después: grupos por nivel (hoy es el filtro "de mi nivel"), la agenda del equipo sin dos prácticas a la misma hora, y avisos por mail o al celular antes de la práctica.
 
+## Tablón y Mis PCW como listas (agregado el 2026-11-08)
+
+A Kyan no lo convencían las tarjetas. Las dos partes pasaron a ser listas, como una tabla:
+
+- **Tablón:** una fila por anuncio con Equipo (escudo, nombre con link al perfil, "Te desafían", hace cuánto y confiabilidad), Ranking (el puesto del equipo en el ranking de equipos, "#4"; "Mix" para un mix de amigos), Mapa (el nombre del elegido, o "BO3 · Ban"), Hora, Parejo y "Mandar oferta" (o "Enviada" con Retirar). Tocar la fila abre el detalle: nota, roster, historial contra ustedes, mapas del veto, confiabilidad completa, link y calendario (`PostRow.tsx`). Tu anuncio con sus ofertas sigue como tarjeta arriba.
+- **Mis PCW:** "Próximas" con Rival, BO, Hora (y cuánto falta), Estado y la acción ("Estamos listos" o "Ir a la sala") con el menú "⋯"; la propuesta de otra hora va debajo de su fila. "Últimas jugadas" es otra lista plegada, con el resultado.
+- En celular cada fila se acomoda en dos o tres líneas, sin scroll horizontal.
+
+## La próxima PCW en grande (agregado el 2026-11-08)
+
+Arriba de Mis PCW va la próxima práctica en grande (`NextPcw.tsx`): primero la que está en sala y si no la de hora más cercana. Muestra los dos escudos y nombres, si cada uno marcó "Listos", la cuenta regresiva grande (o "EN SALA" con el paso de la serie), el roster de cada lado con su ELO medio, la propuesta de otra hora, el historial contra ese rival, y Copiar link, Al calendario, Cancelar y la acción que toca. Abajo, "Las siguientes" con el resto. En celular el reloj va arriba y los equipos debajo.
+
+## Mapas elegidos en el anuncio: sin veto (agregado el 2026-11-08)
+
+Si el anuncio elige tantos mapas como el formato (1 en BO1, 3 en BO3), la PCW se juega en esos mapas y en ese orden, **sin veto**: al estar los dos listos, la sala pasa directo a buscar servidor. Con más mapas que el formato (o el pool por defecto), se vetan. En el tablón, la columna **Mapa** muestra el nombre del mapa elegido ("Dust2"); sin mapas fijos, el formato con veto ("BO3 · Ban"). También lo dicen el panel para mandar la oferta ("Se juega Dust2, sin veto.") y el de publicar. La regla está en `fixedMaps` (`lib/series.ts`). En la demo, "Pick de kira" es una BO1 en Dust2.
+
+En la sala, un invitado sin cuenta cuenta con el ELO promedio de su lado, para que no baje el promedio ni la probabilidad de ganar.
+
+## "Tu anuncio" como lista y avisos (agregado el 2026-11-08)
+
+- **Tu anuncio** (`MyPost.tsx`) usa el formato de la lista del tablón: la fila del anuncio (ranking, mapa, hora y ELO) con "Esperando ofertas" o "2 ofertas" y Borrar, y debajo las ofertas como lista: equipo y confiabilidad, ranking, ELO medio, la hora (la tuya o la que propone), si es pareja y Elegir. La tarjeta vieja (`PostCard`) se borró.
+- **Avisos**, en la **campana de notificaciones de la web** (la misma de la barra de arriba, `NotificationsMenu`), al lado de "Publicar una PCW":
+  - te llegó una oferta a tu anuncio;
+  - eligieron tu oferta (queda en Mis PCW);
+  - eligieron otra oferta (el anuncio se cierra);
+  - tu PCW empieza en 15 minutos (o menos).
+  
+  Cada uno sale también como toast (y avisa si también llegó por Discord). En la demo, un desafío directo siempre te elige; los demás, 6 de cada 10.
+
+  La campana aprendió los tipos nuevos (`pcw_offer`, `pcw_offer_chosen`, `pcw_offer_rejected`) y dos que la base ya manda y no mostraba bien (`pcw_soon` y `pcw_expired`), en `notifications/lib/model.ts`. Para que la demo la use, la campana acepta una fuente propia (`notifications/api/source.ts`); sin ella, como siempre, lee la API. En la demo, `DemoNotifications` le pasa los avisos de PCW con la forma de la API.
+
+## Equipo o mix al publicar y ofertar (agregado el 2026-11-08)
+
+Al publicar y al mandar una oferta se elige **con quién se juega** (`SidePicker.tsx`):
+
+- **Tu equipo** (por defecto): no se arma un roster. Se muestra el plantel y entra cualquiera de ellos; en el servidor cuentan los que entren (al menos 3 del plantel y hasta 2 suplentes). Hace falta que el plantel tenga 4 jugadores con cuenta.
+- **Mix de amigos:** se le pone **nombre al equipo** ("Pick de kyan" si se deja vacío) y se elige el roster como antes.
+
+Además se ordenó la página: la campana y "Publicar una PCW" a la misma altura, la cantidad de anuncios a la derecha de los filtros y el encabezado "Oferta" alineado con sus botones.
+
 ## La barra "Demo"
 
 | Interruptor | Qué muestra |

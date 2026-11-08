@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   abandonSide,
+  fixedMaps,
   seriesScore,
   seriesWinner,
   vetoOrder,
@@ -77,6 +78,22 @@ describe("vetoState", () => {
     const s = vetoState(POOL, 3, [{ map: "de_aztec", kind: "ban", by: "us" }])
     expect(s.next).toEqual({ kind: "ban", by: "them" })
     expect(s.remaining).toHaveLength(6)
+  })
+})
+
+describe("mapas fijos del anuncio", () => {
+  it("tantos mapas como el formato: se juegan sin veto", () => {
+    expect(fixedMaps(["de_dust2"], 1)).toEqual(["de_dust2"])
+    const s = vetoState(["de_nuke", "de_train", "de_inferno"], 3, [])
+    expect(s.done).toBe(true)
+    expect(s.next).toBeNull()
+    expect(s.maps).toEqual(["de_nuke", "de_train", "de_inferno"])
+  })
+
+  it("con más mapas que el formato, o el pool por defecto, hay veto", () => {
+    expect(fixedMaps(["de_dust2", "de_nuke"], 1)).toBeNull()
+    expect(fixedMaps(null, 1)).toBeNull()
+    expect(vetoState(POOL, 1, []).done).toBe(false)
   })
 })
 

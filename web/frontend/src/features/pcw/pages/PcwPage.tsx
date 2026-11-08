@@ -29,11 +29,13 @@ import {
   DEMO_ME,
   DEMO_TEAMS,
   MY_TEAM,
+  PLANTEL,
   mapImage,
   type PcwDemo,
   type PublishInput,
 } from "../demo"
 import { avgElo, filterPosts, sideName, whenLabel } from "../lib/pcw"
+import { currentMap } from "../lib/room"
 import type {
   BestOf,
   KindFilter,
@@ -45,7 +47,9 @@ import type {
 import { PcwRoom } from "./PcwRoom"
 import { AcceptSheet } from "../components/AcceptSheet"
 import { MyPcw } from "../components/MyPcw"
-import { PostCard } from "../components/PostCard"
+import { MyPost } from "../components/MyPost"
+import { DemoNotifications } from "../components/DemoNotifications"
+import { BoardHeader, PostRow } from "../components/PostRow"
 import { PublishSheet } from "../components/PublishSheet"
 import {
   ActivityPanel,
@@ -161,13 +165,21 @@ export function PcwPage({
             tablón.
           </p>
         </div>
-        <Button
-          className="max-sm:w-full"
-          onClick={() => setPublish({ ...EMPTY_FORM, roster: [DEMO_ME] })}
-        >
-          <PlusIcon />
-          Publicar una PCW
-        </Button>
+        <div className="flex items-center gap-2 max-sm:w-full">
+          {/* La campana de la web, con los avisos de la demo. */}
+          <DemoNotifications
+            notices={demo.notices}
+            onRead={demo.markNoticesRead}
+          />
+          <Button
+            size="sm"
+            className="h-8 max-sm:flex-1"
+            onClick={() => setPublish({ ...EMPTY_FORM, roster: [DEMO_ME] })}
+          >
+            <PlusIcon />
+            Publicar una PCW
+          </Button>
+        </div>
       </div>
 
       {demo.banned && (
@@ -220,47 +232,28 @@ export function PcwPage({
 
             <TabsContent value="board" className="mt-4 flex flex-col gap-6">
               {demo.myPost && (
-                <section
-                  aria-labelledby="my-post-h"
-                  className="flex flex-col gap-3"
-                >
-                  <h2 id="my-post-h" className="text-[17px] font-bold">
-                    Tu anuncio
-                  </h2>
-                  <PostCard
-                    post={demo.myPost}
-                    now={now}
-                    myElo={myElo}
-                    myTeamId={MY_TEAM.id}
-                    results={demo.results}
-                    pool={pool(demo.myPost)}
-                    mapImage={mapImage}
-                    onRemove={demo.removeMyPost}
-                    onChoose={(id) => {
-                      demo.chooseOffer(id)
-                      toast.success("Elegiste la oferta", {
-                        description:
-                          "La práctica quedó en Mis PCW; a las demás les avisamos que no.",
-                      })
-                    }}
-                    mine
-                  />
-                </section>
+                <MyPost
+                  post={demo.myPost}
+                  now={now}
+                  myElo={myElo}
+                  onRemove={demo.removeMyPost}
+                  onChoose={(id) => {
+                    demo.chooseOffer(id)
+                    toast.success("Elegiste la oferta", {
+                      description:
+                        "La práctica quedó en Mis PCW; a las demás les avisamos que no.",
+                    })
+                  }}
+                />
               )}
 
               <section
                 aria-labelledby="board-h"
                 className="flex flex-col gap-3"
               >
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 id="board-h" className="sr-only">
-                    Tablón
-                  </h2>
-                  <span className="text-sm text-muted-foreground">
-                    {board.length} de {visible.length} anuncios
-                  </span>
-                </div>
-
+                <h2 id="board-h" className="sr-only">
+                  Tablón
+                </h2>
                 <div className="flex flex-wrap items-center gap-2">
                   <FilterChips<"all" | "1" | "3" | "5">
                     label="Formato"
@@ -345,6 +338,11 @@ export function PcwPage({
                       )}
                     </PopoverContent>
                   </Popover>
+                  <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                    {board.length === visible.length
+                      ? `${visible.length} anuncios`
+                      : `${board.length} de ${visible.length} anuncios`}
+                  </span>
                 </div>
 
                 {board.length === 0 ? (
@@ -372,22 +370,28 @@ export function PcwPage({
                     </EmptyState>
                   </div>
                 ) : (
-                  <div className="grid gap-4 xl:grid-cols-2">
-                    {board.map((p) => (
-                      <PostCard
-                        key={p.id}
-                        post={p}
-                        now={now}
-                        myElo={myElo}
-                        myTeamId={MY_TEAM.id}
-                        results={demo.results}
-                        pool={pool(p)}
-                        mapImage={mapImage}
-                        onAccept={() => setAccepting(p)}
-                        onWithdraw={() => demo.withdrawOffer(p.id)}
-                      />
-                    ))}
-                  </div>
+                  <Card variant="outline" className="overflow-hidden p-0">
+                    <BoardHeader />
+                    <ul
+                      aria-label="Anuncios"
+                      className="flex flex-col divide-y"
+                    >
+                      {board.map((p) => (
+                        <PostRow
+                          key={p.id}
+                          post={p}
+                          now={now}
+                          myElo={myElo}
+                          myTeamId={MY_TEAM.id}
+                          results={demo.results}
+                          pool={pool(p)}
+                          mapImage={mapImage}
+                          onAccept={() => setAccepting(p)}
+                          onWithdraw={() => demo.withdrawOffer(p.id)}
+                        />
+                      ))}
+                    </ul>
+                  </Card>
                 )}
               </section>
             </TabsContent>
@@ -396,6 +400,12 @@ export function PcwPage({
               <MyPcw
                 matches={demo.matches}
                 now={now}
+                results={demo.results}
+                myTeamId={MY_TEAM.id}
+                backdrop={(m) => {
+                  const map = m.booking ? currentMap(m) : null
+                  return mapImage(map ?? DEFAULT_POOL[0]!)
+                }}
                 onReady={(id) => {
                   // Si el rival ya estaba listo, la serie arranca y se abre su sala.
                   const was = demo.matches.find((x) => x.id === id)?.status
@@ -499,6 +509,7 @@ export function PcwPage({
         friends={DEMO_FRIENDS}
         me={DEMO_ME}
         myTeam={MY_TEAM}
+        plantel={PLANTEL()}
         teams={DEMO_TEAMS}
         banned={demo.banned}
         onPublish={(i) => {
@@ -512,13 +523,14 @@ export function PcwPage({
       <AcceptSheet
         post={accepting}
         onClose={() => setAccepting(null)}
-        initialRoster={demo.last.roster}
+        myTeam={MY_TEAM}
+        plantel={PLANTEL()}
         friends={DEMO_FRIENDS}
         me={DEMO_ME}
         banned={demo.banned}
         now={now}
-        onAccept={(p, r, at) => {
-          demo.accept(p, r, at)
+        onAccept={(p, c, at) => {
+          demo.accept(p, c, at)
           toast.success("Oferta enviada", {
             description: "Si te eligen, la práctica queda en Mis PCW.",
           })
