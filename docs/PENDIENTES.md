@@ -786,6 +786,19 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   4. Avisarle a Daniel (base y API) y a Esteban (perfil y admin).
 - **Bitácora:** [`2026-11-04-medallas-automaticas`](bitacora/2026-11-04-medallas-automaticas/)
 
+### 1.38 Widget para streamers con stats y personalizable (prototipo)
+
+- **Qué es:** `/demo/widget` del frontend de `repo` (`kyan/pruebas`).
+  - Tres diseños nuevos: Stats (como la tarjeta que pasó Kyan), Barra y Vertical.
+  - El nivel con el anillo elegido.
+  - 19 stats a elegir, incluidas sniper, cuchillo y clutches, que ya manda el reporter 2.7+.
+  - Color, fondo, tamaño, partes a mostrar y frase propia o automática. Todo va en la URL del widget.
+- **Qué falta:**
+  - **Daniel:** que `widget_player()` reciba el período y devuelva las stats nuevas, el puesto en el ranking y en el país, y los últimos 10 resultados.
+  - **Esteban:** el personalizador en el perfil y la página `/widget` que lee la URL.
+- No toca el plugin, así que no hay nada que subir a los servidores.
+- **Bitácora:** [`2026-11-08-widget-streamers-stats`](bitacora/2026-11-08-widget-streamers-stats/).
+
 ## 2. Investigaciones abiertas
 
 ### 2.0 Tirones y sonido en el servidor real (#1)
