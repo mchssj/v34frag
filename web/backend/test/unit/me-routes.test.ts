@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { json, makeApp, testEnv } from '../helpers';
 import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
 
-const DEFAULTS = { team: true, tournament: true, pcw: true, elo: true, season: true, account: true, news: false, admin: true };
+const DEFAULTS = { team: true, tournament: true, pcw: true, elo: true, season: true, account: true, news: false, admin: true, friends: true };
 
 // /api/v1/me/* con PostgREST simulado: cubre la lógica de las rutas sin Docker (para el CI).
 const USER = '44444444-4444-4444-8444-444444444444';
