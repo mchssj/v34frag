@@ -66,6 +66,13 @@ function DemoMatchmaking() {
             <Button
               size="sm"
               variant="outline"
+              onClick={controls.partnerWrites}
+            >
+              El compañero escribe
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={controls.partnerLeavesParty}
             >
               El compañero sale del grupo

@@ -21,6 +21,7 @@ import type {
   MmMatch,
   MmMeeting,
   MmParty,
+  MmPartyChatMessage,
   MmPasswordEntry,
   MmPlayer,
   MmFriend,
@@ -211,6 +212,8 @@ export type DemoControls = {
   teammateLeaves(): void
   /** El compañero del dúo sale del grupo (por su cuenta). */
   partnerLeavesParty(): void
+  /** El compañero escribe en el chat del grupo. */
+  partnerWrites(): void
   /** Prende o apaga un escenario (capitán, cuenta nueva, servidores ocupados, temporada). */
   setFlag(flag: DemoFlag, on: boolean): void
   reset(): void
@@ -254,6 +257,10 @@ export function createDemoSource({
   let config = structuredClone(DEFAULT_CONFIG)
   let modeMaps = structuredClone(DEFAULT_MODE_MAPS)
   let chatLog: MmChatMessage[] = []
+  // Chat del grupo (prototipo): se vacía cuando el grupo cambia de id o se deshace.
+  let partyLog: MmPartyChatMessage[] = []
+  let partyLogId: string | null = null
+  let partyNicks = new Set<string>()
   let blocks: MmState["blocks"]["list"] = []
   let friends = seedFriends()
   let friendRequests: MmState["friend_requests"] = { received: [], sent: [] }
@@ -721,6 +728,79 @@ export function createDemoSource({
     emit("queue.changed")
   }
 
+  /** El chat del grupo, con un aviso por cada uno que entra o sale. */
+  function partyMessages(): MmPartyChatMessage[] {
+    if (!party) {
+      partyLog = []
+      partyLogId = null
+      partyNicks = new Set()
+      return []
+    }
+    if (partyLogId !== party.id) {
+      partyLog = []
+      partyLogId = party.id
+      partyNicks = new Set(party.members.filter((m) => m.is_me).map((m) => m.nick))
+    }
+    const nicks = new Set(party.members.map((m) => m.nick))
+    for (const n of nicks)
+      if (!partyNicks.has(n)) partyNote(`${n} se unió al grupo`)
+    for (const n of partyNicks)
+      if (!nicks.has(n)) partyNote(`${n} salió del grupo`)
+    partyNicks = nicks
+    return partyLog
+  }
+  function partyNote(message: string) {
+    partyLog = [
+      ...partyLog,
+      { id: id("pmsg"), nick: "", message, created_at: iso(now()), system: true },
+    ]
+  }
+  function partySay(nick: string, message: string) {
+    partyMessages()
+    partyLog = [
+      ...partyLog,
+      {
+        id: id("pmsg"),
+        nick,
+        // Los del grupo tienen ficha: el menú del nombre necesita el id.
+        player_id: party?.members.find((m) => m.nick === nick)?.player_id ?? null,
+        message,
+        created_at: iso(now()),
+      },
+    ]
+    emit("party.chat")
+  }
+  // Chat global (prototipo): lo que dicen los que están en Jugar.
+  const GLOBAL_LINES = [
+    "alguien para 2v2?",
+    "gg wp los de recién",
+    "falta uno para la cola de 5v5, entren",
+    "¿qué servidor anda mejor hoy?",
+    "busco dúo nivel 6-7",
+    "ese clutch en nuke fue una locura",
+    "¿hay mix a la noche?",
+  ]
+  const botLine = () => {
+    const [nick] = BOTS[Math.floor(random() * BOTS.length)]!
+    return {
+      id: id("gmsg"),
+      nick,
+      player_id: `p-${nick}`,
+      message: GLOBAL_LINES[Math.floor(random() * GLOBAL_LINES.length)]!,
+      created_at: iso(now()),
+    }
+  }
+  let globalLog: MmPartyChatMessage[] = [botLine(), botLine(), botLine()]
+  function globalSay(nick: string, message: string, player_id: string) {
+    globalLog = [
+      ...globalLog,
+      { id: id("gmsg"), nick, player_id, message, created_at: iso(now()) },
+    ].slice(-100)
+    emit("chat.global")
+  }
+
+  const PARTNER_LINES = ["dale", "vamos que hoy se gana", "ok, entro en 1", "jaja", "¿buscamos de nuevo?"]
+
   function tickParty(t: number) {
     invites = invites.filter((i) => Date.parse(i.expires_at) > t)
     if (party?.pending && Date.parse(party.pending.expires_at) <= t) {
@@ -750,6 +830,11 @@ export function createDemoSource({
   function tick() {
     const t = now()
     tickParty(t)
+    // Cada tanto alguien escribe en el global.
+    if (random() < 0.04) {
+      const line = botLine()
+      globalSay(line.nick, line.message, line.player_id)
+    }
     // Sin servidor libre no se arma la sala (plan, decisión "Pocos servidores").
     if (
       queue &&
@@ -1091,6 +1176,31 @@ export function createDemoSource({
     async chat() {
       return structuredClone(chatLog)
     },
+    async globalChat() {
+      return structuredClone(globalLog)
+    },
+    async sendGlobalChat(message) {
+      const text = message.trim().slice(0, 300)
+      if (!text) throw new DemoError("Escribí un mensaje")
+      globalSay(ME.nick, text, ME.player_id)
+    },
+    async partyChat() {
+      return structuredClone(partyMessages())
+    },
+    async sendPartyChat(message) {
+      const text = message.trim().slice(0, 300)
+      if (!party || party.members.length < 2)
+        throw new DemoError("No estás en un grupo")
+      if (!text) throw new DemoError("Escribí un mensaje")
+      partySay(ME.nick, text)
+      // El compañero contesta al rato.
+      const mate = partner()
+      if (mate)
+        setTimeout(() => {
+          if (partner()?.nick === mate.nick)
+            partySay(mate.nick, PARTNER_LINES[seq % PARTNER_LINES.length]!)
+        }, 1500)
+    },
     async veto(_matchId, map) {
       if (!myTurn()) throw new DemoError("No es tu turno de banear")
       ban(map, false)
@@ -1347,6 +1457,27 @@ export function createDemoSource({
       if (!lobby || !text) throw new DemoError("No hay sala activa")
       say(ME.nick, text, teamOnly ? (myTeam() ?? null) : null)
     },
+    async reportPlayer(playerId, reason, note) {
+      const target = KNOWN().find((f) => f.player_id === playerId)
+      if (!target) throw new DemoError("Ese jugador no existe")
+      reports = [
+        {
+          id: id("rep"),
+          lobby_id: "chat", // Fuera de una sala: en la demo, "chat" en lugar de una sala.
+          mode: "chat",
+          reporter: ME.nick,
+          reported: target.nick,
+          reported_user_id: playerId,
+          reason,
+          note: note.trim() || null,
+          created_at: iso(now()),
+          status: "pending",
+        },
+        ...reports,
+      ]
+      emit("state")
+      return snapshot()
+    },
     async report(lobbyId, playerId, reason, note) {
       const target = lobby?.players.find((x) => x.player_id === playerId)
       if (!lobby || lobby.id !== lobbyId || !target)
@@ -1548,6 +1679,10 @@ export function createDemoSource({
         { id: id("inv"), from, expires_at: iso(now() + 60 * SECOND) },
       ]
       emit("party.invite")
+    },
+    partnerWrites() {
+      const mate = partner()
+      if (mate) partySay(mate.nick, PARTNER_LINES[seq % PARTNER_LINES.length]!)
     },
     partnerLeavesParty() {
       if (!party) return

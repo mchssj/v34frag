@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtClock, secondsLeft } from "./labels"
+import { PlayerName } from "./PlayerMenu"
 import { LeavePartyButton, PartyMenu, usePartyNotices } from "./PartyMenu"
 import { playerSearchOptions, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -175,7 +176,12 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
       </Avatar>
       <span className="flex max-w-full items-center gap-1.5 text-sm font-semibold">
         {card.country && <CountryFlag country={card.country} />}
-        <span className="truncate">{card.nick}</span>
+        <PlayerName
+          nick={card.nick}
+          playerId={card.is_me ? null : card.player_id}
+          isMe={card.is_me}
+          className="truncate"
+        />
         {card.vip && <Badge variant="vip">VIP</Badge>}
       </span>
       <span

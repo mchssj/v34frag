@@ -231,6 +231,21 @@ export type MmParty = {
   pending: { to_nick: string; expires_at: string } | null
 }
 
+/**
+ * Un mensaje del chat de Jugar (prototipo, sin backend): el del grupo (lo ven solo los del grupo y se borra cuando el
+ * grupo se deshace) o el global (todos los del matchmaking).
+ */
+export type MmPartyChatMessage = {
+  id: string
+  nick: string
+  message: string
+  created_at: string
+  /** Quién lo escribió (para el menú del nombre); null en los avisos. */
+  player_id?: string | null
+  /** Aviso del grupo ("X se unió al grupo"), sin autor. */
+  system?: boolean
+}
+
 export type MmInvite = {
   id: string
   from: Omit<MmPartyMember, "is_me" | "is_leader">

@@ -1182,6 +1182,18 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - No toca el plugin, así que no hay nada que subir a los servidores.
 - **Bitácora:** [`2026-11-08-widget-streamers-stats`](bitacora/2026-11-08-widget-streamers-stats/).
 
+### 1.74 Página de PCW (prototipo en `/demo/pcw`): hecho, falta pasarlo a la web y el backend de las ideas
+
+- **Qué es:** el prototipo de `/pcw` con Mis PCW, el tablón con filtros, publicar y aceptar en paneles laterales, servidores para PCW, suplentes, avisos a medida, actividad, nivel parejo, historial entre equipos, confiabilidad, desafío directo, otra hora, link y calendario. Sin medallas de PCW (Kyan, 2026-11-08).
+- **Hecho el 2026-11-08** en `kyan/pruebas`, commiteado y subido (sin aplicar el replanteo 88 ni desplegar nada). No toca el plugin: no hay nada que subir a los servidores.
+- **Falta:**
+  - **Esteban:** la página real `/pcw` con la API, sacarle el "Pronto" del menú y Administración › PCW (formatos y resultado a mano).
+  - **Daniel:** el backend de las ideas g a m (aviso en Discord, desafío directo, otra hora, avisos a medida, confiabilidad, suplentes y recordatorio).
+  - **Daniel:** el backend del chat de Jugar (prototipo en `/demo/matchmaking`, agregado el 2026-11-08): el global (`/mm/chat`, aviso `chat.global`, límite por minuto, filtro y reporte) y el del grupo (`/mm/party/chat`, aviso `party.chat`).
+  - **Esteban:** la serie después de "los dos listos" dentro de Mis PCW (prototipo `SeriesPanel`), con `match_booking` del replanteo `56`.
+  - **Daniel o Kyan:** aplicar en producción el replanteo `88_pcw_sin_elo.sql` (las PCW no dan ELO, Kyan 2026-11-08; probado en local). Al aplicarse recalcula el ELO de todos sin las PCW ya jugadas: avisar antes en el Discord y hacerlo sin un mix terminando. Decidir si va también a `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+- **Bitácora:** [`2026-11-08-pcw-demo`](bitacora/2026-11-08-pcw-demo/)
+
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 
 - **Quejas (2026-10-18):** cuesta escuchar pasos y puertas, y los jugadores "aparecen y desaparecen".

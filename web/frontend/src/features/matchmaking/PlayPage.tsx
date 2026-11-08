@@ -28,6 +28,7 @@ import {
   unlockAudio,
   useAudioReady,
 } from "./alert"
+import { ChatDock } from "./ChatDock"
 import { GroupSlots } from "./GroupSlots"
 import { InviteDialog } from "./InviteDialog"
 import { fmtClock, fmtDateTime, secondsLeft } from "./labels"
@@ -234,6 +235,9 @@ function LastMatch({ lobby, onBack }: { lobby: MmLobby; onBack: () => void }) {
 }
 
 function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
+  const source = useMmSource()
+  // Chat aparte, abajo a la derecha (prototipo): solo si la fuente lo tiene (hoy, la demo).
+  const showChat = !!source.globalChat && !!source.sendGlobalChat
   const [picked, setPicked] = useState<string | null>(null)
   const [region, setRegion] = useState(ANY_REGION)
   // En cola manda el modo de la cola; si el elegido se apagó, el primero habilitado.
@@ -297,6 +301,7 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
         </div>
       </Card>
       <PlayFeed state={state} />
+      {showChat && <ChatDock party={state.party} meNick={state.me.nick} />}
     </div>
   )
 }

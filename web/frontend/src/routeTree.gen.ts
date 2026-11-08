@@ -40,6 +40,7 @@ import { Route as DemoFavoritasRouteImport } from './routes/demo.favoritas'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
+import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
@@ -235,6 +236,11 @@ const DemoMedallasRoute = DemoMedallasRouteImport.update({
 const DemoMisionesRoute = DemoMisionesRouteImport.update({
   id: '/demo/misiones',
   path: '/demo/misiones',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoPcwRoute = DemoPcwRouteImport.update({
+  id: '/demo/pcw',
+  path: '/demo/pcw',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
@@ -483,6 +489,7 @@ export interface FileRoutesByFullPath {
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
+  '/demo/pcw': typeof DemoPcwRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -556,6 +563,7 @@ export interface FileRoutesByTo {
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
+  '/demo/pcw': typeof DemoPcwRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -633,6 +641,7 @@ export interface FileRoutesById {
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
+  '/demo/pcw': typeof DemoPcwRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -709,6 +718,7 @@ export interface FileRouteTypes {
     | '/demo/matchmaking'
     | '/demo/medallas'
     | '/demo/misiones'
+    | '/demo/pcw'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -782,6 +792,7 @@ export interface FileRouteTypes {
     | '/demo/matchmaking'
     | '/demo/medallas'
     | '/demo/misiones'
+    | '/demo/pcw'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -858,6 +869,7 @@ export interface FileRouteTypes {
     | '/demo/matchmaking'
     | '/demo/medallas'
     | '/demo/misiones'
+    | '/demo/pcw'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -925,6 +937,7 @@ export interface RootRouteChildren {
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoMedallasRoute: typeof DemoMedallasRoute
   DemoMisionesRoute: typeof DemoMisionesRoute
+  DemoPcwRoute: typeof DemoPcwRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
@@ -1149,6 +1162,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/misiones'
       fullPath: '/demo/misiones'
       preLoaderRoute: typeof DemoMisionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/pcw': {
+      id: '/demo/pcw'
+      path: '/demo/pcw'
+      fullPath: '/demo/pcw'
+      preLoaderRoute: typeof DemoPcwRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/recalculo': {
@@ -1609,6 +1629,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoMedallasRoute: DemoMedallasRoute,
   DemoMisionesRoute: DemoMisionesRoute,
+  DemoPcwRoute: DemoPcwRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoTorneoStatsRoute: DemoTorneoStatsRoute,
