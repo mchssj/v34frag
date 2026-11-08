@@ -42,6 +42,7 @@ import type {
   PcwPost,
   TimeFilter,
 } from "../types"
+import { PcwRoom } from "./PcwRoom"
 import { AcceptSheet } from "../components/AcceptSheet"
 import { MyPcw } from "../components/MyPcw"
 import { PostCard } from "../components/PostCard"
@@ -85,7 +86,16 @@ const EMPTY_FORM: Omit<PublishInput, "roster"> = {
 }
 
 /** La página de PCW: Mis PCW, el tablón con filtros y la columna con servidores, suplentes y avisos. */
-export function PcwPage({ demo }: { demo: PcwDemo }) {
+export function PcwPage({
+  demo,
+  room,
+  onRoom,
+}: {
+  demo: PcwDemo
+  /** La sala abierta (`?sala=` en la URL): la serie después de los dos listos. */
+  room?: string
+  onRoom: (id: string | null) => void
+}) {
   const now = new Date(useNow(true))
   const [filters, setFilters] = useState<PcwFilters>({
     bo: null,
@@ -119,6 +129,25 @@ export function PcwPage({ demo }: { demo: PcwDemo }) {
     Number(filters.kind !== "all") +
     Number(filters.myLevel)
   const freeServers = demo.servers.filter((x) => x.free).length
+
+  const open = room
+    ? demo.matches.find((x) => x.id === room && x.booking)
+    : undefined
+  if (open)
+    return (
+      <PcwRoom
+        key={open.id}
+        m={open}
+        onBack={() => onRoom(null)}
+        series={{
+          onRoom,
+          onVeto: demo.veto,
+          onUnready: demo.unready,
+          onFinishMap: demo.finishMap,
+          onDismiss: demo.dismissSeries,
+        }}
+      />
+    )
 
   return (
     <div className="flex flex-col gap-5">
@@ -207,6 +236,13 @@ export function PcwPage({ demo }: { demo: PcwDemo }) {
                     pool={pool(demo.myPost)}
                     mapImage={mapImage}
                     onRemove={demo.removeMyPost}
+                    onChoose={(id) => {
+                      demo.chooseOffer(id)
+                      toast.success("Elegiste la oferta", {
+                        description:
+                          "La práctica quedó en Mis PCW; a las demás les avisamos que no.",
+                      })
+                    }}
                     mine
                   />
                 </section>
@@ -348,6 +384,7 @@ export function PcwPage({ demo }: { demo: PcwDemo }) {
                         pool={pool(p)}
                         mapImage={mapImage}
                         onAccept={() => setAccepting(p)}
+                        onWithdraw={() => demo.withdrawOffer(p.id)}
                       />
                     ))}
                   </div>
@@ -359,7 +396,12 @@ export function PcwPage({ demo }: { demo: PcwDemo }) {
               <MyPcw
                 matches={demo.matches}
                 now={now}
-                onReady={demo.ready}
+                onReady={(id) => {
+                  // Si el rival ya estaba listo, la serie arranca y se abre su sala.
+                  const was = demo.matches.find((x) => x.id === id)?.status
+                  demo.ready(id)
+                  if (was === "ready_us") onRoom(id)
+                }}
                 onAnswer={demo.answerProposal}
                 onCancel={(id) => {
                   demo.cancelMatch(id)
@@ -370,6 +412,7 @@ export function PcwPage({ demo }: { demo: PcwDemo }) {
                 }}
                 onRepeat={() => setPublish(demo.last)}
                 series={{
+                  onRoom,
                   onVeto: demo.veto,
                   onUnready: demo.unready,
                   onFinishMap: demo.finishMap,
@@ -476,9 +519,8 @@ export function PcwPage({ demo }: { demo: PcwDemo }) {
         now={now}
         onAccept={(p, r, at) => {
           demo.accept(p, r, at)
-          toast.success("PCW aceptada", {
-            description:
-              'Quedó en Mis PCW. Marquen "Estamos listos" cuando estén.',
+          toast.success("Oferta enviada", {
+            description: "Si te eligen, la práctica queda en Mis PCW.",
           })
         }}
       />

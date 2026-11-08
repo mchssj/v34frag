@@ -19,7 +19,7 @@
   - Aceptar un anuncio, que pasa a Mis PCW.
   - Publicar, con los avisos de roster.
   - "Repetir la última", los filtros y la contraoferta de hora.
-- Después de "los dos listos" (agregado): 9 pruebas en `features/pcw/lib/series.test.ts`; en el navegador, una BO3 completa: veto (6 pasos alternados), servidor, entrar (la serie arranca sola con 5 y 5), mapa 1 jugado, mapa 2 con 5 min, y con "El rival no entra" y "Adelantar la espera", la PCW abandonada con la sanción del rival.
+- Después de "los dos listos" (agregado): 9 pruebas en `features/pcw/lib/series.test.ts`; en el navegador, una BO3 completa: veto (6 pasos alternados), servidor, entrar (la serie arranca sola con los dos lados completos), mapa 1 jugado, mapa 2 con 5 min, y con "El rival no entra" y "Adelantar la espera", la PCW abandonada con la sanción del rival.
 - Chat del grupo (agregado): en `/demo/matchmaking`, aceptar una invitación muestra el chat con "colo se unió al grupo"; la respuesta rápida, un mensaje escrito y las respuestas del compañero llegan; al salir el compañero, el chat se va. Sin scroll horizontal.
 - Todo el frontend: 728 pruebas, typecheck y lint sin errores.
 - No se probó con datos reales, porque es una demo sin API.
@@ -29,6 +29,8 @@
 - La cuenta regresiva se muestra solo si falta menos de un día: "24 h 59 min" no aportaba nada.
 - Publicar como equipo avisa si alguien con cuenta no es del plantel. La regla es de la base y el plan no la nombraba.
 - La racha ("14 seguidas sin cancelar") va como dato de la confiabilidad, sin medalla.
+
+- La regla de entrada estaba mal en la demo ("5 por equipo, los suplentes cuentan"). Se corrigió a la del plugin y la base: al menos 4 adentro por lado, 3 del roster y hasta 2 suplentes.
 
 ## Lo que tiene que hacer cada uno
 
@@ -76,7 +78,13 @@ Las stats del mapa (K/D, rating), la demo y los puntos del ranking de equipos se
 
 **Denunciar fuera de la sala:** hoy `mm_reports` necesita una sala. Para el menú del nombre hace falta una denuncia desde el chat (con el mensaje como prueba): `POST /mm/players/{id}/report` y que Administración › Matchmaking › Reportes la muestre sin sala. Mientras no exista, la web solo deja denunciar desde la sala.
 
-**Chat de Jugar (grupo y global):** para el global, una tabla de mensajes con tope (los últimos 100), `GET`/`POST /mm/chat`, el aviso `chat.global` a todos los conectados a Jugar, límite de mensajes por minuto, el filtro de palabras y que se pueda reportar un mensaje. Para el del grupo, tabla de mensajes por grupo (`mm_party_members` decide quién lee y escribe; se borran cuando el grupo se deshace), `GET` y `POST /mm/party/chat`, el aviso `party.chat` por el socket solo a los del grupo, el mismo filtro de palabras que el chat de la sala y 300 caracteres. Con eso, `apiSource` implementa `partyChat` y `sendPartyChat`, y el chat aparece solo en `/play`.
+**Chat del grupo en Jugar:** tabla de mensajes por grupo (`mm_party_members` decide quién lee y escribe; se borran cuando el grupo se deshace), `GET` y `POST /mm/party/chat`, el aviso `party.chat` por el socket solo a los del grupo, el mismo filtro de palabras que el chat de la sala y 300 caracteres. Sin chat global (Kyan: no cargar el socket). Con eso, `apiSource` implementa `partyChat` y `sendPartyChat`, y el chat aparece solo en `/play`.
+
+**Ofertas (como en pracc):** tabla `pcw_offers` (anuncio, bando con su roster, hora propuesta, estado: abierta, elegida, rechazada, retirada); `POST /pcw/posts/{id}/offers` reemplaza a `accept_pcw` para mandar una; `DELETE` para retirarla; `POST /pcw/offers/{id}/choose` solo para el que publicó, que crea la partida y rechaza las demás; avisos al que publicó (llegó una oferta) y a los que ofertaron (te eligieron o no). Las reglas de hoy (4 con cuenta, sanción de PCW, plantel) pasan a la oferta.
+
+**La sala de la PCW:** la página real usa `MatchRoom` igual que la demo, con `pcwToLobby` armado desde `match_booking` y el veto real (`veto_act` con picks). Hace falta que el veto de la base exponga si el turno es ban o pick.
+
+**Partida encontrada en toda la web:** es solo frontend y ya funciona con la API (`GlobalMatchAlerts` y `SearchingPill` en el layout): no necesita backend.
 
 | Idea | Qué hace falta |
 |---|---|

@@ -109,9 +109,9 @@ describe("serie", () => {
     expect(waitMinutes(2)).toBe(5)
   })
 
-  it("abandona el que no llegó a 5 adentro", () => {
-    expect(abandonSide([5, 5])).toBeNull()
+  it("abandona el que no llegó a 4 adentro", () => {
+    expect(abandonSide([5, 4])).toBeNull()
     expect(abandonSide([5, 3])).toBe("them")
-    expect(abandonSide([4, 2])).toBe("both")
+    expect(abandonSide([3, 2])).toBe("both")
   })
 })

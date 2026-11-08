@@ -739,7 +739,9 @@ export function createDemoSource({
     if (partyLogId !== party.id) {
       partyLog = []
       partyLogId = party.id
-      partyNicks = new Set(party.members.filter((m) => m.is_me).map((m) => m.nick))
+      partyNicks = new Set(
+        party.members.filter((m) => m.is_me).map((m) => m.nick)
+      )
     }
     const nicks = new Set(party.members.map((m) => m.nick))
     for (const n of nicks)
@@ -752,7 +754,13 @@ export function createDemoSource({
   function partyNote(message: string) {
     partyLog = [
       ...partyLog,
-      { id: id("pmsg"), nick: "", message, created_at: iso(now()), system: true },
+      {
+        id: id("pmsg"),
+        nick: "",
+        message,
+        created_at: iso(now()),
+        system: true,
+      },
     ]
   }
   function partySay(nick: string, message: string) {
@@ -763,43 +771,21 @@ export function createDemoSource({
         id: id("pmsg"),
         nick,
         // Los del grupo tienen ficha: el menú del nombre necesita el id.
-        player_id: party?.members.find((m) => m.nick === nick)?.player_id ?? null,
+        player_id:
+          party?.members.find((m) => m.nick === nick)?.player_id ?? null,
         message,
         created_at: iso(now()),
       },
     ]
     emit("party.chat")
   }
-  // Chat global (prototipo): lo que dicen los que están en Jugar.
-  const GLOBAL_LINES = [
-    "alguien para 2v2?",
-    "gg wp los de recién",
-    "falta uno para la cola de 5v5, entren",
-    "¿qué servidor anda mejor hoy?",
-    "busco dúo nivel 6-7",
-    "ese clutch en nuke fue una locura",
-    "¿hay mix a la noche?",
+  const PARTNER_LINES = [
+    "dale",
+    "vamos que hoy se gana",
+    "ok, entro en 1",
+    "jaja",
+    "¿buscamos de nuevo?",
   ]
-  const botLine = () => {
-    const [nick] = BOTS[Math.floor(random() * BOTS.length)]!
-    return {
-      id: id("gmsg"),
-      nick,
-      player_id: `p-${nick}`,
-      message: GLOBAL_LINES[Math.floor(random() * GLOBAL_LINES.length)]!,
-      created_at: iso(now()),
-    }
-  }
-  let globalLog: MmPartyChatMessage[] = [botLine(), botLine(), botLine()]
-  function globalSay(nick: string, message: string, player_id: string) {
-    globalLog = [
-      ...globalLog,
-      { id: id("gmsg"), nick, player_id, message, created_at: iso(now()) },
-    ].slice(-100)
-    emit("chat.global")
-  }
-
-  const PARTNER_LINES = ["dale", "vamos que hoy se gana", "ok, entro en 1", "jaja", "¿buscamos de nuevo?"]
 
   function tickParty(t: number) {
     invites = invites.filter((i) => Date.parse(i.expires_at) > t)
@@ -830,11 +816,6 @@ export function createDemoSource({
   function tick() {
     const t = now()
     tickParty(t)
-    // Cada tanto alguien escribe en el global.
-    if (random() < 0.04) {
-      const line = botLine()
-      globalSay(line.nick, line.message, line.player_id)
-    }
     // Sin servidor libre no se arma la sala (plan, decisión "Pocos servidores").
     if (
       queue &&
@@ -1175,14 +1156,6 @@ export function createDemoSource({
     },
     async chat() {
       return structuredClone(chatLog)
-    },
-    async globalChat() {
-      return structuredClone(globalLog)
-    },
-    async sendGlobalChat(message) {
-      const text = message.trim().slice(0, 300)
-      if (!text) throw new DemoError("Escribí un mensaje")
-      globalSay(ME.nick, text, ME.player_id)
     },
     async partyChat() {
       return structuredClone(partyMessages())

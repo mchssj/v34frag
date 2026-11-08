@@ -16,6 +16,7 @@ import { useNow } from "@/features/matchmaking/useNow"
 import { mapImage } from "../demo"
 import {
   banDays,
+  ENTRY_RULE,
   NEEDED,
   seriesScore,
   vetoState,
@@ -41,12 +42,15 @@ export function SeriesPanel({
   onUnready,
   onFinishMap,
   onDismiss,
+  size = "sm",
 }: {
   m: PcwMatch
   onVeto: (map: string) => void
   onUnready: () => void
   onFinishMap: () => void
   onDismiss: () => void
+  /** "lg" en la sala de la PCW: mapas más grandes y sin el recuadro. */
+  size?: "sm" | "lg"
 }) {
   const b = m.booking!
   const now = useNow(b.deadline !== null, 250)
@@ -57,7 +61,12 @@ export function SeriesPanel({
   const [us, them] = seriesScore(b.scores)
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border bg-muted/40 p-3">
+    <div
+      className={cn(
+        "flex flex-col gap-3",
+        size === "sm" && "rounded-md border bg-muted/40 p-3"
+      )}
+    >
       {b.step !== "abandoned" && (
         <ol
           aria-label="Pasos de la serie"
@@ -117,13 +126,17 @@ export function SeriesPanel({
                         : map
                     }
                     className={cn(
-                      "relative flex h-14 w-full items-end overflow-hidden rounded-md border bg-cover bg-center p-1.5 text-left text-xs font-semibold text-white",
+                      "relative flex w-full items-end overflow-hidden rounded-md border bg-cover bg-center p-1.5 text-left text-xs font-semibold text-white",
+                      size === "lg" ? "h-20 sm:text-sm" : "h-14",
                       act?.kind === "ban" && "opacity-35 grayscale",
                       act?.kind === "pick" && "ring-2 ring-primary",
                       mine &&
                         "cursor-pointer hover:ring-2 hover:ring-primary/60"
                     )}
-                    style={img ? { backgroundImage: `url(${img})` } : undefined}
+                    // Entre comillas: las fotos de ejemplo son SVG con espacios en la URL.
+                    style={
+                      img ? { backgroundImage: `url("${img}")` } : undefined
+                    }
                   >
                     <span className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
                     <span className="relative flex w-full items-center justify-between gap-1">
@@ -221,10 +234,10 @@ export function SeriesPanel({
           <Presence label="Ustedes" n={b.present[0]} />
           <Presence label={rival} n={b.present[1]} />
           <p className="text-xs text-muted-foreground">
-            Tienen {waitMinutes(b.map_no)} min para entrar {NEEDED} por equipo
-            (los suplentes cuentan). Con los dos completos arranca solo. Si un
-            equipo no llega, pierde por abandono: la PCW no cuenta y queda sin
-            PCW {banDays(false)} días ({banDays(true)} si se repite en 30).
+            Tienen {waitMinutes(b.map_no)} min para entrar: {ENTRY_RULE}. Con
+            los dos en regla arranca solo. Si un equipo no llega, pierde por
+            abandono: la PCW no cuenta y queda sin PCW {banDays(false)} días (
+            {banDays(true)} si se repite en 30).
           </p>
         </>
       )}
@@ -287,8 +300,8 @@ export function SeriesPanel({
             </>
           ) : (
             <>
-              <b>No llegaron a {NEEDED} a tiempo.</b> La PCW no cuenta y quedan
-              sin crear ni aceptar PCW {banDays(false)} días.
+              <b>No llegaron a {NEEDED} adentro a tiempo.</b> La PCW no cuenta y
+              quedan sin crear ni aceptar PCW {banDays(false)} días.
             </>
           )}
         </End>
@@ -302,12 +315,12 @@ function Presence({ label, n }: { label: string; n: number }) {
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 truncate">{label}</span>
       <Progress
-        value={(n / NEEDED) * 100}
-        aria-label={`${label}: ${n} de ${NEEDED} adentro`}
+        value={Math.min(100, (n / NEEDED) * 100)}
+        aria-label={`${label}: ${n} adentro, mínimo ${NEEDED}`}
         className="h-1.5 flex-1"
       />
       <span className="w-8 text-right font-mono tabular-nums">
-        {n}/{NEEDED}
+        {n} (mín. {NEEDED})
       </span>
     </div>
   )

@@ -7,6 +7,10 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { AdminMatchmaking } from "@/features/matchmaking/admin/AdminMatchmaking"
 import { createDemoSource, type DemoFlag } from "@/features/matchmaking/demo"
+import {
+  GlobalMatchAlerts,
+  SearchingPill,
+} from "@/features/matchmaking/MatchAlerts"
 import { PlayPage } from "@/features/matchmaking/PlayPage"
 import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
 import { MmSourceContext } from "@/features/matchmaking/source"
@@ -24,7 +28,7 @@ function DemoMatchmaking() {
   // Cache aparte: no se mezcla con los datos reales de la app.
   const [queryClient] = useState(() => new QueryClient())
   const [{ source, controls }] = useState(() => createDemoSource())
-  const [view, setView] = useState<"player" | "admin">("player")
+  const [view, setView] = useState<"player" | "other" | "admin">("player")
   return (
     <QueryClientProvider client={queryClient}>
       <MmSourceContext value={source}>
@@ -100,7 +104,7 @@ function DemoMatchmaking() {
               Reiniciar
             </Button>
             <span className="ml-auto inline-flex rounded-lg border p-0.5">
-              {(["player", "admin"] as const).map((v) => (
+              {(["player", "other", "admin"] as const).map((v) => (
                 <Button
                   key={v}
                   size="sm"
@@ -108,13 +112,25 @@ function DemoMatchmaking() {
                   aria-pressed={view === v}
                   onClick={() => setView(v)}
                 >
-                  {v === "player" ? "Jugador" : "Administración"}
+                  {v === "player"
+                    ? "Jugador"
+                    : v === "other"
+                      ? "Otra pantalla"
+                      : "Administración"}
                 </Button>
               ))}
             </span>
           </div>
           <ReconnectBanner />
-          {view === "player" ? <PlayPage /> : <AdminMatchmaking />}
+          {view === "player" ? (
+            <PlayPage />
+          ) : view === "other" ? (
+            <OtherScreen />
+          ) : (
+            <AdminMatchmaking />
+          )}
+          {/* Fuera de Jugar, como en el layout de la web: el aviso para aceptar y "Buscando" arriba. */}
+          <GlobalMatchAlerts away={view !== "player"} />
         </div>
       </MmSourceContext>
     </QueryClientProvider>
@@ -158,5 +174,24 @@ function FlagSwitch({
         {label}
       </Label>
     </span>
+  )
+}
+
+/** "Otra pantalla" de la demo: así se ve la barra de arriba con la cola fuera de Jugar. */
+function OtherScreen() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex h-[52px] items-center gap-2 rounded-xl border px-3">
+        <span className="flex-1 text-sm text-muted-foreground">
+          Barra de arriba (en cualquier página fuera de Jugar)
+        </span>
+        <SearchingPill away />
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Otra página de la web (Ranking, Partidas, un perfil…). Entrá a la cola
+        en Jugar y volvé acá: arriba se ve &quot;Buscando&quot; con el tiempo, y
+        cuando se arma la partida salta la ventana para aceptar.
+      </p>
+    </div>
   )
 }

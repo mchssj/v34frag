@@ -35,6 +35,7 @@ import {
   whenLabel,
 } from "../lib/pcw"
 import type { PcwPost, PcwResult } from "../types"
+import { TeamName } from "./TeamName"
 import { copyLink, downloadIcs } from "./share"
 
 const BALANCE_TONE = {
@@ -54,6 +55,8 @@ export function PostCard({
   mapImage,
   onAccept,
   onRemove,
+  onWithdraw,
+  onChoose,
   mine = false,
 }: {
   post: PcwPost
@@ -66,6 +69,10 @@ export function PostCard({
   mapImage: (name: string) => string | null
   onAccept?: () => void
   onRemove?: () => void
+  /** Retirar la oferta que mandé. */
+  onWithdraw?: () => void
+  /** En mi anuncio: elegir una oferta. */
+  onChoose?: (offerId: string) => void
   mine?: boolean
 }) {
   const s = post.side
@@ -101,7 +108,7 @@ export function PostCard({
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 <h3 className="truncate text-[17px] font-bold">
-                  {sideName(s)}
+                  <TeamName team={s.team} name={sideName(s)} />
                 </h3>
                 {s.team?.tag && (
                   <span className="font-mono text-xs text-muted-foreground">
@@ -175,9 +182,18 @@ export function PostCard({
               <Button variant="destructive" size="sm" onClick={onRemove}>
                 Borrar el anuncio
               </Button>
+            ) : post.my_offer ? (
+              <>
+                <Badge variant="primary" size="md" shape="pill">
+                  Oferta enviada · esperando que elijan
+                </Badge>
+                <Button variant="ghost" size="sm" onClick={onWithdraw}>
+                  Retirar
+                </Button>
+              </>
             ) : (
               <Button size="sm" onClick={onAccept}>
-                Aceptar
+                Mandar oferta
               </Button>
             )}
             <Button
@@ -194,6 +210,15 @@ export function PostCard({
               />
             </Button>
           </div>
+
+          {mine && (
+            <OffersList
+              post={post}
+              myElo={myElo}
+              now={now}
+              onChoose={onChoose}
+            />
+          )}
 
           {open && (
             <div id={detailId} className="flex flex-col gap-3 border-t pt-3">
@@ -305,5 +330,68 @@ export function PostCard({
         </div>
       </article>
     </Card>
+  )
+}
+
+/** En mi anuncio: las ofertas que llegaron, para elegir una (como en pracc). */
+function OffersList({
+  post,
+  myElo,
+  now,
+  onChoose,
+}: {
+  post: PcwPost
+  myElo: number
+  now: Date
+  onChoose?: (offerId: string) => void
+}) {
+  const offers = post.offers ?? []
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
+      <span className="text-xs font-semibold">
+        Ofertas{offers.length > 0 && ` · ${offers.length}`}
+      </span>
+      {offers.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Todavía no llegaron ofertas. Te avisamos cuando llegue una; elegís la
+          que más te sirva.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {offers.map((o) => {
+            const elo = avgElo(o.side.roster)
+            const bal = balance(myElo, elo)
+            return (
+              <li
+                key={o.id}
+                className="flex flex-wrap items-center gap-2 text-sm"
+              >
+                {o.side.team && <TeamCrest team={o.side.team} size="xs" />}
+                <span className="min-w-0 flex-1">
+                  <TeamName
+                    team={o.side.team}
+                    name={sideName(o.side)}
+                    className="block truncate font-semibold"
+                  />
+                  <span className="block text-xs text-muted-foreground">
+                    ELO medio {elo}
+                    {o.reliability &&
+                      ` · ${reliabilityPct(o.reliability)} % jugadas`}
+                    {o.proposed_at &&
+                      ` · propone ${whenLabel(o.proposed_at, now)}`}
+                  </span>
+                </span>
+                <Badge variant={BALANCE_TONE[bal.tone]} size="sm" shape="pill">
+                  {bal.label}
+                </Badge>
+                <Button size="xs" onClick={() => onChoose?.(o.id)}>
+                  Elegir
+                </Button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
   )
 }

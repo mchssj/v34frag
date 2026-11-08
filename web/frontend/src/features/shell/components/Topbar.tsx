@@ -23,6 +23,7 @@ import {
 import { Kbd } from "@/components/ui/kbd"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { SearchingPill } from "@/features/matchmaking/MatchAlerts"
 import { breadcrumbsFor } from "../lib/nav"
 import { NotificationsMenu } from "../notifications/components/NotificationsMenu"
 import { useCrumbData } from "../api/queries"
@@ -55,6 +56,7 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
           {SEARCH_SHORTCUT}
         </Kbd>
       </Button>
+      <SearchingPill />
       <ThemeMenu />
       <NotificationsMenu />
     </header>

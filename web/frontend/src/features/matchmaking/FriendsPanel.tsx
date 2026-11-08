@@ -128,7 +128,7 @@ export function FriendsPanel({
             <ul
               aria-label="Lista de amigos"
               tabIndex={friends.length > 3 ? 0 : undefined}
-              className="-mr-2 flex max-h-[116px] flex-col gap-1 overflow-y-auto overscroll-contain pr-2 [scrollbar-width:thin]"
+              className="-mr-2 flex max-h-[116px] [scrollbar-width:thin] flex-col gap-1 overflow-y-auto overscroll-contain pr-2"
             >
               {friends.map((f) => {
                 const status = STATUS[f.status] ?? STATUS.offline

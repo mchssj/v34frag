@@ -138,6 +138,8 @@ export type MmVetoBan = {
   map: string
   /** El capitán no baneó a tiempo y se baneó uno al azar. */
   auto: boolean
+  /** "pick": el mapa se eligió para jugarse (PCW BO3 y BO5). Sin el campo, ban. */
+  kind?: "ban" | "pick"
 }
 
 export type MmVeto = {
@@ -146,6 +148,8 @@ export type MmVeto = {
   /** Equipo que banea ahora; null = terminó. */
   turn: 1 | 2 | null
   deadline: string | null
+  /** Qué toca en este turno; sin el campo, ban (el matchmaking solo banea). */
+  next_kind?: "ban" | "pick"
 }
 
 export type MmChatMessage = {
@@ -183,6 +187,17 @@ export type MmLobby = {
   elo_stake: { win: number; loss: number } | null
   /** Reemplazos de la sala: buscando, tomados y los que entraron (replanteo 78). */
   replacements?: MmReplacement[]
+  /** Nombre de cada bando en lugar de "Equipo A/B" (la sala de una PCW usa la misma sala). */
+  sides?: { 1: string; 2: string }
+  /** El tipo de partida en la cabecera, en lugar de "Matchmaking 5v5" (por ejemplo, "PCW BO3"). */
+  kind_label?: string
+  /** La explicación del estado en el centro, en lugar de la del matchmaking. */
+  status_hint?: string
+  /** El escudo de cada bando que juega como equipo (PCW); sin él, la foto del capitán. */
+  crests?: {
+    1?: { name: string; tag: string | null; logo_url?: string | null } | null
+    2?: { name: string; tag: string | null; logo_url?: string | null } | null
+  }
 }
 
 /** Un reemplazo de la sala (`mm_lobby_replacements`, replanteo 78). */
@@ -231,10 +246,7 @@ export type MmParty = {
   pending: { to_nick: string; expires_at: string } | null
 }
 
-/**
- * Un mensaje del chat de Jugar (prototipo, sin backend): el del grupo (lo ven solo los del grupo y se borra cuando el
- * grupo se deshace) o el global (todos los del matchmaking).
- */
+/** Chat del grupo en Jugar (prototipo, sin backend): lo ven solo los del grupo y se borra cuando el grupo se deshace. */
 export type MmPartyChatMessage = {
   id: string
   nick: string

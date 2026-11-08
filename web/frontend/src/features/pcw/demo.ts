@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
+import { toast } from "sonner"
+
 import { demoArt, demoAvatar } from "@/features/matchmaking/demo"
 import type { MapEntry } from "@/features/maps/types"
 import {
@@ -15,6 +17,7 @@ import type {
   PcwBooking,
   PcwAlert,
   PcwMatch,
+  PcwOffer,
   PcwPlayer,
   PcwPost,
   PcwResult,
@@ -434,6 +437,51 @@ export function usePcwDemo() {
     setMyPost(post)
     setLast(input)
     setFlags((f) => ({ ...f, myPost: true }))
+    // Las ofertas van llegando: dos equipos a los 4 y 9 s.
+    const arrive = (offer: PcwOffer) =>
+      setMyPost((x) =>
+        x && x.id === post.id
+          ? { ...x, offers: [...(x.offers ?? []), offer] }
+          : x
+      )
+    setTimeout(
+      () =>
+        arrive({
+          id: uid("offer"),
+          side: side(
+            "Ruido Blanco",
+            [p("ari", 1250), p("colo", 1205), p("emi", 1280), p("valen", 1230)],
+            RUIDO
+          ),
+          proposed_at: null,
+          created_at: new Date().toISOString(),
+          reliability: { played: 22, cancelled: 1, abandoned: 0, streak: 9 },
+        }),
+      4000
+    )
+    setTimeout(
+      () =>
+        arrive({
+          id: uid("offer"),
+          side: side(
+            "Sin Freno",
+            [
+              p("toto", 1380),
+              p("bruno", 1350),
+              p("facu", 1410),
+              p("santi", 1335),
+              p("leo", 1300),
+            ],
+            SINFRENO
+          ),
+          proposed_at: post.starts_at
+            ? new Date(Date.parse(post.starts_at) + HOUR).toISOString()
+            : null,
+          created_at: new Date().toISOString(),
+          reliability: { played: 9, cancelled: 2, abandoned: 1, streak: 2 },
+        }),
+      9000
+    )
   }
 
   function removeMyPost() {
@@ -441,8 +489,74 @@ export function usePcwDemo() {
     setFlags((f) => ({ ...f, myPost: false }))
   }
 
-  /** Acepta un anuncio: sale del tablón y queda como práctica próxima. */
+  // Ofertas mandadas que todavía no eligieron (la demo elige la mía a los 6 s si no la retiro).
+  const pendingOffers = useRef(new Set<string>())
+
+  /**
+   * Manda una oferta a un anuncio (como en pracc): el que publicó elige. En la demo, a los 6 s te eligen y queda
+   * como práctica próxima.
+   */
   function accept(
+    post: PcwPost,
+    roster: PcwPlayer[],
+    proposedAt: string | null
+  ) {
+    pendingOffers.current.add(post.id)
+    setPosts((ps) =>
+      ps.map((x) =>
+        x.id === post.id
+          ? {
+              ...x,
+              my_offer: {
+                created_at: new Date().toISOString(),
+                proposed_at: proposedAt,
+              },
+            }
+          : x
+      )
+    )
+    setTimeout(() => {
+      if (!pendingOffers.current.delete(post.id)) return
+      chosen(post, roster, proposedAt)
+      toast.success(`${post.side.name} eligió tu oferta`, {
+        description: 'Quedó en Mis PCW. Marquen "Estamos listos" cuando estén.',
+      })
+    }, 6000)
+  }
+
+  /** Retira una oferta que todavía no eligieron. */
+  function withdrawOffer(postId: string) {
+    pendingOffers.current.delete(postId)
+    setPosts((ps) =>
+      ps.map((x) => (x.id === postId ? { ...x, my_offer: null } : x))
+    )
+  }
+
+  /** Elijo una de las ofertas de mi anuncio: queda la práctica y el anuncio se cierra. */
+  function chooseOffer(offerId: string) {
+    const post = myPost
+    const offer = post?.offers?.find((o) => o.id === offerId)
+    if (!post || !offer) return
+    setMatches((ms) => [
+      {
+        id: uid("match"),
+        best_of: post.best_of,
+        starts_at: offer.proposed_at ?? post.starts_at,
+        us: post.side,
+        them: offer.side,
+        status: "waiting",
+        score: null,
+        proposed_at: null,
+        proposed_by: null,
+      },
+      ...ms,
+    ])
+    setMyPost(null)
+    setFlags((f) => ({ ...f, myPost: false }))
+  }
+
+  /** Te eligieron: sale del tablón y queda como práctica próxima. */
+  function chosen(
     post: PcwPost,
     roster: PcwPlayer[],
     proposedAt: string | null
@@ -644,6 +758,8 @@ export function usePcwDemo() {
     publish,
     removeMyPost,
     accept,
+    withdrawOffer,
+    chooseOffer,
     ready,
     veto,
     unready,

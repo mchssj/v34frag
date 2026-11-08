@@ -37,7 +37,7 @@ import {
   mapLabel,
   secondsLeft,
   steamConnectUrl,
-  teamName,
+  sideLabel,
 } from "../labels"
 import { LobbyChat } from "../LobbyChat"
 import { PasswordField } from "../PasswordField"
@@ -66,6 +66,7 @@ export function RoomOverview({
   onBack,
   mode = "live",
   takeCard,
+  extra,
 }: {
   lobby: MmLobby
   map: MmVetoMap | null
@@ -73,6 +74,8 @@ export function RoomOverview({
   mode?: RoomMode
   /** En la vista previa del link: la tarjeta con el botón para tomar el lugar. */
   takeCard?: React.ReactNode
+  /** Arriba del centro: lo propio de otro tipo de partida (en una PCW, la serie y sus reglas). */
+  extra?: React.ReactNode
 }) {
   return (
     <div className="grid items-stretch gap-4 lg:grid-cols-[1fr_minmax(320px,400px)_1fr]">
@@ -83,6 +86,7 @@ export function RoomOverview({
         onBack={onBack}
         mode={mode}
         takeCard={takeCard}
+        extra={extra}
       />
       <TeamColumn lobby={lobby} team={2} mode={mode} />
     </div>
@@ -106,7 +110,7 @@ function TeamColumn({
   return (
     <div className="flex flex-col gap-3">
       <section
-        aria-label={teamName(team)}
+        aria-label={sideLabel(lobby, team)}
         className={cn(
           "flex-1 overflow-hidden rounded-xl border bg-card",
           open && "border-primary/60"
@@ -120,7 +124,7 @@ function TeamColumn({
               : "shadow-[inset_3px_0_0_var(--chart-2)]"
           )}
         >
-          Jugadores · {teamName(team)}
+          Jugadores · {sideLabel(lobby, team)}
           {open ? (
             <span className="text-[11px] font-semibold text-primary">
               Tu equipo si entras
@@ -515,12 +519,14 @@ function Center({
   onBack,
   mode,
   takeCard,
+  extra,
 }: {
   lobby: MmLobby
   map: MmVetoMap | null
   onBack?: () => void
   mode: RoomMode
   takeCard?: React.ReactNode
+  extra?: React.ReactNode
 }) {
   const connecting = lobby.status === "connecting"
   const now = useNow(connecting)
@@ -537,6 +543,7 @@ function Center({
 
   return (
     <div className="flex flex-col gap-4">
+      {extra}
       {mode === "preview" && takeCard}
       {myRep && <ReplaceConnectCard lobby={lobby} rep={myRep} />}
       {/* Durante el veto, el tablero ya dice qué pasa. */}
@@ -552,7 +559,7 @@ function Center({
           <p className="mt-1 text-sm text-muted-foreground">
             {lobby.status === "cancelled"
               ? lobby.end_reason
-              : LOBBY_HINT[lobby.status]}
+              : (lobby.status_hint ?? LOBBY_HINT[lobby.status])}
           </p>
           {connecting && (
             <p
@@ -821,7 +828,7 @@ function VetoHistory({ lobby }: { lobby: MmLobby }) {
               <BanIcon aria-hidden className="size-3.5 text-destructive" />
               <span className="font-medium">{label(b.map)}</span>
               <span className="ml-auto text-xs text-muted-foreground">
-                {teamName(b.team)}
+                {sideLabel(lobby, b.team)}
                 {b.auto && " · automático"}
               </span>
             </li>

@@ -2,20 +2,29 @@ import { cn } from "cn"
 import {
   CalendarPlusIcon,
   CheckIcon,
-  ClockIcon,
+  ChevronDownIcon,
+  EllipsisIcon,
   LinkIcon,
   RepeatIcon,
   XIcon,
 } from "lucide-react"
+import { useState } from "react"
 
 import { TeamCrest } from "@/components/brand/TeamCrest"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { countdown, sideName, whenLabel } from "../lib/pcw"
 import { stepLabel } from "../lib/series"
 import type { PcwMatch } from "../types"
-import { SeriesPanel } from "./SeriesPanel"
+import { TeamName } from "./TeamName"
 import { copyLink, downloadIcs } from "./share"
 
 const STATUS: Record<
@@ -71,15 +80,17 @@ export function MyPcw({
   const recent = matches
     .filter((m) => !m.booking && (m.status === "won" || m.status === "lost"))
     .slice(0, 3)
+  // Las últimas jugadas quedan plegadas: arriba va lo que hay que atender.
+  const [showRecent, setShowRecent] = useState(false)
 
   return (
-    <Card variant="outline" asChild className="flex flex-col gap-4 p-4">
+    <Card variant="outline" asChild className="flex flex-col gap-3 p-4">
       <section aria-labelledby="my-pcw-h">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="my-pcw-h" className="text-[17px] font-bold">
             Mis PCW
           </h2>
-          <Button variant="outline" size="sm" onClick={onRepeat}>
+          <Button variant="ghost" size="sm" onClick={onRepeat}>
             <RepeatIcon />
             Repetir la última
           </Button>
@@ -107,16 +118,37 @@ export function MyPcw({
         )}
 
         {recent.length > 0 && (
-          <div className="flex flex-col gap-1.5 border-t pt-3">
-            <span className="text-xs text-muted-foreground">
-              Últimas jugadas
-            </span>
-            <ul className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5 border-t pt-2">
+            <button
+              type="button"
+              aria-expanded={showRecent}
+              aria-controls="my-pcw-recent"
+              onClick={() => setShowRecent((o) => !o)}
+              className="inline-flex items-center gap-1 self-start rounded-sm text-xs text-muted-foreground hover:text-foreground"
+            >
+              Últimas jugadas · {recent.length}
+              <ChevronDownIcon
+                aria-hidden
+                className={cn(
+                  "size-3.5 transition-transform",
+                  showRecent && "rotate-180"
+                )}
+              />
+            </button>
+            <ul
+              id="my-pcw-recent"
+              hidden={!showRecent}
+              className="flex flex-col gap-1"
+            >
               {recent.map((m) => (
                 <li key={m.id} className="flex items-center gap-2 text-sm">
                   {m.them.team && <TeamCrest team={m.them.team} size="xs" />}
                   <span className="min-w-0 flex-1 truncate">
-                    vs <b>{sideName(m.them)}</b> · BO{m.best_of}
+                    vs{" "}
+                    <b>
+                      <TeamName team={m.them.team} name={sideName(m.them)} />
+                    </b>{" "}
+                    · BO{m.best_of}
                   </span>
                   <span className="font-mono font-semibold">
                     {m.score?.[0]}-{m.score?.[1]}
@@ -160,78 +192,55 @@ function UpcomingRow({
     new Date(m.starts_at).getTime() - now.getTime() <= REMIND_MS
   const st = STATUS[m.status]
   const title = `PCW BO${m.best_of} vs ${sideName(m.them)}`
+  // "Esperando" es lo normal y no se muestra; los demás estados van en la línea de abajo.
+  const state = m.booking
+    ? stepLabel(m.booking)
+    : m.status === "waiting"
+      ? null
+      : st.label
+  const canCancel =
+    !m.booking && (m.status === "waiting" || m.status === "ready_us")
 
   return (
     <li
       className={cn(
-        "flex flex-col gap-2 rounded-lg border p-3",
+        "flex flex-col gap-2 rounded-lg border px-3 py-2.5",
         soon && "border-primary/60 bg-primary/5"
       )}
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {m.them.team && <TeamCrest team={m.them.team} size="row" />}
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate font-semibold">vs {sideName(m.them)}</span>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <ClockIcon aria-hidden className="size-3" />
+          <span className="truncate text-sm font-semibold">
+            vs <TeamName team={m.them.team} name={sideName(m.them)} />
+          </span>
+          <span className="truncate text-xs text-muted-foreground">
             BO{m.best_of} · {whenLabel(m.starts_at, now)}
-          </span>
-        </div>
-        {left && !m.booking && (
-          <span
-            aria-label="Falta"
-            className="font-mono text-lg font-semibold tabular-nums"
-          >
-            {left}
-          </span>
-        )}
-      </div>
-
-      {soon && (
-        <p className="text-xs">
-          <b>Empieza en menos de 15 minutos.</b> Entrá con CMLeague Conectar o
-          esperá el aviso con la IP cuando el servidor esté listo.
-        </p>
-      )}
-
-      {m.proposed_at && (
-        <div className="flex flex-wrap items-center gap-2 rounded-md bg-muted px-2.5 py-2 text-xs">
-          {m.proposed_by === "them" ? (
-            <>
-              <span className="min-w-[14rem] flex-1">
-                <b>{sideName(m.them)}</b> propone pasarla a{" "}
-                <b>{whenLabel(m.proposed_at, now)}</b>
-              </span>
-              <Button size="xs" onClick={() => onAnswer(m.id, true)}>
-                <CheckIcon />
-                Aceptar
-              </Button>
-              <Button
-                size="xs"
-                variant="ghost"
-                onClick={() => onAnswer(m.id, false)}
+            {left && !m.booking && (
+              <span className="font-mono tabular-nums"> · faltan {left}</span>
+            )}
+            {state && (
+              <span
+                className={
+                  m.booking?.step === "abandoned"
+                    ? "text-destructive"
+                    : "text-primary"
+                }
               >
-                Mantener la hora
-              </Button>
-            </>
-          ) : (
-            <span>
-              Propusiste <b>{whenLabel(m.proposed_at, now)}</b> · esperando
-              respuesta
-            </span>
-          )}
+                {" "}
+                · {state}
+              </span>
+            )}
+          </span>
         </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge
-          variant={m.booking?.step === "abandoned" ? "danger" : st.variant}
-          size="md"
-          shape="pill"
-        >
-          {m.booking ? stepLabel(m.booking) : st.label}
-        </Badge>
-        <span className="flex-1" />
+        {m.booking && (
+          // Con los dos listos, la serie sigue en su propia sala (veto, servidor y chats).
+          <Button size="sm" onClick={() => series.onRoom(m.id)}>
+            {m.booking.step === "finished" || m.booking.step === "abandoned"
+              ? "Ver resultado"
+              : "Ir a la sala"}
+          </Button>
+        )}
         {m.status === "waiting" && (
           <Button size="sm" onClick={() => onReady(m.id)}>
             Estamos listos
@@ -242,52 +251,85 @@ function UpcomingRow({
             Simular: el rival está listo
           </Button>
         )}
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          aria-label="Copiar link"
-          onClick={() => copyLink(m.id, "match")}
-        >
-          <LinkIcon />
-        </Button>
-        {m.starts_at && (
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Agregar al calendario"
-            onClick={() =>
-              downloadIcs({
-                id: m.id,
-                title,
-                startsAt: m.starts_at!,
-                bestOf: m.best_of,
-                kind: "match",
-              })
-            }
-          >
-            <CalendarPlusIcon />
-          </Button>
-        )}
-        {!m.booking && (m.status === "waiting" || m.status === "ready_us") && (
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Cancelar la práctica"
-            onClick={() => onCancel(m.id)}
-          >
-            <XIcon />
-          </Button>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label={`Más opciones de la práctica vs ${sideName(m.them)}`}
+            >
+              <EllipsisIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => copyLink(m.id, "match")}>
+              <LinkIcon aria-hidden />
+              Copiar link
+            </DropdownMenuItem>
+            {m.starts_at && (
+              <DropdownMenuItem
+                onSelect={() =>
+                  downloadIcs({
+                    id: m.id,
+                    title,
+                    startsAt: m.starts_at!,
+                    bestOf: m.best_of,
+                    kind: "match",
+                  })
+                }
+              >
+                <CalendarPlusIcon aria-hidden />
+                Agregar al calendario
+              </DropdownMenuItem>
+            )}
+            {canCancel && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => onCancel(m.id)}
+                >
+                  <XIcon aria-hidden />
+                  Cancelar la práctica
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {m.booking && (
-        <SeriesPanel
-          m={m}
-          onVeto={(map) => series.onVeto(m.id, map)}
-          onUnready={() => series.onUnready(m.id)}
-          onFinishMap={() => series.onFinishMap(m.id)}
-          onDismiss={() => series.onDismiss(m.id)}
-        />
+      {soon && (
+        <p className="text-xs">
+          <b>Empieza en menos de 15 min.</b> Entrá con CMLeague Conectar.
+        </p>
+      )}
+
+      {m.proposed_at && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md bg-muted px-2.5 py-1.5 text-xs">
+          {m.proposed_by === "them" ? (
+            <>
+              <span className="min-w-[11rem] flex-1">
+                Proponen pasarla a <b>{whenLabel(m.proposed_at, now)}</b>
+              </span>
+              <Button size="xs" onClick={() => onAnswer(m.id, true)}>
+                <CheckIcon />
+                Aceptar
+              </Button>
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => onAnswer(m.id, false)}
+              >
+                Mantener
+              </Button>
+            </>
+          ) : (
+            <span>
+              Propusiste <b>{whenLabel(m.proposed_at, now)}</b> · esperando
+              respuesta
+            </span>
+          )}
+        </div>
       )}
     </li>
   )
@@ -295,6 +337,8 @@ function UpcomingRow({
 
 /** Acciones de la serie después de "los dos listos". */
 export type SeriesActions = {
+  /** Abre la sala de la PCW. */
+  onRoom: (id: string) => void
   onVeto: (id: string, map: string) => void
   onUnready: (id: string) => void
   onFinishMap: (id: string) => void

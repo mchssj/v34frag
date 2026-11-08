@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { avgElo, sideName, whenLabel } from "../lib/pcw"
+import { TeamName } from "./TeamName"
 import type {
   BestOf,
   PcwAlert,
@@ -192,9 +193,11 @@ export function SubsPanel({
                       className="size-4 text-muted-foreground"
                     />
                   )}
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">
-                    {sideName(s.side)}
-                  </span>
+                  <TeamName
+                    team={s.side.team}
+                    name={sideName(s.side)}
+                    className="min-w-0 flex-1 truncate text-sm font-semibold"
+                  />
                   <Badge variant="primary" size="sm" shape="pill">
                     {s.need === 1 ? "Falta 1" : `Faltan ${s.need}`}
                   </Badge>
@@ -363,7 +366,7 @@ export function ActivityPanel({
                   r.score[0] > r.score[1] && "font-semibold"
                 )}
               >
-                {r.a.name}
+                <TeamName team={r.a} />
               </span>
               <span className="font-mono text-xs font-semibold">
                 {r.score[0]}-{r.score[1]}
@@ -374,7 +377,7 @@ export function ActivityPanel({
                   r.score[1] > r.score[0] && "font-semibold"
                 )}
               >
-                {r.b.name}
+                <TeamName team={r.b} />
               </span>
               <span className="w-14 shrink-0 text-right text-[11px] text-muted-foreground">
                 {whenLabel(r.at, now).replace("Hace ", "")}
@@ -392,7 +395,7 @@ export function ActivityPanel({
                 {i + 1}
               </span>
               <TeamCrest team={a.team} size="xs" />
-              <span className="flex-1 truncate">{a.team.name}</span>
+              <TeamName team={a.team} className="flex-1 truncate" />
               <span className="font-mono text-xs text-muted-foreground">
                 {a.w}G · {a.n - a.w}P
               </span>

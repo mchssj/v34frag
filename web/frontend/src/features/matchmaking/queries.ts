@@ -26,7 +26,6 @@ export const mmKeys = {
   profile: ["mm", "profile"] as const,
   lobbyMatch: (id: string) => ["mm", "lobby-match", id] as const,
   partyChat: ["mm", "party-chat"] as const,
-  globalChat: ["mm", "global-chat"] as const,
   adminServers: ["mm", "admin", "servers"] as const,
   passwords: (id: string) => ["mm", "admin", "passwords", id] as const,
 }
@@ -330,9 +329,6 @@ export function applyMmEvent(
     if (e.t === "lobby.chat") needs.chat = true
     else needs.live = true
     if (e.t === "lobby.finished") needs.profile = true
-  } else if (e.t === "chat.global") {
-    // Solo el chat global (prototipo).
-    void queryClient.invalidateQueries({ queryKey: mmKeys.globalChat })
   } else if (e.t === "party.chat") {
     // Solo el chat del grupo (prototipo).
     void queryClient.invalidateQueries({ queryKey: mmKeys.partyChat })

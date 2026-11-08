@@ -48,6 +48,20 @@ export type PcwPost = {
   invited: PcwTeamRef | null
   discord: boolean
   reliability: Reliability | null
+  /** backend: en mi anuncio, las ofertas que llegaron (como en pracc: el que publicó elige). */
+  offers?: PcwOffer[]
+  /** backend: en uno del tablón, la oferta que mandé y todavía no eligieron. */
+  my_offer?: { created_at: string; proposed_at: string | null } | null
+}
+
+/** backend: una oferta a un anuncio. El que publicó elige una y las demás quedan rechazadas. */
+export type PcwOffer = {
+  id: string
+  side: PcwSide
+  /** Otra hora que propone (o null: la del anuncio). */
+  proposed_at: string | null
+  created_at: string
+  reliability: Reliability | null
 }
 
 export type MatchStatus =

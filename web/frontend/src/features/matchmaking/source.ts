@@ -66,11 +66,12 @@ export type MmSource = {
   /** Chat del grupo (prototipo): solo la demo lo tiene; sin estos dos, Jugar no lo muestra. */
   partyChat?(signal?: AbortSignal): Promise<MmPartyChatMessage[]>
   sendPartyChat?(message: string): Promise<void>
-  /** Chat global de Jugar (prototipo): todos los que están en el matchmaking. */
-  globalChat?(signal?: AbortSignal): Promise<MmPartyChatMessage[]>
-  sendGlobalChat?(message: string): Promise<void>
   /** Denunciar fuera de una sala (desde el chat o el perfil). Prototipo: solo la demo. */
-  reportPlayer?(playerId: string, reason: ReportReason, note: string): Promise<MmState>
+  reportPlayer?(
+    playerId: string,
+    reason: ReportReason,
+    note: string
+  ): Promise<MmState>
   report(
     lobbyId: string,
     playerId: string,

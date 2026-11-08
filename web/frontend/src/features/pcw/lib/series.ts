@@ -7,8 +7,15 @@ import type { BestOf, PcwBooking, VetoAction, VetoKind } from "../types"
 export const VETO_TURN_S = 30
 /** Espera para entrar: 15 min el primer mapa, 5 los siguientes. */
 export const waitMinutes = (mapNo: number) => (mapNo === 1 ? 15 : 5)
-/** Jugadores que tiene que tener adentro cada equipo (los stand-ins cuentan). */
-export const NEEDED = 5
+/**
+ * Para jugar, cada lado necesita al menos 4 adentro, de esos al menos 3 del roster anotado y como mucho 2 suplentes
+ * (lo que aplican el plugin, MM_BOOKING_MIN_SIDE, y la base: min_roster 3 y max_standins 2 en una PCW).
+ */
+export const NEEDED = 4
+export const MIN_ROSTER = 3
+export const MAX_STANDINS = 2
+/** La regla en una frase, para la sala y las tarjetas. */
+export const ENTRY_RULE = `al menos ${NEEDED} por lado, ${MIN_ROSTER} del roster y hasta ${MAX_STANDINS} suplentes`
 /** Sanción por abandonar: 3 días, 7 si se repite en 30 días. */
 export const banDays = (repeat: boolean) => (repeat ? 7 : 3)
 
@@ -65,7 +72,7 @@ export function seriesWinner(
   return a >= need ? "us" : b >= need ? "them" : null
 }
 
-/** Al vencer la espera: abandona el lado que no llegó a 5 (los dos si ninguno). */
+/** Al vencer la espera: abandona el lado que no llegó a 4 adentro (los dos si ninguno). */
 export function abandonSide(
   present: [number, number]
 ): "us" | "them" | "both" | null {

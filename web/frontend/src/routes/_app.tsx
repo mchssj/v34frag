@@ -10,6 +10,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { GlobalMatchAlerts } from "@/features/matchmaking/MatchAlerts"
 import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
 import { MmSourceContext } from "@/features/matchmaking/source"
 import { AppSidebar } from "@/features/shell/components/AppSidebar"
@@ -55,18 +56,20 @@ function AppLayout() {
     <SidebarProvider defaultOpen={initialSidebarOpen()}>
       <AppSidebar user={user} />
       <SidebarInset className="min-h-[calc(100svh-16px)] min-w-0 md:peer-data-[variant=inset]:shadow-[0_1px_3px_rgb(0_0_0/.06),0_0_0_1px_var(--border)]">
-        <Topbar onSearch={() => setSearchOpen(true)} />
-        <NowBar />
-        <div className="flex flex-1 justify-center p-6">
-          {/* Columna flex: una vista puede ocupar todo el alto con flex-1 (p. ej. "Sin equipo"). */}
-          <div className="flex w-full max-w-[1320px] min-w-0 flex-col gap-4">
-            {/* Si te caes de una partida, el aviso te sigue por toda la web. */}
-            <MmSourceContext value={apiMmSource}>
+        {/* El matchmaking en toda la web: "Buscando" en la barra, la partida encontrada y la reconexión. */}
+        <MmSourceContext value={apiMmSource}>
+          <Topbar onSearch={() => setSearchOpen(true)} />
+          <NowBar />
+          <div className="flex flex-1 justify-center p-6">
+            {/* Columna flex: una vista puede ocupar todo el alto con flex-1 (p. ej. "Sin equipo"). */}
+            <div className="flex w-full max-w-[1320px] min-w-0 flex-col gap-4">
+              {/* Si te caes de una partida, el aviso te sigue por toda la web. */}
               <ReconnectBanner />
-            </MmSourceContext>
-            <Outlet />
+              <Outlet />
+            </div>
           </div>
-        </div>
+          <GlobalMatchAlerts />
+        </MmSourceContext>
       </SidebarInset>
       <CommandMenu user={user} open={searchOpen} onOpenChange={setSearchOpen} />
     </SidebarProvider>

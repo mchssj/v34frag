@@ -236,8 +236,12 @@ function LastMatch({ lobby, onBack }: { lobby: MmLobby; onBack: () => void }) {
 
 function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
   const source = useMmSource()
-  // Chat aparte, abajo a la derecha (prototipo): solo si la fuente lo tiene (hoy, la demo).
-  const showChat = !!source.globalChat && !!source.sendGlobalChat
+  // Chat del grupo aparte, abajo a la derecha (prototipo): con grupo y si la fuente lo tiene (hoy, la demo).
+  const showChat =
+    !!state.party &&
+    state.party.members.length > 1 &&
+    !!source.partyChat &&
+    !!source.sendPartyChat
   const [picked, setPicked] = useState<string | null>(null)
   const [region, setRegion] = useState(ANY_REGION)
   // En cola manda el modo de la cola; si el elegido se apagó, el primero habilitado.
@@ -301,7 +305,7 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
         </div>
       </Card>
       <PlayFeed state={state} />
-      {showChat && <ChatDock party={state.party} meNick={state.me.nick} />}
+      {showChat && <ChatDock party={state.party!} meNick={state.me.nick} />}
     </div>
   )
 }

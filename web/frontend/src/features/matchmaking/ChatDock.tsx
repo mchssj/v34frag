@@ -7,7 +7,6 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlayerName } from "./PlayerMenu"
 import { mmKeys } from "./queries"
 import { useMmSource } from "./source"
@@ -17,8 +16,6 @@ const MAX = 300
 /** Respuestas de un toque en el chat del grupo, para no escribir mientras se busca. */
 const QUICK = ["Dale", "¿Uno más?", "Listo", "Me voy en esta"]
 const OPEN_KEY = "csstv.mm.chat-open"
-
-type Room = "party" | "global"
 
 const readOpen = () => {
   try {
@@ -31,55 +28,30 @@ const readOpen = () => {
 }
 
 /**
- * Chat de Jugar (prototipo, bitácora 2026-11-08-pcw-demo): una ventana aparte abajo a la derecha, encima de la
- * página y sin achicarla, con el chat del grupo y el global. Se minimiza a un botón con los mensajes sin leer.
+ * Chat del grupo en Jugar (prototipo, bitácora 2026-11-08-pcw-demo): una ventana aparte abajo a la derecha, encima
+ * de la página y sin achicarla. Solo con un grupo de más de uno. Se minimiza a un botón con los mensajes sin leer.
+ * Sin chat global: no se quiere cargar el socket con mensajes para todos (Kyan, 2026-11-08).
  */
 export function ChatDock({
   party,
   meNick,
 }: {
-  party: MmParty | null
+  party: MmParty
   meNick: string
 }) {
   const source = useMmSource()
-  const inParty = !!party && party.members.length > 1 && !!source.partyChat
   const [open, setOpen] = useState(readOpen)
-  const [room, setRoom] = useState<Room>(inParty ? "party" : "global")
-  const active: Room = room === "party" && !inParty ? "global" : room
-
-  const global = useQuery({
-    queryKey: mmKeys.globalChat,
-    queryFn: ({ signal }) => source.globalChat!(signal),
-  })
-  const group = useQuery({
+  const { data = [] } = useQuery({
     // Con los miembros en la clave, el aviso de quién entró o salió aparece sin esperar otro mensaje.
-    queryKey: [...mmKeys.partyChat, party?.id, party?.members.length],
+    queryKey: [...mmKeys.partyChat, party.id, party.members.length],
     queryFn: ({ signal }) => source.partyChat!(signal),
-    enabled: inParty,
   })
 
-  // Sin leer: lo que llegó desde la última vez que se vio cada sala. La sala abierta no tiene.
-  const [seen, setSeen] = useState<Record<Room, number>>({
-    party: 0,
-    global: 0,
-  })
-  const count = (r: Room) =>
-    (r === "party"
-      ? inParty
-        ? group.data?.length
-        : 0
-      : global.data?.length) ?? 0
-  const unread = (r: Room) =>
-    open && active === r ? 0 : Math.max(0, count(r) - seen[r])
-  // Al salir de una sala (cambiar de pestaña o minimizar) queda vista hasta ese mensaje.
-  const leave = (r: Room) => setSeen((x) => ({ ...x, [r]: count(r) }))
-
-  const pick = (r: Room) => {
-    leave(active)
-    setRoom(r)
-  }
+  // Sin leer: lo que llegó mientras estaba minimizado.
+  const [seen, setSeen] = useState(0)
+  const unread = open ? 0 : Math.max(0, data.length - seen)
   const toggle = (o: boolean) => {
-    if (!o) leave(active)
+    if (!o) setSeen(data.length)
     setOpen(o)
     try {
       localStorage.setItem(OPEN_KEY, o ? "1" : "0")
@@ -87,7 +59,7 @@ export function ChatDock({
       // Sin almacenamiento, solo no se recuerda.
     }
   }
-  const total = unread("party") + unread("global")
+  const others = party.members.length - 1
 
   if (!open)
     return (
@@ -95,14 +67,16 @@ export function ChatDock({
         onClick={() => toggle(true)}
         className="fixed right-4 bottom-4 z-40 h-11 rounded-full px-4 shadow-lg"
         aria-label={
-          total ? `Abrir el chat, ${total} sin leer` : "Abrir el chat"
+          unread
+            ? `Abrir el chat del grupo, ${unread} sin leer`
+            : "Abrir el chat del grupo"
         }
       >
         <MessageSquareIcon />
-        Chat
-        {total > 0 && (
+        Chat del grupo
+        {unread > 0 && (
           <span className="grid h-5 min-w-5 place-items-center rounded-full bg-background px-1 font-mono text-[11px] text-foreground tabular-nums">
-            {total}
+            {unread}
           </span>
         )}
       </Button>
@@ -110,28 +84,17 @@ export function ChatDock({
 
   return (
     <section
-      aria-label="Chat"
-      className="fixed right-4 bottom-4 z-40 flex h-[26rem] max-h-[calc(100dvh-2rem)] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border bg-card shadow-2xl"
+      aria-label="Chat del grupo"
+      className="fixed right-4 bottom-4 z-40 flex h-[24rem] max-h-[calc(100dvh-2rem)] w-[min(21rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border bg-card shadow-2xl"
     >
-      <div className="flex items-center gap-2 border-b px-2 py-1.5">
-        <Tabs
-          value={active}
-          onValueChange={(v) => pick(v as Room)}
-          className="flex-1"
-        >
-          <TabsList variant="line" aria-label="Sala del chat">
-            {source.partyChat && (
-              <TabsTrigger value="party" disabled={!inParty}>
-                Grupo
-                <Unread n={unread("party")} />
-              </TabsTrigger>
-            )}
-            <TabsTrigger value="global">
-              Global
-              <Unread n={unread("global")} />
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex items-center gap-2 border-b py-1.5 pr-2 pl-3">
+        <MessageSquareIcon aria-hidden className="size-3.5" />
+        <h2 className="flex-1 text-sm font-semibold">
+          Chat del grupo{" "}
+          <span className="text-xs font-normal text-muted-foreground">
+            · {others === 1 ? "1 compañero" : `${others} compañeros`}
+          </span>
+        </h2>
         <Button
           variant="ghost"
           size="icon-sm"
@@ -141,43 +104,17 @@ export function ChatDock({
           <MinusIcon />
         </Button>
       </div>
-      {active === "party" && party ? (
-        <Room
-          key={`party-${party.id}`}
-          messages={group.data ?? []}
-          meNick={meNick}
-          empty="Solo lo ven los del grupo. Se borra al deshacerse."
-          placeholder="Mensaje al grupo"
-          quick={QUICK}
-          send={(m) => source.sendPartyChat!(m)}
-          invalidate={mmKeys.partyChat}
-        />
-      ) : (
-        <Room
-          key="global"
-          messages={global.data ?? []}
-          meNick={meNick}
-          empty="Todavía no hay mensajes."
-          placeholder="Mensaje a todos"
-          send={(m) => source.sendGlobalChat!(m)}
-          invalidate={mmKeys.globalChat}
-          note={
-            inParty
-              ? undefined
-              : "Lo ven todos los que están en Jugar. Sin insultos: se puede reportar."
-          }
-        />
-      )}
+      <Room
+        key={party.id}
+        messages={data}
+        meNick={meNick}
+        empty="Solo lo ven los del grupo. Se borra al deshacerse."
+        placeholder="Mensaje al grupo"
+        quick={QUICK}
+        send={(m) => source.sendPartyChat!(m)}
+        invalidate={mmKeys.partyChat}
+      />
     </section>
-  )
-}
-
-function Unread({ n }: { n: number }) {
-  if (n <= 0) return null
-  return (
-    <span className="grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 font-mono text-[10px] text-primary-foreground tabular-nums">
-      {n}
-    </span>
   )
 }
 

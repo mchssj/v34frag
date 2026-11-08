@@ -91,11 +91,11 @@ function AcceptForm({
   return (
     <>
       <SheetHeader className="border-b">
-        <SheetTitle>Aceptar contra {sideName(post.side)}</SheetTitle>
+        <SheetTitle>Mandar una oferta a {sideName(post.side)}</SheetTitle>
         <SheetDescription>
-          BO{post.best_of} · {whenLabel(post.starts_at, now)}. Al aceptar se
-          crea la práctica y los dos equipos marcan "Estamos listos" para el
-          veto y el servidor. Las PCW no suman ni restan ELO.
+          BO{post.best_of} · {whenLabel(post.starts_at, now)}. El que publicó
+          elige entre las ofertas que le llegan; si te elige, la práctica queda
+          en Mis PCW. Las PCW no suman ni restan ELO.
         </SheetDescription>
       </SheetHeader>
 
@@ -163,7 +163,7 @@ function AcceptForm({
             )
           }
         >
-          {propose ? "Aceptar y proponer la hora" : "Aceptar"}
+          {propose ? "Mandar oferta con otra hora" : "Mandar oferta"}
         </Button>
       </SheetFooter>
     </>
