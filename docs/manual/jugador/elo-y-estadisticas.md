@@ -14,15 +14,33 @@ El ELO mide tu nivel según los mixes que juegas. Todos empiezan con **1000**. C
 
 ## Cuánto sube o baja
 
-Antes de cada partida calculamos qué tan probable es que gane tu equipo, según el nivel de todos los jugadores.
+Lo que ganas o pierdes sale de **esa partida**: qué equipo era favorito y cómo jugaste tú. Tu nivel general (tu historial) sirve para armar partidas parejas, no para decidir cuánto te llevas.
 
-- **Si tu equipo era favorito**, ganar te da poco y perder te quita más.
-- **Si era el más débil**, ganar te da más y perder te quita poco.
-- **Con equipos parejos**, ganas o pierdes más o menos lo mismo.
-- **Tu rendimiento suma un poco:** si jugaste muy bien, ganas algo más o pierdes algo menos; si jugaste mal, al revés.
-- Ganar siempre suma al menos 1 punto y perder siempre resta al menos 1.
+**1. La base: quién era favorito.** Comparamos el ELO promedio de los dos equipos al empezar.
 
-En el matchmaking, la **Sala de la partida** te muestra cuánto te juegas: **En juego: +X / −Y**.
+- **Con equipos parejos**, la base es de **20**: ganar suma 20 y perder resta 20.
+- **Si tu equipo era favorito**, ganar te da menos y perder te quita más. Con 200 de ELO promedio a favor (un 76 % de ganar), la base es +10 si ganas y −30 si pierdes.
+- **Si era el más débil**, al revés: ganar te da más y perder te quita menos.
+
+**2. Tu rendimiento: el rating de esa partida** (el que ves en el detalle) multiplica la base:
+
+| Rating | Si ganas | Si pierdes |
+|---|---|---|
+| 0,75 o menos | ×0,75 | ×1,25 |
+| 1,00 | ×1,00 | ×1,00 |
+| 1,50 o más | ×1,50 | ×0,50 |
+
+Si ganas, cuanto mejor jugaste más sumas. Si pierdes jugando bien, pierdes menos; si pierdes jugando mal, pierdes más.
+
+**3. Topes:**
+
+- **Máximo 30 por equipo:** si a alguien le tocaría más de 30, a todo su equipo se le achica en la misma proporción, así las diferencias entre compañeros se mantienen.
+- **Mínimo 10:** en una partida terminada, ganar suma **10 o más** y perder resta **10 o más**.
+- Una partida que se cortó por una caída del servidor y que el staff da por buena no tiene ese mínimo (ganar suma al menos 1 y perder resta al menos 1). Un empate tampoco: suma o resta según quién era favorito.
+
+**Ejemplo:** equipos parejos (todos con 1000). Gana tu equipo: el que jugó con rating 1,80 suma +30; el de 1,00, +20; el de 0,65, +15. Pierde el otro: el de 1,10 resta −18 y el de 0,20, −25.
+
+En el matchmaking, la **Sala de la partida** te muestra cuánto te juegas con un rating de 1,00: **En juego: +X / −Y**. Después, tu rating de la partida lo sube o lo baja.
 
 ### Si no jugaste la partida completa
 
@@ -30,14 +48,14 @@ Cuenta la parte de la partida que jugaste:
 
 - Si jugaste menos del {{elo.min_pct}} de las rondas, tu ELO no cambia.
 - Si jugaste el {{elo.full_pct}} o más, cuenta completo.
-- En el medio, el cambio es proporcional a las rondas que jugaste.
+- En el medio, el cambio es proporcional a las rondas que jugaste, también el mínimo de 10 (con la mitad de las rondas, al menos 5).
 
 ### Si alguien abandona en el matchmaking
 
 - **Quien abandona** pierde ELO y se lleva una sanción de espera, que es el castigo fuerte (ver [Buscar partida en el matchmaking](/help/jugador/buscar-partida)). Cuánto ELO pierde depende de cuándo se fue: irse al principio cuesta más que irse cerca del final.
-  - Si su equipo **gana**: pierde entre {{mm.abandono_ganado_min}} y {{mm.abandono_ganado_max}} de ELO.
+  - Si su equipo **gana**: pierde entre {{mm.abandono_ganado_min}} y {{mm.abandono_ganado_max}} de ELO, y nunca menos de 10.
   - Si su equipo **pierde** (o empatan): pierde entre {{mm.abandono_perdido_min}} y {{mm.abandono_perdido_max}}, pero **nunca menos que una derrota normal**. Irse no sale más barato que perder.
-- **Su equipo** pierde menos si pierde, y gana más si gana igual. Si se rinden con `!gg`, pierden menos de lo normal.
+- **Su equipo** pierde menos si pierde, y gana más si gana igual. Si se rinden con `!gg`, pierden menos de lo normal, pero al menos 10.
 - **El equipo rival** gana menos, porque jugó con ventaja.
 - Si abandonan 2 o más del mismo equipo, ese equipo pierde la partida.
 - Irse en la última ronda no cuenta como abandono: el ELO de todos se calcula normal.

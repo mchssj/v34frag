@@ -30,6 +30,14 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Hecho:** 709 pruebas de la web, typecheck y lint en verde, 18 de 18 en el navegador sobre `/demo/siembra` y probado por Daniel en la página real local, con la copia de producción (2026-11-09). Commit en `main` (solo web: no va a `feat/mm-claim-en-sala`).
 - **Desplegada** el 2026-11-09 (20:45 UTC, sin mixes en curso): la web `f002fa643e02`. No se copió a `feat/frontend-fase-1`.
 
+## Resultados que no entraban y ELO por partida (2026-11-09): desplegado y commiteado en `main`
+
+- **Replanteo `97`** ([`2026-11-09-ingreso-sin-timeout`](bitacora/2026-11-09-ingreso-sin-timeout/)): **aplicado en producción** el 2026-11-09. `ingest_server_chunk` con 30 s y las medallas solo a la cola. El 8-16 de la sala `cb04b97c` (#2) entró y quedó vinculado a la sala.
+- **Replanteo `98`** ([`2026-11-09-elo-minimo-15`](bitacora/2026-11-09-elo-minimo-15/)): probado en la base local (7 de 7) y **aplicado en producción** el 2026-11-09 (19:19 UTC), con `elo_recompute_all()`.
+- **Replanteo `99`** ([`2026-11-09-resultado-tardio-mm`](bitacora/2026-11-09-resultado-tardio-mm/)): una sala que el plugin canceló porque el resultado no llegó en 5 minutos se cierra como terminada cuando el resultado entra (mismo servidor, menos de 24 h). Probado en local (6 de 6) y **aplicado en producción** el 2026-11-09 (19:49 UTC).
+- **Replanteo `100`, API y web** ([`2026-11-09-elo-por-partida`](bitacora/2026-11-09-elo-por-partida/)): el ELO por partida (probabilidad por ELO visible, multiplicador por el rating del mix, tope de 30 y mínimo de 10, editables en Reglas del ELO). Probado en local (base 12 de 12, API 595, web 710). **Desplegado el 2026-11-09** (base con `elo_recompute_all()`, API `f002fa643e02-local11092053` y web `f002fa643e02-local11092054`). **Falta:** probar la pestaña en el navegador.
+- **Commit:** en `main` el 2026-11-09. Falta la copia de la base (`97` a `100`) en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+
 ## Ajuste manual del armado del matchmaking (2026-11-09): desplegado el 2026-11-09
 
 - **Hecho:** replanteo `96`: puntos por ficha (0 por defecto, ±300, vencen a los 30 días) que se suman al ELO de armado sin tocar el ELO ni el rating, puestos solo desde la base, con historial de un año ([`2026-11-09-ajuste-manual-armado`](bitacora/2026-11-09-ajuste-manual-armado/)). Probado en la base local (`probar_96.sh`, todo en verde, con la inversa) y la `96` aplicada ahí. Términos, privacidad y manual al día.

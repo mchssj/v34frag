@@ -21,7 +21,7 @@ import {
   useSaveEloConfig,
 } from "../api/queries"
 import type { EloValues } from "../types"
-import { ELO_FIELDS, parseElo } from "../lib/eloRules"
+import { ELO_FIELDS, fmtNum, parseElo } from "../lib/eloRules"
 import type { Draft } from "../lib/eloRules"
 
 const toDraft = (v: EloValues): Draft =>
@@ -40,6 +40,7 @@ export function EloRulesTab() {
     <EloForm
       key={config.data.updated_at ?? "default"}
       saved={config.data.config}
+      formulaFrom={config.data.formula_from}
       updatedAt={config.data.updated_at}
       updatedBy={config.data.updated_by?.alias ?? null}
     />
@@ -48,10 +49,12 @@ export function EloRulesTab() {
 
 function EloForm({
   saved,
+  formulaFrom,
   updatedAt,
   updatedBy,
 }: {
   saved: EloValues
+  formulaFrom: string | null
   updatedAt: string | null
   updatedBy: string | null
 }) {
@@ -91,6 +94,13 @@ function EloForm({
             <Alert>
               <InfoIcon aria-hidden />
               <AlertDescription>
+                {formulaFrom && (
+                  <>
+                    Desde el {fmtDate(formulaFrom)}, lo que da cada mix sale de
+                    qué equipo era favorito por su ELO promedio y del rating de
+                    cada uno en ese mix.{" "}
+                  </>
+                )}
                 Los cambios valen para los mixes que terminen desde que guardas.{" "}
                 <b>No recalculan el historial.</b> Para corregir a jugadores
                 puntuales usa Ajustes manuales.
@@ -148,7 +158,7 @@ function EloForm({
                           err ? "text-destructive" : "text-muted-foreground"
                         )}
                       >
-                        {err ?? `${f.help} (${f.min}–${f.max})`}
+                        {err ?? `${f.help} (${fmtNum(f.min)}–${fmtNum(f.max)})`}
                       </span>
                     </div>
                   )
@@ -201,7 +211,7 @@ function EloForm({
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="text-[15px] font-semibold">Así queda un mix</h2>
             <span className="text-xs text-muted-foreground">
-              Equipos parejos
+              El que más se mueve de su equipo
             </span>
           </div>
           {!values ? (
@@ -243,19 +253,43 @@ function Preview({
   minPct: number
   fullPct: number
 }) {
+  const pct = (prob: number) => `${Math.round(prob * 100)} %`
   const rows = [
-    { label: "Partido normal", sub: "Rating 1,00", now: p.even, was: b?.even },
+    {
+      label: "Partido normal",
+      sub: "Parejos · rating 1,00",
+      now: p.even,
+      was: b?.even,
+    },
     {
       label: "Buen partido",
-      sub: "Rating 1,40",
+      sub: "Parejos · rating 1,40",
       now: p.high_rating,
       was: b?.high_rating,
     },
     {
+      label: "Partidazo",
+      sub: "Parejos · rating 1,80",
+      now: p.top_rating,
+      was: b?.top_rating,
+    },
+    {
       label: "Mal partido",
-      sub: "Rating 0,60",
+      sub: "Parejos · rating 0,60",
       now: p.low_rating,
       was: b?.low_rating,
+    },
+    {
+      label: "Favorito",
+      sub: `+${p.favorite.diff} de ELO · ${pct(p.favorite.prob)} de ganar`,
+      now: p.favorite,
+      was: b?.favorite,
+    },
+    {
+      label: "No favorito",
+      sub: `${p.underdog.diff} de ELO · ${pct(p.underdog.prob)} de ganar`,
+      now: p.underdog,
+      was: b?.underdog,
     },
   ]
   const was = (now: number | null, before: number | null | undefined) =>

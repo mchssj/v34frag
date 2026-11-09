@@ -29,13 +29,23 @@ import { ELO_DEFAULTS, preview, type EloConfig as Values } from '../services/elo
 // (plan docs/bitacora/2026-10-21-ajustes-elo-admin). Desde la web ya no se recalcula ni se simula el historial.
 
 type C = Context<AppEnv>;
-const COLUMNS = 'base, bonus_max, bonus_factor, elo_floor, start_elo, min_pct, full_pct, updated_at, updated_by';
+const COLUMNS =
+  'base, bonus_max, bonus_factor, elo_floor, start_elo, min_pct, full_pct, mult_win_min, mult_win_max, mult_loss_min, mult_loss_max, team_cap, min_delta, formula_from, updated_at, updated_by';
 
 async function readConfig(c: C) {
   const row = must(await c.var.sb.from('elo_config').select(COLUMNS).eq('id', 1).maybeSingle());
-  if (!row) return { config: ELO_DEFAULTS, updated_at: null, updated_by: null as string | null };
-  const { updated_at, updated_by, ...v } = row;
-  return { config: { ...v, bonus_factor: Number(v.bonus_factor) } as Values, updated_at, updated_by };
+  if (!row) return { config: ELO_DEFAULTS, formula_from: null, updated_at: null, updated_by: null as string | null };
+  const { updated_at, updated_by, formula_from, ...v } = row;
+  // numeric llega como número o como texto según el driver: siempre número.
+  const config: Values = {
+    ...v,
+    bonus_factor: Number(v.bonus_factor),
+    mult_win_min: Number(v.mult_win_min),
+    mult_win_max: Number(v.mult_win_max),
+    mult_loss_min: Number(v.mult_loss_min),
+    mult_loss_max: Number(v.mult_loss_max),
+  };
+  return { config, formula_from, updated_at, updated_by };
 }
 
 /** Argumentos de elo_set_config. */
@@ -47,6 +57,12 @@ const args = (v: Values) => ({
   p_start_elo: v.start_elo,
   p_min_pct: v.min_pct,
   p_full_pct: v.full_pct,
+  p_mult_win_min: v.mult_win_min,
+  p_mult_win_max: v.mult_win_max,
+  p_mult_loss_min: v.mult_loss_min,
+  p_mult_loss_max: v.mult_loss_max,
+  p_team_cap: v.team_cap,
+  p_min_delta: v.min_delta,
 });
 
 const getConfig = createRoute({
@@ -65,7 +81,9 @@ const putConfig = createRoute({
 const previewRoute = createRoute({
   method: 'post', path: '/api/v1/admin/elo/preview', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Vista previa de una configuración',
-  description: 'Ejemplos con los valores enviados (equipos parejos, rating alto y bajo, jugador nuevo, participación). No guarda nada ni toca la base.',
+  description:
+    'Ejemplos con los valores enviados y la fórmula por partida (equipos parejos, rating alto, bajo y máximo, favorito y no favorito ' +
+    'por 200 de ELO, jugador nuevo, participación). No guarda nada ni toca la base.',
   request: { body: { required: true, ...json(EloValues) } },
   responses: { 200: { description: 'Ejemplos', ...json(EloPreview) }, ...errorResponses(400, 401, 403) },
 });
@@ -121,7 +139,7 @@ export const elo = createRouter()
       updatedBy = { id: r.updated_by, alias: p?.tag ?? null };
     }
     c.header('Cache-Control', 'no-store');
-    return c.json({ config: r.config, updated_at: r.updated_at, updated_by: updatedBy }, 200);
+    return c.json({ config: r.config, formula_from: r.formula_from, updated_at: r.updated_at, updated_by: updatedBy }, 200);
   })
   .openapi(putConfig, async (c) => {
     must(await c.var.sb.rpc('elo_set_config', { ...args(c.req.valid('json').config), p_recompute: false }));

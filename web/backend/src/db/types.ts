@@ -653,13 +653,13 @@ isOneToOne: false
                   ]
                 },"elo_config": {
                   Row: {
-                    "base": number,"bonus_factor": number,"bonus_max": number,"elo_floor": number,"full_pct": number,"id": number,"min_pct": number,"start_elo": number,"updated_at": string,"updated_by": string | null
+                    "base": number,"bonus_factor": number,"bonus_max": number,"elo_floor": number,"formula_from": string | null,"full_pct": number,"id": number,"min_delta": number,"min_delta_from": string | null,"min_pct": number,"mult_loss_max": number,"mult_loss_min": number,"mult_win_max": number,"mult_win_min": number,"start_elo": number,"team_cap": number,"updated_at": string,"updated_by": string | null
                   }
                   Insert: {
-                    "base"?: number,"bonus_factor"?: number,"bonus_max"?: number,"elo_floor"?: number,"full_pct"?: number,"id"?: number,"min_pct"?: number,"start_elo"?: number,"updated_at"?: string,"updated_by"?: string | null
+                    "base"?: number,"bonus_factor"?: number,"bonus_max"?: number,"elo_floor"?: number,"formula_from"?: string | null,"full_pct"?: number,"id"?: number,"min_delta"?: number,"min_delta_from"?: string | null,"min_pct"?: number,"mult_loss_max"?: number,"mult_loss_min"?: number,"mult_win_max"?: number,"mult_win_min"?: number,"start_elo"?: number,"team_cap"?: number,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "base"?: number,"bonus_factor"?: number,"bonus_max"?: number,"elo_floor"?: number,"full_pct"?: number,"id"?: number,"min_pct"?: number,"start_elo"?: number,"updated_at"?: string,"updated_by"?: string | null
+                    "base"?: number,"bonus_factor"?: number,"bonus_max"?: number,"elo_floor"?: number,"formula_from"?: string | null,"full_pct"?: number,"id"?: number,"min_delta"?: number,"min_delta_from"?: string | null,"min_pct"?: number,"mult_loss_max"?: number,"mult_loss_min"?: number,"mult_win_max"?: number,"mult_win_min"?: number,"start_elo"?: number,"team_cap"?: number,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     
@@ -1233,13 +1233,13 @@ isOneToOne: true
                   ]
                 },"match_player_stats": {
                   Row: {
-                    "assists": number | null,"created_at": string,"damage": number | null,"deaths": number | null,"defuses": number,"elo_after": number | null,"elo_before": number | null,"elo_delta": number | null,"first_deaths": number,"first_kills": number,"headshots": number | null,"id": number,"k1": number,"k2": number,"k3": number,"k4": number,"k5": number,"kills": number | null,"match_id": string | null,"nick": string | null,"plants": number,"player_id": string | null,"rating": number | null,"rounds": number,"steam_id": string,"suicides": number,"team": number,"teamkills": number,"win_prob": number | null
+                    "assists": number | null,"created_at": string,"damage": number | null,"deaths": number | null,"defuses": number,"elo_after": number | null,"elo_before": number | null,"elo_delta": number | null,"elo_mult": number | null,"elo_scale": number | null,"first_deaths": number,"first_kills": number,"headshots": number | null,"id": number,"k1": number,"k2": number,"k3": number,"k4": number,"k5": number,"kills": number | null,"match_id": string | null,"nick": string | null,"plants": number,"player_id": string | null,"rating": number | null,"rounds": number,"steam_id": string,"suicides": number,"team": number,"teamkills": number,"win_prob": number | null
                   }
                   Insert: {
-                    "assists"?: number | null,"created_at"?: string,"damage"?: number | null,"deaths"?: number | null,"defuses"?: number,"elo_after"?: number | null,"elo_before"?: number | null,"elo_delta"?: number | null,"first_deaths"?: number,"first_kills"?: number,"headshots"?: number | null,"id"?: number,"k1"?: number,"k2"?: number,"k3"?: number,"k4"?: number,"k5"?: number,"kills"?: number | null,"match_id"?: string | null,"nick"?: string | null,"plants"?: number,"player_id"?: string | null,"rating"?: number | null,"rounds"?: number,"steam_id": string,"suicides"?: number,"team": number,"teamkills"?: number,"win_prob"?: number | null
+                    "assists"?: number | null,"created_at"?: string,"damage"?: number | null,"deaths"?: number | null,"defuses"?: number,"elo_after"?: number | null,"elo_before"?: number | null,"elo_delta"?: number | null,"elo_mult"?: number | null,"elo_scale"?: number | null,"first_deaths"?: number,"first_kills"?: number,"headshots"?: number | null,"id"?: number,"k1"?: number,"k2"?: number,"k3"?: number,"k4"?: number,"k5"?: number,"kills"?: number | null,"match_id"?: string | null,"nick"?: string | null,"plants"?: number,"player_id"?: string | null,"rating"?: number | null,"rounds"?: number,"steam_id": string,"suicides"?: number,"team": number,"teamkills"?: number,"win_prob"?: number | null
                   }
                   Update: {
-                    "assists"?: number | null,"created_at"?: string,"damage"?: number | null,"deaths"?: number | null,"defuses"?: number,"elo_after"?: number | null,"elo_before"?: number | null,"elo_delta"?: number | null,"first_deaths"?: number,"first_kills"?: number,"headshots"?: number | null,"id"?: number,"k1"?: number,"k2"?: number,"k3"?: number,"k4"?: number,"k5"?: number,"kills"?: number | null,"match_id"?: string | null,"nick"?: string | null,"plants"?: number,"player_id"?: string | null,"rating"?: number | null,"rounds"?: number,"steam_id"?: string,"suicides"?: number,"team"?: number,"teamkills"?: number,"win_prob"?: number | null
+                    "assists"?: number | null,"created_at"?: string,"damage"?: number | null,"deaths"?: number | null,"defuses"?: number,"elo_after"?: number | null,"elo_before"?: number | null,"elo_delta"?: number | null,"elo_mult"?: number | null,"elo_scale"?: number | null,"first_deaths"?: number,"first_kills"?: number,"headshots"?: number | null,"id"?: number,"k1"?: number,"k2"?: number,"k3"?: number,"k4"?: number,"k5"?: number,"kills"?: number | null,"match_id"?: string | null,"nick"?: string | null,"plants"?: number,"player_id"?: string | null,"rating"?: number | null,"rounds"?: number,"steam_id"?: string,"suicides"?: number,"team"?: number,"teamkills"?: number,"win_prob"?: number | null
                   }
                   Relationships: [
                     {
@@ -6530,7 +6530,7 @@ isOneToOne: false
 { Args: { "p_close": boolean,"p_key": string,"p_season": string }; Returns: undefined
                            },
 "elo_set_config":
-{ Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct"?: number,"p_min_pct"?: number,"p_recompute"?: boolean,"p_start_elo": number }; Returns: number
+{ Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct"?: number,"p_min_delta"?: number,"p_min_pct"?: number,"p_mult_loss_max"?: number,"p_mult_loss_min"?: number,"p_mult_win_max"?: number,"p_mult_win_min"?: number,"p_recompute"?: boolean,"p_start_elo": number,"p_team_cap"?: number }; Returns: number
                            },
 "elo_simulate":
 { Args: { "p_base": number,"p_bonus_factor": number,"p_bonus_max": number,"p_floor": number,"p_full_pct": number,"p_min_pct": number,"p_start_elo": number }; Returns: {

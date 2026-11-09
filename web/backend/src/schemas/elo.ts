@@ -3,24 +3,37 @@ import { dateParam, Envelope, listQuery } from '../lib/list';
 import { confirmField } from './common';
 
 // Configuración del ELO y vista previa (plan docs/bitacora/2026-10-16-api-elo-config) y ajustes manuales.
-// Los rangos son los de elo_set_config.
+// Los rangos son los de elo_set_config. Desde el replanteo 100 (docs/bitacora/2026-11-09-elo-por-partida): el multiplicador
+// por el rating del mix, el tope por equipo y el mínimo por partida.
 
 const int = (min: number, max: number, description: string) =>
   z.number().int().min(min, `Entre ${min} y ${max}`).max(max, `Entre ${min} y ${max}`).openapi({ description });
+const dec = (min: number, max: number, description: string) => {
+  const m = `Entre ${String(min).replace('.', ',')} y ${String(max).replace('.', ',')}`;
+  return z.number().min(min, m).max(max, m).openapi({ description });
+};
 
 export const EloValues = z
   .object({
-    base: int(5, 100, 'ELO que gana o pierde cada uno con equipos parejos'),
-    bonus_max: int(0, 20, 'Tope del bonus (o castigo) por rendimiento'),
-    bonus_factor: z.number().min(0, 'Entre 0 y 50').max(50, 'Entre 0 y 50').openapi({ description: 'Bonus por cada punto de rating sobre (o bajo) 1,00' }),
+    base: int(5, 100, 'ELO que gana o pierde cada uno con equipos parejos y rating 1,00 (la mitad de K)'),
+    bonus_max: int(0, 20, 'Fórmula anterior a la Temporada 2: tope del bonus (o castigo) por rendimiento'),
+    bonus_factor: z.number().min(0, 'Entre 0 y 50').max(50, 'Entre 0 y 50')
+      .openapi({ description: 'Fórmula anterior a la Temporada 2: bonus por cada punto de rating sobre (o bajo) 1,00' }),
     elo_floor: int(0, 1000, 'Nadie baja de este ELO'),
     start_elo: int(100, 5000, 'ELO con el que empieza un jugador nuevo (no menor que `elo_floor`)'),
     min_pct: int(1, 100, 'Con menos de este % de las rondas jugadas no cambia el ELO'),
     full_pct: int(1, 100, 'Desde este % de las rondas cuenta completo (entre `min_pct` y 100)'),
+    mult_win_min: dec(0.1, 1, 'Multiplicador mínimo del que gana (su rating del mix, acotado)'),
+    mult_win_max: dec(1, 3, 'Multiplicador máximo del que gana'),
+    mult_loss_min: dec(0.1, 1, 'Multiplicador mínimo del que pierde (2 − su rating del mix, acotado)'),
+    mult_loss_max: dec(1, 3, 'Multiplicador máximo del que pierde'),
+    team_cap: int(5, 200, 'Tope por equipo: si alguien lo pasa, todo su equipo se escala en la misma proporción'),
+    min_delta: int(0, 100, 'Mínimo que gana o pierde cada uno en un mix terminado (no en los interrumpidos ni en los empates)'),
   })
   .superRefine((v, ctx) => {
     if (v.start_elo < v.elo_floor) ctx.addIssue({ code: 'custom', path: ['start_elo'], message: 'No puede ser menor que el ELO mínimo' });
     if (v.full_pct < v.min_pct) ctx.addIssue({ code: 'custom', path: ['full_pct'], message: 'No puede ser menor que el mínimo de participación' });
+    if (v.min_delta > v.team_cap) ctx.addIssue({ code: 'custom', path: ['min_delta'], message: 'No puede pasar el tope por equipo' });
   })
   .openapi('EloValues');
 
@@ -31,6 +44,7 @@ export const EloConfigPut = z
 export const EloConfig = z
   .object({
     config: EloValues,
+    formula_from: z.string().nullable().openapi({ description: 'Desde cuándo vale la fórmula por partida (los mixes anteriores, con la de antes)' }),
     updated_at: z.string().nullable(),
     updated_by: z.object({ id: z.uuid(), alias: z.string().nullable() }).nullable().openapi({ description: 'Solo para un admin' }),
   })
@@ -44,6 +58,10 @@ export const EloPreview = z
     even: Pair.openapi({ description: 'Equipos parejos, rating 1,00' }),
     high_rating: Pair,
     low_rating: Pair,
+    top_rating: Pair.openapi({ description: 'Rating 1,80: el multiplicador máximo y el tope por equipo' }),
+    favorite: Pair.extend({ diff: z.number().int(), prob: z.number() })
+      .openapi({ description: 'Su equipo tiene `diff` de ELO promedio a favor (`prob`: probabilidad de ganar), rating 1,00' }),
+    underdog: Pair.extend({ diff: z.number().int(), prob: z.number() }).openapi({ description: 'Su equipo tiene `diff` en contra' }),
     new_player: z.object({ elo: z.number().int(), level: z.number().int().nullable() }),
     floor: z.number().int(),
     participation: z

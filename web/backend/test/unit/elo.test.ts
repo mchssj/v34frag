@@ -1,12 +1,14 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AdjustBody, EloValues, UndoBody } from '../../src/schemas/elo';
-import { delta, ELO_DEFAULTS, preview, weight } from '../../src/services/elo';
+import { delta, ELO_DEFAULTS, multiplier, preview, weight, winProb } from '../../src/services/elo';
 import { json, makeApp, testEnv } from '../helpers';
 import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
 
 const D = ELO_DEFAULTS;
 
-describe('vista previa', () => {
+describe('vista previa (fórmula por partida, replanteo 100)', () => {
+  const P = { ...D, base: 20 }; // K 40, como en producción
+
   it('participación: mínimo, completo y proporcional', () => {
     expect(weight(D, 0, 30)).toBe(0);
     expect(weight(D, 10, 30)).toBe(0); // 33 % < 35 %
@@ -15,37 +17,58 @@ describe('vista previa', () => {
     expect(weight(D, 5, 0)).toBe(0);
   });
 
-  it('cambio de ELO con equipos parejos', () => {
-    expect(delta(D, true)).toBe(30);
-    expect(delta(D, false)).toBe(-30);
-    expect(delta(D, true, 1.4)).toBe(34);
-    expect(delta(D, false, 0.6)).toBe(-34);
-    expect(delta(D, true, 3)).toBe(35); // tope del bonus
-    expect(delta(D, true, 1, 20, 30)).toBe(20);
-    expect(delta(D, true, 1, 10, 30)).toBeNull();
-    // Nunca 0: quien gana suma al menos 1 y quien pierde resta al menos 1.
-    const c = { ...D, base: 5, bonus_max: 20, bonus_factor: 50 };
-    expect(delta(c, true, 0)).toBe(1);
-    expect(delta(c, false, 2)).toBe(-1);
-    // round de Postgres: el empate se aleja del cero (-2,5 → -3).
-    expect(delta({ ...D, base: 5, bonus_factor: 25 }, false, 0.9)).toBe(-8);
-    // round de Postgres sobre double (participación): el empate va al par (25 × 0,5 = 12,5 → 12; 27 × 0,5 → 14; −12,5 → −12).
-    expect(delta({ ...D, base: 25 }, true, 1, 15, 30)).toBe(12);
-    expect(delta({ ...D, base: 27 }, true, 1, 15, 30)).toBe(14);
-    expect(delta({ ...D, base: 25 }, false, 1, 15, 30)).toBe(-12);
+  it('probabilidad por ELO promedio (Elo clásico, 4 decimales)', () => {
+    expect(winProb(0)).toBe(0.5);
+    expect(winProb(200)).toBe(0.7597);
+    expect(winProb(-200)).toBe(0.2403);
+    expect(winProb(400)).toBe(0.9091);
+  });
+
+  it('multiplicador: el rating al ganar y 2 − rating al perder, acotados', () => {
+    expect(multiplier(P, true, 1.72)).toBe(1.5);
+    expect(multiplier(P, true, 1.12)).toBe(1.12);
+    expect(multiplier(P, true, 0.13)).toBe(0.75);
+    expect(multiplier(P, false, 0.13)).toBe(1.25);
+    expect(multiplier(P, false, 0.83)).toBe(1.17);
+    expect(multiplier(P, false, 1.8)).toBe(0.5);
+  });
+
+  it('el mix de mirage del 2026-11-09 (todos en 1000)', () => {
+    expect([1.82, 1.63, 1.48, 0.71, 0.65].map((r) => delta(P, true, r))).toEqual([30, 30, 30, 15, 15]);
+    expect([0.17, 0.67, 0.85, 0.98, 1.09].map((r) => delta(P, false, r))).toEqual([-25, -25, -23, -20, -18]);
+  });
+
+  it('tope por equipo y mínimo', () => {
+    expect(delta(D, true, 1.4)).toBe(30); // 42 escalado a 30
+    expect(delta(D, false, 0.6)).toBe(-30); // −38 escalado a −30
+    expect(delta(P, false, 1.8)).toBe(-10); // −10 por el multiplicador, justo el mínimo
+    expect(delta(P, true, 1, 1, 1, 0.7597)).toBe(10); // favorito: 9,6 sube al mínimo
+    expect(delta({ ...P, min_delta: 0 }, true, 1, 1, 1, 0.9091)).toBe(4); // sin mínimo, al menos 1
+    expect(delta({ ...P, min_delta: 0, base: 5 }, true, 0.13, 1, 1, 0.99)).toBe(1);
+  });
+
+  it('participación parcial: también el mínimo va en proporción', () => {
+    expect(delta(P, true, 1, 20, 30)).toBe(13);
+    expect(delta(P, false, 1, 20, 30)).toBe(-13);
+    expect(delta(P, true, 1, 10, 30)).toBeNull();
+    expect(delta(P, true, 1, 1, 1, 0.9091)).toBe(10);
+    expect(delta(P, true, 1, 20, 30, 0.9091)).toBe(7); // 2,4 → mínimo 10 × 0,67 = 7
   });
 
   it('ejemplos', () => {
-    const p = preview(D);
-    expect(p.even).toEqual({ rating: 1, win: 30, lose: -30 });
-    expect(p.high_rating).toEqual({ rating: 1.4, win: 34, lose: -26 });
-    expect(p.low_rating).toEqual({ rating: 0.6, win: 26, lose: -34 });
+    const p = preview(P);
+    expect(p.even).toEqual({ rating: 1, win: 20, lose: -20 });
+    expect(p.high_rating).toEqual({ rating: 1.4, win: 28, lose: -12 });
+    expect(p.low_rating).toEqual({ rating: 0.6, win: 15, lose: -25 });
+    expect(p.top_rating).toEqual({ rating: 1.8, win: 30, lose: -10 });
+    expect(p.favorite).toEqual({ diff: 200, prob: 0.7597, rating: 1, win: 10, lose: -30 });
+    expect(p.underdog).toEqual({ diff: -200, prob: 0.2403, rating: 1, win: 30, lose: -10 });
     expect(p.new_player).toEqual({ elo: 1000, level: 4 });
     expect(p.floor).toBe(100);
     expect(p.participation).toEqual([
       { rounds: 10, total: 30, pct: 33, weight: 0, rating: 1, win: null, lose: null },
-      { rounds: 20, total: 30, pct: 67, weight: 0.67, rating: 1, win: 20, lose: -20 },
-      { rounds: 27, total: 30, pct: 90, weight: 1, rating: 1, win: 30, lose: -30 },
+      { rounds: 20, total: 30, pct: 67, weight: 0.67, rating: 1, win: 13, lose: -13 },
+      { rounds: 27, total: 30, pct: 90, weight: 1, rating: 1, win: 20, lose: -20 },
     ]);
   });
 });
@@ -60,6 +83,14 @@ describe('esquemas', () => {
     [{ start_elo: 500, elo_floor: 600 }, 'start_elo'],
     [{ min_pct: 50, full_pct: 40 }, 'full_pct'],
     [{ base: 30.5 }, 'base'],
+    [{ mult_win_min: 0.05 }, 'mult_win_min'],
+    [{ mult_win_max: 3.5 }, 'mult_win_max'],
+    [{ mult_loss_min: 1.2 }, 'mult_loss_min'],
+    [{ mult_loss_max: 0.9 }, 'mult_loss_max'],
+    [{ team_cap: 4 }, 'team_cap'],
+    [{ min_delta: 101 }, 'min_delta'],
+    [{ min_delta: 35, team_cap: 30 }, 'min_delta'],
+    [{ min_delta: 10.5 }, 'min_delta'],
   ])('rechaza %j', (over, path) => {
     const r = EloValues.safeParse({ ...D, ...over });
     expect(r.success).toBe(false);
@@ -67,6 +98,7 @@ describe('esquemas', () => {
   });
 
   it('acepta un factor con decimales', () => expect(EloValues.parse({ ...D, bonus_factor: 7.5 }).bonus_factor).toBe(7.5));
+  it('acepta multiplicadores con decimales', () => expect(EloValues.parse({ ...D, mult_win_max: 1.35 }).mult_win_max).toBe(1.35));
 
   it('ajuste: sumar o fijar (uno de los dos), de 1 a 10 fichas sin repetir y con motivo', () => {
     const P = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222'];
@@ -132,7 +164,10 @@ const call = async (method: string, path: string, body?: unknown, token = true) 
     },
     testEnv(),
   );
-const row = { ...D, bonus_factor: '10', updated_at: '2026-10-16T00:00:00Z', updated_by: ADMIN2 };
+const row = {
+  ...D, bonus_factor: '10', mult_win_min: '0.75', mult_win_max: '1.50', mult_loss_min: '0.50', mult_loss_max: '1.25',
+  formula_from: '2026-11-09T09:00:05Z', updated_at: '2026-10-16T00:00:00Z', updated_by: ADMIN2,
+};
 const config = (url: URL) => (url.pathname.endsWith('/elo_config') ? Response.json([row]) : undefined);
 
 describe('rutas', () => {
@@ -140,7 +175,7 @@ describe('rutas', () => {
     postgrest('user', (url) => (url.pathname.endsWith('/elo_config') ? Response.json([]) : undefined));
     const res = await call('GET', '/api/v1/elo/config', undefined, false);
     expect(res.status).toBe(200);
-    expect(await json(res)).toEqual({ config: D, updated_at: null, updated_by: null });
+    expect(await json(res)).toEqual({ config: D, formula_from: null, updated_at: null, updated_by: null });
   });
 
   it('un usuario común no ve quién la cambió', async () => {
@@ -148,10 +183,10 @@ describe('rutas', () => {
     expect((await json(await call('GET', '/api/v1/elo/config'))).updated_by).toBeNull();
   });
 
-  it('un admin ve quién la cambió; bonus_factor como número', async () => {
+  it('un admin ve quién la cambió; los numeric como número', async () => {
     postgrest('admin', (url) => config(url) ?? (url.pathname.endsWith('/profiles') ? Response.json([{ tag: 'Daniel' }]) : undefined));
     expect(await json(await call('GET', '/api/v1/elo/config'))).toEqual({
-      config: { ...D, bonus_factor: 10 }, updated_at: row.updated_at, updated_by: { id: ADMIN2, alias: 'Daniel' },
+      config: D, formula_from: row.formula_from, updated_at: row.updated_at, updated_by: { id: ADMIN2, alias: 'Daniel' },
     });
   });
 
@@ -159,9 +194,11 @@ describe('rutas', () => {
     const calls = postgrest('admin', (url) => config(url) ?? (url.pathname.endsWith('/rpc/elo_set_config') ? Response.json(0) : undefined));
     const res = await call('PUT', '/api/v1/admin/elo/config', { config: D, recompute: true, confirm: 'estoy seguro' });
     expect(res.status).toBe(200);
-    expect(await json(res)).toEqual({ config: { ...D, bonus_factor: 10 } });
+    expect(await json(res)).toEqual({ config: D });
     expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/'))!.body!)).toEqual({
-      p_base: 30, p_bonus_max: 5, p_bonus_factor: 10, p_floor: 100, p_start_elo: 1000, p_min_pct: 35, p_full_pct: 90, p_recompute: false,
+      p_base: 30, p_bonus_max: 5, p_bonus_factor: 10, p_floor: 100, p_start_elo: 1000, p_min_pct: 35, p_full_pct: 90,
+      p_mult_win_min: 0.75, p_mult_win_max: 1.5, p_mult_loss_min: 0.5, p_mult_loss_max: 1.25, p_team_cap: 30, p_min_delta: 10,
+      p_recompute: false,
     });
   });
 
@@ -175,7 +212,7 @@ describe('rutas', () => {
     const calls = postgrest('admin', () => undefined);
     const res = await call('POST', '/api/v1/admin/elo/preview', { ...D, base: 20 });
     expect(res.status).toBe(200);
-    expect((await json(res)).even).toEqual({ rating: 1, win: 20, lose: -20 });
+    expect((await json(res)).even).toEqual({ rating: 1, win: 20, lose: -20 }); // base 20, equipos parejos
     expect(calls.some((x) => x.url.includes('/rest/v1/') && !x.url.includes('/profiles'))).toBe(false);
   });
 

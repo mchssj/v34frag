@@ -1,0 +1,12 @@
+CMLeague 2.9.30 --  Changelog
+
+ELO
+- Ahora toda partida terminada mueve al menos 15 de ELO: si ganas, sumas 15 o más, y si pierdes, restas 15 o más, aunque tu equipo fuera muy favorito o muy débil.
+- Tu rendimiento se suma encima: si ganas jugando muy bien, sumas más de 15; si pierdes jugando mal, restas más de 15.
+- Si jugaste solo una parte de la partida, el mínimo va en proporción a lo que jugaste.
+- Las partidas que se cortan por una caída del servidor y los empates siguen como antes.
+- Vale desde el inicio de la Temporada 2: los mixes que ya jugaste en esta temporada se recalcularon con la regla nueva.
+- En la sala del matchmaking, "En juego" ya muestra al menos +15 / −15.
+
+Partidas
+- Arreglamos un problema por el que algunos resultados tardaban en llegar a la web y la sala quedaba "en vivo" después de terminar.

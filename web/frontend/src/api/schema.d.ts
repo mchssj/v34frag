@@ -10312,7 +10312,7 @@ export interface paths {
         put?: never;
         /**
          * Vista previa de una configuración
-         * @description Ejemplos con los valores enviados (equipos parejos, rating alto y bajo, jugador nuevo, participación). No guarda nada ni toca la base.
+         * @description Ejemplos con los valores enviados y la fórmula por partida (equipos parejos, rating alto, bajo y máximo, favorito y no favorito por 200 de ELO, jugador nuevo, participación). No guarda nada ni toca la base.
          */
         post: {
             parameters: {
@@ -25390,6 +25390,8 @@ export interface components {
         };
         EloConfig: {
             config: components["schemas"]["EloValues"];
+            /** @description Desde cuándo vale la fórmula por partida (los mixes anteriores, con la de antes) */
+            formula_from: string | null;
             updated_at: string | null;
             /** @description Solo para un admin */
             updated_by: {
@@ -25399,11 +25401,11 @@ export interface components {
             } | null;
         };
         EloValues: {
-            /** @description ELO que gana o pierde cada uno con equipos parejos */
+            /** @description ELO que gana o pierde cada uno con equipos parejos y rating 1,00 (la mitad de K) */
             base: number;
-            /** @description Tope del bonus (o castigo) por rendimiento */
+            /** @description Fórmula anterior a la Temporada 2: tope del bonus (o castigo) por rendimiento */
             bonus_max: number;
-            /** @description Bonus por cada punto de rating sobre (o bajo) 1,00 */
+            /** @description Fórmula anterior a la Temporada 2: bonus por cada punto de rating sobre (o bajo) 1,00 */
             bonus_factor: number;
             /** @description Nadie baja de este ELO */
             elo_floor: number;
@@ -25413,6 +25415,18 @@ export interface components {
             min_pct: number;
             /** @description Desde este % de las rondas cuenta completo (entre `min_pct` y 100) */
             full_pct: number;
+            /** @description Multiplicador mínimo del que gana (su rating del mix, acotado) */
+            mult_win_min: number;
+            /** @description Multiplicador máximo del que gana */
+            mult_win_max: number;
+            /** @description Multiplicador mínimo del que pierde (2 − su rating del mix, acotado) */
+            mult_loss_min: number;
+            /** @description Multiplicador máximo del que pierde */
+            mult_loss_max: number;
+            /** @description Tope por equipo: si alguien lo pasa, todo su equipo se escala en la misma proporción */
+            team_cap: number;
+            /** @description Mínimo que gana o pierde cada uno en un mix terminado (no en los interrumpidos ni en los empates) */
+            min_delta: number;
         };
         EloSaved: {
             config: components["schemas"]["EloValues"];
@@ -25437,6 +25451,28 @@ export interface components {
                 rating: number;
                 win: number | null;
                 lose: number | null;
+            };
+            /** @description Rating 1,80: el multiplicador máximo y el tope por equipo */
+            top_rating: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+            };
+            /** @description Su equipo tiene `diff` de ELO promedio a favor (`prob`: probabilidad de ganar), rating 1,00 */
+            favorite: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+                diff: number;
+                prob: number;
+            };
+            /** @description Su equipo tiene `diff` en contra */
+            underdog: {
+                rating: number;
+                win: number | null;
+                lose: number | null;
+                diff: number;
+                prob: number;
             };
             new_player: {
                 elo: number;

@@ -13,7 +13,8 @@ type FieldDef = {
   decimals?: boolean
 }
 
-// Rangos del contrato (admin.md, "ELO (admin)").
+// Rangos del contrato (admin.md, "ELO (admin)"). Desde el replanteo 100 (bitácora 2026-11-09-elo-por-partida):
+// multiplicador por el rating del mix, tope por equipo y mínimo por partida.
 export const ELO_FIELDS: FieldDef[] = [
   {
     key: "base",
@@ -21,24 +22,59 @@ export const ELO_FIELDS: FieldDef[] = [
     label: "ELO base",
     min: 5,
     max: 100,
-    help: "Lo que gana o pierde cada uno con equipos parejos.",
+    help: "Con equipos parejos y rating 1,00 (la mitad de K).",
   },
   {
-    key: "bonus_max",
+    key: "team_cap",
     group: "Por mix",
-    label: "Tope por rendimiento",
-    min: 0,
-    max: 20,
-    help: "Máximo que el rating suma o resta.",
+    label: "Tope por equipo",
+    min: 5,
+    max: 200,
+    help: "Si alguien lo pasa, todo su equipo se achica en proporción.",
   },
   {
-    key: "bonus_factor",
+    key: "min_delta",
     group: "Por mix",
-    label: "Bonus por punto de rating",
+    label: "Mínimo por partida",
     min: 0,
-    max: 50,
+    max: 100,
+    help: "Lo menos que gana o pierde cada uno en un mix terminado.",
+  },
+  {
+    key: "mult_win_min",
+    group: "Multiplicador por rating",
+    label: "Gana: mínimo",
+    min: 0.1,
+    max: 1,
     decimals: true,
-    help: "Por cada 1,00 de rating sobre o bajo 1,00.",
+    help: "Al ganar, el multiplicador es su rating del mix.",
+  },
+  {
+    key: "mult_win_max",
+    group: "Multiplicador por rating",
+    label: "Gana: máximo",
+    min: 1,
+    max: 3,
+    decimals: true,
+    help: "Tope del rating que cuenta al ganar.",
+  },
+  {
+    key: "mult_loss_min",
+    group: "Multiplicador por rating",
+    label: "Pierde: mínimo",
+    min: 0.1,
+    max: 1,
+    decimals: true,
+    help: "Al perder, es 2 − su rating: el que jugó bien pierde menos.",
+  },
+  {
+    key: "mult_loss_max",
+    group: "Multiplicador por rating",
+    label: "Pierde: máximo",
+    min: 1,
+    max: 3,
+    decimals: true,
+    help: "Lo más que pierde el que jugó mal.",
   },
   {
     key: "start_elo",
@@ -74,7 +110,27 @@ export const ELO_FIELDS: FieldDef[] = [
     max: 100,
     help: "Desde acá cuenta entero; en el medio, proporcional.",
   },
+  {
+    key: "bonus_max",
+    group: "Mixes anteriores a la Temporada 2",
+    label: "Tope por rendimiento",
+    min: 0,
+    max: 20,
+    help: "Solo para recalcular mixes viejos: máximo que el rating sumaba o restaba.",
+  },
+  {
+    key: "bonus_factor",
+    group: "Mixes anteriores a la Temporada 2",
+    label: "Bonus por punto de rating",
+    min: 0,
+    max: 50,
+    decimals: true,
+    help: "Solo para recalcular mixes viejos.",
+  },
 ]
+
+/** Un número con coma decimal (0,75). */
+export const fmtNum = (n: number) => String(n).replace(".", ",")
 
 export type Draft = Record<Key, string>
 
@@ -92,7 +148,7 @@ export function parseElo(d: Draft): {
     else if (!f.decimals && !Number.isInteger(n))
       errors[f.key] = "Tiene que ser un número entero."
     else if (n < f.min || n > f.max)
-      errors[f.key] = `Entre ${f.min} y ${f.max}.`
+      errors[f.key] = `Entre ${fmtNum(f.min)} y ${fmtNum(f.max)}.`
     else out[f.key] = n
   }
   if (
@@ -107,6 +163,12 @@ export function parseElo(d: Draft): {
     out.full_pct < out.min_pct
   )
     errors.full_pct = "No puede ser menor que la mínima."
+  if (
+    out.min_delta !== undefined &&
+    out.team_cap !== undefined &&
+    out.min_delta > out.team_cap
+  )
+    errors.min_delta = "No puede pasar el tope por equipo."
   return {
     values: Object.keys(errors).length ? null : (out as EloValues),
     errors,
