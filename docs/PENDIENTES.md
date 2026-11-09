@@ -4,6 +4,8 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
+> **Numeración nueva desde el 2026-11-08** (Kyan): **#1** es MVZG (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`) son los nuevos, los tres en el panel de MVZG. flow ya no existe y el de retake (ExtremeHost) se da de baja alrededor del 2026-11-10. Lo que abajo dice "#2" o "flow" antes del 2026-11-08 es flow; "#3", el de ExtremeHost.
+
 > **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
 
 ## Términos y condiciones y política de privacidad (borradores, sin publicar)
@@ -21,6 +23,19 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## Servidores nuevos #2 y #3 (2026-11-08): armados, falta darlos de alta
+
+- **Hecho el 2026-11-08** ([`2026-11-08-servidores-nuevos`](bitacora/2026-11-08-servidores-nuevos/)):
+  - #2 (`cd1be322`, `190.104.34.3:27030`) y #3 (`16c850ff`, `:27031`) recibieron la configuración del #1: MetaMod, SourceMod, Stripper, plugins, cfg y 17 mapas.
+  - Se verificó byte a byte y se reiniciaron vacíos. Cargan SourceMod sin errores nuevos.
+  - Tienen el reporter con `csstv_send "0"`, `csstv_mm "0"` y `csstv_claim "0"`, sin token y con el HUD apagado.
+- **Falta:**
+  1. **Pedirle a MVZG** que saque `-nohltv` de la línea de arranque de los dos (sin eso no hay SourceTV ni demos) y que pase `TICKRATE` a 100 (hoy 64; para nosotros es de solo lectura).
+  2. **Daniel o Kyan, en Administración › Servidores:** dar de alta "Server CM League #2" y "#3" (tag `srv2` y `srv3`, `tv_port` `27066` y `27067`) y pasarle a Claude el token y el HUD de cada uno, o ponerlos en el `.env`. Con eso se completa el cfg y se prenden `csstv_send`, `csstv_mm` y `csstv_claim`, como en el #1.
+  3. Pasar la fila de flow (`cedf12a8-…`) a histórico, fuera del matchmaking. Lo mismo con el de retake cuando se dé de baja.
+  4. **Worker `v34frag-demos`:** sumar `PTERO_KEY_cd1be322` y `PTERO_KEY_16c850ff` (la misma key que `157703b5`) y borrar `PTERO_KEY_f337a7d9` (flow).
+  5. Hacer un mix de prueba en cada uno antes de abrirlos al matchmaking.
 
 ## Jugadas en un solo aviso, la sección Juega del inicio y equipos más parejos (2026-11-07): desplegado el 2026-11-07
 

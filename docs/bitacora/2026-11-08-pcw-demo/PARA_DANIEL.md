@@ -149,6 +149,17 @@ Ordenado por lo que más destraba.
 - La página de PCW sigue siendo una demo hasta que esté el backend de arriba.
 - No hay nada para los servidores.
 
+## Aparte: servidores nuevos
+
+flow ya no existe, y el de retake se da de baja alrededor del 2026-11-10. Desde el 2026-11-08 hay dos servidores nuevos en el panel de MVZG, que son el **#2** (`cd1be322`) y el **#3** (`16c850ff`). Ya tienen la configuración del #1.
+
+Para que funcionen falta:
+- darlos de alta en Administración › Servidores;
+- pedirle a MVZG que saque `-nohltv` y suba el tickrate a 100;
+- sumar las keys de los dos nuevos al Worker de demos.
+
+Detalle: [`2026-11-08-servidores-nuevos`](../2026-11-08-servidores-nuevos/GUIA_IMPLEMENTACION.md).
+
 ## Dónde está cada cosa
 
 | Qué | Dónde |
