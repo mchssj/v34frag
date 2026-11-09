@@ -1,0 +1,7 @@
+CMLeague 2.9.28 --  Changelog
+
+Arreglos en la sala de la partida
+
+- Los capitanes vuelven a poder vetar mapas.
+- Vuelve el chat de equipo: debajo de tu equipo hablas solo con los tuyos y debajo del rival está el chat general.
+- Vuelve el aviso para vincular tu SteamID con !claim y la bandera de cada jugador.
