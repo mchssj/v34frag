@@ -40,6 +40,10 @@ import {
 } from "../../components/ui"
 import { BanDialog } from "../components/BanDialog"
 import { BanPanel } from "../components/BanPanel"
+import {
+  CommentReportsPanel,
+  useOpenCommentReports,
+} from "../components/CommentReportsPanel"
 import { BAN_STATUS, banLabel, banOrigin } from "../lib/bans"
 import {
   BANS_PER,
@@ -150,7 +154,7 @@ export function AdminBansPage({
   const canPermanent = canBanPermanent(role)
   const tab: StatusTab = search.status ?? "active"
   const status: BanStatus | undefined =
-    tab === "all" || tab === "mm" ? undefined : tab
+    tab === "all" || tab === "mm" || tab === "comments" ? undefined : tab
   const page = search.page ?? 1
   const filters: BanFilters = {
     source: search.source,
@@ -182,6 +186,7 @@ export function AdminBansPage({
   const mmCount =
     mmPenalties && mmBans ? mmPenalties.length + mmBans.length : undefined
   const servers = useQuery(serverStatusOptions).data?.servers ?? []
+  const openComments = useOpenCommentReports()
   const [banning, setBanning] = useState(false)
 
   // El baneo elegido sale de la lista, del historial de esa persona o del último que se abrió
@@ -248,10 +253,13 @@ export function AdminBansPage({
                 : undefined,
           },
           { key: "mm", label: "Matchmaking", badge: mmCount },
+          { key: "comments", label: "Comentarios", badge: openComments },
         ]}
       />
 
-      {tab === "mm" ? (
+      {tab === "comments" ? (
+        <CommentReportsPanel />
+      ) : tab === "mm" ? (
         <MmSourceContext value={apiMmSource}>
           <p className="text-[13px] leading-relaxed text-muted-foreground">
             Lo que deja a alguien sin buscar partida, sin tocar los servidores:

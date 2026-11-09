@@ -1,8 +1,10 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-07**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
+
+> **Numeración nueva desde el 2026-11-08** (Kyan): **#1** es MVZG (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`) son los nuevos, los tres en el panel de MVZG. flow ya no existe y el de retake (ExtremeHost) se da de baja alrededor del 2026-11-10. Lo que abajo dice "#2" o "flow" antes del 2026-11-08 es flow; "#3", el de ExtremeHost.
 
 > **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
 
@@ -21,6 +23,88 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## Autoaceptar VIP, comentarios en el perfil e insignia de verificado (2026-11-09): de `kyan/pruebas`, traído a `main` el 2026-11-09, sin commit ni producción
+
+Pedidos por Kyan. Bitácoras [`2026-11-09-autoaceptar-vip`](bitacora/2026-11-09-autoaceptar-vip/), [`2026-11-09-comentarios-perfil`](bitacora/2026-11-09-comentarios-perfil/) y [`2026-11-09-jugadores-verificados`](bitacora/2026-11-09-jugadores-verificados/).
+
+- **Replanteos 89, 90 y 91.**
+  - La 90 y la 91 se probaron en la base local con `probar_90_91.sh`.
+  - La **89** se probó el 2026-11-09 en la base local de `main` (con todo hasta la 88): sin VIP no se prende, el VIP entra aceptado, con el VIP vencido no, y la inversa deja todo igual.
+- **Orden de despliegue:**
+  - La 90 va antes que la API nueva: la ficha del jugador lee `players.verified`, y sin la 90 el perfil falla.
+  - La 91 va después de la 90.
+  - La 89 se aplica sin salas y con `cmleague-mm` parado.
+- **Ramas:** la 89 y `mm.ts` van también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Preguntar antes.
+- ~~**Después:** el sello de verificado en listas~~: hecho el 2026-11-09 en la `94` (ver abajo), salvo el buscador de arriba.
+
+## Ajustes de los comentarios del perfil y la insignia en las listas (2026-11-09): en local, sin commit
+
+- **Qué es:** los puntos 1 a 6 de backend de la lista de Kyan, con su web ([`2026-11-09-perfil-social-ajustes`](bitacora/2026-11-09-perfil-social-ajustes/)):
+  - las palabras bloqueadas en los comentarios, palabra por palabra;
+  - denunciar un comentario, y la pestaña Comentarios en Administración › Baneos;
+  - los baneados y los bloqueados por el dueño no comentan ni votan;
+  - la insignia en el ranking, Jugadores (con el filtro Verificados), los amigos, el grupo y la sala;
+  - los tipos de la base regenerados.
+- **Hecho:**
+  - **Base:** replanteo `94`, 7 bloques y la inversa.
+  - **API:** 582 pruebas unitarias y 10 escenarios contra la API local.
+  - **Web:** pruebas, lint y typecheck en verde.
+  - **En el navegador:** 7 de 7.
+  - La `94` quedó aplicada en la base local, después de la 89 a la 93.
+- **Falta:**
+  1. Commit, en la misma tanda que lo de Kyan y lo de PCW. Decidir qué va a `feat/mm-claim-en-sala`: la `94` necesita la `91`.
+  2. Desplegar en orden **88 → 89 → 90 → 91 → 92 → 93 → 94** ([guía](bitacora/2026-11-09-perfil-social-ajustes/GUIA_IMPLEMENTACION.md)).
+  3. El sello en el buscador de arriba y en las listas de equipos, torneos y PCW.
+
+## Servidores nuevos #2 y #3 (2026-11-08): armados, falta darlos de alta
+
+- **Hecho el 2026-11-08** ([`2026-11-08-servidores-nuevos`](bitacora/2026-11-08-servidores-nuevos/)):
+  - #2 (`cd1be322`, `190.104.34.3:27030`) y #3 (`16c850ff`, `:27031`) recibieron la configuración del #1: MetaMod, SourceMod, Stripper, plugins, cfg y 17 mapas.
+  - Se verificó byte a byte y se reiniciaron vacíos. Cargan SourceMod sin errores nuevos.
+  - Tienen el reporter con `csstv_send "0"`, `csstv_mm "0"` y `csstv_claim "0"`, sin token y con el HUD apagado.
+- **Falta:**
+  1. **Pedirle a MVZG** que saque `-nohltv` de la línea de arranque de los dos (sin eso no hay SourceTV ni demos) y que pase `TICKRATE` a 100 (hoy 64; para nosotros es de solo lectura).
+  2. **Daniel o Kyan, en Administración › Servidores:** dar de alta "Server CM League #2" y "#3" (tag `srv2` y `srv3`, `tv_port` `27066` y `27067`) y pasarle a Claude el token y el HUD de cada uno, o ponerlos en el `.env`. Con eso se completa el cfg y se prenden `csstv_send`, `csstv_mm` y `csstv_claim`, como en el #1.
+  3. Pasar la fila de flow (`cedf12a8-…`) a histórico, fuera del matchmaking. Lo mismo con el de retake cuando se dé de baja.
+  4. **Worker `v34frag-demos`:** sumar `PTERO_KEY_cd1be322` y `PTERO_KEY_16c850ff` (la misma key que `157703b5`) y borrar `PTERO_KEY_f337a7d9` (flow).
+  5. Hacer un mix de prueba en cada uno antes de abrirlos al matchmaking.
+
+## La página de PCW de verdad, con ofertas, y lo nuevo de Jugar (2026-11-08): en local, sin commit
+
+- **Qué es:** el prototipo de Kyan ([`2026-11-08-pcw-demo`](bitacora/2026-11-08-pcw-demo/)) pasado a `/pcw` contra la API, con el backend que le faltaba:
+  - ofertas (`pcw_offers`): el que publicó elige una y se crea la partida;
+  - publicar solo con VIP;
+  - como equipo sin roster;
+  - mapas fijos sin veto;
+  - la sala real;
+  - los avisos `pcw_offer*`.
+  En Jugar: el chat del grupo, la denuncia desde ese chat, el menú del nombre y la partida encontrada en cualquier página. Diseño: https://claude.ai/artifact/TyjvGnDfauLS9L4AiZxLaL
+- **Hecho:**
+  - **Base:** replanteos `88` (de Kyan), `92` y `93` (eran la `89` y la `90`; se renumeraron el 2026-11-09 porque Kyan ya usó esos números), con sus inversas. Las pruebas pasan en la base local (7, 12 y 6 bloques) y las tres quedaron aplicadas ahí.
+  - **API:** 569 pruebas unitarias en verde. En integración pasan las de PCW, torneos, notificaciones y VIP; las 10 que fallan en la suite completa fallan igual en `main` limpio.
+  - **Web:** 698 pruebas, lint y build en verde.
+  - **En el navegador:** se recorrió el flujo completo con dos cuentas, de publicar a la sala con el veto.
+  - **Manual, términos y privacidad** al día.
+- **Dónde:** worktree `v34frag-mainwt` (`main`), sin commit. El código de Kyan se trajo sin el widget para streamers.
+- **Falta:**
+  1. El commit en `main`. Lo del matchmaking va también en las otras ramas:
+     - la `93` y `mm.ts`, en `feat/mm-claim-en-sala`;
+     - la web de `features/matchmaking/`, en `feat/frontend-fase-1`.
+  2. Desplegar, siguiendo [la guía](bitacora/2026-11-08-pcw-real/GUIA_IMPLEMENTACION.md):
+     - la `88` recalcula el ELO de quienes jugaron PCW: avisar antes en el Discord y aplicarla sin un mix terminando;
+     - después, la `89`, la `90` y la `91` de Kyan, la `92`, la `93`, la API y la web.
+  3. Mirarlo en producción con dos cuentas y publicar el `CHANGELOG_DISCORD.txt` (2.9.27).
+  4. **Ideas de Kyan sin backend todavía** (siguen en `/demo/pcw`):
+     - aviso en Discord al publicar;
+     - desafío directo;
+     - otra hora en una práctica ya armada;
+     - avisos a medida;
+     - confiabilidad;
+     - suplentes;
+     - recordatorio con Conectar;
+     - avisos de PCW por mensaje directo de Discord.
+- **Bitácora:** [`2026-11-08-pcw-real`](bitacora/2026-11-08-pcw-real/)
 
 ## Jugadas en un solo aviso, la sección Juega del inicio y equipos más parejos (2026-11-07): desplegado el 2026-11-07
 

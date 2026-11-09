@@ -73,6 +73,20 @@ const RETENTION: [string, string][] = [
   ["Amigos y solicitudes de amistad", "Mientras tengas la cuenta"],
   ["Visitas a perfiles", "30 días"],
   [
+    "Comentarios en perfiles (también los borrados) y votos",
+    "Mientras tengas la cuenta",
+  ],
+  [
+    "Denuncias de comentarios (motivo, nota y quién la mandó)",
+    "Mientras existan el comentario y tu cuenta",
+  ],
+  ["Chat del grupo en Jugar", "Hasta que el grupo se deshace"],
+  [
+    "Mensaje denunciado desde el chat del grupo",
+    "Sin plazo, con la denuncia: es parte de la sanción",
+  ],
+  ["Ofertas de PCW que no se eligieron", "Hasta la limpieza siguiente de PCW"],
+  [
     "Evidencia del anticheat",
     "30 días desde que se cierra la sesión, salvo que forme parte de una sanción en curso",
   ],
@@ -132,6 +146,16 @@ const SECTIONS: LegalSection[] = [
             Las visitas a perfiles: qué perfiles públicos abres con tu sesión, y
             quién abre el tuyo.
           </li>
+          <li>
+            Los comentarios que dejas en perfiles y los que te dejan, y tus me
+            gusta y no me gusta. Si denuncias un comentario, el motivo y la nota
+            que escribes; el autor del comentario no ve quién lo denunció. Si
+            tienes la insignia de cuenta verificada, su color, el motivo, qué
+            admin la puso y cuándo.
+          </li>
+          <li>
+            Tus preferencias del matchmaking, como el autoaceptar partida (VIP).
+          </li>
         </ul>
 
         <h3>Si juegas en un servidor de la liga</h3>
@@ -162,6 +186,14 @@ const SECTIONS: LegalSection[] = [
         <h3>Lo que subes o escribes</h3>
         <ul>
           <li>Los mensajes del chat de las partidas en la web.</li>
+          <li>
+            Los mensajes del chat de tu grupo en Jugar. Los ven solo los del
+            grupo. Si denuncias un mensaje, guardamos una copia con la denuncia.
+          </li>
+          <li>
+            Las PCW que publicas y las ofertas que mandas: tu equipo o tu mix,
+            el roster y la hora.
+          </li>
           <li>
             Las capturas y notas de los reportes de resultados <Wip />
           </li>
@@ -262,6 +294,15 @@ const SECTIONS: LegalSection[] = [
           visitaron y, si eres VIP, quiénes. Si visitas el perfil de alguien con
           VIP, esa persona ve que lo visitaste, salvo que seas VIP y uses
           «navegar sin dejar rastro» (hasta 15 perfiles por semana).
+        </p>
+        <p>
+          Los comentarios de un perfil los ve cualquiera, también sin sesión,
+          con el nick, la foto, el nivel y la insignia de quien comentó. Los me
+          gusta y no me gusta se ven solo como números: nadie más que tú sabe
+          cómo votaste. Un comentario borrado deja de verse, pero lo guardamos
+          con quién lo borró y cuándo, por si hace falta revisar un caso de
+          acoso. La insignia de verificado se ve en tu perfil y en tus
+          comentarios.
         </p>
         <p>
           En un torneo histórico (el registro de un torneo jugado antes o fuera

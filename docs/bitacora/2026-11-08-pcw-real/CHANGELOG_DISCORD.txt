@@ -1,0 +1,24 @@
+CMLeague 2.9.27 --  Changelog
+
+PCW
+
+- Ya está abierta la sección PCW: prácticas entre equipos o entre mixes de amigos.
+- El tablón muestra las PCW publicadas en una lista: el equipo, su puesto en el ranking, el mapa (o si se vetan), la hora y si el nivel es parejo.
+- Publicar una PCW es para VIP. Mandar una oferta a una publicada es para todos.
+- Al publicar o mandar una oferta eliges con quién juegas: con tu equipo (entra cualquiera del plantel, no hace falta armar un roster) o con un mix de amigos con nombre propio.
+- Ya no se queda la PCW el primero que la acepta: los demás te mandan ofertas, y tú eliges la que prefieras. Una oferta puede proponer otra hora.
+- Si eliges tantos mapas como el formato (1 en una BO1, 3 en una BO3), se juegan esos en ese orden, sin veto.
+- Te avisamos en la campana cuando te llega una oferta, cuando eligen la tuya y cuando eligen a otro.
+- En Mis PCW ves la próxima en grande, con cuánto falta, los dos rosters y si cada equipo ya marcó Listos.
+- Con los dos equipos listos se abre la sala, igual a la del matchmaking: los escudos, el veto (con turnos para elegir mapa en las BO3 y BO5), el servidor y el chat.
+- Las PCW no suman ni restan ELO, nunca. Las ganadas como equipo siguen sumando al ranking de equipos.
+
+Jugar
+
+- Nuevo chat del grupo: con al menos un compañero en tu grupo, abajo a la derecha tienes un chat que solo ven ustedes. Se borra cuando el grupo se deshace.
+- Toca el nombre de cualquier jugador (en tu grupo, en tus amigos, en el chat o en la sala) para ver su perfil, enviarle una solicitud de amistad o bloquearlo. Desde la sala y desde el chat del grupo también puedes denunciarlo.
+- El perfil se abre en otra pestaña, así no pierdes tu lugar en la cola.
+- La lista de amigos ya no estira el panel: muestra 3 y el resto lo recorres con la barra.
+- Cuando se arma tu partida, la ventana para aceptarla te salta en cualquier página de la web, no solo en Jugar. Al aceptar te lleva a la sala.
+- Mientras buscas partida y andas por otra página, arriba ves "Buscando" con el tiempo: tócalo para volver a Jugar o usa la X para dejar de buscar.
+- El título de la pestaña también te avisa: "Buscando partida" y "¡Partida encontrada!", así te enteras aunque estés en otra pestaña.

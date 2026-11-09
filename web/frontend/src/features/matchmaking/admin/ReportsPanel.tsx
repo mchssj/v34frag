@@ -142,10 +142,21 @@ function ReportRow({ report: r }: { report: MmAdminReport }) {
               “{r.note}”
             </span>
           )}
+          {/* (replanteo 93) Desde el chat del grupo: el mensaje denunciado. */}
+          {r.message && (
+            <span className="max-w-64 text-xs">
+              Mensaje: <q className="text-muted-foreground">{r.message}</q>
+            </span>
+          )}
         </div>
       </TableCell>
       <TableCell className="text-sm">
-        {r.reporter} · <span className="font-mono">{r.mode}</span>
+        {r.reporter} ·{" "}
+        {r.lobby_id ? (
+          <span className="font-mono">{r.mode}</span>
+        ) : (
+          <span className="text-muted-foreground">chat del grupo</span>
+        )}
       </TableCell>
       <TableCell>
         <span

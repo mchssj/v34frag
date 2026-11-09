@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { secondsLeft, teamName } from "./labels"
+import { secondsLeft, sideLabel } from "./labels"
 import { suggestBan } from "./room/roomData"
 import { banOptimistic, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -37,6 +37,10 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
   const suggestion = me ? suggestBan(veto, me.team) : null
   const banOf = new Map(veto.bans.map((b) => [b.map, b]))
   const turnCaptain = veto.turn ? captainOf(veto.turn) : null
+  // En una PCW BO3 o BO5 también se eligen mapas; el matchmaking solo banea.
+  const picking = veto.next_kind === "pick"
+  const picks = veto.bans.filter((b) => b.kind === "pick").map((b) => b.map)
+  const name = (t: 1 | 2) => sideLabel(lobby, t)
 
   return (
     <Card>
@@ -46,8 +50,10 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
           {veto.turn === null
             ? `Se juega ${veto.pool.find((m) => m.name === lobby.map)?.label ?? lobby.map}.`
             : myTurn
-              ? "Tu turno: banea un mapa."
-              : `Banea ${turnCaptain?.nick ?? "el capitán"} (${teamName(veto.turn)}).`}
+              ? picking
+                ? "Tu turno: elige un mapa para jugar."
+                : "Tu turno: banea un mapa."
+              : `${picking ? "Elige" : "Banea"} ${turnCaptain?.nick ?? "el capitán"} (${name(veto.turn)}).`}
         </CardDescription>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
           {([1, 2] as const).map((t) => (
@@ -59,14 +65,14 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
               )}
             >
               <CrownIcon aria-hidden className="size-3.5 text-primary" />
-              {teamName(t)}: {captainOf(t)?.nick ?? "—"}
+              {name(t)}: {captainOf(t)?.nick ?? "—"}
               {captainOf(t)?.is_me && " (tú)"}
             </span>
           ))}
           {veto.turn !== null && (
             <span
               role="timer"
-              aria-label={`${left} segundos para banear`}
+              aria-label={`${left} segundos para ${picking ? "elegir" : "banear"}`}
               className={cn(
                 "ml-auto font-mono text-lg font-bold tabular-nums",
                 left <= 5 && "text-destructive"
@@ -78,7 +84,7 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
         </div>
       </CardHeader>
       <CardContent>
-        {me && veto.turn === me.team && suggestion && (
+        {me && veto.turn === me.team && !picking && suggestion && (
           <p className="mb-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs">
             Te conviene banear <strong>{suggestion.label}</strong>: tu equipo
             gana {suggestion.mine} %, ellos {suggestion.theirs} %.
@@ -90,6 +96,9 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
               key={m.name}
               map={m}
               ban={banOf.get(m.name)}
+              order={picks.indexOf(m.name)}
+              name={name}
+              verb={picking ? "Elegir" : "Banear"}
               picked={veto.turn === null && lobby.map === m.name}
               canBan={!!myTurn && !banOf.has(m.name) && !ban.isPending}
               onBan={() =>
@@ -107,18 +116,28 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
 
 function MapTile({
   map,
-  ban,
+  ban: act,
+  order,
+  name,
+  verb,
   picked,
   canBan,
   onBan,
 }: {
   map: MmVetoMap
   ban: MmVetoBan | undefined
+  /** Orden del mapa elegido (desde 0), o -1. */
+  order: number
+  name: (t: 1 | 2) => string
+  verb: "Banear" | "Elegir"
   picked: boolean
   canBan: boolean
   onBan: () => void
 }) {
   const label = map.label
+  // Un pick no es un ban: se ve como mapa de la serie, no tachado.
+  const ban = act?.kind === "pick" ? undefined : act
+  const pick = act?.kind === "pick" ? act : undefined
   return (
     <li>
       <button
@@ -127,16 +146,18 @@ function MapTile({
         onClick={onBan}
         aria-label={
           ban
-            ? `${label}, baneado por ${teamName(ban.team)}`
-            : canBan
-              ? `Banear ${label}`
-              : label
+            ? `${label}, baneado por ${name(ban.team)}`
+            : pick
+              ? `${label}, mapa ${order + 1}, elegido por ${name(pick.team)}`
+              : canBan
+                ? `${verb} ${label}`
+                : label
         }
         className={cn(
           "flex h-8 w-full items-center gap-2.5 rounded-lg border bg-muted/40 pr-2.5 text-left text-[13px] transition-colors",
           canBan && "cursor-pointer hover:border-destructive hover:bg-muted",
           ban && "opacity-50",
-          picked && "border-primary bg-primary/10"
+          (picked || pick) && "border-primary bg-primary/10"
         )}
       >
         <span className="h-full w-14 shrink-0 overflow-hidden rounded-l-[inherit] bg-muted">
@@ -152,7 +173,7 @@ function MapTile({
         <span className={cn("font-medium", ban && "line-through")}>
           {label}
         </span>
-        {!ban && !picked && map.team1_win_pct !== null && (
+        {!ban && !pick && !picked && map.team1_win_pct !== null && (
           <span
             title="% de victorias en este mapa de cada equipo"
             className="ml-auto font-mono text-[11px] text-muted-foreground tabular-nums"
@@ -163,8 +184,14 @@ function MapTile({
         {ban && (
           <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
             <BanIcon aria-hidden className="size-3" />
-            {teamName(ban.team)}
+            {name(ban.team)}
             {ban.auto && " · auto"}
+          </span>
+        )}
+        {pick && (
+          <span className="ml-auto text-xs font-semibold text-primary">
+            Mapa {order + 1} · {name(pick.team)}
+            {pick.auto && " · auto"}
           </span>
         )}
         {picked && (
@@ -173,7 +200,14 @@ function MapTile({
           </span>
         )}
         {canBan && (
-          <span className="text-xs font-medium text-destructive">Banear</span>
+          <span
+            className={cn(
+              "text-xs font-medium",
+              verb === "Elegir" ? "text-primary" : "text-destructive"
+            )}
+          >
+            {verb}
+          </span>
         )}
       </button>
     </li>

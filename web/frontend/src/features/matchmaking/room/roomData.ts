@@ -66,6 +66,7 @@ export function roomRows(lobby: MmLobby, team: Team, preview = false) {
 
 /** "team_<capitán>", como en el veto; sin capitán todavía, "Equipo A/B". */
 export function teamLabel(lobby: MmLobby, team: Team) {
+  if (lobby.sides) return lobby.sides[team]
   const captain = lobby.players.find((p) => p.team === team && p.is_captain)
   return captain ? `team_${captain.nick}` : team === 1 ? "Equipo A" : "Equipo B"
 }

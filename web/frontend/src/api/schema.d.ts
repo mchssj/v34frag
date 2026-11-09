@@ -1360,6 +1360,597 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/players/{id}/wall": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Los votos y comentarios de un perfil
+         * @description También sin sesión (solo para leer). `my_vote`, `can_vote` y `can_comment` dependen de quién consulta.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Los anteriores a esta fecha (para "Ver más") */
+                    before?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Muro */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileWall"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Votar un perfil
+         * @description Un voto por cuenta y perfil. No el propio.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileVote"];
+                };
+            };
+            responses: {
+                /** @description Muro */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileWall"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comentar un perfil
+         * @description Hasta 280 caracteres. 30 segundos entre comentarios y 30 por día (`400` con el motivo). No si el dueño los cerró (`403`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileNewComment"];
+                };
+            };
+            responses: {
+                /** @description Muro */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileWall"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profile-comments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar un comentario
+         * @description El autor, el dueño del perfil o un moderador o admin.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Borrado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profile-comments/{id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Denunciar un comentario
+         * @description Un comentario ajeno, una vez por cuenta; 20 denuncias por día. La revisan moderadores y admins.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileCommentReportBody"];
+                };
+            };
+            responses: {
+                /** @description Denunciado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/profile-comment-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Comentarios denunciados
+         * @description Moderadores y admins. La base pagina, filtra y ordena.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `open` (por revisar, por defecto), `resolved` o `all` */
+                    status?: "open" | "resolved" | "all";
+                    reason?: "toxic" | "spam" | "harassment" | "other";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Denuncias */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileCommentReportList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/profile-comment-reports/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolver una denuncia de un comentario
+         * @description Cierra todas las denuncias abiertas de ese comentario. Con `delete`, el comentario se borra (queda guardado, como los que borra el dueño).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileCommentReportResolve"];
+                };
+            };
+            responses: {
+                /** @description Resuelta */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/profile-comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Abrir o cerrar los comentarios de mi perfil */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProfileCommentsOpen"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players/{id}/visit": {
         parameters: {
             query?: never;
@@ -3582,6 +4173,8 @@ export interface paths {
                     has_account?: "true" | "false";
                     /** @description Con o sin SteamID vinculado */
                     has_steam?: "true" | "false";
+                    /** @description Con o sin insignia de verificado (replanteo 94) */
+                    verified?: "true" | "false";
                     elo_min?: number | null;
                     elo_max?: number | null;
                 };
@@ -6308,6 +6901,89 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/v1/admin/players/{id}/verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Poner, cambiar o sacar la insignia de verificado
+         * @description Solo admins. `kind` null la saca (y el motivo con ella).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminPlayerVerification"];
+                };
+            };
+            responses: {
+                /** @description La insignia como queda */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            verification: components["schemas"]["PlayerVerification"];
+                        };
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/admin/players/{id}/photo": {
@@ -12685,6 +13361,219 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/mm/party/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Los mensajes de mi grupo (los últimos 50) */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Solo los mensajes posteriores a este id */
+                    after?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Escribir en el chat de mi grupo */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MmPartyChatBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mm/party/chat/{id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Denunciar al autor de un mensaje del chat del grupo */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MmChatReport"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mm/sounds/selected": {
         parameters: {
             query?: never;
@@ -12704,6 +13593,82 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": components["schemas"]["MmSoundChoice"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mm/auto-accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Autoaceptar partida (VIP) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MmAutoAccept"];
                 };
             };
             responses: {
@@ -14836,7 +15801,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Servidores libres y aptos para un torneo, una PCW o el matchmaking (organizadores y moderadores) */
+        /** Servidores libres y aptos para un torneo, una PCW o el matchmaking (organizadores y moderadores; los de PCW, cualquiera con sesión: replanteo 92) */
         get: {
             parameters: {
                 query?: {
@@ -21152,7 +22117,7 @@ export interface paths {
         };
         /**
          * Anuncios de PCW abiertos
-         * @description Los abiertos de los últimos 7 días. Sin sesión.
+         * @description Los abiertos de los últimos 7 días. Sin sesión; con sesión, cada uno trae `my_offer`.
          */
         get: {
             parameters: {
@@ -21202,7 +22167,7 @@ export interface paths {
         put?: never;
         /**
          * Publicar una PCW
-         * @description Roster de 1 a 7 con al menos 4 jugadores con cuenta; formato entre los habilitados; un anuncio abierto por usuario. Con `team_id`, el bando juega como ese equipo oficial (suma al ranking).
+         * @description Solo cuentas VIP (403 `VIP_REQUIRED`; replanteo 92). Roster de 1 a 7 con al menos 4 jugadores con cuenta; formato entre los habilitados; un anuncio abierto por usuario. Con `team_id`, el bando juega como ese equipo oficial (suma al ranking); sin roster, es su plantel.
          */
         post: {
             parameters: {
@@ -21270,7 +22235,7 @@ export interface paths {
         };
         /**
          * Mi anuncio abierto
-         * @description null si no hay ninguno.
+         * @description null si no hay ninguno. Trae las ofertas abiertas que le llegaron (`offers`).
          */
         get: {
             parameters: {
@@ -21288,6 +22253,54 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PcwPost"] & (Record<string, never> | null);
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/pcw/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lo mío para la página de PCW
+         * @description Si soy VIP, mi ficha, el equipo oficial con el que puedo jugar (con su plantel y su sanción) y mis amigos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Contexto */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PcwContext"];
                     };
                 };
                 /** @description Sin sesión o sesión vencida */
@@ -21376,7 +22389,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/pcw/posts/{id}/accept": {
+    "/api/v1/pcw/posts/{id}/offers": {
         parameters: {
             query?: never;
             header?: never;
@@ -21386,8 +22399,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Aceptar una PCW
-         * @description Crea la partida. Nadie puede estar en los dos rosters. Devuelve el id de la partida.
+         * Mandar una oferta a un anuncio
+         * @description Para todos (sin VIP). El que publicó elige una. Nadie puede estar en los dos rosters; una oferta abierta por anuncio. Devuelve el id de la oferta.
          */
         post: {
             parameters: {
@@ -21400,9 +22413,134 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["PcwAcceptBody"];
+                    "application/json": components["schemas"]["PcwOfferBody"];
                 };
             };
+            responses: {
+                /** @description Oferta enviada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Created"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pcw/offers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Retirar mi oferta
+         * @description Mientras siga abierta.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pcw/offers/{id}/choose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Elegir una oferta
+         * @description Solo el que publicó: crea la partida (con la hora de la oferta, si propuso otra) y rechaza las demás. Devuelve el id de la partida.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
             responses: {
                 /** @description Partida creada */
                 201: {
@@ -22525,6 +23663,125 @@ export interface components {
             /** @description Motivo del rechazo, si el admin escribió uno. null en el resto */
             reject_reason: string | null;
         } | null;
+        ProfileWall: {
+            likes: number;
+            dislikes: number;
+            my_vote: 1 | -1 | null;
+            /** @description Con sesión y ficha, no es el perfil propio, sin un baneo activo y sin estar bloqueado por el dueño */
+            can_vote: boolean;
+            is_owner: boolean;
+            /** @description El dueño puede cerrarlos. Cerrados, no se ven ni se dejan */
+            comments_open: boolean;
+            /** @description Abiertos, con sesión y ficha, sin un baneo activo y sin estar bloqueado por el dueño */
+            can_comment: boolean;
+            /**
+             * @description Por qué no puede comentar ni votar: un baneo activo o el dueño lo bloqueó (replanteo 94)
+             * @enum {string|null}
+             */
+            restriction: "banned" | "blocked" | null;
+            total: number;
+            /** @description Los más nuevos primero, 20 por página */
+            items: components["schemas"]["ProfileWallComment"][];
+        };
+        ProfileWallComment: {
+            /** Format: uuid */
+            id: string;
+            body: string;
+            created_at: string;
+            author: {
+                /** Format: uuid */
+                player_id: string;
+                nick: string;
+                photo_url: string | null;
+                level: number;
+                /** @enum {string|null} */
+                verified: "gray" | "gold" | null;
+            };
+            mine: boolean;
+            /** @description Con sesión y no es el propio (replanteo 94) */
+            can_report: boolean;
+            /** @description El autor, el dueño del perfil y los moderadores o admins */
+            can_delete: boolean;
+        };
+        ProfileVote: {
+            /** @description 1 me gusta, -1 no me gusta, 0 lo saca */
+            value: 1 | -1 | 0;
+        };
+        ProfileNewComment: {
+            body: string;
+        };
+        ProfileCommentReportBody: {
+            /**
+             * @description `toxic` (insultos), `spam`, `harassment` (acoso) u `other`
+             * @enum {string}
+             */
+            reason: "toxic" | "spam" | "harassment" | "other";
+            note?: string;
+        };
+        ProfileCommentReportList: {
+            items: components["schemas"]["ProfileCommentReport"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        ProfileCommentReport: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            reason: "toxic" | "spam" | "harassment" | "other";
+            note: string | null;
+            created_at: string;
+            /**
+             * @description `dismissed`: descartada; `removed`: se borró el comentario
+             * @enum {string}
+             */
+            status: "open" | "dismissed" | "removed";
+            resolved_at: string | null;
+            resolved_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            reporter: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description Cuántas denuncias tiene ese comentario */
+            reports: number;
+            comment: {
+                /** Format: uuid */
+                id: string;
+                body: string;
+                created_at: string;
+                deleted_at: string | null;
+                author: {
+                    /** Format: uuid */
+                    id: string;
+                    alias: string;
+                } | null;
+            };
+            /** @description El perfil donde está el comentario */
+            profile: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+        };
+        ProfileCommentReportResolve: {
+            /**
+             * @description `dismiss` la descarta; `delete` borra el comentario
+             * @enum {string}
+             */
+            action: "dismiss" | "delete";
+        };
+        ProfileCommentsOpen: {
+            open: boolean;
+        };
         ProfileVisits: {
             vip: boolean;
             /** @description Jugadores distintos que visitaron tu perfil en los últimos 30 días */
@@ -22872,6 +24129,8 @@ export interface components {
                 alias: string;
                 photo_url: string | null;
                 vip: boolean;
+                /** @enum {string|null} */
+                verified: "gray" | "gold" | null;
             };
             level: number | null;
             elo: number;
@@ -22922,6 +24181,8 @@ export interface components {
                 alias: string;
                 photo_url: string | null;
                 vip: boolean;
+                /** @enum {string|null} */
+                verified: "gray" | "gold" | null;
             };
             teams: components["schemas"]["TeamRef"][];
             game_role: string | null;
@@ -23092,9 +24353,15 @@ export interface components {
             teams: components["schemas"]["TeamRef"][];
             /** @description Es VIP hoy (solo el estado; las fechas, en Mi perfil y en el admin) */
             vip: boolean;
+            /**
+             * @description Insignia de verificado (replanteo 90); null si no tiene
+             * @enum {string|null}
+             */
+            verified: "gray" | "gold" | null;
         };
         /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
         PlayerDetail: components["schemas"]["PlayerSummary"] & {
+            verification: components["schemas"]["PlayerVerification"];
             /** @description SteamID principal. Solo para el dueño y los admins: para los demás, null */
             steam_id: string | null;
             /** @description Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío */
@@ -23112,6 +24379,16 @@ export interface components {
             private: boolean;
             ban: components["schemas"]["ActiveBan"] & unknown;
         };
+        /** @description Insignia de verificado; null si no tiene */
+        PlayerVerification: {
+            /**
+             * @description gray: verificado; gold: verificado destacado
+             * @enum {string}
+             */
+            kind: "gray" | "gold";
+            /** @description El motivo que se lee en el tooltip (por ejemplo, "Verificación de identidad") */
+            note: string | null;
+        } | null;
         /** @description null si no jugó partidas terminadas */
         PlayerStatsDetail: components["schemas"]["PlayerStats"] & ({
             k2: number | null;
@@ -23608,6 +24885,11 @@ export interface components {
              * @default false
              */
             force: boolean;
+        };
+        AdminPlayerVerification: {
+            /** @enum {string|null} */
+            kind: "gray" | "gold" | null;
+            note?: string | null;
         };
         MedalGrant: {
             /**
@@ -24466,9 +25748,20 @@ export interface components {
             reason: "afk" | "toxic" | "cheat" | "abandon" | "other";
             note?: string;
         };
+        MmPartyChatBody: {
+            message: string;
+        };
+        MmChatReport: {
+            /** @enum {string} */
+            reason: "afk" | "toxic" | "cheat" | "abandon" | "other";
+            note?: string;
+        };
         MmSoundChoice: {
             /** Format: uuid */
             sound_id: string | null;
+        };
+        MmAutoAccept: {
+            enabled: boolean;
         };
         MmConfigPatch: {
             [key: string]: unknown;
@@ -26178,9 +27471,12 @@ export interface components {
             /** Format: uuid */
             match_id: string | null;
             created_at: string;
-            /** @description Pool del veto; `null`: el pool por defecto */
+            /** @description Pool del veto; `null`: el pool por defecto. Con tantos mapas como el formato, se juegan esos sin veto */
             map_pool: string[] | null;
             side: components["schemas"]["PcwSide"];
+            my_offer?: components["schemas"]["PcwMyOffer"];
+            /** @description Solo en GET /me/pcw/post: las ofertas abiertas que llegaron */
+            offers?: components["schemas"]["PcwOffer"][];
         };
         PcwSide: {
             /** Format: uuid */
@@ -26192,15 +27488,79 @@ export interface components {
                 name: string;
                 tag: string | null;
             } | null;
+            /** @description Puesto en el ranking de equipos (total) del equipo con el que juega; null: mix de amigos o sin puesto */
+            rank: number | null;
             roster: {
                 /** Format: uuid */
                 player_id: string | null;
                 alias: string;
                 guest: boolean;
+                /** @description ELO actual; null: invitado o sin ELO */
+                elo: number | null;
+            }[];
+        };
+        /** @description Con sesión: la oferta abierta que mandé a este anuncio */
+        PcwMyOffer: {
+            /** Format: uuid */
+            id: string;
+            starts_at: string | null;
+            created_at: string;
+        } | null;
+        PcwOffer: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            post_id: string;
+            /** @enum {string} */
+            status: "open" | "chosen" | "rejected" | "withdrawn";
+            /** @description Otra hora que propone; null: la del anuncio */
+            starts_at: string | null;
+            created_at: string;
+            by: {
+                /** Format: uuid */
+                user_id: string;
+                alias: string | null;
+            };
+            side: components["schemas"]["PcwSide"];
+        };
+        PcwContext: {
+            /** @description Puede publicar (VIP o admin) */
+            vip: boolean;
+            /** @description Mi ficha; null sin ficha */
+            me: {
+                /** Format: uuid */
+                player_id: string;
+                alias: string;
+                elo: number | null;
+            } | null;
+            /** @description El equipo oficial con el que puedo jugar (capitán o dueño); null si no tengo */
+            team: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                tag: string | null;
+                logo_url: string | null;
+                rank: number | null;
+                /** @description Sanción de PCW vigente del equipo */
+                ban_until: string | null;
+                plantel: {
+                    /** Format: uuid */
+                    player_id: string;
+                    alias: string;
+                    elo: number | null;
+                    has_account: boolean;
+                }[];
+            } | null;
+            friends: {
+                /** Format: uuid */
+                player_id: string;
+                alias: string;
+                elo: number | null;
+                teammate: boolean;
             }[];
         };
         MyPcwList: {
-            items: components["schemas"]["MatchSummary"][];
+            items: components["schemas"]["MyPcwMatch"][];
             /** @description Total con los filtros aplicados */
             total: number;
             page: number;
@@ -26208,6 +27568,20 @@ export interface components {
             sort: string;
             /** @enum {string} */
             order: "asc" | "desc";
+        };
+        MyPcwMatch: components["schemas"]["MatchSummary"] & {
+            my_side: 1 | 2;
+            /** @description null: sin reserva (todavía nadie marcó listos) o terminada */
+            booking: {
+                status: string;
+                ready1: boolean;
+                ready2: boolean;
+            } | null;
+            /** @description Los dos bandos con su roster (y el ELO), el equipo oficial con el que juegan y su puesto */
+            pcw_sides: {
+                1: components["schemas"]["PcwSide"] & (Record<string, never> | null);
+                2: components["schemas"]["PcwSide"] & (Record<string, never> | null);
+            };
         };
         PcwPostBody: {
             /**
@@ -26236,13 +27610,13 @@ export interface components {
             guests: string[];
             /**
              * Format: uuid
-             * @description Jugar como este equipo oficial (capitán o dueño): todo el roster con cuenta tiene que ser de su plantel y la PCW ganada suma a su ranking
+             * @description Jugar como este equipo oficial (capitán o dueño): todo el roster con cuenta tiene que ser de su plantel y la PCW ganada suma a su ranking. Sin `players` ni `guests`, el bando es el plantel (hasta 7, primero el capitán): en el servidor entra cualquiera de ellos
              */
             team_id?: string;
             /** @description Nombre del bando (por defecto, "Pick de <alias>") */
             name?: string;
         };
-        PcwAcceptBody: {
+        PcwOfferBody: {
             /**
              * @description Jugadores de la lista (al menos 4 con cuenta en total)
              * @default []
@@ -26255,11 +27629,16 @@ export interface components {
             guests: string[];
             /**
              * Format: uuid
-             * @description Jugar como este equipo oficial (capitán o dueño): todo el roster con cuenta tiene que ser de su plantel y la PCW ganada suma a su ranking
+             * @description Jugar como este equipo oficial (capitán o dueño): todo el roster con cuenta tiene que ser de su plantel y la PCW ganada suma a su ranking. Sin `players` ni `guests`, el bando es el plantel (hasta 7, primero el capitán): en el servidor entra cualquiera de ellos
              */
             team_id?: string;
             /** @description Nombre del bando (por defecto, "Pick de <alias>") */
             name?: string;
+            /**
+             * Format: date-time
+             * @description Otra hora que propone; sin hora, la del anuncio
+             */
+            starts_at?: string;
         };
         MapList: {
             items: components["schemas"]["MapItem"][];

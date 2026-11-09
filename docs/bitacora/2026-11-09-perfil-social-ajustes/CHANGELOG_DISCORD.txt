@@ -1,0 +1,9 @@
+CMLeague 2.9.28 --  Changelog
+
+Más cuidado en los comentarios y el sello de verificado en más lugares
+
+- Ahora puedes denunciar un comentario de otro jugador con la bandera. Lo revisa un moderador y, si no cumple las reglas, lo borra.
+- Los comentarios con palabras prohibidas ya no se publican.
+- Si tienes un baneo activo, no puedes comentar ni votar perfiles.
+- Si alguien te bloqueó, no puedes comentar ni votar en su perfil.
+- El sello de cuenta verificada ahora también aparece en el ranking, en tu lista de amigos y en las salas de Jugar.

@@ -21,6 +21,7 @@ export function MatchRoom({
   onBack,
   mode = "live",
   initialTab = "overview",
+  extra,
 }: {
   lobby: MmLobby
   onBack?: () => void
@@ -28,6 +29,8 @@ export function MatchRoom({
   mode?: "live" | "detail"
   /** La pestaña con que abre (replanteo 83: el aviso de jugadas lleva a Estadísticas). */
   initialTab?: Tab
+  /** Arriba del centro de la sala (la serie y las reglas de una PCW). */
+  extra?: React.ReactNode
 }) {
   const [tab, setTab] = useState<Tab>(initialTab)
   const map = lobby.veto?.pool.find((m) => m.name === lobby.map) ?? null
@@ -110,7 +113,13 @@ export function MatchRoom({
       />
 
       {current === "overview" ? (
-        <RoomOverview lobby={lobby} map={map} onBack={onBack} mode={mode} />
+        <RoomOverview
+          lobby={lobby}
+          map={map}
+          onBack={onBack}
+          mode={mode}
+          extra={extra}
+        />
       ) : (
         <RoomStats
           lobby={lobby}

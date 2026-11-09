@@ -324,9 +324,10 @@ const SECTIONS: LegalSection[] = [
           quien lo recibe.
         </li>
         <li>
-          Las PCW (prácticas entre equipos) <Wip /> no mueven el ELO de los
-          jugadores, pero cuentan para el ranking de equipos y se rigen por las
-          mismas reglas de conducta.
+          Las PCW (prácticas entre equipos) no mueven el ELO de los jugadores,
+          pero cuentan para el ranking de equipos y se rigen por las mismas
+          reglas de conducta. Publicar una PCW es para cuentas VIP; mandar una
+          oferta a una ya publicada, para todos.
         </li>
       </ul>
     ),
@@ -351,6 +352,22 @@ const SECTIONS: LegalSection[] = [
           Las configs <Wip /> se revisan antes de publicarse: se quitan las
           contraseñas que encontremos, pero revisa tú también que no tengan
           datos privados.
+        </li>
+        <li>
+          Los comentarios que dejas en el perfil de otro jugador son públicos y
+          salen con tu nick. Tienen que cumplir las reglas de conducta: sin
+          insultos, acoso, spam ni datos personales de otros. El dueño del
+          perfil puede borrarlos o cerrar los comentarios de su perfil, y los
+          moderadores y admins pueden borrar los que no cumplan. Los me gusta y
+          no me gusta también se ven, como números, sin decir quién votó. No se
+          aceptan comentarios con palabras de nuestra lista de palabras
+          bloqueadas. Con un baneo activo no puedes comentar ni votar perfiles,
+          y tampoco en el perfil de alguien que te bloqueó. Cualquiera puede
+          denunciar un comentario: lo revisa un moderador.
+        </li>
+        <li>
+          La insignia de cuenta verificada (gris o dorada) la pone un admin a su
+          criterio, no se compra ni se pide desde la web, y se puede quitar.
         </li>
         <li>
           Podemos quitar cualquier contenido que no cumpla estos términos, sin
@@ -427,9 +444,10 @@ const SECTIONS: LegalSection[] = [
             El VIP da ventajas de comodidad y estética (cosméticos, estadísticas
             avanzadas, comparador, favoritas, configs, créditos, ver quién
             visitó tu perfil y visitar hasta 15 perfiles por semana sin dejar
-            rastro, y similares).{" "}
+            rastro, autoaceptar las partidas del matchmaking, y similares).{" "}
             <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
-            ELO ni sobre las sanciones.
+            ELO ni sobre las sanciones: con el autoaceptar, si no te conectas a
+            tiempo, la sanción es la misma.
           </li>
           <li>
             Podemos cambiar, sumar o quitar ventajas del VIP. Si quitamos una

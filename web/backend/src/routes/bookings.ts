@@ -119,7 +119,7 @@ const act = createRoute({
 });
 const free = createRoute({
   method: 'get', path: '/api/v1/servers/free', tags: ['Servidores'], security: bearer, middleware: [requireUser] as const,
-  summary: 'Servidores libres y aptos para un torneo, una PCW o el matchmaking (organizadores y moderadores)',
+  summary: 'Servidores libres y aptos para un torneo, una PCW o el matchmaking (organizadores y moderadores; los de PCW, cualquiera con sesión: replanteo 92)',
   request: { query: FreeQuery },
   responses: { ...ok(Envelope(FreeServer)), ...errorResponses(400, 401, 403) },
 });

@@ -43,6 +43,7 @@ export function playersListOptions(q: string, f: FichaFilter, page: number) {
               ...(f === "account" ? { has_account: "true" as const } : {}),
               ...(f === "noaccount" ? { has_account: "false" as const } : {}),
               ...(f === "nosteam" ? { has_steam: "false" as const } : {}),
+              ...(f === "verified" ? { verified: "true" as const } : {}),
             },
           },
           signal,

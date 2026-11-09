@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PlayerName } from "./PlayerMenu"
 import { mmKeys } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby } from "./types"
@@ -83,9 +84,15 @@ export function LobbyChat({
         )}
         {messages.map((m) => (
           <li key={m.id} className="leading-snug break-words">
-            <strong className={cn(m.nick === me?.nick && "text-primary")}>
+            <PlayerName
+              nick={m.nick}
+              playerId={lobby.players.find((p) => p.nick === m.nick)?.player_id}
+              isMe={m.nick === me?.nick}
+              lobbyId={lobby.id}
+              className={cn("font-bold", m.nick === me?.nick && "text-primary")}
+            >
               {m.nick}:
-            </strong>{" "}
+            </PlayerName>{" "}
             {m.message}
           </li>
         ))}

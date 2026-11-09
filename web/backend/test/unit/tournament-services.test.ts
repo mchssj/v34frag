@@ -57,6 +57,17 @@ describe('veto', () => {
     expect(s.maps_to_play).toEqual([{ map: 'd', version: 'd_classic', decider: true }]);
     expect(vetoState(pool, acts, 1, 't1', 't2', {}).maps_to_play[0]!.version).toBe('d');
   });
+  it('mapas fijos (replanteo 92): con tantos mapas como el BO no hay veto y se juegan en orden', () => {
+    expect(vetoSequence(3, 3)).toEqual([]);
+    expect(vetoSequence(1, 1)).toEqual([]);
+    expect(vetoSequence(5, 5)).toEqual([]);
+    const fixed = [pool[2]!, pool[0]!, pool[3]!];
+    const s = vetoState(fixed, [], 3, 't1', 't2', { d: 'd_classic' });
+    expect(s.sequence).toEqual([]);
+    expect(s.next).toBeNull();
+    expect(s.maps_to_play.map((m) => m.map)).toEqual(['c', 'a', 'd']);
+    expect(s.maps_to_play.every((m) => !m.decider)).toBe(true);
+  });
 });
 
 describe('sumSeries (E21)', () => {

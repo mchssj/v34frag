@@ -1,0 +1,7 @@
+CMLeague 2.9.28 --  Changelog
+
+Autoaceptar partida (VIP)
+
+- Nuevo para VIP: en Jugar, toca Configuración y prende Autoaceptar partida. Cuando se arma tu partida, la aceptamos por ti aunque no estés mirando la web.
+- Igual suena el aviso, así sabes que tienes partida.
+- Ojo: si después no entras al servidor a tiempo, te sancionamos igual que siempre. Préndelo solo si vas a estar cerca de la PC.

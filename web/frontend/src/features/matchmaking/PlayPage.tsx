@@ -28,6 +28,7 @@ import {
   unlockAudio,
   useAudioReady,
 } from "./alert"
+import { ChatDock } from "./ChatDock"
 import { GroupSlots } from "./GroupSlots"
 import { InviteDialog } from "./InviteDialog"
 import { fmtClock, fmtDateTime, secondsLeft } from "./labels"
@@ -207,6 +208,7 @@ export function PlayPage() {
               pending={accept.isPending || decline.isPending}
               onAccept={() => accept.mutate()}
               onDecline={() => decline.mutate()}
+              auto={!!state.auto_accept?.allowed && !!state.auto_accept.enabled}
             />
           )}
           {!state.lobby && state.invites[0] && (
@@ -234,6 +236,13 @@ function LastMatch({ lobby, onBack }: { lobby: MmLobby; onBack: () => void }) {
 }
 
 function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
+  const source = useMmSource()
+  // Chat del grupo aparte, abajo a la derecha (prototipo): con grupo y si la fuente lo tiene (hoy, la demo).
+  const showChat =
+    !!state.party &&
+    state.party.members.length > 1 &&
+    !!source.partyChat &&
+    !!source.sendPartyChat
   const [picked, setPicked] = useState<string | null>(null)
   const [region, setRegion] = useState(ANY_REGION)
   // En cola manda el modo de la cola; si el elegido se apagó, el primero habilitado.
@@ -268,7 +277,10 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
           </Link>
           <ConnectionChip up={socketUp} />
           <SoundButton />
-          <SoundSettingsDialog sounds={state.sounds} />
+          <SoundSettingsDialog
+            sounds={state.sounds}
+            autoAccept={state.auto_accept}
+          />
         </div>
       </div>
       <Card
@@ -297,6 +309,7 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
         </div>
       </Card>
       <PlayFeed state={state} />
+      {showChat && <ChatDock party={state.party!} meNick={state.me.nick} />}
     </div>
   )
 }

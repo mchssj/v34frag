@@ -134,7 +134,7 @@ export function AppSidebar({ user }: { user: AuthUser }) {
 
 const BADGE_LABEL: Record<BadgeKey, (n: number) => string> = {
   live: (n) => `${n} en vivo`,
-  pcw: (n) => `${n} solicitudes abiertas`,
+  pcw: (n) => `${n} anuncios en el tablón`,
   adminBans: (n) => `${n} baneos activos`,
   adminClips: (n) => `${n} clips para revisar`,
 }

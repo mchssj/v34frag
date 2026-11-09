@@ -28,6 +28,7 @@ import {
 } from "../../components/ui"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { initialOf, PlayerAvatar } from "@/components/brand/PlayerAvatar"
+import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { SelectButton } from "@/components/data-table/DataTable"
 import {
   useServerTable,
@@ -75,7 +76,10 @@ const COLUMNS: DataColumn<PlayerSummary>[] = [
           className="size-[34px]"
         />
         <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="truncate font-semibold">{p.alias}</span>
+          <span className="flex min-w-0 items-center gap-1">
+            <span className="truncate font-semibold">{p.alias}</span>
+            <ListSeal kind={p.verified} />
+          </span>
           <span className="text-xs text-muted-foreground">
             {p.has_account ? "Con cuenta" : "Sin cuenta"}
           </span>
@@ -177,6 +181,7 @@ export function FichasTab({
                 { value: "account", label: "Con cuenta" },
                 { value: "noaccount", label: "Sin cuenta" },
                 { value: "nosteam", label: "Sin SteamID" },
+                { value: "verified", label: "Verificados" },
               ]}
             />
             <span className="ml-auto text-xs text-muted-foreground">

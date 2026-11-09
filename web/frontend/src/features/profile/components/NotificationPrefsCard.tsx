@@ -52,7 +52,8 @@ const CATEGORIES: {
   {
     key: "friends",
     title: "Amigos",
-    description: "Solicitudes de amistad y cuando alguien acepta la tuya.",
+    description:
+      "Solicitudes de amistad, cuando alguien acepta la tuya y los comentarios y me gusta en tu perfil.",
     always: "Las solicitudes de amistad llegan siempre.",
   },
   {

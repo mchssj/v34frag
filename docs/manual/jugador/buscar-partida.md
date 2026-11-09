@@ -18,7 +18,7 @@ El matchmaking arma partidas con jugadores de un nivel parecido al tuyo, elige e
 2. Elige el **Modo de juego** y la **Región del servidor**.
 3. Toca **Buscar partida**.
 
-Mientras buscas puedes seguir usando la web: la búsqueda sigue abierta y te avisamos cuando hay partida. Al principio solo te emparejamos con jugadores de ELO cercano; con el paso de los minutos el margen se agranda para que no esperes de más.
+Mientras buscas puedes seguir usando la web: la búsqueda sigue abierta y te avisamos cuando hay partida. En cualquier página, arriba aparece **Buscando** con el tiempo (tocarlo te lleva a Jugar; la **X** deja de buscar), y el título de la pestaña dice "Buscando partida". Al principio solo te emparejamos con jugadores de ELO cercano; con el paso de los minutos el margen se agranda para que no esperes de más.
 
 Para seguir buscando, la web tiene que quedar abierta, en cualquier página y en cualquier pestaña. Si la cierras o cierras la sesión, sales de la cola sin sanción. Si recargas la página o se te corta internet unos segundos, sigues buscando con tu lugar; mientras no estás, no te armamos partida. Al volver, Jugar te avisa si te sacamos de la cola.
 
@@ -28,14 +28,30 @@ Los equipos se reparten para que queden lo más parejos posible. Se mira el ELO 
 
 Puedes buscar con un amigo: invítalo con **Invitar al grupo** (tus amigos están en el panel **Amigos**; ver [Amigos](/help/jugador/amigos)). Juegan en el mismo equipo. El grupo puede ser de hasta {{mm.grupo_max}} personas, con hasta {{mm.grupo_dif_elo}} de diferencia de ELO entre ustedes.
 
+### El chat del grupo
+
+Con al menos un compañero en el grupo, abajo a la derecha aparece **Chat del grupo**. Solo lo ven los del grupo, y los mensajes se borran cuando el grupo se deshace. Los mensajes van de 1 a 300 caracteres; tiene respuestas de un toque ("Dale", "¿Uno más?", "Listo"). Con **–** lo minimizas: el botón dice cuántos mensajes no leíste.
+
+### El menú de un nombre
+
+Toca el nombre de un jugador (en el grupo, en Amigos, en el chat del grupo o en la sala) para ver su perfil (se abre en otra pestaña), agregarlo de amigo o bloquearlo. **Denunciar** aparece en la sala y en el chat del grupo: desde el chat, la denuncia lleva el mensaje como prueba y la revisa un moderador.
+
 ## 2. Aceptar
 
-Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Aceptar**.
+Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Aceptar**. La ventana aparece en cualquier página de la web, no solo en Jugar, con su sonido; al aceptar te lleva a Jugar. Si tienes la web en otra pestaña, el título de esa pestaña dice "¡Partida encontrada!" y, si diste permiso, te llega una notificación del navegador: vuelve a esa pestaña para aceptar.
 
 - Si todos aceptan, pasan al veto.
 - Si alguien no acepta, la partida se cancela. Los que aceptaron vuelven a la búsqueda sin perder su lugar en la cola. Un grupo vuelve solo si aceptaron todos sus integrantes.
 
 > **Ojo:** no aceptar a tiempo o rechazar la partida te da una sanción: un rato sin poder buscar (ver "Sanciones" abajo).
+
+### Autoaceptar (VIP)
+
+Si eres VIP, en Jugar toca **Configuración** y prende **Autoaceptar partida**. Desde ahí, cuando se arma una partida la aceptamos por ti apenas aparece, aunque no estés mirando la web. Igual suena el aviso y la ventana dice **Aceptada sola**.
+
+- Puedes apagarlo cuando quieras, también sin VIP.
+- Si se te vence el VIP, deja de aceptar por ti aunque el interruptor siga prendido.
+- Aceptar no alcanza: si después no te conectas al servidor a tiempo, la sanción es la misma que por no conectarte. Prende el autoaceptar solo si vas a estar cerca de la PC.
 
 ## 3. Veto de mapas
 

@@ -1,8 +1,7 @@
 ---
 titulo: Sanciones de PCW
 resumen: Qué cuenta como abandonar una PCW, cuánto dura la sanción y a quién alcanza.
-orden: 5
-oculta: true
+orden: 6
 ---
 
 Una PCW se da por **abandonada** cuando:
@@ -14,9 +13,9 @@ La PCW abandonada **no cuenta para nadie** y el servidor queda libre. Les avisam
 
 ## La sanción
 
-El equipo que abandonó no puede crear ni aceptar PCW durante **3 días**, o **7 días** si ya tuvo otra sanción en los 30 días anteriores.
+El equipo que abandonó no puede publicar PCW ni mandar ofertas durante **3 días**, o **7 días** si ya tuvo otra sanción en los 30 días anteriores.
 
-Alcanza al equipo y a cada jugador de su plantel: armar otro equipo no sirve para esquivarla. La sanción vigente se ve en la página del equipo y en la de la PCW.
+Alcanza al equipo y a cada jugador de su plantel: armar otro equipo no sirve para esquivarla. La sanción vigente se ve en la página del equipo y arriba de [PCW](/pcw).
 
 ## Lo que no se sanciona
 

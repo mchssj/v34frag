@@ -208,7 +208,7 @@ describe("PlayPage (con la demo)", () => {
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ma")
     await user.click(
       await screen.findByRole("button", {
-        name: /^(?!Invitar|Sacar|Eliminar).*maxi/,
+        name: /^(?!Invitar|Sacar|Eliminar|Jugador).*maxi/,
       })
     )
     expect(
@@ -423,7 +423,7 @@ describe("PlayPage (con la demo)", () => {
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ma")
     await user.click(
       await screen.findByRole("button", {
-        name: /^(?!Invitar|Sacar|Eliminar).*maxi/,
+        name: /^(?!Invitar|Sacar|Eliminar|Jugador).*maxi/,
       })
     )
     await flush(3500)
@@ -467,7 +467,7 @@ describe("PlayPage (con la demo)", () => {
     await user.type(screen.getByLabelText("Buscar jugador por nick"), "ju")
     await user.click(
       await screen.findByRole("button", {
-        name: /^(?!Invitar|Sacar|Eliminar).*juanchi/,
+        name: /^(?!Invitar|Sacar|Eliminar|Jugador).*juanchi/,
       })
     )
     await flush(3500)

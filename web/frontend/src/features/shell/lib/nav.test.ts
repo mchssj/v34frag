@@ -129,10 +129,11 @@ describe("Baneos en el sidebar", () => {
 describe("NAV_GROUPS", () => {
   const items = NAV_GROUPS.flatMap((g) => g.items)
 
-  it("Palmarés no está en el menú y PCW está desactivado hasta que estén listos", () => {
+  it("Palmarés no está en el menú; PCW está activo y cuenta los anuncios abiertos (2026-11-08-pcw-real)", () => {
     expect(items.find((i) => i.key === "hall-of-fame")).toBeUndefined()
-    expect(items.find((i) => i.key === "pcw")).toMatchObject({ soon: true })
-    expect(items.find((i) => i.key === "pcw")?.badge).toBeUndefined()
+    const pcw = items.find((i) => i.key === "pcw")
+    expect(pcw?.soon).toBeUndefined()
+    expect(pcw?.badge).toBe("pcw")
   })
 })
 

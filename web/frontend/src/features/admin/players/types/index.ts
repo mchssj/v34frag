@@ -21,4 +21,10 @@ export type PlayerPatch = Omit<Schemas["AdminPlayerPatch"], "force"> & {
   force?: boolean
 }
 
-export type FichaFilter = "all" | "account" | "noaccount" | "nosteam"
+export type FichaFilter =
+  | "all"
+  | "account"
+  | "noaccount"
+  | "nosteam"
+  /** Con insignia de verificado (replanteo 94). */
+  | "verified"

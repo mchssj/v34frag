@@ -6,6 +6,7 @@ import type { RowData } from "@tanstack/react-table"
 
 import { FilterChips } from "@/components/brand/FilterChips"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { DataTable } from "@/components/data-table/DataTable"
 import { DataTablePagination } from "@/components/data-table/DataTablePagination"
@@ -147,7 +148,10 @@ const HISTORIC_COLUMNS: DataColumn<RankingPlayer>[] = [
             photo={p.player.photo_url}
           />
           <span className="flex flex-col leading-tight">
-            <span className="font-medium">{p.player.alias}</span>
+            <span className="inline-flex items-center gap-1 font-medium">
+              {p.player.alias}
+              <ListSeal kind={p.player.verified} />
+            </span>
             {sub && (
               <span className="text-xs text-muted-foreground">{sub}</span>
             )}

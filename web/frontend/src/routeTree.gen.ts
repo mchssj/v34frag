@@ -28,6 +28,8 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
+import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
+import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
 import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
@@ -156,6 +158,16 @@ const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
 const DemoMedallasRoute = DemoMedallasRouteImport.update({
   id: '/demo/medallas',
   path: '/demo/medallas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoPcwRoute = DemoPcwRouteImport.update({
+  id: '/demo/pcw',
+  path: '/demo/pcw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoPerfilSocialRoute = DemoPerfilSocialRouteImport.update({
+  id: '/demo/perfil-social',
+  path: '/demo/perfil-social',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminBansRoute = AppAdminBansRouteImport.update({
@@ -357,6 +369,8 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/pcw': typeof DemoPcwRoute
+  '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
@@ -411,6 +425,8 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/pcw': typeof DemoPcwRoute
+  '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
@@ -469,6 +485,8 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/pcw': typeof DemoPcwRoute
+  '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
@@ -526,6 +544,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/demo/matchmaking'
     | '/demo/medallas'
+    | '/demo/pcw'
+    | '/demo/perfil-social'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
@@ -580,6 +600,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/demo/matchmaking'
     | '/demo/medallas'
+    | '/demo/pcw'
+    | '/demo/perfil-social'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
@@ -637,6 +659,8 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/demo/matchmaking'
     | '/demo/medallas'
+    | '/demo/pcw'
+    | '/demo/perfil-social'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
     | '/_app/admin/maps'
@@ -685,6 +709,8 @@ export interface RootRouteChildren {
   WelcomeRoute: typeof WelcomeRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoMedallasRoute: typeof DemoMedallasRoute
+  DemoPcwRoute: typeof DemoPcwRoute
+  DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -820,6 +846,20 @@ declare module '@tanstack/react-router' {
       path: '/demo/medallas'
       fullPath: '/demo/medallas'
       preLoaderRoute: typeof DemoMedallasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/pcw': {
+      id: '/demo/pcw'
+      path: '/demo/pcw'
+      fullPath: '/demo/pcw'
+      preLoaderRoute: typeof DemoPcwRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/perfil-social': {
+      id: '/demo/perfil-social'
+      path: '/demo/perfil-social'
+      fullPath: '/demo/perfil-social'
+      preLoaderRoute: typeof DemoPerfilSocialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/admin/bans': {
@@ -1215,6 +1255,8 @@ const rootRouteChildren: RootRouteChildren = {
   WelcomeRoute: WelcomeRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoMedallasRoute: DemoMedallasRoute,
+  DemoPcwRoute: DemoPcwRoute,
+  DemoPerfilSocialRoute: DemoPerfilSocialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

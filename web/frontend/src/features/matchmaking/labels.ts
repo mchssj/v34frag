@@ -77,6 +77,11 @@ export const fmtDateTime = (iso: string) =>
   })
 
 export const teamName = (team: 1 | 2) => (team === 1 ? "Equipo A" : "Equipo B")
+/** El nombre del bando en la sala: el de la PCW si lo tiene, si no "Equipo A/B". */
+export const sideLabel = (
+  lobby: { sides?: { 1: string; 2: string } },
+  team: 1 | 2
+) => lobby.sides?.[team] ?? teamName(team)
 
 export const REASON_TEXT: Record<ReportReason, string> = {
   afk: "AFK",
