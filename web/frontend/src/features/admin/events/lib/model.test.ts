@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  fillSlots,
   koRound1,
+  placeTeam,
+  seedLayout,
+  type LayoutSlot,
   mapsProblem,
   moveItem,
   nextStep,
@@ -122,6 +126,79 @@ describe("siembra", () => {
     expect(moveItem(["a", "b", "c", "d"], 3, 0)).toEqual(["d", "a", "b", "c"])
     expect(moveItem(["a", "b", "c"], 0, 2)).toEqual(["b", "c", "a"])
     expect(moveItem(["a", "b"], 1, 1)).toEqual(["a", "b"])
+  })
+})
+
+describe("siembra sobre la llave", () => {
+  const seedsOf = (slots: LayoutSlot[]) =>
+    slots.map((s) => (s.kind === "seed" ? s.seed : s.kind))
+
+  it("eliminación directa: todas las rondas y byes", () => {
+    const [llave] = seedLayout("single", {}, 6)
+    expect(llave.cols.map((c) => c.title)).toEqual([
+      "Cuartos",
+      "Semifinal",
+      "Final",
+    ])
+    expect(llave.cols[0].boxes.map((b) => seedsOf(b.slots))).toEqual([
+      [1, "bye"],
+      [4, 5],
+      [2, "bye"],
+      [3, 6],
+    ])
+    expect(llave.cols[2].boxes[0].slots).toEqual([
+      { kind: "ph", text: "Ganador 2.1" },
+      { kind: "ph", text: "Ganador 2.2" },
+    ])
+    expect(seedLayout("single", {}, 1)).toEqual([])
+  })
+  it("doble: final superior y gran final", () => {
+    const [sup] = seedLayout("double", {}, 4)
+    expect(sup.cols.map((c) => c.title)).toEqual([
+      "Semifinal",
+      "Final superior",
+      "Gran final",
+    ])
+  })
+  it("grupos en serpentina", () => {
+    const [g] = seedLayout("groups", { groups: 2, advance: 2 }, 8)
+    expect(g.cols.map((c) => seedsOf(c.boxes[0].slots))).toEqual([
+      [1, 4, 5, 8],
+      [2, 3, 6, 7],
+    ])
+    expect(g.hint).toContain("Pasan 2 por grupo")
+  })
+  it("suizo: los que entran directo y la ronda 1 de la etapa 1", () => {
+    const secs = seedLayout("swiss", { stages: 2, size: 16, wins: 3 }, 24)
+    expect(secs.map((s) => s.title)).toEqual(["Entran directo", "Etapa 1"])
+    expect(seedsOf(secs[0].cols[0].boxes[0].slots)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8,
+    ])
+    expect(seedsOf(secs[1].cols[0].boxes[0].slots)).toEqual([9, 17])
+    expect(secs[1].cols[0].boxes).toHaveLength(8)
+    const [solo] = seedLayout("swiss", { stages: 1, size: 8, wins: 2 }, 8)
+    expect(solo.cols[0].boxes.map((b) => seedsOf(b.slots))).toEqual([
+      [1, 5],
+      [2, 6],
+      [3, 7],
+      [4, 8],
+    ])
+  })
+  it("poner un equipo: intercambio, desde los sin ubicar y fuera de rango", () => {
+    expect(placeTeam(["a", "b", "c"], "c", 0)).toEqual(["c", "b", "a"])
+    expect(placeTeam(["a", null, "c"], "a", 1)).toEqual([null, "a", "c"])
+    // Desde los sin ubicar: el que estaba vuelve a la columna (sale de la lista).
+    expect(placeTeam(["a", "b", null], "d", 1)).toEqual(["a", "d", null])
+    expect(placeTeam(["a", "b"], "a", 0)).toEqual(["a", "b"])
+    expect(placeTeam(["a", "b"], "c", 5)).toEqual(["a", "b"])
+  })
+  it("completar huecos en orden", () => {
+    expect(fillSlots([null, "b", null, null], ["x", "y"])).toEqual([
+      "x",
+      "b",
+      "y",
+      null,
+    ])
   })
 })
 

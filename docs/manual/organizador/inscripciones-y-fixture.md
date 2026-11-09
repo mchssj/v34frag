@@ -16,13 +16,19 @@ Los capitanes inscriben a sus equipos desde la página pública del torneo. En l
 
 ## Siembra
 
-En la pestaña **Siembra** ordenas a los equipos del 1 al último. Define los cruces y quién recibe un bye.
+En la pestaña **Siembra** ves el formato del torneo (la llave, los grupos o la primera ronda del suizo) con cada equipo en su lugar. La siembra define los cruces y quién recibe un bye. Cada lugar lleva su número: **#1** es la cabeza de serie.
 
-- **Por ranking:** ordena según el ranking de equipos.
-- **Sortear:** al azar.
-- **A mano:** sube o baja cada equipo con las flechas y guarda.
+- **Por ranking:** ordena según el ranking de equipos y lo guarda.
+- **Sortear:** al azar, y lo guarda.
+- **A mano:** arrastra un equipo al lugar donde quieres que juegue. Si lo sueltas sobre un lugar ocupado, los dos equipos se intercambian. En el celular, o con el teclado, toca el equipo y después el lugar.
 
-Generar por ranking o sortear reemplaza toda la siembra: se pierden los cambios a mano que no guardaste.
+Para armarla de cero, toca **Vaciar**: todos pasan a la columna **Sin ubicar**. Pon a mano los que te importan y completa el resto con **Completar huecos en orden** (en el orden de la siembra guardada) o **Completar huecos al azar**. Para sacar un equipo de la llave, toca la **×** o arrástralo a **Sin ubicar**.
+
+Un punto naranja marca a los equipos que no están en su lugar de la siembra guardada. **Guardar siembra** se habilita cuando todos los equipos están ubicados, y **Deshacer cambios** vuelve a la guardada.
+
+Solo se siembra la primera ronda (o los grupos): lo demás se llena con los resultados. En los grupos, soltar un equipo en otro grupo lo cambia de grupo. En un suizo de varias etapas, los mejores aparecen en **Entran directo**.
+
+> **Ojo:** **Por ranking** y **Sortear** reemplazan toda la siembra: se pierden los cambios a mano que no guardaste.
 
 ## Generar el fixture
 

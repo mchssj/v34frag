@@ -1,0 +1,10 @@
+CMLeague 2.9.31 --  Changelog
+
+Torneos: siembra sobre la llave
+
+Para organizadores:
+- La pestaña Siembra ahora muestra el formato del torneo: la llave, los grupos o la primera ronda del suizo, con cada equipo en su lugar.
+- Arrastra un equipo al lugar donde quieres que juegue. Si lo sueltas sobre otro, se intercambian.
+- En el celular, toca el equipo y después el lugar.
+- Nuevo: Vaciar, para armarla de cero, y Completar huecos (en orden o al azar), para poner a mano solo los que te importan.
+- Por ranking y Sortear siguen como siempre.

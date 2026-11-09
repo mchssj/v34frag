@@ -257,6 +257,231 @@ export function snakeGroups<T>(teams: T[], groups: number): T[][] {
   return out
 }
 
+// ---- Siembra sobre la llave (bitácora 2026-11-09-siembra-sobre-la-llave) ----
+
+/** Un lugar de la llave: una semilla (1 = cabeza de serie), un bye o un texto ("Ganador 1.2"). */
+export type LayoutSlot =
+  | { kind: "seed"; seed: number }
+  | { kind: "bye" }
+  | { kind: "ph"; text: string }
+/** Una partida o un grupo. */
+export type LayoutBox = { label?: string; side?: string; slots: LayoutSlot[] }
+export type LayoutCol = { title: string; boxes: LayoutBox[] }
+export type LayoutSection = {
+  title: string
+  hint: string
+  /** Llave: las cajas de cada columna se alinean con las de la siguiente. */
+  bracket: boolean
+  cols: LayoutCol[]
+}
+
+const seedSlot = (seed: number): LayoutSlot => ({ kind: "seed", seed })
+const ph = (text: string): LayoutSlot => ({ kind: "ph", text })
+
+/** Nombre de una ronda de eliminación por los equipos que la juegan. */
+export function koRoundName(teams: number): string {
+  if (teams === 2) return "Final"
+  if (teams === 4) return "Semifinal"
+  if (teams === 8) return "Cuartos"
+  if (teams === 16) return "Octavos"
+  return `Ronda de ${teams}`
+}
+
+/** Columnas de una llave de eliminación: la primera ronda con semillas y el resto con "Ganador r.k". */
+function koCols(n: number, lastTitle?: string): LayoutCol[] {
+  const size = 2 ** Math.ceil(Math.log2(Math.max(n, 2)))
+  const o = seedOrder(size)
+  const s = (x: number): LayoutSlot => (x <= n ? seedSlot(x) : { kind: "bye" })
+  const first: LayoutBox[] = []
+  for (let i = 0; i < size; i += 2)
+    first.push({ label: `1.${i / 2 + 1}`, slots: [s(o[i]), s(o[i + 1])] })
+  const cols: LayoutCol[] = [{ title: koRoundName(size), boxes: first }]
+  for (let r = 2, teams = size / 2; teams >= 2; r++, teams /= 2) {
+    const boxes: LayoutBox[] = []
+    for (let k = 1; k <= teams / 2; k++)
+      boxes.push({
+        label: `${r}.${k}`,
+        slots: [
+          ph(`Ganador ${r - 1}.${2 * k - 1}`),
+          ph(`Ganador ${r - 1}.${2 * k}`),
+        ],
+      })
+    cols.push({
+      title: teams === 2 && lastTitle ? lastTitle : koRoundName(teams),
+      boxes,
+    })
+  }
+  return cols
+}
+
+/**
+ * Cómo se ve la siembra en el formato elegido: qué semilla cae en cada lugar.
+ * Solo se siembra la primera ronda (o los grupos); el resto sale de los resultados.
+ */
+export function seedLayout(
+  template: Template,
+  config: {
+    stages?: number
+    size?: number
+    groups?: number
+    advance?: number
+    wins?: number
+  },
+  n: number
+): LayoutSection[] {
+  if (n < 2) return []
+  if (template === "single")
+    return [
+      {
+        title: "Llave",
+        hint: "Orden clásico (1-8, 4-5, 2-7, 3-6): si respetas el ranking, los dos mejores solo se cruzan en la final. Solo se siembra la primera ronda.",
+        bracket: true,
+        cols: koCols(n),
+      },
+    ]
+  if (template === "double")
+    return [
+      {
+        title: "Llave superior",
+        hint: "Se siembra solo la primera ronda de arriba. El que pierde baja a la llave inferior, que se llena sola con los resultados.",
+        bracket: true,
+        cols: [
+          ...koCols(n, "Final superior"),
+          {
+            title: "Gran final",
+            boxes: [
+              {
+                slots: [
+                  ph("Ganador de la superior"),
+                  ph("Ganador de la inferior"),
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  if (template === "groups" || template === "groups_double") {
+    const double = template === "groups_double"
+    const seeds = Array.from({ length: n }, (_, i) => i + 1)
+    return [
+      {
+        title: "Grupos",
+        hint: `Por ranking el reparto es en serpentina: cada grupo queda parejo. Soltar un equipo en otro grupo lo cambia de grupo. ${double ? "Cada grupo es una llave doble." : "Todos contra todos."} Pasan ${config.advance ?? (double ? 3 : 2)} por grupo a los playoffs, que se cruzan al terminar los grupos.`,
+        bracket: false,
+        cols: snakeGroups(seeds, Math.max(config.groups ?? 2, 1)).map(
+          (g, k) => ({
+            title: `Grupo ${String.fromCharCode(65 + k)}`,
+            boxes: [
+              {
+                label: double ? "Llave doble" : "Todos contra todos",
+                side: `${g.length} equipos`,
+                slots: g.map(seedSlot),
+              },
+            ],
+          })
+        ),
+      },
+    ]
+  }
+  // Suizo: los que entran directo a una etapa más avanzada y la ronda 1 de la etapa 1.
+  const blocks = seedBlocks(template, config, n)
+  const stage1 = blocks[blocks.length - 1]
+  const out: LayoutSection[] = []
+  if (blocks.length > 1)
+    out.push({
+      title: "Entran directo",
+      hint: "Los mejores no juegan la etapa 1: esperan en una etapa más avanzada a los que la pasan.",
+      bracket: false,
+      cols: blocks.slice(0, -1).map((b) => ({
+        title: b.label,
+        boxes: [
+          {
+            side: `${b.from}–${b.to}`,
+            slots: Array.from({ length: b.to - b.from + 1 }, (_, k) =>
+              seedSlot(b.from + k)
+            ),
+          },
+        ],
+      })),
+    })
+  const seeds = Array.from(
+    { length: stage1.to - stage1.from + 1 },
+    (_, k) => stage1.from + k
+  )
+  const wins = config.wins ?? 3
+  const round1: LayoutBox[] = swissRound1(seeds).map((p, k) => ({
+    label: `1.${k + 1}`,
+    slots: [seedSlot(p.a!), seedSlot(p.b!)],
+  }))
+  // Con un número impar, el último no tiene rival en la ronda 1.
+  if (seeds.length % 2 === 1)
+    round1.push({
+      label: "Libre",
+      slots: [seedSlot(seeds[seeds.length - 1]), { kind: "bye" }],
+    })
+  out.push({
+    title: blocks.length > 1 ? "Etapa 1" : "Suizo",
+    hint: "Ronda 1: mitad de arriba contra mitad de abajo. Desde la ronda 2 se cruzan por récord, así que solo se siembra la ronda 1.",
+    bracket: false,
+    cols: [
+      { title: "Ronda 1 · 0-0", boxes: round1 },
+      {
+        title: "Rondas siguientes",
+        boxes: [
+          {
+            label: "Por récord",
+            slots: [
+              ph("Ganadores contra ganadores"),
+              ph("Perdedores contra perdedores"),
+            ],
+          },
+          {
+            label: "Resultado",
+            slots: [
+              ph(
+                `Con ${wins} ${wins === 1 ? "victoria" : "victorias"}, clasifica`
+              ),
+              ph(
+                `Con ${wins} ${wins === 1 ? "derrota" : "derrotas"}, queda afuera`
+              ),
+            ],
+          },
+        ],
+      },
+    ],
+  })
+  return out
+}
+
+/**
+ * Pone un equipo en un lugar de la siembra. Si estaba en otro lugar, intercambia con el que había;
+ * si venía de los sin ubicar, el que había vuelve a los sin ubicar.
+ */
+export function placeTeam(
+  slots: (string | null)[],
+  id: string,
+  to: number
+): (string | null)[] {
+  if (to < 0 || to >= slots.length) return slots
+  const from = slots.indexOf(id)
+  if (from === to) return slots
+  const out = [...slots]
+  const occupant = out[to]
+  out[to] = id
+  if (from >= 0) out[from] = occupant
+  return out
+}
+
+/** Llena los lugares vacíos, en orden, con los equipos de `rest`. */
+export function fillSlots(
+  slots: (string | null)[],
+  rest: string[]
+): (string | null)[] {
+  const queue = [...rest]
+  return slots.map((s) => s ?? queue.shift() ?? null)
+}
+
 /** Mueve un elemento de una lista a otra posición (arrastrar en la siembra). */
 export function moveItem<T>(list: T[], from: number, to: number): T[] {
   if (from === to || from < 0 || to < 0 || from >= list.length) return list
