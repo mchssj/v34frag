@@ -11,6 +11,7 @@ export const TABS = [
   "equipos",
   "temporadas",
   "bio",
+  "comentarios",
 ] as const
 export type Tab = (typeof TABS)[number]
 

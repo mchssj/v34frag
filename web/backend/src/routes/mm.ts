@@ -78,7 +78,13 @@ const lists = (what: string, arg?: (c: C) => string | undefined) => async (c: C)
 const Join = z.object({ mode: z.string().max(10), region: z.string().max(60).nullish() }).openapi('MmJoin');
 const Report = z.object({ lobby_id: Id, player_id: Id, reason: z.enum(['afk', 'toxic', 'cheat', 'abandon', 'other']), note: z.string().max(500).optional() }).openapi('MmReport');
 const Commend = z.object({ lobby_id: Id, player_id: Id }).openapi('MmCommend');
+// (replanteo 93) Chat del grupo y denuncia desde ese chat.
+const PartyChat = z.object({ message: z.string().trim().min(1).max(300) }).openapi('MmPartyChatBody');
+const PartyChatQuery = z.object({ after: z.coerce.number().int().positive().optional().openapi({ description: 'Solo los mensajes posteriores a este id' }) });
+const ChatIdParam = z.object({ id: z.coerce.number().int().positive().openapi({ param: { name: 'id', in: 'path' } }) });
+const ChatReport = z.object({ reason: z.enum(['afk', 'toxic', 'cheat', 'abandon', 'other']), note: z.string().max(500).optional() }).openapi('MmChatReport');
 const Sound = z.object({ sound_id: Id.nullable() }).openapi('MmSoundChoice');
+const AutoAccept = z.object({ enabled: z.boolean() }).openapi('MmAutoAccept');
 const Resolve = z.object({ action: z.enum(['dismiss', 'warn', 'mm_ban', 'ban', 'server_ban']), days: z.number().int().positive().max(3650).optional() }).openapi('MmResolve');
 const Lift = z.object({ reason: z.string().trim().min(3).max(300) }).openapi('MmPenaltyLift');
 const Maps = z.object({ maps: z.array(z.string().max(64)).min(2).max(50) }).openapi('MmMaps');
@@ -213,8 +219,25 @@ add(route('post', '/api/v1/mm/reports', { summary: 'Reportar a un jugador', requ
   return { p_lobby: b.lobby_id, p_player: b.player_id, p_reason: b.reason, p_note: b.note ?? null };
 }));
 
+// (replanteo 93) Chat del grupo: lo leen y escriben solo los del grupo; el socket avisa con 'party.chat'.
+add(route('get', '/api/v1/mm/party/chat', { summary: 'Los mensajes de mi grupo (los últimos 50)', request: { query: PartyChatQuery } }), async (c) => {
+  const after = (c.req as unknown as { valid(t: 'query'): { after?: number } }).valid('query').after ?? null;
+  return c.json({ items: await rpc(c, 'mm_party_chat_list', { p_after: after }) } as never, 200);
+});
+add(route('post', '/api/v1/mm/party/chat', { summary: 'Escribir en el chat de mi grupo', request: jsonBody(PartyChat) }), async (c) =>
+  c.json((await rpc(c, 'mm_party_chat_send', { p_message: body<{ message: string }>(c).message })) as never, 200));
+add(route('post', '/api/v1/mm/party/chat/{id}/report', { summary: 'Denunciar al autor de un mensaje del chat del grupo', request: { params: ChatIdParam, ...jsonBody(ChatReport) } }), async (c) => {
+  const id = (c.req as unknown as { valid(t: 'param'): { id: number } }).valid('param').id;
+  const b = body<{ reason: string; note?: string }>(c);
+  await rpc(c, 'mm_report_from_chat', { p_message: id, p_reason: b.reason, p_note: b.note ?? null });
+  return c.body(null, 204);
+});
+
 add(route('put', '/api/v1/mm/sounds/selected', { summary: 'Elegir el sonido de partida', request: jsonBody(Sound) }),
   action('mm_set_sound', (c) => ({ p_sound: body<{ sound_id: string | null }>(c).sound_id })));
+// Autoaceptar partida (replanteo 89): prenderlo es solo para VIP (403); apagarlo, para cualquiera.
+add(route('put', '/api/v1/mm/auto-accept', { summary: 'Autoaceptar partida (VIP)', request: jsonBody(AutoAccept) }),
+  action('mm_set_auto_accept', (c) => ({ p_on: body<{ enabled: boolean }>(c).enabled })));
 add(route('post', '/api/v1/mm/sounds/mine', { summary: 'Subir mi sonido (VIP)', request: { body: multipart(AudioForm) } }), async (c) => {
   const file = form(c).file;
   // Se valida antes de subir: sin VIP no se guarda nada.

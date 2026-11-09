@@ -21,6 +21,7 @@ import type {
   MmFeed,
   MmLobby,
   MmMatch,
+  MmPartyChatMessage,
   MmPasswordEntry,
   MmPlayerHit,
   MmReplaceInfo,
@@ -62,6 +63,15 @@ export type MmSource = {
   veto(matchId: string, map: string): Promise<MmState>
   chat(matchId: string, signal?: AbortSignal): Promise<MmChatMessage[]>
   sendChat(matchId: string, message: string, teamOnly: boolean): Promise<void>
+  /** Chat del grupo (replanteo 93): sin estos dos, Jugar no lo muestra. */
+  partyChat?(signal?: AbortSignal): Promise<MmPartyChatMessage[]>
+  sendPartyChat?(message: string): Promise<void>
+  /** Denunciar fuera de una sala: al autor de un mensaje del chat del grupo, con el mensaje como prueba. */
+  reportMessage?(
+    messageId: string,
+    reason: ReportReason,
+    note: string
+  ): Promise<void>
   report(
     lobbyId: string,
     playerId: string,
@@ -72,6 +82,8 @@ export type MmSource = {
   block(playerId: string): Promise<MmState>
   unblock(playerId: string): Promise<MmState>
   setSound(soundId: string | null): Promise<MmState>
+  /** Solo VIP. */
+  setAutoAccept(enabled: boolean): Promise<MmState>
   /** Solo VIP. */
   uploadMySound(file: File): Promise<MmState>
   deleteMySound(): Promise<MmState>
@@ -269,6 +281,34 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     },
     report: (lobby_id, player_id, reason, note) =>
       send("/api/v1/mm/reports", { lobby_id, player_id, reason, note }),
+    // (replanteo 93) Chat del grupo: el socket avisa con 'party.chat' y la web lo vuelve a pedir.
+    partyChat: async (signal) =>
+      (
+        await call<{
+          items: {
+            id: number
+            player_id: string | null
+            alias: string
+            message: string
+            created_at: string
+          }[]
+        }>("/api/v1/mm/party/chat", { signal })
+      ).items.map((m) => ({
+        id: String(m.id),
+        nick: m.alias,
+        message: m.message,
+        created_at: m.created_at,
+        player_id: m.player_id,
+      })),
+    sendPartyChat: async (message) => {
+      await send("/api/v1/mm/party/chat", { message })
+    },
+    reportMessage: async (messageId, reason, note) => {
+      await send(
+        `/api/v1/mm/party/chat/${encodeURIComponent(messageId)}/report`,
+        { reason, note: note.trim() || undefined }
+      )
+    },
     // Usa la búsqueda de jugadores que ya existe; el backend filtra a quién se puede invitar.
     // Búsqueda de jugadores que ya existe; mm_party_invite valida si se lo puede invitar.
     searchPlayers: async (q, signal) =>
@@ -291,6 +331,8 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       send("/api/v1/mm/commends", { lobby_id, player_id }),
     setSound: (sound_id) =>
       send("/api/v1/mm/sounds/selected", { sound_id }, "PUT"),
+    setAutoAccept: (enabled) =>
+      send("/api/v1/mm/auto-accept", { enabled }, "PUT"),
     uploadMySound: (file) => {
       const body = new FormData()
       body.set("file", file)

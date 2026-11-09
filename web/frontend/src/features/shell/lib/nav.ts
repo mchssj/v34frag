@@ -54,8 +54,14 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         badge: "live",
       },
       { key: "events", label: "Torneos", to: "/events", icon: TrophyIcon },
-      // Desactivado hasta que PCW esté listo (Daniel, 2026-11-02).
-      { key: "pcw", label: "PCW", to: "/pcw", icon: CrosshairIcon, soon: true },
+      // (bitácora 2026-11-08-pcw-real) PCW con ofertas; el badge cuenta los anuncios abiertos del tablón.
+      {
+        key: "pcw",
+        label: "PCW",
+        to: "/pcw",
+        icon: CrosshairIcon,
+        badge: "pcw",
+      },
       { key: "myteam", label: "Mi equipo", to: "/myteam", icon: ShieldIcon },
     ],
   },

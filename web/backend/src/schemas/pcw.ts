@@ -26,7 +26,7 @@ const Roster = {
     .max(7)
     .default([])
     .openapi({ description: 'Tags de jugadores sin ficha (stand-ins)' }),
-  team_id: z.uuid().optional().openapi({ description: 'Jugar como este equipo oficial (capitán o dueño): todo el roster con cuenta tiene que ser de su plantel y la PCW ganada suma a su ranking' }),
+  team_id: z.uuid().optional().openapi({ description: 'Jugar como este equipo oficial (capitán o dueño): todo el roster con cuenta tiene que ser de su plantel y la PCW ganada suma a su ranking. Sin `players` ni `guests`, el bando es el plantel (hasta 7, primero el capitán): en el servidor entra cualquiera de ellos' }),
   name: z.string().trim().max(24).optional().openapi({ description: 'Nombre del bando (por defecto, "Pick de <alias>")' }),
 };
 
@@ -48,16 +48,46 @@ export const PcwPostBody = z
   })
   .openapi('PcwPostBody');
 
-export const PcwAcceptBody = z.object(Roster).openapi('PcwAcceptBody');
+// (replanteo 92) Una oferta a un anuncio: el bando y, si quiere, otra hora.
+export const PcwOfferBody = z
+  .object({
+    ...Roster,
+    starts_at: z.iso.datetime({ offset: true }).optional().openapi({ description: 'Otra hora que propone; sin hora, la del anuncio' }),
+  })
+  .openapi('PcwOfferBody');
 
-const Side = z
+export const PcwSideSchema = z
   .object({
     team_id: z.uuid(),
     name: z.string(),
     plays_as: z.object({ id: z.uuid(), name: z.string(), tag: z.string().nullable() }).nullable(),
-    roster: z.array(z.object({ player_id: z.uuid().nullable(), alias: z.string(), guest: z.boolean() })),
+    rank: z.number().int().nullable().openapi({ description: 'Puesto en el ranking de equipos (total) del equipo con el que juega; null: mix de amigos o sin puesto' }),
+    roster: z.array(
+      z.object({
+        player_id: z.uuid().nullable(),
+        alias: z.string(),
+        guest: z.boolean(),
+        elo: z.number().int().nullable().openapi({ description: 'ELO actual; null: invitado o sin ELO' }),
+      }),
+    ),
   })
   .openapi('PcwSide');
+
+export const PcwOffer = z
+  .object({
+    id: z.uuid(),
+    post_id: z.uuid(),
+    status: z.enum(['open', 'chosen', 'rejected', 'withdrawn']),
+    starts_at: z.string().nullable().openapi({ description: 'Otra hora que propone; null: la del anuncio' }),
+    created_at: z.string(),
+    by: z.object({ user_id: z.uuid(), alias: z.string().nullable() }),
+    side: PcwSideSchema,
+  })
+  .openapi('PcwOffer');
+
+const MyOffer = z
+  .object({ id: z.uuid(), starts_at: z.string().nullable(), created_at: z.string() })
+  .openapi('PcwMyOffer', { description: 'Con sesión: la oferta abierta que mandé a este anuncio' });
 
 export const PcwPost = z
   .object({
@@ -70,10 +100,36 @@ export const PcwPost = z
     status: z.string(),
     match_id: z.uuid().nullable(),
     created_at: z.string(),
-    map_pool: z.array(z.string()).nullable().openapi({ description: 'Pool del veto; `null`: el pool por defecto' }),
-    side: Side,
+    map_pool: z.array(z.string()).nullable().openapi({ description: 'Pool del veto; `null`: el pool por defecto. Con tantos mapas como el formato, se juegan esos sin veto' }),
+    side: PcwSideSchema,
+    my_offer: MyOffer.nullable().optional(),
+    offers: z.array(PcwOffer).optional().openapi({ description: 'Solo en GET /me/pcw/post: las ofertas abiertas que llegaron' }),
   })
   .openapi('PcwPost');
+
+// (replanteo 92) Lo mío para la página de PCW.
+const CtxPlayer = z.object({ player_id: z.uuid(), alias: z.string(), elo: z.number().int().nullable() });
+export const PcwContext = z
+  .object({
+    vip: z.boolean().openapi({ description: 'Puede publicar (VIP o admin)' }),
+    me: CtxPlayer.nullable().openapi({ description: 'Mi ficha; null sin ficha' }),
+    team: z
+      .object({
+        id: z.uuid(),
+        name: z.string(),
+        tag: z.string().nullable(),
+        logo_url: z.string().nullable(),
+        rank: z.number().int().nullable(),
+        ban_until: z.string().nullable().openapi({ description: 'Sanción de PCW vigente del equipo' }),
+        plantel: z.array(CtxPlayer.extend({ has_account: z.boolean() })),
+      })
+      .nullable()
+      .openapi({ description: 'El equipo oficial con el que puedo jugar (capitán o dueño); null si no tengo' }),
+    friends: z.array(CtxPlayer.extend({ teammate: z.boolean() })),
+  })
+  .openapi('PcwContext');
+
+export const OfferParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 
 export const PostParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 

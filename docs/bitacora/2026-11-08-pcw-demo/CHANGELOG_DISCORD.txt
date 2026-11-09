@@ -1,0 +1,14 @@
+CMLeague 2.9.27 --  Changelog
+
+Jugar
+
+- Toca el nombre de cualquier jugador (en el chat de la sala, en las tarjetas de tu grupo o en tu lista de amigos) y se abre un menú para ver su perfil, enviarle una solicitud de amistad, bloquearlo o denunciarlo.
+- El perfil se abre en otra pestaña, así no pierdes tu lugar en la cola.
+- La lista de amigos ya no estira el panel: muestra 3 y el resto lo recorres con la barra.
+- Cuando se arma tu partida, la ventana para aceptarla te salta en cualquier página de la web, no solo en Jugar. Al aceptar te lleva a la sala.
+- Mientras buscas partida y andas por otra página, arriba ves "Buscando" con el tiempo: tócalo para volver a Jugar o usa la X para dejar de buscar.
+- El título de la pestaña también te avisa: "Buscando partida" y "¡Partida encontrada!", así te enteras aunque estés en otra pestaña.
+
+PCW
+
+- Las PCW no suman ni restan ELO, nunca: ni jugando como equipo ni como mix de amigos. Las ganadas como equipo siguen sumando al ranking de equipos.

@@ -4,10 +4,12 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { timeAgo } from "@/features/shell/notifications/lib/model"
 import { PlayerPicker } from "./BlockPanel"
+import { PlayerName } from "./PlayerMenu"
 import { useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { MmFriend, MmState } from "./types"
@@ -123,18 +125,29 @@ export function FriendsPanel({
               Todavía no tienes amigos. Envíale una solicitud a alguien.
             </p>
           ) : (
-            <ul className="flex flex-col gap-1">
+            // Se ven 3 amigos y el resto con la barra: la tarjeta no crece con la lista (Kyan, 2026-11-08).
+            <ul
+              aria-label="Lista de amigos"
+              tabIndex={friends.length > 3 ? 0 : undefined}
+              className="-mr-2 flex max-h-[116px] [scrollbar-width:thin] flex-col gap-1 overflow-y-auto overscroll-contain pr-2"
+            >
               {friends.map((f) => {
                 const status = STATUS[f.status] ?? STATUS.offline
                 return (
                   <li
                     key={f.player_id}
-                    className="flex items-center gap-2 text-[13px]"
+                    className="flex min-h-9 shrink-0 items-center gap-2 text-[13px]"
                   >
                     <LevelBadge level={f.level} size={20} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">
-                        {f.nick}
+                      <span className="flex max-w-full items-center gap-1">
+                        <PlayerName
+                          nick={f.nick}
+                          playerId={f.player_id}
+                          friend
+                          className="block min-w-0 truncate font-medium"
+                        />
+                        <ListSeal kind={f.verified} />
                       </span>
                       <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <span

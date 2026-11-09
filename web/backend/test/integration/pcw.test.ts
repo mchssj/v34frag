@@ -41,6 +41,9 @@ describe('formatos de PCW', () => {
 
     // Publicar un BO5 ahora falla con el mensaje de la base (la validación del formato va antes que la del roster).
     const u = await createUser();
+    // (replanteo 92) publicar es para VIP: sin VIP el error sería ese, antes que el del formato.
+    const vip = await admin().from('vip_memberships').insert({ user_id: u.id, source: 'manual' });
+    if (vip.error) throw vip.error;
     const { createClient } = await import('@supabase/supabase-js');
     const sb = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },

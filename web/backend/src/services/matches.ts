@@ -75,8 +75,9 @@ export const demoUrl = (cfg: Config, m: { kind: string; external_id: string | nu
     ? `${cfg.DEMO_BASE_URL}/demo/${encodeURIComponent(m.external_id)}`
     : null;
 
-/** Secuencia del veto, igual que veto_sequence() en la base. */
+/** Secuencia del veto, igual que veto_sequence() en la base. Con tantos mapas como el formato (o menos), sin veto (replanteo 92). */
 export function vetoSequence(bo: number, maps: number): ('ban' | 'pick')[] {
+  if (maps <= bo) return [];
   const a: ('ban' | 'pick')[] = [];
   if (bo >= 3) a.push('ban', 'ban');
   if (bo === 3) a.push('pick', 'pick');
@@ -102,7 +103,11 @@ export function vetoState(
   const done = n >= sequence.length;
   const used = new Set(actions.map((a) => a.map));
   const rest = pool.filter((p) => !used.has(p.name));
-  const maps_to_play = done
+  // Mapas fijos (replanteo 92): sin veto, se juega todo el pool en su orden.
+  const fixed = sequence.length === 0 && pool.length > 1;
+  const maps_to_play = fixed
+    ? pool.map((p) => ({ map: p.name, version: p.versions[0] ?? p.name, decider: false }))
+    : done
     ? [
         ...actions.filter((a) => a.action === 'pick').map((a) => ({ map: a.map, version: a.version ?? a.map, decider: false })),
         ...rest.slice(0, 1).map((p) => ({ map: p.name, version: deciderVersions[p.name] ?? p.versions[0] ?? p.name, decider: true })),

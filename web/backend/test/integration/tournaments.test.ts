@@ -275,25 +275,79 @@ describe('partida: detalle, veto, chat y código', () => {
   });
 });
 
+/** VIP manual (replanteo 92: publicar una PCW es para VIP). */
+async function vip(u: U) {
+  const r = await admin().from('vip_memberships').insert({ user_id: u.id, source: 'manual' });
+  if (r.error) throw r.error;
+}
+
+/** Ofertar y que el que publicó elija: la partida (replanteo 92). */
+async function offerAndChoose(postId: string, by: U, chooser: U, body: Record<string, unknown>) {
+  const o = await req('POST', `/api/v1/pcw/posts/${postId}/offers`, { token: by.token, body });
+  expect(o.status).toBe(201);
+  const m = await req('POST', `/api/v1/pcw/offers/${o.body.id}/choose`, { token: chooser.token });
+  expect(m.status).toBe(201);
+  return m.body.id as string;
+}
+
 describe('PCW', () => {
-  it('publicar como equipo, aceptar, mis PCW, cancelar y resultado del admin', async () => {
-    const [a, b] = await Promise.all([team(), team()]);
+  it('publicar es para VIP, ofertas, elegir, mis PCW, cancelar y resultado del admin', async () => {
+    const [a, b, c] = await Promise.all([team(), team(), team()]);
+    // Sin VIP no se publica (403 VIP_REQUIRED); ofertar no pide VIP.
+    const noVip = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 1, players: a.players.slice(0, 4), team_id: a.id } });
+    expect(noVip.status).toBe(403);
+    expect(noVip.body.error.code).toBe('VIP_REQUIRED');
+    expect((await req('GET', '/api/v1/me/pcw/context', { token: a.cap.token })).body.vip).toBe(false);
+    await vip(a.cap);
+    const ctx = (await req('GET', '/api/v1/me/pcw/context', { token: a.cap.token })).body;
+    expect(ctx).toMatchObject({ vip: true, me: { player_id: a.players[0] }, team: { id: a.id, ban_until: null } });
+    expect(ctx.team.plantel).toHaveLength(5);
+    expect(ctx.team.plantel[0]).toMatchObject({ player_id: a.players[0], has_account: true });
     const post = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 1, players: a.players.slice(0, 4), guests: ['Suplente'], team_id: a.id } });
     expect(post.status).toBe(201);
     const open = await req('GET', '/api/v1/pcw/posts?best_of=1&per=100');
     const mine = open.body.items.find((p: { id: string }) => p.id === post.body.id);
     expect(mine.side).toMatchObject({ plays_as: { id: a.id } });
     expect(mine.side.roster).toHaveLength(5);
+    expect(mine.side.roster[0]).toHaveProperty('elo');
+    expect(mine.side).toHaveProperty('rank');
+    expect(mine.my_offer).toBeUndefined();
     // Otro no puede jugar como un equipo ajeno.
-    expect((await req('POST', `/api/v1/pcw/posts/${post.body.id}/accept`, { token: b.cap.token, body: { players: b.players.slice(0, 4), team_id: a.id } })).status).toBe(403);
-    const acc = await req('POST', `/api/v1/pcw/posts/${post.body.id}/accept`, { token: b.cap.token, body: { players: b.players.slice(0, 4) } });
-    expect(acc.status).toBe(201);
+    expect((await req('POST', `/api/v1/pcw/posts/${post.body.id}/offers`, { token: b.cap.token, body: { players: b.players.slice(0, 4), team_id: a.id } })).status).toBe(403);
+    // Como equipo y sin roster: el plantel entero.
+    const later = new Date(Date.now() + 3 * 3_600_000).toISOString();
+    const ob = await req('POST', `/api/v1/pcw/posts/${post.body.id}/offers`, { token: b.cap.token, body: { team_id: b.id, starts_at: later } });
+    expect(ob.status).toBe(201);
+    const oc = await req('POST', `/api/v1/pcw/posts/${post.body.id}/offers`, { token: c.cap.token, body: { players: c.players.slice(0, 4) } });
+    expect(oc.status).toBe(201);
+    // Con sesión, el tablón dice que ya ofertó.
+    const seen = (await req('GET', '/api/v1/pcw/posts?best_of=1&per=100', { token: b.cap.token })).body.items.find((p: { id: string }) => p.id === post.body.id);
+    expect(seen.my_offer).toMatchObject({ id: ob.body.id });
+    // El que publicó ve las ofertas; el plantel de b entró entero y es de su equipo.
+    const myPost = (await req('GET', '/api/v1/me/pcw/post', { token: a.cap.token })).body;
+    expect(myPost.offers.map((o: { id: string }) => o.id)).toEqual([ob.body.id, oc.body.id]);
+    const offerB = myPost.offers[0];
+    expect(offerB.side).toMatchObject({ plays_as: { id: b.id }, name: b.name });
+    expect(offerB.side.roster).toHaveLength(5);
+    expect(offerB.starts_at).not.toBeNull();
+    // Solo el que publicó elige.
+    expect((await req('POST', `/api/v1/pcw/offers/${ob.body.id}/choose`, { token: b.cap.token })).status).toBe(400);
+    const chosen = await req('POST', `/api/v1/pcw/offers/${ob.body.id}/choose`, { token: a.cap.token });
+    expect(chosen.status).toBe(201);
+    const matchId = chosen.body.id as string;
     expect((await req('GET', '/api/v1/me/pcw/post', { token: a.cap.token })).body).toBeNull();
+    // La otra oferta quedó rechazada: ya no se puede retirar.
+    expect((await req('DELETE', `/api/v1/pcw/offers/${oc.body.id}`, { token: c.cap.token })).status).toBe(400);
     const my = await req('GET', '/api/v1/me/pcw/matches?status=upcoming', { token: a.cap.token });
-    expect(my.body.items.map((x: { id: string }) => x.id)).toEqual([acc.body.id]);
+    expect(my.body.items.map((x: { id: string }) => x.id)).toEqual([matchId]);
+    expect(my.body.items[0]).toMatchObject({ my_side: 1, booking: null, starts_at: expect.any(String) });
+    expect(my.body.items[0].pcw_sides['1']).toMatchObject({ plays_as: { id: a.id } });
+    expect(my.body.items[0].pcw_sides['2']).toMatchObject({ plays_as: { id: b.id } });
+    expect(my.body.items[0].pcw_sides['2'].roster).toHaveLength(5);
+    expect((await req('GET', '/api/v1/me/pcw/matches?status=upcoming', { token: b.cap.token })).body.items[0]).toMatchObject({ id: matchId, my_side: 2 });
     // El resultado a mano de una PCW es solo del admin.
-    expect((await req('POST', `/api/v1/admin/pcw/matches/${acc.body.id}/result`, { token: a.cap.token, body: { maps: [{ r1: 16, r2: 2 }] } })).status).toBe(403);
-    expect((await req('POST', `/api/v1/admin/pcw/matches/${acc.body.id}/result`, { token: adm.token, body: { maps: [{ map: 'de_cbble', r1: 16, r2: 2 }] } })).status).toBe(204);
+    expect((await req('POST', `/api/v1/admin/pcw/matches/${matchId}/result`, { token: a.cap.token, body: { maps: [{ r1: 16, r2: 2 }] } })).status).toBe(403);
+    expect((await req('POST', `/api/v1/admin/pcw/matches/${matchId}/result`, { token: adm.token, body: { maps: [{ map: 'de_cbble', r1: 16, r2: 2 }] } })).status).toBe(204);
     // Suma al ranking del equipo con pcw=1.
     const rk = await req('GET', `/api/v1/ranking/teams?pcw=1&q=${encodeURIComponent(a.name)}`);
     expect(rk.body.items.find((i: { team: { id: string } }) => i.team.id === a.id)).toMatchObject({ won: 1, points: 5 });
@@ -302,6 +356,8 @@ describe('PCW', () => {
     const p2 = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 1, players: a.players.slice(0, 4) } });
     expect((await req('DELETE', `/api/v1/pcw/posts/${p2.body.id}`, { token: b.cap.token })).status).toBe(400);
     expect((await req('DELETE', `/api/v1/pcw/posts/${p2.body.id}`, { token: a.cap.token })).status).toBe(204);
+    // Aceptar directo ya no existe.
+    expect((await req('POST', `/api/v1/pcw/posts/${p2.body.id}/accept`, { token: b.cap.token, body: { players: b.players.slice(0, 4) } })).status).toBe(404);
   });
 
   it('admin: pool de mapas y roles', async () => {
@@ -355,17 +411,31 @@ describe('catálogo de mapas: pools propios y foto', () => {
 
   it('PCW con pool propio: al menos su BO, y el veto de la partida lo usa', async () => {
     const [a, b] = await Promise.all([team(), team()]);
+    await vip(a.cap);
     const short = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 3, players: a.players.slice(0, 4), map_pool: ['de_cache', 'de_cbble'] } });
     expect(short.body.error.message).toBe('El pool de mapas necesita al menos 3 mapas (el BO más alto)');
     const post = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 1, players: a.players.slice(0, 4), map_pool: ['de_cache', 'de_cbble'] } });
     expect(post.status).toBe(201);
     const listed = (await req('GET', '/api/v1/pcw/posts?per=100')).body.items.find((p: { id: string }) => p.id === post.body.id);
     expect(listed.map_pool).toEqual(['de_cache', 'de_cbble']);
-    const acc = await req('POST', `/api/v1/pcw/posts/${post.body.id}/accept`, { token: b.cap.token, body: { players: b.players.slice(0, 4) } });
-    const d = await req('GET', `/api/v1/matches/${acc.body.id}`, { token: a.cap.token });
+    const accId = await offerAndChoose(post.body.id, b.cap, a.cap, { players: b.players.slice(0, 4) });
+    const d = await req('GET', `/api/v1/matches/${accId}`, { token: a.cap.token });
     expect(d.body.veto.pool.map((x: { name: string }) => x.name)).toEqual(['de_cache', 'de_cbble']);
     expect(d.body.veto.sequence).toEqual(['ban']);
-    expect((await req('POST', `/api/v1/pcw/matches/${acc.body.id}/cancel`, { token: a.cap.token })).status).toBe(204);
+    expect((await req('POST', `/api/v1/pcw/matches/${accId}/cancel`, { token: a.cap.token })).status).toBe(204);
+  });
+
+  it('PCW con mapas fijos (replanteo 92): tantos mapas como el BO, sin veto y en el orden elegido', async () => {
+    const [a, b] = await Promise.all([team(), team()]);
+    await vip(a.cap);
+    const post = await req('POST', '/api/v1/pcw/posts', { token: a.cap.token, body: { best_of: 3, players: a.players.slice(0, 4), map_pool: ['de_tuscan', 'de_cache', 'de_cbble'] } });
+    expect(post.status).toBe(201);
+    const id = await offerAndChoose(post.body.id, b.cap, a.cap, { players: b.players.slice(0, 4) });
+    const d = await req('GET', `/api/v1/matches/${id}`, { token: a.cap.token });
+    expect(d.body.veto.sequence).toEqual([]);
+    expect(d.body.veto.next).toBeNull();
+    expect(d.body.veto.maps_to_play.map((m: { map: string }) => m.map)).toEqual(['de_tuscan', 'de_cache', 'de_cbble']);
+    expect((await req('POST', `/api/v1/pcw/matches/${id}/cancel`, { token: a.cap.token })).status).toBe(204);
   });
 
   it('foto de un mapa: se sube al bucket, reemplaza a la anterior y se quita', async () => {

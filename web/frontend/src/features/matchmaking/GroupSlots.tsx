@@ -4,6 +4,7 @@ import { CrownIcon, UserIcon, UserPlusIcon } from "lucide-react"
 import { useState, type CSSProperties, type ReactNode } from "react"
 import { toast } from "sonner"
 
+import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { errorMessage } from "@/api/errors"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { LevelBadge } from "@/components/brand/LevelBadge"
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/popover"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { fmtClock, secondsLeft } from "./labels"
+import { PlayerName } from "./PlayerMenu"
 import { LeavePartyButton, PartyMenu, usePartyNotices } from "./PartyMenu"
 import { playerSearchOptions, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -27,6 +29,8 @@ import { useNow } from "./useNow"
 // el grupo; después, los lugares que el grupo puede llenar (se invita) y los que llena la cola.
 
 type Card = {
+  /** Insignia de verificado (replanteo 94). */
+  verified?: "gray" | "gold" | null
   vip?: boolean
   player_id: string
   nick: string
@@ -175,7 +179,13 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
       </Avatar>
       <span className="flex max-w-full items-center gap-1.5 text-sm font-semibold">
         {card.country && <CountryFlag country={card.country} />}
-        <span className="truncate">{card.nick}</span>
+        <PlayerName
+          nick={card.nick}
+          playerId={card.is_me ? null : card.player_id}
+          isMe={card.is_me}
+          className="truncate"
+        />
+        <ListSeal kind={card.verified} />
         {card.vip && <Badge variant="vip">VIP</Badge>}
       </span>
       <span

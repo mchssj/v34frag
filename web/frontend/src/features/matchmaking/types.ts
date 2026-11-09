@@ -19,6 +19,8 @@ export type LobbyStatus =
 /** Si la cuenta es VIP (`is_vip()`). Los cosméticos de la tienda llegan con la tienda. */
 export type MmVip = {
   vip?: boolean
+  /** Insignia de verificado (replanteo 94); sin la 94, no viene. */
+  verified?: "gray" | "gold" | null
 }
 
 export type MmPlayer = MmVip & {
@@ -138,6 +140,8 @@ export type MmVetoBan = {
   map: string
   /** El capitán no baneó a tiempo y se baneó uno al azar. */
   auto: boolean
+  /** "pick": el mapa se eligió para jugarse (PCW BO3 y BO5). Sin el campo, ban. */
+  kind?: "ban" | "pick"
 }
 
 export type MmVeto = {
@@ -146,6 +150,8 @@ export type MmVeto = {
   /** Equipo que banea ahora; null = terminó. */
   turn: 1 | 2 | null
   deadline: string | null
+  /** Qué toca en este turno; sin el campo, ban (el matchmaking solo banea). */
+  next_kind?: "ban" | "pick"
 }
 
 export type MmChatMessage = {
@@ -183,6 +189,17 @@ export type MmLobby = {
   elo_stake: { win: number; loss: number } | null
   /** Reemplazos de la sala: buscando, tomados y los que entraron (replanteo 78). */
   replacements?: MmReplacement[]
+  /** Nombre de cada bando en lugar de "Equipo A/B" (la sala de una PCW usa la misma sala). */
+  sides?: { 1: string; 2: string }
+  /** El tipo de partida en la cabecera, en lugar de "Matchmaking 5v5" (por ejemplo, "PCW BO3"). */
+  kind_label?: string
+  /** La explicación del estado en el centro, en lugar de la del matchmaking. */
+  status_hint?: string
+  /** El escudo de cada bando que juega como equipo (PCW); sin él, la foto del capitán. */
+  crests?: {
+    1?: { name: string; tag: string | null; logo_url?: string | null } | null
+    2?: { name: string; tag: string | null; logo_url?: string | null } | null
+  }
 }
 
 /** Un reemplazo de la sala (`mm_lobby_replacements`, replanteo 78). */
@@ -231,6 +248,18 @@ export type MmParty = {
   pending: { to_nick: string; expires_at: string } | null
 }
 
+/** Chat del grupo en Jugar (prototipo, sin backend): lo ven solo los del grupo y se borra cuando el grupo se deshace. */
+export type MmPartyChatMessage = {
+  id: string
+  nick: string
+  message: string
+  created_at: string
+  /** Quién lo escribió (para el menú del nombre); null en los avisos. */
+  player_id?: string | null
+  /** Aviso del grupo ("X se unió al grupo"), sin autor. */
+  system?: boolean
+}
+
 export type MmInvite = {
   id: string
   from: Omit<MmPartyMember, "is_me" | "is_leader">
@@ -269,6 +298,8 @@ export type MmFriend = {
   player_id: string
   nick: string
   level: number
+  /** Insignia de verificado (replanteo 94). */
+  verified?: "gray" | "gold" | null
   /** (replanteo 85) Son amigos los dos: el estado se ve siempre. */
   status: "free" | "queue" | "playing" | "offline"
 }
@@ -329,6 +360,15 @@ export type MmState = {
     levels: { label: string; count: number }[]
     /** Quiénes están buscando, los que más esperan primero (hasta 50). */
     players: { player_id: string; nick: string; level: number; mode: string }[]
+  }
+  /**
+   * Autoaceptar partida (Kyan, 2026-11-09): el servidor acepta por vos apenas se arma la partida. Solo VIP; si
+   * se vence el VIP queda guardado pero no se aplica. Sin la migración 89 la API no lo manda.
+   */
+  auto_accept?: {
+    enabled: boolean
+    /** Si esta cuenta puede usarlo (VIP). */
+    allowed: boolean
   }
   /** Sonido de partida encontrada. */
   sounds: {
@@ -501,8 +541,11 @@ export type ReportStatus = "pending" | "dismissed" | "warned" | "banned"
 
 export type MmAdminReport = {
   id: string
-  lobby_id: string
-  mode: string
+  /** null: denuncia desde el chat del grupo (replanteo 93). */
+  lobby_id: string | null
+  mode: string | null
+  /** La denuncia desde el chat del grupo: el mensaje, como prueba. */
+  message?: string | null
   reporter: string
   reported: string
   reported_user_id: string

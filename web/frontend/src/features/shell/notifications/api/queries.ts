@@ -9,6 +9,7 @@ import { errorFromResponse, networkError } from "@/api/errors"
 import { profileKeys } from "@/features/profile/api/queries"
 import type { Notification } from "../lib/model"
 import type { Resolution } from "../types"
+import type { NotificationsSource } from "./source"
 
 // Contrato notificaciones.md: el contador se consulta cada 30 s, al enfocar la pestaña y después de
 // cada acción propia, siempre con If-None-Match; la lista, solo al abrir el menú.
@@ -68,15 +69,17 @@ export const notificationsOptions = queryOptions({
 })
 
 /** Marca leídas (`ids`) o todas; actualiza la lista sin esperar a la API. */
-export function useMarkRead() {
+export function useMarkRead(source?: NotificationsSource | null) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (ids: number[] | "all") =>
-      unwrap(
-        api.POST("/api/v1/notifications/read", {
-          body: ids === "all" ? { all: true } : { ids },
-        })
-      ),
+      source
+        ? source.markRead(ids)
+        : unwrap(
+            api.POST("/api/v1/notifications/read", {
+              body: ids === "all" ? { all: true } : { ids },
+            })
+          ),
     onMutate: (ids) => {
       queryClient.setQueryData<Notification[]>(notificationKeys.list, (old) =>
         old?.map((n) =>

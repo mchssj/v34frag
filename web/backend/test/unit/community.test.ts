@@ -15,6 +15,11 @@ afterEach(() => {
 });
 
 const VISITS = { vip: false, total: 3, week: 1, items: null, incognito: null };
+const WALL = {
+  likes: 3, dislikes: 1, my_vote: null, can_vote: true, is_owner: false, comments_open: true, can_comment: true, restriction: null, total: 1,
+  items: [{ id: '88888888-8888-4888-8888-888888888888', body: 'buen jugador', created_at: '2026-11-09T03:00:00+00:00',
+    author: { player_id: PLAYER, nick: 'kyan', photo_url: null, level: 7, verified: 'gold' }, mine: false, can_report: true, can_delete: false }],
+};
 const STAFF = { admins: [{ player_id: PLAYER, nick: 'kyan', photo_url: null, level: 6 }], moderators: [], vips: [] };
 
 function stub(errorOn?: string) {
@@ -29,11 +34,14 @@ function stub(errorOn?: string) {
         const fn = url.slice(url.indexOf('/rpc/') + 5).split('?')[0]!;
         const raw = req ? await req.text() : init?.body;
         calls.push({ fn, body: raw ? JSON.parse(String(raw)) : null });
+        if (fn === errorOn && fn === 'profile_comment_add')
+          return Response.json({ code: 'P0001', message: 'Espera unos segundos antes de comentar de nuevo', details: null, hint: null }, { status: 400 });
         if (fn === errorOn)
           return Response.json({ code: '42501', message: 'Navegar sin dejar rastro es exclusivo para VIP', details: null, hint: null }, { status: 403 });
         if (fn === 'my_profile_visits') return Response.json(VISITS);
         if (fn === 'staff_public') return Response.json(STAFF);
         if (fn === 'vip_list_me') return Response.json({ vip: true, hidden: true });
+        if (fn === 'profile_wall') return Response.json(WALL);
         return new Response(null, { status: 204 });
       }
       return new Response('no simulado: ' + url, { status: 599 });
@@ -79,5 +87,147 @@ describe('página del Equipo', () => {
     const res = await call('PUT', '/api/v1/me/vip-list', { hidden: true });
     expect(await res.json()).toEqual({ vip: true, hidden: true });
     expect(calls.map((c) => c.fn)).toEqual(['staff_public', 'vip_list_hidden_set', 'vip_list_me']);
+  });
+});
+
+describe('comentarios y votos en el perfil', () => {
+  it('el muro se lee sin sesión', async () => {
+    const calls = stub();
+    const res = await makeApp().request(`/api/v1/players/${PLAYER}/wall`, {}, testEnv());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(WALL);
+    expect(calls).toEqual([{ fn: 'profile_wall', body: { p_player: PLAYER, p_before: null } }]);
+  });
+
+  it('votar y comentar devuelven el muro', async () => {
+    const calls = stub();
+    expect(await (await call('PUT', `/api/v1/players/${PLAYER}/vote`, { value: -1 })).json()).toEqual(WALL);
+    expect((await call('POST', `/api/v1/players/${PLAYER}/comments`, { body: 'grande' })).status).toBe(200);
+    expect(calls).toEqual([
+      { fn: 'profile_vote', body: { p_player: PLAYER, p_value: -1 } },
+      { fn: 'profile_wall', body: { p_player: PLAYER } },
+      { fn: 'profile_comment_add', body: { p_player: PLAYER, p_body: 'grande' } },
+      { fn: 'profile_wall', body: { p_player: PLAYER } },
+    ]);
+  });
+
+  it('un voto que no es 1, -1 ni 0, o un comentario de más de 280: 400 sin llegar a la base', async () => {
+    const calls = stub();
+    expect((await call('PUT', `/api/v1/players/${PLAYER}/vote`, { value: 2 })).status).toBe(400);
+    expect((await call('POST', `/api/v1/players/${PLAYER}/comments`, { body: 'x'.repeat(281) })).status).toBe(400);
+    expect(calls).toEqual([]);
+  });
+
+  it('el tope de la base llega con su mensaje', async () => {
+    stub('profile_comment_add');
+    const res = await call('POST', `/api/v1/players/${PLAYER}/comments`, { body: 'otro' });
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(await res.json())).toContain('Espera unos segundos');
+  });
+
+  it('sin sesión no se vota ni se comenta', async () => {
+    stub();
+    const res = await makeApp().request(`/api/v1/players/${PLAYER}/vote`, { method: 'PUT', body: JSON.stringify({ value: 1 }) }, testEnv());
+    expect(res.status).toBe(401);
+  });
+
+  it('borrar un comentario y cerrar los comentarios del perfil', async () => {
+    const calls = stub();
+    expect((await call('DELETE', '/api/v1/profile-comments/88888888-8888-4888-8888-888888888888')).status).toBe(204);
+    expect((await call('PUT', '/api/v1/me/profile-comments', { open: false })).status).toBe(204);
+    expect(calls).toEqual([
+      { fn: 'profile_comment_delete', body: { p_id: '88888888-8888-4888-8888-888888888888' } },
+      { fn: 'profile_comments_set', body: { p_open: false } },
+    ]);
+  });
+});
+
+// Denunciar un comentario y la lista de moderación (replanteo 94).
+const REPORT = '99999999-9999-4999-8999-999999999999';
+const REPORTS = {
+  total: 3,
+  items: [{
+    id: REPORT, reason: 'toxic', note: 'insulta', created_at: '2026-11-09T03:00:00+00:00', status: 'open', resolved_at: null, resolved_by: null,
+    reporter: { id: PLAYER, alias: 'kyan' }, reports: 2,
+    comment: { id: '88888888-8888-4888-8888-888888888888', body: 'feo', created_at: '2026-11-09T02:00:00+00:00', deleted_at: null, author: { id: PLAYER, alias: 'otro' } },
+    profile: { id: PLAYER, alias: 'dueño' },
+  }],
+};
+function stubMod(role: string | null) {
+  const calls: { fn: string; body: unknown }[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = input instanceof Request ? input : null;
+      const url = decodeURIComponent(String(req ? req.url : input));
+      if (url.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
+      if (url.includes('/rest/v1/profiles')) return Response.json(role ? { role } : null);
+      if (url.includes('/rpc/')) {
+        const fn = url.slice(url.indexOf('/rpc/') + 5).split('?')[0]!;
+        const raw = req ? await req.text() : init?.body;
+        calls.push({ fn, body: raw ? JSON.parse(String(raw)) : null });
+        if (fn === 'profile_comment_reports_admin') return Response.json(REPORTS);
+        if (fn === 'profile_comment_report' && (JSON.parse(String(raw)) as { p_note: string | null }).p_note === 'repetida')
+          return Response.json({ code: 'P0001', message: 'Ya denunciaste ese comentario', details: null, hint: null }, { status: 400 });
+        return new Response(null, { status: 204 });
+      }
+      return new Response('no simulado: ' + url, { status: 599 });
+    }),
+  );
+  return calls;
+}
+
+describe('denunciar un comentario (replanteo 94)', () => {
+  const C = '88888888-8888-4888-8888-888888888888';
+  it('denunciar: 204 con el motivo y la nota', async () => {
+    const calls = stubMod(null);
+    expect((await call('POST', `/api/v1/profile-comments/${C}/report`, { reason: 'harassment', note: '  me acosa  ' })).status).toBe(204);
+    expect(calls).toEqual([{ fn: 'profile_comment_report', body: { p_comment: C, p_reason: 'harassment', p_note: 'me acosa' } }]);
+  });
+
+  it('sin nota va null; un motivo inventado o una nota de más de 300: 400 sin llegar a la base', async () => {
+    const calls = stubMod(null);
+    expect((await call('POST', `/api/v1/profile-comments/${C}/report`, { reason: 'spam' })).status).toBe(204);
+    expect(calls[0]!.body).toEqual({ p_comment: C, p_reason: 'spam', p_note: null });
+    expect((await call('POST', `/api/v1/profile-comments/${C}/report`, { reason: 'feo' })).status).toBe(400);
+    expect((await call('POST', `/api/v1/profile-comments/${C}/report`, { reason: 'other', note: 'x'.repeat(301) })).status).toBe(400);
+    expect(calls).toHaveLength(1);
+  });
+
+  it('la base dice que ya la denunció: 400 con su mensaje', async () => {
+    stubMod(null);
+    const res = await call('POST', `/api/v1/profile-comments/${C}/report`, { reason: 'spam', note: 'repetida' });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: { message: string } }).error.message).toBe('Ya denunciaste ese comentario');
+  });
+
+  it('sin sesión no se denuncia', async () => {
+    stubMod(null);
+    const res = await makeApp().request(`/api/v1/profile-comments/${C}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'spam' }) }, testEnv());
+    expect(res.status).toBe(401);
+  });
+
+  it('la lista: un jugador sin rol, 403; un moderador la ve con la página que pidió', async () => {
+    expect((await (stubMod('user'), call('GET', '/api/v1/admin/profile-comment-reports'))).status).toBe(403);
+    const calls = stubMod('moderator');
+    const res = await call('GET', '/api/v1/admin/profile-comment-reports?status=all&reason=toxic&order=asc&page=2&per=10');
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { total: number; page: number; per: number; items: unknown[] };
+    expect(body).toMatchObject({ total: 3, page: 2, per: 10, order: 'asc' });
+    expect(body.items).toEqual(REPORTS.items);
+    expect(calls).toEqual([{ fn: 'profile_comment_reports_admin', body: { p_status: null, p_reason: 'toxic', p_order: 'asc', p_limit: 10, p_offset: 10 } }]);
+  });
+
+  it('por defecto, las abiertas y las más nuevas primero', async () => {
+    const calls = stubMod('admin');
+    expect((await call('GET', '/api/v1/admin/profile-comment-reports')).status).toBe(200);
+    expect(calls[0]!.body).toEqual({ p_status: 'open', p_reason: null, p_order: 'desc', p_limit: 20, p_offset: 0 });
+  });
+
+  it('resolver: descartar o borrar; otra acción, 400', async () => {
+    const calls = stubMod('moderator');
+    expect((await call('POST', `/api/v1/admin/profile-comment-reports/${REPORT}/resolve`, { action: 'delete' })).status).toBe(204);
+    expect((await call('POST', `/api/v1/admin/profile-comment-reports/${REPORT}/resolve`, { action: 'ban' })).status).toBe(400);
+    expect(calls).toEqual([{ fn: 'profile_comment_report_resolve', body: { p_report: REPORT, p_action: 'delete' } }]);
   });
 });

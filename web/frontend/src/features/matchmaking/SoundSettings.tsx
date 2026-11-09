@@ -7,7 +7,7 @@ import {
   Trash2Icon,
   UploadIcon,
 } from "lucide-react"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
@@ -21,6 +21,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { VipDialog } from "@/features/vip/VipDialog"
 import { previewSound } from "./alert"
 import { useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -28,10 +31,17 @@ import type { MmState } from "./types"
 
 // Sonido de partida encontrada (plan, decisión "Sonidos de partida"): todos eligen entre los que
 // subieron los admins; los VIP, además, pueden subir el suyo, que solo escuchan ellos.
+// Desde el 2026-11-09 (Kyan) la ventana es "Configuración" y suma el autoaceptar partida, solo VIP.
 
 export const SOUND_ACCEPT = "audio/mpeg,audio/ogg,audio/wav"
 
-export function SoundSettingsDialog({ sounds }: { sounds: MmState["sounds"] }) {
+export function SoundSettingsDialog({
+  sounds,
+  autoAccept,
+}: {
+  sounds: MmState["sounds"]
+  autoAccept: MmState["auto_accept"]
+}) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -42,14 +52,76 @@ export function SoundSettingsDialog({ sounds }: { sounds: MmState["sounds"] }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Sonido de partida encontrada</DialogTitle>
+          <DialogTitle>Configuración</DialogTitle>
           <DialogDescription>
-            Suena cuando te sale una partida.
+            Cómo te avisa la web cuando te sale una partida.
           </DialogDescription>
         </DialogHeader>
+        {/* Sin la migración 89 la API no lo manda: no se muestra. */}
+        {autoAccept && <AutoAcceptSetting autoAccept={autoAccept} />}
+        <h3 className="border-t pt-4 text-sm font-semibold">
+          Sonido de partida encontrada
+        </h3>
         <SoundSettings sounds={sounds} />
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** Autoaceptar partida: solo VIP. Sin VIP el interruptor se ve con candado y ofrece hacerse VIP. */
+export function AutoAcceptSetting({
+  autoAccept,
+}: {
+  autoAccept: NonNullable<MmState["auto_accept"]>
+}) {
+  const source = useMmSource()
+  const set = useMmMutation((on: boolean) => source.setAutoAccept(on))
+  const on = autoAccept.allowed && autoAccept.enabled
+  // En main no está el aviso de VIP de Kyan (features/vip/upsell): se abre "Cómo ser VIP".
+  const [vipOpen, setVipOpen] = useState(false)
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-3">
+        <Label
+          htmlFor="mm-auto-accept"
+          className="flex items-center gap-2 text-sm font-semibold"
+        >
+          Autoaceptar partida <Badge variant="vip">VIP</Badge>
+        </Label>
+        {autoAccept.allowed ? (
+          <Switch
+            id="mm-auto-accept"
+            checked={on}
+            disabled={set.isPending}
+            onCheckedChange={(v) =>
+              set.mutate(v, {
+                onSuccess: () =>
+                  toast.success(
+                    v ? "Autoaceptar activado" : "Autoaceptar desactivado"
+                  ),
+                onError: (e) => toast.error(errorMessage(e)),
+              })
+            }
+          />
+        ) : (
+          // Sin VIP: el interruptor se ve con candado y al tocarlo ofrece hacerse VIP.
+          <span className="inline-flex items-center gap-1.5">
+            <LockIcon aria-hidden className="size-3.5 text-muted-foreground" />
+            <Switch
+              id="mm-auto-accept"
+              checked={false}
+              onCheckedChange={() => setVipOpen(true)}
+            />
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Cuando se arma la partida, la aceptamos por ti aunque no estés mirando
+        la web. Igual suena el aviso. Si después no entras al servidor a tiempo,
+        la sanción es la misma que por no conectarte.
+      </p>
+      <VipDialog open={vipOpen} onOpenChange={setVipOpen} />
+    </div>
   )
 }
 

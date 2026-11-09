@@ -1854,6 +1854,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"mm_friend_requests": {
+                  Row: {
+                    "answered_at": string | null,"created_at": string,"from_user": string,"id": string,"status": string,"to_user": string
+                  }
+                  Insert: {
+                    "answered_at"?: string | null,"created_at"?: string,"from_user": string,"id"?: string,"status"?: string,"to_user": string
+                  }
+                  Update: {
+                    "answered_at"?: string | null,"created_at"?: string,"from_user"?: string,"id"?: string,"status"?: string,"to_user"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"mm_friends": {
                   Row: {
                     "created_at": string,"player_id": string,"user_id": string
@@ -2130,6 +2143,25 @@ isOneToOne: true
                   Relationships: [
                     
                   ]
+                },"mm_party_chat": {
+                  Row: {
+                    "created_at": string,"id": number,"message": string,"party_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: never,"message": string,"party_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: never,"message"?: string,"party_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mm_party_chat_party_id_fkey"
+      columns: ["party_id"]
+isOneToOne: false
+      referencedRelation: "mm_parties"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"mm_party_invites": {
                   Row: {
                     "created_at": string,"expires_at": string,"from_user": string,"id": string,"party_id": string,"status": string,"to_user": string
@@ -2320,13 +2352,13 @@ isOneToOne: false
                   ]
                 },"mm_reports": {
                   Row: {
-                    "created_at": string,"id": string,"lobby_id": string,"note": string | null,"reason": string,"reported_id": string,"reporter_id": string,"resolved_at": string | null,"resolved_by": string | null,"status": string
+                    "created_at": string,"id": string,"lobby_id": string | null,"message": string | null,"note": string | null,"reason": string,"reported_id": string,"reporter_id": string,"resolved_at": string | null,"resolved_by": string | null,"status": string
                   }
                   Insert: {
-                    "created_at"?: string,"id"?: string,"lobby_id": string,"note"?: string | null,"reason": string,"reported_id": string,"reporter_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
+                    "created_at"?: string,"id"?: string,"lobby_id"?: string | null,"message"?: string | null,"note"?: string | null,"reason": string,"reported_id": string,"reporter_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"lobby_id"?: string,"note"?: string | null,"reason"?: string,"reported_id"?: string,"reporter_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
+                    "created_at"?: string,"id"?: string,"lobby_id"?: string | null,"message"?: string | null,"note"?: string | null,"reason"?: string,"reported_id"?: string,"reporter_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
                   }
                   Relationships: [
                     {
@@ -2615,6 +2647,49 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"pcw_offers": {
+                  Row: {
+                    "by_user": string,"closed_at": string | null,"created_at": string,"id": string,"post_id": string,"starts_at": string | null,"status": string,"team_id": string
+                  }
+                  Insert: {
+                    "by_user": string,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"post_id": string,"starts_at"?: string | null,"status"?: string,"team_id": string
+                  }
+                  Update: {
+                    "by_user"?: string,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"post_id"?: string,"starts_at"?: string | null,"status"?: string,"team_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pcw_offers_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "pcw_post_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pcw_offers_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "pcw_posts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pcw_offers_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pcw_offers_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pcw_offers_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"pcw_posts": {
                   Row: {
@@ -2974,16 +3049,102 @@ isOneToOne: false
                   ]
                 },"players": {
                   Row: {
-                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"primary_steam_changed_at": string | null,"privacy": string,"steam_added_at": string | null,"steam_id": string | null,"team_history": string | null,"user_id": string | null
+                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"primary_steam_changed_at": string | null,"privacy": string,"steam_added_at": string | null,"steam_id": string | null,"team_history": string | null,"user_id": string | null,"verified": string | null,"verified_at": string | null,"verified_by": string | null,"verified_note": string | null
                   }
                   Insert: {
-                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
                   }
                   Update: {
-                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
                   }
                   Relationships: [
                     
+                  ]
+                },"profile_comment_reports": {
+                  Row: {
+                    "comment_id": string,"created_at": string,"id": string,"note": string | null,"reason": string,"reporter": string,"resolved_at": string | null,"resolved_by": string | null,"status": string
+                  }
+                  Insert: {
+                    "comment_id": string,"created_at"?: string,"id"?: string,"note"?: string | null,"reason": string,"reporter": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "comment_id"?: string,"created_at"?: string,"id"?: string,"note"?: string | null,"reason"?: string,"reporter"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_comment_reports_comment_id_fkey"
+      columns: ["comment_id"]
+isOneToOne: false
+      referencedRelation: "profile_comments"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profile_comments": {
+                  Row: {
+                    "author": string,"body": string,"created_at": string,"deleted_at": string | null,"deleted_by": string | null,"id": string,"player_id": string
+                  }
+                  Insert: {
+                    "author": string,"body": string,"created_at"?: string,"deleted_at"?: string | null,"deleted_by"?: string | null,"id"?: string,"player_id": string
+                  }
+                  Update: {
+                    "author"?: string,"body"?: string,"created_at"?: string,"deleted_at"?: string | null,"deleted_by"?: string | null,"id"?: string,"player_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
                   ]
                 },"profile_details": {
                   Row: {
@@ -2997,6 +3158,140 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"profile_visits": {
+                  Row: {
+                    "day": string,"hidden": boolean,"player_id": string,"visited_at": string,"visitor": string
+                  }
+                  Insert: {
+                    "day": string,"hidden"?: boolean,"player_id": string,"visited_at"?: string,"visitor": string
+                  }
+                  Update: {
+                    "day"?: string,"hidden"?: boolean,"player_id"?: string,"visited_at"?: string,"visitor"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
+                  ]
+                },"profile_votes": {
+                  Row: {
+                    "player_id": string,"value": number,"voted_at": string,"voter": string
+                  }
+                  Insert: {
+                    "player_id": string,"value": number,"voted_at"?: string,"voter": string
+                  }
+                  Update: {
+                    "player_id"?: string,"value"?: number,"voted_at"?: string,"voter"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
                   ]
                 },"profiles": {
                   Row: {
@@ -3046,6 +3341,45 @@ isOneToOne: false
                   }
                   Update: {
                     "photo_url"?: string,"player_id"?: string,"saved_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"replanteo85_marcas": {
+                  Row: {
+                    "created_at": string,"player_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at": string,"player_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"player_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"replanteo92_funciones": {
+                  Row: {
+                    "def": string | null,"exec_roles": (unknown)[] | null,"fn": string | null
+                  }
+                  Insert: {
+                    "def"?: string | null,"exec_roles"?: (unknown)[] | null,"fn"?: string | null
+                  }
+                  Update: {
+                    "def"?: string | null,"exec_roles"?: (unknown)[] | null,"fn"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"replanteo94_funciones": {
+                  Row: {
+                    "def": string | null,"fn": string | null
+                  }
+                  Insert: {
+                    "def"?: string | null,"fn"?: string | null
+                  }
+                  Update: {
+                    "def"?: string | null,"fn"?: string | null
                   }
                   Relationships: [
                     
@@ -5750,9 +6084,6 @@ isOneToOne: false
 "ac_user_code":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
-"accept_pcw":
-{ Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[],"p_post": string,"p_team"?: string }; Returns: string
-                           },
 "admin_account_action":
 { Args: { "p_action": string,"p_user": string }; Returns: Json
                            },
@@ -5791,6 +6122,9 @@ isOneToOne: false
 { Args: { "p_player": string }; Returns: {
               "first_seen_at": string,"ip": string,"last_nick": string,"last_seen_at": string,"others": Json,"others_unlinked": number,"steam_id": string,"times": number
             }[]
+                           },
+"admin_player_verify":
+{ Args: { "p_kind": string,"p_note"?: string,"p_player": string }; Returns: undefined
                            },
 "admin_regenerate_hud_key":
 { Args: { "p_server": string }; Returns: string
@@ -5878,6 +6212,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "id": string,"kind": string,"name": string,"word": string
             }[]
+                           },
+"bogota_today":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"bogota_week_start":
+{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "booking_abandon":
 { Args: { "p_booking": string,"p_reason": string,"p_side": number }; Returns: undefined
@@ -6002,6 +6342,9 @@ isOneToOne: false
                            },
 "clips_notify_detected":
 { Args: { "p_match": string }; Returns: undefined
+                           },
+"comment_blocked_word":
+{ Args: { "p": string }; Returns: string
                            },
 "crash_min_rounds":
 { Args: { "p_max_rounds": number }; Returns: number
@@ -6547,6 +6890,9 @@ isOneToOne: false
 "mm_assign_server":
 { Args: { "p_lobby": string }; Returns: boolean
                            },
+"mm_auto_accept_on":
+{ Args: { "p_user": string }; Returns: boolean
+                           },
 "mm_balance_elos":
 { Args: { "p_elos": (number)[],"p_players": (string)[] }; Returns: (number)[]
                            },
@@ -6598,8 +6944,26 @@ isOneToOne: false
 "mm_free_server":
 { Args: { "p_regions": (string)[] }; Returns: string
                            },
+"mm_friend_accept":
+{ Args: { "p_request": string }; Returns: undefined
+                           },
+"mm_friend_answer":
+{ Args: { "p_accept": boolean,"p_player": string }; Returns: undefined
+                           },
+"mm_friend_close":
+{ Args: { "p_request": string,"p_status": string }; Returns: undefined
+                           },
+"mm_friend_cut":
+{ Args: { "p_player": string }; Returns: undefined
+                           },
+"mm_friend_expire":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "mm_friend_users":
 { Args: { "p_player": string }; Returns: (string)[]
+                           },
+"mm_friendship":
+{ Args: { "p_player": string }; Returns: string
                            },
 "mm_game_room":
 { Args: { "p_game": string }; Returns: Json
@@ -6652,6 +7016,12 @@ isOneToOne: false
 "mm_new_password":
 { Args: { "p_len"?: number }; Returns: string
                            },
+"mm_party_chat_list":
+{ Args: { "p_after"?: number }; Returns: Json
+                           },
+"mm_party_chat_send":
+{ Args: { "p_message": string }; Returns: Json
+                           },
 "mm_party_clear_queue":
 { Args: { "p_party": string }; Returns: undefined
                            },
@@ -6666,6 +7036,9 @@ isOneToOne: false
                            },
 "mm_party_leave":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"mm_party_of":
+{ Args: { "p_user": string }; Returns: string
                            },
 "mm_party_promote":
 { Args: { "p_player": string }; Returns: undefined
@@ -6769,6 +7142,12 @@ isOneToOne: false
 "mm_report":
 { Args: { "p_lobby": string,"p_note"?: string,"p_player": string,"p_reason": string }; Returns: undefined
                            },
+"mm_report_from_chat":
+{ Args: { "p_message": number,"p_note"?: string,"p_reason": string }; Returns: undefined
+                           },
+"mm_set_auto_accept":
+{ Args: { "p_on": boolean }; Returns: undefined
+                           },
 "mm_set_config":
 { Args: { "p": Json }; Returns: Json
                            },
@@ -6807,6 +7186,9 @@ isOneToOne: false
                            },
 "mm_unit_away":
 { Args: { "p_unit": string }; Returns: boolean
+                           },
+"my_profile_visits":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "name_blocked":
 { Args: { "p": string }; Returns: string
@@ -6870,6 +7252,18 @@ isOneToOne: false
 "pcw_make_side":
 { Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[] }; Returns: string
                            },
+"pcw_my_context":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"pcw_offer_choose":
+{ Args: { "p_offer": string }; Returns: string
+                           },
+"pcw_offer_send":
+{ Args: { "p_guests": (string)[],"p_name": string,"p_players": (string)[],"p_post": string,"p_starts_at"?: string,"p_team"?: string }; Returns: string
+                           },
+"pcw_offer_withdraw":
+{ Args: { "p_offer": string }; Returns: undefined
+                           },
 "pcw_ready":
 { Args: { "p_match": string,"p_ready"?: boolean }; Returns: undefined
                            },
@@ -6900,6 +7294,45 @@ isOneToOne: false
 { Args: { "p_a": string,"p_b": string }; Returns: {
               "a_wins": number,"against_matches": number,"same_matches": number,"same_wins": number
             }[]
+                           },
+"profile_comment_add":
+{ Args: { "p_body": string,"p_player": string }; Returns: string
+                           },
+"profile_comment_delete":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"profile_comment_report":
+{ Args: { "p_comment": string,"p_note"?: string,"p_reason": string }; Returns: string
+                           },
+"profile_comment_report_resolve":
+{ Args: { "p_action": string,"p_report": string }; Returns: undefined
+                           },
+"profile_comment_reports_admin":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_order"?: string,"p_reason"?: string,"p_status"?: string }; Returns: Json
+                           },
+"profile_comments_open":
+{ Args: { "p_player": string }; Returns: boolean
+                           },
+"profile_comments_set":
+{ Args: { "p_open": boolean }; Returns: undefined
+                           },
+"profile_incognito_set":
+{ Args: { "p_on": boolean }; Returns: undefined
+                           },
+"profile_social_blocked":
+{ Args: { "p_player": string,"p_user": string }; Returns: string
+                           },
+"profile_social_check":
+{ Args: { "p_player": string,"p_user": string }; Returns: undefined
+                           },
+"profile_visit":
+{ Args: { "p_player": string }; Returns: undefined
+                           },
+"profile_vote":
+{ Args: { "p_player": string,"p_value": number }; Returns: undefined
+                           },
+"profile_wall":
+{ Args: { "p_before"?: string,"p_player": string }; Returns: Json
                            },
 "reject_steam_request":
 { Args: { "p_id": number,"p_reason": string }; Returns: undefined
@@ -7039,6 +7472,9 @@ isOneToOne: false
                            },
 "site_auth_image":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"staff_public":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "steam_attach":
 { Args: { "p_by": string,"p_player": string,"p_steam": string }; Returns: boolean
@@ -7221,6 +7657,12 @@ isOneToOne: false
                            },
 "vip_at":
 { Args: { "p_at": string,"p_user": string }; Returns: boolean
+                           },
+"vip_list_hidden_set":
+{ Args: { "p_hidden": boolean }; Returns: undefined
+                           },
+"vip_list_me":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            }
           }
           Enums: {

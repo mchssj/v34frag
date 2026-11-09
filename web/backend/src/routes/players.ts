@@ -25,10 +25,11 @@ import {
   TitleList,
   TitleQuery,
   type PlayerSummary,
+  verificationOf,
 } from '../schemas/players';
 import { activeBan } from '../services/bans';
 import { vipPlayers } from '../services/vip';
-import { resolvePlayer } from '../services/players';
+import { resolvePlayer, verifiedIds, verifiedPlayers } from '../services/players';
 import { stageLabel } from '../services/stages';
 import { clutchesOf } from '../services/matches';
 
@@ -43,7 +44,7 @@ type OverviewRow = {
   wins: number | null; losses: number | null; teams: unknown;
 };
 
-export const toSummary = (r: OverviewRow, vip: Set<string>): z.infer<typeof PlayerSummary> => ({
+export const toSummary = (r: OverviewRow, vip: Set<string>, verified: Map<string, 'gray' | 'gold'> = new Map()): z.infer<typeof PlayerSummary> => ({
   id: r.id!,
   alias: r.nick ?? '',
   has_account: !!r.has_account,
@@ -59,6 +60,7 @@ export const toSummary = (r: OverviewRow, vip: Set<string>): z.infer<typeof Play
   losses: r.losses,
   teams: Array.isArray(r.teams) ? (r.teams as z.infer<typeof PlayerSummary>['teams']) : [],
   vip: vip.has(r.id!),
+  verified: verified.get(r.id!) ?? null,
 });
 
 // ---------- rutas ----------
@@ -220,18 +222,25 @@ export const players = createRouter()
     if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
     if (p.has_account !== undefined) q = q.eq('has_account', p.has_account);
     if (p.has_steam !== undefined) q = q.eq('has_steam', p.has_steam);
+    // (replanteo 94) La vista no trae la insignia: se filtra por los ids de las fichas verificadas (son pocas).
+    if (p.verified !== undefined) {
+      const ids = await verifiedIds(c.var.sb);
+      if (p.verified) q = q.in('id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
+      else if (ids.length) q = q.not('id', 'in', `(${ids.join(',')})`);
+    }
     if (p.elo_min !== undefined) q = q.gte('elo', p.elo_min);
     if (p.elo_max !== undefined) q = q.lte('elo', p.elo_max);
     const { rows, total } = await runList<OverviewRow, typeof q>(q, p, { alias: 'nick' });
-    const vip = await vipPlayers(c.var.sb, rows.map((r) => r.id!));
-    return c.json(envelope(rows.map((r) => toSummary(r, vip)), total, p), 200);
+    const ids = rows.map((r) => r.id!);
+    const [vip, verified] = await Promise.all([vipPlayers(c.var.sb, ids), verifiedPlayers(c.var.sb, ids)]);
+    return c.json(envelope(rows.map((r) => toSummary(r, vip, verified)), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const sb = c.var.sb;
     const id = await resolvePlayer(sb, c.req.valid('param').id);
     const [overview, player] = await Promise.all([
       sb.from('player_overview').select(OVERVIEW).eq('id', id).maybeSingle().then(must),
-      sb.from('players').select('user_id, steam_id, bio, achievements, team_history, privacy').eq('id', id).maybeSingle().then(must),
+      sb.from('players').select('user_id, steam_id, bio, achievements, team_history, privacy, verified, verified_note').eq('id', id).maybeSingle().then(must),
     ]);
     const steams = player ? mustHave(await sb.from('player_steam_all').select('steam_id, is_primary').eq('player_id', id)) : [];
     if (!overview || !player) throw notFound('ese jugador');
@@ -247,7 +256,7 @@ export const players = createRouter()
     ]);
     return c.json(
       {
-        ...toSummary(overview, vip),
+        ...toSummary(overview, vip, new Map(player.verified === 'gray' || player.verified === 'gold' ? [[id, player.verified]] : [])),
         steam_id: seesSteam ? player.steam_id : null,
         steam_ids: seesSteam
           ? steams.sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || (a.steam_id ?? '').localeCompare(b.steam_id ?? '')).map((s) => s.steam_id ?? '')
@@ -256,6 +265,7 @@ export const players = createRouter()
         achievements: player.achievements,
         team_history_text: player.team_history,
         privacy: player.privacy === 'private' ? ('private' as const) : ('public' as const),
+        verification: verificationOf(player.verified, player.verified_note),
         peak_elo: overview.peak_elo,
         stats: stats ? { ...stats, clutches: clutchesOf(clutchRows) } : null,
         details: details ?? null,

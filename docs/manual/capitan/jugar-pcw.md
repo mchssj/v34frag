@@ -1,24 +1,26 @@
 ---
 titulo: Jugar una PCW
-resumen: Marcarse listos, el veto, la fila de servidores, la espera y cuándo arranca solo.
-orden: 4
-oculta: true
+resumen: Marcarse listos, la sala, el veto, la fila de servidores, la espera y cuándo arranca solo.
+orden: 5
 ---
 
-Una PCW es una práctica entre dos equipos. No cuenta para el ELO.
+Una PCW es una práctica entre dos equipos. No cuenta para el ELO. Para armarla, ver [Publicar una PCW o mandar una oferta](/help/capitan/publicar-y-ofertar-pcw).
 
 ## 1. Marcarse listos
 
-En la página de la PCW, un jugador de cada equipo toca **Estamos listos**. Cuando los dos equipos están listos:
+En [PCW](/pcw), pestaña **Mis PCW**, un jugador de cada equipo toca **Estamos listos**. La tarjeta muestra si el otro equipo ya lo marcó. Cuando los dos equipos están listos, aparece **Ir a la sala**.
 
-1. Se hace el veto, si falta: 30 segundos por turno; si vence, se elige un mapa al azar.
-2. La PCW entra a la **fila de servidores** y toma el primero libre, en orden de llegada.
+La sala es como la del matchmaking: los dos equipos con su escudo y su ELO medio, los jugadores, el veto, el servidor y el chat general. Arriba del centro va la serie: el marcador y los mapas.
+
+1. Se hace el veto, si falta. Lo hace el capitán de cada lado, por turnos: 30 segundos por turno; si vence, se elige un mapa al azar. En una BO3 o BO5, algunos turnos son para **Elegir** un mapa en lugar de banearlo.
+2. Si el anuncio traía tantos mapas como el formato, no hay veto: se juegan esos en ese orden.
+3. La PCW entra a la **fila de servidores** y toma el primero libre, en orden de llegada.
 
 Mientras no hay servidor, cualquiera de los dos equipos puede tocar **Ya no estamos listos**, sin sanción.
 
 ## 2. Conectarse
 
-Cuando la fila les da un servidor, les avisamos en la campana y la página muestra **Conectarse** y la contraseña. La contraseña solo la ven los planteles: si juega un stand-in, pásasela tú.
+Cuando la fila les da un servidor, les avisamos en la campana y la sala muestra **Conectar** y la contraseña. La contraseña solo la ven los planteles: si juega un stand-in, pásasela tú.
 
 ## 3. La espera
 

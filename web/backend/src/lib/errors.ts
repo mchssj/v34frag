@@ -28,6 +28,7 @@ export type ErrorCode =
   | 'PLAYER_NOT_LINKED'
   | 'PCW_BANNED'
   | 'SERVER_BUSY'
+  | 'VIP_REQUIRED'
   | 'INTERNAL';
 
 export class AppError extends Error {
@@ -104,6 +105,9 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
     // (replanteo 57) Aviso de la cola en Discord antes de los 15 minutos; el detail trae next_at.
     case 'V5701':
       return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
+    // (replanteo 92) Publicar una PCW es para VIP.
+    case 'V8901':
+      return new AppError(403, 'VIP_REQUIRED', err.message);
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);

@@ -152,6 +152,13 @@ const playerLink = (player: unknown): NotificationLink | undefined => {
   const nick = str(obj(player).alias)
   return nick ? { to: "/player/$nick", params: { nick } } : undefined
 }
+/** Los comentarios del perfil propio (replanteo 91). */
+const wallLink = (profile: unknown): NotificationLink | undefined => {
+  const nick = str(obj(profile).alias)
+  return nick
+    ? { to: "/player/$nick", params: { nick }, search: { tab: "comentarios" } }
+    : undefined
+}
 const adminEventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event)
     ? { to: "/admin/events/$id", params: { id: idOf(event) } }
@@ -433,6 +440,45 @@ export function describe(n: Notification, me?: string | null): Described {
           : `${str(d.title, vs)}. No cuenta para ninguno de los dos.`,
         link: matchLink(matchId),
       }
+    // (bitácora 2026-11-08-pcw-demo) Ofertas: el que publica elige entre las que le llegan.
+    case "pcw_offer":
+      return {
+        kind: "pcw",
+        title: `${nameOf(d.team, str(d.side, "Un equipo"))} mandó una oferta a tu anuncio`,
+        body: d.proposed_at
+          ? `Propone ${day(d.proposed_at) || "otra hora"}. Elegí la que más te sirva.`
+          : "Elegí la que más te sirva en PCW.",
+        link: { to: "/pcw" },
+      }
+    case "pcw_offer_chosen":
+      return {
+        kind: "pcw",
+        title: `${nameOf(d.team, str(d.side, "El rival"))} eligió tu oferta`,
+        body: 'Quedó en Mis PCW. Marquen "Estamos listos" cuando estén.',
+        link: { to: "/pcw" },
+      }
+    case "pcw_offer_rejected":
+      return {
+        kind: "pcw",
+        title: `${nameOf(d.team, str(d.side, "El equipo"))} eligió otra oferta`,
+        body: "Hay más anuncios en el tablón.",
+        link: { to: "/pcw" },
+      }
+    // (replanteo 35) Recordatorio de notify_due() y anuncio vencido.
+    case "pcw_soon":
+      return {
+        kind: "pcw",
+        title: `Tu PCW empieza en ${num(d.minutes) ?? 15} min`,
+        body: str(d.title, vs),
+        link: matchLink(matchId),
+      }
+    case "pcw_expired":
+      return {
+        kind: "pcw",
+        title: "Tu anuncio de PCW venció",
+        body: "Nadie lo aceptó a tiempo. Podés publicarlo de nuevo.",
+        link: { to: "/pcw" },
+      }
     case "pcw_result":
       return {
         kind: "pcw",
@@ -600,6 +646,21 @@ export function describe(n: Notification, me?: string | null): Described {
         kind: "friend",
         title: `${player} aceptó tu solicitud`,
         body: "Ya son amigos.",
+        link: playerLink(d.player),
+      }
+    // ---------- tu perfil (replanteo 91, en la categoría Amigos) ----------
+    case "profile_comment":
+      return {
+        kind: "friend",
+        title: `${player} comentó en tu perfil`,
+        body: str(d.comment, "Mirá lo que te escribió."),
+        link: wallLink(d.profile),
+      }
+    case "profile_like":
+      return {
+        kind: "friend",
+        title: `A ${player} le gusta tu perfil`,
+        body: "Te dio me gusta.",
         link: playerLink(d.player),
       }
     case "password_changed":

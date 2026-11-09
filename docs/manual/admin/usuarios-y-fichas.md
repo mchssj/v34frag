@@ -52,7 +52,17 @@ En **Inicio de sesión** cambias la imagen que se ve al lado del formulario de e
 
 ## Fichas
 
-En Administración › Jugadores, pestaña **Fichas**, buscas por nick o SteamID y filtras por **Con cuenta**, **Sin cuenta** y **Sin SteamID**. En el detalle de una ficha editas su nick (si tiene cuenta, manda el alias de la cuenta), la foto, la biografía, los logros, sus SteamID, la cuenta vinculada y las medallas. La foto de la ficha se ve en toda la web hasta que el jugador sube una suya: gana la última que se subió.
+En Administración › Jugadores, pestaña **Fichas**, buscas por nick o SteamID y filtras por **Con cuenta**, **Sin cuenta**, **Sin SteamID** y **Verificados** (las que tienen insignia, que también se ve en la lista). En el detalle de una ficha editas su nick (si tiene cuenta, manda el alias de la cuenta), la foto, la biografía, los logros, sus SteamID, la cuenta vinculada y las medallas. La foto de la ficha se ve en toda la web hasta que el jugador sube una suya: gana la última que se subió.
+
+## Insignia de verificado
+
+En el perfil público de un jugador, los admins ven el botón **Verificar** (o **Insignia**, si ya tiene una). Elige:
+
+- **Ninguna**: saca la insignia.
+- **Gris**: cuenta verificada, por ejemplo después de confirmar quién es.
+- **Dorada**: cuenta verificada destacada, para jugadores profesionales, casters, creadores de contenido o quien quieras destacar.
+
+En **Qué se verificó** escribe lo que se lee en la ficha de la insignia, hasta 60 caracteres (por ejemplo, "Jugador profesional"). Vacío, dice "Verificación de identidad" en la gris y "Jugador destacado de la comunidad" en la dorada. Solo un admin la pone, la cambia o la saca: el jugador no la puede pedir desde la web. Qué es cada una lo explica [Cuentas verificadas](/help/jugador/cuentas-verificadas).
 
 **Nueva ficha** crea un jugador sin cuenta, al que después le sumas SteamID o una cuenta.
 

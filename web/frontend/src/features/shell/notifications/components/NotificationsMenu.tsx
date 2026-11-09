@@ -41,11 +41,13 @@ import {
   type NotificationTab,
 } from "../lib/model"
 import {
+  notificationKeys,
   notificationsOptions,
   unreadCountOptions,
   useMarkRead,
   useResolveRequest,
 } from "../api/queries"
+import { useNotificationsSource } from "../api/source"
 import type { Resolution } from "../types"
 
 const ICONS: Record<NotificationKind, LucideIcon> = {
@@ -91,9 +93,26 @@ export function NotificationsMenu() {
   const [tab, setTab] = useState<NotificationTab>("all")
   const [invite, setInvite] = useState<Notification | null>(null)
   const me = useMe().data?.tag ?? null
-  const count = useQuery(unreadCountOptions).data
-  const list = useQuery({ ...notificationsOptions, enabled: open })
-  const markRead = useMarkRead()
+  // Con una fuente propia (una demo), la campana usa sus notificaciones en lugar de la API.
+  const source = useNotificationsSource()
+  const count = useQuery(
+    source
+      ? {
+          queryKey: notificationKeys.count,
+          queryFn: ({ signal }) => source.unread(signal),
+        }
+      : unreadCountOptions
+  ).data
+  const list = useQuery(
+    source
+      ? {
+          queryKey: notificationKeys.list,
+          queryFn: ({ signal }) => source.list(signal),
+          enabled: open,
+        }
+      : { ...notificationsOptions, enabled: open }
+  )
+  const markRead = useMarkRead(source)
   const resolveRequest = useResolveRequest()
   const navigate = useNavigate()
   const router = useRouter()

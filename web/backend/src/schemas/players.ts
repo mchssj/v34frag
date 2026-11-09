@@ -25,6 +25,7 @@ export const PlayerListQuery = listQuery(['elo', 'alias', 'elo_matches', 'rating
   team: z.uuid().optional().openapi({ description: 'Jugadores activos de un equipo oficial' }),
   has_account: boolParam('Con o sin cuenta en la web'),
   has_steam: boolParam('Con o sin SteamID vinculado'),
+  verified: boolParam('Con o sin insignia de verificado (replanteo 94)'),
   elo_min: z.coerce.number().int().optional(),
   elo_max: z.coerce.number().int().optional(),
 });
@@ -46,6 +47,7 @@ export const PlayerSummary = z
     losses: num,
     teams: z.array(TeamRef).openapi({ description: 'Equipos oficiales donde está hoy (puede ser más de uno)' }),
     vip: z.boolean().openapi({ description: 'Es VIP hoy (solo el estado; las fechas, en Mi perfil y en el admin)' }),
+    verified: z.enum(['gray', 'gold']).nullable().openapi({ description: 'Insignia de verificado (replanteo 90); null si no tiene' }),
   })
   .openapi('PlayerSummary');
 
@@ -126,7 +128,20 @@ export const ActiveBan = z
   })
   .openapi('ActiveBan', { description: 'Baneo activo en los servidores' });
 
+/** Insignia de verificado (replanteo 90): la pone un admin. */
+export const PlayerVerification = z
+  .object({
+    kind: z.enum(['gray', 'gold']).openapi({ description: 'gray: verificado; gold: verificado destacado' }),
+    note: z.string().nullable().openapi({ description: 'El motivo que se lee en el tooltip (por ejemplo, "Verificación de identidad")' }),
+  })
+  .openapi('PlayerVerification');
+
+/** La insignia de la fila de `players` (verified y verified_note), o null. */
+export const verificationOf = (kind: string | null, note: string | null): z.infer<typeof PlayerVerification> | null =>
+  kind === 'gray' || kind === 'gold' ? { kind, note } : null;
+
 export const PlayerDetail = PlayerSummary.extend({
+  verification: PlayerVerification.nullable().openapi({ description: 'Insignia de verificado; null si no tiene' }),
   steam_id: z.string().nullable().openapi({ description: 'SteamID principal. Solo para el dueño y los admins: para los demás, null' }),
   steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío' }),
   bio: z.string().nullable(),
@@ -242,7 +257,7 @@ export const RankingPlayerQuery = listQuery(['position', 'rating', 'kd', 'matche
 export const RankingPlayer = z
   .object({
     position: z.number().int().openapi({ description: 'Posición global por ELO (no cambia al filtrar; empatados comparten posición)' }),
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean() }),
+    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean(), verified: z.enum(['gray', 'gold']).nullable() }),
     level: z.number().int().min(1).max(10).nullable(),
     elo: z.number().int(),
     teams: z.array(TeamRef),
@@ -263,7 +278,7 @@ export const CompareQuery = z.object({
 });
 export const ComparePlayer = z
   .object({
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean() }),
+    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean(), verified: z.enum(['gray', 'gold']).nullable() }),
     teams: z.array(TeamRef),
     game_role: z.string().nullable(),
     level: z.number().int().min(1).max(10).nullable(),

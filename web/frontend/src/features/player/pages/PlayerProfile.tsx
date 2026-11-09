@@ -17,8 +17,10 @@ import { toast } from "sonner"
 
 import { api } from "@/api/client"
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
+import { canVerifyPlayers } from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { VerifiedBadge } from "@/components/brand/VerifiedBadge"
 import { LevelBadge, levelColor } from "@/components/brand/LevelBadge"
 import { initialOf } from "@/components/brand/PlayerAvatar"
 import { Segmented } from "@/components/brand/Segmented"
@@ -34,6 +36,8 @@ import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
 import { EloChart } from "../components/EloChart"
 import { FriendButton } from "../components/FriendButton"
+import { ProfileVotes } from "../components/ProfileWall"
+import { VerifyDialog } from "../components/VerifyDialog"
 import {
   LEVEL_FLOORS,
   faceitUrl,
@@ -128,7 +132,8 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
 function PlayerHeader({ p }: { p: PlayerDetail }) {
   const mine = useMine()
   const owner = mine.playerId === p.id
-  const signedIn = !!useMe().data
+  const me = useMe().data
+  const signedIn = !!me
   // (replanteo 86) Abrir el perfil de otro con sesión cuenta como una visita (una por día; la base decide si va oculta).
   useEffect(() => {
     if (signedIn && !owner && mine.ready)
@@ -157,9 +162,19 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
         </Avatar>
         <div className="flex min-w-[240px] flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-[28px] font-bold tracking-[-0.6px]">
-              {p.alias}
-            </h1>
+            {/* La insignia pegada al nick, como en FACEIT. */}
+            <span className="inline-flex items-center gap-1.5">
+              <h1 className="text-[28px] font-bold tracking-[-0.6px]">
+                {p.alias}
+              </h1>
+              {p.verification && (
+                <VerifiedBadge
+                  kind={p.verification.kind}
+                  note={p.verification.note}
+                  sealClassName="size-6"
+                />
+              )}
+            </span>
             {d?.country && (
               <span className="inline-flex h-[22px] items-center gap-1.5 rounded-[calc(var(--radius)-4px)] border px-1.5 text-xs font-medium">
                 {country && <CountryFlag country={country} />}
@@ -175,7 +190,7 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
                 title="Tiene al menos un SteamID vinculado"
               >
                 <BadgeCheckIcon aria-hidden className="size-3 text-win" />
-                Verificado
+                Steam vinculado
               </Badge>
             )}
             {owner && p.privacy === "private" && (
@@ -270,7 +285,9 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
             </div>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ProfileVotes playerId={p.id} />
+          {me && canVerifyPlayers(me.role) && <VerifyDialog player={p} />}
           {owner ? (
             <Link
               to="/profile"

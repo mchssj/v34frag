@@ -2,6 +2,7 @@ import { cn } from "cn"
 import { ServerIcon } from "lucide-react"
 
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { TeamCrest } from "@/components/brand/TeamCrest"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
 import { WatchTvButton } from "@/features/mixes/components/parts"
@@ -41,7 +42,7 @@ export function RoomHeader({
   const m = lobby.match
   const live = lobby.status === "live"
   const details = [
-    `Matchmaking ${lobby.mode}`,
+    lobby.kind_label ?? `Matchmaking ${lobby.mode}`,
     lobby.server?.name,
     m && fmtDateTime(m.played_at),
   ]
@@ -168,6 +169,18 @@ function Side({ lobby, team }: { lobby: MmLobby; team: Team }) {
 
 function Tag({ lobby, team }: { lobby: MmLobby; team: Team }) {
   const captain = teamCaptain(lobby, team)
+  // Un bando que juega como equipo (PCW) muestra su escudo; el matchmaking, la foto del capitán.
+  const crest = lobby.crests?.[team]
+  if (crest)
+    return (
+      <TeamCrest
+        team={crest}
+        size="sm"
+        className={cn(
+          lobby.match?.winner === team && "shadow-[0_0_0_2px_var(--primary)]"
+        )}
+      />
+    )
   return (
     <Avatar
       className={cn(

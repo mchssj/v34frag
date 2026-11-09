@@ -97,6 +97,7 @@ const detail = (o: Record<string, unknown> = {}) => ({
   achievements: "Campeón Liga Apertura 2025",
   team_history_text: "ARVUM\nSOVIET",
   privacy: "public",
+  verification: { kind: "gold", note: "Jugador profesional" },
   peak_elo: 1078,
   stats: {
     maps: 20,
@@ -175,6 +176,35 @@ function api(
     ),
     http.get(`${API}/api/v1/players/Zeta`, () =>
       HttpResponse.json(o.detail ?? detail())
+    ),
+    // Comentarios y votos (replanteo 91).
+    http.get(`${API}/api/v1/players/:id/wall`, () =>
+      HttpResponse.json({
+        likes: 12,
+        dislikes: 2,
+        my_vote: null,
+        can_vote: false,
+        is_owner: false,
+        comments_open: true,
+        can_comment: false,
+        total: 1,
+        items: [
+          {
+            id: "c1",
+            body: "Gran IGL",
+            created_at: "2026-11-09T03:00:00Z",
+            author: {
+              player_id: "p9",
+              nick: "kz.flick",
+              photo_url: null,
+              level: 9,
+              verified: null,
+            },
+            mine: false,
+            can_delete: false,
+          },
+        ],
+      })
     ),
     // Clips destacados (replanteo 76): por id, sin destacados salvo que el caso los pida.
     http.get(`${API}/api/v1/players/:id/clips/featured`, () =>
@@ -351,7 +381,14 @@ describe("Perfil público", () => {
       await screen.findByRole("heading", { name: "Zeta" })
     ).toBeInTheDocument()
     expect(screen.getByText("Martín Ruiz")).toBeInTheDocument()
-    expect(screen.getByText("Verificado")).toBeInTheDocument()
+    expect(screen.getByText("Steam vinculado")).toBeInTheDocument()
+    // (replanteo 90) La insignia de verificado al lado del nick, y los votos.
+    expect(
+      screen.getByRole("button", { name: "Cuenta verificada destacada" })
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole("button", { name: "Me gusta: 12" })
+    ).toBeDisabled()
     expect(screen.getByRole("link", { name: "+ Brava" })).toBeInTheDocument()
     // El SteamID escrito a mano no se muestra ni da botón de Steam; FACEIT sí.
     expect(screen.queryByText(/STEAM_0/)).not.toBeInTheDocument()
