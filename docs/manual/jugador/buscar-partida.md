@@ -102,6 +102,8 @@ Ganas o pierdes ELO como cualquiera, según las rondas que juegues: si entras mu
 
 Al terminar, la sala muestra el resultado, el MVP, los destacados y los clips.
 
+Si el resultado tarda en llegar a la web, la sala puede seguir un rato **en vivo** con el último marcador y, a los 5 minutos, pasar a **cancelada** con "El resultado de la partida no llegó a la web". No pasa nada: el servidor lo sigue mandando y, cuando llega (dentro de las 24 horas), la sala queda terminada con el resultado y el ELO de siempre. Mientras tanto, ya puedes buscar otra partida.
+
 ## Ver una partida jugada
 
 En **Partidas**, una partida del matchmaking se abre como su sala, con dos pestañas:
