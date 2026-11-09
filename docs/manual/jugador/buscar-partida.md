@@ -37,6 +37,14 @@ Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Ace
 
 > **Ojo:** no aceptar a tiempo o rechazar la partida te da una sanción: un rato sin poder buscar (ver "Sanciones" abajo).
 
+### Autoaceptar (VIP)
+
+Si eres VIP, en Jugar toca **Configuración** y prende **Autoaceptar partida**. Desde ahí, cuando se arma una partida la aceptamos por ti apenas aparece, aunque no estés mirando la web. Igual suena el aviso y la ventana dice **Aceptada sola**.
+
+- Puedes apagarlo cuando quieras, también sin VIP.
+- Si se te vence el VIP, deja de aceptar por ti aunque el interruptor siga prendido.
+- Aceptar no alcanza: si después no te conectas al servidor a tiempo, la sanción es la misma que por no conectarte. Prende el autoaceptar solo si vas a estar cerca de la PC.
+
 ## 3. Veto de mapas
 
 Cada equipo tiene un capitán: el jugador con más ELO del equipo. Los capitanes banean mapas por turnos hasta que queda uno, que es el que se juega. Empieza el equipo con menos ELO promedio.

@@ -35,6 +35,9 @@ export const canAccessAdminSection = (role: Role, section: AdminSection) =>
 export const homeAdminSection = (role: Role): AdminSection =>
   role === "moderator" ? "bans" : "events"
 
+/** Insignia de verificado (replanteo 90): solo admin. */
+export const canVerifyPlayers = (role: Role) => role === "admin"
+
 /** Baneos (banear, cambiar y levantar): moderador y admin. Los permanentes, solo admin. */
 export const canModerate = (role: Role) =>
   role === "admin" || role === "moderator"

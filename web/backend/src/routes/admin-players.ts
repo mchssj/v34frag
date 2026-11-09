@@ -35,7 +35,7 @@ import {
 } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { AvatarResult, AvatarUpload } from '../schemas/profile';
-import { Medal } from '../schemas/players';
+import { Medal, PlayerVerification, verificationOf } from '../schemas/players';
 import { vipStatusOf } from '../services/vip';
 import { designOf, loadDefinitions } from '../services/medals';
 
@@ -71,6 +71,17 @@ const patchPlayer = createRoute({
   description: 'Solo lo enviado. El nick solo se cambia en jugadores sin cuenta (en los vinculados es el alias de la cuenta).',
   request: { params: IdParam, body: { required: true, ...json(AdminPlayerPatch) } },
   responses: { 200: { description: 'Actualizado', ...json(AdminPlayer) }, ...errorResponses(400, 401, 403, 404, 409) },
+});
+// Insignia de verificado (replanteo 90): gris o dorada, con el motivo del tooltip. kind null la saca.
+const VerificationBody = z
+  .object({ kind: z.enum(['gray', 'gold']).nullable(), note: z.string().max(60).nullish() })
+  .openapi('AdminPlayerVerification');
+const setVerification = createRoute({
+  method: 'put', path: '/api/v1/admin/players/{id}/verification', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Poner, cambiar o sacar la insignia de verificado',
+  description: 'Solo admins. `kind` null la saca (y el motivo con ella).',
+  request: { params: IdParam, body: { required: true, ...json(VerificationBody) } },
+  responses: { 200: { description: 'La insignia como queda', ...json(z.object({ verification: PlayerVerification.nullable() })) }, ...errorResponses(400, 401, 403, 404) },
 });
 const deletePlayer = createRoute({
   method: 'delete', path: '/api/v1/admin/players/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
@@ -225,6 +236,14 @@ export const adminPlayers = createRouter()
     // supabase-js omite las claves undefined: solo se cambia lo enviado.
     const row = mustHave(await c.var.sb.from('players').update(body).eq('id', id).select(PLAYER).single());
     return c.json(row, 200);
+  })
+  .openapi(setVerification, async (c) => {
+    const { id } = c.req.valid('param');
+    const { kind, note } = c.req.valid('json');
+    must(await c.var.sb.rpc('admin_player_verify' as never, { p_player: id, p_kind: kind, p_note: note ?? null } as never));
+    const row = must(await c.var.sb.from('players').select('verified, verified_note').eq('id', id).maybeSingle());
+    if (!row) throw notFound('ese jugador');
+    return c.json({ verification: verificationOf(row.verified, row.verified_note) }, 200);
   })
   .openapi(deletePlayer, async (c) => {
     const { id } = c.req.valid('param');

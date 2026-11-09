@@ -1,0 +1,9 @@
+CMLeague 2.9.28 --  Changelog
+
+Cuentas verificadas
+
+- Nueva insignia de cuenta verificada al lado del nick, en gris o dorada.
+- Gris: confirmamos que la cuenta es de quien dice ser. Dorada: además, es alguien destacado de la comunidad (pros, casters, creadores).
+- Pasa el mouse por el sello para ver qué se verificó.
+- La pone el staff, no se compra. Si crees que tu cuenta debería tenerla, escríbenos en el Discord.
+- El chip que antes decía "Verificado" ahora dice "Steam vinculado".

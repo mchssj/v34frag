@@ -41,6 +41,8 @@ const TYPES: [string, Notification["category"]][] = [
   ["team_request_answered", "team"],
   ["friend_request", "friends"],
   ["friend_accepted", "friends"],
+  ["profile_comment", "friends"],
+  ["profile_like", "friends"],
   ["event_registration", "tournament"],
   ["event_fixture", "tournament"],
   ["match_scheduled", "tournament"],
@@ -385,5 +387,35 @@ group("amigos (replanteo 85)", () => {
         base({ type: "friend_accepted", category: "friends", data: { player } })
       ).title
     ).toBe("romanxz aceptó tu solicitud")
+  })
+})
+
+group("tu perfil (replanteo 91)", () => {
+  it("el comentario lleva a la pestaña Comentarios propia y el me gusta al que lo dio", () => {
+    const player = { id: "p1", alias: "romanxz" }
+    const profile = { id: "p2", alias: "kyan" }
+    const c = describe(
+      base({
+        type: "profile_comment",
+        category: "friends",
+        data: { player, profile, comment: "gran clutch" },
+      })
+    )
+    expect(c.title).toBe("romanxz comentó en tu perfil")
+    expect(c.body).toBe("gran clutch")
+    expect(c.link).toEqual({
+      to: "/player/$nick",
+      params: { nick: "kyan" },
+      search: { tab: "comentarios" },
+    })
+    const l = describe(
+      base({
+        type: "profile_like",
+        category: "friends",
+        data: { player, profile },
+      })
+    )
+    expect(l.title).toBe("A romanxz le gusta tu perfil")
+    expect(l.link).toEqual({ to: "/player/$nick", params: { nick: "romanxz" } })
   })
 })

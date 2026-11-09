@@ -24,6 +24,20 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Autoaceptar VIP, comentarios en el perfil e insignia de verificado (2026-11-09): hecho en `kyan/pruebas`, sin commit ni producción
+
+Pedidos por Kyan. Bitácoras [`2026-11-09-autoaceptar-vip`](bitacora/2026-11-09-autoaceptar-vip/), [`2026-11-09-comentarios-perfil`](bitacora/2026-11-09-comentarios-perfil/) y [`2026-11-09-jugadores-verificados`](bitacora/2026-11-09-jugadores-verificados/).
+
+- **Replanteos 89, 90 y 91.**
+  - La 90 y la 91 se probaron en la base local con `probar_90_91.sh`.
+  - La **89 no se probó**: la base local no llega a la 59. Daniel la prueba antes, con todo hasta la 88.
+- **Orden de despliegue:**
+  - La 90 va antes que la API nueva: la ficha del jugador lee `players.verified`, y sin la 90 el perfil falla.
+  - La 91 va después de la 90.
+  - La 89 se aplica sin salas y con `cmleague-mm` parado.
+- **Ramas:** la 89 y `mm.ts` van también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Preguntar antes.
+- **Después:** el sello de verificado en listas (ranking, buscador, sala del matchmaking). Hace falta que `PlayerSummary` lo mande.
+
 ## Servidores nuevos #2 y #3 (2026-11-08): armados, falta darlos de alta
 
 - **Hecho el 2026-11-08** ([`2026-11-08-servidores-nuevos`](bitacora/2026-11-08-servidores-nuevos/)):

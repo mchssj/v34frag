@@ -354,6 +354,18 @@ const SECTIONS: LegalSection[] = [
           datos privados.
         </li>
         <li>
+          Los comentarios que dejas en el perfil de otro jugador son públicos y
+          salen con tu nick. Tienen que cumplir las reglas de conducta: sin
+          insultos, acoso, spam ni datos personales de otros. El dueño del
+          perfil puede borrarlos o cerrar los comentarios de su perfil, y los
+          moderadores y admins pueden borrar los que no cumplan. Los me gusta y
+          no me gusta también se ven, como números, sin decir quién votó.
+        </li>
+        <li>
+          La insignia de cuenta verificada (gris o dorada) la pone un admin a su
+          criterio, no se compra ni se pide desde la web, y se puede quitar.
+        </li>
+        <li>
           Podemos quitar cualquier contenido que no cumpla estos términos, sin
           aviso previo.
         </li>
@@ -428,9 +440,10 @@ const SECTIONS: LegalSection[] = [
             El VIP da ventajas de comodidad y estética (cosméticos, estadísticas
             avanzadas, comparador, favoritas, configs, créditos, ver quién
             visitó tu perfil y visitar hasta 15 perfiles por semana sin dejar
-            rastro, y similares).{" "}
+            rastro, autoaceptar las partidas del matchmaking, y similares).{" "}
             <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
-            ELO ni sobre las sanciones.
+            ELO ni sobre las sanciones: con el autoaceptar, si no te conectas a
+            tiempo, la sanción es la misma.
           </li>
           <li>
             Podemos cambiar, sumar o quitar ventajas del VIP. Si quitamos una

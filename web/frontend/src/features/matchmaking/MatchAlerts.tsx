@@ -93,6 +93,7 @@ export function GlobalMatchAlerts({ away }: { away?: boolean } = {}) {
         })
       }
       onDecline={() => decline.mutate()}
+      auto={!!state?.auto_accept?.allowed && !!state.auto_accept.enabled}
     />
   )
 }

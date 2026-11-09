@@ -208,6 +208,7 @@ export function PlayPage() {
               pending={accept.isPending || decline.isPending}
               onAccept={() => accept.mutate()}
               onDecline={() => decline.mutate()}
+              auto={!!state.auto_accept?.allowed && !!state.auto_accept.enabled}
             />
           )}
           {!state.lobby && state.invites[0] && (
@@ -276,7 +277,10 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
           </Link>
           <ConnectionChip up={socketUp} />
           <SoundButton />
-          <SoundSettingsDialog sounds={state.sounds} />
+          <SoundSettingsDialog
+            sounds={state.sounds}
+            autoAccept={state.auto_accept}
+          />
         </div>
       </div>
       <Card

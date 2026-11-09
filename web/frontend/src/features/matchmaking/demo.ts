@@ -267,6 +267,7 @@ export function createDemoSource({
   let soundCatalog = seedSounds()
   let selectedSound: string | null = null
   let mySound: MmSound | null = null
+  let autoAccept = false
   let sanctions = seedSanctions(now())
   let teamSize = 5
   let lobbyCreatedAt = ""
@@ -426,6 +427,8 @@ export function createDemoSource({
         player({ player_id: `p-${nick}`, nick, level, elo })
       )
     const all = [player(ME, true), ...(mate ? [player(mate)] : []), ...bots]
+    // Autoaceptar: el servidor acepta por el VIP apenas se arma la partida.
+    if (autoAccept && !flags.notVip) all[0]!.accepted = true
     if (party && mate) {
       all[0]!.party_id = party.id
       all[1]!.party_id = party.id
@@ -996,6 +999,7 @@ export function createDemoSource({
       vip_only: config.blocks_vip_only,
       allowed: !config.blocks_vip_only || !flags.notVip,
     },
+    auto_accept: { enabled: autoAccept, allowed: !flags.notVip },
     sounds: soundsState(),
     queue_activity: queueActivity(),
     friends: structuredClone(friends),
@@ -1194,6 +1198,13 @@ export function createDemoSource({
     },
     async setSound(soundId) {
       selectedSound = soundId
+      emit("state")
+      return snapshot()
+    },
+    async setAutoAccept(enabled) {
+      if (enabled && flags.notVip)
+        throw new DemoError("Autoaceptar es exclusivo para VIP")
+      autoAccept = enabled
       emit("state")
       return snapshot()
     },

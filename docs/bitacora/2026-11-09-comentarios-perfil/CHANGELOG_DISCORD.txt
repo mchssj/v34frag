@@ -1,0 +1,9 @@
+CMLeague 2.9.28 --  Changelog
+
+Comentarios y me gusta en los perfiles
+
+- Ahora puedes darle me gusta o no me gusta al perfil de otro jugador. Arriba a la derecha de cada perfil se ven los dos números.
+- Nueva pestaña Comentarios en los perfiles: deja un comentario de hasta 280 caracteres.
+- En tu perfil puedes borrar cualquier comentario o cerrar los comentarios si no quieres recibir más.
+- Te avisamos en la campana cuando alguien comenta tu perfil o le da me gusta.
+- Los moderadores pueden borrar comentarios que no cumplan las reglas. Nada de insultos ni spam.

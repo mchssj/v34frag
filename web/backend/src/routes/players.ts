@@ -25,6 +25,7 @@ import {
   TitleList,
   TitleQuery,
   type PlayerSummary,
+  verificationOf,
 } from '../schemas/players';
 import { activeBan } from '../services/bans';
 import { vipPlayers } from '../services/vip';
@@ -232,7 +233,7 @@ export const players = createRouter()
     const id = await resolvePlayer(sb, c.req.valid('param').id);
     const [overview, player] = await Promise.all([
       sb.from('player_overview').select(OVERVIEW).eq('id', id).maybeSingle().then(must),
-      sb.from('players').select('user_id, steam_id, bio, achievements, team_history, privacy').eq('id', id).maybeSingle().then(must),
+      sb.from('players').select('user_id, steam_id, bio, achievements, team_history, privacy, verified, verified_note').eq('id', id).maybeSingle().then(must),
     ]);
     const steams = player ? mustHave(await sb.from('player_steam_all').select('steam_id, is_primary').eq('player_id', id)) : [];
     if (!overview || !player) throw notFound('ese jugador');
@@ -257,6 +258,7 @@ export const players = createRouter()
         achievements: player.achievements,
         team_history_text: player.team_history,
         privacy: player.privacy === 'private' ? ('private' as const) : ('public' as const),
+        verification: verificationOf(player.verified, player.verified_note),
         peak_elo: overview.peak_elo,
         stats: stats ? { ...stats, clutches: clutchesOf(clutchRows) } : null,
         details: details ?? null,

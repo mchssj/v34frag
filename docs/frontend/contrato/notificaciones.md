@@ -129,6 +129,8 @@ Todo con sesión (`401` sin ella).
 |---|---|---|---|---|
 | `friend_request` | Jugador (obligatoria) | `player` | "{player.alias} te envió una solicitud de amistad" | Aceptar / Rechazar (`POST /api/v1/mm/friends/{player.id}/accept` o `/reject`). `ref` = `friend_request:{id}`; se resuelve con la solicitud (`accepted`, `rejected`, `cancelled` o `expired`) |
 | `friend_accepted` | Quien envió la solicitud | `player` | "{player.alias} aceptó tu solicitud" | `/player/{player.alias}` |
+| `profile_comment` (replanteo 91) | El dueño del perfil, si comentó otro | `player` (quien comentó), `profile` (el perfil), `comment` (hasta 100 caracteres) | "{player.alias} comentó en tu perfil" | `/player/{profile.alias}?tab=comentarios`. `ref` = `profile_comment:{id}` |
+| `profile_like` (replanteo 91) | El dueño del perfil, la primera vez que cada cuenta le da me gusta | `player`, `profile` | "A {player.alias} le gusta tu perfil" | `/player/{player.alias}`. `ref` = `profile_like:{perfil}:{cuenta}`. El "no me gusta" no avisa |
 
 #### Cuenta (`account`)
 | `type` | Le llega a | `data` | Texto sugerido | Link |

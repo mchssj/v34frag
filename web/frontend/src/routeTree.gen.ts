@@ -41,6 +41,7 @@ import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
+import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
@@ -241,6 +242,11 @@ const DemoMisionesRoute = DemoMisionesRouteImport.update({
 const DemoPcwRoute = DemoPcwRouteImport.update({
   id: '/demo/pcw',
   path: '/demo/pcw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoPerfilSocialRoute = DemoPerfilSocialRouteImport.update({
+  id: '/demo/perfil-social',
+  path: '/demo/perfil-social',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
@@ -490,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
   '/demo/pcw': typeof DemoPcwRoute
+  '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -564,6 +571,7 @@ export interface FileRoutesByTo {
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
   '/demo/pcw': typeof DemoPcwRoute
+  '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -642,6 +650,7 @@ export interface FileRoutesById {
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/misiones': typeof DemoMisionesRoute
   '/demo/pcw': typeof DemoPcwRoute
+  '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -719,6 +728,7 @@ export interface FileRouteTypes {
     | '/demo/medallas'
     | '/demo/misiones'
     | '/demo/pcw'
+    | '/demo/perfil-social'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -793,6 +803,7 @@ export interface FileRouteTypes {
     | '/demo/medallas'
     | '/demo/misiones'
     | '/demo/pcw'
+    | '/demo/perfil-social'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -870,6 +881,7 @@ export interface FileRouteTypes {
     | '/demo/medallas'
     | '/demo/misiones'
     | '/demo/pcw'
+    | '/demo/perfil-social'
     | '/demo/recalculo'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -938,6 +950,7 @@ export interface RootRouteChildren {
   DemoMedallasRoute: typeof DemoMedallasRoute
   DemoMisionesRoute: typeof DemoMisionesRoute
   DemoPcwRoute: typeof DemoPcwRoute
+  DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
@@ -1169,6 +1182,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/pcw'
       fullPath: '/demo/pcw'
       preLoaderRoute: typeof DemoPcwRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/perfil-social': {
+      id: '/demo/perfil-social'
+      path: '/demo/perfil-social'
+      fullPath: '/demo/perfil-social'
+      preLoaderRoute: typeof DemoPerfilSocialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/recalculo': {
@@ -1630,6 +1650,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoMedallasRoute: DemoMedallasRoute,
   DemoMisionesRoute: DemoMisionesRoute,
   DemoPcwRoute: DemoPcwRoute,
+  DemoPerfilSocialRoute: DemoPerfilSocialRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoTorneoStatsRoute: DemoTorneoStatsRoute,

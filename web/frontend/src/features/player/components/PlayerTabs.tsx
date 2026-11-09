@@ -23,6 +23,7 @@ import { Seasons } from "./tabs/SeasonsTab"
 import { Bio } from "./tabs/BioTab"
 import { Clips } from "./tabs/ClipsTab"
 import { Achievements } from "./tabs/AchievementsTab"
+import { ProfileWall, wallOptions } from "./ProfileWall"
 
 const LABELS: Record<Tab, string> = {
   resumen: "Resumen",
@@ -33,6 +34,7 @@ const LABELS: Record<Tab, string> = {
   equipos: "Equipos",
   temporadas: "Temporadas",
   bio: "Bio y torneos",
+  comentarios: "Comentarios",
 }
 
 type Props = {
@@ -53,12 +55,14 @@ function useTabCounts(
   const matches = useQuery(playerMatchesOptions(nick, {})).data
   const teams = useQuery(teamsOptions(nick)).data
   const seasons = useQuery(seasonsOptions(nick)).data
+  const wall = useQuery(wallOptions(playerId)).data
   return {
     clips: clips?.length,
     mapas: maps?.length,
     partidas: matches?.total,
     equipos: teams?.length,
     temporadas: seasons?.length,
+    comentarios: wall?.comments_open ? wall.total : undefined,
   }
 }
 
@@ -162,6 +166,7 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
         )}
         {tab === "temporadas" && <Seasons nick={nick} />}
         {tab === "bio" && <Bio nick={nick} player={player} owner={owner} />}
+        {tab === "comentarios" && <ProfileWall playerId={player.id} />}
       </TabsContent>
     </Tabs>
   )

@@ -22,11 +22,14 @@ export function AcceptDialog({
   onAccept,
   onDecline,
   pending,
+  auto = false,
 }: {
   lobby: MmLobby
   onAccept: () => void
   onDecline: () => void
   pending: boolean
+  /** Tiene autoaceptar (VIP): la partida ya llega aceptada. */
+  auto?: boolean
 }) {
   const now = useNow(true, 250)
   const left = secondsLeft(lobby.accept_deadline, now)
@@ -46,9 +49,11 @@ export function AcceptDialog({
           <DialogTitle>Partida encontrada</DialogTitle>
           <DialogDescription>
             {lobby.map ?? "Mapa al azar"} · 5v5 ·{" "}
-            {meAccepted
-              ? "esperando al resto"
-              : "acepta antes de que termine el tiempo"}
+            {meAccepted && auto
+              ? "la aceptamos por ti (autoaceptar)"
+              : meAccepted
+                ? "esperando al resto"
+                : "acepta antes de que termine el tiempo"}
           </DialogDescription>
         </DialogHeader>
 
@@ -110,7 +115,7 @@ export function AcceptDialog({
             disabled={pending || meAccepted}
             autoFocus
           >
-            {meAccepted ? "Aceptada" : "Aceptar"}
+            {meAccepted ? (auto ? "Aceptada sola" : "Aceptada") : "Aceptar"}
           </Button>
         </DialogFooter>
       </DialogContent>

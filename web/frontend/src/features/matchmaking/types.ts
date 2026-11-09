@@ -357,6 +357,15 @@ export type MmState = {
     /** Quiénes están buscando, los que más esperan primero (hasta 50). */
     players: { player_id: string; nick: string; level: number; mode: string }[]
   }
+  /**
+   * Autoaceptar partida (Kyan, 2026-11-09): el servidor acepta por vos apenas se arma la partida. Solo VIP; si
+   * se vence el VIP queda guardado pero no se aplica. Sin la migración 89 la API no lo manda.
+   */
+  auto_accept?: {
+    enabled: boolean
+    /** Si esta cuenta puede usarlo (VIP). */
+    allowed: boolean
+  }
   /** Sonido de partida encontrada. */
   sounds: {
     /** Los que subieron los admins. */

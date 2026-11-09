@@ -128,7 +128,20 @@ export const ActiveBan = z
   })
   .openapi('ActiveBan', { description: 'Baneo activo en los servidores' });
 
+/** Insignia de verificado (replanteo 90): la pone un admin. */
+export const PlayerVerification = z
+  .object({
+    kind: z.enum(['gray', 'gold']).openapi({ description: 'gray: verificado; gold: verificado destacado' }),
+    note: z.string().nullable().openapi({ description: 'El motivo que se lee en el tooltip (por ejemplo, "Verificación de identidad")' }),
+  })
+  .openapi('PlayerVerification');
+
+/** La insignia de la fila de `players` (verified y verified_note), o null. */
+export const verificationOf = (kind: string | null, note: string | null): z.infer<typeof PlayerVerification> | null =>
+  kind === 'gray' || kind === 'gold' ? { kind, note } : null;
+
 export const PlayerDetail = PlayerSummary.extend({
+  verification: PlayerVerification.nullable().openapi({ description: 'Insignia de verificado; null si no tiene' }),
   steam_id: z.string().nullable().openapi({ description: 'SteamID principal. Solo para el dueño y los admins: para los demás, null' }),
   steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío' }),
   bio: z.string().nullable(),

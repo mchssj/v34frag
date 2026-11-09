@@ -83,6 +83,8 @@ export type MmSource = {
   unblock(playerId: string): Promise<MmState>
   setSound(soundId: string | null): Promise<MmState>
   /** Solo VIP. */
+  setAutoAccept(enabled: boolean): Promise<MmState>
+  /** Solo VIP. */
   uploadMySound(file: File): Promise<MmState>
   deleteMySound(): Promise<MmState>
   adminSounds(signal?: AbortSignal): Promise<MmSound[]>
@@ -301,6 +303,8 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       send("/api/v1/mm/commends", { lobby_id, player_id }),
     setSound: (sound_id) =>
       send("/api/v1/mm/sounds/selected", { sound_id }, "PUT"),
+    setAutoAccept: (enabled) =>
+      send("/api/v1/mm/auto-accept", { enabled }, "PUT"),
     uploadMySound: (file) => {
       const body = new FormData()
       body.set("file", file)

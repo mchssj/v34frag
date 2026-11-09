@@ -79,6 +79,7 @@ const Join = z.object({ mode: z.string().max(10), region: z.string().max(60).nul
 const Report = z.object({ lobby_id: Id, player_id: Id, reason: z.enum(['afk', 'toxic', 'cheat', 'abandon', 'other']), note: z.string().max(500).optional() }).openapi('MmReport');
 const Commend = z.object({ lobby_id: Id, player_id: Id }).openapi('MmCommend');
 const Sound = z.object({ sound_id: Id.nullable() }).openapi('MmSoundChoice');
+const AutoAccept = z.object({ enabled: z.boolean() }).openapi('MmAutoAccept');
 const Resolve = z.object({ action: z.enum(['dismiss', 'warn', 'mm_ban', 'ban', 'server_ban']), days: z.number().int().positive().max(3650).optional() }).openapi('MmResolve');
 const Lift = z.object({ reason: z.string().trim().min(3).max(300) }).openapi('MmPenaltyLift');
 const Maps = z.object({ maps: z.array(z.string().max(64)).min(2).max(50) }).openapi('MmMaps');
@@ -215,6 +216,9 @@ add(route('post', '/api/v1/mm/reports', { summary: 'Reportar a un jugador', requ
 
 add(route('put', '/api/v1/mm/sounds/selected', { summary: 'Elegir el sonido de partida', request: jsonBody(Sound) }),
   action('mm_set_sound', (c) => ({ p_sound: body<{ sound_id: string | null }>(c).sound_id })));
+// Autoaceptar partida (replanteo 89): prenderlo es solo para VIP (403); apagarlo, para cualquiera.
+add(route('put', '/api/v1/mm/auto-accept', { summary: 'Autoaceptar partida (VIP)', request: jsonBody(AutoAccept) }),
+  action('mm_set_auto_accept', (c) => ({ p_on: body<{ enabled: boolean }>(c).enabled })));
 add(route('post', '/api/v1/mm/sounds/mine', { summary: 'Subir mi sonido (VIP)', request: { body: multipart(AudioForm) } }), async (c) => {
   const file = form(c).file;
   // Se valida antes de subir: sin VIP no se guarda nada.

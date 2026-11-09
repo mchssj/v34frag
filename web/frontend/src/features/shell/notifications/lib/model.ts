@@ -171,6 +171,13 @@ const playerLink = (player: unknown): NotificationLink | undefined => {
   const nick = str(obj(player).alias)
   return nick ? { to: "/player/$nick", params: { nick } } : undefined
 }
+/** Los comentarios del perfil propio (replanteo 91). */
+const wallLink = (profile: unknown): NotificationLink | undefined => {
+  const nick = str(obj(profile).alias)
+  return nick
+    ? { to: "/player/$nick", params: { nick }, search: { tab: "comentarios" } }
+    : undefined
+}
 const adminEventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event)
     ? { to: "/admin/events/$id", params: { id: idOf(event) } }
@@ -663,6 +670,21 @@ export function describe(n: Notification, me?: string | null): Described {
         kind: "friend",
         title: `${player} aceptó tu solicitud`,
         body: "Ya son amigos.",
+        link: playerLink(d.player),
+      }
+    // ---------- tu perfil (replanteo 91, en la categoría Amigos) ----------
+    case "profile_comment":
+      return {
+        kind: "friend",
+        title: `${player} comentó en tu perfil`,
+        body: str(d.comment, "Mirá lo que te escribió."),
+        link: wallLink(d.profile),
+      }
+    case "profile_like":
+      return {
+        kind: "friend",
+        title: `A ${player} le gusta tu perfil`,
+        body: "Te dio me gusta.",
         link: playerLink(d.player),
       }
     case "password_changed":
