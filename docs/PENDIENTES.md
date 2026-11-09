@@ -33,8 +33,9 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   2. Publicar los `terms/` estáticos (junto con los de los requerimientos anteriores).
   3. Sin changelog (decisión de Daniel).
 
-## Autoaceptar VIP, comentarios en el perfil e insignia de verificado (2026-11-09): de `kyan/pruebas`, traído a `main` el 2026-11-09, sin commit ni producción
+## Autoaceptar VIP, comentarios en el perfil e insignia de verificado (2026-11-09): desplegado el 2026-11-09
 
+- **Desplegado el 2026-11-09 (14:09-14:35 UTC)** desde `main` (`d06cc274`, desplegado como `e53f3e7b4a96`; copias `46524bbc` en `feat/frontend-fase-1` y `62666ff2` en `feat/mm-claim-en-sala`): sin salas, cola ni mixes en vivo; respaldo `20261109T141109Z` (también en R2); `cmleague-mm` parado; contra producción, `probar_88.sh` (con una PCW de prueba: producción no tenía ninguna), la prueba de la `89`, `probar_90_91.sh`, `probar_92.sh`, `probar_93.sh` y `probar_94.sh`, todas en verde y con la inversa igual a antes; 88 → 89 → 90 → 91 → 92 → 93 → 94 desde los archivos commiteados con `PGCLIENTENCODING=UTF8` (la `96` ya estaba); `notify pgrst, 'reload schema'`; la API (`/api/health` con `e53f3e7b4a96`), `cmleague-mm` prendido de nuevo y la web con `--sin-pruebas` (las 703 pasaron antes con `--maxWorkers=2`). La `88` no recalculó nada: no había PCW jugadas, así que el ELO de nadie cambió. **Falta** mirarlo con una sesión en producción y publicar el changelog.
 Pedidos por Kyan. Bitácoras [`2026-11-09-autoaceptar-vip`](bitacora/2026-11-09-autoaceptar-vip/), [`2026-11-09-comentarios-perfil`](bitacora/2026-11-09-comentarios-perfil/) y [`2026-11-09-jugadores-verificados`](bitacora/2026-11-09-jugadores-verificados/).
 
 - **Replanteos 89, 90 y 91.**
@@ -47,8 +48,9 @@ Pedidos por Kyan. Bitácoras [`2026-11-09-autoaceptar-vip`](bitacora/2026-11-09-
 - **Ramas:** la 89 y `mm.ts` van también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Preguntar antes.
 - ~~**Después:** el sello de verificado en listas~~: hecho el 2026-11-09 en la `94` (ver abajo), salvo el buscador de arriba.
 
-## Ajustes de los comentarios del perfil y la insignia en las listas (2026-11-09): en local, sin commit
+## Ajustes de los comentarios del perfil y la insignia en las listas (2026-11-09): desplegado el 2026-11-09
 
+- **Desplegado el 2026-11-09 (14:09-14:35 UTC)** desde `main` (`d06cc274`, desplegado como `e53f3e7b4a96`; copias `46524bbc` en `feat/frontend-fase-1` y `62666ff2` en `feat/mm-claim-en-sala`): sin salas, cola ni mixes en vivo; respaldo `20261109T141109Z` (también en R2); `cmleague-mm` parado; contra producción, `probar_88.sh` (con una PCW de prueba: producción no tenía ninguna), la prueba de la `89`, `probar_90_91.sh`, `probar_92.sh`, `probar_93.sh` y `probar_94.sh`, todas en verde y con la inversa igual a antes; 88 → 89 → 90 → 91 → 92 → 93 → 94 desde los archivos commiteados con `PGCLIENTENCODING=UTF8` (la `96` ya estaba); `notify pgrst, 'reload schema'`; la API (`/api/health` con `e53f3e7b4a96`), `cmleague-mm` prendido de nuevo y la web con `--sin-pruebas` (las 703 pasaron antes con `--maxWorkers=2`). La `88` no recalculó nada: no había PCW jugadas, así que el ELO de nadie cambió. **Falta** mirarlo con una sesión en producción y publicar el changelog.
 - **Qué es:** los puntos 1 a 6 de backend de la lista de Kyan, con su web ([`2026-11-09-perfil-social-ajustes`](bitacora/2026-11-09-perfil-social-ajustes/)):
   - las palabras bloqueadas en los comentarios, palabra por palabra;
   - denunciar un comentario, y la pestaña Comentarios en Administración › Baneos;
@@ -79,8 +81,9 @@ Pedidos por Kyan. Bitácoras [`2026-11-09-autoaceptar-vip`](bitacora/2026-11-09-
   4. **Worker `v34frag-demos`:** sumar `PTERO_KEY_cd1be322` y `PTERO_KEY_16c850ff` (la misma key que `157703b5`) y borrar `PTERO_KEY_f337a7d9` (flow).
   5. Hacer un mix de prueba en cada uno antes de abrirlos al matchmaking.
 
-## La página de PCW de verdad, con ofertas, y lo nuevo de Jugar (2026-11-08): en local, sin commit
+## La página de PCW de verdad, con ofertas, y lo nuevo de Jugar (2026-11-08): desplegado el 2026-11-09
 
+- **Desplegado el 2026-11-09 (14:09-14:35 UTC)** desde `main` (`d06cc274`, desplegado como `e53f3e7b4a96`; copias `46524bbc` en `feat/frontend-fase-1` y `62666ff2` en `feat/mm-claim-en-sala`): sin salas, cola ni mixes en vivo; respaldo `20261109T141109Z` (también en R2); `cmleague-mm` parado; contra producción, `probar_88.sh` (con una PCW de prueba: producción no tenía ninguna), la prueba de la `89`, `probar_90_91.sh`, `probar_92.sh`, `probar_93.sh` y `probar_94.sh`, todas en verde y con la inversa igual a antes; 88 → 89 → 90 → 91 → 92 → 93 → 94 desde los archivos commiteados con `PGCLIENTENCODING=UTF8` (la `96` ya estaba); `notify pgrst, 'reload schema'`; la API (`/api/health` con `e53f3e7b4a96`), `cmleague-mm` prendido de nuevo y la web con `--sin-pruebas` (las 703 pasaron antes con `--maxWorkers=2`). La `88` no recalculó nada: no había PCW jugadas, así que el ELO de nadie cambió. **Falta** mirarlo con una sesión en producción y publicar el changelog.
 - **Qué es:** el prototipo de Kyan ([`2026-11-08-pcw-demo`](bitacora/2026-11-08-pcw-demo/)) pasado a `/pcw` contra la API, con el backend que le faltaba:
   - ofertas (`pcw_offers`): el que publicó elige una y se crea la partida;
   - publicar solo con VIP;

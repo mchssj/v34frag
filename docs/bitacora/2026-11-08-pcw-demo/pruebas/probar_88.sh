@@ -13,6 +13,8 @@ est="$(grep -v '^--' "$root/docs/bitacora/2026-10-14-replanteo-modelo-datos/prue
   echo "create temp table t_antes as $est;"
   echo "create temp table t_fn_antes as select p.oid::regprocedure::text f, md5(pg_get_functiondef(p.oid)) d from pg_proc p where p.oid in ('public.elo_apply_match(uuid)'::regprocedure, 'public.elo_recompute_all()'::regprocedure);"
   echo "select elo_recompute_all();"   # ELO de referencia: el que da un recálculo antes de la 88
+  # Sin ninguna PCW en la base (producción, 2026-11-09), una de prueba: se deshace con el resto.
+  echo "do \$\$ begin if not exists (select 1 from matches where kind = 'pcw') then insert into matches (kind, status) values ('pcw', 'upcoming'); end if; end \$\$;"
   # Una PCW ya jugada con ELO (antes de la 88): el mix con ELO más viejo, vinculado a una PCW. La 88 tiene que recalcular.
   echo "create temp table t88_pre as select (select id from matches m where m.kind = 'mix' and m.status = 'finished' and m.parent_match_id is null and exists (select 1 from match_player_stats s where s.match_id = m.id and s.elo_after is not null) order by coalesce(m.played_at, m.starts_at) limit 1) g, (select id from matches where kind = 'pcw' limit 1) p;"
   echo "update matches m set parent_match_id = t.p, parent_side1 = 1 from t88_pre t where m.id = t.g;"

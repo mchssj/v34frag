@@ -2,6 +2,8 @@
 
 ## Estado
 
+**Desplegado el 2026-11-09 (14:09-14:35 UTC)** desde `main` (`d06cc274`, desplegado como `e53f3e7b4a96`; copias `46524bbc` en `feat/frontend-fase-1` y `62666ff2` en `feat/mm-claim-en-sala`): sin salas, cola ni mixes en vivo; respaldo `20261109T141109Z` (también en R2); `cmleague-mm` parado; contra producción, `probar_88.sh` (con una PCW de prueba: producción no tenía ninguna), la prueba de la `89`, `probar_90_91.sh`, `probar_92.sh`, `probar_93.sh` y `probar_94.sh`, todas en verde y con la inversa igual a antes; 88 → 89 → 90 → 91 → 92 → 93 → 94 desde los archivos commiteados con `PGCLIENTENCODING=UTF8` (la `96` ya estaba); `notify pgrst, 'reload schema'`; la API (`/api/health` con `e53f3e7b4a96`), `cmleague-mm` prendido de nuevo y la web con `--sin-pruebas` (las 703 pasaron antes con `--maxWorkers=2`). La `88` no recalculó nada: no había PCW jugadas, así que el ELO de nadie cambió. Falta mirarlo con una sesión en producción y publicar el changelog.
+
 **Hecho y probado en local el 2026-11-09**, en `kyan/pruebas`. **Sin commit** y **sin aplicar en producción.**
 
 Se despliega junto con los comentarios: la 91 lee `players.verified`, así que la 90 va primero. Los pasos están en la guía de [comentarios](../2026-11-09-comentarios-perfil/GUIA_IMPLEMENTACION.md).
