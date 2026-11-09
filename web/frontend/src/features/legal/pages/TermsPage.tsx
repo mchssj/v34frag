@@ -268,6 +268,12 @@ const SECTIONS: LegalSection[] = [
           asigna un servidor. Si confirmas, te comprometes a jugarla entera.
         </li>
         <li>
+          Para que los equipos queden parejos, la liga también puede aplicar
+          ajustes internos y temporales a cuánto pesa un jugador al repartir los
+          equipos. Esos ajustes no cambian tu ELO, tu rating ni lo que ganas o
+          pierdes en cada partida, y no se publican.
+        </li>
+        <li>
           Si alguien abandona una partida del matchmaking, la liga puede
           publicar en su Discord un aviso con un link para entrar en su lugar.
           El aviso muestra el modo, el mapa y el marcador, no los nombres de los

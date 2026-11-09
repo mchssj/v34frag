@@ -65,6 +65,10 @@ const RETENTION: [string, string][] = [
   ["Cada conexión a un servidor (IP, fecha y nick)", "90 días"],
   ["Intentos de conexión por IP", "90 días"],
   [
+    "Ajustes internos del reparto de equipos del matchmaking",
+    "Hasta que vencen (30 días por defecto, 180 como máximo); su historial, un año",
+  ],
+  [
     "Lista de IP usadas por cada SteamID",
     "Mientras sea necesaria para detectar evasión de baneos",
   ],
@@ -155,6 +159,11 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             Tus preferencias del matchmaking, como el autoaceptar partida (VIP).
+          </li>
+          <li>
+            Si la liga te aplica un ajuste interno para repartir los equipos del
+            matchmaking: los puntos, el motivo, quién lo puso y hasta cuándo
+            vale. No se publica.
           </li>
         </ul>
 

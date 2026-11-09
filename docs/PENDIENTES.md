@@ -24,6 +24,14 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Ajuste manual del armado del matchmaking (2026-11-09): en local, sin commit
+
+- **Hecho:** replanteo `96`: puntos por ficha (0 por defecto, ±300, vencen a los 30 días) que se suman al ELO de armado sin tocar el ELO ni el rating, puestos solo desde la base, con historial de un año ([`2026-11-09-ajuste-manual-armado`](bitacora/2026-11-09-ajuste-manual-armado/)). Probado en la base local (`probar_96.sh`, todo en verde, con la inversa) y la `96` aplicada ahí. Términos, privacidad y manual al día.
+- **Falta:**
+  1. Commit en `main`; copia en `feat/frontend-fase-1` y la base en `feat/mm-claim-en-sala`.
+  2. Desplegar sin un mix en curso: respaldo, `probar_96.sh` contra producción, la `96` y la web (textos legales) y los `terms/` estáticos.
+  3. Sin changelog (decisión de Daniel).
+
 ## Autoaceptar VIP, comentarios en el perfil e insignia de verificado (2026-11-09): de `kyan/pruebas`, traído a `main` el 2026-11-09, sin commit ni producción
 
 Pedidos por Kyan. Bitácoras [`2026-11-09-autoaceptar-vip`](bitacora/2026-11-09-autoaceptar-vip/), [`2026-11-09-comentarios-perfil`](bitacora/2026-11-09-comentarios-perfil/) y [`2026-11-09-jugadores-verificados`](bitacora/2026-11-09-jugadores-verificados/).
