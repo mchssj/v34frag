@@ -59,9 +59,9 @@ Sin cambios: el chat de la partida ya se guardaba; ahora un mensaje de equipo de
 
 | Qué | Archivo |
 |---|---|
-| Base | `supabase/replanteo/99_pcw_chat_de_equipo.sql` |
-| Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/99_pcw_chat_de_equipo.sql` |
-| Pruebas de la base | `pruebas/probar_99.sh` y `pruebas/prueba_99.sql` |
+| Base | `supabase/replanteo/102_pcw_chat_de_equipo.sql` |
+| Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/102_pcw_chat_de_equipo.sql` |
+| Pruebas de la base | `pruebas/probar_102.sh` y `pruebas/prueba_102.sql` |
 | API | `web/backend/src/routes/matches.ts` (`sendChat`), `web/backend/src/schemas/matches.ts` (`ChatBody`) |
 | Lado y chats de la sala | `web/frontend/src/features/matchmaking/room/roomData.ts`, `RoomOverview.tsx`, `LobbyChat.tsx` |
 | PCW | `web/frontend/src/features/pcw/lib/room.ts`, `lib/adapt.ts`, `pages/PcwLiveRoom.tsx`, `types/index.ts` |

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Prueba el replanteo 99 y su inversa dentro de UNA transacción que termina en rollback (no deja nada en la base).
-# Compara la estructura y las funciones que cambian antes de la 99 y después de su inversa: tienen que ser iguales.
+# Prueba el replanteo 102 y su inversa dentro de UNA transacción que termina en rollback (no deja nada en la base).
+# Compara la estructura y las funciones que cambian antes de la 102 y después de su inversa: tienen que ser iguales.
 # Necesita la 48, la 56 y una PCW con una cuenta que pueda escribir en cada lado.
-# Uso: ./probar_99.sh "<cadena de conexión de psql>"     (o, con la Supabase local:  ./probar_99.sh docker)
+# Uso: ./probar_102.sh "<cadena de conexión de psql>"     (o, con la Supabase local:  ./probar_102.sh docker)
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$here/../../../.."
@@ -17,10 +17,10 @@ pol_sel="select polname from pg_policy where polrelid = 'public.match_chat'::reg
   echo "create temp table t_antes as $est;"
   echo "create temp table t_fn_antes as $fn_sel;"
   echo "create temp table t_pol_antes as $pol_sel;"
-  sin_tx "$root/supabase/replanteo/99_pcw_chat_de_equipo.sql"
-  sin_tx "$here/prueba_99.sql"
+  sin_tx "$root/supabase/replanteo/102_pcw_chat_de_equipo.sql"
+  sin_tx "$here/prueba_102.sql"
   echo "\\echo '--- Inversa'"
-  sin_tx "$root/docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/99_pcw_chat_de_equipo.sql"
+  sin_tx "$root/docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/102_pcw_chat_de_equipo.sql"
   echo "create temp table t_despues as $est;"
   echo "select 'falta: ' || k || ' ' || v from (select * from t_antes except select * from t_despues) a(k, v)"
   echo "union all select 'sobra: ' || k || ' ' || v from (select * from t_despues except select * from t_antes) b(k, v);"

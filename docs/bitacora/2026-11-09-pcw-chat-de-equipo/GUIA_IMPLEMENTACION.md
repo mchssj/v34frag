@@ -2,15 +2,15 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-09 (base local con la `99` aplicada, typecheck y pruebas de la web y la API). **Sin commit y sin desplegar.**
+Implementado y probado en local el 2026-11-09 (base local con la `102` aplicada, typecheck y pruebas de la web y la API). **Sin commit y sin desplegar.**
 
 ## Archivos
 
 | Archivo | Cambio |
 |---|---|
-| `supabase/replanteo/99_pcw_chat_de_equipo.sql` | `mm_my_team` y `mm_chat_can_read` con la PCW; política `chat: lado propio` |
-| `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/99_pcw_chat_de_equipo.sql` | Inversa |
-| `docs/bitacora/2026-11-09-pcw-chat-de-equipo/pruebas/` | `probar_99.sh` y `prueba_99.sql` |
+| `supabase/replanteo/102_pcw_chat_de_equipo.sql` | `mm_my_team` y `mm_chat_can_read` con la PCW; política `chat: lado propio` |
+| `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/102_pcw_chat_de_equipo.sql` | Inversa |
+| `docs/bitacora/2026-11-09-pcw-chat-de-equipo/pruebas/` | `probar_102.sh` y `prueba_102.sql` |
 | `web/backend/src/routes/matches.ts` | `team_only` sin lado: 403 |
 | `web/backend/src/schemas/matches.ts` | Descripción de `team_only` |
 | `web/frontend/src/features/matchmaking/types.ts` | `MmLobby.my_team` |
@@ -26,21 +26,21 @@ Implementado y probado en local el 2026-11-09 (base local con la `99` aplicada, 
 
 ```mermaid
 flowchart LR
-  A[Commit] --> B[probar_99.sh contra producción]
-  B --> C[Aplicar la 99]
+  A[Commit] --> B[probar_102.sh contra producción]
+  B --> C[Aplicar la 102]
   C --> D[API]
   D --> E[Web]
 ```
 
-1. **Ramas:** toca la base, la API y la web del matchmaking. La `99` y `matches.ts` van en `feat/frontend-fase-1` y en `feat/mm-claim-en-sala`; la web solo en `feat/frontend-fase-1`.
-2. **Orden:** después de la `98` ([`2026-11-09-sala-sin-is-me`](../2026-11-09-sala-sin-is-me/)) y de la `95`, la `96` y la `97` de `main` (la `99` necesita la `48` y la `56`).
-3. **Prueba contra producción, por el túnel:** `probar_99.sh "<conexión>"`. Corre en una transacción que se deshace; tiene que terminar con los tres `true`.
-4. **Aplicar** la `99` con `PGCLIENTENCODING=UTF8` y después `notify pgrst, 'reload schema'`.
+1. **Ramas:** toca la base, la API y la web del matchmaking. La `102` y `matches.ts` van en `feat/frontend-fase-1` y en `feat/mm-claim-en-sala`; la web solo en `feat/frontend-fase-1`.
+2. **Orden:** después de la `101` ([`2026-11-09-sala-sin-is-me`](../2026-11-09-sala-sin-is-me/)) y de la `95`, la `96` y la `97` de `main` (la `102` necesita la `48` y la `56`).
+3. **Prueba contra producción, por el túnel:** `probar_102.sh "<conexión>"`. Corre en una transacción que se deshace; tiene que terminar con los tres `true`.
+4. **Aplicar** la `102` con `PGCLIENTENCODING=UTF8` y después `notify pgrst, 'reload schema'`.
 5. **API y web**, como siempre. `pnpm gen:api` solo cambia la descripción de `team_only`.
 
 ## Pruebas
 
-### Base (`probar_99.sh docker`, 2026-11-09)
+### Base (`probar_102.sh docker`, 2026-11-09)
 
 Sobre una PCW de la base local con una cuenta en cada lado: `mm_my_team` da 1, 2 y `null` (afuera); cada lado escribe el general y el suyo y no el del otro (RLS); cada lado lee el general y el suyo, afuera y sin sesión solo el general, el admin todo. Inversa igual a antes, funciones y políticas iguales a antes.
 
@@ -50,9 +50,9 @@ Sobre una PCW de la base local con una cuenta en cada lado: `mm_my_team` da 1, 2
 
 ## En qué se apartó del plan
 
-- **Número:** el plan dice `95`. Ese día `main` ya tenía la `95` (Pionero), la `96` (ajuste manual del armado) y la `97` (ingreso sin timeout), y la `98` fue el arreglo urgente de `is_me`. Este cambio quedó como `99`.
+- **Número:** el plan dice `95`. Ese día `main` ya tenía la `95` (Pionero), la `96` (ajuste manual del armado) y la `97` (ingreso sin timeout), y la `98` fue el arreglo urgente de `is_me`. Este cambio quedó como `99`. **Renumerado a `102` el 2026-11-09** (Daniel): ese día `main` ya tenía commiteados y en producción la `98` (mínimo de ELO), la `99` (resultado tardío) y la `100` (ELO por partida); el arreglo de `is_me` pasó a `101`.
 - **El veto de la PCW:** no estaba en el plan. Tenía el mismo problema que el chat (un capitán que no está en el roster no podía vetar) y se arregló igual, con `can_veto` de la reserva.
-- **La causa del reclamo era otra:** las "dos generales" que vio Daniel fueron en una sala del matchmaking (en producción no hubo PCW) y venían de la `94`, que dejó la ficha sin `is_me`. Eso se arregla en la `98`. Este requerimiento queda para la PCW, que tenía el mismo problema por su lado, y para que una sala sin lado propio muestre un solo chat general.
+- **La causa del reclamo era otra:** las "dos generales" que vio Daniel fueron en una sala del matchmaking (en producción no hubo PCW) y venían de la `94`, que dejó la ficha sin `is_me`. Eso se arregla en la `101` (antes `98`). Este requerimiento queda para la PCW, que tenía el mismo problema por su lado, y para que una sala sin lado propio muestre un solo chat general.
 
 ## Incidentes durante las pruebas
 
@@ -61,5 +61,5 @@ Sobre una PCW de la base local con una cuenta en cada lado: `mm_my_team` da 1, 2
 
 ## Cómo revertir
 
-1. La inversa `reversas/99_pcw_chat_de_equipo.sql` (los mensajes de equipo de PCW que existan pasan a leerlos todos los que leen el chat de esa partida).
+1. La inversa `reversas/102_pcw_chat_de_equipo.sql` (los mensajes de equipo de PCW que existan pasan a leerlos todos los que leen el chat de esa partida).
 2. Revert del commit de la API y la web.
