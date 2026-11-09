@@ -11,7 +11,7 @@ Sin `is_me`, la web no sabe cuál de los diez jugadores es el que está mirando:
 - **`!claim`:** sin `linked`, no aparecía el aviso para vincular el SteamID.
 - **País:** sin `country`, no se veía la bandera.
 
-El replanteo `98` saca el comentario de esa línea y la ficha vuelve a tener los tres campos.
+El replanteo `101` saca el comentario de esa línea y la ficha vuelve a tener los tres campos.
 
 ```mermaid
 sequenceDiagram
@@ -36,6 +36,6 @@ Sin cambios.
 
 | Qué | Archivo |
 |---|---|
-| Arreglo | `supabase/replanteo/98_mm_ficha_is_me.sql` |
-| Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/98_mm_ficha_is_me.sql` |
-| Prueba | `pruebas/probar_98.sh` |
+| Arreglo | `supabase/replanteo/101_mm_ficha_is_me.sql` |
+| Inversa | `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/101_mm_ficha_is_me.sql` |
+| Prueba | `pruebas/probar_101.sh` |

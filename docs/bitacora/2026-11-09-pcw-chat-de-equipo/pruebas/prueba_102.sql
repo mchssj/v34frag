@@ -1,4 +1,4 @@
--- Pruebas del replanteo 99. Las arma probar_99.sh: van entre el replanteo y su inversa, dentro de una transacción que
+-- Pruebas del replanteo 102. Las arma probar_102.sh: van entre el replanteo y su inversa, dentro de una transacción que
 -- se deshace al final. Usan una PCW que ya exista con una cuenta en cada lado que pueda escribir en su chat, una cuenta
 -- de afuera y un admin. Cada bloque corre como la cuenta que dice (t95_como) y con el rol authenticated (RLS).
 
@@ -23,7 +23,7 @@ begin
     end loop;
     exit when a is not null and b is not null;
   end loop;
-  if a is null or b is null then raise exception 'prueba 99: no hay una PCW con una cuenta que escriba en cada lado'; end if;
+  if a is null or b is null then raise exception 'prueba 102: no hay una PCW con una cuenta que escriba en cada lado'; end if;
   select u.id into f from auth.users u left join profiles p on p.id = u.id
    where not u.id = any(match_side_users(m)) and coalesce(p.role, 'user') <> 'admin' limit 1;
   select id into adm from profiles where role = 'admin' and not id = any(match_side_users(m)) limit 1;

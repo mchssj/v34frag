@@ -1,4 +1,4 @@
--- Inversa del replanteo 99 (chat de equipo en la sala de la PCW): mm_my_team y mm_chat_can_read vuelven a como los dejó
+-- Inversa del replanteo 102 (chat de equipo en la sala de la PCW): mm_my_team y mm_chat_can_read vuelven a como los dejó
 -- la 48 y se borra la política "chat: lado propio". Los mensajes de equipo de PCW que ya existan quedan, pero los lee
 -- cualquiera que lea el chat de esa partida.
 begin;
@@ -6,7 +6,7 @@ begin;
 do $$
 begin
   if not exists (select 1 from pg_policy where polrelid = 'public.match_chat'::regclass and polname = 'chat: lado propio') then
-    raise exception 'inversa 99: falta la política "chat: lado propio" (¿se aplicó la 99?)';
+    raise exception 'inversa 102: falta la política "chat: lado propio" (¿se aplicó la 102?)';
   end if;
 end $$;
 

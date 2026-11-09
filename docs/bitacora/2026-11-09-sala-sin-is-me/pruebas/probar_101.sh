@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Prueba el replanteo 98 y su inversa dentro de UNA transacción que termina en rollback (no deja nada en la base).
-# Uso: ./probar_98.sh "<cadena de conexión de psql>"     (o, con la Supabase local:  ./probar_98.sh docker)
+# Prueba el replanteo 101 y su inversa dentro de UNA transacción que termina en rollback (no deja nada en la base).
+# Uso: ./probar_101.sh "<cadena de conexión de psql>"     (o, con la Supabase local:  ./probar_101.sh docker)
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$here/../../../.."
@@ -13,10 +13,10 @@ card="select mm_player_card(p.id, p.user_id) c, mm_player_card(p.id, gen_random_
   echo 'begin;'
   echo "create temp table t_antes as select md5(pg_get_functiondef($fn)) d;"
   echo "select 'antes, con is_me: ' || (c ? 'is_me') from ($card) x;"
-  sin_tx "$root/supabase/replanteo/98_mm_ficha_is_me.sql"
+  sin_tx "$root/supabase/replanteo/101_mm_ficha_is_me.sql"
   echo "select 'is_me del dueño: ' || (c->>'is_me') || ', de otro: ' || (o->>'is_me') || ', linked: ' || (c ? 'linked') || ', country: ' || (c ? 'country') || ', verified: ' || (c ? 'verified') from ($card) x;"
   echo "\echo '--- Inversa'"
-  sin_tx "$root/docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/98_mm_ficha_is_me.sql"
+  sin_tx "$root/docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/101_mm_ficha_is_me.sql"
   echo "select 'función igual a antes: ' || (md5(pg_get_functiondef($fn)) = (select d from t_antes));"
   echo 'rollback;'
 } | if [ "${1:-}" = docker ]; then

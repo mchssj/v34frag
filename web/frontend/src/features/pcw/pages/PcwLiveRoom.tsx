@@ -115,7 +115,7 @@ function liveRoomSource(refresh: () => void): MmSource {
       }
       return empty
     },
-    // El de equipo lo separa la base por lado (replanteo 99).
+    // El de equipo lo separa la base por lado (replanteo 102).
     chat: (matchId, signal) => apiMmSource.chat(matchId, signal),
     sendChat: (matchId, message, teamOnly) =>
       apiMmSource.sendChat(matchId, message, teamOnly),

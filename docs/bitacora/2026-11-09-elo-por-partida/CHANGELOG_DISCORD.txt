@@ -1,0 +1,10 @@
+CMLeague 2.9.31 --  Changelog
+
+ELO: ahora se gana en la partida que jugaste
+- Lo que sumas o pierdes sale de esa partida: qué equipo era favorito y cómo jugaste tú. Tu historial sirve para armar partidas parejas, no para decidir cuánto te llevas.
+- Quién era favorito sale del ELO promedio de cada equipo, el que ves en la web. Con equipos parejos, ganar suma 20 y perder resta 20.
+- Tu rating de la partida pesa mucho más: si ganas jugando muy bien, sumas hasta un 50 % más; si pierdes jugando bien, pierdes hasta la mitad. Si pierdes jugando mal, pierdes más.
+- Nadie de un equipo suma ni resta más de 30 en una partida.
+- Toda partida terminada mueve al menos 10 (antes 15).
+- Vale desde el inicio de la Temporada 2: los mixes que ya jugaste en esta temporada se recalcularon con la regla nueva.
+- En la sala del matchmaking, "En juego" muestra lo que se juega con un rating de 1,00.

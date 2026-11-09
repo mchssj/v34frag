@@ -1,17 +1,17 @@
--- 99: chat de equipo en la sala de la PCW (bitácora docs/bitacora/2026-11-09-pcw-chat-de-equipo, Daniel 2026-11-09).
+-- 102: chat de equipo en la sala de la PCW (bitácora docs/bitacora/2026-11-09-pcw-chat-de-equipo, Daniel 2026-11-09).
 --
 --   1. mm_my_team: sin sala del matchmaking, en una PCW devuelve el lado de match_my_side (null si no juega).
 --   2. mm_chat_can_read: en una PCW, un mensaje con lado lo leen ese lado y los admins.
 --   3. "chat: lado propio": nadie escribe con un lado que no es el suyo (también en el matchmaking).
--- Necesita la 48 y la 56. Inversa: docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/99_pcw_chat_de_equipo.sql.
+-- Necesita la 48 y la 56. Inversa: docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/102_pcw_chat_de_equipo.sql.
 begin;
 
 do $$
 begin
-  if to_regprocedure('public.mm_my_team(uuid)') is null then raise exception 'replanteo 99: falta la 48 (mm_my_team)'; end if;
-  if to_regprocedure('public.match_my_side(uuid)') is null then raise exception 'replanteo 99: falta la 56 (match_my_side)'; end if;
+  if to_regprocedure('public.mm_my_team(uuid)') is null then raise exception 'replanteo 102: falta la 48 (mm_my_team)'; end if;
+  if to_regprocedure('public.match_my_side(uuid)') is null then raise exception 'replanteo 102: falta la 56 (match_my_side)'; end if;
   if exists (select 1 from pg_policy where polrelid = 'public.match_chat'::regclass and polname = 'chat: lado propio') then
-    raise exception 'replanteo 99: ya se aplicó (política "chat: lado propio")';
+    raise exception 'replanteo 102: ya se aplicó (política "chat: lado propio")';
   end if;
 end $$;
 
