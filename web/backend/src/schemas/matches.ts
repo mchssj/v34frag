@@ -196,7 +196,7 @@ export const ChatPage = z
   })
   .openapi('ChatPage');
 
-export const ChatBody = z.object({ message: z.string().trim().min(1).max(300), team_only: z.boolean().optional().openapi({ description: 'En una sala de matchmaking: solo a tu equipo' }) }).openapi('ChatBody');
+export const ChatBody = z.object({ message: z.string().trim().min(1).max(300), team_only: z.boolean().optional().openapi({ description: 'En una sala de matchmaking o de PCW: solo a tu equipo (403 si no jugás en ninguno)' }) }).openapi('ChatBody');
 export const VetoBody = z
   .object({ map: z.string().min(1).max(40), version: z.string().min(1).max(40).optional() })
   .openapi('VetoBody');

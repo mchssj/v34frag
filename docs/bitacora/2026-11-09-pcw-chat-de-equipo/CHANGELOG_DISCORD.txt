@@ -1,0 +1,6 @@
+CMLeague 2.9.28 --  Changelog
+
+Chat de equipo en las PCW
+
+- La sala de la PCW ahora tiene chat de equipo: debajo de tu equipo hablas solo con los tuyos, y debajo del rival está el chat general para los dos.
+- Ya no aparece el chat general repetido.
