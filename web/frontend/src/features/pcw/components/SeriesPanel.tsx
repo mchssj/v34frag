@@ -11,7 +11,12 @@ import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { fmtClock, secondsLeft } from "@/features/matchmaking/labels"
+import { ConectarHint } from "@/features/matchmaking/ConectarHint"
+import {
+  cmleagueConnectUrl,
+  fmtClock,
+  secondsLeft,
+} from "@/features/matchmaking/labels"
 import { useNow } from "@/features/matchmaking/useNow"
 import { mapImage } from "../demo"
 import {
@@ -224,13 +229,14 @@ export function SeriesPanel({
             </Button>
             <Button size="xs" asChild>
               <a
-                href={`steam://connect/${b.server.address}/${b.server.password}`}
+                href={cmleagueConnectUrl(b.server.address, b.server.password)}
               >
                 <PlayIcon />
                 Entrar
               </a>
             </Button>
           </div>
+          <ConectarHint />
           <Presence label="Ustedes" n={b.present[0]} />
           <Presence label={rival} n={b.present[1]} />
           <p className="text-xs text-muted-foreground">

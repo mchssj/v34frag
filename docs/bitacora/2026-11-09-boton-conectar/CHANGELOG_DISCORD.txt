@@ -1,0 +1,6 @@
+CMLeague 2.9.29 --  Changelog
+
+- El botón Conectar de la sala ahora abre el CS:S v34 y te mete directo al servidor con la contraseña puesta. Antes abría el CS:S de Steam.
+- Para que funcione, instala una sola vez CMLeague Conectar: está en el link de abajo del botón. Descomprime el zip y abre conectar.bat.
+- Lo mismo para el botón Entrar de las PCW y el Conectar de la partida en curso.
+- Si no quieres instalar nada, sigue estando Copiar connect para pegarlo en la consola.

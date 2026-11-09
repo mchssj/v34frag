@@ -34,11 +34,12 @@ import {
   connectCommand,
   fmtClock,
   isCountry,
+  cmleagueConnectUrl,
   mapLabel,
   secondsLeft,
-  steamConnectUrl,
   sideLabel,
 } from "../labels"
+import { ConectarHint } from "../ConectarHint"
 import { LobbyChat } from "../LobbyChat"
 import { PasswordField } from "../PasswordField"
 import { ReportDialog } from "../ReportDialog"
@@ -626,7 +627,7 @@ function Center({
                 password={lobby.server.password}
               />
               <a
-                href={steamConnectUrl(
+                href={cmleagueConnectUrl(
                   lobby.server.address,
                   lobby.server.password
                 )}
@@ -636,6 +637,7 @@ function Center({
                 Conectar
               </a>
             </span>
+            <ConectarHint />
           </div>
         </Block>
       )}

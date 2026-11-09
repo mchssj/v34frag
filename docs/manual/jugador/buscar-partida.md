@@ -58,8 +58,16 @@ Cuando termina el veto, buscamos un servidor libre. Si están todos ocupados, la
 
 Con el servidor listo, la **Sala de la partida** te muestra la dirección y la contraseña. Para entrar:
 
-- Toca **Conectar**: abre el juego y entra directo al servidor.
+- Toca **Conectar**: abre el CS:S v34 de ClientMod y entra directo al servidor, con la contraseña puesta. Si el juego ya está abierto, escribe el comando en su consola.
 - O toca **Copiar connect** y pega el comando en la consola del juego.
+
+El botón **Conectar** funciona con **CMLeague Conectar**, un programa chico que se instala una sola vez:
+
+1. En la sala, debajo del botón, toca **Instala CMLeague Conectar**.
+2. Descomprime el `.zip` y abre `conectar.bat`. No pide permisos de administrador.
+3. Desde ahí, **Conectar** abre el juego. La primera vez el navegador te pregunta si quieres abrir CMLeague Conectar: acepta. Windows también te pide permiso de administrador, porque el launcher de ClientMod corre así.
+
+Si no quieres instalar nada, usa **Copiar connect**: hace lo mismo a mano.
 
 Tienes **{{mm.conectar}}** para conectarte; la sala muestra cuánto queda y quiénes ya entraron. Si todavía no vinculaste tu SteamID, o entraste desde otra PC, escribe en el chat el `!claim` que te muestra la sala.
 

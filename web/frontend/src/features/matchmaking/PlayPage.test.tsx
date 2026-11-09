@@ -170,10 +170,13 @@ describe("PlayPage (con la demo)", () => {
     ).toBeInTheDocument()
     expect(screen.getAllByText(/CM League #1/).length).toBeGreaterThan(0)
     expect(screen.getByLabelText("Contraseña oculta")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /Conectar/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Conectar" })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^steam:\/\/connect\/45\.235\.98\.12:27062\//)
+      expect.stringMatching(/^cmleague:\/\/connect\/45\.235\.98\.12:27062\//)
     )
+    expect(
+      screen.getByRole("link", { name: "Instala CMLeague Conectar" })
+    ).toHaveAttribute("href", "/descargas/cmleague-conectar.zip")
   })
 
   it("el capitán banea en su turno y el resto ve el veto", async () => {

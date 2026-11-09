@@ -5,6 +5,7 @@ import type { ReactNode } from "react"
 import { KIND_LABEL } from "@/components/brand/KindBadge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { cmleagueConnectUrl } from "@/features/matchmaking/labels"
 import { WatchTvButton } from "@/features/mixes/components/parts"
 import { sideName } from "@/features/public/lib/format"
 import { useFeaturedLive, type FeaturedLive } from "../api/queries"
@@ -52,7 +53,7 @@ function MatchNow({
     >
       {live.address && (
         <Button asChild variant="outline" size="sm" className="h-7">
-          <a href={`steam://connect/${live.address}`}>
+          <a href={cmleagueConnectUrl(live.address)}>
             <PlugZapIcon aria-hidden />
             Conectar
           </a>

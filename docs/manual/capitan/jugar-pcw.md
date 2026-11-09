@@ -20,6 +20,8 @@ Mientras no hay servidor, cualquiera de los dos equipos puede tocar **Ya no esta
 
 Cuando la fila les da un servidor, les avisamos en la campana y la página muestra **Conectarse** y la contraseña. La contraseña solo la ven los planteles: si juega un stand-in, pásasela tú.
 
+**Entrar** abre el CS:S v34 y entra con la contraseña, si tienes instalado CMLeague Conectar (se baja desde el link de abajo del botón, una sola vez; ver [Buscar partida](/help/jugador/buscar-partida)). Si no, toca **Copiar** y pega el comando en la consola.
+
 ## 3. La espera
 
 Tienen **15 minutos** para entrar al primer mapa y **5 minutos** entre mapas. La página muestra cuánto queda y cuántos hay de cada lado.
