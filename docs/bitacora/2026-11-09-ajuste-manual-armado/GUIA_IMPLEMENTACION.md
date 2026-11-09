@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en la base local el 2026-11-09, con la `96` aplicada ahí. **Sin commit y sin desplegar**: falta que Daniel lo pida.
+**Desplegado el 2026-11-09 (13:58 UTC)**: la `96` en la base del VPS y la web `bbe20fd2da5f`. Commit `6663efba` en `main` y la base en `feat/mm-claim-en-sala` (`a8026437`). **Falta la copia en `feat/frontend-fase-1`**: ese día tenía a medio hacer (con conflictos) la copia de los replanteos 88 a 94 de otra sesión, y no se tocó. Sin ajustes cargados: el reparto no cambia hasta que se ponga el primero.
 
 ## Archivos
 
@@ -18,7 +18,18 @@ Implementado y probado en la base local el 2026-11-09, con la `96` aplicada ahí
 
 La API no cambió. La web, solo los textos legales.
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-09)
+
+Lo que se hizo:
+
+1. Estado: sin salas activas ni nadie en la cola. La única partida `live` era la `0d42d09a…`, colgada del #1 desde antes.
+2. `probar_96.sh vps` contra producción (por stdin a `docker exec -i supabase-db psql`, en una sola conexión SSH): todo `t`, la sala real armada y deshecha, y la inversa igual a antes.
+3. Respaldo `20261109T135849Z` (`sudo cmleague-respaldar`, también en R2).
+4. `cmleague-mm` parado, la `96` (13:58:55 UTC) con `notify pgrst, 'reload schema'`, `cmleague-mm` prendido. Comprobado: 0 ajustes, 0 en el historial, `mm_tick` y `mm_balance_elos` con lo nuevo y sin errores en el worker.
+5. **Web:** `main` ya tenía commiteados los replanteos 88 a 94, que no están en producción, así que la web no salió de `main`. Se armó la rama local `deploy/web-96` sobre la versión publicada (`8991457b`) con solo los textos legales y `LEGAL_UPDATED` en 9 de noviembre (`bbe20fd2`), y `deploy/vps/desplegar.sh web` (667 pruebas): `bbe20fd2da5f`. Los textos nuevos se sirven en `/terminos` y `/privacidad`. El próximo despliegue de la web desde `main` ya los trae.
+6. Los `terms/` estáticos siguen sin publicar, como los de los requerimientos anteriores.
+
+Los pasos, para repetirlos:
 
 Desde `main`, sin un mix en curso (`create or replace` de `mm_tick` y `mm_balance_elos`: el worker del matchmaking espera un instante).
 
