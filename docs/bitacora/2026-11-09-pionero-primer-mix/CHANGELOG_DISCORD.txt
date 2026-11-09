@@ -1,0 +1,5 @@
+CMLeague 2.9.29 --  Changelog
+
+Medallas
+- Ya llegó la medalla Pionero: es para quienes jugaron el primer mix de CMLeague, el de dust2 del 13 de octubre. Tenía que llegar con el inicio de la Temporada 2 y se demoró unas horas. Si estuviste en ese mix, ya la tienes en tu perfil.
+- Para Pionero solo cuentan los mixes: las partidas de torneo, PCW y matchmaking no.

@@ -116,12 +116,12 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Urgente: la BETA de producción cierra el 2026-11-09 a las 09:00 UTC** (en la base; los documentos decían 2026-12-03). El despliegue tiene que estar antes.
 - **Desplegado el 2026-11-06 (18:53-19:00 UTC)** desde `main` (`1b4d517c`): respaldo `20261106T185310Z`, la `79` y las definiciones en la base del VPS, API y web `1b4d517c2de7` y `cmleague-medals.timer`.
 - **2026-11-06 (Daniel):** el ranking de jugadores ya no muestra "(sin diseño propio)" junto a la medalla del Top 20 (`8469ee86`, web `8469ee8631e6` desplegada desde `main`). En Administración › Temporadas el selector de tramos lo sigue diciendo.
+- **Cierre de la BETA (2026-11-09 09:00 UTC), comprobado:** el podio y el top con medalla y 120 Fundador. Pionero no le llegó a nadie (la partida más vieja era de un torneo histórico): se arregló con el replanteo `95` y se dio a 9 jugadores del primer mix, sin NOTIONSPAPU (baneado) ([`2026-11-09-pionero-primer-mix`](bitacora/2026-11-09-pionero-primer-mix/)).
 - **Falta:**
-  1. Después del cierre de la BETA (2026-11-09 09:00 UTC): comprobar que el cierre dio el podio y el top con medalla y que el cron dio Fundador y Pionero.
-  2. Avisar en Discord antes del cierre de la BETA (unos 130 avisos de Fundador y Pionero al abrirse la temporada 2) y publicar el `CHANGELOG_DISCORD.txt`.
-  3. Más adelante: `@fontsource/montserrat` (lo instala Daniel; hasta entonces, Arial).
-  4. Con Kyan: diseño del Top 20 (hoy, el círculo del Top 10 en bronce), si en tamaño chico va la versión plana (pregunta 4) y que `brillo_solo_marco` sea la versión final; revisar las respuestas de Daniel a las preguntas del plan (abierta: la 8, "más mejorado").
-  5. `badges/`, las misiones semanales y las insignias VIP siguen sin commit en `v34frag-main` (`feat-missions-badges`): no salen con las medallas.
+  1. Publicar el `CHANGELOG_DISCORD.txt` de las medallas y el de [`2026-11-09-pionero-primer-mix`](bitacora/2026-11-09-pionero-primer-mix/) (2.9.29).
+  2. Más adelante: `@fontsource/montserrat` (lo instala Daniel; hasta entonces, Arial).
+  3. Con Kyan: diseño del Top 20 (hoy, el círculo del Top 10 en bronce), si en tamaño chico va la versión plana (pregunta 4) y que `brillo_solo_marco` sea la versión final; revisar las respuestas de Daniel a las preguntas del plan (abierta: la 8, "más mejorado").
+  4. `badges/`, las misiones semanales y las insignias VIP siguen sin commit en `v34frag-main` (`feat-missions-badges`): no salen con las medallas.
 
 ## La sala en el link de reemplazo, el detalle como sala y el ELO del abandono (2026-11-06): desplegado
 

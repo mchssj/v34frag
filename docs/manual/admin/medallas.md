@@ -14,7 +14,7 @@ Las medallas se ganan jugando. Cada una sale de una **plantilla**: un diseño de
 | Temporada (Podio y Top) | El cierre de la temporada, según el tramo de cada puesto. Se eligen en [Temporadas](/help/admin/temporadas) |
 | Comunidad (staff, caster, campeón de torneo…) | Un admin, desde la ficha del jugador ([Usuarios y fichas](/help/admin/usuarios-y-fichas)) |
 
-> **Ojo:** las stats de la Temporada BETA no cuentan. Mientras dure, el juego no da ninguna medalla, **Calcular** dice 0 y activar con **Dársela a quienes ya la cumplen** no da nada. Todo cuenta desde la temporada siguiente. Al crearla, el juego le da Fundador y Pionero a quienes jugaron la BETA, en unos minutos. Las de Temporada (Podio y Top) sí se dan al cerrar la BETA.
+> **Ojo:** las stats de la Temporada BETA no cuentan. Mientras dure, el juego no da ninguna medalla, **Calcular** dice 0 y activar con **Dársela a quienes ya la cumplen** no da nada. Todo cuenta desde la temporada siguiente. Al crearla, el juego le da Fundador a quienes jugaron la BETA y Pionero a quienes jugaron el primer mix, en unos minutos. Para Pionero solo cuentan los mixes: no las partidas de torneo, PCW ni matchmaking. Las de Temporada (Podio y Top) sí se dan al cerrar la BETA.
 
 ## Crear una medalla
 
@@ -40,3 +40,4 @@ Al activarla, la casilla **Dársela a quienes ya la cumplen** se la da enseguida
 - Un borrador se puede **borrar**.
 - Una medalla que está en un tramo de temporada no se archiva: primero cámbiala en Temporadas.
 - Una medalla no se le quita sola a nadie. Si hace falta, la quitas a mano desde la ficha del jugador.
+- Para que un jugador no reciba nunca una medalla del juego aunque la cumpla (por ejemplo, porque está baneado), pídeselo a Daniel: queda **excluido** de esa medalla y el juego no se la da, ni después de un mix ni al activarla para todos. Todavía no hay pantalla para hacerlo.
