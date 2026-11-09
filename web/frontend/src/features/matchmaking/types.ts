@@ -177,6 +177,10 @@ export type MmLobby = {
   accept_deadline: string | null
   veto: MmVeto | null
   connect_deadline: string | null
+  /** Mi lado cuando no sale de los jugadores (is_me), como en una PCW. null: no juego. */
+  my_team?: 1 | 2 | null
+  /** Si me toca vetar, cuando lo dice la sala (una PCW) y no el capitán de mi fila. */
+  can_veto?: boolean
   players: MmPlayer[]
   server: MmServer | null
   match_id: string | null

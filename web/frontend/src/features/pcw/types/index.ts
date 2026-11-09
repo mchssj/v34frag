@@ -135,6 +135,10 @@ export type PcwBooking = {
   /** Rondas de cada mapa jugado: nosotros y ellos. */
   scores: [number, number][]
   abandoned_by: "us" | "them" | null
+  /** Mi lado según la base (match_my_side): 0 si no juego. Un capitán que no juega no está en el roster. */
+  my_side?: 0 | 1 | 2
+  /** Me toca vetar ahora, según la base (can_veto). */
+  can_veto?: boolean
 }
 
 /** backend: "nos falta 1". */

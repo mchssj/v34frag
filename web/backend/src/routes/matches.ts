@@ -482,6 +482,8 @@ export const matches = createRouter()
     const { sb, user } = c.var;
     const { message, team_only } = c.req.valid('json');
     const side = team_only ? must(await sb.rpc('mm_my_team' as never, { p_match: id } as never)) : null;
+    // Un mensaje de equipo nunca termina en el general.
+    if (team_only && side == null) throw new AppError(403, 'FORBIDDEN', 'No jugás en ningún equipo de esta partida: escribí en el chat general.');
     const r = await sb.from('match_chat').insert({ match_id: id, user_id: user.id, message, side } as never).select('id').single();
     if (r.error?.code === '42501') throw new AppError(403, 'FORBIDDEN', 'En esta partida escriben solo los dos equipos, el organizador y los admins.');
     const row = mustHave(r);

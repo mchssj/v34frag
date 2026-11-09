@@ -102,7 +102,7 @@ export function PcwLiveRoom({
 
 /**
  * Lo que la sala le pide a su fuente, con la API: el veto y el chat de la partida (los de siempre), y amigo y bloqueo
- * del matchmaking. En una PCW el chat es uno solo (el general) y la denuncia no va por la sala.
+ * del matchmaking. La denuncia no va por la sala.
  */
 function liveRoomSource(refresh: () => void): MmSource {
   const empty = {} as MmState
@@ -115,14 +115,10 @@ function liveRoomSource(refresh: () => void): MmSource {
       }
       return empty
     },
+    // El de equipo lo separa la base por lado (replanteo 99).
     chat: (matchId, signal) => apiMmSource.chat(matchId, signal),
-    async sendChat(matchId, message, teamOnly) {
-      if (teamOnly)
-        throw new Error(
-          "En la sala de una PCW el chat es uno solo: escribí en el chat general."
-        )
-      await apiMmSource.sendChat(matchId, message, false)
-    },
+    sendChat: (matchId, message, teamOnly) =>
+      apiMmSource.sendChat(matchId, message, teamOnly),
     async report() {
       throw new Error(
         "Para denunciar a alguien de una PCW, escribile a un moderador por Discord."

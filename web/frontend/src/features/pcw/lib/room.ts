@@ -124,6 +124,9 @@ export function pcwToLobby(
       next_kind: v.next?.kind,
     },
     connect_deadline: b.step === "wait" ? b.deadline : null,
+    // Sin my_side (la demo), el lado sale de is_me.
+    my_team: b.my_side === undefined ? undefined : b.my_side || null,
+    can_veto: b.can_veto,
     players: [
       ...m.us.roster.map((p, i) => player(p, 1, i)),
       ...m.them.roster.map((p, i) => player(p, 2, i)),

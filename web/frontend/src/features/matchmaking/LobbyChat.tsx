@@ -8,6 +8,7 @@ import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PlayerName } from "./PlayerMenu"
+import { myTeam } from "./room/roomData"
 import { mmKeys } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby } from "./types"
@@ -40,8 +41,9 @@ export function LobbyChat({
     onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKey }),
   })
   const me = lobby.players.find((p) => p.is_me)
+  const side = myTeam(lobby)
   const messages = data.filter((m) =>
-    team ? m.team !== null && m.team === me?.team : m.team === null
+    team ? m.team !== null && m.team === side : m.team === null
   )
   const list = useRef<HTMLUListElement>(null)
   const count = messages.length

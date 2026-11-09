@@ -284,6 +284,8 @@ export function seriesToMatch(
     scores: games,
     abandoned_by:
       b?.abandoned_side === 1 ? "us" : b?.abandoned_side === 2 ? "them" : null,
+    my_side: mb.my_side,
+    can_veto: mb.can_veto,
   }
   return {
     id: d.id,

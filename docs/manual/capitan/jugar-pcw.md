@@ -10,7 +10,7 @@ Una PCW es una práctica entre dos equipos. No cuenta para el ELO. Para armarla,
 
 En [PCW](/pcw), pestaña **Mis PCW**, un jugador de cada equipo toca **Estamos listos**. La tarjeta muestra si el otro equipo ya lo marcó. Cuando los dos equipos están listos, aparece **Ir a la sala**.
 
-La sala es como la del matchmaking: los dos equipos con su escudo y su ELO medio, los jugadores, el veto, el servidor y el chat general. Arriba del centro va la serie: el marcador y los mapas.
+La sala es como la del matchmaking: los dos equipos con su escudo y su ELO medio, los jugadores, el veto, el servidor y los chats: debajo de tu equipo, el **chat de equipo**, que solo ven los de tu lado; debajo del rival, el **chat general**, que ven los dos. Arriba del centro va la serie: el marcador y los mapas.
 
 1. Se hace el veto, si falta. Lo hace el capitán de cada lado, por turnos: 30 segundos por turno; si vence, se elige un mapa al azar. En una BO3 o BO5, algunos turnos son para **Elegir** un mapa en lugar de banearlo.
 2. Si el anuncio traía tantos mapas como el formato, no hay veto: se juegan esos en ese orden.

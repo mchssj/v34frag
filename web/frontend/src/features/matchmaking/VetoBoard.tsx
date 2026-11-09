@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { secondsLeft, sideLabel } from "./labels"
-import { suggestBan } from "./room/roomData"
+import { myTeam, suggestBan } from "./room/roomData"
 import { banOptimistic, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { MmLobby, MmVetoBan, MmVetoMap } from "./types"
@@ -32,9 +32,13 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
   const me = lobby.players.find((p) => p.is_me)
   const captainOf = (team: 1 | 2) =>
     lobby.players.find((p) => p.team === team && p.is_captain)
-  const myTurn = veto.turn !== null && me?.is_captain && me.team === veto.turn
+  const side = myTeam(lobby)
+  // En una PCW lo dice la base: un capitán que no juega no está entre los jugadores.
+  const myTurn =
+    veto.turn !== null &&
+    (lobby.can_veto ?? (!!me?.is_captain && me.team === veto.turn))
   const left = secondsLeft(veto.deadline, now)
-  const suggestion = me ? suggestBan(veto, me.team) : null
+  const suggestion = side ? suggestBan(veto, side) : null
   const banOf = new Map(veto.bans.map((b) => [b.map, b]))
   const turnCaptain = veto.turn ? captainOf(veto.turn) : null
   // En una PCW BO3 o BO5 también se eligen mapas; el matchmaking solo banea.
@@ -84,7 +88,7 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
         </div>
       </CardHeader>
       <CardContent>
-        {me && veto.turn === me.team && !picking && suggestion && (
+        {side && veto.turn === side && !picking && suggestion && (
           <p className="mb-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs">
             Te conviene banear <strong>{suggestion.label}</strong>: tu equipo
             gana {suggestion.mine} %, ellos {suggestion.theirs} %.

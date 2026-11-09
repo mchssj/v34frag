@@ -16,6 +16,22 @@ export type Team = 1 | 2
 
 export const otherTeam = (t: Team): Team => (t === 1 ? 2 : 1)
 
+/** Mi lado: el que dice la sala (una PCW) o el de mi fila de jugador. null: no juego. */
+export function myTeam(lobby: MmLobby): Team | null {
+  if (lobby.my_team !== undefined) return lobby.my_team
+  return lobby.players.find((p) => p.is_me)?.team ?? null
+}
+
+/**
+ * Qué chat va debajo de cada lado: el de equipo debajo del mío y el general debajo del rival. Sin lado,
+ * un solo general (debajo del lado 2).
+ */
+export function chatScope(lobby: MmLobby, team: Team): "team" | "all" | null {
+  const mine = myTeam(lobby)
+  if (mine === null) return team === 2 ? "all" : null
+  return team === mine ? "team" : "all"
+}
+
 export function teamPlayers(lobby: MmLobby, team: Team) {
   return lobby.players
     .filter((p) => p.team === team)

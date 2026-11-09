@@ -50,7 +50,13 @@ import { ClaimCard, needsClaim } from "./ClaimCard"
 import { Encounters } from "./Encounters"
 import { MatchSummary, PlayAgain, PlayerPostMatch } from "./PostMatch"
 import { signed } from "@/features/mixes/lib/labels"
-import { replacementOf, roomRows, teamLabel, type Team } from "./roomData"
+import {
+  chatScope,
+  replacementOf,
+  roomRows,
+  teamLabel,
+  type Team,
+} from "./roomData"
 
 // Descripción general de la sala: los jugadores de cada equipo a los lados y, en el medio, el
 // veto o el servidor y el mapa (plan, sección 7, "Sala de la partida").
@@ -106,7 +112,7 @@ function TeamColumn({
   const live =
     mode !== "detail" &&
     ["connecting", "live", "finished"].includes(lobby.status)
-  const mine = lobby.players.some((p) => p.is_me && p.team === team)
+  const chat = chatScope(lobby, team)
   const { main, gone, open } = roomRows(lobby, team, mode === "preview")
   return (
     <div className="flex flex-col gap-3">
@@ -153,8 +159,8 @@ function TeamColumn({
         </ul>
       </section>
       {/* Debajo de los jugadores: el de equipo en tu columna y el general en la del rival. */}
-      {lobby.match_id && mode === "live" && (
-        <LobbyChat lobby={lobby} scope={mine ? "team" : "all"} />
+      {lobby.match_id && mode === "live" && chat && (
+        <LobbyChat lobby={lobby} scope={chat} />
       )}
     </div>
   )
