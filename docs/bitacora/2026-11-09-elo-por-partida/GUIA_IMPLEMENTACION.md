@@ -52,5 +52,5 @@
 
 ## Falta
 
-- Probar la pestaña en el navegador (con la `98` y la `100` aplicadas en la base local, sin `elo_recompute_all` o recargando la copia después).
+- ~~Probar la pestaña en el navegador~~: probada por Daniel en producción el 2026-11-09. Una pestaña abierta antes del despliegue mostraba "Los datos enviados no son válidos" en la vista previa (la web vieja manda la configuración sin los campos nuevos y la API nueva la rechaza); con recargar, anda.
 - Commit: la base en `main`, `feat/frontend-fase-1` y `feat/mm-claim-en-sala`; la API y la web en `main`. El próximo despliegue desde `main` sin estos cambios commiteados los borraría.
