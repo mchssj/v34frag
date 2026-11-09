@@ -2,7 +2,7 @@
 
 ## Estado
 
-Probado en local el 2026-11-09 (lógica, pruebas de toda la web y la demo en el navegador) y por Daniel en la página real local, con la copia de producción. Commit en `main`; **falta el despliegue de la web**. Solo web: no hay migraciones ni cambios en la API, el VPS ni los servidores.
+Probado en local el 2026-11-09 (lógica, pruebas de toda la web y la demo en el navegador) y por Daniel en la página real local, con la copia de producción. **Desplegado el 2026-11-09 (20:45 UTC)**: commit `f002fa64` en `main` y la web `f002fa643e02`. Solo web: no hay migraciones ni cambios en la API, el VPS ni los servidores.
 
 ## Archivos
 
@@ -16,10 +16,11 @@ Probado en local el 2026-11-09 (lógica, pruebas de toda la web y la demo en el 
 | `docs/manual/organizador/inscripciones-y-fixture.md` | Sección **Siembra** nueva |
 | `docs/bitacora/2026-11-09-siembra-sobre-la-llave/` | Esta carpeta, con `pruebas/probar_demo_siembra.cjs` y `CHANGELOG_DISCORD.txt` (2.9.31) |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-09)
 
-1. Commit en `main` (worktree `v34frag-mainwt`): hecho el 2026-11-09, con `docs/bitacora/README.md` y `docs/PENDIENTES.md`. Es solo web: no va a `feat/mm-claim-en-sala`. Si `feat/frontend-fase-1` sigue como copia, se adelanta.
-2. Desplegar la web como siempre. No hay orden con otros requerimientos: no depende de ningún replanteo.
+1. Commit `f002fa64` en `main` (worktree `v34frag-mainwt`). Es solo web: no va a `feat/mm-claim-en-sala`. No se copió a `feat/frontend-fase-1`, que se separó de `main` (haría falta un cherry-pick).
+2. Antes de desplegar se esperó a que no hubiera mixes en vivo (`/api/v1/mixes/live` vacío y `/api/v1/servers/status` con 0 partidas, 0 jugadores y nadie en la cola), como pidió Daniel. Había uno en el #2 (`de_dust2_ob`) que terminó a las 20:39 UTC.
+3. La web salió de un worktree limpio en `f002fa64`, porque `main` tenía cambios sin commit de otra sesión en `web/backend` y el script le habría puesto `-local` a la versión: `deploy/vps/desplegar.sh web` (con lint y pruebas). Quedó `f002fa643e02` (antes `e53f3e7b4a96`), y `https://cmleague.lat/` sirve el `index` nuevo. La API no se tocó (sigue en `e53f3e7b4a96`).
 
 ## Pruebas
 
@@ -59,4 +60,4 @@ Se miraron las capturas de cada formato, en tema oscuro y en el celular.
 
 ## Cómo revertir
 
-Revertir el commit. La siembra guardada no cambia de forma, así que no hay nada que deshacer en la base.
+Revertir el commit y desplegar la web, o volver a la versión anterior en el VPS (`/srv/cmleague/web/current` → `releases/e53f3e7b4a96`). La siembra guardada no cambia de forma, así que no hay nada que deshacer en la base.

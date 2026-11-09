@@ -24,11 +24,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Siembra sobre la llave (2026-11-09): commit en `main`, falta desplegar
+## Siembra sobre la llave (2026-11-09): desplegada el 2026-11-09
 
 - **Qué es:** la pestaña **Siembra** de un torneo muestra el formato elegido, y los equipos se arrastran (o se tocan y se ponen) en su lugar de la llave. Suma **Vaciar** y **Completar huecos** (en orden o al azar). Solo web, sin cambios en la base ni en la API ([`2026-11-09-siembra-sobre-la-llave`](bitacora/2026-11-09-siembra-sobre-la-llave/)).
 - **Hecho:** 709 pruebas de la web, typecheck y lint en verde, 18 de 18 en el navegador sobre `/demo/siembra` y probado por Daniel en la página real local, con la copia de producción (2026-11-09). Commit en `main` (solo web: no va a `feat/mm-claim-en-sala`).
-- **Falta:** desplegar la web.
+- **Desplegada** el 2026-11-09 (20:45 UTC, sin mixes en curso): la web `f002fa643e02`. No se copió a `feat/frontend-fase-1`.
 
 ## Ajuste manual del armado del matchmaking (2026-11-09): desplegado el 2026-11-09
 
