@@ -24,12 +24,13 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Ajuste manual del armado del matchmaking (2026-11-09): en local, sin commit
+## Ajuste manual del armado del matchmaking (2026-11-09): desplegado el 2026-11-09
 
 - **Hecho:** replanteo `96`: puntos por ficha (0 por defecto, ±300, vencen a los 30 días) que se suman al ELO de armado sin tocar el ELO ni el rating, puestos solo desde la base, con historial de un año ([`2026-11-09-ajuste-manual-armado`](bitacora/2026-11-09-ajuste-manual-armado/)). Probado en la base local (`probar_96.sh`, todo en verde, con la inversa) y la `96` aplicada ahí. Términos, privacidad y manual al día.
+- **Desplegado el 2026-11-09 (13:58 UTC):** respaldo `20261109T135849Z`, `probar_96.sh` contra producción en verde, la `96` con `cmleague-mm` parado, y la web `bbe20fd2da5f` (rama local `deploy/web-96` sobre `8991457b`, solo los textos legales, porque `main` ya tiene los replanteos 88 a 94 sin desplegar). Commit `6663efba` en `main` y `a8026437` en `feat/mm-claim-en-sala`. Sin ajustes cargados.
 - **Falta:**
-  1. Commit en `main`; copia en `feat/frontend-fase-1` y la base en `feat/mm-claim-en-sala`.
-  2. Desplegar sin un mix en curso: respaldo, `probar_96.sh` contra producción, la `96` y la web (textos legales) y los `terms/` estáticos.
+  1. La copia en `feat/frontend-fase-1`, cuando termine la copia de los replanteos 88 a 94 que está a medio hacer ahí.
+  2. Publicar los `terms/` estáticos (junto con los de los requerimientos anteriores).
   3. Sin changelog (decisión de Daniel).
 
 ## Autoaceptar VIP, comentarios en el perfil e insignia de verificado (2026-11-09): de `kyan/pruebas`, traído a `main` el 2026-11-09, sin commit ni producción
