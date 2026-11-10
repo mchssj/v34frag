@@ -24,6 +24,15 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Bajar el máximo del grupo desarma los grupos (2026-11-09): en local, sin commit
+
+- **Qué es:** replanteo `105` y el aviso en la web ([`2026-11-09-mm-grupo-maximo`](bitacora/2026-11-09-mm-grupo-maximo/)). Al bajar el tamaño máximo del grupo del matchmaking, los grupos más grandes se desarman (los de la cola salen; los de una sala, cuando termina).
+- **Hecho:** la `105` aplicada en la base local, 5 de 5, inversa probada; web con 712 pruebas, lint y typecheck.
+- **Falta:**
+  1. Commit en `main`, y la `105` (con su inversa y la fila del README) también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+  2. Aplicar la `105` en el VPS (no reinicia nada; va en cualquier orden con la `104`).
+  3. Desplegar la web, sin mixes en curso.
+
 ## Siembra sobre la llave (2026-11-09): desplegada el 2026-11-09
 
 - **Qué es:** la pestaña **Siembra** de un torneo muestra el formato elegido, y los equipos se arrastran (o se tocan y se ponen) en su lugar de la llave. Suma **Vaciar** y **Completar huecos** (en orden o al azar). Solo web, sin cambios en la base ni en la API ([`2026-11-09-siembra-sobre-la-llave`](bitacora/2026-11-09-siembra-sobre-la-llave/)).

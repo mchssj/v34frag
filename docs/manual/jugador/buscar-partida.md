@@ -28,6 +28,8 @@ Los equipos se reparten para que queden lo más parejos posible. Se mira el ELO 
 
 Puedes buscar con un amigo: invítalo con **Invitar al grupo** (tus amigos están en el panel **Amigos**; ver [Amigos](/help/jugador/amigos)). Juegan en el mismo equipo. El grupo puede ser de hasta {{mm.grupo_max}} personas, con hasta {{mm.grupo_dif_elo}} de diferencia de ELO entre ustedes.
 
+Si la liga baja el tamaño máximo, los grupos más grandes se desarman solos y te avisamos. Si estaban buscando, salen de la cola: vuelve a buscar solo. Si están jugando una partida, el grupo se desarma cuando termina.
+
 ### El chat del grupo
 
 Con al menos un compañero en el grupo, abajo a la derecha aparece **Chat del grupo**. Solo lo ven los del grupo, y los mensajes se borran cuando el grupo se deshace. Los mensajes van de 1 a 300 caracteres; tiene respuestas de un toque ("Dale", "¿Uno más?", "Listo"). Con **–** lo minimizas: el botón dice cuántos mensajes no leíste.

@@ -263,7 +263,7 @@ function Form({ initial }: { initial: MmAdminConfig }) {
 
       <Section
         title="Grupos"
-        description="1 = sin grupos; 2 = dúo. Nunca más que un equipo del modo."
+        description="1 = sin grupos; 2 = dúo. Nunca más que un equipo del modo. Al bajarlo, los grupos más grandes se desarman (los que estaban buscando salen de la cola); los que están en una sala, cuando la sala termina."
       >
         <Grid>
           <NumberField

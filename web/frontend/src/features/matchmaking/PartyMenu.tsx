@@ -36,6 +36,25 @@ type Confirm =
 /** Lo que el que mira hizo a propósito: así no se le avisa "salió del grupo" por su propia acción. */
 const own = { current: false }
 
+/**
+ * (replanteo 105, bitácora 2026-11-09-mm-grupo-maximo) Un admin bajó el tamaño máximo y el grupo se desarmó:
+ * se avisa una vez, y no se repite el "salió del grupo" de `usePartyNotices`.
+ */
+export function noticePartyDisbanded(d: unknown) {
+  const { max, queued } = (d ?? {}) as { max?: number; queued?: boolean }
+  own.current = true
+  toast.warning(
+    max === 1
+      ? "Se desarmó tu grupo: ahora se juega sin grupos"
+      : `Se desarmó tu grupo: ahora el máximo es de ${max ?? "menos"} por grupo`,
+    {
+      description: queued
+        ? "Saliste de la cola: vuelve a buscar solo."
+        : undefined,
+    }
+  )
+}
+
 /** Menú "⋯" de una tarjeta del grupo. */
 export function PartyMenu({
   state,

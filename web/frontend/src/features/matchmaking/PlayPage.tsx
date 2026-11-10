@@ -32,6 +32,7 @@ import { ChatDock } from "./ChatDock"
 import { GroupSlots } from "./GroupSlots"
 import { InviteDialog } from "./InviteDialog"
 import { fmtClock, fmtDateTime, secondsLeft } from "./labels"
+import { noticePartyDisbanded } from "./PartyMenu"
 import { ANY_REGION, PlayBar } from "./PlayBar"
 import { PlayFeed } from "./PlayFeed"
 import { SoundSettingsDialog } from "./SoundSettings"
@@ -70,6 +71,7 @@ export function PlayPage() {
         }
       )
     }
+    if (e.t === "party.disbanded") noticePartyDisbanded(e.d)
     if (e.t === "friend.searching" && e.friend) {
       const { player_id, nick } = e.friend
       alertFriend(nick)

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { AcceptDialog } from "./AcceptDialog"
 import { alertMatchFound, alertServerReady } from "./alert"
 import { fmtClock } from "./labels"
+import { noticePartyDisbanded } from "./PartyMenu"
 import { mmStateOptions, useMmAction, useMmSocket } from "./queries"
 import { useMmSource } from "./source"
 import { useNow } from "./useNow"
@@ -52,6 +53,7 @@ export function GlobalMatchAlerts({ away }: { away?: boolean } = {}) {
       })
     }
     if (e.t === "lobby.cancelled") toast.warning("La partida se canceló")
+    if (e.t === "party.disbanded") noticePartyDisbanded(e.d)
   })
   const { data: state } = useQuery(
     mmStateOptions(source, socketUp, useQueryClient())

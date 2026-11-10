@@ -1,0 +1,7 @@
+CMLeague 2.9.32 --  Changelog
+
+Matchmaking: tamaño del grupo
+
+- Si la liga cambia el tamaño máximo del grupo, los grupos más grandes se desarman solos y te avisamos.
+- Si estabas buscando partida en ese grupo, sales de la cola: vuelve a buscar solo.
+- Si estás jugando una partida, nada cambia hasta que termine.
