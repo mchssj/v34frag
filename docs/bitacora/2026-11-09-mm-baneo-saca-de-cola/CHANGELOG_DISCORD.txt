@@ -1,0 +1,6 @@
+CMLeague 2.9.35 --  Changelog
+
+Matchmaking
+- Si banean a alguien mientras busca partida, sale de la cola solo, junto con su grupo. Ya no puede caer en tu partida.
+- Si estaba en una sala que todavía no empezó, la sala se cancela y vuelves a la cola con tu lugar.
+- Si ya estaba jugando, cuenta como abandono y tu equipo puede recibir un reemplazo enseguida.

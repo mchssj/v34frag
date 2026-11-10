@@ -28,6 +28,12 @@ Es el castigo más fuerte: no puedes entrar a ningún servidor de CMLeague ni bu
 
 Puede durar unos días, hasta una fecha o ser permanente. Un baneo permanente solo lo puede cambiar o levantar un admin.
 
+Si te banean mientras estás en el matchmaking:
+
+- Si estabas buscando partida, sales de la cola, junto con tu grupo.
+- Si estabas en una sala que todavía no empezó, la sala se cancela y los demás vuelven a la cola.
+- Si ya estabas jugando, cuenta como abandono: te resta ELO y tu equipo puede recibir un reemplazo.
+
 ## Si crees que es un error
 
 Habla con un moderador por el Discord de CMLeague y cuéntale qué pasó. Si se cayó Steam o internet justo al aparecer la partida, o falló el servidor, te levanta la sanción de la cola y tu escalón baja uno, como si esa falta no hubiera pasado.

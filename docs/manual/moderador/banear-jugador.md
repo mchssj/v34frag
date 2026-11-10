@@ -8,6 +8,14 @@ Los baneos se manejan en Administración › [Baneos](/admin/bans). Es una sola 
 
 Un jugador baneado no puede entrar a ningún servidor de CMLeague ni buscar partida en el matchmaking.
 
+Si está en el matchmaking cuando lo baneas, la web lo saca sola, sin que hagas nada más. Vale igual para los baneos de la web y para los `!ban` del juego:
+
+- **Buscando partida:** sale de la cola, junto con su grupo.
+- **En una sala que todavía no empezó** (aceptando, vetando mapas o conectándose): la sala se cancela y los otros vuelven a la cola con su lugar.
+- **Jugando:** el servidor lo echa y su abandono cuenta en el acto, así se puede llamar antes a un reemplazo. La partida sigue.
+
+No se le suma una sanción de la cola: el baneo ya es la sanción.
+
 ## Poner un baneo
 
 1. Toca **Banear**.

@@ -24,6 +24,12 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## El baneo saca al jugador del matchmaking (2026-11-10): desplegado
+
+- **Qué es:** un baneo nuevo saca al baneado de la cola (con su grupo), cancela su sala si no empezó y, si está jugando, marca su abandono en el acto ([`2026-11-09-mm-baneo-saca-de-cola`](bitacora/2026-11-09-mm-baneo-saca-de-cola/)).
+- **Hecho el 2026-11-10:** replanteo `107` en producción, probado antes en local y en producción (29 de 29).
+- **Falta:** publicar la web para que salga el punto nuevo de los términos.
+
 ## Tope de 10 GB en los dos buckets de R2 (2026-11-10): desplegado
 
 - **Qué es:** dos veces por día, el Worker de demos y el de clips revisan su bucket y, si pasa de 10 GB, borran lo más viejo hasta 9,5 GB ([`2026-11-10-r2-tope-10gb`](bitacora/2026-11-10-r2-tope-10gb/)). Demos y volcados (la partida queda vencida); de clips, solo los que ya están en Drive.

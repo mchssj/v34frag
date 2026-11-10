@@ -216,6 +216,12 @@ const SECTIONS: LegalSection[] = [
           mostrar a quién, desde cuándo, hasta cuándo y el motivo.
         </li>
         <li>
+          Si te banean mientras buscas partida en el matchmaking, sales de la
+          cola, junto con tu grupo. Si estabas en una sala que todavía no
+          empezó, la sala se cancela y los demás vuelven a la cola. Si la
+          partida ya estaba en juego, cuenta como abandono.
+        </li>
+        <li>
           En el matchmaking, abandonar una partida te resta ELO (menos que una
           derrota si tu equipo gana; si pierde, al menos lo que cuesta una
           derrota) y puede sumar escalones de espera antes de volver a buscar
