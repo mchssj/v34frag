@@ -27,4 +27,5 @@ SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 # Secretos (no van en este archivo): pnpm exec wrangler secret put RENDER_TOKEN / ADMIN_KEY
 #   RENDER_TOKEN: un token de render_workers propio (nombre clips-worker), para clip_r2_evict_due y clip_r2_evicted.
 #   ADMIN_KEY: protege /trim.
-# Despliegue: CLOUDFLARE_API_TOKEN=<CF_API_TOKEN_CLIPS del .env> pnpm exec wrangler deploy
+# Despliegue: pnpm exec wrangler deploy con la sesión OAuth de wrangler (ve las dos cuentas). CF_API_TOKEN_CLIPS no tiene
+# acceso al Worker (2026-11-10).
