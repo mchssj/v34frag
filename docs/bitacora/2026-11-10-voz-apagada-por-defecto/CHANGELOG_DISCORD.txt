@@ -1,0 +1,5 @@
+CMLeague 2.9.35 --  Changelog
+
+Voz en el clutch
+- Cuando quedas último vivo de tu equipo, ahora sigues escuchando a tus compañeros muertos.
+- Si prefieres jugar el clutch en silencio, escribe !voz: cada vez que quedes solo dejarás de escucharlos hasta que termine la ronda. Escribe !voz otra vez para volver a escucharlos.

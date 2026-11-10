@@ -39,7 +39,7 @@ Si mueres, reapareces enseguida con un arma gratis y chaleco con casco.
 | `!sell` | Vende lo que compraste en la ronda, durante la compra. `!sell all` vende todo |
 | `!eq` | Qué tiene cada uno de tu equipo: armas, chaleco, kit, granadas y plata. También aparece solo unos segundos antes de que arranque cada ronda |
 | `!hp` | Quién te mató en la ronda y cuánta vida le queda |
-| `!voz` | Cuando quedas último vivo, dejas de escuchar a tus compañeros muertos hasta que termina la ronda. `!voz` lo apaga (o lo vuelve a prender) para ti |
+| `!voz` | Por defecto, cuando quedas último vivo sigues escuchando a tus compañeros muertos. Con `!voz` dejas de escucharlos cada vez que quedas solo, hasta que termina la ronda; otro `!voz` lo vuelve a apagar. Dura mientras sigas conectado |
 | `!score` | El marcador |
 
 Para pedirle un arma a un compañero no hay comando: se hace con la **R** y la **E** (ver [Jugar en el servidor](/help/jugador/jugar-en-el-servidor)).

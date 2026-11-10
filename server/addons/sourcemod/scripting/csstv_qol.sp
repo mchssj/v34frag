@@ -19,7 +19,7 @@
  *
  * Desde la 1.2.0 (plan docs/bitacora/2026-11-02-qol-tanda-4):
  *   - quien queda último vivo de su equipo deja de escuchar a sus compañeros muertos hasta el final
- *     de la ronda (!voz lo desactiva para uno mismo);
+ *     de la ronda, si lo pidió con !voz (desde la 1.4.0; antes era al revés);
  *   - al empezar cada ronda en vivo, los espectadores y la SourceTV ven la plata de cada equipo y si
  *     le alcanza para comprar todo (los coaches de csstv_coach no);
  *   - 4 kills y ace al final de la ronda; a los T, quién tiene la C4 y dónde quedó si muere con ella;
@@ -29,6 +29,9 @@
  *   - 1.2.1: en el calentamiento los cuerpos desaparecen a los 2 s y las armas tiradas a los
  *     csstv_qol_warmup_cleanup segundos.
  *   - 1.3.0: el calentamiento como deathmatch: al aparecer, un arma gratis (!armas) y chaleco con casco.
+ *   - 1.3.2: sin el menú de modelos al entrar o cambiar de equipo: se elige uno al azar (csstv_qol_auto_class).
+ *   - 1.4.0 (plan docs/bitacora/2026-11-10-voz-apagada-por-defecto): el silencio del clutch es al
+ *     revés, se pide con !voz. Por defecto, quien queda solo sigue escuchando a sus compañeros muertos.
  *
  * El estado del mix se lee de la ConVar csstv_state del reporter (2.7.7 o más nuevo) y el de los otros
  * modos de sm_retake_on, sm_2v2_on y sm_dm_on. Si no existen, de las respuestas de sm_csstv_status y de
@@ -45,7 +48,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.3.1"
+#define PLUGIN_VERSION "1.4.0"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -104,7 +107,7 @@ ConVar g_cvMute;
 ConVar g_cvSpecMoney;
 bool g_bMuting[MAXPLAYERS + 1];                    // quedó solo y ya se silenció a sus compañeros muertos
 bool g_bMuted[MAXPLAYERS + 1][MAXPLAYERS + 1];     // [vivo][muerto]: silenciado por el clutch
-bool g_bVoiceOn[MAXPLAYERS + 1];                   // !voz: no silenciar
+bool g_bClutchMute[MAXPLAYERS + 1];                // !voz: silenciar a los muertos al quedar solo (apagado por defecto)
 
 ConVar g_cvAce;
 ConVar g_cvC4Info;
@@ -115,6 +118,7 @@ ConVar g_cvGoodbye;
 ConVar g_cvBlockKill;
 ConVar g_cvCleanup;
 ConVar g_cvWarmGuns;
+ConVar g_cvAutoClass;
 bool g_bStateHooked;
 int g_iWarmGun[MAXPLAYERS + 1];                    // !armas: 0 = la de su lado
 int g_iCleaned;                                    // cuerpos y armas borrados en el calentamiento, para sm_qol_status
@@ -141,25 +145,27 @@ public void OnPluginStart()
 	g_cvEq        = CreateConVar("csstv_qol_eq", "6", "Segundos antes del fin del freezetime para mostrarle a cada equipo qué tiene cada uno (0 = no; !eq siempre).", _, true, 0.0, true, 60.0);
 	g_cvClutch    = CreateConVar("csstv_qol_clutch", "1", "Anunciar los clutch (1 vs 2 o más) a los muertos y los espectadores.", _, true, 0.0, true, 1.0);
 	g_cvNades     = CreateConVar("csstv_qol_nades", "1", "Permitir !nades (práctica de granadas) en el calentamiento.", _, true, 0.0, true, 1.0);
-	g_cvMute      = CreateConVar("csstv_qol_clutch_mute", "1", "Quien queda último vivo de su equipo no escucha a sus compañeros muertos hasta el final de la ronda (!voz lo desactiva para uno).", _, true, 0.0, true, 1.0);
+	g_cvMute      = CreateConVar("csstv_qol_clutch_mute", "1", "Quien queda último vivo de su equipo y lo pidió con !voz no escucha a sus compañeros muertos hasta el final de la ronda (por defecto los sigue escuchando).", _, true, 0.0, true, 1.0);
 	g_cvSpecMoney = CreateConVar("csstv_qol_spec_money", "1", "Al empezar cada ronda en vivo, mostrarles a los espectadores y a la SourceTV la plata de cada equipo (no a los coaches).", _, true, 0.0, true, 1.0);
 	g_cvAce       = CreateConVar("csstv_qol_ace", "1", "Con la partida en vivo, anunciar al final de la ronda a quien hizo 4 kills o un ace.", _, true, 0.0, true, 1.0);
 	g_cvC4Info    = CreateConVar("csstv_qol_c4_info", "1", "A los T: quién tiene la C4 al empezar la ronda y dónde quedó si muere quien la llevaba.", _, true, 0.0, true, 1.0);
 	g_cvSpecChat  = CreateConVar("csstv_qol_spec_chat", "1", "Durante la partida, los espectadores no escriben en el chat general (los admins sí).", _, true, 0.0, true, 1.0);
 	g_cvSpecVoice = CreateConVar("csstv_qol_spec_voice", "1", "Durante la partida, los jugadores no escuchan a los espectadores (el coach sí, a su equipo).", _, true, 0.0, true, 1.0);
 	g_cvLockNames = CreateConVar("csstv_qol_lock_names", "1", "Durante la partida no se puede cambiar el nombre.", _, true, 0.0, true, 1.0);
+	g_cvAutoClass = CreateConVar("csstv_qol_auto_class", "1", "Sin el menú de modelos al entrar a un equipo: se elige uno al azar de su lado.", _, true, 0.0, true, 1.0);
 	g_cvWarmGuns  = CreateConVar("csstv_qol_warmup_guns", "1", "En el calentamiento, al aparecer: un arma gratis (la de su lado o la de !armas) y chaleco con casco.", _, true, 0.0, true, 1.0);
 	g_cvCleanup   = CreateConVar("csstv_qol_warmup_cleanup", "8", "En el calentamiento: segundos para borrar un arma tirada que nadie levantó (los cuerpos, a los 2 s). 0 = no limpiar.", _, true, 0.0, true, 120.0);
 	g_cvBlockKill = CreateConVar("csstv_qol_block_kill", "1", "Durante la partida, kill y explode (suicidarse por consola) no hacen nada.", _, true, 0.0, true, 1.0);
 	g_cvGoodbye   = CreateConVar("csstv_qol_goodbye", "1", "Durante la partida, avisar quién se fue y con qué K/D.", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "csstv_qol");
-	RegConsoleCmd("sm_voz", Cmd_Voz, "Cuando quedás solo: seguir escuchando (o no) a tus compañeros muertos.");
+	RegConsoleCmd("sm_voz", Cmd_Voz, "Cuando quedes solo: dejar de escuchar (o volver a escuchar) a tus compañeros muertos.");
 	RegConsoleCmd("sm_admins", Cmd_Admins, "Qué admins están conectados.");
 	RegConsoleCmd("sm_armas", Cmd_Armas, "En el calentamiento: elegir el arma con la que aparecés.");
 	for (int i = 1; i <= MaxClients; i++)   // recarga del plugin con jugadores adentro
 		if (IsClientInGame(i))
 			OnClientPutInServer(i);
 	AddCommandListener(Cmd_Say, "say");
+	HookUserMessage(GetUserMessageId("VGUIMenu"), Msg_VguiMenu, true);
 	AddCommandListener(Cmd_Suicide, "kill");
 	AddCommandListener(Cmd_Suicide, "explode");
 	HookEvent("bomb_dropped", Event_BombDropped);
@@ -251,7 +257,7 @@ public void OnClientDisconnect(int client)
 			if (IsClientInGame(c))
 				SetListenOverride(c, client, Listen_Default);
 		}
-	g_bVoiceOn[client] = false;
+	g_bClutchMute[client] = false;
 	g_bNameRevert[client] = false;
 	g_iWarmGun[client] = 0;
 	for (int i = 1; i <= MaxClients; i++)
@@ -368,6 +374,44 @@ public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0 && (team == TEAM_T || team == TEAM_CT) && g_cvRespawn.BoolValue && InWarmup())
 		CreateTimer(1.5, Timer_Respawn, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+// ---------------------------------------------------------------------------
+// Sin el menú de modelos (1.3.2): al entrar a un equipo, o al cambiar, el juego abre class_ter o class_ct y el jugador
+// queda esperando elegir. Se corta el menú y se elige un modelo al azar de su lado, como hacen v34_retake y v34_wingman
+// (con esos modos prendidos lo hacen ellos). Nunca en un bot: joinclass en un bot tira el servidor en v34.
+// ---------------------------------------------------------------------------
+
+public Action Msg_VguiMenu(UserMsg msgId, BfRead msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	if (!g_cvAutoClass.BoolValue || OtherModeHandlesClass())
+		return Plugin_Continue;
+	char panel[32];
+	msg.ReadString(panel, sizeof(panel));
+	if (StrContains(panel, "class_") != 0)
+		return Plugin_Continue;
+	for (int i = 0; i < playersNum; i++)
+		if (players[i] > 0 && IsClientInGame(players[i]) && !IsFakeClient(players[i]))
+			RequestFrame(Frame_AutoClass, GetClientUserId(players[i]));   // fuera del hook del mensaje
+	return Plugin_Handled;
+}
+
+bool OtherModeHandlesClass()
+{
+	ConVar r = FindConVar("sm_retake_on"), w = FindConVar("sm_2v2_on");
+	return (r != null && r.BoolValue) || (w != null && w.BoolValue);
+}
+
+public void Frame_AutoClass(int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || IsPlayerAlive(client))
+		return;
+	int team = GetClientTeam(client);
+	if (team == TEAM_T)
+		FakeClientCommandEx(client, "joinclass %d", GetRandomInt(1, 4));
+	else if (team == TEAM_CT)
+		FakeClientCommandEx(client, "joinclass %d", GetRandomInt(5, 8));
 }
 
 // ---------------------------------------------------------------------------
@@ -991,7 +1035,7 @@ public void Frame_Mute(any data)
 		int last, other;
 		if (AliveOn(team, last) != 1 || AliveOn(team == TEAM_T ? TEAM_CT : TEAM_T, other) < 1)
 			continue;
-		if (IsFakeClient(last) || g_bVoiceOn[last] || g_bMuting[last])
+		if (IsFakeClient(last) || !g_bClutchMute[last] || g_bMuting[last])
 			continue;
 		int n;
 		for (int i = 1; i <= MaxClients; i++)
@@ -1008,7 +1052,7 @@ public void Frame_Mute(any data)
 		{
 			char tag[32];
 			Tag(tag, sizeof(tag));
-			PrintToChat(last, "\x04[%s]\x01 Quedaste solo: no escuchás a tus compañeros muertos hasta el final de la ronda. \x04!voz\x01 para escucharlos.", tag);
+			PrintToChat(last, "\x04[%s]\x01 Quedaste solo: no escuchas a tus compañeros muertos hasta el final de la ronda. \x04!voz\x01 para volver a escucharlos.", tag);
 		}
 	}
 }
@@ -1036,14 +1080,16 @@ public Action Cmd_Voz(int client, int args)
 {
 	if (client <= 0)
 		return Plugin_Handled;
-	g_bVoiceOn[client] = !g_bVoiceOn[client];
-	if (g_bVoiceOn[client])
+	g_bClutchMute[client] = !g_bClutchMute[client];
+	if (!g_bClutchMute[client])
 		Mute_Clear(client);
+	else if (g_cvMute.BoolValue && IsLive())
+		RequestFrame(Frame_Mute);   // si ya quedó solo, lo silencia ahora
 	char tag[32];
 	Tag(tag, sizeof(tag));
-	PrintToChat(client, "\x04[%s]\x01 %s", tag, g_bVoiceOn[client]
-		? "Cuando quedes solo vas a seguir escuchando a tus compañeros muertos."
-		: "Cuando quedes solo no vas a escuchar a tus compañeros muertos hasta el final de la ronda.");
+	PrintToChat(client, "\x04[%s]\x01 %s", tag, g_bClutchMute[client]
+		? "Cuando quedes solo no vas a escuchar a tus compañeros muertos hasta el final de la ronda. \x04!voz\x01 para volver a escucharlos."
+		: "Vas a seguir escuchando a tus compañeros muertos aunque quedes solo.");
 	return Plugin_Handled;
 }
 
