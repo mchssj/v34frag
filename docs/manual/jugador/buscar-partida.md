@@ -88,7 +88,7 @@ La partida arranca cuando todos escriben `!ready`. Si ya entraron todos cuando s
 
 Cuando alguien abandona, puede salir un aviso en el Discord de la liga con un link para que otro jugador entre en su lugar. Así tu equipo no juega con uno menos el resto de la partida.
 
-- **Sin esperar:** si un compañero se desconectó y no va a volver, escribe `!callreplace` en el chat del servidor y elige quién falta. Vota solo tu equipo y pasa con más del {{mm.reemplazo_voto}} de los compañeros conectados. El que no vota cuenta como "No". Si pasa, el que se fue queda como abandono en el momento.
+- **Sin esperar:** si un compañero se desconectó hace al menos 1 minuto y 30 segundos y no va a volver, escribe `!callreplace` en el chat del servidor y elige quién falta. Vota solo tu equipo y pasa con más del {{mm.reemplazo_voto}} de los compañeros conectados. El que no vota cuenta como "No". Si pasa, el que se fue queda como abandono en el momento.
 - **Si no hacen nada:** al terminar sus {{mm.volver}} para volver, se llama a un reemplazo solo.
 - No se llama a nadie si faltan menos de {{mm.reemplazo_rondas}} para el final del tiempo reglamentario.
 - Un abandono cubierto por un reemplazo no cuenta para los 2 que hacen perder la partida.

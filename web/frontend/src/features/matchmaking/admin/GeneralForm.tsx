@@ -73,6 +73,8 @@ const schema = z
     replace_vote_pct: int(50, 100),
     replace_vote_seconds: int(10, 120),
     replace_vote_cooldown_s: int(0, 600),
+    // (replanteo 109) Segundos desconectado antes de que se pueda pedir su reemplazo.
+    replace_min_away_s: int(0, 600),
     // (replanteo 78) ELO que pierde el que abandona.
     abandon_win_min: int(0, 50),
     abandon_win_max: int(0, 50),
@@ -384,7 +386,7 @@ function Form({ initial }: { initial: MmAdminConfig }) {
 
       <Section
         title="Reemplazos"
-        description="Encendido, cuando alguien abandona una sala en vivo sale un aviso en Discord con un link de un solo uso para entrar en su lugar. Con !callreplace, su equipo puede votar para no esperar los minutos de reconexión."
+        description="Encendido, cuando alguien abandona una sala en vivo sale un aviso en Discord con un link de un solo uso para entrar en su lugar. Con !callreplace, su equipo puede votar para no esperar los minutos de reconexión, si el compañero lleva desconectado el mínimo de abajo."
       >
         <Controller
           control={c}
@@ -425,6 +427,11 @@ function Form({ initial }: { initial: MmAdminConfig }) {
             control={c}
             name="replace_vote_cooldown_s"
             label="Espera entre votos (s)"
+          />
+          <NumberField
+            control={c}
+            name="replace_min_away_s"
+            label="!callreplace con desconectados hace al menos (s)"
           />
         </Grid>
       </Section>

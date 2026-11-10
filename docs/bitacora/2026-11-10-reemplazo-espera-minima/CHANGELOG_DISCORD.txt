@@ -1,0 +1,4 @@
+CMLeague 2.9.37 --  Changelog
+
+Reemplazos
+- Para pedir un reemplazo con !callreplace, tu compañero tiene que llevar al menos 1 minuto y 30 segundos desconectado. Antes de eso no aparece en el menú, así le da tiempo a volver si solo se le cortó el juego.

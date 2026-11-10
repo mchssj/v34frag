@@ -35,7 +35,7 @@ Si mueres, reapareces enseguida con un arma gratis y chaleco con casco.
 | `!tech` | Pausa técnica por un crash o un problema de conexión: una por equipo en cada mitad, de 2 minutos. No gasta las tácticas |
 | `!unpause` | Termina la pausa antes, cuando los dos equipos lo escriben. También cancela la que pediste |
 | `!gg` | Vota para que tu equipo se rinda. Solo si van perdiendo por 8 rondas o más, y hacen falta los votos de todo el equipo menos uno. En los torneos no se puede |
-| `!callreplace` | En el matchmaking, con un compañero desconectado: abre un voto en tu equipo para pedir un reemplazo sin esperar a que se termine su tiempo para volver (ver [Buscar partida](/help/jugador/buscar-partida)) |
+| `!callreplace` | En el matchmaking, con un compañero desconectado hace al menos 1 minuto y 30 segundos: abre un voto en tu equipo para pedir un reemplazo sin esperar a que se termine su tiempo para volver (ver [Buscar partida](/help/jugador/buscar-partida)) |
 | `!sell` | Vende lo que compraste en la ronda, durante la compra. `!sell all` vende todo |
 | `!eq` | Qué tiene cada uno de tu equipo: armas, chaleco, kit, granadas y plata. También aparece solo unos segundos antes de que arranque cada ronda |
 | `!hp` | Quién te mató en la ronda y cuánta vida le queda |

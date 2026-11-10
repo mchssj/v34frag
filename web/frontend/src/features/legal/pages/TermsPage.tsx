@@ -225,9 +225,9 @@ const SECTIONS: LegalSection[] = [
           En el matchmaking, abandonar una partida te resta ELO (menos que una
           derrota si tu equipo gana; si pierde, al menos lo que cuesta una
           derrota) y puede sumar escalones de espera antes de volver a buscar
-          partida. Si te desconectas, tu equipo puede votar en el servidor para
-          darte por abandonado sin esperar a que se termine tu plazo para
-          volver, y la liga puede llamar a otro jugador para que entre en tu
+          partida. Si te desconectas, pasado 1 minuto y 30 segundos tu equipo
+          puede votar en el servidor para darte por abandonado sin esperar a
+          que se termine tu plazo para volver, y la liga puede llamar a otro jugador para que entre en tu
           lugar. Si vuelves después de que entró, quedas de espectador. Irte en
           la última ronda, o cuando ya terminó la partida, no cuenta como
           abandono.

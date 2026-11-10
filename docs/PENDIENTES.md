@@ -24,6 +24,17 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Esperar 1 min 30 s antes de pedir un reemplazo y baneos por horas (2026-11-10): desplegados, sin commit
+
+- **Qué es:** `!callreplace` solo deja elegir a un compañero desconectado hace al menos 90 s (replanteo `109`, [`2026-11-10-reemplazo-espera-minima`](bitacora/2026-11-10-reemplazo-espera-minima/)), y banear por unas horas, de 1 a 72, con **Como está** al cambiar un baneo ([`2026-11-10-baneo-por-horas`](bitacora/2026-11-10-baneo-por-horas/)).
+- **Desplegado el 2026-11-10:** la `109` (20:28 UTC, 5 de 5 antes contra producción) y la web `c77b49e01d7c-local11102029`.
+- **Falta:**
+  1. Desplegar la API sin mixes en curso, para que `/help` tenga el manual nuevo.
+  2. Commit en `main` (lo pide Daniel).
+  3. Probar los baneos por horas en el navegador y ver un `!callreplace` real.
+  4. Publicar los dos changelogs (2.9.37 y 2.9.38).
+  5. Mejora posible: que `!callreplace` diga cuánto falta en vez de "No hay ningún compañero desconectado" (plugin nuevo).
+
 ## Con todos conectados, la sala no se cancela por el plazo de conexión (2026-11-10): desplegado el 2026-11-10
 
 - **Qué es:** replanteo `108` y el texto de la cuenta en la sala ([`2026-11-10-mm-plazo-ready`](bitacora/2026-11-10-mm-plazo-ready/)). Si al vencer el plazo de conexión están todos en el servidor, tienen 3 minutos desde el último para el `!ready`; si no arranca, se cancela sin sanción.

@@ -530,6 +530,8 @@ export type MmAdminConfig = {
   replace_vote_pct: number
   replace_vote_seconds: number
   replace_vote_cooldown_s: number
+  /** Segundos desconectado antes de que su equipo pueda pedir el reemplazo con !callreplace (replanteo 109). */
+  replace_min_away_s: number
   /** ELO que pierde el que abandona (replanteo 78): si su equipo ganó, de min a max según la parte que no jugó. */
   abandon_win_min: number
   abandon_win_max: number
