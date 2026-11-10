@@ -28,4 +28,4 @@ No se probó con un servidor real: el plugin no cambia, y el `!ready` sigue avis
 1. Base: aplicar la `108` en el VPS sin salas en `connecting`, y `notify pgrst, 'reload schema';`. No reinicia nada.
 2. Web: `deploy/vps/desplegar.sh web` desde `main`, sin mixes en curso.
 
-**Estado:** sin desplegar.
+**Estado: desplegado el 2026-11-10** desde `main` (commit `fab22c41`): la `108` en el VPS sin salas abiertas (`mm_tick` conserva lo de la `104` y la `105`, y corre bien) y la web `fab22c418a68`, que ya sirve el texto nuevo. Con la web también salieron los cambios de términos y privacidad de la `106` y la `107` (otra sesión), que estaban commiteados en `main`.

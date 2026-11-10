@@ -24,11 +24,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Con todos conectados, la sala no se cancela por el plazo de conexión (2026-11-10): sin desplegar
+## Con todos conectados, la sala no se cancela por el plazo de conexión (2026-11-10): desplegado el 2026-11-10
 
 - **Qué es:** replanteo `108` y el texto de la cuenta en la sala ([`2026-11-10-mm-plazo-ready`](bitacora/2026-11-10-mm-plazo-ready/)). Si al vencer el plazo de conexión están todos en el servidor, tienen 3 minutos desde el último para el `!ready`; si no arranca, se cancela sin sanción.
 - **Hecho:** 6 de 6 en la base local con rollback; web con 715 pruebas, typecheck y lint.
-- **Falta:** aplicar la `108` en el VPS (sin salas en `connecting`) y desplegar la web.
+- **Desplegado el 2026-11-10:** la `108` en el VPS y la web `fab22c418a68`. Falta verlo en una sala real.
 
 ## El baneo saca al jugador del matchmaking (2026-11-10): desplegado
 
