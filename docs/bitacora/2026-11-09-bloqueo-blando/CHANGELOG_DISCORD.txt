@@ -1,0 +1,7 @@
+CMLeague 2.9.33 --  Changelog
+
+Matchmaking: el bloqueo ya no desarma partidas
+- El bloqueo de VIP ahora es una preferencia: quien bloqueaste no te toca en tu equipo, salvo que eso deje los equipos muy desparejos.
+- Si en una partida no se pudo respetar, te avisamos solo a ti (en Mixes y ELO). Al otro jugador no le llega nada.
+- Se ignoran los menos bloqueos posibles, y primero los más recientes. El grupo con el que buscas partida nunca se separa.
+- Puedes bloquear a alguien nuevo hasta 5 veces por semana. Desbloquear no cuenta. En el panel Bloqueo ves cuántos cambios te quedan.
