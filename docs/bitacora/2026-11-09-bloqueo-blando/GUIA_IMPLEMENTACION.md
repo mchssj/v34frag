@@ -49,4 +49,5 @@ No se probó el armado completo de una sala con jugadores en la cola: el reparto
 
 - **Base (03:16 UTC):** la `104` aplicada con 9 jugadores en la cola; PostgREST recargado. `block_margin` 100, `block_changes_week` 5, `mm_block_log` con los 6 bloqueos vigentes, `notification_category('mm_block_ignored')` = `elo`. Una sala que se armó a las 03:15:55 (antes del cambio) siguió su curso.
 - **API y web:** `17e2b2c8dcbf` (596 y 711 pruebas). Se sirven los textos nuevos del aviso, del panel Bloqueo y de Administración › Matchmaking.
-- **Falta:** integrar `feat/bloqueo-blando` en `main` (hasta entonces, un despliegue desde `main` vuelve la API y la web a la versión sin esto; la base no se toca), probar en el navegador (Jugar › Bloqueo con una cuenta VIP y Administración › Matchmaking) y copiar la base en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+- **Integrada en `main` el 2026-11-10** (merge `38ccae12`, después del commit de la `105`): web 713 y API 596 pruebas sobre el merge; la web desplegada desde `main` (`38ccae12e3db`). La base copiada en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+- **Falta:** probar en el navegador (Jugar › Bloqueo con una cuenta VIP y Administración › Matchmaking).

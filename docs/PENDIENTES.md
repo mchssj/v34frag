@@ -24,25 +24,19 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Bloqueo blando y límite de cambios (2026-11-09): desplegado el 2026-11-10 desde `feat/bloqueo-blando`, falta integrarla en `main`
+## Bloqueo blando y límite de cambios (2026-11-09): desplegado el 2026-11-10, integrado en `main`
 
 - **Qué es:** replanteo `104`, API, web, manual y legales ([`2026-11-09-bloqueo-blando`](bitacora/2026-11-09-bloqueo-blando/)). El bloqueo de VIP pasa a ser una preferencia con un margen de 100 de ELO de armado, aviso solo al que bloqueó y 5 bloqueos nuevos en 7 días.
 - **Hecho:** base 7 de 7 con rollback, API 596 pruebas, web 711; typecheck y lint en verde.
-- **Desplegado el 2026-11-10:** la `104` en el VPS (03:16 UTC), API y web `17e2b2c8dcbf`.
-- **Falta:**
-  1. **Integrar `feat/bloqueo-blando` en `main`** cuando la otra sesión commitee la `105` en `v34frag-mainwt` (los dos tocan `PENDIENTES.md`, los dos README, `admin/matchmaking.md` y `GeneralForm.tsx`). **Hasta entonces, no desplegar la API ni la web desde `main`**: volverían a la versión sin el bloqueo blando.
-  2. Probar Jugar › Bloqueo (cuenta VIP) y Administración › Matchmaking en el navegador.
-  3. Convive con la `105` (grupo máximo, otra sesión); para deshacer, primero la `105`.
+- **Desplegado el 2026-11-10:** la `104` en el VPS (03:16 UTC), API y web `17e2b2c8dcbf` desde la rama; integrada en `main` (merge `38ccae12`) y la web desplegada desde `main` (`38ccae12e3db`).
+- **Falta:** probar Jugar › Bloqueo (cuenta VIP) y Administración › Matchmaking en el navegador. Para deshacer, primero la `105`.
 - **Visto al desplegar (no es de este cambio):** una sala se canceló con "No se conectaron todos a tiempo" aunque los 10 estaban conectados (el último, 8 s antes del plazo). `mm_tick` cancela al vencer `connect_deadline` si la partida no arrancó (`live` llega con el `!ready`), aunque estén todos adentro; nadie queda sancionado. Habría que darles un plazo propio para el `!ready` cuando ya están todos.
 
-## Bajar el máximo del grupo desarma los grupos (2026-11-09): en local, sin commit
+## Bajar el máximo del grupo desarma los grupos (2026-11-09): desplegado el 2026-11-10
 
 - **Qué es:** replanteo `105` y el aviso en la web ([`2026-11-09-mm-grupo-maximo`](bitacora/2026-11-09-mm-grupo-maximo/)). Al bajar el tamaño máximo del grupo del matchmaking, los grupos más grandes se desarman (los de la cola salen; los de una sala, cuando termina).
-- **Hecho:** la `105` aplicada en la base local, 5 de 5, inversa probada; web con 712 pruebas, lint y typecheck.
-- **Falta:**
-  1. Commit en `main`, y la `105` (con su inversa y la fila del README) también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
-  2. Aplicar la `105` en el VPS (no reinicia nada; va en cualquier orden con la `104`).
-  3. Desplegar la web, sin mixes en curso.
+- **Hecho:** la `105` aplicada en la base local, 5 de 5, inversa probada; web con 712 pruebas, lint y typecheck. Commit en `main` (`f6101285`).
+- **Desplegado el 2026-11-10:** la `105` en el VPS (sin salas activas; el máximo estaba en 1 y no había grupos que desarmar; `mm_tick` corre bien) y la web `38ccae12e3db`. La base de la `105` copiada en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
 
 ## Siembra sobre la llave (2026-11-09): desplegada el 2026-11-09
 

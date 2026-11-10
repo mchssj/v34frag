@@ -2,7 +2,7 @@
 
 ## Estado
 
-Probado en local el 2026-11-09: la `105` está aplicada en la base local (copia de producción) y pasó 5 de 5. La web pasó typecheck, lint y 712 pruebas. **Falta el commit, aplicar la `105` en producción y desplegar la web.**
+Probado en local el 2026-11-09: la `105` está aplicada en la base local (copia de producción) y pasó 5 de 5. La web pasó typecheck, lint y 712 pruebas. Commit en `main` (`f6101285`). **Desplegado el 2026-11-10:** la `105` en el VPS, sin salas activas (el máximo estaba en 1 y no había grupos de más; `mm_tick` corre bien), y la web `38ccae12e3db` desde `main`, junto con el bloqueo blando (`104`).
 
 ## Archivos
 
@@ -20,7 +20,7 @@ Probado en local el 2026-11-09: la `105` está aplicada en la base local (copia 
 
 La API no cambia: el socket reenvía cualquier tipo de aviso.
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-10)
 
 1. **Commit** en `main`. Es base del matchmaking: la `105`, su inversa y la fila del README van también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`; la web, solo en `feat/frontend-fase-1`.
 2. **Base:** aplicar la `105` en el VPS. No depende de ningún replanteo sin aplicar: se probó sin el `104` y sus anclas no son las del `104`, así que van en cualquier orden. Al aplicarla no se desarma nada (no llama a `mm_party_trim`), pero la primera vuelta de `mm_tick` sí: con el máximo en 2, no hay grupos de más de 2 (la invitación ya lo impedía), así que no cambia nada. No reinicia nada ni toca las salas.
