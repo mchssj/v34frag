@@ -24,6 +24,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Tope de 10 GB en los dos buckets de R2 (2026-11-10): en local, sin commit ni despliegue
+
+- **Qué es:** dos veces por día, el Worker de demos y el de clips revisan su bucket y, si pasa de 10 GB, borran lo más viejo hasta 9,5 GB ([`2026-11-10-r2-tope-10gb`](bitacora/2026-11-10-r2-tope-10gb/)). Demos y volcados (la partida queda vencida); de clips, solo los que ya están en Drive.
+- **Hecho:** replanteo `106`, los dos Workers (compilan), pruebas de la elección (7 de 7), legales y manual.
+- **Falta:**
+  1. Correr `pruebas/prueba_106.sql` en la base local y aplicar la `106` en producción.
+  2. Token de render `clips-worker` y los secretos `RENDER_TOKEN` y `ADMIN_KEY` del Worker de clips.
+  3. `wrangler deploy` de los dos Workers y `/trim?dry=1` en cada uno.
+  4. Commit (la base va en `main`; los Workers y los legales también).
+
 ## Bloqueo blando y límite de cambios (2026-11-09): desplegado el 2026-11-10, integrado en `main`
 
 - **Qué es:** replanteo `104`, API, web, manual y legales ([`2026-11-09-bloqueo-blando`](bitacora/2026-11-09-bloqueo-blando/)). El bloqueo de VIP pasa a ser una preferencia con un margen de 100 de ELO de armado, aviso solo al que bloqueó y 5 bloqueos nuevos en 7 días.

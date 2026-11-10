@@ -11,12 +11,17 @@ bucket_name = "csstv-demos"
 preview_bucket_name = "csstv-demos"
 
 [triggers]
-# Cada 10 minutos sube las demos pendientes; una vez por día marca las vencidas.
-crons = ["*/10 * * * *", "17 6 * * *"]
+# Cada 10 minutos sube las demos pendientes; una vez por día marca las vencidas; dos veces por día revisa que el
+# bucket no pase de R2_MAX_BYTES (docs/bitacora/2026-11-10-r2-tope-10gb).
+crons = ["*/10 * * * *", "17 6 * * *", "47 5,17 * * *"]
 
 [vars]
 EXPIRE_CRON = "17 6 * * *"
 RETENTION_DAYS = "90"
+TRIM_CRON = "47 5,17 * * *"
+# 10 GB gratis por cuenta: por encima de R2_MAX_BYTES se borra lo más viejo hasta R2_TARGET_BYTES (GB decimales).
+R2_MAX_BYTES = "10000000000"
+R2_TARGET_BYTES = "9500000000"
 # Borrar la demo del servidor después de subirla y verificarla (activado tras el primer mix real, 2026-10-12).
 DELETE_AFTER_UPLOAD = "true"
 PTERO_PANEL_URL = "https://panel.extremehost.com.ar"

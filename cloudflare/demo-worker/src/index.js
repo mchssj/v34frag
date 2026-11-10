@@ -9,10 +9,14 @@
  * de SFTP con demo_fallback, sin gastar intento: la baja la tarea del VPS
  * (ver docs/bitacora/2026-10-28-demos-servidores-externos).
  * Cron diario: demo_expire marca como vencidas las que pasaron RETENTION_DAYS (R2 las borra con su regla).
+ * Cron de recorte (TRIM_CRON, dos veces por día): si el bucket pasa de R2_MAX_BYTES, borra las demos y los volcados
+ * más viejos hasta quedar en R2_TARGET_BYTES; las partidas pasan antes a vencidas con demo_evict
+ * (ver docs/bitacora/2026-11-10-r2-tope-10gb).
  *
  * Rutas:
  *   GET /demo/<match_uid>      descarga pública, con un nombre legible
  *   GET /run?key=<ADMIN_KEY>   corre el cron a mano (para probar) y devuelve lo que hizo
+ *   GET /trim?key=<ADMIN_KEY>  corre el recorte a mano; con &dry=1 solo dice qué borraría
  *   POST /crash?key=<CRASH_KEY> recibe un volcado de Accelerator (MinidumpUrl en core.cfg del servidor)
  *                              y lo guarda en R2 como crashes/<fecha>-<id>.dmp (+ .txt y .json)
  *                              (ver docs/bitacora/2026-10-14-crash-servidor-accelerator)
@@ -33,6 +37,10 @@ export default {
       if (!env.ADMIN_KEY || url.searchParams.get('key') !== env.ADMIN_KEY) return text('Forbidden', 403);
       return json(await uploadPending(env));
     }
+    if (url.pathname === '/trim') {
+      if (!env.ADMIN_KEY || url.searchParams.get('key') !== env.ADMIN_KEY) return text('Forbidden', 403);
+      return json(await trimBucket(env, url.searchParams.get('dry') === '1'));
+    }
     return text('Not found', 404);
   },
 
@@ -40,6 +48,8 @@ export default {
     if (event.cron === env.EXPIRE_CRON) {
       ctx.waitUntil(supabase(env, 'demo_expire', { p_days: Number(env.RETENTION_DAYS) || 90 })
         .then((n) => console.log(`demo_expire: ${n} vencidas`)));
+    } else if (event.cron === env.TRIM_CRON) {
+      ctx.waitUntil(trimBucket(env, false).then((r) => console.log(JSON.stringify(r))));
     } else {
       ctx.waitUntil(uploadPending(env).then((r) => console.log(JSON.stringify(r))));
     }
@@ -185,6 +195,70 @@ function r2Key(m) {
   const d = new Date(m.played_at || Date.now());
   const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
   return `demos/${d.getUTCFullYear()}/${mm}/${m.external_id}.dem`;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Recorte: el bucket no pasa de R2_MAX_BYTES
+// ---------------------------------------------------------------------------------------------
+
+/** Lo que se puede borrar para liberar espacio: las demos y los volcados. Lo demás cuenta pero no se toca. */
+const TRIM_PREFIXES = ['demos/', 'crashes/'];
+
+async function trimBucket(env, dry) {
+  const max = Number(env.R2_MAX_BYTES) || 10e9;
+  const target = Number(env.R2_TARGET_BYTES) || 9.5e9;
+  const objects = await listAll(env.DEMOS);
+  const total = objects.reduce((n, o) => n + o.size, 0);
+  const out = { total, max, target, objects: objects.length, deleted: 0, freed: 0, after: total, dry };
+  if (total <= max) return out;
+
+  const candidates = objects.filter((o) => TRIM_PREFIXES.some((p) => o.key.startsWith(p)));
+  const victims = pickOldest(candidates, total, target);
+  out.freed = victims.reduce((n, o) => n + o.size, 0);
+  out.after = total - out.freed;
+  out.keys = victims.map((o) => o.key);
+  if (out.after > target) out.note = 'no alcanza con las demos y los volcados para bajar al objetivo';
+  if (dry || !victims.length) return out;
+
+  // Primero la base: si después falla el borrado, en la próxima vuelta siguen siendo los más viejos.
+  const demoKeys = out.keys.filter((k) => k.startsWith('demos/'));
+  for (let i = 0; i < demoKeys.length; i += 1000) {
+    out.expired = (out.expired || 0) + (await supabase(env, 'demo_evict', { p_keys: demoKeys.slice(i, i + 1000) }));
+  }
+  for (let i = 0; i < out.keys.length; i += 1000) await env.DEMOS.delete(out.keys.slice(i, i + 1000));
+  out.deleted = victims.length;
+  delete out.keys;
+  const gone = new Set(victims);
+  out.oldest_kept = objects.filter((o) => !gone.has(o)).sort(byUploaded)[0]?.uploaded ?? null;
+  return out;
+}
+
+/** Todos los objetos del bucket: { key, size, uploaded (ISO) }. */
+async function listAll(bucket) {
+  const all = [];
+  let cursor;
+  do {
+    const page = await bucket.list({ cursor, limit: 1000 });
+    for (const o of page.objects) all.push({ key: o.key, size: o.size, uploaded: new Date(o.uploaded).toISOString() });
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+  return all;
+}
+
+function byUploaded(a, b) {
+  return a.uploaded < b.uploaded ? -1 : a.uploaded > b.uploaded ? 1 : a.key < b.key ? -1 : 1;
+}
+
+/** Los candidatos más viejos que hay que borrar para que total quede en target o menos (los que haya, si no alcanzan). */
+export function pickOldest(candidates, total, target) {
+  const picked = [];
+  let left = total;
+  for (const o of [...candidates].sort(byUploaded)) {
+    if (left <= target) break;
+    picked.push(o);
+    left -= o.size;
+  }
+  return picked;
 }
 
 // ---------------------------------------------------------------------------------------------

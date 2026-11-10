@@ -32,7 +32,7 @@ En la pestaña **Reglas** decides:
 
 - **La prioridad de cada tipo de jugada** (ace, 4k, 3k y clutches del 1v1 al 1v5). 1 es lo más valioso. Si dos tipos valen lo mismo, gana la jugada de una ronda ganada y después la más tardía.
 - **Cuántas se muestran:** por partida (hoy {{clips.por_partida}}) y por jugador (hoy {{clips.por_jugador}}). Los VIP suman sus mejores jugadas aparte.
-- **Destacados en el perfil:** cuántos clips muestra la ficha de cada jugador (hoy {{clips.destacados}}) y la de un VIP (hoy {{clips.destacados_vip}}). Los destacados no salen de R2 a los 15 días mientras estén destacados.
+- **Destacados en el perfil:** cuántos clips muestra la ficha de cada jugador (hoy {{clips.destacados}}) y la de un VIP (hoy {{clips.destacados_vip}}). Los destacados no salen de R2 a los 15 días mientras estén destacados. Si el espacio de los clips pasa de 10 GB, salen antes los que ya están en Drive (primero los que no son destacados) hasta bajar a 9,5 GB; se siguen viendo desde Drive.
 
 El ejemplo de la derecha te muestra qué clips saldrían con jugadas inventadas y tus reglas.
 

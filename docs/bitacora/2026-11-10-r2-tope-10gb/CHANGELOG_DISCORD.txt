@@ -1,0 +1,7 @@
+CMLeague 2.9.34 --  Changelog
+
+Demos
+- Las demos se siguen guardando hasta 90 días, pero si se llena el espacio, las más viejas se borran antes. Si quieres guardar una, bájala apenas termine la partida.
+
+Clips
+- Los videos de las jugadas se siguen viendo en la web como siempre.

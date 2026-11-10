@@ -48,7 +48,7 @@ La pestaña **Mixes por revisar** tiene dos listas:
 
 ## Demos
 
-La pestaña **Demos** muestra el estado de la demo de cada partida: **Pendiente**, **Subida**, **Perdida** o **Vencida** (pasados 90 días).
+La pestaña **Demos** muestra el estado de la demo de cada partida: **Pendiente**, **Subida**, **Perdida** o **Vencida** (pasados 90 días, o antes si el espacio de las demos pasó de 10 GB: se borran las más viejas hasta bajar a 9,5 GB).
 
 - Cuando una demo se puede volver a buscar, su fila tiene **Reintentar**: el Worker la busca en los próximos 10 minutos.
 - Arriba está el Worker de demos: si está en línea y cuándo se vio por última vez. Desde ahí lo revocas, lo reactivas o le generas un token nuevo (hay que cargarlo en Cloudflare con el comando que te da la web).

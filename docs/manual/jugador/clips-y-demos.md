@@ -43,7 +43,7 @@ Si una partida no tiene demo (porque falló la subida o porque ya venció), sus 
 
 En la sala de la partida, toca **Ver demo** (en el matchmaking) o **Descargar demo** (en un mix).
 
-- La demo se puede bajar durante **90 días**. Después vence y ya no está.
+- La demo se puede bajar durante **90 días**. Después vence y ya no está. Si se llena el espacio de las demos, las más viejas vencen antes.
 - Si dice **La demo se está subiendo**, vuelve en unos minutos.
 - En [Partidas](/matches), la columna **Demo / TV** te muestra qué partidas tienen demo.
 

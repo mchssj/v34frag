@@ -396,7 +396,8 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li>
           Las partidas se graban con SourceTV. Las demos se publican en la web y
-          se borran a los 90 días.
+          se borran a los 90 días, o antes si se llena el espacio de
+          almacenamiento: en ese caso se borran primero las más viejas.
         </li>
         <li>
           Las mejores jugadas (aces, multikills y clutches) se graban como clips

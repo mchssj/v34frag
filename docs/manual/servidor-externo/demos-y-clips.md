@@ -28,7 +28,7 @@ Si no la encuentra, reintenta varias veces antes de marcarla como perdida.
 
 Después de subirla, la demo se borra de tu servidor. Así no se te llena el disco.
 
-En la web, la demo se puede bajar durante 90 días. Después vence.
+En la web, la demo se puede bajar durante 90 días. Después vence. Si se llena el espacio de las demos, las más viejas vencen antes.
 
 ## Si cambias el acceso
 

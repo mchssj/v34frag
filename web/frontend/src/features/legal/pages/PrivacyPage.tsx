@@ -60,7 +60,7 @@ const PROVIDERS: [string, string][] = [
 const RETENTION: [string, string][] = [
   ["Cuenta y perfil", "Mientras tengas la cuenta"],
   ["Estadísticas, resultados y ELO", "Sin plazo: son el historial de la liga"],
-  ["Demos", "90 días"],
+  ["Demos", "Hasta 90 días (antes, las más viejas, si se llena el espacio)"],
   ["Clips", "Mientras exista la jugada en la liga"],
   ["Cada conexión a un servidor (IP, fecha y nick)", "90 días"],
   ["Intentos de conexión por IP", "90 días"],
