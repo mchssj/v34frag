@@ -24,11 +24,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Bloqueo blando y límite de cambios (2026-11-09): en la rama `feat/bloqueo-blando`, sin desplegar
+## Bloqueo blando y límite de cambios (2026-11-09): desplegado el 2026-11-10 desde `feat/bloqueo-blando`, falta integrarla en `main`
 
 - **Qué es:** replanteo `104`, API, web, manual y legales ([`2026-11-09-bloqueo-blando`](bitacora/2026-11-09-bloqueo-blando/)). El bloqueo de VIP pasa a ser una preferencia con un margen de 100 de ELO de armado, aviso solo al que bloqueó y 5 bloqueos nuevos en 7 días.
 - **Hecho:** base 7 de 7 con rollback, API 596 pruebas, web 711; typecheck y lint en verde.
-- **Falta:** integrar la rama en `main`, desplegar base, API y web en la misma tanda (sin salas armándose), probar Jugar › Bloqueo y Administración › Matchmaking en el navegador, y copiar la base en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Convive con la `105` (grupo máximo, otra sesión); para deshacer, primero la `105`.
+- **Desplegado el 2026-11-10:** la `104` en el VPS (03:16 UTC), API y web `17e2b2c8dcbf`.
+- **Falta:**
+  1. **Integrar `feat/bloqueo-blando` en `main`** cuando la otra sesión commitee la `105` en `v34frag-mainwt` (los dos tocan `PENDIENTES.md`, los dos README, `admin/matchmaking.md` y `GeneralForm.tsx`). **Hasta entonces, no desplegar la API ni la web desde `main`**: volverían a la versión sin el bloqueo blando.
+  2. Probar Jugar › Bloqueo (cuenta VIP) y Administración › Matchmaking en el navegador.
+  3. Convive con la `105` (grupo máximo, otra sesión); para deshacer, primero la `105`.
+- **Visto al desplegar (no es de este cambio):** una sala se canceló con "No se conectaron todos a tiempo" aunque los 10 estaban conectados (el último, 8 s antes del plazo). `mm_tick` cancela al vencer `connect_deadline` si la partida no arrancó (`live` llega con el `!ready`), aunque estén todos adentro; nadie queda sancionado. Habría que darles un plazo propio para el `!ready` cuando ya están todos.
 
 ## Siembra sobre la llave (2026-11-09): desplegada el 2026-11-09
 
