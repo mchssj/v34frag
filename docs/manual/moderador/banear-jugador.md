@@ -23,7 +23,7 @@ No se le suma una sanción de la cola: el baneo ya es la sanción.
    - Si eliges una **ficha**, el baneo vale para todos sus SteamID y para los que sume después.
    - Si pegas un SteamID que tiene ficha, se banea la ficha entera.
 3. Escribe el **motivo**. Se ve en la lista y al intentar entrar al servidor: escríbelo claro y sin insultos.
-4. Elige la duración: **1 día**, **3 días**, **1 semana**, **1 mes** o **Hasta una fecha**.
+4. Elige la duración: **Horas** (escribe cuántas, de 1 a 72), **1 día**, **3 días**, **1 semana**, **1 mes** o **Hasta una fecha**. Abajo ves el día y la hora en que vence.
 5. Toca **Banear**.
 
 > **Ojo:** el baneo **Permanente** solo lo puede poner un admin. Tampoco puedes cambiar ni levantar uno permanente: pídeselo a un admin.
@@ -40,7 +40,7 @@ Arriba filtras por **Activos**, **Vencidos**, **Levantados** o **Todos**, por or
 
 Desde el detalle del baneo:
 
-- **Cambiar:** otro motivo u otra duración. Guarda con **Guardar cambios**.
+- **Cambiar:** otro motivo u otra duración. Si solo cambias el motivo, deja la duración en **Como está** y el vencimiento no se mueve. Guarda con **Guardar cambios**.
 - **Levantar baneo:** escribe el motivo (es obligatorio) y confirma. El jugador puede volver a entrar desde la próxima sincronización de los servidores. El baneo no se borra: queda en la lista como levantado, con tu motivo.
 
 ## Las sanciones del matchmaking

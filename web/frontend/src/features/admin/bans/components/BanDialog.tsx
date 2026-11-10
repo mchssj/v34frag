@@ -19,21 +19,31 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { pickPlayerOptions } from "../../players/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { endOfDayIso, fmtDate, isoDatePlus } from "../../lib/format"
+import {
+  endOfDayIso,
+  fmtDate,
+  fmtDateTime,
+  isoDatePlus,
+} from "../../lib/format"
 import {
   activeBansForOptions,
   useCreateBan,
   useUpdateBan,
 } from "../api/queries"
 import type { Ban } from "../types"
-import { banExpiry } from "../lib/bans"
+import { BAN_MAX_HOURS, banExpiry, validBanHours } from "../lib/bans"
 import type { Duration } from "../lib/bans"
+
+/** Al cambiar un baneo, "keep" deja el vencimiento como está. */
+type Choice = Duration | "keep"
 
 export type BanTarget =
   | { kind: "player"; id: string; label: string }
   | { kind: "steam"; steamId: string }
 
-const DURATIONS: { key: Duration; label: string }[] = [
+const DURATIONS: { key: Choice; label: string }[] = [
+  { key: "keep", label: "Como está" },
+  { key: "hours", label: "Horas" },
   { key: "1", label: "1 día" },
   { key: "3", label: "3 días" },
   { key: "7", label: "1 semana" },
@@ -76,9 +86,9 @@ export function BanDialog({
     pickPlayerOptions(STEAM64.test(debounced) ? "" : debounced)
   )
   const [reason, setReason] = useState(ban?.reason ?? "")
-  const [dur, setDur] = useState<Duration>(
-    ban ? (ban.permanent ? "perm" : "date") : "7"
-  )
+  const [dur, setDur] = useState<Choice>(ban ? "keep" : "7")
+  const [hours, setHours] = useState("1")
+  const hoursN = Number(hours)
   const [date, setDate] = useState(
     ban?.expires_at ? ban.expires_at.slice(0, 10) : isoDatePlus(7)
   )
@@ -95,16 +105,25 @@ export function BanDialog({
 
   const dateOk =
     dur !== "date" || (!!date && new Date(endOfDayIso(date)) > new Date())
+  const hoursOk = dur !== "hours" || validBanHours(hoursN)
+  // Vencimiento elegido: undefined = como está (solo al cambiar), null = permanente.
+  const expiry = (): string | null | undefined =>
+    dur === "keep"
+      ? ban?.permanent
+        ? null
+        : ban?.expires_at
+      : banExpiry(dur, date, new Date(), hoursN)
   const ready =
     !!target &&
     reason.trim().length > 0 &&
     dateOk &&
+    hoursOk &&
     !blockedByPerm &&
     !mutation.isPending
 
   function submit() {
     if (!target) return
-    const expires = banExpiry(dur, date)
+    const expires = expiry() ?? null
     const timing =
       expires === null ? { permanent: true as const } : { expires_at: expires }
     const done = (msg: string, saved: Ban) => {
@@ -138,7 +157,10 @@ export function BanDialog({
   }
 
   const typedSteam = STEAM64.test(debounced) ? debounced : null
-  const durations = DURATIONS.filter((d) => d.key !== "perm" || canPermanent)
+  const durations = DURATIONS.filter(
+    (d) => (d.key !== "perm" || canPermanent) && (d.key !== "keep" || !!ban)
+  )
+  const shown = hoursOk && dateOk ? expiry() : undefined
 
   return (
     <Dialog open onOpenChange={(o) => !o && !mutation.isPending && onClose()}>
@@ -216,7 +238,7 @@ export function BanDialog({
             <AlertDescription>
               {blockedByPerm
                 ? "Tiene un baneo permanente: solo un admin puede reemplazarlo."
-                : `Ya tiene un baneo activo (${replaces.permanent ? "permanente" : `hasta el ${fmtDate(replaces.expires_at)}`}). Este lo reemplaza y el anterior queda levantado.`}
+                : `Ya tiene un baneo activo (${replaces.permanent ? "permanente" : `hasta el ${fmtDateTime(replaces.expires_at)}`}). Este lo reemplaza y el anterior queda levantado.`}
             </AlertDescription>
           </Alert>
         )}
@@ -265,6 +287,22 @@ export function BanDialog({
               </button>
             ))}
           </div>
+          {dur === "hours" && (
+            <label className="flex items-center gap-2 text-sm">
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={BAN_MAX_HOURS}
+                step={1}
+                aria-label="Cuántas horas"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+                className="w-24"
+              />
+              {hoursN === 1 ? "hora" : "horas"}
+            </label>
+          )}
           {dur === "date" && (
             <Input
               type="date"
@@ -277,14 +315,16 @@ export function BanDialog({
           <span
             className={cn(
               "text-xs",
-              dateOk ? "text-muted-foreground" : "text-destructive"
+              dateOk && hoursOk ? "text-muted-foreground" : "text-destructive"
             )}
           >
             {!dateOk
               ? "La fecha tiene que ser futura."
-              : dur === "perm"
-                ? "No vence. Solo un admin lo puede cambiar o levantar."
-                : `Vence el ${fmtDate(banExpiry(dur, date))}.`}
+              : !hoursOk
+                ? `Pon un número entero de horas, de 1 a ${BAN_MAX_HOURS}.`
+                : shown === null
+                  ? "No vence. Solo un admin lo puede cambiar o levantar."
+                  : `Vence el ${(dur === "date" ? fmtDate : fmtDateTime)(shown)}.`}
           </span>
         </div>
 

@@ -29,7 +29,7 @@ import {
 } from "@/features/matchmaking/queries"
 import { MmSourceContext } from "@/features/matchmaking/source"
 import { SearchBox } from "@/components/brand/SearchBox"
-import { daysUntil, fmtDate } from "../../lib/format"
+import { fmtDate, fmtDateTime } from "../../lib/format"
 import {
   AdminHeader,
   AdminTable,
@@ -44,7 +44,7 @@ import {
   CommentReportsPanel,
   useOpenCommentReports,
 } from "../components/CommentReportsPanel"
-import { BAN_STATUS, banLabel, banOrigin } from "../lib/bans"
+import { BAN_STATUS, banLabel, banOrigin, banRemaining } from "../lib/bans"
 import {
   BANS_PER,
   banCountOptions,
@@ -93,17 +93,14 @@ const BAN_COLUMNS: DataColumn<Ban>[] = [
     header: "Vence",
     cellClassName: "py-3 whitespace-nowrap",
     cell: ({ row: { original: b } }) => {
-      const days = b.expires_at ? daysUntil(b.expires_at) : 0
       return (
         <span className="flex flex-col gap-0.5">
           <span className={cn(b.permanent && "font-semibold text-destructive")}>
-            {b.permanent ? "Permanente" : fmtDate(b.expires_at)}
+            {b.permanent ? "Permanente" : fmtDateTime(b.expires_at)}
           </span>
           <span className="text-xs text-muted-foreground">
-            {b.status === "active" && !b.permanent
-              ? days <= 1
-                ? "mañana"
-                : `en ${days} días`
+            {b.status === "active" && !b.permanent && b.expires_at
+              ? banRemaining(b.expires_at)
               : b.status === "lifted" && b.lifted
                 ? `${b.lifted.replaced_by ? "Reemplazado" : "Levantado"} el ${fmtDate(b.lifted.at)}`
                 : `Desde ${fmtDate(b.created_at)}`}

@@ -1,0 +1,5 @@
+CMLeague 2.9.38 --  Changelog
+
+Baneos
+- Los moderadores y admins ahora pueden banear por unas horas (de 1 a 72), además de por días.
+- En la lista de baneos y en el detalle ves el día y la hora en que vence cada baneo, y cuánto le falta.

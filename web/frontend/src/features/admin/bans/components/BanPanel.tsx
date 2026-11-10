@@ -7,10 +7,16 @@ import { toast } from "sonner"
 import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { daysUntil, fmtDate } from "../../lib/format"
+import { fmtDate, fmtDateTime } from "../../lib/format"
 import { Chip, PanelSection } from "../../components/ui"
 import { BanDialog, type BanTarget } from "./BanDialog"
-import { BAN_STATUS, banLabel, banSteps, canEditBan } from "../lib/bans"
+import {
+  BAN_STATUS,
+  banLabel,
+  banRemaining,
+  banSteps,
+  canEditBan,
+} from "../lib/bans"
 import { useLiftBan } from "../api/queries"
 import type { Ban } from "../types"
 
@@ -48,7 +54,6 @@ export function BanPanel({
       ? { kind: "steam", steamId: ban.steam_id }
       : null
   const steps = banSteps(ban)
-  const days = ban.expires_at ? daysUntil(ban.expires_at) : 0
 
   return (
     <>
@@ -115,8 +120,10 @@ export function BanPanel({
           >
             {ban.permanent
               ? "Nunca (permanente)"
-              : `${fmtDate(ban.expires_at)}${
-                  active ? (days <= 1 ? " (mañana)" : ` (en ${days} días)`) : ""
+              : `${fmtDateTime(ban.expires_at)}${
+                  active && ban.expires_at
+                    ? ` (${banRemaining(ban.expires_at)})`
+                    : ""
                 }`}
           </span>
         </Fact>

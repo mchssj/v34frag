@@ -96,15 +96,38 @@ export function banSteps(b: Ban): BanStep[] {
 export const canEditBan = (b: Ban, canPermanent: boolean) =>
   b.status === "active" && (canPermanent || !b.permanent)
 
-export type Duration = "1" | "3" | "7" | "30" | "date" | "perm"
+/** Días ("7"), unas horas a elección, hasta una fecha o permanente. */
+export type Duration = "hours" | "1" | "3" | "7" | "30" | "date" | "perm"
+
+/** Horas que se pueden poner en un baneo por horas; para más, los días o una fecha. */
+export const BAN_MAX_HOURS = 72
+
+/** ¿Es un número entero de horas válido (1 a 72)? */
+export const validBanHours = (h: number) =>
+  Number.isInteger(h) && h >= 1 && h <= BAN_MAX_HOURS
 
 /** Fecha de vencimiento del baneo (null = permanente). */
 export function banExpiry(
   d: Duration,
   date: string,
-  now = new Date()
+  now = new Date(),
+  hours = 1
 ): string | null {
   if (d === "perm") return null
   if (d === "date") return endOfDayIso(date)
+  if (d === "hours")
+    return new Date(now.getTime() + hours * 3_600_000).toISOString()
   return new Date(now.getTime() + Number(d) * 86_400_000).toISOString()
+}
+
+/** Cuánto le falta a un baneo activo: minutos u horas si vence en menos de un día. */
+export function banRemaining(iso: string, now = new Date()): string {
+  const ms = new Date(iso).getTime() - now.getTime()
+  if (ms < 3_600_000) return `en ${Math.max(1, Math.ceil(ms / 60_000))} min`
+  if (ms < 86_400_000) {
+    const h = Math.round(ms / 3_600_000)
+    return h === 1 ? "en 1 hora" : `en ${h} horas`
+  }
+  const days = Math.ceil(ms / 86_400_000)
+  return days === 1 ? "mañana" : `en ${days} días`
 }

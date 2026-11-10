@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { banExpiry, banOrigin, banSteps, canEditBan } from "./bans"
+import {
+  banExpiry,
+  banOrigin,
+  banRemaining,
+  banSteps,
+  canEditBan,
+  validBanHours,
+} from "./bans"
 import type { Ban } from "../types"
 
 describe("Baneos", () => {
@@ -8,6 +15,24 @@ describe("Baneos", () => {
     const now = new Date("2026-10-28T12:00:00Z")
     expect(banExpiry("perm", "", now)).toBeNull()
     expect(banExpiry("7", "", now)).toBe("2026-11-04T12:00:00.000Z")
+  })
+
+  it("por horas: las que se escriben, de 1 a 72", () => {
+    const now = new Date("2026-10-28T12:00:00Z")
+    expect(banExpiry("hours", "", now, 1)).toBe("2026-10-28T13:00:00.000Z")
+    expect(banExpiry("hours", "", now, 5)).toBe("2026-10-28T17:00:00.000Z")
+    expect(banExpiry("hours", "", now, 36)).toBe("2026-10-30T00:00:00.000Z")
+    expect([1, 5, 72].every(validBanHours)).toBe(true)
+    expect([0, -1, 73, 1.5, NaN].some(validBanHours)).toBe(false)
+  })
+
+  it("lo que falta: minutos, horas o días", () => {
+    const now = new Date("2026-10-28T12:00:00Z")
+    expect(banRemaining("2026-10-28T12:20:00Z", now)).toBe("en 20 min")
+    expect(banRemaining("2026-10-28T13:00:00Z", now)).toBe("en 1 hora")
+    expect(banRemaining("2026-10-28T18:00:00Z", now)).toBe("en 6 horas")
+    expect(banRemaining("2026-10-29T12:00:00Z", now)).toBe("mañana")
+    expect(banRemaining("2026-11-04T12:00:00Z", now)).toBe("en 7 días")
   })
 
   const b = (o: Partial<Ban>) =>
