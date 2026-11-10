@@ -115,6 +115,8 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   require_anticheat: true,
   max_blocks: 1,
   blocks_vip_only: true,
+  block_margin: 100,
+  block_changes_week: 5,
   min_mixes: 5,
   min_account_days: 7,
   season_queue_close_minutes: 15,
@@ -262,6 +264,22 @@ export function createDemoSource({
   let partyLogId: string | null = null
   let partyNicks = new Set<string>()
   let blocks: MmState["blocks"]["list"] = []
+  // (replanteo 104) Cuándo bloqueó cada vez, para el límite de cambios en 7 días.
+  let blockLog: number[] = []
+  const WEEK = 7 * 24 * 3600 * 1000
+  const blockChanges = () => {
+    const w = config.block_changes_week
+    const recent = blockLog
+      .filter((t) => t > Date.now() - WEEK)
+      .slice(-Math.max(w, 1))
+    const left = w === 0 ? null : Math.max(w - recent.length, 0)
+    return {
+      changes_week: w,
+      changes_left: left,
+      next_change_at:
+        left === 0 ? new Date(recent[0]! + WEEK).toISOString() : null,
+    }
+  }
   let friends = seedFriends()
   let friendRequests: MmState["friend_requests"] = { received: [], sent: [] }
   let soundCatalog = seedSounds()
@@ -998,6 +1016,7 @@ export function createDemoSource({
       max: config.max_blocks,
       vip_only: config.blocks_vip_only,
       allowed: !config.blocks_vip_only || !flags.notVip,
+      changes: blockChanges(),
     },
     auto_accept: { enabled: autoAccept, allowed: !flags.notVip },
     sounds: soundsState(),
@@ -1308,11 +1327,17 @@ export function createDemoSource({
     async block(playerId) {
       if (config.blocks_vip_only && flags.notVip)
         throw new DemoError("El bloqueo es exclusivo para VIP")
+      if (blocks.some((b) => b.player_id === playerId)) return snapshot()
       if (blocks.length >= config.max_blocks)
         throw new DemoError("Ya usaste todos tus bloqueos")
+      if (blockChanges().changes_left === 0)
+        throw new DemoError(
+          `Ya cambiaste tu bloqueo ${config.block_changes_week} veces en los últimos 7 días`
+        )
       const hit = KNOWN().find((f) => f.player_id === playerId)
       if (!hit) throw new DemoError("Ese jugador no existe")
       blocks = [...blocks, { player_id: hit.player_id, nick: hit.nick }]
+      blockLog = [...blockLog, Date.now()]
       emit("state")
       return snapshot()
     },

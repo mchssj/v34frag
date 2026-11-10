@@ -353,6 +353,13 @@ export type MmState = {
     vip_only: boolean
     /** Si esta cuenta puede usarlo. */
     allowed: boolean
+    /** (replanteo 104) Bloqueos nuevos que le quedan en 7 días; `changes_left` null: sin límite. */
+    changes?: {
+      changes_week: number
+      changes_left: number | null
+      /** Cuándo se libera el próximo, si no le quedan. */
+      next_change_at: string | null
+    }
   }
   /** Quién está buscando ahora, por modo y por nivel. */
   queue_activity: {
@@ -497,6 +504,10 @@ export type MmAdminConfig = {
   require_anticheat: boolean
   max_blocks: number
   blocks_vip_only: boolean
+  /** (replanteo 104) Cuánto puede empeorar la diferencia de ELO de armado (en total) por respetar los bloqueos. */
+  block_margin: number
+  /** Bloqueos nuevos por cuenta en 7 días (0: sin límite). */
+  block_changes_week: number
   min_mixes: number
   min_account_days: number
   season_queue_close_minutes: number

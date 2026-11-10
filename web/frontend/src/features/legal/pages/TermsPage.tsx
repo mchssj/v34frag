@@ -274,6 +274,13 @@ const SECTIONS: LegalSection[] = [
           pierdes en cada partida, y no se publican.
         </li>
         <li>
+          Si eres VIP, puedes bloquear a un jugador para que no te toque en tu
+          equipo. Es una preferencia, no una garantía: si respetarla deja los
+          equipos muy desparejos, en esa partida no se respeta y te avisamos
+          solo a ti. Puedes bloquear a alguien nuevo hasta 5 veces por semana.
+          Un grupo con el que buscas partida nunca se separa.
+        </li>
+        <li>
           Si alguien abandona una partida del matchmaking, la liga puede
           publicar en su Discord un aviso con un link para entrar en su lugar.
           El aviso muestra el modo, el mapa y el marcador, no los nombres de los
@@ -450,10 +457,11 @@ const SECTIONS: LegalSection[] = [
             El VIP da ventajas de comodidad y estética (cosméticos, estadísticas
             avanzadas, comparador, favoritas, configs, créditos, ver quién
             visitó tu perfil y visitar hasta 15 perfiles por semana sin dejar
-            rastro, autoaceptar las partidas del matchmaking, y similares).{" "}
-            <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
-            ELO ni sobre las sanciones: con el autoaceptar, si no te conectas a
-            tiempo, la sanción es la misma.
+            rastro, autoaceptar las partidas del matchmaking, bloquear a un
+            jugador para que no te toque en tu equipo, como preferencia, y
+            similares). <strong>Nunca da ventaja dentro de la partida</strong>{" "}
+            ni sobre el ELO ni sobre las sanciones: con el autoaceptar, si no te
+            conectas a tiempo, la sanción es la misma.
           </li>
           <li>
             Podemos cambiar, sumar o quitar ventajas del VIP. Si quitamos una

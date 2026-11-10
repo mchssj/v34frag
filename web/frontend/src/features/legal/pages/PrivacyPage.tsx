@@ -77,6 +77,11 @@ const RETENTION: [string, string][] = [
   ["Amigos y solicitudes de amistad", "Mientras tengas la cuenta"],
   ["Visitas a perfiles", "30 días"],
   [
+    "Historial de bloqueos del matchmaking (a quién bloqueaste y desbloqueaste)",
+    "90 días",
+  ],
+  ["Bloqueos que no se respetaron en una partida", "Lo que exista la partida"],
+  [
     "Comentarios en perfiles (también los borrados) y votos",
     "Mientras tengas la cuenta",
   ],
@@ -289,7 +294,7 @@ const SECTIONS: LegalSection[] = [
           rows={[
             [
               "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP. Si eres admin o moderador, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
-              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, y la evidencia del anticheat.",
+              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, a quién bloqueaste en el matchmaking, y la evidencia del anticheat.",
             ],
           ]}
         />

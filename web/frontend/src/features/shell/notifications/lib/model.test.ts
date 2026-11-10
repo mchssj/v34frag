@@ -43,6 +43,7 @@ const TYPES: [string, Notification["category"]][] = [
   ["friend_accepted", "friends"],
   ["profile_comment", "friends"],
   ["profile_like", "friends"],
+  ["mm_block_ignored", "elo"],
   ["event_registration", "tournament"],
   ["event_fixture", "tournament"],
   ["match_scheduled", "tournament"],
@@ -417,5 +418,21 @@ group("tu perfil (replanteo 91)", () => {
     )
     expect(l.title).toBe("A romanxz le gusta tu perfil")
     expect(l.link).toEqual({ to: "/player/$nick", params: { nick: "romanxz" } })
+  })
+
+  it("bloqueo no respetado (replanteo 104): solo al que bloqueó, con el nick y el link a Jugar", () => {
+    const n = describe(
+      base({
+        type: "mm_block_ignored",
+        category: "elo",
+        data: { lobby: "l1", player: { id: "p9", alias: "kobassj" } },
+      })
+    )
+    expect(n.kind).toBe("elo")
+    expect(n.title).toBe("No pudimos respetar tu bloqueo")
+    expect(n.body).toBe(
+      "Para que los equipos quedaran parejos, en esta partida te tocó con kobassj."
+    )
+    expect(n.link).toEqual({ to: "/play" })
   })
 })

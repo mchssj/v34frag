@@ -37,6 +37,8 @@ const schema = z
     require_anticheat: z.boolean(),
     blocks_vip_only: z.boolean(),
     max_blocks: int(0, 10),
+    block_margin: int(0, 2000),
+    block_changes_week: int(0, 50),
     modes: z.array(
       z.object({
         mode: z.string(),
@@ -240,7 +242,7 @@ function Form({ initial }: { initial: MmAdminConfig }) {
 
       <Section
         title="Bloqueo de compañeros"
-        description="Con quien bloqueó no le toca en el mismo equipo; en contra, sí. En 0 está apagado."
+        description="Con quien bloqueó no le toca en el mismo equipo; en contra, sí. En 0 está apagado. Si respetar los bloqueos empeora la diferencia de ELO de armado más que el margen, se ignoran los menos posibles (los más recientes primero) y se le avisa al que bloqueó. Un grupo nunca se separa."
       >
         <Controller
           control={c}
@@ -257,6 +259,16 @@ function Form({ initial }: { initial: MmAdminConfig }) {
             control={c}
             name="max_blocks"
             label="Bloqueos por cuenta"
+          />
+          <NumberField
+            control={c}
+            name="block_margin"
+            label="Margen de ELO de armado"
+          />
+          <NumberField
+            control={c}
+            name="block_changes_week"
+            label="Cambios por semana (0: sin límite)"
           />
         </Grid>
       </Section>

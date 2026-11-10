@@ -535,6 +535,14 @@ export function describe(n: Notification, me?: string | null): Described {
               ? "Se revirtió el ELO que te dio."
               : "No movía ELO.",
       }
+    // (replanteo 104) Solo le llega al que bloqueó.
+    case "mm_block_ignored":
+      return {
+        kind: "elo",
+        title: "No pudimos respetar tu bloqueo",
+        body: `Para que los equipos quedaran parejos, en esta partida te tocó con ${str(obj(d.player).alias, "el jugador que bloqueaste")}.`,
+        link: { to: "/play" },
+      }
     case "elo_adjusted": {
       const set = num(d.set_elo)
       return {

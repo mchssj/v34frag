@@ -42,7 +42,7 @@ const CATEGORIES: {
     key: "elo",
     title: "Mixes y ELO",
     description:
-      "Cambios de nivel, mixes interrumpidos o borrados, ajustes de ELO y videos de tus jugadas.",
+      "Cambios de nivel, mixes interrumpidos o borrados, ajustes de ELO, videos de tus jugadas y cuando no se pudo respetar tu bloqueo.",
   },
   {
     key: "season",

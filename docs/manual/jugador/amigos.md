@@ -38,3 +38,10 @@ En el panel **Amigos**, toca la **X** junto a su nombre. O en su perfil, toca **
 ## Bloquear
 
 Si bloqueas a alguien (en **Jugar**, panel **Bloqueo**), deja de ser tu amigo, se cancelan las solicitudes entre ustedes y ya no te puede enviar una nueva.
+
+En el matchmaking, quien bloqueaste no te toca en tu equipo (en contra, sí). El bloqueo es exclusivo para VIP y es una **preferencia, no una garantía**:
+
+- Si separarlos deja los equipos muy desparejos (más de {{mm.bloqueo_margen}} de diferencia en el ELO con el que se arman los equipos, sumando los dos), en esa partida no se respeta. Se ignoran los menos bloqueos posibles, y primero los más recientes.
+- Cuando pasa, te llega un aviso (en **Mixes y ELO**): "No pudimos respetar tu bloqueo". Al otro jugador no le avisamos nada.
+- El grupo con el que buscas partida nunca se separa.
+- Puedes bloquear a alguien nuevo **{{mm.bloqueo_cambios}} veces en 7 días**. Desbloquear no cuenta. El panel te dice cuántos cambios te quedan y, si no te queda ninguno, desde cuándo puedes volver a bloquear.

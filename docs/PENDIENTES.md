@@ -24,6 +24,12 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Bloqueo blando y límite de cambios (2026-11-09): en la rama `feat/bloqueo-blando`, sin desplegar
+
+- **Qué es:** replanteo `104`, API, web, manual y legales ([`2026-11-09-bloqueo-blando`](bitacora/2026-11-09-bloqueo-blando/)). El bloqueo de VIP pasa a ser una preferencia con un margen de 100 de ELO de armado, aviso solo al que bloqueó y 5 bloqueos nuevos en 7 días.
+- **Hecho:** base 7 de 7 con rollback, API 596 pruebas, web 711; typecheck y lint en verde.
+- **Falta:** integrar la rama en `main`, desplegar base, API y web en la misma tanda (sin salas armándose), probar Jugar › Bloqueo y Administración › Matchmaking en el navegador, y copiar la base en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Convive con la `105` (grupo máximo, otra sesión); para deshacer, primero la `105`.
+
 ## Siembra sobre la llave (2026-11-09): desplegada el 2026-11-09
 
 - **Qué es:** la pestaña **Siembra** de un torneo muestra el formato elegido, y los equipos se arrastran (o se tocan y se ponen) en su lugar de la llave. Suma **Vaciar** y **Completar huecos** (en orden o al azar). Solo web, sin cambios en la base ni en la API ([`2026-11-09-siembra-sobre-la-llave`](bitacora/2026-11-09-siembra-sobre-la-llave/)).
