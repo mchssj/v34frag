@@ -24,6 +24,12 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Con todos conectados, la sala no se cancela por el plazo de conexión (2026-11-10): sin desplegar
+
+- **Qué es:** replanteo `108` y el texto de la cuenta en la sala ([`2026-11-10-mm-plazo-ready`](bitacora/2026-11-10-mm-plazo-ready/)). Si al vencer el plazo de conexión están todos en el servidor, tienen 3 minutos desde el último para el `!ready`; si no arranca, se cancela sin sanción.
+- **Hecho:** 6 de 6 en la base local con rollback; web con 715 pruebas, typecheck y lint.
+- **Falta:** aplicar la `108` en el VPS (sin salas en `connecting`) y desplegar la web.
+
 ## El baneo saca al jugador del matchmaking (2026-11-10): desplegado
 
 - **Qué es:** un baneo nuevo saca al baneado de la cola (con su grupo), cancela su sala si no empezó y, si está jugando, marca su abandono en el acto ([`2026-11-09-mm-baneo-saca-de-cola`](bitacora/2026-11-09-mm-baneo-saca-de-cola/)).
@@ -42,7 +48,7 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Hecho:** base 7 de 7 con rollback, API 596 pruebas, web 711; typecheck y lint en verde.
 - **Desplegado el 2026-11-10:** la `104` en el VPS (03:16 UTC), API y web `17e2b2c8dcbf` desde la rama; integrada en `main` (merge `38ccae12`) y la web desplegada desde `main` (`38ccae12e3db`).
 - **Falta:** probar Jugar › Bloqueo (cuenta VIP) y Administración › Matchmaking en el navegador. Para deshacer, primero la `105`.
-- **Visto al desplegar (no es de este cambio):** una sala se canceló con "No se conectaron todos a tiempo" aunque los 10 estaban conectados (el último, 8 s antes del plazo). `mm_tick` cancela al vencer `connect_deadline` si la partida no arrancó (`live` llega con el `!ready`), aunque estén todos adentro; nadie queda sancionado. Habría que darles un plazo propio para el `!ready` cuando ya están todos.
+- **Visto al desplegar (no es de este cambio):** una sala se canceló con todos conectados; se arregla en [`2026-11-10-mm-plazo-ready`](bitacora/2026-11-10-mm-plazo-ready/).
 
 ## Bajar el máximo del grupo desarma los grupos (2026-11-09): desplegado el 2026-11-10
 

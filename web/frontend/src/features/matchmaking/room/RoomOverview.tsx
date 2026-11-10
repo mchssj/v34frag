@@ -568,8 +568,12 @@ function Center({
               role="timer"
               className="mt-2 font-mono text-xs text-muted-foreground tabular-nums"
             >
+              {/* (replanteo 108) Con todos adentro, el plazo es para el !ready (3 min desde el último). */}
               Quedan {fmtClock(secondsLeft(lobby.connect_deadline, now) * 1000)}{" "}
-              para entrar · {lobby.players.filter((p) => p.connected).length}/
+              {lobby.players.every((p) => p.connected)
+                ? "para que todos escriban !ready"
+                : "para entrar"}{" "}
+              · {lobby.players.filter((p) => p.connected).length}/
               {lobby.players.length} conectados
             </p>
           )}

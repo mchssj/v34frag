@@ -232,3 +232,29 @@ describe("RoomOverview con reemplazos (replanteo 78)", () => {
     expect(screen.getByText("Albert entró de reemplazo")).toBeInTheDocument()
   })
 })
+
+describe("RoomOverview conectando (replanteo 108)", () => {
+  const conectando = (connected: boolean) =>
+    lobby({
+      status: "connecting",
+      connect_deadline: new Date(Date.now() + 150_000).toISOString(),
+      players: [
+        player("Arnold", 1, { is_captain: true }),
+        player("Kyle", 2, { is_captain: true, connected }),
+      ],
+    })
+
+  it("falta alguien: la cuenta es para entrar", () => {
+    render(conectando(false), "live")
+    expect(screen.getByRole("timer")).toHaveTextContent(
+      /Quedan 2:\d\d para entrar · 1\/2 conectados/
+    )
+  })
+
+  it("están todos: la cuenta es para el !ready", () => {
+    render(conectando(true), "live")
+    expect(screen.getByRole("timer")).toHaveTextContent(
+      /Quedan 2:\d\d para que todos escriban !ready · 2\/2 conectados/
+    )
+  })
+})

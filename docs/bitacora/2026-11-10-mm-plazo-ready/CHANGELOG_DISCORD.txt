@@ -1,0 +1,6 @@
+CMLeague 2.9.36 --  Changelog
+
+Matchmaking: la partida no se cancela si ya entraron todos
+- Si están los 10 en el servidor cuando se termina el tiempo para conectarse, la partida ya no se cancela: tienen 3 minutos desde que entró el último para escribir !ready.
+- La sala te muestra cuánto queda para el !ready.
+- Si en esos 3 minutos la partida no arranca, se cancela sin sanción para nadie.

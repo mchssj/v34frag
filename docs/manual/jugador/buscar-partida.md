@@ -73,6 +73,8 @@ Con el servidor listo, la **Sala de la partida** te muestra la dirección y la c
 
 Tienes **{{mm.conectar}}** para conectarte; la sala muestra cuánto queda y quiénes ya entraron. Si todavía no vinculaste tu SteamID, o entraste desde otra PC, escribe en el chat el `!claim` que te muestra la sala.
 
+La partida arranca cuando todos escriben `!ready`. Si ya entraron todos cuando se termina el tiempo para conectarse, la partida no se cancela: tienen **3 minutos** desde que entró el último para el `!ready`, y la sala muestra cuánto queda. Si en ese tiempo no arranca, se cancela sin sanción para nadie.
+
 > **Ojo:** la contraseña es solo para los jugadores de la partida. No la compartas.
 
 ## 5. Durante la partida
