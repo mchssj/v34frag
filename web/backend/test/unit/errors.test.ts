@@ -61,6 +61,14 @@ describe('fromPostgrest', () => {
     expect(fromPostgrest({ code: 'V3901', message: 'x' }).details).toBeUndefined();
     expect(fromPostgrest({ code: 'V3901', message: 'x', details: '["no", "objeto"]' }).details).toBeUndefined();
   });
+
+  it('V8904 → 409 CONFLICT con next_change_at (límite de cambios de bloqueo, replanteo 104)', () => {
+    const e = fromPostgrest({ code: 'V8904', message: 'Ya cambiaste tu bloqueo 5 veces en los últimos 7 días', details: '{"next_change_at": "2026-11-16T21:00:00+00:00"}' });
+    expect(e.status).toBe(409);
+    expect(e.code).toBe('CONFLICT');
+    expect(e.message).toBe('Ya cambiaste tu bloqueo 5 veces en los últimos 7 días');
+    expect(e.details).toEqual({ next_change_at: '2026-11-16T21:00:00+00:00' });
+  });
 });
 
 describe('fromAuthError', () => {

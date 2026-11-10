@@ -14,7 +14,7 @@ El matchmaking se configura en Administración › [Matchmaking](/admin/matchmak
 |---|---|
 | **Cola** | Abierta o cerrada. Cerrarla impide entrar, sin cancelar las salas armadas. También qué modos están habilitados y cuáles dan ELO |
 | **Quién puede jugar** | Mixes mínimos jugados y días de cuenta mínimos. En 0 no se exige |
-| **Bloqueo de compañeros** | Cuántos jugadores puede bloquear cada cuenta para que no le toquen en su equipo (en contra sí). En 0 está apagado |
+| **Bloqueo de compañeros** | Cuántos jugadores puede bloquear cada cuenta para que no le toquen en su equipo (en contra sí). En 0 está apagado. **Margen de ELO de armado**: si respetar los bloqueos empeora la diferencia entre los equipos más que esto (en total), se ignoran los menos posibles (los más recientes primero) y se le avisa al que bloqueó; un grupo nunca se separa. **Cambios por semana**: cuántas veces puede bloquear a alguien nuevo en 7 días (0: sin límite) |
 | **Grupos** | Tamaño máximo (1 = sin grupos; 2 = dúo) y la diferencia de ELO máxima dentro del grupo. Al bajar el máximo, los grupos más grandes se desarman al guardar: los que estaban buscando salen de la cola, y a todos les llega un aviso. Los que están en una sala siguen hasta que la sala termina, y ahí se desarman. Las invitaciones que ya no se pueden aceptar se vencen |
 | **Tiempos** | Para aceptar, por turno del veto, para conectarse, esperando servidor, para volver si se desconecta y el cierre de la cola antes de que termine la temporada |
 | **Ventana de ELO** | Con qué diferencia de ELO empieza a emparejar, cuánto se abre y cada cuánto, el tope y después de cuánto tiempo se empareja sin límite |

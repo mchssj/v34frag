@@ -10,18 +10,22 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
+import { fmtDateTime } from "./labels"
 import { playerSearchOptions, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { MmState } from "./types"
 
 // Bloqueo (plan, decisión "Bloqueo de compañeros"): con quien bloqueaste no te toca en el mismo
 // equipo, pero sí te puede tocar en contra. Al principio, 1 solo y exclusivo de VIP.
+// (replanteo 104) Es una preferencia: si separarlos deja los equipos muy desparejos, no se respeta
+// (y te avisamos). Bloquear de nuevo tiene un límite por semana.
 
 export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
   const source = useMmSource()
   const remove = useMmMutation((id: string) => source.unblock(id))
   const block = useMmMutation((id: string) => source.block(id))
-  const canAdd = blocks.allowed && blocks.list.length < blocks.max
+  const left = blocks.changes?.changes_left ?? null
+  const canAdd = blocks.allowed && blocks.list.length < blocks.max && left !== 0
 
   return (
     <Card
@@ -39,7 +43,8 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
         </div>
         <div className="flex flex-col gap-2 p-4">
           <p className="text-[13px] text-muted-foreground">
-            No te toca en tu equipo. En contra, sí.
+            No te toca en tu equipo, salvo que eso deje los equipos muy
+            desparejos (te avisamos). En contra, sí.
           </p>
           {!blocks.allowed ? (
             <p className="inline-flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-[13px]">
@@ -68,6 +73,15 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
                   </li>
                 ))}
               </ul>
+              {blocks.changes && left !== null && (
+                <p className="text-xs text-muted-foreground">
+                  {left > 0
+                    ? `Te ${left === 1 ? "queda 1 cambio" : `quedan ${left} cambios`} esta semana.`
+                    : blocks.changes.next_change_at
+                      ? `Ya no te quedan cambios esta semana. El próximo, desde el ${fmtDateTime(blocks.changes.next_change_at)}.`
+                      : "Ya no te quedan cambios esta semana."}
+                </p>
+              )}
               {canAdd && (
                 <PlayerPicker
                   label="Buscar a quién bloquear"

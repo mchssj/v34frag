@@ -252,6 +252,9 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'mm.abandono_ganado_max': { formato: { tipo: 'numero' }, defecto: 15 },
   'mm.abandono_perdido_min': { formato: { tipo: 'numero' }, defecto: 15 },
   'mm.abandono_perdido_max': { formato: { tipo: 'numero' }, defecto: 20 },
+  // (replanteo 104) Bloqueo blando: margen de ELO de armado y bloqueos nuevos en 7 días.
+  'mm.bloqueo_margen': { formato: { tipo: 'numero' }, defecto: 100 },
+  'mm.bloqueo_cambios': { formato: { tipo: 'numero' }, defecto: 5 },
   'mm.sanciones': { formato: { tipo: 'duraciones' }, defecto: ESCALERA },
   'mm.sancion_min': { clave: 'mm.sanciones', formato: { tipo: 'primera_duracion' }, defecto: ESCALERA },
   'mm.sancion_max': { clave: 'mm.sanciones', formato: { tipo: 'ultima_duracion' }, defecto: ESCALERA },

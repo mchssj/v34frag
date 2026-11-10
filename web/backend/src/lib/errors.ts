@@ -108,6 +108,9 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
     // (replanteo 92) Publicar una PCW es para VIP.
     case 'V8901':
       return new AppError(403, 'VIP_REQUIRED', err.message);
+    // (replanteo 104) Límite de cambios de bloqueo en 7 días; el detail trae next_change_at.
+    case 'V8904':
+      return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);
