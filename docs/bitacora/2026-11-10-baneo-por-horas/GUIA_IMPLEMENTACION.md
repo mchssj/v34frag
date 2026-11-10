@@ -28,4 +28,6 @@ No se probó en el navegador antes de desplegar.
 
 Revertir el commit y desplegar la web. Los baneos por horas que ya se pusieron siguen valiendo y vencen a su hora.
 
-**Estado: desplegado el 2026-11-10, sin commit.** Web `c77b49e01d7c-local11102029`. **Falta:** probarlo en el navegador con una cuenta de moderador, desplegar la API para que `/help` muestre el manual nuevo, el commit en `main` y publicar el changelog.
+**Estado: desplegado el 2026-11-10** (commit `a282dce6`; a las 21:17 UTC, la API y la web `64b6ffab9855`, con el manual nuevo en `/help`).
+
+Antes, sin commit: Web `c77b49e01d7c-local11102029`. **Falta:** probarlo en el navegador con una cuenta de moderador, desplegar la API para que `/help` muestre el manual nuevo, el commit en `main` y publicar el changelog.

@@ -24,16 +24,21 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Esperar 1 min 30 s antes de pedir un reemplazo y baneos por horas (2026-11-10): desplegados, sin commit
+## Caída del #1 en pleno mix (2026-11-10 20:38 UTC): sin causa confirmada
+
+- **Qué pasó:** el juego del #1 se cerró de golpe durante el mix de dust2_ob (sala `86bc974b`, 15-10, a una ronda del final). El script de arranque lo volvió a lanzar a las 20:38:48; el contenedor no se reinició. La sala quedó cancelada ("El servidor se reinició durante la partida") y la partida `c3e2bdc7` guardada como interrumpida, sin sanciones.
+- **Lo que se sabe:** el servidor iba a 100 tick sin lag hasta las 20:38:31; ningún log anota un error; la consola del panel solo guarda lo de después del reinicio, y el #1 no tiene Accelerator. Fue dentro de los 17 s siguientes a que se desconectara un jugador. Era el primer mix con `csstv_qol` 1.4.0 (`!voz`), que cambia a quién escucha cada jugador cuando queda uno solo vivo: es una sospecha, no algo confirmado. La `109` (aplicada a las 20:28) no cambia el formato del poll, y el servidor siguió consultando la base sin errores.
+- **Propuesto, sin hacer:** Accelerator en el #1, #2 y #3 para tener el volcado de la próxima caída; si se repite con una desconexión, volver a `csstv_qol` 1.3.2.
+- **Visto también:** a las 20:40, `PGRST003` (sin conexiones libres en el pool de PostgREST) en un poll del #1, justo cuando entraba el resultado y se armaba la sala siguiente.
+
+## Esperar 1 min 30 s antes de pedir un reemplazo y baneos por horas (2026-11-10): desplegados
 
 - **Qué es:** `!callreplace` solo deja elegir a un compañero desconectado hace al menos 90 s (replanteo `109`, [`2026-11-10-reemplazo-espera-minima`](bitacora/2026-11-10-reemplazo-espera-minima/)), y banear por unas horas, de 1 a 72, con **Como está** al cambiar un baneo ([`2026-11-10-baneo-por-horas`](bitacora/2026-11-10-baneo-por-horas/)).
-- **Desplegado el 2026-11-10:** la `109` (20:28 UTC, 5 de 5 antes contra producción) y la web `c77b49e01d7c-local11102029`.
+- **Desplegado el 2026-11-10:** la `109` (20:28 UTC, 5 de 5 antes contra producción), y la API y la web `64b6ffab9855` (21:17 UTC, sin salas abiertas). Commits `a282dce6` y `64b6ffab` en `main`.
 - **Falta:**
-  1. Desplegar la API sin mixes en curso, para que `/help` tenga el manual nuevo.
-  2. Commit en `main` (lo pide Daniel).
-  3. Probar los baneos por horas en el navegador y ver un `!callreplace` real.
-  4. Publicar los dos changelogs (2.9.37 y 2.9.38).
-  5. Mejora posible: que `!callreplace` diga cuánto falta en vez de "No hay ningún compañero desconectado" (plugin nuevo).
+  1. Probar los baneos por horas en el navegador y ver un `!callreplace` real.
+  2. Publicar los dos changelogs (2.9.37 y 2.9.38).
+  3. Mejora posible: que `!callreplace` diga cuánto falta en vez de "No hay ningún compañero desconectado" (plugin nuevo).
 
 ## Con todos conectados, la sala no se cancela por el plazo de conexión (2026-11-10): desplegado el 2026-11-10
 

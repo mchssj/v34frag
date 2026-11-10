@@ -43,4 +43,6 @@ Sin servidor real: el plugin no cambia y arma el menú con `away=` como antes.
 
 La inversa (`reversas/109_mm_reemplazo_espera.sql`) y, si se quiere, revertir la web. Con la web nueva y la base sin la `109`, guardar la configuración del matchmaking falla porque el campo no existe: revertir las dos juntas. Para apagarlo sin deshacer nada, poner el campo en 0.
 
-**Estado: desplegado el 2026-11-10, sin commit.** `probar_109.sql` contra producción, 5 de 5 y deshecho; la `109` aplicada a las 20:28 UTC con una sala en vivo en el #1 (dust2_ob, 10-8), que siguió consultando la base sin errores; `replace_min_away_s` en 90. Web `c77b49e01d7c-local11102029`. **Falta:** desplegar la API para que `/help` muestre el manual nuevo (reinicia `cmleague-api`: sin mixes en curso), el commit en `main` y publicar el changelog.
+**Estado: desplegado el 2026-11-10** (commit `64b6ffab`; a las 21:17 UTC, sin salas abiertas, la API y la web `64b6ffab9855`, con el manual nuevo en `/help`).
+
+Antes, sin commit: `probar_109.sql` contra producción, 5 de 5 y deshecho; la `109` aplicada a las 20:28 UTC con una sala en vivo en el #1 (dust2_ob, 10-8), que siguió consultando la base sin errores; `replace_min_away_s` en 90. Web `c77b49e01d7c-local11102029`. **Falta:** desplegar la API para que `/help` muestre el manual nuevo (reinicia `cmleague-api`: sin mixes en curso), el commit en `main` y publicar el changelog.
