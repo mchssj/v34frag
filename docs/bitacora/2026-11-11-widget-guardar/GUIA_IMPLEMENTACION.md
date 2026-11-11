@@ -2,7 +2,15 @@
 
 ## Estado
 
-**En local, sin commit ni despliegue** (worktree de `main`, 2026-11-11). La `112` quedó aplicada en la base local.
+**Desplegado** desde `main` (commit `f97a565a`) el 2026-11-11. **Falta** probar el diálogo con una cuenta real.
+
+- **La `112`:** antes, `probar_112.sql` contra producción pasó 9 de 9 y se deshizo. Aplicada a las ~16:50 UTC, con `notify pgrst, 'reload schema'`, sin salas del matchmaking activas. Verificado: existen `widget_settings` y `widget_save`, `widget_player` devuelve `settings` y `anon` no puede ejecutar `widget_save`.
+- **La API y la web `f97a565a104e`:** desplegadas a las 16:53 y 16:55 UTC.
+- **Comprobado en producción:**
+  - `GET /api/v1/players/{id}/widget` sin período: `200` con `settings` null; con `since` sin período, `200`; con `period=all&since`, `400`.
+  - `PUT /api/v1/me/widget` sin sesión: `401`.
+  - `/widget?id=…` (sin nada guardado) muestra lo de fábrica, y una URL de antes (`&d=barra&v=historico&a=00b4ff`) se ve como siempre. Sin errores en la consola.
+- La `112` también quedó aplicada en la base local.
 
 ## Archivos
 
