@@ -2,7 +2,14 @@
 
 ## Estado
 
-**En local, sin commit ni despliegue** (worktree de `main`, 2026-11-11). La `111` quedó aplicada en la base local.
+**Desplegado** desde `main` (commit `1f586b80`) el 2026-11-11. **Falta** verlo en OBS de verdad.
+
+- **La `111`:** antes, `probar_111.sql` contra producción pasó 6 de 6 y se deshizo. Aplicada a las ~16:10 UTC, con `notify pgrst, 'reload schema'`. No había salas del matchmaking activas.
+- **La API y la web `1f586b80bdfa`:** desplegadas a las 16:16 UTC, sin salas del matchmaking activas.
+- **Comprobado en producción:**
+  - `GET /api/v1/players/{id}/widget` trae `photo_url` en las 8 primeras fichas del ranking, igual a la foto que muestra el ranking.
+  - `https://cmleague.lat/widget` con la ficha número 1 (que tiene foto): en Stats y en Barra, la foto dentro del anillo y la pastilla con el nivel 6; con `h=photo`, el anillo con el número como antes. Sin errores en la consola.
+- La `111` también quedó aplicada en la base local.
 
 ## Archivos
 

@@ -24,14 +24,14 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Foto de perfil en el widget (2026-11-11): en local, sin commit
+## Foto de perfil en el widget (2026-11-11): desplegado el 2026-11-11
 
 - **Qué es:** la foto del perfil dentro del anillo de nivel en los seis diseños del widget, con el nivel en una pastilla abajo, y **Foto de perfil** en el personalizador para apagarla (`h=photo`); apagada, el nivel queda como antes ([`2026-11-11-widget-foto-de-perfil`](bitacora/2026-11-11-widget-foto-de-perfil/)).
 - **Hecho:** en el worktree de `main`: replanteo `111` (`widget_player` devuelve `photo_url`), la API y la web. 6 de 6 en la base local, 5 de integración y 596 unitarias de la API, 733 de la web y capturas en el navegador. La `111` quedó aplicada en la base local.
+- **Desplegado** (commit `1f586b80`): la `111` (antes `probar_111.sql` pasó 6 de 6 en producción y se deshizo), y la API y la web `1f586b80bdfa` a las 16:16 UTC. Comprobado en producción con la foto real de la ficha número 1, con la foto prendida y apagada ([guía](bitacora/2026-11-11-widget-foto-de-perfil/GUIA_IMPLEMENTACION.md)).
 - **Falta:**
-  1. Commit (lo pide Daniel).
-  2. Desplegar en orden: la `111` (con `probar_111.sql` antes), la API y la web ([guía](bitacora/2026-11-11-widget-foto-de-perfil/GUIA_IMPLEMENTACION.md)).
-  3. Verlo con una foto real y en OBS, y publicar el changelog 2.9.40.
+  1. Verlo en OBS de verdad.
+  2. Publicar el changelog 2.9.40.
 
 ## Widget para streamers en `main` (2026-11-10): desplegado el 2026-11-11
 
