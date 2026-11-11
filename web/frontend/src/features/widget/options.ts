@@ -165,10 +165,13 @@ export function parseOptions(search: string | URLSearchParams): WidgetOptions {
   }
 }
 
-/** Arma la URL del widget con solo lo que cambia respecto de los valores por defecto. */
-export function widgetUrl(base: string, playerId: string, o: WidgetOptions) {
+/**
+ * Las opciones como texto de URL, sin el `id`, con solo lo que cambia respecto de los valores por defecto. Es lo
+ * que se guarda en la cuenta (replanteo 112, bitácora 2026-11-11-widget-guardar).
+ */
+export function optionsQuery(o: WidgetOptions) {
   const d = DEFAULT_OPTIONS
-  const q = new URLSearchParams({ id: playerId })
+  const q = new URLSearchParams()
   if (o.design !== d.design) q.set("d", o.design)
   if (o.period !== d.period) q.set("v", o.period)
   if (o.top.join() !== d.top.join()) q.set("t", o.top.join(","))
@@ -179,5 +182,31 @@ export function widgetUrl(base: string, playerId: string, o: WidgetOptions) {
   if (o.hidden.length) q.set("h", o.hidden.join(","))
   if (o.phrase.trim()) q.set("f", o.phrase.trim().slice(0, MAX_PHRASE))
   if (o.last !== d.last) q.set("n", String(o.last))
-  return `${base}/widget?${q.toString()}`
+  return q.toString()
+}
+
+/** La URL del widget con las opciones adentro (la de `/demo/widget`, sin cuenta). */
+export function widgetUrl(base: string, playerId: string, o: WidgetOptions) {
+  const rest = optionsQuery(o)
+  return `${base}/widget?${new URLSearchParams({ id: playerId })}${rest ? `&${rest}` : ""}`
+}
+
+/** La URL fija del widget: solo la ficha. Usa lo que el jugador guardó en su cuenta. */
+export const savedWidgetUrl = (base: string, playerId: string) =>
+  `${base}/widget?${new URLSearchParams({ id: playerId })}`
+
+/** Las claves de opciones de la URL (sin `id` ni `bg`). */
+const OPTION_KEYS = ["d", "v", "t", "c", "a", "o", "s", "h", "f", "n"]
+
+/**
+ * Lo guardado con las opciones de la URL encima: cada opción que trae la URL gana. Así una URL vieja, con todo
+ * adentro, se sigue viendo igual, y `/widget?id=…` muestra lo guardado.
+ */
+export function mergeOptions(saved: string | null, url: URLSearchParams) {
+  const q = new URLSearchParams(saved ?? "")
+  for (const k of OPTION_KEYS) {
+    const v = url.get(k)
+    if (v !== null) q.set(k, v)
+  }
+  return parseOptions(q)
 }

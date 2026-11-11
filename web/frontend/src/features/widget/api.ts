@@ -6,6 +6,9 @@ import { COUNTRIES } from "@/features/profile/lib/schemas"
 import type { WidgetPeriod } from "./options"
 import type { WidgetData } from "./StreamWidget"
 
+/** Lo que devuelve la API: los datos del widget y lo que guardó el dueño (replanteo 112). */
+export type WidgetResponse = WidgetData & { settings: string | null }
+
 // Datos del widget para OBS: GET /api/v1/players/{id}/widget (replanteo 110, bitácora
 // 2026-11-10-widget-streamers-en-main). Se piden cada minuto, también con la pestaña en segundo plano,
 // porque OBS no la tiene "visible".
@@ -31,31 +34,37 @@ const isCountry = (c: string | null): c is (typeof COUNTRIES)[number] =>
   c !== null && (COUNTRIES as readonly string[]).includes(c)
 
 /** La respuesta de la API con el país solo si es uno de la lista (la bandera necesita uno conocido). */
-export function toWidgetData(r: Schemas["WidgetData"]): WidgetData {
+export function toWidgetData(r: Schemas["WidgetData"]): WidgetResponse {
   return { ...r, country: isCountry(r.country) ? r.country : null }
 }
 
 export const widgetKeys = {
-  data: (id: string, period: WidgetPeriod) => ["widget", id, period] as const,
+  all: (id: string) => ["widget", id] as const,
+  /** `null`: el período guardado (o Hoy si no hay nada guardado). */
+  data: (id: string, period: WidgetPeriod | null) =>
+    ["widget", id, period ?? "guardado"] as const,
 }
 
+/** `period` null pide el período que guardó el jugador; la API lo resuelve (replanteo 112). */
 export function widgetDataOptions(
   id: string,
-  period: WidgetPeriod,
+  period: WidgetPeriod | null,
   enabled = true
 ) {
   return queryOptions({
     queryKey: widgetKeys.data(id, period),
     enabled,
-    queryFn: ({ signal }): Promise<WidgetData> =>
+    queryFn: ({ signal }): Promise<WidgetResponse> =>
       unwrap(
         api.GET("/api/v1/players/{id}/widget", {
           params: {
             path: { id },
             query:
-              period === "hoy"
-                ? { period: "today", since: localMidnight() }
-                : { period: API_PERIOD[period] },
+              period === null
+                ? { since: localMidnight() }
+                : period === "hoy"
+                  ? { period: "today", since: localMidnight() }
+                  : { period: API_PERIOD[period] },
           },
           signal,
         })
@@ -69,3 +78,7 @@ export function widgetDataOptions(
     retry: (failures, e) => failures < 2 && !isApiError(e, "NOT_FOUND"),
   })
 }
+
+/** Guarda la configuración del widget en la cuenta: el texto de `optionsQuery` (replanteo 112). */
+export const saveWidget = (query: string) =>
+  unwrap(api.PUT("/api/v1/me/widget", { body: { query } }))

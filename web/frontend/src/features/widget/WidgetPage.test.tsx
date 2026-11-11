@@ -55,6 +55,7 @@ const WIDGET = {
     { r: "D", elo: -12 },
     { r: "V", elo: 21 },
   ],
+  settings: null as string | null,
 }
 
 async function open(search: string) {
@@ -79,7 +80,7 @@ describe("página /widget", () => {
     ).toBeInTheDocument()
   })
 
-  it("con datos: dibuja el diseño de la URL y pide Hoy desde la medianoche local", async () => {
+  it("con datos: dibuja el diseño de la URL y, sin período, pide el guardado desde la medianoche local", async () => {
     let query: URLSearchParams | null = null
     server.use(
       http.get(`${API}/api/v1/players/${ID}/widget`, ({ request }) => {
@@ -90,8 +91,24 @@ describe("página /widget", () => {
     await open(`?id=${ID}&d=completo&a=00b4ff`)
     expect(await screen.findByText("Mecha")).toBeInTheDocument()
     expect(screen.getByText("ALF")).toBeInTheDocument()
-    expect(query!.get("period")).toBe("today")
+    expect(query!.get("period")).toBeNull()
     expect(query!.get("since")).toBe(localMidnight())
+  })
+
+  it("solo con el id: usa lo guardado, y lo de la URL gana", async () => {
+    server.use(
+      http.get(`${API}/api/v1/players/${ID}/widget`, () =>
+        HttpResponse.json({ ...WIDGET, settings: "d=stats&f=Lo+guardado" })
+      )
+    )
+    const a = await open(`?id=${ID}`)
+    expect(await screen.findByText("Lo guardado")).toBeInTheDocument()
+    expect(screen.getByText("Ranking:")).toBeInTheDocument()
+    a.unmount()
+
+    await open(`?id=${ID}&f=De+la+URL`)
+    expect(await screen.findByText("De la URL")).toBeInTheDocument()
+    expect(screen.queryByText("Lo guardado")).toBeNull()
   })
 
   it("el período de la URL va a la API", async () => {

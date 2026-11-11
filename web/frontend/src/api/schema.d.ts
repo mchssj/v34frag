@@ -1360,6 +1360,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/widget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Guardar mi widget para stream
+         * @description Guarda la configuración del widget de mi ficha (replanteo 112, bitácora 2026-11-11-widget-guardar), con el formato de la URL del widget sin el `id`. La URL `/widget?id=<ficha>` la usa sola. `400 BUSINESS_RULE` si la cuenta no tiene ficha vinculada.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["WidgetSaveBody"];
+                };
+            };
+            responses: {
+                /** @description Guardado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WidgetSaved"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players/{id}/wall": {
         parameters: {
             query?: never;
@@ -4738,9 +4799,9 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description `today`: desde `since` (la medianoche de la PC del streamer); `24h`: las últimas 24 horas; `season`: desde el comienzo de la temporada activa; `all`: todo */
+                    /** @description `today`: desde `since` (la medianoche de la PC del streamer); `24h`: las últimas 24 horas; `season`: desde el comienzo de la temporada activa; `all`: todo. Sin esto, el que guardó el dueño (`v=` de `settings`, replanteo 112) y, si no guardó nada, `today` */
                     period?: "today" | "24h" | "season" | "all";
-                    /** @description Solo con `today`: desde cuándo. Hasta 48 horas atrás. Sin esto, las últimas 24 horas */
+                    /** @description Con `today` o sin `period`: desde cuándo cuenta "hoy". Hasta 48 horas atrás. Sin esto, las últimas 24 horas */
                     since?: string;
                 };
                 header?: never;
@@ -23737,6 +23798,17 @@ export interface components {
             /** @description Motivo del rechazo, si el admin escribió uno. null en el resto */
             reject_reason: string | null;
         } | null;
+        WidgetSaved: {
+            query: string;
+            updated_at: string;
+        };
+        WidgetSaveBody: {
+            /**
+             * @description Las opciones con el formato de la URL del widget, sin el `id`. Vacío = las de fábrica
+             * @example d=stats&v=historico&h=photo
+             */
+            query: string;
+        };
         ProfileWall: {
             likes: number;
             dislikes: number;
@@ -24614,6 +24686,11 @@ export interface components {
                 r: "V" | "D" | "E";
                 elo: number | null;
             }[];
+            /**
+             * @description Lo que guardó el dueño (replanteo 112), con el formato de la URL del widget sin el `id` (`d=stats&v=historico`); null si no guardó nada
+             * @example d=stats&v=historico&h=photo
+             */
+            settings: string | null;
         };
         TitleList: {
             items: components["schemas"]["Title"][];

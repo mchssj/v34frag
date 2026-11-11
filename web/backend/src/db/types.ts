@@ -7665,7 +7665,10 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "widget_player":
-{ Args: { "p_period"?: string,"p_player": string,"p_since"?: string }; Returns: Json
+{ Args: { "p_period"?: string | null,"p_player": string,"p_since"?: string }; Returns: Json
+                           }
+"widget_save":
+{ Args: { "p_query": string }; Returns: Json
                            }
           }
           Enums: {

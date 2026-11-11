@@ -1,0 +1,7 @@
+CMLeague 2.9.41 --  Changelog
+
+Widget para tu stream
+- Nuevo: botón Guardar. Lo que eliges queda guardado en tu cuenta y, la próxima vez que abras "Armar mi widget", empieza con lo que tenías.
+- La URL para OBS ahora es fija: la pegas una sola vez. Cada vez que guardas, tu widget en OBS cambia solo en un minuto, sin tocar nada.
+- Si cierras con cambios sin guardar, te preguntamos antes de perderlos.
+- ¿Ya tenías el widget en OBS? Tu URL de antes sigue andando igual, pero no toma lo que guardes: reemplázala una vez por la nueva.

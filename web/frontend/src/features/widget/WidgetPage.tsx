@@ -4,12 +4,12 @@ import { useEffect, type ReactNode } from "react"
 
 import { isApiError } from "@/api/errors"
 import { widgetDataOptions } from "./api"
-import { parseOptions } from "./options"
+import { mergeOptions, parseOptions } from "./options"
 import { StreamWidget } from "./StreamWidget"
 
 // La página /widget que va en la fuente de navegador de OBS (bitácora 2026-11-10-widget-streamers-en-main).
-// Todo lo que eligió el streamer viene en la URL (parseOptions); `bg=1` pone un fondo gris para verlo en el
-// navegador.
+// Usa lo que el streamer guardó en su cuenta (2026-11-11-widget-guardar) con las opciones de la URL encima: las URLs
+// viejas traen todo adentro y se siguen viendo igual. `bg=1` pone un fondo gris para verlo en el navegador.
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -35,11 +35,14 @@ export function WidgetPage() {
   const search = useLocation({ select: (l) => l.searchStr })
   const q = new URLSearchParams(search)
   const id = (q.get("id") ?? "").trim()
-  const options = parseOptions(q)
   const valid = UUID.test(id)
   usePageBackground(q.get("bg") === "1" ? "#3a3f47" : "transparent")
 
-  const data = useQuery(widgetDataOptions(id, options.period, valid))
+  // Sin `v` en la URL, la API usa el período guardado.
+  const data = useQuery(
+    widgetDataOptions(id, q.has("v") ? parseOptions(q).period : null, valid)
+  )
+  const options = mergeOptions(data.data?.settings ?? null, q)
 
   let body: ReactNode = null
   if (!valid) body = <Notice>Falta el jugador en la URL</Notice>

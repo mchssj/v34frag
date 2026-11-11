@@ -312,15 +312,17 @@ export const WIDGET_PERIODS = ['today', '24h', 'season', 'all'] as const;
 
 export const WidgetQuery = z
   .object({
-    period: z.enum(WIDGET_PERIODS).default('today').openapi({
-      description: '`today`: desde `since` (la medianoche de la PC del streamer); `24h`: las últimas 24 horas; `season`: desde el comienzo de la temporada activa; `all`: todo',
+    period: z.enum(WIDGET_PERIODS).optional().openapi({
+      description:
+        '`today`: desde `since` (la medianoche de la PC del streamer); `24h`: las últimas 24 horas; `season`: desde el comienzo de la temporada activa; `all`: todo. ' +
+        'Sin esto, el que guardó el dueño (`v=` de `settings`, replanteo 112) y, si no guardó nada, `today`',
     }),
     since: z.iso.datetime({ offset: true }).optional().openapi({
-      description: 'Solo con `today`: desde cuándo. Hasta 48 horas atrás. Sin esto, las últimas 24 horas',
+      description: 'Con `today` o sin `period`: desde cuándo cuenta "hoy". Hasta 48 horas atrás. Sin esto, las últimas 24 horas',
       example: '2026-11-10T03:00:00.000Z',
     }),
   })
-  .refine((q) => !q.since || q.period === 'today', { message: '`since` solo va con `period=today`', path: ['since'] })
+  .refine((q) => !q.since || !q.period || q.period === 'today', { message: '`since` solo va con `period=today` o sin `period`', path: ['since'] })
   .refine(
     (q) => {
       if (!q.since) return true;
@@ -359,5 +361,25 @@ export const WidgetData = z
     ultimos: z
       .array(z.object({ r: z.enum(['V', 'D', 'E']), elo: int.nullable() }))
       .openapi({ description: 'Últimos 10 mixes, del más nuevo al más viejo (de cualquier fecha)' }),
+    settings: z.string().nullable().openapi({
+      description: 'Lo que guardó el dueño (replanteo 112), con el formato de la URL del widget sin el `id` (`d=stats&v=historico`); null si no guardó nada',
+      example: 'd=stats&v=historico&h=photo',
+    }),
   })
   .openapi('WidgetData');
+
+/** Lo que acepta la base en `widget_settings.query` (replanteo 112). */
+const WIDGET_QUERY = /^[A-Za-z0-9=&,_%.+-]*$/;
+
+export const WidgetSaveBody = z
+  .object({
+    query: z.string().max(600).regex(WIDGET_QUERY, 'Solo el texto de opciones de la URL del widget').openapi({
+      description: 'Las opciones con el formato de la URL del widget, sin el `id`. Vacío = las de fábrica',
+      example: 'd=stats&v=historico&h=photo',
+    }),
+  })
+  .openapi('WidgetSaveBody');
+
+export const WidgetSaved = z
+  .object({ query: z.string(), updated_at: z.string() })
+  .openapi('WidgetSaved');

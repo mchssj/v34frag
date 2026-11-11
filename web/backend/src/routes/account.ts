@@ -3,6 +3,7 @@ import { optionalUser, requireUser } from '../lib/auth';
 import { must, mustHave } from '../lib/db';
 import { createRouter } from '../lib/router';
 import { bearer, errorResponses, json } from '../schemas/common';
+import { WidgetSaveBody, WidgetSaved } from '../schemas/players';
 import { AliasAvailability, AliasBody, AliasParam, AliasResult, TeamRequest } from '../schemas/teams';
 
 export const ALIAS_WAIT_DAYS = 15;
@@ -46,6 +47,20 @@ const getTeamRequest = createRoute({
   responses: { 200: { description: 'Solicitud', ...json(TeamRequest.nullable()) }, ...errorResponses(401) },
 });
 
+const putWidget = createRoute({
+  method: 'put',
+  path: '/api/v1/me/widget',
+  tags: ['Mi perfil'],
+  summary: 'Guardar mi widget para stream',
+  description:
+    'Guarda la configuración del widget de mi ficha (replanteo 112, bitácora 2026-11-11-widget-guardar), con el formato de la URL ' +
+    'del widget sin el `id`. La URL `/widget?id=<ficha>` la usa sola. `400 BUSINESS_RULE` si la cuenta no tiene ficha vinculada.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  request: { body: { required: true, ...json(WidgetSaveBody) } },
+  responses: { 200: { description: 'Guardado', ...json(WidgetSaved) }, ...errorResponses(400, 401) },
+});
+
 const REQUEST = 'name, tag, status, logo_url, created_at, reject_reason';
 
 export const account = createRouter()
@@ -67,4 +82,8 @@ export const account = createRouter()
     const { sb, user } = c.var;
     const r = must(await sb.from('team_requests').select(REQUEST).eq('user_id', user.id).maybeSingle());
     return c.json(r ? { ...r, status: r.status as 'pending' | 'approved' | 'rejected' } : null, 200);
+  })
+  .openapi(putWidget, async (c) => {
+    const saved = mustHave(await c.var.sb.rpc('widget_save', { p_query: c.req.valid('json').query }));
+    return c.json(WidgetSaved.parse(saved), 200);
   });

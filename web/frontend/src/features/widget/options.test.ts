@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest"
 
 import {
   DEFAULT_OPTIONS,
+  mergeOptions,
+  optionsQuery,
   parseOptions,
+  savedWidgetUrl,
   widgetUrl,
   type WidgetOptions,
 } from "./options"
@@ -51,5 +54,28 @@ describe("opciones del widget en la URL", () => {
     const o = parseOptions(`?t=adr,kd,kr,hs,rating,aces&f=${"x".repeat(80)}`)
     expect(o.top).toHaveLength(4)
     expect(o.phrase).toHaveLength(40)
+  })
+
+  it("lo que se guarda es la URL sin el id, y la URL fija es solo el id", () => {
+    expect(optionsQuery(DEFAULT_OPTIONS)).toBe("")
+    expect(optionsQuery({ ...DEFAULT_OPTIONS, design: "barra" })).toBe(
+      "d=barra"
+    )
+    expect(savedWidgetUrl("https://cmleague.lat", ID)).toBe(
+      `https://cmleague.lat/widget?id=${ID}`
+    )
+  })
+
+  it("lo guardado con lo de la URL encima, opción por opción", () => {
+    const o = mergeOptions(
+      "d=stats&v=historico&a=00b4ff",
+      new URLSearchParams(`id=${ID}&v=hoy&bg=1`)
+    )
+    expect(o.design).toBe("stats")
+    expect(o.period).toBe("hoy")
+    expect(o.accent).toBe("00b4ff")
+    expect(mergeOptions(null, new URLSearchParams(`id=${ID}`))).toEqual(
+      DEFAULT_OPTIONS
+    )
   })
 })

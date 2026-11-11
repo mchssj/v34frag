@@ -209,6 +209,11 @@ const SECTIONS: LegalSection[] = [
             el roster y la hora.
           </li>
           <li>
+            La configuración de tu widget para stream, si la guardas: el diseño,
+            el período, las stats, los colores y tu frase. Es pública, porque es
+            lo que se ve en tu stream.
+          </li>
+          <li>
             Las capturas y notas de los reportes de resultados <Wip />
           </li>
           <li>

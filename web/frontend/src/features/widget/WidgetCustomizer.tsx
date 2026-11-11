@@ -273,6 +273,7 @@ export function WidgetPreview({
   url,
   bgClassName = STREAM_BG,
   empty,
+  hint = "Se actualiza solo cada minuto.",
 }: {
   value: WidgetOptions
   data: WidgetData | undefined
@@ -280,6 +281,8 @@ export function WidgetPreview({
   bgClassName?: string
   /** Lo que se ve en la vista previa sin datos (cargando o con error). */
   empty?: ReactNode
+  /** Lo que va después del tamaño para OBS. */
+  hint?: ReactNode
 }) {
   const [w, h] = WIDGET_SIZE[o.design]
   return (
@@ -315,7 +318,7 @@ export function WidgetPreview({
         En OBS: Fuentes → + →{" "}
         <strong className="text-foreground">Navegador</strong> → pega la URL con
         tamaño {Math.round((w * o.scale) / 100)} ×{" "}
-        {Math.round((h * o.scale) / 100)}. Se actualiza solo cada minuto.
+        {Math.round((h * o.scale) / 100)}. {hint}
       </p>
     </div>
   )

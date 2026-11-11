@@ -1,27 +1,41 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { MonitorPlayIcon } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
 import { CardTitle, SectionCard } from "@/features/profile/components/ui"
-import { widgetDataOptions } from "./api"
-import { DEFAULT_OPTIONS, widgetUrl, type WidgetOptions } from "./options"
+import {
+  saveWidget,
+  widgetDataOptions,
+  widgetKeys,
+  type WidgetResponse,
+} from "./api"
+import {
+  optionsQuery,
+  parseOptions,
+  savedWidgetUrl,
+  type WidgetOptions,
+} from "./options"
 import { WidgetControls, WidgetPreview } from "./WidgetCustomizer"
 
 // Widget para stream en Cuenta (bitácora 2026-11-10-widget-streamers-en-main): para cualquiera con ficha,
-// al lado del HUD de los streamers. Lo que se elige queda solo en la URL; no se guarda nada.
+// al lado del HUD de los streamers. Desde 2026-11-11-widget-guardar lo que se elige se guarda en la cuenta y la
+// URL de OBS queda fija (solo la ficha).
 
-/** El diálogo con el personalizador y la vista previa con los datos reales de la ficha. */
+/** El diálogo con el personalizador, la vista previa con los datos reales y el botón Guardar. */
 function WidgetDialog({
   playerId,
   open,
@@ -31,40 +45,117 @@ function WidgetDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const [o, setO] = useState<WidgetOptions>(DEFAULT_OPTIONS)
-  const data = useQuery(widgetDataOptions(playerId, o.period, open))
-  const url = widgetUrl(location.origin, playerId, o)
+  const queryClient = useQueryClient()
+  // null: sin cambios, se muestra lo guardado. Al tocar algo, la copia que se está editando.
+  const [edit, setEdit] = useState<WidgetOptions | null>(null)
+  const [confirmClose, setConfirmClose] = useState(false)
+  const [period, setPeriod] = useState<WidgetOptions["period"] | null>(null)
+  const data = useQuery(
+    widgetDataOptions(playerId, edit?.period ?? period, open)
+  )
+  const saved = data.data ? parseOptions(data.data.settings ?? "") : null
+  const o = edit ?? saved
+  const dirty =
+    edit !== null &&
+    saved !== null &&
+    optionsQuery(edit) !== optionsQuery(saved)
+  const url = savedWidgetUrl(location.origin, playerId)
+
+  const save = useMutation({
+    mutationFn: (o: WidgetOptions) => saveWidget(optionsQuery(o)),
+    onSuccess: (r, o) => {
+      // Todas las consultas del widget de esta ficha pasan a tener lo guardado.
+      queryClient.setQueriesData<WidgetResponse>(
+        { queryKey: widgetKeys.all(playerId) },
+        (old) => old && { ...old, settings: r.query }
+      )
+      setPeriod(o.period)
+      setEdit(null)
+      toast.success("Guardado. Tu widget en OBS cambia solo en un minuto.")
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  })
+
+  const close = () => {
+    setEdit(null)
+    setPeriod(null)
+    onOpenChange(false)
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (v) onOpenChange(true)
+        else if (dirty) setConfirmClose(true)
+        else close()
+      }}
+    >
       <DialogContent className="max-h-[calc(100dvh-32px)] gap-5 overflow-y-auto sm:max-w-[960px]">
         <DialogHeader>
           <DialogTitle>Widget para stream</DialogTitle>
           <DialogDescription>
-            Elige cómo se ve y copia la URL en una fuente de navegador de OBS.
-            Todo queda guardado en la URL: si cambias algo, vuelve a copiarla.
+            Elige cómo se ve y toca Guardar. La URL no cambia: pégala una vez en
+            una fuente de navegador de OBS y, cada vez que guardes, tu widget se
+            actualiza solo.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <WidgetControls value={o} onChange={setO} data={data.data} />
-          <div className="lg:sticky lg:top-0 lg:self-start">
-            <WidgetPreview
-              value={o}
-              data={data.data}
-              url={url}
-              empty={
-                data.isError ? (
-                  <span className="dark rounded-lg bg-black/70 px-3 py-2 text-[13px] text-foreground">
-                    {errorMessage(data.error)}
-                  </span>
-                ) : (
-                  <Spinner className="size-6 text-white/70" />
-                )
-              }
-            />
+        {o ? (
+          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <WidgetControls value={o} onChange={setEdit} data={data.data} />
+            <div className="flex flex-col gap-3 lg:sticky lg:top-0 lg:self-start">
+              <WidgetPreview
+                value={o}
+                data={data.data}
+                url={url}
+                hint="Pégala una sola vez: cuando guardes, se actualiza sola en un minuto."
+                empty={<Spinner className="size-6 text-white/70" />}
+              />
+              <p className="text-xs text-muted-foreground">
+                Si en OBS tienes una URL más larga (de antes), reemplázala una
+                vez por esta: la larga sigue mostrando lo que tenía.
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid min-h-[200px] place-items-center">
+            {data.isError ? (
+              <span className="text-sm text-destructive">
+                {errorMessage(data.error)}
+              </span>
+            ) : (
+              <Spinner className="size-6" />
+            )}
+          </div>
+        )}
+        <DialogFooter className="items-center gap-3 sm:justify-end">
+          {dirty && (
+            <span className="text-sm text-muted-foreground">
+              Cambios sin guardar
+            </span>
+          )}
+          <Button
+            disabled={!dirty || save.isPending}
+            onClick={() => edit && save.mutate(edit)}
+          >
+            {save.isPending && <Spinner />}
+            Guardar
+          </Button>
+        </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={confirmClose}
+        onOpenChange={setConfirmClose}
+        title="¿Cerrar sin guardar?"
+        description="Se pierden los cambios. Tu widget en OBS sigue como estaba."
+        confirmLabel="Cerrar sin guardar"
+        pending={false}
+        error={null}
+        onConfirm={() => {
+          setConfirmClose(false)
+          close()
+        }}
+      />
     </Dialog>
   )
 }

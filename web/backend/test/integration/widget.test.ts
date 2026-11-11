@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
-import { admin, localEnv } from './local';
+import { admin, createUser, localEnv } from './local';
 
 // Widget para streamers contra la Supabase local con el replanteo 110 (bitácora 2026-11-10-widget-streamers-en-main).
 const app = createApp();
@@ -10,6 +10,14 @@ const steam = () => '7656119' + String(Math.floor(Math.random() * 1e10)).padStar
 
 async function get(path: string) {
   const res = await app.request(path, {}, env);
+  const text = await res.text();
+  return { status: res.status, headers: res.headers, body: text ? JSON.parse(text) : null };
+}
+
+async function put(path: string, body: unknown, token?: string) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await app.request(path, { method: 'PUT', headers, body: JSON.stringify(body) }, env);
   const text = await res.text();
   return { status: res.status, headers: res.headers, body: text ? JSON.parse(text) : null };
 }
@@ -68,6 +76,35 @@ describe('GET /api/v1/players/{id}/widget', () => {
   it('ficha que no existe: 404', async () => {
     const r = await get('/api/v1/players/00000000-0000-4000-8000-000000000000/widget');
     expect(r.status).toBe(404);
+  });
+
+  it('guardar (replanteo 112): solo el dueño, y sin período usa el guardado', async () => {
+    const r0 = await get(`/api/v1/players/${playerId}/widget`);
+    expect(r0.status).toBe(200);
+    expect(r0.body.settings).toBeNull();
+
+    // Sin sesión: 401. Con sesión pero sin ficha: 400 con un mensaje claro.
+    expect((await put('/api/v1/me/widget', { query: 'd=stats' })).status).toBe(401);
+    const otro = await createUser();
+    const sin = await put('/api/v1/me/widget', { query: 'd=stats' }, otro.token);
+    expect(sin.status).toBe(400);
+    expect(sin.body.error.message).toMatch(/ficha de jugador vinculada/);
+
+    // El dueño guarda. Texto inválido: 400 antes de llegar a la base.
+    const duenio = await createUser();
+    const v = await admin().from('players').update({ user_id: duenio.id }).eq('id', playerId);
+    if (v.error) throw v.error;
+    expect((await put('/api/v1/me/widget', { query: 'f=<b>' }, duenio.token)).status).toBe(400);
+    const ok = await put('/api/v1/me/widget', { query: 'd=stats&v=historico&h=photo' }, duenio.token);
+    expect(ok.status).toBe(200);
+    expect(ok.body.query).toBe('d=stats&v=historico&h=photo');
+
+    // OBS sin período ve lo guardado; "since" sin período también vale.
+    const since = encodeURIComponent(new Date(Date.now() - 2 * 3600_000).toISOString());
+    const r1 = await get(`/api/v1/players/${playerId}/widget?since=${since}`);
+    expect(r1.status).toBe(200);
+    expect(r1.body.settings).toBe('d=stats&v=historico&h=photo');
+    expect(r1.body.period.v).toBe(1);
   });
 
   it('parámetros inválidos: 400', async () => {

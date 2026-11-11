@@ -383,7 +383,8 @@ export const players = createRouter()
   .openapi(widget, async (c) => {
     const { period, since } = c.req.valid('query');
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
-    const data = must(await c.var.sb.rpc('widget_player', { p_player: id, p_period: period, ...(since ? { p_since: since } : {}) }));
+    // Sin período, la base usa el que guardó el dueño (replanteo 112).
+    const data = must(await c.var.sb.rpc('widget_player', { p_player: id, p_period: period ?? null, ...(since ? { p_since: since } : {}) }));
     if (!data) throw notFound('ese jugador');
     c.header('Cache-Control', 'public, max-age=30');
     return c.json(WidgetData.parse(data), 200);

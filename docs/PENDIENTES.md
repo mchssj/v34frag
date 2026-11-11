@@ -24,6 +24,15 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Guardar el widget en la cuenta (2026-11-11): en local, sin commit
+
+- **Qué es:** botón **Guardar** en el personalizador del widget; la configuración queda en la cuenta y la URL de OBS queda fija (`/widget?id=…`). Las URLs de antes siguen igual: sus opciones ganan a lo guardado ([`2026-11-11-widget-guardar`](bitacora/2026-11-11-widget-guardar/)).
+- **Hecho:** en el worktree de `main`: replanteo `112`, `PUT /api/v1/me/widget`, la web, `/privacidad` y el manual. 9 de 9 en la base local, 6 de integración y 596 unitarias de la API, 737 de la web, y de punta a punta en local. La `112` quedó aplicada en la base local.
+- **Falta:**
+  1. Commit (lo pide Daniel).
+  2. Desplegar en orden: la `112` (con `probar_112.sql` antes), la API y la web ([guía](bitacora/2026-11-11-widget-guardar/GUIA_IMPLEMENTACION.md)).
+  3. Probar el diálogo con una cuenta real y publicar el changelog 2.9.41.
+
 ## Foto de perfil en el widget (2026-11-11): desplegado el 2026-11-11
 
 - **Qué es:** la foto del perfil dentro del anillo de nivel en los seis diseños del widget, con el nivel en una pastilla abajo, y **Foto de perfil** en el personalizador para apagarla (`h=photo`); apagada, el nivel queda como antes ([`2026-11-11-widget-foto-de-perfil`](bitacora/2026-11-11-widget-foto-de-perfil/)).
