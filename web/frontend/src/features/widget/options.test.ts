@@ -25,7 +25,7 @@ describe("opciones del widget en la URL", () => {
       accent: "1ce400",
       opacity: 55,
       scale: 125,
-      hidden: ["tag", "progress"],
+      hidden: ["photo", "tag", "progress"],
       phrase: "¡Vamos que se puede!",
       last: 10,
     }

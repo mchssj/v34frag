@@ -116,6 +116,7 @@ const START: Omit<WidgetData, "period"> = {
   nick: "Pepon",
   team_tag: "v34",
   country: "Argentina",
+  photo_url: null,
   elo: 1187,
   peak_elo: 1210,
   rank: 14,

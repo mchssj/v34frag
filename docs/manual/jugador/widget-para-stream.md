@@ -1,10 +1,10 @@
 ---
 titulo: Poner tu widget en el stream
-resumen: Un recuadro para OBS con tu nivel, tu ELO y cómo te va en los mixes, que se actualiza solo.
+resumen: Un recuadro para OBS con tu foto, tu nivel, tu ELO y cómo te va en los mixes, que se actualiza solo.
 orden: 15
 ---
 
-El widget es un recuadro que muestras en OBS (o en Streamlabs) encima del juego: tu nivel, tu ELO, cuánto te falta para el siguiente nivel, las stats que elijas y tus últimos resultados. Se actualiza solo cada minuto.
+El widget es un recuadro que muestras en OBS (o en Streamlabs) encima del juego: tu foto de perfil, tu nivel, tu ELO, cuánto te falta para el siguiente nivel, las stats que elijas y tus últimos resultados. Se actualiza solo cada minuto.
 
 Lo puede usar cualquier jugador, no hace falta ser streamer de la liga. Muestra lo mismo que ya se ve en tu perfil público.
 
@@ -20,7 +20,7 @@ Necesitas tu perfil vinculado a tu jugador del servidor: ver [Vincular tu SteamI
    - **Diseño:** Mini, Compacto, Completo, Stats, Barra (una tira para abajo de la pantalla) o Vertical (una columna para el costado de la cámara).
    - **Período:** Hoy (desde la medianoche de tu PC), 24 h, Temporada o Histórico.
    - **Stats grandes** y **Stats chicas**, en los diseños que las muestran. Se marcan en orden: el número dice en qué lugar sale cada una.
-   - El **color**, la opacidad del **fondo**, el **tamaño** y **qué se muestra** (nick, tag del equipo, nivel, bandera…).
+   - El **color**, la opacidad del **fondo**, el **tamaño** y **qué se muestra** (foto de perfil, nick, tag del equipo, nivel, bandera…).
    - Una **frase** propia. Si la dejas vacía, sale sola cuando hay algo para destacar: primero del ranking, una racha de victorias, el top 10, +50 ELO en el día o primero de tu país.
 4. Mira la vista previa con tus datos y toca **Copiar URL**.
 
@@ -31,6 +31,12 @@ Necesitas tu perfil vinculado a tu jugador del servidor: ver [Vincular tu SteamI
 3. Ponle el tamaño que te dice la web debajo de la URL (cambia con el diseño y el tamaño que elegiste).
 
 El fondo de la fuente es transparente: solo se ve el recuadro.
+
+## Tu foto
+
+Tu foto de perfil sale dentro del anillo de tu nivel, y el número del nivel queda en una pastilla abajo. Es la misma foto de tu perfil: para cambiarla, cámbiala en [Mi perfil](/profile). Si no tienes foto, sale la inicial de tu nick.
+
+Si no quieres que salga, apaga **Foto de perfil** en **qué se muestra** y vuelve a copiar la URL: el nivel queda como antes, con el número dentro del anillo.
 
 ## Cambiar algo
 

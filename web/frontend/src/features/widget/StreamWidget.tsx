@@ -2,7 +2,9 @@ import { cn } from "cn"
 import type { CSSProperties, ReactNode } from "react"
 
 import { CountryFlag } from "@/components/brand/CountryFlag"
+import { initialOf } from "@/components/brand/PlayerAvatar"
 import { LEVEL_SEGMENTS, levelColor } from "@/components/brand/LevelBadge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { levelOf } from "@/features/matchmaking/room/roomData"
 import { LEVEL_FLOORS } from "@/features/player/lib/labels"
 import type { COUNTRIES } from "@/features/profile/lib/schemas"
@@ -52,6 +54,8 @@ export interface WidgetData {
   nick: string
   team_tag: string | null
   country: (typeof COUNTRIES)[number] | null
+  /** Foto del perfil público (replanteo 111); null si no tiene. */
+  photo_url: string | null
   elo: number
   peak_elo: number
   /** Puesto en el ranking general y en el de su país (null sin puesto). */
@@ -145,7 +149,18 @@ export function autoPhrase(d: WidgetData, o: WidgetOptions) {
 }
 
 /** El anillo de nivel de la web (`LevelBadge`) a cualquier tamaño: el widget usa tamaños que la insignia no tiene. */
-export function LevelRing({ level, size }: { level: number; size: number }) {
+export function LevelRing({
+  level,
+  size,
+  number = true,
+  className,
+}: {
+  level: number
+  size: number
+  /** false: el anillo sin el número adentro (la foto va encima). */
+  number?: boolean
+  className?: string
+}) {
   const n = Math.max(0, Math.min(10, Math.round(level)))
   const color = levelColor(n)
   return (
@@ -155,7 +170,7 @@ export function LevelRing({ level, size }: { level: number; size: number }) {
       height={size}
       role="img"
       aria-label={`Nivel ${level}`}
-      className="shrink-0"
+      className={cn("shrink-0", className)}
     >
       {LEVEL_SEGMENTS.map((d, i) => (
         <path
@@ -164,19 +179,89 @@ export function LevelRing({ level, size }: { level: number; size: number }) {
           style={{ fill: i < n ? color : "var(--level-off)" }}
         />
       ))}
-      <text
-        x={120}
-        y={120}
-        dominantBaseline="central"
-        textAnchor="middle"
-        fontSize={n >= 10 ? 96 : 118}
-        fontWeight={900}
-        letterSpacing={n >= 10 ? -6 : 0}
-        className="fill-foreground font-sans"
+      {number && (
+        <text
+          x={120}
+          y={120}
+          dominantBaseline="central"
+          textAnchor="middle"
+          fontSize={n >= 10 ? 96 : 118}
+          fontWeight={900}
+          letterSpacing={n >= 10 ? -6 : 0}
+          className="fill-foreground font-sans"
+        >
+          {level}
+        </text>
+      )}
+    </svg>
+  )
+}
+
+/** La foto del perfil en un círculo; sin foto, o si no carga, la inicial del nick. */
+function Photo({ d, size }: { d: WidgetData; size: number }) {
+  return (
+    <Avatar
+      aria-hidden
+      style={{ width: size, height: size }}
+      className="shrink-0 after:hidden"
+    >
+      {d.photo_url && <AvatarImage src={d.photo_url} alt="" />}
+      <AvatarFallback
+        style={{ fontSize: Math.round(size * 0.42) }}
+        className="bg-secondary font-bold text-foreground"
+      >
+        {initialOf(d.nick)}
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+/**
+ * La foto y el nivel (bitácora 2026-11-11-widget-foto-de-perfil): la foto dentro del anillo y el número en una
+ * pastilla abajo. Con la foto oculta, el anillo con el número como antes; con el nivel oculto, solo la foto.
+ */
+export function Identity({
+  d,
+  o,
+  size,
+}: {
+  d: WidgetData
+  o: WidgetOptions
+  size: number
+}) {
+  const level = levelOf(d.elo, LEVEL_FLOORS)
+  const photo = shows(o, "photo")
+  if (!shows(o, "level")) return photo ? <Photo d={d} size={size} /> : null
+  if (!photo) return <LevelRing level={level} size={size} />
+  const inner = Math.round(size * 0.72)
+  const font = Math.max(9, Math.round(size * 0.22))
+  const color = levelColor(level)
+  return (
+    <span
+      className="relative grid shrink-0 place-items-center"
+      style={{ width: size, height: size }}
+    >
+      <LevelRing
+        level={level}
+        size={size}
+        number={false}
+        className="absolute inset-0"
+      />
+      <Photo d={d} size={inner} />
+      <span
+        aria-hidden
+        style={{
+          fontSize: font,
+          lineHeight: `${font + 3}px`,
+          minWidth: font + 9,
+          borderColor: color,
+          color,
+        }}
+        className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border-[1.5px] bg-background px-1 text-center font-black tabular-nums"
       >
         {level}
-      </text>
-    </svg>
+      </span>
+    </span>
   )
 }
 
@@ -351,7 +436,6 @@ function Phrase({
 
 /** Mini, Compacto y Completo: los diseños de antes, con las opciones nuevas. */
 function Classic({ d, o }: { d: WidgetData; o: WidgetOptions }) {
-  const level = levelOf(d.elo, LEVEL_FLOORS)
   const p = d.period
   const when = o.period === "hoy" ? "hoy" : PERIOD_LABEL[o.period].toLowerCase()
   const mini = o.design === "mini"
@@ -366,7 +450,7 @@ function Classic({ d, o }: { d: WidgetData; o: WidgetOptions }) {
       )}
     >
       <div className="flex items-center gap-2.5">
-        {shows(o, "level") && <LevelRing level={level} size={mini ? 34 : 40} />}
+        <Identity d={d} o={o} size={mini ? 34 : 40} />
         <div className="min-w-0">
           {!mini && <Name d={d} o={o} className="block text-[15px]" />}
           <div className="flex items-baseline gap-1">
@@ -455,14 +539,13 @@ function ClassicStat({
 
 /** Stats: la tarjeta completa, con nivel, ELO, stats grandes, frase, stats chicas y la última fila. */
 function StatsCard({ d, o }: { d: WidgetData; o: WidgetOptions }) {
-  const level = levelOf(d.elo, LEVEL_FLOORS)
   const hs = statValue("hs", d).value
   return (
     <Frame o={o} className="w-[400px] gap-0 overflow-hidden p-0">
       <div className="flex items-center gap-3 px-3.5 pt-3">
-        {shows(o, "level") && (
-          <span className="flex flex-col items-center">
-            <LevelRing level={level} size={52} />
+        {(shows(o, "level") || shows(o, "photo")) && (
+          <span className="flex flex-col items-center gap-0.5">
+            <Identity d={d} o={o} size={52} />
             {d.rank && (
               <span className="text-[11px] font-bold text-[var(--w-acc)]">
                 #{d.rank}
@@ -537,13 +620,12 @@ function StatsCard({ d, o }: { d: WidgetData; o: WidgetOptions }) {
 
 /** Barra: una tira horizontal para abajo de la pantalla. */
 function Bar({ d, o }: { d: WidgetData; o: WidgetOptions }) {
-  const level = levelOf(d.elo, LEVEL_FLOORS)
   return (
     <Frame
       o={o}
       className="w-[710px] flex-row items-center gap-4 border-b-2 border-b-[var(--w-acc)] px-3 py-1.5"
     >
-      {shows(o, "level") && <LevelRing level={level} size={36} />}
+      <Identity d={d} o={o} size={36} />
       <span className="flex min-w-0 flex-col leading-tight">
         <Name d={d} o={o} className="text-[13px]" />
         <span className="flex items-baseline gap-1">
@@ -576,7 +658,6 @@ function Bar({ d, o }: { d: WidgetData; o: WidgetOptions }) {
 
 /** Vertical: una columna angosta para el costado de la cámara. */
 function Column({ d, o }: { d: WidgetData; o: WidgetOptions }) {
-  const level = levelOf(d.elo, LEVEL_FLOORS)
   const rows = [...o.top, ...o.chips]
   return (
     <Frame
@@ -584,7 +665,7 @@ function Column({ d, o }: { d: WidgetData; o: WidgetOptions }) {
       className="w-[190px] items-stretch border-t-[3px] border-t-[var(--w-acc)] px-3 py-3"
     >
       <span className="flex flex-col items-center gap-1 text-center">
-        {shows(o, "level") && <LevelRing level={level} size={64} />}
+        <Identity d={d} o={o} size={64} />
         <Name d={d} o={o} className="max-w-full text-[14px]" />
         <span className="flex items-baseline gap-1">
           <span className="text-[24px] leading-7 font-extrabold tabular-nums">

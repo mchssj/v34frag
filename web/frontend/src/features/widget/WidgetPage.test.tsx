@@ -25,6 +25,7 @@ const WIDGET = {
   nick: "Mecha",
   team_tag: "ALF",
   country: "Argentina",
+  photo_url: null,
   elo: 1180,
   peak_elo: 1240,
   rank: 7,

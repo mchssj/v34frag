@@ -350,6 +350,7 @@ export const WidgetData = z
     nick: z.string(),
     team_tag: z.string().nullable().openapi({ description: 'Sigla de su primer equipo oficial; null sin equipo o si el equipo no tiene sigla' }),
     country: z.string().nullable().openapi({ description: 'País del perfil; null si no tiene o si el perfil es privado' }),
+    photo_url: z.string().nullable().openapi({ description: 'Foto del perfil público (replanteo 111); null si no tiene' }),
     elo: int,
     peak_elo: int,
     rank: int.nullable().openapi({ description: 'Puesto en el ranking general; null sin ELO' }),

@@ -24575,6 +24575,8 @@ export interface components {
             team_tag: string | null;
             /** @description País del perfil; null si no tiene o si el perfil es privado */
             country: string | null;
+            /** @description Foto del perfil público (replanteo 111); null si no tiene */
+            photo_url: string | null;
             elo: number;
             peak_elo: number;
             /** @description Puesto en el ranking general; null sin ELO */

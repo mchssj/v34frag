@@ -46,6 +46,17 @@ describe('GET /api/v1/players/{id}/widget', () => {
     expect(r.body.ultimos[0]).toEqual({ r: 'V', elo: 18 });
   });
 
+  it('trae la foto de la ficha, o null si no tiene (replanteo 111)', async () => {
+    const r = await get(`/api/v1/players/${playerId}/widget?period=all`);
+    expect(r.status).toBe(200);
+    expect(r.body.photo_url).toBeNull();
+    const url = 'https://example.com/foto-widget.png';
+    const u = await admin().from('players').update({ photo_url: url }).eq('id', playerId);
+    if (u.error) throw u.error;
+    const r2 = await get(`/api/v1/players/${playerId}/widget?period=24h`);
+    expect(r2.body.photo_url).toBe(url);
+  });
+
   it('también por nick, y con los otros períodos', async () => {
     for (const period of ['24h', 'season', 'all']) {
       const r = await get(`/api/v1/players/${nick}/widget?period=${period}`);

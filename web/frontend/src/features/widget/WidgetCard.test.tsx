@@ -53,6 +53,7 @@ describe("Widget para stream en Cuenta", () => {
           nick: "Mecha",
           team_tag: null,
           country: null,
+          photo_url: null,
           elo: 1100,
           peak_elo: 1100,
           rank: 30,

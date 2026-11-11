@@ -61,8 +61,9 @@ export const MAX_CHIPS = 5
 export const MAX_PHRASE = 40
 
 export type Part =
-  "nick" | "tag" | "level" | "progress" | "last" | "flag" | "phrase"
+  "photo" | "nick" | "tag" | "level" | "progress" | "last" | "flag" | "phrase"
 export const PART_LABEL: Record<Part, string> = {
+  photo: "Foto de perfil",
   nick: "Nick",
   tag: "Tag del equipo",
   level: "Nivel",

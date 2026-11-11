@@ -1,0 +1,7 @@
+CMLeague 2.9.40 --  Changelog
+
+Widget para tu stream
+- Ahora tu foto de perfil sale en el widget, dentro del anillo de tu nivel. El número del nivel queda justo abajo.
+- Si no tienes foto, sale la inicial de tu nick.
+- ¿No la quieres? Apaga "Foto de perfil" al armar tu widget y vuelve a copiar la URL: el nivel queda como antes.
+- Si ya tenías el widget en OBS, la foto aparece sola en el próximo minuto, sin tocar nada.
