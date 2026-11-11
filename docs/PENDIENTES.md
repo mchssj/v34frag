@@ -14,7 +14,7 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Falta:**
   - Verificar en cada uno, después del cambio de mapa, que `sm plugins list` muestre "CSSTV Flash" 1.0.0.
   - Publicar el changelog en Discord (`CHANGELOG_DISCORD.txt` de la carpeta).
-  - Decidir si va también a `feat/frontend-fase-1` y `feat/mm-claim-en-sala` (las ramas que tienen lo que corre en los servidores). Por ahora está solo en `kyan/pruebas`.
+  - **Rama (Kyan, 2026-11-11):** solo en `kyan/pruebas`. No va a `feat/frontend-fase-1` ni a `feat/mm-claim-en-sala`, aunque esas ramas tengan los plugins que corren en los servidores.
   - El de retake (ExtremeHost) no lo recibió: se daba de baja alrededor del 2026-11-10.
 
 ## Términos y condiciones y política de privacidad (borradores, sin publicar)
