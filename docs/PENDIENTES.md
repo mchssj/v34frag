@@ -24,18 +24,20 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Widget para streamers en `main` (2026-11-10): probado en local, sin commit ni desplegar
+## Widget para streamers en `main` (2026-11-10): desplegado el 2026-11-11
 
 - **Qué es:** el widget para OBS del prototipo de Kyan (`kyan/pruebas`, `d9c02ee0`), con datos reales ([`2026-11-10-widget-streamers-en-main`](bitacora/2026-11-10-widget-streamers-en-main/)):
   - la base: replanteo `110`, `widget_player`;
   - la API: `GET /api/v1/players/{id}/widget`;
   - la web: la página `/widget` y **Widget para stream** en Mi perfil › Cuenta, para cualquier jugador con perfil vinculado.
 - **Hecho:** en el worktree de `main`. 11 de 11 en la base local, 4 de integración y 596 unitarias de la API, 728 de la web y recorrido en el navegador con datos de la base local. La `110` quedó aplicada en la base local.
+- **Desplegado:**
+  - la `110`, el 2026-11-10. Antes, `probar_110.sql` contra producción pasó 10 de 11 y se deshizo; la 9 quedó salteada porque hay una temporada activa;
+  - la API y la web `a737d54e2c4f`, el 2026-11-11 a las 04:58 UTC.
+  - `/widget` comprobado en producción con datos reales.
 - **Falta:**
-  1. El commit en `main`.
-  2. Desplegar, en este orden: la `110` (con `probar_110.sql` antes contra producción), la API (reinicia `cmleague-api`) y la web.
-  3. Probarlo en OBS de verdad.
-  4. Publicar el changelog 2.9.39.
+  1. Probarlo en OBS de verdad.
+  2. Publicar el changelog 2.9.39.
 
 ## Caída del #1 en pleno mix (2026-11-10 20:38 UTC): sin causa confirmada
 

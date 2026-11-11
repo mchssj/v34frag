@@ -2,7 +2,13 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-10, en el worktree de `main`, sin commit. **Falta:** el commit, el despliegue (la `110`, la API y la web) y probarlo en OBS de verdad.
+**Desplegado** desde `main` (commit `a737d54e`). **Falta** probarlo en OBS de verdad.
+
+- **La `110`:** aplicada el 2026-11-10. Antes, `probar_110.sql` contra producción pasó 10 de 11 y se deshizo; la 9 quedó salteada porque producción ya tiene una temporada activa.
+- **La API y la web `a737d54e2c4f`:** desplegadas el 2026-11-11 a las 04:58 UTC. Había una sala del matchmaking `live` y ninguna aceptando ni en el veto. El partido no depende de la API, y `desplegar.sh api` no reinicia `cmleague-mm`.
+- **Comprobado en producción:**
+  - `GET /api/v1/players/{id}/widget` responde `200` con caché de 30 s, y `404` con una ficha que no existe.
+  - `https://cmleague.lat/widget?…&d=stats` se dibuja con los datos reales y la frase "Primero del ranking", sin errores en la consola.
 
 ## Archivos
 
