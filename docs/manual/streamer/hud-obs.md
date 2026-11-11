@@ -35,3 +35,7 @@ El HUD aparece cuando eliges un servidor en el panel y ese servidor está mandan
 Toca **Generar otro link**. El anterior deja de andar en 30 segundos: cambia el link nuevo en OBS y guarda el panel nuevo.
 
 Si un admin te quita la marca de streamer, tu link deja de andar en 30 segundos. Si te la vuelven a dar, tienes que generar uno nuevo.
+
+## El widget con tus stats
+
+Aparte del HUD, cualquier jugador puede poner en OBS un recuadro con su nivel, su ELO y cómo le va en los mixes: ver [Poner tu widget en el stream](/help/jugador/widget-para-stream).

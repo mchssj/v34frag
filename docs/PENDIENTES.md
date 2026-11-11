@@ -24,6 +24,19 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Widget para streamers en `main` (2026-11-10): probado en local, sin commit ni desplegar
+
+- **Qué es:** el widget para OBS del prototipo de Kyan (`kyan/pruebas`, `d9c02ee0`), con datos reales ([`2026-11-10-widget-streamers-en-main`](bitacora/2026-11-10-widget-streamers-en-main/)):
+  - la base: replanteo `110`, `widget_player`;
+  - la API: `GET /api/v1/players/{id}/widget`;
+  - la web: la página `/widget` y **Widget para stream** en Mi perfil › Cuenta, para cualquier jugador con perfil vinculado.
+- **Hecho:** en el worktree de `main`. 11 de 11 en la base local, 4 de integración y 596 unitarias de la API, 728 de la web y recorrido en el navegador con datos de la base local. La `110` quedó aplicada en la base local.
+- **Falta:**
+  1. El commit en `main`.
+  2. Desplegar, en este orden: la `110` (con `probar_110.sql` antes contra producción), la API (reinicia `cmleague-api`) y la web.
+  3. Probarlo en OBS de verdad.
+  4. Publicar el changelog 2.9.39.
+
 ## Caída del #1 en pleno mix (2026-11-10 20:38 UTC): sin causa confirmada
 
 - **Qué pasó:** el juego del #1 se cerró de golpe durante el mix de dust2_ob (sala `86bc974b`, 15-10, a una ronda del final). El script de arranque lo volvió a lanzar a las 20:38:48; el contenedor no se reinició. La sala quedó cancelada ("El servidor se reinició durante la partida") y la partida `c3e2bdc7` guardada como interrumpida, sin sanciones.

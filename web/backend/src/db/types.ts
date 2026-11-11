@@ -7663,6 +7663,9 @@ isOneToOne: false
                            },
 "vip_list_me":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"widget_player":
+{ Args: { "p_period"?: string,"p_player": string,"p_since"?: string }; Returns: Json
                            }
           }
           Enums: {

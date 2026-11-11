@@ -305,3 +305,58 @@ export const Compare = z
     }),
   })
   .openapi('Compare');
+
+// ---------- widget para streamers (replanteo 110, bitácora 2026-11-10-widget-streamers-en-main) ----------
+
+export const WIDGET_PERIODS = ['today', '24h', 'season', 'all'] as const;
+
+export const WidgetQuery = z
+  .object({
+    period: z.enum(WIDGET_PERIODS).default('today').openapi({
+      description: '`today`: desde `since` (la medianoche de la PC del streamer); `24h`: las últimas 24 horas; `season`: desde el comienzo de la temporada activa; `all`: todo',
+    }),
+    since: z.iso.datetime({ offset: true }).optional().openapi({
+      description: 'Solo con `today`: desde cuándo. Hasta 48 horas atrás. Sin esto, las últimas 24 horas',
+      example: '2026-11-10T03:00:00.000Z',
+    }),
+  })
+  .refine((q) => !q.since || q.period === 'today', { message: '`since` solo va con `period=today`', path: ['since'] })
+  .refine(
+    (q) => {
+      if (!q.since) return true;
+      const t = Date.parse(q.since);
+      return t <= Date.now() + 60_000 && t >= Date.now() - 48 * 3600_000;
+    },
+    { message: '`since` tiene que estar entre hace 48 horas y ahora', path: ['since'] },
+  );
+
+const int = z.number().int();
+export const WidgetPeriodStats = z.object({
+  v: int, d: int, e: int,
+  elo: int.openapi({ description: 'ELO ganado o perdido en el período' }),
+  kills: int, deaths: int, rounds: int, damage: int, headshots: int,
+  k3: int, k4: int, k5: int,
+  sniper: int.openapi({ description: 'Kills con AWP y Scout (reporter 2.7.0 en adelante)' }),
+  knife: int,
+  clutches: int.openapi({ description: 'Clutches ganados, 1v1 a 1v5 (reporter 2.7.0 en adelante)' }),
+  entries: int.openapi({ description: 'Primeras kills de la ronda' }),
+  pistols: int.openapi({ description: 'Rondas de pistola ganadas (reporter 2.7.0 en adelante)' }),
+  rating: num,
+});
+
+export const WidgetData = z
+  .object({
+    id: z.uuid(),
+    nick: z.string(),
+    team_tag: z.string().nullable().openapi({ description: 'Sigla de su primer equipo oficial; null sin equipo o si el equipo no tiene sigla' }),
+    country: z.string().nullable().openapi({ description: 'País del perfil; null si no tiene o si el perfil es privado' }),
+    elo: int,
+    peak_elo: int,
+    rank: int.nullable().openapi({ description: 'Puesto en el ranking general; null sin ELO' }),
+    country_rank: int.nullable().openapi({ description: 'Puesto entre los de su país; null sin país o sin ELO' }),
+    period: WidgetPeriodStats,
+    ultimos: z
+      .array(z.object({ r: z.enum(['V', 'D', 'E']), elo: int.nullable() }))
+      .openapi({ description: 'Últimos 10 mixes, del más nuevo al más viejo (de cualquier fecha)' }),
+  })
+  .openapi('WidgetData');

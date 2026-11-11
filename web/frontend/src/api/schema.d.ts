@@ -4724,6 +4724,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/players/{id}/widget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Datos del widget para streamers
+         * @description Lo que dibuja el widget de OBS (`/widget` de la web): ELO, puestos, equipo, las stats del período y los últimos 10 mixes. Público y sin sesión, porque OBS no inicia sesión. Se puede cachear 30 segundos (el widget pide cada minuto).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description `today`: desde `since` (la medianoche de la PC del streamer); `24h`: las últimas 24 horas; `season`: desde el comienzo de la temporada activa; `all`: todo */
+                    period?: "today" | "24h" | "season" | "all";
+                    /** @description Solo con `today`: desde cuándo. Hasta 48 horas atrás. Sin esto, las últimas 24 horas */
+                    since?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Datos del widget */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WidgetData"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players/{id}/titles": {
         parameters: {
             query?: never;
@@ -24492,6 +24566,52 @@ export interface components {
             elo_before: number | null;
             elo_after: number;
             elo_delta: number | null;
+        };
+        WidgetData: {
+            /** Format: uuid */
+            id: string;
+            nick: string;
+            /** @description Sigla de su primer equipo oficial; null sin equipo o si el equipo no tiene sigla */
+            team_tag: string | null;
+            /** @description País del perfil; null si no tiene o si el perfil es privado */
+            country: string | null;
+            elo: number;
+            peak_elo: number;
+            /** @description Puesto en el ranking general; null sin ELO */
+            rank: number | null;
+            /** @description Puesto entre los de su país; null sin país o sin ELO */
+            country_rank: number | null;
+            period: {
+                v: number;
+                d: number;
+                e: number;
+                /** @description ELO ganado o perdido en el período */
+                elo: number;
+                kills: number;
+                deaths: number;
+                rounds: number;
+                damage: number;
+                headshots: number;
+                k3: number;
+                k4: number;
+                k5: number;
+                /** @description Kills con AWP y Scout (reporter 2.7.0 en adelante) */
+                sniper: number;
+                knife: number;
+                /** @description Clutches ganados, 1v1 a 1v5 (reporter 2.7.0 en adelante) */
+                clutches: number;
+                /** @description Primeras kills de la ronda */
+                entries: number;
+                /** @description Rondas de pistola ganadas (reporter 2.7.0 en adelante) */
+                pistols: number;
+                rating: number | null;
+            };
+            /** @description Últimos 10 mixes, del más nuevo al más viejo (de cualquier fecha) */
+            ultimos: {
+                /** @enum {string} */
+                r: "V" | "D" | "E";
+                elo: number | null;
+            }[];
         };
         TitleList: {
             items: components["schemas"]["Title"][];

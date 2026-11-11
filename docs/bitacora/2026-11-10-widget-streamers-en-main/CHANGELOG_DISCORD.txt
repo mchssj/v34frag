@@ -1,0 +1,10 @@
+CMLeague 2.9.39 --  Changelog
+
+Widget para tu stream
+- Nuevo: en Mi perfil > Cuenta tienes "Widget para stream". Arma un recuadro para OBS con tu nivel, tu ELO, cuánto te falta para el siguiente nivel, tus stats y tus últimos resultados.
+- Elige entre seis diseños (Mini, Compacto, Completo, Stats, Barra y Vertical) y qué período mostrar: hoy, 24 horas, la temporada o todo.
+- Elige qué stats salen y en qué orden: ADR, rating, K/D, HS, aces, clutches, entradas, pistolas, sniper, cuchillo, tu puesto en el ranking y en tu país, y más.
+- Cambia el color, la opacidad del fondo y el tamaño, y oculta lo que no quieras mostrar.
+- Escribe tu propia frase o deja que salga sola: racha de victorias, top 10, primero del ranking...
+- Copias la URL, la pegas en una fuente de navegador de OBS y listo: se actualiza solo cada minuto.
+- No hace falta ser streamer de la liga: lo puede usar cualquiera con su perfil vinculado.

@@ -16,6 +16,7 @@ import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as WidgetRouteImport } from './routes/widget'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppEquipoRouteImport } from './routes/_app/equipo'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
@@ -31,6 +32,7 @@ import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as DemoSiembraRouteImport } from './routes/demo.siembra'
+import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
 import { Route as AppAdminMapsRouteImport } from './routes/_app/admin.maps'
@@ -99,6 +101,11 @@ const TerminosRoute = TerminosRouteImport.update({
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WidgetRoute = WidgetRouteImport.update({
+  id: '/widget',
+  path: '/widget',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminRoute = AppAdminRouteImport.update({
@@ -174,6 +181,11 @@ const DemoPerfilSocialRoute = DemoPerfilSocialRouteImport.update({
 const DemoSiembraRoute = DemoSiembraRouteImport.update({
   id: '/demo/siembra',
   path: '/demo/siembra',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoWidgetRoute = DemoWidgetRouteImport.update({
+  id: '/demo/widget',
+  path: '/demo/widget',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAdminBansRoute = AppAdminBansRouteImport.update({
@@ -363,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
+  '/widget': typeof WidgetRoute
   '/admin': typeof AppAdminRouteWithChildren
   '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
@@ -378,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/siembra': typeof DemoSiembraRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
@@ -421,6 +435,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
+  '/widget': typeof WidgetRoute
   '/admin': typeof AppAdminRouteWithChildren
   '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
@@ -435,6 +450,7 @@ export interface FileRoutesByTo {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/siembra': typeof DemoSiembraRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
@@ -481,6 +497,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
   '/welcome': typeof WelcomeRoute
+  '/widget': typeof WidgetRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/equipo': typeof AppEquipoRoute
   '/_app/home': typeof AppHomeRoute
@@ -496,6 +513,7 @@ export interface FileRoutesById {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/siembra': typeof DemoSiembraRoute
+  '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
@@ -541,6 +559,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terminos'
     | '/welcome'
+    | '/widget'
     | '/admin'
     | '/equipo'
     | '/home'
@@ -556,6 +575,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/siembra'
+    | '/demo/widget'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
@@ -599,6 +619,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terminos'
     | '/welcome'
+    | '/widget'
     | '/admin'
     | '/equipo'
     | '/home'
@@ -613,6 +634,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/siembra'
+    | '/demo/widget'
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
@@ -658,6 +680,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terminos'
     | '/welcome'
+    | '/widget'
     | '/_app/admin'
     | '/_app/equipo'
     | '/_app/home'
@@ -673,6 +696,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/siembra'
+    | '/demo/widget'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
     | '/_app/admin/maps'
@@ -719,11 +743,13 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
+  WidgetRoute: typeof WidgetRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoMedallasRoute: typeof DemoMedallasRoute
   DemoPcwRoute: typeof DemoPcwRoute
   DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
   DemoSiembraRoute: typeof DemoSiembraRoute
+  DemoWidgetRoute: typeof DemoWidgetRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -775,6 +801,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/widget': {
+      id: '/widget'
+      path: '/widget'
+      fullPath: '/widget'
+      preLoaderRoute: typeof WidgetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/admin': {
@@ -880,6 +913,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/siembra'
       fullPath: '/demo/siembra'
       preLoaderRoute: typeof DemoSiembraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/widget': {
+      id: '/demo/widget'
+      path: '/demo/widget'
+      fullPath: '/demo/widget'
+      preLoaderRoute: typeof DemoWidgetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/admin/bans': {
@@ -1273,11 +1313,13 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
+  WidgetRoute: WidgetRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoMedallasRoute: DemoMedallasRoute,
   DemoPcwRoute: DemoPcwRoute,
   DemoPerfilSocialRoute: DemoPerfilSocialRoute,
   DemoSiembraRoute: DemoSiembraRoute,
+  DemoWidgetRoute: DemoWidgetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -26,6 +26,8 @@ import {
   TitleQuery,
   type PlayerSummary,
   verificationOf,
+  WidgetData,
+  WidgetQuery,
 } from '../schemas/players';
 import { activeBan } from '../services/bans';
 import { vipPlayers } from '../services/vip';
@@ -180,6 +182,19 @@ const medalSummary = createRoute({
   middleware: [optionalUser] as const,
   request: { params: IdParam, query: MedalSummaryQuery },
   responses: { 200: { description: 'Medallas agrupadas', ...json(MedalSummaryList) }, ...errorResponses(400, 401, 404) },
+});
+
+const widget = createRoute({
+  method: 'get',
+  path: '/api/v1/players/{id}/widget',
+  tags: ['Jugadores'],
+  summary: 'Datos del widget para streamers',
+  description:
+    'Lo que dibuja el widget de OBS (`/widget` de la web): ELO, puestos, equipo, las stats del período y los últimos 10 mixes. ' +
+    'Público y sin sesión, porque OBS no inicia sesión. Se puede cachear 30 segundos (el widget pide cada minuto).',
+  middleware: [optionalUser] as const,
+  request: { params: IdParam, query: WidgetQuery },
+  responses: { 200: { description: 'Datos del widget', ...json(WidgetData) }, ...errorResponses(400, 401, 404) },
 });
 
 /** Partidas terminadas de una ficha, con sus stats (lo comparten la ficha y Mi perfil). */
@@ -364,6 +379,14 @@ export const players = createRouter()
     type Row = { match_id: string | null; map: string | null; at: string | null; elo_before: number | null; elo_after: number | null; elo_delta: number | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'match_id');
     return c.json(envelope(rows.map((r) => ({ ...r, match_id: r.match_id!, elo_after: r.elo_after ?? 0 })), total, p), 200);
+  })
+  .openapi(widget, async (c) => {
+    const { period, since } = c.req.valid('query');
+    const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
+    const data = must(await c.var.sb.rpc('widget_player', { p_player: id, p_period: period, ...(since ? { p_since: since } : {}) }));
+    if (!data) throw notFound('ese jugador');
+    c.header('Cache-Control', 'public, max-age=30');
+    return c.json(WidgetData.parse(data), 200);
   })
   .openapi(titles, async (c) => {
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
