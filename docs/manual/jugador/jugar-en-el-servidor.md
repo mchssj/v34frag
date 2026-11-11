@@ -1,6 +1,6 @@
 ---
 titulo: Jugar en el servidor
-resumen: Cómo arranca la partida, el calentamiento, el formato, las pausas, la rendición, pedir un arma y los espectadores.
+resumen: Cómo arranca la partida, el calentamiento, el formato, las pausas, la rendición, pedir un arma, la flash y los espectadores.
 orden: 4
 ---
 
@@ -41,6 +41,10 @@ Si no te alcanza la plata, un compañero te puede comprar el arma:
 
 1. Al empezar la ronda, mientras están todos quietos, aprieta **R** (recargar) y elige el arma en el menú.
 2. Tu equipo ve el pedido. El primero que aprieta **E** (usar) en la zona de compra te la compra, con su plata.
+
+## La flash
+
+La flash ciega según cómo la agarres, parecido a CS:GO. Si la miras de frente, te ciega completa. De costado te ciega menos, y de espaldas es solo un destello corto. De lejos también dura menos. Si la escuchas venir, darte vuelta a tiempo sirve.
 
 ## Si algo pasa
 

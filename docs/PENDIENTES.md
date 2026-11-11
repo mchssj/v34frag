@@ -1,12 +1,21 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-11**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
 > **Numeración nueva desde el 2026-11-08** (Kyan): **#1** es MVZG (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`) son los nuevos, los tres en el panel de MVZG. flow ya no existe y el de retake (ExtremeHost) se da de baja alrededor del 2026-11-10. Lo que abajo dice "#2" o "flow" antes del 2026-11-08 es flow; "#3", el de ExtremeHost.
 
 > **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
+
+## Flash según el ángulo y la distancia, `csstv_flash` 1.0.0 (2026-11-11): subido a los tres, falta verificar que cargó
+
+- **Estado:** pedido por Kyan. Probado en el servidor local con bots y por Kyan con flashes de verdad. El `.smx` y `cfg/sourcemod/csstv_flash.cfg` se subieron el 2026-11-11 por la API del panel a **#1** (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`), sin recargar nada: uno tenía una partida en curso. Cada uno lo carga en su próximo cambio de mapa. Detalle: [`2026-11-11-flash-por-angulo`](bitacora/2026-11-11-flash-por-angulo/).
+- **Falta:**
+  - Verificar en cada uno, después del cambio de mapa, que `sm plugins list` muestre "CSSTV Flash" 1.0.0.
+  - Publicar el changelog en Discord (`CHANGELOG_DISCORD.txt` de la carpeta).
+  - Decidir si va también a `feat/frontend-fase-1` y `feat/mm-claim-en-sala` (las ramas que tienen lo que corre en los servidores). Por ahora está solo en `kyan/pruebas`.
+  - El de retake (ExtremeHost) no lo recibió: se daba de baja alrededor del 2026-11-10.
 
 ## Términos y condiciones y política de privacidad (borradores, sin publicar)
 
