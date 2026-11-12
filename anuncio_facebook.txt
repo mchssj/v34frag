@@ -1,0 +1,15 @@
+CMLeague: competitivo de Counter-Strike: Source
+
+Counter-Strike: Source es el CS clásico, el de antes del CS:GO. Se juega gratis con ClientMod, una versión de la comunidad que funciona en cualquier PC.
+
+Armamos una liga con matchmaking propio, como FACEIT: buscas partida desde la web, te arma un 5 contra 5 con gente de tu nivel y cada partida suma a tu ELO y tus estadísticas.
+
+Cómo jugar:
+1. Descarga ClientMod desde https://clientmod.ru
+2. Crea tu cuenta en https://cmleague.lat
+3. Entra a Jugar y toca Buscar partida
+4. Acepta, entra al servidor con el botón Conectar y escribe !ready en el chat
+
+Si te trabas, pregunta en el Discord: https://dsc.gg/v34frag
+
+¡Nos vemos en el server!

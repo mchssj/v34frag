@@ -29,6 +29,7 @@ import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoAdminMedallasRouteImport } from './routes/demo.admin-medallas'
 import { Route as DemoBioRouteImport } from './routes/demo.bio'
 import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
 import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
@@ -183,6 +184,11 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => AuthRoute,
+} as any)
+const DemoAdminMedallasRoute = DemoAdminMedallasRouteImport.update({
+  id: '/demo/admin-medallas',
+  path: '/demo/admin-medallas',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DemoBioRoute = DemoBioRouteImport.update({
   id: '/demo/bio',
@@ -484,6 +490,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/admin-medallas': typeof DemoAdminMedallasRoute
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
@@ -559,6 +566,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/admin-medallas': typeof DemoAdminMedallasRoute
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
@@ -638,6 +646,7 @@ export interface FileRoutesById {
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/admin-medallas': typeof DemoAdminMedallasRoute
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
   '/demo/comparador': typeof DemoComparadorRoute
@@ -716,6 +725,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/demo/admin-medallas'
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
@@ -791,6 +801,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/demo/admin-medallas'
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
@@ -869,6 +880,7 @@ export interface FileRouteTypes {
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/admin-medallas'
     | '/demo/bio'
     | '/demo/buscador'
     | '/demo/comparador'
@@ -938,6 +950,7 @@ export interface RootRouteChildren {
   SoporteRoute: typeof SoporteRoute
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
+  DemoAdminMedallasRoute: typeof DemoAdminMedallasRoute
   DemoBioRoute: typeof DemoBioRoute
   DemoBuscadorRoute: typeof DemoBuscadorRoute
   DemoComparadorRoute: typeof DemoComparadorRoute
@@ -1099,6 +1112,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/register'
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/demo/admin-medallas': {
+      id: '/demo/admin-medallas'
+      path: '/demo/admin-medallas'
+      fullPath: '/demo/admin-medallas'
+      preLoaderRoute: typeof DemoAdminMedallasRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/demo/bio': {
       id: '/demo/bio'
@@ -1638,6 +1658,7 @@ const rootRouteChildren: RootRouteChildren = {
   SoporteRoute: SoporteRoute,
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
+  DemoAdminMedallasRoute: DemoAdminMedallasRoute,
   DemoBioRoute: DemoBioRoute,
   DemoBuscadorRoute: DemoBuscadorRoute,
   DemoComparadorRoute: DemoComparadorRoute,

@@ -64,6 +64,37 @@
         "cd /c/Users/Agus/Documents/repo/.claude/worktrees/anticheat-web/web/frontend && pnpm dev --port 5199 --strictPort"
       ],
       "port": 5199
+    },
+    {
+      "name": "frontend-repo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "C:/Users/Agus/Documents/repo/web/frontend",
+        "dev",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "api-repo",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": [
+        "-lc",
+        "cd /c/Users/Agus/Documents/repo/web/backend && PORT=8790 pnpm dev:node"
+      ],
+      "port": 8790
+    },
+    {
+      "name": "frontend-repo-api",
+      "runtimeExecutable": "C:/Program Files/Git/bin/bash.exe",
+      "runtimeArgs": [
+        "-lc",
+        "cd /c/Users/Agus/Documents/repo/web/frontend && VITE_API_URL=http://localhost:8790 pnpm dev --port 5177 --strictPort"
+      ],
+      "port": 5177
     }
   ]
 }

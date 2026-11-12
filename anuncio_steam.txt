@@ -1,0 +1,31 @@
+TÍTULO DEL ANUNCIO:
+Te presentamos CMLeague: el competitivo que el ClientMod se merecía
+
+CUERPO DEL ANUNCIO:
+¿Te acordás de lo que era jugar un mix y que al otro día no quedara nada? Ni un número, ni una demo, ni forma de saber si mejoraste. Eso es lo que vinieron a cambiar los chicos de [b][url=https://dsc.gg/v34frag]CMLeague[/url][/b], y por eso se los queremos presentar.
+
+CMLeague es una liga competitiva para CS:Source v34 con ClientMod. La idea es simple: que el v34 tenga lo que tienen los juegos de hoy, como FACEIT. Ya está andando, con gente jugando todos los días.
+
+[h2]Buscás partida desde la web y listo[/h2]
+Entrás a [url=https://cmleague.lat]cmleague.lat[/url], tocás [b]Buscar partida[/b], solo o con amigos, y el matchmaking te arma una partida con gente de tu nivel. Aceptás, los capitanes vetan los mapas y con un botón te conectás al servidor. Si alguien abandona, pierde ELO y se puede pedir un reemplazo, así que no te quedás jugando 4 contra 5 toda la partida.
+
+[h2]Todo lo que jugás queda guardado[/h2]
+Cada partida suma a tu [b]ELO[/b], con niveles del 1 al 10. En tu perfil vas a ver tus stats por mapa (K/D, HS, ADR y rating), cómo viene tu ELO partida a partida, tus temporadas y más de 200 medallas que se ganan jugando. Lo mejor: las mejores jugadas (aces, clutches, 4k) [b]se graban solas[/b] en video, y podés elegir tus favoritas para que aparezcan en tu perfil. Las demos también quedan para bajarlas.
+
+[h2]Servidores pensados para jugar bien[/h2]
+Tres servidores con un plugin hecho a medida: !ready con ronda de cuchillo, pausa técnica, coach, pedirle un arma a un compañero con una tecla, !calladmin cuando hace falta un moderador y una flash que ahora ciega según cómo la mires, como en los CS nuevos. Cuando no hay mix, también hay deathmatch, retake y 2v2 para calentar la mano.
+
+[h2]Para equipos, torneos y streamers[/h2]
+Armás tu equipo al toque, buscás jugadores, coordinás PCW con otros equipos y te anotás en torneos con la llave en vivo. Y si streameás, hay un HUD para poner en OBS con la partida en tiempo real.
+
+[h2]Lo que viene[/h2]
+Una tienda con puntos que se ganan jugando y un anticheat propio. Los chicos le meten cambios casi todos los días, y muchas de las ideas salen de lo que pide la comunidad.
+
+[h2]¿Cómo arrancar?[/h2]
+[list]
+[*]Sumate al Discord de [url=https://dsc.gg/v34frag]CMLeague[/url]
+[*]Creá tu cuenta en [url=https://cmleague.lat]cmleague.lat[/url]
+[*]Tocá Buscar partida, o entrá a un servidor y escribí !ready
+[/list]
+
+Si te gusta el v34 tanto como a nosotros, date una vuelta. Cuanta más gente se sume, más rápido se llena la cola y mejores se ponen las partidas. ¡Nos vemos adentro!

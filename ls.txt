@@ -1,0 +1,28 @@
+# 🔥 LocalStrike × CMLeague 🔥
+
+¡Buenas, comunidad! Les queremos presentar a **[CMLeague](https://dsc.gg/v34frag)**, una comunidad aliada que está armando algo que el ClientMod venía necesitando: **un FACEIT para CS:Source v34**.
+
+## 🎮 ¿Qué es CMLeague?
+Una liga competitiva de ClientMod con servidores y web propios. Cada partida que juegues cuenta.
+
+## ✅ Lo que ya podés jugar
+🖥️ **Servidores con plugin propio:** !ready con ronda de cuchillo, pausa técnica, coach y pedir armas al compañero
+📈 **ELO con niveles del 1 al 10**, como en FACEIT: ganás, subís; perdés, bajás
+📊 **Stats de cada partida** en la web: K/D, HS%, ADR y rating
+🎥 **Demos y clips automáticos** de las mejores jugadas
+🚨 **!calladmin** para llamar a un moderador cuando lo necesites
+
+## 🚀 Lo que viene
+🌐 **Web nueva** con perfil completo, temporadas, ranking de jugadores y equipos, torneos con llave en vivo y PCW
+⚔️ **Matchmaking**: entrás a la cola desde la web, se arman partidas parejas por ELO y vas directo al servidor
+🛡️ **Anticheat propio**
+🛒 **Tienda con puntos** que ganás jugando
+
+## 🤝 ¿Cómo sumarte?
+1️⃣ Entrá al Discord de **[CMLeague](https://dsc.gg/v34frag)**
+2️⃣ Creá tu cuenta en **cmleague.lat**
+3️⃣ Conectate a un servidor, escribí **!ready** ¡y a jugar!
+
+Se vienen eventos en conjunto entre **LocalStrike y CMLeague**, así que estén atentos 👀
+
+¡Nos vemos en el server! 💥
