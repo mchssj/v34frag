@@ -66,6 +66,17 @@ export function ItemCard({
           <i className={cn("absolute inset-x-0 bottom-0 h-0.5", rarity.bar)} />
           <span className="pointer-events-none absolute top-2 left-2 flex gap-1">
             {onSale && <SaleChip pct={shop.config.weekly_discount} />}
+            {/* Los fondos de miniperfil son lo último que llegó a la tienda. */}
+            {c.kind === "background" && !onSale && (
+              <Badge
+                variant="primary"
+                shape="tag"
+                size="xs"
+                className="bg-background/90"
+              >
+                Nuevo
+              </Badge>
+            )}
             {eq && (
               <Badge variant="strong" shape="tag" size="xs">
                 <CheckIcon />
