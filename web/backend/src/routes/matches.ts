@@ -17,6 +17,7 @@ import {
   GameCandidateList,
   GameCandidateQuery,
   GameReviewBody,
+  MatchKillList,
   MatchGameParam,
   MatchDetail,
   MatchList,
@@ -31,9 +32,9 @@ import {
 } from '../schemas/matches';
 import type { MixMvp } from '../schemas/live';
 import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
-import { clutchesOf, demoUrl, markHistoricSides, MATCH_LIST, mixReview, sumSeries, toSummary, vetoState, type MatchRow, type StatRow } from '../services/matches';
+import { clutchesOf, demoUrl, markHistoricSides, MATCH_LIST, mixReview, sumSeries, toSummary, trackUrl, vetoState, type MatchRow, type StatRow } from '../services/matches';
 
-const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
+const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size, track_key';
 
 // Lo que usan los filtros del listado de un query builder de PostgREST (como Orderable en lib/list.ts).
 interface Filters<Q> {
@@ -167,6 +168,15 @@ const gameReview = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403, 404, 409) },
 });
 
+const kills = createRoute({
+  method: 'get', path: '/api/v1/matches/{id}/kills', tags: ['Partidas'], middleware: [optionalUser] as const,
+  summary: 'Kills con posición',
+  description: 'Cada kill de la partida con dónde estaba el que mató y dónde murió (coordenadas del juego), para el mapa de calor. ' +
+    'Vacío en las partidas jugadas antes del reporter 2.11.0. Sin sesión.',
+  request: { params: MatchParam },
+  responses: { 200: { description: 'Kills', ...json(MatchKillList) }, ...errorResponses(400, 404) },
+});
+
 const adminDelete = createRoute({
   method: 'delete', path: '/api/v1/admin/matches/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Borrar una partida', description: 'Para partidas huérfanas (de torneos borrados) o cargadas por error. Un mix con stats no se borra.',
@@ -176,7 +186,7 @@ const adminDelete = createRoute({
 
 type DetailRow = {
   maps: unknown; server_id: string | null; server_ip: string | null; cancel_reason: string | null; external_id: string | null;
-  advantage_side: number | null; demo_size: number | null;
+  advantage_side: number | null; demo_size: number | null; track_key: string | null;
 };
 
 export const matches = createRouter()
@@ -266,7 +276,7 @@ export const matches = createRouter()
       series
         ? sb
             .from('matches')
-            .select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, demo_size, parent_side1, parent_approved')
+            .select('id, status, map, score1, score2, played_at, kind, external_id, demo_status, demo_size, track_key, parent_side1, parent_approved')
             .eq('parent_match_id', id)
             .order('played_at')
             .then(mustHave)
@@ -421,6 +431,7 @@ export const matches = createRouter()
       cancel_reason: m.cancel_reason,
       server: m.server_id || m.server_ip ? { id: server?.id ?? null, name: server?.name ?? null, address: server?.connect_address ?? m.server_ip } : null,
       demo_url: demoUrl(config, m),
+      track_url: trackUrl(config, m),
       demo_size: m.demo_size ?? null,
       clutch_data: clutchData,
       link_code,
@@ -441,7 +452,7 @@ export const matches = createRouter()
         const flip = g.parent_side1 === 2;
         return {
           id: g.id, map: g.map, score1: flip ? g.score2 : g.score1, score2: flip ? g.score1 : g.score2, played_at: g.played_at,
-          demo_url: demoUrl(config, g), demo_size: g.demo_size ?? null, demo_status: g.demo_status,
+          demo_url: demoUrl(config, g), demo_size: g.demo_size ?? null, demo_status: g.demo_status, track_url: trackUrl(config, g),
           players: (gamePlayers.get(g.id) ?? []).map((x) => x.line).sort(bySideAndRating),
         };
       }),
@@ -549,6 +560,16 @@ export const matches = createRouter()
   .openapi(resetVeto, async (c) => {
     must(await c.var.sb.rpc('veto_reset', { p_match: c.req.valid('param').id }));
     return c.body(null, 204);
+  })
+  .openapi(kills, async (c) => {
+    const { id } = c.req.valid('param');
+    const sb = c.var.sb;
+    const [m, rows] = await Promise.all([
+      sb.from('matches').select('map').eq('id', id).maybeSingle().then(must),
+      sb.from('match_kills').select('round, killer_steam, victim_steam, weapon, headshot, kx, ky, vx, vy').eq('match_id', id).order('id').then(mustHave),
+    ]);
+    if (!m) throw notFound('esa partida');
+    return c.json({ map: (m as { map: string | null }).map, kills: rows as z.infer<typeof MatchKillList>['kills'] }, 200);
   })
   .openapi(adminDelete, async (c) => {
     const { id } = c.req.valid('param');

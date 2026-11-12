@@ -36,7 +36,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.10.0"
+#define PLUGIN_VERSION "2.11.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -140,6 +140,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/license_id.inc"
 #include "csstv/license.inc"
 #include "csstv/qol.inc"
+#include "csstv/track.inc"   // después de qol.inc: usa DEMO_DIR
 #include "csstv/rr.inc"
 #include "csstv/knife.inc"
 #include "csstv/gg.inc"
@@ -232,6 +233,7 @@ public void OnPluginStart()
 	Whois_Init();
 	Tips_Init();
 	Clips_Init();
+	Track_Init();
 }
 
 /**
@@ -279,6 +281,8 @@ public void OnMapEnd()
 {
 	if (g_State == State_Starting || g_State == State_Live || g_State == State_Halftime || g_State == State_Knife)
 		CancelMatch("map_change", "");
+	g_hTrackTimer = null;   // TIMER_FLAG_NO_MAPCHANGE: muere con el mapa
+	g_hTrackNadeTimer = null;
 	Demo_Stop();
 	RestoreStartMoney();
 	g_hReadyTimer = null;
@@ -321,6 +325,7 @@ public void OnClientDisconnect(int client)
 	Board_SaveClient(client);
 	AutoPause_OnLeave(client);
 	Clips_OnLeave(client);   // antes de Stats_ClientLeave: puede dejar a un compañero en clutch
+	Track_OnDisconnect(client);
 	Stats_ClientLeave(client);
 	Maps_OnClientDisconnect(client);
 }
@@ -664,6 +669,7 @@ void ResetMatch()
 		g_bReady[i] = false;
 	Stats_Reset();
 	Clips_Clear();
+	Track_Clear();
 	Qol_Reset();
 	Rr_Reset();
 	Knife_Reset();
@@ -825,6 +831,7 @@ void OnRoundCompleted(int winnerSide, int reason)
 	bool halfStart = g_iSegRound == 0 || g_iSegRound == g_iSegLen / 2;   // primera ronda de una mitad
 	Stats_RoundEnd(g_iSideA, winnerSide, halfStart && g_iSegment == 0, !halfStart);
 	Stats_LogRound(aWon ? 1 : 2, g_iSideA, reason);
+	Track_OnRoundEnd(winnerSide, reason);
 
 	if (aWon) { g_iSegA++; g_iTotA++; }
 	else      { g_iSegB++; g_iTotB++; }
@@ -1001,7 +1008,7 @@ void CancelMatch(const char[] reason, const char[] by)
 		LogMessage("Partida %s cancelada (%s %s) sin rondas jugadas. No se guarda.", g_sMatchUid, reason, by);
 		PrintToChatAll("%s Partida cancelada. No se jugó ninguna ronda, así que no se guarda.", PREFIX);
 		if (g_bDemoRecorded)
-			Demo_Discard(g_sMatchUid);
+			Demo_Discard(g_sMatchUid);   // también borra el .trk
 		Live_Discard();
 		return;
 	}
@@ -1138,7 +1145,10 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 		OnRestartsDone();
 	}
 	if (g_State == State_Live)
+	{
 		Qol_OnLiveRoundStart();
+		Track_OnRoundStart();
+	}
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -1175,6 +1185,9 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 		return;
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	Stats_OnHurt(victim, attacker, event.GetInt("dmg_health"), event.GetInt("health"), g_State == State_Live && !g_bRestarting);
+	char hw[32];
+	event.GetString("weapon", hw, sizeof(hw));
+	Track_OnHurt(victim, attacker, event.GetInt("dmg_health"), event.GetInt("health"), hw, event.GetInt("hitgroup"));
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -1189,6 +1202,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	event.GetString("weapon", weapon, sizeof(weapon));
 	Stats_OnDeath(victim, attacker, event.GetBool("headshot"), weapon);
 	Clips_OnDeath(victim, attacker);
+	Track_OnDeath(victim, attacker, weapon, event.GetBool("headshot"));
 	Qol_OnDeath(victim, attacker, weapon);
 }
 
@@ -1199,13 +1213,15 @@ public void Event_BombPlanted(Event event, const char[] name, bool dontBroadcast
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0)
 		Stats_Add(client, ST_PLANTS, 1);
+	Track_OnBomb("plant", client);
 }
 
 public void Event_BombDefused(Event event, const char[] name, bool dontBroadcast)
 {
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	Track_OnBomb("defuse", client);   // antes del corte: puede llegar con la partida ya en el medio tiempo
 	if (g_State != State_Live || g_bRestarting)
 		return;
-	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0)
 	{
 		Stats_Add(client, ST_DEFUSES, 1);
@@ -1215,9 +1231,10 @@ public void Event_BombDefused(Event event, const char[] name, bool dontBroadcast
 
 public void Event_BombExploded(Event event, const char[] name, bool dontBroadcast)
 {
+	int planter = GetClientOfUserId(event.GetInt("userid"));   // quien la plantó
+	Track_OnBomb("explode", planter);   // llega después de round_end: en la última ronda de una mitad ya no hay vivo
 	if (g_State != State_Live || g_bRestarting)
 		return;
-	int planter = GetClientOfUserId(event.GetInt("userid"));   // quien la plantó
 	if (planter > 0)
 		Stats_Add(planter, ST_BOMBS, 1);
 	Qol_OnBombScore(planter);
@@ -1226,7 +1243,10 @@ public void Event_BombExploded(Event event, const char[] name, bool dontBroadcas
 public void Event_FreezeEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	if (g_State == State_Live && !g_bRestarting)
+	{
 		Stats_FreezeEnd();
+		Track_OnFreezeEnd();
+	}
 }
 
 // ---------------------------------------------------------------------------

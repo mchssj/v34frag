@@ -40,3 +40,6 @@ dist-ssr
 # Sin ellos, los efectos de tema usan el sonido sintetizado.
 /public/sounds/grenade_hit1.wav
 /public/sounds/sg_explode.wav
+
+# Repetición 2D: .trk de prueba para /demo/repeticion (datos de bots, no se versionan)
+public/demo-replay/

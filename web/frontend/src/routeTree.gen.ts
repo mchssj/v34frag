@@ -44,6 +44,7 @@ import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
+import { Route as DemoRepeticionRouteImport } from './routes/demo.repeticion'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
 import { Route as DemoVipRouteImport } from './routes/demo.vip'
@@ -258,6 +259,11 @@ const DemoPerfilSocialRoute = DemoPerfilSocialRouteImport.update({
 const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
   id: '/demo/recalculo',
   path: '/demo/recalculo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRepeticionRoute = DemoRepeticionRouteImport.update({
+  id: '/demo/repeticion',
+  path: '/demo/repeticion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTiendaRoute = DemoTiendaRouteImport.update({
@@ -505,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/repeticion': typeof DemoRepeticionRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/vip': typeof DemoVipRoute
@@ -581,6 +588,7 @@ export interface FileRoutesByTo {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/repeticion': typeof DemoRepeticionRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/vip': typeof DemoVipRoute
@@ -661,6 +669,7 @@ export interface FileRoutesById {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/repeticion': typeof DemoRepeticionRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/vip': typeof DemoVipRoute
@@ -740,6 +749,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/recalculo'
+    | '/demo/repeticion'
     | '/demo/tienda'
     | '/demo/torneo-stats'
     | '/demo/vip'
@@ -816,6 +826,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/recalculo'
+    | '/demo/repeticion'
     | '/demo/tienda'
     | '/demo/torneo-stats'
     | '/demo/vip'
@@ -895,6 +906,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/recalculo'
+    | '/demo/repeticion'
     | '/demo/tienda'
     | '/demo/torneo-stats'
     | '/demo/vip'
@@ -965,6 +977,7 @@ export interface RootRouteChildren {
   DemoPcwRoute: typeof DemoPcwRoute
   DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
+  DemoRepeticionRoute: typeof DemoRepeticionRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
   DemoVipRoute: typeof DemoVipRoute
@@ -1216,6 +1229,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/recalculo'
       fullPath: '/demo/recalculo'
       preLoaderRoute: typeof DemoRecalculoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/repeticion': {
+      id: '/demo/repeticion'
+      path: '/demo/repeticion'
+      fullPath: '/demo/repeticion'
+      preLoaderRoute: typeof DemoRepeticionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tienda': {
@@ -1673,6 +1693,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoPcwRoute: DemoPcwRoute,
   DemoPerfilSocialRoute: DemoPerfilSocialRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
+  DemoRepeticionRoute: DemoRepeticionRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoTorneoStatsRoute: DemoTorneoStatsRoute,
   DemoVipRoute: DemoVipRoute,

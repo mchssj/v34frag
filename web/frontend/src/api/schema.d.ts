@@ -5181,6 +5181,1153 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shop/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catálogo de la tienda
+         * @description Lo que está a la venta con el precio de hoy (ofertas de la semana incluidas), lo VIP con su precio en monedas VIP y la clave de pack (`theme`).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Catálogo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ShopCatalog"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shop/economy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cómo se ganan los puntos
+         * @description Cuánto da cada premio en puntos y monedas VIP, el tope de partidas por día y los descuentos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Economía */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Economy"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/cosmetics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lo que tiene puesto un jugador
+         * @description Marco, tema, nombre, fondo y stickers de la ficha, sin lo VIP si la cuenta ya no es VIP. Sin cuenta o sin nada: todo vacío.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Cosméticos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerCosmetics"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mi billetera
+         * @description Puntos, monedas VIP (congeladas si no es VIP) y partidas que ya dieron premio hoy.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Billetera */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Wallet"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mi historial de puntos
+         * @description Premios, regalos y compras, lo más nuevo primero. Se pagina con `before`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description `points` (todos) o `vip` (monedas VIP) */
+                    currency?: "points" | "vip";
+                    /** @description Las filas con id menor (página siguiente) */
+                    before?: number;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Historial */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Ledger"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mi inventario
+         * @description Lo que tengo (con el premio VIP si soy VIP), si lo puedo usar, lo que tengo puesto y mi lista de deseos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventario */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Inventory"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/cosmetics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Equipar
+         * @description Cambia lo puesto. Solo lo que tengo y puedo usar; hasta 3 stickers.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetCosmetics"];
+                };
+            };
+            responses: {
+                /** @description Lo puesto */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            equipped: components["schemas"]["Equipped"];
+                        };
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shop/buy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprar un artículo
+         * @description Con puntos al precio de hoy; lo VIP, con monedas VIP y siendo VIP. Sin saldo: `BUSINESS_RULE`. Ya lo tiene: `CONFLICT`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BuyItem"];
+                };
+            };
+            responses: {
+                /** @description Compra */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Purchase"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shop/buy-bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprar un pack
+         * @description Lo que falta de un pack (`theme`), con el descuento de los packs. Todo en una moneda.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BuyBundle"];
+                };
+            };
+            responses: {
+                /** @description Compra */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Purchase"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/wishlist/{item}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lista de deseos
+         * @description Agrega o saca un artículo (hasta 100).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    item: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Estado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WishToggled"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/wallets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Saldos
+         * @description Cuentas con movimientos o inventario, de más puntos a menos.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    page?: number;
+                    per?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Saldos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminWallets"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/grant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dar o corregir puntos
+         * @description Suma o resta puntos o monedas VIP con motivo. Queda en el historial de la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminPointsGrant"];
+                };
+            };
+            responses: {
+                /** @description Billetera de la cuenta */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                        };
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/economy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Topes y descuentos
+         * @description Rige desde ahora: no le cambia el saldo a nadie hacia atrás.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminEconomy"];
+                };
+            };
+            responses: {
+                /** @description Economía */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Economy"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/economy/rules/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Cambiar un premio */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    key: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminEconomyRule"];
+                };
+            };
+            responses: {
+                /** @description Economía */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Economy"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Precio o activo de un artículo */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminShopItemPatch"];
+                };
+            };
+            responses: {
+                /** @description Guardado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Regalar un artículo
+         * @description También uno VIP (se usa mientras la cuenta sea VIP). El premio VIP no se regala.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminItemGrant"];
+                };
+            };
+            responses: {
+                /** @description Regalado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/items/{item}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Quitar un artículo
+         * @description Del inventario y de lo puesto, con motivo. No devuelve puntos.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    item: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminItemRevoke"];
+                };
+            };
+            responses: {
+                /** @description Quitado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players": {
         parameters: {
             query?: never;
@@ -5528,6 +6675,73 @@ export interface paths {
                 };
                 /** @description Sin sesión o sesión vencida */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/heatmap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mapa de calor de un jugador
+         * @description Puntos de sus kills (desde dónde mató) o sus muertes en un mapa, de sus últimas partidas terminadas. Solo partidas jugadas con el reporter 2.11.0 o más nuevo. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Mapa exacto (de_dust2) */
+                    map: string;
+                    /** @description `kills`: desde dónde mató; `deaths`: dónde murió */
+                    kind?: "kills" | "deaths";
+                    /** @description Últimas partidas terminadas en ese mapa */
+                    matches?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Puntos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerHeatmap"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -19304,6 +20518,65 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/matches/{id}/kills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Kills con posición
+         * @description Cada kill de la partida con dónde estaba el que mató y dónde murió (coordenadas del juego), para el mapa de calor. Vacío en las partidas jugadas antes del reporter 2.11.0. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Kills */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MatchKillList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/matches/{id}": {
         parameters: {
             query?: never;
@@ -25089,6 +26362,203 @@ export interface components {
             /** @description Cuándo la ganó; null = bloqueada */
             earned_at: string | null;
         };
+        ShopCatalog: {
+            items: components["schemas"]["ShopItem"][];
+            /** @description Cuándo cambian las ofertas (lunes 00:00 de Bogotá) */
+            weekly_ends: string;
+            weekly_discount: number;
+            /** @description Descuento de un pack sobre lo que falta */
+            bundle_discount: number;
+        };
+        ShopItem: {
+            id: string;
+            /** @enum {string} */
+            kind: "frame" | "sticker" | "theme" | "name" | "background";
+            name: string;
+            description: string | null;
+            /** @description SVG en /cosmetics/ (marcos, stickers y fondos) */
+            file: string | null;
+            /** @description Clase de cosmeticos.css (temas y nombres) */
+            css_class: string | null;
+            vip_only: boolean;
+            /** @description Viene con el VIP: no se compra (el Marco Oro VIP) */
+            vip_reward: boolean;
+            animated: boolean;
+            collection: string;
+            /** @description Clave del pack: el id sin el prefijo del tipo (pais-ar, serie-ninja…) */
+            theme: string;
+            /** @description Precio en puntos sin la oferta */
+            base_price: number | null;
+            /** @description Precio en puntos de hoy; `null` si no se vende por puntos */
+            price: number | null;
+            /** @description Precio en monedas VIP (solo lo VIP) */
+            vip_price: number | null;
+            /** @description En oferta esta semana */
+            weekly: boolean;
+        };
+        Economy: {
+            rules: components["schemas"]["EconomyRule"][];
+            daily_match_cap: number;
+            weekly_count: number;
+            weekly_discount: number;
+            bundle_discount: number;
+            /** @description Desde cuándo se dan premios */
+            starts_at: string;
+        };
+        EconomyRule: {
+            /** @description match, match_win, first_of_day, official, medal_oro, season_10, tournament_1… */
+            key: string;
+            points: number;
+            vip_coins: number;
+            enabled: boolean;
+        };
+        PlayerCosmetics: components["schemas"]["Equipped"] & {
+            vip: boolean;
+        };
+        Equipped: {
+            frame: string | null;
+            theme: string | null;
+            name: string | null;
+            background: string | null;
+            stickers: string[];
+        };
+        Wallet: {
+            points: number;
+            vip_coins: number;
+            /** @description Es VIP hoy. Si no, las monedas VIP están congeladas */
+            vip: boolean;
+            /** @description Partidas que ya dieron premio hoy */
+            matches_today: number;
+            daily_match_cap: number;
+        };
+        Ledger: {
+            items: components["schemas"]["LedgerRow"][];
+            /** @description `before` de la página siguiente */
+            next: number | null;
+        };
+        LedgerRow: {
+            id: number;
+            created_at: string;
+            /**
+             * @description `points` (todos) o `vip` (monedas VIP)
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            /** @description Positivo: premio o regalo. Negativo: compra o corrección */
+            amount: number;
+            /** @description match, medal, season, grant, purchase… */
+            source: string;
+            ref: string;
+            label: string;
+        };
+        Inventory: {
+            items: {
+                item_id: string;
+                /**
+                 * @description `vip`: el premio VIP, mientras sea VIP
+                 * @enum {string}
+                 */
+                source: "purchase" | "bundle" | "grant" | "vip";
+                /**
+                 * @description `points` (todos) o `vip` (monedas VIP)
+                 * @enum {string|null}
+                 */
+                currency: "points" | "vip" | null;
+                price_paid: number | null;
+                acquired_at: string | null;
+                /** @description false: es VIP y la cuenta no lo es hoy (congelado) */
+                usable: boolean;
+                equipped: boolean;
+            }[];
+            equipped: components["schemas"]["Equipped"];
+            wishlist: string[];
+        };
+        /** @description Lo que no viene no se toca; `null` lo saca */
+        SetCosmetics: {
+            frame?: string | null;
+            theme?: string | null;
+            name?: string | null;
+            background?: string | null;
+            stickers?: string[];
+        };
+        Purchase: {
+            /**
+             * @description `points` (todos) o `vip` (monedas VIP)
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            price_paid: number;
+            /** @description Saldo de esa moneda después de la compra */
+            balance: number;
+            /** @description Artículos que entraron al inventario */
+            items: number;
+            /** @description En un pack: lo que costaba sin descuento */
+            full: number | null;
+        };
+        BuyItem: {
+            item: string;
+        };
+        BuyBundle: {
+            theme: string;
+        };
+        WishToggled: {
+            on: boolean;
+        };
+        AdminWallets: {
+            items: {
+                /** Format: uuid */
+                user_id: string;
+                alias: string | null;
+                /** Format: uuid */
+                player_id: string | null;
+                nick: string | null;
+                vip: boolean;
+                points: number;
+                vip_coins: number;
+                earned: number;
+                spent: number;
+                items: number;
+            }[];
+            total: number;
+            page: number;
+            per: number;
+        };
+        AdminPointsGrant: {
+            /** Format: uuid */
+            user: string;
+            /**
+             * @description `points` (todos) o `vip` (monedas VIP)
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            amount: number;
+            reason: string;
+        };
+        AdminEconomy: {
+            daily_match_cap: number;
+            weekly_count: number;
+            weekly_discount: number;
+            bundle_discount: number;
+        };
+        AdminEconomyRule: {
+            points?: number;
+            vip_coins?: number;
+            enabled?: boolean;
+        };
+        AdminShopItemPatch: {
+            /** @description En puntos, o en monedas VIP si el artículo es VIP */
+            price?: number;
+            /** @description Lo saca de la venta */
+            no_price?: boolean;
+            active?: boolean;
+        };
+        AdminItemGrant: {
+            item: string;
+            note?: string;
+        };
+        AdminItemRevoke: {
+            reason: string;
+        };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
             /** @description Total con los filtros aplicados */
@@ -25185,6 +26655,18 @@ export interface components {
             joined_at: string | null;
             last_seen: string | null;
         } | null;
+        PlayerHeatmap: {
+            map: string;
+            /** @enum {string} */
+            kind: "kills" | "deaths";
+            /** @description Partidas que aportaron puntos */
+            matches: number;
+            /** @description [x, y] en coordenadas del juego */
+            points: [
+                number,
+                number
+            ][];
+        };
         MedalList: {
             items: components["schemas"]["Medal"][];
             /** @description Total con los filtros aplicados */
@@ -27014,6 +28496,8 @@ export interface components {
             } | null;
             /** @description Mix con la demo subida: link de descarga */
             demo_url: string | null;
+            /** @description Mix con repetición 2D: el .trk (texto) que lee la web; null si no hay */
+            track_url: string | null;
             /** @description Tamaño de la demo en bytes (null si no hay) */
             demo_size: number | null;
             /** @description Código de !match: solo para los dos equipos, el organizador y los admins */
@@ -27077,6 +28561,8 @@ export interface components {
             demo_size: number | null;
             /** @description Estado de la demo del juego (`pending`, `uploaded`, `failed`…) */
             demo_status: string;
+            /** @description Repetición 2D del juego (.trk, texto); null si no hay */
+            track_url: string | null;
             /** @description Juego terminado: stats de cada jugador en ese mapa, en los lados de la serie, con su `elo_delta` y sus clutches. Vacío si no terminó */
             players: components["schemas"]["PlayerLine"][];
         };
@@ -27274,6 +28760,24 @@ export interface components {
         GameReviewBody: {
             /** @description `true` aprueba el mix vinculado; `false` lo rechaza: se desvincula y el mapa queda con su marcador como resultado a mano */
             approve: boolean;
+        };
+        MatchKillList: {
+            map: string | null;
+            kills: components["schemas"]["MatchKill"][];
+        };
+        MatchKill: {
+            round: number;
+            /** @description null: el mundo, un suicidio o un bot */
+            killer_steam: string | null;
+            victim_steam: string;
+            weapon: string;
+            headshot: boolean;
+            /** @description Dónde estaba el que mató (coordenadas del juego) */
+            kx: number | null;
+            ky: number | null;
+            /** @description Dónde murió */
+            vx: number;
+            vy: number;
         };
         ClipList: {
             items: components["schemas"]["Clip"][];

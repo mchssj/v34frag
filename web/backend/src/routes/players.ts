@@ -8,6 +8,8 @@ import { bearer, errorResponses, json } from '../schemas/common';
 import {
   EloHistoryList,
   EloHistoryQuery,
+  HeatmapQuery,
+  PlayerHeatmap,
   IdParam,
   MapStatsQuery,
   MedalSummaryList,
@@ -125,6 +127,18 @@ const mapStats = createRoute({
   middleware: [optionalUser] as const,
   request: { params: IdParam, query: MapStatsQuery },
   responses: { 200: { description: 'Stats por mapa', ...json(PlayerMapStatsList) }, ...errorResponses(400, 401) },
+});
+
+const heatmap = createRoute({
+  method: 'get',
+  path: '/api/v1/players/{id}/heatmap',
+  tags: ['Jugadores'],
+  middleware: [optionalUser] as const,
+  summary: 'Mapa de calor de un jugador',
+  description: 'Puntos de sus kills (desde dónde mató) o sus muertes en un mapa, de sus últimas partidas terminadas. ' +
+    'Solo partidas jugadas con el reporter 2.11.0 o más nuevo. Sin sesión.',
+  request: { params: IdParam, query: HeatmapQuery },
+  responses: { 200: { description: 'Puntos', ...json(PlayerHeatmap) }, ...errorResponses(400, 404) },
 });
 
 const medals = createRoute({
@@ -287,6 +301,17 @@ export const players = createRouter()
     type Row = { map_name: string | null; maps: number | null; rating: number | null; kd: number | null; adr: number | null; wins: number | null; losses: number | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {}, 'map_name');
     return c.json(envelope(rows.map(({ map_name, ...m }) => ({ map: map_name ?? '?', ...m })), total, p), 200);
+  })
+  .openapi(heatmap, async (c) => {
+    const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
+    const p = c.req.valid('query');
+    const rows = must(
+      await c.var.sb.rpc('player_heatmap', { p_player: id, p_map: p.map, p_kind: p.kind, p_matches: p.matches }),
+    ) as { x: number; y: number; match_id: string }[];
+    return c.json(
+      { map: p.map, kind: p.kind, matches: new Set(rows.map((r) => r.match_id)).size, points: rows.map((r) => [r.x, r.y] as [number, number]) },
+      200,
+    );
   })
   .openapi(medals, async (c) => {
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);

@@ -262,5 +262,7 @@ void Json_BuildPayload(int endedAt, bool cancelled = false, const char[] reason 
 	}
 	J_Char(']');
 	Clips_WriteJson();   // al final: si no entran, se sacan sin cortar el resto
+	if (liveSeq == 0)
+		Track_WriteJson();   // igual que los clips; las fotos en vivo no las llevan
 	J_Char('}');
 }

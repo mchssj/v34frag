@@ -43,7 +43,7 @@ function LegalTable({
 }
 
 const PROVIDERS: [string, string][] = [
-  ["Cloudflare", "Demos y clips, y parte de la web"],
+  ["Cloudflare", "Demos, repeticiones 2D y clips, y parte de la web"],
   [
     "OVH (servidor VPS)",
     "La base de datos, las cuentas y los archivos (avatares, capturas, evidencia del anticheat), la API de la web, el matchmaking y el HUD de las transmisiones",
@@ -61,6 +61,14 @@ const RETENTION: [string, string][] = [
   ["Cuenta y perfil", "Mientras tengas la cuenta"],
   ["Estadísticas, resultados y ELO", "Sin plazo: son el historial de la liga"],
   ["Demos", "90 días"],
+  [
+    "Repetición 2D (posiciones de cada ronda; en preparación)",
+    "90 días, como la demo",
+  ],
+  [
+    "Dónde mataste y moriste (mapa de calor; en preparación)",
+    "Sin plazo: es parte de las estadísticas",
+  ],
   ["Clips", "Mientras exista la jugada en la liga"],
   ["Cada conexión a un servidor (IP, fecha y nick)", "90 días"],
   ["Intentos de conexión por IP", "90 días"],
@@ -159,6 +167,14 @@ const SECTIONS: LegalSection[] = [
             que pasa en el juego, incluido el chat escrito.
           </li>
           <li>
+            Dónde estás en el mapa durante cada ronda (dos veces por segundo),
+            hacia dónde miras, tu vida, el arma en la mano, tu plata al empezar
+            la ronda, los golpes que das y recibes, y las granadas que tiras
+            (por dónde van, dónde explotan y a quién ciega cada flash), para la
+            repetición 2D de la partida, y dónde mataste y dónde moriste, para
+            el mapa de calor <Wip />.
+          </li>
+          <li>
             <strong>Tu dirección IP</strong>, con la fecha, el servidor y el
             nick con que te conectaste, y la cantidad de intentos de conexión de
             cada IP. Se usa para la seguridad de los servidores (por ejemplo,
@@ -232,7 +248,8 @@ const SECTIONS: LegalSection[] = [
             cuentas duplicadas y ataques a los servidores.
           </li>
           <li>
-            Publicar demos, clips, transmisiones y el widget para streamers.
+            Publicar demos, repeticiones 2D, mapas de calor, clips,
+            transmisiones y el widget para streamers.
           </li>
           <li>
             Mandarte los correos de la cuenta (confirmación y cambio de

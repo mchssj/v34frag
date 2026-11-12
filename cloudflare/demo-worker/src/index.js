@@ -12,6 +12,8 @@
  *
  * Rutas:
  *   GET /demo/<match_uid>      descarga pública, con un nombre legible
+ *   GET /track/<match_uid>     el .trk de la repetición 2D (texto), para la web
+ *                              (ver docs/bitacora/2026-11-12-repeticion-2d-y-mapa-de-calor)
  *   GET /run?key=<ADMIN_KEY>   corre el cron a mano (para probar) y devuelve lo que hizo
  *   POST /crash?key=<CRASH_KEY> recibe un volcado de Accelerator (MinidumpUrl en core.cfg del servidor)
  *                              y lo guarda en R2 como crashes/<fecha>-<id>.dmp (+ .txt y .json)
@@ -25,6 +27,9 @@ export default {
     const url = new URL(request.url);
     const demo = url.pathname.match(/^\/demo\/([A-Za-z0-9_-]{6,80})(?:\.dem)?$/);
     if (demo && (request.method === 'GET' || request.method === 'HEAD')) return download(env, demo[1], request.method);
+    const track = url.pathname.match(/^\/track\/([A-Za-z0-9_-]{6,80})(?:\.trk)?$/);
+    if (track && (request.method === 'GET' || request.method === 'HEAD')) return downloadTrack(env, track[1], request.method);
+    if (track && request.method === 'OPTIONS') return new Response(null, { status: 204, headers: TRACK_CORS });
     if (url.pathname === '/crash' && request.method === 'POST') {
       if (!env.CRASH_KEY || url.searchParams.get('key') !== env.CRASH_KEY) return text('Forbidden', 403);
       return saveCrash(env, request);
@@ -101,8 +106,22 @@ async function uploadPending(env) {
       r.via = 'api';
       r.key = key;
       r.size = size;
+      // La repetición 2D (reporter 2.11.0) va al lado de la demo con el mismo nombre. Si falla, la demo queda igual.
+      const trk = listing.get(`${m.external_id}.trk`) || listing.get(`${m.external_id.toLowerCase()}.trk`);
+      if (trk) {
+        try {
+          const tkey = key.replace(/^demos\//, 'tracks/').replace(/\.dem$/, '.trk');
+          await copyToR2(env, panel, trk, tkey, 'text/plain; charset=utf-8');
+          await supabase(env, 'track_mark', { p_uid: m.external_id, p_key: tkey });
+          r.track = tkey;
+        } catch (e) {
+          r.track_error = String(e && e.message ? e.message : e);
+        }
+      }
       if (env.DELETE_AFTER_UPLOAD === 'true') {
-        await ptero(panel, '/files/delete', { root: env.DEMO_DIR, files: [file.name] });
+        const files = [file.name];
+        if (r.track) files.push(trk.name);
+        await ptero(panel, '/files/delete', { root: env.DEMO_DIR, files });
         r.deleted = true;
       }
     } catch (e) {
@@ -123,11 +142,11 @@ async function toSftp(env, m, r, reason) {
   r.status = await supabase(env, 'demo_fallback', { p_uid: m.external_id, p_reason: reason });
 }
 
-/** Demos del servidor: Map nombre -> { name, size }. */
+/** Demos y repeticiones (.trk) del servidor: Map nombre -> { name, size }. */
 async function listDemos(env, panel) {
   const list = await ptero(panel, `/files/list?directory=${encodeURIComponent(env.DEMO_DIR)}`);
   const map = new Map();
-  for (const { attributes: f } of list.data) if (f.is_file && f.name.endsWith('.dem')) map.set(f.name, { name: f.name, size: f.size });
+  for (const { attributes: f } of list.data) if (f.is_file && /\.(dem|trk)$/.test(f.name)) map.set(f.name, { name: f.name, size: f.size });
   return map;
 }
 
@@ -156,8 +175,8 @@ async function saveCrash(env, request) {
   return text(`Crash ID: ${id}`);
 }
 
-/** Baja la demo del nodo y la sube a R2 en stream. Devuelve el tamaño subido; falla si no coincide. */
-async function copyToR2(env, panel, file, key) {
+/** Baja la demo (o el .trk) del nodo y la sube a R2 en stream. Devuelve el tamaño subido; falla si no coincide. */
+async function copyToR2(env, panel, file, key, contentType = 'application/octet-stream') {
   const dl = await ptero(panel, `/files/download?file=${encodeURIComponent(`${env.DEMO_DIR}/${file.name}`)}`);
   const resp = await fetch(dl.attributes.url, { headers: { 'User-Agent': 'v34frag-demos' } });
   if (!resp.ok || !resp.body) throw new Error(`el nodo respondió ${resp.status}`);
@@ -169,7 +188,7 @@ async function copyToR2(env, panel, file, key) {
   const fixed = new FixedLengthStream(len);
   const pipe = resp.body.pipeTo(fixed.writable);
   const obj = await env.DEMOS.put(key, fixed.readable, {
-    httpMetadata: { contentType: 'application/octet-stream' },
+    httpMetadata: { contentType },
     customMetadata: { source: file.name },
   });
   await pipe;
@@ -205,6 +224,31 @@ async function download(env, uid, method) {
     'Content-Type': 'application/octet-stream',
     'Content-Length': String(obj.size),
     'Content-Disposition': `attachment; filename="${friendlyName(m)}"`,
+    'Cache-Control': 'public, max-age=86400',
+    ETag: obj.httpEtag,
+  });
+  return new Response(method === 'HEAD' ? null : obj.body, { headers });
+}
+
+const TRACK_CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+/** El .trk de la repetición 2D. Público como la demo, y vence con ella. */
+async function downloadTrack(env, uid, method) {
+  const q = `matches?select=track_key,demo_status&external_id=eq.${encodeURIComponent(uid)}`;
+  const m = (await rest(env, q))[0];
+  if (!m) return text('Esa partida no existe.', 404, TRACK_CORS);
+  if (m.demo_status === 'expired') return text('La repetición de esta partida ya venció.', 410, TRACK_CORS);
+  if (!m.track_key) return text('Esta partida no tiene repetición 2D.', 404, TRACK_CORS);
+  const obj = method === 'HEAD' ? await env.DEMOS.head(m.track_key) : await env.DEMOS.get(m.track_key);
+  if (!obj) return text('No se encontró la repetición.', 404, TRACK_CORS);
+  const headers = new Headers({
+    ...TRACK_CORS,
+    'Content-Type': 'text/plain; charset=utf-8',
+    'Content-Length': String(obj.size),
     'Cache-Control': 'public, max-age=86400',
     ETag: obj.httpEtag,
   });
@@ -294,6 +338,6 @@ function json(data) {
   return new Response(JSON.stringify(data, null, 2), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
 }
 
-function text(body, status) {
-  return new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+function text(body, status, extra = {}) {
+  return new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...extra } });
 }

@@ -73,6 +73,21 @@ export const MapStatsQuery = listQuery(['maps', 'rating', 'kd', 'adr', 'wins'], 
 });
 export const PlayerMapStatsList = Envelope(PlayerMapStats).openapi('PlayerMapStatsList');
 
+// Mapa de calor (replanteo 92): desde dónde mata o dónde muere en un mapa, en sus últimas partidas.
+export const HeatmapQuery = z.object({
+  map: z.string().regex(/^[a-z0-9_$-]{2,40}$/i).openapi({ description: 'Mapa exacto (de_dust2)' }),
+  kind: z.enum(['kills', 'deaths']).default('kills').openapi({ description: '`kills`: desde dónde mató; `deaths`: dónde murió' }),
+  matches: z.coerce.number().int().min(1).max(100).default(30).openapi({ description: 'Últimas partidas terminadas en ese mapa' }),
+});
+export const PlayerHeatmap = z
+  .object({
+    map: z.string(),
+    kind: z.enum(['kills', 'deaths']),
+    matches: z.number().int().openapi({ description: 'Partidas que aportaron puntos' }),
+    points: z.array(z.tuple([z.number().int(), z.number().int()])).openapi({ description: '[x, y] en coordenadas del juego' }),
+  })
+  .openapi('PlayerHeatmap');
+
 export const Medal = z
   .object({
     id: z.uuid(),

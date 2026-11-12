@@ -1,12 +1,26 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-11**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-12**.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
 > **Numeración nueva desde el 2026-11-08** (Kyan): **#1** es MVZG (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`) son los nuevos, los tres en el panel de MVZG. flow ya no existe y el de retake (ExtremeHost) se da de baja alrededor del 2026-11-10. Lo que abajo dice "#2" o "flow" antes del 2026-11-08 es flow; "#3", el de ExtremeHost.
 
 > **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
+
+## Repetición 2D y mapa de calor, reporter 2.11.0 (2026-11-12): probado en local, sin commit ni despliegue
+
+- **Estado:** pedido por Kyan. El reporter graba las posiciones de cada ronda en `<uid>.trk`, al lado de la demo, y manda las kills con posición en el resultado. El Worker sube el `.trk` a R2, la base guarda las kills (replanteo `92`) y la sala de la partida muestra la repetición y el mapa de calor sobre un radar sacado del `.nav`. Probado en local con bots, en la base, la API, el Worker (`wrangler dev`) y la web. Detalle: [`2026-11-12-repeticion-2d-y-mapa-de-calor`](bitacora/2026-11-12-repeticion-2d-y-mapa-de-calor/).
+- **Falta (en este orden):**
+  - Aplicar la `92` en el VPS (Daniel).
+  - Que la regla de vencimiento de R2 (90 días) cubra también `tracks/` (Daniel).
+  - Desplegar el Worker de demos y la API.
+  - Que la tarea de SFTP del VPS suba también el `.trk` (Daniel). Hoy no la usa ningún servidor.
+  - Subir el reporter 2.11.0 a **#1**, **#2** y **#3** en la misma tanda, con `csstv_track "1"`, sin recargar con una partida en curso.
+  - Desplegar la web y sacar "En preparación" de `/privacidad` y `terms/privacidad.html`.
+  - Probar la subida del `.trk` desde el panel (no se probó: el Worker borra los archivos del servidor) y un mix real de 10 jugadores (tamaño del `.trk`).
+  - El mapa de calor de un jugador en su perfil: la API está (`/players/{id}/heatmap`); falta que Esteban decida dónde va.
+  - Publicar el changelog en Discord.
 
 ## Flash según el ángulo y la distancia, `csstv_flash` 1.0.0 (2026-11-11): subido a los tres, falta verificar que cargó
 

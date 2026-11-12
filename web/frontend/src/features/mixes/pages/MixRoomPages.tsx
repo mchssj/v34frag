@@ -15,6 +15,7 @@ import { MatchRoom } from "@/features/matchmaking/room/MatchRoom"
 import { MmSourceContext } from "@/features/matchmaking/source"
 import { myProfileOptions } from "@/features/profile/api/queries"
 import { matchDetailOptions } from "@/features/shell/api/queries"
+import { MatchReplay } from "@/features/replay/components/MatchReplay"
 import { SeriesRoom } from "@/features/series/pages/SeriesRoom"
 import { DeleteMixDialog } from "../components/DeleteMixDialog"
 import { mixHighlights } from "../components/MixHighlights"
@@ -97,44 +98,64 @@ export function MixMatchRoom({
 
   if (room.data)
     return (
-      <MmSourceContext value={apiMmSource}>
-        <MatchRoom
-          lobby={{
-            ...room.data,
-            server: null,
-            reported: room.data.reported ?? [],
-            commended: room.data.commended ?? null,
-            elo_stake: room.data.elo_stake ?? null,
-          }}
-          mode="detail"
-          initialTab={view === "stats" ? "stats" : "overview"}
-        />
-      </MmSourceContext>
+      <WithReplay trackUrl={m.track_url}>
+        <MmSourceContext value={apiMmSource}>
+          <MatchRoom
+            lobby={{
+              ...room.data,
+              server: null,
+              reported: room.data.reported ?? [],
+              commended: room.data.commended ?? null,
+              elo_stake: room.data.elo_stake ?? null,
+            }}
+            mode="detail"
+            initialTab={view === "stats" ? "stats" : "overview"}
+          />
+        </MmSourceContext>
+      </WithReplay>
     )
 
   const mixRoom = roomFromMatch(m, me)
   // La API no borra un mix vinculado con !match a un torneo o PCW.
   const canDelete = !!role && canDeleteMix(role) && !m.parent_match_id
   return (
-    <MixRoom
-      room={mixRoom}
-      mapImage={mapImage(maps, m.map)}
-      highlights={
-        mixRoom.status === "finished"
-          ? mixHighlights(m.id, mixRoom, m.map)
-          : undefined
-      }
-      tab={tab}
-      onTab={onTab}
-      adminAction={
-        canDelete ? (
-          <DeleteMixDialog
-            matchId={m.id}
-            movedElo={mixRoom.status === "finished"}
-          />
-        ) : undefined
-      }
-    />
+    <WithReplay trackUrl={m.track_url}>
+      <MixRoom
+        room={mixRoom}
+        mapImage={mapImage(maps, m.map)}
+        highlights={
+          mixRoom.status === "finished"
+            ? mixHighlights(m.id, mixRoom, m.map)
+            : undefined
+        }
+        tab={tab}
+        onTab={onTab}
+        adminAction={
+          canDelete ? (
+            <DeleteMixDialog
+              matchId={m.id}
+              movedElo={mixRoom.status === "finished"}
+            />
+          ) : undefined
+        }
+      />
+    </WithReplay>
+  )
+}
+
+/** La sala y, debajo, la repetición 2D y el mapa de calor (replanteo 92), si la partida tiene .trk. */
+function WithReplay({
+  trackUrl,
+  children,
+}: {
+  trackUrl: string | null | undefined
+  children: ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-8">
+      {children}
+      <MatchReplay trackUrl={trackUrl} />
+    </div>
   )
 }
 

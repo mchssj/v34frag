@@ -1177,6 +1177,7 @@ void Demo_Start()
 	g_bRecording = true;
 	g_bDemoRecorded = true;
 	LogMessage("Grabando demo %s/%s.dem", DEMO_DIR, g_sMatchUid);
+	Track_Start();
 }
 
 void Demo_Stop()
@@ -1186,6 +1187,7 @@ void Demo_Stop()
 		return;
 	ServerCommand("tv_stoprecord");
 	g_bRecording = false;
+	Track_Stop();
 	CreateTimer(3.0, Timer_DemoCleanup);
 }
 
@@ -1227,6 +1229,7 @@ public Action Timer_DemoDiscard(Handle timer, DataPack pack)
 	Format(path, sizeof(path), "%s/%s.dem", DEMO_DIR, uid);
 	if (FileExists(path) && DeleteFile(path))
 		LogMessage("Demo descartado: %s", path);
+	Track_Discard(uid);
 	return Plugin_Stop;
 }
 
@@ -1262,6 +1265,11 @@ void Demo_Cleanup()
 		names.GetString(oldest, path, sizeof(path));
 		if (DeleteFile(path))
 			LogMessage("Demo viejo borrado: %s", path);
+		// Su repetición 2D (mismo nombre, .trk).
+		path[strlen(path) - 4] = '\0';
+		StrCat(path, sizeof(path), ".trk");
+		if (FileExists(path))
+			DeleteFile(path);
 		names.Erase(oldest);
 		times.Erase(oldest);
 	}

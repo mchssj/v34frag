@@ -129,6 +129,7 @@ export const GameRef = z
     demo_url: z.string().nullable(),
     demo_size: z.number().int().nullable().openapi({ description: 'Tamaño de la demo en bytes (null si no hay)' }),
     demo_status: z.string().openapi({ description: 'Estado de la demo del juego (`pending`, `uploaded`, `failed`…)' }),
+    track_url: z.string().nullable().openapi({ description: 'Repetición 2D del juego (.trk, texto); null si no hay' }),
     players: z.array(PlayerLine).openapi({
       description: 'Juego terminado: stats de cada jugador en ese mapa, en los lados de la serie, con su `elo_delta` y sus clutches. Vacío si no terminó',
     }),
@@ -164,6 +165,7 @@ export const MatchDetail = MatchSummary.extend({
   advantage_side: z.number().int().nullable().openapi({ description: 'Gran final con mapa de ventaja: bando que empezó 1-0' }),
   server: z.object({ id: z.uuid().nullable(), name: z.string().nullable(), address: z.string().nullable() }).nullable(),
   demo_url: z.string().nullable().openapi({ description: 'Mix con la demo subida: link de descarga' }),
+  track_url: z.string().nullable().openapi({ description: 'Mix con repetición 2D: el .trk (texto) que lee la web; null si no hay' }),
   demo_size: z.number().int().nullable().openapi({ description: 'Tamaño de la demo en bytes (null si no hay)' }),
   link_code: z.string().nullable().openapi({ description: 'Código de !match: solo para los dos equipos, el organizador y los admins' }),
   roster1: z.array(RosterPlayer),
@@ -281,6 +283,22 @@ export const SeriesMap = z
 export const SeriesMapsBody = z
   .object({ maps: z.array(SeriesMap).max(5).openapi({ description: 'Los mapas de la serie en orden. Lista vacía: sin resultado' }) })
   .openapi('SeriesMapsBody');
+
+// Kills con posición (replanteo 92): mapa de calor de la partida.
+export const MatchKill = z
+  .object({
+    round: z.number().int(),
+    killer_steam: z.string().nullable().openapi({ description: 'null: el mundo, un suicidio o un bot' }),
+    victim_steam: z.string(),
+    weapon: z.string(),
+    headshot: z.boolean(),
+    kx: z.number().int().nullable().openapi({ description: 'Dónde estaba el que mató (coordenadas del juego)' }),
+    ky: z.number().int().nullable(),
+    vx: z.number().int().openapi({ description: 'Dónde murió' }),
+    vy: z.number().int(),
+  })
+  .openapi('MatchKill');
+export const MatchKillList = z.object({ map: z.string().nullable(), kills: z.array(MatchKill) }).openapi('MatchKillList');
 
 export const MatchParam = z.object({ id: z.uuid().openapi({ param: { name: 'id', in: 'path' } }) });
 export const MatchGameParam = MatchParam.extend({ gameId: z.uuid().openapi({ param: { name: 'gameId', in: 'path' } }) });

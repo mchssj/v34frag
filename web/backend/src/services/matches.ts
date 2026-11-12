@@ -75,6 +75,12 @@ export const demoUrl = (cfg: Config, m: { kind: string; external_id: string | nu
     ? `${cfg.DEMO_BASE_URL}/demo/${encodeURIComponent(m.external_id)}`
     : null;
 
+/** El .trk de la repetición 2D (replanteo 92): lo sirve el Worker de demos, como la demo. */
+export const trackUrl = (cfg: Config, m: { kind: string; external_id: string | null; demo_status: string; track_key?: string | null }) =>
+  m.kind === 'mix' && m.external_id && m.track_key && m.demo_status !== 'expired' && cfg.DEMO_BASE_URL
+    ? `${cfg.DEMO_BASE_URL}/track/${encodeURIComponent(m.external_id)}`
+    : null;
+
 /** Secuencia del veto, igual que veto_sequence() en la base. */
 export function vetoSequence(bo: number, maps: number): ('ban' | 'pick')[] {
   const a: ('ban' | 'pick')[] = [];

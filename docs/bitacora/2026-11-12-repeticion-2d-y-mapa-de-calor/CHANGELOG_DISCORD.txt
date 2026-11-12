@@ -1,0 +1,12 @@
+CMLeague 2.9.32 --  Changelog
+
+Repetición 2D y mapa de calor
+
+- En la sala de cada partida, debajo del resultado, ahora está la Repetición 2D: cada ronda vista desde arriba, con los jugadores moviéndose sobre el mapa.
+- Elige la ronda, dale a Reproducir y cambia la velocidad a 1x, 2x, 4x u 8x. También puedes mover la barra o usar el teclado (espacio, flechas, coma y punto).
+- Se ve hacia dónde mira cada uno, su vida, el arma que tiene en la mano y el camino que viene haciendo. Toca un jugador para seguirlo.
+- El C4 plantado titila en rojo cada vez más rápido, con la cuenta regresiva, y ves el anillo cuando un CT la desactiva.
+- Las granadas: el tiro, el humo (dura lo mismo que en el juego), la HE y la flash. Arriba del cegado aparece un ojo blanco mientras no ve.
+- Cada golpe muestra el daño, y al costado tienes a los diez jugadores con su plata y su daño, y todo lo que pasó en la ronda.
+- Con Mapa de calor ves desde dónde se mató, dónde se murió y dónde cayeron las granadas en la partida, de todos o de un jugador.
+- Solo las partidas nuevas tienen repetición. Se borra con la demo, a los 90 días.

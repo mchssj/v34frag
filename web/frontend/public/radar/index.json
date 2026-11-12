@@ -1,0 +1,154 @@
+{
+ "de_aztec": {
+  "minx": -3114,
+  "maxy": 1464,
+  "width": 6153,
+  "height": 3203,
+  "minz": -539,
+  "maxz": -96
+ },
+ "de_cache": {
+  "minx": -1814,
+  "maxy": 2339,
+  "width": 5203,
+  "height": 3878,
+  "minz": -160,
+  "maxz": 75
+ },
+ "de_cbble": {
+  "minx": -3514,
+  "maxy": 3006,
+  "width": 5103,
+  "height": 5370,
+  "minz": -256,
+  "maxz": 320
+ },
+ "de_chateau": {
+  "minx": -539,
+  "maxy": 2914,
+  "width": 3703,
+  "height": 4378,
+  "minz": -174,
+  "maxz": 236
+ },
+ "de_dust": {
+  "minx": -2064,
+  "maxy": 3889,
+  "width": 4728,
+  "height": 5803,
+  "minz": -192,
+  "maxz": 128
+ },
+ "de_dust2": {
+  "minx": -2264,
+  "maxy": 3189,
+  "width": 4109,
+  "height": 4253,
+  "minz": -191,
+  "maxz": 186
+ },
+ "de_dust2_ob": {
+  "minx": -2264,
+  "maxy": 3189,
+  "width": 4109,
+  "height": 4253,
+  "minz": -191,
+  "maxz": 186
+ },
+ "de_inferno": {
+  "minx": -2039,
+  "maxy": 3664,
+  "width": 4803,
+  "height": 4503,
+  "minz": -64,
+  "maxz": 283
+ },
+ "de_inferno_classic": {
+  "minx": -2464,
+  "maxy": 1614,
+  "width": 4753,
+  "height": 4203,
+  "minz": -368,
+  "maxz": -16
+ },
+ "de_mirage_rc1": {
+  "minx": -2714,
+  "maxy": 939,
+  "width": 4228,
+  "height": 3528,
+  "minz": -368,
+  "maxz": -3
+ },
+ "de_nuke": {
+  "minx": -3064,
+  "maxy": 1014,
+  "width": 6628,
+  "height": 3553,
+  "minz": -768,
+  "maxz": -23
+ },
+ "de_nuke_old_blue_ep": {
+  "minx": -2564,
+  "maxy": 1014,
+  "width": 6128,
+  "height": 3553,
+  "minz": -768,
+  "maxz": -96
+ },
+ "de_piranesi": {
+  "minx": -2939,
+  "maxy": 2739,
+  "width": 5403,
+  "height": 3728,
+  "minz": -72,
+  "maxz": 528
+ },
+ "de_port": {
+  "minx": -3385,
+  "maxy": 4139,
+  "width": 6260,
+  "height": 8128,
+  "minz": 320,
+  "maxz": 961
+ },
+ "de_prodigy": {
+  "minx": -264,
+  "maxy": 1089,
+  "width": 3678,
+  "height": 2785,
+  "minz": -480,
+  "maxz": -48
+ },
+ "de_season": {
+  "minx": -889,
+  "maxy": 2089,
+  "width": 4703,
+  "height": 4603,
+  "minz": -168,
+  "maxz": 128
+ },
+ "de_tides": {
+  "minx": -1814,
+  "maxy": 1339,
+  "width": 3253,
+  "height": 3403,
+  "minz": -163,
+  "maxz": 48
+ },
+ "de_train": {
+  "minx": -2082,
+  "maxy": 1864,
+  "width": 4196,
+  "height": 3703,
+  "minz": -360,
+  "maxz": 95
+ },
+ "de_tuscan": {
+  "minx": -2364,
+  "maxy": 2314,
+  "width": 3978,
+  "height": 4703,
+  "minz": -384,
+  "maxz": 148
+ }
+}
