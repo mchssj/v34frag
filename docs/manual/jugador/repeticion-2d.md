@@ -11,7 +11,7 @@ Solo las partidas jugadas desde que existe la repetición tienen esta parte. Las
 ## Ver una ronda
 
 1. Abre la partida desde [Partidas](/matches) o desde tu perfil.
-2. Baja hasta **Repetición 2D**, debajo de la sala.
+2. En una partida del matchmaking, toca la pestaña **Repetición 2D**, al lado de **Descripción general** y **Estadísticas**. En un mix, está debajo de la sala.
 3. Elige la ronda con los números de arriba. La raya de color debajo de cada número dice qué lado la ganó: celeste los CT, naranja los T.
 4. Toca **Reproducir**. Con **1×**, **2×**, **4×** y **8×** cambias la velocidad, y con la barra vas a cualquier momento de la ronda. Las flechas de al lado pasan a la ronda anterior o a la siguiente.
 

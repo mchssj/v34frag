@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import heroImage from "@/assets/landing-bg.webp"
 import { BackButton } from "@/components/brand/BackButton"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { MatchReplay } from "@/features/replay/components/MatchReplay"
 import type { MmLobby } from "../types"
 import { RoomHeader } from "./RoomHeader"
 import { RoomOverview } from "./RoomOverview"
@@ -14,7 +15,7 @@ import { RoomStats } from "./RoomStats"
 // Sala de la partida (plan, sección 7): la misma pantalla desde el veto hasta después del
 // resultado, con "Descripción general" y "Estadísticas" (esta, recién cuando la partida terminó).
 
-type Tab = "overview" | "stats"
+type Tab = "overview" | "stats" | "replay"
 
 export function MatchRoom({
   lobby,
@@ -22,6 +23,7 @@ export function MatchRoom({
   mode = "live",
   initialTab = "overview",
   extra,
+  trackUrl,
 }: {
   lobby: MmLobby
   onBack?: () => void
@@ -31,6 +33,8 @@ export function MatchRoom({
   initialTab?: Tab
   /** Arriba del centro de la sala (la serie y las reglas de una PCW). */
   extra?: React.ReactNode
+  /** El .trk de la partida (replanteo 92): con él aparece la pestaña "Repetición 2D". */
+  trackUrl?: string | null
 }) {
   const [tab, setTab] = useState<Tab>(initialTab)
   const map = lobby.veto?.pool.find((m) => m.name === lobby.map) ?? null
@@ -38,7 +42,11 @@ export function MatchRoom({
   // Las estadísticas son postpartido: con la partida en vivo solo se ve el marcador.
   const hasStats = lobby.status === "finished" && !!lobby.match
   const ended = lobby.status === "finished" || lobby.status === "cancelled"
-  const current = hasStats ? tab : "overview"
+  const hasReplay = ended && !!trackUrl
+  const current =
+    (tab === "stats" && hasStats) || (tab === "replay" && hasReplay)
+      ? tab
+      : "overview"
 
   const share = async () => {
     try {
@@ -83,6 +91,14 @@ export function MatchRoom({
           >
             Estadísticas
           </RoomTab>
+          {hasReplay && (
+            <RoomTab
+              active={current === "replay"}
+              onClick={() => setTab("replay")}
+            >
+              Repetición 2D
+            </RoomTab>
+          )}
         </div>
         <span className="ml-auto flex items-center gap-1">
           <Button
@@ -120,6 +136,8 @@ export function MatchRoom({
           mode={mode}
           extra={extra}
         />
+      ) : current === "replay" ? (
+        <MatchReplay trackUrl={trackUrl} />
       ) : (
         <RoomStats
           lobby={lobby}

@@ -44,8 +44,8 @@ export function MixMatchRoom({
 }: { id: string } & TabProps & {
     map?: string
     onMap?: (gameId: string | undefined) => void
-    /** (replanteo 83) "stats": la sala del matchmaking abre en Estadísticas. */
-    view?: "stats"
+    /** (replanteo 83) "stats": la sala del matchmaking abre en Estadísticas; (92) "replay", en la Repetición 2D. */
+    view?: "stats" | "replay"
   }) {
   const match = useQuery(matchDetailOptions(id))
   const me = useMyPlayerId()
@@ -98,21 +98,20 @@ export function MixMatchRoom({
 
   if (room.data)
     return (
-      <WithReplay trackUrl={m.track_url}>
-        <MmSourceContext value={apiMmSource}>
-          <MatchRoom
-            lobby={{
-              ...room.data,
-              server: null,
-              reported: room.data.reported ?? [],
-              commended: room.data.commended ?? null,
-              elo_stake: room.data.elo_stake ?? null,
-            }}
-            mode="detail"
-            initialTab={view === "stats" ? "stats" : "overview"}
-          />
-        </MmSourceContext>
-      </WithReplay>
+      <MmSourceContext value={apiMmSource}>
+        <MatchRoom
+          lobby={{
+            ...room.data,
+            server: null,
+            reported: room.data.reported ?? [],
+            commended: room.data.commended ?? null,
+            elo_stake: room.data.elo_stake ?? null,
+          }}
+          mode="detail"
+          initialTab={view ?? "overview"}
+          trackUrl={m.track_url}
+        />
+      </MmSourceContext>
     )
 
   const mixRoom = roomFromMatch(m, me)

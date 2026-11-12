@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import type { AnchorHTMLAttributes, ReactNode } from "react"
@@ -612,6 +613,55 @@ describe("partida del matchmaking (replanteo 78)", () => {
     ).toHaveAttribute("aria-selected", "true")
     expect(screen.getByRole("tab", { name: "Estadísticas" })).toBeEnabled()
     expect(screen.getAllByText("Esta partida")).toHaveLength(2)
+    // Sin .trk (partida vieja) no hay repetición.
+    expect(
+      screen.queryByRole("tab", { name: "Repetición 2D" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("con .trk suma la pestaña Repetición 2D", async () => {
+    profileAnswer()
+    const trk = [
+      "V 1 de_tuscan 66 33",
+      "R 1 0",
+      "J 1 2 STEAM_0:1:1 Zeta",
+      "F 10 1,0,0,0,0,100,ak47",
+      "E 100 2 9",
+    ].join("\n")
+    server.use(
+      http.get(`${API}/api/v1/matches/m-1`, () =>
+        HttpResponse.json(
+          detail({
+            parent_match_id: "serie-1",
+            track_url: "https://demos.test/track/m-1",
+          })
+        )
+      ),
+      http.get(`${API}/api/v1/mm/games/m-1/room`, () =>
+        HttpResponse.json(room)
+      ),
+      http.get("https://demos.test/track/m-1", () => new HttpResponse(trk)),
+      http.get("*/radar/index.json", () =>
+        HttpResponse.json({
+          de_tuscan: {
+            minx: 0,
+            maxy: 100,
+            width: 200,
+            height: 200,
+            minz: 0,
+            maxz: 1,
+          },
+        })
+      )
+    )
+    renderWithQuery(wrap(<MixMatchRoom id="m-1" />))
+
+    const tab = await screen.findByRole("tab", { name: "Repetición 2D" })
+    await userEvent.click(tab)
+    expect(tab).toHaveAttribute("aria-selected", "true")
+    expect(
+      await screen.findByRole("tab", { name: "Ronda 1, ganan los T" })
+    ).toBeInTheDocument()
   })
 
   it("si no es de una sala (null), la sala de mix de siempre", async () => {

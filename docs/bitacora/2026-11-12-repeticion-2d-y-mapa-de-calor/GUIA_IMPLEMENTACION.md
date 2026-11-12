@@ -24,7 +24,7 @@ Hecho y probado en local el 2026-11-12 (servidor con bots, base, API, Worker con
 | `web/backend/test/integration/repeticion.test.ts` | Nuevo: 5 pruebas |
 | `web/frontend/src/api/schema.d.ts` | Regenerado desde la OpenAPI de la API (trae también las rutas que le faltaban de antes) |
 | `web/frontend/src/features/replay/` | Nuevo: lector, radar, repetición, mapa de calor y la sección de la sala, con pruebas |
-| `web/frontend/src/features/mixes/pages/MixRoomPages.tsx` | `MatchReplay` debajo de la sala (mix y matchmaking) |
+| `web/frontend/src/features/mixes/pages/MixRoomPages.tsx`, `features/matchmaking/room/MatchRoom.tsx`, `features/mixes/lib/search.ts` | Pestaña "Repetición 2D" en la sala del matchmaking (`?view=replay`); en un mix sin sala, `MatchReplay` debajo |
 | `web/frontend/src/routes/demo.repeticion.tsx` | Demo sin API (`pnpm dev`) |
 | `web/frontend/.gitignore` | `public/demo-replay/` (el `.trk` de bots de la demo) |
 | `web/frontend/src/features/legal/pages/PrivacyPage.tsx`, `terms/privacidad.html` | Posiciones, plazos, para qué y Cloudflare, "En preparación" |
@@ -86,7 +86,7 @@ El primer `.trk` se abrió en `/demo/repeticion`: rondas, movimiento, bomba y ki
 
 - **`demo_mark` no cambia:** el Worker marca el `.trk` con una función aparte, `track_mark`. Así una falla del `.trk` no toca la demo.
 - **`demo_pending` no cambia:** el Worker ya lista la carpeta; busca el `.trk` por el nombre de la demo.
-- **Las vistas en la sala:** la repetición y el mapa de calor van en una sección debajo de la sala (con "Repetición 2D" y "Mapa de calor" para cambiar), no en pestañas de la sala, para no tocar las dos salas (mix y matchmaking).
+- **Las vistas en la sala:** en la partida del matchmaking, a pedido de Kyan, la repetición es una tercera pestaña ("Repetición 2D", con "Mapa de calor" adentro). En un mix sin sala queda como sección debajo, porque esa sala no tiene pestañas.
 - **El mapa de calor del perfil** quedó en la API (`/players/{id}/heatmap`) pero no en la web: el perfil es de Esteban.
 - **Partidas viejas:** la sección no se muestra (en vez de un aviso), para no sumar ruido a todas las partidas anteriores.
 - **El nombre del `.trk`** va en minúsculas, como la demo.
