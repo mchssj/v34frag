@@ -22,7 +22,10 @@ export function FramedAvatar({
   frameSrc?: string | null
   size: number
 }) {
-  const initials = alias.replace(/^v34\|/, "").slice(0, 2).toUpperCase()
+  const initials = alias
+    .replace(/^v34\|/, "")
+    .slice(0, 2)
+    .toUpperCase()
   const inner = src ? (
     <img className="avf-img" src={src} alt="" />
   ) : (
@@ -36,10 +39,7 @@ export function FramedAvatar({
   const marco = frameSrc ?? (frame?.file ? COSMETICS_BASE + frame.file : null)
   if (!marco)
     return (
-      <div
-        className="relative shrink-0"
-        style={{ width: size, height: size }}
-      >
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
         <div className="absolute inset-[12.5%] overflow-hidden rounded-[8%]">
           {src ? (
             <img className="size-full object-cover" src={src} alt="" />
@@ -57,12 +57,7 @@ export function FramedAvatar({
   return (
     <div className="avf" style={{ ["--avf" as string]: `${size}px` }}>
       {inner}
-      <img
-        className="avf-marco"
-        src={marco}
-        alt=""
-        loading="lazy"
-      />
+      <img className="avf-marco" src={marco} alt="" loading="lazy" />
     </div>
   )
 }
@@ -116,7 +111,10 @@ export function VipBadge({ className }: { className?: string }) {
       src={COSMETICS_BASE + "insignias/vip.svg"}
       alt="VIP"
       title="VIP"
-      className={cn("inline-block h-[1.6em] w-auto shrink-0 drop-shadow", className)}
+      className={cn(
+        "inline-block h-[1.6em] w-auto shrink-0 drop-shadow",
+        className
+      )}
     />
   )
 }
@@ -159,13 +157,17 @@ export function MiniCard({
       className={cn(
         "relative isolate flex h-[124px] w-full max-w-[340px] items-center gap-3 overflow-hidden rounded-xl border p-2 pr-4",
         bg ? "border-white/15 text-white" : "bg-card",
-        className,
+        className
       )}
     >
       <CardBackground src={bg} />
       <FramedAvatar alias={alias} frame={frame} size={avatar} />
       <div className="flex min-w-0 flex-col gap-1.5">
-        <NameFx text={alias} effect={name} className="truncate text-lg font-black" />
+        <NameFx
+          text={alias}
+          effect={name}
+          className="truncate text-lg font-black"
+        />
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold">
           <LevelBadge level={level} size={20} className="rounded-full" />
           Nivel {level}

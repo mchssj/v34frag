@@ -1,4 +1,5 @@
-// Tipos de la tienda, con los nombres de la base (supabase/migrations/20261029180000_tienda.sql en kyan/pruebas).
+// Tipos de la tienda, con los nombres de la base (plan docs/bitacora/2026-11-11-economia-puntos).
+import type { Source } from "./economy"
 
 export type ItemKind = "frame" | "sticker" | "theme" | "name" | "background"
 
@@ -34,40 +35,23 @@ export interface Equipped {
   stickers: string[]
 }
 
-export interface PointsConfig {
-  per_mix: number
-  per_win: number
-  vip_multiplier: number
-  weekly_count: number
-  weekly_discount: number
-  /** Monedas VIP por mix jugado siendo VIP, y extra por victoria. */
-  vip_per_mix: number
-  vip_per_win: number
-}
-
 export interface Balance {
   earned: number
   granted: number
   spent: number
   balance: number
-  mixes: number
-}
-
-export interface Points extends Balance {
-  vip: boolean
-  /** Monedas VIP: congeladas si la cuenta no es VIP hoy. */
-  vip_coins: Balance
 }
 
 export type Currency = "points" | "vip"
 
-export interface HistoryRow {
-  kind: "mix" | "grant" | "purchase"
+/** Una fila de point_ledger: cada premio, regalo o compra (plan 2026-11-11-economia-puntos). */
+export interface LedgerRow {
+  id: number
   at: string
-  points: number
-  label: string
-  vip: boolean
   currency: Currency
+  amount: number
+  source: Source
+  label: string
 }
 
 export interface AdminAccount {

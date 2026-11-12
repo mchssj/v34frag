@@ -12,10 +12,22 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 - **Estado:** pedido por Kyan. Probado en el servidor local con bots y por Kyan con flashes de verdad. El `.smx` y `cfg/sourcemod/csstv_flash.cfg` se subieron el 2026-11-11 por la API del panel a **#1** (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`), sin recargar nada: uno tenía una partida en curso. Cada uno lo carga en su próximo cambio de mapa. Detalle: [`2026-11-11-flash-por-angulo`](bitacora/2026-11-11-flash-por-angulo/).
 - **Falta:**
-  - Verificar en cada uno, después del cambio de mapa, que `sm plugins list` muestre "CSSTV Flash" 1.0.0.
+  - Verificar en el #1 y el #2, después del cambio de mapa, que `sm plugins list` muestre "CSSTV Flash" 1.0.0. **El #3 ya lo cargó** (visto el 2026-11-11 por la consola del panel; los tres tienen el reporter 2.10.0).
   - Publicar el changelog en Discord (`CHANGELOG_DISCORD.txt` de la carpeta).
   - **Rama (Kyan, 2026-11-11):** solo en `kyan/pruebas`. No va a `feat/frontend-fase-1` ni a `feat/mm-claim-en-sala`, aunque esas ramas tengan los plugins que corren en los servidores.
   - El de retake (ExtremeHost) no lo recibió: se daba de baja alrededor del 2026-11-10.
+
+## MR24 con economía de CS2 (2026-11-11): planteado, en pausa
+
+- **Idea de Kyan:** pasar de MR30 a MR24 (gana el primero en llegar a 13) con la economía de CS2, porque la del Source no sirve con mitades de 12 rondas. **En pausa** por pedido de Kyan; sin plan ni código.
+- **Lo visto:**
+  - El formato es `csstv_maxrounds` del reporter. La web, la API y el ELO leen `max_rounds` de cada partida (el mínimo para el ELO ya es el 35 %).
+  - Hay que cambiar el manual ("primero en llegar a 16") y `csstv_gg_min_diff`.
+  - La economía va en un plugin nuevo (`csstv_economy`), porque en el v34 los montos son fijos. Corrige la plata en cada kill (por arma) y al empezar cada ronda (victoria o derrota). Según el motor, el juego reparte la plata del equipo en la ronda siguiente: confirmarlo en el servidor local.
+  - Lo de CS2: el bonus por derrota (1400 a 3400) baja un escalón al ganar en vez de volver a cero; kills con cuchillo 1500, SMG 600 (P90 300), M3 900, XM1014 600 y AWP 100; prórroga MR3 con 12500.
+  - **Precios de las armas:** quedan los del Source. El menú de compra del v34 muestra los precios del cliente, y cobrar otros confundiría.
+- **Decisiones abiertas (con la recomendación):** aplica a todas las partidas (sí); la pistola perdida da 1400 (sí); el T que se salva sin plantar cobra el bonus (sí, como hoy); `!gg` con 6 rondas de diferencia; prórroga a 12500.
+- **Al retomarlo:** convivir con `!rr`, la reconexión con plata, `!sell` y pedir un arma. El reporter va también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala` (preguntar antes).
 
 ## Términos y condiciones y política de privacidad (borradores, sin publicar)
 
@@ -1235,6 +1247,29 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
   - **Daniel o Kyan:** aplicar en producción el replanteo `88_pcw_sin_elo.sql` (las PCW no dan ELO, Kyan 2026-11-08; probado en local). Al aplicarse recalcula el ELO de todos sin las PCW ya jugadas: avisar antes en el Discord y hacerlo sin un mix terminando. Decidir si va también a `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
 - **Desde el 2026-11-08 Daniel hace también lo de Esteban:** el resumen de todo para él está en [`PARA_DANIEL.md`](bitacora/2026-11-08-pcw-demo/PARA_DANIEL.md).
 - **Bitácora:** [`2026-11-08-pcw-demo`](bitacora/2026-11-08-pcw-demo/)
+
+### 1.75 Tienda, inventario y economía de puntos (replanteo 110): probado en local, sin commit
+
+- **Qué es:**
+  - **Economía:** puntos para todos y monedas VIP para los VIP, por partida, victoria, primera del día, oficial, medalla (por metal), temporada (por puesto) y bienvenida VIP. Tope de 10 partidas por día. Las PCW no dan nada.
+  - **Tienda nueva** en el frontend nuevo: portada, ofertas, packs, rareza, lista de deseos, **inventario** con ranuras, cómo ganar e historial.
+  - **Dónde se ve:** por ahora solo en `/demo/tienda`.
+- **Hecho:**
+  - **Base:** el replanteo `110_economia_tienda.sql`, que reemplaza las migraciones viejas de la tienda (nunca se aplicaron). Pasan 19 pruebas SQL.
+  - **API:** rutas en `web/backend/src/routes/shop.ts`. Pasan 5 pruebas de integración y las 569 unitarias.
+  - **Manual:** `jugador/tienda-y-puntos.md` y `admin/tienda.md`, ocultas.
+  - **Términos:** el punto de las monedas VIP, en preparación.
+- **Falta:**
+  1. **Daniel:**
+     - confirmar el número del replanteo (110);
+     - aplicarlo en el VPS con `starts_at` el día que salga, sin retroactivo (Kyan, 2026-11-11);
+     - regenerar `src/db/types.ts` y desplegar la API.
+  2. **La ruta real `/tienda`** sobre la API. Después, mostrar las páginas del manual y sacar "En preparación" de los términos.
+  3. **Cosméticos en el matchmaking** desde `player_cosmetics_public`. Van en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+  4. **Premios sin enganche** (torneo, nivel, misiones, Primeros pasos, clip destacado y referidos): que cada sistema llame a `economy_award` cuando exista.
+  5. **`20261029120000_widget_streamers.sql`** usa `teams.members` y frena el replanteo 05 en `db-local.sh`. No es de la tienda, pero rompe `pnpm db:reset` en esta rama.
+- No toca el plugin, así que no hay nada que subir a los servidores.
+- **Bitácora:** [`2026-11-11-economia-puntos`](bitacora/2026-11-11-economia-puntos/) y [`2026-11-11-tienda`](bitacora/2026-11-11-tienda/).
 
 ### 2.0 Tirones y sonido en el servidor real (hoy #3)
 

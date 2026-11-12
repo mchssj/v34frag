@@ -1,17 +1,27 @@
 import { createFileRoute, notFound } from "@tanstack/react-router"
+import { ChevronDownIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { AdminShop } from "@/features/shop/AdminShop"
-import { useShopDemo } from "@/features/shop/demo"
+import { useShopDemo, type Awarded } from "@/features/shop/demo"
+import { METALS } from "@/features/shop/economy"
 import { ProfilePreview } from "@/features/shop/ProfilePreview"
 import { ShopPage } from "@/features/shop/ShopPage"
 
-// Ejemplo de la tienda sin API ni sesión (docs/bitacora/2026-10-29-tienda-web en kyan/pruebas), con las
-// reglas de la base. Solo en `pnpm dev`: en el build de producción la ruta no existe.
+// Ejemplo de la tienda sin API ni sesión (planes docs/bitacora/2026-11-11-economia-puntos y 2026-11-11-tienda),
+// con las reglas de la economía. Solo en `pnpm dev`: en el build de producción la ruta no existe.
 export const Route = createFileRoute("/demo/tienda")({
   beforeLoad: () => {
     if (!import.meta.env.DEV) throw notFound()
@@ -20,11 +30,22 @@ export const Route = createFileRoute("/demo/tienda")({
 })
 
 const ALIAS = "v34|Pepon"
+const VIEWS = {
+  shop: "Tienda",
+  profile: "Mi perfil",
+  admin: "Administración",
+} as const
 
-function mixText(how: string, r: { points: number; coins: number }) {
-  return `Mix ${how}: +${r.points} puntos` + (r.coins ? ` y +${r.coins} monedas VIP.` : ".")
+function say(what: string, r: Awarded) {
+  if (r.capped)
+    return toast.warning(
+      `${what}: llegaste al tope de partidas con premio de hoy.`
+    )
+  if (!r.points && !r.vip) return toast(`${what}: sin premio.`)
+  toast.success(
+    `${what}: ${[r.points && `+${r.points} puntos`, r.vip && `+${r.vip} monedas VIP`].filter(Boolean).join(" y ")}.`
+  )
 }
-const VIEWS = { shop: "Tienda", profile: "Mi perfil", admin: "Administración" } as const
 
 function DemoTienda() {
   const shop = useShopDemo()
@@ -38,39 +59,129 @@ function DemoTienda() {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => toast.success(mixText("ganado", shop.playMix(true)))}
+          onClick={() => say("Partida ganada", shop.playMatch(true))}
         >
-          Ganar un mix
+          Ganar una partida
         </Button>
         <Button
           size="sm"
           variant="outline"
-          onClick={() => toast.success(mixText("perdido", shop.playMix(false)))}
+          onClick={() => say("Partida perdida", shop.playMatch(false))}
         >
-          Perder un mix
+          Perder una partida
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline">
+              Otros premios <ChevronDownIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-60">
+            <DropdownMenuLabel>Partidas</DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={() =>
+                say("Partida oficial ganada", shop.playMatch(true, true))
+              }
+            >
+              Ganar una oficial de torneo
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => say("Campeón del torneo", shop.tournament(true))}
+            >
+              Salir campeón de un torneo
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() =>
+                say("Subcampeón del torneo", shop.tournament(false))
+              }
+            >
+              Salir subcampeón
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Medallas</DropdownMenuLabel>
+            {METALS.map((m) => (
+              <DropdownMenuItem
+                key={m}
+                className="capitalize"
+                onSelect={() => say(`Medalla de ${m}`, shop.earnMedal(m))}
+              >
+                Medalla de {m}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Temporada</DropdownMenuLabel>
+            {[1, 2, 3, 7, 15].map((r) => (
+              <DropdownMenuItem
+                key={r}
+                onSelect={() =>
+                  say(`Temporada, puesto ${r}`, shop.closeSeason(r))
+                }
+              >
+                Cerrar la temporada en el puesto {r}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Otros</DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={() => say("Nivel nuevo", shop.levelUp())}
+            >
+              Subir de nivel
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => say("Misión", shop.completeMission(false))}
+            >
+              Completar una misión
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => say("Misión VIP", shop.completeMission(true))}
+            >
+              Completar una misión VIP
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => say("Primeros pasos", shop.firstStep())}
+            >
+              Un paso de Primeros pasos
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => say("Clip destacado", shop.featuredClip())}
+            >
+              Que destaquen un clip
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                shop.grant(500, "Regalo del admin")
+                toast.success("+500 puntos de regalo.")
+              }}
+            >
+              Regalo de 500 puntos
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                shop.grant(300, "Regalo VIP del admin", "vip")
+                toast.success("+300 monedas VIP de regalo.")
+              }}
+            >
+              Regalo de 300 monedas VIP
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           size="sm"
           variant="outline"
           onClick={() => {
-            shop.grant(500, "Premio del admin")
-            toast.success("+500 puntos de regalo.")
+            shop.nextDay()
+            toast("Pasó un día: se renuevan las partidas con premio.")
           }}
         >
-          Regalo de 500
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            shop.grant(300, "Premio VIP del admin", "vip")
-            toast.success("+300 monedas VIP de regalo.")
-          }}
-        >
-          Regalo de 300 VIP
+          Pasar al día siguiente
         </Button>
         <span className="inline-flex items-center gap-1.5">
-          <Switch id="demo-vip" size="sm" checked={shop.vip} onCheckedChange={shop.setVip} />
+          <Switch
+            id="demo-vip"
+            size="sm"
+            checked={shop.vip}
+            onCheckedChange={shop.setVip}
+          />
           <Label htmlFor="demo-vip" className="text-xs">
             Ser VIP
           </Label>

@@ -483,6 +483,12 @@ const SECTIONS: LegalSection[] = [
             y nombres).
           </li>
           <li>
+            Si eres VIP, además ganas monedas VIP, que solo sirven para los
+            artículos VIP. Si tu VIP vence, esas monedas y lo VIP que compraste
+            quedan congelados hasta que vuelvas a ser VIP. Las PCW no dan puntos
+            y hay un tope de partidas por día que dan puntos.
+          </li>
+          <li>
             <strong>
               Los puntos no se compran con dinero, no se canjean por dinero ni
               por premios

@@ -1,23 +1,38 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import {
+  buildBundles,
+  hash,
+  isoWeek,
+  seasonPrize,
+  SOURCE_LABEL,
+  START_ECONOMY,
+  type Bundle,
+  type EconomyConfig,
+  type Metal,
+  type Source,
+} from "./economy"
 import type {
   AdminAccount,
   Balance,
   CatalogItem,
   Currency,
   Equipped,
-  HistoryRow,
-  Points,
-  PointsConfig,
+  LedgerRow,
   ShopItem,
 } from "./types"
 import { COSMETICS_BASE } from "./types"
 
-// Tienda de ejemplo en memoria, con las mismas reglas que la base (shop_buy, set_my_cosmetics,
-// shop_weekly y points_of de 20261029180000_tienda.sql). Sin API ni sesión.
+// Tienda de ejemplo en memoria con las reglas del plan 2026-11-11-economia-puntos: cada premio es una fila del
+// registro (point_ledger), el tope diario de partidas, las monedas VIP solo siendo VIP y las compras como filas
+// negativas. Sin API ni sesión.
 
 type CatalogFile = { items: Omit<ShopItem, "price" | "active">[] }
-type Override = { price?: number | null; vip_price?: number | null; active?: boolean }
+type Override = {
+  price?: number | null
+  vip_price?: number | null
+  active?: boolean
+}
 
 // Precios iniciales: los de generar_catalogo_sql.py.
 function basePrice(i: Omit<ShopItem, "price" | "active">): number | null {
@@ -31,17 +46,13 @@ function basePrice(i: Omit<ShopItem, "price" | "active">): number | null {
   return i.collection.startsWith("paises") ? 1000 : 900
 }
 
-const START_CONFIG: PointsConfig = {
-  per_mix: 10,
-  per_win: 5,
-  vip_multiplier: 1,
-  weekly_count: 6,
-  weekly_discount: 25,
-  vip_per_mix: 10,
-  vip_per_win: 5,
-}
-
-const START_OWNED = ["marco-fuego", "sticker-gg", "tema-pais-ar", "nombre-brillo", "fondo-neon"]
+const START_OWNED = [
+  "marco-fuego",
+  "sticker-gg",
+  "tema-pais-ar",
+  "nombre-brillo",
+  "fondo-neon",
+]
 const START_EQUIPPED: Equipped = {
   frame: "marco-fuego",
   theme: "tema-pais-ar",
@@ -49,23 +60,101 @@ const START_EQUIPPED: Equipped = {
   background: "fondo-neon",
   stickers: ["sticker-gg"],
 }
-const MAPS = ["de_dust2", "de_inferno", "de_nuke", "de_train", "cs_office"]
+const START_WISH = ["marco-pais-br", "fondo-mapa-dust2"]
+const MAPS = [
+  "de_dust2",
+  "de_inferno",
+  "de_nuke",
+  "de_train",
+  "cs_office",
+  "de_aztec",
+]
 
-// 110 mixes; los 40 más nuevos, jugados siendo VIP (el VIP se venció: las monedas quedan congeladas).
-function startHistory(): HistoryRow[] {
+let seq = 0
+const row = (
+  at: number,
+  source: Source,
+  currency: Currency,
+  amount: number,
+  label: string
+): LedgerRow => ({
+  id: ++seq,
+  at: new Date(at).toISOString(),
+  currency,
+  amount,
+  source,
+  label,
+})
+
+// Tres semanas desde que se implementó: partidas, una medalla, misiones y Primeros pasos. Los primeros 10 días
+// fue VIP (las monedas quedan congeladas hasta que vuelva a serlo).
+function startLedger(): LedgerRow[] {
   const now = Date.now()
-  return Array.from({ length: 110 }, (_, k) => {
-    const won = k % 3 !== 1
-    const row = {
-      kind: "mix" as const,
-      at: new Date(now - (k + 1) * 9 * 3600_000).toISOString(),
-      label: MAPS[k % MAPS.length] + (won ? " · victoria" : ""),
-      vip: k < 40,
+  const out: LedgerRow[] = []
+  for (let d = 21; d >= 1; d--) {
+    const day = now - d * 86400_000
+    const vip = d > 11
+    const n = 1 + (hash(String(d)) % 3)
+    for (let k = 0; k < n; k++) {
+      const at = day + k * 3600_000
+      const won = (d + k) % 3 !== 1
+      const map = MAPS[(d + k) % MAPS.length]!
+      const label = `Matchmaking · ${map}`
+      out.push(row(at, "match", "points", 10, label))
+      if (won) out.push(row(at, "match_win", "points", 5, label))
+      if (k === 0)
+        out.push(row(at, "first_of_day", "points", 10, "Primera del día"))
+      if (vip) {
+        out.push(row(at, "match", "vip", 10, label))
+        if (won) out.push(row(at, "match_win", "vip", 5, label))
+        if (k === 0)
+          out.push(row(at, "first_of_day", "vip", 10, "Primera del día"))
+      }
     }
-    const rows: HistoryRow[] = [{ ...row, points: won ? 15 : 10, currency: "points" }]
-    if (row.vip) rows.push({ ...row, points: won ? 15 : 10, currency: "vip" })
-    return rows
-  }).flat()
+    if (d === 20) out.push(row(day, "vip_welcome", "vip", 100, "Mes de VIP"))
+    if (d % 7 === 3)
+      out.push(
+        row(
+          day + 7200_000,
+          "mission",
+          "points",
+          30,
+          "Misión: 3 victorias en la semana"
+        )
+      )
+    if (d === 18)
+      out.push(
+        row(
+          day,
+          "first_steps",
+          "points",
+          20,
+          "Primeros pasos: completar el perfil"
+        )
+      )
+    if (d === 15)
+      out.push(
+        row(
+          day + 9000_000,
+          "medal",
+          "points",
+          100,
+          "Medalla de plata: 100 headshots"
+        )
+      )
+    if (d === 15)
+      out.push(
+        row(
+          day + 9000_000,
+          "medal",
+          "vip",
+          50,
+          "Medalla de plata: 100 headshots"
+        )
+      )
+    if (d === 9) out.push(row(day, "level_up", "points", 50, "Nivel 7"))
+  }
+  return out.reverse()
 }
 
 const ACCOUNTS: AdminAccount[] = [
@@ -88,40 +177,26 @@ const ACCOUNTS: AdminAccount[] = [
   vip_balance: vip ? Math.round((earned as number) * 0.4) : 0,
 }))
 
-// La semana ISO, como semilla de las ofertas (shop_weekly mezcla con md5(id || semana)).
-function isoWeek(d = new Date()): string {
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-  const day = t.getUTCDay() || 7
-  t.setUTCDate(t.getUTCDate() + 4 - day)
-  const y = t.getUTCFullYear()
-  const w = Math.ceil(((+t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7)
-  return `${y}-${String(w).padStart(2, "0")}`
-}
-function hash(s: string): number {
-  let h = 2166136261
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619)
-  return h >>> 0
-}
-
-export function nextMonday(): Date {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7))
-  return d
-}
+const dayKey = (d: Date) =>
+  d.toLocaleDateString("en-CA", { timeZone: "America/Bogota" })
 
 export type ShopDemo = ReturnType<typeof useShopDemo>
+export type Awarded = { points: number; vip: number; capped: boolean }
 
 export function useShopDemo() {
   const [raw, setRaw] = useState<CatalogFile["items"] | null>(null)
   const [overrides, setOverrides] = useState<Record<string, Override>>({})
-  const [config, setConfig] = useState<PointsConfig>(START_CONFIG)
-  const [vip, setVip] = useState(false)
+  const [config, setConfig] = useState<EconomyConfig>(START_ECONOMY)
+  const [vip, setVipState] = useState(false)
   const [owned, setOwned] = useState<string[]>(START_OWNED)
   const [equipped, setEquipped] = useState<Equipped>(START_EQUIPPED)
-  const [history, setHistory] = useState<HistoryRow[]>(startHistory)
+  const [ledger, setLedger] = useState<LedgerRow[]>(startLedger)
   const [accounts, setAccounts] = useState<AdminAccount[]>(ACCOUNTS)
   const [cover, setCover] = useState<string | null>(null)
+  const [wish, setWish] = useState<string[]>(START_WISH)
+  // El "día" del demo: "Pasar al día siguiente" lo adelanta para probar el tope y la primera del día.
+  const [dayOffset, setDayOffset] = useState(0)
+  const [level, setLevel] = useState(7)
 
   useEffect(() => {
     let alive = true
@@ -134,23 +209,30 @@ export function useShopDemo() {
     }
   }, [])
 
+  // Hora de entrada a la página: el "hoy" del render no puede leer el reloj.
+  const [opened] = useState(() => Date.now())
+  const now = () => Date.now() + dayOffset * 86400_000
+  const today = dayKey(new Date(opened + dayOffset * 86400_000))
+
   const items: ShopItem[] = useMemo(
     () =>
       (raw ?? []).map((i) => ({
         ...i,
         price:
           overrides[i.id]?.price !== undefined
-            ? (overrides[i.id].price ?? null)
+            ? (overrides[i.id]!.price ?? null)
             : basePrice(i),
         vip_price:
-          overrides[i.id]?.vip_price !== undefined ? (overrides[i.id].vip_price ?? null) : i.vip_price,
+          overrides[i.id]?.vip_price !== undefined
+            ? (overrides[i.id]!.vip_price ?? null)
+            : i.vip_price,
         active: overrides[i.id]?.active ?? true,
       })),
-    [raw, overrides],
+    [raw, overrides]
   )
   const byId = useMemo(
     () => Object.fromEntries(items.map((i) => [i.id, i])),
-    [items],
+    [items]
   )
 
   const catalog: CatalogItem[] = useMemo(() => {
@@ -160,7 +242,7 @@ export function useShopDemo() {
         .filter((i) => i.active && i.price != null && !i.vip_only)
         .sort((a, b) => hash(a.id + week) - hash(b.id + week))
         .slice(0, config.weekly_count)
-        .map((i) => i.id),
+        .map((i) => i.id)
     )
     return items
       .filter((i) => i.active)
@@ -174,42 +256,68 @@ export function useShopDemo() {
             i.price == null
               ? null
               : w
-                ? Math.max(1, Math.round((i.price * (100 - config.weekly_discount)) / 100))
+                ? Math.max(
+                    1,
+                    Math.round((i.price * (100 - config.weekly_discount)) / 100)
+                  )
                 : i.price,
         }
       })
   }, [items, config.weekly_count, config.weekly_discount])
   const catalogById = useMemo(
     () => Object.fromEntries(catalog.map((i) => [i.id, i])),
-    [catalog],
+    [catalog]
   )
 
-  // points_of y vip_coins_of: cada moneda por separado.
-  function balanceOf(currency: Currency): Balance {
-    const rows = history.filter((h) => h.currency === currency)
-    const sum = (kind: HistoryRow["kind"]) =>
-      rows.filter((h) => h.kind === kind).reduce((s, h) => s + h.points, 0)
-    const earned = sum("mix")
-    const granted = sum("grant")
-    const spent = -sum("purchase") || 0
-    return {
-      earned,
-      granted,
-      spent,
-      balance: earned + granted - spent,
-      mixes: rows.filter((h) => h.kind === "mix").length,
-    }
-  }
-  const points: Points = { ...balanceOf("points"), vip, vip_coins: balanceOf("vip") }
+  const bundles: Bundle[] = useMemo(
+    () => buildBundles(catalog, owned, config.bundle_discount),
+    [catalog, owned, config.bundle_discount]
+  )
+  // Los packs de la semana: 4 con algo por comprar, elegidos con la semana como semilla.
+  const weeklyBundles = useMemo(() => {
+    const week = isoWeek()
+    return bundles
+      .filter((b) => b.missing.length)
+      .sort((a, b) => hash(a.id + week) - hash(b.id + week))
+      .slice(0, 4)
+  }, [bundles])
+
+  const balanceOf = useCallback(
+    (currency: Currency): Balance => {
+      let earned = 0
+      let granted = 0
+      let spent = 0
+      for (const r of ledger) {
+        if (r.currency !== currency) continue
+        if (r.source === "purchase") spent -= r.amount
+        else if (r.source === "grant") granted += r.amount
+        else earned += r.amount
+      }
+      return { earned, granted, spent, balance: earned + granted - spent }
+    },
+    [ledger]
+  )
+  const points = balanceOf("points")
+  const coins = balanceOf("vip")
+
+  // Partidas de hoy que ya dieron premio (match en puntos, una por partida).
+  const matchesToday = ledger.filter(
+    (r) =>
+      r.source === "match" &&
+      r.currency === "points" &&
+      dayKey(new Date(r.at)) === today
+  ).length
 
   // can_use_item: el premio VIP mientras sea VIP; lo demás si lo tiene, y lo VIP solo siendo VIP.
   const canUse = useCallback(
-    (i: ShopItem) => (i.vip_reward ? vip : owned.includes(i.id) && (!i.vip_only || vip)),
-    [owned, vip],
+    (i: ShopItem) =>
+      i.vip_reward ? vip : owned.includes(i.id) && (!i.vip_only || vip),
+    [owned, vip]
   )
   // Lo que se ve: sin lo VIP si la cuenta dejó de ser VIP (como player_cosmetics_public).
   const visible: Equipped = useMemo(() => {
-    const ok = (id: string | null) => (id && byId[id] && canUse(byId[id]) ? id : null)
+    const ok = (id: string | null) =>
+      id && byId[id] && canUse(byId[id]) ? id : null
     return {
       frame: ok(equipped.frame),
       theme: ok(equipped.theme),
@@ -218,6 +326,99 @@ export function useShopDemo() {
       stickers: equipped.stickers.filter((s) => ok(s)),
     }
   }, [equipped, byId, canUse])
+
+  // points_award: una fila por moneda; las monedas VIP, solo siendo VIP.
+  function award(
+    source: Source,
+    label: string,
+    pts: number,
+    vipCoins: number,
+    isVip = vip
+  ): Awarded {
+    const at = now()
+    const rows: LedgerRow[] = []
+    if (pts) rows.push(row(at, source, "points", pts, label))
+    if (vipCoins && isVip) rows.push(row(at, source, "vip", vipCoins, label))
+    setLedger((l) => [...rows, ...l])
+    return { points: pts, vip: isVip ? vipCoins : 0, capped: false }
+  }
+
+  // award_match: partida + victoria + primera del día, con el tope diario.
+  function playMatch(won: boolean, official = false): Awarded {
+    if (matchesToday >= config.daily_match_cap)
+      return { points: 0, vip: 0, capped: true }
+    const map = MAPS[Math.floor(Math.random() * MAPS.length)]!
+    const label = `${official ? "Oficial" : "Matchmaking"} · ${map}`
+    const r = config.rules
+    const parts: [Source, string, number, number][] = []
+    const base = official ? r.official : r.match
+    if (base.enabled) parts.push(["match", label, base.points, base.vip])
+    if (won && r.match_win.enabled)
+      parts.push(["match_win", label, r.match_win.points, r.match_win.vip])
+    if (matchesToday === 0 && r.first_of_day.enabled)
+      parts.push([
+        "first_of_day",
+        "Primera del día",
+        r.first_of_day.points,
+        r.first_of_day.vip,
+      ])
+    const at = now()
+    const rows: LedgerRow[] = []
+    let pts = 0
+    let v = 0
+    for (const [s, l, p, c] of parts) {
+      rows.push(row(at, s, "points", p, l))
+      pts += p
+      if (vip && c) {
+        rows.push(row(at, s, "vip", c, l))
+        v += c
+      }
+    }
+    setLedger((l) => [...rows.reverse(), ...l])
+    return { points: pts, vip: v, capped: false }
+  }
+
+  function earnMedal(metal: Metal) {
+    const m = config.medal[metal]
+    return award("medal", `Medalla de ${metal}`, m.points, m.vip)
+  }
+  function closeSeason(rank: number) {
+    const p = seasonPrize(config, rank)
+    if (!p) return { points: 0, vip: 0, capped: false }
+    return award("season", `Temporada 2 · puesto ${rank}`, p.points, p.vip)
+  }
+  function simple(
+    source: Exclude<
+      Source,
+      "medal" | "season" | "tournament" | "grant" | "purchase"
+    >,
+    label: string
+  ) {
+    const r = config.rules[source]
+    if (!r.enabled) return { points: 0, vip: 0, capped: false }
+    return award(source, label, r.points, r.vip)
+  }
+  function levelUp() {
+    const n = Math.min(10, level + 1)
+    setLevel(n)
+    return simple("level_up", `Nivel ${n}`)
+  }
+  function tournament(champion: boolean) {
+    const r = champion ? config.tournament.champion : config.tournament.runnerUp
+    return award(
+      "tournament",
+      champion ? "Campeón del torneo" : "Subcampeón del torneo",
+      r.points,
+      r.vip
+    )
+  }
+
+  function setVip(on: boolean) {
+    setVipState(on)
+    // vip_welcome: cada mes de VIP que empieza.
+    if (on && config.rules.vip_welcome.enabled)
+      award("vip_welcome", "Mes de VIP", 0, config.rules.vip_welcome.vip, true)
+  }
 
   // shop_buy: los mismos rechazos que la función de la base.
   function buy(id: string): string | null {
@@ -230,12 +431,25 @@ export function useShopDemo() {
     const currency: Currency = i.vip_only ? "vip" : "points"
     const price = i.vip_only ? i.vip_price : c.price
     if (price == null) return "Ese artículo no está a la venta"
-    const bal = i.vip_only ? points.vip_coins.balance : points.balance
-    if (bal < price) return `Te faltan ${price - bal} ${i.vip_only ? "monedas VIP" : "puntos"}`
+    const bal = i.vip_only ? coins.balance : points.balance
+    if (bal < price)
+      return `Te faltan ${price - bal} ${i.vip_only ? "monedas VIP" : "puntos"}`
     setOwned((o) => [...o, id])
-    setHistory((h) => [
-      { kind: "purchase", at: new Date().toISOString(), points: -price, label: i.name, vip: false, currency },
-      ...h,
+    setLedger((l) => [row(now(), "purchase", currency, -price, i.name), ...l])
+    return null
+  }
+
+  function buyBundle(b: Bundle): string | null {
+    if (!b.missing.length) return "Ya tenés todo el pack"
+    if (b.currency === "vip" && !vip)
+      return "Los packs VIP se compran siendo VIP"
+    const bal = b.currency === "vip" ? coins.balance : points.balance
+    if (bal < b.price)
+      return `Te faltan ${b.price - bal} ${b.currency === "vip" ? "monedas VIP" : "puntos"}`
+    setOwned((o) => [...o, ...b.missing.map((i) => i.id)])
+    setLedger((l) => [
+      row(now(), "purchase", b.currency, -b.price, `Pack ${b.name}`),
+      ...l,
     ])
     return null
   }
@@ -254,30 +468,16 @@ export function useShopDemo() {
     return null
   }
 
-  function playMix(won: boolean) {
-    const p = Math.round(
-      (config.per_mix + (won ? config.per_win : 0)) * (vip ? config.vip_multiplier : 1),
-    )
-    const coins = vip ? config.vip_per_mix + (won ? config.vip_per_win : 0) : 0
-    const row = {
-      kind: "mix" as const,
-      at: new Date().toISOString(),
-      label: MAPS[Math.floor(Math.random() * MAPS.length)] + (won ? " · victoria" : ""),
-      vip,
-    }
-    setHistory((h) => [
-      ...(coins ? [{ ...row, points: coins, currency: "vip" as const }] : []),
-      { ...row, points: p, currency: "points" as const },
-      ...h,
-    ])
-    return { points: p, coins }
+  function toggleWish(id: string) {
+    setWish((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id]))
   }
 
-  function grant(amount: number, reason: string, currency: Currency = "points") {
-    setHistory((h) => [
-      { kind: "grant", at: new Date().toISOString(), points: amount, label: reason, vip: false, currency },
-      ...h,
-    ])
+  function grant(
+    amount: number,
+    reason: string,
+    currency: Currency = "points"
+  ) {
+    setLedger((l) => [row(now(), "grant", currency, amount, reason), ...l])
   }
 
   function updateItem(id: string, patch: Override) {
@@ -291,19 +491,22 @@ export function useShopDemo() {
         const n = { ...x, ...patch }
         n.balance = n.earned + n.granted - n.spent
         return n
-      }),
+      })
     )
   }
 
   function reset() {
     setOverrides({})
-    setConfig(START_CONFIG)
-    setVip(false)
+    setConfig(START_ECONOMY)
+    setVipState(false)
     setOwned(START_OWNED)
     setEquipped(START_EQUIPPED)
-    setHistory(startHistory())
+    setLedger(startLedger())
     setAccounts(ACCOUNTS)
     setCover(null)
+    setWish(START_WISH)
+    setDayOffset(0)
+    setLevel(7)
   }
 
   return {
@@ -312,6 +515,8 @@ export function useShopDemo() {
     byId,
     catalog,
     catalogById,
+    bundles,
+    weeklyBundles,
     config,
     setConfig,
     vip,
@@ -320,17 +525,36 @@ export function useShopDemo() {
     equipped,
     visible,
     points,
-    history,
+    coins,
+    ledger,
+    matchesToday,
+    level,
     accounts,
     cover,
     setCover,
+    wish,
+    toggleWish,
     canUse,
     buy,
+    buyBundle,
     equip,
-    playMix,
+    playMatch,
+    earnMedal,
+    closeSeason,
+    levelUp,
+    tournament,
+    completeMission: (isVip: boolean) =>
+      isVip
+        ? simple("mission_vip", "Misión VIP: 5 clutches")
+        : simple("mission", "Misión: 3 victorias en la semana"),
+    firstStep: () => simple("first_steps", "Primeros pasos: votar un clip"),
+    featuredClip: () => simple("clip_featured", "Clip destacado por un admin"),
+    nextDay: () => setDayOffset((d) => d + 1),
     grant,
     updateItem,
     adminAccount,
     reset,
   }
 }
+
+export { SOURCE_LABEL }
