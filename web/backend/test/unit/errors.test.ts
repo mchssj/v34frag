@@ -13,6 +13,9 @@ describe('fromPostgrest', () => {
     ['23503', 400, 'VALIDATION_ERROR'],
     ['23514', 400, 'VALIDATION_ERROR'],
     ['22P02', 400, 'VALIDATION_ERROR'],
+    // La base no da abasto (sin conexiones libres en PostgREST o statement_timeout): pasajero.
+    ['PGRST003', 503, 'UNAVAILABLE'],
+    ['57014', 503, 'UNAVAILABLE'],
     ['XX000', 500, 'INTERNAL'],
     [undefined, 500, 'INTERNAL'],
   ])('%s → %i %s', (code, status, appCode) => {

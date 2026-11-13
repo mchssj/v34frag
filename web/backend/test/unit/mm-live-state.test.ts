@@ -52,11 +52,13 @@ function stub() {
       if (url.includes('/rpc/mm_my_live')) return Response.json({ queue_size: 4, lobby: null });
       if (url.includes('/rpc/mm_my_profile')) return Response.json({ me: { nick: 'kyan' } });
       if (url.includes('/rpc/mm_lobby_match')) return Response.json({ game_id: null, stats: [] });
+      if (url.includes('/rpc/mm_my_last_lobby')) return Response.json(lastLobby);
       return new Response('no simulado: ' + url, { status: 599 });
     }),
   );
   return calls;
 }
+let lastLobby: unknown = null;
 const get = async (path: string) =>
   makeApp().request(path, { headers: { Authorization: `Bearer ${await signToken(key, userClaims(USER))}` } }, testEnv());
 
@@ -72,6 +74,31 @@ describe('estado en dos partes', () => {
   it('GET /api/v1/mm/profile: mm_my_profile', async () => {
     stub();
     expect(await (await get('/api/v1/mm/profile')).json()).toMatchObject({ me: { nick: 'kyan' } });
+  });
+  it('GET /api/v1/mm/last-lobby: mm_my_last_lobby (replanteo 115)', async () => {
+    const calls = stub();
+    lastLobby = { id: LOBBY, status: 'finished' };
+    expect(await (await get('/api/v1/mm/last-lobby')).json()).toEqual({ id: LOBBY, status: 'finished' });
+    lastLobby = null;
+    expect(await (await get('/api/v1/mm/last-lobby')).json()).toBeNull();
+    expect(calls.filter((u) => u.includes('/rpc/mm_my_last_lobby'))).toHaveLength(2);
+  });
+  it('base sin conexiones libres (PGRST003): 503 UNAVAILABLE, no 500', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input instanceof Request ? input.url : input);
+        if (url.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
+        return Response.json(
+          { code: 'PGRST003', details: null, hint: null, message: 'Timed out acquiring connection from connection pool.' },
+          { status: 504 },
+        );
+      }),
+    );
+    const res = await get('/api/v1/mm/state/live');
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect((await res.json()).error).toMatchObject({ code: 'UNAVAILABLE' });
   });
   it('GET /api/v1/mm/lobbies/{id}/match: la partida de la sala', async () => {
     const calls = stub();

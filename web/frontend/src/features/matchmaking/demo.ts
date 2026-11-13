@@ -1076,6 +1076,10 @@ export function createDemoSource({
     async profile() {
       return snapshot()
     },
+    // La demo trae la última sala completa en el estado: no usa la referencia.
+    async lastLobby() {
+      return snapshot().last_lobby ?? null
+    },
     async lobbyMatch() {
       const last = lobby?.status === "finished" ? lobby : lastLobby
       return structuredClone(last?.match ?? lobby?.match ?? null)

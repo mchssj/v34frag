@@ -376,7 +376,8 @@ describe("PlayPage (con la demo)", () => {
     ).toBeInTheDocument()
     await flush(3 * 60_000 + 1000)
     expect(await screen.findByText(/^Abandonó:/)).toBeInTheDocument()
-  })
+    // Pesada (toda la sala con la demo): con la suite completa en paralelo pasa de los 5 s por defecto.
+  }, 15_000)
 
   it("sala terminada: estadísticas, MVP, clips y volver a Jugar", async () => {
     const { user, controls } = setup()
@@ -412,7 +413,7 @@ describe("PlayPage (con la demo)", () => {
     await user.click(screen.getByRole("tab", { name: "Descripción general" }))
     await user.click(screen.getByRole("button", { name: "Volver a Jugar" }))
     expect(await searchButton()).toBeInTheDocument()
-  })
+  }, 15_000)
 
   it("grupo: el líder pasa el liderazgo y saca a alguien; salir pide confirmación", async () => {
     const { user, controls, source } = setup()

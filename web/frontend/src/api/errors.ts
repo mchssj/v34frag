@@ -23,6 +23,7 @@ export type ApiErrorCode =
   | "COACH_NOT_ALLOWED"
   | "REGISTRATION_CLOSED"
   | "PLAYER_NOT_LINKED"
+  | "UNAVAILABLE"
   | "INTERNAL"
   | "NETWORK"
 
@@ -78,6 +79,7 @@ const KNOWN_CODES = new Set<string>([
   "COACH_NOT_ALLOWED",
   "REGISTRATION_CLOSED",
   "PLAYER_NOT_LINKED",
+  "UNAVAILABLE",
   "INTERNAL",
 ])
 
@@ -89,6 +91,10 @@ const CODE_BY_STATUS: Record<number, ApiErrorCode> = {
   409: "CONFLICT",
   413: "FILE_TOO_LARGE",
   429: "RATE_LIMITED",
+  // Caddy o Kong sin respuesta de la API o de la base (un reinicio, la base ocupada): pasajero.
+  502: "UNAVAILABLE",
+  503: "UNAVAILABLE",
+  504: "UNAVAILABLE",
 }
 
 function parseRetryAfter(value: string | null): number | null {
@@ -191,6 +197,8 @@ export function errorMessage(
       )
     case "NETWORK":
       return "No se pudo conectar con el servidor. Revisa tu conexión."
+    case "UNAVAILABLE":
+      return "El servidor está ocupado. Intenta de nuevo en un momento."
     case "INTERNAL":
     case "CONFIG_INVALID":
       return e.requestId
@@ -211,6 +219,7 @@ export function isRetryable(e: unknown): boolean {
   return (
     isApiError(e) &&
     (e.code === "INTERNAL" ||
+      e.code === "UNAVAILABLE" ||
       e.code === "CONFIG_INVALID" ||
       e.code === "NETWORK")
   )

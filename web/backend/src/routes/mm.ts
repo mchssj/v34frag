@@ -127,7 +127,11 @@ add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala
   c.var.mmPolled?.(c.var.user.id);
   return liveState(c);
 });
-add(route('get', '/api/v1/mm/profile', { summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
+// (replanteo 115) La última sala terminada, aparte del estado liviano (que trae solo last_lobby_ref): la web la pide
+// cuando cambia `rev`. null si no jugó.
+add(route('get', '/api/v1/mm/last-lobby', { summary: 'Mi última sala terminada (sin estadísticas)' }), async (c) =>
+  c.json(((await rpc(c, 'mm_my_last_lobby')) ?? null) as never, 200));
+add(route('get', '/api/v1/mm/profile',{ summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
   c.json({ ...((await rpc(c, 'mm_my_profile')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
 add(route('get', '/api/v1/mm/lobbies/{id}/match', { summary: 'La partida de una sala que jugué, con las estadísticas y los clips', request: { params: IdParam } }), async (c) => {
   const game = (await rpc(c, 'mm_lobby_match', { p_lobby: param(c) })) as unknown as GameRef | null;

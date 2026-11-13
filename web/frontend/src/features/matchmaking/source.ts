@@ -45,6 +45,8 @@ export type MmSource = {
   profile(signal?: AbortSignal): Promise<Partial<MmState>>
   /** La partida de una sala terminada, con las estadísticas y los clips. */
   lobbyMatch(lobbyId: string, signal?: AbortSignal): Promise<MmMatch | null>
+  /** La última sala terminada, sin las estadísticas (replanteo 115). */
+  lastLobby(signal?: AbortSignal): Promise<MmLobby | null>
   feed(signal?: AbortSignal): Promise<MmFeed>
   join(mode: string, region: string | null): Promise<MmState>
   setInvitePref(pref: InvitePref): Promise<MmState>
@@ -239,6 +241,7 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     profile: (signal) => call("/api/v1/mm/profile", { signal }),
     lobbyMatch: (id, signal) =>
       call(`/api/v1/mm/lobbies/${id}/match`, { signal }),
+    lastLobby: (signal) => call("/api/v1/mm/last-lobby", { signal }),
     leave: () => call("/api/v1/mm/queue", { method: "DELETE" }),
     queuePingStatus: (signal) => call("/api/v1/mm/queue/ping", { signal }),
     queuePing: () => call("/api/v1/mm/queue/ping", { method: "POST" }),

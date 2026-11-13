@@ -1,6 +1,8 @@
 import {
+  keepPreviousData,
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
 import { useEffect, useRef, useState } from "react"
@@ -25,6 +27,8 @@ export const mmKeys = {
   state: ["mm", "state"] as const,
   profile: ["mm", "profile"] as const,
   lobbyMatch: (id: string) => ["mm", "lobby-match", id] as const,
+  lastLobby: (id: string, rev: string) =>
+    ["mm", "last-lobby", id, rev] as const,
   partyChat: ["mm", "party-chat"] as const,
   adminServers: ["mm", "admin", "servers"] as const,
   passwords: (id: string) => ["mm", "admin", "passwords", id] as const,
@@ -54,6 +58,31 @@ export function mmProfileOptions(source: MmSource) {
     staleTime: MM_PROFILE_MS,
     refetchInterval: MM_PROFILE_MS,
   })
+}
+
+/**
+ * La última sala terminada (replanteo 115). Armarla era lo más caro del estado liviano: ahora se pide aparte y, como
+ * la clave lleva `rev`, solo de nuevo cuando cambia algo de ella (el resultado, un reporte, una recomendación).
+ */
+export function lastLobbyOptions(
+  source: MmSource,
+  ref: { id: string; rev: string } | null | undefined
+) {
+  return queryOptions({
+    queryKey: mmKeys.lastLobby(ref?.id ?? "", ref?.rev ?? ""),
+    queryFn: ({ signal }) => source.lastLobby(signal),
+    enabled: !!ref,
+    staleTime: Infinity,
+    // Mientras llega la versión nueva queda la anterior: la pestaña no parpadea.
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** La última sala: la consulta aparte o, si todavía no llegó, la que trae el estado completo (mm_my_state). */
+export function useLastLobby(source: MmSource, state: MmState | undefined) {
+  const ref = state?.last_lobby_ref
+  const fetched = useQuery(lastLobbyOptions(source, ref)).data
+  return (ref ? fetched : undefined) ?? state?.last_lobby ?? null
 }
 
 /** Las estadísticas y los clips de una partida terminada no cambian: se piden una sola vez. */

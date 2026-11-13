@@ -40,6 +40,7 @@ import { MatchRoom } from "./room/MatchRoom"
 import {
   lobbyMatchOptions,
   mmStateOptions,
+  useLastLobby,
   useMmAction,
   useMmSocket,
 } from "./queries"
@@ -106,7 +107,7 @@ export function PlayPage() {
   const [droppedSeen, setDroppedSeen] = useState<string | null>(null)
   const dropped = state?.queue_dropped_at ?? null
   const lobby = state?.lobby ?? null
-  const last = state?.last_lobby ?? null
+  const last = useLastLobby(source, state)
   const room = lobby && lobby.status !== "accepting" ? lobby : null
   if (room && watched !== room.id) setWatched(room.id)
   if (!room && last && watched === last.id) {

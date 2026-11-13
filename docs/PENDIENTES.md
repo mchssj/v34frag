@@ -24,6 +24,13 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## La base sin conexiones libres en las horas pico (2026-11-13): sin desplegar
+
+- **Qué es:** en las horas pico PostgREST se quedaba sin conexiones (`PGRST003`) y cualquier página daba "Algo salió mal". `mm_my_live` armaba en cada llamada la última sala terminada: ahora la web la pide aparte, solo cuando cambia (replanteo `115`). Y la base ocupada da `503 UNAVAILABLE` con **Reintentar** ([`2026-11-13-pool-de-conexiones`](bitacora/2026-11-13-pool-de-conexiones/)).
+- **Falta:** la `115` en producción, la API y la web. Después, medir de nuevo `pg_stat_statements` y los `PGRST003`.
+- **Queda afuera:** agrandar el pool de PostgREST (10, por defecto) y `shared_buffers` (128 MB).
+- **Ramas del matchmaking:** `feat/frontend-fase-1` y `feat/mm-claim-en-sala` siguen en la `105` y no reciben la `115` (Daniel, 2026-11-13).
+
 ## Buscador con jugadores, equipos y torneos (2026-11-13): desplegado el 2026-11-13
 
 - **Qué es:** el buscador de arriba (Ctrl+K) trae jugadores, equipos y torneos además de las páginas ([`2026-11-13-buscador-global`](bitacora/2026-11-13-buscador-global/)). Solo la web y el manual.
