@@ -37,7 +37,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.12.0"
+#define PLUGIN_VERSION "2.12.1"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -156,6 +156,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/webnick.inc"
 #include "csstv/tips.inc"
 #include "csstv/ips.inc"
+#include "csstv/autoready.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -207,6 +208,7 @@ public void OnPluginStart()
 
 	CreateTimer(1.0, Timer_AbandonCheck, _, TIMER_REPEAT);
 	Ips_Init();
+	AutoReady_Init();
 
 	HookEventEx("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEventEx("round_end", Event_RoundEnd);
@@ -304,6 +306,7 @@ public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 public void OnClientPutInServer(int client)
 {
 	g_bReady[client] = false;
+	AutoReady_ClientReset(client);
 	Gg_ClientReset(client);
 	Stats_ClientReset(client);
 	Board_OnClientPut(client);
@@ -460,6 +463,7 @@ public Action Cmd_Ready(int client, int args)
 		ReplyToCommand(client, "[%s] Uníte a CT o T para marcarte listo.", g_sTag);
 		return Plugin_Handled;
 	}
+	AutoReady_SetOff(client, false);
 	if (!g_bReady[client])
 	{
 		g_bReady[client] = true;
@@ -473,6 +477,8 @@ public Action Cmd_Unready(int client, int args)
 {
 	if (client <= 0 || !IsClientInGame(client))
 		return Plugin_Handled;
+	if (g_State == State_Warmup)
+		AutoReady_SetOff(client, true);
 	if (g_State == State_Warmup && g_bReady[client])
 	{
 		g_bReady[client] = false;
@@ -558,9 +564,15 @@ public Action Timer_ReadyReminder(Handle timer)
 		PrintToChatAll("%s Este servidor no tiene una licencia válida de CSSTV (%s). Los mixes están desactivados.", PREFIX, why);
 		return Plugin_Continue;
 	}
+	AutoReady_Sweep();
+	if (g_State != State_Warmup)
+		return Plugin_Continue;
 	char names[256];
 	int missing = ReadyMissing(names, sizeof(names), 6);
-	PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
+	if (AutoReady_Applies())
+		PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Entrás listo solo; !unready si necesitás un momento.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
+	else
+		PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
 	if (missing)
 		PrintToChatAll("%s Faltan: %s%s", PREFIX, names, missing > 6 ? "…" : "");
 	if (g_LinkState == Link_Active)
@@ -672,6 +684,7 @@ void ResetMatch()
 	}
 	for (int i = 1; i <= MaxClients; i++)
 		g_bReady[i] = false;
+	AutoReady_Reset();
 	Stats_Reset();
 	Clips_Clear();
 	Track_Clear();

@@ -9,7 +9,7 @@ Todos los servidores de CMLeague se juegan igual. Los comandos se escriben en el
 ## Cómo arranca
 
 1. Mientras entran todos, el servidor está en **calentamiento**. Si mueres, reapareces enseguida con un arma gratis (la eliges con `!armas`) y chaleco con casco. Puedes practicar granadas con `!nades`.
-2. Cuando estés listo, escribe `!ready` (`!unready` lo quita, `!faltan` dice quiénes faltan). La partida arranca cuando están todos listos.
+2. En los mixes y en el matchmaking, apenas entras a un equipo ya quedas **listo** solo. Si necesitas un momento, escribe `!unready` (y `!ready` cuando estés). En torneos y PCW, cada uno escribe `!ready`. `!faltan` dice quiénes faltan. La partida arranca cuando están todos listos: en un mix, apenas se llega al mínimo de jugadores.
 3. Primero se juega una **ronda de cuchillo**. El equipo que gana tiene 60 segundos para elegir lado: `!stay` se queda donde está y `!switch` cambia. Si se acaba el tiempo de la ronda sin que un equipo mate a todos los del otro, gana el que **sume más vida entre sus vivos**; si empatan, se juega otra. Esconderse no sirve.
 4. Después, la partida en vivo.
 

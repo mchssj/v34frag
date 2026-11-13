@@ -27,6 +27,17 @@ Todo por la API del panel de MVZG (`SFTP_CSS_API_KEY`), sin reiniciar ni cambiar
 2. **FastDL:** en cada `cfg/server.cfg`, solo la línea `sv_downloadurl`, con el uuid de cada servidor (#1 `157703b5-d387-…`, #2 `cd1be322-d7c1-…`, #3 `16c850ff-5eaa-…`) y `/cstrike`. Respaldo en `cfg/server.cfg.bak_fastdl`. Entra en el próximo cambio de mapa.
 3. **Mapcycle:** los 8 mapas que faltaban, al final de `mapcycle.txt`, en los tres. Respaldo en `mapcycle.txt.bak_mapas`.
 
+4. **Stripper para `de_strike_mirage`:** el mapa trae de decoración un terrorista agachado (`prop_dynamic` con `models/player/t_phoenix.mdl`, `hammerid` 77047, en `297 -791 -168`). Es sólido y parece un jugador. Se saca con `addons/stripper/maps/de_strike_mirage.cfg`, en los tres:
+
+   ```
+   filter:
+   {
+   "classname" "prop_dynamic"
+   "hammerid" "77047"
+   "model" "models/player/t_phoenix.mdl"
+   }
+   ```
+
 ## Pruebas
 
 ### Carga de los mapas (servidor local `Downloads\cssds`, v34)

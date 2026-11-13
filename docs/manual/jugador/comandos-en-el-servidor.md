@@ -10,9 +10,9 @@ Se escriben en el chat del juego. Con `!` adelante (`!pause`) todos ven el coman
 
 | Comando | Qué hace |
 |---|---|
-| `!ready` | Te marca listo. La partida arranca cuando están todos listos |
-| `!unready` | Quita tu listo |
-| `!faltan` | Quiénes faltan escribir `!ready` |
+| `!ready` | Te marca listo. En los mixes y en el matchmaking ya entras listo solo; en torneos y PCW lo tienes que escribir. La partida arranca cuando están todos listos |
+| `!unready` | Quita tu listo, si necesitas un momento antes de que arranque. No vuelves a quedar listo solo hasta que escribas `!ready` |
+| `!faltan` | Quiénes faltan estar listos |
 | `!stay` · `!switch` | Después de la ronda de cuchillo, el capitán del equipo que ganó se queda en su lado o cambia (ver [Comandos del capitán en el servidor](/help/capitan/comandos-en-el-servidor)) |
 
 ## En el calentamiento
