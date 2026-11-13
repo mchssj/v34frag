@@ -13,6 +13,7 @@
  * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
  * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
  * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
+ * csstv/webnick.inc: a quien tiene ficha en la web se le pone el nick de la ficha (csstv_web_names lo apaga).
  * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
  * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
  * csstv/mm.inc toma las salas del matchmaking de la web (csstv_mm lo prende).
@@ -36,7 +37,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.11.0"
+#define PLUGIN_VERSION "2.12.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -152,6 +153,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/status.inc"
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
+#include "csstv/webnick.inc"
 #include "csstv/tips.inc"
 #include "csstv/ips.inc"
 
@@ -231,6 +233,7 @@ public void OnPluginStart()
 	Status_Init();
 	Claim_Init();
 	Whois_Init();
+	WebNick_Init();
 	Tips_Init();
 	Clips_Init();
 	Track_Init();
@@ -306,6 +309,7 @@ public void OnClientPutInServer(int client)
 	Board_OnClientPut(client);
 	Claim_ClientReset(client);
 	Whois_ClientReset(client);
+	WebNick_ClientReset(client);
 	Clips_ClientReset(client);
 }
 
@@ -315,6 +319,7 @@ public void OnClientPostAdminCheck(int client)
 	Match_OnClientJoin(client);
 	Mm_OnClientJoin(client);
 	Ips_OnJoin(client);
+	WebNick_Request(client);
 }
 
 public void OnClientDisconnect(int client)

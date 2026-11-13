@@ -287,6 +287,9 @@ const SECTIONS: LegalSection[] = [
           privado.
         </p>
         <p>
+          En nuestros servidores de Counter-Strike, si tu SteamID está vinculado a tu perfil y tu perfil no es privado, apareces con tu tag de la web y no puedes cambiarlo mientras juegas (los VIP sí pueden). Si tu perfil es privado, conservas tu nombre de Steam.
+        </p>
+        <p>
           Las visitas a tu perfil las ves solo tú: cuántos jugadores lo
           visitaron y, si eres VIP, quiénes. Si visitas el perfil de alguien con
           VIP, esa persona ve que lo visitaste, salvo que seas VIP y uses

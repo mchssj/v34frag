@@ -17,6 +17,8 @@ Si tu equipo gana la ronda de cuchillo, te aparece un menú para elegir lado. Ta
 
 Tienes 60 segundos. Solo elige el capitán: si lo escribe otro, el servidor le dice quién tiene que elegir.
 
+Si la ronda de cuchillo termina porque se acabó el tiempo, la gana el equipo que sume más vida entre sus vivos (no los CT, como antes).
+
 ## Repetir una ronda
 
 Si una ronda se arruinó por algo ajeno al juego (un crash, alguien que entró al equipo equivocado), los dos capitanes pueden repetirla:

@@ -14,7 +14,7 @@ Con una cuenta en la web puedes buscar partida, sumar ELO, entrar a un equipo y 
 
 Si tu email ya tiene una cuenta, la web te avisa: inicia sesión con él o toca **¿Olvidaste tu contraseña?** si no la recuerdas.
 
-Tu alias es tu nombre en toda la web: el ranking, los planteles y el chat. En el juego puedes usar el nombre que quieras. Empiezas con 1000 de ELO.
+Tu alias es tu nombre en toda la web: el ranking, los planteles y el chat. Cuando vinculas tu SteamID con `!claim`, también es tu nombre en nuestros servidores (ver [Jugar en el servidor](/help/jugador/jugar-en-el-servidor), en "Tu nombre en el servidor"). Empiezas con 1000 de ELO.
 
 ## 2. Confirmar tu correo
 

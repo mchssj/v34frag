@@ -2,6 +2,17 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-12**.
 
+## Cuchillo por vida y nombre de la web, reporter 2.10.1 (2026-11-12): desplegado, falta la base
+
+- **Estado:** sugerencias de jugadores en Discord, pedidas por Kyan. La ronda de cuchillo que termina por tiempo la gana el que suma más vida entre sus vivos; a quien tiene ficha (pública, no VIP) se le pone el nick de la web y no lo puede cambiar. Reporter **2.10.1** (sobre la 2.10.0 de `main`) subido a **#1**, **#2** y **#3** por la API del panel, comparado byte a byte, con la 2.10.0 en `plugins/disabled/csstv_reporter_2.10.0.smx`; entra en el próximo cambio de mapa. En `kyan/pruebas` el mismo cambio es la 2.12.0 (sobre la 2.11.0). Detalle: [`2026-11-12-cuchillo-por-vida-y-nombre-web`](bitacora/2026-11-12-cuchillo-por-vida-y-nombre-web/).
+- **Falta:**
+  - Aplicar la `113` en la base del VPS (Daniel o Kyan). Sin ella nadie cambia de nombre; el cuchillo ya funciona.
+  - Verificar la 2.10.1 en `sm plugins list` de cada servidor después del cambio de mapa.
+  - Que Kyan pruebe el nombre entrando con su cuenta.
+  - Publicar el changelog (CMLeague 2.9.33) cuando la `113` esté aplicada.
+  - Llevar el parche a `main` / `feat/frontend-fase-1` (Daniel) y desplegar la web (párrafo nuevo de `/privacidad`).
+  - Cuando se despliegue la 2.11.0, que vaya la 2.12.0 (o una versión que tenga los dos cambios), no la 2.11.0 sola.
+
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
 > **Numeración nueva desde el 2026-11-08** (Kyan): **#1** es MVZG (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`) son los nuevos, los tres en el panel de MVZG. flow ya no existe y el de retake (ExtremeHost) se da de baja alrededor del 2026-11-10. Lo que abajo dice "#2" o "flow" antes del 2026-11-08 es flow; "#3", el de ExtremeHost.
@@ -888,7 +899,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
 - **Decisiones de Daniel (2026-11-02) sobre las diferencias:**
   1. **El #1 es para probar el matchmaking:** por eso manda a staging (`csstv_api_url` = `STAGING_SUPABASE_URL`, `edaljnirzvisiaathitt`). El #3 apunta a producción (`wmzfwsizashpszxlvpeb`). Queda así.
   2. **`live.cfg` del #1 con `mp_friendlyfire 0` y `mp_flashlight 0`** (el #3 y el repo tienen `1`): queda así por ahora.
-  3. **`Anti_Wallhack_Lite` en `disabled/` en el #1:** se sacó para ver si arreglaba el error del sonido. Todavía no se sabe si lo arregló. Excepción temporal a `CLAUDE.md`.
+  3. **`Anti_Wallhack_Lite` en `disabled/` en el #1:** se sacó para ver si arreglaba el error del sonido. Todavía no se sabe si lo arregló. Excepción temporal a `CLAUDE.md`. El #2 y el #3 lo heredaron así al copiarse del #1. **Vuelto a `plugins/` en los tres el 2026-11-12** (pedido de Kyan, por la API del panel, sin recargar: entra en el próximo cambio de mapa). Kyan puede pedir sacarlo de nuevo.
   4. **El #3 es el servidor de retake y 2vs2** (`v34_retake`, `v34_wingman`); por eso no tiene los mismos plugins que el #1. **Falta versionar esos plugins en esta rama:** los fuentes (`v34_retake.sp`, `v34_wingman.sp`, `v34_dm.sp`, sus `.inc`, `configs/retake/`) y la bitácora `2026-10-30-plugin-retake` están en `origin/kyan/pruebas`; hay que traerlos.
   5. `sv_allowupload 0` en el #1 y `1` en el #3: está bien.
   6. **Demos del #1:** seguramente no tiene cargados los datos de SFTP en Administración, porque es para el matchmaking. Sin cambios.
