@@ -15,7 +15,7 @@ Todos los servidores de CMLeague se juegan igual: mismas reglas, mismos plugins,
 | **Las cfg de la partida** | Calentamiento, en vivo, fin, y las de cada tipo de partida (torneo, PCW, matchmaking y mix) |
 | **El ciclo de mapas** | El mismo `mapcycle.txt` |
 | **El plugin de CMLeague** | Formato MR15 con prórroga MR3 a 12000, medio tiempo de 3 segundos, pausas y `!gg` como en [Jugar en el servidor](/help/jugador/jugar-en-el-servidor) |
-| **El `server.cfg`** | `sv_pure 1` con la misma lista de archivos permitidos (solo skins de armas en primera persona y sonidos de armas), `phys_timescale 1.7`, humo tipo 2 de ClientMod, `sv_minupdaterate` y `sv_mincmdrate` en 100, `sv_maxupdaterate` y `sv_maxcmdrate` en 101 |
+| **El `server.cfg`** | `sv_pure 2`, `phys_timescale 1.7`, humo tipo 2 de ClientMod, `sv_minupdaterate` y `sv_mincmdrate` en 100, `sv_maxupdaterate` y `sv_maxcmdrate` en 101 |
 
 ## Lo propio de tu servidor
 

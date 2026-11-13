@@ -136,12 +136,6 @@ const SECTIONS: LegalSection[] = [
           juego o lea su memoria.
         </li>
         <li>
-          La única excepción son las skins de las armas que ves en primera
-          persona (el modelo, sus texturas y las manos) y los sonidos de las
-          armas, salvo los de la C4 y las granadas. Los servidores no cargan
-          ninguna otra modificación.
-        </li>
-        <li>
           Los servidores de la liga usan protecciones propias y de terceros (
           <code>sv_pure</code>, anti-wallhack, controles de ClientMod y otros).
           Intentar esquivarlas es lo mismo que hacer trampa.
