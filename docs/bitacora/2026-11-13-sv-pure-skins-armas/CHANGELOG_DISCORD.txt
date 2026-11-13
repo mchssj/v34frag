@@ -1,0 +1,11 @@
+CMLeague 2.9.35 --  Changelog
+
+Skins de armas en los servidores
+
+- Ahora puedes usar tus propias skins para las armas que ves en tu mano: el modelo, las texturas y las manos.
+- También puedes usar tus propios sonidos de disparo y de recarga.
+- Para instalarlas, copia las carpetas de la skin (models, materials y sound) dentro de la carpeta cstrike de tu juego.
+- Siguen sin poder cambiarse los modelos de los jugadores, las armas que ves en el piso o en otros jugadores, las texturas del mapa y los sonidos de la C4 y las granadas. Si tienes algo de eso modificado, el servidor no lo carga y ves el original.
+- Usar texturas o modelos modificados para ver mejor a los rivales sigue siendo trampa y se sanciona.
+
+Empieza a funcionar en el próximo mapa de cada servidor. Tienes todos los detalles en el manual de la web, en "Usar skins de armas".
