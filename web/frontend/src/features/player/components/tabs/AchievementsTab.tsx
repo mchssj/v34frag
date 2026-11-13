@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { AwardIcon } from "lucide-react"
 
@@ -141,7 +142,17 @@ function AchievementCard({ i }: { i: Item }) {
       )}
     >
       <Medal look={i.look} locked={i.locked} size={88} title={i.title} />
-      <span className="text-[13px] font-semibold">{i.title}</span>
+      {i.event ? (
+        <Link
+          to="/events/$id"
+          params={{ id: i.event.id }}
+          className="text-[13px] font-semibold hover:underline"
+        >
+          {i.title}
+        </Link>
+      ) : (
+        <span className="text-[13px] font-semibold">{i.title}</span>
+      )}
       <span className="font-mono text-[11px] text-muted-foreground">
         {i.locked ? `Siguiente: ${i.sub}` : i.sub}
       </span>

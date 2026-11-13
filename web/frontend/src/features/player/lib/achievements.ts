@@ -17,6 +17,7 @@ export type EarnedMedal = {
   created_at: string
   source: string
   season: { name: string } | null
+  event?: { id: string; name: string } | null
   design: Look
 }
 export type Progress = {
@@ -36,6 +37,8 @@ export type Item = {
   sub: string
   locked: boolean
   pct: number
+  /** El torneo de una medalla de campeón o finalista (replanteo 114). */
+  event?: { id: string; name: string } | null
 }
 export type Section = { title: string; items: Item[] }
 
@@ -94,6 +97,7 @@ export function buildAchievements(earned: EarnedMedal[], progress: Progress[]) {
       look: m.design,
       title: m.season ? m.design.title : m.title,
       sub: m.season ? m.season.name : `Obtenida el ${day(m.created_at)}`,
+      event: m.event ?? null,
       locked: false,
       pct: 100,
       cat: templateOf(m.design.template)?.category ?? "Comunidad",

@@ -283,7 +283,10 @@ export const adminPlayers = createRouter()
     const b = c.req.valid('json');
     const def = (await loadDefinitions(c.var.sb, [b.definition_id])).get(b.definition_id);
     if (!def || def.status !== 'active') throw notFound('esa medalla');
-    if (def.aggregation !== 'manual') throw new AppError(400, 'BUSINESS_RULE', 'Esa medalla la da el juego o el cierre de temporada, no un admin.');
+    // (replanteo 114) Campeón y finalista de torneo también se dan a mano, para los torneos de fuera de la plataforma.
+    if (def.aggregation !== 'manual' && def.aggregation !== 'event_result') {
+      throw new AppError(400, 'BUSINESS_RULE', 'Esa medalla la da el juego o el cierre de temporada, no un admin.');
+    }
     const row = mustHave(
       await c.var.sb
         .from('player_medals')
@@ -291,10 +294,16 @@ export const adminPlayers = createRouter()
         .select('id, title, created_at')
         .single(),
     );
-    return c.json({ ...row, source: 'admin' as const, season: null, rank: null, design: designOf(def) }, 201);
+    return c.json({ ...row, source: 'admin' as const, season: null, event: null, rank: null, design: designOf(def) }, 201);
   })
   .openapi(deleteMedal, async (c) => {
-    const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', c.req.valid('param').id).select('id'));
+    const { id } = c.req.valid('param');
+    // (replanteo 114) La de un torneo sigue al palmarés: la base la volvería a dar.
+    const cur = must(await c.var.sb.from('player_medals').select('source').eq('id', id).maybeSingle());
+    if (cur?.source === 'event') {
+      throw new AppError(400, 'BUSINESS_RULE', 'Esta medalla la da el torneo: se quita sola si cambia el resultado o el plantel.');
+    }
+    const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', id).select('id'));
     if (!gone.length) throw notFound('esa medalla');
     return c.body(null, 204);
   })

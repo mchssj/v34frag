@@ -5,7 +5,8 @@ import { z } from '@hono/zod-openapi';
 
 export const MEDAL_METALS = ['bronce', 'plata', 'oro', 'platino', 'diamante'] as const;
 export const MEDAL_STATUS = ['draft', 'active', 'archived'] as const;
-export const MEDAL_AGGREGATIONS = ['total', 'avg_min_matches', 'max', 'streak', 'once', 'season_rank', 'manual'] as const;
+// event_result (replanteo 114): campeón o finalista de un torneo, la da la base al terminar el torneo.
+export const MEDAL_AGGREGATIONS = ['total', 'avg_min_matches', 'max', 'streak', 'once', 'season_rank', 'manual', 'event_result'] as const;
 
 export const MedalDesign = z
   .object({

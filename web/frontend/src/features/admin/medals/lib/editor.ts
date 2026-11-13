@@ -29,6 +29,7 @@ export const AGGREGATION_LABEL: Record<string, string> = {
   once: "Una vez",
   season_rank: "Puesto al cerrar la temporada",
   manual: "La da un admin",
+  event_result: "Al terminar un torneo",
 }
 
 export type Draft = {
@@ -109,6 +110,12 @@ export function ruleOf(d: Draft) {
       return "Se otorga al cerrar la temporada a quien termina en el tramo que la usa (Administración › Temporadas). La etiqueta dice el número de la temporada."
     case "manual":
       return "La da un admin a mano, desde Administración › Jugadores › Fichas."
+    case "event_result":
+      return `Se da sola a los jugadores con ficha del equipo ${
+        (t.filters as { result?: string }).result === "runner_up"
+          ? "que pierde la final"
+          : "campeón"
+      }, cuando el torneo termina. Si se corrige el resultado, pasa a quien corresponda. Un admin también la puede dar a mano, para torneos de fuera de la plataforma.`
     case "once":
       return "Se otorga una vez, cuando el jugador la cumple."
     case "avg_min_matches":
@@ -124,7 +131,9 @@ export function ruleOf(d: Draft) {
 
 /** Objetivo fijo: las de una vez y las manuales valen 1; el podio va del 1 al 3. */
 export const fixedTarget = (t: Template) =>
-  t.aggregation === "once" || t.aggregation === "manual"
+  t.aggregation === "once" ||
+  t.aggregation === "manual" ||
+  t.aggregation === "event_result"
 
 /** Errores que frenan el guardado (los mismos límites que la API). */
 export function problems(d: Draft): string[] {

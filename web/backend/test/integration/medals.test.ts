@@ -114,13 +114,15 @@ describe('medallas configurables', () => {
     expect(await res.json()).toMatchObject({ design: { metal: 'oro', number: '1M' } });
   });
 
-  it('al guardar el mix la da en el acto; el cron queda de respaldo', async () => {
+  // Desde el replanteo 97 (2026-11-09), guardar el mix solo anota en la cola y las da el cron (medals:tick).
+  it('al guardar el mix lo anota en la cola y el cron la da', async () => {
     const a = admin();
     check(await a.from('match_player_stats').insert([stats(mixes[1]!, steam[1]!, players[1]!, TARGET)]));
-    expect((await a.from('player_medals').select('id').eq('player_id', players[1]!).eq('definition_id', defId)).data?.length).toBe(1);
-    expect((await a.from('medal_queue').select('player_id').eq('player_id', players[1]!)).data?.length).toBe(0);
+    expect((await a.from('player_medals').select('id').eq('player_id', players[1]!).eq('definition_id', defId)).data?.length).toBe(0);
+    expect((await a.from('medal_queue').select('player_id').eq('player_id', players[1]!)).data?.length).toBe(1);
     const tick = check(await a.rpc('medals_evaluate_pending', { p_limit: 5000 })).data as { medals: number };
-    expect(tick.medals).toBe(0);
+    expect(tick.medals).toBeGreaterThanOrEqual(1);
+    expect((await a.from('player_medals').select('id').eq('player_id', players[1]!).eq('definition_id', defId)).data?.length).toBe(1);
   });
 
   it('progreso: solo el dueño (y el admin) lo ven; los demás, solo las ganadas', async () => {
@@ -181,5 +183,65 @@ describe('medallas configurables', () => {
     check(await a.from('player_medals').delete().eq('player_id', players[1]!).eq('source', 'auto'));
     check(await a.from('match_player_stats').update({ kills: TARGET }).eq('match_id', mixes[1]!));   // se vuelve a guardar el mix
     expect((await a.from('player_medals').select('id').eq('player_id', players[1]!).eq('source', 'auto')).data?.length).toBe(0);
+  });
+});
+
+// Campeón y finalista de torneo (replanteo 114): las da la base al terminar el torneo (event_medals_sync, probada en
+// docs/bitacora/2026-11-13-medallas-de-torneo/pruebas/probar_114.sql). Acá, lo que cambia en la API.
+describe('medallas de torneo', () => {
+  let eventId: string;
+  let medalId: string;
+
+  beforeAll(async () => {
+    const a = admin();
+    eventId = check(await a.from('events').insert({ name: `Torneo medallas ${seed}` }).select('id').single()).data!.id;
+    const def = check(await a.from('medal_definitions').select('id').eq('key', 'campeon_torneo').single()).data!;
+    medalId = check(
+      await a.from('player_medals')
+        .insert({ player_id: players[1]!, definition_id: def.id, title: `Campeón · Torneo medallas ${seed}`, icon: null, source: 'event', event_id: eventId })
+        .select('id').single(),
+    ).data!.id;
+  });
+
+  afterAll(async () => {
+    const a = admin();
+    await a.from('player_medals').delete().eq('event_id', eventId);
+    await a.from('events').delete().eq('id', eventId);
+  });
+
+  it('el perfil la muestra con su torneo', async () => {
+    const body = (await (await call('GET', `/api/v1/players/${players[1]}/medals`, undefined, '')).json()) as {
+      items: { id: string; source: string; event: { id: string; name: string } | null; design: { template: string } }[];
+    };
+    expect(body.items.find((x) => x.id === medalId)).toMatchObject({
+      source: 'event', event: { id: eventId, name: `Torneo medallas ${seed}` }, design: { template: 'campeon_torneo' },
+    });
+    expect(body.items.filter((x) => x.source !== 'event').every((x) => x.event === null)).toBe(true);
+  });
+
+  it('no se quita a mano: sigue al palmarés', async () => {
+    const res = await call('DELETE', `/api/v1/admin/medals/${medalId}`);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: { code: 'BUSINESS_RULE' } });
+  });
+
+  it('las dos son event_result, se siguen dando a mano y no se crean otras', async () => {
+    const defs = (await (await call('GET', '/api/v1/admin/medals/definitions')).json()) as {
+      items: { id: string; key: string; aggregation: string }[];
+    };
+    const torneo = defs.items.filter((x) => x.key === 'campeon_torneo' || x.key === 'finalista_torneo');
+    expect(torneo.map((x) => x.aggregation)).toEqual(['event_result', 'event_result']);
+    const fin = torneo.find((x) => x.key === 'finalista_torneo')!;
+    const res = await call('POST', `/api/v1/admin/players/${players[1]}/medals`, { definition_id: fin.id, title: 'Torneo de afuera' });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({ source: 'admin', event: null });
+    expect((await call('POST', '/api/v1/admin/medals/definitions', { template: 'campeon_torneo', target: 1 })).status).toBe(400);
+  });
+
+  it('el progreso no las lista', async () => {
+    const body = (await (await call('GET', `/api/v1/players/${players[1]}/medals/progress`)).json()) as {
+      items: { design: { template: string } }[];
+    };
+    expect(body.items.some((x) => ['campeon_torneo', 'finalista_torneo'].includes(x.design.template))).toBe(false);
   });
 });

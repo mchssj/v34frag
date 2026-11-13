@@ -107,4 +107,25 @@ describe("Logros", () => {
       a.sections.find((s) => s.title === "Arsenal y bomba")!.items[0]
     ).toMatchObject({ locked: true })
   })
+
+  it("la de un torneo lleva el torneo (replanteo 114)", () => {
+    const a = buildAchievements(
+      [
+        {
+          id: "m1",
+          title: "Campeón · Copa",
+          created_at: "2026-11-13T00:00:00Z",
+          source: "event",
+          season: null,
+          event: { id: "e1", name: "Copa" },
+          design: look("c", "campeon_torneo", "oro", "Campeón de torneo"),
+        },
+      ],
+      []
+    )
+    expect(a.sections.flatMap((s) => s.items)[0]).toMatchObject({
+      title: "Campeón · Copa",
+      event: { id: "e1", name: "Copa" },
+    })
+  })
 })

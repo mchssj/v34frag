@@ -44,4 +44,4 @@ En **Otras acciones**:
 
 - Cada serie definida hace avanzar la llave sola: el ganador pasa a su próxima partida y les avisamos a los equipos.
 - En formatos con grupos o suizo, la fase siguiente se arma cuando termina la anterior. Si hay un empate que tienes que resolver, la página del torneo te lo pide.
-- Cuando se juega la última partida, el torneo pasa a **Terminado** con su campeón.
+- Cuando se juega la última partida, el torneo pasa a **Terminado** con su campeón. Los jugadores inscritos del campeón y del finalista reciben su medalla de **Campeón de torneo** o **Finalista de torneo**. Si después corriges la final, las medallas pasan a quien corresponda.

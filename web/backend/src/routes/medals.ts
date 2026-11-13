@@ -77,7 +77,7 @@ function filtersOf(t: Template, minMatches?: number, current?: Record<string, un
 /** Objetivos fijos: las de una sola vez y las manuales valen 1; el podio va del 1 al 3. */
 function checkTarget(t: Template, target: number) {
   const bad = (m: string) => new AppError(400, 'VALIDATION_ERROR', m);
-  if ((t.aggregation === 'once' || t.aggregation === 'manual') && target !== 1) throw bad('Esta medalla se gana una vez: el objetivo es 1.');
+  if ((t.aggregation === 'once' || t.aggregation === 'manual' || t.aggregation === 'event_result') && target !== 1) throw bad('Esta medalla se gana una vez: el objetivo es 1.');
   if (t.id === 'podio' && ![1, 2, 3].includes(target)) throw bad('El podio es del puesto 1 al 3.');
   if (t.aggregation !== 'avg_min_matches' && !Number.isInteger(target)) throw bad('El objetivo tiene que ser un número entero.');
 }
@@ -178,6 +178,8 @@ export const medals = createRouter()
   .openapi(create, async (c) => {
     const b = c.req.valid('json');
     const t = needTemplate(b.template);
+    // (replanteo 114) Campeón y finalista de torneo ya existen y las da la base: se editan, no se crean otras.
+    if (t.aggregation === 'event_result') throw new AppError(400, 'BUSINESS_RULE', 'Esta medalla la da el torneo y ya existe: editala desde la lista.');
     checkTarget(t, b.target);
     const row = {
       key: defaultKey(t, b.target),
@@ -264,7 +266,7 @@ export const medals = createRouter()
     const value = new Map((values as { definition_id: string; value: number }[]).map((v) => [v.definition_id, Number(v.value)]));
     const got = new Map(earned.map((e) => [e.definition_id!, e.created_at]));
     const items = (defs as unknown as DefRow[])
-      .filter((d) => d.scope === 'player' && d.aggregation !== 'season_rank' && d.aggregation !== 'manual')
+      .filter((d) => d.scope === 'player' && !['season_rank', 'manual', 'event_result'].includes(d.aggregation))
       .map((d) => ({
         design: designOf(d),
         series: d.series,

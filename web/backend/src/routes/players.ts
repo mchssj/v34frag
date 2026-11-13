@@ -316,11 +316,11 @@ export const players = createRouter()
     const p = c.req.valid('query');
     const q = c.var.sb
       .from('player_medals')
-      .select('id, title, created_at, rank, source, definition_id, season:seasons(id, number, name)', { count: 'exact' })
+      .select('id, title, created_at, rank, source, definition_id, season:seasons(id, number, name), event:events(id, name)', { count: 'exact' })
       .eq('player_id', id)
       .not('definition_id', 'is', null);
     type Row = { id: string; title: string; created_at: string; rank: number | null; source: string; definition_id: string | null;
-                 season: { id: string; number: number; name: string } | null };
+                 season: { id: string; number: number; name: string } | null; event: { id: string; name: string } | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, {});
     const defs = await loadDefinitions(c.var.sb, rows.map((r) => r.definition_id));
     return c.json(
@@ -329,8 +329,9 @@ export const players = createRouter()
           .filter((r) => defs.has(r.definition_id!))
           .map(({ definition_id, ...r }) => ({
             ...r,
-            source: r.source as 'admin' | 'auto' | 'season',
+            source: r.source as 'admin' | 'auto' | 'season' | 'event',
             season: r.season ?? null,
+            event: r.event ?? null,
             rank: r.rank ?? null,
             design: designOf(defs.get(definition_id!)!, r.rank, r.season?.number),
           })),

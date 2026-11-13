@@ -22,7 +22,7 @@ En la pestaña **Inscripciones**:
 - **Inscribir equipo de la plataforma:** busca cualquier equipo oficial y tócalo. No le pide plantel ni jugadores. El torneo entra en su historial.
 - **Equipo que no está en la plataforma:** escribe el nombre y la sigla. Si ya hay equipos con un nombre parecido, la web te los muestra: si es uno de esos, toca **Inscribir este**; si no, **Es otro: cargarlo igual**. Queda como equipo histórico: solo nombre, sigla y logo, sin página propia. Lo puedes reusar en otro histórico.
 - **Editar** (solo en los equipos históricos): corrige el nombre, la sigla o el logo. El cambio se ve en todos los históricos donde está.
-- **Jugadores** (opcional): hasta 10 por equipo, estén o no en su plantel. Búscalos por alias y tócalos. Los que tienen ficha ven el torneo en su perfil y, si su equipo salió campeón, el título. Un jugador va en un solo equipo por torneo.
+- **Jugadores** (opcional): hasta 10 por equipo, estén o no en su plantel. Búscalos por alias y tócalos. Los que tienen ficha ven el torneo en su perfil y, si su equipo salió campeón o jugó la final, el título y la medalla de **Campeón de torneo** o **Finalista de torneo** (con aviso en la campana, aunque el histórico no mande otros avisos). Los cargados solo con el nombre no reciben medalla. Un jugador va en un solo equipo por torneo.
   - Los jugadores se cambian también con el fixture generado o el torneo terminado (no si está cancelado). Lo que no se puede después del fixture es inscribir o quitar equipos.
   - **Si no está en la plataforma:** escribe su nombre en el buscador y, si no aparece su ficha, toca **Agregar «nombre» sin ficha** (o Enter). Si hay una ficha con ese alias exacto, la web no ofrece cargarlo sin ficha y Enter elige la ficha. Va solo el nombre, de 2 a 24 caracteres, y en la lista lleva la marca "sin ficha". Queda en ese torneo y no en el equipo: en un equipo de la plataforma no aparece en su plantel ni en su página. No tiene perfil, títulos ni estadísticas.
   - Los nombres sin ficha salen en la tabla de **Inscripciones** y en los planteles de cada partida de la llave.
@@ -35,6 +35,6 @@ En la pestaña **Inscripciones**:
    - **Vincular un mix:** si se jugó en nuestros servidores. En un histórico la lista no tiene límite de fecha: usa los filtros **Desde**, **Hasta**, **Mapa** y **Servidor**. Si el mix no tiene jugadores inscritos que digan qué bando fue cada equipo, acomódalo con **Invertir bandos**.
    - **Resultado a mano:** el mapa, el marcador y **Jugado el**. Sin fecha, queda la del comienzo del torneo. En la página de la partida ese mapa dice "Sin detalle de la partida".
    - **W.O.:** elige la **Fecha del W.O.** antes de tocar **W.O. para**.
-3. Cuando se carga la final, el torneo queda **Terminado** con su campeón.
+3. Cuando se carga la final, el torneo queda **Terminado** con su campeón y se dan las medallas de campeón y finalista (si el torneo ya está aprobado; si no, al aprobarse).
 
 > **Ojo:** en un histórico, una serie suma al ranking de equipos solo si **todos sus mapas** tienen un mix aprobado. Con un mapa a mano o un W.O., la serie cuenta en la llave pero no en el ranking. El panel de la partida te lo dice.

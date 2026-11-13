@@ -134,7 +134,9 @@ function MedalRow({ d, onEdit }: { d: MedalDefinition; onEdit: () => void }) {
     "activate" | "archive" | "delete" | null
   >(null)
   const [retro, setRetro] = useState(true)
-  const engine = d.aggregation !== "season_rank" && d.aggregation !== "manual"
+  const engine = !["season_rank", "manual", "event_result"].includes(
+    d.aggregation
+  )
 
   return (
     <li
@@ -206,7 +208,9 @@ function MedalRow({ d, onEdit }: { d: MedalDefinition; onEdit: () => void }) {
             ? "Desde ahora el motor la revisa después de cada mix."
             : d.aggregation === "manual"
               ? "La va a poder dar un admin desde Fichas."
-              : "Queda disponible para los tramos de Administración › Temporadas."
+              : d.aggregation === "event_result"
+                ? "Se va a dar sola al terminar cada torneo."
+                : "Queda disponible para los tramos de Administración › Temporadas."
         }
         confirmLabel="Activar"
         pending={activate.isPending}

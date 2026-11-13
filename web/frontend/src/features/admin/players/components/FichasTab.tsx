@@ -910,7 +910,10 @@ function Medals({ playerId }: { playerId: string }) {
   const id = useId()
   const medals = useQuery(medalsOptions(playerId))
   const defs = useQuery(activeMedalsOptions)
-  const manual = (defs.data ?? []).filter((d) => d.aggregation === "manual")
+  // Campeón y finalista de torneo también, para los torneos de fuera de la plataforma (replanteo 114).
+  const manual = (defs.data ?? []).filter(
+    (d) => d.aggregation === "manual" || d.aggregation === "event_result"
+  )
   const add = useAddMedal(playerId)
   const del = useDeleteMedal(playerId)
   const [definition, setDefinition] = useState<string | undefined>(undefined)
@@ -930,16 +933,18 @@ function Medals({ playerId }: { playerId: string }) {
               <span className="text-xs text-muted-foreground">
                 {m.season
                   ? `Por la ${m.season.name}${m.rank ? ` (puesto ${m.rank})` : ""}`
-                  : m.source === "auto"
-                    ? `La dio el juego el ${fmtDate(m.created_at)}`
-                    : `Dada a mano el ${fmtDate(m.created_at)}`}
+                  : m.source === "event"
+                    ? `Por el torneo ${m.event?.name ?? ""}: se quita sola si cambia el resultado`
+                    : m.source === "auto"
+                      ? `La dio el juego el ${fmtDate(m.created_at)}`
+                      : `Dada a mano el ${fmtDate(m.created_at)}`}
               </span>
             </span>
             <Button
               variant="ghost"
               size="icon-sm"
               aria-label={`Quitar la medalla ${m.title}`}
-              disabled={del.isPending}
+              disabled={del.isPending || m.source === "event"}
               onClick={() =>
                 del.mutate(m.id, {
                   onSuccess: () => toast.success("Medalla quitada."),

@@ -85,7 +85,11 @@ export const Medal = z
       .nullable()
       .openapi({ description: 'Temporada en la que la ganó; `null` en las medallas que da el admin a mano' }),
     rank: z.number().int().nullable().openapi({ description: 'Puesto en esa temporada' }),
-    source: z.enum(['admin', 'auto', 'season']).openapi({ description: 'Quién la dio: un admin, el motor o el cierre de temporada' }),
+    source: z.enum(['admin', 'auto', 'season', 'event']).openapi({ description: 'Quién la dio: un admin, el motor, el cierre de temporada o un torneo (campeón o finalista)' }),
+    event: z
+      .object({ id: z.uuid(), name: z.string() })
+      .nullable()
+      .openapi({ description: 'El torneo de una medalla de campeón o finalista (`source = event`, replanteo 114)' }),
     design: MedalDesign.openapi({ description: 'El dibujo (replanteo 79). Sin emoji' }),
   })
   .openapi('Medal');

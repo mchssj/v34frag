@@ -2952,13 +2952,13 @@ isOneToOne: false
                   ]
                 },"player_medals": {
                   Row: {
-                    "created_at": string,"definition_id": string | null,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"source": string,"tier": string | null,"title": string
+                    "admin_title": string | null,"created_at": string,"definition_id": string | null,"event_id": string | null,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"source": string,"tier": string | null,"title": string
                   }
                   Insert: {
-                    "created_at"?: string,"definition_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title": string
+                    "admin_title"?: string | null,"created_at"?: string,"definition_id"?: string | null,"event_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title": string
                   }
                   Update: {
-                    "created_at"?: string,"definition_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title"?: string
+                    "admin_title"?: string | null,"created_at"?: string,"definition_id"?: string | null,"event_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -2966,6 +2966,12 @@ isOneToOne: false
       columns: ["definition_id"]
 isOneToOne: false
       referencedRelation: "medal_definitions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_medals_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "player_medals_player_id_fkey"

@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest"
 
 import {
   designBody,
+  fixedTarget,
   fromTemplate,
   lookOf,
   problems,
   ruleOf,
   withTarget,
 } from "./editor"
+import { templateOf } from "@/features/medals/templates"
 
 describe("editor de medallas", () => {
   it("cada plantilla trae su primer escalón y su dibujo", () => {
@@ -62,5 +64,13 @@ describe("editor de medallas", () => {
       metal: "bronce",
       accent: "pistolas",
     })
+  })
+
+  it("campeón y finalista de torneo: se dan solas al terminar el torneo (replanteo 114)", () => {
+    expect(ruleOf(fromTemplate("campeon_torneo"))).toContain("equipo campeón")
+    expect(ruleOf(fromTemplate("finalista_torneo"))).toContain(
+      "pierde la final"
+    )
+    expect(fixedTarget(templateOf("campeon_torneo")!)).toBe(true)
   })
 })

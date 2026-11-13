@@ -24360,7 +24360,7 @@ export interface components {
             description: string | null;
             metric: string;
             /** @enum {string} */
-            aggregation: "total" | "avg_min_matches" | "max" | "streak" | "once" | "season_rank" | "manual";
+            aggregation: "total" | "avg_min_matches" | "max" | "streak" | "once" | "season_rank" | "manual" | "event_result";
             filters: {
                 [key: string]: unknown;
             };
@@ -24592,10 +24592,16 @@ export interface components {
             /** @description Puesto en esa temporada */
             rank: number | null;
             /**
-             * @description Quién la dio: un admin, el motor o el cierre de temporada
+             * @description Quién la dio: un admin, el motor, el cierre de temporada o un torneo (campeón o finalista)
              * @enum {string}
              */
-            source: "admin" | "auto" | "season";
+            source: "admin" | "auto" | "season" | "event";
+            /** @description El torneo de una medalla de campeón o finalista (`source = event`, replanteo 114) */
+            event: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
             design: components["schemas"]["MedalDesign"] & unknown;
         };
         TeamStintList: {
