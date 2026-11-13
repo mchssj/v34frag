@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-13. **Sin desplegar** y sin commit.
+Implementado, probado en local y **desplegado el 2026-11-13** (commit `92ea3367`: la web y la API `92ea3367f5c8`).
 
 ## Archivos
 
@@ -14,9 +14,9 @@ Implementado y probado en local el 2026-11-13. **Sin desplegar** y sin commit.
 | `web/frontend/src/features/shell/components/CommandMenu.test.tsx` | Pruebas nuevas (3) |
 | `docs/manual/jugador/buscador.md` | Página nueva del manual |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-13)
 
-Ningún servidor de juego, ni la base, ni el plugin. Van dos partes, porque el manual va dentro del build de la API:
+Ningún servidor de juego, ni la base, ni el plugin. Fueron dos partes, porque el manual va dentro del build de la API. Se desplegó desde un worktree limpio en `92ea3367` (`v34frag-deploy`), porque `v34frag` tenía sin commit lo de las medallas (que necesita la `114`, sin aplicar) y el script arma desde el árbol de trabajo:
 
 ```bash
 deploy/vps/desplegar.sh web
@@ -24,6 +24,11 @@ deploy/vps/desplegar.sh api   # solo para que /help muestre la página nueva del
 ```
 
 ## Pruebas
+
+### Producción
+
+- `GET https://api.cmleague.lat/api/v1/players?q=grim&per=5` devuelve a 1GRIM. `/api/health` con `92ea3367f5c8`.
+- El script corrió de nuevo las pruebas: 747 de la web y 596 de la API.
 
 ### Web
 
