@@ -26538,7 +26538,7 @@ export interface components {
             /** Format: uuid */
             player_id: string | null;
             alias: string;
-            /** @description Invitado sin ficha (solo PCW) */
+            /** @description Invitado sin ficha: en PCW, un invitado; en un torneo histórico, un jugador cargado solo con el nombre (replanteo 113) */
             guest: boolean;
             /** @description Rating de las últimas 4 semanas en partidas 5v5 de cualquier tipo (replanteo 44). null sin partidas o si es invitado */
             rating: number | null;
@@ -27373,6 +27373,8 @@ export interface components {
                  */
                 role: "active" | "sub";
             }[];
+            /** @description Torneo histórico: jugadores sin ficha, solo el nombre, en el orden en que se cargaron. Vacío en los demás (replanteo 113) */
+            guests: string[];
         };
         EventMatchList: {
             items: components["schemas"]["EventMatch"][];
@@ -27458,6 +27460,8 @@ export interface components {
             subs: string[];
             /** @description Suizo: fase en la que empieza (solo el organizador) */
             start_stage?: number;
+            /** @description Solo en un torneo histórico: jugadores sin ficha (solo el nombre, de 2 a 24 caracteres, sin repetir). Fichas y nombres suman hasta 10. Si viene, reemplaza los nombres guardados; si no viene, no los toca (replanteo 113) */
+            guests?: string[];
         };
         /** @description Lo que crea un organizador o un moderador queda pendiente de aprobación (`approval`); lo de un admin, aprobado. Lo de un moderador lo aprueba solo un admin (`admin_review`). El premio: `prize_amount` y `prize_currency` van juntos, y `prize_currency_other` solo con `other` */
         EventCreate: {

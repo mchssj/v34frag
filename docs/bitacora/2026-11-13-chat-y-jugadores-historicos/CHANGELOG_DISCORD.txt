@@ -1,0 +1,8 @@
+CMLeague 2.9.42 --  Changelog
+
+Sala de la partida
+- Arreglado: un mensaje muy largo en el chat ya no estira la sala ni la saca de la pantalla. El texto corta dentro del chat.
+
+Torneos históricos
+- Ahora puedes cargar jugadores que no están en la plataforma: escribe su nombre en "Jugadores" y toca "Agregar sin ficha". Sirve para equipos de la plataforma y para los que no están.
+- Esos nombres quedan solo en ese torneo: no aparecen en el plantel ni en la página del equipo.

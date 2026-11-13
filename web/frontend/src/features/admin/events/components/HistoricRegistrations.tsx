@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { TriangleAlertIcon, XIcon } from "lucide-react"
+import { PlusIcon, TriangleAlertIcon, XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -44,11 +44,19 @@ import {
 const MAX_PLAYERS = 10
 
 type Team = Registration["team"]
-type Picked = { id: string; alias: string }
+/** id null: jugador sin ficha, solo el nombre (replanteo 113). */
+type Picked = { id: string | null; alias: string }
+
+const GUEST_MIN = 2
+const GUEST_MAX = 24
+
+/** Clave de la lista: la ficha o, sin ficha, el nombre. */
+const keyOf = (p: Picked) => p.id ?? `sin-ficha:${p.alias.toLowerCase()}`
 
 /**
  * Inscripciones de un torneo histórico (replanteo 80): equipos de la plataforma o históricos
- * (solo nombre, sigla y logo) y de 0 a 10 jugadores opcionales por equipo, sin plantel ni SteamID.
+ * (solo nombre, sigla y logo) y de 0 a 10 jugadores opcionales por equipo, sin plantel ni SteamID: fichas o,
+ * para quien no está en la plataforma, solo el nombre (replanteo 113).
  */
 export function HistoricRegistrations({ event }: { event: EventDetail }) {
   const regs = useQuery(eventRegistrationsOptions(event.id))
@@ -126,8 +134,11 @@ export function HistoricRegistrations({ event }: { event: EventDetail }) {
                       </span>
                     </td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">
-                      {r.players.length
-                        ? r.players.map((p) => p.alias).join(", ")
+                      {r.players.length + r.guests.length
+                        ? [
+                            ...r.players.map((p) => p.alias),
+                            ...r.guests.map((g) => `${g} (sin ficha)`),
+                          ].join(", ")
                         : "Sin jugadores cargados"}
                     </td>
                     <td className="px-3 py-2">
@@ -184,7 +195,7 @@ export function HistoricRegistrations({ event }: { event: EventDetail }) {
           onCreated={(team) =>
             setDialog({
               kind: "players",
-              reg: { team, seed: 0, start_stage: 1, players: [] },
+              reg: { team, seed: 0, start_stage: 1, players: [], guests: [] },
             })
           }
         />
@@ -433,7 +444,10 @@ function HistoricTeamDialog({
   )
 }
 
-/** Jugadores opcionales (0 a 10, estén o no en el plantel): el torneo sale en su perfil. */
+/**
+ * Jugadores opcionales (0 a 10, estén o no en el plantel): las fichas ven el torneo en su perfil. Quien no está en la
+ * plataforma se carga solo con el nombre, que queda en esta inscripción y no en el equipo (replanteo 113).
+ */
 function PlayersDialog({
   event,
   reg,
@@ -443,15 +457,27 @@ function PlayersDialog({
   reg: Registration
   onClose: () => void
 }) {
-  const [picked, setPicked] = useState<Picked[]>(
-    reg.players.map((p) => ({ id: p.player_id, alias: p.alias }))
-  )
+  const [picked, setPicked] = useState<Picked[]>([
+    ...reg.players.map((p) => ({ id: p.player_id, alias: p.alias })),
+    ...reg.guests.map((g) => ({ id: null, alias: g })),
+  ])
   const [q, setQ] = useState("")
   const debounced = useDebouncedValue(q.trim(), 250)
   const players = useQuery(pickPlayerOptions(debounced))
   const register = useRegisterTeam(event.id)
-  const ids = new Set(picked.map((p) => p.id))
+  const keys = new Set(picked.map(keyOf))
   const full = picked.length >= MAX_PLAYERS
+  // El nombre sin ficha, con los espacios limpios como lo guarda la base.
+  const guest = q.trim().replace(/\s+/g, " ")
+  const canAddGuest =
+    guest.length >= GUEST_MIN &&
+    guest.length <= GUEST_MAX &&
+    !keys.has(keyOf({ id: null, alias: guest }))
+  const addGuest = () => {
+    if (!canAddGuest || full) return
+    setPicked((all) => [...all, { id: null, alias: guest }])
+    setQ("")
+  }
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -459,23 +485,31 @@ function PlayersDialog({
         <DialogHeader>
           <DialogTitle>Jugadores de {reg.team.name}</DialogTitle>
           <DialogDescription>
-            Opcionales, hasta {MAX_PLAYERS}. Los que cargues ven el torneo (y el
-            título, si salen campeones) en su perfil. Un jugador, un solo equipo
-            por torneo.
+            Opcionales, hasta {MAX_PLAYERS}. Los que tienen ficha ven el torneo
+            (y el título, si salen campeones) en su perfil. Si alguien no está
+            en la plataforma, cárgalo solo con el nombre: queda en este torneo,
+            no en el equipo. Un jugador, un solo equipo por torneo.
           </DialogDescription>
         </DialogHeader>
         {picked.length > 0 ? (
           <ul className="flex flex-wrap gap-1.5">
             {picked.map((p) => (
-              <li key={p.id}>
+              <li key={keyOf(p)}>
                 <Badge variant="muted" className="gap-1 pr-1">
                   {p.alias}
+                  {p.id === null && (
+                    <span className="font-normal text-muted-foreground">
+                      · sin ficha
+                    </span>
+                  )}
                   <button
                     type="button"
                     aria-label={`Quitar a ${p.alias}`}
                     className="rounded-full p-0.5 hover:bg-foreground/10"
                     onClick={() =>
-                      setPicked((all) => all.filter((x) => x.id !== p.id))
+                      setPicked((all) =>
+                        all.filter((x) => keyOf(x) !== keyOf(p))
+                      )
                     }
                   >
                     <XIcon className="size-3" />
@@ -491,9 +525,16 @@ function PlayersDialog({
         )}
         <Input
           placeholder={full ? "Ya cargaste 10" : "Buscar jugador por alias"}
+          aria-label="Buscar jugador por alias"
           disabled={full}
+          maxLength={60}
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return
+            e.preventDefault()
+            addGuest()
+          }}
         />
         {!full && debounced.length > 0 && (
           <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto">
@@ -502,8 +543,28 @@ function PlayersDialog({
                 No hay jugadores con ese alias.
               </li>
             )}
+            {canAddGuest && (
+              <li>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-muted"
+                  onClick={addGuest}
+                >
+                  <PlusIcon className="size-4 text-muted-foreground" />
+                  <span>
+                    Agregar «<span className="font-medium">{guest}</span>» sin
+                    ficha
+                  </span>
+                </button>
+              </li>
+            )}
+            {guest.length > GUEST_MAX && (
+              <li className="text-xs text-muted-foreground">
+                Sin ficha, el nombre tiene hasta {GUEST_MAX} caracteres.
+              </li>
+            )}
             {players.data?.items
-              .filter((p) => !ids.has(p.id))
+              .filter((p) => !keys.has(p.id))
               .map((p) => (
                 <li key={p.id}>
                   <button
@@ -536,7 +597,11 @@ function PlayersDialog({
             disabled={register.isPending}
             onClick={() =>
               register.mutate(
-                { teamId: reg.team.id, players: picked.map((p) => p.id) },
+                {
+                  teamId: reg.team.id,
+                  players: picked.flatMap((p) => (p.id ? [p.id] : [])),
+                  guests: picked.flatMap((p) => (p.id ? [] : [p.alias])),
+                },
                 {
                   onSuccess: () => {
                     toast.success("Jugadores guardados.")

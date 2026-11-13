@@ -83,7 +83,7 @@ export function LobbyChat({
           </li>
         )}
         {messages.map((m) => (
-          <li key={m.id} className="leading-snug break-words">
+          <li key={m.id} className="leading-snug wrap-anywhere">
             <PlayerName
               nick={m.nick}
               playerId={lobby.players.find((p) => p.nick === m.nick)?.player_id}

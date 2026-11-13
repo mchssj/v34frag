@@ -3956,13 +3956,13 @@ isOneToOne: false
                   ]
                 },"tournament_registrations": {
                   Row: {
-                    "created_at": string,"event_id": string | null,"id": string,"start_stage": number,"team_id": string | null
+                    "created_at": string,"event_id": string | null,"guest_names": (string)[],"id": string,"start_stage": number,"team_id": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"start_stage"?: number,"team_id"?: string | null
+                    "created_at"?: string,"event_id"?: string | null,"guest_names"?: (string)[],"id"?: string,"start_stage"?: number,"team_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"start_stage"?: number,"team_id"?: string | null
+                    "created_at"?: string,"event_id"?: string | null,"guest_names"?: (string)[],"id"?: string,"start_stage"?: number,"team_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -6601,6 +6601,9 @@ isOneToOne: false
                            },
 "event_register":
 { Args: { "p_active": (string)[],"p_event": string,"p_start_stage"?: number,"p_subs"?: (string)[],"p_team": string }; Returns: undefined
+                           },
+"event_register_historic":
+{ Args: { "p_event": string,"p_names": (string)[],"p_players": (string)[],"p_start_stage"?: number,"p_team": string }; Returns: undefined
                            },
 "event_reset":
 { Args: { "p_event": string }; Returns: undefined

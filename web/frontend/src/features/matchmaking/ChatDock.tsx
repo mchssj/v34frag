@@ -176,12 +176,12 @@ function Room({
           m.system ? (
             <li
               key={m.id}
-              className="text-center text-xs text-muted-foreground"
+              className="text-center text-xs wrap-anywhere text-muted-foreground"
             >
               {m.message}
             </li>
           ) : (
-            <li key={m.id} className="leading-snug break-words">
+            <li key={m.id} className="leading-snug wrap-anywhere">
               <PlayerName
                 nick={m.nick}
                 playerId={m.player_id}

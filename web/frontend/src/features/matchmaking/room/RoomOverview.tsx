@@ -79,7 +79,7 @@ export function RoomOverview({
   extra?: React.ReactNode
 }) {
   return (
-    <div className="grid items-stretch gap-4 lg:grid-cols-[1fr_minmax(320px,400px)_1fr]">
+    <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)_minmax(0,1fr)]">
       <TeamColumn lobby={lobby} team={1} mode={mode} />
       <Center
         lobby={lobby}
@@ -109,7 +109,7 @@ function TeamColumn({
   const mine = lobby.players.some((p) => p.is_me && p.team === team)
   const { main, gone, open } = roomRows(lobby, team, mode === "preview")
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-3">
       <section
         aria-label={sideLabel(lobby, team)}
         className={cn(
