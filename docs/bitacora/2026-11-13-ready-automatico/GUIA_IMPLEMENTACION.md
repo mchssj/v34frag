@@ -46,6 +46,10 @@ En `C:\Users\Agus\Downloads\cssds`, con `csstv_send 0`, `csstv_include_bots 1` y
 
 Sin probar: `!unready` con una persona, el bloqueo con `sm_dm_on`/`sm_retake_on`/`sm_2v2_on` y una sala del matchmaking.
 
+## Incidentes
+
+**Se culpó por error a la 2.10.2 (2026-11-13).** A las 14:47 el #3 tomó una sala en `de_dust2_ob` y los jugadores se quedaron en "conectando". Era el primer cambio de mapa del #3 con la 2.10.2 y se volvió a la 2.10.1 en los tres. La causa real era `sv_pure 1`: un cambio de `sv_pure` en `server.cfg` entra un mapa después, y el #3 no había cambiado de mapa desde que se volvió a `sv_pure 2` (ver [`2026-11-13-sv-pure-skins-armas`](../2026-11-13-sv-pure-skins-armas/GUIA_IMPLEMENTACION.md)). Ese mismo día se volvió a subir la 2.10.2 a los tres, igual byte a byte; entra en el próximo cambio de mapa de cada uno.
+
 ## En qué se apartó del plan
 
 Se sumó un barrido en el recordatorio del calentamiento (cada 30 s) para los que ya estaban en un equipo cuando empezó a valer, porque ahí no hay evento de equipo.
