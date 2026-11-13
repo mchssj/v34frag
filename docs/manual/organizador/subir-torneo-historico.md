@@ -23,7 +23,8 @@ En la pestaña **Inscripciones**:
 - **Equipo que no está en la plataforma:** escribe el nombre y la sigla. Si ya hay equipos con un nombre parecido, la web te los muestra: si es uno de esos, toca **Inscribir este**; si no, **Es otro: cargarlo igual**. Queda como equipo histórico: solo nombre, sigla y logo, sin página propia. Lo puedes reusar en otro histórico.
 - **Editar** (solo en los equipos históricos): corrige el nombre, la sigla o el logo. El cambio se ve en todos los históricos donde está.
 - **Jugadores** (opcional): hasta 10 por equipo, estén o no en su plantel. Búscalos por alias y tócalos. Los que tienen ficha ven el torneo en su perfil y, si su equipo salió campeón, el título. Un jugador va en un solo equipo por torneo.
-  - **Si no está en la plataforma:** escribe su nombre en el buscador y toca **Agregar «nombre» sin ficha** (o Enter). Va solo el nombre, de 2 a 24 caracteres, y en la lista lleva la marca "sin ficha". Queda en ese torneo y no en el equipo: en un equipo de la plataforma no aparece en su plantel ni en su página. No tiene perfil, títulos ni estadísticas.
+  - Los jugadores se cambian también con el fixture generado o el torneo terminado (no si está cancelado). Lo que no se puede después del fixture es inscribir o quitar equipos.
+  - **Si no está en la plataforma:** escribe su nombre en el buscador y, si no aparece su ficha, toca **Agregar «nombre» sin ficha** (o Enter). Si hay una ficha con ese alias exacto, la web no ofrece cargarlo sin ficha y Enter elige la ficha. Va solo el nombre, de 2 a 24 caracteres, y en la lista lleva la marca "sin ficha". Queda en ese torneo y no en el equipo: en un equipo de la plataforma no aparece en su plantel ni en su página. No tiene perfil, títulos ni estadísticas.
   - Los nombres sin ficha salen en la tabla de **Inscripciones** y en los planteles de cada partida de la llave.
   - Toca **Guardar** para que quede.
 

@@ -70,6 +70,8 @@ export function HistoricRegistrations({ event }: { event: EventDetail }) {
   >(null)
   const [target, setTarget] = useState<Registration | null>(null)
   const open = event.status === "registration"
+  // Los jugadores de un equipo ya inscrito se cambian también con el fixture generado o el torneo terminado.
+  const playersOpen = event.status !== "cancelled"
 
   if (regs.isError)
     return <QueryError error={regs.error} onRetry={() => void regs.refetch()} />
@@ -146,7 +148,7 @@ export function HistoricRegistrations({ event }: { event: EventDetail }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          disabled={!open}
+                          disabled={!playersOpen}
                           onClick={() => setDialog({ kind: "players", reg: r })}
                         >
                           Jugadores
@@ -469,15 +471,27 @@ function PlayersDialog({
   const full = picked.length >= MAX_PLAYERS
   // El nombre sin ficha, con los espacios limpios como lo guarda la base.
   const guest = q.trim().replace(/\s+/g, " ")
+  // Sin ficha solo con la búsqueda de este texto ya resuelta, y si no hay una ficha con ese alias exacto:
+  // así no se carga como texto a alguien que está en la plataforma.
+  const searched =
+    debounced === q.trim() && players.isSuccess && !players.isPlaceholderData
+  const exact = searched
+    ? players.data.items.find(
+        (p) => p.alias.toLowerCase() === guest.toLowerCase()
+      )
+    : undefined
   const canAddGuest =
+    searched &&
+    !exact &&
     guest.length >= GUEST_MIN &&
     guest.length <= GUEST_MAX &&
     !keys.has(keyOf({ id: null, alias: guest }))
-  const addGuest = () => {
-    if (!canAddGuest || full) return
-    setPicked((all) => [...all, { id: null, alias: guest }])
+  const pick = (p: Picked) => {
+    if (full || keys.has(keyOf(p))) return
+    setPicked((all) => [...all, p])
     setQ("")
   }
+  const addGuest = () => canAddGuest && pick({ id: null, alias: guest })
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -533,7 +547,9 @@ function PlayersDialog({
           onKeyDown={(e) => {
             if (e.key !== "Enter") return
             e.preventDefault()
-            addGuest()
+            // Enter: la ficha con ese alias exacto o, si no hay, el nombre sin ficha.
+            if (exact) pick({ id: exact.id, alias: exact.alias })
+            else addGuest()
           }}
         />
         {!full && debounced.length > 0 && (
@@ -543,6 +559,24 @@ function PlayersDialog({
                 No hay jugadores con ese alias.
               </li>
             )}
+            {players.data?.items
+              .filter((p) => !keys.has(p.id))
+              .map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-muted"
+                    onClick={() => pick({ id: p.id, alias: p.alias })}
+                  >
+                    <PlayerAvatar
+                      alias={p.alias}
+                      photo={p.photo_url}
+                      size="row"
+                    />
+                    {p.alias}
+                  </button>
+                </li>
+              ))}
             {canAddGuest && (
               <li>
                 <button
@@ -563,27 +597,6 @@ function PlayersDialog({
                 Sin ficha, el nombre tiene hasta {GUEST_MAX} caracteres.
               </li>
             )}
-            {players.data?.items
-              .filter((p) => !keys.has(p.id))
-              .map((p) => (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-muted"
-                    onClick={() => {
-                      setPicked((all) => [...all, { id: p.id, alias: p.alias }])
-                      setQ("")
-                    }}
-                  >
-                    <PlayerAvatar
-                      alias={p.alias}
-                      photo={p.photo_url}
-                      size="row"
-                    />
-                    {p.alias}
-                  </button>
-                </li>
-              ))}
           </ul>
         )}
         {register.error && (

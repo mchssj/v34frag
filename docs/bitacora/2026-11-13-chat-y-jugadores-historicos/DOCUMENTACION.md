@@ -27,7 +27,8 @@ flowchart LR
 - **Dónde se guarda:** `tournament_registrations.guest_names text[]` (replanteo `113`). Se borra con la inscripción.
 - **Reglas** (`event_register_historic`): solo en un histórico y solo quien lo gestiona (`can_manage_event`: admin, moderador u organizador dueño). Cada nombre de 2 a 24 caracteres, con los espacios limpios; sin repetir, sin distinguir mayúsculas; fichas y nombres suman hasta 10. Guarda fichas y nombres en una sola transacción: si algo falla, no cambia nada.
 - **API:** `PUT /api/v1/events/{id}/registrations/{teamId}` con `guests` usa la función nueva; sin `guests`, todo sigue como antes. `GET …/registrations` devuelve `guests` en cada inscripción (vacío en los torneos normales). El detalle de una serie de torneo (`GET /api/v1/matches/{id}`) suma los nombres a `roster1`/`roster2` como invitados (`guest: true`, sin `player_id`).
-- **La web:** en **Jugadores**, si escribes un nombre aparece **Agregar «nombre» sin ficha** (también con Enter). En la lista va con "· sin ficha" y en la tabla de inscritos como "nombre (sin ficha)".
+- **La web:** en **Jugadores**, si escribes un nombre aparece **Agregar «nombre» sin ficha** (también con Enter), debajo de las fichas encontradas. No aparece hasta que termina la búsqueda ni si hay una ficha con ese alias exacto (sin distinguir mayúsculas): ahí Enter elige la ficha. En la lista va con "· sin ficha" y en la tabla de inscritos como "nombre (sin ficha)".
+- **Jugadores con el torneo en curso o terminado:** en un histórico, el botón **Jugadores** queda activo en cualquier estado menos cancelado (antes, solo en inscripciones). La base ya lo permitía para un equipo inscrito. **Inscribir** y **Quitar** equipos siguen solo en inscripciones. Pedido por Daniel (2026-11-13) para cargar jugadores en TORNEO TITAN, que está en curso.
 - **Lo que no tienen:** perfil, palmarés, estadísticas, ni lugar en el plantel del equipo.
 
 ## Qué cambia para cada rol

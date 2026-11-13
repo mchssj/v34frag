@@ -6,3 +6,4 @@ Sala de la partida
 Torneos históricos
 - Ahora puedes cargar jugadores que no están en la plataforma: escribe su nombre en "Jugadores" y toca "Agregar sin ficha". Sirve para equipos de la plataforma y para los que no están.
 - Esos nombres quedan solo en ese torneo: no aparecen en el plantel ni en la página del equipo.
+- Ahora también puedes cambiar los jugadores de un torneo histórico que ya está en curso o terminado.

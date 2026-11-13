@@ -2,8 +2,9 @@
 
 ## Estado
 
-- **Hecho** en el worktree de `main`, sin commit: la `113`, la API, la web, el manual y `/privacidad`. La `113` quedó aplicada en la base local.
-- **Sin desplegar.** No se probó en el navegador (sí con las pruebas de la base, de la API y de la web).
+- **Hecho** en `main` (commits `b8b3d259` y el siguiente): la `113`, la API, la web, el manual y `/privacidad`. La `113` quedó aplicada en la base local.
+- **Probado en local con la copia de producción del 2026-11-12** (base local, la API y la web de este código, con Playwright).
+- **Sin desplegar.**
 
 ## Archivos
 
@@ -40,9 +41,20 @@ Vuelta atrás: primero la web y la API, después la inversa de la `113` (borra l
 
 - Prueba nueva `HistoricRegistrations.test.tsx`: la tabla muestra "(sin ficha)"; el diálogo agrega un nombre con los espacios limpios, no ofrece el mismo nombre dos veces y manda `{active, subs: [], guests}`.
 - Matchmaking: 106 de 106 después del cambio del chat.
-- Lint y typecheck sin errores; la suite completa, 739 de 739.
+- Lint y typecheck sin errores; la suite completa, 739 de 739. Después, `HistoricRegistrations.test.tsx` suma 3 casos (en curso, cancelado y ficha con el alias exacto): 21 de 21 en `features/admin/events`.
+
+### En local con la copia de producción (2026-11-13)
+
+API de este código en `:8788` y web en `:5174` contra la base local (copia de producción del 2026-11-12, con la `113`), con un admin de prueba creado solo en la base local.
+
+- **Chat:** en `/demo/matchmaking`, un mensaje de 250 caracteres sin espacios en el chat de equipo y en el general. La página no se desborda (ancho de la página igual al de la ventana en 1440 y 390 px) y el texto corta dentro de cada chat.
+- **Histórico en inscripciones** (el de prueba "M m36wd6"): equipo de la plataforma (ETHEREAL) con una ficha y un nombre sin ficha, y un equipo histórico nuevo con un nombre (los espacios de más se limpian). La página de ETHEREAL no muestra el nombre. Con el fixture generado, la llave muestra los dos planteles con los nombres.
+- **TORNEO TITAN (en curso):** **Jugadores** activo y **Quitar** bloqueado. En Lotus, la ficha de kobassj y dos nombres sin ficha; la llave los muestra en la alineación.
+- **Lo que encontró la prueba:** la opción "sin ficha" salía antes que las fichas encontradas, y al buscar `kobassj` se cargó como texto en vez de su ficha. Se corrigió: la opción va al final, espera a que termine la búsqueda y no aparece si hay una ficha con el alias exacto; Enter elige la ficha. Prueba nueva en `HistoricRegistrations.test.tsx`.
 
 ## En qué se apartó del plan
+
+- **Jugadores con el torneo en curso o terminado:** no estaba en el plan. En un histórico, **Jugadores** ahora queda activo en cualquier estado menos cancelado, para cargar los jugadores de TORNEO TITAN (en curso). Pedido por Daniel el 2026-11-13.
 
 - El plan nombraba la página del manual del moderador. No hizo falta: la de subir un histórico es la del organizador y la usan los tres roles que gestionan uno.
 

@@ -30,14 +30,28 @@ const reg = (over: Partial<Registration> = {}): Registration => ({
   ...over,
 })
 
-function serve(regs: Registration[], onPut: (body: unknown) => void) {
+const FICHA = {
+  id: "p2",
+  alias: "kobassj",
+  photo_url: null,
+}
+
+function serve(
+  regs: Registration[],
+  onPut: (body: unknown) => void,
+  found: (typeof FICHA)[] = []
+) {
   server.use(
     http.get(`${API}/api/v1/events/e1/registrations`, () =>
       HttpResponse.json({ items: regs, total: regs.length, page: 1, per: 100 })
     ),
-    http.get(`${API}/api/v1/players`, () =>
-      HttpResponse.json({ items: [], total: 0, page: 1, per: 8 })
-    ),
+    http.get(`${API}/api/v1/players`, ({ request }) => {
+      const q = new URL(request.url).searchParams.get("q") ?? ""
+      const items = found.filter((p) =>
+        p.alias.toLowerCase().includes(q.toLowerCase())
+      )
+      return HttpResponse.json({ items, total: items.length, page: 1, per: 8 })
+    }),
     http.put(
       `${API}/api/v1/events/e1/registrations/t1`,
       async ({ request }) => {
@@ -92,6 +106,49 @@ describe("HistoricRegistrations (replanteo 113)", () => {
         subs: [],
         guests: ["Viejo Uno", "Juan Pérez"],
       })
+    )
+  })
+
+  it("en un histórico en curso deja cambiar los jugadores, pero no quitar equipos", async () => {
+    serve([reg()], () => {})
+    renderWithQuery(
+      <HistoricRegistrations event={{ ...EVENT, status: "in_progress" }} />
+    )
+    expect(
+      await screen.findByRole("button", { name: "Jugadores" })
+    ).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Quitar" })).toBeDisabled()
+  })
+
+  it("en un histórico cancelado no deja cambiar los jugadores", async () => {
+    serve([reg()], () => {})
+    renderWithQuery(
+      <HistoricRegistrations event={{ ...EVENT, status: "cancelled" }} />
+    )
+    expect(
+      await screen.findByRole("button", { name: "Jugadores" })
+    ).toBeDisabled()
+  })
+
+  it("con una ficha de ese alias exacto no ofrece cargarlo sin ficha y Enter elige la ficha", async () => {
+    const user = userEvent.setup()
+    let body: unknown
+    serve([reg({ guests: [] })], (b) => (body = b), [FICHA])
+    renderWithQuery(<HistoricRegistrations event={EVENT} />)
+    await user.click(await screen.findByRole("button", { name: "Jugadores" }))
+    const dialog = await screen.findByRole("dialog")
+    const box = within(dialog).getByRole("textbox", {
+      name: "Buscar jugador por alias",
+    })
+    await user.type(box, "KOBASSJ")
+    await within(dialog).findByRole("button", { name: "kobassj" })
+    expect(
+      within(dialog).queryByRole("button", { name: /sin ficha/ })
+    ).not.toBeInTheDocument()
+    await user.type(box, "{Enter}")
+    await user.click(within(dialog).getByRole("button", { name: "Guardar" }))
+    await waitFor(() =>
+      expect(body).toEqual({ active: ["p1", "p2"], subs: [], guests: [] })
     )
   })
 })

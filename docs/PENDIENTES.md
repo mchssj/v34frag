@@ -27,11 +27,10 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 ## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): sin desplegar
 
 - **Qué es:** un mensaje largo ya no estira la sala de la partida, y en un torneo histórico se cargan jugadores que no están en la plataforma solo con el nombre, en la inscripción torneo-equipo ([`2026-11-13-chat-y-jugadores-historicos`](bitacora/2026-11-13-chat-y-jugadores-historicos/)).
-- **Hecho:** en el worktree de `main`, sin commit: replanteo `113`, la API, la web, el manual y `/privacidad`. 7 de 7 en la base local y 6 de integración de la API. La `113` quedó aplicada en la base local.
+- **Hecho:** en `main`: replanteo `113`, la API, la web, el manual y `/privacidad`; en un histórico, **Jugadores** también con el torneo en curso o terminado. 7 de 7 en la base local, 6 de integración de la API, y probado en local con la copia de producción (también en TORNEO TITAN). La `113` quedó aplicada en la base local.
 - **Falta:**
-  1. Probarlo en el navegador.
-  2. Commit y despliegue: `probar_113.sql` en producción, la `113`, la API y la web ([guía](bitacora/2026-11-13-chat-y-jugadores-historicos/GUIA_IMPLEMENTACION.md)).
-  3. Publicar el changelog 2.9.42 y las páginas de `terms/` (cambió la privacidad).
+  1. Despliegue: `probar_113.sql` en producción, la `113`, la API y la web ([guía](bitacora/2026-11-13-chat-y-jugadores-historicos/GUIA_IMPLEMENTACION.md)).
+  2. Publicar el changelog 2.9.42 y las páginas de `terms/` (cambió la privacidad).
 
 ## Guardar el widget en la cuenta (2026-11-11): desplegado el 2026-11-11
 
