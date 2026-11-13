@@ -1,0 +1,8 @@
+CMLeague 2.9.44 --  Changelog
+
+Medallas de torneo
+- Si tu equipo gana un torneo, recibes la medalla de Campeón de torneo apenas se carga la final. Si pierdes la final, recibes la de Finalista de torneo.
+- La medalla lleva el nombre del torneo, y en tu perfil (Logros) te lleva directo a él.
+- También vale para los torneos históricos, si tienes ficha en la web.
+- Si se corrige un resultado, las medallas se acomodan solas.
+- Los campeones y finalistas de los torneos que ya terminaron también recibieron la suya.
