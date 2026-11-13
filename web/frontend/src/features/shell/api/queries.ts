@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
 import type { AuthUser } from "@/auth/queries"
@@ -77,6 +77,71 @@ export function useShellIdentity() {
   }).data
   const team = profile?.teams.find((t) => t.is_captain) ?? profile?.teams[0]
   return { team, level: level ?? null }
+}
+
+/** Resultados por grupo del buscador de arriba. */
+export const SEARCH_PER = 5
+
+/**
+ * Jugadores, equipos y torneos para el buscador (los mismos listados con `q`). Mientras llega
+ * una búsqueda nueva quedan los resultados de la anterior; si una falla, las otras siguen.
+ */
+export function useGlobalSearch(q: string) {
+  const enabled = q.length >= 2
+  const common = {
+    enabled,
+    staleTime: MINUTE,
+    placeholderData: keepPreviousData,
+    retry: false,
+  } as const
+  const players = useQuery({
+    ...common,
+    queryKey: shellKeys.search("players", q),
+    queryFn: async ({ signal }) =>
+      (
+        await unwrap(
+          api.GET("/api/v1/players", {
+            params: {
+              query: { q, per: SEARCH_PER, sort: "elo", order: "desc" },
+            },
+            signal,
+          })
+        )
+      ).items,
+  })
+  const teams = useQuery({
+    ...common,
+    queryKey: shellKeys.search("teams", q),
+    queryFn: async ({ signal }) =>
+      (
+        await unwrap(
+          api.GET("/api/v1/teams", {
+            params: { query: { q, per: SEARCH_PER } },
+            signal,
+          })
+        )
+      ).items,
+  })
+  const events = useQuery({
+    ...common,
+    queryKey: shellKeys.search("events", q),
+    queryFn: async ({ signal }) =>
+      (
+        await unwrap(
+          api.GET("/api/v1/events", {
+            params: { query: { q, per: SEARCH_PER } },
+            signal,
+          })
+        )
+      ).items,
+  })
+  return {
+    players: (enabled && players.data) || [],
+    teams: (enabled && teams.data) || [],
+    events: (enabled && events.data) || [],
+    loading:
+      enabled && (players.isFetching || teams.isFetching || events.isFetching),
+  }
 }
 
 export function matchDetailOptions(id: string) {

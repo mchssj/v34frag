@@ -24,6 +24,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
+## Buscador con jugadores, equipos y torneos (2026-11-13): sin desplegar ni commitear
+
+- **Qué es:** el buscador de arriba (Ctrl+K) trae jugadores, equipos y torneos además de las páginas ([`2026-11-13-buscador-global`](bitacora/2026-11-13-buscador-global/)). Solo la web y el manual.
+- **Falta:** commit, `deploy/vps/desplegar.sh web` y `deploy/vps/desplegar.sh api` (por la página nueva del manual, `jugador/buscador.md`). No toca la base ni los servidores.
+
 ## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): desplegado el 2026-11-13
 
 - **Qué es:** un mensaje largo ya no estira la sala de la partida, y en un torneo histórico se cargan jugadores que no están en la plataforma solo con el nombre, en la inscripción torneo-equipo ([`2026-11-13-chat-y-jugadores-historicos`](bitacora/2026-11-13-chat-y-jugadores-historicos/)).

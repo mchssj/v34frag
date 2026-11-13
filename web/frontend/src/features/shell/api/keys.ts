@@ -2,4 +2,6 @@
 export const shellKeys = {
   pcwOpen: ["shell", "pcw-open"] as const,
   match: (id: string) => ["match", id] as const,
+  search: (what: "players" | "teams" | "events", q: string) =>
+    ["shell", "search", what, q] as const,
 }

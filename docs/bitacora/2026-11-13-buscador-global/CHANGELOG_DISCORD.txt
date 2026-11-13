@@ -1,0 +1,5 @@
+CMLeague 2.9.43 --  Changelog
+
+Buscador
+- El buscador de arriba (Ctrl + K) ahora encuentra jugadores, equipos y torneos, no solo secciones de la web.
+- Escribe un nick, el nombre o la sigla de un equipo o el nombre de un torneo y elige el resultado para ir a su página.
