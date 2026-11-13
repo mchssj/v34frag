@@ -4,7 +4,11 @@
 
 - **Hecho** en `main` (commits `b8b3d259` y el siguiente): la `113`, la API, la web, el manual y `/privacidad`. La `113` quedó aplicada en la base local.
 - **Probado en local con la copia de producción del 2026-11-12** (base local, la API y la web de este código, con Playwright).
-- **Sin desplegar.**
+- **Desplegado** desde `main` (commit `35670aa6`) el 2026-11-13:
+  - **La `113`:** antes, `probar_113.sql` contra producción pasó 7 de 7 y se deshizo (después no quedaba ni la columna ni los datos de prueba). Aplicada a las 15:04 UTC, con `notify pgrst, 'reload schema'`. Verificado: existen `guest_names` y `event_register_historic`, y `anon` no puede ejecutarla.
+  - **La API y la web `35670aa6f63d`:** desplegadas a las ~15:05 UTC. No había salas del matchmaking en las últimas 3 horas y la cola estaba vacía.
+  - **Comprobado en producción:** `/api/health` con `35670aa6f63d`; la OpenAPI trae `guests` en `RegistrationBody`; `PUT …/registrations/{teamId}` con `guests` y sin sesión da `401`; las inscripciones de TORNEO TITAN (en testing) no se ven sin sesión.
+- **Falta:** cargar los jugadores reales de TORNEO TITAN desde la web y publicar el changelog 2.9.42 y las páginas de `terms/`.
 
 ## Archivos
 

@@ -24,12 +24,13 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
 
-## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): sin desplegar
+## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): desplegado el 2026-11-13
 
 - **Qué es:** un mensaje largo ya no estira la sala de la partida, y en un torneo histórico se cargan jugadores que no están en la plataforma solo con el nombre, en la inscripción torneo-equipo ([`2026-11-13-chat-y-jugadores-historicos`](bitacora/2026-11-13-chat-y-jugadores-historicos/)).
 - **Hecho:** en `main`: replanteo `113`, la API, la web, el manual y `/privacidad`; en un histórico, **Jugadores** también con el torneo en curso o terminado. 7 de 7 en la base local, 6 de integración de la API, y probado en local con la copia de producción (también en TORNEO TITAN). La `113` quedó aplicada en la base local.
+- **Desplegado** (commit `35670aa6`): la `113` (antes `probar_113.sql` pasó 7 de 7 en producción y se deshizo), y la API y la web `35670aa6f63d` a las ~15:05 UTC ([guía](bitacora/2026-11-13-chat-y-jugadores-historicos/GUIA_IMPLEMENTACION.md)).
 - **Falta:**
-  1. Despliegue: `probar_113.sql` en producción, la `113`, la API y la web ([guía](bitacora/2026-11-13-chat-y-jugadores-historicos/GUIA_IMPLEMENTACION.md)).
+  1. Cargar los jugadores reales de TORNEO TITAN.
   2. Publicar el changelog 2.9.42 y las páginas de `terms/` (cambió la privacidad).
 
 ## Guardar el widget en la cuenta (2026-11-11): desplegado el 2026-11-11
