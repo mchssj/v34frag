@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-13. Despliegue: ver abajo.
+Implementado, probado y **desplegado el 2026-11-13** (commit `ccafae66`): la `115`, y la API y la web `ccafae6600f1`.
 
 ## Archivos
 
@@ -21,19 +21,30 @@ Implementado y probado en local el 2026-11-13. Despliegue: ver abajo.
 
 `src/api/schema.d.ts` no se regeneró: las rutas del matchmaking responden `Any` y la web las llama sin tipos generados, y el archivo tenía sin commit los cambios de las medallas.
 
-## Despliegue
+## Despliegue (hecho el 2026-11-13, 17:55 a 18:01 UTC)
 
-Ninguna parte toca los servidores de juego.
+Ninguna parte toca los servidores de juego. Se cambió el orden del plan: la web y la API nuevas funcionan con la base de antes (sin `last_lobby_ref`, la web usa el `last_lobby` de siempre), así que fueron primero y nadie vio vacía "Tu última partida".
 
-1. **Base:** `pruebas/probar_115.sql` contra producción (se deshace solo). Después, aplicar la `115` y `notify pgrst, 'reload schema'`. Desde ese momento, quien tenga la web vieja abierta ve vacía "Tu última partida" hasta recargar.
-2. **API:** `deploy/vps/desplegar.sh api`, sin salas del matchmaking armándose.
-3. **Web:** `deploy/vps/desplegar.sh web`.
-4. Los dos desde un worktree limpio en el commit: `v34frag` tiene sin commit lo de las medallas (que necesita la `114`) y el script arma con lo que haya en la carpeta.
-5. Comprobar: `/api/health` con el commit, y en **Jugar** › **Tu última partida** la sala. Al día siguiente, `pg_stat_statements` (reiniciado al desplegar) y `docker logs supabase-rest | grep PGRST003`.
+1. **Prueba en producción:** `pruebas/probar_115.sql` (se deshace sola): 6 de 6.
+2. **Web:** `deploy/vps/desplegar.sh web` (749 pruebas), `ccafae6600f1`.
+3. **API:** `deploy/vps/desplegar.sh api` (600 pruebas), `ccafae6600f1`. No había salas armándose: una en vivo, que sigue en el servidor de juego.
+4. **Base:** foto de `pg_stat_statements` en `pruebas/pg_stat_statements_antes.md`; la `115`, `notify pgrst, 'reload schema'` y `pg_stat_statements_reset()`.
+5. La web y la API, desde un worktree limpio en `ccafae66` (después se borró).
+6. Comprobado: `/api/health` con `ccafae6600f1` y `GET /api/v1/mm/last-lobby` sin sesión da 401 (antes 404). La medición de después está en "Pruebas › Producción".
+7. Pendiente: medir de nuevo en un pico (20:00 a 06:00 UTC) y buscar `PGRST003` en `docker logs supabase-rest`.
 
 Vuelta atrás: primero la web y la API de antes, después la inversa de la `115`.
 
 ## Pruebas
+
+### Producción
+
+- `probar_115.sql`: 6 de 6.
+- Medición a los 5 minutos de la `115` (18:01 a 18:06 UTC, fuera del pico, con una sala en vivo):
+  - `mm_my_live`: 51 llamadas, 119 ms de media y 502 de máximo (antes, acumulado desde el 3/11: 811 ms de media).
+  - `mm_my_last_lobby`: 3 llamadas, 159 ms de media. La web la pidió 3 veces contra 72 del estado liviano: la caché por `rev` funciona.
+  - La API: 72 `GET /mm/state/live` y 3 `GET /mm/last-lobby` con 200, y ninguna respuesta 5xx.
+  - No alcanza para medir la mejora: con tan poca gente, casi todas las llamadas son de los 10 de la sala en vivo, que siguen armando su sala abierta (eso no cambió). Hay que medir en un pico.
 
 ### Base (local, copia de producción del 2026-11-13)
 
