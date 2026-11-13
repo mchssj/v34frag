@@ -1,0 +1,22 @@
+CMLeague 2.9.34 --  Changelog
+
+Mapas nuevos en los servidores
+
+- Sumamos mapas nuevos para variar un poco. La idea es que no estés siempre muriendo en los mismos mapas de siempre: hay rincones nuevos para aprender, jugadas nuevas para armar con tu equipo y otra forma de jugar cada partida.
+- Los mapas nuevos son:
+  - de_ancient_css
+  - de_anubis_css
+  - de_anubis_t5
+  - de_cbble_go_t1
+  - de_inferno_plus
+  - de_nuke_cs2
+  - de_strike_mirage
+  - de_train_t5
+  - de_tuscan_ob: el tuscan de siempre, pero sin techo. Las granadas pasan por arriba de todo, como en de_dust2_ob, así que hay jugadas nuevas para probar.
+- Ya están en la rotación de los servidores.
+- Los arreglamos para que anden bien en nuestra versión del juego. Antes, algunos de estos mapas tiraban abajo el servidor al cargarlos.
+- La primera vez que entres a uno de estos mapas se te descarga solo. Algunos pesan bastante, así que si prefieres no esperar al entrar, te dejamos un pack con todos para bajar antes: descomprímelo y copia los archivos en tu carpeta cstrike/download/maps (o cstrike/maps).
+- Arreglamos también la descarga rápida de mapas de los servidores, que no estaba funcionando: ahora cualquier mapa que te falte se baja mucho más rápido al entrar.
+- Si ya tenías alguno de estos mapas de otro lado y el juego te dice que tu mapa no coincide con el del servidor ("differs from the server's"), reemplázalo por el del pack.
+
+Ya están en los tres servidores.
