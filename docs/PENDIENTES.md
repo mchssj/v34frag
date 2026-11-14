@@ -2,12 +2,12 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
-## Rol Soporte (2026-11-13): llevado a `main` el 2026-11-14, desplegándose
+## Rol Soporte (2026-11-13): desplegado el 2026-11-14
 
 - **Qué es:** pedido por Daniel. Un rol `support` debajo del moderador: baneos de 1 a 120 minutos (no a quien ya está baneado, hasta 3 de soporte por jugador en 7 días, solo cambia o levanta los suyos), reprocesar y revisar clips, quitar fotos y logos, borrar comentarios y levantar sanciones de la cola. Todo queda en Baneos › Actividad del soporte ([`2026-11-13-rol-soporte`](bitacora/2026-11-13-rol-soporte/)).
-- **Hecho:** replanteo `117`, la API, la web, la sección Soporte del manual y los legales. Probado en local (19 de 19 en la base, 622 de la API y 757 de la web) y por Daniel en el navegador.
+- **Desplegado** (commit `777a477b`): la prueba en producción con rollback (19 de 19), la `117` a las 06:00 UTC, y la API y la web `777a477bac92`.
 - **Falta:**
-  1. Desplegar: la prueba en producción con rollback, la `117`, la API y la web (ver la guía).
+  1. Probarlo en producción con una cuenta de soporte (sin sesión, las rutas nuevas dan 401: existen).
   2. Dar el rol a las cuentas de soporte, con ficha de jugador para que salgan en Quiénes somos.
   3. Publicar `terms/` y el changelog 2.9.45 en Discord.
   4. Llevar la `117` a `feat/frontend-fase-1` y `feat/mm-claim-en-sala` solo si Daniel lo pide: siguen en la `105`.
@@ -63,7 +63,7 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
   1. `git pull` en el portátil, con la tarea "CMLeague clips" sin una corrida a mitad.
   2. Grabar el clip de siege en el portátil con `render\config.v34.json` y escucharlo.
   3. Pasar la tarea del portátil a `"client": "v34"`.
-  4. Desplegar la web (por `/privacidad`) y publicar las páginas de `terms/`.
+  4. Publicar las páginas de `terms/`. La web, con su `/privacidad`, quedó desplegada el 2026-11-14 junto con el rol Soporte (`777a477bac92`).
 
 ## Clips de clutch perdido y de vivos sin nombre escribible (2026-11-13): commiteado, falta el portátil
 

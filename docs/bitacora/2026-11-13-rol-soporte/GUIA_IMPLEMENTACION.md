@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado en la rama `feat/rol-soporte` (worktree `v34frag-soporte`) y llevado a `main` el 2026-11-14. Ver "Despliegue".
+**Desplegado el 2026-11-14** (Daniel, con Claude) desde `main`: commit `777a477b`, hecho en la rama `feat/rol-soporte` (worktree `v34frag-soporte`) sobre `3ae03e57`. Ver "Despliegue".
 
 Probado el 2026-11-14:
 
@@ -42,6 +42,19 @@ No toca los servidores de juego ni el plugin.
 5. **Comprobar:** `/api/health` con el commit, y que `GET /api/v1/admin/support-actions` sin sesión dé 401.
 6. **Dar el rol:** un admin, desde Administración › Usuarios, a una cuenta con ficha (si no tiene ficha, no aparece en Quiénes somos).
 7. **Publicar** `terms/terminos.html` y `terms/privacidad.html` donde se publiquen, y el `CHANGELOG_DISCORD.txt` en Discord.
+
+## Despliegue (hecho el 2026-11-14, 05:58 a 06:03 UTC)
+
+No toca los servidores de juego. Había una sala del matchmaking activa, que siguió en su servidor.
+
+1. **Commit y push:** `777a477b` a `origin/main` (avance directo desde `3ae03e57`). Antes: typecheck, lint y 757 pruebas de la web; typecheck y 622 de la API.
+2. **Prueba en producción**, por el túnel y en una transacción que se deshizo: 19 de 19 (del 1 al 18, más el 14b), con la inversa idéntica a la 116. Después no quedaban `support_actions` ni las cuentas de prueba.
+3. **Base:** la `117`, a las 06:00 UTC. Comprobado: `support_actions` e `is_support()` existen, y `clip_review_ok` usa `is_support()`. Ninguna cuenta tiene todavía el rol.
+4. **API:** `deploy/vps/desplegar.sh api`, `777a477bac92` (`/api/health` con esa versión; antes, `e8dbe4968ef9`).
+5. **Web:** `deploy/vps/desplegar.sh web`, `777a477bac92`. Lleva también el `/privacidad` de [`2026-11-14-render-voces-opus`](../2026-11-14-render-voces-opus/), que estaba en `main` sin desplegar.
+6. **Comprobado:** sin sesión, `GET /api/v1/admin/support-actions`, `/admin/bans/support-quota` y `/admin/clips/review` dan 401 (las rutas existen), y la web responde. **Falta** probarlo en producción con una cuenta de soporte.
+
+Vuelta atrás: la API y la web `e8dbe4968ef9` (`ln -sfn`, ver `deploy/vps/README.md`) y la inversa de la `117`.
 
 ## Ramas
 
