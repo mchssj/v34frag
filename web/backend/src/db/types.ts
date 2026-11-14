@@ -234,6 +234,12 @@ isOneToOne: false
       foreignKeyName: "ac_sessions_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "ac_sessions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -295,13 +301,13 @@ isOneToOne: false
                   ]
                 },"bans": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"created_by_name": string | null,"created_by_steam": string | null,"expires_at": string | null,"id": string,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_name": string | null,"lifted_by_steam": string | null,"nick": string | null,"player_id": string | null,"reason": string,"replaced_by": string | null,"server_id": string | null,"source": string,"steam_id": string,"updated_at": string,"updated_by": string | null
+                    "created_at": string,"created_by": string | null,"created_by_name": string | null,"created_by_role": string | null,"created_by_steam": string | null,"expires_at": string | null,"id": string,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_name": string | null,"lifted_by_steam": string | null,"nick": string | null,"player_id": string | null,"reason": string,"replaced_by": string | null,"server_id": string | null,"source": string,"steam_id": string,"updated_at": string,"updated_by": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason": string,"replaced_by"?: string | null,"server_id"?: string | null,"source": string,"steam_id": string,"updated_at"?: string,"updated_by"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_role"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason": string,"replaced_by"?: string | null,"server_id"?: string | null,"source": string,"steam_id": string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason"?: string,"replaced_by"?: string | null,"server_id"?: string | null,"source"?: string,"steam_id"?: string,"updated_at"?: string,"updated_by"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_role"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason"?: string,"replaced_by"?: string | null,"server_id"?: string | null,"source"?: string,"steam_id"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -363,6 +369,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "bans_player_id_fkey"
@@ -522,6 +534,12 @@ isOneToOne: false
       foreignKeyName: "claim_log_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -622,6 +640,55 @@ isOneToOne: false
       columns: ["server_id"]
 isOneToOne: false
       referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"custom_cosmetics": {
+                  Row: {
+                    "animated": boolean,"cleared_at": string | null,"cleared_by": string | null,"cleared_reason": string | null,"created_at": string,"currency": string,"id": string,"kind": string,"poster_url": string | null,"price": number,"url": string,"user_id": string
+                  }
+                  Insert: {
+                    "animated": boolean,"cleared_at"?: string | null,"cleared_by"?: string | null,"cleared_reason"?: string | null,"created_at"?: string,"currency": string,"id"?: string,"kind": string,"poster_url"?: string | null,"price": number,"url": string,"user_id": string
+                  }
+                  Update: {
+                    "animated"?: boolean,"cleared_at"?: string | null,"cleared_by"?: string | null,"cleared_reason"?: string | null,"created_at"?: string,"currency"?: string,"id"?: string,"kind"?: string,"poster_url"?: string | null,"price"?: number,"url"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "custom_cosmetics_cleared_by_fkey"
+      columns: ["cleared_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "custom_cosmetics_cleared_by_fkey"
+      columns: ["cleared_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "custom_cosmetics_cleared_by_fkey"
+      columns: ["cleared_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "custom_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "custom_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "custom_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -1104,13 +1171,13 @@ isOneToOne: false
                   ]
                 },"match_clips": {
                   Row: {
-                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string,"discord_message_id": string | null,"discord_posted_at": string | null,"end_tick": number | null,"id": string,"kill_ticks": (number)[],"match_id": string,"player_name": string,"player_steamid": string,"round": number,"round_seconds": number,"round_won": boolean,"video_attempts": number,"video_bytes": number | null,"video_claimed_at": string | null,"video_drive_id": string | null,"video_error": string | null,"video_forced": boolean,"video_forced_at": string | null,"video_forced_by": string | null,"video_key": string | null,"video_r2_deleted_at": string | null,"video_reject_reason": string | null,"video_rejected_at": string | null,"video_rejected_by": string | null,"video_rendered_at": string | null,"video_reprocess_count": number,"video_reprocessed_at": string | null,"video_review": string | null,"video_reviewed_at": string | null,"video_reviewed_by": string | null,"video_seconds": number | null,"video_status": string | null
+                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string,"discord_message_id": string | null,"discord_posted_at": string | null,"end_tick": number | null,"id": string,"kill_ticks": (number)[],"match_id": string,"player_name": string,"player_steamid": string,"round": number,"round_seconds": number,"round_won": boolean,"video_attempts": number,"video_bytes": number | null,"video_claimed_at": string | null,"video_drive_id": string | null,"video_error": string | null,"video_forced": boolean,"video_forced_at": string | null,"video_forced_by": string | null,"video_key": string | null,"video_r2_deleted_at": string | null,"video_reject_reason": string | null,"video_rejected_at": string | null,"video_rejected_by": string | null,"video_rendered_at": string | null,"video_reprocess_count": number,"video_reprocessed_at": string | null,"video_reprocessed_by": string | null,"video_review": string | null,"video_reviewed_at": string | null,"video_reviewed_by": string | null,"video_seconds": number | null,"video_status": string | null
                   }
                   Insert: {
-                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id": string,"player_name"?: string,"player_steamid": string,"round": number,"round_seconds"?: number,"round_won": boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_at"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
+                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id": string,"player_name"?: string,"player_steamid": string,"round": number,"round_seconds"?: number,"round_won": boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_at"?: string | null,"video_reprocessed_by"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
                   }
                   Update: {
-                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id"?: string,"player_name"?: string,"player_steamid"?: string,"round"?: number,"round_seconds"?: number,"round_won"?: boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_at"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
+                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id"?: string,"player_name"?: string,"player_steamid"?: string,"round"?: number,"round_seconds"?: number,"round_won"?: boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_at"?: string | null,"video_reprocessed_by"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
                   }
                   Relationships: [
                     {
@@ -1155,6 +1222,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "steam_profile_matches"
       referencedColumns: ["match_id"]
+    },{
+      foreignKeyName: "match_clips_video_reprocessed_by_fkey"
+      columns: ["video_reprocessed_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_clips_video_reprocessed_by_fkey"
+      columns: ["video_reprocessed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_clips_video_reprocessed_by_fkey"
+      columns: ["video_reprocessed_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"match_crashes": {
@@ -1307,6 +1392,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "match_player_stats_player_id_fkey"
@@ -1602,6 +1693,85 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"medal_exclusions": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"definition_id": string,"player_id": string,"reason": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"definition_id": string,"player_id": string,"reason": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"definition_id"?: string,"player_id"?: string,"reason"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "medal_exclusions_definition_id_fkey"
+      columns: ["definition_id"]
+isOneToOne: false
+      referencedRelation: "medal_definitions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "medal_exclusions_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
+                  ]
                 },"medal_queue": {
                   Row: {
                     "player_id": string,"queued_at": string
@@ -1636,6 +1806,12 @@ isOneToOne: true
       columns: ["player_id"]
 isOneToOne: true
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "medal_queue_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "medal_queue_player_id_fkey"
@@ -1682,6 +1858,92 @@ isOneToOne: true
                   Relationships: [
                     
                   ]
+                },"mm_balance_override_log": {
+                  Row: {
+                    "action": string,"at": string,"db_user": string,"expires_after": string | null,"expires_before": string | null,"id": number,"player_id": string,"points_after": number | null,"points_before": number | null,"reason": string | null,"set_by": string | null
+                  }
+                  Insert: {
+                    "action": string,"at"?: string,"db_user"?: string,"expires_after"?: string | null,"expires_before"?: string | null,"id"?: never,"player_id": string,"points_after"?: number | null,"points_before"?: number | null,"reason"?: string | null,"set_by"?: string | null
+                  }
+                  Update: {
+                    "action"?: string,"at"?: string,"db_user"?: string,"expires_after"?: string | null,"expires_before"?: string | null,"id"?: never,"player_id"?: string,"points_after"?: number | null,"points_before"?: number | null,"reason"?: string | null,"set_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"mm_balance_overrides": {
+                  Row: {
+                    "created_at": string,"expires_at": string,"player_id": string,"points": number,"reason": string,"set_by": string,"updated_at": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"expires_at": string,"player_id": string,"points": number,"reason": string,"set_by": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"expires_at"?: string,"player_id"?: string,"points"?: number,"reason"?: string,"set_by"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
+                  ]
                 },"mm_bans": {
                   Row: {
                     "created_at": string,"created_by": string | null,"id": string,"reason": string,"report_id": string | null,"until": string,"user_id": string
@@ -1699,6 +1961,79 @@ isOneToOne: true
 isOneToOne: false
       referencedRelation: "mm_reports"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"mm_block_log": {
+                  Row: {
+                    "action": string,"at": string,"id": number,"player_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "action": string,"at"?: string,"id"?: never,"player_id": string,"user_id": string
+                  }
+                  Update: {
+                    "action"?: string,"at"?: string,"id"?: never,"player_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_block_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
     }
                   ]
                 },"mm_blocks": {
@@ -1735,6 +2070,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_blocks_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "mm_blocks_player_id_fkey"
@@ -1813,6 +2154,12 @@ isOneToOne: false
       foreignKeyName: "mm_commends_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_commends_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -1843,13 +2190,13 @@ isOneToOne: false
                   ]
                 },"mm_config": {
                   Row: {
-                    "abandon_adjust_pct": number,"abandon_extra_elo": number,"abandon_gg_pct": number,"abandon_loss_max": number,"abandon_loss_min": number,"abandon_win_max": number,"abandon_win_min": number,"accept_seconds": number,"balance_rating": boolean,"balance_rating_cap": number,"balance_rating_days": number,"balance_rating_prior_maps": number,"balance_rating_weight": number,"blocks_vip_only": boolean,"connect_minutes": number,"elo_unlimited_after_s": number,"elo_window_every_s": number,"elo_window_max": number,"elo_window_start": number,"elo_window_step": number,"id": number,"max_blocks": number,"max_party_size": number,"min_account_days": number,"min_mixes": number,"mvp_image_url": string | null,"open": boolean,"party_max_elo_gap": number,"penalty_ladder": (number)[],"reconnect_minutes": number,"replace_enabled": boolean,"replace_link_minutes": number,"replace_min_rounds_left": number,"replace_vote_cooldown_s": number,"replace_vote_pct": number,"replace_vote_seconds": number,"require_anticheat": boolean,"season_queue_close_minutes": number,"server_wait_minutes": number,"veto_seconds": number
+                    "abandon_adjust_pct": number,"abandon_extra_elo": number,"abandon_gg_pct": number,"abandon_loss_max": number,"abandon_loss_min": number,"abandon_win_max": number,"abandon_win_min": number,"accept_seconds": number,"balance_rating": boolean,"balance_rating_cap": number,"balance_rating_days": number,"balance_rating_prior_maps": number,"balance_rating_weight": number,"block_changes_week": number,"block_margin": number,"blocks_vip_only": boolean,"connect_minutes": number,"elo_unlimited_after_s": number,"elo_window_every_s": number,"elo_window_max": number,"elo_window_start": number,"elo_window_step": number,"id": number,"max_blocks": number,"max_party_size": number,"min_account_days": number,"min_mixes": number,"mvp_image_url": string | null,"open": boolean,"party_max_elo_gap": number,"penalty_ladder": (number)[],"reconnect_minutes": number,"replace_enabled": boolean,"replace_link_minutes": number,"replace_min_away_s": number,"replace_min_rounds_left": number,"replace_vote_cooldown_s": number,"replace_vote_pct": number,"replace_vote_seconds": number,"require_anticheat": boolean,"season_queue_close_minutes": number,"server_wait_minutes": number,"veto_seconds": number
                   }
                   Insert: {
-                    "abandon_adjust_pct"?: number,"abandon_extra_elo"?: number,"abandon_gg_pct"?: number,"abandon_loss_max"?: number,"abandon_loss_min"?: number,"abandon_win_max"?: number,"abandon_win_min"?: number,"accept_seconds"?: number,"balance_rating"?: boolean,"balance_rating_cap"?: number,"balance_rating_days"?: number,"balance_rating_prior_maps"?: number,"balance_rating_weight"?: number,"blocks_vip_only"?: boolean,"connect_minutes"?: number,"elo_unlimited_after_s"?: number,"elo_window_every_s"?: number,"elo_window_max"?: number,"elo_window_start"?: number,"elo_window_step"?: number,"id"?: number,"max_blocks"?: number,"max_party_size"?: number,"min_account_days"?: number,"min_mixes"?: number,"mvp_image_url"?: string | null,"open"?: boolean,"party_max_elo_gap"?: number,"penalty_ladder"?: (number)[],"reconnect_minutes"?: number,"replace_enabled"?: boolean,"replace_link_minutes"?: number,"replace_min_rounds_left"?: number,"replace_vote_cooldown_s"?: number,"replace_vote_pct"?: number,"replace_vote_seconds"?: number,"require_anticheat"?: boolean,"season_queue_close_minutes"?: number,"server_wait_minutes"?: number,"veto_seconds"?: number
+                    "abandon_adjust_pct"?: number,"abandon_extra_elo"?: number,"abandon_gg_pct"?: number,"abandon_loss_max"?: number,"abandon_loss_min"?: number,"abandon_win_max"?: number,"abandon_win_min"?: number,"accept_seconds"?: number,"balance_rating"?: boolean,"balance_rating_cap"?: number,"balance_rating_days"?: number,"balance_rating_prior_maps"?: number,"balance_rating_weight"?: number,"block_changes_week"?: number,"block_margin"?: number,"blocks_vip_only"?: boolean,"connect_minutes"?: number,"elo_unlimited_after_s"?: number,"elo_window_every_s"?: number,"elo_window_max"?: number,"elo_window_start"?: number,"elo_window_step"?: number,"id"?: number,"max_blocks"?: number,"max_party_size"?: number,"min_account_days"?: number,"min_mixes"?: number,"mvp_image_url"?: string | null,"open"?: boolean,"party_max_elo_gap"?: number,"penalty_ladder"?: (number)[],"reconnect_minutes"?: number,"replace_enabled"?: boolean,"replace_link_minutes"?: number,"replace_min_away_s"?: number,"replace_min_rounds_left"?: number,"replace_vote_cooldown_s"?: number,"replace_vote_pct"?: number,"replace_vote_seconds"?: number,"require_anticheat"?: boolean,"season_queue_close_minutes"?: number,"server_wait_minutes"?: number,"veto_seconds"?: number
                   }
                   Update: {
-                    "abandon_adjust_pct"?: number,"abandon_extra_elo"?: number,"abandon_gg_pct"?: number,"abandon_loss_max"?: number,"abandon_loss_min"?: number,"abandon_win_max"?: number,"abandon_win_min"?: number,"accept_seconds"?: number,"balance_rating"?: boolean,"balance_rating_cap"?: number,"balance_rating_days"?: number,"balance_rating_prior_maps"?: number,"balance_rating_weight"?: number,"blocks_vip_only"?: boolean,"connect_minutes"?: number,"elo_unlimited_after_s"?: number,"elo_window_every_s"?: number,"elo_window_max"?: number,"elo_window_start"?: number,"elo_window_step"?: number,"id"?: number,"max_blocks"?: number,"max_party_size"?: number,"min_account_days"?: number,"min_mixes"?: number,"mvp_image_url"?: string | null,"open"?: boolean,"party_max_elo_gap"?: number,"penalty_ladder"?: (number)[],"reconnect_minutes"?: number,"replace_enabled"?: boolean,"replace_link_minutes"?: number,"replace_min_rounds_left"?: number,"replace_vote_cooldown_s"?: number,"replace_vote_pct"?: number,"replace_vote_seconds"?: number,"require_anticheat"?: boolean,"season_queue_close_minutes"?: number,"server_wait_minutes"?: number,"veto_seconds"?: number
+                    "abandon_adjust_pct"?: number,"abandon_extra_elo"?: number,"abandon_gg_pct"?: number,"abandon_loss_max"?: number,"abandon_loss_min"?: number,"abandon_win_max"?: number,"abandon_win_min"?: number,"accept_seconds"?: number,"balance_rating"?: boolean,"balance_rating_cap"?: number,"balance_rating_days"?: number,"balance_rating_prior_maps"?: number,"balance_rating_weight"?: number,"block_changes_week"?: number,"block_margin"?: number,"blocks_vip_only"?: boolean,"connect_minutes"?: number,"elo_unlimited_after_s"?: number,"elo_window_every_s"?: number,"elo_window_max"?: number,"elo_window_start"?: number,"elo_window_step"?: number,"id"?: number,"max_blocks"?: number,"max_party_size"?: number,"min_account_days"?: number,"min_mixes"?: number,"mvp_image_url"?: string | null,"open"?: boolean,"party_max_elo_gap"?: number,"penalty_ladder"?: (number)[],"reconnect_minutes"?: number,"replace_enabled"?: boolean,"replace_link_minutes"?: number,"replace_min_away_s"?: number,"replace_min_rounds_left"?: number,"replace_vote_cooldown_s"?: number,"replace_vote_pct"?: number,"replace_vote_seconds"?: number,"require_anticheat"?: boolean,"season_queue_close_minutes"?: number,"server_wait_minutes"?: number,"veto_seconds"?: number
                   }
                   Relationships: [
                     
@@ -1901,6 +2248,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_friends_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "mm_friends_player_id_fkey"
@@ -2013,6 +2366,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"mm_lobby_block_ignored": {
+                  Row: {
+                    "lobby_id": string,"player_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "lobby_id": string,"player_id": string,"user_id": string
+                  }
+                  Update: {
+                    "lobby_id"?: string,"player_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mm_lobby_block_ignored_lobby_id_fkey"
+      columns: ["lobby_id"]
+isOneToOne: false
+      referencedRelation: "mm_lobbies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"mm_lobby_players": {
                   Row: {
                     "abandoned": boolean,"accepted_at": string | null,"balance_elo": number | null,"connected_at": string | null,"declined_at": string | null,"elo": number,"is_captain": boolean,"joined_at": string,"left_at": string | null,"lobby_id": string,"party_id": string | null,"player_id": string,"region": string | null,"replaced_by": string | null,"replaces_user_id": string | null,"team": number,"user_id": string
@@ -2053,6 +2425,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_lobby_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "mm_lobby_players_player_id_fkey"
@@ -2272,6 +2650,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_queue_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "mm_queue_player_id_fkey"
@@ -2589,6 +2973,12 @@ isOneToOne: false
       foreignKeyName: "pcw_bans_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "pcw_bans_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -2860,6 +3250,12 @@ isOneToOne: false
       foreignKeyName: "player_extra_steam_ids_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "player_extra_steam_ids_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -2952,13 +3348,13 @@ isOneToOne: false
                   ]
                 },"player_medals": {
                   Row: {
-                    "created_at": string,"definition_id": string | null,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"source": string,"tier": string | null,"title": string
+                    "admin_title": string | null,"created_at": string,"definition_id": string | null,"event_id": string | null,"icon": string | null,"id": string,"player_id": string | null,"rank": number | null,"season_id": string | null,"source": string,"tier": string | null,"title": string
                   }
                   Insert: {
-                    "created_at"?: string,"definition_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title": string
+                    "admin_title"?: string | null,"created_at"?: string,"definition_id"?: string | null,"event_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title": string
                   }
                   Update: {
-                    "created_at"?: string,"definition_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title"?: string
+                    "admin_title"?: string | null,"created_at"?: string,"definition_id"?: string | null,"event_id"?: string | null,"icon"?: string | null,"id"?: string,"player_id"?: string | null,"rank"?: number | null,"season_id"?: string | null,"source"?: string,"tier"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -2966,6 +3362,18 @@ isOneToOne: false
       columns: ["definition_id"]
 isOneToOne: false
       referencedRelation: "medal_definitions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_medals_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "event_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "player_medals_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "player_medals_player_id_fkey"
@@ -2990,6 +3398,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "player_medals_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "player_medals_player_id_fkey"
@@ -3060,6 +3474,86 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"point_grants": {
+                  Row: {
+                    "amount": number,"created_at": string,"currency": string,"granted_by": string | null,"id": string,"reason": string,"user_id": string
+                  }
+                  Insert: {
+                    "amount": number,"created_at"?: string,"currency"?: string,"granted_by"?: string | null,"id"?: string,"reason": string,"user_id": string
+                  }
+                  Update: {
+                    "amount"?: number,"created_at"?: string,"currency"?: string,"granted_by"?: string | null,"id"?: string,"reason"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "point_grants_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "point_grants_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "point_grants_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "point_grants_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "point_grants_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "point_grants_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"points_config": {
+                  Row: {
+                    "custom_avatar_price": number,"custom_bg_animated_price": number,"custom_bg_static_price": number,"custom_max_avatar": number,"custom_max_background": number,"id": number,"per_mix": number,"per_win": number,"updated_at": string,"updated_by": string | null,"vip_multiplier": number,"vip_per_mix": number,"vip_per_win": number,"weekly_count": number,"weekly_discount": number
+                  }
+                  Insert: {
+                    "custom_avatar_price"?: number,"custom_bg_animated_price"?: number,"custom_bg_static_price"?: number,"custom_max_avatar"?: number,"custom_max_background"?: number,"id"?: number,"per_mix"?: number,"per_win"?: number,"updated_at"?: string,"updated_by"?: string | null,"vip_multiplier"?: number,"vip_per_mix"?: number,"vip_per_win"?: number,"weekly_count"?: number,"weekly_discount"?: number
+                  }
+                  Update: {
+                    "custom_avatar_price"?: number,"custom_bg_animated_price"?: number,"custom_bg_static_price"?: number,"custom_max_avatar"?: number,"custom_max_background"?: number,"id"?: number,"per_mix"?: number,"per_win"?: number,"updated_at"?: string,"updated_by"?: string | null,"vip_multiplier"?: number,"vip_per_mix"?: number,"vip_per_win"?: number,"weekly_count"?: number,"weekly_discount"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "points_config_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "points_config_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "points_config_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profile_comment_reports": {
                   Row: {
                     "comment_id": string,"created_at": string,"id": string,"note": string | null,"reason": string,"reporter": string,"resolved_at": string | null,"resolved_by": string | null,"status": string
@@ -3118,6 +3612,12 @@ isOneToOne: false
       foreignKeyName: "profile_comments_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_comments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -3148,16 +3648,47 @@ isOneToOne: false
                   ]
                 },"profile_details": {
                   Row: {
-                    "avatar_url": string | null,"country": string | null,"discord": string | null,"faceit": string | null,"game_role": string | null,"joined_at": string | null,"last_seen": string | null,"real_name": string | null,"steam": string | null,"updated_at": string,"user_id": string
+                    "avatar_url": string | null,"country": string | null,"cover_url": string | null,"discord": string | null,"faceit": string | null,"game_role": string | null,"joined_at": string | null,"last_seen": string | null,"real_name": string | null,"steam": string | null,"updated_at": string,"user_id": string
                   }
                   Insert: {
-                    "avatar_url"?: string | null,"country"?: string | null,"discord"?: string | null,"faceit"?: string | null,"game_role"?: string | null,"joined_at"?: string | null,"last_seen"?: string | null,"real_name"?: string | null,"steam"?: string | null,"updated_at"?: string,"user_id": string
+                    "avatar_url"?: string | null,"country"?: string | null,"cover_url"?: string | null,"discord"?: string | null,"faceit"?: string | null,"game_role"?: string | null,"joined_at"?: string | null,"last_seen"?: string | null,"real_name"?: string | null,"steam"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "avatar_url"?: string | null,"country"?: string | null,"discord"?: string | null,"faceit"?: string | null,"game_role"?: string | null,"joined_at"?: string | null,"last_seen"?: string | null,"real_name"?: string | null,"steam"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "avatar_url"?: string | null,"country"?: string | null,"cover_url"?: string | null,"discord"?: string | null,"faceit"?: string | null,"game_role"?: string | null,"joined_at"?: string | null,"last_seen"?: string | null,"real_name"?: string | null,"steam"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"profile_media_reports": {
+                  Row: {
+                    "created_at": string,"id": string,"kind": string,"note": string | null,"poster_url": string | null,"reason": string,"reporter": string,"resolved_at": string | null,"resolved_by": string | null,"status": string,"target": string,"url": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"kind": string,"note"?: string | null,"poster_url"?: string | null,"reason": string,"reporter": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"target": string,"url": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"kind"?: string,"note"?: string | null,"poster_url"?: string | null,"reason"?: string,"reporter"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"target"?: string,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_media_reports_target_fkey"
+      columns: ["target"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_media_reports_target_fkey"
+      columns: ["target"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profile_media_reports_target_fkey"
+      columns: ["target"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"profile_visits": {
                   Row: {
@@ -3193,6 +3724,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_visits_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "profile_visits_player_id_fkey"
@@ -3265,6 +3802,12 @@ isOneToOne: false
       foreignKeyName: "profile_votes_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "profile_votes_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -3328,6 +3871,45 @@ isOneToOne: false
                   }
                   Update: {
                     "active"?: boolean,"created_at"?: string,"id"?: string,"last_seen_at"?: string | null,"name"?: string,"token_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"replanteo100_funciones": {
+                  Row: {
+                    "def": string,"extra": Json | null,"nombre": string
+                  }
+                  Insert: {
+                    "def": string,"extra"?: Json | null,"nombre": string
+                  }
+                  Update: {
+                    "def"?: string,"extra"?: Json | null,"nombre"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"replanteo104_funciones": {
+                  Row: {
+                    "def": string,"nombre": string
+                  }
+                  Insert: {
+                    "def": string,"nombre": string
+                  }
+                  Update: {
+                    "def"?: string,"nombre"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"replanteo113_funciones": {
+                  Row: {
+                    "def": string,"nombre": string
+                  }
+                  Insert: {
+                    "def": string,"nombre": string
+                  }
+                  Update: {
+                    "def"?: string,"nombre"?: string
                   }
                   Relationships: [
                     
@@ -3436,6 +4018,12 @@ isOneToOne: false
       foreignKeyName: "season_standings_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -3501,6 +4089,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"shop_items": {
+                  Row: {
+                    "active": boolean,"animated": boolean,"collection": string,"created_at": string,"css_class": string | null,"description": string | null,"file": string | null,"id": string,"kind": string,"name": string,"price": number | null,"sort": number,"vip_only": boolean,"vip_price": number | null,"vip_reward": boolean
+                  }
+                  Insert: {
+                    "active"?: boolean,"animated"?: boolean,"collection"?: string,"created_at"?: string,"css_class"?: string | null,"description"?: string | null,"file"?: string | null,"id": string,"kind": string,"name": string,"price"?: number | null,"sort"?: number,"vip_only"?: boolean,"vip_price"?: number | null,"vip_reward"?: boolean
+                  }
+                  Update: {
+                    "active"?: boolean,"animated"?: boolean,"collection"?: string,"created_at"?: string,"css_class"?: string | null,"description"?: string | null,"file"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"price"?: number | null,"sort"?: number,"vip_only"?: boolean,"vip_price"?: number | null,"vip_reward"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"site_config": {
                   Row: {
                     "auth_image_url": string | null,"id": number
@@ -3553,6 +4154,12 @@ isOneToOne: false
       foreignKeyName: "steam_requests_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -3596,6 +4203,37 @@ isOneToOne: false
       columns: ["server_id"]
 isOneToOne: false
       referencedRelation: "game_servers_public"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"support_actions": {
+                  Row: {
+                    "action": string,"actor_id": string | null,"created_at": string,"id": number,"reason": string | null,"target": NonNullable<Json>
+                  }
+                  Insert: {
+                    "action": string,"actor_id"?: string | null,"created_at"?: string,"id"?: never,"reason"?: string | null,"target"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "action"?: string,"actor_id"?: string | null,"created_at"?: string,"id"?: never,"reason"?: string | null,"target"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "support_actions_actor_id_fkey"
+      columns: ["actor_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "support_actions_actor_id_fkey"
+      columns: ["actor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "support_actions_actor_id_fkey"
+      columns: ["actor_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -3682,6 +4320,12 @@ isOneToOne: false
       foreignKeyName: "team_invites_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "team_invites_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -3762,6 +4406,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "team_members_player_id_fkey"
@@ -3908,6 +4558,12 @@ isOneToOne: false
       foreignKeyName: "tournament_registration_players_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "tournament_registration_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -3956,13 +4612,13 @@ isOneToOne: false
                   ]
                 },"tournament_registrations": {
                   Row: {
-                    "created_at": string,"event_id": string | null,"id": string,"start_stage": number,"team_id": string | null
+                    "created_at": string,"event_id": string | null,"guest_names": (string)[],"id": string,"start_stage": number,"team_id": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"start_stage"?: number,"team_id"?: string | null
+                    "created_at"?: string,"event_id"?: string | null,"guest_names"?: (string)[],"id"?: string,"start_stage"?: number,"team_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"start_stage"?: number,"team_id"?: string | null
+                    "created_at"?: string,"event_id"?: string | null,"guest_names"?: (string)[],"id"?: string,"start_stage"?: number,"team_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -3994,6 +4650,170 @@ isOneToOne: false
       columns: ["team_id"]
 isOneToOne: false
       referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"user_cosmetics": {
+                  Row: {
+                    "avatar": string | null,"avatar_custom": string | null,"background": string | null,"background_custom": string | null,"frame": string | null,"name": string | null,"stickers": (string)[],"theme": string | null,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "avatar"?: string | null,"avatar_custom"?: string | null,"background"?: string | null,"background_custom"?: string | null,"frame"?: string | null,"name"?: string | null,"stickers"?: (string)[],"theme"?: string | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "avatar"?: string | null,"avatar_custom"?: string | null,"background"?: string | null,"background_custom"?: string | null,"frame"?: string | null,"name"?: string | null,"stickers"?: (string)[],"theme"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_cosmetics_avatar_custom_fkey"
+      columns: ["avatar_custom"]
+isOneToOne: false
+      referencedRelation: "custom_cosmetics"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_avatar_fkey"
+      columns: ["avatar"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_avatar_fkey"
+      columns: ["avatar"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_background_custom_fkey"
+      columns: ["background_custom"]
+isOneToOne: false
+      referencedRelation: "custom_cosmetics"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_background_fkey"
+      columns: ["background"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_background_fkey"
+      columns: ["background"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_frame_fkey"
+      columns: ["frame"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_frame_fkey"
+      columns: ["frame"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_name_fkey"
+      columns: ["name"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_name_fkey"
+      columns: ["name"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_theme_fkey"
+      columns: ["theme"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_theme_fkey"
+      columns: ["theme"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"user_items": {
+                  Row: {
+                    "acquired_at": string,"currency": string,"granted_by": string | null,"item_id": string,"note": string | null,"price_paid": number | null,"source": string,"user_id": string
+                  }
+                  Insert: {
+                    "acquired_at"?: string,"currency"?: string,"granted_by"?: string | null,"item_id": string,"note"?: string | null,"price_paid"?: number | null,"source": string,"user_id": string
+                  }
+                  Update: {
+                    "acquired_at"?: string,"currency"?: string,"granted_by"?: string | null,"item_id"?: string,"note"?: string | null,"price_paid"?: number | null,"source"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_items_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_granted_by_fkey"
+      columns: ["granted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_items_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -4077,6 +4897,79 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"widget_settings": {
+                  Row: {
+                    "player_id": string,"query": string,"updated_at": string
+                  }
+                  Insert: {
+                    "player_id": string,"query": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "player_id"?: string,"query"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "widget_settings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -4108,6 +5001,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "claim_log_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "claim_log_player_id_fkey"
@@ -4294,6 +5193,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "steam_requests_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "steam_requests_player_id_fkey"
@@ -5053,6 +5958,73 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"mm_balance_overrides_active": {
+                  Row: {
+                    "created_at": string | null,"elo": number | null,"expires_at": string | null,"nick": string | null,"player_id": string | null,"points": number | null,"reason": string | null,"set_by": string | null,"steam_id": string | null,"updated_at": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["captain_player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "match_clip_list"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "player_ranking"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "vip_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "mm_balance_overrides_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: true
+      referencedRelation: "vip_status"
+      referencedColumns: ["player_id"]
+    }
+                  ]
                 },"notification_list": {
                   Row: {
                     "actionable": boolean | null,"actor_alias": string | null,"actor_id": string | null,"category": string | null,"created_at": string | null,"data": Json | null,"id": number | null,"read_at": string | null,"ref": string | null,"resolution": string | null,"type": string | null,"user_id": string | null
@@ -5152,6 +6124,31 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"player_cosmetics_public": {
+                  Row: {
+                    "avatar": Json | null,"background": Json | null,"frame": Json | null,"name": Json | null,"player_id": string | null,"stickers": Json | null,"theme": Json | null,"user_id": string | null,"vip": boolean | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_cosmetics_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"player_elo_adjustment_list": {
                   Row: {
                     "applied_at": string | null,"delta": number | null,"id": number | null,"player_id": string | null,"reason": string | null,"set_elo": number | null
@@ -5234,6 +6231,12 @@ isOneToOne: false
       foreignKeyName: "match_player_stats_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -5295,6 +6298,12 @@ isOneToOne: false
       foreignKeyName: "match_player_stats_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -5351,6 +6360,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "match_player_stats_player_id_fkey"
@@ -5473,6 +6488,12 @@ isOneToOne: false
       foreignKeyName: "season_standings_player_id_fkey"
       columns: ["player_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -5529,6 +6550,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "match_player_stats_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "match_player_stats_player_id_fkey"
@@ -5597,6 +6624,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "tournament_registration_players_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "tournament_registration_players_player_id_fkey"
@@ -5676,6 +6709,12 @@ isOneToOne: false
       foreignKeyName: "season_standings_player_id_fkey"
       columns: ["champion_id"]
 isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "season_standings_player_id_fkey"
+      columns: ["champion_id"]
+isOneToOne: false
       referencedRelation: "player_overview"
       referencedColumns: ["id"]
     },{
@@ -5714,6 +6753,13 @@ isOneToOne: false
                 },"season_standings_list": {
                   Row: {
                     "eligible": boolean | null,"elo": number | null,"elo_after": number | null,"icon": string | null,"kd": number | null,"losses": number | null,"matches": number | null,"nick": string | null,"peak_elo": number | null,"photo_url": string | null,"player_id": string | null,"rank": number | null,"rating": number | null,"search": string | null,"season_id": string | null,"teams": Json | null,"tier": string | null,"wins": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"shop_catalog": {
+                  Row: {
+                    "animated": boolean | null,"base_price": number | null,"collection": string | null,"css_class": string | null,"description": string | null,"file": string | null,"id": string | null,"kind": string | null,"name": string | null,"price": number | null,"sort": number | null,"vip_only": boolean | null,"vip_price": number | null,"vip_reward": boolean | null,"weekly": boolean | null,"weekly_ends": string | null
                   }
                   Relationships: [
                     
@@ -5823,6 +6869,12 @@ isOneToOne: false
       columns: ["player_id"]
 isOneToOne: false
       referencedRelation: "match_clip_ranked"
+      referencedColumns: ["player_id"]
+    },{
+      foreignKeyName: "team_members_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "player_cosmetics_public"
       referencedColumns: ["player_id"]
     },{
       foreignKeyName: "team_members_player_id_fkey"
@@ -6093,6 +7145,9 @@ isOneToOne: false
 "admin_account_status":
 { Args: { "p_user": string }; Returns: Json
                            },
+"admin_cover_clear":
+{ Args: { "p_reason": string,"p_user": string }; Returns: string
+                           },
 "admin_create_demo_worker":
 { Args: { "p_name": string }; Returns: {
               "id": string,"token": string
@@ -6103,6 +7158,9 @@ isOneToOne: false
               "id": string,"token": string
             }[]
                            },
+"admin_custom_clear":
+{ Args: { "p_id": string,"p_reason": string,"p_user": string }; Returns: Json
+                           },
 "admin_delete_mix":
 { Args: { "p_elo": string,"p_match": string }; Returns: Json
                            },
@@ -6111,6 +7169,12 @@ isOneToOne: false
                            },
 "admin_grant_streamer":
 { Args: { "p_user": string }; Returns: undefined
+                           },
+"admin_item_grant":
+{ Args: { "p_item": string,"p_note"?: string,"p_user": string }; Returns: undefined
+                           },
+"admin_item_revoke":
+{ Args: { "p_item": string,"p_reason": string,"p_user": string }; Returns: undefined
                            },
 "admin_name_blocked":
 { Args: { "p": string }; Returns: string
@@ -6126,6 +7190,14 @@ isOneToOne: false
 "admin_player_verify":
 { Args: { "p_kind": string,"p_note"?: string,"p_player": string }; Returns: undefined
                            },
+"admin_points_accounts":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_q"?: string,"p_sort"?: string,"p_vip"?: boolean }; Returns: {
+              "alias": string,"balance": number,"cover_url": string,"earned": number,"granted": number,"items": number,"mixes": number,"nick": string,"player_id": string,"spent": number,"total": number,"user_id": string,"vip": boolean,"vip_balance": number,"vip_earned": number,"vip_granted": number,"vip_spent": number
+            }[]
+                           },
+"admin_points_grant":
+{ Args: { "p_amount": number,"p_currency"?: string,"p_reason": string,"p_user": string }; Returns: string
+                           },
 "admin_regenerate_hud_key":
 { Args: { "p_server": string }; Returns: string
                            },
@@ -6140,6 +7212,9 @@ isOneToOne: false
                            },
 "admin_set_server_hud":
 { Args: { "p_enabled": boolean,"p_port": number,"p_server": string }; Returns: undefined
+                           },
+"admin_shop_item_update":
+{ Args: { "p_changes": Json,"p_item": string }; Returns: Json
                            },
 "admin_users":
 { Args: { "p_q"?: string }; Returns: {
@@ -6163,6 +7238,7 @@ isOneToOne: false
               "created_at": string,
 "created_by": string | null,
 "created_by_name": string | null,
+"created_by_role": string | null,
 "created_by_steam": string | null,
 "expires_at": string | null,
 "id": string,
@@ -6201,6 +7277,15 @@ isOneToOne: false
                            },
 "ban_steams":
 { Args: { "p_player": string,"p_steam": string }; Returns: (string)[]
+                           },
+"ban_support_count":
+{ Args: { "p_steam": string }; Returns: number
+                           },
+"ban_support_quota":
+{ Args: { "p_player": string,"p_steam": string }; Returns: Json
+                           },
+"ban_target_steam":
+{ Args: { "p_player": string,"p_steam": string }; Returns: string
                            },
 "ban_unix":
 { Args: { "p_expires": string }; Returns: number
@@ -6264,6 +7349,9 @@ isOneToOne: false
 "can_own_event":
 { Args: { "p_event": string }; Returns: boolean
                            },
+"can_use_item":
+{ Args: { "p_item": string,"p_user": string }; Returns: boolean
+                           },
 "cancel_pcw_match":
 { Args: { "p_match": string }; Returns: undefined
                            },
@@ -6298,6 +7386,14 @@ isOneToOne: false
                            },
 "clip_my_featured":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"clip_r2_evict_due":
+{ Args: { "p_limit"?: number,"p_token": string }; Returns: {
+              "clip_id": string,"video_key": string
+            }[]
+                           },
+"clip_r2_evicted":
+{ Args: { "p_clips": (string)[],"p_token": string }; Returns: number
                            },
 "clip_reject":
 { Args: { "p_clip": string,"p_reason"?: string }; Returns: string
@@ -6345,6 +7441,9 @@ isOneToOne: false
                            },
 "comment_blocked_word":
 { Args: { "p": string }; Returns: string
+                           },
+"cosmetic_json":
+{ Args: { "p_item": string }; Returns: Json
                            },
 "crash_min_rounds":
 { Args: { "p_max_rounds": number }; Returns: number
@@ -6444,6 +7543,9 @@ isOneToOne: false
 "csstv_npdf":
 { Args: { "x": number }; Returns: number
                            },
+"csstv_player_name":
+{ Args: { "p_steam": string,"p_token": string }; Returns: Json
+                           },
 "csstv_rating":
 { Args: { "deaths": number,"k1": number,"k2": number,"k3": number,"k4": number,"k5": number,"kills": number,"rounds": number }; Returns: number
                            },
@@ -6462,8 +7564,41 @@ isOneToOne: false
 "csstv_whois":
 { Args: { "p_online"?: string,"p_query"?: string,"p_steam"?: string,"p_token": string }; Returns: Json
                            },
+"custom_cosmetic_clear":
+{ Args: { "p_by": string,"p_id": string,"p_why": string }; Returns: {
+              "animated": boolean,
+"cleared_at": string | null,
+"cleared_by": string | null,
+"cleared_reason": string | null,
+"created_at": string,
+"currency": string,
+"id": string,
+"kind": string,
+"poster_url": string | null,
+"price": number,
+"url": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "custom_cosmetics"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"custom_cosmetic_delete":
+{ Args: { "p_id": string }; Returns: Json
+                           },
+"custom_cosmetic_json":
+{ Args: { "p_id": string }; Returns: Json
+                           },
+"custom_cosmetic_set":
+{ Args: { "p_animated": boolean,"p_kind": string,"p_poster": string,"p_price": number,"p_url": string }; Returns: Json
+                           },
 "demo_auth":
 { Args: { "p_token": string }; Returns: string
+                           },
+"demo_evict":
+{ Args: { "p_keys": (string)[],"p_token": string }; Returns: number
                            },
 "demo_expire":
 { Args: { "p_days"?: number,"p_token": string }; Returns: number
@@ -6513,6 +7648,9 @@ isOneToOne: false
                            },
 "elo_level":
 { Args: { "p_elo": number }; Returns: number
+                           },
+"elo_min_for":
+{ Args: { "p_match": string }; Returns: number
                            },
 "elo_recompute_all":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -6587,6 +7725,9 @@ isOneToOne: false
 "event_max_bo":
 { Args: { "p_config": Json }; Returns: number
                            },
+"event_medals_sync":
+{ Args: { "p_event": string }; Returns: undefined
+                           },
 "event_progress":
 { Args: { "p_event": string }; Returns: undefined
                            },
@@ -6601,6 +7742,9 @@ isOneToOne: false
                            },
 "event_register":
 { Args: { "p_active": (string)[],"p_event": string,"p_start_stage"?: number,"p_subs"?: (string)[],"p_team": string }; Returns: undefined
+                           },
+"event_register_historic":
+{ Args: { "p_event": string,"p_names": (string)[],"p_players": (string)[],"p_start_stage"?: number,"p_team": string }; Returns: undefined
                            },
 "event_reset":
 { Args: { "p_event": string }; Returns: undefined
@@ -6690,6 +7834,9 @@ isOneToOne: false
                            },
 "is_steam64":
 { Args: { "p": string }; Returns: boolean
+                           },
+"is_support":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "is_team_captain":
 { Args: { "p_team": string }; Returns: boolean
@@ -6827,6 +7974,9 @@ isOneToOne: false
 "medal_stats_since":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"medal_title_key":
+{ Args: { "p": string }; Returns: string
+                           },
 "medals_award":
 { Args: { "p_defs"?: (string)[],"p_players": (string)[] }; Returns: number
                            },
@@ -6835,6 +7985,12 @@ isOneToOne: false
                            },
 "medals_evaluate_pending":
 { Args: { "p_limit"?: number }; Returns: Json
+                           },
+"media_report_current":
+{ Args: { "p_kind": string,"p_target": string,"p_url": string }; Returns: boolean
+                           },
+"media_report_reason_label":
+{ Args: { "p_reason": string }; Returns: string
                            },
 "mix_users":
 { Args: { "p_match": string }; Returns: (string)[]
@@ -6896,14 +8052,42 @@ isOneToOne: false
 "mm_balance_elos":
 { Args: { "p_elos": (number)[],"p_players": (string)[] }; Returns: (number)[]
                            },
+"mm_balance_override_clear":
+{ Args: { "p_by": string,"p_player": string,"p_reason": string }; Returns: boolean
+                           },
+"mm_balance_override_set":
+{ Args: { "p_by": string,"p_days"?: number,"p_player": string,"p_points": number,"p_reason": string }; Returns: {
+              "created_at": string,
+"expires_at": string,
+"player_id": string,
+"points": number,
+"reason": string,
+"set_by": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "mm_balance_overrides"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"mm_ban_kick":
+{ Args: { "p_ban": string }; Returns: Json
+                           },
 "mm_ban_map":
 { Args: { "p_by": string,"p_lobby": string,"p_map": string }; Returns: undefined
                            },
 "mm_best_split":
 { Args: { "p_elos": (number)[],"p_parties": (string)[],"p_size": number,"p_users": (string)[] }; Returns: (number)[]
                            },
+"mm_best_split_ex":
+{ Args: { "p_elos": (number)[],"p_parties": (string)[],"p_size": number,"p_users": (string)[] }; Returns: Json
+                           },
 "mm_block":
 { Args: { "p_player": string }; Returns: undefined
+                           },
+"mm_block_changes":
+{ Args: { "p_user": string }; Returns: Json
                            },
 "mm_block_reason":
 { Args: { "p_user": string }; Returns: string
@@ -6989,6 +8173,9 @@ isOneToOne: false
 "mm_lobby_replacements":
 { Args: { "p_lobby": string }; Returns: Json
                            },
+"mm_lobby_rev":
+{ Args: { "p_lobby": string,"p_viewer": string }; Returns: string
+                           },
 "mm_lobby_users":
 { Args: { "p_lobby": string }; Returns: (string)[]
                            },
@@ -7000,6 +8187,9 @@ isOneToOne: false
                            },
 "mm_mvp_image":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"mm_my_last_lobby":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "mm_my_live":
 { Args: { "p_full"?: boolean }; Returns: Json
@@ -7045,6 +8235,9 @@ isOneToOne: false
                            },
 "mm_party_respond":
 { Args: { "p_accept": boolean,"p_invite": string }; Returns: undefined
+                           },
+"mm_party_trim":
+{ Args: { "p_max": number }; Returns: number
                            },
 "mm_penalize":
 { Args: { "p_reason": string,"p_user": string }; Returns: undefined
@@ -7187,6 +8380,12 @@ isOneToOne: false
 "mm_unit_away":
 { Args: { "p_unit": string }; Returns: boolean
                            },
+"mm_unit_banned":
+{ Args: { "p_unit": string }; Returns: boolean
+                           },
+"mm_user_banned":
+{ Args: { "p_user": string }; Returns: boolean
+                           },
 "my_profile_visits":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -7295,6 +8494,24 @@ isOneToOne: false
               "a_wins": number,"against_matches": number,"same_matches": number,"same_wins": number
             }[]
                            },
+"points_history":
+{ Args: { "p_currency"?: string,"p_limit"?: number,"p_offset"?: number,"p_user"?: string }; Returns: {
+              "amount": number,"at": string,"kind": string,"label": string,"ref": string,"total": number
+            }[]
+                           },
+"points_mixes_of":
+{ Args: { "p_user": string }; Returns: {
+              "coins": number,"map": string,"match_id": string,"mm": boolean,"played_at": string,"points": number,"vip": boolean,"won": boolean
+            }[]
+                           },
+"points_summary":
+{ Args: { "p_user"?: string }; Returns: Json
+                           },
+"points_totals":
+{ Args: { "p_user": string }; Returns: {
+              "balance": number,"earned": number,"granted": number,"mixes": number,"spent": number,"vip_balance": number,"vip_earned": number,"vip_granted": number,"vip_mixes": number,"vip_spent": number
+            }[]
+                           },
 "profile_comment_add":
 { Args: { "p_body": string,"p_player": string }; Returns: string
                            },
@@ -7318,6 +8535,15 @@ isOneToOne: false
                            },
 "profile_incognito_set":
 { Args: { "p_on": boolean }; Returns: undefined
+                           },
+"profile_media_report":
+{ Args: { "p_kind": string,"p_note"?: string,"p_player": string,"p_reason": string }; Returns: string
+                           },
+"profile_media_report_resolve":
+{ Args: { "p_action": string,"p_report": string }; Returns: Json
+                           },
+"profile_media_reports_admin":
+{ Args: { "p_kind"?: string,"p_limit"?: number,"p_offset"?: number,"p_order"?: string,"p_reason"?: string,"p_status"?: string }; Returns: Json
                            },
 "profile_social_blocked":
 { Args: { "p_player": string,"p_user": string }; Returns: string
@@ -7434,6 +8660,9 @@ isOneToOne: false
 "set_my_bio":
 { Args: { "p_bio": string }; Returns: string
                            },
+"set_my_cosmetics":
+{ Args: { "p_data": Json }; Returns: Json
+                           },
 "set_my_preferences":
 { Args: { "p_changes": Json }; Returns: Json
                            },
@@ -7445,6 +8674,9 @@ isOneToOne: false
                            },
 "set_pcw_formats":
 { Args: { "p_best_of": (number)[] }; Returns: (number)[]
+                           },
+"set_points_config":
+{ Args: { "p_changes": Json }; Returns: Json
                            },
 "set_ranking_config":
 { Args: { "p_official": number,"p_pcw": number }; Returns: undefined
@@ -7464,6 +8696,12 @@ isOneToOne: false
 "set_user_tag":
 { Args: { "p_force"?: boolean,"p_tag": string,"p_user": string }; Returns: undefined
                            },
+"shop_buy":
+{ Args: { "p_item": string }; Returns: Json
+                           },
+"shop_weekly":
+{ Args: Record<PropertyKey, never>; Returns: string[]
+                           },
 "side_users":
 { Args: { "p_event"?: string,"p_team": string }; Returns: (string)[]
                            },
@@ -7475,6 +8713,9 @@ isOneToOne: false
                            },
 "staff_public":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"staff_remove_photo":
+{ Args: { "p_player": string,"p_reason": string }; Returns: Json
                            },
 "steam_attach":
 { Args: { "p_by": string,"p_player": string,"p_steam": string }; Returns: boolean
@@ -7502,6 +8743,12 @@ isOneToOne: false
                            },
 "steam_requests_expire":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"support_actions_list":
+{ Args: { "p_action"?: string,"p_actor"?: string,"p_from"?: string,"p_limit"?: number,"p_offset"?: number,"p_order"?: string,"p_to"?: string }; Returns: Json
+                           },
+"support_log":
+{ Args: { "p_action": string,"p_reason"?: string,"p_target": Json }; Returns: undefined
                            },
 "team_actor_role":
 { Args: { "p_team": string }; Returns: string
@@ -7634,6 +8881,11 @@ isOneToOne: false
 "team_update":
 { Args: { "p_looking_for": (string)[],"p_team": string }; Returns: undefined
                            },
+"user_items_of":
+{ Args: { "p_user"?: string }; Returns: {
+              "acquired_at": string,"currency": string,"item_id": string,"kind": string,"name": string,"note": string,"price_paid": number,"source": string,"usable": boolean
+            }[]
+                           },
 "users_of_players":
 { Args: { "p_players": (string)[] }; Returns: (string)[]
                            },
@@ -7664,9 +8916,12 @@ isOneToOne: false
 "vip_list_me":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"was_vip":
+{ Args: { "p_at": string,"p_user": string }; Returns: boolean
+                           },
 "widget_player":
-{ Args: { "p_period"?: string | null,"p_player": string,"p_since"?: string }; Returns: Json
-                           }
+{ Args: { "p_period"?: string,"p_player": string,"p_since"?: string }; Returns: Json
+                           },
 "widget_save":
 { Args: { "p_query": string }; Returns: Json
                            }

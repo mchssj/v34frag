@@ -8,6 +8,7 @@ import { errorBody, onError } from './lib/errors';
 import { requestLog, withConfig } from './lib/middleware';
 import type { UdpExchange } from './lib/a2s';
 import { type Manual, manualVacio } from './lib/manual';
+import type { MediaConverter } from './lib/media';
 import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
@@ -18,11 +19,13 @@ import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
 import { claim } from './routes/claim';
 import { community } from './routes/community';
+import { custom } from './routes/custom';
 import { clips } from './routes/clips';
 import { bans } from './routes/bans';
 import { mm } from './routes/mm';
 import { bookings } from './routes/bookings';
 import { vip } from './routes/vip';
+import { shop } from './routes/shop';
 import { hud } from './routes/hud';
 import { elo } from './routes/elo';
 import { events } from './routes/events';
@@ -56,6 +59,8 @@ export type AppOptions = {
   mmPolled?: (userId: string) => void;
   // Manual de usuario, leído del disco por node.ts (lib/manual-node.ts). El Worker no lo tiene: queda vacío.
   manual?: Manual;
+  // Conversión con ffmpeg de lo propio animado (lib/media-node.ts). La pasa node.ts; sin ella, la subida animada no está.
+  media?: MediaConverter;
 };
 
 export function createApp(options: AppOptions = {}) {
@@ -70,6 +75,7 @@ export function createApp(options: AppOptions = {}) {
     c.set('udp', options.udp);
     c.set('mmPolled', options.mmPolled);
     c.set('manual', manual);
+    c.set('media', options.media);
     await next();
   });
   app.use('*', requestLog);
@@ -106,6 +112,8 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', elo);
   app.route('/', bans);
   app.route('/', vip);
+  app.route('/', shop);
+  app.route('/', custom); // (replanteo 113) avatar y fondo propios y denuncias de imágenes del perfil
   app.route('/', mm);
   app.route('/', bookings); // antes que servers: /servers/free no es un {id}
   app.route('/', hud);

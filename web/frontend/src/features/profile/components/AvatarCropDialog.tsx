@@ -29,6 +29,8 @@ export function AvatarCropDialog({
   title = "Encuadra tu foto",
   confirmLabel = "Guardar foto",
   aspect = 1,
+  video = false,
+  description = "Arrástrala y usa el zoom para que quede como quieres.",
 }: {
   src: string
   busy: boolean
@@ -39,6 +41,9 @@ export function AvatarCropDialog({
   confirmLabel?: string
   /** Ancho / alto del recorte: 1 para la foto y el logo, 4 para el banner de un torneo. */
   aspect?: number
+  /** `src` es un video (MP4 o WebM): se encuadra mientras se reproduce. Un GIF va como imagen y también se mueve. */
+  video?: boolean
+  description?: string
 }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -51,9 +56,7 @@ export function AvatarCropDialog({
           <DialogTitle className="text-base leading-[normal] font-semibold">
             {title}
           </DialogTitle>
-          <DialogDescription>
-            Arrástrala y usa el zoom para que quede como quieres.
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </div>
         <div
           className={cn(
@@ -62,7 +65,7 @@ export function AvatarCropDialog({
           )}
         >
           <Cropper
-            image={src}
+            {...(video ? { video: src } : { image: src })}
             crop={crop}
             zoom={zoom}
             aspect={aspect}

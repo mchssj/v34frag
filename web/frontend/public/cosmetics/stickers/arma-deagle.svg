@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs><linearGradient id="bs" x1="0" y1="0" x2="1" y2="1"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="sk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a5a10"/><stop offset=".5" stop-color="#f2c040"/><stop offset="1" stop-color="#fff3c0"/></linearGradient></defs>
+  <g transform="rotate(-8 64 50)">
+    <rect x="6" y="22" width="116" height="56" rx="10" fill="#111" stroke="#fff" stroke-width="6"/>
+    <g transform="translate(20.29 28.57) scale(0.5714)" fill="url(#sk)" stroke="#fff" stroke-width="1.58" stroke-linejoin="round" fill-rule="evenodd"><path d="M6 7 L66 7 L66 24 L6 24 L4 15 Z M10 10 L13 10 L11 21 L8 21 Z M15 10 L18 10 L16 21 L13 21 Z M20 10 L23 10 L21 21 L18 21 Z"/><path d="M7 2.5 L10 2.5 L10 4.5 L14 4.5 L14 2.5 L17 2.5 L17 7 L7 7 Z"/><path d="M66 4 L152 4 L152 22 L66 22 Z M76 13 L146 13 L146 14.5 L76 14.5 Z"/><path d="M70 0 L150 0 L150 4 L70 4 Z M78 1 L80 1 L80 4 L78 4 Z M88 1 L90 1 L90 4 L88 4 Z M98 1 L100 1 L100 4 L98 4 Z M108 1 L110 1 L110 4 L108 4 Z M118 1 L120 1 L120 4 L118 4 Z M128 1 L130 1 L130 4 L128 4 Z M138 1 L140 1 L140 4 L138 4 Z"/><path d="M42 22 L152 22 L152 29 L145 35 L42 35 Z M92 26 L140 26 L140 27.5 L92 27.5 Z"/><path d="M82 28.5 m-3.5 0 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0 Z"/><path d="M6 9 L-2 6 Q-5 13 0 19 L6 20 Z M-0.5 10 L3 10.5 L3 15.5 L0 15 Z"/><path d="M50 35 L50 49 Q50 55 56 55 L78 55 L84 51 L80 48 L80 35 Z M54 35 L54 48 Q54 51 57 51 L76 51 L76 35 Z"/><path d="M14 22 L50 34 L49 41 L39 72 Q38 76 34 76 L13 76 Q9 76 10 72 L20 38 Q20 30 11 26 Z"/><path d="M62 35 Q59 41 63 46 L65 46 Q62 41 65 35 Z"/></g>
+    <rect x="6" y="22" width="116" height="56" rx="10" fill="url(#bs)">
+      <animate attributeName="x" values="-120;130;130" keyTimes="0;.5;1" dur="2.5s" repeatCount="indefinite"/></rect>
+  </g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#8a5a10" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="20" letter-spacing="1.2" fill="#fff">DEAGLE</text>
+  </g>
+</svg>

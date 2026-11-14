@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs></defs>
+  <g transform="translate(64 50)">
+    <circle r="40" fill="#ffd90f" stroke="#fff" stroke-width="6"/>
+    <g transform="scale(1.15)"><circle r="26" fill="#e8b06a"/><path d="M-21 0a21 21 0 1 1 42 0q-3 4-6 1t-6 2-6-1-6 2-6-1-6 2-6-1q-3 0-6-4Z" fill="#ff7ab8"/><circle r="8" fill="#1a1010"/><g stroke-width="2.5" stroke-linecap="round"><path d="M-12-12l3 2" stroke="#3ad0ff"/><path d="M8-15l3-2" stroke="#ffe14a"/><path d="M13-4l2 3" stroke="#7aff6a"/><path d="M-15-2l-1 3" stroke="#fff"/><path d="M0-18h3" stroke="#ff4a4a"/></g><animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur="1.4s" additive="sum" repeatCount="indefinite"/></g>
+  </g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#ff7ab8" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="20" letter-spacing="1.2" fill="#fff">DONA</text>
+  </g>
+</svg>

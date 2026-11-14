@@ -715,6 +715,52 @@ export function describe(n: Notification, me?: string | null): Described {
         title: "Un admin te quitó el acceso al HUD",
         body: "Tu link de OBS dejó de andar.",
       }
+    // (replanteo 113) La tienda: lo que hace un admin con tus puntos, tus artículos o tu portada.
+    case "points_granted": {
+      const amount = num(d.amount) ?? 0
+      const what = d.currency === "vip" ? "monedas VIP" : "puntos"
+      return {
+        kind: "account",
+        title:
+          amount >= 0
+            ? `Un admin te sumó ${amount} ${what}`
+            : `Un admin te restó ${-amount} ${what}`,
+        body: str(d.reason),
+        link: { to: "/shop" },
+      }
+    }
+    case "item_granted":
+      return {
+        kind: "account",
+        title: `Te regalaron «${str(d.name, "un artículo")}»`,
+        body: "Ya está en tu inventario: póntelo desde la Tienda.",
+        link: { to: "/shop" },
+      }
+    case "item_revoked":
+      return {
+        kind: "account",
+        title: `Un admin te quitó «${str(d.name, "un artículo")}»`,
+        body: str(d.reason),
+        link: { to: "/shop" },
+      }
+    case "cover_removed":
+      return {
+        kind: "account",
+        title: "Te quitaron la portada",
+        body: str(d.reason),
+        link: { to: "/profile" },
+      }
+    // (bitácora 2026-11-13-avatar-y-fondo-propios) Un moderador o un admin sacó lo que subió. No se devuelve lo pagado.
+    case "custom_removed":
+      return {
+        kind: "account",
+        title:
+          d.kind === "avatar"
+            ? "Te sacaron tu avatar"
+            : "Te sacaron tu fondo de miniperfil",
+        body: str(d.reason),
+        link: { to: "/shop" },
+      }
 
     // ---------- novedades ----------
     case "event_new":

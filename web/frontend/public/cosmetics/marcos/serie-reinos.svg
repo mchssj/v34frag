@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs><mask id="m"><rect width="256" height="256" fill="#fff"/><rect x="34" y="34" width="188" height="188" rx="8" fill="#000"/></mask><linearGradient id="ac" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b626b"/><stop offset=".5" stop-color="#8a929c"/><stop offset="1" stop-color="#3e444b"/></linearGradient><linearGradient id="hoja" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c9ced6"/><stop offset="1" stop-color="#6d747d"/></linearGradient><linearGradient id="br" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/><animate attributeName="x1" values="-1;1" dur="2.5s" repeatCount="indefinite"/><animate attributeName="x2" values="0;2" dur="2.5s" repeatCount="indefinite"/></linearGradient></defs>
+  <rect x="14" y="14" width="228" height="228" rx="10" fill="url(#ac)" mask="url(#m)"/>
+  <rect x="14" y="14" width="228" height="228" rx="10" fill="none" stroke="#1b1e22" stroke-width="3"/>
+  <rect x="31" y="31" width="194" height="194" rx="8" fill="none" stroke="#1b1e22" stroke-width="3"/>
+  <g fill="#1b1e22"><circle cx="23" cy="60" r="2.5"/><circle cx="23" cy="128" r="2.5"/><circle cx="23" cy="196" r="2.5"/><circle cx="233" cy="60" r="2.5"/><circle cx="233" cy="128" r="2.5"/><circle cx="233" cy="196" r="2.5"/><circle cx="60" cy="233" r="2.5"/><circle cx="196" cy="233" r="2.5"/></g>
+  <g fill="url(#hoja)" stroke="#2a2e33" stroke-width="1"><path transform="translate(52 0)" d="M0 0l4 6v22l-4 6-4-6V6Z"/><path transform="translate(72 0)" d="M0 0l4 6v22l-4 6-4-6V6Z"/><path transform="translate(92 0)" d="M0 0l4 6v22l-4 6-4-6V6Z"/><path transform="translate(164 0)" d="M0 0l4 6v22l-4 6-4-6V6Z"/><path transform="translate(184 0)" d="M0 0l4 6v22l-4 6-4-6V6Z"/><path transform="translate(204 0)" d="M0 0l4 6v22l-4 6-4-6V6Z"/></g>
+  <g transform="translate(128 24) scale(1.35)">
+    <path d="M-22 10l-4-18 12 9 14-15 14 15 12-9-4 18Z" fill="#e0b84a" stroke="#6b5216" stroke-width="2"/>
+    <circle cx="0" cy="2" r="3" fill="#c8102e"/>
+    <path d="M-22 10l-4-18 12 9 14-15 14 15 12-9-4 18Z" fill="url(#br)"/>
+  </g>
+  <g fill="#e8f4ff"><circle cx="18" cy="0" r="2"><animate attributeName="cy" values="0;256" dur="4s" begin="0s" repeatCount="indefinite"/></circle><circle cx="40" cy="0" r="1.5"><animate attributeName="cy" values="0;256" dur="5s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="236" cy="0" r="2"><animate attributeName="cy" values="0;256" dur="4.5s" begin="0.7s" repeatCount="indefinite"/></circle><circle cx="216" cy="0" r="1.5"><animate attributeName="cy" values="0;256" dur="6s" begin="2.5s" repeatCount="indefinite"/></circle><circle cx="10" cy="0" r="1.2"><animate attributeName="cy" values="0;256" dur="5.5s" begin="3s" repeatCount="indefinite"/></circle></g>
+</svg>

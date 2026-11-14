@@ -8,6 +8,7 @@ import { FilterChips } from "@/components/brand/FilterChips"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
+import { AvatarThumb, NameFx } from "@/features/shop/cosmetics"
 import { DataTable } from "@/components/data-table/DataTable"
 import { DataTablePagination } from "@/components/data-table/DataTablePagination"
 import { SortHeader } from "@/components/data-table/SortHeader"
@@ -142,14 +143,19 @@ const HISTORIC_COLUMNS: DataColumn<RankingPlayer>[] = [
       const sub = roleCountry(p.game_role, p.country)
       return (
         <span className="flex items-center gap-2.5">
-          <PlayerAvatar
-            size="row"
-            alias={p.player.alias}
-            photo={p.player.photo_url}
-          />
+          {/* (bitácora 2026-11-12-avatares-animados) El avatar de la tienda, quieto; se anima al pasar el mouse. */}
+          {p.player.cosmetics?.avatar ? (
+            <AvatarThumb avatar={p.player.cosmetics.avatar} size={30} className="rounded-full" />
+          ) : (
+            <PlayerAvatar
+              size="row"
+              alias={p.player.alias}
+              photo={p.player.photo_url}
+            />
+          )}
           <span className="flex flex-col leading-tight">
             <span className="inline-flex items-center gap-1 font-medium">
-              {p.player.alias}
+              <NameFx text={p.player.alias} effect={p.player.cosmetics?.name} />
               <ListSeal kind={p.player.verified} />
             </span>
             {sub && (

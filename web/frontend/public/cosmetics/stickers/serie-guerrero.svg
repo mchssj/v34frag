@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs></defs>
+  <g transform="translate(64 52)">
+    <path d="M-40 30Q-46-10-24-40Q-20-14 0-48Q20-14 24-40Q46-10 40 30Z" fill="#ffd43a" opacity=".85">
+      <animateTransform attributeName="transform" type="scale" values="1;1.06;1" dur=".4s" repeatCount="indefinite"/></path>
+    <path d="M-26 30Q-30 0-14-22Q-8-4 0-30Q8-4 14-22Q30 0 26 30Z" fill="#fff6c2"/>
+    <rect x="-30" y="-4" width="40" height="22" rx="4" fill="#3dff6e" fill-opacity=".55" stroke="#e8fff0" stroke-width="2"/>
+    <text x="-10" y="12" text-anchor="middle" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#0b2410">PWR<animate attributeName="opacity" values="1;0;1" dur=".6s" repeatCount="indefinite"/></text>
+  </g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#ff9a00" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="22" letter-spacing="1.5" fill="#1b1407">+9000</text>
+  </g>
+</svg>

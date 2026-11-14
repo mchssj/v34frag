@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs></defs>
+  <g fill="#e8e8ee" opacity=".9">
+    <circle cx="40" cy="60" r="18"><animate attributeName="r" values="14;20;14" dur="1.6s" repeatCount="indefinite"/></circle>
+    <circle cx="64" cy="48" r="22"><animate attributeName="r" values="18;24;18" dur="1.6s" begin=".3s" repeatCount="indefinite"/></circle>
+    <circle cx="88" cy="60" r="18"><animate attributeName="r" values="14;20;14" dur="1.6s" begin=".6s" repeatCount="indefinite"/></circle>
+  </g>
+  <g transform="translate(64 54) scale(1.6)"><polygon points="0,-15 4,-4 15,0 4,4 0,15 -4,4 -15,0 -4,-4" fill="#d6dbe2" stroke="#2a2a2a" stroke-width="1.5"/><circle r="3" fill="#2a2a2a"/><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.8s" additive="sum" repeatCount="indefinite"/></g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#ff7a1a" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="22" letter-spacing="1.5" fill="#1d1d22">JUTSU!</text>
+  </g>
+</svg>

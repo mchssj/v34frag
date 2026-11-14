@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { claimsVerifier, createMmHub, listenMm, MM_PING_MS, mmSql, sqlPresence } from './mm/socket';
 import { nodeUdp } from './lib/udp-node';
 import { cargarManual, carpetaDelManual } from './lib/manual-node';
+import { nodeMedia } from './lib/media-node';
 
 // En el VPS las variables las pone systemd (/etc/cmleague/api.env): no se busca .dev.vars.
 if (process.env.APP_ENV !== 'production') {
@@ -25,7 +26,8 @@ const { manual, errores: erroresManual } = cargarManual(manualDir);
 for (const e of erroresManual) console.error(`manual: ${e}`);
 console.log(`manual: ${manual.paginas.size} páginas y ${manual.imagenes.size} capturas (${manualDir ?? 'sin carpeta'})`);
 // Un pedido del estado liviano cuenta como presencia en la cola (replanteo 63): la web sin socket sigue buscando.
-const app = createApp({ udp: nodeUdp, manual, mmPolled: (user) => hub.polled(user) });
+// FFMPEG_PATH: dónde está ffmpeg si no está en el PATH (en el VPS, apt lo deja en el PATH).
+const app = createApp({ udp: nodeUdp, manual, mmPolled: (user) => hub.polled(user), media: nodeMedia(process.env.FFMPEG_PATH || 'ffmpeg') });
 const port = Number(process.env.PORT ?? 8787);
 // HOST=127.0.0.1 en el VPS: solo Caddy llega a la API. Sin HOST, todas las interfaces (como antes).
 const hostname = process.env.HOST || undefined;

@@ -31,6 +31,7 @@ import {
 } from '../schemas/players';
 import { activeBan } from '../services/bans';
 import { vipPlayers } from '../services/vip';
+import { cosmeticsLight, cosmeticsRows, type Light, toFull } from '../services/shop';
 import { resolvePlayer, verifiedIds, verifiedPlayers } from '../services/players';
 import { stageLabel } from '../services/stages';
 import { clutchesOf } from '../services/matches';
@@ -47,7 +48,12 @@ type OverviewRow = {
   wins: number | null; losses: number | null; teams: unknown;
 };
 
-export const toSummary = (r: OverviewRow, vip: Set<string>, verified: Map<string, 'gray' | 'gold'> = new Map()): z.infer<typeof PlayerSummary> => ({
+export const toSummary = (
+  r: OverviewRow,
+  vip: Set<string>,
+  verified: Map<string, 'gray' | 'gold'> = new Map(),
+  cosmetics: Map<string, Light> = new Map(),
+): z.infer<typeof PlayerSummary> => ({
   id: r.id!,
   alias: r.nick ?? '',
   has_account: !!r.has_account,
@@ -64,6 +70,7 @@ export const toSummary = (r: OverviewRow, vip: Set<string>, verified: Map<string
   teams: Array.isArray(r.teams) ? (r.teams as z.infer<typeof PlayerSummary>['teams']) : [],
   vip: vip.has(r.id!),
   verified: verified.get(r.id!) ?? null,
+  cosmetics: cosmetics.get(r.id!) ?? null,
 });
 
 // ---------- rutas ----------
@@ -248,8 +255,10 @@ export const players = createRouter()
     if (p.elo_max !== undefined) q = q.lte('elo', p.elo_max);
     const { rows, total } = await runList<OverviewRow, typeof q>(q, p, { alias: 'nick' });
     const ids = rows.map((r) => r.id!);
-    const [vip, verified] = await Promise.all([vipPlayers(c.var.sb, ids), verifiedPlayers(c.var.sb, ids)]);
-    return c.json(envelope(rows.map((r) => toSummary(r, vip, verified)), total, p), 200);
+    const [vip, verified, cosmetics] = await Promise.all([
+      vipPlayers(c.var.sb, ids), verifiedPlayers(c.var.sb, ids), cosmeticsLight(c.var.sb, ids),
+    ]);
+    return c.json(envelope(rows.map((r) => toSummary(r, vip, verified, cosmetics)), total, p), 200);
   })
   .openapi(detail, async (c) => {
     const sb = c.var.sb;
@@ -263,16 +272,25 @@ export const players = createRouter()
     // Los SteamID nunca salen en el perfil público: solo para el dueño y los admins.
     const user = currentUser(c);
     const seesSteam = !!user && (user.id === player.user_id || (await isAdmin(c)));
-    const [stats, clutchRows, details, ban, vip] = await Promise.all([
+    const [stats, clutchRows, detailsRow, ban, vip, cosmeticRows] = await Promise.all([
       sb.from('player_stats').select('maps, rounds, kills, deaths, assists, damage, rating, kd, hs, adr, wins, losses, k2, k3, k4, k5, first_kills, first_deaths, plants, defuses').eq('player_id', id).maybeSingle().then(must),
       sb.from('player_clutches').select('vs, won').eq('player_id', id).then(mustHave),
-      player.user_id ? sb.from('profile_details').select(DETAILS).eq('user_id', player.user_id).maybeSingle().then(must) : Promise.resolve(null),
+      player.user_id ? sb.from('profile_details').select(`${DETAILS}, cover_url`).eq('user_id', player.user_id).maybeSingle().then(must) : Promise.resolve(null),
       activeBan(sb, { player: id }),
       vipPlayers(sb, [id]),
+      cosmeticsRows(sb, [id]),
     ]);
+    // (replanteo 113) La portada va con los datos personales: un perfil privado la oculta.
+    const cover_url = detailsRow?.cover_url ?? null;
+    const details = detailsRow ? (({ cover_url: _cover, ...d }) => d)(detailsRow) : null;
+    const equipped = cosmeticRows.get(id);
+    const full = equipped ? toFull(equipped) : null;
+    const hasAny = !!full && !!(full.frame || full.avatar || full.name || full.background || full.theme || full.stickers.length);
     return c.json(
       {
         ...toSummary(overview, vip, new Map(player.verified === 'gray' || player.verified === 'gold' ? [[id, player.verified]] : [])),
+        cosmetics: hasAny ? full : null,
+        cover_url,
         steam_id: seesSteam ? player.steam_id : null,
         steam_ids: seesSteam
           ? steams.sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || (a.steam_id ?? '').localeCompare(b.steam_id ?? '')).map((s) => s.steam_id ?? '')
@@ -284,8 +302,8 @@ export const players = createRouter()
         verification: verificationOf(player.verified, player.verified_note),
         peak_elo: overview.peak_elo,
         stats: stats ? { ...stats, clutches: clutchesOf(clutchRows) } : null,
-        details: details ?? null,
-        private: !!player.user_id && !details,
+        details,
+        private: !!player.user_id && !detailsRow,
         ban,
       },
       200,
@@ -383,8 +401,8 @@ export const players = createRouter()
   .openapi(widget, async (c) => {
     const { period, since } = c.req.valid('query');
     const id = await resolvePlayer(c.var.sb, c.req.valid('param').id);
-    // Sin período, la base usa el que guardó el dueño (replanteo 112).
-    const data = must(await c.var.sb.rpc('widget_player', { p_player: id, p_period: period ?? null, ...(since ? { p_since: since } : {}) }));
+    // Sin período, la base usa el que guardó el dueño (replanteo 112). null a propósito: los tipos generados no lo admiten.
+    const data = must(await c.var.sb.rpc('widget_player', { p_player: id, p_period: (period ?? null) as string, ...(since ? { p_since: since } : {}) }));
     if (!data) throw notFound('ese jugador');
     c.header('Cache-Control', 'public, max-age=30');
     return c.json(WidgetData.parse(data), 200);

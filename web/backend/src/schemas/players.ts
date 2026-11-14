@@ -2,6 +2,7 @@ import { z } from '@hono/zod-openapi';
 import { MedalDesign } from './medals';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
 import { Clutches } from './common';
+import { CosmeticsFull, CosmeticsLight } from './shop';
 
 const num = z.number().nullable();
 
@@ -49,6 +50,7 @@ export const PlayerSummary = z
     teams: z.array(TeamRef).openapi({ description: 'Equipos oficiales donde está hoy (puede ser más de uno)' }),
     vip: z.boolean().openapi({ description: 'Es VIP hoy (solo el estado; las fechas, en Mi perfil y en el admin)' }),
     verified: z.enum(['gray', 'gold']).nullable().openapi({ description: 'Insignia de verificado (replanteo 90); null si no tiene' }),
+    cosmetics: CosmeticsLight.nullable().openapi({ description: 'Marco y efecto de nombre equipados (replanteo 113); null si no tiene ninguno' }),
   })
   .openapi('PlayerSummary');
 
@@ -143,6 +145,8 @@ export const verificationOf = (kind: string | null, note: string | null): z.infe
   kind === 'gray' || kind === 'gold' ? { kind, note } : null;
 
 export const PlayerDetail = PlayerSummary.extend({
+  cosmetics: CosmeticsFull.nullable().openapi({ description: 'Todo lo equipado (replanteo 113); null si no tiene nada' }),
+  cover_url: z.string().nullable().openapi({ description: 'Portada del perfil (4:1); null si no tiene o si su perfil es privado' }),
   verification: PlayerVerification.nullable().openapi({ description: 'Insignia de verificado; null si no tiene' }),
   steam_id: z.string().nullable().openapi({ description: 'SteamID principal. Solo para el dueño y los admins: para los demás, null' }),
   steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío' }),
@@ -259,7 +263,10 @@ export const RankingPlayerQuery = listQuery(['position', 'rating', 'kd', 'matche
 export const RankingPlayer = z
   .object({
     position: z.number().int().openapi({ description: 'Posición global por ELO (no cambia al filtrar; empatados comparten posición)' }),
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean(), verified: z.enum(['gray', 'gold']).nullable() }),
+    player: z.object({
+      id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean(), verified: z.enum(['gray', 'gold']).nullable(),
+      cosmetics: CosmeticsLight.nullable().openapi({ description: 'Marco y efecto de nombre (replanteo 113)' }),
+    }),
     level: z.number().int().min(1).max(10).nullable(),
     elo: z.number().int(),
     teams: z.array(TeamRef),
@@ -280,7 +287,10 @@ export const CompareQuery = z.object({
 });
 export const ComparePlayer = z
   .object({
-    player: z.object({ id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean(), verified: z.enum(['gray', 'gold']).nullable() }),
+    player: z.object({
+      id: z.uuid(), alias: z.string(), photo_url: z.string().nullable(), vip: z.boolean(), verified: z.enum(['gray', 'gold']).nullable(),
+      cosmetics: CosmeticsLight.nullable().openapi({ description: 'Marco y efecto de nombre (replanteo 113)' }),
+    }),
     teams: z.array(TeamRef),
     game_role: z.string().nullable(),
     level: z.number().int().min(1).max(10).nullable(),

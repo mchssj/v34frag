@@ -4,6 +4,7 @@ import type { UdpExchange } from './a2s';
 import type { AuthUser } from './auth';
 import type { RateLimiter } from './ratelimit';
 import type { Manual } from './manual';
+import type { MediaConverter } from './media';
 import type { Db } from './supabase';
 
 // Tipo de Hono compartido por toda la app.
@@ -18,6 +19,8 @@ export type AppEnv = {
     mmPolled: ((userId: string) => void) | undefined;
     // Manual de usuario (lib/manual.ts): lo carga node.ts del disco; sin él, vacío.
     manual: Manual;
+    // Conversión de lo propio animado (ffmpeg): solo en Node (node.ts).
+    media: MediaConverter | undefined;
     // Solo existen en rutas con requireUser.
     user: AuthUser;
     sb: Db;

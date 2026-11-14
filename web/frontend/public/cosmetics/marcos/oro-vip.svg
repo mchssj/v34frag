@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="o" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2b0"/><stop offset=".35" stop-color="#e8b53a"/><stop offset=".7" stop-color="#a8741a"/><stop offset="1" stop-color="#f7d76a"/></linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <clipPath id="c"><path fill-rule="evenodd" clip-rule="evenodd" d="M16 16h224v224H16zM32 32v192h192V32z"/></clipPath>
+    <ellipse id="leaf" rx="10" ry="4.5" fill="url(#o)" stroke="#6b4a0e" stroke-width="1"/>
+  </defs>
+  <path fill-rule="evenodd" fill="url(#o)" d="M16 16h224v224H16zM32 32v192h192V32z" stroke="#6b4a0e" stroke-width="2"/>
+  <rect x="22" y="22" width="212" height="212" fill="none" stroke="#fff6cf" stroke-opacity=".6" stroke-width="1"/>
+  <g clip-path="url(#c)">
+    <rect x="-120" y="-60" width="60" height="380" fill="url(#s)" transform="rotate(25 128 128)">
+      <animate attributeName="x" values="-160;360" dur="2.8s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <use href="#leaf" transform="translate(10 200) rotate(-60)"/><use href="#leaf" transform="translate(8 172) rotate(-75)"/><use href="#leaf" transform="translate(8 144) rotate(-90)"/><use href="#leaf" transform="translate(10 116) rotate(-100)"/>
+  <use href="#leaf" transform="translate(246 200) rotate(60)"/><use href="#leaf" transform="translate(248 172) rotate(75)"/><use href="#leaf" transform="translate(248 144) rotate(90)"/><use href="#leaf" transform="translate(246 116) rotate(100)"/>
+  <g transform="translate(128 22)">
+    <path d="M-34 8 L-26 -12 L-13 0 L0 -18 L13 0 L26 -12 L34 8 Z" fill="url(#o)" stroke="#6b4a0e" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="0" cy="-18" r="4" fill="#f0449b"><animate attributeName="opacity" values="1;.4;1" dur="1.4s" repeatCount="indefinite"/></circle>
+    <circle cx="-26" cy="-12" r="3" fill="#fff6cf"/><circle cx="26" cy="-12" r="3" fill="#fff6cf"/>
+  </g>
+  <g transform="translate(128 238)">
+    <rect x="-30" y="-12" width="60" height="22" rx="11" fill="#1b1407" stroke="url(#o)" stroke-width="3"/>
+    <text y="4" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="2" fill="#f7d76a">VIP</text>
+  </g>
+</svg>

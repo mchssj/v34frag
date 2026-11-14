@@ -34,8 +34,18 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
 import { useMine } from "@/features/ranking/components/parts"
+import {
+  FramedAvatar,
+  NameFx,
+  Stickers,
+  VipBadge,
+} from "@/features/shop/cosmetics"
 import { EloChart } from "../components/EloChart"
 import { FriendButton } from "../components/FriendButton"
+import {
+  MediaReportDialog,
+  type MediaKind,
+} from "../components/MediaReportDialog"
 import { ProfileVotes } from "../components/ProfileWall"
 import { VerifyDialog } from "../components/VerifyDialog"
 import {
@@ -98,8 +108,15 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
     )
 
   const p = q.data
-  return (
-    <section className="flex flex-col gap-5">
+  // (replanteo 113) El tema equipado pinta toda la página del jugador, siempre en oscuro (sus colores son oscuros).
+  const theme = p.cosmetics?.theme?.css_class
+  const page = (
+    <section
+      className={cn(
+        "flex flex-col gap-5",
+        theme && [theme, "perfil-tema -m-3 rounded-2xl p-3 text-foreground"]
+      )}
+    >
       <PlayerHeader p={p} />
       <div className="grid items-stretch gap-4 md:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
         <LevelCard p={p} />
@@ -127,6 +144,7 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
       />
     </section>
   )
+  return theme ? <div className="dark">{page}</div> : page
 }
 
 function PlayerHeader({ p }: { p: PlayerDetail }) {
@@ -150,23 +168,50 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
       : null
   const photo = p.photo_url ?? d?.avatar_url ?? null
   const [first, ...rest] = p.teams
+  // (replanteo 113) Lo equipado en la tienda: portada, tema, marco, efecto de nombre y stickers.
+  const cos = p.cosmetics
 
   return (
-    <Card variant="outline">
+    <Card
+      variant="outline"
+      className={cn(
+        (p.cover_url || cos?.theme) && "overflow-hidden",
+        cos?.theme?.css_class
+      )}
+    >
+      {p.cover_url && (
+        <div
+          aria-hidden
+          className="-mb-2 aspect-[4/1] max-h-48 w-full bg-muted bg-cover bg-center"
+          style={{ backgroundImage: `url("${p.cover_url}")` }}
+        />
+      )}
       <div className="flex flex-wrap items-start gap-5 p-5">
-        <Avatar className="size-24 rounded-xl after:hidden after:rounded-xl">
-          {photo && <AvatarImage src={photo} alt="" className="rounded-xl" />}
-          <AvatarFallback className="rounded-xl bg-secondary text-4xl font-semibold text-foreground">
-            {initialOf(p.alias)}
-          </AvatarFallback>
-        </Avatar>
+        {cos?.frame || cos?.avatar ? (
+          <FramedAvatar
+            alias={p.alias}
+            src={photo}
+            frame={cos.frame}
+            avatar={cos.avatar}
+            size={124}
+            className="-m-3.5"
+          />
+        ) : (
+          <Avatar className="size-24 rounded-xl after:hidden after:rounded-xl">
+            {photo && <AvatarImage src={photo} alt="" className="rounded-xl" />}
+            <AvatarFallback className="rounded-xl bg-secondary text-4xl font-semibold text-foreground">
+              {initialOf(p.alias)}
+            </AvatarFallback>
+          </Avatar>
+        )}
         <div className="flex min-w-[240px] flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2.5">
             {/* La insignia pegada al nick, como en FACEIT. */}
             <span className="inline-flex items-center gap-1.5">
               <h1 className="text-[28px] font-bold tracking-[-0.6px]">
-                {p.alias}
+                <NameFx text={p.alias} effect={cos?.name} />
               </h1>
+              {p.vip && <VipBadge className="h-6" />}
               {p.verification && (
                 <VerifiedBadge
                   kind={p.verification.kind}
@@ -175,6 +220,12 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
                 />
               )}
             </span>
+            {cos && cos.stickers.length > 0 && (
+              <Stickers
+                items={cos.stickers.filter((x) => x !== null)}
+                size={32}
+              />
+            )}
             {d?.country && (
               <span className="inline-flex h-[22px] items-center gap-1.5 rounded-[calc(var(--radius)-4px)] border px-1.5 text-xs font-medium">
                 {country && <CountryFlag country={country} />}
@@ -301,6 +352,19 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
           ) : (
             <>
               {signedIn && <FriendButton playerId={p.id} nick={p.alias} />}
+              {signedIn && (
+                <MediaReportDialog
+                  player={p.id}
+                  nick={p.alias}
+                  kinds={
+                    [
+                      cos?.avatar?.id === "custom" && "avatar",
+                      cos?.background?.id === "custom" && "background",
+                      p.cover_url && "cover",
+                    ].filter(Boolean) as MediaKind[]
+                  }
+                />
+              )}
               <Link
                 to="/players/compare"
                 search={{ b: p.alias }}

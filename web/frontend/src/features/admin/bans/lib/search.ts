@@ -2,6 +2,7 @@ import { z } from "zod"
 
 // "mm": las sanciones del matchmaking (cola y exclusiones), que no son baneos de los servidores.
 // "comments": las denuncias de comentarios de los perfiles (replanteo 94).
+// "images": las denuncias del avatar, el fondo y la portada (replanteo 113, bitácora 2026-11-13-avatar-y-fondo-propios).
 export const STATUS_TABS = [
   "active",
   "expired",
@@ -9,6 +10,7 @@ export const STATUS_TABS = [
   "all",
   "mm",
   "comments",
+  "images",
 ] as const
 
 /** Filtros de la URL de `/admin/bans` (todos opcionales; sin estado = Activos). */

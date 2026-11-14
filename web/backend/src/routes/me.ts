@@ -33,9 +33,9 @@ const mustHave = <R extends Res>(r: R): NonNullable<R['data']> => {
   return d as NonNullable<R['data']>;
 };
 
-const DETAILS = 'avatar_url, real_name, country, game_role, steam, faceit, discord, joined_at, last_seen, updated_at';
+const DETAILS = 'avatar_url, cover_url, real_name, country, game_role, steam, faceit, discord, joined_at, last_seen, updated_at';
 const EMPTY_DETAILS = {
-  avatar_url: null, real_name: null, country: null, game_role: null, steam: null,
+  avatar_url: null, cover_url: null, real_name: null, country: null, game_role: null, steam: null,
   faceit: null, discord: null, joined_at: null, last_seen: null, updated_at: null,
 };
 

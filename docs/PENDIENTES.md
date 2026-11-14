@@ -8,6 +8,47 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 > **Numeración nueva desde el 2026-11-02** (Daniel): **#1** es el servidor "MVZG" (`SFTP_CSS_*_MVZG`, en el mismo panel que flow), **#2** es flow (`SERVER2_*`) y **#3** es el servidor real de siempre en ExtremeHost (`SFTP_CSS_*`). Los puntos anteriores a esa fecha llaman "#1" o "servidor real" al de ExtremeHost (hoy #3), "#2" a RBK y "CMLeague #3" a flow (hoy #2). Desde ahora, todo despliegue va a los tres en la misma tanda (ver `CLAUDE.md`). Lo que falta en el #1 nuevo está en el punto 1.44.
 
+## Permisos de producción (2026-11-12): probado en local, sale con la tienda
+
+> Daniel (2026-11-12): la `114` se despliega junto con la tienda (`113`), no antes.
+
+
+- **Qué pasa:** desde la mudanza al VPS (2026-11-03), cualquiera sin sesión puede ejecutar por `https://db.cmleague.lat/rest` funciones internas como `season_close_run` (cierra la temporada) y `csstv_after_ingest`, y leer `matches.link_code`. 407 objetos de `public` con permisos de más ([`2026-11-12-permisos-funciones`](bitacora/2026-11-12-permisos-funciones/)).
+- **Hecho:** replanteo `114_permisos.sql` (solo `revoke`, generado comparando con una base armada desde cero), su inversa, la prueba sobre la copia de producción (0 diferencias) y `migrar-vps.sh` corregido.
+- **Falta:**
+  1. Con la tienda: respaldo, la `114` en producción por el túnel y `comparar.sh` contra producción ([guía](bitacora/2026-11-12-permisos-funciones/GUIA_IMPLEMENTACION.md)).
+  2. Commit en `main`, y la `114` también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+  3. Revisar si alguien usó esas funciones (logs de Kong del VPS, si se conservan).
+- **Encontrado de paso:**
+  - en `main`, `mm_player_card` perdió `is_me`, `linked` y `country` por un comentario en el medio de una línea del replanteo `94` (producción tiene el arreglo, commit `91ede9b2` de `feat/frontend-fase-1`);
+  - `db-local.sh` falla en la `04` en un checkout de Windows con CRLF.
+
+## Tienda de cosméticos con puntos y monedas VIP (2026-11-11): hecha y probada en local, sin commit
+
+- **Hecho:** replanteo `113_tienda.sql`, API, web (Tienda, Mi perfil, ficha, ranking, sala y amigos del matchmaking, Administración › Tienda), manual, términos, privacidad y contrato del frontend, probados sobre una copia de producción ([`2026-11-11-tienda-de-puntos`](bitacora/2026-11-11-tienda-de-puntos/)).
+- **Falta:**
+  1. Commit en `feat/tienda-de-puntos` (worktree `v34frag-mainwt`; lo de `features/matchmaking/` también en `feat/frontend-fase-1`).
+  2. Antes de generar la `113` para producción, pasar a `catalogo.json` lo que Daniel cambió en su local (abajo), y que Daniel instale `ffmpeg` en el VPS.
+  3. **Antes de desplegar (revisado el 2026-11-14):**
+     - Traer `main` a `feat/tienda-de-puntos`: la rama está 18 commits atrás, y desplegar la API o la web desde ella sacaría de producción lo que ya salió (la `116`, el buscador, las medallas…). Hay 12 archivos tocados en los dos lados (`players.ts`, `RoomOverview.tsx`, términos y privacidad, índices de la bitácora, y los tipos generados, que se regeneran).
+     - **Renumerar las migraciones:** en `main` ya existen la `113` (`historico_jugadores_sin_ficha`), dos `114` (medallas y nombre de la ficha), la `115` y la `116`, y la `117` está planeada (tope de baneo). Los permisos y la tienda pasan a los dos números libres que sigan (hoy, `118` y `119`), con sus prechequeos, la tabla de respaldo `replanteo113_funciones`, la inversa y `probar_113`. Los permisos se vuelven a generar (`generar_114.py`) contra producción, porque desde el 2026-11-12 aparecieron funciones nuevas.
+     - Refrescar la copia local de producción y volver a correr la prueba de la tienda sobre ella.
+  4. Desplegar: los permisos, la tienda, `notify pgrst`, la API y la web ([guía](bitacora/2026-11-11-tienda-de-puntos/GUIA_IMPLEMENTACION.md)). Lo de `features/matchmaking/` también se commitea en `feat/frontend-fase-1`.
+  5. Probar en producción con una cuenta común y una VIP, y publicar el changelog (2.9.46, o la que siga: `main` ya usó hasta la 2.9.45).
+  6. **Después:** las misiones de Kyan (`/demo/misiones`), en su propio requerimiento.
+- **Avatares animados** (2026-11-12, [`2026-11-12-avatares-animados`](bitacora/2026-11-12-avatares-animados/)): **reemplazados el 2026-11-13.** Los 16 son arte de terceros sin permiso («Nieve», de Pinterest y animada por Daniel; casi todos los demás, de Wallpaper Engine) y no se publican. Siguen valiendo lo que se hizo con ellos: la API rechaza imágenes animadas subidas y las filas ya no muestran el marco.
+- **Avatar y fondos propios** (2026-11-13, [`2026-11-13-avatar-y-fondo-propios`](bitacora/2026-11-13-avatar-y-fondo-propios/)): **hecho y probado en local (2026-11-14), sin commit.** Cada jugador sube su fondo fijo (puntos) y, siendo VIP, su avatar y su fondo animados (monedas VIP), pagando cada vez; se ve al instante y se saca si lo denuncian, sin devolver lo pagado. Va dentro de la `113`, antes de desplegar la tienda.
+  - Decidido (2026-11-14): el catálogo sigue separado como lo planteó Kyan (lo VIP, solo VIP); lo propio animado es solo VIP.
+  - Hecho en local (2026-11-14): los 24 avatares y 12 fondos de Kyan en la tienda (369 artículos, sin los 16 de terceros) y la vista previa en ventana en la Tienda y en Administración › Tienda. Daniel elige en su local cuáles quedan activos.
+  - Hecho en local (2026-11-14): el admin cambia el nombre, la descripción y si es solo VIP de cada artículo (lápiz en el catálogo; `admin_shop_item_update` acepta `vip_only`). **Antes de desplegar**, pasar a `catalogo.json` y a la `113` lo que Daniel active, renombre, redescriba o cambie de grupo en su local: la `113` carga el catálogo desde ahí y en producción se perdería.
+  - Precios aprobados y aplicados en local (2026-11-14): los de Kyan ÷ 2,5, redondeados a 50, y 50 más. Lo propio: fondo fijo 500 puntos, avatar animado 550 y fondo animado 650 monedas VIP.
+  - Hecho en local (2026-11-14): la subida de lo propio (bucket `cosmetics`, conversión con ffmpeg en la API de Node), las denuncias de imágenes (Baneos › Imágenes), sacar desde Gestionar, los tres precios en la configuración, manual, términos y privacidad. Los 16 avatares de terceros salieron del repo y del catálogo (Daniel probó dejar 6 y se arrepintió): están en `~/.v34frag/avatares-retirados/` de la PC de Daniel ([guía](bitacora/2026-11-13-avatar-y-fondo-propios/GUIA_IMPLEMENTACION.md)).
+  - Antes del despliegue, Daniel instala `ffmpeg` en el VPS (`sudo apt install ffmpeg`). Sin él, lo animado responde «no disponible» y no cobra; el fondo fijo funciona.
+- **Lo subido queda guardado** (2026-11-14, [`2026-11-14-inventario-de-lo-propio`](bitacora/2026-11-14-inventario-de-lo-propio/)): **hecho y probado en local, sin commit.** Cada avatar o fondo de miniperfil subido queda en la cuenta (hasta 5 y 5) y ponérselo otra vez es gratis; el fondo se llama «fondo de miniperfil» y se encuadra vertical (1:2), con la forma de la tarjeta de Jugar. Va dentro de la `113`. La base local de Daniel se actualizó en su lugar.
+  - **Falta:** reiniciar la API local (`pnpm dev` de `v34frag-mainwt/web/backend`, quedó caída en el puerto 8787) y recorrerlo en el navegador: subir dos, volver al primero sin pagar, el tope, borrar, y el fondo en Jugar en la computadora y en el celular (confirmar la proporción 1:2, que se calculó y no se midió).
+- Nuevo: `web/backend/scripts/copia-produccion.sh` carga una copia de producción en la base local (el método de antes del corte ya no sirve).
+- La base local tiene dos cuentas de prueba (`pruebatienda` y `pruebavip`, admin y VIP) vinculadas a fichas de la copia: se van con la próxima recarga.
+
 ## Términos y condiciones y política de privacidad (borradores, sin publicar)
 
 - **Estado:** `terms/terminos.html` escrito y `terms/privacidad.html` reescrita el 2026-11-03, pedidos por Kyan. Cubren toda la plataforma, también lo que no está implementado, con la ley argentina (CCyC, Ley 24.240 y Ley 25.326). No tocan los servidores (ni `aurav34`, flow ni MVZG).

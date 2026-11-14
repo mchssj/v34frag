@@ -9,6 +9,7 @@ import { errorResponses, json } from '../schemas/common';
 import { Compare, type ComparePlayer, CompareQuery, RankingPlayerList, RankingPlayerQuery, type TeamRef } from '../schemas/players';
 import { resolvePlayer, verifiedPlayers } from '../services/players';
 import { vipPlayers } from '../services/vip';
+import { cosmeticsLight, type Light } from '../services/shop';
 
 // Ranking de jugadores y comparador (plan docs/bitacora/2026-10-24-api-mixes-perfil-ranking). Vistas player_ranking y
 // player_elo_history y función players_together del replanteo 27. Se monta antes que players: /players/compare no es un {id}.
@@ -57,7 +58,9 @@ type OverviewRow = {
   rating: number | null; kd: number | null; teams: unknown; user_id?: string | null;
 };
 
-async function comparePlayer(sb: Db, id: string, trend: number[], vip: Set<string>, verified: Map<string, 'gray' | 'gold'>): Promise<z.infer<typeof ComparePlayer>> {
+async function comparePlayer(
+  sb: Db, id: string, trend: number[], vip: Set<string>, verified: Map<string, 'gray' | 'gold'>, cosmetics: Map<string, Light>,
+): Promise<z.infer<typeof ComparePlayer>> {
   const [o, s, p] = await Promise.all([
     sb.from('player_overview').select('id, nick, photo_url, elo, elo_matches, maps, rating, kd, teams').eq('id', id).maybeSingle().then(must),
     sb.from('player_stats').select('maps, hs, adr, wins, losses').eq('player_id', id).maybeSingle().then(must),
@@ -69,7 +72,7 @@ async function comparePlayer(sb: Db, id: string, trend: number[], vip: Set<strin
   const d = p?.user_id ? must(await sb.from('profile_details').select('game_role').eq('user_id', p.user_id).maybeSingle()) : null;
   const played = (s?.wins ?? 0) + (s?.losses ?? 0);
   return {
-    player: { id, alias: row.nick ?? '', photo_url: row.photo_url, vip: vip.has(id), verified: verified.get(id) ?? null },
+    player: { id, alias: row.nick ?? '', photo_url: row.photo_url, vip: vip.has(id), verified: verified.get(id) ?? null, cosmetics: cosmetics.get(id) ?? null },
     teams: Array.isArray(row.teams) ? (row.teams as z.infer<typeof TeamRef>[]) : [],
     game_role: d?.game_role ?? null,
     level: levelOf(row.elo),
@@ -101,12 +104,15 @@ export const ranking = createRouter()
     type Row = OverviewRow & { position: number | null; country: string | null; game_role: string | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, { matches: 'maps' });
     const ids = rows.map((r) => r.id!);
-    const [trends, vip, verified] = await Promise.all([eloTrends(sb, ids), vipPlayers(sb, ids), verifiedPlayers(sb, ids)]);
+    const [trends, vip, verified, cosmetics] = await Promise.all([eloTrends(sb, ids), vipPlayers(sb, ids), verifiedPlayers(sb, ids), cosmeticsLight(sb, ids)]);
     return c.json(
       envelope(
         rows.map((r) => ({
           position: r.position ?? 0,
-          player: { id: r.id!, alias: r.nick ?? '', photo_url: r.photo_url, vip: vip.has(r.id!), verified: verified.get(r.id!) ?? null },
+          player: {
+            id: r.id!, alias: r.nick ?? '', photo_url: r.photo_url, vip: vip.has(r.id!), verified: verified.get(r.id!) ?? null,
+            cosmetics: cosmetics.get(r.id!) ?? null,
+          },
           level: levelOf(r.elo),
           elo: r.elo ?? 0,
           teams: Array.isArray(r.teams) ? (r.teams as z.infer<typeof TeamRef>[]) : [],
@@ -129,10 +135,12 @@ export const ranking = createRouter()
     const sb = c.var.sb;
     const [ida, idb] = await Promise.all([resolvePlayer(sb, a), resolvePlayer(sb, b)]);
     if (ida === idb) throw new AppError(400, 'VALIDATION_ERROR', 'Elige dos jugadores distintos.');
-    const [trends, vip, verified] = await Promise.all([eloTrends(sb, [ida, idb]), vipPlayers(sb, [ida, idb]), verifiedPlayers(sb, [ida, idb])]);
+    const [trends, vip, verified, cosmetics] = await Promise.all([
+      eloTrends(sb, [ida, idb]), vipPlayers(sb, [ida, idb]), verifiedPlayers(sb, [ida, idb]), cosmeticsLight(sb, [ida, idb]),
+    ]);
     const [pa, pb, together] = await Promise.all([
-      comparePlayer(sb, ida, trends.get(ida) ?? [], vip, verified),
-      comparePlayer(sb, idb, trends.get(idb) ?? [], vip, verified),
+      comparePlayer(sb, ida, trends.get(ida) ?? [], vip, verified, cosmetics),
+      comparePlayer(sb, idb, trends.get(idb) ?? [], vip, verified, cosmetics),
       sb.rpc('players_together', { p_a: ida, p_b: idb }).then(mustHave),
     ]);
     const t = together[0];

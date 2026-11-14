@@ -226,11 +226,11 @@ const SECTIONS: LegalSection[] = [
           derrota si tu equipo gana; si pierde, al menos lo que cuesta una
           derrota) y puede sumar escalones de espera antes de volver a buscar
           partida. Si te desconectas, pasado 1 minuto y 30 segundos tu equipo
-          puede votar en el servidor para darte por abandonado sin esperar a
-          que se termine tu plazo para volver, y la liga puede llamar a otro jugador para que entre en tu
-          lugar. Si vuelves después de que entró, quedas de espectador. Irte en
-          la última ronda, o cuando ya terminó la partida, no cuenta como
-          abandono.
+          puede votar en el servidor para darte por abandonado sin esperar a que
+          se termine tu plazo para volver, y la liga puede llamar a otro jugador
+          para que entre en tu lugar. Si vuelves después de que entró, quedas de
+          espectador. Irte en la última ronda, o cuando ya terminó la partida,
+          no cuenta como abandono.
         </li>
         <li>
           Los servidores de la liga registran tu IP, tu SteamID y tu nick al
@@ -498,14 +498,36 @@ const SECTIONS: LegalSection[] = [
     title: "Puntos, tienda y misiones",
     body: (
       <>
-        <p>
-          <Wip />
-        </p>
         <ul>
           <li>
-            Ganas puntos jugando y completando misiones. Con los puntos compras
-            cosméticos para tu perfil (marcos, fondos, avatares, stickers, temas
-            y nombres).
+            Ganas puntos jugando mixes y partidas del matchmaking, y completando
+            misiones <Wip />. Con los puntos compras cosméticos para tu perfil
+            en la Tienda (marcos, avatares, fondos de miniperfil, stickers,
+            temas y efectos de nombre).
+          </li>
+          <li>
+            También puedes <strong>subir tu propio fondo de miniperfil</strong>{" "}
+            para tu tarjeta en el grupo de Jugar, con puntos, y, si eres VIP, tu{" "}
+            <strong>avatar y tu fondo de miniperfil animados</strong>, con
+            monedas VIP. Se paga cada vez que subes uno. Lo que subes{" "}
+            <strong>queda guardado</strong> (hasta 5 avatares y 5 fondos de
+            miniperfil; el número lo puede cambiar un administrador) hasta que
+            lo borres: ponerte cualquiera de los guardados, sacártelo o borrarlo
+            no cuesta ni se devuelve. Tu foto de perfil no puede ser animada. Si
+            el VIP vence, lo animado que subiste queda guardado pero no se
+            muestra ni te lo puedes poner hasta que lo renueves.
+          </li>
+          <li>
+            Al subir una imagen declaras que{" "}
+            <strong>tienes derecho a usarla</strong> (es tuya o tienes permiso
+            de quien la hizo) y nos permites mostrarla en la web mientras la
+            tengas. Si no era así, la responsabilidad es tuya.
+          </li>
+          <li>
+            Si eres VIP, además ganas <strong>monedas VIP</strong> en los mixes
+            que juegas siendo VIP, con las que compras los artículos VIP. Si el
+            VIP vence, las monedas y lo VIP que compraste quedan congelados
+            hasta que lo renueves.
           </li>
           <li>
             <strong>
@@ -523,7 +545,20 @@ const SECTIONS: LegalSection[] = [
             Los cosméticos son una licencia para usarlos en tu perfil de
             CMLeague, no una propiedad. Podemos cambiar sus precios y retirar
             artículos de la venta. Hacer trampa para ganar puntos o misiones es
-            motivo de sanción y de perder lo ganado.
+            motivo de sanción y de perder lo ganado: un administrador puede
+            restarte puntos o quitarte un artículo, con el motivo, y lo que
+            pagaste por él no se devuelve.
+          </li>
+          <li>
+            Puedes subir una <strong>portada</strong> para tu perfil, gratis.
+          </li>
+          <li>
+            Cualquier jugador puede <strong>denunciar</strong> tu avatar, tu
+            fondo de miniperfil o tu portada. Un moderador o un administrador la
+            revisa y, si usa una imagen ajena sin permiso o no respeta las
+            reglas de conducta, la saca (solo esa: lo demás que guardaste sigue)
+            y te avisa el motivo.{" "}
+            <strong>Lo que pagaste no se devuelve.</strong>
           </li>
         </ul>
       </>

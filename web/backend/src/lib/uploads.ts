@@ -28,7 +28,35 @@ export async function readImage(file: File, maxBytes: number): Promise<{ bytes: 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const type = sniffImage(bytes);
   if (!type) throw new AppError(400, 'INVALID_FILE', 'La imagen tiene que ser JPG, PNG o WebP.');
+  // (bitácora 2026-11-12-avatares-animados) Una imagen animada de perfil solo se consigue en la tienda.
+  if (isAnimated(bytes, type)) throw new AppError(400, 'INVALID_FILE', 'La imagen no puede ser animada.');
   return { bytes, type };
+}
+
+/** PNG animado (APNG: un `acTL` antes del primer `IDAT`) o WebP animado (`VP8X` con la marca de animación o un `ANIM`). */
+export function isAnimated(b: Uint8Array, type: ImageType): boolean {
+  const ascii = (at: number, s: string) => [...s].every((ch, i) => b[at + i] === ch.charCodeAt(0));
+  if (type.ext === 'png') {
+    let i = 8;
+    while (i + 8 <= b.length) {
+      const len = ((b[i]! << 24) >>> 0) + (b[i + 1]! << 16) + (b[i + 2]! << 8) + b[i + 3]!;
+      if (ascii(i + 4, 'acTL')) return true;
+      if (ascii(i + 4, 'IDAT') || ascii(i + 4, 'IEND')) return false;
+      i += 12 + len;
+    }
+    return false;
+  }
+  if (type.ext === 'webp') {
+    let i = 12;
+    while (i + 8 <= b.length) {
+      const len = (b[i + 4]! | (b[i + 5]! << 8) | (b[i + 6]! << 16) | (b[i + 7]! << 24)) >>> 0;
+      if (ascii(i, 'ANIM') || ascii(i, 'ANMF')) return true;
+      if (ascii(i, 'VP8X') && i + 8 < b.length && (b[i + 8]! & 0x02) !== 0) return true;
+      i += 8 + len + (len & 1);
+    }
+    return false;
+  }
+  return false;
 }
 
 // Sonidos de partida: MP3, OGG o WAV, hasta 1 MB. Se mira el tipo real, no el que declara el navegador.

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs></defs>
+  <g fill="none" stroke-width="7">
+    <circle cx="30" cy="50" r="16" stroke="#ff2f86"><animate attributeName="stroke" values="#ff2f86;#fff;#ff2f86;#ff2f86" keyTimes="0;.1;.2;1" dur="1.8s" repeatCount="indefinite"/></circle>
+    <path d="M64 32l18 32H46Z" stroke="#ff2f86" stroke-linejoin="round"><animate attributeName="stroke" values="#ff2f86;#ff2f86;#fff;#ff2f86;#ff2f86" keyTimes="0;.3;.4;.5;1" dur="1.8s" repeatCount="indefinite"/></path>
+    <rect x="84" y="34" width="30" height="30" stroke="#ff2f86"><animate attributeName="stroke" values="#ff2f86;#ff2f86;#fff;#ff2f86;#ff2f86" keyTimes="0;.6;.7;.8;1" dur="1.8s" repeatCount="indefinite"/></rect>
+  </g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#0d2b2b" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="18" letter-spacing="1.5" fill="#ff2f86">ELIMINADO</text>
+  </g>
+</svg>

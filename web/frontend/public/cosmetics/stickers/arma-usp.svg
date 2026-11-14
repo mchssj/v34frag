@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs><linearGradient id="bs" x1="0" y1="0" x2="1" y2="1"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="sk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a0a1f"/><stop offset=".5" stop-color="#4a3aa0"/><stop offset="1" stop-color="#c0b0ff"/></linearGradient></defs>
+  <g transform="rotate(-8 64 50)">
+    <rect x="6" y="22" width="116" height="56" rx="10" fill="#111" stroke="#fff" stroke-width="6"/>
+    <g transform="translate(15.47 27.35) scale(0.6471)" fill="url(#sk)" stroke="#fff" stroke-width="1.39" stroke-linejoin="round" fill-rule="evenodd"><path d="M8 6 L96 6 L96 22 L8 22 L6 11 Z M12 9 L14 9 L14 19 L12 19 Z M17 9 L19 9 L19 19 L17 19 Z M22 9 L24 9 L24 19 L22 19 Z"/><path d="M10 3 L17 3 L17 6 L10 6 Z M88 3.5 L92 3.5 L92 6 L88 6 Z"/><path d="M96 11 L101 11 L101 18 L96 18 Z"/><path d="M101 7 L150 7 Q153 7 153 10 L153 19 Q153 22 150 22 L101 22 Z M108 10.5 L146 10.5 L146 12 L108 12 Z"/><path d="M42 22 L95 22 L90 32 L42 32 Z M58 25.5 L86 25.5 L86 27 L58 27 Z"/><path d="M8 10 L2 9 Q-3 12 1 17 L8 19 Z"/><path d="M46 32 L46 46 Q46 52 52 52 L70 52 Q75 52 76 47 L79 42 L76 40 L76 32 Z M50 32 L50 45 Q50 48 53 48 L69 48 Q72 48 72 45 L72 32 Z"/><path d="M14 22 L46 32 L45 38 L36 65 Q35 68 32 68 L14 68 Q10 68 11 64 L19 36 Q19 28 11 25 Z"/><path d="M20 24 L30 25 L30 28 L20 27.5 Z"/><path d="M58 32 Q55 38 59 42 L61 42 Q58 38 61 32 Z"/></g>
+    <rect x="6" y="22" width="116" height="56" rx="10" fill="url(#bs)">
+      <animate attributeName="x" values="-120;130;130" keyTimes="0;.5;1" dur="2.5s" repeatCount="indefinite"/></rect>
+  </g>
+  <g transform="rotate(-6 64 108)">
+    <rect x="8" y="94" width="112" height="28" rx="8" fill="#0a0a1f" stroke="#fff" stroke-width="5"/>
+    <text x="64" y="115" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="20" letter-spacing="1.2" fill="#fff">USP</text>
+  </g>
+</svg>

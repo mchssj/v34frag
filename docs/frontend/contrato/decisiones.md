@@ -167,3 +167,8 @@ Todas las decisiones de diseño que afectan al frontend, en orden. "Daniel" son 
 | 2026-11-05 | Medallas: alcance | Cuentan todas las partidas terminadas (mixes, PCW y torneo); clutchs desde 1v1; ninguna se quita sola; el objetivo de una otorgada no se edita | Daniel |
 | 2026-11-05 | Medallas: dibujo | Paleta fija de Kyan; en tamaño chico, la de brillo achicada; Top 20 con el Top 10 en bronce hasta que el admin la cambie | Daniel |
 | 2026-11-05 | Medallas: VIP por meses | Meses acumulados; no existe Premium (fase 2) | Daniel |
+| 2026-11-11 | Tienda: qué suma | Mixes y mapas del matchmaking que dieron ELO, desde el primer mix; no los interrumpidos ni los abandonados; PCW y torneos, no por ahora | Daniel |
+| 2026-11-11 | Tienda: VIP | Monedas VIP (la versión de Kyan): el VIP da el Marco Oro VIP y lo demás de lo VIP se compra con monedas ganadas siendo VIP; si vence, se congela | Daniel |
+| 2026-11-11 | Tienda: precios y portada | Los precios de Kyan, cambiables por el admin; portada del perfil 4:1 | Daniel |
+| 2026-11-12 | Tienda: quitar un artículo | No devuelve lo pagado: queda un descuento con el motivo en el historial | Daniel (plan de Kyan) |
+| 2026-11-12 | Cosméticos en las listas del matchmaking | `GET /cosmetics?players=` en lugar de cambiar `mm_state` (el matchmaking va en dos ramas) | Claude, en la tienda |

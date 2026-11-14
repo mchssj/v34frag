@@ -13,9 +13,13 @@ import {
   PlusIcon,
   ShieldCheckIcon,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { ListSeal } from "@/components/brand/VerifiedBadge"
+import { playersCosmeticsOptions } from "@/features/shop/api"
+import { AvatarThumb, NameFx } from "@/features/shop/cosmetics"
+import type { CosmeticsLight } from "@/features/shop/types"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { LiveDot } from "@/components/brand/LiveDot"
@@ -108,6 +112,10 @@ function TeamColumn({
     ["connecting", "live", "finished"].includes(lobby.status)
   const mine = lobby.players.some((p) => p.is_me && p.team === team)
   const { main, gone, open } = roomRows(lobby, team, mode === "preview")
+  // (replanteo 113) El efecto de nombre de la tienda (en las filas, sin el marco): una sola consulta para las dos columnas.
+  const cosmetics = useQuery(
+    playersCosmeticsOptions(lobby.players.map((p) => p.player_id))
+  ).data
   return (
     <div className="flex flex-col gap-3">
       <section
@@ -144,6 +152,7 @@ function TeamColumn({
               lobby={lobby}
               showConnection={live}
               mode={mode}
+              cosmetics={cosmetics?.get(p.player_id)}
             />
           ))}
           {open && <OpenSlot rep={open} />}
@@ -165,11 +174,13 @@ function PlayerCard({
   lobby,
   showConnection,
   mode,
+  cosmetics,
 }: {
   p: MmPlayer
   lobby: MmLobby
   showConnection: boolean
   mode: RoomMode
+  cosmetics?: Pick<CosmeticsLight, "name" | "avatar">
 }) {
   const r = p.recent
   const rep = replacementOf(lobby, p.player_id)
@@ -187,12 +198,17 @@ function PlayerCard({
       )}
     >
       <div className="flex items-center gap-2.5">
-        <Avatar className="size-9 rounded-lg">
-          {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
-          <AvatarFallback className="rounded-lg text-sm font-semibold">
-            {p.nick.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {cosmetics?.avatar ? (
+          // (bitácora 2026-11-12-avatares-animados) El avatar de la tienda, quieto; se anima al pasar el mouse.
+          <AvatarThumb avatar={cosmetics.avatar} size={36} className="rounded-lg" />
+        ) : (
+          <Avatar className="size-9 rounded-lg">
+            {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
+            <AvatarFallback className="rounded-lg text-sm font-semibold">
+              {p.nick.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
         <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
           {p.country && <CountryFlag country={p.country} />}
           <Link
@@ -200,7 +216,7 @@ function PlayerCard({
             params={{ nick: p.nick }}
             className="min-w-0 truncate hover:underline"
           >
-            {p.nick}
+            <NameFx text={p.nick} effect={cosmetics?.name} />
           </Link>
           <ListSeal kind={p.verified} />
           {p.vip && <Badge variant="vip">VIP</Badge>}

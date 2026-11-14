@@ -11480,6 +11480,1996 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shop/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catálogo de la tienda
+         * @description Los artículos activos con el precio de hoy (las ofertas de la semana ya descontadas). Sin sesión se ve todo; con sesión, cada artículo dice si lo tienes, si lo puedes usar y si lo tienes puesto. `owned` necesita sesión.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 400) */
+                    per?: number;
+                    /** @description Campo de orden: `sort`, `price`, `name` */
+                    sort?: "sort" | "price" | "name";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker` */
+                    kind?: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
+                    collection?: string;
+                    /** @description Solo lo VIP (`true`) o solo lo de todos (`false`) */
+                    vip?: "true" | "false";
+                    /** @description Solo las ofertas de la semana */
+                    weekly?: "true" | "false";
+                    /** @description Solo lo que tienes (`true`) o lo que no (`false`). Necesita sesión */
+                    owned?: "true" | "false";
+                    /** @description Busca en el nombre */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Catálogo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ShopItemList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shop/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cuánto se gana
+         * @description Puntos y monedas VIP por mix y las ofertas de la semana. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PointsConfig"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cosmetics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cosméticos de varias fichas
+         * @description Lo equipado de hasta 100 fichas a la vez, para las listas que no lo traen (la sala del matchmaking, los amigos, el grupo). Sin lo que la cuenta ya no puede usar. Las fichas sin nada equipado no vienen. Sin sesión.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Ids de fichas separados por coma (hasta 100) */
+                    players: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Cosméticos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerCosmeticsList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shop/items/{id}/buy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprar
+         * @description Con puntos lo de todos; lo VIP, con monedas VIP y siendo VIP. Sin saldo, ya lo tienes, no se vende, el premio VIP o sin ficha vinculada: `BUSINESS_RULE` con el motivo.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Compra hecha */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BuyResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis puntos y monedas VIP
+         * @description Se calculan de los mixes y los mapas del matchmaking: si un admin borra un mix, se corrigen solos.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Saldo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Points"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/points/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Movimientos de mis puntos
+         * @description De una moneda (`currency`), lo más nuevo primero.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description `points` (puntos) o `vip` (monedas VIP) */
+                    currency?: "points" | "vip";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Movimientos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PointsHistory"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/cosmetics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lo que tengo puesto */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Equipado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Equipped"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Equipar
+         * @description Uno por tipo y hasta 3 stickers, de lo que tienes (lo VIP, siendo VIP). Lo que no viene no se toca; `null` lo saca.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EquipPatch"];
+                };
+            };
+            responses: {
+                /** @description Equipado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Equipped"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subir mi portada
+         * @description `multipart/form-data`, campo `file`. Reemplaza a la anterior. JPEG, PNG o WebP de hasta 1 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": components["schemas"]["CoverUpload"];
+                };
+            };
+            responses: {
+                /** @description Portada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CoverResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /** Quitar mi portada */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sin portada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CoverResult"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catálogo (admin)
+         * @description Todo el catálogo, también lo inactivo, con cuántas cuentas tienen cada artículo.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 400) */
+                    per?: number;
+                    /** @description Campo de orden: `sort`, `name`, `price`, `vip_price`, `kind` */
+                    sort?: "sort" | "name" | "price" | "vip_price" | "kind";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker` */
+                    kind?: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
+                    collection?: string;
+                    /** @description Solo lo VIP o solo lo de todos */
+                    vip?: "true" | "false";
+                    /** @description Activos o inactivos */
+                    active?: "true" | "false";
+                    /** @description Busca en el nombre o el id */
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Catálogo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminShopItemList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shop/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar un artículo
+         * @description Precio en puntos (lo de todos), precio en monedas VIP (lo VIP), activo, orden, nombre, descripción y si es solo VIP. `null` en un precio lo saca de la venta. Al pasar a VIP o a todos se borra el precio de la otra moneda. El tipo no se cambia, y el artículo que viene con el VIP sigue siendo VIP.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminShopItemPatch"];
+                };
+            };
+            responses: {
+                /** @description Artículo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminShopItem"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/points/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Configuración de los puntos */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PointsConfig"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Cambiar la configuración de los puntos
+         * @description Cambia el saldo de todos: los puntos y las monedas se calculan con estos valores, también los de mixes viejos.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PointsConfigPatch"];
+                };
+            };
+            responses: {
+                /** @description Configuración */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PointsConfig"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/points/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Puntos de las cuentas
+         * @description Saldo, monedas VIP, artículos y portada de cada cuenta.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `balance`, `vip_balance`, `mixes`, `alias` */
+                    sort?: "balance" | "vip_balance" | "mixes" | "alias";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Busca en el alias o el nick */
+                    q?: string;
+                    /** @description Solo VIP o solo no VIP */
+                    vip?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Cuentas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAccountList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Puntos de una cuenta */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Saldo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Points"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Sumar o restar puntos o monedas VIP
+         * @description Con motivo. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PointsGrant"];
+                };
+            };
+            responses: {
+                /** @description Saldo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Points"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/points/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movimientos de una cuenta */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description `points` (puntos) o `vip` (monedas VIP) */
+                    currency?: "points" | "vip";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Movimientos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PointsHistory"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventario de una cuenta
+         * @description Lo comprado y lo regalado (el premio VIP no está: viene con el VIP).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `acquired_at` */
+                    sort?: "acquired_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker` */
+                    kind?: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
+                    source?: "purchase" | "grant";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventario */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserItemList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Regalar un artículo
+         * @description También uno sin precio o uno VIP (se usa mientras la cuenta sea VIP). Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ItemGrant"];
+                };
+            };
+            responses: {
+                /** @description Artículo regalado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserItem"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/items/{item}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar un artículo
+         * @description Del inventario y de lo equipado, con motivo. No devuelve lo pagado. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    item: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["Reason"];
+                };
+            };
+            responses: {
+                /** @description Quitado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/cover/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar la portada de una cuenta
+         * @description Moderación, con motivo. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["Reason"];
+                };
+            };
+            responses: {
+                /** @description Sin portada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CoverResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/custom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis avatares y fondos de miniperfil propios
+         * @description Lo subido y guardado (con cuál está puesto), los topes, los precios de hoy y si se pueden subir animaciones.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Lo propio */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyCustom"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/custom/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subir un avatar o un fondo de miniperfil
+         * @description `multipart/form-data`. Cobra cada vez, lo guarda (los anteriores siguen guardados) y se lo pone. Si ya guarda el tope de ese tipo, `BUSINESS_RULE` sin cobrar. Avatar: GIF, PNG o WebP animados, o MP4 o WebM, de hasta 8 MB. Se recorta cuadrado y se pasa a WebM de 256×256 y hasta 10 s, sin audio. Fondo: Fondo de miniperfil fijo: JPEG, PNG o WebP sin animación, de hasta 2 MB, de proporción 1:2 (vertical, entre 240×480 y 960×1920; el frontend lo recorta). Animado (VIP): GIF, PNG o WebP animados, o MP4 o WebM, de hasta 8 MB; se pasa a WebM de 256×512 y hasta 10 s. Lo animado es para los VIP y se paga con monedas VIP; el fondo fijo, con puntos. Si el precio cambió, no alcanza el saldo o falta el VIP: `BUSINESS_RULE` o `VIP_REQUIRED`, sin cobrar. Sin ffmpeg en el servidor, lo animado responde `NOT_AVAILABLE`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description `avatar` (animado, VIP) o `background` (fondo de miniperfil: fijo o, siendo VIP, animado) */
+                    kind: "avatar" | "background";
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": components["schemas"]["CustomUpload"];
+                };
+            };
+            responses: {
+                /** @description Subido y puesto */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CustomResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Archivo demasiado grande */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No disponible en este despliegue */
+                501: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/custom/items/{cid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar una subida guardada
+         * @description Puesta o no. Se borra el archivo. No devuelve lo pagado.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description La subida */
+                    cid: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Lo propio */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyCustom"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/media-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Denunciar una imagen del perfil
+         * @description El avatar o el fondo propios, o la portada, tal como se ven hoy. Una vez por imagen y hasta 20 denuncias por día.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MediaReportBody"];
+                };
+            };
+            responses: {
+                /** @description Denunciada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/profile-media-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Imágenes denunciadas
+         * @description Moderadores y admins. La base pagina, filtra y ordena.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description `open` (por revisar, por defecto), `resolved` o `all` */
+                    status?: "open" | "resolved" | "all";
+                    kind?: "avatar" | "background" | "cover";
+                    reason?: "copyright" | "nsfw" | "offensive" | "other";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Denuncias */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MediaReportList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/profile-media-reports/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolver una denuncia de una imagen
+         * @description Cierra todas las denuncias abiertas de esa imagen. Con `remove`, la saca del perfil (si sigue puesta), borra el archivo y avisa al dueño con el motivo. No devuelve lo pagado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MediaReportResolve"];
+                };
+            };
+            responses: {
+                /** @description Resuelta */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/custom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Avatares y fondos de miniperfil propios de una cuenta
+         * @description Todo lo guardado, con cuál está puesto.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Lo propio */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminCustom"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/custom/items/{cid}/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sacar una subida propia de una cuenta
+         * @description Puesta o no, con motivo. Borra el archivo, cierra sus denuncias y avisa a la cuenta. Las demás guardadas siguen. No devuelve lo pagado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    /** @description La subida */
+                    cid: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["Reason"];
+                };
+            };
+            responses: {
+                /** @description Sacado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mm/state": {
         parameters: {
             query?: never;
@@ -23574,6 +25564,8 @@ export interface components {
         };
         ProfileDetails: {
             avatar_url: string | null;
+            /** @description Portada del perfil, 4:1 (replanteo 113): POST y DELETE /me/cover */
+            cover_url: string | null;
             real_name: string | null;
             country: string | null;
             game_role: string | null;
@@ -24277,6 +26269,7 @@ export interface components {
                 vip: boolean;
                 /** @enum {string|null} */
                 verified: "gray" | "gold" | null;
+                cosmetics: components["schemas"]["CosmeticsLight"];
             };
             level: number | null;
             elo: number;
@@ -24294,6 +26287,31 @@ export interface components {
             /** @description ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo */
             elo_trend: number[];
         };
+        /** @description Marco y efecto de nombre (replanteo 113) */
+        CosmeticsLight: {
+            frame: components["schemas"]["Cosmetic"];
+            avatar: components["schemas"]["Cosmetic"];
+            name: components["schemas"]["Cosmetic"];
+        } | null;
+        Cosmetic: {
+            id: string;
+            /**
+             * @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker`
+             * @enum {string}
+             */
+            kind: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
+            name: string;
+            /** @description Archivo en /cosmetics/ (marcos, fondos, stickers y avatares); null si es una clase CSS. Un avatar es un .webm con un .webp fijo del mismo nombre */
+            file: string | null;
+            /** @description Clase de cosmeticos.css (temas y efectos de nombre); null si es un archivo */
+            css_class: string | null;
+            animated: boolean;
+            vip_only: boolean;
+            /** @description Solo lo propio (id `custom`): la dirección del archivo subido (WebM si es animado, la imagen si es fijo). `file` es null */
+            url?: string | null;
+            /** @description Solo lo propio animado: la imagen fija (WebP) */
+            poster_url?: string | null;
+        } | null;
         TeamRef: {
             /** Format: uuid */
             id: string;
@@ -24329,6 +26347,7 @@ export interface components {
                 vip: boolean;
                 /** @enum {string|null} */
                 verified: "gray" | "gold" | null;
+                cosmetics: components["schemas"]["CosmeticsLight"];
             };
             teams: components["schemas"]["TeamRef"][];
             game_role: string | null;
@@ -24504,9 +26523,13 @@ export interface components {
              * @enum {string|null}
              */
             verified: "gray" | "gold" | null;
+            cosmetics: components["schemas"]["CosmeticsLight"] & unknown;
         };
         /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
         PlayerDetail: components["schemas"]["PlayerSummary"] & {
+            cosmetics?: components["schemas"]["CosmeticsFull"];
+            /** @description Portada del perfil (4:1); null si no tiene o si su perfil es privado */
+            cover_url: string | null;
             verification: components["schemas"]["PlayerVerification"];
             /** @description SteamID principal. Solo para el dueño y los admins: para los demás, null */
             steam_id: string | null;
@@ -24525,6 +26548,12 @@ export interface components {
             private: boolean;
             ban: components["schemas"]["ActiveBan"] & unknown;
         };
+        /** @description Todo lo equipado (replanteo 113); null si no tiene nada */
+        CosmeticsFull: components["schemas"]["CosmeticsLight"] & ({
+            background: components["schemas"]["Cosmetic"];
+            theme: components["schemas"]["Cosmetic"];
+            stickers: components["schemas"]["Cosmetic"][];
+        } | null);
         /** @description Insignia de verificado; null si no tiene */
         PlayerVerification: {
             /**
@@ -25961,6 +27990,488 @@ export interface components {
         };
         VipRevoke: {
             reason: string;
+        };
+        ShopItemList: {
+            items: components["schemas"]["ShopItem"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+            /** @description Cuándo cambian las ofertas (lunes 00:00 de Argentina) */
+            weekly_ends: string;
+        };
+        ShopItem: {
+            id: string;
+            /**
+             * @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker`
+             * @enum {string}
+             */
+            kind: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
+            name: string;
+            description: string | null;
+            file: string | null;
+            css_class: string | null;
+            /** @description Colección (`cs`, `paises`, `mapas`…), para agrupar en la tienda */
+            collection: string;
+            animated: boolean;
+            /** @description Artículo VIP: se compra con monedas VIP siendo VIP y se usa mientras la cuenta sea VIP */
+            vip_only: boolean;
+            /** @description Viene con el VIP, sin comprarlo (el Marco Oro VIP) */
+            vip_reward: boolean;
+            /** @description Precio de hoy en puntos (con la oferta de la semana); null si no se vende con puntos */
+            price: number | null;
+            /** @description Precio sin la oferta */
+            base_price: number | null;
+            /** @description Precio en monedas VIP (solo lo VIP); null si no se vende */
+            vip_price: number | null;
+            /** @description Está en las ofertas de esta semana */
+            weekly: boolean;
+            /** @description Lo tienes (con sesión; sin sesión, false) */
+            owned: boolean;
+            /** @description Puedes equiparlo hoy: lo tienes (lo VIP, siendo VIP) o es el premio VIP y eres VIP */
+            usable: boolean;
+            /** @description Lo tienes puesto */
+            equipped: boolean;
+        };
+        PointsConfig: {
+            /** @description Puntos por mix o mapa del matchmaking terminado */
+            per_mix: number;
+            /** @description Puntos extra si ganó su equipo */
+            per_win: number;
+            /** @description Multiplicador de los puntos en los mixes jugados siendo VIP (1: sin multiplicar) */
+            vip_multiplier: number;
+            /** @description Monedas VIP por mix jugado siendo VIP */
+            vip_per_mix: number;
+            /** @description Monedas VIP extra si ganó */
+            vip_per_win: number;
+            /** @description Artículos en oferta cada semana */
+            weekly_count: number;
+            /** @description Descuento de las ofertas, en % */
+            weekly_discount: number;
+            /** @description Subir un avatar animado propio (VIP), en monedas VIP */
+            custom_avatar_price: number;
+            /** @description Subir un fondo animado propio (VIP), en monedas VIP */
+            custom_bg_animated_price: number;
+            /** @description Subir un fondo de miniperfil fijo propio, en puntos */
+            custom_bg_static_price: number;
+            /** @description Cuántos avatares propios guarda cada cuenta */
+            custom_max_avatar: number;
+            /** @description Cuántos fondos de miniperfil propios (fijos y animados) guarda cada cuenta */
+            custom_max_background: number;
+        };
+        PlayerCosmeticsList: {
+            items: components["schemas"]["PlayerCosmetics"][];
+        };
+        /** @description Todo lo equipado, sin lo que la cuenta ya no puede usar (VIP vencido o quitado por un admin) */
+        PlayerCosmetics: components["schemas"]["CosmeticsFull"] & {
+            /** Format: uuid */
+            player_id: string;
+            vip: boolean;
+        };
+        BuyResult: {
+            item: string;
+            price_paid: number;
+            /**
+             * @description `points` (puntos) o `vip` (monedas VIP)
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            /** @description Saldo nuevo de esa moneda */
+            balance: number;
+        };
+        Points: {
+            /** @description Es VIP hoy */
+            vip: boolean;
+            /** @description Tiene ficha de jugador vinculada (sin ficha no suma ni compra) */
+            has_player: boolean;
+            points: {
+                /** @description Ganados en mixes */
+                earned: number;
+                /** @description Regalos y correcciones de un admin (pueden ser negativos) */
+                granted: number;
+                /** @description Gastados en la tienda */
+                spent: number;
+                /** @description Saldo: ganados + regalos − gastados. Puede ser negativo si se borró un mix después de una compra */
+                balance: number;
+                /** @description Mixes que sumaron */
+                mixes: number;
+            };
+            vip_coins: {
+                /** @description Ganados en mixes */
+                earned: number;
+                /** @description Regalos y correcciones de un admin (pueden ser negativos) */
+                granted: number;
+                /** @description Gastados en la tienda */
+                spent: number;
+                /** @description Saldo: ganados + regalos − gastados. Puede ser negativo si se borró un mix después de una compra */
+                balance: number;
+                /** @description Mixes que sumaron */
+                mixes: number;
+                /** @description Congeladas: hoy no es VIP */
+                frozen: boolean;
+            };
+        };
+        /** @description Lo más nuevo primero (sort `at`, order `desc`) */
+        PointsHistory: {
+            items: components["schemas"]["PointsMove"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        PointsMove: {
+            /**
+             * @description `mix`, `mm` (mapa del matchmaking), `grant` (admin), `purchase` o `custom` (subió su avatar o su fondo)
+             * @enum {string}
+             */
+            kind: "mix" | "mm" | "grant" | "purchase" | "custom";
+            at: string | null;
+            /** @description Positivo suma, negativo resta */
+            amount: number;
+            /** @description Mapa y si ganó, el motivo del admin o el artículo comprado */
+            label: string;
+            /** @description La partida (mix y mm), el artículo (purchase) o la subida (custom) */
+            ref: string | null;
+        };
+        /** @description Ids de lo equipado (tal como lo guardó; la ficha pública oculta lo que ya no puede usar). `custom:<id>` en avatar o background: una subida propia */
+        Equipped: {
+            frame: string | null;
+            avatar: string | null;
+            background: string | null;
+            theme: string | null;
+            name: string | null;
+            stickers: string[];
+        };
+        /** @description Lo que no viene no se toca; `null` lo saca. `custom:<id>` en avatar o background pone una subida propia guardada, sin pagar */
+        EquipPatch: {
+            frame?: string | null;
+            avatar?: string | null;
+            background?: string | null;
+            theme?: string | null;
+            name?: string | null;
+            stickers?: string[];
+        };
+        CoverResult: {
+            cover_url: string | null;
+        };
+        CoverUpload: {
+            /**
+             * Format: binary
+             * @description JPEG, PNG o WebP de hasta 1 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).
+             */
+            file: string;
+        };
+        AdminShopItemList: {
+            items: components["schemas"]["AdminShopItem"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminShopItem: {
+            id: string;
+            /**
+             * @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker`
+             * @enum {string}
+             */
+            kind: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
+            name: string;
+            description: string | null;
+            file: string | null;
+            css_class: string | null;
+            collection: string;
+            animated: boolean;
+            vip_only: boolean;
+            vip_reward: boolean;
+            /** @description Precio de lista en puntos; null no se vende */
+            price: number | null;
+            vip_price: number | null;
+            /** @description Se ve en la tienda. Quien ya lo tiene lo sigue usando */
+            active: boolean;
+            sort: number;
+            /** @description Cuántas cuentas lo tienen */
+            owners: number;
+        };
+        AdminShopItemPatch: {
+            /** @description Puntos; `null` lo saca de la venta */
+            price?: number | null;
+            /** @description Monedas VIP (solo lo VIP); `null` lo saca de la venta */
+            vip_price?: number | null;
+            active?: boolean;
+            sort?: number;
+            name?: string;
+            description?: string | null;
+            /** @description Solo VIP o para todos. Borra el precio de la otra moneda: manda el nuevo (`vip_price` o `price`) en el mismo cambio */
+            vip_only?: boolean;
+        };
+        PointsConfigPatch: {
+            per_mix?: number;
+            per_win?: number;
+            vip_multiplier?: number;
+            vip_per_mix?: number;
+            vip_per_win?: number;
+            weekly_count?: number;
+            weekly_discount?: number;
+            custom_avatar_price?: number;
+            custom_bg_animated_price?: number;
+            custom_bg_static_price?: number;
+            custom_max_avatar?: number;
+            custom_max_background?: number;
+        };
+        AdminAccountList: {
+            items: components["schemas"]["AdminAccountPoints"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminAccountPoints: {
+            user: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            };
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            vip: boolean;
+            points: {
+                /** @description Ganados en mixes */
+                earned: number;
+                /** @description Regalos y correcciones de un admin (pueden ser negativos) */
+                granted: number;
+                /** @description Gastados en la tienda */
+                spent: number;
+                /** @description Saldo: ganados + regalos − gastados. Puede ser negativo si se borró un mix después de una compra */
+                balance: number;
+                /** @description Mixes que sumaron */
+                mixes: number;
+            };
+            vip_coins: {
+                /** @description Ganados en mixes */
+                earned: number;
+                /** @description Regalos y correcciones de un admin (pueden ser negativos) */
+                granted: number;
+                /** @description Gastados en la tienda */
+                spent: number;
+                /** @description Saldo: ganados + regalos − gastados. Puede ser negativo si se borró un mix después de una compra */
+                balance: number;
+            };
+            items: number;
+            cover_url: string | null;
+        };
+        PointsGrant: {
+            /**
+             * @description `points` (puntos) o `vip` (monedas VIP)
+             * @default points
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            amount: number;
+            reason: string;
+        };
+        UserItemList: {
+            items: components["schemas"]["UserItem"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        UserItem: {
+            item: components["schemas"]["Cosmetic"];
+            /** @enum {string} */
+            source: "purchase" | "grant";
+            /**
+             * @description Con qué se pagó; null si fue un regalo
+             * @enum {string|null}
+             */
+            currency: "points" | "vip" | null;
+            price_paid: number | null;
+            note: string | null;
+            acquired_at: string;
+        };
+        ItemGrant: {
+            item: string;
+            note?: string;
+        };
+        Reason: {
+            reason: string;
+        };
+        MyCustom: {
+            /** @description Los avatares guardados, lo más nuevo primero */
+            avatar: components["schemas"]["CustomMedia"][];
+            /** @description Los fondos de miniperfil guardados, lo más nuevo primero */
+            background: components["schemas"]["CustomMedia"][];
+            /** @description Cuántos guarda de cada tipo */
+            max: {
+                avatar: number;
+                background: number;
+            };
+            prices: {
+                avatar: number;
+                background_animated: number;
+                background_static: number;
+            };
+            /** @description La API puede convertir animaciones (ffmpeg). Si no, solo el fondo fijo */
+            animated_available: boolean;
+        };
+        CustomMedia: {
+            /**
+             * Format: uuid
+             * @description La subida: con `custom:<id>` se la pone (PUT /me/cosmetics)
+             */
+            id: string;
+            /**
+             * @description `avatar` (animado, VIP) o `background` (fondo de miniperfil: fijo o, siendo VIP, animado)
+             * @enum {string}
+             */
+            kind: "avatar" | "background";
+            animated: boolean;
+            url: string;
+            poster_url: string | null;
+            /** @description Lo que pagó al subirlo */
+            price: number;
+            /**
+             * @description `points` (puntos) o `vip` (monedas VIP)
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            created_at: string;
+            /** @description Lo tiene puesto */
+            equipped: boolean;
+            /** @description Se puede usar: lo animado, solo mientras sea VIP */
+            visible: boolean;
+        };
+        CustomResult: components["schemas"]["MyCustom"] & {
+            /**
+             * Format: uuid
+             * @description La subida nueva (ya puesta)
+             */
+            id: string;
+            price_paid: number;
+            /**
+             * @description `points` (puntos) o `vip` (monedas VIP)
+             * @enum {string}
+             */
+            currency: "points" | "vip";
+            /** @description Saldo nuevo de esa moneda */
+            balance: number;
+        };
+        CustomUpload: {
+            /** Format: binary */
+            file: string;
+            /** @description El precio que vio: si cambió, no se cobra */
+            price: number | null;
+            /**
+             * @description Solo el fondo: `true` animado (VIP), `false` fijo. El avatar siempre es animado
+             * @enum {string}
+             */
+            animated?: "true" | "false";
+            /**
+             * @description Confirma «Tengo derecho a usar esta imagen»
+             * @enum {string}
+             */
+            rights: "true";
+            /** @description Recorte: x, en píxeles del original */
+            crop_x?: number | null;
+            /** @description Recorte: y, en píxeles del original */
+            crop_y?: number | null;
+            /** @description Recorte: ancho, en píxeles del original */
+            crop_w?: number | null;
+            /** @description Recorte: alto, en píxeles del original */
+            crop_h?: number | null;
+        };
+        MediaReportBody: {
+            /**
+             * @description `avatar` o `background` (los propios) o `cover` (la portada)
+             * @enum {string}
+             */
+            kind: "avatar" | "background" | "cover";
+            /**
+             * @description `copyright` (es de otra persona), `nsfw`, `offensive` u `other`
+             * @enum {string}
+             */
+            reason: "copyright" | "nsfw" | "offensive" | "other";
+            note?: string;
+        };
+        MediaReportList: {
+            items: components["schemas"]["MediaReport"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        MediaReport: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "avatar" | "background" | "cover";
+            url: string;
+            poster_url: string | null;
+            /** @enum {string} */
+            reason: "copyright" | "nsfw" | "offensive" | "other";
+            note: string | null;
+            created_at: string;
+            /**
+             * @description `dismissed`: descartada; `removed`: se sacó la imagen
+             * @enum {string}
+             */
+            status: "open" | "dismissed" | "removed";
+            resolved_at: string | null;
+            resolved_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            reporter: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description Cuántas denuncias tiene esa imagen */
+            reports: number;
+            /** @description La imagen sigue puesta en el perfil */
+            current: boolean;
+            /** @description El perfil de la imagen */
+            profile: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+        };
+        MediaReportResolve: {
+            /**
+             * @description `dismiss` la descarta; `remove` saca la imagen y avisa al dueño
+             * @enum {string}
+             */
+            action: "dismiss" | "remove";
+        };
+        /** @description Lo propio guardado de una cuenta */
+        AdminCustom: {
+            /** @description Los avatares guardados, lo más nuevo primero */
+            avatar: components["schemas"]["CustomMedia"][];
+            /** @description Los fondos de miniperfil guardados, lo más nuevo primero */
+            background: components["schemas"]["CustomMedia"][];
         };
         /** @description Respuesta de mm_my_state() o de la función de administración */
         MmJson: unknown;

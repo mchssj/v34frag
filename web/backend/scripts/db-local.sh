@@ -32,11 +32,11 @@ cargar() {
     fi
   done
   if [[ "${REPLANTEO:-1}" != "0" ]]; then
-    for f in "$raiz"/supabase/replanteo/[0-9]*.sql; do
-      [[ -e "$f" ]] || continue
-      echo "  replanteo: $(basename "$f")"
-      psql_local < "$f" >/dev/null
-    done
+    # En orden numérico: el glob es alfabético y pone la 100 antes que la 10 y que la 98 (que la 100 necesita).
+    while IFS= read -r nombre; do
+      echo "  replanteo: $nombre"
+      psql_local < "$raiz/supabase/replanteo/$nombre" >/dev/null
+    done < <(cd "$raiz/supabase/replanteo" && printf '%s\n' [0-9]*.sql | sort -V)
   else
     echo "  replanteo: omitido (REPLANTEO=0)"
   fi

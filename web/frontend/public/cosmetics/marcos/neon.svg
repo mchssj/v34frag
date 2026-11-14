@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="n" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="256" y2="256">
+      <stop offset="0" stop-color="#f0449b"/><stop offset=".5" stop-color="#7a5cff"/><stop offset="1" stop-color="#2ee6ff"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" values="0 128 128;360 128 128" dur="4s" repeatCount="indefinite"/>
+    </linearGradient>
+    <filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <g fill="none" stroke="url(#n)">
+    <rect x="22" y="22" width="212" height="212" rx="26" stroke-width="12" filter="url(#g)">
+      <animate attributeName="stroke-opacity" values=".9;.4;.9" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="22" y="22" width="212" height="212" rx="26" stroke-width="6"/>
+    <rect x="10" y="10" width="236" height="236" rx="34" stroke-width="1.5" stroke-dasharray="6 10" stroke-opacity=".7">
+      <animate attributeName="stroke-dashoffset" values="0;-64" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+</svg>

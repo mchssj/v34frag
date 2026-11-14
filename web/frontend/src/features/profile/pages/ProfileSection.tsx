@@ -31,6 +31,8 @@ import { useAliasStatus } from "@/features/auth/lib/useAliasStatus"
 import { AuthField } from "@/components/brand/AuthField"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { aliasFeedback } from "../lib/alias"
+import { CoverCard } from "@/features/shop/CoverCard"
+
 import { AvatarPicker } from "../components/AvatarPicker"
 import {
   myProfileOptions,
@@ -64,6 +66,8 @@ export function ProfileSection() {
         details={profile.data.details}
         photo={myPhotoUrl(profile.data)}
       />
+      {/* (replanteo 113) La portada del perfil y el acceso a la Tienda. */}
+      <CoverCard />
     </>
   )
 }

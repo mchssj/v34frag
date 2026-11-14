@@ -17,6 +17,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
+import { useMine } from "@/features/ranking/components/parts"
+import { playersCosmeticsOptions } from "@/features/shop/api"
+import { CardBackground, FramedAvatar, NameFx } from "@/features/shop/cosmetics"
+import { fileUrl, posterUrl, type CosmeticsFull } from "@/features/shop/types"
 import { fmtClock, secondsLeft } from "./labels"
 import { PlayerName } from "./PlayerMenu"
 import { LeavePartyButton, PartyMenu, usePartyNotices } from "./PartyMenu"
@@ -106,6 +110,16 @@ export function GroupSlots({
   usePartyNotices(state.party)
   const busy = !!state.queue || !!state.lobby
   const slots = buildSlots(state, teamSize)
+  // (replanteo 113) Los cosméticos de cada integrante: la tarjeta propia usa el id de la ficha (state.me no lo trae).
+  const mine = useMine()
+  const idOf = (card: Card) => (card.is_me ? mine.playerId : card.player_id)
+  const cosmetics = useQuery(
+    playersCosmeticsOptions(
+      slots
+        .flatMap((s) => (s.kind === "member" ? [idOf(s.card)] : []))
+        .filter((id): id is string => !!id)
+    )
+  ).data
 
   return (
     <div className="flex h-full flex-col gap-3">
@@ -128,6 +142,7 @@ export function GroupSlots({
             {slot.kind === "member" && (
               <MemberCard
                 card={slot.card}
+                cosmetics={cosmetics?.get(idOf(slot.card) ?? "")}
                 menu={
                   state.party && (
                     <PartyMenu
@@ -153,17 +168,29 @@ export function GroupSlots({
   )
 }
 
-function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
+function MemberCard({
+  card,
+  cosmetics,
+  menu,
+}: {
+  card: Card
+  /** Lo equipado en la tienda: fondo de miniperfil, avatar animado, marco y efecto de nombre. */
+  cosmetics?: CosmeticsFull
+  menu?: ReactNode
+}) {
   const initials = card.nick.slice(0, 2).toUpperCase()
+  const bg = fileUrl(cosmetics?.background)
   return (
     <div
       className={cn(
         "relative isolate flex size-full flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border p-3",
-        card.is_me
-          ? "bg-card shadow-[inset_0_0_0_2px_var(--primary)]"
-          : "bg-card"
+        bg ? "border-white/15 text-white" : "bg-card",
+        // El borde de "tu tarjeta" va solo sin fondo de miniperfil: con fondo queda debajo y se asoma en los bordes
+        // redondeados (bitácora 2026-11-14-inventario-de-lo-propio).
+        card.is_me && !bg && "shadow-[inset_0_0_0_2px_var(--primary)]"
       )}
     >
+      <CardBackground src={bg} poster={posterUrl(cosmetics?.background)} />
       {menu}
       {card.is_leader && (
         <CrownIcon
@@ -171,12 +198,24 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
           className="absolute top-2.5 right-2.5 size-4 text-primary"
         />
       )}
-      <Avatar className="size-16 ring-2 ring-foreground/10">
-        {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
-        <AvatarFallback className="text-base font-semibold">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
+      {cosmetics?.frame || cosmetics?.avatar ? (
+        // La foto (o el avatar) queda en 64px, como sin marco: el 75 % central de 86.
+        <FramedAvatar
+          alias={card.nick}
+          src={card.photo_url}
+          frame={cosmetics.frame}
+          avatar={cosmetics.avatar}
+          size={86}
+          className="-my-[11px]"
+        />
+      ) : (
+        <Avatar className="size-16 ring-2 ring-foreground/10">
+          {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
+          <AvatarFallback className="text-base font-semibold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      )}
       <span className="flex max-w-full items-center gap-1.5 text-sm font-semibold">
         {card.country && <CountryFlag country={card.country} />}
         <PlayerName
@@ -184,7 +223,9 @@ function MemberCard({ card, menu }: { card: Card; menu?: ReactNode }) {
           playerId={card.is_me ? null : card.player_id}
           isMe={card.is_me}
           className="truncate"
-        />
+        >
+          <NameFx text={card.nick} effect={cosmetics?.name} />
+        </PlayerName>
         <ListSeal kind={card.verified} />
         {card.vip && <Badge variant="vip">VIP</Badge>}
       </span>

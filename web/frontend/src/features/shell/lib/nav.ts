@@ -15,6 +15,7 @@ import {
   ServerIcon,
   ShieldAlertIcon,
   ShieldIcon,
+  StoreIcon,
   SwordsIcon,
   TrophyIcon,
   UserCogIcon,
@@ -75,6 +76,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         to: "/ranking",
         icon: ListOrderedIcon,
       },
+      // (replanteo 113) Cosméticos con los puntos de los mixes (docs/bitacora/2026-11-11-tienda-de-puntos).
+      { key: "shop", label: "Tienda", to: "/shop", icon: StoreIcon },
       // (replanteo 87) Quiénes están detrás del proyecto y los VIP (docs/bitacora/2026-11-07-pagina-equipo).
       {
         key: "staff",
@@ -139,6 +142,13 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         admin: "medals",
       },
       {
+        key: "admin-shop",
+        label: "Tienda",
+        to: "/admin/shop",
+        icon: StoreIcon,
+        admin: "shop",
+      },
+      {
         key: "admin-clips",
         label: "Clips",
         to: "/admin/clips",
@@ -195,6 +205,7 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
   maps: "Mapas",
   users: "Usuarios",
   bans: "Baneos",
+  shop: "Tienda",
 }
 
 /** Secciones de Mi perfil en los breadcrumbs (la principal, Perfil, queda como "Mi perfil"). */

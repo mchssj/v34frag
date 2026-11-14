@@ -1,5 +1,39 @@
 import { describe, expect, it } from 'vitest';
-import { BANNER_SHAPE, checkShape, imageSize, LOGO_SHAPE, sniffImage } from '../../src/lib/uploads';
+import { BANNER_SHAPE, checkShape, imageSize, isAnimated, LOGO_SHAPE, readImage, sniffImage } from '../../src/lib/uploads';
+
+// Un PNG de verdad por chunks: firma, IHDR, opcionalmente acTL (APNG) y un IDAT vacío.
+const chunk = (type: string, data: number[]) => {
+  const len = data.length;
+  return [len >>> 24, (len >> 16) & 0xff, (len >> 8) & 0xff, len & 0xff, ...[...type].map((c) => c.charCodeAt(0)), ...data, 0, 0, 0, 0];
+};
+const pngChunks = (animated: boolean) =>
+  new Uint8Array([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ...chunk('IHDR', [0, 0, 0, 64, 0, 0, 0, 64, 8, 6, 0, 0, 0]),
+    ...(animated ? chunk('acTL', [0, 0, 0, 2, 0, 0, 0, 0]) : []),
+    ...chunk('IDAT', []),
+    ...chunk('IEND', []),
+  ]);
+
+describe('isAnimated (bitácora 2026-11-12-avatares-animados)', () => {
+  const PNG = { mime: 'image/png', ext: 'png' } as const;
+  const WEBP = { mime: 'image/webp', ext: 'webp' } as const;
+  it('PNG: el acTL antes del IDAT es un APNG', () => {
+    expect(isAnimated(pngChunks(false), PNG)).toBe(false);
+    expect(isAnimated(pngChunks(true), PNG)).toBe(true);
+  });
+  it('WebP: VP8X con la marca de animación, o un ANIM', () => {
+    expect(isAnimated(webp('VP8X', [0x02, 0, 0, 0, 63, 0, 0, 63, 0, 0]), WEBP)).toBe(true);
+    expect(isAnimated(webp('VP8X', [0x10, 0, 0, 0, 63, 0, 0, 63, 0, 0]), WEBP)).toBe(false);
+    expect(isAnimated(webp('ANIM', [0, 0, 0, 0]), WEBP)).toBe(true);
+    expect(isAnimated(webp('VP8 ', [0, 0, 0, 0x9d, 0x01, 0x2a, 64, 0, 64, 0]), WEBP)).toBe(false);
+  });
+  it('readImage rechaza una imagen animada y deja pasar la fija', async () => {
+    const file = (b: Uint8Array) => new File([b as BlobPart], 'x.png', { type: 'image/png' });
+    await expect(readImage(file(pngChunks(true)), 1024 * 1024)).rejects.toMatchObject({ code: 'INVALID_FILE', message: 'La imagen no puede ser animada.' });
+    await expect(readImage(file(pngChunks(false)), 1024 * 1024)).resolves.toMatchObject({ type: PNG });
+  });
+});
 
 const png = (w: number, h: number) => {
   const b = new Uint8Array(32);

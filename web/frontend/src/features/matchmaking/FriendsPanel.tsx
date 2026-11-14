@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
 import { UserPlusIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
@@ -8,6 +9,8 @@ import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { timeAgo } from "@/features/shell/notifications/lib/model"
+import { playersCosmeticsOptions } from "@/features/shop/api"
+import { NameFx } from "@/features/shop/cosmetics"
 import { PlayerPicker } from "./BlockPanel"
 import { PlayerName } from "./PlayerMenu"
 import { useMmMutation } from "./queries"
@@ -42,6 +45,7 @@ export function FriendsPanel({
   )
   const invite = useMmMutation((id: string) => source.invite(id))
   const onError = (e: unknown) => toast.error(errorMessage(e))
+  const cosmetics = useQuery(playersCosmeticsOptions(friends.map((f) => f.player_id))).data
   return (
     <Card
       variant="outline"
@@ -146,7 +150,10 @@ export function FriendsPanel({
                           playerId={f.player_id}
                           friend
                           className="block min-w-0 truncate font-medium"
-                        />
+                        >
+                          {/* (replanteo 113) El efecto de nombre de la tienda. */}
+                          <NameFx text={f.nick} effect={cosmetics?.get(f.player_id)?.name} />
+                        </PlayerName>
                         <ListSeal kind={f.verified} />
                       </span>
                       <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">

@@ -24,6 +24,7 @@ import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
 import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppShopRouteImport } from './routes/_app/shop'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
@@ -42,6 +43,7 @@ import { Route as AppAdminPlayersRouteImport } from './routes/_app/admin.players
 import { Route as AppAdminRankingRouteImport } from './routes/_app/admin.ranking'
 import { Route as AppAdminSeasonsRouteImport } from './routes/_app/admin.seasons'
 import { Route as AppAdminServersRouteImport } from './routes/_app/admin.servers'
+import { Route as AppAdminShopRouteImport } from './routes/_app/admin.shop'
 import { Route as AppAdminTeamsRouteImport } from './routes/_app/admin.teams'
 import { Route as AppAdminUsersRouteImport } from './routes/_app/admin.users'
 import { Route as AppEventsIndexRouteImport } from './routes/_app/events.index'
@@ -143,6 +145,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppShopRoute = AppShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => AppRoute,
+} as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -231,6 +238,11 @@ const AppAdminSeasonsRoute = AppAdminSeasonsRouteImport.update({
 const AppAdminServersRoute = AppAdminServersRouteImport.update({
   id: '/servers',
   path: '/servers',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminShopRoute = AppAdminShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminTeamsRoute = AppAdminTeamsRouteImport.update({
@@ -383,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/pcw': typeof AppPcwRoute
   '/play': typeof AppPlayRoute
   '/profile': typeof AppProfileRouteWithChildren
+  '/shop': typeof AppShopRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -401,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
   '/admin/servers': typeof AppAdminServersRoute
+  '/admin/shop': typeof AppAdminShopRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/users': typeof AppAdminUsersRoute
   '/events/$id': typeof AppEventsIdRoute
@@ -442,6 +456,7 @@ export interface FileRoutesByTo {
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
   '/play': typeof AppPlayRoute
+  '/shop': typeof AppShopRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -460,6 +475,7 @@ export interface FileRoutesByTo {
   '/admin/ranking': typeof AppAdminRankingRoute
   '/admin/seasons': typeof AppAdminSeasonsRoute
   '/admin/servers': typeof AppAdminServersRoute
+  '/admin/shop': typeof AppAdminShopRoute
   '/admin/teams': typeof AppAdminTeamsRoute
   '/admin/users': typeof AppAdminUsersRoute
   '/events/$id': typeof AppEventsIdRoute
@@ -505,6 +521,7 @@ export interface FileRoutesById {
   '/_app/pcw': typeof AppPcwRoute
   '/_app/play': typeof AppPlayRoute
   '/_app/profile': typeof AppProfileRouteWithChildren
+  '/_app/shop': typeof AppShopRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
@@ -523,6 +540,7 @@ export interface FileRoutesById {
   '/_app/admin/ranking': typeof AppAdminRankingRoute
   '/_app/admin/seasons': typeof AppAdminSeasonsRoute
   '/_app/admin/servers': typeof AppAdminServersRoute
+  '/_app/admin/shop': typeof AppAdminShopRoute
   '/_app/admin/teams': typeof AppAdminTeamsRoute
   '/_app/admin/users': typeof AppAdminUsersRoute
   '/_app/events/$id': typeof AppEventsIdRoute
@@ -567,6 +585,7 @@ export interface FileRouteTypes {
     | '/pcw'
     | '/play'
     | '/profile'
+    | '/shop'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -585,6 +604,7 @@ export interface FileRouteTypes {
     | '/admin/ranking'
     | '/admin/seasons'
     | '/admin/servers'
+    | '/admin/shop'
     | '/admin/teams'
     | '/admin/users'
     | '/events/$id'
@@ -626,6 +646,7 @@ export interface FileRouteTypes {
     | '/myteam'
     | '/pcw'
     | '/play'
+    | '/shop'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -644,6 +665,7 @@ export interface FileRouteTypes {
     | '/admin/ranking'
     | '/admin/seasons'
     | '/admin/servers'
+    | '/admin/shop'
     | '/admin/teams'
     | '/admin/users'
     | '/events/$id'
@@ -688,6 +710,7 @@ export interface FileRouteTypes {
     | '/_app/pcw'
     | '/_app/play'
     | '/_app/profile'
+    | '/_app/shop'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
@@ -706,6 +729,7 @@ export interface FileRouteTypes {
     | '/_app/admin/ranking'
     | '/_app/admin/seasons'
     | '/_app/admin/servers'
+    | '/_app/admin/shop'
     | '/_app/admin/teams'
     | '/_app/admin/users'
     | '/_app/events/$id'
@@ -859,6 +883,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/shop': {
+      id: '/_app/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof AppShopRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_auth/forgot-password': {
       id: '/_auth/forgot-password'
       path: '/forgot-password'
@@ -983,6 +1014,13 @@ declare module '@tanstack/react-router' {
       path: '/servers'
       fullPath: '/admin/servers'
       preLoaderRoute: typeof AppAdminServersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/shop': {
+      id: '/_app/admin/shop'
+      path: '/shop'
+      fullPath: '/admin/shop'
+      preLoaderRoute: typeof AppAdminShopRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/teams': {
@@ -1187,6 +1225,7 @@ interface AppAdminRouteChildren {
   AppAdminRankingRoute: typeof AppAdminRankingRoute
   AppAdminSeasonsRoute: typeof AppAdminSeasonsRoute
   AppAdminServersRoute: typeof AppAdminServersRoute
+  AppAdminShopRoute: typeof AppAdminShopRoute
   AppAdminTeamsRoute: typeof AppAdminTeamsRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminEventsIdRoute: typeof AppAdminEventsIdRoute
@@ -1204,6 +1243,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminRankingRoute: AppAdminRankingRoute,
   AppAdminSeasonsRoute: AppAdminSeasonsRoute,
   AppAdminServersRoute: AppAdminServersRoute,
+  AppAdminShopRoute: AppAdminShopRoute,
   AppAdminTeamsRoute: AppAdminTeamsRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminEventsIdRoute: AppAdminEventsIdRoute,
@@ -1245,6 +1285,7 @@ interface AppRouteChildren {
   AppPcwRoute: typeof AppPcwRoute
   AppPlayRoute: typeof AppPlayRoute
   AppProfileRoute: typeof AppProfileRouteWithChildren
+  AppShopRoute: typeof AppShopRoute
   AppEventsIdRoute: typeof AppEventsIdRoute
   AppMatchIdRoute: typeof AppMatchIdRoute
   AppMatchesResultsRoute: typeof AppMatchesResultsRoute
@@ -1271,6 +1312,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPcwRoute: AppPcwRoute,
   AppPlayRoute: AppPlayRoute,
   AppProfileRoute: AppProfileRouteWithChildren,
+  AppShopRoute: AppShopRoute,
   AppEventsIdRoute: AppEventsIdRoute,
   AppMatchIdRoute: AppMatchIdRoute,
   AppMatchesResultsRoute: AppMatchesResultsRoute,

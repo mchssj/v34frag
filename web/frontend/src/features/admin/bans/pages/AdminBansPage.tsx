@@ -44,6 +44,10 @@ import {
   CommentReportsPanel,
   useOpenCommentReports,
 } from "../components/CommentReportsPanel"
+import {
+  MediaReportsPanel,
+  useOpenMediaReports,
+} from "../components/MediaReportsPanel"
 import { BAN_STATUS, banLabel, banOrigin, banRemaining } from "../lib/bans"
 import {
   BANS_PER,
@@ -151,7 +155,9 @@ export function AdminBansPage({
   const canPermanent = canBanPermanent(role)
   const tab: StatusTab = search.status ?? "active"
   const status: BanStatus | undefined =
-    tab === "all" || tab === "mm" || tab === "comments" ? undefined : tab
+    tab === "all" || tab === "mm" || tab === "comments" || tab === "images"
+      ? undefined
+      : tab
   const page = search.page ?? 1
   const filters: BanFilters = {
     source: search.source,
@@ -184,6 +190,7 @@ export function AdminBansPage({
     mmPenalties && mmBans ? mmPenalties.length + mmBans.length : undefined
   const servers = useQuery(serverStatusOptions).data?.servers ?? []
   const openComments = useOpenCommentReports()
+  const openImages = useOpenMediaReports()
   const [banning, setBanning] = useState(false)
 
   // El baneo elegido sale de la lista, del historial de esa persona o del último que se abrió
@@ -251,11 +258,14 @@ export function AdminBansPage({
           },
           { key: "mm", label: "Matchmaking", badge: mmCount },
           { key: "comments", label: "Comentarios", badge: openComments },
+          { key: "images", label: "Imágenes", badge: openImages },
         ]}
       />
 
       {tab === "comments" ? (
         <CommentReportsPanel />
+      ) : tab === "images" ? (
+        <MediaReportsPanel />
       ) : tab === "mm" ? (
         <MmSourceContext value={apiMmSource}>
           <p className="text-[13px] leading-relaxed text-muted-foreground">

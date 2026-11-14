@@ -74,6 +74,10 @@ const RETENTION: [string, string][] = [
   ],
   ["Baneos y sanciones", "Sin plazo: se levantan, no se borran"],
   ["Historial de VIP", "Mientras tengas la cuenta"],
+  [
+    "Avatares y fondos de miniperfil que subiste",
+    "Hasta que los borres o se saquen por una denuncia, o hasta que borres la cuenta; el registro del pago, mientras tengas la cuenta",
+  ],
   ["Amigos y solicitudes de amistad", "Mientras tengas la cuenta"],
   ["Visitas a perfiles", "30 días"],
   [
@@ -136,7 +140,7 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             Tu <em>tag</em> y lo que agregues a tu perfil: nombre real, país,
-            rol en el juego, links de Steam, FACEIT y Discord, avatar,
+            rol en el juego, links de Steam, FACEIT y Discord, avatar, portada,
             biografía, preferencias y nivel de privacidad del perfil.
           </li>
           <li>La fecha de tu última visita y tus notificaciones.</li>
@@ -235,8 +239,27 @@ const SECTIONS: LegalSection[] = [
             plataforma de pagos y no vamos a ver los datos de tu tarjeta.
           </li>
           <li>
-            Tus puntos, compras, cosméticos, misiones y si quieres aparecer en
-            los créditos <Wip />
+            Tus compras y regalos de la tienda, lo que tienes puesto y los
+            puntos o monedas VIP que te sume o reste un administrador, con el
+            motivo. Los puntos que ganas jugando no se guardan aparte: se
+            calculan de tus partidas.
+          </li>
+          <li>
+            Los avatares y los fondos de miniperfil que subes: el archivo,
+            cuándo lo subiste y cuánto pagaste. Quedan guardados en tu cuenta,
+            aunque no los tengas puestos, hasta que los borres. Solo el que
+            tienes puesto se ve en público, en tu perfil, en el lobby de Jugar y
+            en las listas; los demás los ven solo tú y los administradores. Si
+            los borras o se sacan por una denuncia, se borra el archivo; el
+            registro del pago queda.
+          </li>
+          <li>
+            Las denuncias de imágenes que haces o te hacen: quién la mandó, qué
+            imagen, el motivo y la nota. Las ven solo los moderadores y los
+            administradores; a quien denuncias no le decimos quién fuiste.
+          </li>
+          <li>
+            Tus misiones y si quieres aparecer en los créditos <Wip />
           </li>
         </ul>
 
@@ -298,8 +321,8 @@ const SECTIONS: LegalSection[] = [
           head={["Público para cualquiera", "Solo tú y el staff"]}
           rows={[
             [
-              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP. Si eres admin o moderador, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
-              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, a quién bloqueaste en el matchmaking, y la evidencia del anticheat.",
+              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos, si eres VIP y los cosméticos que tienes puestos. Tu portada también, salvo que tu perfil sea privado. Si eres admin o moderador, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
+              "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos, monedas VIP y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, a quién bloqueaste en el matchmaking, y la evidencia del anticheat.",
             ],
           ]}
         />

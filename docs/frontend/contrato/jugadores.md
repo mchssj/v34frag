@@ -22,6 +22,8 @@
 
 **ELO pico:** `peak_elo` es el pico de la **temporada activa** (al empezar cada temporada arranca en el ELO actual). El de cada temporada cerrada queda en `/players/{id}/seasons`.
 
+- **Cosméticos** (desde el 2026-11-12, tienda): cada jugador de `GET /players`, del ranking y del comparador trae `cosmetics: { frame, name } | null`; la ficha, `cosmetics` completo y `cover_url` (la portada; un perfil privado la oculta). Detalle en [`tienda.md`](tienda.md).
+
 ## 5c. Ranking de jugadores y comparador (disponible desde el 2026-10-24)
 
 | Endpoint | Pantalla |

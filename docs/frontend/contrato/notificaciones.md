@@ -143,6 +143,10 @@ Todo con sesión (`401` sin ella).
 | `vip_granted` | Usuario (desde el 2026-10-28) | `until` (ISO, o `null` si es lifetime), `lifetime` | "Ya eres VIP hasta el {until}" o "Ya eres VIP lifetime" | `/profile` |
 | `vip_revoked` | Usuario (desde el 2026-10-28) | `reason` | "Un admin te quitó el VIP: {reason}" | `/profile` |
 | `vip_expiring` | Usuario (desde el 2026-10-29) | `ends_at` | "Tu VIP vence el {ends_at}" | `/profile` |
+| `points_granted` | Usuario (desde el 2026-11-12, tienda) | `amount` (negativo si resta), `currency` (`points` o `vip`), `reason` | "Un admin te sumó {amount} puntos: {reason}" | `/shop` |
+| `item_granted` | Usuario (desde el 2026-11-12, tienda) | `item`, `name`, `kind` | "Te regalaron {name} para tu perfil" | `/shop` |
+| `item_revoked` | Usuario (desde el 2026-11-12, tienda) | `item`, `name`, `reason` | "Un admin te quitó {name}: {reason}" | `/shop` |
+| `cover_removed` | Usuario (desde el 2026-11-12, tienda) | `reason` | "Un admin quitó tu portada: {reason}" | `/profile` |
 | `streamer_granted` | Usuario (desde el 2026-10-29) | — | "Ya puedes transmitir con el HUD: genera tu link en Mi perfil" | `/profile` |
 | `streamer_revoked` | Usuario (desde el 2026-10-29) | — | "Un admin te quitó el acceso al HUD" | — |
 

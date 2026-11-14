@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="br" x1="0" y1="0" x2="1" y2="1"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <mask id="m"><rect width="256" height="256" fill="#fff"/><rect x="34" y="34" width="188" height="188" rx="8" fill="#000"/></mask>
+  </defs>
+  <rect x="12" y="12" width="232" height="232" rx="22" fill="none" stroke="#0c0c10" stroke-width="10"/><rect x="14" y="14" width="228" height="228" rx="20" fill="none" stroke="#74acdf" stroke-width="7"/><rect x="21" y="21" width="214" height="214" rx="16" fill="none" stroke="#ffffff" stroke-width="7"/><rect x="28" y="28" width="200" height="200" rx="12" fill="none" stroke="#74acdf" stroke-width="7"/><rect x="33" y="33" width="190" height="190" rx="9" fill="none" stroke="#0c0c10" stroke-width="3"/>
+  <rect x="-256" y="0" width="256" height="256" fill="url(#br)" mask="url(#m)">
+    <animate attributeName="x" values="-256;256;256" keyTimes="0;.45;1" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <g transform="translate(0 0)">
+    <circle cx="128" cy="30" r="26" fill="#0c0c10" stroke="#74acdf" stroke-width="3"/>
+    <circle cx="128" cy="30" r="22" fill="#fff"/><g stroke="#f6b40e" stroke-width="2.6" stroke-linecap="round"><line x1="138.3" y1="30.0" x2="146.7" y2="30.0"/><line x1="137.5" y1="33.9" x2="141.8" y2="35.7"/><line x1="135.3" y1="37.3" x2="141.2" y2="43.2"/><line x1="131.9" y1="39.5" x2="133.7" y2="43.8"/><line x1="128.0" y1="40.3" x2="128.0" y2="48.7"/><line x1="124.1" y1="39.5" x2="122.3" y2="43.8"/><line x1="120.7" y1="37.3" x2="114.8" y2="43.2"/><line x1="118.5" y1="33.9" x2="114.2" y2="35.7"/><line x1="117.7" y1="30.0" x2="109.3" y2="30.0"/><line x1="118.5" y1="26.1" x2="114.2" y2="24.3"/><line x1="120.7" y1="22.7" x2="114.8" y2="16.8"/><line x1="124.1" y1="20.5" x2="122.3" y2="16.2"/><line x1="128.0" y1="19.7" x2="128.0" y2="11.3"/><line x1="131.9" y1="20.5" x2="133.7" y2="16.2"/><line x1="135.3" y1="22.7" x2="141.2" y2="16.8"/><line x1="137.5" y1="26.1" x2="141.8" y2="24.3"/></g><circle cx="128" cy="30" r="9.3" fill="#f6b40e" stroke="#85340a" stroke-width="1.2"/>
+  </g>
+  <rect x="46" y="218" width="163" height="32" rx="6" fill="#0c0c10" stroke="#74acdf" stroke-width="2.5"/>
+  <text x="128" y="241" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="21" letter-spacing="1.5" fill="#fff">ARGENTINA</text>
+</svg>

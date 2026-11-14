@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="24" y="24" width="208" height="208" rx="16" fill="none" stroke="#2a1458" stroke-width="12"/>
+  <rect x="24" y="24" width="208" height="208" rx="16" fill="none" stroke="#b26bff" stroke-width="3" filter="url(#g)">
+    <animate attributeName="stroke-opacity" values="1;.5;1;.8;1" dur=".6s" repeatCount="indefinite"/>
+  </rect>
+  <g fill="none" stroke="#e6d4ff" stroke-width="2.5" stroke-linejoin="round" filter="url(#g)">
+    <path d="M24 60l8 10-6 10 9 12-7 14">
+      <animate attributeName="d" values="M24 60l8 10-6 10 9 12-7 14;M24 60l-6 10 8 10-8 12 6 14;M24 60l8 10-6 10 9 12-7 14" dur=".3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M232 150l-8 12 7 8-9 12 8 14">
+      <animate attributeName="d" values="M232 150l-8 12 7 8-9 12 8 14;M232 150l6 12-8 8 7 12-6 14;M232 150l-8 12 7 8-9 12 8 14" dur=".35s" repeatCount="indefinite"/>
+    </path>
+    <path d="M90 24l10-8 12 7 12-9 14 8 12-6">
+      <animate attributeName="d" values="M90 24l10-8 12 7 12-9 14 8 12-6;M90 24l10 7 12-8 12 9 14-7 12 6;M90 24l10-8 12 7 12-9 14 8 12-6" dur=".4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M130 232l12 8 10-7 14 9 10-8 14 6">
+      <animate attributeName="d" values="M130 232l12 8 10-7 14 9 10-8 14 6;M130 232l12-7 10 8 14-8 10 7 14-6;M130 232l12 8 10-7 14 9 10-8 14 6" dur=".3s" repeatCount="indefinite"/>
+    </path>
+    <animate attributeName="opacity" values="1;0;1;1;0;1" keyTimes="0;.1;.2;.6;.7;1" dur="2s" repeatCount="indefinite"/>
+  </g>
+  <g fill="#e6d4ff" filter="url(#g)">
+    <circle cx="24" cy="24" r="5"/><circle cx="232" cy="24" r="5"/><circle cx="232" cy="232" r="5"/><circle cx="24" cy="232" r="5"/>
+  </g>
+</svg>

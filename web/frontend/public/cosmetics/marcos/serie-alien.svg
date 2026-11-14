@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs><mask id="m"><rect width="256" height="256" fill="#fff"/><rect x="34" y="34" width="188" height="188" rx="8" fill="#000"/></mask><pattern id="hx" width="20" height="17.3" patternUnits="userSpaceOnUse"><path d="M5 0h10l5 8.66-5 8.66H5L0 8.66Z" fill="none" stroke="#3dff6e" stroke-opacity=".35" stroke-width="1.2"/></pattern></defs>
+  <rect x="16" y="16" width="224" height="224" rx="20" fill="#14181a" mask="url(#m)"/>
+  <rect x="16" y="16" width="224" height="224" rx="20" fill="url(#hx)" mask="url(#m)"/>
+  <rect x="16" y="16" width="224" height="224" rx="20" fill="none" stroke="#3dff6e" stroke-width="4">
+    <animate attributeName="stroke-opacity" values="1;.35;1" dur="1.8s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="31" y="31" width="194" height="194" rx="9" fill="none" stroke="#3dff6e" stroke-width="2.5"/>
+  <g transform="translate(128 228)">
+    <circle r="24" fill="#22282b" stroke="#9aa3a8" stroke-width="4"/>
+    <circle r="16" fill="#0b2410"/>
+    <g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" additive="sum" repeatCount="indefinite"/><path d="M0-14v28M-14 0h28" stroke="#3dff6e" stroke-width="5" stroke-linecap="round"/></g>
+    <circle r="16" fill="#3dff6e" opacity=".25"><animate attributeName="opacity" values=".05;.45;.05" dur="1.8s" repeatCount="indefinite"/></circle>
+  </g>
+  <g fill="#3dff6e"><circle cx="24" cy="128" r="3"><animate attributeName="opacity" values="1;.2;1" dur="1s" repeatCount="indefinite"/></circle>
+    <circle cx="232" cy="128" r="3"><animate attributeName="opacity" values=".2;1;.2" dur="1s" repeatCount="indefinite"/></circle></g>
+</svg>

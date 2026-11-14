@@ -55,6 +55,14 @@ paso "2. Esquema de public"
 # postgres no es superusuario para cambiarlos.
 dump --schema-only --schema=public --no-owner |
   sed -e '/^CREATE SCHEMA public;$/d' -e '/^ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin /d' > "$dir/public_esquema.sql"
+# (2026-11-12, bitácora 2026-11-12-permisos-funciones) Sin los permisos por defecto de Supabase mientras se carga: si no,
+# cada objeto nace con permisos para anon y authenticated, y el volcado no trae los revoke (pg_dump compara con los
+# permisos por defecto de Postgres, no con los de Supabase). El volcado los vuelve a poner al final.
+pg <<'SQL'
+alter default privileges for role postgres in schema public revoke all on tables from anon, authenticated, service_role;
+alter default privileges for role postgres in schema public revoke all on functions from anon, authenticated, service_role;
+alter default privileges for role postgres in schema public revoke all on sequences from anon, authenticated, service_role;
+SQL
 pg < "$dir/public_esquema.sql" >/dev/null
 echo "   $(pg -At -c "select count(*) from pg_tables where schemaname = 'public'") tablas, $(pg -At -c "select count(*) from pg_proc where pronamespace = 'public'::regnamespace") funciones"
 
@@ -101,6 +109,23 @@ if ! diff "$dir/huella_origen.txt" "$dir/huella_vps.txt" > "$dir/huella_diff.txt
   echo "   DIFERENCIAS:"; head -20 "$dir/huella_diff.txt"; exit 1
 fi
 echo "   $(wc -l < "$dir/huella_vps.txt") tablas idénticas, $(awk -F'|' '{s+=$2} END {print s}' "$dir/huella_vps.txt") filas"
+# (2026-11-12) También los permisos de cada función, tabla, vista, secuencia y columna de public.
+permisos() {
+  "$1" -At <<'SQL'
+select o.n || '|' || coalesce(array_to_string(array(select x::text from unnest(o.acl) x order by 1), ','), '')
+  from (select p.oid::regprocedure::text n, p.proacl acl from pg_proc p where p.pronamespace = 'public'::regnamespace
+        union all select c.oid::regclass::text, c.relacl from pg_class c where c.relnamespace = 'public'::regnamespace
+        union all select a.attrelid::regclass::text || '.' || a.attname, a.attacl from pg_attribute a
+                    join pg_class c on c.oid = a.attrelid where c.relnamespace = 'public'::regnamespace and a.attnum > 0) o
+ order by 1
+SQL
+}
+permisos origen > "$dir/permisos_origen.txt"
+permisos admin > "$dir/permisos_vps.txt"
+if ! diff "$dir/permisos_origen.txt" "$dir/permisos_vps.txt" > "$dir/permisos_diff.txt"; then
+  echo "   PERMISOS DISTINTOS:"; head -20 "$dir/permisos_diff.txt"; exit 1
+fi
+echo "   $(wc -l < "$dir/permisos_vps.txt") objetos con los mismos permisos"
 
 paso "6. Archivos de Storage"
 admin <<'SQL'

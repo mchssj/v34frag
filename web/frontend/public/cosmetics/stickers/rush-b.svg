@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <g transform="rotate(-10 64 64)">
+    <path d="M8 44h66V22l46 42-46 42V84H8Z" fill="#fff" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M8 44h66V22l46 42-46 42V84H8Z" fill="#f2c230" stroke="#1b1b1f" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M12 48h8l-8 10ZM12 66l14-18h8L12 76Z" fill="#1b1b1f" opacity=".85"/>
+    <text x="72" y="73" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="22" fill="#1b1b1f">RUSH B</text>
+  </g>
+</svg>

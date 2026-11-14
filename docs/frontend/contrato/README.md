@@ -32,6 +32,7 @@ Cada archivo conserva el número de sus secciones, así las referencias de la bi
 | [`temporadas.md`](temporadas.md) | 8f | Temporadas: ranking por temporada, medallas y reinicio del nivel 10 |
 | [`admin.md`](admin.md) | 9 | Admin |
 | [`notificaciones.md`](notificaciones.md) | 12 | Notificaciones: lista, contador con ETag, marcar como leídas, tipos, categorías y preferencias |
+| [`tienda.md`](tienda.md) | 13 | Tienda: puntos y monedas VIP, catálogo, comprar, equipar, portada, cosméticos en los jugadores y el admin |
 | [`decisiones.md`](decisiones.md) | 11 | Registro de todas las decisiones, con fecha y origen |
 
 **Al cambiar algo del backend:** se actualiza el archivo de su módulo, las novedades de abajo y [`decisiones.md`](decisiones.md).
@@ -42,6 +43,7 @@ Lo que cambió o se sumó. Los puntos marcados **(rompe)** cambian algo que ya e
 
 | Tema | Qué cambió | Dónde |
 |---|---|---|
+| **Tienda de cosméticos** (nuevo, 2026-11-12, replanteo `113`) | Puntos y monedas VIP por mix, catálogo con ofertas de la semana, comprar, equipar, portada del perfil y Administración › Tienda. `PlayerSummary`, `RankingPlayer.player` y `ComparePlayer.player` suman `cosmetics` (marco y nombre); `PlayerDetail`, `cosmetics` completo y `cover_url`. `GET /cosmetics?players=` para las listas del matchmaking. Avisos `points_granted`, `item_granted`, `item_revoked` y `cover_removed` | [Tienda](tienda.md), [Jugadores](jugadores.md), [Notificaciones](notificaciones.md) |
 | **Medallas configurables** (nuevo, 2026-11-04, replanteo `79`) **(rompe)** | Las medallas ya no traen `icon`: traen `design` (`MedalDesign`: `key`, `template`, `number`, `label`, `band`, `metal`, `accent`) para dibujarlas con `<Medal>` y el SVG de su plantilla (`features/medals/templates.json`), y `source`. Progreso en `GET /players/{id}/medals/progress`; Administración › Medallas en `/admin/medals/definitions`; dar una manual en Fichas pide `definition_id`. En temporadas, el tramo lleva `definition` (clave) y la medalla de cada puesto es `{ name, design }`. Los avisos `medal_granted` y `season_closed` traen el dibujo | [Jugadores](jugadores.md), [Temporadas](temporadas.md), [Admin](admin.md) |
 | **Moderar equipos** (nuevo, 2026-11-01) | Lista e historial de equipos para moderadores y admins; acciones del staff con motivo opcional y aviso obligatorio al líder (`team_staff_action`). El líder nuevo de `PATCH /admin/teams/{id}` tiene que ser del plantel | [Admin](admin.md), [Notificaciones](notificaciones.md) |
 | **Fin real del torneo** (nuevo, 2026-11-01) | `EventSummary.finished_at`: cuándo terminó de verdad (la última partida). `ends_on` queda como fin tentativo, opcional y sin validar en la API. Para la fecha del campeón, usar `finished_at` | [Torneos](torneos.md) |
