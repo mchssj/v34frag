@@ -58,6 +58,11 @@ Ninguno.
 
   Resultado: 2 pasadas, 3 tramos (300, 778 y 300 cuadros en 9,4, 19,1 y 9,2 s, contra unos 26 s por tramo de 300 con ClientMod), 112 s de sesión, 17,1 MB (`D:\CMLeague_Render\videos\prueba_v34_cbble_spr.mp4`). La cámara sigue a spr, sin consola, menú ni control del espectador. Dos diferencias con ClientMod: en los primeros 0,3 s del primer tramo cruza una barra negra (seguramente el panel del espectador cerrándose; no se confirmó), y salen los íconos del chat de voz de la demo abajo a la derecha. Falta probarlo en el portátil, que es donde se deforman los polígonos.
 
+- **2026-11-13, primera prueba en el portátil** (`probar_jugada.py` con el 4k de siege en cache, `53900f5c`, el clip que con ClientMod sale con los polígonos deformados): **no se deformó**, pero el video salió sin audio.
+  - El `.wav` de `startmovie` pesaba 44 bytes, solo la cabecera. `render_clip.ffmpeg_segment` armaba el video mudo sin avisar: ahora lo avisa en el log, con el tamaño del `.wav` y los `.wav` recientes de la carpeta del juego (commit `9b316e0a`).
+  - Descartados: VirtualStore (el `.wav` estaba donde el script lo busca), la elevación (a mano, normal o como administrador, también daba 44 bytes) y el foco de la ventana (en la PC, con el juego sin foco, el `.wav` salió completo).
+  - Causa: las opciones "Habilitar mejoras de audio" y "Permitir que las aplicaciones tomen el control exclusivo" del dispositivo de reproducción predeterminado de Windows. El formato ya estaba en 16 bits. Daniel las destildó y el `startmovie` a mano dio 721.692 bytes (unos 4 s). Anotado en el paso 3b de `render/CONFIGURAR_PORTATIL.md`.
+
 ## Cómo revertir
 
 Poner `"client": "clientmod"` (o quitar la clave) en `config.json` y las claves de ClientMod. Para sacar el código, revertir el commit en `render/`.
