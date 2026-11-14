@@ -2,7 +2,9 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-14 (base, API y web), sin commit, en `feat/tienda-de-puntos` (worktree `v34frag-mainwt`). **No se recorrió en el navegador** (ver Pruebas). Sale con la tienda.
+**Desplegado el 2026-11-14** (23:44 a 23:51 UTC): la `118` y la `119` en producción, y la API y la web `e0b08e9f9e82`. Ver el despliegue en la [guía de la tienda](../2026-11-11-tienda-de-puntos/GUIA_IMPLEMENTACION.md). Falta recorrerlo en el navegador.
+
+Antes: Hecho y probado en local el 2026-11-14 (base, API y web), sin commit, en `feat/tienda-de-puntos` (worktree `v34frag-mainwt`). **No se recorrió en el navegador** (ver Pruebas). Sale con la tienda.
 
 ## Archivos
 

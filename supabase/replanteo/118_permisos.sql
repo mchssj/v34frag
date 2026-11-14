@@ -1,4 +1,4 @@
--- 114: los permisos de producción vuelven a ser los de las migraciones (bitácora docs/bitacora/2026-11-12-permisos-funciones/).
+-- 118 (antes 114): los permisos de producción vuelven a ser los de las migraciones (bitácora docs/bitacora/2026-11-12-permisos-funciones/).
 --
 -- La mudanza al VPS (2026-11-03, deploy/supabase/migrar-vps.sh) cargó el esquema de public en un Supabase nuevo, donde
 -- cada objeto recibe permisos por defecto para anon y authenticated, y el volcado no traía los revoke. Quedaron
@@ -427,7 +427,7 @@ begin
     'public.vip_status'] loop
     if to_regclass(v) is null then faltan := faltan || v; end if;
   end loop;
-  if cardinality(faltan) > 0 then raise exception 'replanteo 114: no existen %', faltan; end if;
+  if cardinality(faltan) > 0 then raise exception 'replanteo 118: no existen %', faltan; end if;
 end $$;
 
 revoke execute on function public.ac_admin_chain(uuid) from anon;
@@ -860,18 +860,18 @@ do $$ begin
      or has_function_privilege('anon', 'public.csstv_after_ingest(uuid, jsonb, text)', 'execute')
      or has_function_privilege('anon', 'public.elo_recompute_player(text, text[])', 'execute')
      or has_function_privilege('authenticated', 'public.notify_due()', 'execute') then
-    raise exception 'replanteo 114: quedó algún permiso de los que se quitan';
+    raise exception 'replanteo 118: quedó algún permiso de los que se quitan';
   end if;
   -- Lo que tiene que seguir andando: el plugin (anon con su token) y la web (con sesión).
   if not has_function_privilege('anon', 'public.csstv_ingest(uuid, jsonb)', 'execute')
      or not has_function_privilege('authenticated', 'public.mm_my_state()', 'execute') then
-    raise exception 'replanteo 114: se quitó un permiso que se usa';
+    raise exception 'replanteo 118: se quitó un permiso que se usa';
   end if;
   -- matches: todo menos el código de !match.
   if has_column_privilege('anon', 'public.matches', 'link_code', 'select')
      or not has_column_privilege('anon', 'public.matches', 'parent_approved', 'select')
      or not has_column_privilege('authenticated', 'public.matches', 'status', 'select') then
-    raise exception 'replanteo 114: los permisos de matches no quedaron como tienen que quedar';
+    raise exception 'replanteo 118: los permisos de matches no quedaron como tienen que quedar';
   end if;
 end $$;
 

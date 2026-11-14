@@ -2,7 +2,9 @@
 
 ## Estado
 
-Base, API, web, manual y legales hechos y probados en local el 2026-11-12, sobre una copia de producción. **Sin commit ni despliegue.** Sale junto con el arreglo de permisos (`114`, [`2026-11-12-permisos-funciones`](../2026-11-12-permisos-funciones/)), por decisión de Daniel del 2026-11-12.
+**Desplegado el 2026-11-14** (23:44 a 23:51 UTC): la `118` y la `119` en producción, y la API y la web `e0b08e9f9e82`. Ver el despliegue en la [guía de la tienda](../2026-11-11-tienda-de-puntos/GUIA_IMPLEMENTACION.md).
+
+Antes: Base, API, web, manual y legales hechos y probados en local el 2026-11-12, sobre una copia de producción. **Sin commit ni despliegue.** Sale junto con el arreglo de permisos (`114`, [`2026-11-12-permisos-funciones`](../2026-11-12-permisos-funciones/)), por decisión de Daniel del 2026-11-12.
 
 ## Archivos
 
@@ -34,7 +36,38 @@ Base, API, web, manual y legales hechos y probados en local el 2026-11-12, sobre
 | `docs/manual/jugador/tienda-y-cosmeticos.md`, `docs/manual/admin/tienda-y-puntos.md` | Nuevas |
 | `web/frontend/src/features/legal/pages/TermsPage.tsx`, `PrivacyPage.tsx`, `lib/meta.ts`, `terms/terminos.html`, `terms/privacidad.html` | La tienda fuera de "En preparación", monedas VIP, portada; fecha 2026-11-12 |
 
-## Despliegue (pendiente, con la `114`)
+## Despliegue (hecho el 2026-11-14, 23:44 a 23:51 UTC)
+
+Junto con los permisos ([`2026-11-12-permisos-funciones`](../2026-11-12-permisos-funciones/)), lo propio guardado
+([`2026-11-14-inventario-de-lo-propio`](../2026-11-14-inventario-de-lo-propio/)) y el avatar en toda la web
+([`2026-11-14-avatar-en-toda-la-web`](../2026-11-14-avatar-en-toda-la-web/)). No toca los servidores de juego.
+
+1. **Renumeración:** la `113` pasó a ser la **`119`** y la `114` de permisos, la **`118`**: en `main` ya estaban la
+   `113` a la `117`. La `119` sale con los valores y el catálogo de la base local de Daniel (20 y 10 puntos por mix, fondo
+   fijo a 300, topes 5 y 5, 326 de 369 artículos a la venta; `catalogo.json` versión 14 guarda `price` y `active`).
+2. **Rama:** `feat/tienda-de-puntos` con `origin/main` mezclado (`019eb513`, hasta la `117`). API: 647 pruebas; web:
+   788. `ffmpeg` 8.0.1 instalado antes en el VPS.
+3. **118 regenerada contra producción** (por el túnel, solo lectura, `referencia.sh 117` y `comparar.sh`): los mismos
+   407 objetos que el 2026-11-12; las migraciones `113` a `117` no sumaron ninguno. `comparar.sh` pasa ahora la consulta
+   por la entrada estándar (en Windows, como argumento, la tilde llegaba en otra codificación).
+4. **Ensayo en producción**, la `118` y la `119` en una transacción que se deshizo: 369 artículos (326 activos), los
+   valores de Daniel y el bucket `cosmetics`; después, sin tienda. Duró 67 s por una consulta de saldos de todas las
+   cuentas que no iba en la aplicación real: durante ese minuto las lecturas de `profile_details` pudieron esperar.
+5. **Respaldo** `20261114T234345Z` en R2 (`sudo cmleague-respaldar`).
+6. **Base:** la `118` (23:44 a 23:45 UTC) y la `119` (23:45:33 a 23:45:47 UTC), y `notify pgrst`. Comprobado: `anon` ya
+   no ejecuta `season_close_run`, el plugin sigue llegando a `csstv_ingest`, `matches.link_code` no se lee; contra la
+   referencia hasta la `117` solo queda la diferencia esperada (`matches.parent_approved`, que da la `118`).
+7. **API:** `deploy/vps/desplegar.sh api`, `e0b08e9f9e82` (antes `777a477bac92`), `/api/health` con esa versión.
+8. **Web:** `deploy/vps/desplegar.sh web`, `e0b08e9f9e82` (antes `777a477bac92`).
+9. **Comprobado sin sesión:** `GET /api/v1/shop/config` con los valores de Daniel, `GET /api/v1/shop/items` con el
+   catálogo, `/me/points`, `/me/custom` y `/admin/shop/items` dan 401, y `https://cmleague.lat/shop` responde.
+10. **Falta:** probar en producción con una cuenta común y una VIP (comprar, equipar, subir lo propio, el avatar en
+    toda la web), publicar `CHANGELOG_DISCORD.txt` (2.9.46) en Discord y publicar `terms/` donde se publiquen.
+
+Vuelta atrás: la API y la web `777a477bac92` (`ln -sfn`, ver `deploy/vps/README.md`), y las inversas de la `119` y la
+`118` (en ese orden).
+
+## Despliegue (como se planeó, con la `114`)
 
 1. Respaldo del día en R2.
 2. Por el túnel, en orden: la **`114_permisos.sql`** (su guía) y la **`113_tienda.sql`**. La `113` no cambia datos existentes salvo agregar `profile_details.cover_url` y la categoría de los avisos; no hace falta parar nada.

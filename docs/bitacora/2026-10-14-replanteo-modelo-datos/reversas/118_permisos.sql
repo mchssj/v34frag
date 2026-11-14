@@ -1,5 +1,5 @@
--- Inversa de la 114: devuelve los permisos de más que tenía producción. Deja otra vez abiertas funciones como
--- season_close_run: solo para deshacer si la 114 rompió algo, y hasta encontrar qué.
+-- Inversa de la 118: devuelve los permisos de más que tenía producción. Deja otra vez abiertas funciones como
+-- season_close_run: solo para deshacer si la 118 rompió algo, y hasta encontrar qué.
 
 begin;
 

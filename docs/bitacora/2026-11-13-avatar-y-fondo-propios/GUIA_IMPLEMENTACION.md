@@ -2,7 +2,9 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-14, sin commit (rama `feat/tienda-de-puntos`, worktree `v34frag-mainwt`). Sale con la tienda: falta el commit, `ffmpeg` en el VPS y el despliegue de la `113`.
+**Desplegado el 2026-11-14** (23:44 a 23:51 UTC): la `118` y la `119` en producción, y la API y la web `e0b08e9f9e82`. Ver el despliegue en la [guía de la tienda](../2026-11-11-tienda-de-puntos/GUIA_IMPLEMENTACION.md).
+
+Antes: Hecho y probado en local el 2026-11-14, sin commit (rama `feat/tienda-de-puntos`, worktree `v34frag-mainwt`). Sale con la tienda: falta el commit, `ffmpeg` en el VPS y el despliegue de la `113`.
 
 ## Archivos
 

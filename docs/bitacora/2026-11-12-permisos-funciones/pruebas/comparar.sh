@@ -33,14 +33,15 @@ select k, n, case when k = 'c' and o.acl is null then '' else coalesce((select s
 
 leer() {
   case "$1" in
-    local:*) docker exec -i "$C" psql -U postgres -d "${1#local:}" -At -F'|' -c "$Q" ;;
+    # La consulta va por la entrada estándar: como argumento, Windows le cambia la codificación a las tildes.
+    local:*) printf '%s' "$Q" | docker exec -i "$C" psql -U postgres -d "${1#local:}" -At -F'|' ;;
     prod)
       # El .env está en el repo principal (los worktrees no lo tienen).
       local env="$raiz/.env"
       [[ -f "$env" ]] || env="$(git -C "$raiz" worktree list --porcelain | sed -n '1s/^worktree //p')/.env"
       l() { grep "^$1=" "$env" | tail -1 | cut -d= -f2- | tr -d '\r'; }
       PGHOST="$(l PG_HOST)" PGPORT="$(l PG_PORT)" PGUSER="$(l PG_USER)" PGPASSWORD="$(l PG_PASSWORD)" PGDATABASE=postgres \
-        PGSSLMODE="$(l PG_SSLMODE)" PGOPTIONS='-c default_transaction_read_only=on' psql -At -F'|' -c "$Q" ;;
+        PGSSLMODE="$(l PG_SSLMODE)" PGCLIENTENCODING=UTF8 PGOPTIONS='-c default_transaction_read_only=on' psql -At -F'|' <<< "$Q" ;;
     *) echo "Base desconocida: $1 (local:<nombre> o prod)" >&2; exit 2 ;;
   esac
 }

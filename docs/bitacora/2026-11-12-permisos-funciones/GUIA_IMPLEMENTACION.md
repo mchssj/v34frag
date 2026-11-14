@@ -2,7 +2,9 @@
 
 ## Estado
 
-Probado en la copia local de producción el 2026-11-12. **Se despliega junto con la tienda** (`113`), por decisión de Daniel del 2026-11-12; falta el commit.
+**Desplegado el 2026-11-14** (23:44 a 23:51 UTC): la `118` y la `119` en producción, y la API y la web `e0b08e9f9e82`. Ver el despliegue en la [guía de la tienda](../2026-11-11-tienda-de-puntos/GUIA_IMPLEMENTACION.md).
+
+Antes: Probado en la copia local de producción el 2026-11-12. **Se despliega junto con la tienda** (`113`), por decisión de Daniel del 2026-11-12; falta el commit.
 
 ## Archivos
 
