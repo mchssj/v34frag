@@ -1,6 +1,6 @@
 # Plan: recap de fin de temporada
 
-> Planeación original. Estado: **propuesta**, pendiente de aprobación de Kyan. Incluye lo que se sumó al ver el prototipo (`/demo/recap`).
+> Planeación original. Estado: **propuesta**, pendiente de aprobación. Incluye lo que se sumó al ver el prototipo (`/demo/recap`). **La implementación la toma Daniel** (Kyan, 2026-11-14): parte de la rama `kyan/recap`, que tiene este plan y el prototipo.
 
 Kyan lo pidió así: al cerrar cada temporada, cada jugador tiene su **recap**, un resumen en formato "historia" (como el Wrapped de Spotify o el recap de FACEIT) que se recorre de a una pantalla. Para verlo: perfil público › **Temporadas** › botón **"Recap"** en la tarjeta de esa temporada. Después de la última slide, la tarjeta se agranda hasta ocupar toda la pantalla y muestra todas las estadísticas, con el fondo de la landing, y se puede guardar como imagen o PDF.
 
@@ -27,7 +27,7 @@ Kyan lo pidió así: al cerrar cada temporada, cada jugador tiene su **recap**, 
 | Aviso "por llegar" | Tipo nuevo `recap_soon` (categoría `season`), del mismo job de avisos programados que `season_ending` (replanteo `35`): **3 días antes** del cierre, a toda ficha con al menos 1 mix en la temporada. "Tu recap de la Temporada N llega en 3 días · Llevás X mixes" | Pedido de Kyan. `season_ending` sale a las 24 h y solo a quien tiene la mitad de los mixes; este es para todos y antes |
 | Aviso "llegó" | Se reusa `season_closed` (le llega justo a quien tiene recap): pasa a decir "Llegó tu recap de la Temporada N · Terminaste 4.º · Top 10" y lleva al recap en vez de al perfil | Así no caen dos avisos juntos al cerrar |
 | Para ti | Tarjeta "Tu recap" en `/home`: desde el aviso `recap_soon` hasta el cierre, con cuenta regresiva, avance de la temporada y un adelanto borroso; después del cierre, "Llegó tu recap" con medalla, puesto, +ELO, % de victorias, kills y "Ver tu recap", durante **14 días** | Pedido de Kyan: que el recap también aparezca en Para ti |
-| Rama | El plan y el prototipo van en `kyan/recap` (pedido de Kyan el 2026-11-14). Dónde se implementa la base, la API y la web se pregunta antes de empezar | Regla de ramas del `CLAUDE.md` |
+| Rama y quién | El plan y el prototipo están en `kyan/recap` (pedido de Kyan el 2026-11-14). Lo implementa Daniel, que decide en qué rama van la base, la API y la web | Kyan se lo pasa a Daniel para lo que sigue |
 | Perfil del jugador | Se le avisa a Killuaz (Esteban), que lleva el perfil. El recap es una vista aparte y en la pestaña solo se agrega el botón | No se pisa su trabajo |
 
 ## 1. El flujo completo
