@@ -134,6 +134,8 @@ export type MmSource = {
   adminStats(days: number, signal?: AbortSignal): Promise<MmStatsDay[]>
   setServerEnabled(serverId: string, enabled: boolean): Promise<MmAdminServer>
   adminLobbies(signal?: AbortSignal): Promise<MmAdminLobby[]>
+  /** Ver sala (replanteo 116): la sala completa, como la ve un jugador, con el servidor. */
+  adminLobby(lobbyId: string, signal?: AbortSignal): Promise<MmLobby>
   cancelLobby(lobbyId: string): Promise<void>
   subscribe(
     onEvent: (e: MmEvent) => void,
@@ -423,6 +425,16 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
         "PATCH"
       ),
     adminLobbies: (signal) => call("/api/v1/admin/mm/lobbies", { signal }),
+    adminLobby: (id, signal) =>
+      call<MmLobby>(`/api/v1/admin/mm/lobbies/${encodeURIComponent(id)}`, {
+        signal,
+      }).then((l) => ({
+        ...l,
+        // La base los saca: son del que mira como jugador.
+        reported: l.reported ?? [],
+        commended: l.commended ?? null,
+        elo_stake: l.elo_stake ?? null,
+      })),
     cancelLobby: (id) =>
       post(`/api/v1/admin/mm/lobbies/${encodeURIComponent(id)}/cancel`),
     subscribe: openSocket,

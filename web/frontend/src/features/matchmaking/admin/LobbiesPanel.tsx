@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
+import { EyeIcon } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
@@ -22,12 +24,19 @@ import {
 import { LOBBY_TITLE, fmtDateTime } from "../labels"
 import { adminLobbiesOptions, useMmAdminMutation } from "../queries"
 import { useMmSource } from "../source"
+import { LobbyRoom } from "./LobbyRoom"
 
-/** Administración › Matchmaking › Salas: las activas y cancelar una trabada. */
+/** Administración › Matchmaking › Salas: las activas, verlas como un jugador y cancelar una trabada. */
 export function LobbiesPanel() {
   const source = useMmSource()
-  const { data } = useQuery(adminLobbiesOptions(source))
+  const [open, setOpen] = useState<string | null>(null)
+  const { data } = useQuery({
+    ...adminLobbiesOptions(source),
+    refetchInterval: open ? false : 10_000,
+  })
   const cancel = useMmAdminMutation((id: string) => source.cancelLobby(id))
+
+  if (open) return <LobbyRoom lobbyId={open} onBack={() => setOpen(null)} />
 
   return (
     <Card variant="outline" className="flex flex-col gap-3 p-4">
@@ -66,20 +75,30 @@ export function LobbiesPanel() {
                   <TableCell className="text-muted-foreground">
                     {fmtDateTime(l.created_at)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={cancel.isPending}
-                      onClick={() =>
-                        cancel.mutate(l.id, {
-                          onSuccess: () => toast.success("Sala cancelada"),
-                          onError: (e) => toast.error(errorMessage(e)),
-                        })
-                      }
-                    >
-                      Cancelar
-                    </Button>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setOpen(l.id)}
+                      >
+                        <EyeIcon aria-hidden />
+                        Ver sala
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={cancel.isPending}
+                        onClick={() =>
+                          cancel.mutate(l.id, {
+                            onSuccess: () => toast.success("Sala cancelada"),
+                            onError: (e) => toast.error(errorMessage(e)),
+                          })
+                        }
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context, MiddlewareHandler } from 'hono';
 import { requireAdmin, requireModerator, requireUser } from '../lib/auth';
-import { must, mustHave } from '../lib/db';
+import { must, mustHave, notFound } from '../lib/db';
 import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
@@ -267,6 +267,13 @@ add(route('get', '/api/v1/admin/mm/config', { summary: 'Configuración', guard: 
 add(route('patch', '/api/v1/admin/mm/config', { summary: 'Cambiar la configuración', guard: requireAdmin, request: jsonBody(Config) }),
   async (c) => c.json((await rpc(c, 'mm_set_config', { p: body<unknown>(c) })) as never, 200));
 add(route('get', '/api/v1/admin/mm/lobbies', { summary: 'Salas activas', guard: requireAdmin }), lists('lobbies'));
+// (replanteo 116) "Ver sala": la sala completa, como la ve un jugador, con el servidor y sin lo del que mira como jugador.
+add(route('get', '/api/v1/admin/mm/lobbies/{id}', { summary: 'Una sala completa (Ver sala)', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
+  const room = (await rpc(c, 'mm_admin_lobby', { p_lobby: param(c) })) as unknown as { match?: GameRef | null } | null;
+  if (!room) throw notFound('la sala');
+  if (room.match?.game_id) await withGame(c, room.match);
+  return c.json(room as never, 200);
+});
 add(route('post', '/api/v1/admin/mm/lobbies/{id}/cancel', { summary: 'Cancelar una sala', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
   await rpc(c, 'mm_admin_cancel', { p_lobby: param(c) });
   return c.json({ ok: true } as never, 200);
