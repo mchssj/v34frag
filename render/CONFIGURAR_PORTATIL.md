@@ -84,8 +84,9 @@ Desde el 2026-11-04 se puede grabar con el CS:S v34 normal en vez de ClientMod (
    ```
    Lo que encuentra termina en `\Settings`: en `registry_key` va la clave de arriba, sin el `\Settings`, igual que la de ClientMod (`HKCU\Software\CSSv34_ClientMod`, que tiene adentro `Settings`). Si no aparece nada, se deja la de ejemplo: el script avisa en el log y sigue sin respaldarla.
 3. **Mapas:** igual que en el paso 3, pero en `cstrike/maps/` (con sus `materials`, `models` y `sound` dentro de `cstrike/`). `cstrike_downloads/` es de ClientMod: si se copian los mapas de la PC, el contenido de `cstrike_downloads` va **dentro de `cstrike/`**.
-4. **Permisos:** como la carpeta está en `C:\Program Files (x86)`, el juego tiene que correr como administrador para escribir ahí los cuadros, el log y las demos. El script ya se eleva (y la tarea corre con privilegios más altos), así que no hay que hacer nada. Si se prefiere evitarlo, se puede mover la carpeta entera a, por ejemplo, `C:\CMLeague_Render\v34`.
-5. **En `config.json`** (paso 5):
+4. **La consola y el control del espectador:** los maneja el script (desde el 2026-11-13). Pone `bind "k" "toggleconsole"` en `cmleague_render.cfg` (el v34 no trae una tecla para la consola, y la de al lado del 1 no la abre) y, al cargar la demo, aprieta Ctrl para cerrar el control del espectador. Después de una grabación, la K queda abriendo la consola también al jugar con esa instalación.
+5. **Permisos:** como la carpeta está en `C:\Program Files (x86)`, el juego tiene que correr como administrador para escribir ahí los cuadros, el log y las demos. El script ya se eleva (y la tarea corre con privilegios más altos), así que no hay que hacer nada. Si se prefiere evitarlo, se puede mover la carpeta entera a, por ejemplo, `C:\CMLeague_Render\v34`.
+6. **En `config.json`** (paso 5):
    ```json
    "client": "v34",
    "client_dir": "C:\\Program Files (x86)\\CSS v34 eXpandedCS",

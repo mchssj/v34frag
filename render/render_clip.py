@@ -151,6 +151,11 @@ def click(x, y):
 
 WM_KEYDOWN, WM_KEYUP, WM_CHAR = 0x100, 0x101, 0x102
 SCAN_CONSOLE = 0x29  # la tecla a la izquierda del 1 (º en el teclado español, ` en el inglés)
+# El v34 normal no abre la consola con esa tecla (en el teclado latinoamericano le llega como "\" y escribe "|"), y no
+# trae un bind para abrirla: la K, con bind "k" "toggleconsole" en cmleague_render.cfg (Daniel, 2026-11-13). La K no la
+# cierra: la cierran hideconsole y gameui_hide, que van en cada línea.
+KEY_CONSOLE_V34 = (0x25, 0x4B)  # K
+KEY_CTRL = (0x1D, 0x11)  # cierra el control del espectador del v34 al cargar la demo
 
 
 def post_key(hwnd, scan, vk=None):
@@ -161,13 +166,14 @@ def post_key(hwnd, scan, vk=None):
     time.sleep(0.05)
 
 
-def console_command(hwnd, text):
+def console_command(hwnd, text, key=(SCAN_CONSOLE, None)):
     """Abre la consola, escribe el texto y aprieta Enter. El texto tiene que cerrar la consola (hideconsole).
 
     La tecla de la consola también puede escribir su carácter en la línea (en un teclado latinoamericano es "|"; en el
-    español, "º"), y quedaba "|demo_pause; …": el primer comando no existía. Se borra la línea con Backspace y el
-    texto empieza con ";", así un carácter suelto solo anula un comando vacío."""
-    post_key(hwnd, SCAN_CONSOLE)
+    español, "º"; con la K del v34, "k"), y quedaba "|demo_pause; …": el primer comando no existía. Se borra la línea
+    con Backspace y el texto empieza con ";", así un carácter suelto solo anula un comando vacío. key: (scan, vk) de
+    la tecla que abre la consola."""
+    post_key(hwnd, *key)
     time.sleep(0.3)
     for _ in range(4):
         post_key(hwnd, 0x0E, 0x08)  # Backspace
@@ -255,6 +261,7 @@ class Game:
         self.log_pos = 0
         self.hwnd = None
         self.step_pos = 0
+        self.console_key = KEY_CONSOLE_V34 if self.client == "v34" else (SCAN_CONSOLE, None)
 
     # ---- preparación y limpieza ----
 
@@ -267,6 +274,7 @@ class Game:
             # La consola es la única forma de manejar el juego: en una instalación limpia puede venir apagada.
             "con_enable 1",
             'bind "`" "toggleconsole"',
+            'bind "k" "toggleconsole"' if self.client == "v34" else "",
             "con_logfile cmleague/render.log",
             f"host_framerate {c['fps']}",
             "fps_max 0",
@@ -373,7 +381,7 @@ class Game:
             log("Cerrando el juego.")
             t0 = time.time()
             while self.running() and time.time() - t0 < 60:
-                console_command(self.hwnd, "quit")
+                console_command(self.hwnd, "quit", self.console_key)
                 time.sleep(4)
         if self.running() and self.client == "v34":
             log("El juego no se cerró con quit: lo cierro a la fuerza.")
@@ -426,17 +434,19 @@ class Game:
             time.sleep(0.2)
         raise TimeoutError(f"no apareció '{text}' en el log en {timeout} s")
 
-    def step(self, commands, timeout=60):
+    def step(self, commands, timeout=60, before_retry=None):
         """Escribe el paso en la consola y espera su marca en el log. Si no llegó en 5 s, lo vuelve a escribir
         (pasa si la consola no llegó a abrirse). Un paso que no cabe en una línea va en varias (console_lines), cada
-        una con su marca; step_pos queda al principio del paso completo."""
+        una con su marca; step_pos queda al principio del paso completo. before_retry: lo que se hace antes de cada
+        reenvío (en el v34, Ctrl para cerrar el control del espectador)."""
         self.step_pos = os.path.getsize(self.logfile)
         for line in console_lines(commands, self.n + 1):
             self.n += 1
             text = console_line(line, self.n)[2:]  # console_command le pone el "; " del principio
-            send = lambda t=text: console_command(self.hwnd, t)  # noqa: E731
+            send = lambda t=text: console_command(self.hwnd, t, self.console_key)  # noqa: E731
+            retry = (lambda: (before_retry(), send())) if before_retry else send
             send()
-            self.wait_log(f"CML_PASO_{self.n}", timeout, retry=send)
+            self.wait_log(f"CML_PASO_{self.n}", timeout, retry=retry)
 
     def log_text(self, since):
         if not os.path.exists(self.logfile):
@@ -448,9 +458,10 @@ class Game:
     def wait_loaded(self, since=0, timeout=600):
         """Espera a que termine de cargar la demo (al abrir el juego o después de un reinicio de la demo).
 
-        Con ClientMod, la línea LOADED. La v34 normal puede no escribirla (no se sabe todavía): se espera "Playing
-        demo from" (el playdemo arrancó), LOADED hasta 30 s y, si no aparece, un paso de prueba por la consola, que
-        solo responde cuando la carga terminó. El aviso copia al log las últimas líneas, para ver qué escribe."""
+        Con ClientMod, la línea LOADED. La v34 normal no la escribe: termina la carga con "Initializing renderer...".
+        Al cargar, la demo abre el control del espectador, que se queda con el teclado (ni la tecla de la consola
+        llega) y se cierra con Ctrl (Daniel, 2026-11-13). Se aprieta Ctrl y se manda un paso de prueba, que también lo
+        oculta por comando; como Ctrl lo abre y lo cierra, si el paso no responde se reintenta con otro Ctrl."""
         if self.client == "clientmod":  # como siempre
             return self.wait_log(self.LOADED, timeout) if since == 0 else self.wait_text(self.LOADED, since, timeout)
         t0 = time.time()
@@ -459,14 +470,12 @@ class Game:
                 raise TimeoutError(f"el juego no escribe el log de la consola ({self.logfile}): ¿falta -condebug?")
             time.sleep(0.5)
         self.wait_text("Playing demo from", since, timeout)
-        try:
-            self.wait_text(self.LOADED, since, 30)
-            return
-        except TimeoutError:
-            pass
-        tail = [l for l in self.log_text(since).splitlines() if l.strip()][-8:]
-        log("Aviso: no apareció '" + self.LOADED + "'; pruebo la consola. Últimas líneas del log: " + " | ".join(tail))
-        self.step(["demo_pause", "hideconsole"], timeout=timeout)
+        self.wait_text("Initializing renderer", since, timeout)
+        time.sleep(2)
+        close_spec = lambda: post_key(self.hwnd, *KEY_CTRL)  # noqa: E731
+        close_spec()
+        self.step(["demo_pause", "hidepanel specmenu", "hidepanel specgui", "hideconsole", "gameui_hide"],
+                  timeout=timeout, before_retry=close_spec)
 
     def wait_text(self, text, since, timeout):
         """Espera a que el texto aparezca en el log desde la posición since (sin depender de lo ya leído)."""
