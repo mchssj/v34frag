@@ -16,6 +16,7 @@ import os
 import sys
 import time
 import traceback
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -28,12 +29,21 @@ from render_clip import log  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
 
-def get(env, query):
+def get(env, query, tries=5):
+    """Una lectura con la clave pública. match_clip_list anda cerca del tope de tiempo de la base (entre 0,9 y 3,7 s
+    por partida, el 2026-11-13): si la corta (500 o 503), se reintenta."""
     req = urllib.request.Request(env["RENDER_SUPABASE_URL"].rstrip("/") + "/rest/v1/" + query, headers={
         "User-Agent": procesar.USER_AGENT, "apikey": env["RENDER_SUPABASE_KEY"],
         "Authorization": f"Bearer {env['RENDER_SUPABASE_KEY']}"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read())
+    for attempt in range(1, tries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code not in (500, 503) or attempt == tries:
+                raise
+            log(f"Aviso: la base respondió {e.code} ({query.split('?')[0]}); reintento ({attempt + 1} de {tries}).")
+            time.sleep(3)
 
 
 def main():
