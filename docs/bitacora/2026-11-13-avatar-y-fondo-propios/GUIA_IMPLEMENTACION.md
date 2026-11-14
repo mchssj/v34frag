@@ -34,7 +34,7 @@ Hecho y probado en local el 2026-11-14, sin commit (rama `feat/tienda-de-puntos`
 
 Va con el de la tienda ([guía](../2026-11-11-tienda-de-puntos/GUIA_IMPLEMENTACION.md)), con dos pasos más:
 
-1. **Antes:** Daniel instala ffmpeg en el VPS (`sudo apt install ffmpeg`) y comprueba `ffmpeg -version` con el usuario del servicio `cmleague-api`. Sin ffmpeg, lo animado responde «no disponible» y no cobra; el fondo fijo funciona.
+1. **Antes:** ffmpeg en el VPS. **Hecho el 2026-11-14**, pedido por Daniel: `sudo apt-get install -y --no-upgrade --no-install-recommends ffmpeg` (con `NEEDRESTART_SUSPEND=1`, para que no reinicie servicios), 150 paquetes nuevos y ninguno actualizado. `ffmpeg -version` con el usuario `cmleague` (el de `cmleague-api`): 8.0.1. La API actual no lo usa todavía: la que trae la tienda lo encuentra al arrancar.
 2. **Antes de generar la `113` para producción:** pasar a `catalogo.json` lo que Daniel activó, renombró, redescribió o cambió de grupo en su local, y regenerar con `generar_catalogo.py` (la `113` carga el catálogo desde ahí).
 3. La `114`, la `113` (crea el bucket `cosmetics` y sus políticas), `notify pgrst`, la API y la web, como dice la guía de la tienda.
 4. Probar en producción con una cuenta VIP (avatar animado) y una sin VIP (fondo fijo), y una denuncia resuelta desde Baneos › Imágenes.
