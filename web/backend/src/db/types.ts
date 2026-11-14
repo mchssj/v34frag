@@ -295,13 +295,13 @@ isOneToOne: false
                   ]
                 },"bans": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"created_by_name": string | null,"created_by_steam": string | null,"expires_at": string | null,"id": string,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_name": string | null,"lifted_by_steam": string | null,"nick": string | null,"player_id": string | null,"reason": string,"replaced_by": string | null,"server_id": string | null,"source": string,"steam_id": string,"updated_at": string,"updated_by": string | null
+                    "created_at": string,"created_by": string | null,"created_by_role": string | null,"created_by_name": string | null,"created_by_steam": string | null,"expires_at": string | null,"id": string,"lift_reason": string | null,"lifted_at": string | null,"lifted_by": string | null,"lifted_by_name": string | null,"lifted_by_steam": string | null,"nick": string | null,"player_id": string | null,"reason": string,"replaced_by": string | null,"server_id": string | null,"source": string,"steam_id": string,"updated_at": string,"updated_by": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason": string,"replaced_by"?: string | null,"server_id"?: string | null,"source": string,"steam_id": string,"updated_at"?: string,"updated_by"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"created_by_role"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason": string,"replaced_by"?: string | null,"server_id"?: string | null,"source": string,"steam_id": string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason"?: string,"replaced_by"?: string | null,"server_id"?: string | null,"source"?: string,"steam_id"?: string,"updated_at"?: string,"updated_by"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"created_by_role"?: string | null,"created_by_name"?: string | null,"created_by_steam"?: string | null,"expires_at"?: string | null,"id"?: string,"lift_reason"?: string | null,"lifted_at"?: string | null,"lifted_by"?: string | null,"lifted_by_name"?: string | null,"lifted_by_steam"?: string | null,"nick"?: string | null,"player_id"?: string | null,"reason"?: string,"replaced_by"?: string | null,"server_id"?: string | null,"source"?: string,"steam_id"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -1104,13 +1104,13 @@ isOneToOne: false
                   ]
                 },"match_clips": {
                   Row: {
-                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string,"discord_message_id": string | null,"discord_posted_at": string | null,"end_tick": number | null,"id": string,"kill_ticks": (number)[],"match_id": string,"player_name": string,"player_steamid": string,"round": number,"round_seconds": number,"round_won": boolean,"video_attempts": number,"video_bytes": number | null,"video_claimed_at": string | null,"video_drive_id": string | null,"video_error": string | null,"video_forced": boolean,"video_forced_at": string | null,"video_forced_by": string | null,"video_key": string | null,"video_r2_deleted_at": string | null,"video_reject_reason": string | null,"video_rejected_at": string | null,"video_rejected_by": string | null,"video_rendered_at": string | null,"video_reprocess_count": number,"video_reprocessed_at": string | null,"video_review": string | null,"video_reviewed_at": string | null,"video_reviewed_by": string | null,"video_seconds": number | null,"video_status": string | null
+                    "clutch_start_tick": number | null,"clutch_vs": number | null,"created_at": string,"discord_message_id": string | null,"discord_posted_at": string | null,"end_tick": number | null,"id": string,"kill_ticks": (number)[],"match_id": string,"player_name": string,"player_steamid": string,"round": number,"round_seconds": number,"round_won": boolean,"video_attempts": number,"video_bytes": number | null,"video_claimed_at": string | null,"video_drive_id": string | null,"video_error": string | null,"video_forced": boolean,"video_forced_at": string | null,"video_forced_by": string | null,"video_key": string | null,"video_r2_deleted_at": string | null,"video_reject_reason": string | null,"video_rejected_at": string | null,"video_rejected_by": string | null,"video_rendered_at": string | null,"video_reprocess_count": number,"video_reprocessed_by": string | null,"video_reprocessed_at": string | null,"video_review": string | null,"video_reviewed_at": string | null,"video_reviewed_by": string | null,"video_seconds": number | null,"video_status": string | null
                   }
                   Insert: {
-                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id": string,"player_name"?: string,"player_steamid": string,"round": number,"round_seconds"?: number,"round_won": boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_at"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
+                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id": string,"player_name"?: string,"player_steamid": string,"round": number,"round_seconds"?: number,"round_won": boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_by"?: string | null,"video_reprocessed_at"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
                   }
                   Update: {
-                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id"?: string,"player_name"?: string,"player_steamid"?: string,"round"?: number,"round_seconds"?: number,"round_won"?: boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_at"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
+                    "clutch_start_tick"?: number | null,"clutch_vs"?: number | null,"created_at"?: string,"discord_message_id"?: string | null,"discord_posted_at"?: string | null,"end_tick"?: number | null,"id"?: string,"kill_ticks"?: (number)[],"match_id"?: string,"player_name"?: string,"player_steamid"?: string,"round"?: number,"round_seconds"?: number,"round_won"?: boolean,"video_attempts"?: number,"video_bytes"?: number | null,"video_claimed_at"?: string | null,"video_drive_id"?: string | null,"video_error"?: string | null,"video_forced"?: boolean,"video_forced_at"?: string | null,"video_forced_by"?: string | null,"video_key"?: string | null,"video_r2_deleted_at"?: string | null,"video_reject_reason"?: string | null,"video_rejected_at"?: string | null,"video_rejected_by"?: string | null,"video_rendered_at"?: string | null,"video_reprocess_count"?: number,"video_reprocessed_by"?: string | null,"video_reprocessed_at"?: string | null,"video_review"?: string | null,"video_reviewed_at"?: string | null,"video_reviewed_by"?: string | null,"video_seconds"?: number | null,"video_status"?: string | null
                   }
                   Relationships: [
                     {
@@ -6208,6 +6208,15 @@ isOneToOne: false
 "ban_steams":
 { Args: { "p_player": string,"p_steam": string }; Returns: (string)[]
                            },
+"ban_support_count":
+{ Args: { "p_steam": string }; Returns: number
+                           },
+"ban_support_quota":
+{ Args: { "p_player": string,"p_steam": string }; Returns: Json
+                           },
+"ban_target_steam":
+{ Args: { "p_player": string,"p_steam": string }; Returns: string
+                           },
 "ban_unix":
 { Args: { "p_expires": string }; Returns: number
                            },
@@ -6690,6 +6699,9 @@ isOneToOne: false
                            },
 "is_match_participant":
 { Args: { "p_match": string }; Returns: boolean
+                           },
+"is_support":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "is_moderator":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -7485,6 +7497,9 @@ isOneToOne: false
 "staff_public":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"staff_remove_photo":
+{ Args: { "p_player": string,"p_reason": string }; Returns: Json
+                           },
 "steam_attach":
 { Args: { "p_by": string,"p_player": string,"p_steam": string }; Returns: boolean
                            },
@@ -7511,6 +7526,12 @@ isOneToOne: false
                            },
 "steam_requests_expire":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"support_actions_list":
+{ Args: { "p_action"?: string,"p_actor"?: string,"p_from"?: string,"p_limit"?: number,"p_offset"?: number,"p_order"?: string,"p_to"?: string }; Returns: Json
+                           },
+"support_log":
+{ Args: { "p_action": string,"p_reason"?: string,"p_target": Json }; Returns: undefined
                            },
 "team_actor_role":
 { Args: { "p_team": string }; Returns: string

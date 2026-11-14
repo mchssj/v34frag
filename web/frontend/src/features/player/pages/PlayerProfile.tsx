@@ -15,9 +15,10 @@ import {
 import { useEffect } from "react"
 import { toast } from "sonner"
 
-import { api } from "@/api/client"
+import { api, unwrap } from "@/api/client"
 import { errorMessage, isApiError, isRetryable } from "@/api/errors"
-import { canVerifyPlayers } from "@/auth/permissions"
+import { canSupport, canVerifyPlayers } from "@/auth/permissions"
+import { RemoveImageButton } from "@/components/brand/RemoveImageButton"
 import { useMe } from "@/auth/queries"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { VerifiedBadge } from "@/components/brand/VerifiedBadge"
@@ -288,6 +289,23 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ProfileVotes playerId={p.id} />
           {me && canVerifyPlayers(me.role) && <VerifyDialog player={p} />}
+          {me && canSupport(me.role) && !owner && photo && (
+            <RemoveImageButton
+              label="Quitar foto"
+              title={`¿Quitar la foto de perfil de ${p.alias}?`}
+              description="Queda la imagen por defecto hasta que suba otra. Le llega un aviso con el motivo."
+              done="Foto quitada."
+              remove={(reason) =>
+                unwrap(
+                  api.POST("/api/v1/admin/players/{id}/photo/remove", {
+                    params: { path: { id: p.id } },
+                    body: { reason },
+                  })
+                )
+              }
+              invalidate={[["players"], ["player"]]}
+            />
+          )}
           {owner ? (
             <Link
               to="/profile"

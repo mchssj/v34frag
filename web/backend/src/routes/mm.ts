@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context, MiddlewareHandler } from 'hono';
-import { requireAdmin, requireModerator, requireUser } from '../lib/auth';
+import { requireAdmin, requireModerator, requireSupport, requireUser } from '../lib/auth';
 import { must, mustHave, notFound } from '../lib/db';
 import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { AppError } from '../lib/errors';
@@ -302,8 +302,9 @@ add(route('delete', '/api/v1/admin/mm/bans/{id}', { summary: 'Levantar una exclu
   return c.json({ ok: true } as never, 200);
 });
 // Sanciones automáticas de la cola (replanteo 61). Levantar corta la espera y baja un nivel de la escalera.
-add(route('get', '/api/v1/admin/mm/penalties', { summary: 'Sanciones de la cola vigentes', guard: requireModerator }), lists('penalties'));
-add(route('post', '/api/v1/admin/mm/penalties/{id}/lift', { summary: 'Levantar una sanción de la cola', guard: requireModerator, request: { params: IdParam, ...jsonBody(Lift) } }), async (c) => {
+// También el soporte (replanteo 117); las exclusiones, no.
+add(route('get', '/api/v1/admin/mm/penalties', { summary: 'Sanciones de la cola vigentes', guard: requireSupport }), lists('penalties'));
+add(route('post', '/api/v1/admin/mm/penalties/{id}/lift', { summary: 'Levantar una sanción de la cola', guard: requireSupport, request: { params: IdParam, ...jsonBody(Lift) } }), async (c) => {
   await rpc(c, 'mm_admin_lift_penalty', { p_user: param(c), p_reason: body<{ reason: string }>(c).reason });
   return c.json({ ok: true } as never, 200);
 });

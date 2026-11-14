@@ -2,6 +2,16 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## Rol Soporte (2026-11-13): llevado a `main` el 2026-11-14, desplegándose
+
+- **Qué es:** pedido por Daniel. Un rol `support` debajo del moderador: baneos de 1 a 120 minutos (no a quien ya está baneado, hasta 3 de soporte por jugador en 7 días, solo cambia o levanta los suyos), reprocesar y revisar clips, quitar fotos y logos, borrar comentarios y levantar sanciones de la cola. Todo queda en Baneos › Actividad del soporte ([`2026-11-13-rol-soporte`](bitacora/2026-11-13-rol-soporte/)).
+- **Hecho:** replanteo `117`, la API, la web, la sección Soporte del manual y los legales. Probado en local (19 de 19 en la base, 622 de la API y 757 de la web) y por Daniel en el navegador.
+- **Falta:**
+  1. Desplegar: la prueba en producción con rollback, la `117`, la API y la web (ver la guía).
+  2. Dar el rol a las cuentas de soporte, con ficha de jugador para que salgan en Quiénes somos.
+  3. Publicar `terms/` y el changelog 2.9.45 en Discord.
+  4. Llevar la `117` a `feat/frontend-fase-1` y `feat/mm-claim-en-sala` solo si Daniel lo pide: siguen en la `105`.
+
 ## Ver una sala del matchmaking como admin (2026-11-14): desplegado el 2026-11-14
 
 - **Qué es:** pedido por Kyan. "Ver sala" en Administración › Matchmaking › Salas abre la sala como "Tu última partida", con cancelar, servidor, TV y banear ([`2026-11-14-mm-admin-ver-sala`](bitacora/2026-11-14-mm-admin-ver-sala/)).

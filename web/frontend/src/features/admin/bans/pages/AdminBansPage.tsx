@@ -4,7 +4,11 @@ import { BanIcon } from "lucide-react"
 import { useState } from "react"
 import { z } from "zod"
 
-import { canBanPermanent } from "@/auth/permissions"
+import {
+  canBanPermanent,
+  canSeeSupportActivity,
+  isSupportOnly,
+} from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -40,6 +44,7 @@ import {
 } from "../../components/ui"
 import { BanDialog } from "../components/BanDialog"
 import { BanPanel } from "../components/BanPanel"
+import { SupportActivityPanel } from "../components/SupportActivityPanel"
 import {
   CommentReportsPanel,
   useOpenCommentReports,
@@ -147,11 +152,19 @@ export function AdminBansPage({
   /** Cambia parte de la búsqueda; `undefined` borra el filtro. */
   onSearch: (patch: Partial<BanSearch>) => void
 }) {
-  const role = useMe().data?.role ?? "user"
+  const me = useMe().data
+  const role = me?.role ?? "user"
   const canPermanent = canBanPermanent(role)
-  const tab: StatusTab = search.status ?? "active"
+  // Soporte (replanteo 117): banea por minutos, solo toca sus baneos y no ve las exclusiones del matchmaking.
+  const support = isSupportOnly(role)
+  const supportUserId = support ? me?.id : undefined
+  const seesActivity = canSeeSupportActivity(role)
+  const asked: StatusTab = search.status ?? "active"
+  const tab: StatusTab = asked === "support" && !seesActivity ? "active" : asked
   const status: BanStatus | undefined =
-    tab === "all" || tab === "mm" || tab === "comments" ? undefined : tab
+    tab === "all" || tab === "mm" || tab === "comments" || tab === "support"
+      ? undefined
+      : tab
   const page = search.page ?? 1
   const filters: BanFilters = {
     source: search.source,
@@ -179,9 +192,15 @@ export function AdminBansPage({
     lifted: useQuery(banCountOptions("lifted", filters)).data,
   }
   const mmPenalties = useQuery(adminPenaltiesOptions(apiMmSource)).data
-  const mmBans = useQuery(adminBansOptions(apiMmSource)).data
-  const mmCount =
-    mmPenalties && mmBans ? mmPenalties.length + mmBans.length : undefined
+  const mmBans = useQuery({
+    ...adminBansOptions(apiMmSource),
+    enabled: !support,
+  }).data
+  const mmCount = support
+    ? mmPenalties?.length
+    : mmPenalties && mmBans
+      ? mmPenalties.length + mmBans.length
+      : undefined
   const servers = useQuery(serverStatusOptions).data?.servers ?? []
   const openComments = useOpenCommentReports()
   const [banning, setBanning] = useState(false)
@@ -220,13 +239,24 @@ export function AdminBansPage({
           </Button>
         }
       />
-      {!canPermanent && (
+      {support ? (
         <Alert>
           <AlertDescription>
-            Entras como moderador: puedes banear, cambiar o levantar cualquier
-            baneo que no sea permanente. Los permanentes son de los admins.
+            Entras como soporte: baneas por minutos, de 1 a 120, a quien no esté
+            baneado y hasta 3 veces por jugador en 7 días. Solo cambias o
+            levantas los baneos que pusiste tú. Para algo más largo, pásale el
+            caso a un moderador.
           </AlertDescription>
         </Alert>
+      ) : (
+        !canPermanent && (
+          <Alert>
+            <AlertDescription>
+              Entras como moderador: puedes banear, cambiar o levantar cualquier
+              baneo que no sea permanente. Los permanentes son de los admins.
+            </AlertDescription>
+          </Alert>
+        )
       )}
 
       <AdminTabs
@@ -251,19 +281,24 @@ export function AdminBansPage({
           },
           { key: "mm", label: "Matchmaking", badge: mmCount },
           { key: "comments", label: "Comentarios", badge: openComments },
+          ...(seesActivity
+            ? [{ key: "support" as const, label: "Actividad del soporte" }]
+            : []),
         ]}
       />
 
-      {tab === "comments" ? (
+      {tab === "support" ? (
+        <SupportActivityPanel />
+      ) : tab === "comments" ? (
         <CommentReportsPanel />
       ) : tab === "mm" ? (
         <MmSourceContext value={apiMmSource}>
           <p className="text-[13px] leading-relaxed text-muted-foreground">
-            Lo que deja a alguien sin buscar partida, sin tocar los servidores:
-            las sanciones que pone la cola sola y las exclusiones que se ponen
-            al resolver un reporte.
+            {support
+              ? "Lo que deja a alguien sin buscar partida, sin tocar los servidores: las sanciones que pone la cola sola. Las exclusiones que se ponen al resolver un reporte son de los moderadores."
+              : "Lo que deja a alguien sin buscar partida, sin tocar los servidores: las sanciones que pone la cola sola y las exclusiones que se ponen al resolver un reporte."}
           </p>
-          <SanctionsPanel />
+          <SanctionsPanel showBans={!support} />
         </MmSourceContext>
       ) : (
         <>
@@ -333,6 +368,7 @@ export function AdminBansPage({
                     ban={selected}
                     others={history.data?.items}
                     canPermanent={canPermanent}
+                    supportUserId={supportUserId}
                     onClose={() => onSearch({ ban: undefined })}
                     onPick={open}
                     onChanged={open}
@@ -358,6 +394,7 @@ export function AdminBansPage({
       {banning && (
         <BanDialog
           canPermanent={canPermanent}
+          support={support}
           onClose={() => setBanning(false)}
           onSaved={(b) => {
             setPicked(b)

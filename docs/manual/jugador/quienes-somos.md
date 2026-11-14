@@ -1,13 +1,13 @@
 ---
 titulo: Quiénes somos
-resumen: La página con los admins, los moderadores y el agradecimiento a los VIP, y cómo ocultarte de esa lista.
+resumen: La página con los admins, los moderadores, el soporte y el agradecimiento a los VIP, y cómo ocultarte de esa lista.
 orden: 12
 ---
 
 En el menú, sección **Comunidad**, toca **Quiénes somos**. Ahí están las personas detrás de CMLeague:
 
 - **Administración:** los admins, el equipo principal. Desde cada tarjeta vas a su perfil o al Discord.
-- **Moderación:** los moderadores.
+- **Moderación:** los moderadores y el soporte, ordenados por nick. Cada tarjeta dice **Moderador** o **Soporte**.
 - **Gracias a los VIP:** los VIP activos, del más antiguo al más nuevo. Los admins no aparecen en esta lista.
 
 La página se arma sola con el rol de cada cuenta y el VIP vigente. Solo aparecen las cuentas con ficha de jugador.

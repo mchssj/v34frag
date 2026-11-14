@@ -263,7 +263,8 @@ export function TeamPanel({
                     "mt-1.5 size-2 rounded-full",
                     e.actor_role === "admin"
                       ? "bg-primary"
-                      : e.actor_role === "moderator"
+                      : e.actor_role === "moderator" ||
+                          e.actor_role === "support"
                         ? "bg-blue-500"
                         : "bg-muted-foreground"
                   )}

@@ -15,7 +15,7 @@ Cada denuncia muestra el motivo, quién la mandó, el comentario, su autor, en q
 
 ## Borrar desde el perfil
 
-Los moderadores y admins ven la papelera en todos los comentarios de los perfiles, no solo en los suyos.
+Los moderadores, los admins y el soporte ven la papelera en todos los comentarios de los perfiles, no solo en los suyos.
 
 1. Abre el perfil del jugador y la pestaña **Comentarios**.
 2. Toca la papelera del comentario.

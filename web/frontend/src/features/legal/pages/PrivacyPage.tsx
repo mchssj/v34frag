@@ -73,6 +73,10 @@ const RETENTION: [string, string][] = [
     "Mientras sea necesaria para detectar evasión de baneos",
   ],
   ["Baneos y sanciones", "Sin plazo: se levantan, no se borran"],
+  [
+    "Registro de lo que hace el soporte (quién, qué, a quién, el motivo y cuándo)",
+    "Sin plazo, como los baneos",
+  ],
   ["Historial de VIP", "Mientras tengas la cuenta"],
   ["Amigos y solicitudes de amistad", "Mientras tengas la cuenta"],
   ["Visitas a perfiles", "30 días"],
@@ -298,7 +302,7 @@ const SECTIONS: LegalSection[] = [
           head={["Público para cualquiera", "Solo tú y el staff"]}
           rows={[
             [
-              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP. Si eres admin o moderador, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
+              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos y si eres VIP. Si eres admin, moderador o de soporte, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
               "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, a quién bloqueaste en el matchmaking, y la evidencia del anticheat.",
             ],
           ]}
@@ -468,10 +472,10 @@ const SECTIONS: LegalSection[] = [
           que hizo la jugada. Muestran lo mismo que la demo de la partida: el
           mapa, los nombres que los jugadores usaban dentro del juego y el
           registro de eliminaciones. También se escucha lo que los jugadores
-          dijeron por el chat de voz durante la jugada, igual que en la
-          partida. No incluyen cámara ni ningún dato personal fuera del juego.
-          Las mejores jugadas también se publican en el canal de clips del
-          Discord de la liga.
+          dijeron por el chat de voz durante la jugada, igual que en la partida.
+          No incluyen cámara ni ningún dato personal fuera del juego. Las
+          mejores jugadas también se publican en el canal de clips del Discord
+          de la liga.
         </p>
       </>
     ),

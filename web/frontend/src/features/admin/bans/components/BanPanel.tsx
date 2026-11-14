@@ -25,6 +25,7 @@ export function BanPanel({
   ban,
   others,
   canPermanent,
+  supportUserId,
   onClose,
   onPick,
   onChanged,
@@ -33,6 +34,8 @@ export function BanPanel({
   /** Todos los baneos de esa persona (este incluido); undefined mientras cargan. */
   others: Ban[] | undefined
   canPermanent: boolean
+  /** La cuenta es de soporte (replanteo 117): su id, porque solo cambia o levanta los baneos que puso. */
+  supportUserId?: string
   onClose: () => void
   /** Abrir otro baneo (por id si no está en la lista de esa persona). */
   onPick: (b: Ban | string) => void
@@ -54,6 +57,7 @@ export function BanPanel({
       ? { kind: "steam", steamId: ban.steam_id }
       : null
   const steps = banSteps(ban)
+  const editable = canEditBan(ban, canPermanent, supportUserId)
 
   return (
     <>
@@ -194,7 +198,7 @@ export function BanPanel({
       </section>
 
       <div className="flex flex-wrap items-center gap-2">
-        {canEditBan(ban, canPermanent) && (
+        {editable && (
           <>
             <Button variant="outline" onClick={() => setEditing(true)}>
               Cambiar motivo o vencimiento
@@ -208,9 +212,11 @@ export function BanPanel({
             </Button>
           </>
         )}
-        {active && !canEditBan(ban, canPermanent) && (
+        {active && !editable && (
           <span className="text-[13px] leading-snug text-muted-foreground">
-            Es permanente: solo un admin lo cambia o lo levanta.
+            {ban.permanent
+              ? "Es permanente: solo un admin lo cambia o lo levanta."
+              : "Lo puso otra persona: solo quien lo puso, un moderador o un admin lo cambia o lo levanta."}
           </span>
         )}
         {!active &&
@@ -276,6 +282,7 @@ export function BanPanel({
         <BanDialog
           ban={ban}
           canPermanent={canPermanent}
+          support={!!supportUserId}
           onClose={() => setEditing(false)}
           onSaved={onChanged}
         />
@@ -284,6 +291,7 @@ export function BanPanel({
         <BanDialog
           fixed={target}
           canPermanent={canPermanent}
+          support={!!supportUserId}
           onClose={() => setRebanning(false)}
           onSaved={onChanged}
         />

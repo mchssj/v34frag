@@ -12,7 +12,13 @@ export type VipGrant = Schemas["VipGrant"]
 
 export type Streamer = Schemas["Streamer"]
 
-export type SettableRole = "user" | "organizer" | "moderator"
+export type SettableRole = "user" | "organizer" | "support" | "moderator"
 
 export type AccountFilter =
-  "all" | "admin" | "moderator" | "organizer" | "streamer" | "noplayer"
+  | "all"
+  | "admin"
+  | "moderator"
+  | "support"
+  | "organizer"
+  | "streamer"
+  | "noplayer"

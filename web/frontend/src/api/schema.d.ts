@@ -1808,7 +1808,7 @@ export interface paths {
         };
         /**
          * Comentarios denunciados
-         * @description Moderadores y admins. La base pagina, filtra y ordena.
+         * @description Soporte, moderadores y admins. La base pagina, filtra y ordena.
          */
         get: {
             parameters: {
@@ -7121,6 +7121,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/players/{id}/photo/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar la foto de perfil
+         * @description Soporte, moderadores y admins (replanteo 117). Borra la foto de la ficha y la de su cuenta, con motivo; el jugador recibe el aviso `avatar_removed`. Queda la imagen por defecto hasta que suba otra. `BUSINESS_RULE` si no tiene foto.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PhotoRemoveBody"];
+                };
+            };
+            responses: {
+                /** @description Quitada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/players/{id}/photo": {
         parameters: {
             query?: never;
@@ -7619,7 +7698,7 @@ export interface paths {
                     order?: "asc" | "desc";
                     /** @description Busca en el alias */
                     q?: string;
-                    role?: "user" | "organizer" | "moderator" | "admin";
+                    role?: "user" | "organizer" | "support" | "moderator" | "admin";
                     /** @description Con o sin jugador vinculado */
                     has_player?: "true" | "false";
                     /** @description Con o sin SteamID vinculado */
@@ -8711,7 +8790,7 @@ export interface paths {
         put?: never;
         /**
          * Quitar el logo de un equipo
-         * @description Moderadores y admins. El líder recibe el aviso `team_staff_action` con el motivo, si lo hay.
+         * @description Soporte, moderadores y admins (el soporte, con motivo de 3 a 300 caracteres; replanteo 117). El líder recibe el aviso `team_staff_action` con el motivo, si lo hay.
          */
         post: {
             parameters: {
@@ -10956,7 +11035,7 @@ export interface paths {
         put?: never;
         /**
          * Banear
-         * @description Una ficha (vale para todos sus SteamID, también los que sume después) o un SteamID sin ficha, en todos los servidores. Moderadores y admins; `permanent` solo un admin. Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, el servidor lo frena siempre; a quien ya está jugando (aunque sea un mix) lo echa en la sincronización, cada 3 minutos y al empezar cada mapa, o al momento con `!syncbans` en el servidor.
+         * @description Una ficha (vale para todos sus SteamID, también los que sume después) o un SteamID sin ficha, en todos los servidores. Soporte, moderadores y admins; `permanent` solo un admin. El soporte, solo con `minutes` (de 1 a 120), a quien no esté baneado y hasta 3 baneos de soporte por jugador en 7 días (`BUSINESS_RULE` con el motivo; ver `/admin/bans/support-quota`). Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, el servidor lo frena siempre; a quien ya está jugando (aunque sea un mix) lo echa en la sincronización, cada 3 minutos y al empezar cada mapa, o al momento con `!syncbans` en el servidor.
          */
         post: {
             parameters: {
@@ -11030,7 +11109,7 @@ export interface paths {
         head?: never;
         /**
          * Cambiar un baneo
-         * @description El motivo o el vencimiento de un baneo activo. Uno permanente, o volverlo permanente, solo un admin.
+         * @description El motivo o el vencimiento de un baneo activo. Uno permanente, o volverlo permanente, solo un admin. El soporte cambia solo los suyos, con `minutes`, y sin pasar de 120 minutos desde que lo puso.
          */
         patch: {
             parameters: {
@@ -11107,7 +11186,7 @@ export interface paths {
         put?: never;
         /**
          * Levantar un baneo
-         * @description Con motivo. No se borra: queda en la lista como levantado. Uno permanente, solo un admin.
+         * @description Con motivo. No se borra: queda en la lista como levantado. Uno permanente, solo un admin. El soporte, solo los suyos.
          */
         post: {
             parameters: {
@@ -11171,6 +11250,159 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bans/support-quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cupo de baneos de soporte
+         * @description Cuántos baneos de soporte tiene esa ficha (o ese SteamID) en los últimos 7 días, de 3, y si ya está baneada (replanteo 117).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Ficha */
+                    player_id?: string;
+                    /** @description SteamID64 sin ficha */
+                    steam_id?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Cupo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SupportQuota"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/support-actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Actividad del soporte
+         * @description Cada acción de las cuentas de soporte: baneos, clips reprocesados, fotos y logos quitados, comentarios borrados, denuncias resueltas y sanciones de la cola levantadas (replanteo 117). Moderadores y admins. La base pagina, filtra y ordena.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description La cuenta de soporte (su id de usuario) */
+                    actor?: string;
+                    action?: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift";
+                    /** @description Desde (incluido) */
+                    from?: string;
+                    /** @description Hasta (sin incluir) */
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Acciones */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SupportActionList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -11560,6 +11792,78 @@ export interface paths {
             cookie?: never;
         };
         /** Estado liviano: cola, sala (sin estadísticas), grupo y contadores */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mm/last-lobby": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mi última sala terminada (sin estadísticas) */
         get: {
             parameters: {
                 query?: never;
@@ -14141,6 +14445,80 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/mm/lobbies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Una sala completa (Ver sala) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -18892,7 +19270,7 @@ export interface paths {
         };
         /**
          * Clips para revisar
-         * @description Los reprocesados que esperan el "Bien", del más viejo al más nuevo. `clip.video.status` dice si el video nuevo ya está (`done`, con `embed_url` de Drive para mirarlo) o todavía se graba.
+         * @description Soporte, moderadores y admins (replanteo 117). Los reprocesados que esperan el "Bien", del más viejo al más nuevo. `clip.video.status` dice si el video nuevo ya está (`done`, con `embed_url` de Drive para mirarlo) o todavía se graba.
          */
         get: {
             parameters: {
@@ -18969,7 +19347,7 @@ export interface paths {
         put?: never;
         /**
          * Reprocesar un clip
-         * @description El video actual se borra (de R2 y de Drive) y el bot lo vuelve a grabar y lo sube a Drive. No sale en Discord hasta el "Bien" (`/approve`); si ya había salido, se publica otra vez. Solo un clip de la lista, ya grabado (o fallido) y con la demo todavía en R2 (si no, `BUSINESS_RULE` con el motivo).
+         * @description Soporte, moderadores y admins (replanteo 117). El video actual se borra (de R2 y de Drive) y el bot lo vuelve a grabar y lo sube a Drive. No sale en Discord hasta el "Bien" (`/approve`); si ya había salido, se publica otra vez. Solo un clip de la lista, ya grabado (o fallido) y con la demo todavía en R2 (si no, `BUSINESS_RULE` con el motivo).
          */
         post: {
             parameters: {
@@ -19044,7 +19422,7 @@ export interface paths {
         };
         /**
          * Lista de clips
-         * @description Las jugadas que se muestran (las de `match_clip_list`), de la más nueva a la más vieja, para reprocesar varias a la vez. `can_reprocess` y `blocked_reason` repiten las reglas de `clip_reprocess`: con la demo todavía en R2, ya grabada (o fallida) y no grabándose.
+         * @description Soporte, moderadores y admins (replanteo 117). Las jugadas que se muestran (las de `match_clip_list`), de la más nueva a la más vieja, para reprocesar varias a la vez. `can_reprocess` y `blocked_reason` repiten las reglas de `clip_reprocess`: con la demo todavía en R2, ya grabada (o fallida) y no grabándose.
          */
         get: {
             parameters: {
@@ -19126,7 +19504,7 @@ export interface paths {
         put?: never;
         /**
          * Reprocesar varios clips
-         * @description Como `/admin/clips/{id}/reprocess`, para cada uno de `ids` (de 1 a 50), uno por uno: uno que no se puede no frena a los demás. Devuelve el resultado de cada uno, con el motivo si no se pudo. Cada reprocesado pasa a "Para revisar".
+         * @description Como `/admin/clips/{id}/reprocess`, para cada uno de `ids` (de 1 a 50; el soporte y los moderadores, hasta 10), uno por uno: uno que no se puede no frena a los demás. Devuelve el resultado de cada uno, con el motivo si no se pudo. Cada reprocesado pasa a "Para revisar".
          */
         post: {
             parameters: {
@@ -19196,7 +19574,7 @@ export interface paths {
         put?: never;
         /**
          * Aprobar un clip reprocesado
-         * @description El video nuevo quedó bien: sale en Discord y se muestra a todos. Solo un reprocesado con el video listo (si no, `BUSINESS_RULE`).
+         * @description Soporte, moderadores y admins (replanteo 117). El video nuevo quedó bien: sale en Discord y se muestra a todos. Solo un reprocesado con el video listo (si no, `BUSINESS_RULE`).
          */
         post: {
             parameters: {
@@ -19273,7 +19651,7 @@ export interface paths {
         put?: never;
         /**
          * Rechazar un clip
-         * @description Deja de verse en la web (la partida, la sala y los perfiles), no sale en Discord y no se vuelve a grabar. El video va a la papelera. No entra otro clip en su lugar. No se puede mientras se graba (`BUSINESS_RULE`).
+         * @description Soporte, moderadores y admins, desde Para revisar (replanteo 117). Rechazar varios y recuperar siguen siendo del admin. Deja de verse en la web (la partida, la sala y los perfiles), no sale en Discord y no se vuelve a grabar. El video va a la papelera. No entra otro clip en su lugar. No se puede mientras se graba (`BUSINESS_RULE`).
          */
         post: {
             parameters: {
@@ -23274,7 +23652,7 @@ export interface paths {
         get?: never;
         /**
          * Cambiar el rol de una cuenta
-         * @description `user`, `organizer` o `moderator` (banea desde la web). El rol admin se da en la base.
+         * @description `user`, `organizer`, `support` (baneos cortos y moderación de primera línea, replanteo 117) o `moderator` (banea desde la web). El rol admin se da en la base.
          */
         put: {
             parameters: {
@@ -23485,10 +23863,10 @@ export interface components {
             email: string | null;
             tag: string | null;
             /**
-             * @description Todos juegan. `organizer` crea y gestiona sus torneos; `moderator` banea; `admin`, todo
+             * @description Todos juegan. `organizer` crea y gestiona sus torneos; `support` banea hasta 120 minutos, reprocesa clips y modera fotos, logos, comentarios y sanciones de la cola; `moderator` banea; `admin`, todo
              * @enum {string}
              */
-            role: "user" | "organizer" | "moderator" | "admin";
+            role: "user" | "organizer" | "support" | "moderator" | "admin";
             /** @description Fecha de registro de la cuenta */
             created_at: string | null;
             /** @description Último cambio de contraseña; null si no la cambió desde que se guarda la fecha (2026-10-19) */
@@ -23960,6 +24338,8 @@ export interface components {
         Staff: {
             admins: components["schemas"]["StaffCard"][];
             moderators: components["schemas"]["StaffCard"][];
+            /** @description Soporte (replanteo 117). La web los muestra junto con los moderadores */
+            supports: components["schemas"]["StaffCard"][];
             /** @description VIP activos, sin los admins ni los que se ocultaron, por antigüedad */
             vips: (components["schemas"]["StaffCard"] & {
                 since: string;
@@ -25096,6 +25476,10 @@ export interface components {
             kind: "gray" | "gold" | null;
             note?: string | null;
         };
+        PhotoRemoveBody: {
+            /** @description Le llega al jugador en el aviso */
+            reason: string;
+        };
         MedalGrant: {
             /**
              * Format: uuid
@@ -25304,7 +25688,7 @@ export interface components {
                 alias: string | null;
             };
             /** @enum {string} */
-            actor_role: "team" | "moderator" | "admin" | "system";
+            actor_role: "team" | "support" | "moderator" | "admin" | "system";
             /** @description `created`, `renamed`, `logo_changed`, `logo_removed`, `captain_changed`, `member_added`, `member_removed`, `member_left`, `role_changed` o `dissolved` */
             action: string;
             /** @description Detalle: nombres de antes y después, jugador, rol… */
@@ -25863,6 +26247,8 @@ export interface components {
              * @enum {boolean}
              */
             permanent?: true;
+            /** @description Duración en minutos, desde ahora (de 1 a 120). Es como banea el soporte (replanteo 117), que no puede usar `expires_at` ni `permanent` */
+            minutes?: number;
         };
         BanPatch: {
             reason?: string;
@@ -25876,10 +26262,62 @@ export interface components {
              * @enum {boolean}
              */
             permanent?: true;
+            /** @description Nuevo vencimiento en minutos desde ahora (de 1 a 120). El del soporte no pasa de 120 minutos desde que se puso (replanteo 117) */
+            minutes?: number;
         };
         BanLift: {
             /** @description Por qué se levanta */
             reason: string;
+        };
+        SupportQuota: {
+            /** @description Baneos de soporte en los últimos 7 días (los levantados también cuentan) */
+            used: number;
+            max: number;
+            remaining: number;
+            /** @description Si ya tiene un baneo activo (de quien sea): el soporte no lo puede banear */
+            banned: boolean;
+            /** @description Hasta cuándo, si está baneado. `null` también si es permanente */
+            banned_until: string | null;
+            permanent: boolean;
+        };
+        SupportActionList: {
+            items: components["schemas"]["SupportAction"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        SupportAction: {
+            id: number;
+            /** @enum {string} */
+            action: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift";
+            created_at: string;
+            /** @description La ficha de quien lo hizo (null si ya no tiene) */
+            actor: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description El jugador alcanzado, si hay */
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description El equipo, en `logo_remove` */
+            team: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+            reason: string | null;
+            /** @description Detalle: `ban_id`, `expires_at`, `clip_id`, `match_id`, `comment_id`, `body` (el comentario), `decision`, las URL de la foto o el logo… */
+            target: {
+                [key: string]: unknown;
+            };
         };
         AdminVipList: {
             items: components["schemas"]["AdminVip"][];
@@ -26138,10 +26576,10 @@ export interface components {
              * @description La sección con la que abre la ayuda: la del rol más alto de la cuenta.
              * @enum {string}
              */
-            inicio: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+            inicio: "jugador" | "capitan" | "organizador" | "soporte" | "moderador" | "admin" | "streamer" | "servidor-externo";
             secciones: {
                 /** @enum {string} */
-                id: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+                id: "jugador" | "capitan" | "organizador" | "soporte" | "moderador" | "admin" | "streamer" | "servidor-externo";
                 titulo: string;
                 paginas: {
                     tarea: string;
@@ -26154,7 +26592,7 @@ export interface components {
         };
         ManualPagina: {
             /** @enum {string} */
-            seccion: "jugador" | "capitan" | "organizador" | "moderador" | "admin" | "streamer" | "servidor-externo";
+            seccion: "jugador" | "capitan" | "organizador" | "soporte" | "moderador" | "admin" | "streamer" | "servidor-externo";
             tarea: string;
             titulo: string;
             resumen: string;
@@ -27952,7 +28390,7 @@ export interface components {
         };
         RoleChange: {
             /** @enum {string} */
-            role: "user" | "organizer" | "moderator";
+            role: "user" | "organizer" | "support" | "moderator";
         };
         DiscordCounts: {
             /** @description Conectados ahora. null si Discord no respondió */

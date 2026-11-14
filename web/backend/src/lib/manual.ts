@@ -6,6 +6,7 @@ export const SECCIONES = [
   { id: 'jugador', titulo: 'Jugador' },
   { id: 'capitan', titulo: 'Capitán o líder de equipo' },
   { id: 'organizador', titulo: 'Organizador de torneo' },
+  { id: 'soporte', titulo: 'Soporte' },
   { id: 'moderador', titulo: 'Moderador' },
   { id: 'admin', titulo: 'Admin' },
   { id: 'streamer', titulo: 'Streamer' },
@@ -14,13 +15,14 @@ export const SECCIONES = [
 export type SeccionId = (typeof SECCIONES)[number]['id'];
 
 const TODOS = ['jugador', 'capitan', 'streamer', 'servidor-externo'] as const;
-const ROLES = ['user', 'organizer', 'moderator', 'admin'] as const;
+const ROLES = ['user', 'organizer', 'support', 'moderator', 'admin'] as const;
 
 /** Las secciones que ve cada rol de cuenta (profiles.role). Un rol desconocido ve lo mismo que un usuario. */
 export function seccionesDe(role: string | null | undefined): SeccionId[] {
   const extra: SeccionId[] =
-    role === 'admin' ? ['organizador', 'moderador', 'admin']
-    : role === 'moderator' ? ['organizador', 'moderador']
+    role === 'admin' ? ['organizador', 'soporte', 'moderador', 'admin']
+    : role === 'moderator' ? ['organizador', 'soporte', 'moderador']
+    : role === 'support' ? ['soporte'] // (replanteo 117) el moderador también ve lo del soporte: lo puede hacer
     : role === 'organizer' ? ['organizador']
     : [];
   const ve = new Set<SeccionId>([...TODOS, ...extra]);
@@ -29,7 +31,7 @@ export function seccionesDe(role: string | null | undefined): SeccionId[] {
 
 /** La sección con la que abre la ayuda: la del rol más alto. */
 export function inicioDe(role: string | null | undefined): SeccionId {
-  return role === 'admin' ? 'admin' : role === 'moderator' ? 'moderador' : role === 'organizer' ? 'organizador' : 'jugador';
+  return role === 'admin' ? 'admin' : role === 'moderator' ? 'moderador' : role === 'support' ? 'soporte' : role === 'organizer' ? 'organizador' : 'jugador';
 }
 
 export type ManualPagina = {

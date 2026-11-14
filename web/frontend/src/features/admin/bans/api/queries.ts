@@ -13,6 +13,7 @@ import type {
   BanPatch,
   BanFilters,
   BanPerson,
+  SupportActionFilters,
 } from "../types"
 
 export const BANS_PER = 25
@@ -122,6 +123,55 @@ export function activeBansForOptions(q: string) {
         })
       ),
     enabled: q.length > 0,
+  })
+}
+
+/** Cupo de baneos de soporte de la semana y si ya está baneado (replanteo 117). */
+export function supportQuotaOptions(p: BanPerson | null) {
+  return queryOptions({
+    queryKey: [
+      "admin",
+      "bans",
+      "support-quota",
+      p ? (p.kind === "player" ? `p:${p.id}` : `s:${p.steamId}`) : "",
+    ] as const,
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/bans/support-quota", {
+          params: {
+            query:
+              p?.kind === "player"
+                ? { player_id: p.id }
+                : { steam_id: p?.kind === "steam" ? p.steamId : "" },
+          },
+          signal,
+        })
+      ),
+    enabled: p !== null,
+  })
+}
+
+export const SUPPORT_ACTIONS_PER = 25
+
+/** Baneos › Actividad del soporte (moderadores y admins, replanteo 117). */
+export function supportActionsOptions(f: SupportActionFilters, page: number) {
+  return queryOptions({
+    queryKey: ["admin", "bans", "support-actions", f, page] as const,
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/support-actions", {
+          params: {
+            query: {
+              page,
+              per: SUPPORT_ACTIONS_PER,
+              ...(f.action ? { action: f.action } : {}),
+              ...(f.actor ? { actor: f.actor } : {}),
+            },
+          },
+          signal,
+        })
+      ),
+    placeholderData: keepPreviousData,
   })
 }
 

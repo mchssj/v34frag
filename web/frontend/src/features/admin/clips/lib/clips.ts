@@ -148,3 +148,6 @@ export function pickClips(plays: SamplePlay[], c: ClipConfig) {
 }
 
 export const CLIP_TABS = ["list", "review", "rules"] as const
+
+/** Cuántos clips reprocesa a la vez el soporte o un moderador (replanteo 117; el admin, 50). */
+export const SUPPORT_REPROCESS_MAX = 10

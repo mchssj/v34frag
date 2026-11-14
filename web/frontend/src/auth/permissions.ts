@@ -19,20 +19,53 @@ export const ADMIN_SECTIONS = [
 ] as const
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]
 
-/** El grupo Administración: organizador, moderador y admin. */
+/** El grupo Administración: organizador, soporte, moderador y admin. */
 export const canSeeAdmin = (role: Role) =>
-  role === "admin" || role === "organizer" || role === "moderator"
+  role === "admin" ||
+  role === "organizer" ||
+  role === "support" ||
+  role === "moderator"
 
-/** Admin entra a todo; el organizador solo a Torneos (los suyos) y el moderador a Torneos, Equipos y Baneos. */
+/**
+ * Admin entra a todo; el organizador solo a Torneos (los suyos); el soporte a Baneos y Clips (replanteo 117), y el
+ * moderador a Torneos, Equipos, Baneos y Clips (puede todo lo del soporte).
+ */
 export const canAccessAdminSection = (role: Role, section: AdminSection) =>
   role === "admin" ||
   (role === "organizer" && section === "events") ||
+  (role === "support" && (section === "bans" || section === "clips")) ||
   (role === "moderator" &&
-    (section === "bans" || section === "events" || section === "teams"))
+    (section === "bans" ||
+      section === "events" ||
+      section === "teams" ||
+      section === "clips"))
 
 /** Primera sección de Administración a la que entra cada rol. */
 export const homeAdminSection = (role: Role): AdminSection =>
-  role === "moderator" ? "bans" : "events"
+  role === "moderator" || role === "support" ? "bans" : "events"
+
+/** Soporte (replanteo 117): solo eso, no un moderador ni un admin. Banea por minutos y solo toca sus baneos. */
+export const isSupportOnly = (role: Role) => role === "support"
+
+/**
+ * Lo del soporte (replanteo 117): baneos cortos, denuncias de comentarios, sanciones de la cola, quitar fotos de perfil
+ * y logos de equipo, y reprocesar clips. También el moderador y el admin.
+ */
+export const canSupport = (role: Role) =>
+  role === "admin" || role === "moderator" || role === "support"
+
+/**
+ * La cola Para revisar de Clips: publicar en Discord, reprocesar otra vez y rechazar (replanteo 117; Daniel, 2026-11-14).
+ * Soporte, moderador y admin.
+ */
+export const canReviewClips = canSupport
+
+/** Las reglas de Clips, rechazar varios a la vez, recuperar rechazados y reprocesar hasta 50: solo admin. */
+export const canManageClips = (role: Role) => role === "admin"
+
+/** La pestaña Actividad del soporte de Baneos: moderador y admin. */
+export const canSeeSupportActivity = (role: Role) =>
+  role === "admin" || role === "moderator"
 
 /** Insignia de verificado (replanteo 90): solo admin. */
 export const canVerifyPlayers = (role: Role) => role === "admin"

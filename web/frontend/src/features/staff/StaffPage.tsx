@@ -12,8 +12,10 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { COMMUNITY } from "@/config/site"
 import { VipDialog } from "@/features/vip/VipDialog"
+import { moderationCount, moderationTeam, type ModRole } from "./moderation"
 
-// La página del Equipo (replanteo 87, bitácora 2026-11-07-pagina-equipo): los admins, los moderadores y un
+// La página del Equipo (replanteo 87, bitácora 2026-11-07-pagina-equipo): los admins, los moderadores (con el soporte,
+// replanteo 117) y un
 // agradecimiento a los VIP. Sale sola del rol de cada cuenta y del VIP activo.
 
 type Staff = Schemas["Staff"]
@@ -92,7 +94,7 @@ function AdminCard({ m }: { m: Member }) {
   )
 }
 
-function ModCard({ m }: { m: Member }) {
+function ModCard({ m, role }: { m: Member; role: ModRole }) {
   return (
     <Link
       to="/player/$nick"
@@ -108,7 +110,9 @@ function ModCard({ m }: { m: Member }) {
       />
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="truncate text-[15px] font-semibold">{m.nick}</span>
-        <span className="text-xs text-muted-foreground">Moderador</span>
+        <span className="text-xs text-muted-foreground">
+          {role === "support" ? "Soporte" : "Moderador"}
+        </span>
       </span>
     </Link>
   )
@@ -170,15 +174,18 @@ export function StaffPage() {
               </div>
             </section>
 
-            {s.moderators.length > 0 && (
+            {moderationTeam(s).length > 0 && (
               <section className="flex flex-col gap-5">
                 <SectionHead
                   title="Moderación"
-                  count={`${s.moderators.length} ${s.moderators.length === 1 ? "moderador" : "moderadores"}`}
+                  count={moderationCount(
+                    s.moderators.length,
+                    s.supports?.length ?? 0
+                  )}
                 />
                 <div className="grid gap-3 sm:grid-cols-[repeat(auto-fill,minmax(230px,1fr))]">
-                  {s.moderators.map((m) => (
-                    <ModCard key={m.player_id} m={m} />
+                  {moderationTeam(s).map(({ m, role }) => (
+                    <ModCard key={m.player_id} m={m} role={role} />
                   ))}
                 </div>
               </section>

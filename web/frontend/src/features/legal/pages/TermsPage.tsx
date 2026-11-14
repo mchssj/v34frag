@@ -211,6 +211,14 @@ const SECTIONS: LegalSection[] = [
           servidores de la liga y de la web, por un tiempo o para siempre.
         </li>
         <li>
+          El equipo de soporte puede banearte por un rato (hasta 120 minutos, y
+          entre todo el soporte no más de 3 veces en 7 días), quitar tu foto de
+          perfil o el logo de tu equipo si no cumplen las reglas (te avisamos
+          con el motivo), borrar comentarios, levantar sanciones de la cola y
+          revisar los clips antes de que salgan en Discord. Todo lo que hace
+          queda registrado, y los moderadores y admins lo revisan.
+        </li>
+        <li>
           Un baneo alcanza a tu ficha y a todos sus SteamID, también a los que
           sumes después. La lista de baneos <Wip /> va a ser pública y va a
           mostrar a quién, desde cuándo, hasta cuándo y el motivo.
@@ -226,11 +234,11 @@ const SECTIONS: LegalSection[] = [
           derrota si tu equipo gana; si pierde, al menos lo que cuesta una
           derrota) y puede sumar escalones de espera antes de volver a buscar
           partida. Si te desconectas, pasado 1 minuto y 30 segundos tu equipo
-          puede votar en el servidor para darte por abandonado sin esperar a
-          que se termine tu plazo para volver, y la liga puede llamar a otro jugador para que entre en tu
-          lugar. Si vuelves después de que entró, quedas de espectador. Irte en
-          la última ronda, o cuando ya terminó la partida, no cuenta como
-          abandono.
+          puede votar en el servidor para darte por abandonado sin esperar a que
+          se termine tu plazo para volver, y la liga puede llamar a otro jugador
+          para que entre en tu lugar. Si vuelves después de que entró, quedas de
+          espectador. Irte en la última ronda, o cuando ya terminó la partida,
+          no cuenta como abandono.
         </li>
         <li>
           Los servidores de la liga registran tu IP, tu SteamID y tu nick al
@@ -376,13 +384,14 @@ const SECTIONS: LegalSection[] = [
           Los comentarios que dejas en el perfil de otro jugador son públicos y
           salen con tu nick. Tienen que cumplir las reglas de conducta: sin
           insultos, acoso, spam ni datos personales de otros. El dueño del
-          perfil puede borrarlos o cerrar los comentarios de su perfil, y los
-          moderadores y admins pueden borrar los que no cumplan. Los me gusta y
-          no me gusta también se ven, como números, sin decir quién votó. No se
-          aceptan comentarios con palabras de nuestra lista de palabras
-          bloqueadas. Con un baneo activo no puedes comentar ni votar perfiles,
-          y tampoco en el perfil de alguien que te bloqueó. Cualquiera puede
-          denunciar un comentario: lo revisa un moderador.
+          perfil puede borrarlos o cerrar los comentarios de su perfil, y el
+          soporte, los moderadores y los admins pueden borrar los que no
+          cumplan. Los me gusta y no me gusta también se ven, como números, sin
+          decir quién votó. No se aceptan comentarios con palabras de nuestra
+          lista de palabras bloqueadas. Con un baneo activo no puedes comentar
+          ni votar perfiles, y tampoco en el perfil de alguien que te bloqueó.
+          Cualquiera puede denunciar un comentario: lo revisa alguien de soporte
+          o un moderador.
         </li>
         <li>
           La insignia de cuenta verificada (gris o dorada) la pone un admin a su

@@ -17,7 +17,10 @@ import { useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { api, unwrap } from "@/api/client"
+import { canSupport } from "@/auth/permissions"
 import { useMe } from "@/auth/queries"
+import { RemoveImageButton } from "@/components/brand/RemoveImageButton"
 import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -52,6 +55,7 @@ import {
   championsOptions,
   myInvitesOptions,
   teamDetailOptions,
+  teamKeys,
   teamMembersOptions,
   teamRankingOptions,
   useCancelJoin,
@@ -86,6 +90,29 @@ const foundedLabel = (iso: string | null) =>
  * Vista de un equipo. `mine`: Mi equipo, con la gestión si el usuario es el líder. `public`:
  * cualquier equipo en solo lectura, con "Pedir entrar".
  */
+/** Soporte, moderador o admin (replanteo 117): quitar el logo de un equipo. Le llega el aviso al líder. */
+function StaffLogoAction({ team }: { team: TeamDetail }) {
+  const role = useMe().data?.role
+  if (!role || !canSupport(role)) return null
+  return (
+    <RemoveImageButton
+      label="Quitar logo"
+      title={`¿Quitar el logo de ${team.name}?`}
+      description="Queda el escudo por defecto hasta que el líder suba otro. El líder recibe un aviso con el motivo."
+      done="Logo quitado."
+      remove={(reason) =>
+        unwrap(
+          api.POST("/api/v1/admin/teams/{id}/logo/remove", {
+            params: { path: { id: team.id } },
+            body: { reason },
+          })
+        )
+      }
+      invalidate={[teamKeys.detail(team.id), ["teams"]]}
+    />
+  )
+}
+
 export function TeamView({
   teamId,
   mode,
@@ -158,6 +185,9 @@ export function TeamView({
             />
           ) : (
             <PublicActions team={team} />
+          )}
+          {mode === "public" && team.kind === "official" && team.logo_url && (
+            <StaffLogoAction team={team} />
           )}
         </div>
         <TeamKpis

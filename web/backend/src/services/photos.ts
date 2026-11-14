@@ -3,6 +3,7 @@
 import type { Context } from 'hono';
 import { inBackground } from '../lib/background';
 import { checkShape, readImage, storageError, type ImageShape } from '../lib/uploads';
+import { serviceClient } from '../lib/supabase';
 import type { AppEnv } from '../lib/types';
 
 export const PHOTOS = 'photos';
@@ -26,13 +27,24 @@ export async function dropPhoto(c: Context<AppEnv>, path: string) {
 }
 
 /** Borra del bucket una foto que ya no se usa, sin demorar la respuesta. Ignora las URL que no son del bucket. */
-export function removePhoto(c: Context<AppEnv>, url: string | null | undefined) {
-  if (!url?.includes(MARKER)) return;
-  const path = decodeURIComponent(url.slice(url.indexOf(MARKER) + MARKER.length));
+export function removePhoto(c: Context<AppEnv>, url: string | null | undefined, opts: { staff?: boolean } = {}) {
+  removeStored(c, PHOTOS, url, opts);
+}
+
+/**
+ * Borra un archivo de un bucket público a partir de su URL, sin demorar la respuesta. Ignora las URL de otro lado.
+ * `staff`: la base ya autorizó quitarla (soporte o moderador, replanteo 117), pero la política de Storage solo deja borrar
+ * al dueño o al admin; se borra con la clave de servicio (si no está configurada, con el token del usuario).
+ */
+export function removeStored(c: Context<AppEnv>, bucket: string, url: string | null | undefined, opts: { staff?: boolean } = {}) {
+  const marker = `/storage/v1/object/public/${bucket}/`;
+  if (!url?.includes(marker)) return;
+  const path = decodeURIComponent(url.slice(url.indexOf(marker) + marker.length));
+  const sb = (opts.staff ? serviceClient(c.var.config) : null) ?? c.var.sb;
   inBackground(
     c,
-    c.var.sb.storage.from(PHOTOS).remove([path]).then((r) => {
-      if (r.error) throw new Error(`borrar foto ${path}: ${r.error.message}`);
+    sb.storage.from(bucket).remove([path]).then((r) => {
+      if (r.error) throw new Error(`borrar ${bucket}/${path}: ${r.error.message}`);
     }),
   );
 }

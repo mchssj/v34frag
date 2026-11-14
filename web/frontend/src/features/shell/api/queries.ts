@@ -2,7 +2,7 @@ import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
 import type { AuthUser } from "@/auth/queries"
-import { canAccessAdminSection } from "@/auth/permissions"
+import { canAccessAdminSection, canReviewClips } from "@/auth/permissions"
 import { activeBanCountOptions } from "@/features/admin/bans/api/queries"
 import { clipReviewCountOptions } from "@/features/admin/clips/api/queries"
 import {
@@ -61,7 +61,8 @@ export function useBadgeCounts(
   }).data
   const adminClips = useQuery({
     ...clipReviewCountOptions,
-    enabled: canAccessAdminSection(user.role, "clips"),
+    // La cola Para revisar: soporte, moderador y admin (replanteo 117).
+    enabled: canReviewClips(user.role),
   }).data
   return { live, pcw, adminBans, adminClips }
 }

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../../src/app';
 import {
-  aplicarMarcadores, armarManual, duracion, indiceDe, leerEncabezado, MARCADORES, type ManualArchivo, seccionesDe, textoPlano,
+  aplicarMarcadores, armarManual, inicioDe, duracion, indiceDe, leerEncabezado, MARCADORES, type ManualArchivo, seccionesDe, textoPlano,
 } from '../../src/lib/manual';
 import { olvidarValores } from '../../src/routes/manual';
 import { cargarManual } from '../../src/lib/manual-node';
@@ -57,11 +57,13 @@ function app(role: string) {
 }
 
 describe('qué sección ve cada rol', () => {
-  it('usuario, organizador, moderador y admin', () => {
+  it('usuario, organizador, soporte, moderador y admin', () => {
     expect(seccionesDe('user')).toEqual(['jugador', 'capitan', 'streamer', 'servidor-externo']);
     expect(seccionesDe('organizer')).toEqual(['jugador', 'capitan', 'organizador', 'streamer', 'servidor-externo']);
-    expect(seccionesDe('moderator')).toEqual(['jugador', 'capitan', 'organizador', 'moderador', 'streamer', 'servidor-externo']);
-    expect(seccionesDe('admin')).toHaveLength(7);
+    expect(seccionesDe('support')).toEqual(['jugador', 'capitan', 'soporte', 'streamer', 'servidor-externo']);
+    expect(seccionesDe('moderator')).toEqual(['jugador', 'capitan', 'organizador', 'soporte', 'moderador', 'streamer', 'servidor-externo']);
+    expect(seccionesDe('admin')).toHaveLength(8);
+    expect(inicioDe('support')).toBe('soporte');
     expect(seccionesDe('otro')).toEqual(seccionesDe('user'));
   });
 });
@@ -108,7 +110,7 @@ describe('armarManual', () => {
     expect(errores).toEqual([
       'jugador/a.md: el link /help/jugador/nada no lleva a ninguna página del manual',
       'jugador/a.md: el link /help/capitan/oculta lleva a una página oculta',
-      'jugador/a.md: el link /help/admin/b es de una sección que no ven todos (user, organizer, moderator)',
+      'jugador/a.md: el link /help/admin/b es de una sección que no ven todos (user, organizer, support, moderator)',
       'jugador/a.md: falta la captura jugador/img/falta.webp',
       'jugador/a.md: la captura ../admin/img/x.webp tiene que estar en img/ de la misma sección',
     ]);

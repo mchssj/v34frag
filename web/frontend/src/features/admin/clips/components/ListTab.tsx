@@ -35,7 +35,7 @@ import {
   useRestoreClips,
   type ClipListFilters,
 } from "../api/queries"
-import { CLIP_TYPES, clipLabel } from "../lib/clips"
+import { CLIP_TYPES, clipLabel, SUPPORT_REPROCESS_MAX } from "../lib/clips"
 import type { AdminClip, AdminClipStatus, ClipType } from "../types"
 
 // Administración › Clips › Clips (plan docs/bitacora/2026-11-03-reportes-clips-nombre-equipo): todas las jugadas
@@ -97,7 +97,12 @@ const VIDEO: Record<string, { label: string; tone: Tone }> = {
 /** El link para mirar el video: el .mp4 de R2 o, si ya no está, el de Drive. */
 const videoHref = (c: AdminClip["clip"]) => c.video.url ?? c.video.embed_url
 
-export function ListTab() {
+/**
+ * `reviewer` (admin): también rechaza varios y recupera, hasta 50 a la vez. Si no (soporte y moderador, replanteo 117), solo
+ * reprocesa, hasta SUPPORT_REPROCESS_MAX a la vez.
+ */
+export function ListTab({ reviewer }: { reviewer: boolean }) {
+  const max = reviewer ? 50 : SUPPORT_REPROCESS_MAX
   const [filters, setFilters] = useState<ClipListFilters>({})
   const [page, setPage] = useState(1)
   const [picked, setPicked] = useState<Map<string, AdminClip>>(new Map())
@@ -118,7 +123,7 @@ export function ListTab() {
   // rechazar); reprocesar solo hace los que se pueden y avisa de los otros.
   const canPick = (r: AdminClip) =>
     rejectedView
-      ? !!r.rejected?.can_restore
+      ? reviewer && !!r.rejected?.can_restore
       : r.clip.video.status !== "processing"
   const pickable = rows.filter(canPick)
   const allOnPage =
@@ -267,7 +272,9 @@ export function ListTab() {
       headClassName: "pr-4",
       cellClassName: "pr-4 text-xs text-muted-foreground",
       cell: ({ row: { original: r } }) =>
-        rejectedView ? (
+        rejectedView && !reviewer ? (
+          "Solo un admin lo recupera"
+        ) : rejectedView ? (
           <Button
             size="sm"
             variant="outline"
@@ -458,8 +465,8 @@ export function ListTab() {
             {rejectedView ? (
               <Button
                 size="sm"
-                disabled={picked.size > 50}
-                title={picked.size > 50 ? "Hasta 50 a la vez" : undefined}
+                disabled={picked.size > max}
+                title={picked.size > max ? `Hasta ${max} a la vez` : undefined}
                 onClick={() => setConfirm("restore")}
               >
                 <Undo2Icon aria-hidden />
@@ -469,23 +476,27 @@ export function ListTab() {
               <>
                 <Button
                   size="sm"
-                  disabled={picked.size > 50}
-                  title={picked.size > 50 ? "Hasta 50 a la vez" : undefined}
+                  disabled={picked.size > max}
+                  title={
+                    picked.size > max ? `Hasta ${max} a la vez` : undefined
+                  }
                   onClick={() => setConfirm("reprocess")}
                 >
                   <RotateCcwIcon aria-hidden />
                   Reprocesar
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-destructive/45 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  disabled={picked.size > 50}
-                  onClick={() => setConfirm("reject")}
-                >
-                  <BanIcon aria-hidden />
-                  Rechazar
-                </Button>
+                {reviewer && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-destructive/45 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    disabled={picked.size > max}
+                    onClick={() => setConfirm("reject")}
+                  >
+                    <BanIcon aria-hidden />
+                    Rechazar
+                  </Button>
+                )}
               </>
             )}
           </div>

@@ -5,6 +5,8 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { canManageClips } from "@/auth/permissions"
+import { useMe } from "@/auth/queries"
 import { ConfirmDialog } from "@/components/brand/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -59,6 +61,8 @@ function ReviewCard({ r }: { r: ClipReview }) {
   const again = useReprocessClip()
   const reject = useRejectClip()
   const [asking, setAsking] = useState(false)
+  // Recuperar un rechazado es del admin (replanteo 117).
+  const admin = canManageClips(useMe().data?.role ?? "user")
   const { clip, match } = r
   const video = clip.video
   const ready = video.status === "done" && !!(video.url || video.embed_url)
@@ -180,7 +184,7 @@ function ReviewCard({ r }: { r: ClipReview }) {
           onOpenChange={setAsking}
           danger
           title={`¿Rechazar el ${clipLabel(clip.type)} de ${who}?`}
-          description="Deja de verse en la partida, en la sala y en los perfiles, no sale en Discord y no se vuelve a grabar. El video se borra esta noche. Se puede recuperar desde la lista mientras la demo siga guardada."
+          description={`Deja de verse en la partida, en la sala y en los perfiles, no sale en Discord y no se vuelve a grabar. El video se borra esta noche. ${admin ? "Se puede recuperar" : "Un admin lo puede recuperar"} desde la lista mientras la demo siga guardada.`}
           reason={{ label: "Motivo (opcional)", required: false }}
           confirmLabel="Rechazar el clip"
           pending={reject.isPending}
@@ -192,7 +196,9 @@ function ReviewCard({ r }: { r: ClipReview }) {
                 onSuccess: () => {
                   setAsking(false)
                   toast.success(
-                    "Clip rechazado. Si te equivocaste, lo recuperas en Clips › Rechazados."
+                    admin
+                      ? "Clip rechazado. Si te equivocaste, lo recuperas en Clips › Rechazados."
+                      : "Clip rechazado. Si te equivocaste, pídele a un admin que lo recupere."
                   )
                 },
               }

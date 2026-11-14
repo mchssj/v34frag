@@ -11,6 +11,7 @@ El changelog de Discord cuenta las novedades. El manual cuenta cómo funciona ho
 | `jugador/` | Jugador | Todas las cuentas |
 | `capitan/` | Capitán o líder de equipo | Todas las cuentas (capitán es un rol por equipo) |
 | `organizador/` | Organizador de torneo | Organizadores, moderadores y admins |
+| `soporte/` | Soporte | Soporte, moderadores y admins (el moderador puede todo lo del soporte) |
 | `moderador/` | Moderador | Moderadores y admins |
 | `admin/` | Admin | Admins |
 | `streamer/` | Streamer | Todas las cuentas |
@@ -113,4 +114,4 @@ Todo plugin nuevo, y todo comando nuevo o cambiado de un plugin, documenta su us
 | Moderador (grupo `Moderador`) | `b`, `c`, `d`, `f` o `j` | `moderador/comandos-en-el-servidor.md` |
 | Admin | Los demás (`g`, `m`, `z`…) o un override que lo pase a uno de ellos | `admin/comandos-en-el-servidor.md` |
 
-Los comandos de depuración (los que solo existen en las builds de prueba) no van. Organizador, streamer y dueño de un servidor externo no tienen comandos en el juego.
+Los comandos de depuración (los que solo existen en las builds de prueba) no van. Organizador, soporte, streamer y dueño de un servidor externo no tienen comandos en el juego.

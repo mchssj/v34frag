@@ -24,12 +24,12 @@ import type { MmAdminPenalty } from "../types"
 // Administración › Baneos › Matchmaking: las sanciones automáticas de la cola (replanteo 61) y las exclusiones
 // que ponen los moderadores desde un reporte. Se levantan acá (bitácora 2026-11-02-mm-sanciones-admin).
 
-/** Las dos tarjetas, una debajo de la otra. */
-export function SanctionsPanel() {
+/** Las dos tarjetas, una debajo de la otra. El soporte (replanteo 117) ve solo las sanciones de la cola. */
+export function SanctionsPanel({ showBans = true }: { showBans?: boolean }) {
   return (
     <div className="flex flex-col gap-4">
       <PenaltiesCard />
-      <BansCard />
+      {showBans && <BansCard />}
     </div>
   )
 }

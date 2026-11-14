@@ -43,6 +43,12 @@ Desde el detalle del baneo:
 - **Cambiar:** otro motivo u otra duración. Si solo cambias el motivo, deja la duración en **Como está** y el vencimiento no se mueve. Guarda con **Guardar cambios**.
 - **Levantar baneo:** escribe el motivo (es obligatorio) y confirma. El jugador puede volver a entrar desde la próxima sincronización de los servidores. El baneo no se borra: queda en la lista como levantado, con tu motivo.
 
+## Los baneos del soporte
+
+El soporte también banea desde la web, pero con límites: de 1 a 120 minutos, nunca a quien ya está baneado y hasta 3 baneos de soporte por jugador en 7 días. Solo cambia o levanta los suyos. Tú puedes cambiar o levantar cualquiera de ellos. Lo que puede hacer el soporte está en la sección [Soporte](/help/soporte/banear-jugador) del manual.
+
+Todo lo que hace el soporte (baneos, clips, fotos y logos quitados, comentarios borrados y sanciones levantadas) aparece en la pestaña **Actividad del soporte** de Baneos, con quién lo hizo, a quién, el motivo y cuándo. Puedes filtrar por acción.
+
 ## Las sanciones del matchmaking
 
 La pestaña **Matchmaking** de Baneos tiene las sanciones que pone la cola sola y las exclusiones del matchmaking. Son otra cosa: no sacan del servidor, solo de la cola. Mira [Revisar y levantar sanciones del matchmaking](/help/moderador/sanciones-matchmaking).
