@@ -426,7 +426,18 @@ def rounds(d):
 
 
 def alive_at(d, tick):
-    """Los SteamID vivos en ese tick: los que estaban en T o CT al empezar la ronda, menos los que murieron antes.
+    """Los SteamID vivos en ese tick: los que estaban en T o CT al empezar la ronda, menos los que murieron antes."""
+    return _round_at(d, tick)[1]
+
+
+def in_round_at(d, tick):
+    """Los SteamID que jugaban la ronda en ese tick, vivos o muertos: en T o CT al empezar la ronda y sin cambiar de
+    equipo ni desconectarse después. Son los que pueden servir de ancla muerta a la cámara (render_clip.spec_target)."""
+    return _round_at(d, tick)[0]
+
+
+def _round_at(d, tick):
+    """(los que juegan la ronda, los vivos) en ese tick.
 
     La demo empieza en el vivo, así que los equipos de la primera mitad salen del "oldteam" del primer cambio de
     equipo de cada jugador. La primera ronda no tiene round_start: empieza en el tick 0."""
@@ -448,7 +459,18 @@ def alive_at(d, tick):
                 team.pop(ev["userid"], None)
             else:
                 team[ev["userid"]] = ev["team"]
-    alive = {u for u, t in team.items() if t in (2, 3)}
+    # El que nunca cambió de equipo en la demo no tiene equipo conocido: una partida cortada antes del medio tiempo
+    # (srv3-20261112T164548-42dd, 2026-11-12: "lephyxzz漏斗" no aparecía vivo en ninguna ronda, y en la ronda 1 había
+    # 3 vivos de 10). Juega si mató o murió alguna vez en la demo (un espectador nunca lo hace). Al que tiene algún
+    # player_team lo sigue resolviendo lo de arriba.
+    with_team_ev = {ev["userid"] for ev in d.events if ev["event"] == "player_team"}
+    for ev in d.events:
+        if ev["event"] == "player_death":
+            for u in (ev["userid"], ev.get("attacker", 0)):
+                if u and u not in with_team_ev:
+                    team[u] = 2  # el número da igual: solo importa que juega
+    playing = {u for u, t in team.items() if t in (2, 3)}
+    alive = set(playing)
     for ev in d.events:
         if ev["tick"] >= tick:
             break
@@ -456,7 +478,9 @@ def alive_at(d, tick):
             alive.discard(ev["userid"])
         elif ev["tick"] > start and ev["event"] == "player_team":
             alive.discard(ev["userid"])  # el que cambia de equipo durante la ronda queda muerto
-    return {player(d, u)["steamid"] for u in alive if player(d, u)["steamid"]}
+            playing.discard(ev["userid"])  # y deja de jugarla (o se desconectó)
+    sids = lambda us: {player(d, u)["steamid"] for u in us if player(d, u)["steamid"]}  # noqa: E731
+    return sids(playing), sids(alive)
 
 
 def clips(rs):

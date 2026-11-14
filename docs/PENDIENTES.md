@@ -37,6 +37,14 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Qué es:** el buscador de arriba (Ctrl+K) trae jugadores, equipos y torneos además de las páginas ([`2026-11-13-buscador-global`](bitacora/2026-11-13-buscador-global/)). Solo la web y el manual.
 - **Desplegado:** la web y la API `92ea3367f5c8` (la API, por la página nueva del manual). No toca la base ni los servidores.
 
+## Clips de clutch perdido y de vivos sin nombre escribible (2026-11-13): commiteado, falta el portátil
+
+- **Qué es:** el render dejaba `skipped` clips que sí se podían grabar: los dos de "New™ tam" que Daniel reprocesó y tres de "lephyxzz漏斗" ([`2026-11-13-render-clutch-perdido-y-ancla-muerta`](bitacora/2026-11-13-render-clutch-perdido-y-ancla-muerta/)). Solo `render/`.
+- **Hecho:** commiteado en `main` el 2026-11-13. También arregla el menú de ClientMod abierto en algunos videos y el tramo suelto del inicio de los clutches. Probado en la PC de Daniel: 6 partidas sin el juego (`pruebas/revisar_camara.py`), y el 1v1 de tam y el 4k de lephyxzz con el juego.
+- **Falta:**
+  1. `git pull` en el portátil con la tarea "CMLeague clips" sin una corrida a mitad.
+  2. Con la confirmación de Daniel, `pruebas/reprocesar.sql` en producción (5 clips), y revisar que queden `done`. Los dos de tam esperan su aprobación para salir en Discord.
+
 ## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): desplegado el 2026-11-13
 
 - **Qué es:** un mensaje largo ya no estira la sala de la partida, y en un torneo histórico se cargan jugadores que no están en la plataforma solo con el nombre, en la inscripción torneo-equipo ([`2026-11-13-chat-y-jugadores-historicos`](bitacora/2026-11-13-chat-y-jugadores-historicos/)).

@@ -25,6 +25,7 @@ La resolución y el modo de ventana quedan en el registro (registry_key), compar
 se respaldan antes y se restauran al final.
 """
 import argparse
+import bisect
 import ctypes
 import ctypes.wintypes as wt
 import glob
@@ -188,7 +189,8 @@ def console_lines(commands, n):
 
     La consola corta la línea en unos 255 caracteres y la marca del final se perdía (dust2, 2026-10-30: «New™ CH1LI»
     no se puede escribir y la cámara llega a él desde «GO TO KNOW musul    ^'-'^»; el paso medía 259). Cada línea
-    lleva hideconsole (console_command abre la consola con su tecla, que la cierra si ya está abierta). Van siempre en
+    lleva hideconsole y gameui_hide (console_command abre la consola con su tecla, que la cierra si ya está abierta y en
+    ClientMod también abre el menú). Van siempre en
     la misma línea:
     - spec_player y sus spec_next: si la línea se reenvía, la cámara vuelve al mismo jugador;
     - startmovie y demo_resume: con la demo en pausa, startmovie grabaría cuadros quietos hasta la línea siguiente;
@@ -204,7 +206,10 @@ def console_lines(commands, n):
             groups[-1].append(c)
         else:
             groups.append([c])
-    fix = lambda cmds: cmds if "hideconsole" in cmds else ["hideconsole"] + cmds  # noqa: E731
+    # Cada línea vuelve a abrir la consola con su tecla, y en ClientMod la tecla también abre el menú: sin gameui_hide
+    # en cada línea, el menú quedaba encima del video (dust2_ob, 2026-11-13: la línea de startmovie y demo_resume
+    # llevaba solo hideconsole).
+    fix = lambda cmds: [c for c in ("hideconsole", "gameui_hide") if c not in cmds] + cmds  # noqa: E731
     lines = [[]]
     for g in groups:
         if lines[-1] and len(console_line(fix(lines[-1] + g), n + len(lines) - 1)) > CONSOLE_MAX:
@@ -528,7 +533,8 @@ def spec_target(d, steamid, tick):
     Si su nombre se puede escribir, spec_player "<nombre>". Si no (el "愛" de un jugador, el 2026-10-24, llegaba mal a
     la consola y la cámara se quedaba en otro), se sigue a un jugador vivo con nombre escribible y se pasa con
     spec_next hasta llegar a él: spec_next va al siguiente jugador vivo por número (índice de entidad). Se elige el que
-    queda a menos pasos. spec_player solo acepta el nombre exacto: con el número no sigue a nadie."""
+    queda a menos pasos. spec_player solo acepta el nombre exacto: con el número no sigue a nadie. Si no hay ningún vivo
+    escribible, el único vivo va con spec_next solo y, si no, el ancla es un muerto de la ronda con nombre escribible."""
     name = d.name_at(steamid, tick)
     if console_safe(name):
         return [f'spec_player "{name}"']
@@ -550,7 +556,21 @@ def spec_target(d, steamid, tick):
         # spec_next lleva al siguiente vivo desde cualquier jugador, y no hay otro.
         if slots == [target]:
             return ["spec_next"]
-        raise RuntimeError(f"no hay ningún jugador vivo con nombre escribible para llegar a {name!r}")
+        # Ningún vivo escribible (el 1v1 de "New™ tam" contra "lephyxzz漏斗", dust2_ob del 2026-11-13): el ancla es un
+        # muerto de la ronda. spec_player lo busca por el nombre sin mirar si está vivo, y el primer spec_next lleva al
+        # primer vivo con número mayor que el suyo (dando la vuelta); desde ahí se cuenta como con un ancla viva.
+        # Bitácora 2026-11-13-render-clutch-perdido-y-ancla-muerta.
+        alive_sids = {sid for _, sid in alive}
+        for sid in leer_demo.in_round_at(d, tick) - alive_sids:
+            sl, anchor = d.slot_at(sid, tick), d.name_at(sid, tick)
+            if not sl or not console_safe(anchor):
+                continue
+            first = bisect.bisect_right(slots, sl) % len(slots)
+            steps = (slots.index(target) - first) % len(slots) + 1
+            if best is None or (steps, anchor) < best:
+                best = (steps, anchor)
+        if best is None:
+            raise RuntimeError(f"no hay ningún jugador vivo ni muerto de la ronda con nombre escribible para llegar a {name!r}")
     return [f'spec_player "{best[1]}"'] + ["spec_next"] * best[0]
 
 

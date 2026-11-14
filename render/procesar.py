@@ -147,9 +147,11 @@ def tick_offset(d, rounds, clips):
     return near[len(near) // 2]
 
 
-def clip_events(d, rounds, clip, offset):
+def clip_events(d, rounds, clip, offset, gap=None):
     """Los ticks del .dem de lo que pasa en la jugada: cada kill (la de la demo, si está a 3 ticks o menos de la
-    que mandó el plugin corrida por el desfase) y, en un clutch, el inicio y el fin de la ronda."""
+    que mandó el plugin corrida por el desfase) y, en un clutch, el inicio y el fin de la ronda (o la muerte del
+    jugador). gap: los ticks de split_gap_seconds; con él, el inicio del clutch va solo si queda en el mismo tramo
+    que otro evento."""
     sid = demo_steamid(d, clip)
     demo_kills = [k["tick"] for r in rounds for k in r["kills"] if not k["suicide"] and k["attacker_steamid"] == sid]
     events = []
@@ -158,7 +160,16 @@ def clip_events(d, rounds, clip, offset):
         near = min(demo_kills, key=lambda k: abs(k - want), default=None)
         events.append(near if near is not None and abs(near - want) <= 3 else want)
     if clip.get("clutch_start_tick") is not None:
-        events += [clip["clutch_start_tick"] + offset, clip["end_tick"] + offset]
+        start, end = clip["clutch_start_tick"] + offset, clip["end_tick"] + offset
+        # Un clutch perdido termina con la muerte del jugador, no con el fin de la ronda: en ese tick ya no hay a quién
+        # seguir (el 3k de "New™ tam" en mirage_rc1, 2026-11-12: lo mataron 5 s antes del fin de la ronda).
+        died = [k["tick"] for r in rounds for k in r["kills"] if k["victim_steamid"] == sid and start <= k["tick"] <= end]
+        events.append(min(died) if died else end)
+        # El inicio (la muerte del último compañero) lejos de todo lo demás era un tramo suelto en el que no pasa nada
+        # (el 1v1 de "New™ tam" en dust2_ob, 2026-11-13: 5 s de él caminando, 40 s antes de la kill). Va solo si cae
+        # en el mismo tramo que una kill o el final.
+        if gap is None or any(abs(e - start) <= gap for e in events):
+            events.append(start)
     return sorted(max(e, 0) for e in events)
 
 
@@ -169,7 +180,7 @@ class Skip(Exception):
 def build_job(d, rounds, clip, offset, seg_cfg):
     if offset is None:
         raise Skip("No se pudo ubicar la partida en la demo (sin kills ni fines de ronda para comparar)")
-    events = clip_events(d, rounds, clip, offset)
+    events = clip_events(d, rounds, clip, offset, round(seg_cfg["split_gap_seconds"] / d.tick_interval))
     if not events:
         raise Skip("La jugada no tiene kills ni clutch")
     sid = demo_steamid(d, clip)
