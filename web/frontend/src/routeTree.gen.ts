@@ -44,6 +44,7 @@ import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
+import { Route as DemoRecapRouteImport } from './routes/demo.recap'
 import { Route as DemoRepeticionRouteImport } from './routes/demo.repeticion'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
 import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
@@ -259,6 +260,11 @@ const DemoPerfilSocialRoute = DemoPerfilSocialRouteImport.update({
 const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
   id: '/demo/recalculo',
   path: '/demo/recalculo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRecapRoute = DemoRecapRouteImport.update({
+  id: '/demo/recap',
+  path: '/demo/recap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRepeticionRoute = DemoRepeticionRouteImport.update({
@@ -511,6 +517,7 @@ export interface FileRoutesByFullPath {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/recap': typeof DemoRecapRoute
   '/demo/repeticion': typeof DemoRepeticionRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -588,6 +595,7 @@ export interface FileRoutesByTo {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/recap': typeof DemoRecapRoute
   '/demo/repeticion': typeof DemoRepeticionRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -669,6 +677,7 @@ export interface FileRoutesById {
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/recalculo': typeof DemoRecalculoRoute
+  '/demo/recap': typeof DemoRecapRoute
   '/demo/repeticion': typeof DemoRepeticionRoute
   '/demo/tienda': typeof DemoTiendaRoute
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
@@ -749,6 +758,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/recalculo'
+    | '/demo/recap'
     | '/demo/repeticion'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -826,6 +836,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/recalculo'
+    | '/demo/recap'
     | '/demo/repeticion'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -906,6 +917,7 @@ export interface FileRouteTypes {
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/recalculo'
+    | '/demo/recap'
     | '/demo/repeticion'
     | '/demo/tienda'
     | '/demo/torneo-stats'
@@ -977,6 +989,7 @@ export interface RootRouteChildren {
   DemoPcwRoute: typeof DemoPcwRoute
   DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
   DemoRecalculoRoute: typeof DemoRecalculoRoute
+  DemoRecapRoute: typeof DemoRecapRoute
   DemoRepeticionRoute: typeof DemoRepeticionRoute
   DemoTiendaRoute: typeof DemoTiendaRoute
   DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
@@ -1229,6 +1242,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/recalculo'
       fullPath: '/demo/recalculo'
       preLoaderRoute: typeof DemoRecalculoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/recap': {
+      id: '/demo/recap'
+      path: '/demo/recap'
+      fullPath: '/demo/recap'
+      preLoaderRoute: typeof DemoRecapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/repeticion': {
@@ -1693,6 +1713,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoPcwRoute: DemoPcwRoute,
   DemoPerfilSocialRoute: DemoPerfilSocialRoute,
   DemoRecalculoRoute: DemoRecalculoRoute,
+  DemoRecapRoute: DemoRecapRoute,
   DemoRepeticionRoute: DemoRepeticionRoute,
   DemoTiendaRoute: DemoTiendaRoute,
   DemoTorneoStatsRoute: DemoTorneoStatsRoute,
