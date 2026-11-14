@@ -2,14 +2,13 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
-## Ver una sala del matchmaking como admin (2026-11-14): commiteado en `kyan/pruebas`, sin desplegar
+## Ver una sala del matchmaking como admin (2026-11-14): desplegado el 2026-11-14
 
-- **Estado:** pedido por Kyan. "Ver sala" en Administración › Matchmaking › Salas abre la sala como "Tu última partida", con cancelar, servidor, TV y banear. La `116` está aplicada y probada en la copia local de producción; la ruta y la web, con pruebas y con datos reales de la copia. Detalle: [`2026-11-14-mm-admin-ver-sala`](bitacora/2026-11-14-mm-admin-ver-sala/).
+- **Qué es:** pedido por Kyan. "Ver sala" en Administración › Matchmaking › Salas abre la sala como "Tu última partida", con cancelar, servidor, TV y banear ([`2026-11-14-mm-admin-ver-sala`](bitacora/2026-11-14-mm-admin-ver-sala/)).
+- **Desplegado** (commit `e8dbe496`, el `268eee8f` de `kyan/pruebas` llevado a `main` sin la repetición 2D): la `116` (antes, probada en producción en una transacción que se deshizo: 5 de 5), y la API y la web `e8dbe4968ef9` a las ~04:22 UTC.
 - **Falta:**
-  - Una prueba de punta a punta (web → API → base con salas): la Supabase local no tiene salas y la copia no tiene PostgREST.
-  - Aplicar la `116` en el VPS y desplegar la API y la web.
-  - Llevarlo a `feat/frontend-fase-1` (base, API y web) y `feat/mm-claim-en-sala` (base y API), preguntando antes.
-
+  - Que un admin la abra en producción con una sala activa (sin sesión, la ruta da 401: existe).
+  - Llevarlo a `feat/frontend-fase-1` y `feat/mm-claim-en-sala`: siguen en la `105` y no reciben la `115` (Daniel, 2026-11-13), así que tampoco la `116` hasta que Daniel diga.
 
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 

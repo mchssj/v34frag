@@ -2,7 +2,9 @@
 
 ## Estado
 
-Commiteado en `kyan/pruebas`, **sin desplegar**. Probado el 2026-11-14:
+**Desplegado el 2026-11-14** (Daniel, con Claude) desde `main`: commit `e8dbe496`, que es el `268eee8f` de `kyan/pruebas` llevado sobre `main` (`9b316e0a`). Ver "Despliegue".
+
+Probado el 2026-11-14 (Kyan):
 
 - **Base:** la `116` está aplicada en la copia local de producción (`cmleague-copia-prod`). Ver "Pruebas en la copia".
 - **API:** `test/unit/mm-admin-lobby.test.ts`, con PostgREST simulado (4 casos). Las 573 pruebas unitarias pasan.
@@ -37,6 +39,19 @@ Simulando la sesión con `set role authenticated` y `request.jwt.claims`:
    Sin la `116`, "Ver sala" muestra "No se pudo abrir la sala" (la función no existe); el resto de la pestaña sigue igual.
 2. Desplegar la API (`web/backend`) con la ruta nueva.
 3. Desplegar la web (`web/frontend`).
+
+## Despliegue (hecho el 2026-11-14, 04:15 a 04:23 UTC)
+
+No toca los servidores de juego. Había una sala en vivo, que siguió en su servidor.
+
+1. **Cherry-pick a `main`:** conflictos en `MatchRoom.tsx` y `RoomOverview.tsx` porque en `kyan/pruebas` ya está la pestaña Repetición 2D (`MatchReplay`, `trackUrl`): se dejó lo de `main` sin la repetición, más `playerExtra`. En los README y `PENDIENTES.md`, solo las filas de este requerimiento. API: 604 pruebas; web: typecheck, lint y 750 pruebas.
+2. **Prueba en producción**, en una transacción que se deshizo (`mm_admin_lobby` no quedó): admin con la sala en vivo (10 jugadores, `server` con contraseña, sin `reported`, `commended` ni `elo_stake`), admin con una terminada (`match.game_id`, sin `server`), sala que no existe (`null`), jugador común (`Solo admins`) y `anon` (sin permiso). 5 de 5.
+3. **Base:** la `116` y `notify pgrst, 'reload schema'`.
+4. **API:** `deploy/vps/desplegar.sh api`, `e8dbe4968ef9` (`/api/health` con esa versión).
+5. **Web:** `deploy/vps/desplegar.sh web`, `e8dbe4968ef9`.
+6. Comprobado: `GET /api/v1/admin/mm/lobbies/{id}` sin sesión da 401. Falta abrirla como admin.
+
+Vuelta atrás: la web y la API `ccafae6600f1` (`ln -sfn`, ver `deploy/vps/README.md`) y la inversa de la `116`.
 
 ## Ramas
 
