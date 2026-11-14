@@ -72,6 +72,7 @@ function regs(n: number): Registration[] {
       alias: `jugador${k}`,
       role: "active" as const,
     })),
+    guests: [],
   }))
 }
 

@@ -2,6 +2,24 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## Rol Soporte (2026-11-13): desplegado el 2026-11-14
+
+- **Qué es:** pedido por Daniel. Un rol `support` debajo del moderador: baneos de 1 a 120 minutos (no a quien ya está baneado, hasta 3 de soporte por jugador en 7 días, solo cambia o levanta los suyos), reprocesar y revisar clips, quitar fotos y logos, borrar comentarios y levantar sanciones de la cola. Todo queda en Baneos › Actividad del soporte ([`2026-11-13-rol-soporte`](bitacora/2026-11-13-rol-soporte/)).
+- **Desplegado** (commit `777a477b`): la prueba en producción con rollback (19 de 19), la `117` a las 06:00 UTC, y la API y la web `777a477bac92`.
+- **Falta:**
+  1. Probarlo en producción con una cuenta de soporte (sin sesión, las rutas nuevas dan 401: existen).
+  2. Dar el rol a las cuentas de soporte, con ficha de jugador para que salgan en Quiénes somos.
+  3. Publicar `terms/` y el changelog 2.9.45 en Discord.
+  4. Llevar la `117` a `feat/frontend-fase-1` y `feat/mm-claim-en-sala` solo si Daniel lo pide: siguen en la `105`.
+
+## Ver una sala del matchmaking como admin (2026-11-14): desplegado el 2026-11-14
+
+- **Qué es:** pedido por Kyan. "Ver sala" en Administración › Matchmaking › Salas abre la sala como "Tu última partida", con cancelar, servidor, TV y banear ([`2026-11-14-mm-admin-ver-sala`](bitacora/2026-11-14-mm-admin-ver-sala/)).
+- **Desplegado** (commit `e8dbe496`, el `268eee8f` de `kyan/pruebas` llevado a `main` sin la repetición 2D): la `116` (antes, probada en producción en una transacción que se deshizo: 5 de 5), y la API y la web `e8dbe4968ef9` a las ~04:22 UTC.
+- **Falta:**
+  - Que un admin la abra en producción con una sala activa (sin sesión, la ruta da 401: existe).
+  - Llevarlo a `feat/frontend-fase-1` y `feat/mm-claim-en-sala`: siguen en la `105` y no reciben la `115` (Daniel, 2026-11-13), así que tampoco la `116` hasta que Daniel diga.
+
 > **RBK dejó de usarse el 2026-10-29** (Daniel). Los puntos que dicen "en RBK" quedan como historia; lo que estaba pendiente en RBK se cancela y los despliegues van solo al real y a flow.
 
 > **Numeración nueva desde el 2026-11-08** (Kyan): **#1** es MVZG (`157703b5`), **#2** (`cd1be322`) y **#3** (`16c850ff`) son los nuevos, los tres en el panel de MVZG. flow ya no existe y el de retake (ExtremeHost) se da de baja alrededor del 2026-11-10. Lo que abajo dice "#2" o "flow" antes del 2026-11-08 es flow; "#3", el de ExtremeHost.
@@ -64,6 +82,46 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Bitácora:** [`2026-11-03-terminos-y-condiciones`](bitacora/2026-11-03-terminos-y-condiciones/) y [`2026-11-03-politica-privacidad`](bitacora/2026-11-03-politica-privacidad/).
 
 Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cada punto está en su carpeta de [`bitacora/`](bitacora/); el índice con todos los requerimientos es [`bitacora/README.md`](bitacora/README.md).
+
+## La base sin conexiones libres en las horas pico (2026-11-13): desplegado el 2026-11-13
+
+- **Qué es:** en las horas pico PostgREST se quedaba sin conexiones (`PGRST003`) y cualquier página daba "Algo salió mal". `mm_my_live` armaba en cada llamada la última sala terminada: ahora la web la pide aparte, solo cuando cambia (replanteo `115`). Y la base ocupada da `503 UNAVAILABLE` con **Reintentar** ([`2026-11-13-pool-de-conexiones`](bitacora/2026-11-13-pool-de-conexiones/)).
+- **Desplegado:** la `115`, y la API y la web `ccafae6600f1`. `pg_stat_statements` se reinició al aplicar la `115` (la foto de antes está en `pruebas/`).
+- **Falta:** medir de nuevo en un pico (20:00 a 06:00 UTC): `pg_stat_statements` y `docker logs supabase-rest | grep PGRST003`.
+- **Queda afuera:** agrandar el pool de PostgREST (10, por defecto) y `shared_buffers` (128 MB).
+- **Ramas del matchmaking:** `feat/frontend-fase-1` y `feat/mm-claim-en-sala` siguen en la `105` y no reciben la `115` (Daniel, 2026-11-13).
+
+## Buscador con jugadores, equipos y torneos (2026-11-13): desplegado el 2026-11-13
+
+- **Qué es:** el buscador de arriba (Ctrl+K) trae jugadores, equipos y torneos además de las páginas ([`2026-11-13-buscador-global`](bitacora/2026-11-13-buscador-global/)). Solo la web y el manual.
+- **Desplegado:** la web y la API `92ea3367f5c8` (la API, por la página nueva del manual). No toca la base ni los servidores.
+
+## Las voces de los jugadores en los clips del v34 (2026-11-14): sin desplegar
+
+- **Qué es:** con `"client": "v34"`, el render saca las voces de la demo (Opus de ClientMod), las decodifica con FFmpeg y las mezcla en cada tramo; la voz del juego queda sin volumen para que se vean los íconos, y el sonido del juego se adelanta 0,17 s ([`2026-11-14-render-voces-opus`](bitacora/2026-11-14-render-voces-opus/)). También corrige `/privacidad`: los clips y las demos incluyen el chat de voz.
+- **Hecho:** commiteado en `main` el 2026-11-14. Probado en la PC de Daniel, sin el juego y con el 4k de spr en cbble.
+- **Falta:**
+  1. `git pull` en el portátil, con la tarea "CMLeague clips" sin una corrida a mitad.
+  2. Grabar el clip de siege en el portátil con `render\config.v34.json` y escucharlo.
+  3. Pasar la tarea del portátil a `"client": "v34"`.
+  4. Publicar las páginas de `terms/`. La web, con su `/privacidad`, quedó desplegada el 2026-11-14 junto con el rol Soporte (`777a477bac92`).
+
+## Clips de clutch perdido y de vivos sin nombre escribible (2026-11-13): commiteado, falta el portátil
+
+- **Qué es:** el render dejaba `skipped` clips que sí se podían grabar: los dos de "New™ tam" que Daniel reprocesó y tres de "lephyxzz漏斗" ([`2026-11-13-render-clutch-perdido-y-ancla-muerta`](bitacora/2026-11-13-render-clutch-perdido-y-ancla-muerta/)). Solo `render/`.
+- **Hecho:** commiteado en `main` el 2026-11-13. También arregla el menú de ClientMod abierto en algunos videos y el tramo suelto del inicio de los clutches. Probado en la PC de Daniel: 6 partidas sin el juego (`pruebas/revisar_camara.py`), y el 1v1 de tam y el 4k de lephyxzz con el juego.
+- **Falta:**
+  1. `git pull` en el portátil con la tarea "CMLeague clips" sin una corrida a mitad.
+  2. Con la confirmación de Daniel, `pruebas/reprocesar.sql` en producción (5 clips), y revisar que queden `done`. Los dos de tam esperan su aprobación para salir en Discord.
+
+## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): desplegado el 2026-11-13
+
+- **Qué es:** un mensaje largo ya no estira la sala de la partida, y en un torneo histórico se cargan jugadores que no están en la plataforma solo con el nombre, en la inscripción torneo-equipo ([`2026-11-13-chat-y-jugadores-historicos`](bitacora/2026-11-13-chat-y-jugadores-historicos/)).
+- **Hecho:** en `main`: replanteo `113`, la API, la web, el manual y `/privacidad`; en un histórico, **Jugadores** también con el torneo en curso o terminado. 7 de 7 en la base local, 6 de integración de la API, y probado en local con la copia de producción (también en TORNEO TITAN). La `113` quedó aplicada en la base local.
+- **Desplegado** (commit `35670aa6`): la `113` (antes `probar_113.sql` pasó 7 de 7 en producción y se deshizo), y la API y la web `35670aa6f63d` a las ~15:05 UTC ([guía](bitacora/2026-11-13-chat-y-jugadores-historicos/GUIA_IMPLEMENTACION.md)).
+- **Falta:**
+  1. Cargar los jugadores reales de TORNEO TITAN.
+  2. Publicar el changelog 2.9.42 y las páginas de `terms/` (cambió la privacidad).
 
 ## Guardar el widget en la cuenta (2026-11-11): desplegado el 2026-11-11
 
@@ -760,7 +818,7 @@ Nada de esto se despliega antes del corte: la web vieja sigue usando la base de 
     5. el portátil (Daniel instaló un ClientMod limpio): copiar los mapas de la liga, `render/`, Python de python.org, FFmpeg, un `.env` reducido (`RENDER_*`, `CF_*_CLIPS`, `GOOGLE_*`) y `config.json` con sus rutas; abrir el juego una vez a mano; medir una jugada a 1080p;
     6. `instalar_tarea.ps1` en el portátil (no en la PC: `render/config.json` de la PC ya está en 1080p con Drive, para pruebas).
   - **Después:** el primer mix real con la 2.5.0 (clips detectados por el plugin, clutches reales, el desfase real con `tv_delay`) y su video por el Worker y en Drive.
-- **Grabar con el CS:S v34 normal (2026-11-04, commiteado en `feat/frontend-fase-1`):** `"client": "v34"` en `render/config.json` abre `hl2.exe` directo, sin el launcher de ClientMod (Daniel sospecha que el launcher es lo que hace fallar los clips). Instalado en el portátil en `C:\Program Files (x86)\CSS v34 eXpandedCS`. **Falta:** llevar `render/` al portátil, configurarlo (paso 3b de `render/CONFIGURAR_PORTATIL.md`) y grabar una jugada. No se pudo probar en la PC (no hay un v34 normal). Bitácora [`2026-11-04-render-sin-launcher`](bitacora/2026-11-04-render-sin-launcher/).
+- **Grabar con el CS:S v34 normal (2026-11-04, commiteado en `feat/frontend-fase-1`):** `"client": "v34"` en `render/config.json` abre `hl2.exe` directo, sin el launcher de ClientMod (Daniel sospecha que el launcher es lo que hace fallar los clips). Instalado en el portátil en `C:\Program Files (x86)\CSS v34 eXpandedCS`. **Probado en la PC de Daniel el 2026-11-13** (`E:\CSS v34 eXpandedCS`), con dos arreglos (commiteados en `main` el 2026-11-13): la consola se abre con la K (`bind "k" "toggleconsole"`) y, al cargar la demo, Ctrl cierra el control del espectador. **Falta:** llevar `render/` al portátil, configurarlo (paso 3b de `render/CONFIGURAR_PORTATIL.md`), grabar una jugada y ver si los polígonos se siguen deformando. Bitácora [`2026-11-04-render-sin-launcher`](bitacora/2026-11-04-render-sin-launcher/).
 - **Cuentas:** los videos de los clips van al R2 de la **cuenta de Cloudflare de Daniel** (variables `CF_*_CLIPS` en el `.env`, conexión probada); las demos se quedan en la cuenta de kyan. YouTube se descartó.
 - **Bitácora:** [`2026-10-23-clips-video`](bitacora/2026-10-23-clips-video/) y [`2026-10-23-clips-render-automatico`](bitacora/2026-10-23-clips-render-automatico/)
 

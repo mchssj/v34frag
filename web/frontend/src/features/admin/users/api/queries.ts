@@ -31,7 +31,10 @@ export function usersOptions(q: string, f: AccountFilter, page: number) {
               page,
               per: USERS_PER,
               ...(q ? { q } : {}),
-              ...(f === "admin" || f === "moderator" || f === "organizer"
+              ...(f === "admin" ||
+              f === "moderator" ||
+              f === "support" ||
+              f === "organizer"
                 ? { role: f }
                 : {}),
               ...(f === "noplayer" ? { has_player: "false" as const } : {}),

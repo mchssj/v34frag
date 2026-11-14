@@ -86,7 +86,7 @@ function list() {
 describe("ListTab", () => {
   it("apaga la casilla del que se está grabando y elegir la página toma solo los demás", async () => {
     server.use(list())
-    const { user } = renderWithQuery(<ListTab />)
+    const { user } = renderWithQuery(<ListTab reviewer />)
     const blocked = await screen.findByRole("checkbox", {
       name: /Elegir el clip de charlie/,
     })
@@ -113,7 +113,7 @@ describe("ListTab", () => {
         })
       })
     )
-    const { user } = renderWithQuery(<ListTab />)
+    const { user } = renderWithQuery(<ListTab reviewer />)
     await user.click(
       await screen.findByRole("checkbox", { name: /Elegir el clip de alfa/ })
     )
@@ -143,7 +143,7 @@ describe("ListTab", () => {
         })
       })
     )
-    const { user } = renderWithQuery(<ListTab />)
+    const { user } = renderWithQuery(<ListTab reviewer />)
     await user.click(
       await screen.findByRole("checkbox", { name: /Elegir el clip de alfa/ })
     )
@@ -202,7 +202,7 @@ describe("ListTab", () => {
         })
       })
     )
-    const { user } = renderWithQuery(<ListTab />)
+    const { user } = renderWithQuery(<ListTab reviewer />)
     await user.click(await screen.findByRole("radio", { name: "Rechazados" }))
     expect(await screen.findByText("mal")).toBeInTheDocument()
     expect(screen.getByText("Sin motivo")).toBeInTheDocument()

@@ -40,6 +40,7 @@ function roleLabel(
   if (role === "admin") return "Admin"
   if (role === "organizer") return "Organizador"
   if (role === "moderator") return "Moderador"
+  if (role === "support") return "Soporte"
   if (team) return `${team.is_captain ? "Capitán" : "Miembro"} de ${team.name}`
   return "Jugador"
 }

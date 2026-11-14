@@ -16,6 +16,7 @@ import os
 import sys
 import time
 import traceback
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -28,12 +29,21 @@ from render_clip import log  # noqa: E402
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
 
-def get(env, query):
+def get(env, query, tries=5):
+    """Una lectura con la clave pública. match_clip_list anda cerca del tope de tiempo de la base (entre 0,9 y 3,7 s
+    por partida, el 2026-11-13): si la corta (500 o 503), se reintenta."""
     req = urllib.request.Request(env["RENDER_SUPABASE_URL"].rstrip("/") + "/rest/v1/" + query, headers={
         "User-Agent": procesar.USER_AGENT, "apikey": env["RENDER_SUPABASE_KEY"],
         "Authorization": f"Bearer {env['RENDER_SUPABASE_KEY']}"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read())
+    for attempt in range(1, tries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code not in (500, 503) or attempt == tries:
+                raise
+            log(f"Aviso: la base respondió {e.code} ({query.split('?')[0]}); reintento ({attempt + 1} de {tries}).")
+            time.sleep(3)
 
 
 def main():
@@ -59,12 +69,16 @@ def main():
 
     env = procesar.load_env(a.env)
     clip_id = urllib.parse.quote(a.clip)
-    rows = get(env, f"match_clip_list?select=*&id=eq.{clip_id}")
+    # match_clip_list filtrada por el id de la jugada recorre todas y la base la corta por tiempo (57014, el
+    # 2026-11-13); por partida responde enseguida. La partida sale de match_clips, por su clave.
+    rows = get(env, f"match_clips?select=match_id&id=eq.{clip_id}")
     if not rows:
-        raise SystemExit(f"no existe la jugada {a.clip} (o no es visible)")
-    clip = rows[0]
+        raise SystemExit(f"no existe la jugada {a.clip}")
+    clips = get(env, f"match_clip_list?select=*&match_id=eq.{rows[0]['match_id']}")
+    clip = next((c for c in clips if c["id"] == a.clip), None)
+    if not clip:
+        raise SystemExit(f"la jugada {a.clip} no está entre los clips visibles de su partida")
     match = get(env, f"matches?select=id,map,played_at,external_id,demo_size&id=eq.{clip['match_id']}")[0]
-    clips = get(env, f"match_clip_list?select=*&match_id=eq.{clip['match_id']}")
     conf = get(env, "clip_config?select=pre_seconds,post_seconds,split_gap_seconds&id=eq.1")[0]
     log(f"Jugada {clip['id'][:8]}: {clip['type']} de {clip['player_name']} (ronda {clip['round']}) en "
         f"{match['map']}, partida {match['external_id']}.")
@@ -93,7 +107,8 @@ def main():
     os.makedirs(cfg["out_dir"], exist_ok=True)
     name = a.name or f"prueba_{match['map']}_{clip['type']}_r{clip['round']}_{clip['id'][:8]}_{cfg.get('client', 'clientmod')}"
     out = os.path.join(cfg["out_dir"], name + ".mp4")
-    render_clip.encode(cfg, prefixes[job["key"]], job["segs"], d.tick_interval, out, d.header["playback_ticks"])
+    render_clip.encode(cfg, prefixes[job["key"]], job["segs"], d.tick_interval, out, d.header["playback_ticks"],
+                       voice=d.voice)
     log(f"Listo: {out} ({os.path.getsize(out) / 1e6:.1f} MB)")
 
 

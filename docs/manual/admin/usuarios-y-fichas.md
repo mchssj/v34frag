@@ -13,7 +13,7 @@ Una cuenta se une con su ficha cuando el jugador vincula su SteamID con `!claim`
 
 ## Cuentas
 
-En **Cuentas** buscas y filtras por **Admins**, **Moderadores**, **Organizadores**, **Streamers** y **Sin ficha**. Toca una cuenta para:
+En **Cuentas** buscas y filtras por **Admins**, **Moderadores**, **Soporte**, **Organizadores**, **Streamers** y **Sin ficha**. Toca una cuenta para:
 
 - **Cambiar el alias**, sin la espera de 15 días. Si tiene una palabra bloqueada, la web te pide confirmar.
 - **Cambiar el rol:**
@@ -22,9 +22,10 @@ En **Cuentas** buscas y filtras por **Admins**, **Moderadores**, **Organizadores
   |---|---|
   | Usuario | Juega, arma equipos y se inscribe |
   | Organizador | Además crea y gestiona sus torneos |
+  | Soporte | Además banea hasta 120 minutos, reprocesa y revisa clips, quita fotos y logos, borra comentarios y levanta sanciones de la cola. Lo que hace queda en Baneos › **Actividad del soporte** |
   | Moderador | Además banea desde la web (no permanentes), modera equipos y gestiona torneos |
 
-  El rol de admin no se da desde la web.
+  El rol de admin no se da desde la web. Para que alguien de soporte o moderación aparezca en Quiénes somos, su cuenta tiene que tener ficha de jugador.
 - **Acceso:** ver su correo, si lo confirmó y cuándo entró por última vez, y ayudarlo a entrar (ver abajo). El correo es solo para consultarlo: no se cambia desde aquí. Es un dato personal, así que no lo compartas.
 - **VIP:** darlo hasta una fecha o de por vida, y ver hasta cuándo dura.
 - **Streamer del HUD:** con la marca, la cuenta puede generar su link de OBS desde Mi perfil y transmitir cualquier servidor con el HUD activo. Quitarla corta su link en 30 segundos. A la cuenta se le avisa en los dos casos.
@@ -52,7 +53,7 @@ En **Inicio de sesión** cambias la imagen que se ve al lado del formulario de e
 
 ## Fichas
 
-En Administración › Jugadores, pestaña **Fichas**, buscas por nick o SteamID y filtras por **Con cuenta**, **Sin cuenta**, **Sin SteamID** y **Verificados** (las que tienen insignia, que también se ve en la lista). En el detalle de una ficha editas su nick (si tiene cuenta, manda el alias de la cuenta), la foto, la biografía, los logros, sus SteamID, la cuenta vinculada y las medallas. En **Medallas** das una de Comunidad (staff, caster, campeón de torneo…) y, si quieres, le pones un título, como el nombre del torneo; las demás las da el juego (ver [Medallas](/help/admin/medallas)). La foto de la ficha se ve en toda la web hasta que el jugador sube una suya: gana la última que se subió.
+En Administración › Jugadores, pestaña **Fichas**, buscas por nick o SteamID y filtras por **Con cuenta**, **Sin cuenta**, **Sin SteamID** y **Verificados** (las que tienen insignia, que también se ve en la lista). En el detalle de una ficha editas su nick (si tiene cuenta, manda el alias de la cuenta), la foto, la biografía, los logros, sus SteamID, la cuenta vinculada y las medallas. En **Medallas** das una de Comunidad (staff, caster, campeón o finalista de un torneo de fuera de la plataforma…) y, si quieres, le pones un título, como el nombre del torneo; las demás las da el juego. Las de campeón y finalista de los torneos de la plataforma llegan solas al terminar el torneo y no se quitan desde acá (ver [Medallas](/help/admin/medallas)). La foto de la ficha se ve en toda la web hasta que el jugador sube una suya: gana la última que se subió.
 
 ## Insignia de verificado
 

@@ -29,6 +29,7 @@ export type ErrorCode =
   | 'PCW_BANNED'
   | 'SERVER_BUSY'
   | 'VIP_REQUIRED'
+  | 'UNAVAILABLE'
   | 'INTERNAL';
 
 export class AppError extends Error {
@@ -111,6 +112,11 @@ export function fromPostgrest(err: PostgrestLikeError): AppError {
     // (replanteo 104) Límite de cambios de bloqueo en 7 días; el detail trae next_change_at.
     case 'V8904':
       return new AppError(409, 'CONFLICT', err.message, jsonObject(err.details));
+    // (bitácora 2026-11-13-pool-de-conexiones) La base no da abasto: PostgREST sin conexiones libres o una consulta
+    // cortada por statement_timeout. Es pasajero: 503 para que la web ofrezca reintentar.
+    case 'PGRST003':
+    case '57014':
+      return new AppError(503, 'UNAVAILABLE', 'El servidor está ocupado. Intenta de nuevo en un momento.', undefined, { 'Retry-After': '5' });
   }
   if (code.startsWith('22')) return new AppError(400, 'VALIDATION_ERROR', 'Algún dato tiene un formato inválido.');
   return new AppError(500, 'INTERNAL', 'Error interno.', undefined);

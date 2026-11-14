@@ -1806,9 +1806,11 @@
         "number": null,
         "band": "CAMPEÓN"
       },
-      "metric": "manual",
-      "aggregation": "manual",
-      "filters": {},
+      "metric": "event_result",
+      "aggregation": "event_result",
+      "filters": {
+        "result": "champion"
+      },
       "steps": [1],
       "titleFmt": "Campeón de torneo",
       "dataSince": null
@@ -1835,9 +1837,11 @@
         "number": null,
         "band": "FINALISTA"
       },
-      "metric": "manual",
-      "aggregation": "manual",
-      "filters": {},
+      "metric": "event_result",
+      "aggregation": "event_result",
+      "filters": {
+        "result": "runner_up"
+      },
       "steps": [1],
       "titleFmt": "Finalista de torneo",
       "dataSince": null

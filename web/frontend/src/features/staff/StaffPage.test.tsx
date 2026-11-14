@@ -42,3 +42,27 @@ describe("página del Equipo", () => {
     ).toHaveAttribute("href", "https://discord.gg/bn5Yxsh9tc")
   })
 })
+
+describe("Moderación con el soporte (replanteo 117)", () => {
+  it("moderadores y soporte en la misma sección, por nick", async () => {
+    server.use(
+      http.get(`${API}/api/v1/staff`, () =>
+        HttpResponse.json({
+          admins: [card("daniloev", 1)],
+          moderators: [card("zeta", 2), card("aciart", 3)],
+          supports: [card("helper", 4)],
+          vips: [],
+        })
+      )
+    )
+    await renderWithRouter(<StaffPage />)
+    expect(
+      await screen.findByText("2 moderadores y 1 de soporte")
+    ).toBeInTheDocument()
+    const cards = screen
+      .getAllByRole("link")
+      .map((a) => (a.textContent ?? "").slice(1))
+      .filter((t) => /aciart|helper|zeta/.test(t ?? ""))
+    expect(cards).toEqual(["aciartModerador", "helperSoporte", "zetaModerador"])
+  })
+})

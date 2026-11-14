@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { act, renderHook } from "@testing-library/react"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -14,6 +14,7 @@ import {
   normalizeState,
   patchQueueSizes,
   seedFoundLobby,
+  useLastLobby,
   useMmMutation,
   useMmSocket,
 } from "./queries"
@@ -419,5 +420,40 @@ describe("normalizeState", () => {
     } as unknown as MmState)
     expect(s.lobby!.id).toBe("L3")
     expect(s.last_lobby).toBeNull()
+  })
+})
+
+describe("useLastLobby (replanteo 115)", () => {
+  it("pide la sala una vez por versión y, sin referencia, usa la del estado", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    let n = 0
+    const lastLobby = vi.fn(
+      async () => ({ id: "L1", n: ++n }) as unknown as MmLobby
+    )
+    const source = { lastLobby } as unknown as MmSource
+    const withRef = (rev: string) =>
+      ({ last_lobby_ref: { id: "L1", rev } }) as unknown as MmState
+
+    const { result, rerender } = renderHook(
+      ({ s }: { s: MmState | undefined }) => useLastLobby(source, s),
+      { wrapper, initialProps: { s: withRef("a") } }
+    )
+    await waitFor(() => expect(result.current).toMatchObject({ n: 1 }))
+    // Mismo rev (un aviso del socket, el refresco de 30 s): no la pide de nuevo.
+    rerender({ s: withRef("a") })
+    expect(lastLobby).toHaveBeenCalledTimes(1)
+    // Cambió algo de la sala (un reporte, el resultado): la pide de nuevo.
+    rerender({ s: withRef("b") })
+    await waitFor(() => expect(result.current).toMatchObject({ n: 2 }))
+    expect(lastLobby).toHaveBeenCalledTimes(2)
+    // Sin referencia (la demo): la del estado.
+    rerender({ s: { last_lobby: { id: "L0" } } as unknown as MmState })
+    expect(result.current).toMatchObject({ id: "L0" })
+    expect(lastLobby).toHaveBeenCalledTimes(2)
   })
 })

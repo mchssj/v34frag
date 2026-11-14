@@ -108,6 +108,9 @@ export const Registration = z
     players: z
       .array(z.object({ player_id: z.uuid(), alias: z.string(), role: z.enum(['active', 'sub']).openapi({ description: '`active` o `sub` (suplente)' }) }))
       .openapi({ description: 'Primero los activos y después los suplentes, cada grupo por alias' }),
+    guests: z
+      .array(z.string())
+      .openapi({ description: 'Torneo histórico: jugadores sin ficha, solo el nombre, en el orden en que se cargaron. Vacío en los demás (replanteo 113)' }),
   })
   .openapi('Registration');
 
@@ -244,6 +247,15 @@ export const RegistrationBody = z
     active: z.array(z.uuid()).max(10).openapi({ description: 'Activos: exactamente `players_per_team` del torneo, miembros del plantel con SteamID. En un histórico, de 0 a 10 fichas cualesquiera (sin plantel ni SteamID)' }),
     subs: z.array(z.uuid()).max(4).default([]).openapi({ description: 'Suplentes: hasta `subs_max` del torneo. El coach no se inscribe' }),
     start_stage: z.number().int().min(1).max(3).optional().openapi({ description: 'Suizo: fase en la que empieza (solo el organizador)' }),
+    guests: z
+      .array(z.string().trim().min(2).max(24))
+      .max(10)
+      .optional()
+      .openapi({
+        description:
+          'Solo en un torneo histórico: jugadores sin ficha (solo el nombre, de 2 a 24 caracteres, sin repetir). Fichas y nombres suman ' +
+          'hasta 10. Si viene, reemplaza los nombres guardados; si no viene, no los toca (replanteo 113)',
+      }),
   })
   .openapi('RegistrationBody');
 

@@ -9,6 +9,7 @@ const SECCIONES = [
   "jugador",
   "capitan",
   "organizador",
+  "soporte",
   "moderador",
   "admin",
   "streamer",

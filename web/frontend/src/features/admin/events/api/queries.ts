@@ -385,11 +385,20 @@ export function useResubmitEvent(id: string) {
 export function useRegisterTeam(eventId: string) {
   const invalidate = useInvalidateEvent()
   return useMutation({
-    mutationFn: ({ teamId, players }: { teamId: string; players: string[] }) =>
+    mutationFn: ({
+      teamId,
+      players,
+      guests,
+    }: {
+      teamId: string
+      players: string[]
+      /** Histórico: jugadores sin ficha, solo el nombre (replanteo 113). */
+      guests?: string[]
+    }) =>
       unwrap(
         api.PUT("/api/v1/events/{id}/registrations/{teamId}", {
           params: { path: { id: eventId, teamId } },
-          body: { active: players, subs: [] },
+          body: { active: players, subs: [], ...(guests ? { guests } : {}) },
         })
       ),
     onSuccess: () => invalidate(eventId),

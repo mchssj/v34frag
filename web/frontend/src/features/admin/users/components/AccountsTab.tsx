@@ -46,6 +46,7 @@ import { StreamerSection } from "./StreamerSection"
 const ROLE_TONE: Record<string, Tone> = {
   admin: "strong",
   moderator: "primary",
+  support: "primary",
   organizer: "neutral",
   user: "neutral",
 }
@@ -150,6 +151,7 @@ export function AccountsTab({
                 { value: "all", label: "Todas" },
                 { value: "admin", label: "Admins" },
                 { value: "moderator", label: "Moderadores" },
+                { value: "support", label: "Soporte" },
                 { value: "organizer", label: "Organizadores" },
                 { value: "streamer", label: "Streamers" },
                 { value: "noplayer", label: "Sin ficha" },
@@ -321,6 +323,10 @@ function AccountPanel({ u, onClose }: { u: AdminUser; onClose: () => void }) {
               [
                 ["user", "Juega, arma equipos y se inscribe."],
                 ["organizer", "Además crea y gestiona sus torneos."],
+                [
+                  "support",
+                  "Además banea hasta 120 minutos, reprocesa clips, quita fotos y logos, borra comentarios y levanta sanciones de la cola.",
+                ],
                 ["moderator", "Además banea desde la web (no permanentes)."],
               ] as const
             ).map(([r, desc]) => {

@@ -17,6 +17,8 @@ Cuando una sanción vence, sale sola de la lista.
 
 ## Levantar una
 
+El soporte también puede levantarlas (no las exclusiones). Lo que levanta queda en Baneos › **Actividad del soporte**.
+
 Levanta una sanción cuando la falta no fue culpa del jugador: se le cayó Steam o internet justo al aparecer la partida, o el servidor falló.
 
 1. Toca **Levantar** en su fila.

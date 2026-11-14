@@ -1,6 +1,7 @@
-import { act, screen } from "@testing-library/react"
+import { act, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { renderWithQuery } from "@/test/render"
 import { createDemoSource } from "../demo"
 import { MmSourceContext } from "../source"
@@ -19,9 +20,11 @@ vi.mock("@tanstack/react-router", () => ({
 function setup() {
   const demo = createDemoSource({ random: () => 0.5 })
   const view = renderWithQuery(
-    <MmSourceContext value={demo.source}>
-      <AdminMatchmaking />
-    </MmSourceContext>
+    <TooltipProvider>
+      <MmSourceContext value={demo.source}>
+        <AdminMatchmaking />
+      </MmSourceContext>
+    </TooltipProvider>
   )
   return { ...demo, ...view }
 }
@@ -115,13 +118,17 @@ describe("Administración › Matchmaking", () => {
     const { user, source } = setup()
     const sw = await screen.findByRole("switch", { name: "Apagado" })
     expect(sw).not.toBeChecked()
-    expect(screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+64/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+64/)
+    ).toBeInTheDocument()
 
     await user.click(sw)
     const cap = screen.getByLabelText("Tope del ajuste (±)")
     await user.clear(cap)
     await user.type(cap, "50")
-    expect(screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+50/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/1,40 de rating en 20 mapas, el ELO de armado es \+50/)
+    ).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
     const cfg = await source.adminConfig()
@@ -178,5 +185,43 @@ describe("Administración › Matchmaking", () => {
       screen.getByRole("switch", { name: "CM League #1 en el matchmaking" })
     )
     expect((await source.adminServers())[0]!.mm_enabled).toBe(false)
+  })
+  it("Salas: Ver sala abre la sala con lo del admin y Cancelar sala la cancela", async () => {
+    const { user, source, controls } = setup()
+    await source.join("5v5", null)
+    for (let i = 0; i < 10; i++) {
+      if ((await source.state()).lobby?.status === "live") break
+      controls.skip()
+    }
+    await user.click(screen.getByRole("tab", { name: "Salas" }))
+    await user.click(await screen.findByRole("button", { name: "Ver sala" }))
+
+    expect(
+      await screen.findByRole("region", { name: "Sala de la partida" })
+    ).toBeInTheDocument()
+    const admin = screen.getByRole("region", {
+      name: "Administración de la sala",
+    })
+    expect(screen.getAllByRole("button", { name: /^Banear a / })).toHaveLength(
+      10
+    )
+    // Nada del que mira como jugador: ni reportar ni el chat.
+    expect(screen.queryByRole("button", { name: /Reportar/ })).toBeNull()
+    expect(screen.queryByText("(tú)")).toBeNull()
+
+    await user.click(
+      within(admin).getByRole("button", { name: "Cancelar sala" })
+    )
+    await user.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", {
+        name: "Cancelar sala",
+      })
+    )
+    await vi.waitFor(async () =>
+      expect(await source.adminLobbies()).toEqual([])
+    )
+
+    await user.click(screen.getByRole("button", { name: "Salas" }))
+    expect(await screen.findByText("No hay salas activas.")).toBeInTheDocument()
   })
 })

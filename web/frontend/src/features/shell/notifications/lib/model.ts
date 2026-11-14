@@ -117,6 +117,8 @@ const BOOKING_ATTENTION: Record<string, string> = {
 const ACCOUNT_ROLE: Record<string, string> = {
   user: "usuario",
   organizer: "organizador",
+  support: "parte del soporte",
+  moderator: "moderador",
   admin: "admin",
 }
 const CATEGORY: Record<NotificationCategory, [NotificationKind, string]> = {
@@ -257,7 +259,12 @@ export function describe(n: Notification, me?: string | null): Described {
       }
     case "team_staff_action": {
       // Acción de un moderador o un admin sobre el equipo; le llega siempre al líder.
-      const who = d.by === "admin" ? "Un admin" : "Un moderador"
+      const who =
+        d.by === "admin"
+          ? "Un admin"
+          : d.by === "support"
+            ? "Alguien de soporte"
+            : "Un moderador"
       const what: Record<string, string> = {
         renamed: `cambió el nombre del equipo a ${str(d.name, team)}`,
         logo_removed: `quitó el logo de ${team}`,
@@ -657,6 +664,16 @@ export function describe(n: Notification, me?: string | null): Described {
         kind: "account",
         title: `Tu alias ahora es ${str(d.alias)}`,
         body: "Lo cambió un admin.",
+        link: { to: "/profile" },
+      }
+    case "avatar_removed":
+      // (replanteo 117) Lo quitó alguien del staff; queda la imagen por defecto.
+      return {
+        kind: "account",
+        title: "Te quitamos la foto de perfil",
+        body: str(d.reason)
+          ? `Motivo: ${str(d.reason)}. Puedes subir otra.`
+          : "Puedes subir otra.",
         link: { to: "/profile" },
       }
     case "role_changed":

@@ -1,0 +1,8 @@
+CMLeague 2.9.45 --  Changelog
+
+Web
+- Nuevo rol: Soporte. Es el equipo de primera línea: te ayuda con lo del día a día sin tener que esperar a un moderador.
+- El soporte puede banear por un rato (hasta 2 horas, y no más de 3 veces en una semana al mismo jugador), quitar una foto de perfil o un logo que no cumplan las reglas, borrar comentarios y levantar una sanción de la cola si no fue tu culpa (por ejemplo, se te cayó internet al aceptar).
+- Si te quitan la foto de perfil o el logo de tu equipo, te llega un aviso con el motivo. Puedes subir otra cuando quieras.
+- El soporte también revisa los clips que se volvieron a grabar antes de que salgan en Discord.
+- En Quiénes somos, el soporte aparece junto a los moderadores, en Moderación.

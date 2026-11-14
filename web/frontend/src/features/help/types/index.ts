@@ -4,6 +4,7 @@ export type ManualSeccionId =
   | "jugador"
   | "capitan"
   | "organizador"
+  | "soporte"
   | "moderador"
   | "admin"
   | "streamer"

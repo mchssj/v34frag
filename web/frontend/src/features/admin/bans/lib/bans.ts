@@ -92,9 +92,41 @@ export function banSteps(b: Ban): BanStep[] {
   return steps
 }
 
-/** Cambiar o levantar: solo uno activo, y uno permanente solo si se pueden tocar los permanentes. */
-export const canEditBan = (b: Ban, canPermanent: boolean) =>
-  b.status === "active" && (canPermanent || !b.permanent)
+/**
+ * Cambiar o levantar: solo uno activo, y uno permanente solo si se pueden tocar los permanentes. El soporte
+ * (`supportUserId`, replanteo 117), solo los que puso él.
+ */
+export const canEditBan = (
+  b: Ban,
+  canPermanent: boolean,
+  supportUserId?: string
+) =>
+  b.status === "active" &&
+  (canPermanent || !b.permanent) &&
+  (!supportUserId || b.created_by?.id === supportUserId)
+
+/** Lo más largo que banea el soporte, en minutos (replanteo 117). */
+export const SUPPORT_BAN_MAX_MINUTES = 120
+
+/** Baneos de soporte por jugador en 7 días. */
+export const SUPPORT_WEEKLY_BANS = 3
+
+/** ¿Es un número entero de minutos válido para el soporte (1 a 120)? */
+export const validBanMinutes = (m: number) =>
+  Number.isInteger(m) && m >= 1 && m <= SUPPORT_BAN_MAX_MINUTES
+
+/** Hasta dónde puede llegar un baneo de soporte al cambiarlo: 120 minutos desde que se puso. */
+export const supportBanLimit = (b: Pick<Ban, "created_at">) =>
+  new Date(new Date(b.created_at).getTime() + SUPPORT_BAN_MAX_MINUTES * 60_000)
+
+/** "Te queda 1 de 3" / "No te quedan baneos" para el formulario del soporte. */
+export function supportQuotaText(remaining: number): string {
+  if (remaining <= 0)
+    return `Ya tiene ${SUPPORT_WEEKLY_BANS} baneos de soporte en los últimos 7 días: pásale el caso a un moderador.`
+  return remaining === 1
+    ? `Le queda 1 baneo de soporte de ${SUPPORT_WEEKLY_BANS} esta semana.`
+    : `Le quedan ${remaining} baneos de soporte de ${SUPPORT_WEEKLY_BANS} esta semana.`
+}
 
 /** Días ("7"), unas horas a elección, hasta una fecha o permanente. */
 export type Duration = "hours" | "1" | "3" | "7" | "30" | "date" | "perm"

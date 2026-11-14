@@ -3901,7 +3901,7 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"replanteo113_funciones": {
+                },"replanteo119_funciones": {
                   Row: {
                     "def": string,"nombre": string
                   }
@@ -8018,6 +8018,9 @@ isOneToOne: false
                            },
 "mm_admin_lists":
 { Args: { "p_arg"?: string,"p_what": string }; Returns: Json
+                           },
+"mm_admin_lobby":
+{ Args: { "p_lobby": string }; Returns: Json
                            },
 "mm_admin_resolve_report":
 { Args: { "p_action": string,"p_days"?: number,"p_report": string }; Returns: undefined

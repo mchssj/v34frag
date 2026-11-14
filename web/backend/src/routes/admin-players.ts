@@ -1,7 +1,8 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { requireAdmin, requireUser } from '../lib/auth';
+import { requireAdmin, requireSupport, requireUser } from '../lib/auth';
+import { removeStored } from '../services/photos';
 import { inBackground } from '../lib/background';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
@@ -28,6 +29,7 @@ import {
   BlockedWordQuery,
   IdParam,
   MedalBody,
+  PhotoRemoveBody,
   PlayerIpList,
   SteamLinkBody,
   SteamUnlinkedList,
@@ -89,6 +91,17 @@ const deletePlayer = createRoute({
   request: { params: IdParam },
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
+const removePhotoRoute = createRoute({
+  method: 'post', path: '/api/v1/admin/players/{id}/photo/remove', tags: ['Admin'], security: bearer,
+  middleware: [requireUser, requireSupport] as const,
+  summary: 'Quitar la foto de perfil',
+  description:
+    'Soporte, moderadores y admins (replanteo 117). Borra la foto de la ficha y la de su cuenta, con motivo; el jugador recibe ' +
+    'el aviso `avatar_removed`. Queda la imagen por defecto hasta que suba otra. `BUSINESS_RULE` si no tiene foto.',
+  request: { params: IdParam, body: { required: true, ...json(PhotoRemoveBody) } },
+  responses: { 204: { description: 'Quitada' }, ...errorResponses(400, 401, 403, 404) },
+});
+
 const uploadPhoto = createRoute({
   method: 'post', path: '/api/v1/admin/players/{id}/photo', tags: ['Admin'], security: bearer,
   middleware: [
@@ -251,6 +264,14 @@ export const adminPlayers = createRouter()
     if (!gone.length) throw notFound('ese jugador');
     return c.body(null, 204);
   })
+  .openapi(removePhotoRoute, async (c) => {
+    const urls = must(
+      await c.var.sb.rpc('staff_remove_photo', { p_player: c.req.valid('param').id, p_reason: c.req.valid('json').reason }),
+    ) as { photo_url: string | null; avatar_url: string | null };
+    removeStored(c, 'photos', urls.photo_url, { staff: true });
+    removeStored(c, 'avatars', urls.avatar_url, { staff: true });
+    return c.body(null, 204);
+  })
   .openapi(uploadPhoto, async (c) => {
     const { id } = c.req.valid('param');
     const { sb } = c.var;
@@ -283,7 +304,10 @@ export const adminPlayers = createRouter()
     const b = c.req.valid('json');
     const def = (await loadDefinitions(c.var.sb, [b.definition_id])).get(b.definition_id);
     if (!def || def.status !== 'active') throw notFound('esa medalla');
-    if (def.aggregation !== 'manual') throw new AppError(400, 'BUSINESS_RULE', 'Esa medalla la da el juego o el cierre de temporada, no un admin.');
+    // (replanteo 114) Campeón y finalista de torneo también se dan a mano, para los torneos de fuera de la plataforma.
+    if (def.aggregation !== 'manual' && def.aggregation !== 'event_result') {
+      throw new AppError(400, 'BUSINESS_RULE', 'Esa medalla la da el juego o el cierre de temporada, no un admin.');
+    }
     const row = mustHave(
       await c.var.sb
         .from('player_medals')
@@ -291,10 +315,16 @@ export const adminPlayers = createRouter()
         .select('id, title, created_at')
         .single(),
     );
-    return c.json({ ...row, source: 'admin' as const, season: null, rank: null, design: designOf(def) }, 201);
+    return c.json({ ...row, source: 'admin' as const, season: null, event: null, rank: null, design: designOf(def) }, 201);
   })
   .openapi(deleteMedal, async (c) => {
-    const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', c.req.valid('param').id).select('id'));
+    const { id } = c.req.valid('param');
+    // (replanteo 114) La de un torneo sigue al palmarés: la base la volvería a dar.
+    const cur = must(await c.var.sb.from('player_medals').select('source').eq('id', id).maybeSingle());
+    if (cur?.source === 'event') {
+      throw new AppError(400, 'BUSINESS_RULE', 'Esta medalla la da el torneo: se quita sola si cambia el resultado o el plantel.');
+    }
+    const gone = mustHave(await c.var.sb.from('player_medals').delete().eq('id', id).select('id'));
     if (!gone.length) throw notFound('esa medalla');
     return c.body(null, 204);
   })

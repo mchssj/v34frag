@@ -1,0 +1,5 @@
+CMLeague 2.9.44 --  Changelog
+
+Web
+- Arreglado: en las horas de más gente, a veces cualquier página mostraba "Algo salió mal". La página de Jugar le pedía demasiado al servidor y lo dejaba sin lugar para lo demás.
+- Si el servidor está ocupado, ahora te lo dice y puedes tocar "Reintentar".

@@ -487,7 +487,13 @@ export const events = createRouter()
             .in('team_id', rows.map((r) => r.team_id)),
         )
       : [];
-    const hist = await historicTeams(c.var.sb, rows.map((r) => r.team_id));
+    const [hist, guests] = await Promise.all([
+      historicTeams(c.var.sb, rows.map((r) => r.team_id)),
+      rows.length
+        ? c.var.sb.from('tournament_registrations').select('team_id, guest_names').eq('event_id', id).in('team_id', rows.map((r) => r.team_id)).then(mustHave)
+        : Promise.resolve([]),
+    ]);
+    const guestsOf = new Map(guests.map((g) => [g.team_id, g.guest_names ?? []]));
     const items = rows.map((r) => ({
       team: { id: r.team_id, name: r.name, tag: r.tag, logo_url: r.logo_url, ...(hist.has(r.team_id) ? { historic: true } : {}) },
       seed: r.seed,
@@ -496,6 +502,7 @@ export const events = createRouter()
         .filter((x) => x.team_id === r.team_id && x.player)
         .map((x) => ({ player_id: x.player!.id, alias: x.player!.nick, role: x.role === 'sub' ? ('sub' as const) : ('active' as const) }))
         .sort((a, b) => (a.role === b.role ? a.alias.localeCompare(b.alias) : a.role === 'active' ? -1 : 1)),
+      guests: guestsOf.get(r.team_id) ?? [],
     }));
     return c.json(envelope(items, total, p), 200);
   })
@@ -559,8 +566,14 @@ export const events = createRouter()
   })
   .openapi(register, async (c) => {
     const { id, teamId } = c.req.valid('param');
-    const { active, subs, start_stage } = c.req.valid('json');
-    must(await c.var.sb.rpc('event_register', { p_event: id, p_team: teamId, p_active: active, p_subs: subs, p_start_stage: start_stage }));
+    const { active, subs, start_stage, guests } = c.req.valid('json');
+    // Con nombres (histórico, replanteo 113): fichas y nombres juntos en una sola llamada.
+    if (guests !== undefined) {
+      if (subs.length) throw new AppError(400, 'BUSINESS_RULE', 'En un torneo histórico no hay suplentes.');
+      must(await c.var.sb.rpc('event_register_historic', { p_event: id, p_team: teamId, p_players: active, p_names: guests, p_start_stage: start_stage }));
+    } else {
+      must(await c.var.sb.rpc('event_register', { p_event: id, p_team: teamId, p_active: active, p_subs: subs, p_start_stage: start_stage }));
+    }
     return c.body(null, 204);
   })
   .openapi(unregister, async (c) => {

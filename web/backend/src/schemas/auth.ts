@@ -54,8 +54,12 @@ export const AuthUser = z
     email: z.string().nullable(),
     tag: z.string().nullable(),
     role: z
-      .enum(['user', 'organizer', 'moderator', 'admin'])
-      .openapi({ description: 'Todos juegan. `organizer` crea y gestiona sus torneos; `moderator` banea; `admin`, todo' }),
+      .enum(['user', 'organizer', 'support', 'moderator', 'admin'])
+      .openapi({
+        description:
+          'Todos juegan. `organizer` crea y gestiona sus torneos; `support` banea hasta 120 minutos, reprocesa clips y modera ' +
+          'fotos, logos, comentarios y sanciones de la cola; `moderator` banea; `admin`, todo',
+      }),
     created_at: z.string().nullable().openapi({ description: 'Fecha de registro de la cuenta' }),
     password_changed_at: z.string().nullable().openapi({ description: 'Último cambio de contraseña; null si no la cambió desde que se guarda la fecha (2026-10-19)' }),
   })

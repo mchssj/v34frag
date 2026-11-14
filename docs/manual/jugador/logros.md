@@ -4,7 +4,7 @@ resumen: Cómo se ganan las medallas, dónde las ves y cuánto te falta para la 
 orden: 11
 ---
 
-Las medallas se ganan jugando: por mixes jugados y ganados, rachas, kills, headshots, kills con cada arma, clutchs, rondas, victorias en cada mapa y tu puesto al cerrar cada temporada. Algunas las da la administración, como las de staff, caster o campeón de torneo.
+Las medallas se ganan jugando: por mixes jugados y ganados, rachas, kills, headshots, kills con cada arma, clutchs, rondas, victorias en cada mapa y tu puesto al cerrar cada temporada. Si tu equipo gana un torneo o juega la final, recibes **Campeón de torneo** o **Finalista de torneo**, con el nombre del torneo, apenas termina; en Logros, el nombre te lleva al torneo. Algunas las da la administración, como las de staff o caster.
 
 ## Dónde las ves
 

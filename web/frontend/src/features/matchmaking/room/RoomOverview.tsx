@@ -63,7 +63,8 @@ import { replacementOf, roomRows, teamLabel, type Team } from "./roomData"
  * live: la sala de quien juega. preview: el link de reemplazo (sin servidor ni chat, con el lugar libre). detail: el
  * detalle de una partida terminada (replanteo 78), con los números de esa partida y sin chat ni reportes.
  */
-export type RoomMode = "live" | "preview" | "detail"
+/** admin: Administración › Matchmaking › Salas › Ver sala (replanteo 116), sin nada del que mira como jugador. */
+export type RoomMode = "live" | "preview" | "detail" | "admin"
 
 export function RoomOverview({
   lobby,
@@ -72,6 +73,7 @@ export function RoomOverview({
   mode = "live",
   takeCard,
   extra,
+  playerExtra,
 }: {
   lobby: MmLobby
   map: MmVetoMap | null
@@ -81,10 +83,17 @@ export function RoomOverview({
   takeCard?: React.ReactNode
   /** Arriba del centro: lo propio de otro tipo de partida (en una PCW, la serie y sus reglas). */
   extra?: React.ReactNode
+  /** Al lado del ELO de cada jugador: las acciones del admin. */
+  playerExtra?: (p: MmPlayer) => React.ReactNode
 }) {
   return (
-    <div className="grid items-stretch gap-4 lg:grid-cols-[1fr_minmax(320px,400px)_1fr]">
-      <TeamColumn lobby={lobby} team={1} mode={mode} />
+    <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)_minmax(0,1fr)]">
+      <TeamColumn
+        lobby={lobby}
+        team={1}
+        mode={mode}
+        playerExtra={playerExtra}
+      />
       <Center
         lobby={lobby}
         map={map}
@@ -93,7 +102,12 @@ export function RoomOverview({
         takeCard={takeCard}
         extra={extra}
       />
-      <TeamColumn lobby={lobby} team={2} mode={mode} />
+      <TeamColumn
+        lobby={lobby}
+        team={2}
+        mode={mode}
+        playerExtra={playerExtra}
+      />
     </div>
   )
 }
@@ -102,10 +116,12 @@ function TeamColumn({
   lobby,
   team,
   mode,
+  playerExtra,
 }: {
   lobby: MmLobby
   team: Team
   mode: RoomMode
+  playerExtra?: (p: MmPlayer) => React.ReactNode
 }) {
   const live =
     mode !== "detail" &&
@@ -117,7 +133,7 @@ function TeamColumn({
     playersCosmeticsOptions(lobby.players.map((p) => p.player_id))
   ).data
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-3">
       <section
         aria-label={sideLabel(lobby, team)}
         className={cn(
@@ -153,6 +169,7 @@ function TeamColumn({
               showConnection={live}
               mode={mode}
               cosmetics={cosmetics?.get(p.player_id)}
+              extra={playerExtra?.(p)}
             />
           ))}
           {open && <OpenSlot rep={open} />}
@@ -175,12 +192,14 @@ function PlayerCard({
   showConnection,
   mode,
   cosmetics,
+  extra,
 }: {
   p: MmPlayer
   lobby: MmLobby
   showConnection: boolean
   mode: RoomMode
   cosmetics?: Pick<CosmeticsLight, "name" | "avatar">
+  extra?: React.ReactNode
 }) {
   const r = p.recent
   const rep = replacementOf(lobby, p.player_id)
@@ -200,7 +219,11 @@ function PlayerCard({
       <div className="flex items-center gap-2.5">
         {cosmetics?.avatar ? (
           // (bitácora 2026-11-12-avatares-animados) El avatar de la tienda, quieto; se anima al pasar el mouse.
-          <AvatarThumb avatar={cosmetics.avatar} size={36} className="rounded-lg" />
+          <AvatarThumb
+            avatar={cosmetics.avatar}
+            size={36}
+            className="rounded-lg"
+          />
         ) : (
           <Avatar className="size-9 rounded-lg">
             {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
@@ -265,7 +288,8 @@ function PlayerCard({
           {stat?.delta != null && <EloDelta value={stat.delta} />}
           <span className="font-mono text-sm tabular-nums">{p.elo}</span>
           <LevelBadge level={p.level} size={22} />
-          {!p.is_me && <Encounters player={p} />}
+          {!p.is_me && mode !== "admin" && <Encounters player={p} />}
+          {extra}
           {!p.is_me && mode === "live" && (
             <ReportDialog
               lobbyId={lobby.id}

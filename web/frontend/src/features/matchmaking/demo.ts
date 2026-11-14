@@ -1076,6 +1076,10 @@ export function createDemoSource({
     async profile() {
       return snapshot()
     },
+    // La demo trae la última sala completa en el estado: no usa la referencia.
+    async lastLobby() {
+      return snapshot().last_lobby ?? null
+    },
     async lobbyMatch() {
       const last = lobby?.status === "finished" ? lobby : lastLobby
       return structuredClone(last?.match ?? lobby?.match ?? null)
@@ -1615,6 +1619,18 @@ export function createDemoSource({
           created_at: lobbyCreatedAt,
         })
       return list
+    },
+    async adminLobby(lobbyId) {
+      if (!lobby || lobby.id !== lobbyId)
+        throw new DemoError("Esa sala ya no está")
+      const l = structuredClone(lobby)
+      return {
+        ...l,
+        players: l.players.map((p) => ({ ...p, is_me: false })),
+        reported: [],
+        commended: null,
+        elo_stake: null,
+      }
     },
     async cancelLobby(lobbyId) {
       if (lobby?.id === lobbyId) cancel("Cancelada por un admin", false)

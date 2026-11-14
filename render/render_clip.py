@@ -25,6 +25,7 @@ La resolución y el modo de ventana quedan en el registro (registry_key), compar
 se respaldan antes y se restauran al final.
 """
 import argparse
+import bisect
 import ctypes
 import ctypes.wintypes as wt
 import glob
@@ -37,6 +38,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import leer_demo  # noqa: E402
+import voces  # noqa: E402
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
@@ -108,7 +110,9 @@ def relaunch_as_admin(out_file, script=None):
         os.remove(out_file)
     args = subprocess.list2cmdline([os.path.abspath(script or __file__)] + sys.argv[1:] + ["--out-log", out_file])
     sei = _SEI(cbSize=ctypes.sizeof(_SEI), fMask=0x40, lpVerb="runas", lpFile=sys.executable,
-               lpParameters=f"-I {args}", lpDirectory=AQUI, nShow=7)
+               # La carpeta desde la que se corrió: una ruta relativa como --config render\config.v34.json se
+               # resolvía desde render\ y no se encontraba (el portátil, 2026-11-13).
+               lpParameters=f"-I {args}", lpDirectory=os.getcwd(), nShow=7)
     if not shell32.ShellExecuteExW(ctypes.byref(sei)):
         raise SystemExit("no se pudo abrir como administrador (¿se rechazó el aviso de UAC?)")
     pos = 0
@@ -150,6 +154,12 @@ def click(x, y):
 
 WM_KEYDOWN, WM_KEYUP, WM_CHAR = 0x100, 0x101, 0x102
 SCAN_CONSOLE = 0x29  # la tecla a la izquierda del 1 (º en el teclado español, ` en el inglés)
+# El v34 normal no abre la consola con esa tecla (en el teclado latinoamericano le llega como "\" y escribe "|"), y no
+# trae un bind para abrirla: la K, con bind "k" "toggleconsole" en cmleague_render.cfg (Daniel, 2026-11-13). La K no la
+# cierra: la cierran hideconsole y gameui_hide, que van en cada línea.
+KEY_CONSOLE_V34 = (0x25, 0x4B)  # K
+KEY_CTRL = (0x1D, 0x11)  # cierra el control del espectador del v34 al cargar la demo
+GAME_AUDIO_ADVANCE_V34 = 0.17  # segundos que se adelanta el sonido del juego del v34 (ffmpeg_segment)
 
 
 def post_key(hwnd, scan, vk=None):
@@ -160,13 +170,14 @@ def post_key(hwnd, scan, vk=None):
     time.sleep(0.05)
 
 
-def console_command(hwnd, text):
+def console_command(hwnd, text, key=(SCAN_CONSOLE, None)):
     """Abre la consola, escribe el texto y aprieta Enter. El texto tiene que cerrar la consola (hideconsole).
 
     La tecla de la consola también puede escribir su carácter en la línea (en un teclado latinoamericano es "|"; en el
-    español, "º"), y quedaba "|demo_pause; …": el primer comando no existía. Se borra la línea con Backspace y el
-    texto empieza con ";", así un carácter suelto solo anula un comando vacío."""
-    post_key(hwnd, SCAN_CONSOLE)
+    español, "º"; con la K del v34, "k"), y quedaba "|demo_pause; …": el primer comando no existía. Se borra la línea
+    con Backspace y el texto empieza con ";", así un carácter suelto solo anula un comando vacío. key: (scan, vk) de
+    la tecla que abre la consola."""
+    post_key(hwnd, *key)
     time.sleep(0.3)
     for _ in range(4):
         post_key(hwnd, 0x0E, 0x08)  # Backspace
@@ -188,7 +199,8 @@ def console_lines(commands, n):
 
     La consola corta la línea en unos 255 caracteres y la marca del final se perdía (dust2, 2026-10-30: «New™ CH1LI»
     no se puede escribir y la cámara llega a él desde «GO TO KNOW musul    ^'-'^»; el paso medía 259). Cada línea
-    lleva hideconsole (console_command abre la consola con su tecla, que la cierra si ya está abierta). Van siempre en
+    lleva hideconsole y gameui_hide (console_command abre la consola con su tecla, que la cierra si ya está abierta y en
+    ClientMod también abre el menú). Van siempre en
     la misma línea:
     - spec_player y sus spec_next: si la línea se reenvía, la cámara vuelve al mismo jugador;
     - startmovie y demo_resume: con la demo en pausa, startmovie grabaría cuadros quietos hasta la línea siguiente;
@@ -204,7 +216,10 @@ def console_lines(commands, n):
             groups[-1].append(c)
         else:
             groups.append([c])
-    fix = lambda cmds: cmds if "hideconsole" in cmds else ["hideconsole"] + cmds  # noqa: E731
+    # Cada línea vuelve a abrir la consola con su tecla, y en ClientMod la tecla también abre el menú: sin gameui_hide
+    # en cada línea, el menú quedaba encima del video (dust2_ob, 2026-11-13: la línea de startmovie y demo_resume
+    # llevaba solo hideconsole).
+    fix = lambda cmds: [c for c in ("hideconsole", "gameui_hide") if c not in cmds] + cmds  # noqa: E731
     lines = [[]]
     for g in groups:
         if lines[-1] and len(console_line(fix(lines[-1] + g), n + len(lines) - 1)) > CONSOLE_MAX:
@@ -250,6 +265,7 @@ class Game:
         self.log_pos = 0
         self.hwnd = None
         self.step_pos = 0
+        self.console_key = KEY_CONSOLE_V34 if self.client == "v34" else (SCAN_CONSOLE, None)
 
     # ---- preparación y limpieza ----
 
@@ -262,6 +278,11 @@ class Game:
             # La consola es la única forma de manejar el juego: en una instalación limpia puede venir apagada.
             "con_enable 1",
             'bind "`" "toggleconsole"',
+            'bind "k" "toggleconsole"' if self.client == "v34" else "",
+            # El v34 decodifica como Speex la voz Opus de ClientMod y sale ruido: queda prendida pero sin volumen
+            # (voice_scale 0), para que se vean los íconos de quién habla, y voces.py la mezcla al armar el video
+            # (2026-11-14). voice_enable y voice_modenable pueden haber quedado en 0 en la instalación.
+            "voice_enable 1; voice_modenable 1; voice_scale 0" if self.client == "v34" else "",
             "con_logfile cmleague/render.log",
             f"host_framerate {c['fps']}",
             "fps_max 0",
@@ -368,7 +389,7 @@ class Game:
             log("Cerrando el juego.")
             t0 = time.time()
             while self.running() and time.time() - t0 < 60:
-                console_command(self.hwnd, "quit")
+                console_command(self.hwnd, "quit", self.console_key)
                 time.sleep(4)
         if self.running() and self.client == "v34":
             log("El juego no se cerró con quit: lo cierro a la fuerza.")
@@ -421,17 +442,19 @@ class Game:
             time.sleep(0.2)
         raise TimeoutError(f"no apareció '{text}' en el log en {timeout} s")
 
-    def step(self, commands, timeout=60):
+    def step(self, commands, timeout=60, before_retry=None):
         """Escribe el paso en la consola y espera su marca en el log. Si no llegó en 5 s, lo vuelve a escribir
         (pasa si la consola no llegó a abrirse). Un paso que no cabe en una línea va en varias (console_lines), cada
-        una con su marca; step_pos queda al principio del paso completo."""
+        una con su marca; step_pos queda al principio del paso completo. before_retry: lo que se hace antes de cada
+        reenvío (en el v34, Ctrl para cerrar el control del espectador)."""
         self.step_pos = os.path.getsize(self.logfile)
         for line in console_lines(commands, self.n + 1):
             self.n += 1
             text = console_line(line, self.n)[2:]  # console_command le pone el "; " del principio
-            send = lambda t=text: console_command(self.hwnd, t)  # noqa: E731
+            send = lambda t=text: console_command(self.hwnd, t, self.console_key)  # noqa: E731
+            retry = (lambda: (before_retry(), send())) if before_retry else send
             send()
-            self.wait_log(f"CML_PASO_{self.n}", timeout, retry=send)
+            self.wait_log(f"CML_PASO_{self.n}", timeout, retry=retry)
 
     def log_text(self, since):
         if not os.path.exists(self.logfile):
@@ -443,9 +466,10 @@ class Game:
     def wait_loaded(self, since=0, timeout=600):
         """Espera a que termine de cargar la demo (al abrir el juego o después de un reinicio de la demo).
 
-        Con ClientMod, la línea LOADED. La v34 normal puede no escribirla (no se sabe todavía): se espera "Playing
-        demo from" (el playdemo arrancó), LOADED hasta 30 s y, si no aparece, un paso de prueba por la consola, que
-        solo responde cuando la carga terminó. El aviso copia al log las últimas líneas, para ver qué escribe."""
+        Con ClientMod, la línea LOADED. La v34 normal no la escribe: termina la carga con "Initializing renderer...".
+        Al cargar, la demo abre el control del espectador, que se queda con el teclado (ni la tecla de la consola
+        llega) y se cierra con Ctrl (Daniel, 2026-11-13). Se aprieta Ctrl y se manda un paso de prueba, que también lo
+        oculta por comando; como Ctrl lo abre y lo cierra, si el paso no responde se reintenta con otro Ctrl."""
         if self.client == "clientmod":  # como siempre
             return self.wait_log(self.LOADED, timeout) if since == 0 else self.wait_text(self.LOADED, since, timeout)
         t0 = time.time()
@@ -454,14 +478,12 @@ class Game:
                 raise TimeoutError(f"el juego no escribe el log de la consola ({self.logfile}): ¿falta -condebug?")
             time.sleep(0.5)
         self.wait_text("Playing demo from", since, timeout)
-        try:
-            self.wait_text(self.LOADED, since, 30)
-            return
-        except TimeoutError:
-            pass
-        tail = [l for l in self.log_text(since).splitlines() if l.strip()][-8:]
-        log("Aviso: no apareció '" + self.LOADED + "'; pruebo la consola. Últimas líneas del log: " + " | ".join(tail))
-        self.step(["demo_pause", "hideconsole"], timeout=timeout)
+        self.wait_text("Initializing renderer", since, timeout)
+        time.sleep(2)
+        close_spec = lambda: post_key(self.hwnd, *KEY_CTRL)  # noqa: E731
+        close_spec()
+        self.step(["demo_pause", "hidepanel specmenu", "hidepanel specgui", "hideconsole", "gameui_hide"],
+                  timeout=timeout, before_retry=close_spec)
 
     def wait_text(self, text, since, timeout):
         """Espera a que el texto aparezca en el log desde la posición since (sin depender de lo ya leído)."""
@@ -494,10 +516,11 @@ def count_frames(prefix):
     return len(glob.glob(prefix + "*.tga"))
 
 
-def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
+def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0, voices=None):
     """Un tramo: los TGA y el WAV de startmovie a H.264 y AAC. skip: cuadros del principio que se descartan (los
     primeros cuadros después de un salto salen sin el arma: la cámara todavía no está en primera persona). hold:
-    cuadros que se repite el último al final (el tramo llega al final de la demo), con silencio."""
+    cuadros que se repite el último al final (el tramo llega al final de la demo), con silencio. voices: un .wav con
+    las voces del tramo (voces.track, con el v34), que se mezcla con el sonido del juego con un limitador."""
     tgas = sorted(glob.glob(prefix + "*.tga"))
     first = tgas[0][len(prefix):-4]
     pattern = f"{prefix}%0{len(first)}d.tga"
@@ -505,15 +528,40 @@ def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
            "-start_number", str(int(first) + skip), "-i", pattern]
     wav = prefix + ".wav"
     has_audio = os.path.exists(wav) and os.path.getsize(wav) > 1000
+    if not has_audio:
+        # Sin aviso, el video salía mudo sin que nadie lo notara (el v34 del portátil, 2026-11-13).
+        log(f"Aviso: {os.path.basename(prefix)} sin audio: "
+            + (f"el .wav pesa {os.path.getsize(wav)} bytes" if os.path.exists(wav) else f"no está {wav}"))
+        # Por si el cliente lo escribe en otro lado: los .wav de la carpeta del juego de la última hora.
+        game_dir = os.path.dirname(os.path.dirname(os.path.dirname(prefix)))  # <client_dir>/cstrike
+        recent = [f"{p} ({os.path.getsize(p)} bytes)" for p in glob.glob(os.path.join(game_dir, "**", "*.wav"), recursive=True)
+                  if time.time() - os.path.getmtime(p) < 3600]
+        log("  .wav recientes en " + game_dir + ": " + (", ".join(recent[:10]) or "ninguno"))
+    # El sonido del juego del v34 llega ~170 ms tarde respecto de la imagen (el clip de spr en cbble contra el de
+    # ClientMod, 2026-11-14): se adelanta. Configurable con game_audio_advance en config.json.
+    advance = cfg.get("game_audio_advance", GAME_AUDIO_ADVANCE_V34 if cfg.get("client") == "v34" else 0)
     if has_audio:
-        cmd += ["-ss", f"{skip / cfg['fps']:.3f}", "-i", wav]
+        cmd += ["-ss", f"{skip / cfg['fps'] + advance:.3f}", "-i", wav]
+    if voices:
+        cmd += ["-i", voices]  # ya empieza en el primer cuadro del tramo: sin -ss
     vf = f"scale={cfg['width']}:{cfg['height']}"
     if hold:
         # Se cortan los cuadros del tramo antes de repetir el último: el cuadro congelado es el del último tick.
         vf = f"trim=end_frame={frames},{vf},tpad=stop_mode=clone:stop={hold}"
     cmd += ["-frames:v", str(frames + hold), "-vf", vf, "-c:v", "libx264",
             "-crf", str(cfg["crf"]), "-preset", cfg["preset"], "-pix_fmt", "yuv420p"]
-    cmd += ["-c:a", "aac", "-b:a", "128k"] + (["-af", "apad"] if hold else []) + ["-shortest"] if has_audio else ["-an"]
+    if voices:
+        # Las voces (48 kHz, mono) al formato del sonido del juego (44,1 kHz, estéreo): sin esto, amix tomaba el de
+        # las voces y el video salía mono.
+        fmt = "aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo"
+        mix = (f"[1:a]{fmt}[g];[2:a]{fmt}[v];[g][v]amix=inputs=2:duration=longest:normalize=0,"
+               "alimiter=limit=0.95,apad[a]" if has_audio else f"[1:a]{fmt},apad[a]")
+        cmd += ["-filter_complex", mix, "-map", "0:v", "-map", "[a]", "-c:a", "aac", "-b:a", "128k", "-shortest"]
+    elif has_audio:
+        # apad también con el adelanto: el sonido queda más corto que el video y -shortest lo cortaría.
+        cmd += ["-c:a", "aac", "-b:a", "128k"] + (["-af", "apad"] if hold or advance else []) + ["-shortest"]
+    else:
+        cmd += ["-an"]
     subprocess.run(cmd + [out], check=True)
 
 
@@ -528,7 +576,8 @@ def spec_target(d, steamid, tick):
     Si su nombre se puede escribir, spec_player "<nombre>". Si no (el "愛" de un jugador, el 2026-10-24, llegaba mal a
     la consola y la cámara se quedaba en otro), se sigue a un jugador vivo con nombre escribible y se pasa con
     spec_next hasta llegar a él: spec_next va al siguiente jugador vivo por número (índice de entidad). Se elige el que
-    queda a menos pasos. spec_player solo acepta el nombre exacto: con el número no sigue a nadie."""
+    queda a menos pasos. spec_player solo acepta el nombre exacto: con el número no sigue a nadie. Si no hay ningún vivo
+    escribible, el único vivo va con spec_next solo y, si no, el ancla es un muerto de la ronda con nombre escribible."""
     name = d.name_at(steamid, tick)
     if console_safe(name):
         return [f'spec_player "{name}"']
@@ -550,7 +599,21 @@ def spec_target(d, steamid, tick):
         # spec_next lleva al siguiente vivo desde cualquier jugador, y no hay otro.
         if slots == [target]:
             return ["spec_next"]
-        raise RuntimeError(f"no hay ningún jugador vivo con nombre escribible para llegar a {name!r}")
+        # Ningún vivo escribible (el 1v1 de "New™ tam" contra "lephyxzz漏斗", dust2_ob del 2026-11-13): el ancla es un
+        # muerto de la ronda. spec_player lo busca por el nombre sin mirar si está vivo, y el primer spec_next lleva al
+        # primer vivo con número mayor que el suyo (dando la vuelta); desde ahí se cuenta como con un ancla viva.
+        # Bitácora 2026-11-13-render-clutch-perdido-y-ancla-muerta.
+        alive_sids = {sid for _, sid in alive}
+        for sid in leer_demo.in_round_at(d, tick) - alive_sids:
+            sl, anchor = d.slot_at(sid, tick), d.name_at(sid, tick)
+            if not sl or not console_safe(anchor):
+                continue
+            first = bisect.bisect_right(slots, sl) % len(slots)
+            steps = (slots.index(target) - first) % len(slots) + 1
+            if best is None or (steps, anchor) < best:
+                best = (steps, anchor)
+        if best is None:
+            raise RuntimeError(f"no hay ningún jugador vivo ni muerto de la ronda con nombre escribible para llegar a {name!r}")
     return [f'spec_player "{best[1]}"'] + ["spec_next"] * best[0]
 
 
@@ -716,16 +779,33 @@ def hold_frames(cfg, seg, last_tick):
     return round(END_HOLD_SECONDS * cfg["fps"]) if last_tick and seg[1] >= last_tick else 0
 
 
-def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None):
+def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None, voice=None):
     """Los tramos de una jugada a un .mp4 (uno por tramo, unidos con concat sin recodificar). Borra los cuadros.
-    last_tick: el último tick de la demo; el tramo que llega a él termina con el último cuadro congelado."""
-    parts = []
+    last_tick: el último tick de la demo; el tramo que llega a él termina con el último cuadro congelado.
+    voice: los paquetes de voz de la demo (leer_demo.Demo.voice). Con el v34 se decodifican y se mezclan en cada
+    tramo (voces.py); con ClientMod no hace falta, porque los reproduce el juego."""
+    parts, voice_wavs = [], []
     base = os.path.splitext(out)[0]
+    use_voice = cfg.get("client") == "v34" and voice
+    if use_voice and not voces.is_opus(voice):
+        log("Aviso: la voz de la demo no son cuadros Opus de ClientMod: el clip va sin voces.")
+        use_voice = False
     try:
         for i, (prefix, seg) in enumerate(zip(prefixes, segs)):
             part = f"{base}.tramo{i}.mp4"
-            ffmpeg_segment(cfg, prefix, segment_frames(seg, tick_interval, cfg), part, skip=lead_frames(cfg),
-                           hold=hold_frames(cfg, seg, last_tick))
+            frames, hold = segment_frames(seg, tick_interval, cfg), hold_frames(cfg, seg, last_tick)
+            voices_wav = None
+            if use_voice:
+                voices_wav = f"{base}.voces{i}.wav"
+                voice_wavs.append(voices_wav)
+                try:
+                    if not voces.track(cfg["ffmpeg"], voice, tick_interval, seg[0], (frames + hold) / cfg["fps"],
+                                       voices_wav, delay=cfg.get("voice_delay", voces.DELAY)):
+                        voices_wav = None  # nadie habla en el tramo
+                except Exception as e:  # noqa: BLE001 — sin voces, pero la jugada se graba igual
+                    log(f"Aviso: {os.path.basename(prefix)} sin voces: {e}")
+                    voices_wav = None
+            ffmpeg_segment(cfg, prefix, frames, part, skip=lead_frames(cfg), hold=hold, voices=voices_wav)
             parts.append(part)
         if len(parts) == 1:
             subprocess.run([cfg["ffmpeg"], "-y", "-loglevel", "error", "-i", parts[0], "-c", "copy",
@@ -737,7 +817,7 @@ def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None):
                             "-c", "copy", "-movflags", "+faststart", out], check=True)
             os.remove(lst)
     finally:
-        for p in parts:
+        for p in parts + voice_wavs:
             if os.path.exists(p):
                 os.remove(p)
         for prefix in prefixes:

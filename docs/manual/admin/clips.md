@@ -12,7 +12,7 @@ En la pestaña **Clips** están todas las jugadas que se muestran, de la más nu
 
 1. Busca los que salieron mal. Con los filtros ves solo los **Fallidos**, un tipo de jugada o un jugador por su nick.
 2. Marca la casilla de cada uno. La casilla del encabezado marca todos los de la página.
-3. Toca **Reprocesar** en la barra de abajo y confirma. Puedes mandar hasta 50 a la vez.
+3. Toca **Reprocesar** en la barra de abajo y confirma. Puedes mandar hasta 50 a la vez. El soporte y los moderadores también reprocesan, hasta 10 a la vez.
 
 Cada uno se borra y se vuelve a grabar, y pasa a **Para revisar**. Si alguno no se pudo, la web te dice cuál y por qué, y lo deja marcado.
 
@@ -42,7 +42,7 @@ Las reglas valen al instante para todas las partidas, también las viejas: cambi
 
 Cuando un video sale mal y se manda a grabar de nuevo, el clip nuevo no sale en Discord hasta que lo revises. Mientras tanto, los jugadores lo ven "en camino".
 
-En **Para revisar** está cada clip regrabado:
+En **Para revisar** está cada clip regrabado. El soporte y los moderadores también lo revisan: publican, reprocesan otra vez y rechazan de a uno. Lo que hace el soporte queda en Baneos › **Actividad del soporte**. Rechazar varios desde la lista, recuperar y las reglas son solo tuyos.
 
 - **Bien, publicarlo:** sale en Discord (otra vez, si ya había salido) y se ve en la web.
 - **Reprocesar otra vez:** se vuelve a grabar.

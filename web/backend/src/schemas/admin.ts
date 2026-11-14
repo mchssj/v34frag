@@ -149,6 +149,11 @@ export const RoleBody = z.object({ role: z.enum(['player', 'sub', 'coach']), rea
 
 export const ReasonBody = z.object({ reason }).openapi('ReasonBody');
 
+/** Quitar la foto de perfil (replanteo 117): el motivo es obligatorio y le llega al jugador. */
+export const PhotoRemoveBody = z
+  .object({ reason: z.string().trim().min(3, 'Escribe el motivo (3 caracteres o más)').max(300).openapi({ description: 'Le llega al jugador en el aviso' }) })
+  .openapi('PhotoRemoveBody');
+
 export const AdminTeamQuery = listQuery(['name', 'last_change', 'members'], { sort: 'name', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el nombre, la sigla y los jugadores del plantel' }),
   filter: z.enum(['blocked', 'incomplete', 'no_leader', 'in_event']).optional().openapi({
@@ -178,7 +183,7 @@ export const TeamAuditEntry = z
     id: z.number().int(),
     at: z.string(),
     actor: z.object({ user_id: z.uuid().nullable(), alias: z.string().nullable() }),
-    actor_role: z.enum(['team', 'moderator', 'admin', 'system']),
+    actor_role: z.enum(['team', 'support', 'moderator', 'admin', 'system']),
     action: z.string().openapi({
       description: '`created`, `renamed`, `logo_changed`, `logo_removed`, `captain_changed`, `member_added`, `member_removed`, `member_left`, `role_changed` o `dissolved`',
     }),
@@ -222,7 +227,7 @@ export const AdminRandomPassword = z
 
 export const AdminUserQuery = listQuery(['alias', 'role'], { sort: 'alias', order: 'asc' }).extend({
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias' }),
-  role: z.enum(['user', 'organizer', 'moderator', 'admin']).optional(),
+  role: z.enum(['user', 'organizer', 'support', 'moderator', 'admin']).optional(),
   has_player: boolParam('Con o sin jugador vinculado'),
   has_steam: boolParam('Con o sin SteamID vinculado'),
   streamer: boolParam('Con o sin la marca de streamer del HUD'),

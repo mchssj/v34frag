@@ -73,6 +73,10 @@ const RETENTION: [string, string][] = [
     "Mientras sea necesaria para detectar evasión de baneos",
   ],
   ["Baneos y sanciones", "Sin plazo: se levantan, no se borran"],
+  [
+    "Registro de lo que hace el soporte (quién, qué, a quién, el motivo y cuándo)",
+    "Sin plazo, como los baneos",
+  ],
   ["Historial de VIP", "Mientras tengas la cuenta"],
   [
     "Avatares y fondos de miniperfil que subiste",
@@ -186,7 +190,7 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             La grabación de la partida (demo de SourceTV), que muestra todo lo
-            que pasa en el juego, incluido el chat escrito.
+            que pasa en el juego, incluidos el chat escrito y el de voz.
           </li>
           <li>
             <strong>Tu dirección IP</strong>, con la fecha, el servidor y el
@@ -321,7 +325,7 @@ const SECTIONS: LegalSection[] = [
           head={["Público para cualquiera", "Solo tú y el staff"]}
           rows={[
             [
-              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos, si eres VIP y los cosméticos que tienes puestos. Tu portada también, salvo que tu perfil sea privado. Si eres admin o moderador, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
+              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos, si eres VIP y los cosméticos que tienes puestos. Tu portada también, salvo que tu perfil sea privado. Si eres admin, moderador o de soporte, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
               "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos, monedas VIP y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, a quién bloqueaste en el matchmaking, y la evidencia del anticheat.",
             ],
           ]}
@@ -350,8 +354,10 @@ const SECTIONS: LegalSection[] = [
           En un torneo histórico (el registro de un torneo jugado antes o fuera
           de la plataforma) publicamos el nombre, la sigla y el logo de los
           equipos, sus resultados y, si quien lo sube los carga, los jugadores
-          de cada equipo: el torneo aparece en su perfil. Si apareces en uno y
-          quieres que corrijamos o quitemos tu nombre, escríbenos.
+          de cada equipo. Si el jugador tiene perfil en CMLeague, el torneo
+          aparece en su perfil; si no, publicamos solo el nombre que se cargó,
+          en ese torneo. Si apareces en uno y quieres que corrijamos o quitemos
+          tu nombre, escríbenos.
         </p>
       </>
     ),
@@ -488,9 +494,11 @@ const SECTIONS: LegalSection[] = [
           Los videos son grabaciones del juego, en primera persona del jugador
           que hizo la jugada. Muestran lo mismo que la demo de la partida: el
           mapa, los nombres que los jugadores usaban dentro del juego y el
-          registro de eliminaciones. No incluyen voz, cámara ni ningún dato
-          personal fuera del juego. Las mejores jugadas también se publican en
-          el canal de clips del Discord de la liga.
+          registro de eliminaciones. También se escucha lo que los jugadores
+          dijeron por el chat de voz durante la jugada, igual que en la partida.
+          No incluyen cámara ni ningún dato personal fuera del juego. Las
+          mejores jugadas también se publican en el canal de clips del Discord
+          de la liga.
         </p>
       </>
     ),

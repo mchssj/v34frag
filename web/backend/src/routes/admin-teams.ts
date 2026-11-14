@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
-import { isAdmin, requireAdmin, requireModerator, requireUser } from '../lib/auth';
+import { isAdmin, requireAdmin, requireModerator, requireSupport, requireUser } from '../lib/auth';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { AppError } from '../lib/errors';
@@ -60,8 +60,11 @@ const history = createRoute({
   responses: { 200: { description: 'Historial', ...json(TeamAuditList) }, ...errorResponses(400, 401, 403) },
 });
 const removeLogo = createRoute({
-  method: 'post', path: '/api/v1/admin/teams/{id}/logo/remove', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
-  summary: 'Quitar el logo de un equipo', description: 'Moderadores y admins. El líder recibe el aviso `team_staff_action` con el motivo, si lo hay.',
+  method: 'post', path: '/api/v1/admin/teams/{id}/logo/remove', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
+  summary: 'Quitar el logo de un equipo',
+  description:
+    'Soporte, moderadores y admins (el soporte, con motivo de 3 a 300 caracteres; replanteo 117). El líder recibe el aviso ' +
+    '`team_staff_action` con el motivo, si lo hay.',
   request: { params: IdParam, body: { required: false, ...json(ReasonBody) } },
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
@@ -202,7 +205,7 @@ export const adminTeams = createRouter()
       envelope(
         rows.map((r) => ({
           id: r.id, at: r.at, actor: { user_id: r.actor_id, alias: r.actor_id ? (alias.get(r.actor_id) ?? null) : null },
-          actor_role: r.actor_role as 'team' | 'moderator' | 'admin' | 'system', action: r.action, data: r.data ?? {}, reason: r.reason,
+          actor_role: r.actor_role as 'team' | 'support' | 'moderator' | 'admin' | 'system', action: r.action, data: r.data ?? {}, reason: r.reason,
         })),
         total,
         p,
@@ -228,7 +231,7 @@ export const adminTeams = createRouter()
   .openapi(removeLogo, async (c) => {
     const reason = (c.req.valid('json') as { reason?: string } | undefined)?.reason;
     const url = must(await c.var.sb.rpc('team_staff_remove_logo', { p_team: c.req.valid('param').id, p_reason: reason ?? '' }));
-    removePhoto(c, url as string | null);
+    removePhoto(c, url as string | null, { staff: true });
     return c.body(null, 204);
   })
   .openapi(removeMember, async (c) => {

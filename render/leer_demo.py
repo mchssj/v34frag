@@ -57,6 +57,10 @@ class Bits:
     def bit(self):
         return self.read(1) == 1
 
+    def bytes(self, n):
+        """n bytes seguidos (sin alinear), en el orden en que están."""
+        return self.read(n * 8).to_bytes(n, "little") if n else b""
+
     def sint(self, n):
         v = self.read(n)
         return v - (1 << n) if v & (1 << (n - 1)) else v
@@ -116,6 +120,10 @@ class Demo:
         self.names = {}  # steamid -> [(tick, nombre)], para saber cómo se llamaba en cada momento
         self.slots = {}  # steamid -> [(tick, índice de entidad)], el número que acepta spec_player
         self.events = []
+        # La voz de los jugadores (svc_VoiceData): [(tick, cliente, datos)], con cliente el índice de entidad - 1. Con
+        # ClientMod son cuadros Opus aunque svc_VoiceInit diga otro códec (voces.py, 2026-11-14).
+        self.voice = []
+        self.voice_codec = None
         self.server_tick = 0
         self.errors = []
 
@@ -262,10 +270,14 @@ class Demo:
                 self.safe_update(tb, Bits(br.data, br.pos, end), count, tick)
                 br.pos = end
             elif t == SVC_VOICEINIT:
-                br.string(); br.read(8)
+                self.voice_codec = br.string(); br.read(8)
             elif t == SVC_VOICEDATA:
-                br.read(8)  # en este motor no hay byte de proximidad
-                br.skip(br.read(16))
+                client = br.read(8)  # en este motor no hay byte de proximidad
+                n = br.read(16)
+                if n % 8 == 0:
+                    self.voice.append((tick, client, br.bytes(n // 8)))
+                else:
+                    br.skip(n)
             elif t == SVC_SOUNDS:
                 reliable = br.bit()
                 if not reliable:
@@ -426,7 +438,18 @@ def rounds(d):
 
 
 def alive_at(d, tick):
-    """Los SteamID vivos en ese tick: los que estaban en T o CT al empezar la ronda, menos los que murieron antes.
+    """Los SteamID vivos en ese tick: los que estaban en T o CT al empezar la ronda, menos los que murieron antes."""
+    return _round_at(d, tick)[1]
+
+
+def in_round_at(d, tick):
+    """Los SteamID que jugaban la ronda en ese tick, vivos o muertos: en T o CT al empezar la ronda y sin cambiar de
+    equipo ni desconectarse después. Son los que pueden servir de ancla muerta a la cámara (render_clip.spec_target)."""
+    return _round_at(d, tick)[0]
+
+
+def _round_at(d, tick):
+    """(los que juegan la ronda, los vivos) en ese tick.
 
     La demo empieza en el vivo, así que los equipos de la primera mitad salen del "oldteam" del primer cambio de
     equipo de cada jugador. La primera ronda no tiene round_start: empieza en el tick 0."""
@@ -448,7 +471,18 @@ def alive_at(d, tick):
                 team.pop(ev["userid"], None)
             else:
                 team[ev["userid"]] = ev["team"]
-    alive = {u for u, t in team.items() if t in (2, 3)}
+    # El que nunca cambió de equipo en la demo no tiene equipo conocido: una partida cortada antes del medio tiempo
+    # (srv3-20261112T164548-42dd, 2026-11-12: "lephyxzz漏斗" no aparecía vivo en ninguna ronda, y en la ronda 1 había
+    # 3 vivos de 10). Juega si mató o murió alguna vez en la demo (un espectador nunca lo hace). Al que tiene algún
+    # player_team lo sigue resolviendo lo de arriba.
+    with_team_ev = {ev["userid"] for ev in d.events if ev["event"] == "player_team"}
+    for ev in d.events:
+        if ev["event"] == "player_death":
+            for u in (ev["userid"], ev.get("attacker", 0)):
+                if u and u not in with_team_ev:
+                    team[u] = 2  # el número da igual: solo importa que juega
+    playing = {u for u, t in team.items() if t in (2, 3)}
+    alive = set(playing)
     for ev in d.events:
         if ev["tick"] >= tick:
             break
@@ -456,7 +490,9 @@ def alive_at(d, tick):
             alive.discard(ev["userid"])
         elif ev["tick"] > start and ev["event"] == "player_team":
             alive.discard(ev["userid"])  # el que cambia de equipo durante la ronda queda muerto
-    return {player(d, u)["steamid"] for u in alive if player(d, u)["steamid"]}
+            playing.discard(ev["userid"])  # y deja de jugarla (o se desconectó)
+    sids = lambda us: {player(d, u)["steamid"] for u in us if player(d, u)["steamid"]}  # noqa: E731
+    return sids(playing), sids(alive)
 
 
 def clips(rs):

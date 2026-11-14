@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { pickPlayerOptions } from "../../players/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
+import { useNow } from "@/features/matchmaking/useNow"
 import {
   endOfDayIso,
   fmtDate,
@@ -27,15 +28,24 @@ import {
 } from "../../lib/format"
 import {
   activeBansForOptions,
+  supportQuotaOptions,
   useCreateBan,
   useUpdateBan,
 } from "../api/queries"
 import type { Ban } from "../types"
-import { BAN_MAX_HOURS, banExpiry, validBanHours } from "../lib/bans"
+import {
+  BAN_MAX_HOURS,
+  banExpiry,
+  SUPPORT_BAN_MAX_MINUTES,
+  supportBanLimit,
+  supportQuotaText,
+  validBanHours,
+  validBanMinutes,
+} from "../lib/bans"
 import type { Duration } from "../lib/bans"
 
-/** Al cambiar un baneo, "keep" deja el vencimiento como está. */
-type Choice = Duration | "keep"
+/** Al cambiar un baneo, "keep" deja el vencimiento como está. "minutes": el soporte (replanteo 117). */
+type Choice = Duration | "keep" | "minutes"
 
 export type BanTarget =
   | { kind: "player"; id: string; label: string }
@@ -60,17 +70,22 @@ const targetLabel = (t: BanTarget) =>
 /**
  * Banear (con `fixed` o eligiendo a quién) o cambiar un baneo activo (`ban`). Un baneo vale en todos
  * los servidores; el moderador no ve "Permanente" ni puede reemplazar uno permanente (contrato).
+ * Con `support` (replanteo 117) solo hay minutos, de 1 a 120: no banea a quien ya está baneado y tiene 3 por
+ * jugador en 7 días.
  */
 export function BanDialog({
   fixed,
   ban,
   canPermanent,
+  support = false,
   onClose,
   onSaved,
 }: {
   fixed?: BanTarget
   ban?: Ban
   canPermanent: boolean
+  /** La cuenta es de soporte: banea por minutos. */
+  support?: boolean
   onClose: () => void
   /** Con el baneo como quedó (el nuevo o el cambiado). */
   onSaved?: (b: Ban) => void
@@ -86,9 +101,13 @@ export function BanDialog({
     pickPlayerOptions(STEAM64.test(debounced) ? "" : debounced)
   )
   const [reason, setReason] = useState(ban?.reason ?? "")
-  const [dur, setDur] = useState<Choice>(ban ? "keep" : "7")
+  const [dur, setDur] = useState<Choice>(
+    ban ? "keep" : support ? "minutes" : "7"
+  )
   const [hours, setHours] = useState("1")
   const hoursN = Number(hours)
+  const [minutes, setMinutes] = useState("30")
+  const minutesN = Number(minutes)
   const [date, setDate] = useState(
     ban?.expires_at ? ban.expires_at.slice(0, 10) : isoDatePlus(7)
   )
@@ -103,29 +122,64 @@ export function BanDialog({
   )
   const blockedByPerm = !!replaces?.permanent && !canPermanent
 
+  // El soporte: si ya está baneado (por quien sea) o se le acabaron los 3 de la semana, no se puede.
+  const quota = useQuery(
+    supportQuotaOptions(
+      support && !ban && target
+        ? target.kind === "player"
+          ? { kind: "player", id: target.id }
+          : { kind: "steam", steamId: target.steamId }
+        : null
+    )
+  )
+  const supportBlocked =
+    support &&
+    !ban &&
+    (!quota.data || quota.data.banned || quota.data.remaining <= 0)
+  // Al cambiar uno suyo, no pasa de 120 minutos desde que lo puso.
+  const supportLimit = support && ban ? supportBanLimit(ban) : null
+
   const dateOk =
     dur !== "date" || (!!date && new Date(endOfDayIso(date)) > new Date())
   const hoursOk = dur !== "hours" || validBanHours(hoursN)
+  // Con el reloj del servidor, el mismo contra el que la base controla los 120 minutos.
+  const now = useNow(dur === "minutes", 15_000)
+  const minutesUntil = () => new Date(now + minutesN * 60_000).toISOString()
+  const minutesOk =
+    dur !== "minutes" ||
+    (validBanMinutes(minutesN) &&
+      (!supportLimit ||
+        new Date(minutesUntil()).getTime() <= supportLimit.getTime() + 30_000))
   // Vencimiento elegido: undefined = como está (solo al cambiar), null = permanente.
   const expiry = (): string | null | undefined =>
     dur === "keep"
       ? ban?.permanent
         ? null
         : ban?.expires_at
-      : banExpiry(dur, date, new Date(), hoursN)
+      : dur === "minutes"
+        ? minutesUntil()
+        : banExpiry(dur, date, new Date(), hoursN)
   const ready =
     !!target &&
     reason.trim().length > 0 &&
     dateOk &&
     hoursOk &&
+    minutesOk &&
     !blockedByPerm &&
+    !supportBlocked &&
     !mutation.isPending
 
   function submit() {
     if (!target) return
     const expires = expiry() ?? null
     const timing =
-      expires === null ? { permanent: true as const } : { expires_at: expires }
+      dur === "minutes"
+        ? { minutes: minutesN }
+        : support && dur === "keep"
+          ? {}
+          : expires === null
+            ? { permanent: true as const }
+            : { expires_at: expires }
     const done = (msg: string, saved: Ban) => {
       toast.success(msg)
       onSaved?.(saved)
@@ -157,10 +211,15 @@ export function BanDialog({
   }
 
   const typedSteam = STEAM64.test(debounced) ? debounced : null
-  const durations = DURATIONS.filter(
-    (d) => (d.key !== "perm" || canPermanent) && (d.key !== "keep" || !!ban)
-  )
-  const shown = hoursOk && dateOk ? expiry() : undefined
+  const durations = support
+    ? [
+        ...(ban ? [{ key: "keep" as const, label: "Como está" }] : []),
+        { key: "minutes" as const, label: "Minutos" },
+      ]
+    : DURATIONS.filter(
+        (d) => (d.key !== "perm" || canPermanent) && (d.key !== "keep" || !!ban)
+      )
+  const shown = hoursOk && dateOk && minutesOk ? expiry() : undefined
 
   return (
     <Dialog open onOpenChange={(o) => !o && !mutation.isPending && onClose()}>
@@ -232,7 +291,30 @@ export function BanDialog({
           </div>
         )}
 
-        {replaces && (
+        {support && !ban && target && quota.data && (
+          <Alert
+            variant={
+              quota.data.banned || quota.data.remaining <= 0
+                ? "destructive"
+                : "default"
+            }
+          >
+            {quota.data.banned || quota.data.remaining <= 0 ? (
+              <TriangleAlertIcon aria-hidden />
+            ) : (
+              <InfoIcon aria-hidden />
+            )}
+            <AlertDescription>
+              {quota.data.banned
+                ? quota.data.permanent
+                  ? "Tiene un baneo permanente."
+                  : `Ya está baneado hasta el ${fmtDateTime(quota.data.banned_until)}. Si hace falta más, pásale el caso a un moderador.`
+                : supportQuotaText(quota.data.remaining)}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {replaces && !support && (
           <Alert variant={blockedByPerm ? "destructive" : "warning"}>
             <TriangleAlertIcon aria-hidden />
             <AlertDescription>
@@ -303,6 +385,22 @@ export function BanDialog({
               {hoursN === 1 ? "hora" : "horas"}
             </label>
           )}
+          {dur === "minutes" && (
+            <label className="flex items-center gap-2 text-sm">
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={SUPPORT_BAN_MAX_MINUTES}
+                step={1}
+                aria-label="Cuántos minutos"
+                value={minutes}
+                onChange={(e) => setMinutes(e.target.value)}
+                className="w-24"
+              />
+              {minutesN === 1 ? "minuto" : "minutos"}
+            </label>
+          )}
           {dur === "date" && (
             <Input
               type="date"
@@ -322,9 +420,13 @@ export function BanDialog({
               ? "La fecha tiene que ser futura."
               : !hoursOk
                 ? `Pon un número entero de horas, de 1 a ${BAN_MAX_HOURS}.`
-                : shown === null
-                  ? "No vence. Solo un admin lo puede cambiar o levantar."
-                  : `Vence el ${(dur === "date" ? fmtDate : fmtDateTime)(shown)}.`}
+                : !minutesOk
+                  ? supportLimit && validBanMinutes(minutesN)
+                    ? `Un baneo de soporte dura hasta ${SUPPORT_BAN_MAX_MINUTES} minutos desde que lo pusiste: como mucho, hasta el ${fmtDateTime(supportLimit.toISOString())}.`
+                    : `Pon un número entero de minutos, de 1 a ${SUPPORT_BAN_MAX_MINUTES}.`
+                  : shown === null
+                    ? "No vence. Solo un admin lo puede cambiar o levantar."
+                    : `Vence el ${(dur === "date" ? fmtDate : fmtDateTime)(shown)}.`}
           </span>
         </div>
 

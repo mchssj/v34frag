@@ -92,7 +92,7 @@ export const RosterPlayer = z
   .object({
     player_id: z.uuid().nullable(),
     alias: z.string(),
-    guest: z.boolean().openapi({ description: 'Invitado sin ficha (solo PCW)' }),
+    guest: z.boolean().openapi({ description: 'Invitado sin ficha: en PCW, un invitado; en un torneo histórico, un jugador cargado solo con el nombre (replanteo 113)' }),
     rating: z.number().nullable().openapi({
       description: 'Rating de las últimas 4 semanas en partidas 5v5 de cualquier tipo (replanteo 44). null sin partidas o si es invitado',
     }),

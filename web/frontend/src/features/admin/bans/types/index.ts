@@ -24,6 +24,19 @@ export type BanFilters = {
   sort: BanSort
 }
 
+/** Cupo de baneos de soporte de una persona (replanteo 117). */
+export type SupportQuota = Schemas["SupportQuota"]
+
+/** Una acción del soporte (replanteo 117). */
+export type SupportAction = Schemas["SupportAction"]
+
+export type SupportActionKind = SupportAction["action"]
+
+export type SupportActionFilters = {
+  action?: SupportActionKind
+  actor?: string
+}
+
 /** A quién alcanza un baneo: la ficha o, si no tiene, el SteamID. */
 export type BanPerson =
   { kind: "player"; id: string } | { kind: "steam"; steamId: string }

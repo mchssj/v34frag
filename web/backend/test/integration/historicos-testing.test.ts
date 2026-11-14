@@ -184,6 +184,15 @@ describe('torneo histórico', () => {
     const regs = await req('GET', `/api/v1/events/${ev}/registrations`, { token: org.token });
     expect(regs.body.items.find((r: { team: { id: string } }) => r.team.id === c.body.id).team).toMatchObject({ name: `${name} FC`, tag: 'LOB', historic: true });
     expect(regs.body.items.find((r: { team: { id: string } }) => r.team.id === a.id).team.historic).toBeUndefined();
+    // (replanteo 113) jugadores sin ficha: solo el nombre, en la inscripción torneo-equipo (no en el plantel)
+    expect((await req('PUT', `/api/v1/events/${ev}/registrations/${a.id}`, { token: org.token, body: { active: [a.player], guests: ['Juan  Pérez '] } })).status).toBe(204);
+    expect((await req('PUT', `/api/v1/events/${ev}/registrations/${c.body.id}`, { token: org.token, body: { active: [], guests: ['Viejo1', 'Viejo2'] } })).status).toBe(204);
+    expect((await req('PUT', `/api/v1/events/${ev}/registrations/${c.body.id}`, { token: org.token, body: { active: [], guests: ['dup', 'DUP'] } })).status).toBe(400);
+    expect((await req('PUT', `/api/v1/events/${ev}/registrations/${c.body.id}`, { token: user.token, body: { active: [], guests: ['Otro'] } })).status).toBe(403);
+    const withGuests = (await req('GET', `/api/v1/events/${ev}/registrations`, { token: org.token })).body.items;
+    expect(withGuests.find((r: { team: { id: string } }) => r.team.id === a.id)).toMatchObject({ guests: ['Juan Pérez'], players: [expect.objectContaining({ player_id: a.player })] });
+    expect(withGuests.find((r: { team: { id: string } }) => r.team.id === c.body.id).guests).toEqual(['Viejo1', 'Viejo2']);
+    expect(withGuests.find((r: { team: { id: string } }) => r.team.id === b.id).guests).toEqual([]);
     expect((await req('POST', `/api/v1/events/${ev}/generate`, { token: org.token })).status).toBe(204);
     const ms = (await req('GET', `/api/v1/events/${ev}/matches`, { token: org.token })).body.items;
     const semiA = ms.find((m: { side1: { team: { id: string } }; side2: { team: { id: string } } }) => [m.side1.team?.id, m.side2.team?.id].includes(a.id));
@@ -201,6 +210,8 @@ describe('torneo histórico', () => {
     expect((await req('PUT', `/api/v1/matches/${semiA.id}/maps`, { token: org.token, body: { maps: [{ game_id: g, side1 }] } })).status).toBe(204);
     const pub = await req('GET', `/api/v1/matches/${semiA.id}`, { token: org.token });
     expect(pub.body.maps_detail[0]).toMatchObject({ game_id: g, approved: false });
+    // (replanteo 113) el plantel de la serie suma los nombres como invitados
+    expect(pub.body[side1 === 1 ? 'roster1' : 'roster2']).toContainEqual({ player_id: null, alias: 'Juan Pérez', guest: true, rating: null });
     // Los demás no ven el mix por aprobar (cuando el torneo se publique); el staff lo tiene en su lista
     const pending = await req('GET', `/api/v1/admin/pending-games?match=${semiA.id}`, { token: mod.token });
     expect(pending.body).toMatchObject({ total: 1, items: [{ game: { id: g, map: 'de_dust2' }, match: { id: semiA.id } }] });

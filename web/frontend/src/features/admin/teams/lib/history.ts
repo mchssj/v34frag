@@ -3,7 +3,7 @@
 type Entry = {
   action: string
   data: Record<string, unknown>
-  actor_role: "team" | "moderator" | "admin" | "system"
+  actor_role: "team" | "support" | "moderator" | "admin" | "system"
 }
 
 const ROLE: Record<string, string> = {
@@ -49,6 +49,7 @@ export function historyText(e: Entry): string {
 
 export const ACTOR_LABEL: Record<Entry["actor_role"], string> = {
   team: "Equipo",
+  support: "Soporte",
   moderator: "Moderador",
   admin: "Admin",
   system: "Sistema",

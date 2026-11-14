@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
-import { optionalUser, requireModerator, requireUser } from '../lib/auth';
+import { optionalUser, requireSupport, requireUser } from '../lib/auth';
 import { must } from '../lib/db';
 import { Envelope, envelope, listQuery } from '../lib/list';
 import { createRouter } from '../lib/router';
@@ -179,8 +179,8 @@ const ReportQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc
   reason: z.enum(REASONS).optional(),
 });
 const reports = createRoute({
-  method: 'get', path: '/api/v1/admin/profile-comment-reports', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
-  summary: 'Comentarios denunciados', description: 'Moderadores y admins. La base pagina, filtra y ordena.',
+  method: 'get', path: '/api/v1/admin/profile-comment-reports', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
+  summary: 'Comentarios denunciados', description: 'Soporte, moderadores y admins. La base pagina, filtra y ordena.',
   request: { query: ReportQuery },
   responses: { 200: { description: 'Denuncias', ...json(Envelope(CommentReport).openapi('ProfileCommentReportList')) }, ...errorResponses(400, 401, 403) },
 });
@@ -188,7 +188,7 @@ const Resolve = z
   .object({ action: z.enum(['dismiss', 'delete']).openapi({ description: '`dismiss` la descarta; `delete` borra el comentario' }) })
   .openapi('ProfileCommentReportResolve');
 const resolveReport = createRoute({
-  method: 'post', path: '/api/v1/admin/profile-comment-reports/{id}/resolve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
+  method: 'post', path: '/api/v1/admin/profile-comment-reports/{id}/resolve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Resolver una denuncia de un comentario',
   description: 'Cierra todas las denuncias abiertas de ese comentario. Con `delete`, el comentario se borra (queda guardado, como los que borra el dueño).',
   request: { params: IdParam, body: { required: true, ...json(Resolve) } },
@@ -207,6 +207,7 @@ export const Staff = z
   .object({
     admins: z.array(StaffCard),
     moderators: z.array(StaffCard),
+    supports: z.array(StaffCard).openapi({ description: 'Soporte (replanteo 117). La web los muestra junto con los moderadores' }),
     vips: z.array(StaffCard.extend({ since: z.string() })).openapi({ description: 'VIP activos, sin los admins ni los que se ocultaron, por antigüedad' }),
   })
   .openapi('Staff');

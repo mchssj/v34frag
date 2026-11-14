@@ -80,6 +80,12 @@ export async function isModerator(c: Context<AppEnv>): Promise<boolean> {
   return role === 'moderator' || role === 'admin';
 }
 
+/** Si el usuario es soporte, moderador o admin (replanteo 117, bitácora 2026-11-13-rol-soporte). */
+export async function isSupport(c: Context<AppEnv>): Promise<boolean> {
+  const role = await userRole(c);
+  return role === 'support' || role === 'moderator' || role === 'admin';
+}
+
 /** Exige requireUser antes. Lee profiles.role con el token del usuario (la RLS deja leer el propio). */
 export const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
   const user = c.var.user;
@@ -92,5 +98,12 @@ export const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
 export const requireModerator: MiddlewareHandler<AppEnv> = async (c, next) => {
   if (!c.var.user) throw new Error('requireModerator se usó sin requireUser antes');
   if (!(await isModerator(c))) throw new AppError(403, 'FORBIDDEN', 'Solo moderadores y admins pueden hacer esto.');
+  await next();
+};
+
+/** Exige requireUser antes. Soporte, moderadores y admins (replanteo 117). La base vuelve a validar cada acción. */
+export const requireSupport: MiddlewareHandler<AppEnv> = async (c, next) => {
+  if (!c.var.user) throw new Error('requireSupport se usó sin requireUser antes');
+  if (!(await isSupport(c))) throw new AppError(403, 'FORBIDDEN', 'Solo soporte, moderadores y admins pueden hacer esto.');
   await next();
 };

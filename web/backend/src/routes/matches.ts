@@ -291,6 +291,11 @@ export const matches = createRouter()
     // Planteles: en torneo, los inscritos; en PCW, el roster del bando (con invitados).
     const roster = async (team: string | null, guests: string[]): Promise<z.infer<typeof RosterPlayer>[]> => {
       if (!team) return [];
+      // Torneo histórico: los jugadores sin ficha de la inscripción van como invitados (replanteo 113).
+      if (m.event_id) {
+        const reg = must(await sb.from('tournament_registrations').select('guest_names').eq('event_id', m.event_id).eq('team_id', team).maybeSingle());
+        guests = reg?.guest_names ?? [];
+      }
       const ids = m.event_id
         ? mustHave(await sb.from('tournament_registration_players').select('player_id').eq('event_id', m.event_id).eq('team_id', team)).map((r) => r.player_id)
         : mustHave(await sb.from('team_members').select('player_id').eq('team_id', team).is('left_at', null)).map((r) => r.player_id);

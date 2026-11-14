@@ -1,6 +1,7 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
-import { isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
+import { isAdmin, optionalUser, requireAdmin, requireSupport, requireUser, userRole } from '../lib/auth';
+import { AppError } from '../lib/errors';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
@@ -78,46 +79,49 @@ const patchConfig = createRoute({
 });
 
 const review = createRoute({
-  method: 'get', path: '/api/v1/admin/clips/review', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  method: 'get', path: '/api/v1/admin/clips/review', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Clips para revisar',
   description:
-    'Los reprocesados que esperan el "Bien", del más viejo al más nuevo. `clip.video.status` dice si el video nuevo ya está ' +
+    'Soporte, moderadores y admins (replanteo 117). Los reprocesados que esperan el "Bien", del más viejo al más nuevo. `clip.video.status` dice si el video nuevo ya está ' +
     '(`done`, con `embed_url` de Drive para mirarlo) o todavía se graba.',
   request: { query: ClipReviewQuery },
   responses: { 200: { description: 'Para revisar', ...json(ClipReviewList) }, ...errorResponses(400, 401, 403) },
 });
+/** Cuántos clips reprocesan por vez el soporte y los moderadores (replanteo 117): cada uno ocupa el render. El admin, 50. */
+export const SUPPORT_REPROCESS_MAX = 10;
+
 const reprocess = createRoute({
-  method: 'post', path: '/api/v1/admin/clips/{id}/reprocess', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  method: 'post', path: '/api/v1/admin/clips/{id}/reprocess', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Reprocesar un clip',
   description:
-    'El video actual se borra (de R2 y de Drive) y el bot lo vuelve a grabar y lo sube a Drive. No sale en Discord hasta el "Bien" ' +
+    'Soporte, moderadores y admins (replanteo 117). El video actual se borra (de R2 y de Drive) y el bot lo vuelve a grabar y lo sube a Drive. No sale en Discord hasta el "Bien" ' +
     '(`/approve`); si ya había salido, se publica otra vez. Solo un clip de la lista, ya grabado (o fallido) y con la demo todavía en R2 ' +
     '(si no, `BUSINESS_RULE` con el motivo).',
   request: { params: ClipParam },
   responses: { 200: { description: 'En la cola', ...json(Clip) }, ...errorResponses(400, 401, 403, 404) },
 });
 const approve = createRoute({
-  method: 'post', path: '/api/v1/admin/clips/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  method: 'post', path: '/api/v1/admin/clips/{id}/approve', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Aprobar un clip reprocesado',
-  description: 'El video nuevo quedó bien: sale en Discord y se muestra a todos. Solo un reprocesado con el video listo (si no, `BUSINESS_RULE`).',
+  description: 'Soporte, moderadores y admins (replanteo 117). El video nuevo quedó bien: sale en Discord y se muestra a todos. Solo un reprocesado con el video listo (si no, `BUSINESS_RULE`).',
   request: { params: ClipParam },
   responses: { 200: { description: 'Aprobado', ...json(Clip) }, ...errorResponses(400, 401, 403, 404) },
 });
 
 const adminList = createRoute({
-  method: 'get', path: '/api/v1/admin/clips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  method: 'get', path: '/api/v1/admin/clips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Lista de clips',
   description:
-    'Las jugadas que se muestran (las de `match_clip_list`), de la más nueva a la más vieja, para reprocesar varias a la vez. ' +
+    'Soporte, moderadores y admins (replanteo 117). Las jugadas que se muestran (las de `match_clip_list`), de la más nueva a la más vieja, para reprocesar varias a la vez. ' +
     '`can_reprocess` y `blocked_reason` repiten las reglas de `clip_reprocess`: con la demo todavía en R2, ya grabada (o fallida) y no grabándose.',
   request: { query: AdminClipQuery },
   responses: { 200: { description: 'Clips', ...json(AdminClipList) }, ...errorResponses(400, 401, 403) },
 });
 const reprocessMany = createRoute({
-  method: 'post', path: '/api/v1/admin/clips/reprocess', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  method: 'post', path: '/api/v1/admin/clips/reprocess', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Reprocesar varios clips',
   description:
-    'Como `/admin/clips/{id}/reprocess`, para cada uno de `ids` (de 1 a 50), uno por uno: uno que no se puede no frena a los demás. ' +
+    'Como `/admin/clips/{id}/reprocess`, para cada uno de `ids` (de 1 a 50; el soporte y los moderadores, hasta ' + SUPPORT_REPROCESS_MAX + '), uno por uno: uno que no se puede no frena a los demás. ' +
     'Devuelve el resultado de cada uno, con el motivo si no se pudo. Cada reprocesado pasa a "Para revisar".',
   request: { body: { content: { 'application/json': { schema: ClipReprocessBody } }, required: true } },
   responses: { 200: { description: 'Resultado de cada uno', ...json(ClipReprocessResult) }, ...errorResponses(400, 401, 403) },
@@ -126,10 +130,10 @@ const reprocessMany = createRoute({
 // Rechazar y recuperar (replanteo 76): un clip que sigue saliendo mal deja de verse y de grabarse.
 const Results = { 200: { description: 'Resultado de cada uno', ...json(ClipReprocessResult) }, ...errorResponses(400, 401, 403) };
 const reject = createRoute({
-  method: 'post', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const, path: '/api/v1/admin/clips/{id}/reject',
+  method: 'post', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const, path: '/api/v1/admin/clips/{id}/reject',
   summary: 'Rechazar un clip',
   description:
-    'Deja de verse en la web (la partida, la sala y los perfiles), no sale en Discord y no se vuelve a grabar. El video va a la ' +
+    'Soporte, moderadores y admins, desde Para revisar (replanteo 117). Rechazar varios y recuperar siguen siendo del admin. Deja de verse en la web (la partida, la sala y los perfiles), no sale en Discord y no se vuelve a grabar. El video va a la ' +
     'papelera. No entra otro clip en su lugar. No se puede mientras se graba (`BUSINESS_RULE`).',
   request: { params: ClipParam, body: { required: false, ...json(ClipRejectBody) } },
   responses: Results,
@@ -416,6 +420,9 @@ export const clips = createRouter()
   })
   .openapi(reprocessMany, async (c) => {
     const ids = [...new Set(c.req.valid('json').ids)];
+    if (ids.length > SUPPORT_REPROCESS_MAX && (await userRole(c)) !== 'admin') {
+      throw new AppError(400, 'BUSINESS_RULE', `Hasta ${SUPPORT_REPROCESS_MAX} clips por vez (más, solo un admin).`);
+    }
     const results: { id: string; ok: boolean; error: string | null }[] = [];
     // Uno por uno: clip_reprocess bloquea la fila y mueve los videos a la papelera; uno que falla no frena al resto.
     for (const id of ids) {

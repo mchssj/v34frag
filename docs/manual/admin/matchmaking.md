@@ -41,6 +41,15 @@ Para que un servidor reciba salas, márcalo con el uso **Matchmaking** (ver [Ser
 
 La pestaña **Salas** lista las salas en curso, con su modo, estado, mapa y servidor. Puedes cancelar una sala si quedó trabada.
 
+**Ver sala** (a la izquierda de **Cancelar**) abre la sala tal como la ven los jugadores, igual que la pestaña "Tu última partida" de Jugar: el marcador, los dos equipos, el veto, el mapa y el estado. Mientras la sala sigue abierta, se actualiza sola cada 5 segundos. Además tienes:
+
+- **Administración:** el ID de la sala (**Copiar ID**), cuántos jugadores están conectados, **Actualizar** y **Cancelar sala**, que pide confirmación. Cancelar libera el servidor y no sanciona a nadie.
+- **Servidor:** la IP y la contraseña de la sala, con **Conectar** y **Copiar connect**, para entrar a moderar.
+- **Ver en CM League TV**, con la partida en vivo.
+- **Banear** (el ícono al lado del ELO de cada jugador): abre el mismo baneo de Administración › Baneos, que vale en todos los servidores.
+
+No ves el chat de la sala ni puedes reportar o elogiar desde ahí. Para volver a la lista, toca **Salas** arriba a la izquierda.
+
 ## Reportes y sanciones
 
 - **Reportes:** ver [Revisar reportes del matchmaking](/help/admin/reportes-matchmaking).

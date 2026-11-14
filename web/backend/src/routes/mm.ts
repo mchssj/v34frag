@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import type { Context, MiddlewareHandler } from 'hono';
-import { requireAdmin, requireModerator, requireUser } from '../lib/auth';
-import { must, mustHave } from '../lib/db';
+import { requireAdmin, requireModerator, requireSupport, requireUser } from '../lib/auth';
+import { must, mustHave, notFound } from '../lib/db';
 import { RATE_RULES, rateLimit } from '../lib/ratelimit';
 import { AppError } from '../lib/errors';
 import { createRouter } from '../lib/router';
@@ -127,7 +127,11 @@ add(route('get', '/api/v1/mm/state/live', { summary: 'Estado liviano: cola, sala
   c.var.mmPolled?.(c.var.user.id);
   return liveState(c);
 });
-add(route('get', '/api/v1/mm/profile', { summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
+// (replanteo 115) La última sala terminada, aparte del estado liviano (que trae solo last_lobby_ref): la web la pide
+// cuando cambia `rev`. null si no jugó.
+add(route('get', '/api/v1/mm/last-lobby', { summary: 'Mi última sala terminada (sin estadísticas)' }), async (c) =>
+  c.json(((await rpc(c, 'mm_my_last_lobby')) ?? null) as never, 200));
+add(route('get', '/api/v1/mm/profile',{ summary: 'Lo que casi no cambia: mi ficha, últimas partidas, amigos, sonidos y sanciones' }), async (c) =>
   c.json({ ...((await rpc(c, 'mm_my_profile')) as unknown as object), server_now: new Date().toISOString() } as never, 200));
 add(route('get', '/api/v1/mm/lobbies/{id}/match', { summary: 'La partida de una sala que jugué, con las estadísticas y los clips', request: { params: IdParam } }), async (c) => {
   const game = (await rpc(c, 'mm_lobby_match', { p_lobby: param(c) })) as unknown as GameRef | null;
@@ -263,6 +267,13 @@ add(route('get', '/api/v1/admin/mm/config', { summary: 'Configuración', guard: 
 add(route('patch', '/api/v1/admin/mm/config', { summary: 'Cambiar la configuración', guard: requireAdmin, request: jsonBody(Config) }),
   async (c) => c.json((await rpc(c, 'mm_set_config', { p: body<unknown>(c) })) as never, 200));
 add(route('get', '/api/v1/admin/mm/lobbies', { summary: 'Salas activas', guard: requireAdmin }), lists('lobbies'));
+// (replanteo 116) "Ver sala": la sala completa, como la ve un jugador, con el servidor y sin lo del que mira como jugador.
+add(route('get', '/api/v1/admin/mm/lobbies/{id}', { summary: 'Una sala completa (Ver sala)', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
+  const room = (await rpc(c, 'mm_admin_lobby', { p_lobby: param(c) })) as unknown as { match?: GameRef | null } | null;
+  if (!room) throw notFound('la sala');
+  if (room.match?.game_id) await withGame(c, room.match);
+  return c.json(room as never, 200);
+});
 add(route('post', '/api/v1/admin/mm/lobbies/{id}/cancel', { summary: 'Cancelar una sala', guard: requireAdmin, request: { params: IdParam } }), async (c) => {
   await rpc(c, 'mm_admin_cancel', { p_lobby: param(c) });
   return c.json({ ok: true } as never, 200);
@@ -291,8 +302,9 @@ add(route('delete', '/api/v1/admin/mm/bans/{id}', { summary: 'Levantar una exclu
   return c.json({ ok: true } as never, 200);
 });
 // Sanciones automáticas de la cola (replanteo 61). Levantar corta la espera y baja un nivel de la escalera.
-add(route('get', '/api/v1/admin/mm/penalties', { summary: 'Sanciones de la cola vigentes', guard: requireModerator }), lists('penalties'));
-add(route('post', '/api/v1/admin/mm/penalties/{id}/lift', { summary: 'Levantar una sanción de la cola', guard: requireModerator, request: { params: IdParam, ...jsonBody(Lift) } }), async (c) => {
+// También el soporte (replanteo 117); las exclusiones, no.
+add(route('get', '/api/v1/admin/mm/penalties', { summary: 'Sanciones de la cola vigentes', guard: requireSupport }), lists('penalties'));
+add(route('post', '/api/v1/admin/mm/penalties/{id}/lift', { summary: 'Levantar una sanción de la cola', guard: requireSupport, request: { params: IdParam, ...jsonBody(Lift) } }), async (c) => {
   await rpc(c, 'mm_admin_lift_penalty', { p_user: param(c), p_reason: body<{ reason: string }>(c).reason });
   return c.json({ ok: true } as never, 200);
 });

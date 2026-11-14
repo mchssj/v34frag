@@ -5,6 +5,7 @@ import {
   applyFieldErrors,
   errorFromResponse,
   errorMessage,
+  isRetryable,
   networkError,
 } from "./errors"
 
@@ -42,7 +43,7 @@ describe("errorFromResponse", () => {
     expect(errorFromResponse(res(409), { error: { code: "RARO" } }).code).toBe(
       "CONFLICT"
     )
-    expect(errorFromResponse(res(502), null).code).toBe("INTERNAL")
+    expect(errorFromResponse(res(500), null).code).toBe("INTERNAL")
   })
 
   it("reconoce los códigos de Equipo y Torneos y muestra el mensaje del backend", () => {
@@ -61,6 +62,21 @@ describe("errorFromResponse", () => {
   it("toma el requestId del header si no viene en el cuerpo", () => {
     const e = errorFromResponse(res(500, { "X-Request-Id": "hdr" }), {})
     expect(e.requestId).toBe("hdr")
+  })
+})
+
+describe("base ocupada (UNAVAILABLE)", () => {
+  it("el 503 de la API y los 502/503/504 sin cuerpo se pueden reintentar", () => {
+    const api = errorFromResponse(res(503, { "Retry-After": "5" }), {
+      error: { code: "UNAVAILABLE", message: "x", requestId: "req-9" },
+    })
+    expect(api).toMatchObject({ code: "UNAVAILABLE", retryAfter: 5 })
+    expect(errorMessage(api)).toBe(
+      "El servidor está ocupado. Intenta de nuevo en un momento."
+    )
+    expect(isRetryable(api)).toBe(true)
+    for (const status of [502, 503, 504])
+      expect(errorFromResponse(res(status), null).code).toBe("UNAVAILABLE")
   })
 })
 

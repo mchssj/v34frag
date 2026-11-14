@@ -75,7 +75,9 @@ export function MedalEditor({
   const busy = create.isPending || patch.isPending || activate.isPending
   const set = (p: Partial<Draft>) => setD((x) => ({ ...x, ...p }))
   const countKey = `${d.template}:${d.target}:${d.minMatches}`
-  const engine = t.aggregation !== "season_rank" && t.aggregation !== "manual"
+  const engine = !["season_rank", "manual", "event_result"].includes(
+    t.aggregation
+  )
   const avg = t.aggregation === "avg_min_matches"
 
   async function save(andActivate: boolean) {
@@ -207,7 +209,10 @@ export function MedalEditor({
               className="grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-2"
             >
               {TEMPLATES.filter((x) =>
-                locked ? x.id === d.template : x.category === category
+                locked
+                  ? x.id === d.template
+                  : // Campeón y finalista de torneo ya existen (replanteo 114): se editan, no se crean otras.
+                    x.category === category && x.aggregation !== "event_result"
               ).map((x) => {
                 const sel = x.id === d.template
                 return (
@@ -558,7 +563,9 @@ export function MedalEditor({
                 <span className="text-sm text-muted-foreground">
                   {t.aggregation === "manual"
                     ? "Activa, la puede dar un admin desde Administración › Jugadores › Fichas."
-                    : "Activa, queda para elegirla en los tramos de Administración › Temporadas."}
+                    : t.aggregation === "event_result"
+                      ? "Activa, se da sola al terminar cada torneo."
+                      : "Activa, queda para elegirla en los tramos de Administración › Temporadas."}
                 </span>
               )}
             </Block>

@@ -216,10 +216,12 @@ describe('perfil público', () => {
     const medals = await get(`/api/v1/players/${nick(0)}/medals/summary`);
     expect(medals.body.items).toEqual([
       { title: `MVP ${sfx}`, count: 2, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }) },
+      // (replanteo 114) la de campeón de la copa la da la base al terminar el torneo
+      { title: `Campeón · Copa ${sfx}`, count: 1, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }) },
       { title: `Top ${sfx}`, count: 1, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }) },
     ]);
-    expect((await get(`/api/v1/players/${nick(0)}/medals/summary?sort=title&order=desc&per=1`)).body).toMatchObject({ total: 2, items: [{ title: `Top ${sfx}` }] });
-    expect((await get(`/api/v1/players/${nick(0)}/medals`)).body.total).toBe(3);
+    expect((await get(`/api/v1/players/${nick(0)}/medals/summary?sort=title&order=desc&per=1`)).body).toMatchObject({ total: 3, items: [{ title: `Top ${sfx}` }] });
+    expect((await get(`/api/v1/players/${nick(0)}/medals`)).body.total).toBe(4);
 
     const ms = await get(`/api/v1/players/${nick(0)}/matches?kind=mix`);
     expect(ms.body.items[0]).toMatchObject({ event: null, label: null });

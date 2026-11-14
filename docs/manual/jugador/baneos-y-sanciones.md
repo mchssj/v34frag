@@ -10,7 +10,7 @@ Hay tres tipos de castigo. Los ves todos en [Jugar](/play), en el panel **Mis sa
 |---|---|---|---|
 | **Sanción de la cola** | El matchmaking, solo | Buscar partida | De {{mm.sancion_min}} a {{mm.sancion_max}} |
 | **Exclusión del matchmaking** | Un admin, al revisar un reporte | Buscar partida | De 1 a 90 días |
-| **Baneo del servidor** | Un moderador o un admin | Jugar en nuestros servidores y buscar partida | Días, hasta una fecha o permanente |
+| **Baneo del servidor** | El soporte, un moderador o un admin | Jugar en nuestros servidores y buscar partida | El soporte, hasta 120 minutos; los demás, días, hasta una fecha o permanente |
 
 ## Sanción de la cola
 
@@ -26,7 +26,7 @@ Cuando alguien te reporta, un admin revisa el caso. Puede descartarlo, darte una
 
 Es el castigo más fuerte: no puedes entrar a ningún servidor de CMLeague ni buscar partida. Alcanza a todas tus cuentas de Steam vinculadas, también a las que sumes después.
 
-Puede durar unos días, hasta una fecha o ser permanente. Un baneo permanente solo lo puede cambiar o levantar un admin.
+Puede durar unos días, hasta una fecha o ser permanente. Un baneo permanente solo lo puede cambiar o levantar un admin. Uno del soporte dura hasta 120 minutos, y el soporte no te puede poner más de 3 en 7 días: si hace falta más, decide un moderador.
 
 Si te banean mientras estás en el matchmaking:
 
@@ -34,9 +34,13 @@ Si te banean mientras estás en el matchmaking:
 - Si estabas en una sala que todavía no empezó, la sala se cancela y los demás vuelven a la cola.
 - Si ya estabas jugando, cuenta como abandono: te resta ELO y tu equipo puede recibir un reemplazo.
 
+## Si te quitan la foto o el logo
+
+Si tu foto de perfil o el logo de tu equipo no cumplen las reglas (ofensivos o con datos personales), el soporte, un moderador o un admin los puede quitar. Te llega el aviso "Te quitamos la foto de perfil" (o, al líder, el del logo) con el motivo. Queda la imagen por defecto y puedes subir otra cuando quieras.
+
 ## Si crees que es un error
 
-Habla con un moderador por el Discord de CMLeague y cuéntale qué pasó. Si se cayó Steam o internet justo al aparecer la partida, o falló el servidor, te levanta la sanción de la cola y tu escalón baja uno, como si esa falta no hubiera pasado.
+Habla con el soporte o con un moderador por el Discord de CMLeague y cuéntale qué pasó. Si se cayó Steam o internet justo al aparecer la partida, o falló el servidor, te levanta la sanción de la cola y tu escalón baja uno, como si esa falta no hubiera pasado.
 
 ## Reportar a un jugador
 
