@@ -59,12 +59,16 @@ def main():
 
     env = procesar.load_env(a.env)
     clip_id = urllib.parse.quote(a.clip)
-    rows = get(env, f"match_clip_list?select=*&id=eq.{clip_id}")
+    # match_clip_list filtrada por el id de la jugada recorre todas y la base la corta por tiempo (57014, el
+    # 2026-11-13); por partida responde enseguida. La partida sale de match_clips, por su clave.
+    rows = get(env, f"match_clips?select=match_id&id=eq.{clip_id}")
     if not rows:
-        raise SystemExit(f"no existe la jugada {a.clip} (o no es visible)")
-    clip = rows[0]
+        raise SystemExit(f"no existe la jugada {a.clip}")
+    clips = get(env, f"match_clip_list?select=*&match_id=eq.{rows[0]['match_id']}")
+    clip = next((c for c in clips if c["id"] == a.clip), None)
+    if not clip:
+        raise SystemExit(f"la jugada {a.clip} no está entre los clips visibles de su partida")
     match = get(env, f"matches?select=id,map,played_at,external_id,demo_size&id=eq.{clip['match_id']}")[0]
-    clips = get(env, f"match_clip_list?select=*&match_id=eq.{clip['match_id']}")
     conf = get(env, "clip_config?select=pre_seconds,post_seconds,split_gap_seconds&id=eq.1")[0]
     log(f"Jugada {clip['id'][:8]}: {clip['type']} de {clip['player_name']} (ronda {clip['round']}) en "
         f"{match['map']}, partida {match['external_id']}.")

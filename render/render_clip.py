@@ -109,7 +109,9 @@ def relaunch_as_admin(out_file, script=None):
         os.remove(out_file)
     args = subprocess.list2cmdline([os.path.abspath(script or __file__)] + sys.argv[1:] + ["--out-log", out_file])
     sei = _SEI(cbSize=ctypes.sizeof(_SEI), fMask=0x40, lpVerb="runas", lpFile=sys.executable,
-               lpParameters=f"-I {args}", lpDirectory=AQUI, nShow=7)
+               # La carpeta desde la que se corrió: una ruta relativa como --config render\config.v34.json se
+               # resolvía desde render\ y no se encontraba (el portátil, 2026-11-13).
+               lpParameters=f"-I {args}", lpDirectory=os.getcwd(), nShow=7)
     if not shell32.ShellExecuteExW(ctypes.byref(sei)):
         raise SystemExit("no se pudo abrir como administrador (¿se rechazó el aviso de UAC?)")
     pos = 0
