@@ -521,6 +521,15 @@ def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
            "-start_number", str(int(first) + skip), "-i", pattern]
     wav = prefix + ".wav"
     has_audio = os.path.exists(wav) and os.path.getsize(wav) > 1000
+    if not has_audio:
+        # Sin aviso, el video salía mudo sin que nadie lo notara (el v34 del portátil, 2026-11-13).
+        log(f"Aviso: {os.path.basename(prefix)} sin audio: "
+            + (f"el .wav pesa {os.path.getsize(wav)} bytes" if os.path.exists(wav) else f"no está {wav}"))
+        # Por si el cliente lo escribe en otro lado: los .wav de la carpeta del juego de la última hora.
+        game_dir = os.path.dirname(os.path.dirname(os.path.dirname(prefix)))  # <client_dir>/cstrike
+        recent = [f"{p} ({os.path.getsize(p)} bytes)" for p in glob.glob(os.path.join(game_dir, "**", "*.wav"), recursive=True)
+                  if time.time() - os.path.getmtime(p) < 3600]
+        log("  .wav recientes en " + game_dir + ": " + (", ".join(recent[:10]) or "ninguno"))
     if has_audio:
         cmd += ["-ss", f"{skip / cfg['fps']:.3f}", "-i", wav]
     vf = f"scale={cfg['width']}:{cfg['height']}"
