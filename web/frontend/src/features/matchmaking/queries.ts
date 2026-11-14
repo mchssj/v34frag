@@ -522,6 +522,16 @@ export function adminLobbiesOptions(source: MmSource) {
   })
 }
 
+/** Ver sala: mientras no termina, se vuelve a pedir cada 5 s (el admin no recibe los avisos de esa sala). */
+export function adminLobbyOptions(source: MmSource, lobbyId: string) {
+  return queryOptions({
+    queryKey: ["mm", "admin", "lobby", lobbyId] as const,
+    queryFn: ({ signal }) => source.adminLobby(lobbyId, signal),
+    refetchInterval: (q) =>
+      q.state.data && ENDED.includes(q.state.data.status) ? false : 5_000,
+  })
+}
+
 /** Mutación de Administración: al terminar, se vuelve a pedir todo lo del matchmaking. */
 export function useMmAdminMutation<A, R>(fn: (arg: A) => Promise<R>) {
   const queryClient = useQueryClient()

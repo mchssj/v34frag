@@ -1587,6 +1587,18 @@ export function createDemoSource({
         })
       return list
     },
+    async adminLobby(lobbyId) {
+      if (!lobby || lobby.id !== lobbyId)
+        throw new DemoError("Esa sala ya no está")
+      const l = structuredClone(lobby)
+      return {
+        ...l,
+        players: l.players.map((p) => ({ ...p, is_me: false })),
+        reported: [],
+        commended: null,
+        elo_stake: null,
+      }
+    },
     async cancelLobby(lobbyId) {
       if (lobby?.id === lobbyId) cancel("Cancelada por un admin", false)
     },

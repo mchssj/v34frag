@@ -1,5 +1,5 @@
 import { cn } from "cn"
-import { Share2Icon, XIcon } from "lucide-react"
+import { ChevronLeftIcon, Share2Icon, XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -7,7 +7,7 @@ import heroImage from "@/assets/landing-bg.webp"
 import { BackButton } from "@/components/brand/BackButton"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { MatchReplay } from "@/features/replay/components/MatchReplay"
-import type { MmLobby } from "../types"
+import type { MmLobby, MmPlayer } from "../types"
 import { RoomHeader } from "./RoomHeader"
 import { RoomOverview } from "./RoomOverview"
 import { RoomStats } from "./RoomStats"
@@ -23,12 +23,18 @@ export function MatchRoom({
   mode = "live",
   initialTab = "overview",
   extra,
+  playerExtra,
   trackUrl,
 }: {
   lobby: MmLobby
   onBack?: () => void
-  /** detail: el detalle de una partida terminada (`/match/<id>`, replanteo 78), con "Partidas" para volver. */
-  mode?: "live" | "detail"
+  /**
+   * detail: el detalle de una partida terminada (`/match/<id>`, replanteo 78), con "Partidas" para volver.
+   * admin: Administración › Matchmaking › Salas › Ver sala (replanteo 116).
+   */
+  mode?: "live" | "detail" | "admin"
+  /** Al lado del ELO de cada jugador (las acciones del admin). */
+  playerExtra?: (p: MmPlayer) => React.ReactNode
   /** La pestaña con que abre (replanteo 83: el aviso de jugadas lleva a Estadísticas). */
   initialTab?: Tab
   /** Arriba del centro de la sala (la serie y las reglas de una PCW). */
@@ -70,8 +76,23 @@ export function MatchRoom({
             )}
           />
         )}
+        {mode === "admin" && onBack && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-[30px] gap-1.5 pr-2.5 pl-1.5 text-[13px]"
+            onClick={onBack}
+          >
+            <ChevronLeftIcon aria-hidden />
+            Salas
+          </Button>
+        )}
         <h1 className="text-[13px] text-muted-foreground">
-          {mode === "detail" ? "Partida del matchmaking" : "Sala de la partida"}
+          {mode === "detail"
+            ? "Partida del matchmaking"
+            : mode === "admin"
+              ? "Sala de la partida · vista de admin"
+              : "Sala de la partida"}
         </h1>
         <div
           role="tablist"
@@ -101,14 +122,17 @@ export function MatchRoom({
           )}
         </div>
         <span className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Compartir"
-            onClick={() => void share()}
-          >
-            <Share2Icon />
-          </Button>
+          {/* El link de la vista de admin no le sirve a nadie más. */}
+          {mode !== "admin" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Compartir"
+              onClick={() => void share()}
+            >
+              <Share2Icon />
+            </Button>
+          )}
           {ended && onBack && mode === "live" && (
             <Button
               variant="ghost"
@@ -135,6 +159,7 @@ export function MatchRoom({
           onBack={onBack}
           mode={mode}
           extra={extra}
+          playerExtra={playerExtra}
         />
       ) : current === "replay" ? (
         <MatchReplay trackUrl={trackUrl} />
