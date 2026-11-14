@@ -1,7 +1,7 @@
 import { cn } from "cn"
 import type { ReactNode } from "react"
 
-import { initialOf } from "@/components/brand/PlayerAvatar"
+import { initialOf } from "@/components/brand/initial"
 import {
   Dialog,
   DialogContent,

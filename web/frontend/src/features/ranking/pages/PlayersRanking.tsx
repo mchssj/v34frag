@@ -145,11 +145,16 @@ const HISTORIC_COLUMNS: DataColumn<RankingPlayer>[] = [
         <span className="flex items-center gap-2.5">
           {/* (bitácora 2026-11-12-avatares-animados) El avatar de la tienda, quieto; se anima al pasar el mouse. */}
           {p.player.cosmetics?.avatar ? (
-            <AvatarThumb avatar={p.player.cosmetics.avatar} size={30} className="rounded-full" />
+            <AvatarThumb
+              avatar={p.player.cosmetics.avatar}
+              size={30}
+              className="rounded-full"
+            />
           ) : (
             <PlayerAvatar
               size="row"
               alias={p.player.alias}
+              playerId={p.player.id}
               photo={p.player.photo_url}
             />
           )}
@@ -230,6 +235,7 @@ function HistoricView({ search, onChange }: Props) {
       <PlayerAvatar
         size="row"
         alias={p.player.alias}
+        playerId={p.player.id}
         photo={p.player.photo_url}
         className="size-[46px]"
       />
@@ -312,6 +318,7 @@ function seasonColumns(
           <PlayerAvatar
             size="row"
             alias={row.original.player.alias}
+            playerId={row.original.player.id}
             photo={row.original.player.photo_url}
           />
           <span className="font-medium text-foreground">
@@ -434,6 +441,7 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
       <PlayerAvatar
         size="row"
         alias={r.player.alias}
+        playerId={r.player.id}
         photo={r.player.photo_url}
         className="size-[46px]"
       />

@@ -2,8 +2,9 @@ import { cn } from "cn"
 import { useState, type CSSProperties, type ReactNode } from "react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
-import { initialOf } from "@/components/brand/PlayerAvatar"
+import { initialOf } from "@/components/brand/initial"
 
+import { usePlayerAvatar } from "./avatars"
 import "./cosmeticos.css"
 import {
   COSMETICS_BASE,
@@ -131,6 +132,33 @@ export function FramedAvatar({
       <div className="avf-img overflow-hidden">{inner}</div>
       <img className="avf-marco" src={marco} alt="" loading="lazy" />
     </div>
+  )
+}
+
+/**
+ * Dentro de un `<Avatar>` que no usa `PlayerAvatar`: el avatar puesto de la ficha, con el redondeo del contenedor, o
+ * `children` (la foto de siempre) si no tiene. `animate`: en las fotos de 48 px o más (bitácora
+ * 2026-11-14-avatar-en-toda-la-web).
+ */
+export function EquippedAvatar({
+  playerId,
+  animate = false,
+  className,
+  children,
+}: {
+  playerId?: string | null
+  animate?: boolean
+  className?: string
+  children?: ReactNode
+}) {
+  const avatar = usePlayerAvatar(playerId)
+  if (!avatar) return <>{children}</>
+  return (
+    <AvatarMedia
+      avatar={avatar}
+      animate={animate}
+      className={cn("size-full rounded-[inherit]", className)}
+    />
   )
 }
 

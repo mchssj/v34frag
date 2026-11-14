@@ -191,6 +191,7 @@ function RosterPicker({
               >
                 <PlayerAvatar
                   alias={m.alias}
+                  playerId={m.player_id}
                   photo={m.photo_url}
                   className="size-7"
                 />

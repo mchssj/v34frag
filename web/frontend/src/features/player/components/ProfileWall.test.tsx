@@ -1,8 +1,14 @@
-import { render, screen } from "@testing-library/react"
+import { render as rtlRender, screen } from "@testing-library/react"
+import type { ReactElement } from "react"
+
+import { withQuery } from "@/test/render"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { WallComments, type Wall } from "./ProfileWall"
+
+// Con React Query: la foto busca el avatar puesto (bitácora 2026-11-14-avatar-en-toda-la-web).
+const render = (ui: ReactElement) => rtlRender(ui, { wrapper: withQuery() })
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,

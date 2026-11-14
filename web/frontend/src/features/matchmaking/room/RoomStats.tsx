@@ -3,6 +3,7 @@ import { useState } from "react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { EquippedAvatar } from "@/features/shop/cosmetics"
 import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
 import { SideTable } from "@/features/mixes/components/MixRoom"
 import type { RoomPlayer } from "@/features/mixes/lib/room"
@@ -83,22 +84,27 @@ function PlayerAvatar({
   p,
   size,
 }: {
-  p: { nick: string; photo_url?: string | null } | undefined
+  p:
+    | { nick: string; photo_url?: string | null; player_id?: string | null }
+    | undefined
   size: string
 }) {
+  // El avatar puesto (bitácora 2026-11-14-avatar-en-toda-la-web): animado en la foto grande del MVP.
   return (
     <Avatar className={size}>
-      {p?.photo_url && <AvatarImage src={p.photo_url} alt="" />}
-      <AvatarFallback className="text-[10px] font-semibold">
-        {(p?.nick ?? "?").slice(0, 2).toUpperCase()}
-      </AvatarFallback>
+      <EquippedAvatar playerId={p?.player_id} animate={size === "size-16"}>
+        {p?.photo_url && <AvatarImage src={p.photo_url} alt="" />}
+        <AvatarFallback className="text-[10px] font-semibold">
+          {(p?.nick ?? "?").slice(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </EquippedAvatar>
     </Avatar>
   )
 }
 
 /** Lo que se muestra de un jugador junto a sus números (en un mix, sin foto ni nivel). */
 export type CardPlayer = Pick<MmPlayer, "nick" | "photo_url"> &
-  Partial<Pick<MmPlayer, "level" | "elo">>
+  Partial<Pick<MmPlayer, "level" | "elo" | "player_id">>
 
 /**
  * MVP y destacados (más kills, más daño…), arriba de las tablas. La usan la sala del matchmaking y

@@ -149,6 +149,7 @@ function PlayerCombobox({
                     <PlayerAvatar
                       size="row"
                       alias={p.alias}
+                      playerId={p.id}
                       photo={p.photo_url}
                       className="size-6"
                     />
@@ -353,6 +354,7 @@ function Head({ p, color }: { p: ComparePlayer; color: string }) {
       <PlayerAvatar
         size="row"
         alias={p.player.alias}
+        playerId={p.player.id}
         photo={p.player.photo_url}
         className="size-[52px] [&_[data-slot=avatar-fallback]]:text-xl"
       />

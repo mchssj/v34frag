@@ -36,7 +36,7 @@ En la tarjeta de algo que ya tienes, toca **Equipar**; para sacártelo, **Sacar*
 
 ## Avatares
 
-Un avatar reemplaza tu foto de perfil, con tu marco encima si tienes uno. En la Tienda hay avatares para todos (con puntos) y avatares VIP que se mueven (con monedas VIP). La foto que subes en Mi perfil no puede ser animada (ni GIF, ni PNG o WebP animados).
+Un avatar reemplaza tu foto de perfil **en toda la web**: tu perfil, el ranking, Quiénes somos, los equipos, los comentarios, el buscador, la sala de la partida, tu menú de la cuenta y el widget para OBS, con tu marco encima en tu perfil si tienes uno. Si te lo sacas, vuelve tu foto. En Mi perfil › Perfil sigue tu foto normal (la que cambias ahí), con un aviso de que tienes un avatar puesto. En la Tienda hay avatares para todos (con puntos) y avatares VIP que se mueven (con monedas VIP). La foto que subes en Mi perfil no puede ser animada (ni GIF, ni PNG o WebP animados).
 
 ## 3. Subir tu propio fondo de miniperfil o avatar
 
@@ -69,7 +69,7 @@ Si se te vence el VIP, tus avatares y fondos animados quedan guardados, pero no 
 
 > **Ojo:** solo sube imágenes que sean tuyas o que tengas permiso de usar. Un dibujo de un artista o un fondo bajado de internet tienen dueño. Si alguien lo denuncia y no respeta los derechos de otro o las reglas de la comunidad, un moderador saca esa imagen (las demás que guardaste siguen), te avisa el motivo y **no te devuelve lo que pagaste**.
 
-En tu perfil y en tu tarjeta del lobby, el avatar animado se mueve. En el ranking y en la sala de Jugar se ve quieto, y se anima cuando pasas el mouse por encima.
+Donde la foto es grande (tu perfil, tu tarjeta del lobby, Quiénes somos, tu menú de la cuenta, el widget), el avatar animado se mueve. Donde es chica (el ranking, las listas, la sala de Jugar), se ve quieto y se anima cuando pasas el mouse por encima.
 
 ## Temas
 

@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react"
 
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { initialOf } from "@/components/brand/PlayerAvatar"
+import { EquippedAvatar } from "@/features/shop/cosmetics"
 import { LEVEL_SEGMENTS, levelColor } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { levelOf } from "@/features/matchmaking/room/roomData"
@@ -51,6 +52,8 @@ export interface PeriodStats {
 }
 
 export interface WidgetData {
+  /** La ficha: para el avatar puesto (bitácora 2026-11-14-avatar-en-toda-la-web). */
+  id?: string
   nick: string
   team_tag: string | null
   country: (typeof COUNTRIES)[number] | null
@@ -205,13 +208,16 @@ function Photo({ d, size }: { d: WidgetData; size: number }) {
       style={{ width: size, height: size }}
       className="shrink-0 after:hidden"
     >
-      {d.photo_url && <AvatarImage src={d.photo_url} alt="" />}
-      <AvatarFallback
-        style={{ fontSize: Math.round(size * 0.42) }}
-        className="bg-secondary font-bold text-foreground"
-      >
-        {initialOf(d.nick)}
-      </AvatarFallback>
+      {/* El avatar puesto, animado, en lugar de la foto (bitácora 2026-11-14-avatar-en-toda-la-web). */}
+      <EquippedAvatar playerId={d.id} animate>
+        {d.photo_url && <AvatarImage src={d.photo_url} alt="" />}
+        <AvatarFallback
+          style={{ fontSize: Math.round(size * 0.42) }}
+          className="bg-secondary font-bold text-foreground"
+        >
+          {initialOf(d.nick)}
+        </AvatarFallback>
+      </EquippedAvatar>
     </Avatar>
   )
 }

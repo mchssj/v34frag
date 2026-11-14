@@ -86,6 +86,7 @@ function VisitorTile({ v }: { v: Visitor }) {
     >
       <PlayerAvatar
         alias={v.nick}
+        playerId={v.player_id}
         photo={v.photo_url}
         className="size-full rounded-md after:rounded-md"
         imageClassName="rounded-md"
@@ -102,7 +103,12 @@ function VisitorRow({ v }: { v: Visitor }) {
       params={{ nick: v.nick }}
       className="flex items-center gap-2.5 border-t py-2 text-[13px] hover:text-primary"
     >
-      <PlayerAvatar alias={v.nick} photo={v.photo_url} size="row" />
+      <PlayerAvatar
+        alias={v.nick}
+        playerId={v.player_id}
+        photo={v.photo_url}
+        size="row"
+      />
       <span className="min-w-0 flex-1 truncate font-medium">{v.nick}</span>
       <LevelBadge level={v.level} size={20} />
       <span className="text-right text-xs whitespace-nowrap text-muted-foreground">

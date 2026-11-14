@@ -227,6 +227,7 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
         top: top.map((p) => ({
           position: p.position,
           nick: p.player.alias,
+          player_id: p.player.id,
           photo_url: p.player.photo_url,
           elo: p.elo,
           level: p.level ?? 1,

@@ -4,6 +4,7 @@ import { ServerIcon } from "lucide-react"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { TeamCrest } from "@/components/brand/TeamCrest"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { EquippedAvatar } from "@/features/shop/cosmetics"
 import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
 import { WatchTvButton } from "@/features/mixes/components/parts"
 import { fmtDateTime, isCountry } from "../labels"
@@ -188,12 +189,18 @@ function Tag({ lobby, team }: { lobby: MmLobby; team: Team }) {
         lobby.match?.winner === team && "shadow-[0_0_0_2px_var(--primary)]"
       )}
     >
-      {captain?.photo_url && (
-        <AvatarImage src={captain.photo_url} alt="" className="rounded-tile" />
-      )}
-      <AvatarFallback className="rounded-tile bg-muted font-mono text-sm font-bold in-data-photo:bg-white/14 in-data-photo:backdrop-blur-md">
-        {(captain?.nick ?? "?").slice(0, 2).toUpperCase()}
-      </AvatarFallback>
+      <EquippedAvatar playerId={captain?.player_id}>
+        {captain?.photo_url && (
+          <AvatarImage
+            src={captain.photo_url}
+            alt=""
+            className="rounded-tile"
+          />
+        )}
+        <AvatarFallback className="rounded-tile bg-muted font-mono text-sm font-bold in-data-photo:bg-white/14 in-data-photo:backdrop-blur-md">
+          {(captain?.nick ?? "?").slice(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </EquippedAvatar>
     </Avatar>
   )
 }

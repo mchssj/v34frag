@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { Carousel } from "@/components/brand/Carousel"
 import { ClipCard } from "@/components/brand/ClipCard"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { EquippedAvatar } from "@/features/shop/cosmetics"
 import { Button } from "@/components/ui/button"
 import { clipKind } from "@/features/series/lib/series"
 import type { MmClip, MmPlayer } from "../types"
@@ -54,12 +55,14 @@ export function Highlights({
           <h3 className="text-xl font-bold">{clipTitle(clip, mapName)}</h3>
           <span className="flex items-center gap-2 text-sm font-semibold">
             <Avatar className="size-6">
-              {player?.photo_url && (
-                <AvatarImage src={player.photo_url} alt="" />
-              )}
-              <AvatarFallback className="text-[10px]">
-                {clip.nick.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
+              <EquippedAvatar playerId={player?.player_id}>
+                {player?.photo_url && (
+                  <AvatarImage src={player.photo_url} alt="" />
+                )}
+                <AvatarFallback className="text-[10px]">
+                  {clip.nick.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </EquippedAvatar>
             </Avatar>
             {clip.nick} · ronda {clip.round}
           </span>

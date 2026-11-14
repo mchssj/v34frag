@@ -6,6 +6,7 @@ import type { ReactNode } from "react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { EquippedAvatar } from "@/features/shop/cosmetics"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card } from "@/components/ui/card"
 import { MapBackdrop } from "@/features/mixes/components/MapBackdrop"
@@ -296,10 +297,12 @@ function TopPlayers({ items }: { items: MmFeed["top"] }) {
                 )}
               </span>
               <Avatar className="size-8">
-                {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
-                <AvatarFallback className="text-[10px] font-semibold">
-                  {p.nick.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
+                <EquippedAvatar playerId={p.player_id}>
+                  {p.photo_url && <AvatarImage src={p.photo_url} alt="" />}
+                  <AvatarFallback className="text-[10px] font-semibold">
+                    {p.nick.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </EquippedAvatar>
               </Avatar>
               <span className="truncate font-medium">{p.nick}</span>
               <span className="ml-auto font-mono font-semibold tabular-nums">

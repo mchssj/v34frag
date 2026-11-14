@@ -648,6 +648,8 @@ export type MmFeed = {
   top: {
     position: number
     nick: string
+    /** La ficha: para el avatar puesto (bitácora 2026-11-14-avatar-en-toda-la-web). */
+    player_id?: string
     photo_url: string | null
     elo: number
     level: number

@@ -16,6 +16,7 @@ import { initialOf } from "@/components/brand/PlayerAvatar"
 import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme, type Theme } from "@/components/theme-provider"
 import { myPhotoUrl } from "@/features/profile/lib/photo"
+import { EquippedAvatar } from "@/features/shop/cosmetics"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,11 +79,18 @@ export function AccountMenu({
               className="gap-2.5 rounded-lg data-[state=open]:bg-sidebar-accent"
             >
               <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted text-[13px] font-semibold">
-                {avatar ? (
-                  <img src={avatar} alt="" className="size-full object-cover" />
-                ) : (
-                  initialOf(alias)
-                )}
+                {/* El avatar puesto, animado (bitácora 2026-11-14-avatar-en-toda-la-web). */}
+                <EquippedAvatar playerId={profile?.player?.id} animate>
+                  {avatar ? (
+                    <img
+                      src={avatar}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    initialOf(alias)
+                  )}
+                </EquippedAvatar>
               </span>
               <span className="flex min-w-0 flex-1 flex-col leading-[1.25]">
                 <span className="truncate text-sm font-semibold">{alias}</span>

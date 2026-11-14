@@ -12,7 +12,7 @@ import { cn } from "cn"
 import { ArrowRightIcon } from "lucide-react"
 
 import { LevelBadge } from "@/components/brand/LevelBadge"
-import { initialOf } from "@/components/brand/PlayerAvatar"
+import { PlayerAvatar } from "@/components/brand/PlayerAvatar"
 import { SectionHeading } from "@/components/brand/SectionHeading"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -192,21 +192,13 @@ function TopPlayers() {
                 >
                   {i + 1}
                 </span>
-                {p.photo_url ? (
-                  <img
-                    src={p.photo_url}
-                    alt=""
-                    loading="lazy"
-                    className="size-[34px] shrink-0 rounded-full object-cover"
-                  />
-                ) : (
-                  <span
-                    aria-hidden
-                    className="grid size-[34px] shrink-0 place-items-center rounded-full bg-secondary text-[13px] font-semibold"
-                  >
-                    {initialOf(p.alias)}
-                  </span>
-                )}
+                <PlayerAvatar
+                  alias={p.alias}
+                  photo={p.photo_url}
+                  playerId={p.id}
+                  className="size-[34px] after:hidden"
+                  fallbackClassName="text-[13px] text-foreground"
+                />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate font-semibold">{p.alias}</span>
                   <span className="truncate text-xs text-muted-foreground">

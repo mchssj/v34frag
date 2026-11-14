@@ -212,6 +212,7 @@ export function SubsPanel({
                       <PlayerAvatar
                         key={a.id}
                         alias={a.alias}
+                        playerId={a.id}
                         photo={a.photo}
                         className="size-6 ring-2 ring-card"
                       />

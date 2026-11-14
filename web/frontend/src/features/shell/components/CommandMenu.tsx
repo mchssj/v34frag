@@ -211,6 +211,7 @@ export function CommandMenu({
                     icon={
                       <PlayerAvatar
                         alias={p.alias}
+                        playerId={p.id}
                         photo={p.photo_url}
                         className="size-6"
                       />

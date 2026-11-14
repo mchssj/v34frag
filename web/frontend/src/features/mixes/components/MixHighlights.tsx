@@ -53,7 +53,11 @@ function MixMvp({ room }: { room: Room }) {
             ? [
                 [
                   aliases[i],
-                  r.data.photo_url ?? r.data.details?.avatar_url ?? null,
+                  {
+                    photo:
+                      r.data.photo_url ?? r.data.details?.avatar_url ?? null,
+                    id: r.data.id,
+                  },
                 ] as const,
               ]
             : []
@@ -70,7 +74,8 @@ function MixMvp({ room }: { room: Room }) {
         return p
           ? {
               nick: p.nick,
-              photo_url: p.alias ? (photos.get(p.alias) ?? null) : null,
+              photo_url: p.alias ? (photos.get(p.alias)?.photo ?? null) : null,
+              player_id: p.alias ? photos.get(p.alias)?.id : undefined,
             }
           : undefined
       }}

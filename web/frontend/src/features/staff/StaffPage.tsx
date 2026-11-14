@@ -56,6 +56,7 @@ function AdminCard({ m }: { m: Member }) {
       <div className="flex items-center gap-4">
         <PlayerAvatar
           alias={m.nick}
+          playerId={m.player_id}
           photo={m.photo_url}
           className="size-[72px] rounded-xl after:rounded-xl"
           imageClassName="rounded-xl"
@@ -103,6 +104,7 @@ function ModCard({ m, role }: { m: Member; role: ModRole }) {
     >
       <PlayerAvatar
         alias={m.nick}
+        playerId={m.player_id}
         photo={m.photo_url}
         className="size-11 rounded-lg after:rounded-lg"
         imageClassName="rounded-lg"
@@ -127,6 +129,7 @@ function VipChip({ m }: { m: Staff["vips"][number] }) {
     >
       <PlayerAvatar
         alias={m.nick}
+        playerId={m.player_id}
         photo={m.photo_url}
         className="size-8"
         fallbackClassName="text-[13px]"

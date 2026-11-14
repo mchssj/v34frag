@@ -83,6 +83,7 @@ export function SidePicker({
               >
                 <PlayerAvatar
                   alias={p.alias}
+                  playerId={p.id}
                   photo={p.photo}
                   className="size-5"
                 />

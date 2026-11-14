@@ -46,6 +46,7 @@ export function StarPlayer({ teamId }: { teamId: string }) {
       >
         <PlayerAvatar
           alias={star.alias}
+          playerId={star.id}
           photo={star.photo_url}
           className="size-16"
           fallbackClassName="bg-primary text-2xl font-bold text-primary-foreground"

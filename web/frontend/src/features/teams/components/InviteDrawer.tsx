@@ -149,6 +149,7 @@ export function InviteDrawer({
                     >
                       <PlayerAvatar
                         alias={p.alias}
+                        playerId={p.id}
                         photo={p.photo_url}
                         className="size-8"
                         fallbackClassName="text-[13px]"

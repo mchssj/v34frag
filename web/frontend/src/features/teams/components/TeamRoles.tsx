@@ -59,6 +59,7 @@ export function TeamRoles({ members }: { members: RosterEntry[] }) {
               >
                 <PlayerAvatar
                   alias={m.alias}
+                  playerId={m.player_id}
                   photo={m.photo_url}
                   className="size-6"
                   fallbackClassName="text-[10px]"
@@ -110,6 +111,7 @@ function RoleSpot({
             >
               <PlayerAvatar
                 alias={m.alias}
+                playerId={m.player_id}
                 photo={m.photo_url}
                 className="size-14"
                 fallbackClassName="text-lg"

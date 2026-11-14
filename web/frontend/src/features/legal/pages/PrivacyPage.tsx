@@ -252,10 +252,10 @@ const SECTIONS: LegalSection[] = [
             Los avatares y los fondos de miniperfil que subes: el archivo,
             cuándo lo subiste y cuánto pagaste. Quedan guardados en tu cuenta,
             aunque no los tengas puestos, hasta que los borres. Solo el que
-            tienes puesto se ve en público, en tu perfil, en el lobby de Jugar y
-            en las listas; los demás los ven solo tú y los administradores. Si
-            los borras o se sacan por una denuncia, se borra el archivo; el
-            registro del pago queda.
+            tienes puesto se ve en público: el avatar, en lugar de tu foto en
+            toda la web; el fondo de miniperfil, en el lobby de Jugar. Los demás
+            los ven solo tú y los administradores. Si los borras o se sacan por
+            una denuncia, se borra el archivo; el registro del pago queda.
           </li>
           <li>
             Las denuncias de imágenes que haces o te hacen: quién la mandó, qué

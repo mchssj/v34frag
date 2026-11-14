@@ -376,6 +376,7 @@ function CommentRow({
       >
         <PlayerAvatar
           alias={c.author.nick}
+          playerId={c.author.player_id}
           photo={c.author.photo_url}
           size="row"
         />

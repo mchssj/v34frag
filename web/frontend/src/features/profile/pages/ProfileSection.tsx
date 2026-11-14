@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import {
   AtSignIcon,
@@ -31,6 +32,7 @@ import { useAliasStatus } from "@/features/auth/lib/useAliasStatus"
 import { AuthField } from "@/components/brand/AuthField"
 import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { aliasFeedback } from "../lib/alias"
+import { usePlayerAvatar } from "@/features/shop/avatars"
 import { CoverCard } from "@/features/shop/CoverCard"
 
 import { AvatarPicker } from "../components/AvatarPicker"
@@ -65,6 +67,7 @@ export function ProfileSection() {
         alias={user.tag ?? "J"}
         details={profile.data.details}
         photo={myPhotoUrl(profile.data)}
+        playerId={profile.data.player?.id ?? null}
       />
       {/* (replanteo 113) La portada del perfil y el acceso a la Tienda. */}
       <CoverCard />
@@ -194,9 +197,12 @@ function DataCard({
   alias,
   details,
   photo,
+  playerId,
 }: {
   email: string
   alias: string
+  /** La ficha: si tiene un avatar puesto, se avisa que se ve en lugar de esta foto. */
+  playerId: string | null
   /** La foto que se ve en el resto de la web (myPhotoUrl). */
   photo: string | null
   details: {
@@ -207,6 +213,7 @@ function DataCard({
   } | null
 }) {
   const update = useUpdateProfile()
+  const equipped = usePlayerAvatar(playerId)
   const form = useForm<PersonalValues>({
     resolver: zodResolver(personalSchema),
     values: {
@@ -240,6 +247,19 @@ function DataCard({
             title="Avatar"
             hint="JPEG, PNG o WebP · máximo 1 MB. Se recorta a 256×256."
           />
+          {equipped && (
+            // Bitácora 2026-11-14-avatar-en-toda-la-web: en el resto de la web se ve el avatar puesto, no esta foto.
+            <p className="rounded-lg border bg-muted/40 px-3 py-2 text-[13px] text-muted-foreground">
+              Tienes puesto un avatar de la Tienda: se ve en vez de esta foto en
+              toda la web.{" "}
+              <Link
+                to="/shop"
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                Ir a la Tienda para sacártelo
+              </Link>
+            </p>
+          )}
           <div className="grid gap-3.5 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-[13px] font-medium">

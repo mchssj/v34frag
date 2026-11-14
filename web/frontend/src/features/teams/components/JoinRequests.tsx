@@ -75,6 +75,7 @@ function JoinRequestRow({
       >
         <PlayerAvatar
           alias={nick}
+          playerId={request.player.id}
           photo={request.player.photo_url}
           className="size-9"
           fallbackClassName="text-sm"

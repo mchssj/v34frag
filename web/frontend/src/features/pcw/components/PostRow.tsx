@@ -230,6 +230,7 @@ export function PostRow({
                 >
                   <PlayerAvatar
                     alias={pl.alias}
+                    playerId={pl.id}
                     photo={pl.photo}
                     className="size-5"
                   />

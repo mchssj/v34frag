@@ -570,6 +570,7 @@ function PlayersDialog({
                   >
                     <PlayerAvatar
                       alias={p.alias}
+                      playerId={p.id}
                       photo={p.photo_url}
                       size="row"
                     />

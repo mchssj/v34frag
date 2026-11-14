@@ -126,6 +126,7 @@ function RosterRow({
       >
         <PlayerAvatar
           alias={member.alias}
+          playerId={member.player_id}
           photo={member.photo_url}
           className="size-8"
           fallbackClassName="text-[13px]"

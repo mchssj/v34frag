@@ -68,6 +68,7 @@ export function RosterPicker({
             <span className="inline-flex h-8 items-center gap-1.5 rounded-full border bg-card pr-1 pl-1">
               <PlayerAvatar
                 alias={pl.alias}
+                playerId={pl.id}
                 photo={pl.photo}
                 className="size-6"
               />

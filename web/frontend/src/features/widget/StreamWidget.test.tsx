@@ -1,8 +1,14 @@
-import { render, screen } from "@testing-library/react"
+import { render as rtlRender, screen } from "@testing-library/react"
+import type { ReactElement } from "react"
+
+import { withQuery } from "@/test/render"
 import { describe, expect, it } from "vitest"
 
 import { StreamWidget, type WidgetData } from "./StreamWidget"
 import type { Part } from "./options"
+
+// Con React Query: la foto busca el avatar puesto (bitácora 2026-11-14-avatar-en-toda-la-web).
+const render = (ui: ReactElement) => rtlRender(ui, { wrapper: withQuery() })
 
 // La foto del perfil en el widget (bitácora 2026-11-11-widget-foto-de-perfil).
 

@@ -72,6 +72,7 @@ const COLUMNS: DataColumn<PlayerSummary>[] = [
         <PlayerAvatar
           size="row"
           alias={p.alias}
+          playerId={p.id}
           photo={p.photo_url}
           className="size-[34px]"
         />

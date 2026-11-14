@@ -239,7 +239,12 @@ function Roster({ side, label }: { side: PcwSide; label: string }) {
             key={p.id}
             className="inline-flex items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-0.5 text-xs"
           >
-            <PlayerAvatar alias={p.alias} photo={p.photo} className="size-5" />
+            <PlayerAvatar
+              alias={p.alias}
+              playerId={p.id}
+              photo={p.photo}
+              className="size-5"
+            />
             {p.alias}
           </li>
         ))}
