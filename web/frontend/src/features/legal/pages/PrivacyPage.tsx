@@ -182,7 +182,7 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             La grabación de la partida (demo de SourceTV), que muestra todo lo
-            que pasa en el juego, incluido el chat escrito.
+            que pasa en el juego, incluidos el chat escrito y el de voz.
           </li>
           <li>
             <strong>Tu dirección IP</strong>, con la fecha, el servidor y el
@@ -467,9 +467,11 @@ const SECTIONS: LegalSection[] = [
           Los videos son grabaciones del juego, en primera persona del jugador
           que hizo la jugada. Muestran lo mismo que la demo de la partida: el
           mapa, los nombres que los jugadores usaban dentro del juego y el
-          registro de eliminaciones. No incluyen voz, cámara ni ningún dato
-          personal fuera del juego. Las mejores jugadas también se publican en
-          el canal de clips del Discord de la liga.
+          registro de eliminaciones. También se escucha lo que los jugadores
+          dijeron por el chat de voz durante la jugada, igual que en la
+          partida. No incluyen cámara ni ningún dato personal fuera del juego.
+          Las mejores jugadas también se publican en el canal de clips del
+          Discord de la liga.
         </p>
       </>
     ),

@@ -107,7 +107,8 @@ def main():
     os.makedirs(cfg["out_dir"], exist_ok=True)
     name = a.name or f"prueba_{match['map']}_{clip['type']}_r{clip['round']}_{clip['id'][:8]}_{cfg.get('client', 'clientmod')}"
     out = os.path.join(cfg["out_dir"], name + ".mp4")
-    render_clip.encode(cfg, prefixes[job["key"]], job["segs"], d.tick_interval, out, d.header["playback_ticks"])
+    render_clip.encode(cfg, prefixes[job["key"]], job["segs"], d.tick_interval, out, d.header["playback_ticks"],
+                       voice=d.voice)
     log(f"Listo: {out} ({os.path.getsize(out) / 1e6:.1f} MB)")
 
 

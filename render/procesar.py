@@ -306,7 +306,7 @@ def process_match(cfg, api, r2, drive, job):
         out = os.path.join(cfg["out_dir"], f"{c['id']}.mp4")
         try:
             last = d.header["playback_ticks"]
-            render_clip.encode(cfg, prefixes[j["key"]], j["segs"], d.tick_interval, out, last)
+            render_clip.encode(cfg, prefixes[j["key"]], j["segs"], d.tick_interval, out, last, voice=d.voice)
             seconds = round(sum(render_clip.segment_frames(s, d.tick_interval, cfg) + render_clip.hold_frames(cfg, s, last)
                                 for s in j["segs"]) / cfg["fps"], 2)
             size = os.path.getsize(out)

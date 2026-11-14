@@ -38,6 +38,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import leer_demo  # noqa: E402
+import voces  # noqa: E402
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = None  # archivo donde se copia la salida (la ventana elevada se cierra al terminar)
@@ -158,6 +159,7 @@ SCAN_CONSOLE = 0x29  # la tecla a la izquierda del 1 (º en el teclado español,
 # cierra: la cierran hideconsole y gameui_hide, que van en cada línea.
 KEY_CONSOLE_V34 = (0x25, 0x4B)  # K
 KEY_CTRL = (0x1D, 0x11)  # cierra el control del espectador del v34 al cargar la demo
+GAME_AUDIO_ADVANCE_V34 = 0.17  # segundos que se adelanta el sonido del juego del v34 (ffmpeg_segment)
 
 
 def post_key(hwnd, scan, vk=None):
@@ -277,6 +279,10 @@ class Game:
             "con_enable 1",
             'bind "`" "toggleconsole"',
             'bind "k" "toggleconsole"' if self.client == "v34" else "",
+            # El v34 decodifica como Speex la voz Opus de ClientMod y sale ruido: queda prendida pero sin volumen
+            # (voice_scale 0), para que se vean los íconos de quién habla, y voces.py la mezcla al armar el video
+            # (2026-11-14). voice_enable y voice_modenable pueden haber quedado en 0 en la instalación.
+            "voice_enable 1; voice_modenable 1; voice_scale 0" if self.client == "v34" else "",
             "con_logfile cmleague/render.log",
             f"host_framerate {c['fps']}",
             "fps_max 0",
@@ -510,10 +516,11 @@ def count_frames(prefix):
     return len(glob.glob(prefix + "*.tga"))
 
 
-def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
+def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0, voices=None):
     """Un tramo: los TGA y el WAV de startmovie a H.264 y AAC. skip: cuadros del principio que se descartan (los
     primeros cuadros después de un salto salen sin el arma: la cámara todavía no está en primera persona). hold:
-    cuadros que se repite el último al final (el tramo llega al final de la demo), con silencio."""
+    cuadros que se repite el último al final (el tramo llega al final de la demo), con silencio. voices: un .wav con
+    las voces del tramo (voces.track, con el v34), que se mezcla con el sonido del juego con un limitador."""
     tgas = sorted(glob.glob(prefix + "*.tga"))
     first = tgas[0][len(prefix):-4]
     pattern = f"{prefix}%0{len(first)}d.tga"
@@ -530,15 +537,31 @@ def ffmpeg_segment(cfg, prefix, frames, out, skip=0, hold=0):
         recent = [f"{p} ({os.path.getsize(p)} bytes)" for p in glob.glob(os.path.join(game_dir, "**", "*.wav"), recursive=True)
                   if time.time() - os.path.getmtime(p) < 3600]
         log("  .wav recientes en " + game_dir + ": " + (", ".join(recent[:10]) or "ninguno"))
+    # El sonido del juego del v34 llega ~170 ms tarde respecto de la imagen (el clip de spr en cbble contra el de
+    # ClientMod, 2026-11-14): se adelanta. Configurable con game_audio_advance en config.json.
+    advance = cfg.get("game_audio_advance", GAME_AUDIO_ADVANCE_V34 if cfg.get("client") == "v34" else 0)
     if has_audio:
-        cmd += ["-ss", f"{skip / cfg['fps']:.3f}", "-i", wav]
+        cmd += ["-ss", f"{skip / cfg['fps'] + advance:.3f}", "-i", wav]
+    if voices:
+        cmd += ["-i", voices]  # ya empieza en el primer cuadro del tramo: sin -ss
     vf = f"scale={cfg['width']}:{cfg['height']}"
     if hold:
         # Se cortan los cuadros del tramo antes de repetir el último: el cuadro congelado es el del último tick.
         vf = f"trim=end_frame={frames},{vf},tpad=stop_mode=clone:stop={hold}"
     cmd += ["-frames:v", str(frames + hold), "-vf", vf, "-c:v", "libx264",
             "-crf", str(cfg["crf"]), "-preset", cfg["preset"], "-pix_fmt", "yuv420p"]
-    cmd += ["-c:a", "aac", "-b:a", "128k"] + (["-af", "apad"] if hold else []) + ["-shortest"] if has_audio else ["-an"]
+    if voices:
+        # Las voces (48 kHz, mono) al formato del sonido del juego (44,1 kHz, estéreo): sin esto, amix tomaba el de
+        # las voces y el video salía mono.
+        fmt = "aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo"
+        mix = (f"[1:a]{fmt}[g];[2:a]{fmt}[v];[g][v]amix=inputs=2:duration=longest:normalize=0,"
+               "alimiter=limit=0.95,apad[a]" if has_audio else f"[1:a]{fmt},apad[a]")
+        cmd += ["-filter_complex", mix, "-map", "0:v", "-map", "[a]", "-c:a", "aac", "-b:a", "128k", "-shortest"]
+    elif has_audio:
+        # apad también con el adelanto: el sonido queda más corto que el video y -shortest lo cortaría.
+        cmd += ["-c:a", "aac", "-b:a", "128k"] + (["-af", "apad"] if hold or advance else []) + ["-shortest"]
+    else:
+        cmd += ["-an"]
     subprocess.run(cmd + [out], check=True)
 
 
@@ -756,16 +779,33 @@ def hold_frames(cfg, seg, last_tick):
     return round(END_HOLD_SECONDS * cfg["fps"]) if last_tick and seg[1] >= last_tick else 0
 
 
-def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None):
+def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None, voice=None):
     """Los tramos de una jugada a un .mp4 (uno por tramo, unidos con concat sin recodificar). Borra los cuadros.
-    last_tick: el último tick de la demo; el tramo que llega a él termina con el último cuadro congelado."""
-    parts = []
+    last_tick: el último tick de la demo; el tramo que llega a él termina con el último cuadro congelado.
+    voice: los paquetes de voz de la demo (leer_demo.Demo.voice). Con el v34 se decodifican y se mezclan en cada
+    tramo (voces.py); con ClientMod no hace falta, porque los reproduce el juego."""
+    parts, voice_wavs = [], []
     base = os.path.splitext(out)[0]
+    use_voice = cfg.get("client") == "v34" and voice
+    if use_voice and not voces.is_opus(voice):
+        log("Aviso: la voz de la demo no son cuadros Opus de ClientMod: el clip va sin voces.")
+        use_voice = False
     try:
         for i, (prefix, seg) in enumerate(zip(prefixes, segs)):
             part = f"{base}.tramo{i}.mp4"
-            ffmpeg_segment(cfg, prefix, segment_frames(seg, tick_interval, cfg), part, skip=lead_frames(cfg),
-                           hold=hold_frames(cfg, seg, last_tick))
+            frames, hold = segment_frames(seg, tick_interval, cfg), hold_frames(cfg, seg, last_tick)
+            voices_wav = None
+            if use_voice:
+                voices_wav = f"{base}.voces{i}.wav"
+                voice_wavs.append(voices_wav)
+                try:
+                    if not voces.track(cfg["ffmpeg"], voice, tick_interval, seg[0], (frames + hold) / cfg["fps"],
+                                       voices_wav, delay=cfg.get("voice_delay", voces.DELAY)):
+                        voices_wav = None  # nadie habla en el tramo
+                except Exception as e:  # noqa: BLE001 — sin voces, pero la jugada se graba igual
+                    log(f"Aviso: {os.path.basename(prefix)} sin voces: {e}")
+                    voices_wav = None
+            ffmpeg_segment(cfg, prefix, frames, part, skip=lead_frames(cfg), hold=hold, voices=voices_wav)
             parts.append(part)
         if len(parts) == 1:
             subprocess.run([cfg["ffmpeg"], "-y", "-loglevel", "error", "-i", parts[0], "-c", "copy",
@@ -777,7 +817,7 @@ def encode(cfg, prefixes, segs, tick_interval, out, last_tick=None):
                             "-c", "copy", "-movflags", "+faststart", out], check=True)
             os.remove(lst)
     finally:
-        for p in parts:
+        for p in parts + voice_wavs:
             if os.path.exists(p):
                 os.remove(p)
         for prefix in prefixes:

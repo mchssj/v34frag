@@ -45,6 +45,16 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Qué es:** el buscador de arriba (Ctrl+K) trae jugadores, equipos y torneos además de las páginas ([`2026-11-13-buscador-global`](bitacora/2026-11-13-buscador-global/)). Solo la web y el manual.
 - **Desplegado:** la web y la API `92ea3367f5c8` (la API, por la página nueva del manual). No toca la base ni los servidores.
 
+## Las voces de los jugadores en los clips del v34 (2026-11-14): sin desplegar
+
+- **Qué es:** con `"client": "v34"`, el render saca las voces de la demo (Opus de ClientMod), las decodifica con FFmpeg y las mezcla en cada tramo; la voz del juego queda sin volumen para que se vean los íconos, y el sonido del juego se adelanta 0,17 s ([`2026-11-14-render-voces-opus`](bitacora/2026-11-14-render-voces-opus/)). También corrige `/privacidad`: los clips y las demos incluyen el chat de voz.
+- **Hecho:** commiteado en `main` el 2026-11-14. Probado en la PC de Daniel, sin el juego y con el 4k de spr en cbble.
+- **Falta:**
+  1. `git pull` en el portátil, con la tarea "CMLeague clips" sin una corrida a mitad.
+  2. Grabar el clip de siege en el portátil con `render\config.v34.json` y escucharlo.
+  3. Pasar la tarea del portátil a `"client": "v34"`.
+  4. Desplegar la web (por `/privacidad`) y publicar las páginas de `terms/`.
+
 ## Clips de clutch perdido y de vivos sin nombre escribible (2026-11-13): commiteado, falta el portátil
 
 - **Qué es:** el render dejaba `skipped` clips que sí se podían grabar: los dos de "New™ tam" que Daniel reprocesó y tres de "lephyxzz漏斗" ([`2026-11-13-render-clutch-perdido-y-ancla-muerta`](bitacora/2026-11-13-render-clutch-perdido-y-ancla-muerta/)). Solo `render/`.

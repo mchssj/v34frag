@@ -57,6 +57,10 @@ class Bits:
     def bit(self):
         return self.read(1) == 1
 
+    def bytes(self, n):
+        """n bytes seguidos (sin alinear), en el orden en que están."""
+        return self.read(n * 8).to_bytes(n, "little") if n else b""
+
     def sint(self, n):
         v = self.read(n)
         return v - (1 << n) if v & (1 << (n - 1)) else v
@@ -116,6 +120,10 @@ class Demo:
         self.names = {}  # steamid -> [(tick, nombre)], para saber cómo se llamaba en cada momento
         self.slots = {}  # steamid -> [(tick, índice de entidad)], el número que acepta spec_player
         self.events = []
+        # La voz de los jugadores (svc_VoiceData): [(tick, cliente, datos)], con cliente el índice de entidad - 1. Con
+        # ClientMod son cuadros Opus aunque svc_VoiceInit diga otro códec (voces.py, 2026-11-14).
+        self.voice = []
+        self.voice_codec = None
         self.server_tick = 0
         self.errors = []
 
@@ -262,10 +270,14 @@ class Demo:
                 self.safe_update(tb, Bits(br.data, br.pos, end), count, tick)
                 br.pos = end
             elif t == SVC_VOICEINIT:
-                br.string(); br.read(8)
+                self.voice_codec = br.string(); br.read(8)
             elif t == SVC_VOICEDATA:
-                br.read(8)  # en este motor no hay byte de proximidad
-                br.skip(br.read(16))
+                client = br.read(8)  # en este motor no hay byte de proximidad
+                n = br.read(16)
+                if n % 8 == 0:
+                    self.voice.append((tick, client, br.bytes(n // 8)))
+                else:
+                    br.skip(n)
             elif t == SVC_SOUNDS:
                 reliable = br.bit()
                 if not reliable:
