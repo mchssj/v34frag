@@ -7,6 +7,14 @@ export const COMMUNITY = {
   steamGroupUrl: "https://steamcommunity.com/groups/clientmodleague",
 }
 
+/**
+ * ClientMod, el cliente de CS:S v34 con el que se juega (guía de la primera vez, docs/bitacora/2026-11-14-guia-primera-vez).
+ * Link de descarga oficial confirmado por Kyan (2026-11-14).
+ */
+export const CLIENTMOD = {
+  downloadUrl: "https://clientmod.ru/",
+}
+
 /** La tarjeta del Discord en el inicio. Los números (en línea y miembros) los da la API: GET /api/v1/community/discord. */
 export const DISCORD = {
   inviteUrl: COMMUNITY.discordUrl,

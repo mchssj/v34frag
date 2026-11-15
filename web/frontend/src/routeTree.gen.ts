@@ -28,6 +28,7 @@ import { Route as AppShopRouteImport } from './routes/_app/shop'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoGuiaRouteImport } from './routes/demo.guia'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
@@ -165,6 +166,11 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => AuthRoute,
+} as any)
+const DemoGuiaRoute = DemoGuiaRouteImport.update({
+  id: '/demo/guia',
+  path: '/demo/guia',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
   id: '/demo/matchmaking',
@@ -405,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/guia': typeof DemoGuiaRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/pcw': typeof DemoPcwRoute
@@ -467,6 +474,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/guia': typeof DemoGuiaRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/pcw': typeof DemoPcwRoute
@@ -533,6 +541,7 @@ export interface FileRoutesById {
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/guia': typeof DemoGuiaRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/pcw': typeof DemoPcwRoute
@@ -598,6 +607,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/demo/guia'
     | '/demo/matchmaking'
     | '/demo/medallas'
     | '/demo/pcw'
@@ -660,6 +670,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/demo/guia'
     | '/demo/matchmaking'
     | '/demo/medallas'
     | '/demo/pcw'
@@ -725,6 +736,7 @@ export interface FileRouteTypes {
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/guia'
     | '/demo/matchmaking'
     | '/demo/medallas'
     | '/demo/pcw'
@@ -780,6 +792,7 @@ export interface RootRouteChildren {
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
   WidgetRoute: typeof WidgetRoute
+  DemoGuiaRoute: typeof DemoGuiaRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoMedallasRoute: typeof DemoMedallasRoute
   DemoPcwRoute: typeof DemoPcwRoute
@@ -923,6 +936,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/register'
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/demo/guia': {
+      id: '/demo/guia'
+      path: '/demo/guia'
+      fullPath: '/demo/guia'
+      preLoaderRoute: typeof DemoGuiaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/demo/matchmaking': {
       id: '/demo/matchmaking'
@@ -1376,6 +1396,7 @@ const rootRouteChildren: RootRouteChildren = {
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
   WidgetRoute: WidgetRoute,
+  DemoGuiaRoute: DemoGuiaRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoMedallasRoute: DemoMedallasRoute,
   DemoPcwRoute: DemoPcwRoute,

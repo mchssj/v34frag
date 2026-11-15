@@ -2,6 +2,14 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## Guía de la web la primera vez (2026-11-14): en `feat/guia-primera-vez` (desde `main`), sin desplegar
+
+- **Estado:** pedida por Kyan. Al entrar por primera vez, después de la Bienvenida, se abre una guía en pasos: qué es ClientMod, si lo tiene instalado (si no, la descarga de `https://clientmod.ru/`) y si tiene la consola activada; después Jugar, SteamID, Partidas y ranking, equipos y torneos, y Ayuda. En español, portugués de Brasil e inglés. Solo web; prototipo en `/demo/guia`. Detalle: [`2026-11-14-guia-primera-vez`](bitacora/2026-11-14-guia-primera-vez/).
+- **Falta:**
+  - Probarla con una cuenta nueva real (registro → Bienvenida → Para ti).
+  - Confirmar los nombres del menú de Opciones de ClientMod para activar la consola, y que un hablante revise el portugués y el inglés.
+  - Desplegar la web y publicar el changelog (CMLeague 2.9.51).
+
 ## La portada se encuadra más fácil (2026-11-15): desplegado el 2026-11-15
 
 - **Qué es:** pedido por Daniel. La portada del perfil pasa a 3:1 (2400×800) y se puede alejar al encuadrarla; lo que sobra se rellena con la misma foto difuminada ([`2026-11-15-portada-encuadre`](bitacora/2026-11-15-portada-encuadre/)). La API y la web, sin cambios en la base.
