@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en la copia local (2026-11-15). Rama `feat/pines-de-torneo` (worktree `v34frag-pines`), sobre `origin/main` `089c5788`. **Sin commit y sin desplegar.** No toca los servidores de juego ni el plugin. No se probó en el navegador: la extensión de Chrome no estaba conectada.
+**Desplegado el 2026-11-15**: la `123` en producción, y la API y la web `8b39086f0aca` (rama `feat/pines-de-torneo`, commits `e502da3a` y `8b39086f`). No toca los servidores de juego ni el plugin. `main` todavía no tiene estos commits.
 
 ## Archivos
 
@@ -26,19 +26,15 @@ Implementado y probado en la copia local (2026-11-15). Rama `feat/pines-de-torne
 | `web/frontend/src/features/shell/notifications/` | Avisos `event_pin` y `event_award` |
 | `docs/manual/…` | Nuevas: `jugador/vitrina-y-pines.md` y `organizador/pines-y-premios.md`. Actualizadas: `jugador/logros.md`, `organizador/crear-torneo.md`, `resultados-y-llave.md`, `subir-torneo-historico.md` y `admin/medallas.md` |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-15)
 
-1. **Lista previa**, solo leyendo de producción en una transacción de solo lectura, para mostrársela a Daniel:
-   - las medallas `source = 'event'` (el 2026-11-13 eran 3, de «Torneo Mercy 2020»): pasan a pines;
-   - los torneos terminados y el pin que le tocaría a cada equipo.
+1. **Lista previa**, solo leyendo de producción en una transacción de solo lectura: la `114` estaba y la `123` no. Había 12 medallas de torneo (`source = 'event'`): TORNEO TITAN (4 campeón y 3 finalista), Torneo Mercy 2020 (1 y 2) y Torneo LocalStrike 2019 (2 campeón), los tres históricos y terminados. También había 17 medallas de campeón o finalista dadas a mano por torneos de afuera, que no se tocan.
+2. **Base:** se aplicó la `123` por el túnel (`psql -v ON_ERROR_STOP=1 -f`) y después `notify pgrst, 'reload schema'`. Resultado: «12 medallas de torneo pasan a pines; 16 pines de jugador en total». Después: 0 medallas `source = 'event'`, 0 avisos `event_pin` y `event_award`, y las dos definiciones manuales y activas.
+3. **API:** había 7 jugadores en la cola del matchmaking, así que se esperó a que su sala pasara a `live` (el veto pasa por la API; la partida en juego no, porque el plugin manda a `/rest/v1`). `deploy/vps/desplegar.sh api` falló en `build:check` con `EACCES` en el 18787, porque Windows (Hyper-V o WSL) tenía reservado el rango 18713–18812. Se agregó `BUILD_CHECK_PORT` (commit `8b39086f`) y se desplegó con `BUILD_CHECK_PORT=28787` y `--sin-pruebas`: las 654 pruebas ya habían pasado en la corrida anterior con el mismo código. `/api/health` respondió `8b39086f0aca`.
+4. **Web:** `deploy/vps/desplegar.sh web`, con 798 pruebas.
+5. Falta publicar `CHANGELOG_DISCORD.txt`.
 
-   Las 18 medallas de campeón dadas a mano por torneos de afuera no se tocan.
-2. **Base:** aplicar la `123` por el túnel (`psql -v ON_ERROR_STOP=1 -f`) y después `notify pgrst, 'reload schema'`. La migración se cancela sola si a alguien le faltara el pin de una medalla que tenía.
-3. **API:** `deploy/vps/desplegar.sh api`, con la cola del matchmaking vacía.
-4. **Web:** `deploy/vps/desplegar.sh web`.
-5. Publicar `CHANGELOG_DISCORD.txt`.
-
-Orden obligatorio: la base antes que la API (la API nueva lee `team_pin_list` y `events.pins`).
+Orden obligatorio: la base antes que la API (la API nueva lee `team_pin_list` y `events.pins`) y la API antes que la web (la web usa las rutas nuevas).
 
 ## Pruebas
 
@@ -61,11 +57,17 @@ La `123` quedó aplicada en la copia local (139 medallas de torneo pasaron a pin
 - La suite completa de integración: 216 de 227. Las 11 que fallan son de `claim`, `hud`, `live` y `shop`, y fallan igual con los triggers de pines apagados: son de datos de la copia local (configuración de la tienda, HUD, tiempos), no de este cambio.
 - `pnpm build`: valida el manual (68 páginas).
 
+### Producción
+
+- `GET /api/v1/events/{TORNEO TITAN}/pins`: estilo `anillos`, Londonmint campeón, Ogaliciosos finalista, Tasitas tercero. Premios pendientes de elegir: los cinco encendidos por defecto, porque los históricos no tienen stats.
+- `GET /api/v1/players/{un campeón}/showcase`: su pin de campeón como primer destacado.
+- La sala del matchmaking siguió en `live` durante el despliegue.
+
 ### Web
 
 - `tsc -b` sin errores, ESLint sin errores.
 - Vitest: 798 de 798.
-- **No se probó en el navegador.**
+- Probado en la copia local con Chromium sin interfaz (Playwright): medidas y capturas del Resumen. En el navegador de Daniel, la Vitrina y elegir destacados en local.
 
 ## En qué se apartó del plan
 
