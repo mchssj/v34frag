@@ -19,7 +19,12 @@ import {
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { useMine } from "@/features/ranking/components/parts"
 import { playersCosmeticsOptions } from "@/features/shop/api"
-import { CardBackground, FramedAvatar, NameFx } from "@/features/shop/cosmetics"
+import {
+  AvatarMedia,
+  CardBackground,
+  FramedAvatar,
+  NameFx,
+} from "@/features/shop/cosmetics"
 import { fileUrl, posterUrl, type CosmeticsFull } from "@/features/shop/types"
 import { fmtClock, secondsLeft } from "./labels"
 import { PlayerName } from "./PlayerMenu"
@@ -198,7 +203,7 @@ function MemberCard({
           className="absolute top-2.5 right-2.5 size-4 text-primary"
         />
       )}
-      {cosmetics?.frame || cosmetics?.avatar ? (
+      {cosmetics?.frame ? (
         // La foto (o el avatar) queda en 64px, como sin marco: el 75 % central de 86.
         <FramedAvatar
           alias={card.nick}
@@ -209,11 +214,21 @@ function MemberCard({
           className="-my-[11px]"
         />
       ) : (
+        // Sin marco, el avatar puesto va en el mismo círculo que la foto, animado.
         <Avatar className="size-16 ring-2 ring-foreground/10">
-          {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
-          <AvatarFallback className="text-base font-semibold">
-            {initials}
-          </AvatarFallback>
+          {cosmetics?.avatar && fileUrl(cosmetics.avatar) ? (
+            <AvatarMedia
+              avatar={cosmetics.avatar}
+              className="size-full rounded-full"
+            />
+          ) : (
+            <>
+              {card.photo_url && <AvatarImage src={card.photo_url} alt="" />}
+              <AvatarFallback className="text-base font-semibold">
+                {initials}
+              </AvatarFallback>
+            </>
+          )}
         </Avatar>
       )}
       <span className="flex max-w-full items-center gap-1.5 text-sm font-semibold">

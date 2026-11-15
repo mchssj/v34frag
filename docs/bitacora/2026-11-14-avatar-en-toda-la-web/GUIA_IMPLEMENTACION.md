@@ -41,6 +41,10 @@ Con la tienda, en la misma tanda: es solo la web (`deploy/vps/desplegar.sh web`)
 - **`initialOf` a un archivo aparte** (`components/brand/initial.ts`), para que `PlayerAvatar` pueda usar `AvatarMedia` sin un import circular con `cosmetics.tsx`.
 - **No hizo falta tocar la API:** los únicos lugares sin id de la ficha (el feed de Jugar y los destacados de un mix) ya tenían el dato en el cliente.
 
+## Después del despliegue
+
+- **El avatar salía casi cuadrado en la tarjeta del grupo de Jugar** (lo vio Daniel, 2026-11-14): sin marco de la Tienda, la foto va en un círculo, pero el avatar usaba el dibujo del marco (`FramedAvatar`, recorte `rounded-[8%]`). Ahora, sin marco, el avatar va en el mismo círculo que la foto, animado (`features/matchmaking/GroupSlots.tsx`). Con un marco puesto queda como antes: el arte del marco está hecho para ese recorte, y ahí la foto se ve igual. Pruebas del matchmaking: 108 en verde. Sin desplegar todavía.
+
 ## Cómo revertir
 
 Antes de desplegar, volver estos archivos. Después: la web anterior (`ln -sfn`, ver `deploy/vps/README.md`). No hay nada en la base.
