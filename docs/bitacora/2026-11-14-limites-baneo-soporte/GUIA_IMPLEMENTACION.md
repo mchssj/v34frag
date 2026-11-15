@@ -56,7 +56,7 @@ Vuelta atrás: la API y la web `355f10ee714c` (`ln -sfn`, ver `deploy/vps/README
 
 ## Incidentes
 
-- **La `117` quedó en producción con los acentos rotos.** Al aplicarla el 2026-11-14, el archivo se leyó como WIN1252 y no como UTF-8, y con `\r\n`. Diez funciones tienen textos como "ElegÃ­" en vez de "Elegí", y así le llegan al soporte los mensajes de error: `ban_create`, `ban_update`, `ban_support_quota`, `ban_lift`, `clip_reject`, `clip_reprocess`, `clip_review_ok`, `mm_admin_lists`, `profile_comment_delete` y `team_staff_remove_logo`. La `121` reescribió bien las tres primeras. Las otras siete siguen igual: es un arreglo aparte, pendiente de que Daniel lo pida.
+- **La `117` quedó en producción con los acentos rotos.** Al aplicarla el 2026-11-14, el archivo se leyó como WIN1252 y no como UTF-8, y con `\r\n`. Diez funciones tienen textos como "ElegÃ­" en vez de "Elegí", y así le llegan al soporte los mensajes de error: `ban_create`, `ban_update`, `ban_support_quota`, `ban_lift`, `clip_reject`, `clip_reprocess`, `clip_review_ok`, `mm_admin_lists`, `profile_comment_delete` y `team_staff_remove_logo`. La `121` reescribió bien las tres primeras. Las otras siete, y tres comentarios, las arregló la `122` el 2026-11-15 ([`2026-11-15-acentos-117`](../2026-11-15-acentos-117/)).
 - **CRLF en las pruebas:** con `core.autocrlf`, Git deja los `.sql` con CRLF y el psql del contenedor no lee `\i :r121`. `probar_121.sh` les quita los `\r` antes de copiarlos.
 
 ## Ramas

@@ -17,7 +17,7 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Desplegado** (commit `add29312`): la prueba en producción con rollback (12 de 12), la `121` a las 05:31 UTC, y la API y la web `add29312b03b`.
 - **Falta:**
   1. Publicar `terms/terminos.html` y el changelog 2.9.48 en Discord.
-  2. **Acentos rotos de la `117` en producción:** siete funciones siguen con textos como "ElegÃ­" (`ban_lift`, `clip_reject`, `clip_reprocess`, `clip_review_ok`, `mm_admin_lists`, `profile_comment_delete` y `team_staff_remove_logo`). Arreglarlas solo si Daniel lo pide (ver la guía, "Incidentes").
+  2. ~~Acentos rotos de la `117` en producción~~: arreglados el 2026-11-15 con la `122` ([`2026-11-15-acentos-117`](bitacora/2026-11-15-acentos-117/)).
 
 ## Rol Soporte (2026-11-13): desplegado el 2026-11-14
 
