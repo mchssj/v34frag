@@ -12341,7 +12341,7 @@ export interface paths {
         put?: never;
         /**
          * Subir mi portada
-         * @description `multipart/form-data`, campo `file`. Reemplaza a la anterior. JPEG, PNG o WebP de hasta 1 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).
+         * @description `multipart/form-data`, campo `file`. Reemplaza a la anterior. JPEG, PNG o WebP de hasta 1 MB, de proporción 3:1, entre 900×300 y 2400×800 (el frontend lo recorta antes de subirlo).
          */
         post: {
             parameters: {
@@ -26132,7 +26132,7 @@ export interface components {
         };
         ProfileDetails: {
             avatar_url: string | null;
-            /** @description Portada del perfil, 4:1 (replanteo 113): POST y DELETE /me/cover */
+            /** @description Portada del perfil, 3:1 (las subidas antes del 2026-11-15, 4:1; replanteo 113): POST y DELETE /me/cover */
             cover_url: string | null;
             real_name: string | null;
             country: string | null;
@@ -27098,7 +27098,7 @@ export interface components {
         /** @description Stats por mapa, medallas, historial de equipos y partidas van en sus listados: /players/{id}/map-stats, /medals, /teams y /matches */
         PlayerDetail: components["schemas"]["PlayerSummary"] & {
             cosmetics?: components["schemas"]["CosmeticsFull"];
-            /** @description Portada del perfil (4:1); null si no tiene o si su perfil es privado */
+            /** @description Portada del perfil (3:1; las subidas antes del 2026-11-15, 4:1); null si no tiene o si su perfil es privado */
             cover_url: string | null;
             verification: components["schemas"]["PlayerVerification"];
             /** @description SteamID principal. Solo para el dueño y los admins: para los demás, null */
@@ -28820,7 +28820,7 @@ export interface components {
         CoverUpload: {
             /**
              * Format: binary
-             * @description JPEG, PNG o WebP de hasta 1 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).
+             * @description JPEG, PNG o WebP de hasta 1 MB, de proporción 3:1, entre 900×300 y 2400×800 (el frontend lo recorta antes de subirlo).
              */
             file: string;
         };

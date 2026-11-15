@@ -31,6 +31,7 @@ export function AvatarCropDialog({
   aspect = 1,
   video = false,
   description = "Arrástrala y usa el zoom para que quede como quieres.",
+  minZoom = 1,
 }: {
   src: string
   busy: boolean
@@ -44,6 +45,11 @@ export function AvatarCropDialog({
   /** `src` es un video (MP4 o WebM): se encuadra mientras se reproduce. Un GIF va como imagen y también se mueve. */
   video?: boolean
   description?: string
+  /**
+   * Menor a 1 deja alejar: la imagen puede quedar más chica que el marco y moverse fuera de él (la
+   * portada; quien recorta rellena lo que sobra). Por defecto 1: la imagen cubre siempre el marco.
+   */
+  minZoom?: number
 }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -73,6 +79,8 @@ export function AvatarCropDialog({
             // La imagen cubre el marco y el círculo lo ocupa entero.
             objectFit="cover"
             showGrid={false}
+            minZoom={minZoom}
+            restrictPosition={minZoom >= 1}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={(_, pixels) => {
@@ -84,7 +92,7 @@ export function AvatarCropDialog({
         <div className="flex items-center gap-3 text-muted-foreground">
           <ZoomOutIcon className="size-4 shrink-0" aria-hidden />
           <Slider
-            min={1}
+            min={minZoom}
             max={3}
             step={0.01}
             value={[zoom]}

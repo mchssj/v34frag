@@ -54,7 +54,8 @@ import { userExists, vipStatusOf } from '../services/vip';
 type C = Context<AppEnv>;
 const tags = ['Tienda'];
 
-const COVER_SHAPE: ImageShape = { what: 'La portada', ratio: 4, tolerance: 0.05, shape: 'de proporción 4:1', min: [800, 200], max: [2400, 600] };
+// 3:1 desde el 2026-11-15 (bitácora 2026-11-15-portada-encuadre); las 4:1 ya subidas se siguen viendo.
+const COVER_SHAPE: ImageShape = { what: 'La portada', ratio: 3, tolerance: 0.05, shape: 'de proporción 3:1', min: [900, 300], max: [2400, 800] };
 const AVATARS = 'avatars';
 const AVATAR_MARKER = `/storage/v1/object/public/${AVATARS}/`;
 

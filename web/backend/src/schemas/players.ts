@@ -150,7 +150,7 @@ export const verificationOf = (kind: string | null, note: string | null): z.infe
 
 export const PlayerDetail = PlayerSummary.extend({
   cosmetics: CosmeticsFull.nullable().openapi({ description: 'Todo lo equipado (replanteo 113); null si no tiene nada' }),
-  cover_url: z.string().nullable().openapi({ description: 'Portada del perfil (4:1); null si no tiene o si su perfil es privado' }),
+  cover_url: z.string().nullable().openapi({ description: 'Portada del perfil (3:1; las subidas antes del 2026-11-15, 4:1); null si no tiene o si su perfil es privado' }),
   verification: PlayerVerification.nullable().openapi({ description: 'Insignia de verificado; null si no tiene' }),
   steam_id: z.string().nullable().openapi({ description: 'SteamID principal. Solo para el dueño y los admins: para los demás, null' }),
   steam_ids: z.array(z.string()).openapi({ description: 'Todos sus SteamID, el principal primero. Solo para el dueño y los admins: para los demás, vacío' }),

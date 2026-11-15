@@ -98,7 +98,7 @@ export const ProfilePatch = z
 export const ProfileDetails = z
   .object({
     avatar_url: z.string().nullable(),
-    cover_url: z.string().nullable().openapi({ description: 'Portada del perfil, 4:1 (replanteo 113): POST y DELETE /me/cover' }),
+    cover_url: z.string().nullable().openapi({ description: 'Portada del perfil, 3:1 (las subidas antes del 2026-11-15, 4:1; replanteo 113): POST y DELETE /me/cover' }),
     real_name: z.string().nullable(),
     country: z.string().nullable(),
     game_role: z.string().nullable(),

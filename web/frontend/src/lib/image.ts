@@ -52,6 +52,34 @@ type CropOptions = {
   maxBytes: number
   /** PNG conserva la transparencia (logos); si pesa demasiado se pasa a JPEG. */
   png?: boolean
+  /**
+   * El área puede salirse de la foto (se alejó en el recortador): lo que sobra se rellena con la
+   * misma foto agrandada, difuminada y oscurecida.
+   */
+  fill?: boolean
+}
+
+/** Pinta la foto agrandada para cubrir todo el canvas, difuminada y oscurecida: el fondo del relleno. */
+function paintBackdrop(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  width: number,
+  height: number
+) {
+  // Un poco más grande que el canvas, para que el difuminado no aclare los bordes.
+  const margin = 0.08
+  const s =
+    Math.max(width / img.naturalWidth, height / img.naturalHeight) *
+    (1 + margin * 2)
+  const w = img.naturalWidth * s
+  const h = img.naturalHeight * s
+  ctx.save()
+  // Safari viejo no difumina el canvas: ahí queda solo oscurecida.
+  ctx.filter = `blur(${Math.round(width / 60)}px)`
+  ctx.drawImage(img, (width - w) / 2, (height - h) / 2, w, h)
+  ctx.restore()
+  ctx.fillStyle = "rgb(0 0 0 / 0.45)"
+  ctx.fillRect(0, 0, width, height)
 }
 
 /**
@@ -62,7 +90,7 @@ type CropOptions = {
 export async function cropImage(
   file: File,
   area: CropArea,
-  { width, height, maxBytes, png }: CropOptions
+  { width, height, maxBytes, png, fill }: CropOptions
 ): Promise<Blob> {
   checkAvatarSource(file)
   const img = await loadImage(file)
@@ -71,22 +99,50 @@ export async function cropImage(
   canvas.height = height
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new ImageError("Tu navegador no permite procesar imágenes.")
-  ctx.drawImage(
-    img,
-    area.x,
-    area.y,
-    area.width,
-    area.height,
-    0,
-    0,
-    width,
-    height
-  )
+  // La parte del área que cae dentro de la foto; sin `fill`, el área está siempre adentro.
+  const x0 = Math.max(area.x, 0)
+  const y0 = Math.max(area.y, 0)
+  const x1 = Math.min(area.x + area.width, img.naturalWidth)
+  const y1 = Math.min(area.y + area.height, img.naturalHeight)
+  const sx = width / area.width
+  const sy = height / area.height
+  const inside =
+    x0 <= area.x &&
+    y0 <= area.y &&
+    x1 >= area.x + area.width &&
+    y1 >= area.y + area.height
+  if (fill && !inside) {
+    paintBackdrop(ctx, img, width, height)
+    if (x1 > x0 && y1 > y0)
+      ctx.drawImage(
+        img,
+        x0,
+        y0,
+        x1 - x0,
+        y1 - y0,
+        (x0 - area.x) * sx,
+        (y0 - area.y) * sy,
+        (x1 - x0) * sx,
+        (y1 - y0) * sy
+      )
+  } else {
+    ctx.drawImage(
+      img,
+      area.x,
+      area.y,
+      area.width,
+      area.height,
+      0,
+      0,
+      width,
+      height
+    )
+  }
   if (png) {
     const blob = await toBlob(canvas, "image/png")
     if (blob?.type === "image/png" && blob.size <= maxBytes) return blob
   }
-  for (const quality of [0.9, 0.8, 0.7]) {
+  for (const quality of [0.9, 0.8, 0.7, 0.6]) {
     const blob = await toBlob(canvas, "image/jpeg", quality)
     if (!blob || blob.type !== "image/jpeg")
       throw new ImageError("No se pudo procesar la imagen.")

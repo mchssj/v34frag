@@ -20,9 +20,11 @@ import {
 import { useDeleteCover, useUploadCover } from "./api"
 
 /**
- * Portada del perfil (replanteo 113): se elige una imagen, se encuadra en 4:1 y se guarda a 2400×600 (hasta
+ * Portada del perfil (replanteo 113): se elige una imagen, se encuadra en 3:1 y se guarda a 2400×800 (hasta
  * 1 MB, el límite del bucket; si pesa más, baja la calidad del JPEG), para que se vea nítida a todo el ancho en
- * pantallas de alta densidad (bitácora 2026-11-14-portada-calidad-y-staff). Se ve arriba de la ficha pública. Un admin la puede quitar.
+ * pantallas de alta densidad (bitácora 2026-11-14-portada-calidad-y-staff). Se puede alejar para que una foto
+ * entre entera: lo que sobra se rellena con la misma foto difuminada (bitácora 2026-11-15-portada-encuadre).
+ * Se ve arriba de la ficha pública. Un admin la puede quitar.
  */
 export function CoverCard() {
   const cover = useQuery(myProfileOptions).data?.details.cover_url ?? null
@@ -56,8 +58,9 @@ export function CoverCard() {
     try {
       const blob = await cropImage(pending.file, area, {
         width: 2400,
-        height: 600,
+        height: 800,
         maxBytes: 1024 * 1024,
+        fill: true,
       })
       await upload.mutateAsync(blob)
       toast.success("Portada actualizada.")
@@ -84,7 +87,7 @@ export function CoverCard() {
         description="La portada va arriba de tu perfil. Los marcos, los temas, los efectos de nombre y los stickers se consiguen en la Tienda con los puntos de tus mixes."
       />
       <div
-        className="aspect-[4/1] max-w-[640px] rounded-lg border bg-muted bg-cover bg-center"
+        className="aspect-[3/1] max-w-[640px] rounded-lg border bg-muted bg-cover bg-center"
         style={
           cover
             ? { backgroundImage: `url("${cover}")` }
@@ -151,7 +154,9 @@ export function CoverCard() {
           src={pending.src}
           busy={upload.isPending}
           shape="rect"
-          aspect={4}
+          aspect={3}
+          minZoom={0.3}
+          description="Arrástrala y usa el zoom. Si la alejas para que entre entera, lo que sobra se rellena con la misma foto difuminada."
           title="Encuadra tu portada"
           confirmLabel="Usar portada"
           onCancel={() => setPending(null)}

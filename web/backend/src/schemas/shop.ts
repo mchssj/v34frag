@@ -201,7 +201,7 @@ export const EquipPatch = z
     description: 'Lo que no viene no se toca; `null` lo saca. `custom:<id>` en avatar o background pone una subida propia guardada, sin pagar',
   });
 
-export const COVER_HELP = 'JPEG, PNG o WebP de hasta 1 MB, de proporción 4:1, entre 800×200 y 2400×600 (el frontend lo recorta antes de subirlo).';
+export const COVER_HELP = 'JPEG, PNG o WebP de hasta 1 MB, de proporción 3:1, entre 900×300 y 2400×800 (el frontend lo recorta antes de subirlo).';
 export const CoverUpload = z
   .object({ file: z.instanceof(File).openapi({ type: 'string', format: 'binary', description: COVER_HELP }) })
   .openapi('CoverUpload');

@@ -1,0 +1,7 @@
+CMLeague 2.9.49 --  Changelog
+
+Portada más fácil de encuadrar
+
+- La portada de tu perfil ahora es más alta: entra mucho más de la foto, por ejemplo una cara entera.
+- Al encuadrarla puedes alejar la foto con el zoom para que entre completa. Lo que sobra a los costados se rellena con la misma foto difuminada.
+- Si ya tenías una portada, se sigue viendo igual. Para aprovechar lo nuevo, vuelve a subirla desde Mi perfil.

@@ -159,12 +159,14 @@ describe('tienda', () => {
     expect(acc.body.items[0]).toMatchObject({ user: { id: player.id }, points: { balance: 5025 - campPrice! } });
   });
 
-  it('la portada: 4:1, se ve en la ficha y el admin la quita', async () => {
-    const bad = new FormData();
-    bad.append('file', png(500, 500));
-    expect((await req('POST', '/api/v1/me/cover', { token: player.token, form: bad })).status).toBe(400);
+  it('la portada: 3:1, se ve en la ficha y el admin la quita', async () => {
+    for (const [w, h] of [[500, 500], [1200, 300]]) {
+      const bad = new FormData();
+      bad.append('file', png(w, h));
+      expect((await req('POST', '/api/v1/me/cover', { token: player.token, form: bad })).status).toBe(400);
+    }
     const f = new FormData();
-    f.append('file', png(1200, 300));
+    f.append('file', png(1200, 400));
     const up = await req('POST', '/api/v1/me/cover', { token: player.token, form: f });
     expect(up.status).toBe(200);
     expect(up.body.cover_url).toMatch(new RegExp(`/avatars/${player.id}/cover-\\d+\\.png$`));

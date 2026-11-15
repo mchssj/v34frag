@@ -90,11 +90,12 @@ La portada es la imagen ancha arriba de tu perfil.
 
 1. Entra a [Mi perfil](/profile).
 2. En **Portada y cosméticos**, toca **Subir portada**.
-3. Elige una imagen JPG, PNG o WebP, encuádrala y toca **Usar portada**.
+3. Elige una imagen JPG, PNG o WebP y encuádrala: arrástrala y usa el zoom. Si quieres que entre entera, por ejemplo una foto vertical, aléjala con el zoom. Lo que sobra a los costados se rellena con la misma foto difuminada.
+4. Toca **Usar portada**.
 
 Para sacarla, toca **Quitar**. Si tu perfil es privado, la portada no se muestra, igual que tus datos personales.
 
-La portada se guarda grande (2400×600) y se ve siempre con la forma que le diste al encuadrarla, también en pantallas anchas. Si la tuya se ve borrosa, vuelve a subirla: las que se subieron antes se guardaban más chicas.
+La portada tiene forma 3:1 (tres veces más ancha que alta), se guarda grande (2400×800) y se ve siempre como la encuadraste, también en pantallas anchas. Las portadas subidas antes del 2026-11-15 eran más angostas (4:1) y se siguen viendo así. Si la tuya se ve borrosa o quieres que entre más de la foto, vuelve a subirla.
 
 > **Ojo:** la portada tiene que respetar las reglas de la comunidad. Si no las respeta, alguien del staff (soporte, moderadores o administradores) la saca y te avisa el motivo.
 

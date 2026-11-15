@@ -181,11 +181,14 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
       )}
     >
       {p.cover_url && (
-        <div
+        <img
+          src={p.cover_url}
+          alt=""
           aria-hidden
-          // Siempre 4:1, como se encuadró (bitácora 2026-11-14-portada-calidad-y-staff).
-          className="-mb-2 aspect-[4/1] w-full bg-muted bg-cover bg-center"
-          style={{ backgroundImage: `url("${p.cover_url}")` }}
+          decoding="async"
+          // Con su proporción, tal como se encuadró: 3:1 desde el 2026-11-15, 4:1 las de antes
+          // (bitácoras 2026-11-14-portada-calidad-y-staff y 2026-11-15-portada-encuadre).
+          className="-mb-2 block h-auto w-full bg-muted"
         />
       )}
       <div className="flex flex-wrap items-start gap-5 p-5">
