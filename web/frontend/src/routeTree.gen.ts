@@ -32,6 +32,7 @@ import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
+import { Route as DemoPinesRouteImport } from './routes/demo.pines'
 import { Route as DemoSiembraRouteImport } from './routes/demo.siembra'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
@@ -183,6 +184,11 @@ const DemoPcwRoute = DemoPcwRouteImport.update({
 const DemoPerfilSocialRoute = DemoPerfilSocialRouteImport.update({
   id: '/demo/perfil-social',
   path: '/demo/perfil-social',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoPinesRoute = DemoPinesRouteImport.update({
+  id: '/demo/pines',
+  path: '/demo/pines',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoSiembraRoute = DemoSiembraRouteImport.update({
@@ -403,6 +409,7 @@ export interface FileRoutesByFullPath {
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
+  '/demo/pines': typeof DemoPinesRoute
   '/demo/siembra': typeof DemoSiembraRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
@@ -464,6 +471,7 @@ export interface FileRoutesByTo {
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
+  '/demo/pines': typeof DemoPinesRoute
   '/demo/siembra': typeof DemoSiembraRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
@@ -529,6 +537,7 @@ export interface FileRoutesById {
   '/demo/medallas': typeof DemoMedallasRoute
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
+  '/demo/pines': typeof DemoPinesRoute
   '/demo/siembra': typeof DemoSiembraRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
@@ -593,6 +602,7 @@ export interface FileRouteTypes {
     | '/demo/medallas'
     | '/demo/pcw'
     | '/demo/perfil-social'
+    | '/demo/pines'
     | '/demo/siembra'
     | '/demo/widget'
     | '/admin/bans'
@@ -654,6 +664,7 @@ export interface FileRouteTypes {
     | '/demo/medallas'
     | '/demo/pcw'
     | '/demo/perfil-social'
+    | '/demo/pines'
     | '/demo/siembra'
     | '/demo/widget'
     | '/admin/bans'
@@ -718,6 +729,7 @@ export interface FileRouteTypes {
     | '/demo/medallas'
     | '/demo/pcw'
     | '/demo/perfil-social'
+    | '/demo/pines'
     | '/demo/siembra'
     | '/demo/widget'
     | '/_app/admin/bans'
@@ -772,6 +784,7 @@ export interface RootRouteChildren {
   DemoMedallasRoute: typeof DemoMedallasRoute
   DemoPcwRoute: typeof DemoPcwRoute
   DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
+  DemoPinesRoute: typeof DemoPinesRoute
   DemoSiembraRoute: typeof DemoSiembraRoute
   DemoWidgetRoute: typeof DemoWidgetRoute
 }
@@ -937,6 +950,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/perfil-social'
       fullPath: '/demo/perfil-social'
       preLoaderRoute: typeof DemoPerfilSocialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/pines': {
+      id: '/demo/pines'
+      path: '/demo/pines'
+      fullPath: '/demo/pines'
+      preLoaderRoute: typeof DemoPinesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/siembra': {
@@ -1360,6 +1380,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoMedallasRoute: DemoMedallasRoute,
   DemoPcwRoute: DemoPcwRoute,
   DemoPerfilSocialRoute: DemoPerfilSocialRoute,
+  DemoPinesRoute: DemoPinesRoute,
   DemoSiembraRoute: DemoSiembraRoute,
   DemoWidgetRoute: DemoWidgetRoute,
 }
