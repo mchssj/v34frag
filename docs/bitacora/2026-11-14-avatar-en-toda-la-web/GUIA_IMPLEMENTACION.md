@@ -43,7 +43,7 @@ Con la tienda, en la misma tanda: es solo la web (`deploy/vps/desplegar.sh web`)
 
 ## Después del despliegue
 
-- **El avatar salía casi cuadrado en la tarjeta del grupo de Jugar** (lo vio Daniel, 2026-11-14): sin marco de la Tienda, la foto va en un círculo, pero el avatar usaba el dibujo del marco (`FramedAvatar`, recorte `rounded-[8%]`). Ahora, sin marco, el avatar va en el mismo círculo que la foto, animado (`features/matchmaking/GroupSlots.tsx`). Con un marco puesto queda como antes: el arte del marco está hecho para ese recorte, y ahí la foto se ve igual. Pruebas del matchmaking: 108 en verde. Sin desplegar todavía.
+- **El avatar salía casi cuadrado en la tarjeta del grupo de Jugar** (lo vio Daniel, 2026-11-14): sin marco de la Tienda, la foto va en un círculo, pero el avatar usaba el dibujo del marco (`FramedAvatar`, recorte `rounded-[8%]`). Ahora, sin marco, el avatar va en el mismo círculo que la foto, animado (`features/matchmaking/GroupSlots.tsx`). Con un marco puesto queda como antes: el arte del marco está hecho para ese recorte, y ahí la foto se ve igual. Pruebas del matchmaking: 108 en verde. **Desplegado el 2026-11-14** (web `919c51970d4f`; la API sigue en `e0b08e9f9e82`).
 
 ## Cómo revertir
 
