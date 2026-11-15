@@ -160,7 +160,7 @@ describe('tienda', () => {
   });
 
   it('la portada: 3:1, se ve en la ficha y el admin la quita', async () => {
-    for (const [w, h] of [[500, 500], [1200, 300]]) {
+    for (const [w, h] of [[500, 500], [1200, 300]] as const) {
       const bad = new FormData();
       bad.append('file', png(w, h));
       expect((await req('POST', '/api/v1/me/cover', { token: player.token, form: bad })).status).toBe(400);
