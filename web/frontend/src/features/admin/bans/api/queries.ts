@@ -12,6 +12,7 @@ import type {
   BanCreate,
   BanPatch,
   BanFilters,
+  BanLimitsInput,
   BanPerson,
   SupportActionFilters,
 } from "../types"
@@ -126,7 +127,7 @@ export function activeBansForOptions(q: string) {
   })
 }
 
-/** Cupo de baneos de soporte de la semana y si ya está baneado (replanteo 117). */
+/** Cupo de baneos de soporte del jugador, si ya está baneado y los límites que valen (replanteos 117 y 121). */
 export function supportQuotaOptions(p: BanPerson | null) {
   return queryOptions({
     queryKey: [
@@ -148,6 +149,31 @@ export function supportQuotaOptions(p: BanPerson | null) {
         })
       ),
     enabled: p !== null,
+  })
+}
+
+/** Los límites del soporte: minutos, y baneos por jugador en tantos días (replanteo 121). */
+export function banLimitsOptions(enabled = true) {
+  return queryOptions({
+    queryKey: ["admin", "bans", "limits"] as const,
+    queryFn: ({ signal }) =>
+      unwrap(api.GET("/api/v1/admin/bans/limits", { signal })),
+    enabled,
+  })
+}
+
+/** Guarda los límites del soporte (solo un admin). */
+export function useSaveBanLimits() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: BanLimitsInput) =>
+      unwrap(api.PUT("/api/v1/admin/bans/limits", { body })),
+    onSuccess: (saved) => {
+      qc.setQueryData(["admin", "bans", "limits"], saved)
+      void qc.invalidateQueries({
+        queryKey: ["admin", "bans", "support-quota"],
+      })
+    },
   })
 }
 

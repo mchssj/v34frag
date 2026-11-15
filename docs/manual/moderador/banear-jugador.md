@@ -45,7 +45,7 @@ Desde el detalle del baneo:
 
 ## Los baneos del soporte
 
-El soporte también banea desde la web, pero con límites: de 1 a 120 minutos, nunca a quien ya está baneado y hasta 3 baneos de soporte por jugador en 7 días. Solo cambia o levanta los suyos. Tú puedes cambiar o levantar cualquiera de ellos. Lo que puede hacer el soporte está en la sección [Soporte](/help/soporte/banear-jugador) del manual.
+El soporte también banea desde la web, pero con límites: por minutos, nunca a quien ya está baneado y con un límite de baneos de soporte por jugador. Los números los fija un admin (hoy, hasta 120 minutos y 3 baneos en 7 días) y los ves en la tarjeta **Límites del soporte**, en la pestaña **Actividad del soporte**. Solo cambia o levanta los suyos. Tú puedes cambiar o levantar cualquiera de ellos. Lo que puede hacer el soporte está en la sección [Soporte](/help/soporte/banear-jugador) del manual.
 
 Todo lo que hace el soporte (baneos, clips, fotos y logos quitados, comentarios borrados y sanciones levantadas) aparece en la pestaña **Actividad del soporte** de Baneos, con quién lo hizo, a quién, el motivo y cuándo. Puedes filtrar por acción.
 

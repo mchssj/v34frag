@@ -10,7 +10,7 @@ Hay tres tipos de castigo. Los ves todos en [Jugar](/play), en el panel **Mis sa
 |---|---|---|---|
 | **Sanción de la cola** | El matchmaking, solo | Buscar partida | De {{mm.sancion_min}} a {{mm.sancion_max}} |
 | **Exclusión del matchmaking** | Un admin, al revisar un reporte | Buscar partida | De 1 a 90 días |
-| **Baneo del servidor** | El soporte, un moderador o un admin | Jugar en nuestros servidores y buscar partida | El soporte, hasta 120 minutos; los demás, días, hasta una fecha o permanente |
+| **Baneo del servidor** | El soporte, un moderador o un admin | Jugar en nuestros servidores y buscar partida | El soporte, por un rato corto (hoy, hasta 120 minutos); los demás, días, hasta una fecha o permanente |
 
 ## Sanción de la cola
 
@@ -26,7 +26,7 @@ Cuando alguien te reporta, un admin revisa el caso. Puede descartarlo, darte una
 
 Es el castigo más fuerte: no puedes entrar a ningún servidor de CMLeague ni buscar partida. Alcanza a todas tus cuentas de Steam vinculadas, también a las que sumes después.
 
-Puede durar unos días, hasta una fecha o ser permanente. Un baneo permanente solo lo puede cambiar o levantar un admin. Uno del soporte dura hasta 120 minutos, y el soporte no te puede poner más de 3 en 7 días: si hace falta más, decide un moderador.
+Puede durar unos días, hasta una fecha o ser permanente. Un baneo permanente solo lo puede cambiar o levantar un admin. Uno del soporte es corto, y el soporte no te puede poner más de unos pocos en una semana: los números los fija la administración (hoy, hasta 120 minutos y no más de 3 en 7 días). Si hace falta más, decide un moderador.
 
 Si te banean mientras estás en el matchmaking:
 

@@ -28,6 +28,7 @@ import {
 } from "../../lib/format"
 import {
   activeBansForOptions,
+  banLimitsOptions,
   supportQuotaOptions,
   useCreateBan,
   useUpdateBan,
@@ -36,7 +37,7 @@ import type { Ban } from "../types"
 import {
   BAN_MAX_HOURS,
   banExpiry,
-  SUPPORT_BAN_MAX_MINUTES,
+  minutesText,
   supportBanLimit,
   supportQuotaText,
   validBanHours,
@@ -70,8 +71,8 @@ const targetLabel = (t: BanTarget) =>
 /**
  * Banear (con `fixed` o eligiendo a quién) o cambiar un baneo activo (`ban`). Un baneo vale en todos
  * los servidores; el moderador no ve "Permanente" ni puede reemplazar uno permanente (contrato).
- * Con `support` (replanteo 117) solo hay minutos, de 1 a 120: no banea a quien ya está baneado y tiene 3 por
- * jugador en 7 días.
+ * Con `support` (replanteo 117) solo hay minutos: no banea a quien ya está baneado y tiene un límite de baneos
+ * por jugador. Los dos topes los fija un admin y vienen de la API (replanteo 121).
  */
 export function BanDialog({
   fixed,
@@ -122,7 +123,11 @@ export function BanDialog({
   )
   const blockedByPerm = !!replaces?.permanent && !canPermanent
 
-  // El soporte: si ya está baneado (por quien sea) o se le acabaron los 3 de la semana, no se puede.
+  // Los límites del soporte (replanteo 121): mientras no llegan, no se puede guardar.
+  const limits = useQuery(banLimitsOptions(support))
+  const maxMinutes = limits.data?.max_minutes ?? 0
+
+  // El soporte: si ya está baneado (por quien sea) o no le quedan baneos de soporte, no se puede.
   const quota = useQuery(
     supportQuotaOptions(
       support && !ban && target
@@ -136,18 +141,20 @@ export function BanDialog({
     support &&
     !ban &&
     (!quota.data || quota.data.banned || quota.data.remaining <= 0)
-  // Al cambiar uno suyo, no pasa de 120 minutos desde que lo puso.
-  const supportLimit = support && ban ? supportBanLimit(ban) : null
+  // Al cambiar uno suyo, no pasa del máximo de minutos desde que lo puso.
+  const supportLimit =
+    support && ban && maxMinutes ? supportBanLimit(ban, maxMinutes) : null
 
   const dateOk =
     dur !== "date" || (!!date && new Date(endOfDayIso(date)) > new Date())
   const hoursOk = dur !== "hours" || validBanHours(hoursN)
-  // Con el reloj del servidor, el mismo contra el que la base controla los 120 minutos.
+  // Con el reloj del servidor, el mismo contra el que la base controla el máximo de minutos.
   const now = useNow(dur === "minutes", 15_000)
   const minutesUntil = () => new Date(now + minutesN * 60_000).toISOString()
   const minutesOk =
     dur !== "minutes" ||
-    (validBanMinutes(minutesN) &&
+    (validBanMinutes(minutesN, support ? maxMinutes : 1440) &&
+      (!support || !ban || !!supportLimit) &&
       (!supportLimit ||
         new Date(minutesUntil()).getTime() <= supportLimit.getTime() + 30_000))
   // Vencimiento elegido: undefined = como está (solo al cambiar), null = permanente.
@@ -309,7 +316,7 @@ export function BanDialog({
                 ? quota.data.permanent
                   ? "Tiene un baneo permanente."
                   : `Ya está baneado hasta el ${fmtDateTime(quota.data.banned_until)}. Si hace falta más, pásale el caso a un moderador.`
-                : supportQuotaText(quota.data.remaining)}
+                : supportQuotaText(quota.data)}
             </AlertDescription>
           </Alert>
         )}
@@ -391,7 +398,7 @@ export function BanDialog({
                 type="number"
                 inputMode="numeric"
                 min={1}
-                max={SUPPORT_BAN_MAX_MINUTES}
+                max={maxMinutes || undefined}
                 step={1}
                 aria-label="Cuántos minutos"
                 value={minutes}
@@ -421,9 +428,11 @@ export function BanDialog({
               : !hoursOk
                 ? `Pon un número entero de horas, de 1 a ${BAN_MAX_HOURS}.`
                 : !minutesOk
-                  ? supportLimit && validBanMinutes(minutesN)
-                    ? `Un baneo de soporte dura hasta ${SUPPORT_BAN_MAX_MINUTES} minutos desde que lo pusiste: como mucho, hasta el ${fmtDateTime(supportLimit.toISOString())}.`
-                    : `Pon un número entero de minutos, de 1 a ${SUPPORT_BAN_MAX_MINUTES}.`
+                  ? !maxMinutes
+                    ? "Cargando los límites del soporte…"
+                    : supportLimit && validBanMinutes(minutesN, maxMinutes)
+                      ? `Un baneo de soporte dura hasta ${minutesText(maxMinutes)} desde que lo pusiste: como mucho, hasta el ${fmtDateTime(supportLimit.toISOString())}.`
+                      : `Pon un número entero de minutos, de 1 a ${maxMinutes}.`
                   : shown === null
                     ? "No vence. Solo un admin lo puede cambiar o levantar."
                     : `Vence el ${(dur === "date" ? fmtDate : fmtDateTime)(shown)}.`}

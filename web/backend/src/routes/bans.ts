@@ -1,14 +1,14 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
-import { isSupport, optionalUser, requireModerator, requireSupport, requireUser, userRole } from '../lib/auth';
+import { isSupport, optionalUser, requireAdmin, requireModerator, requireSupport, requireUser, userRole } from '../lib/auth';
 import { AppError } from '../lib/errors';
 import { must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import {
-  Ban, BanCreate, BanIdParam, BanLift, BanList, BanPatch, BanQuery, PlayerBanQuery, SupportActionList, SupportActionQuery, SupportQuota,
-  SupportQuotaQuery,
+  Ban, BanCreate, BanIdParam, BanLift, BanLimits, BanLimitsInput, BanList, BanPatch, BanQuery, PlayerBanQuery, SupportActionList,
+  SupportActionQuery, SupportQuota, SupportQuotaQuery,
 } from '../schemas/bans';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { IdParam } from '../schemas/players';
@@ -17,8 +17,9 @@ import { resolvePlayer } from '../services/players';
 
 // Baneos de los servidores gestionados desde la web (plan docs/bitacora/2026-10-25-baneos-web, replanteo 31).
 // La base valida los permisos (ban_create, ban_update, ban_lift): permanente solo un admin; un moderador cambia o
-// levanta cualquier baneo que no sea permanente. El soporte (replanteo 117) banea por minutos, de 1 a 120, no a quien ya
-// está baneado, hasta 3 veces por jugador en 7 días, y solo cambia o levanta los suyos.
+// levanta cualquier baneo que no sea permanente. El soporte (replanteo 117) banea por minutos, no a quien ya está baneado,
+// y solo cambia o levanta los suyos. Sus límites (minutos máximos, y baneos por jugador en tantos días) están en
+// site_config y los cambia un admin (replanteo 121); la base los hace cumplir.
 
 type C = Context<AppEnv>;
 
@@ -43,8 +44,9 @@ const create = createRoute({
   summary: 'Banear',
   description:
     'Una ficha (vale para todos sus SteamID, también los que sume después) o un SteamID sin ficha, en todos los servidores. ' +
-    'Soporte, moderadores y admins; `permanent` solo un admin. El soporte, solo con `minutes` (de 1 a 120), a quien no esté ' +
-    'baneado y hasta 3 baneos de soporte por jugador en 7 días (`BUSINESS_RULE` con el motivo; ver `/admin/bans/support-quota`). Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, ' +
+    'Soporte, moderadores y admins; `permanent` solo un admin. El soporte, solo con `minutes` (hasta el máximo de `/admin/bans/limits`), ' +
+    'a quien no esté baneado y sin pasar el límite de baneos de soporte por jugador (`BUSINESS_RULE` con el motivo; ver ' +
+    '`/admin/bans/support-quota`). Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, ' +
     'el servidor lo frena siempre; a quien ya está jugando (aunque sea un mix) lo echa en la sincronización, cada 3 minutos y al ' +
     'empezar cada mapa, o al momento con `!syncbans` en el servidor.',
   request: { body: { required: true, ...json(BanCreate) } },
@@ -55,7 +57,7 @@ const patch = createRoute({
   summary: 'Cambiar un baneo',
   description:
     'El motivo o el vencimiento de un baneo activo. Uno permanente, o volverlo permanente, solo un admin. El soporte cambia solo ' +
-    'los suyos, con `minutes`, y sin pasar de 120 minutos desde que lo puso.',
+    'los suyos, con `minutes`, y sin pasar del máximo de `/admin/bans/limits` desde que lo puso.',
   request: { params: BanIdParam, body: { required: true, ...json(BanPatch) } },
   responses: { 200: { description: 'Cambiado', ...json(Ban) }, ...errorResponses(400, 401, 403, 404) },
 });
@@ -70,9 +72,26 @@ const lift = createRoute({
 const supportQuota = createRoute({
   method: 'get', path: '/api/v1/admin/bans/support-quota', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
   summary: 'Cupo de baneos de soporte',
-  description: 'Cuántos baneos de soporte tiene esa ficha (o ese SteamID) en los últimos 7 días, de 3, y si ya está baneada (replanteo 117).',
+  description:
+    'Cuántos baneos de soporte tiene esa ficha (o ese SteamID) dentro de la ventana, cuántos le quedan, si ya está baneada y los ' +
+    'límites que valen (replanteos 117 y 121).',
   request: { query: SupportQuotaQuery },
   responses: { 200: { description: 'Cupo', ...json(SupportQuota) }, ...errorResponses(400, 401, 403) },
+});
+const limits = createRoute({
+  method: 'get', path: '/api/v1/admin/bans/limits', tags: ['Admin'], security: bearer, middleware: [requireUser, requireSupport] as const,
+  summary: 'Límites del soporte',
+  description: 'Los minutos máximos de un baneo del soporte y cuántos baneos de soporte puede tener un jugador en tantos días (replanteo 121).',
+  responses: { 200: { description: 'Límites', ...json(BanLimits) }, ...errorResponses(401, 403) },
+});
+const setLimits = createRoute({
+  method: 'put', path: '/api/v1/admin/bans/limits', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Cambiar los límites del soporte',
+  description:
+    'Solo un admin. Minutos de 1 a 1440, baneos de 1 a 20 y días de 1 a 90. Los baneos ya puestos no cambian: los límites nuevos ' +
+    'valen para los baneos nuevos y para los cambios (replanteo 121).',
+  request: { body: { required: true, ...json(BanLimitsInput) } },
+  responses: { 200: { description: 'Guardados', ...json(BanLimits) }, ...errorResponses(400, 401, 403) },
 });
 const supportActions = createRoute({
   method: 'get', path: '/api/v1/admin/support-actions', tags: ['Admin'], security: bearer, middleware: [requireUser, requireModerator] as const,
@@ -89,9 +108,18 @@ const inMinutes = (m: number) => new Date(Date.now() + m * 60_000).toISOString()
 /** El soporte banea por minutos: ni vencimiento exacto ni permanente (replanteo 117). */
 async function supportUsesMinutes(c: C, b: { expires_at?: string; permanent?: true }) {
   if ((b.expires_at !== undefined || b.permanent !== undefined) && (await userRole(c)) === 'support') {
-    throw new AppError(403, 'FORBIDDEN', 'El soporte banea por minutos, de 1 a 120.');
+    throw new AppError(403, 'FORBIDDEN', 'El soporte banea por minutos.');
   }
 }
+
+type LimitsRow = {
+  max_minutes: number; max_bans: number; window_days: number; updated_at: string | null; updated_by: string | null;
+  updated_by_nick: string | null;
+};
+const toLimits = (r: LimitsRow): z.infer<typeof BanLimits> => ({
+  max_minutes: r.max_minutes, max_bans: r.max_bans, window_days: r.window_days, updated_at: r.updated_at,
+  updated_by: r.updated_by ? { id: r.updated_by, alias: r.updated_by_nick } : null,
+});
 
 async function readBan(c: C, id: string) {
   const row = must(await c.var.sb.from('ban_list').select(BAN_FIELDS).eq('id', id).maybeSingle()) as BanRow | null;
@@ -159,6 +187,14 @@ export const bans = createRouter()
       await c.var.sb.rpc('ban_support_quota', { p_player: (q.player_id ?? null) as string, p_steam: (q.steam_id ?? null) as string }),
     );
     return c.json(r as z.infer<typeof SupportQuota>, 200);
+  })
+  .openapi(limits, async (c) => c.json(toLimits(must(await c.var.sb.rpc('site_ban_limits')) as LimitsRow), 200))
+  .openapi(setLimits, async (c) => {
+    const b = c.req.valid('json');
+    const r = must(
+      await c.var.sb.rpc('site_admin_set_ban_limits', { p_max_minutes: b.max_minutes, p_max_bans: b.max_bans, p_window_days: b.window_days }),
+    );
+    return c.json(toLimits(r as LimitsRow), 200);
   })
   .openapi(supportActions, async (c) => {
     const p = c.req.valid('query');

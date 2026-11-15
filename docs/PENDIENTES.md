@@ -2,6 +2,14 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## Límites configurables para los baneos del soporte (2026-11-14): sin desplegar
+
+- **Qué es:** pedido por Daniel. Los límites del soporte (120 minutos, 3 baneos por jugador en 7 días) pasan a `site_config` y un admin los cambia desde Baneos › Actividad del soporte ([`2026-11-14-limites-baneo-soporte`](bitacora/2026-11-14-limites-baneo-soporte/)). Replanteo `121`, la API, la web, el manual y `/terminos`.
+- **Hecho:** probado en local (12 de 12 en la base, 627 de la API y 758 de la web), y probado por Daniel en el navegador.
+- **Falta:**
+  1. La prueba con rollback en producción, la `121` en el VPS, y la API y la web (pasos en la guía).
+  2. Publicar `terms/terminos.html` y el changelog 2.9.48 en Discord.
+
 ## Rol Soporte (2026-11-13): desplegado el 2026-11-14
 
 - **Qué es:** pedido por Daniel. Un rol `support` debajo del moderador: baneos de 1 a 120 minutos (no a quien ya está baneado, hasta 3 de soporte por jugador en 7 días, solo cambia o levanta los suyos), reprocesar y revisar clips, quitar fotos y logos, borrar comentarios y levantar sanciones de la cola. Todo queda en Baneos › Actividad del soporte ([`2026-11-13-rol-soporte`](bitacora/2026-11-13-rol-soporte/)).

@@ -7,6 +7,7 @@ import {
   banSteps,
   canEditBan,
   supportBanLimit,
+  supportLimitsText,
   supportQuotaText,
   validBanHours,
   validBanMinutes,
@@ -99,28 +100,41 @@ describe("Baneos", () => {
     expect(canEditBan(mine, false)).toBe(true)
   })
 
-  it("minutos de 1 a 120, y el tope de 120 desde que lo puso", () => {
-    expect([0, 1, 60, 120, 121, 1.5].map(validBanMinutes)).toEqual([
-      false,
-      true,
-      true,
-      true,
-      false,
-      false,
-    ])
+  it("minutos de 1 al máximo que fijó un admin, y el tope desde que lo puso", () => {
     expect(
-      supportBanLimit({ created_at: "2026-11-13T20:00:00Z" }).toISOString()
+      [0, 1, 60, 120, 121, 1.5].map((m) => validBanMinutes(m, 120))
+    ).toEqual([false, true, true, true, false, false])
+    expect([30, 31].map((m) => validBanMinutes(m, 30))).toEqual([true, false])
+    expect(
+      supportBanLimit({ created_at: "2026-11-13T20:00:00Z" }, 120).toISOString()
     ).toBe("2026-11-13T22:00:00.000Z")
+    expect(
+      supportBanLimit({ created_at: "2026-11-13T20:00:00Z" }, 30).toISOString()
+    ).toBe("2026-11-13T20:30:00.000Z")
   })
 
-  it("el cupo de la semana, en palabras", () => {
-    expect(supportQuotaText(3)).toBe(
-      "Le quedan 3 baneos de soporte de 3 esta semana."
+  it("el cupo del jugador, en palabras y con los límites que valen", () => {
+    expect(supportQuotaText({ remaining: 3, max: 3, window_days: 7 })).toBe(
+      "Le quedan 3 baneos de soporte de 3 en los últimos 7 días."
     )
-    expect(supportQuotaText(1)).toBe(
-      "Le queda 1 baneo de soporte de 3 esta semana."
+    expect(supportQuotaText({ remaining: 1, max: 5, window_days: 1 })).toBe(
+      "Le queda 1 baneo de soporte de 5 en el último día."
     )
-    expect(supportQuotaText(0)).toMatch(/pásale el caso a un moderador/)
+    expect(supportQuotaText({ remaining: 0, max: 2, window_days: 14 })).toBe(
+      "Ya tiene 2 baneos de soporte en los últimos 14 días: pásale el caso a un moderador."
+    )
+    expect(supportQuotaText({ remaining: 0, max: 1, window_days: 7 })).toMatch(
+      /^Ya tiene 1 baneo de soporte/
+    )
+  })
+
+  it("los límites del soporte en una frase", () => {
+    expect(
+      supportLimitsText({ max_minutes: 120, max_bans: 3, window_days: 7 })
+    ).toBe("hasta 120 minutos y 3 veces por jugador en los últimos 7 días")
+    expect(
+      supportLimitsText({ max_minutes: 1, max_bans: 1, window_days: 1 })
+    ).toBe("hasta 1 minuto y 1 vez por jugador en el último día")
   })
 })
 

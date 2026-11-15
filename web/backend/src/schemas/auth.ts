@@ -57,7 +57,7 @@ export const AuthUser = z
       .enum(['user', 'organizer', 'support', 'moderator', 'admin'])
       .openapi({
         description:
-          'Todos juegan. `organizer` crea y gestiona sus torneos; `support` banea hasta 120 minutos, reprocesa clips y modera ' +
+          'Todos juegan. `organizer` crea y gestiona sus torneos; `support` banea por minutos (con los límites de `/admin/bans/limits`), reprocesa clips y modera ' +
           'fotos, logos, comentarios y sanciones de la cola; `moderator` banea; `admin`, todo',
       }),
     created_at: z.string().nullable().openapi({ description: 'Fecha de registro de la cuenta' }),

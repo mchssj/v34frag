@@ -11114,7 +11114,7 @@ export interface paths {
         put?: never;
         /**
          * Banear
-         * @description Una ficha (vale para todos sus SteamID, también los que sume después) o un SteamID sin ficha, en todos los servidores. Soporte, moderadores y admins; `permanent` solo un admin. El soporte, solo con `minutes` (de 1 a 120), a quien no esté baneado y hasta 3 baneos de soporte por jugador en 7 días (`BUSINESS_RULE` con el motivo; ver `/admin/bans/support-quota`). Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, el servidor lo frena siempre; a quien ya está jugando (aunque sea un mix) lo echa en la sincronización, cada 3 minutos y al empezar cada mapa, o al momento con `!syncbans` en el servidor.
+         * @description Una ficha (vale para todos sus SteamID, también los que sume después) o un SteamID sin ficha, en todos los servidores. Soporte, moderadores y admins; `permanent` solo un admin. El soporte, solo con `minutes` (hasta el máximo de `/admin/bans/limits`), a quien no esté baneado y sin pasar el límite de baneos de soporte por jugador (`BUSINESS_RULE` con el motivo; ver `/admin/bans/support-quota`). Reemplaza al baneo activo que tuviera (queda levantado). Al conectarse, el servidor lo frena siempre; a quien ya está jugando (aunque sea un mix) lo echa en la sincronización, cada 3 minutos y al empezar cada mapa, o al momento con `!syncbans` en el servidor.
          */
         post: {
             parameters: {
@@ -11188,7 +11188,7 @@ export interface paths {
         head?: never;
         /**
          * Cambiar un baneo
-         * @description El motivo o el vencimiento de un baneo activo. Uno permanente, o volverlo permanente, solo un admin. El soporte cambia solo los suyos, con `minutes`, y sin pasar de 120 minutos desde que lo puso.
+         * @description El motivo o el vencimiento de un baneo activo. Uno permanente, o volverlo permanente, solo un admin. El soporte cambia solo los suyos, con `minutes`, y sin pasar del máximo de `/admin/bans/limits` desde que lo puso.
          */
         patch: {
             parameters: {
@@ -11344,7 +11344,7 @@ export interface paths {
         };
         /**
          * Cupo de baneos de soporte
-         * @description Cuántos baneos de soporte tiene esa ficha (o ese SteamID) en los últimos 7 días, de 3, y si ya está baneada (replanteo 117).
+         * @description Cuántos baneos de soporte tiene esa ficha (o ese SteamID) dentro de la ventana, cuántos le quedan, si ya está baneada y los límites que valen (replanteos 117 y 121).
          */
         get: {
             parameters: {
@@ -11399,6 +11399,117 @@ export interface paths {
             };
         };
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bans/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Límites del soporte
+         * @description Los minutos máximos de un baneo del soporte y cuántos baneos de soporte puede tener un jugador en tantos días (replanteo 121).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Límites */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BanLimits"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Cambiar los límites del soporte
+         * @description Solo un admin. Minutos de 1 a 1440, baneos de 1 a 20 y días de 1 a 90. Los baneos ya puestos no cambian: los límites nuevos valen para los baneos nuevos y para los cambios (replanteo 121).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BanLimitsInput"];
+                };
+            };
+            responses: {
+                /** @description Guardados */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BanLimits"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -25932,7 +26043,7 @@ export interface components {
             email: string | null;
             tag: string | null;
             /**
-             * @description Todos juegan. `organizer` crea y gestiona sus torneos; `support` banea hasta 120 minutos, reprocesa clips y modera fotos, logos, comentarios y sanciones de la cola; `moderator` banea; `admin`, todo
+             * @description Todos juegan. `organizer` crea y gestiona sus torneos; `support` banea por minutos (con los límites de `/admin/bans/limits`), reprocesa clips y modera fotos, logos, comentarios y sanciones de la cola; `moderator` banea; `admin`, todo
              * @enum {string}
              */
             role: "user" | "organizer" | "support" | "moderator" | "admin";
@@ -28355,7 +28466,7 @@ export interface components {
              * @enum {boolean}
              */
             permanent?: true;
-            /** @description Duración en minutos, desde ahora (de 1 a 120). Es como banea el soporte (replanteo 117), que no puede usar `expires_at` ni `permanent` */
+            /** @description Duración en minutos, desde ahora. Es como banea el soporte (replanteo 117), que no puede usar `expires_at` ni `permanent`, y no pasa del máximo de `/admin/bans/limits` (replanteo 121) */
             minutes?: number;
         };
         BanPatch: {
@@ -28370,7 +28481,7 @@ export interface components {
              * @enum {boolean}
              */
             permanent?: true;
-            /** @description Nuevo vencimiento en minutos desde ahora (de 1 a 120). El del soporte no pasa de 120 minutos desde que se puso (replanteo 117) */
+            /** @description Nuevo vencimiento en minutos desde ahora. El del soporte no pasa del máximo de `/admin/bans/limits` desde que se puso (replanteos 117 y 121) */
             minutes?: number;
         };
         BanLift: {
@@ -28378,15 +28489,38 @@ export interface components {
             reason: string;
         };
         SupportQuota: {
-            /** @description Baneos de soporte en los últimos 7 días (los levantados también cuentan) */
+            /** @description Baneos de soporte en los últimos `window_days` días (los levantados también cuentan) */
             used: number;
+            /** @description Baneos de soporte por jugador en la ventana (replanteo 121) */
             max: number;
             remaining: number;
+            /** @description Días de la ventana (replanteo 121) */
+            window_days: number;
+            /** @description Minutos máximos de un baneo del soporte (replanteo 121) */
+            max_minutes: number;
             /** @description Si ya tiene un baneo activo (de quien sea): el soporte no lo puede banear */
             banned: boolean;
             /** @description Hasta cuándo, si está baneado. `null` también si es permanente */
             banned_until: string | null;
             permanent: boolean;
+        };
+        BanLimits: components["schemas"]["BanLimitsInput"] & {
+            /** @description Último cambio. `null`: nunca se cambiaron (los valores de la 121) */
+            updated_at: string | null;
+            /** @description Quién los cambió por última vez */
+            updated_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string | null;
+            } | null;
+        };
+        BanLimitsInput: {
+            /** @description Minutos máximos de un baneo del soporte, desde que se pone */
+            max_minutes: number;
+            /** @description Baneos de soporte por jugador dentro de la ventana */
+            max_bans: number;
+            /** @description Días de la ventana */
+            window_days: number;
         };
         SupportActionList: {
             items: components["schemas"]["SupportAction"][];

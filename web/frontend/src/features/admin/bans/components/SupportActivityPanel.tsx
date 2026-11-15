@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ago, fmtDateTime } from "../../lib/format"
 import { EmptyState, QueryError } from "../../components/ui"
 import { SUPPORT_ACTIONS_PER, supportActionsOptions } from "../api/queries"
+import { SupportLimitsCard } from "./SupportLimitsCard"
 import {
   SUPPORT_ACTION_LABEL,
   supportActionQuote,
@@ -27,7 +28,12 @@ import type { SupportAction, SupportActionKind } from "../types"
 
 const ALL = "all"
 
-export function SupportActivityPanel() {
+export function SupportActivityPanel({
+  canEditLimits = false,
+}: {
+  /** Un admin: cambia los límites del soporte (replanteo 121). */
+  canEditLimits?: boolean
+}) {
   const [action, setAction] = useState<SupportActionKind | undefined>()
   const [page, setPage] = useState(1)
   const list = useQuery(supportActionsOptions({ action }, page))
@@ -37,11 +43,12 @@ export function SupportActivityPanel() {
 
   return (
     <div className="flex flex-col gap-4">
+      <SupportLimitsCard canEdit={canEditLimits} />
       <p className="text-[13px] leading-relaxed text-muted-foreground">
-        Lo que hizo cada cuenta de soporte: baneos de hasta 120 minutos, clips
-        reprocesados, fotos y logos quitados, comentarios borrados y sanciones
-        de la cola levantadas. Lo tuyo y lo de los admins no aparece acá: queda
-        en cada lista.
+        Lo que hizo cada cuenta de soporte: baneos cortos, clips reprocesados,
+        fotos y logos quitados, comentarios borrados y sanciones de la cola
+        levantadas. Lo tuyo y lo de los admins no aparece acá: queda en cada
+        lista.
       </p>
       <span className="flex items-center gap-2 text-[13px] text-muted-foreground">
         Acción

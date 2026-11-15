@@ -26,6 +26,8 @@ export type BanFilters = {
 
 /** Cupo de baneos de soporte de una persona (replanteo 117). */
 export type SupportQuota = Schemas["SupportQuota"]
+export type BanLimits = Schemas["BanLimits"]
+export type BanLimitsInput = Schemas["BanLimitsInput"]
 
 /** Una acción del soporte (replanteo 117). */
 export type SupportAction = Schemas["SupportAction"]

@@ -6,10 +6,12 @@ import { STEAM64 } from './claim';
 
 const reason = z.string().trim().min(1, 'El motivo es obligatorio').max(200, 'Hasta 200 caracteres');
 
-/** Lo más largo que banea el soporte (replanteo 117). */
-export const SUPPORT_BAN_MAX_MINUTES = 120;
-const supportMinutes = z.number().int().min(1, 'De 1 a 120 minutos').max(SUPPORT_BAN_MAX_MINUTES, 'De 1 a 120 minutos').openapi({
-  description: 'Duración en minutos, desde ahora (de 1 a 120). Es como banea el soporte (replanteo 117), que no puede usar `expires_at` ni `permanent`',
+/** Techo técnico de `minutes`: el máximo de `site_config` no pasa de un día. El tope real lo pone la base (replanteo 121). */
+export const BAN_LIMIT_MAX_MINUTES = 1440;
+const supportMinutes = z.number().int().min(1, 'Al menos 1 minuto').max(BAN_LIMIT_MAX_MINUTES, 'Hasta 1440 minutos').openapi({
+  description:
+    'Duración en minutos, desde ahora. Es como banea el soporte (replanteo 117), que no puede usar `expires_at` ni `permanent`, ' +
+    'y no pasa del máximo de `/admin/bans/limits` (replanteo 121)',
 });
 
 export const Ban = z
@@ -88,7 +90,7 @@ export const BanPatch = z
     expires_at: z.iso.datetime({ offset: true }).optional().openapi({ description: 'Nuevo vencimiento, futuro' }),
     permanent: z.literal(true).optional().openapi({ description: 'Sin vencimiento. Solo un admin' }),
     minutes: supportMinutes.optional().openapi({
-      description: 'Nuevo vencimiento en minutos desde ahora (de 1 a 120). El del soporte no pasa de 120 minutos desde que se puso (replanteo 117)',
+      description: 'Nuevo vencimiento en minutos desde ahora. El del soporte no pasa del máximo de `/admin/bans/limits` desde que se puso (replanteos 117 y 121)',
     }),
   })
   .superRefine((v, ctx) => {
@@ -114,14 +116,34 @@ export const SupportQuotaQuery = z
   });
 export const SupportQuota = z
   .object({
-    used: z.number().int().openapi({ description: 'Baneos de soporte en los últimos 7 días (los levantados también cuentan)' }),
-    max: z.number().int(),
+    used: z.number().int().openapi({ description: 'Baneos de soporte en los últimos `window_days` días (los levantados también cuentan)' }),
+    max: z.number().int().openapi({ description: 'Baneos de soporte por jugador en la ventana (replanteo 121)' }),
     remaining: z.number().int(),
+    window_days: z.number().int().openapi({ description: 'Días de la ventana (replanteo 121)' }),
+    max_minutes: z.number().int().openapi({ description: 'Minutos máximos de un baneo del soporte (replanteo 121)' }),
     banned: z.boolean().openapi({ description: 'Si ya tiene un baneo activo (de quien sea): el soporte no lo puede banear' }),
     banned_until: z.string().nullable().openapi({ description: 'Hasta cuándo, si está baneado. `null` también si es permanente' }),
     permanent: z.boolean(),
   })
   .openapi('SupportQuota');
+
+// ---------- Límites del soporte (replanteo 121) ----------
+
+export const BanLimitsInput = z
+  .object({
+    max_minutes: z.number().int().min(1, 'De 1 a 1440 minutos').max(BAN_LIMIT_MAX_MINUTES, 'De 1 a 1440 minutos').openapi({
+      description: 'Minutos máximos de un baneo del soporte, desde que se pone',
+    }),
+    max_bans: z.number().int().min(1, 'De 1 a 20 baneos').max(20, 'De 1 a 20 baneos').openapi({
+      description: 'Baneos de soporte por jugador dentro de la ventana',
+    }),
+    window_days: z.number().int().min(1, 'De 1 a 90 días').max(90, 'De 1 a 90 días').openapi({ description: 'Días de la ventana' }),
+  })
+  .openapi('BanLimitsInput');
+export const BanLimits = BanLimitsInput.extend({
+  updated_at: z.string().nullable().openapi({ description: 'Último cambio. `null`: nunca se cambiaron (los valores de la 121)' }),
+  updated_by: z.object({ id: z.uuid(), alias: z.string().nullable() }).nullable().openapi({ description: 'Quién los cambió por última vez' }),
+}).openapi('BanLimits');
 
 export const SUPPORT_ACTIONS = ['ban', 'ban_update', 'ban_lift', 'clip_reprocess', 'clip_approve', 'clip_reject', 'photo_remove', 'logo_remove',
   'comment_delete', 'comment_report', 'penalty_lift', 'cover_remove'] as const;

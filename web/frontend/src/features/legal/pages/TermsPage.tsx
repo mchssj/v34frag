@@ -211,8 +211,10 @@ const SECTIONS: LegalSection[] = [
           servidores de la liga y de la web, por un tiempo o para siempre.
         </li>
         <li>
-          El equipo de soporte puede banearte por un rato (hasta 120 minutos, y
-          entre todo el soporte no más de 3 veces en 7 días), quitar tu foto de
+          El equipo de soporte puede banearte por un rato, con un tope de
+          minutos y de veces por semana que fija la administración (hoy, hasta
+          120 minutos, y entre todo el soporte no más de 3 veces en 7 días),
+          quitar tu foto de
           perfil o el logo de tu equipo si no cumplen las reglas (te avisamos
           con el motivo), borrar comentarios, levantar sanciones de la cola y
           revisar los clips antes de que salgan en Discord. Todo lo que hace

@@ -325,7 +325,7 @@ function AccountPanel({ u, onClose }: { u: AdminUser; onClose: () => void }) {
                 ["organizer", "Además crea y gestiona sus torneos."],
                 [
                   "support",
-                  "Además banea hasta 120 minutos, reprocesa clips, quita fotos y logos, borra comentarios y levanta sanciones de la cola.",
+                  "Además banea por minutos (con los límites de Baneos › Actividad del soporte), reprocesa clips, quita fotos y logos, borra comentarios y levanta sanciones de la cola.",
                 ],
                 ["moderator", "Además banea desde la web (no permanentes)."],
               ] as const

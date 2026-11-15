@@ -105,28 +105,50 @@ export const canEditBan = (
   (canPermanent || !b.permanent) &&
   (!supportUserId || b.created_by?.id === supportUserId)
 
-/** Lo más largo que banea el soporte, en minutos (replanteo 117). */
-export const SUPPORT_BAN_MAX_MINUTES = 120
+// Los límites del soporte (minutos, y baneos por jugador en tantos días) los fija un admin y vienen de la API
+// (replanteo 121): acá no hay números fijos.
 
-/** Baneos de soporte por jugador en 7 días. */
-export const SUPPORT_WEEKLY_BANS = 3
+/** ¿Es un número entero de minutos válido para el soporte (de 1 al máximo que fijó un admin)? */
+export const validBanMinutes = (m: number, max: number) =>
+  Number.isInteger(m) && m >= 1 && m <= max
 
-/** ¿Es un número entero de minutos válido para el soporte (1 a 120)? */
-export const validBanMinutes = (m: number) =>
-  Number.isInteger(m) && m >= 1 && m <= SUPPORT_BAN_MAX_MINUTES
+/** Hasta dónde puede llegar un baneo de soporte al cambiarlo: el máximo de minutos desde que se puso. */
+export const supportBanLimit = (
+  b: Pick<Ban, "created_at">,
+  maxMinutes: number
+) => new Date(new Date(b.created_at).getTime() + maxMinutes * 60_000)
 
-/** Hasta dónde puede llegar un baneo de soporte al cambiarlo: 120 minutos desde que se puso. */
-export const supportBanLimit = (b: Pick<Ban, "created_at">) =>
-  new Date(new Date(b.created_at).getTime() + SUPPORT_BAN_MAX_MINUTES * 60_000)
+/** "los últimos 7 días" / "el último día". */
+export const windowText = (days: number) =>
+  days === 1 ? "el último día" : `los últimos ${days} días`
 
-/** "Te queda 1 de 3" / "No te quedan baneos" para el formulario del soporte. */
-export function supportQuotaText(remaining: number): string {
-  if (remaining <= 0)
-    return `Ya tiene ${SUPPORT_WEEKLY_BANS} baneos de soporte en los últimos 7 días: pásale el caso a un moderador.`
-  return remaining === 1
-    ? `Le queda 1 baneo de soporte de ${SUPPORT_WEEKLY_BANS} esta semana.`
-    : `Le quedan ${remaining} baneos de soporte de ${SUPPORT_WEEKLY_BANS} esta semana.`
+/** "Le queda 1 de 3 en los últimos 7 días" / "Ya tiene 3" para el formulario del soporte. */
+export function supportQuotaText(q: {
+  remaining: number
+  max: number
+  window_days: number
+}): string {
+  const w = windowText(q.window_days)
+  if (q.remaining <= 0)
+    return q.max === 1
+      ? `Ya tiene 1 baneo de soporte en ${w}: pásale el caso a un moderador.`
+      : `Ya tiene ${q.max} baneos de soporte en ${w}: pásale el caso a un moderador.`
+  return q.remaining === 1
+    ? `Le queda 1 baneo de soporte de ${q.max} en ${w}.`
+    : `Le quedan ${q.remaining} baneos de soporte de ${q.max} en ${w}.`
 }
+
+/** "120 minutos" / "1 minuto". */
+export const minutesText = (m: number) =>
+  m === 1 ? "1 minuto" : `${m} minutos`
+
+/** El resumen de los límites del soporte, en una frase. */
+export const supportLimitsText = (l: {
+  max_minutes: number
+  max_bans: number
+  window_days: number
+}) =>
+  `hasta ${minutesText(l.max_minutes)} y ${l.max_bans === 1 ? "1 vez" : `${l.max_bans} veces`} por jugador en ${windowText(l.window_days)}`
 
 /** Días ("7"), unas horas a elección, hasta una fecha o permanente. */
 export type Duration = "hours" | "1" | "3" | "7" | "30" | "date" | "perm"

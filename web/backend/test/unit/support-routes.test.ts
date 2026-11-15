@@ -3,8 +3,9 @@ import { BanCreate, BanPatch } from '../../src/schemas/bans';
 import { json, makeApp, testEnv } from '../helpers';
 import { makeKey, signToken, userClaims, type TestKey } from '../jwt';
 
-// Rol Soporte (replanteo 117, bitácora 2026-11-13-rol-soporte) con PostgREST simulado. Los topes de verdad (120 minutos,
-// ya baneado, 3 por semana, solo los suyos) los prueba la base: pruebas/probar_117.sql. Acá, que la API deje pasar al
+// Rol Soporte (replanteo 117, bitácora 2026-11-13-rol-soporte) con PostgREST simulado. Los topes de verdad (los minutos,
+// ya baneado, los baneos por jugador, solo los suyos) los prueba la base: pruebas/probar_117.sql y, desde que son
+// configurables (replanteo 121, bitácora 2026-11-14-limites-baneo-soporte), pruebas/probar_121.sql. Acá, que la API deje pasar al
 // soporte a lo suyo, le cierre lo demás y arme bien las llamadas.
 const USER = '77777777-7777-4777-8777-777777777777';
 const BAN = '0b0b0b0b-0000-4000-8000-000000000001';
@@ -66,10 +67,11 @@ const rpcBody = (calls: Call[], fn: string) => JSON.parse(calls.find((x) => x.ur
 const rpcCount = (calls: Call[], fn: string) => calls.filter((x) => x.url.includes(`/rpc/${fn}`)).length;
 
 describe('esquemas de baneo con minutos', () => {
-  it('minutes de 1 a 120, y uno solo entre minutes, expires_at y permanent', () => {
+  it('minutes de 1 a 1440 (el tope de verdad lo pone la base), y uno solo entre minutes, expires_at y permanent', () => {
     expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 30 }).success).toBe(true);
-    expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 120 }).success).toBe(true);
-    expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 121 }).success).toBe(false);
+    expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 121 }).success).toBe(true);
+    expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 1440 }).success).toBe(true);
+    expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 1441 }).success).toBe(false);
     expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 0 }).success).toBe(false);
     expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 1.5 }).success).toBe(false);
     expect(BanCreate.safeParse({ player_id: PLAYER, reason: 'x', minutes: 30, permanent: true }).success).toBe(false);
@@ -116,7 +118,7 @@ describe('baneos del soporte', () => {
   });
 
   it('el cupo de la semana', async () => {
-    const quota = { used: 2, max: 3, remaining: 1, banned: false, banned_until: null, permanent: false };
+    const quota = { used: 2, max: 3, remaining: 1, window_days: 7, max_minutes: 120, banned: false, banned_until: null, permanent: false };
     const calls = postgrest('support', rpcs({ ban_support_quota: quota }));
     const res = await call('GET', `/api/v1/admin/bans/support-quota?steam_id=${S}`);
     expect(res.status).toBe(200);
@@ -243,5 +245,56 @@ describe('lo demás del soporte', () => {
     const id = 'aaaaaaaa-0000-4000-8000-000000000001';
     expect((await call('POST', `/api/v1/admin/profile-comment-reports/${id}/resolve`, { action: 'delete' })).status).toBe(204);
     expect(rpcBody(calls, 'profile_comment_report_resolve')).toEqual({ p_report: id, p_action: 'delete' });
+  });
+});
+
+describe('límites del soporte (replanteo 121)', () => {
+  const ADMIN_ID = '88888888-8888-4888-8888-888888888888';
+  const row = { max_minutes: 60, max_bans: 2, window_days: 5, updated_at: '2026-11-14T10:00:00Z', updated_by: ADMIN_ID, updated_by_nick: 'Admin' };
+  const out = { max_minutes: 60, max_bans: 2, window_days: 5, updated_at: '2026-11-14T10:00:00Z', updated_by: { id: ADMIN_ID, alias: 'Admin' } };
+
+  it('el soporte y el moderador los leen', async () => {
+    for (const role of ['support', 'moderator'] as const) {
+      postgrest(role, rpcs({ site_ban_limits: row }));
+      const res = await call('GET', '/api/v1/admin/bans/limits');
+      expect(res.status).toBe(200);
+      expect(await json(res)).toEqual(out);
+    }
+  });
+
+  it('sin cambios todavía, updated_by es null', async () => {
+    postgrest('support', rpcs({ site_ban_limits: { ...row, updated_at: null, updated_by: null, updated_by_nick: null } }));
+    expect(await json(await call('GET', '/api/v1/admin/bans/limits'))).toMatchObject({ updated_at: null, updated_by: null });
+  });
+
+  it('el admin los guarda', async () => {
+    const calls = postgrest('admin', rpcs({ site_admin_set_ban_limits: row }));
+    const res = await call('PUT', '/api/v1/admin/bans/limits', { max_minutes: 60, max_bans: 2, window_days: 5 });
+    expect(res.status).toBe(200);
+    expect(await json(res)).toEqual(out);
+    expect(rpcBody(calls, 'site_admin_set_ban_limits')).toEqual({ p_max_minutes: 60, p_max_bans: 2, p_window_days: 5 });
+  });
+
+  it('fuera de rango, 400 sin llamar a la base', async () => {
+    const calls = postgrest('admin', rpcs({ site_admin_set_ban_limits: row }));
+    for (const body of [
+      { max_minutes: 0, max_bans: 2, window_days: 5 }, { max_minutes: 1441, max_bans: 2, window_days: 5 },
+      { max_minutes: 60, max_bans: 21, window_days: 5 }, { max_minutes: 60, max_bans: 2, window_days: 91 },
+      { max_minutes: 60, max_bans: 2 },
+    ]) {
+      expect((await call('PUT', '/api/v1/admin/bans/limits', body)).status).toBe(400);
+    }
+    expect(rpcCount(calls, 'site_admin_set_ban_limits')).toBe(0);
+  });
+
+  it('ni el soporte ni el moderador los cambian; un usuario ni los lee', async () => {
+    for (const role of ['support', 'moderator'] as const) {
+      const calls = postgrest(role, rpcs({ site_admin_set_ban_limits: row }));
+      expect((await call('PUT', '/api/v1/admin/bans/limits', { max_minutes: 60, max_bans: 2, window_days: 5 })).status).toBe(403);
+      expect(rpcCount(calls, 'site_admin_set_ban_limits')).toBe(0);
+    }
+    const calls = postgrest('user', rpcs({ site_ban_limits: row }));
+    expect((await call('GET', '/api/v1/admin/bans/limits')).status).toBe(403);
+    expect(rpcCount(calls, 'site_ban_limits')).toBe(0);
   });
 });

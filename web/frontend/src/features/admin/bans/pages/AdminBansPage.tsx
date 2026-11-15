@@ -53,10 +53,17 @@ import {
   MediaReportsPanel,
   useOpenMediaReports,
 } from "../components/MediaReportsPanel"
-import { BAN_STATUS, banLabel, banOrigin, banRemaining } from "../lib/bans"
+import {
+  BAN_STATUS,
+  banLabel,
+  banOrigin,
+  banRemaining,
+  supportLimitsText,
+} from "../lib/bans"
 import {
   BANS_PER,
   banCountOptions,
+  banLimitsOptions,
   banPerson,
   bansOptions,
   personBansOptions,
@@ -213,6 +220,7 @@ export function AdminBansPage({
   const openComments = useOpenCommentReports()
   const openImages = useOpenMediaReports()
   const [banning, setBanning] = useState(false)
+  const supportLimits = useQuery(banLimitsOptions(support))
 
   // El baneo elegido sale de la lista, del historial de esa persona o del último que se abrió
   // (la API no tiene GET /bans/{id}).
@@ -251,9 +259,12 @@ export function AdminBansPage({
       {support ? (
         <Alert>
           <AlertDescription>
-            Entras como soporte: baneas por minutos, de 1 a 120, a quien no esté
-            baneado y hasta 3 veces por jugador en 7 días. Solo cambias o
-            levantas los baneos que pusiste tú. Para algo más largo, pásale el
+            Entras como soporte: baneas por minutos
+            {supportLimits.data
+              ? `, ${supportLimitsText(supportLimits.data)}, `
+              : " "}
+            a quien no esté baneado. Los límites los fija un admin. Solo cambias
+            o levantas los baneos que pusiste tú. Para algo más largo, pásale el
             caso a un moderador.
           </AlertDescription>
         </Alert>
@@ -298,7 +309,7 @@ export function AdminBansPage({
       />
 
       {tab === "support" ? (
-        <SupportActivityPanel />
+        <SupportActivityPanel canEditLimits={canPermanent} />
       ) : tab === "comments" ? (
         <CommentReportsPanel />
       ) : tab === "images" ? (

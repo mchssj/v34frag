@@ -1,0 +1,5 @@
+CMLeague 2.9.48 --  Changelog
+
+Web
+- Los límites de los baneos del soporte ahora los fija la administración. Por ahora siguen igual: hasta 2 horas, y no más de 3 veces en una semana al mismo jugador.
+- Si eres del soporte, la web te muestra siempre los límites que valen, arriba de Baneos y al banear.

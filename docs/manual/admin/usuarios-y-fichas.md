@@ -22,7 +22,7 @@ En **Cuentas** buscas y filtras por **Admins**, **Moderadores**, **Soporte**, **
   |---|---|
   | Usuario | Juega, arma equipos y se inscribe |
   | Organizador | Además crea y gestiona sus torneos |
-  | Soporte | Además banea hasta 120 minutos, reprocesa y revisa clips, quita fotos y logos, borra comentarios y levanta sanciones de la cola. Lo que hace queda en Baneos › **Actividad del soporte** |
+  | Soporte | Además banea por un rato corto (con los límites que pones en Baneos › Actividad del soporte), reprocesa y revisa clips, quita fotos y logos, borra comentarios y levanta sanciones de la cola. Lo que hace queda en Baneos › **Actividad del soporte** |
   | Moderador | Además banea desde la web (no permanentes), modera equipos y gestiona torneos |
 
   El rol de admin no se da desde la web. Para que alguien de soporte o moderación aparezca en Quiénes somos, su cuenta tiene que tener ficha de jugador.
