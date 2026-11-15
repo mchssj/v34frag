@@ -10,6 +10,14 @@ import { es } from "date-fns/locale"
 import type { Schemas } from "@/api/client"
 import type { AppPath } from "../../lib/nav"
 import { templateOf, type MedalLook } from "@/features/medals/templates"
+import {
+  awardOf,
+  tierOf,
+  type PinAward,
+  type PinMetal,
+  type PinStyle,
+  type PinTier,
+} from "@/features/pins/pinSvg"
 
 // Notificaciones de la API (contrato notificaciones.md, sección 12). La base guarda `type` y `data`
 // con los nombres del momento; el texto, el icono y el link se arman acá.
@@ -45,6 +53,15 @@ export type Described = {
   link?: NotificationLink
   /** La medalla dibujada en lugar del ícono (replanteo 79). */
   medal?: MedalLook & { title: string }
+  /** El pin o el premio de torneo dibujado en lugar del ícono (replanteo 123). */
+  pin?: {
+    tier?: PinTier
+    award?: PinAward
+    metal?: PinMetal
+    style?: PinStyle
+    event: string
+    year: number
+  }
 }
 
 /** Pendiente de aceptar o rechazar desde la lista. */
@@ -388,6 +405,42 @@ export function describe(n: Notification, me?: string | null): Described {
         body: "Felicitaciones al plantel.",
         link: eventLink(d.event),
       }
+    // (replanteo 123) Pines y premios de torneo.
+    case "event_pin": {
+      const tier = str(d.tier, "champion") as PinTier
+      return {
+        kind: "tournament",
+        title: `${tierOf(tier).name} en ${nameOf(d.event, "el torneo")}`,
+        body: `${str(d.team, "Tu equipo")} recibió el pin. Ya está en tu vitrina.`,
+        link: d.event_id
+          ? { to: "/events/$id", params: { id: str(d.event_id) } }
+          : profile,
+        pin: {
+          tier,
+          metal: (str(d.metal) || undefined) as PinMetal | undefined,
+          style: (str(d.style) || undefined) as PinStyle | undefined,
+          event: nameOf(d.event, "Torneo"),
+          year: Number(d.year) || new Date().getFullYear(),
+        },
+      }
+    }
+    case "event_award": {
+      const award = str(d.award, "mvp") as PinAward
+      return {
+        kind: "tournament",
+        title: `${awardOf(award).name} de ${nameOf(d.event, "el torneo")}`,
+        body: "Ganaste un premio individual. Ya está en tu vitrina.",
+        link: d.event_id
+          ? { to: "/events/$id", params: { id: str(d.event_id) } }
+          : profile,
+        pin: {
+          award,
+          style: (str(d.style) || undefined) as PinStyle | undefined,
+          event: nameOf(d.event, "Torneo"),
+          year: Number(d.year) || new Date().getFullYear(),
+        },
+      }
+    }
     case "event_cancelled":
       return {
         kind: "tournament",

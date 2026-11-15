@@ -250,6 +250,8 @@ export const MedalSummary = z
     count: z.number().int(),
     design: MedalDesign,
     last_at: z.string().openapi({ description: 'La más reciente' }),
+    definition_id: z.uuid().openapi({ description: 'La definición: con `title` y `rank` identifica el logro (replanteo 123)' }),
+    rank: z.number().int().nullable().openapi({ description: 'Puesto, en las de temporada' }),
   })
   .openapi('MedalSummary');
 export const MedalSummaryList = Envelope(MedalSummary).openapi('MedalSummaryList', {

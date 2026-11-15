@@ -1,0 +1,17 @@
+CMLeague 2.9.50 --  Changelog
+
+Pines y trofeos de torneo
+- Los torneos ahora reparten pines según el puesto en que termina tu equipo: campeón, finalista, tercer puesto, semifinalista, cuartos, octavos o participante. Tu equipo recibe uno solo, el de su mejor resultado.
+- Cada pin lleva el nombre del torneo y el año, con el diseño que elige quien organiza.
+- Además hay premios individuales: MVP, top fragger, mejor AWP, rey del clutch, mejor puntería, más daño, entry y jugada del torneo.
+- Las medallas de campeón y finalista de torneo que tenías se convirtieron en pines.
+
+Vitrina en tu perfil
+- Nueva pestaña Vitrina con todos tus pines y premios, por año.
+- En el Resumen ves hasta 6 destacados, y los puedes elegir tú desde Vitrina > Elegir destacados.
+- La vitrina de cada equipo también muestra sus pines.
+- En el Resumen, Logros muestra tus 5 principales, con un enlace para ver todos.
+
+Para organizadores
+- Al crear o editar un torneo, en la sección Pines y trofeos eliges el diseño, qué puestos reciben pin, el metal de cada uno y los premios.
+- Cada premio puede ser automático (gana el de mejor cifra) o elegido por ti de una lista con los mejores.

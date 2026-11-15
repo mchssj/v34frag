@@ -1,11 +1,11 @@
-import { Link } from "@tanstack/react-router"
-import { TrophyIcon } from "lucide-react"
-import { prizeOrNull, type PrizeFields } from "@/features/events/lib/model"
-import { timeAgo } from "@/features/shell/notifications/lib/model"
+import { useQuery } from "@tanstack/react-query"
+import { QueryState } from "@/components/brand/QueryState"
+import { teamPinsOptions } from "@/features/pins/api"
+import { PinTile, pinItem } from "@/features/pins/PinTile"
 
 // --- Vitrina ------------------------------------------------------------
 
-type Title = PrizeFields & {
+type Title = {
   id: string
   name: string
   ends_on: string | null
@@ -13,16 +13,17 @@ type Title = PrizeFields & {
   finished_at?: string | null
 }
 
-/** Cuándo salió campeón: el fin real si está; si no, el tentativo. */
-const endOf = (t: Title) => t.finished_at ?? t.ends_on
-
 export function Showcase({
+  teamId,
   titles,
   eventsPlayed,
 }: {
+  teamId: string
   titles: Title[]
   eventsPlayed: number
 }) {
+  // (replanteo 123) La vitrina muestra los pines de torneo: primero los mejores puestos.
+  const pins = useQuery(teamPinsOptions(teamId))
   return (
     <section className="flex flex-col gap-3">
       <h2 className="flex items-baseline gap-2.5 text-xl font-bold tracking-[-0.4px]">
@@ -34,41 +35,23 @@ export function Showcase({
             : `${eventsPlayed} torneos jugados`}
         </span>
       </h2>
-      {titles.length === 0 ? (
-        <p className="rounded-hero border border-dashed px-5 py-6 text-sm text-muted-foreground">
-          Todavía no ganó un torneo.
-        </p>
-      ) : (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-3">
-          {titles.map((t) => (
-            <li key={t.id}>
-              <Link
-                to="/events/$id"
-                params={{ id: t.id }}
-                className="flex flex-col gap-3 rounded-hero border border-primary/35 bg-[linear-gradient(160deg,color-mix(in_oklch,var(--primary)_10%,var(--card)),var(--card)_65%)] p-5 outline-none hover:border-primary/60 focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                <span className="grid size-11 place-items-center rounded-tile bg-primary text-primary-foreground">
-                  <TrophyIcon className="size-5" aria-hidden />
-                </span>
-                <span className="flex flex-col gap-1">
-                  <span className="text-lg font-bold tracking-[-0.3px]">
-                    {t.name}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {[
-                      "Campeón",
-                      endOf(t) && timeAgo(endOf(t) ?? ""),
-                      prizeOrNull(t),
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      <QueryState q={pins}>
+        {(items) =>
+          items.length === 0 ? (
+            <p className="rounded-hero border border-dashed px-5 py-6 text-sm text-muted-foreground">
+              Todavía no tiene pines de torneo.
+            </p>
+          ) : (
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-3 gap-y-5 rounded-hero border p-5">
+              {items.map((p) => (
+                <li key={p.id} className="min-w-0">
+                  <PinTile item={pinItem(p)} size={108} showTeam={false} />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </QueryState>
     </section>
   )
 }

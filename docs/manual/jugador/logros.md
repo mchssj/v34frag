@@ -4,17 +4,26 @@ resumen: Cómo se ganan las medallas, dónde las ves y cuánto te falta para la 
 orden: 11
 ---
 
-Las medallas se ganan jugando: por mixes jugados y ganados, rachas, kills, headshots, kills con cada arma, clutchs, rondas, victorias en cada mapa y tu puesto al cerrar cada temporada. Si tu equipo gana un torneo o juega la final, recibes **Campeón de torneo** o **Finalista de torneo**, con el nombre del torneo, apenas termina; en Logros, el nombre te lleva al torneo. Algunas las da la administración, como las de staff o caster.
+Las medallas se ganan jugando: por mixes jugados y ganados, rachas, kills, headshots, kills con cada arma, clutchs, rondas, victorias en cada mapa y tu puesto al cerrar cada temporada. Algunas las da la administración, como las de staff o caster. Los torneos no dan medallas: dan pines y trofeos, que ves en tu [Vitrina](/help/jugador/vitrina-y-pines).
 
 ## Dónde las ves
 
-En tu perfil público, pestaña **Logros**:
+En tu perfil público: en **Resumen**, hasta 10 (las que más veces conseguiste, o las que elijas), con **Ver todos los logros**, y en la pestaña **Logros**, todas:
 
-- **Vitrina:** tus medallas de más nivel, en grande.
+- **Destacadas:** tus medallas de más nivel, en grande.
 - **Obtenidas**, **En camino** y **La más cerca:** cuántas tienes, cuántas te faltan y cuál está más cerca.
 - Debajo, por tipo: las que tienes y, de cada serie, la siguiente en gris, con lo que llevas (por ejemplo, "73 / 100").
 
 El **metal** del marco dice el nivel: bronce, plata, oro, platino y diamante. Los rombos debajo del número también.
+
+## Elegir los logros del Resumen
+
+1. Entra a tu perfil, pestaña **Logros**.
+2. Toca **Elegir logros del Resumen**.
+3. Activa **Los elijo yo** y toca los que quieras, hasta 10: se muestran en el orden en que los tocas.
+4. Toca **Guardar**.
+
+En automático se muestran los que más veces conseguiste y, entre esos, los más recientes.
 
 ## Cuándo llegan
 

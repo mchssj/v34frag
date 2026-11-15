@@ -1,3 +1,4 @@
+import { PinsConfigInput } from './pins';
 import { z } from '@hono/zod-openapi';
 import { MapPoolNames } from './pcw';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
@@ -230,6 +231,7 @@ export const EventCreate = z
     map_pool: MapPoolNames.optional().openapi({ description: 'Pool del veto del torneo, entre los mapas disponibles del catálogo (al menos el BO más alto de `config`). `null`: el pool por defecto. No cambia después del primer veto' }),
     historic: z.boolean().optional().openapi({ description: 'Torneo histórico (pide `starts_on` y `ends_on`). Lo crean admins, moderadores y organizadores. No se cambia después' }),
     testing: z.boolean().optional().openapi({ description: 'En fase de testing (solo admin o moderador; por defecto `false`)' }),
+    pins: PinsConfigInput.nullable().optional().openapi({ description: 'Pines y premios (replanteo 123). Se puede cambiar también con el torneo terminado: recalcula y queda registrado' }),
   })
   .openapi('EventCreate', {
     description:

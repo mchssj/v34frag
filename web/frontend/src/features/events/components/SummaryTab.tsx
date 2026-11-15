@@ -18,6 +18,7 @@ import {
 import { eventRegistrationsOptions } from "../api/queries"
 import type { EventDetail } from "../types"
 import { SectionCard, TagBox } from "./ui"
+import { EventPinsSection } from "@/features/pins/EventPinsSection"
 
 /** Resumen: información, reglas y equipos inscriptos. */
 export function SummaryTab({ event }: { event: EventDetail }) {
@@ -48,33 +49,37 @@ export function SummaryTab({ event }: { event: EventDetail }) {
     ])
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-4">
-      <SectionCard title="Información">
-        <dl className="flex flex-col gap-2.5">
-          {info.map(([k, v]) => (
-            <div
-              key={k}
-              className="flex justify-between gap-3 border-b pb-2.5 text-sm"
-            >
-              <dt className="text-muted-foreground">{k}</dt>
-              <dd className="text-right font-medium">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </SectionCard>
-      {/* Un histórico ya se jugó: las reglas de la liga por defecto no aplican, solo las que cargue. */}
-      {!(event.historic && !event.rules?.trim()) && (
-        <SectionCard title="Reglas">
-          <ol className="flex list-decimal flex-col gap-2 pl-[18px] text-sm leading-normal">
-            {rulesOf(event.rules).map((rule, i) => (
-              <li key={i}>
-                <Rule text={rule} />
-              </li>
+    <div className="flex flex-col gap-4">
+      {/* (replanteo 123) Al terminar: el podio con los pines y los premios. */}
+      <EventPinsSection event={event} />
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-4">
+        <SectionCard title="Información">
+          <dl className="flex flex-col gap-2.5">
+            {info.map(([k, v]) => (
+              <div
+                key={k}
+                className="flex justify-between gap-3 border-b pb-2.5 text-sm"
+              >
+                <dt className="text-muted-foreground">{k}</dt>
+                <dd className="text-right font-medium">{v}</dd>
+              </div>
             ))}
-          </ol>
+          </dl>
         </SectionCard>
-      )}
-      <Entrants event={event} />
+        {/* Un histórico ya se jugó: las reglas de la liga por defecto no aplican, solo las que cargue. */}
+        {!(event.historic && !event.rules?.trim()) && (
+          <SectionCard title="Reglas">
+            <ol className="flex list-decimal flex-col gap-2 pl-[18px] text-sm leading-normal">
+              {rulesOf(event.rules).map((rule, i) => (
+                <li key={i}>
+                  <Rule text={rule} />
+                </li>
+              ))}
+            </ol>
+          </SectionCard>
+        )}
+        <Entrants event={event} />
+      </div>
     </div>
   )
 }

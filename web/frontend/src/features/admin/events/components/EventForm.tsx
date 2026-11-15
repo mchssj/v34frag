@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "cn"
+import { pinsConfig } from "@/features/pins/config"
+import { PinsFields } from "@/features/pins/PinsFields"
 import { useId, useState, type FormEvent, type ReactNode } from "react"
 
 import type { Schemas } from "@/api/client"
@@ -94,6 +96,7 @@ export type KindChoice = "both" | "historic-only" | "normal-only"
  */
 export function EventForm({
   initial,
+  finished = false,
   locked = false,
   kinds,
   canTesting = false,
@@ -105,6 +108,8 @@ export function EventForm({
   onCancel,
 }: {
   initial?: Partial<EventFormValues>
+  /** El torneo ya terminó: cambiar los pines los recalcula (replanteo 123). */
+  finished?: boolean
   locked?: boolean
   kinds?: KindChoice
   canTesting?: boolean
@@ -160,6 +165,9 @@ export function EventForm({
     initial?.historic ?? kinds === "historic-only"
   )
   const [testing, setTesting] = useState(initial?.testing ?? false)
+  // (replanteo 123) Pines y premios: viajan solo si se tocaron, para no recalcular sin querer.
+  const [pins, setPins] = useState(() => pinsConfig(initial?.pins))
+  const [pinsDirty, setPinsDirty] = useState(false)
 
   // Solo el suizo pide un número exacto de equipos: al cambiar sus etapas o equipos por etapa, el
   // cupo se completa solo (se puede cambiar a mano después).
@@ -234,6 +242,7 @@ export function EventForm({
       ...(pool ? { map_pool: pool } : {}),
       ...(kinds ? { historic } : {}),
       ...(canTesting ? { testing } : {}),
+      ...(pinsDirty ? { pins } : {}),
     })
   }
 
@@ -487,6 +496,19 @@ export function EventForm({
         </Card>
         <Summary template={template} config={config} />
       </div>
+
+      <PinsFields
+        value={pins}
+        onChange={(next) => {
+          setPins(next)
+          setPinsDirty(true)
+        }}
+        eventName={name}
+        template={template}
+        config={config as Record<string, unknown>}
+        teams={maxTeams === "" ? null : maxTeams}
+        finished={finished}
+      />
 
       <div className="flex flex-col gap-2.5">
         <h2 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">

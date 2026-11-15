@@ -63,4 +63,6 @@ En la página del torneo, la pestaña **Configuración** te deja:
 - **Cancelar torneo:** queda como cancelado, con lo que se jugó hasta ahora.
 - **Borrar** el torneo: se borra con sus inscripciones y partidas. No se puede deshacer.
 
+En la sección **Pines y trofeos** eliges el diseño, qué puestos reciben pin y los premios individuales: ver [Pines, trofeos y premios](/help/organizador/pines-y-premios).
+
 Después, sigue con [Inscripciones, siembra y fixture](/help/organizador/inscripciones-y-fixture).

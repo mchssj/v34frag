@@ -10,10 +10,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Medal } from "@/features/medals/Medal"
 import { medalListOptions, medalProgressOptions } from "../../api/queries"
 import { buildAchievements, type Item } from "../../lib/achievements"
+import { MedalsChooser } from "../MedalsCard"
 
 // ---------- Logros (plan 2026-11-04-medallas-configurables, sección 9.3) ----------
 
-export function Achievements({ nick }: { nick: string }) {
+export function Achievements({
+  nick,
+  owner = false,
+}: {
+  nick: string
+  owner?: boolean
+}) {
   const list = useQuery(medalListOptions(nick))
   const progress = useQuery(medalProgressOptions(nick))
 
@@ -53,6 +60,7 @@ export function Achievements({ nick }: { nick: string }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {owner && <MedalsChooser nick={nick} />}
       {beta && (
         <Card
           variant="outline"
@@ -64,7 +72,7 @@ export function Achievements({ nick }: { nick: string }) {
       {a.showcase.length > 0 && (
         <Card variant="outline" className="flex flex-col gap-4 p-5">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-[17px] font-bold">Vitrina</h2>
+            <h2 className="text-[17px] font-bold">Destacadas</h2>
             <span className="text-[13px] text-muted-foreground">
               Las de más nivel, en grande.
             </span>

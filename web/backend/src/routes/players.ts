@@ -448,13 +448,13 @@ export const players = createRouter()
       await c.var.sb.from('player_medals').select('title, created_at, rank, definition_id, season:seasons(number)').eq('player_id', id).not('definition_id', 'is', null),
     ) as { title: string; created_at: string; rank: number | null; definition_id: string; season: { number: number } | null }[];
     const defs = await loadDefinitions(c.var.sb, rows.map((r) => r.definition_id));
-    const groups = new Map<string, { title: string; count: number; last_at: string; design: ReturnType<typeof designOf> }>();
+    const groups = new Map<string, { title: string; count: number; last_at: string; design: ReturnType<typeof designOf>; definition_id: string; rank: number | null }>();
     for (const r of rows) {
       const d = defs.get(r.definition_id);
       if (!d) continue;
       const k = JSON.stringify([r.title, r.definition_id, r.rank]);
       const g = groups.get(k);
-      if (!g) groups.set(k, { title: r.title, count: 1, last_at: r.created_at, design: designOf(d, r.rank, r.season?.number) });
+      if (!g) groups.set(k, { title: r.title, count: 1, last_at: r.created_at, design: designOf(d, r.rank, r.season?.number), definition_id: r.definition_id, rank: r.rank });
       else {
         g.count++;
         if (r.created_at > g.last_at) g.last_at = r.created_at;

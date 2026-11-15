@@ -4204,6 +4204,660 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{id}/pins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pines y premios de un torneo
+         * @description La configuración (efectiva y lo que cambió el torneo), los pines por puesto, los premios individuales y los que esperan que el organizador los elija.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Pines */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventPins"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/awards/{award}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Candidatos para elegir un premio a mano
+         * @description Todo el plantel inscrito: primero los 10 mejores por la cifra del premio (`suggested`), después el resto. Solo el organizador del torneo o un admin.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    /** @description Premio individual */
+                    award: components["schemas"]["PinAward"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Candidatos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AwardCandidateList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/awards/{award}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir el ganador de un premio
+         * @description Pisa al automático y se mantiene en los recálculos. La jugada del torneo se elige con un clip de sus partidas.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    /** @description Premio individual */
+                    award: components["schemas"]["PinAward"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AwardPick"];
+                };
+            };
+            responses: {
+                /** @description Elegido */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Borrar la elección de un premio
+         * @description Vuelve al automático o, en modo "lo elijo yo", queda pendiente.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    /** @description Premio individual */
+                    award: components["schemas"]["PinAward"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Borrada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{id}/clips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clips de un torneo
+         * @description Los clips listos de los mixes vinculados a sus partidas, para elegir la jugada del torneo. Solo el organizador del torneo o un admin.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Clips */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EventClipList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/showcase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vitrina de un jugador
+         * @description Los destacados del Resumen (hasta 6) y todos sus pines y premios.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Vitrina */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerShowcase"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/showcase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir los destacados de mi vitrina
+         * @description `auto`: se eligen solos (los mejores puestos y los más recientes). `manual`: hasta 6 pines o premios propios, en orden.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ShowcaseBody"];
+                };
+            };
+            responses: {
+                /** @description Guardada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/players/{id}/medals/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Logros destacados del Resumen
+         * @description Cómo se eligen (`auto` o `manual`) y, en `manual`, cuáles, en orden.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Logros destacados */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FeaturedMedals"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/medals/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir los logros del Resumen
+         * @description `auto`: los de más veces conseguidos. `manual`: hasta 10 logros propios, en orden.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["FeaturedMedalsBody"];
+                };
+            };
+            responses: {
+                /** @description Guardados */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teams/{id}/pins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vitrina de un equipo
+         * @description Sus pines de torneo: primero los mejores puestos, después los más recientes.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Pines */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TeamPinList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players": {
         parameters: {
             query?: never;
@@ -27055,6 +27709,414 @@ export interface components {
             /** @description Cuándo la ganó; null = bloqueada */
             earned_at: string | null;
         };
+        EventPins: {
+            config: components["schemas"]["PinsConfig"];
+            custom: components["schemas"]["PinsConfigInput"];
+            /** @description Los pines por puesto, del 1.º al último */
+            results: components["schemas"]["TeamPin"][];
+            awards: components["schemas"]["Award"][];
+            /** @description Premios encendidos que esperan que el organizador los elija */
+            pending: components["schemas"]["PinAward"][];
+            /** @description Si el torneo tiene stats para calcular cada premio */
+            calculable: {
+                mvp?: boolean;
+                top_fragger?: boolean;
+                awp?: boolean;
+                clutch?: boolean;
+                hs?: boolean;
+                adr?: boolean;
+                entry?: boolean;
+                play?: boolean;
+            };
+        };
+        PinsConfig: {
+            enabled: boolean;
+            style: components["schemas"]["PinStyle"];
+            tiers: {
+                champion?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+                finalist?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+                third?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+                semifinalist?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+                quarter?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+                round16?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+                participant?: {
+                    on: boolean;
+                    metal: components["schemas"]["PinMetal"];
+                    min_teams: number | null;
+                };
+            };
+            awards: {
+                mvp?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                top_fragger?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                awp?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                clutch?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                hs?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                adr?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                entry?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+                play?: {
+                    on: boolean;
+                    /** @enum {string} */
+                    mode: "auto" | "pick";
+                };
+            };
+        };
+        /**
+         * @description Familia de dibujo del torneo
+         * @enum {string}
+         */
+        PinStyle: "clasico" | "cristal" | "escudo" | "moneda" | "estrella" | "globo" | "cinta" | "angular" | "anillos" | "isotipo" | "rombo" | "jarron" | "orbe" | "alas" | "bloques" | "corona" | "disco" | "obelisco" | "estrella3d";
+        /** @enum {string} */
+        PinMetal: "oro" | "plata" | "bronce" | "acero";
+        /** @description Lo que el torneo cambió (events.pins), para el formulario */
+        PinsConfigInput: {
+            enabled?: boolean;
+            style?: components["schemas"]["PinStyle"];
+            tiers?: {
+                champion?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+                finalist?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+                third?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+                semifinalist?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+                quarter?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+                round16?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+                participant?: {
+                    on?: boolean;
+                    metal?: components["schemas"]["PinMetal"];
+                    /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                    min_teams?: number | null;
+                };
+            };
+            awards?: {
+                mvp?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                top_fragger?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                awp?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                clutch?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                hs?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                adr?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                entry?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+                play?: {
+                    on?: boolean;
+                    /**
+                     * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "pick";
+                };
+            };
+        } | null;
+        TeamPin: {
+            /** Format: uuid */
+            id: string;
+            event: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            };
+            team: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                tag: string | null;
+                logo_url: string | null;
+            };
+            tier: components["schemas"]["PinTier"];
+            /** @description Puesto final (los empatados comparten el número) */
+            place: number;
+            year: number;
+            style: components["schemas"]["PinStyle"];
+            metal: components["schemas"]["PinMetal"];
+            awarded_at: string;
+        };
+        /**
+         * @description Escalón por puesto final
+         * @enum {string}
+         */
+        PinTier: "champion" | "finalist" | "third" | "semifinalist" | "quarter" | "round16" | "participant";
+        Award: {
+            /** Format: uuid */
+            id: string;
+            event: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            };
+            award: components["schemas"]["PinAward"];
+            player: {
+                /** Format: uuid */
+                id: string;
+                nick: string;
+            };
+            team: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                tag: string | null;
+                logo_url: string | null;
+            } | null;
+            /** @description La cifra con la que lo ganó (rating, kills, %, ADR…). null si se eligió sin stats */
+            value: number | null;
+            /** @description Lo eligió el organizador */
+            manual: boolean;
+            /**
+             * Format: uuid
+             * @description Solo la jugada del torneo
+             */
+            clip_id: string | null;
+            year: number;
+            style: components["schemas"]["PinStyle"];
+            awarded_at: string;
+        };
+        /**
+         * @description Premio individual
+         * @enum {string}
+         */
+        PinAward: "mvp" | "top_fragger" | "awp" | "clutch" | "hs" | "adr" | "entry" | "play";
+        AwardCandidateList: {
+            /** @description Todo el plantel inscrito: primero los sugeridos, en orden */
+            items: components["schemas"]["AwardCandidate"][];
+        };
+        AwardCandidate: {
+            player: {
+                /** Format: uuid */
+                id: string;
+                nick: string;
+            };
+            team: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                tag: string | null;
+                logo_url: string | null;
+            } | null;
+            value: number | null;
+            kills: number | null;
+            adr: number | null;
+            rating: number | null;
+            maps: number | null;
+            /** @description Entre los 10 mejores por la cifra del premio (los que llegan al mínimo) */
+            suggested: boolean;
+        };
+        AwardPick: {
+            /**
+             * Format: uuid
+             * @description El ganador (todos los premios salvo la jugada)
+             */
+            player_id?: string;
+            /**
+             * Format: uuid
+             * @description El clip (solo la jugada del torneo): el ganador es su jugador
+             */
+            clip_id?: string;
+        };
+        EventClipList: {
+            items: components["schemas"]["EventClip"][];
+        };
+        EventClip: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            match_id: string;
+            player: {
+                /** Format: uuid */
+                id: string | null;
+                name: string;
+            };
+            /** @description ace, 4k, clutch… */
+            type: string | null;
+            round: number | null;
+            kills: number | null;
+            clutch_vs: number | null;
+        };
+        PlayerShowcase: {
+            /**
+             * @description `auto`: los destacados se eligen solos. `manual`: los marcó el jugador
+             * @enum {string}
+             */
+            mode: "auto" | "manual";
+            /** @description Los hasta 6 del Resumen, en orden */
+            featured: ({
+                /** @enum {string} */
+                kind: "pin";
+                pin: components["schemas"]["TeamPin"] & unknown;
+            } | {
+                /** @enum {string} */
+                kind: "award";
+                award: components["schemas"]["Award"];
+            })[];
+            /** @description Todos sus pines, del más reciente al más viejo (`id` es el de su pin) */
+            pins: components["schemas"]["TeamPin"][];
+            /** @description Todos sus premios individuales */
+            awards: components["schemas"]["Award"][];
+        };
+        ShowcaseBody: {
+            /** @enum {string} */
+            mode: "auto" | "manual";
+            /** @default [] */
+            items: {
+                /** @enum {string} */
+                kind: "pin" | "award";
+                /** Format: uuid */
+                id: string;
+            }[];
+        };
+        FeaturedMedals: {
+            /**
+             * @description `auto`: los de más veces conseguidos. `manual`: los que marcó el jugador
+             * @enum {string}
+             */
+            mode: "auto" | "manual";
+            /** @description En `manual`, los elegidos en orden (definición, título y puesto, como en /medals/summary) */
+            items: {
+                /** Format: uuid */
+                definition_id: string;
+                title: string;
+                rank: number | null;
+            }[];
+        };
+        FeaturedMedalsBody: {
+            /** @enum {string} */
+            mode: "auto" | "manual";
+            /** @default [] */
+            items: {
+                /** Format: uuid */
+                definition_id: string;
+                title: string;
+                rank: number | null;
+            }[];
+        };
+        TeamPinList: {
+            items: components["schemas"]["TeamPin"][];
+        };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
             /** @description Total con los filtros aplicados */
@@ -27339,6 +28401,13 @@ export interface components {
             design: components["schemas"]["MedalDesign"];
             /** @description La más reciente */
             last_at: string;
+            /**
+             * Format: uuid
+             * @description La definición: con `title` y `rank` identifica el logro (replanteo 123)
+             */
+            definition_id: string;
+            /** @description Puesto, en las de temporada */
+            rank: number | null;
         };
         Created: {
             /** Format: uuid */
@@ -30676,6 +31745,121 @@ export interface components {
             historic?: boolean;
             /** @description En fase de testing (solo admin o moderador; por defecto `false`) */
             testing?: boolean;
+            /** @description Pines y premios (replanteo 123). Se puede cambiar también con el torneo terminado: recalcula y queda registrado */
+            pins?: {
+                enabled?: boolean;
+                style?: components["schemas"]["PinStyle"];
+                tiers?: {
+                    champion?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    finalist?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    third?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    semifinalist?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    quarter?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    round16?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    participant?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                };
+                awards?: {
+                    mvp?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    top_fragger?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    awp?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    clutch?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    hs?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    adr?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    entry?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    play?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                };
+            } | null;
         };
         /** @description Solo las claves de la plantilla elegida; las que faltan toman el valor por defecto. Por defecto: single todo BO3; double BO3 y gran final BO5, sin mapa de ventaja; groups 2 grupos, clasifican 2, grupos BO1 y playoffs BO3; swiss 1 fase de 16, 3 victorias, BO1 y decisivas BO3, playoffs BO3; groups_double 2 grupos, clasifican 3, grupos BO3, playoffs BO3 y final BO5. 3.er puesto apagado. */
         EventConfig: {
@@ -30751,6 +31935,121 @@ export interface components {
             map_pool?: string[] | null;
             /** @description En fase de testing (solo admin o moderador; por defecto `false`) */
             testing?: boolean;
+            /** @description Pines y premios (replanteo 123). Se puede cambiar también con el torneo terminado: recalcula y queda registrado */
+            pins?: {
+                enabled?: boolean;
+                style?: components["schemas"]["PinStyle"];
+                tiers?: {
+                    champion?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    finalist?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    third?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    semifinalist?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    quarter?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    round16?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                    participant?: {
+                        on?: boolean;
+                        metal?: components["schemas"]["PinMetal"];
+                        /** @description Equipos que jugaron, como mínimo, para dar este escalón */
+                        min_teams?: number | null;
+                    };
+                };
+                awards?: {
+                    mvp?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    top_fragger?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    awp?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    clutch?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    hs?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    adr?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    entry?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                    play?: {
+                        on?: boolean;
+                        /**
+                         * @description `auto`: gana el de mejor cifra. `pick`: lo elige el organizador. La jugada es siempre `pick`
+                         * @enum {string}
+                         */
+                        mode?: "auto" | "pick";
+                    };
+                };
+            } | null;
         };
         ReviewBody: {
             approve: boolean;

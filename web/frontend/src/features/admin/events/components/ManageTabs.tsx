@@ -31,6 +31,7 @@ import {
 import { BannerCard } from "./BannerCard"
 import { VetoTurnCard } from "./VetoTurnCard"
 import { EventForm } from "./EventForm"
+import { eventPinsOptions, pinKeys } from "@/features/pins/api"
 import { HistoricRegistrations } from "./HistoricRegistrations"
 
 const active = (r: Registration) =>
@@ -424,59 +425,72 @@ export function ConfigTab({ event }: { event: EventDetail }) {
   const navigate = useNavigate()
   const [confirm, setConfirm] = useState<"cancel" | "delete" | null>(null)
   const config = event.config as Record<string, unknown>
+  // (replanteo 123) La configuración de pines guardada: el formulario la lee una sola vez al abrir.
+  const pins = useQuery(eventPinsOptions(event.id))
+  const qc = useQueryClient()
   return (
     <div className="flex flex-col gap-6">
       <BannerCard event={event} />
       {!event.historic && <VetoTurnCard eventId={event.id} />}
-      <EventForm
-        initial={{
-          name: event.name,
-          template: event.template,
-          config,
-          game_mode: event.game_mode,
-          subs_max: event.subs_max,
-          starts_on: event.starts_on,
-          ends_on: event.ends_on,
-          registration_closes_at: event.registration_closes_at,
-          prize: event.prize,
-          prize_amount: event.prize_amount,
-          prize_currency: event.prize_currency,
-          prize_currency_other: event.prize_currency_other,
-          max_teams: event.max_teams,
-          rules: event.rules,
-          map_pool: event.map_pool,
-          historic: event.historic,
-          testing: event.testing,
-        }}
-        canTesting={!!event.viewer?.can_review}
-        locked={event.status !== "registration"}
-        submitLabel="Guardar cambios"
-        pending={update.isPending}
-        error={update.error}
-        onSubmit={(v) => {
-          // Con el fixture generado, el formato no viaja (la base no deja cambiarlo).
-          const body =
-            event.status === "registration"
-              ? v
-              : {
-                  name: v.name,
-                  starts_on: v.starts_on,
-                  ends_on: v.ends_on,
-                  registration_closes_at: v.registration_closes_at,
-                  prize: v.prize,
-                  prize_amount: v.prize_amount,
-                  prize_currency: v.prize_currency,
-                  prize_currency_other: v.prize_currency_other,
-                  max_teams: v.max_teams,
-                  rules: v.rules,
-                  ...(v.map_pool ? { map_pool: v.map_pool } : {}),
-                  ...(v.testing !== undefined ? { testing: v.testing } : {}),
-                }
-          update.mutate(body, {
-            onSuccess: () => toast.success("Torneo guardado."),
-          })
-        }}
-      />
+      {pins.isPending ? (
+        <Skeleton className="h-96 rounded-xl" />
+      ) : (
+        <EventForm
+          finished={event.status === "finished"}
+          initial={{
+            pins: pins.data?.custom ?? null,
+            name: event.name,
+            template: event.template,
+            config,
+            game_mode: event.game_mode,
+            subs_max: event.subs_max,
+            starts_on: event.starts_on,
+            ends_on: event.ends_on,
+            registration_closes_at: event.registration_closes_at,
+            prize: event.prize,
+            prize_amount: event.prize_amount,
+            prize_currency: event.prize_currency,
+            prize_currency_other: event.prize_currency_other,
+            max_teams: event.max_teams,
+            rules: event.rules,
+            map_pool: event.map_pool,
+            historic: event.historic,
+            testing: event.testing,
+          }}
+          canTesting={!!event.viewer?.can_review}
+          locked={event.status !== "registration"}
+          submitLabel="Guardar cambios"
+          pending={update.isPending}
+          error={update.error}
+          onSubmit={(v) => {
+            // Con el fixture generado, el formato no viaja (la base no deja cambiarlo).
+            const body =
+              event.status === "registration"
+                ? v
+                : {
+                    name: v.name,
+                    starts_on: v.starts_on,
+                    ends_on: v.ends_on,
+                    registration_closes_at: v.registration_closes_at,
+                    prize: v.prize,
+                    prize_amount: v.prize_amount,
+                    prize_currency: v.prize_currency,
+                    prize_currency_other: v.prize_currency_other,
+                    max_teams: v.max_teams,
+                    rules: v.rules,
+                    ...(v.map_pool ? { map_pool: v.map_pool } : {}),
+                    ...(v.testing !== undefined ? { testing: v.testing } : {}),
+                    ...(v.pins !== undefined ? { pins: v.pins } : {}),
+                  }
+            update.mutate(body, {
+              onSuccess: () => {
+                toast.success("Torneo guardado.")
+                void qc.invalidateQueries({ queryKey: pinKeys.event(event.id) })
+              },
+            })
+          }}
+        />
+      )}
       {event.viewer?.can_own && (
         <Danger>
           <Button

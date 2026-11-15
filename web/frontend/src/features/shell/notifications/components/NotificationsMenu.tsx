@@ -1,3 +1,4 @@
+import { TournamentPin } from "@/features/pins/TournamentPin"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import { cn } from "cn"
@@ -311,7 +312,9 @@ function NotificationRow({
         onClick={onOpen}
         className="flex items-start gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        {d.medal ? (
+        {d.pin ? (
+          <TournamentPin {...d.pin} size={32} className="mt-[-4px]" />
+        ) : d.medal ? (
           <Medal look={d.medal} size={32} title={d.medal.title} />
         ) : (
           <span

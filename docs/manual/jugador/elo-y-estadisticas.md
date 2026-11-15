@@ -91,7 +91,7 @@ El ranking se divide en temporadas de alrededor de un mes. En [Ranking](/ranking
 
 En tu perfil público (desde **Mi perfil** › **Ver perfil público**, o tocando tu alias en cualquier lado):
 
-- **Resumen:** tu ELO, tu nivel y tus estadísticas (rating, K/D, HS %, ADR, porcentaje de victorias). En **Evolución de ELO**, pasa el mouse (o toca) sobre la línea para ver, en cada partida, el ELO con el que quedaste, cuánto ganaste o perdiste, la fecha y el mapa.
+- **Resumen:** tu ELO, tu nivel y tus estadísticas (rating, K/D, HS %, ADR, porcentaje de victorias). En **Evolución de ELO**, pasa el mouse (o toca) sobre la línea para ver, en cada partida, el ELO con el que quedaste, cuánto ganaste o perdiste, la fecha y el mapa. En **Mejores mapas** ves los 3 mapas que más jugaste, con victorias, derrotas y rating; **Ver todos los mapas** te lleva a la pestaña Mapas.
 - **Partidas:** cada partida, con cuánto ELO te dio o te quitó.
 - **Mapas:** cómo te va en cada mapa.
 - **Logros:** tus medallas y lo que te falta para las que todavía no tienes. Más en [Medallas y logros](/help/jugador/logros).

@@ -225,12 +225,13 @@ describe('medallas de torneo', () => {
     expect(await res.json()).toMatchObject({ error: { code: 'BUSINESS_RULE' } });
   });
 
-  it('las dos son event_result, se siguen dando a mano y no se crean otras', async () => {
+  // (replanteo 123) Lo automático ahora son los pines: las dos vuelven a ser manuales, para torneos de afuera.
+  it('las dos son manuales, se siguen dando a mano y no se crean otras', async () => {
     const defs = (await (await call('GET', '/api/v1/admin/medals/definitions')).json()) as {
       items: { id: string; key: string; aggregation: string }[];
     };
     const torneo = defs.items.filter((x) => x.key === 'campeon_torneo' || x.key === 'finalista_torneo');
-    expect(torneo.map((x) => x.aggregation)).toEqual(['event_result', 'event_result']);
+    expect(torneo.map((x) => x.aggregation)).toEqual(['manual', 'manual']);
     const fin = torneo.find((x) => x.key === 'finalista_torneo')!;
     const res = await call('POST', `/api/v1/admin/players/${players[1]}/medals`, { definition_id: fin.id, title: 'Torneo de afuera' });
     expect(res.status).toBe(201);

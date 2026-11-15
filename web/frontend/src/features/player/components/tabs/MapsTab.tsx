@@ -126,3 +126,103 @@ function Stat({
     </span>
   )
 }
+
+/** Mapas que entran en la tarjeta del Resumen. */
+const SUMMARY_MAPS = 3
+
+/** Resumen › Mejores mapas: los 3 más jugados, con victorias, derrotas y rating. */
+export function BestMapsCard({
+  nick,
+  onAll,
+}: {
+  nick: string
+  onAll: () => void
+}) {
+  const q = useQuery(mapStatsOptions(nick))
+  const catalog = useQuery(mapsOptions).data
+  return (
+    <Card variant="outline" className="flex flex-col gap-3 p-4">
+      <div className="flex items-center text-sm font-semibold">
+        Mejores mapas
+        {(q.data?.length ?? 0) > 0 && (
+          <button
+            type="button"
+            onClick={onAll}
+            className="ml-auto text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            Ver todos los mapas
+          </button>
+        )}
+      </div>
+      <QueryState q={q}>
+        {(items) => {
+          // Los jugados vienen primero, en el orden de la API (por mapas jugados).
+          const top = mapCards(catalog, items)
+            .filter((m) => m.stat)
+            .slice(0, SUMMARY_MAPS)
+          if (!top.length)
+            return (
+              <span className="text-[13px] text-muted-foreground">
+                Todavía no jugó mapas en el servidor.
+              </span>
+            )
+          return (
+            <ul className="flex flex-col gap-2">
+              {top.map((m) => {
+                const s = m.stat!
+                const played = (s.wins ?? 0) + (s.losses ?? 0)
+                const wr = played
+                  ? Math.round(((s.wins ?? 0) / played) * 100)
+                  : 0
+                return (
+                  <li
+                    key={m.key}
+                    className="flex items-center gap-3 overflow-hidden rounded-lg border"
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "h-12 w-20 shrink-0 bg-cover bg-center",
+                        !m.image &&
+                          "bg-[repeating-linear-gradient(135deg,var(--muted)_0_8px,transparent_8px_16px)]"
+                      )}
+                      style={
+                        m.image
+                          ? { backgroundImage: `url(${m.image})` }
+                          : undefined
+                      }
+                    />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-mono text-sm font-semibold">
+                        {m.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {s.maps ?? played} mapas · {s.wins ?? 0}V{" "}
+                        {s.losses ?? 0}D
+                      </span>
+                    </span>
+                    <span className="flex flex-col items-end pr-3">
+                      <span
+                        className={cn(
+                          "font-mono text-sm font-semibold tabular-nums",
+                          wr >= 50 ? "text-win" : "text-destructive"
+                        )}
+                      >
+                        {wr}%
+                      </span>
+                      <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                        {s.rating != null
+                          ? `Rating ${s.rating.toFixed(2)}`
+                          : "—"}
+                      </span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )
+        }}
+      </QueryState>
+    </Card>
+  )
+}

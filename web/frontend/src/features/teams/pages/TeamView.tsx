@@ -219,6 +219,7 @@ export function TeamView({
       </div>
 
       <Showcase
+        teamId={team.id}
         titles={titles}
         eventsPlayed={team.record?.events_played ?? 0}
       />

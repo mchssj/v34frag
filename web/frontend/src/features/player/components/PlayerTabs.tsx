@@ -23,11 +23,14 @@ import { Seasons } from "./tabs/SeasonsTab"
 import { Bio } from "./tabs/BioTab"
 import { Clips } from "./tabs/ClipsTab"
 import { Achievements } from "./tabs/AchievementsTab"
+import { Showcase } from "./tabs/ShowcaseTab"
+import { showcaseOptions } from "@/features/pins/api"
 import { ProfileWall, wallOptions } from "./ProfileWall"
 
 const LABELS: Record<Tab, string> = {
   resumen: "Resumen",
   clips: "Clips",
+  vitrina: "Vitrina",
   logros: "Logros",
   mapas: "Mapas",
   partidas: "Partidas",
@@ -56,8 +59,12 @@ function useTabCounts(
   const teams = useQuery(teamsOptions(nick)).data
   const seasons = useQuery(seasonsOptions(nick)).data
   const wall = useQuery(wallOptions(playerId)).data
+  const showcase = useQuery(showcaseOptions(nick)).data
   return {
     clips: clips?.length,
+    vitrina: showcase
+      ? showcase.pins.length + showcase.awards.length
+      : undefined,
     mapas: maps?.length,
     partidas: matches?.total,
     equipos: teams?.length,
@@ -149,14 +156,11 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
           scroll y las pestañas quedan donde estaban. */}
       <TabsContent value={tab} className="min-h-svh text-[length:inherit]">
         {tab === "resumen" && (
-          <Summary
-            nick={nick}
-            player={player}
-            onAll={() => onTab("partidas")}
-          />
+          <Summary nick={nick} player={player} onTab={onTab} />
         )}
         {tab === "clips" && <Clips playerId={player.id} alias={player.alias} />}
-        {tab === "logros" && <Achievements nick={nick} />}
+        {tab === "vitrina" && <Showcase nick={nick} owner={owner} />}
+        {tab === "logros" && <Achievements nick={nick} owner={owner} />}
         {tab === "mapas" && <Maps nick={nick} />}
         {tab === "partidas" && (
           <Matches nick={nick} search={search} onChange={onChange} />
