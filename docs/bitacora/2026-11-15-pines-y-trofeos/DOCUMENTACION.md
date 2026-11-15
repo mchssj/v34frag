@@ -135,7 +135,7 @@ Cada cambio de `events.pins` con el torneo terminado queda en `event_pins_log`: 
 - **Perfil:**
   - Resumen: la Vitrina, en la columna izquierda, debajo de Partidas recientes.
   - **Logros** (pedido por Daniel, 2026-11-15): en la columna izquierda, debajo de la Vitrina, hasta 10, el alto de «Jugadas clave» (600 px medidos en escritorio; cada logro ocupa 54 px), con «Ver todos los logros». Como la vitrina, se eligen solos (los de más veces conseguidos y los más recientes) o los marca el dueño en la pestaña Logros › **Elegir logros del Resumen** (`player_medal_featured`, `player_showcase_prefs.medals_mode`, `player_medals_featured_set`; `GET /players/{id}/medals/featured` y `PUT /me/medals/featured`). `/medals/summary` suma `definition_id` y `rank`, que con el título identifican cada logro.
-  - **Mejores mapas** (pedido por Daniel, 2026-11-15): en la columna derecha, arriba de Jugadas clave, los 3 mapas más jugados con partidas, victorias, derrotas, % de victorias y rating, y «Ver todos los mapas». Sale de la misma consulta de la pestaña Mapas. Equilibra las dos columnas del Resumen.
+  - **Mejores mapas** (pedido por Daniel, 2026-11-15): en la columna izquierda, debajo de Logros, los 3 mapas más jugados con partidas, victorias, derrotas, % de victorias y rating, y «Ver todos los mapas». Sale de la misma consulta de la pestaña Mapas. Equilibra las dos columnas del Resumen.
   - La pestaña **Vitrina** nueva, con **Elegir destacados**.
   - En la pestaña Logros, la sección «Vitrina» de medallas pasa a llamarse «Destacadas», para no repetir el nombre.
 - **Formulario del torneo:** la sección **Pines y trofeos**, debajo del formato. `pins` viaja solo si se tocó la sección, para no recalcular sin querer.

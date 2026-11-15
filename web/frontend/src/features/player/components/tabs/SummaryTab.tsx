@@ -96,10 +96,10 @@ export function Summary({
         <ShowcaseCard nick={nick} onAll={() => onTab("vitrina")} />
         {/* (replanteo 123) Logros: los elegidos o los de más veces; todos, en la pestaña Logros. */}
         <MedalsCard nick={nick} onAll={() => onTab("logros")} />
+        <BestMapsCard nick={nick} onAll={() => onTab("mapas")} />
       </div>
       <div className="flex flex-col gap-4">
         {own && <ProfileVisitsCard />}
-        <BestMapsCard nick={nick} onAll={() => onTab("mapas")} />
         {/* Solo si el admin le hizo algún ajuste (contrato 5). */}
         {adjustments.data && adjustments.data.length > 0 && (
           <Card variant="outline" className="flex flex-col gap-3 p-4">
