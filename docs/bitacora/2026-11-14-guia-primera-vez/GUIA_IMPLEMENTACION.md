@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho el 2026-11-14 y commiteado en `kyan/guia` el 2026-11-15, **sin desplegar**. Probado con Vitest y en el navegador con el prototipo `/demo/guia` (escritorio y 375 px). **No probado** el flujo real registro → Bienvenida → Para ti con una cuenta nueva: no había API local levantada.
+Hecho el 2026-11-14 y commiteado en `kyan/guia` el 2026-11-15. El 2026-11-15 se llevó a `main` (cherry-pick en `feat/guia-primera-vez`, desde `origin/main` `1182f60e`) y se probó el flujo real con una cuenta nueva de la base local. **Sin desplegar.**
 
 ## Archivos
 
@@ -26,7 +26,7 @@ Rutas relativas a `web/frontend/`.
 
 ## Despliegue
 
-Solo la web: va con el próximo despliegue del frontend. Sin base, API, plugin ni Worker. Según `CLAUDE.md`, la web va en `feat/frontend-fase-1`: llevarlo ahí, preguntando antes.
+Solo la web: va con el próximo despliegue del frontend. Sin base, API, plugin ni Worker. Va en `main`, la referencia de producción desde el 2026-11-04 (Daniel, 2026-11-15).
 
 ## Pruebas
 
@@ -37,6 +37,10 @@ Solo la web: va con el próximo despliegue del frontend. Sin base, API, plugin n
 ### Navegador
 
 `/demo/guia` con el servidor `frontend-repo`: avanza con el botón y con la flecha del teclado y vuelve con Anterior. "Ir a…" y "Leer en la ayuda" cierran la guía y avisan la ruta. Con el rol Moderador aparece el paso de Administración (`/admin/bans`). En 375 px entra sin scroll horizontal. Con el selector en `PT` la guía pasa a portugués y queda guardado (`csstv.guide-lang = pt`). Sin errores en la consola.
+
+### Flujo real (2026-11-15, Daniel con Claude)
+
+Con una cuenta nueva de la Supabase local y Chromium sin interfaz (Playwright): entrar a `/welcome` y después a `/home` abre la guía sola. Recorre los 8 pasos (Bienvenido, ClientMod, la consola, Busca partida, Vincula tu SteamID, Partidas y ranking, Equipos y torneos, Ayuda), «Listo» la cierra y al recargar no vuelve a abrirse. Sin errores en la página. Web en `main` con la guía: 811 pruebas de Vitest, `tsc -b` y ESLint sin errores, y el manual valida en el build de la API (69 páginas).
 
 ## En qué se apartó del plan
 
