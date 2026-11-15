@@ -94,7 +94,9 @@ La portada es la imagen ancha arriba de tu perfil.
 
 Para sacarla, toca **Quitar**. Si tu perfil es privado, la portada no se muestra, igual que tus datos personales.
 
-> **Ojo:** la portada tiene que respetar las reglas de la comunidad. Si la denuncian y no las respeta, un moderador la saca y te avisa el motivo.
+La portada se guarda grande (2400×600) y se ve siempre con la forma que le diste al encuadrarla, también en pantallas anchas. Si la tuya se ve borrosa, vuelve a subirla: las que se subieron antes se guardaban más chicas.
+
+> **Ojo:** la portada tiene que respetar las reglas de la comunidad. Si no las respeta, alguien del staff (soporte, moderadores o administradores) la saca y te avisa el motivo.
 
 ## Denunciar una imagen
 

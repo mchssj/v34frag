@@ -20,8 +20,9 @@ import {
 import { useDeleteCover, useUploadCover } from "./api"
 
 /**
- * Portada del perfil (replanteo 113): se elige una imagen, se encuadra en 4:1 y se guarda a 1200×300 (hasta
- * 1 MB, el límite del bucket). Se ve arriba de la ficha pública. Un admin la puede quitar.
+ * Portada del perfil (replanteo 113): se elige una imagen, se encuadra en 4:1 y se guarda a 2400×600 (hasta
+ * 1 MB, el límite del bucket; si pesa más, baja la calidad del JPEG), para que se vea nítida a todo el ancho en
+ * pantallas de alta densidad (bitácora 2026-11-14-portada-calidad-y-staff). Se ve arriba de la ficha pública. Un admin la puede quitar.
  */
 export function CoverCard() {
   const cover = useQuery(myProfileOptions).data?.details.cover_url ?? null
@@ -54,8 +55,8 @@ export function CoverCard() {
     if (!pending) return
     try {
       const blob = await cropImage(pending.file, area, {
-        width: 1200,
-        height: 300,
+        width: 2400,
+        height: 600,
         maxBytes: 1024 * 1024,
       })
       await upload.mutateAsync(blob)

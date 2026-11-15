@@ -183,7 +183,8 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
       {p.cover_url && (
         <div
           aria-hidden
-          className="-mb-2 aspect-[4/1] max-h-48 w-full bg-muted bg-cover bg-center"
+          // Siempre 4:1, como se encuadró (bitácora 2026-11-14-portada-calidad-y-staff).
+          className="-mb-2 aspect-[4/1] w-full bg-muted bg-cover bg-center"
           style={{ backgroundImage: `url("${p.cover_url}")` }}
         />
       )}
@@ -355,6 +356,24 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
                 )
               }
               invalidate={[["players"], ["player"]]}
+            />
+          )}
+          {me && canSupport(me.role) && !owner && p.cover_url && (
+            // (replanteo 120) El staff quita la portada, como la foto.
+            <RemoveImageButton
+              label="Quitar portada"
+              title={`¿Quitar la portada de ${p.alias}?`}
+              description="El perfil queda sin portada hasta que suba otra. Le llega un aviso con el motivo."
+              done="Portada quitada."
+              remove={(reason) =>
+                unwrap(
+                  api.POST("/api/v1/admin/players/{id}/cover/remove", {
+                    params: { path: { id: p.id } },
+                    body: { reason },
+                  })
+                )
+              }
+              invalidate={[["players"], ["player"], ["public-player"]]}
             />
           )}
           {owner ? (

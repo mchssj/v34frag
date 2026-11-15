@@ -25,4 +25,6 @@ Si dice **ya no la tiene puesta**, el jugador la borró, o se la sacó un modera
 - **Descartar:** la imagen se queda. Se cierran todas sus denuncias.
 - **Sacar la imagen:** deja de verse, se borra el archivo y se cierran todas sus denuncias. Se saca solo esa imagen: lo demás que guardó el jugador sigue. El jugador recibe un aviso con el motivo de la denuncia. **No se le devuelve lo que pagó.**
 
+Una portada también la puedes quitar sin denuncia, desde el perfil del jugador: toca **Quitar portada**, escribe el motivo y confirma. Al jugador le llega el aviso con tu motivo y se cierran las denuncias de esa portada, si había.
+
 Sácala si usa la imagen de otra persona sin permiso (por ejemplo, un dibujo de un artista conocido o un fondo bajado de internet), si es sexual o explícita, o si ofende o no respeta las reglas de la comunidad. Si dudas sobre los derechos, busca la imagen en internet: si es de otra persona y nada indica que el jugador tiene permiso, sácala.

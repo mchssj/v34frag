@@ -1,0 +1,6 @@
+CMLeague 2.9.47 --  Changelog
+
+Portada más nítida
+
+- La portada de tu perfil ahora se guarda más grande y se ve siempre como la encuadraste, también en pantallas anchas. Si la tuya se ve borrosa, vuelve a subirla desde Mi perfil.
+- Si una portada no respeta las reglas, el staff la puede quitar directamente desde el perfil, y te llega un aviso con el motivo.

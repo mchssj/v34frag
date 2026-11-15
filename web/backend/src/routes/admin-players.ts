@@ -102,6 +102,17 @@ const removePhotoRoute = createRoute({
   responses: { 204: { description: 'Quitada' }, ...errorResponses(400, 401, 403, 404) },
 });
 
+const removeCoverRoute = createRoute({
+  method: 'post', path: '/api/v1/admin/players/{id}/cover/remove', tags: ['Admin'], security: bearer,
+  middleware: [requireUser, requireSupport] as const,
+  summary: 'Quitar la portada del perfil',
+  description:
+    'Soporte, moderadores y admins (replanteo 120). Saca la portada de la cuenta de la ficha, con motivo; el jugador recibe ' +
+    'el aviso `cover_removed` y se cierran las denuncias abiertas de esa portada. `BUSINESS_RULE` si no tiene portada.',
+  request: { params: IdParam, body: { required: true, ...json(PhotoRemoveBody) } },
+  responses: { 204: { description: 'Quitada' }, ...errorResponses(400, 401, 403, 404) },
+});
+
 const uploadPhoto = createRoute({
   method: 'post', path: '/api/v1/admin/players/{id}/photo', tags: ['Admin'], security: bearer,
   middleware: [
@@ -270,6 +281,14 @@ export const adminPlayers = createRouter()
     ) as { photo_url: string | null; avatar_url: string | null };
     removeStored(c, 'photos', urls.photo_url, { staff: true });
     removeStored(c, 'avatars', urls.avatar_url, { staff: true });
+    return c.body(null, 204);
+  })
+  .openapi(removeCoverRoute, async (c) => {
+    const url = must(
+      await c.var.sb.rpc('staff_remove_cover', { p_player: c.req.valid('param').id, p_reason: c.req.valid('json').reason }),
+    ) as string | null;
+    // La portada está en el bucket avatars, en la carpeta del dueño: la borra la clave de servicio.
+    removeStored(c, 'avatars', url, { staff: true });
     return c.body(null, 204);
   })
   .openapi(uploadPhoto, async (c) => {

@@ -7200,6 +7200,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/players/{id}/cover/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quitar la portada del perfil
+         * @description Soporte, moderadores y admins (replanteo 120). Saca la portada de la cuenta de la ficha, con motivo; el jugador recibe el aviso `cover_removed` y se cierran las denuncias abiertas de esa portada. `BUSINESS_RULE` si no tiene portada.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PhotoRemoveBody"];
+                };
+            };
+            responses: {
+                /** @description Quitada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/players/{id}/photo": {
         parameters: {
             query?: never;
@@ -11351,7 +11430,7 @@ export interface paths {
                     order?: "asc" | "desc";
                     /** @description La cuenta de soporte (su id de usuario) */
                     actor?: string;
-                    action?: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift";
+                    action?: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift" | "cover_remove";
                     /** @description Desde (incluido) */
                     from?: string;
                     /** @description Hasta (sin incluir) */
@@ -28322,7 +28401,7 @@ export interface components {
         SupportAction: {
             id: number;
             /** @enum {string} */
-            action: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift";
+            action: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift" | "cover_remove";
             created_at: string;
             /** @description La ficha de quien lo hizo (null si ya no tiene) */
             actor: {

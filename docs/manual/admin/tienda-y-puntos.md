@@ -21,7 +21,7 @@ En **Puntos y monedas VIP** cambias los puntos por mix, el extra por victoria, l
    - **Sumar o restar:** elige **Puntos** o **Monedas VIP**, escribe la cantidad (negativa para restar) y toca **Sumar** o **Restar**. El saldo puede quedar negativo; lo comprado no se pierde.
    - **Regalar artículo:** escribe el id del artículo (sale debajo del nombre en el catálogo, por ejemplo `marco-fuego`) y toca **Regalar artículo**. Puede ser uno que no está a la venta o uno VIP (ese se usa solo mientras la cuenta sea VIP). El Marco Oro VIP no se regala: viene con el VIP.
    - **Quitar** un artículo del inventario: también se le saca si lo tenía puesto. No le devuelve lo que pagó.
-   - **Quitar portada**, si no respeta las reglas.
+   - **Quitar portada**, si no respeta las reglas. También se quita desde el perfil del jugador, con **Quitar portada** (lo pueden hacer el soporte y los moderadores: ver [Quitar una foto de perfil, una portada o un logo](/help/soporte/quitar-fotos-y-logos)).
    - **Lo que subió:** todos sus avatares y fondos de miniperfil guardados; el que tiene puesto dice **puesto**. **Sacar** saca esa imagen (puesta o no), borra el archivo, cierra sus denuncias y le avisa. Las demás siguen guardadas. No le devuelve lo que pagó.
 
 Las imágenes que denuncian los jugadores se revisan en Administración › Baneos, pestaña **Imágenes** (ver [Revisar imágenes denunciadas](/help/moderador/revisar-imagenes)).

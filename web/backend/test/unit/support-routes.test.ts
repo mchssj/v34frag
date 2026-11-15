@@ -206,6 +206,20 @@ describe('lo demás del soporte', () => {
     expect(calls.some((x) => x.url.includes('/rpc/'))).toBe(false);
   });
 
+  it('quita la portada con motivo (replanteo 120)', async () => {
+    const calls = postgrest('support', rpcs({ staff_remove_cover: null }));
+    expect((await call('POST', `/api/v1/admin/players/${PLAYER}/cover/remove`, { reason: 'no' })).status).toBe(400);
+    const res = await call('POST', `/api/v1/admin/players/${PLAYER}/cover/remove`, { reason: 'Portada ofensiva' });
+    expect(res.status).toBe(204);
+    expect(rpcBody(calls, 'staff_remove_cover')).toEqual({ p_player: PLAYER, p_reason: 'Portada ofensiva' });
+  });
+
+  it('un usuario común no quita portadas', async () => {
+    const calls = postgrest('user');
+    expect((await call('POST', `/api/v1/admin/players/${PLAYER}/cover/remove`, { reason: 'Portada ofensiva' })).status).toBe(403);
+    expect(calls.some((x) => x.url.includes('/rpc/'))).toBe(false);
+  });
+
   it('quita el logo de un equipo, pero no lo modera', async () => {
     const calls = postgrest('support', rpcs({ team_staff_remove_logo: null }));
     expect((await call('POST', `/api/v1/admin/teams/${TEAM}/logo/remove`, { reason: 'Logo ofensivo' })).status).toBe(204);

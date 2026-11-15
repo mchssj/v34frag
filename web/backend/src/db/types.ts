@@ -4104,13 +4104,13 @@ isOneToOne: false
                   ]
                 },"site_config": {
                   Row: {
-                    "auth_image_url": string | null,"id": number
+                    "auth_image_url": string | null,"ban_limits_updated_at": string | null,"ban_limits_updated_by": string | null,"id": number,"support_ban_max_count": number,"support_ban_max_minutes": number,"support_ban_window_days": number
                   }
                   Insert: {
-                    "auth_image_url"?: string | null,"id"?: number
+                    "auth_image_url"?: string | null,"ban_limits_updated_at"?: string | null,"ban_limits_updated_by"?: string | null,"id"?: number,"support_ban_max_count"?: number,"support_ban_max_minutes"?: number,"support_ban_window_days"?: number
                   }
                   Update: {
-                    "auth_image_url"?: string | null,"id"?: number
+                    "auth_image_url"?: string | null,"ban_limits_updated_at"?: string | null,"ban_limits_updated_by"?: string | null,"id"?: number,"support_ban_max_count"?: number,"support_ban_max_minutes"?: number,"support_ban_window_days"?: number
                   }
                   Relationships: [
                     
@@ -8711,11 +8711,20 @@ isOneToOne: false
 "site_admin_set_auth_image":
 { Args: { "p_url": string }; Returns: string
                            },
+"site_admin_set_ban_limits":
+{ Args: { "p_max_bans": number,"p_max_minutes": number,"p_window_days": number }; Returns: Json
+                           },
 "site_auth_image":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"site_ban_limits":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "staff_public":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"staff_remove_cover":
+{ Args: { "p_player": string,"p_reason": string }; Returns: string
                            },
 "staff_remove_photo":
 { Args: { "p_player": string,"p_reason": string }; Returns: Json

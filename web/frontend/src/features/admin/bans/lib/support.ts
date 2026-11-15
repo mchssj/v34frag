@@ -14,6 +14,7 @@ export const SUPPORT_ACTION_LABEL: Record<SupportActionKind, string> = {
   comment_delete: "Comentarios borrados",
   comment_report: "Denuncias resueltas",
   penalty_lift: "Sanciones de la cola levantadas",
+  cover_remove: "Portadas quitadas",
 }
 
 const str = (v: unknown) => (typeof v === "string" ? v : "")
@@ -51,6 +52,8 @@ export function supportActionText(
         : `descartó una denuncia de un comentario del perfil de ${who}`
     case "penalty_lift":
       return `levantó la sanción de la cola de ${who}`
+    case "cover_remove":
+      return `quitó la portada de ${who}`
   }
 }
 

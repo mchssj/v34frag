@@ -559,7 +559,9 @@ const SECTIONS: LegalSection[] = [
             pagaste por él no se devuelve.
           </li>
           <li>
-            Puedes subir una <strong>portada</strong> para tu perfil, gratis.
+            Puedes subir una <strong>portada</strong> para tu perfil, gratis. Si
+            no respeta las reglas, el staff (soporte, moderadores y
+            administradores) la puede quitar y te avisa el motivo.
           </li>
           <li>
             Cualquier jugador puede <strong>denunciar</strong> tu avatar, tu

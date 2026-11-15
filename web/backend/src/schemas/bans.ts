@@ -124,7 +124,7 @@ export const SupportQuota = z
   .openapi('SupportQuota');
 
 export const SUPPORT_ACTIONS = ['ban', 'ban_update', 'ban_lift', 'clip_reprocess', 'clip_approve', 'clip_reject', 'photo_remove', 'logo_remove',
-  'comment_delete', 'comment_report', 'penalty_lift'] as const;
+  'comment_delete', 'comment_report', 'penalty_lift', 'cover_remove'] as const;
 const Ref = z.object({ id: z.uuid(), alias: z.string() });
 export const SupportAction = z
   .object({
