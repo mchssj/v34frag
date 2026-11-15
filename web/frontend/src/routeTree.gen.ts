@@ -44,6 +44,7 @@ import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
+import { Route as DemoPinesRouteImport } from './routes/demo.pines'
 import { Route as DemoRecapRouteImport } from './routes/demo.recap'
 import { Route as DemoRepeticionRouteImport } from './routes/demo.repeticion'
 import { Route as DemoTiendaRouteImport } from './routes/demo.tienda'
@@ -263,6 +264,11 @@ const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRecapRoute = DemoRecapRouteImport.update({
+const DemoPinesRoute = DemoPinesRouteImport.update({
+  id: '/demo/pines',
+  path: '/demo/pines',
+  getParentRoute: () => rootRouteImport,
+} as any)
   id: '/demo/recap',
   path: '/demo/recap',
   getParentRoute: () => rootRouteImport,
@@ -523,6 +529,7 @@ export interface FileRoutesByFullPath {
   '/demo/torneo-stats': typeof DemoTorneoStatsRoute
   '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
+  '/demo/pines': typeof DemoPinesRoute
   '/admin/anticheat': typeof AppAdminAnticheatRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
@@ -602,6 +609,7 @@ export interface FileRoutesByTo {
   '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/anticheat': typeof AppAdminAnticheatRoute
+  '/demo/pines': typeof DemoPinesRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
   '/admin/maps': typeof AppAdminMapsRoute
@@ -685,6 +693,7 @@ export interface FileRoutesById {
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/anticheat': typeof AppAdminAnticheatRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
+  '/demo/pines': typeof DemoPinesRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
   '/_app/admin/maps': typeof AppAdminMapsRoute
   '/_app/admin/matchmaking': typeof AppAdminMatchmakingRoute
@@ -767,6 +776,7 @@ export interface FileRouteTypes {
     | '/admin/anticheat'
     | '/admin/bans'
     | '/admin/clips'
+    | '/demo/pines'
     | '/admin/maps'
     | '/admin/matchmaking'
     | '/admin/medals'
@@ -846,6 +856,7 @@ export interface FileRouteTypes {
     | '/admin/bans'
     | '/admin/clips'
     | '/admin/maps'
+    | '/demo/pines'
     | '/admin/matchmaking'
     | '/admin/medals'
     | '/admin/players'
@@ -928,6 +939,7 @@ export interface FileRouteTypes {
     | '/_app/admin/clips'
     | '/_app/admin/maps'
     | '/_app/admin/matchmaking'
+    | '/demo/pines'
     | '/_app/admin/medals'
     | '/_app/admin/players'
     | '/_app/admin/ranking'
@@ -1001,6 +1013,7 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       id: '/'
+  DemoPinesRoute: typeof DemoPinesRoute
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
@@ -1257,6 +1270,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/repeticion'
       preLoaderRoute: typeof DemoRepeticionRouteImport
       parentRoute: typeof rootRouteImport
+    '/demo/pines': {
+      id: '/demo/pines'
+      path: '/demo/pines'
+      fullPath: '/demo/pines'
+      preLoaderRoute: typeof DemoPinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     }
     '/demo/tienda': {
       id: '/demo/tienda'
@@ -1723,3 +1743,4 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+  DemoPinesRoute: DemoPinesRoute,
