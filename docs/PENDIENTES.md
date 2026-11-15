@@ -2,13 +2,13 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
-## Límites configurables para los baneos del soporte (2026-11-14): sin desplegar
+## Límites configurables para los baneos del soporte (2026-11-14): desplegado el 2026-11-15
 
 - **Qué es:** pedido por Daniel. Los límites del soporte (120 minutos, 3 baneos por jugador en 7 días) pasan a `site_config` y un admin los cambia desde Baneos › Actividad del soporte ([`2026-11-14-limites-baneo-soporte`](bitacora/2026-11-14-limites-baneo-soporte/)). Replanteo `121`, la API, la web, el manual y `/terminos`.
-- **Hecho:** probado en local (12 de 12 en la base, 627 de la API y 758 de la web), y probado por Daniel en el navegador.
+- **Desplegado** (commit `add29312`): la prueba en producción con rollback (12 de 12), la `121` a las 05:31 UTC, y la API y la web `add29312b03b`.
 - **Falta:**
-  1. La prueba con rollback en producción, la `121` en el VPS, y la API y la web (pasos en la guía).
-  2. Publicar `terms/terminos.html` y el changelog 2.9.48 en Discord.
+  1. Publicar `terms/terminos.html` y el changelog 2.9.48 en Discord.
+  2. **Acentos rotos de la `117` en producción:** siete funciones siguen con textos como "ElegÃ­" (`ban_lift`, `clip_reject`, `clip_reprocess`, `clip_review_ok`, `mm_admin_lists`, `profile_comment_delete` y `team_staff_remove_logo`). Arreglarlas solo si Daniel lo pide (ver la guía, "Incidentes").
 
 ## Rol Soporte (2026-11-13): desplegado el 2026-11-14
 

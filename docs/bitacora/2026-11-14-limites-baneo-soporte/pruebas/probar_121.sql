@@ -4,8 +4,9 @@
 begin;
 
 -- Las funciones antes de la 121, para comparar con la inversa al final.
+-- Sin los \r: la 117 se aplicó en producción desde un archivo con CRLF.
 create temp table antes as
-select p.oid::regprocedure::text as fn, md5(pg_get_functiondef(p.oid)) as h
+select p.oid::regprocedure::text as fn, md5(replace(pg_get_functiondef(p.oid), chr(13), '')) as h
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
  where n.nspname = 'public' and p.proname in ('ban_support_count', 'ban_support_quota', 'ban_create', 'ban_update');
 
@@ -191,9 +192,14 @@ reset role;
 do $$
 declare distintas text;
 begin
-  select string_agg(a.fn, ', ') into distintas from antes a
-   where a.h is distinct from (select md5(pg_get_functiondef(a.fn::regprocedure)));
+  -- Igual, o igual salvo los acentos: en producción la 117 quedó con el UTF-8 leído como WIN1252 ("ElegÃ­"); la
+  -- inversa las deja con los acentos bien.
+  select string_agg(a.fn, ', ') into distintas from antes a, lateral (select replace(pg_get_functiondef(a.fn::regprocedure), chr(13), '') d) f
+   where a.h is distinct from md5(f.d) and a.h is distinct from md5(convert_from(convert_to(f.d, 'UTF8'), 'WIN1252'));
   if distintas is not null then raise exception 'falla 10: la inversa no deja igual: %', distintas; end if;
+  select string_agg(a.fn, ', ') into distintas from antes a
+   where a.h is distinct from md5(replace(pg_get_functiondef(a.fn::regprocedure), chr(13), ''));
+  if distintas is not null then raise notice 'nota 10: iguales salvo los acentos rotos de antes: %', distintas; end if;
   if to_regprocedure('public.site_ban_limits()') is not null or to_regprocedure('public.site_admin_set_ban_limits(int, int, int)') is not null then
     raise exception 'falla 10: quedaron las funciones';
   end if;
