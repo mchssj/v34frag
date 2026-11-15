@@ -5,7 +5,8 @@
 // En Linux además comprueba el cierre ordenado con SIGTERM; en Windows no hay señales (kill corta el proceso).
 import { spawn } from 'node:child_process';
 
-const port = 18787;
+// BUILD_CHECK_PORT: otro puerto si Windows tiene reservado el 18787 (netsh interface ipv4 show excludedportrange).
+const port = Number(process.env.BUILD_CHECK_PORT || 18787);
 const child = spawn(process.execPath, ['--enable-source-maps', 'dist/server.mjs'], {
   env: {
     PATH: process.env.PATH,
