@@ -2,6 +2,15 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## La portada se encuadra más fácil (2026-11-15): desplegado el 2026-11-15
+
+- **Qué es:** pedido por Daniel. La portada del perfil pasa a 3:1 (2400×800) y se puede alejar al encuadrarla; lo que sobra se rellena con la misma foto difuminada ([`2026-11-15-portada-encuadre`](bitacora/2026-11-15-portada-encuadre/)). La API y la web, sin cambios en la base.
+- **Desplegado** (commit `6169f01e`): la API y la web `6169f01eaa77`, a las 05:52 y 05:57 UTC.
+- **Falta:**
+  1. Subir una portada en producción y verla en el perfil.
+  2. Publicar el changelog 2.9.49 en Discord.
+  3. Decidir si se hace lo mismo con el banner de los torneos y la imagen del MVP.
+
 ## Límites configurables para los baneos del soporte (2026-11-14): desplegado el 2026-11-15
 
 - **Qué es:** pedido por Daniel. Los límites del soporte (120 minutos, 3 baneos por jugador en 7 días) pasan a `site_config` y un admin los cambia desde Baneos › Actividad del soporte ([`2026-11-14-limites-baneo-soporte`](bitacora/2026-11-14-limites-baneo-soporte/)). Replanteo `121`, la API, la web, el manual y `/terminos`.

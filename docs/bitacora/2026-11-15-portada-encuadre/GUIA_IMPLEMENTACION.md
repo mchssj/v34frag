@@ -2,7 +2,15 @@
 
 ## Estado
 
-**Pendiente de despliegue** (API y web).
+**Desplegado el 2026-11-15**: la API y la web `6169f01eaa77` (sin cambios en la base). Falta subir una portada en producción y verla en el perfil, y publicar `CHANGELOG_DISCORD.txt` (2.9.49) en Discord.
+
+## Despliegue (hecho el 2026-11-15)
+
+1. **Un primer intento desde la rama equivocada.** Se desplegó la API desde `feat/tienda-de-puntos` (`f806b69ee4d6`), que no tenía lo último de `main`: producción estaba en `add29312b03b` (límites del soporte, [`2026-11-14-limites-baneo-soporte`](../2026-11-14-limites-baneo-soporte/)). La API quedó unos 40 segundos sin esos cambios (05:48 UTC) y se volvió a `add29312b03b` con `ln -sfn` y `systemctl restart cmleague-api`. La web no se llegó a desplegar. **Para la próxima:** se despliega desde `origin/main` (producción), no desde la rama de la tienda.
+2. **Los commits sobre `origin/main`:** en un worktree nuevo (`v34frag-portada`, rama `deploy/portada-encuadre`), `cherry-pick` de los dos commits (el índice de la bitácora tuvo conflicto: quedaron las dos filas). Typecheck de la API y de la web limpio.
+3. **API:** `deploy/vps/desplegar.sh api`, `6169f01eaa77` (antes `add29312b03b`), 654 pruebas; `/api/health` con esa versión a las 05:52 UTC.
+4. **Web:** `deploy/vps/desplegar.sh web`, `6169f01eaa77` (antes `add29312b03b`), 789 pruebas.
+5. **Comprobado sin sesión:** `/api/health` con `6169f01eaa77`, `POST /api/v1/me/cover` da 401 (la ruta existe), el OpenAPI público dice 3:1 de 900×300 a 2400×800 y la web responde.
 
 ## Archivos
 
@@ -33,4 +41,4 @@ En nada.
 
 ## Cómo revertir
 
-Web y API a la versión anterior con `ln -sfn` (ver `deploy/vps/README.md`). Las portadas 3:1 que se hayan subido mientras tanto se siguen viendo bien con la web anterior (la caja 4:1 les corta un poco arriba y abajo).
+Web y API a `add29312b03b` con `ln -sfn` (ver `deploy/vps/README.md`). Las portadas 3:1 que se hayan subido mientras tanto se siguen viendo bien con la web anterior (la caja 4:1 les corta un poco arriba y abajo).
