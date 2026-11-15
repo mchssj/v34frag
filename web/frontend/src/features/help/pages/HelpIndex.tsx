@@ -1,11 +1,17 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { BookOpenIcon, ChevronRightIcon, SearchIcon } from "lucide-react"
+import {
+  BookOpenIcon,
+  ChevronRightIcon,
+  CompassIcon,
+  SearchIcon,
+} from "lucide-react"
 import { useState } from "react"
 
 import { FilterChips } from "@/components/brand/FilterChips"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { QueryErrorMessage } from "@/components/brand/QueryState"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
   InputGroup,
@@ -26,20 +32,31 @@ import type {
 export function HelpIndex({
   seccion,
   onSeccion,
+  onGuide,
 }: {
   seccion: ManualSeccionId | undefined
   onSeccion: (s: ManualSeccionId) => void
+  /** Abre la guía de la web (la de la primera vez). */
+  onGuide?: () => void
 }) {
   const index = useQuery(manualIndexOptions())
   const [q, setQ] = useState("")
 
   return (
     <section className="flex flex-col gap-5">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-[-0.5px]">Ayuda</h1>
-        <p className="text-sm text-muted-foreground">
-          Cómo se usa CM League, paso a paso.
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-[-0.5px]">Ayuda</h1>
+          <p className="text-sm text-muted-foreground">
+            Cómo se usa CM League, paso a paso.
+          </p>
+        </div>
+        {onGuide && (
+          <Button variant="outline" size="sm" onClick={onGuide}>
+            <CompassIcon data-icon="inline-start" aria-hidden />
+            Ver la guía
+          </Button>
+        )}
       </header>
 
       {index.isPending ? (

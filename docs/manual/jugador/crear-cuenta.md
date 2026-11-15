@@ -31,6 +31,14 @@ La primera vez que entras, la web te propone completar tu perfil en unos pasos. 
 - **Contactos:** Discord, Steam y FACEIT. Los ven los usuarios con sesión iniciada y sirven para que te inviten a equipos y prácticas.
 - **Vinculación:** el `!claim` que une tu cuenta de Steam con la web. Lo haces en tu primera partida (ver [Vincular tu SteamID](/help/jugador/vincular-steamid)).
 
+## 4. La guía de la web
+
+Después de completar tu perfil, la primera vez que llegas a la web se abre una guía corta. Primero te pregunta si ya tienes ClientMod instalado y la consola del juego activada, y si no, te muestra cómo (ver [Instalar ClientMod y activar la consola](/help/jugador/instalar-clientmod)). Después te muestra dónde está cada cosa: buscar partida, vincular tu SteamID, las partidas, el ranking, los equipos y torneos, y la ayuda. En cada paso, **Ir a…** te lleva a esa sección y **Leer en la ayuda** abre la página del manual.
+
+La guía está en español, portugués e inglés: cambia el idioma con `ES`, `PT` o `EN`, arriba a la derecha. La web recuerda el que elijas.
+
+Puedes cerrarla con **Saltar guía** o con Escape. Para verla de nuevo, entra a [Ayuda](/help) y toca **Ver la guía**.
+
 ## Cambiar tus datos después
 
 Todo se cambia en **Mi perfil**, desde el menú de tu cuenta:

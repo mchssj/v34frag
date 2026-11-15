@@ -13,6 +13,7 @@ import { apiMmSource } from "@/features/matchmaking/apiSource"
 import { GlobalMatchAlerts } from "@/features/matchmaking/MatchAlerts"
 import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
 import { MmSourceContext } from "@/features/matchmaking/source"
+import { FirstVisitGuide } from "@/features/onboarding/components/FirstVisitGuide"
 import { AppSidebar } from "@/features/shell/components/AppSidebar"
 import { CommandMenu } from "@/features/shell/components/CommandMenu"
 import { NowBar } from "@/features/shell/components/NowBar"
@@ -72,6 +73,8 @@ function AppLayout() {
         </MmSourceContext>
       </SidebarInset>
       <CommandMenu user={user} open={searchOpen} onOpenChange={setSearchOpen} />
+      {/* La guía de la web, una sola vez después de la Bienvenida. */}
+      <FirstVisitGuide user={user} />
     </SidebarProvider>
   )
 }

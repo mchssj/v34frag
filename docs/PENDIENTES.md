@@ -2,6 +2,14 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-14**.
 
+## Guía de la web la primera vez (2026-11-14): commiteada en `kyan/guia`, sin desplegar
+
+- **Estado:** pedida por Kyan. Al entrar por primera vez, después de la Bienvenida, se abre una guía en pasos: qué es ClientMod, si lo tiene instalado (si no, la descarga de `https://clientmod.ru/`) y si tiene la consola activada; después Jugar, SteamID, Partidas y ranking, equipos y torneos, y Ayuda. En español, portugués de Brasil e inglés. Solo web; prototipo en `/demo/guia`. Detalle: [`2026-11-14-guia-primera-vez`](bitacora/2026-11-14-guia-primera-vez/).
+- **Falta:**
+  - Probarla con una cuenta nueva real (registro → Bienvenida → Para ti).
+  - Confirmar los nombres del menú de Opciones de ClientMod para activar la consola, y que un hablante revise el portugués y el inglés.
+  - Llevarla a `feat/frontend-fase-1` (preguntando antes), desplegar la web y publicar el changelog (CMLeague 2.9.37).
+
 ## Ver una sala del matchmaking como admin (2026-11-14): commiteado en `kyan/pruebas`, sin desplegar
 
 - **Estado:** pedido por Kyan. "Ver sala" en Administración › Matchmaking › Salas abre la sala como "Tu última partida", con cancelar, servidor, TV y banear. La `116` está aplicada y probada en la copia local de producción; la ruta y la web, con pruebas y con datos reales de la copia. Detalle: [`2026-11-14-mm-admin-ver-sala`](bitacora/2026-11-14-mm-admin-ver-sala/).

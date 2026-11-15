@@ -25,6 +25,7 @@ import {
   type SocialsInput,
   type SocialsValues,
 } from "@/features/profile/lib/schemas"
+import { markGuidePending } from "../lib/guide"
 import { ClaimStep } from "../components/ClaimStep"
 import { ContactsStep } from "../components/ContactsStep"
 import { PhotoStep } from "../components/PhotoStep"
@@ -106,7 +107,10 @@ export function WelcomeFlow({ user }: { user: AuthUser }) {
   })
 
   // Se marca como vista al entrar: después queda el aviso del Home.
-  useEffect(() => markWelcomeSeen(user.id), [user.id])
+  useEffect(() => {
+    markWelcomeSeen(user.id)
+    markGuidePending(user.id)
+  }, [user.id])
 
   // Los pasos se arman una vez, con lo que ya tenga cargado el perfil.
   if (steps === null && profile.data && steam.data) {

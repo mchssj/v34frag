@@ -1,0 +1,6 @@
+CMLeague 2.9.37 --  Changelog
+
+- Si recién te registras, al entrar a la web por primera vez te aparece una guía corta. Te explica qué es ClientMod, te pregunta si ya lo tienes instalado y con la consola activada (y si no, te muestra cómo), y después te enseña dónde está cada cosa: buscar partida, vincular tu SteamID, partidas, ranking, equipos y ayuda.
+- La guía está en español, portugués e inglés: elige el idioma arriba a la derecha.
+- Puedes saltarla cuando quieras y volver a verla desde Ayuda, con el botón "Ver la guía".
+- Nueva página en la ayuda: Instalar ClientMod y activar la consola.
