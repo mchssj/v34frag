@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho el 2026-11-14 y commiteado en `kyan/guia` el 2026-11-15. El 2026-11-15 se llevó a `main` (cherry-pick en `feat/guia-primera-vez`, desde `origin/main` `1182f60e`) y se probó el flujo real con una cuenta nueva de la base local. **Sin desplegar.**
+Hecho el 2026-11-14 y commiteado en `kyan/guia` el 2026-11-15. El 2026-11-15 se llevó a `main` (cherry-pick en `feat/guia-primera-vez`, desde `origin/main` `1182f60e`) y se probó el flujo real con una cuenta nueva de la base local. **Web desplegada el 2026-11-15** (`d3cf16b6fa9a`, con `deploy/vps/desplegar.sh web`: 811 pruebas). Falta publicar el changelog (2.9.51).
 
 ## Archivos
 
