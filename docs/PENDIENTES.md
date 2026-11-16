@@ -45,6 +45,15 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Qué es:** el buscador de arriba (Ctrl+K) trae jugadores, equipos y torneos además de las páginas ([`2026-11-13-buscador-global`](bitacora/2026-11-13-buscador-global/)). Solo la web y el manual.
 - **Desplegado:** la web y la API `92ea3367f5c8` (la API, por la página nueva del manual). No toca la base ni los servidores.
 
+## Los mapas del CSS nuevo en los clips del v34 (2026-11-15): commiteado, falta el portátil
+
+- **Qué es:** con `"client": "v34"`, el render apaga los reflejos y el HDR (`mat_specular 0; mat_hdr_level 0`), porque `de_tuscan_ob`, `de_strike_mirage`, `de_ancient_css` y `de_train_t5` traen cubemaps VTF 7.4 que el v34 no lee e iluminación HDR que sale demasiado brillante. Y `render/revisar_mapas.py` lista lo que le falta a un mapa ([`2026-11-15-render-mapas-css-nuevo`](bitacora/2026-11-15-render-mapas-css-nuevo/)). Solo `render/`.
+- **Hecho:** commiteado en `main` el 2026-11-15. Probado a mano en la consola del v34 de la PC. No se grabó un clip con el render.
+- **Falta:**
+  1. `git pull` en el portátil, con la tarea "CMLeague clips" sin una corrida a mitad.
+  2. Grabar en el portátil un clip de `de_tuscan_ob` o `de_strike_mirage` con el v34 y mirarlo.
+  3. Conseguir el agua y los materiales del suelo de `de_ancient_css` (y `nature/blendprodasphaltgrass` de `de_cache`): no están en el v34, ni en ClientMod, ni en el servidor local.
+
 ## Las voces de los jugadores en los clips del v34 (2026-11-14): sin desplegar
 
 - **Qué es:** con `"client": "v34"`, el render saca las voces de la demo (Opus de ClientMod), las decodifica con FFmpeg y las mezcla en cada tramo; la voz del juego queda sin volumen para que se vean los íconos, y el sonido del juego se adelanta 0,17 s ([`2026-11-14-render-voces-opus`](bitacora/2026-11-14-render-voces-opus/)). También corrige `/privacidad`: los clips y las demos incluyen el chat de voz.

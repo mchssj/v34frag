@@ -87,8 +87,9 @@ Desde el 2026-11-04 se puede grabar con el CS:S v34 normal en vez de ClientMod (
 4. **La consola y el control del espectador:** los maneja el script (desde el 2026-11-13). Pone `bind "k" "toggleconsole"` en `cmleague_render.cfg` (el v34 no trae una tecla para la consola, y la de al lado del 1 no la abre) y, al cargar la demo, aprieta Ctrl para cerrar el control del espectador. Después de una grabación, la K queda abriendo la consola también al jugar con esa instalación.
 5. **Las voces de los jugadores:** el v34 no sabe reproducir la voz de ClientMod (es Opus, y la decodifica como Speex: sale ruido). El script la deja prendida sin volumen (`voice_scale 0`, para que se vean los íconos de quién habla), la saca de la demo, la decodifica con FFmpeg y la mezcla al armar el video (desde el 2026-11-14, bitácora `2026-11-14-render-voces-opus`). También adelanta 0,17 s el sonido del juego, que el v34 escribe atrasado. Se ajustan, si hiciera falta, con `"voice_delay"` (0,28 s) y `"game_audio_advance"` (0,17 s) en `config.json`. Después de una grabación, esa instalación queda con la voz de los demás en 0 (`voice_scale` se guarda en su `config.cfg`).
 6. **El sonido de la grabación:** en el dispositivo de reproducción predeterminado de Windows (Win + R › `mmsys.cpl` › Reproducción › el dispositivo › Opciones avanzadas y Mejoras) hay que **destildar "Habilitar mejoras de audio" y "Permitir que las aplicaciones tomen el control exclusivo"**. Con esas opciones, el v34 suena al jugar, pero `startmovie` escribe el `.wav` vacío (44 bytes, solo la cabecera) y los videos salen mudos (el portátil, 2026-11-13). El log de la grabación lo avisa con `Aviso: … sin audio`. Para probarlo sin el script: en el juego, `map de_dust2`, `startmovie pruebaaudio`, unos segundos y `endmovie`. El `.wav` tiene que pesar cientos de KB (si el juego no corrió como administrador, queda en `%LOCALAPPDATA%\VirtualStore\Program Files (x86)\CSS v34 eXpandedCS\cstrike\`).
-7. **Permisos:** como la carpeta está en `C:\Program Files (x86)`, el juego tiene que correr como administrador para escribir ahí los cuadros, el log y las demos. El script ya se eleva (y la tarea corre con privilegios más altos), así que no hay que hacer nada. Si se prefiere evitarlo, se puede mover la carpeta entera a, por ejemplo, `C:\CMLeague_Render\v34`.
-8. **En `config.json`** (paso 5):
+7. **Los mapas del CSS nuevo** (`de_tuscan_ob`, `de_strike_mirage`, `de_ancient_css`, `de_train_t5`…): traen cubemaps en un formato que el v34 no lee (VTF 7.4) e iluminación HDR. Con los reflejos prendidos salen texturas rotas (el cuadriculado morado) y un tono morado en el arma, y con el HDR quedan demasiado brillantes. El script pone `mat_specular 0; mat_hdr_level 0` en `cmleague_render.cfg`, en todos los mapas (desde el 2026-11-15, bitácora `2026-11-15-render-mapas-css-nuevo`). Después de una grabación, esa instalación queda sin reflejos ni HDR también al jugar (se guardan en su `config.cfg`). Para revisar si a un mapa nuevo le falta algo, ver "Mapas que faltan" en el paso 9.
+8. **Permisos:** como la carpeta está en `C:\Program Files (x86)`, el juego tiene que correr como administrador para escribir ahí los cuadros, el log y las demos. El script ya se eleva (y la tarea corre con privilegios más altos), así que no hay que hacer nada. Si se prefiere evitarlo, se puede mover la carpeta entera a, por ejemplo, `C:\CMLeague_Render\v34`.
+9. **En `config.json`** (paso 5):
    ```json
    "client": "v34",
    "client_dir": "C:\\Program Files (x86)\\CSS v34 eXpandedCS",
@@ -226,6 +227,18 @@ python -I -c "import sys;sys.path.insert(0,'.');import json,os,urllib.request,pr
 ```
 
 (La base guarda algunos mapas sin el `de_`, como `cbble`, y el script se lo agrega. Si la base tiene un mapa con otro prefijo y el script lo marca como faltante por error, revisa a mano.)
+
+### Texturas o modelos que le faltan a un mapa (v34 normal)
+
+Si un mapa se ve con el cuadriculado morado y negro (una textura que falta) o con un `ERROR` rojo (un modelo que falta), `revisar_mapas.py` lista lo que el v34 no encuentra. Lee el `.bsp` de `cstrike/maps/` y sigue cada material, textura y modelo. Desde `render/`:
+
+```
+python -I revisar_mapas.py "C:\Program Files (x86)\CSS v34 eXpandedCS" de_tuscan_ob de_ancient_css
+```
+
+Con `--fuente <carpeta de un ClientMod>` también busca en sus `.vpk` y en sus carpetas lo que falte, y con `--exportar <carpeta>` lo copia ahí con sus rutas, para pegarlo dentro de `cstrike/`. El aviso "texturas VTF 7.3 o más nuevas" es normal en los mapas del CSS nuevo: son los cubemaps, y el render ya los esquiva con `mat_specular 0` (paso 3b).
+
+En la PC (2026-11-15), a `de_ancient_css` le faltan el agua (`nature/water_coast02`, `water_coast01_beneath`), tres materiales de mezcla del suelo y los modelos `models/effects/vol_light…`, y a `de_cache` el material `nature/blendprodasphaltgrass`. No están en el v34, ni en el ClientMod del render, ni en el servidor local.
 
 ## Al terminar
 
