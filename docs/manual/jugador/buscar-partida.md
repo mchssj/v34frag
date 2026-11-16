@@ -93,6 +93,7 @@ Cuando alguien abandona, puede salir un aviso en el Discord de la liga con un li
 - No se llama a nadie si faltan menos de {{mm.reemplazo_rondas}} para el final del tiempo reglamentario.
 - Un abandono cubierto por un reemplazo no cuenta para los 2 que hacen perder la partida.
 - El que abandonó se lleva igual su sanción y pierde ELO. Si vuelve después de que entró el reemplazo, queda de espectador.
+- Si te reemplazan, esa partida ya no es tuya: en cuanto entra tu reemplazo puedes volver a buscar, cuando se te termine la sanción.
 
 ### Entrar como reemplazo
 

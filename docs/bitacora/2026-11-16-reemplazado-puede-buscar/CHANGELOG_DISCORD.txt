@@ -1,0 +1,3 @@
+CMLeague 2.9.53 --  Changelog
+
+- Si abandonas una partida del matchmaking y entra alguien a reemplazarte, ya puedes volver a buscar partida sin esperar a que termine la que dejaste. Igual te llevas la sanción por abandonar y pierdes ELO.
