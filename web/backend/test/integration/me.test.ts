@@ -59,8 +59,8 @@ describe('GET /api/v1/me/profile', () => {
     const p = await (await getProfile(u.token)).json();
     expect(p.player).toMatchObject({ id: pl.id, nick: expect.any(String) });
     expect(p.teams).toEqual([
-      { id: team.id, name: team.name, tag: 'OFI', is_captain: false, is_member: true },
-      { id: team2.id, name: team2.name, tag: 'DOS', is_captain: false, is_member: true },
+      { id: team.id, name: team.name, tag: 'OFI', is_captain: false, is_member: true, is_primary: true },
+      { id: team2.id, name: team2.name, tag: 'DOS', is_captain: false, is_member: true, is_primary: false },
     ]);
     expect(p.matches_played).toBe(1);
   });

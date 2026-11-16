@@ -533,7 +533,15 @@ export function useSetLookingFor() {
 export function useRenameTeam() {
   const invalidate = useInvalidateTeam()
   return useMutation({
-    mutationFn: ({ teamId, name, tag }: { teamId: string; name: string; tag: string }) =>
+    mutationFn: ({
+      teamId,
+      name,
+      tag,
+    }: {
+      teamId: string
+      name: string
+      tag: string
+    }) =>
       unwrap(
         api.PATCH("/api/v1/teams/{id}", {
           params: { path: { id: teamId } },
@@ -541,5 +549,25 @@ export function useRenameTeam() {
         })
       ),
     onSuccess: (_, { teamId }) => invalidate(teamId),
+  })
+}
+
+/**
+ * Marca el equipo principal (`null` vuelve al más antiguo). Va primero en Mis equipos, en el perfil y en el
+ * ranking, así que se vuelven a pedir (replanteo 124).
+ */
+export function useSetPrimaryTeam() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (teamId: string | null) =>
+      unwrap(
+        api.PUT("/api/v1/me/teams/primary", { body: { team_id: teamId } })
+      ),
+    onSuccess: (teams) => {
+      queryClient.setQueryData(teamKeys.mine, teams)
+      void queryClient.invalidateQueries({ queryKey: profileKeys.mine })
+      void queryClient.invalidateQueries({ queryKey: ["public-player"] })
+      void queryClient.invalidateQueries({ queryKey: ["ranking"] })
+    },
   })
 }

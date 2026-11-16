@@ -25,6 +25,17 @@ Cuando un capitán te invita, te llega a la campana y aparece en [Mi equipo](/my
 
 Puedes estar en más de un equipo a la vez. Si estás en varios, arriba de Mi equipo eliges cuál ver.
 
+## Tu equipo principal
+
+Si estás en varios equipos, uno es el **principal**: el que aparece primero en tu perfil, en el ranking de jugadores y en Mi equipo. Mientras no elijas, es el equipo al que entraste primero.
+
+1. En [Mi equipo](/myteam), elige arriba el equipo que quieres.
+2. Toca **Marcar como principal** (la estrella).
+
+Ese equipo lleva una estrella en el selector y en tu perfil. Para cambiarlo, marca otro. Si sales del equipo principal, vuelve a serlo el más antiguo de los que te quedan.
+
+El principal solo cambia cómo te mostramos: no cambia nada de torneos, PCW ni del ranking de equipos.
+
 ## Crear tu equipo
 
 1. En [Mi equipo](/myteam), toca **Crear equipo**.
@@ -32,7 +43,7 @@ Puedes estar en más de un equipo a la vez. Si estás en varios, arriba de Mi eq
 3. Si quieres, sube un logo: PNG, JPG o WebP, que encuadras en cuadrado. Sin logo, el escudo muestra la sigla.
 4. Toca **Crear equipo**.
 
-El equipo queda creado al instante y tú quedas como su capitán. Puedes ser capitán de hasta {{equipo.capitan_max}} a la vez.
+El equipo queda creado al instante y tú quedas como su capitán. Puedes ser capitán de hasta {{equipo.capitan_max}} a la vez: si ya estás en un equipo y todavía puedes liderar otro, **Crear equipo** aparece arriba de Mi equipo, junto a **Buscar equipo**.
 
 Para inscribirlo en un torneo necesitas los jugadores que pide el modo (5 en 5v5), y el equipo aparece en el ranking de equipos cuando tiene los jugadores para jugar 5v5. Lo que hace el capitán está en la sección **Capitán** de la ayuda.
 

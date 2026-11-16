@@ -133,10 +133,21 @@ export const MyProfile = z
           tag: z.string().nullable(),
           is_captain: z.boolean(),
           is_member: z.boolean().openapi({ description: 'false si solo es dueño o capitán sin estar en el plantel' }),
+          is_primary: z.boolean().openapi({ description: 'Su equipo principal (el que marcó o, si no, el más antiguo): va primero. Se marca con `PUT /api/v1/me/teams/primary`' }),
         }),
       )
-      .openapi({ description: 'Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno)' }),
+      .openapi({
+        description:
+          'Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno). Primero el principal, ' +
+          'después los demás por fecha de ingreso y al final, por nombre, los que capitanea o creó sin estar en el plantel',
+      }),
     matches_played: z.number().int().openapi({ description: 'Partidas terminadas que jugó en el servidor (mixes, PCW y torneos)' }),
+    team_lead: z
+      .object({
+        led: z.number().int().openapi({ description: 'Equipos oficiales activos de los que es capitán' }),
+        max: z.number().int().openapi({ description: 'De cuántos puede ser capitán (`team_config.max_led`, lo fija el admin)' }),
+      })
+      .openapi({ description: 'Si `led < max`, puede crear otro equipo (el admin no tiene tope)' }),
     preferences: Preferences.openapi({ description: 'Preferencias de la cuenta: siempre con todas sus claves (`null` si no eligió)' }),
     vip: VipStatus.nullable().openapi({ description: '`null` si nunca fue VIP' }),
     streamer: MyStreamer.nullable().openapi({ description: 'La marca de streamer del HUD, o `null` si no la tiene (link en `POST /me/hud-link`)' }),

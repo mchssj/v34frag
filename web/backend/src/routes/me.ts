@@ -2,6 +2,7 @@ import { createRoute, z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { requireUser } from '../lib/auth';
+import { sortByPrimary } from '../lib/db';
 import { inBackground } from '../lib/background';
 import { AppError, fromPostgrest, type PostgrestLikeError } from '../lib/errors';
 import { createRouter } from '../lib/router';
@@ -50,28 +51,49 @@ const themeFxOf = (prefs: unknown) => {
 /** Lo mismo que mostraba rProfileView() en la web. */
 async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
   const { sb, user, config } = c.var;
-  const [account, details, player, prefs, vip, streamer] = await Promise.all([
+  const [account, details, ficha, prefs, vip, streamer, teamConfig] = await Promise.all([
     profileOf(config, user.token, user.id),
     sb.from('profile_details').select(DETAILS).eq('user_id', user.id).maybeSingle().then(must),
-    sb.from('players').select('id, nick, photo_url, steam_id, bio').eq('user_id', user.id).limit(1).maybeSingle().then(must),
+    sb.from('players').select('id, nick, photo_url, steam_id, bio, primary_team_id').eq('user_id', user.id).limit(1).maybeSingle().then(must),
     sb.from('user_preferences').select('preferences').eq('user_id', user.id).maybeSingle().then(must),
     vipStatusOf(sb, [user.id]),
     streamersOf(sb, [user.id]).then((m) => m.get(user.id)),
+    sb.from('team_config').select('max_led').eq('id', 1).maybeSingle().then(must),
   ]);
 
+  const { primary_team_id: primaryId = null, ...player } = ficha ?? {};
+
   // Equipos oficiales (no PCW) donde juega hoy el jugador vinculado, más los que capitanea o de los que es dueño.
-  const memberOf = player
-    ? mustHave(await sb.from('team_members').select('team_id').eq('player_id', player.id).is('left_at', null)).map((r) => r.team_id)
+  // Orden (replanteo 124): los suyos con el principal primero y después por fecha de ingreso; al final, por nombre,
+  // los que capitanea o creó sin estar en el plantel.
+  const memberRows = ficha
+    ? mustHave(await sb.from('team_members').select('team_id, joined_at').eq('player_id', ficha.id).is('left_at', null))
     : [];
+  const memberOf = memberRows.map((r) => r.team_id);
   const filter = [`captain_id.eq.${user.id}`, `owner_id.eq.${user.id}`, ...(memberOf.length ? [`id.in.(${memberOf.join(',')})`] : [])];
-  const teams = mustHave(
+  const found = mustHave(
     await sb.from('teams').select('id, name, tag, captain_id').eq('kind', 'official').is('dissolved_at', null).or(filter.join(',')).order('name'),
-  ).map((t) => ({ id: t.id, name: t.name, tag: t.tag, is_captain: t.captain_id === user.id, is_member: memberOf.includes(t.id) }));
+  );
+  const mine = sortByPrimary(
+    found.flatMap((t) => {
+      const m = memberRows.find((r) => r.team_id === t.id);
+      return m ? [{ ...t, team_id: t.id, team_name: t.name, joined_at: m.joined_at }] : [];
+    }),
+    primaryId,
+  );
+  const teams = [...mine, ...found.filter((t) => !memberOf.includes(t.id))].map((t, i) => ({
+    id: t.id,
+    name: t.name,
+    tag: t.tag,
+    is_captain: t.captain_id === user.id,
+    is_member: memberOf.includes(t.id),
+    is_primary: i === 0 && memberOf.includes(t.id),
+  }));
 
   // Partidas jugadas: las de la vista player_matches (mixes, PCW y torneos terminados).
   let matches_played = 0;
-  if (player) {
-    const { count, error } = await sb.from('player_matches').select('match_id', { count: 'exact', head: true }).eq('player_id', player.id);
+  if (ficha) {
+    const { count, error } = await sb.from('player_matches').select('match_id', { count: 'exact', head: true }).eq('player_id', ficha.id);
     if (error) throw fromPostgrest(error);
     matches_played = count ?? 0;
   }
@@ -86,9 +108,11 @@ async function loadMyProfile(c: C): Promise<z.infer<typeof MyProfile>> {
       password_changed_at: account?.password_changed_at ?? null,
     },
     details: details ?? EMPTY_DETAILS,
-    player,
+    player: ficha ? (player as Omit<typeof ficha, 'primary_team_id'>) : null,
     teams,
     matches_played,
+    // El mismo conteo que teams_lead_limit (replanteo 40): oficiales, no disueltos, donde es capitán.
+    team_lead: { led: teams.filter((t) => t.is_captain).length, max: teamConfig?.max_led ?? 1 },
     preferences: { theme_fx: themeFxOf(prefs?.preferences), notifications: notificationPrefsOf(prefs?.preferences) },
     vip: vip.get(user.id) ?? null,
     streamer: streamer?.active

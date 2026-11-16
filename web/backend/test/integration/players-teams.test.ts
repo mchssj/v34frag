@@ -404,3 +404,43 @@ describe('más casos del plantel y del admin', () => {
     expect((await req('GET', `/api/v1/players/${pl}`)).body.photo_url).not.toBe(url);
   });
 });
+
+describe('equipo principal (replanteo 124)', () => {
+  it('marcarlo, el orden en Mis equipos, la ficha y el ranking; uno ajeno no; al salir vuelve al más antiguo', async () => {
+    const sb = admin();
+    const p = await player();
+    const team = async () => (await sb.from('teams').insert({ name: `P ${rnd()}`, tag: 'P', kind: 'official' }).select('id').single()).data!.id as string;
+    const [viejo, nuevo, ajeno] = [await team(), await team(), await team()];
+    const ins = await sb.from('team_members').insert([
+      { team_id: viejo, player_id: p.playerId, joined_at: '2026-01-01T00:00:00Z' },
+      { team_id: nuevo, player_id: p.playerId, joined_at: '2026-06-01T00:00:00Z' },
+    ]);
+    expect(ins.error).toBeNull();
+    const order = async () => ({
+      mine: (await req('GET', '/api/v1/me/teams', { token: p.token })).body.map((t: { id: string; is_primary: boolean }) => [t.id, t.is_primary]),
+      ficha: (await req('GET', `/api/v1/players/${p.playerId}`)).body.teams.map((t: { id: string }) => t.id),
+      perfil: (await req('GET', '/api/v1/me/profile', { token: p.token })).body.teams.map((t: { id: string }) => t.id),
+    });
+
+    // Sin marcar: el más antiguo.
+    expect(await order()).toEqual({ mine: [[viejo, true], [nuevo, false]], ficha: [viejo, nuevo], perfil: [viejo, nuevo] });
+
+    const put = await req('PUT', '/api/v1/me/teams/primary', { token: p.token, body: { team_id: nuevo } });
+    expect(put.status).toBe(200);
+    expect(put.body.map((t: { id: string }) => t.id)).toEqual([nuevo, viejo]);
+    expect(await order()).toEqual({ mine: [[nuevo, true], [viejo, false]], ficha: [nuevo, viejo], perfil: [nuevo, viejo] });
+
+    expect((await req('PUT', '/api/v1/me/teams/primary', { token: p.token, body: { team_id: ajeno } })).status).toBe(409);
+    expect((await req('PUT', '/api/v1/me/teams/primary', { body: { team_id: nuevo } })).status).toBe(401);
+
+    // Al salir del principal, vuelve al más antiguo (y no revive si vuelve a entrar).
+    await sb.from('team_members').update({ left_at: new Date().toISOString() }).eq('team_id', nuevo).eq('player_id', p.playerId);
+    expect((await sb.from('players').select('primary_team_id').eq('id', p.playerId).single()).data!.primary_team_id).toBeNull();
+    expect((await order()).mine).toEqual([[viejo, true]]);
+
+    // null limpia.
+    await req('PUT', '/api/v1/me/teams/primary', { token: p.token, body: { team_id: viejo } });
+    expect((await req('PUT', '/api/v1/me/teams/primary', { token: p.token, body: { team_id: null } })).status).toBe(200);
+    expect((await sb.from('players').select('primary_team_id').eq('id', p.playerId).single()).data!.primary_team_id).toBeNull();
+  });
+});

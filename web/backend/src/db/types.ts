@@ -3938,13 +3938,13 @@ isOneToOne: true
                   ]
                 },"players": {
                   Row: {
-                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"primary_steam_changed_at": string | null,"privacy": string,"steam_added_at": string | null,"steam_id": string | null,"team_history": string | null,"user_id": string | null,"verified": string | null,"verified_at": string | null,"verified_by": string | null,"verified_note": string | null
+                    "achievements": string | null,"bio": string | null,"id": string,"nick": string,"photo_url": string | null,"primary_steam_changed_at": string | null,"primary_team_id": string | null,"privacy": string,"steam_added_at": string | null,"steam_id": string | null,"team_history": string | null,"user_id": string | null,"verified": string | null,"verified_at": string | null,"verified_by": string | null,"verified_note": string | null
                   }
                   Insert: {
-                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick": string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"primary_team_id"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
                   }
                   Update: {
-                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
+                    "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"primary_team_id"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
                   }
                   Relationships: [
                     
@@ -9484,6 +9484,9 @@ isOneToOne: false
                            },
 "set_my_primary_steam":
 { Args: { "p_steam": string }; Returns: undefined
+                           },
+"set_my_primary_team":
+{ Args: { "p_team": string }; Returns: string
                            },
 "set_my_tag":
 { Args: { "p_tag": string }; Returns: undefined

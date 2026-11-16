@@ -11,6 +11,7 @@ import {
   GitCompareIcon,
   LockIcon,
   ShieldIcon,
+  StarIcon,
 } from "lucide-react"
 import { useEffect } from "react"
 import { toast } from "sonner"
@@ -280,12 +281,20 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
                   aria-hidden
                   className="size-3.5 text-muted-foreground"
                 />
+                {/* El primero es el principal (replanteo 124): el que marcó o, si no, el más antiguo. */}
                 <Link
                   to="/teams/$id"
                   params={{ id: first.id }}
-                  className="font-medium hover:underline"
+                  className="inline-flex items-center gap-1 font-medium hover:underline"
+                  title={rest.length ? "Equipo principal" : undefined}
                 >
                   {first.name}
+                  {rest.length > 0 && (
+                    <StarIcon
+                      className="size-3 fill-primary text-primary"
+                      aria-label="Equipo principal"
+                    />
+                  )}
                 </Link>
                 {rest.map((t) => (
                   <Link

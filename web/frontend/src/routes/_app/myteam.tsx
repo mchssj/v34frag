@@ -7,6 +7,7 @@ import { CreateTeam } from "@/features/teams/pages/CreateTeam"
 import { FindTeam } from "@/features/teams/pages/FindTeam"
 import { NoTeam } from "@/features/teams/pages/NoTeam"
 import { myTeamsOptions } from "@/features/teams/api/queries"
+import { myProfileOptions } from "@/features/profile/api/queries"
 import {
   TeamSwitcher,
   type MyTeam,
@@ -28,17 +29,19 @@ function MyTeamPage() {
   const { team: chosen, view } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const mine = useQuery(myTeamsOptions).data
+  // Puede crear otro mientras sea capitán de menos equipos que el tope del admin (max_led).
+  const lead = useQuery(myProfileOptions).data?.team_lead
+  const canCreate = !!lead && lead.led < lead.max
 
-  // Los equipos que lidera, primero.
-  const myTeams: MyTeam[] = (mine ?? [])
-    .map((t) => ({
-      id: t.id,
-      name: t.name,
-      tag: t.tag,
-      logo_url: t.logo_url,
-      role: t.my_role,
-    }))
-    .sort((a, b) => Number(b.role === "leader") - Number(a.role === "leader"))
+  // En el orden de la API: el principal primero (replanteo 124), y sin ?team abre ese.
+  const myTeams: MyTeam[] = (mine ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    tag: t.tag,
+    logo_url: t.logo_url,
+    role: t.my_role,
+    is_primary: t.is_primary,
+  }))
 
   const go = (search: z.infer<typeof searchSchema>) => void navigate({ search })
 
@@ -74,6 +77,7 @@ function MyTeamPage() {
           currentId={current.id}
           onSelect={(id) => go({ team: id })}
           onFind={() => go({ view: "find" })}
+          onCreate={canCreate ? () => go({ view: "create" }) : undefined}
         />
       }
     />

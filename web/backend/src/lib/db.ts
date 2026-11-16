@@ -64,3 +64,21 @@ export function levelOf(elo: number | null | undefined): number | null {
   for (let i = 1; i < LEVEL_FLOORS.length; i++) if (elo >= LEVEL_FLOORS[i]!) level = i + 1;
   return level;
 }
+
+/**
+ * Los equipos de un jugador en el orden de player_overview (replanteo 124): primero el principal, después por fecha
+ * de ingreso (sin fecha, antes) y por nombre. Sin principal marcado (o si ya no está en ese equipo), el primero es el
+ * más antiguo.
+ */
+export function sortByPrimary<T extends { team_id: string | null; team_name?: string | null; joined_at: string | null }>(
+  rows: T[],
+  primaryId: string | null | undefined,
+): T[] {
+  const at = (r: T) => (r.joined_at ? Date.parse(r.joined_at) : -Infinity);
+  return [...rows].sort(
+    (a, b) =>
+      Number(b.team_id === primaryId) - Number(a.team_id === primaryId) ||
+      at(a) - at(b) ||
+      (a.team_name ?? '').localeCompare(b.team_name ?? ''),
+  );
+}

@@ -152,8 +152,8 @@ const SECTIONS: LegalSection[] = [
             Tus partidas favoritas y tus búsquedas guardadas <Wip />
           </li>
           <li>
-            Tu equipo, tus pedidos (de equipo, de vinculación de ficha) y tus
-            inscripciones a torneos y PCW.
+            Tus equipos y cuál marcaste como principal, tus pedidos (de equipo,
+            de vinculación de ficha) y tus inscripciones a torneos y PCW.
           </li>
           <li>
             Tus amigos y las solicitudes de amistad que envías y recibes (si las
@@ -325,7 +325,7 @@ const SECTIONS: LegalSection[] = [
           head={["Público para cualquiera", "Solo tú y el staff"]}
           rows={[
             [
-              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tu equipo, los mensajes del chat de partidas, los baneos, si eres VIP y los cosméticos que tienes puestos. Tu portada también, salvo que tu perfil sea privado. Si eres admin, moderador o de soporte, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
+              "Tu tag, tus nicks del juego, tu SteamID, tus estadísticas, tu ELO y nivel, tus partidas, demos y clips, tus equipos (el principal primero), los mensajes del chat de partidas, los baneos, si eres VIP y los cosméticos que tienes puestos. Tu portada también, salvo que tu perfil sea privado. Si eres admin, moderador o de soporte, tu rol en la página Quiénes somos; si eres VIP, tu nick y desde cuándo lo eres en su lista de agradecimiento, salvo que te ocultes desde Mi perfil › Privacidad.",
               "Tu correo, tus IP, las fechas y notas de tu VIP, tus puntos, monedas VIP y compras, tus pedidos pendientes, tus amigos y solicitudes de amistad, a quién bloqueaste en el matchmaking, y la evidencia del anticheat.",
             ],
           ]}

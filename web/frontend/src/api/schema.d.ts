@@ -6368,6 +6368,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/teams/primary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Marcar mi equipo principal
+         * @description Marca cuál de sus equipos oficiales es el principal: va primero en su perfil, en el ranking y en Mis equipos. `null` vuelve al más antiguo. Solo un equipo en el que está (si no, o sin jugador vinculado, `409 CONFLICT`). Al salir de ese equipo, vuelve solo al más antiguo. Devuelve Mis equipos.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PrimaryTeamBody"];
+                };
+            };
+            responses: {
+                /** @description Equipos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyTeam"][];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ranking/teams": {
         parameters: {
             query?: never;
@@ -26768,7 +26838,7 @@ export interface components {
                 /** @description Biografía de la ficha (se cambia con `PATCH /api/v1/me/profile`) */
                 bio: string | null;
             } | null;
-            /** @description Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno) */
+            /** @description Equipos oficiales donde juega hoy el jugador vinculado, o que capitanea o creó (puede ser más de uno). Primero el principal, después los demás por fecha de ingreso y al final, por nombre, los que capitanea o creó sin estar en el plantel */
             teams: {
                 /** Format: uuid */
                 id: string;
@@ -26777,9 +26847,18 @@ export interface components {
                 is_captain: boolean;
                 /** @description false si solo es dueño o capitán sin estar en el plantel */
                 is_member: boolean;
+                /** @description Su equipo principal (el que marcó o, si no, el más antiguo): va primero. Se marca con `PUT /api/v1/me/teams/primary` */
+                is_primary: boolean;
             }[];
             /** @description Partidas terminadas que jugó en el servidor (mixes, PCW y torneos) */
             matches_played: number;
+            /** @description Si `led < max`, puede crear otro equipo (el admin no tiene tope) */
+            team_lead: {
+                /** @description Equipos oficiales activos de los que es capitán */
+                led: number;
+                /** @description De cuántos puede ser capitán (`team_config.max_led`, lo fija el admin) */
+                max: number;
+            };
             preferences: components["schemas"]["Preferences"];
             vip: components["schemas"]["VipStatus"];
             streamer: components["schemas"]["MyStreamer"];
@@ -28597,6 +28676,15 @@ export interface components {
              * @enum {string}
              */
             my_role: "leader" | "player" | "sub" | "coach";
+            /** @description Su equipo principal: el que marcó o, si no marcó ninguno, el más antiguo. Siempre es el primero de la lista */
+            is_primary: boolean;
+        };
+        PrimaryTeamBody: {
+            /**
+             * Format: uuid
+             * @description Un equipo oficial en el que está. `null` vuelve al más antiguo
+             */
+            team_id: string | null;
         };
         Ranking: {
             items: components["schemas"]["RankingItem"][];

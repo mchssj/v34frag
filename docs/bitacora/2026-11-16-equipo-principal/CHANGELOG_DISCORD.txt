@@ -1,0 +1,6 @@
+CMLeague 2.9.52 --  Changelog
+
+- Si estás en varios equipos, ahora eliges cuál es tu equipo principal. En Mi equipo, elige el equipo y toca "Marcar como principal" (la estrella).
+- Tu equipo principal aparece primero en tu perfil (con una estrella), en el ranking de jugadores y en Mi equipo, que ahora abre directo en ese equipo.
+- Si no eliges ninguno, el principal es el equipo al que entraste primero. Si sales de tu equipo principal, vuelve a serlo el más antiguo.
+- Es solo cómo te mostramos: no cambia nada de torneos, PCW ni del ranking de equipos.

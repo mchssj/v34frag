@@ -207,8 +207,15 @@ export const MyTeam = z
     tag: z.string().nullable(),
     logo_url: z.string().nullable(),
     my_role: z.enum(['leader', 'player', 'sub', 'coach']).openapi({ description: '`leader` si es el capitán; si no, su estado en el roster' }),
+    is_primary: z.boolean().openapi({ description: 'Su equipo principal: el que marcó o, si no marcó ninguno, el más antiguo. Siempre es el primero de la lista' }),
   })
   .openapi('MyTeam');
+
+export const PrimaryTeamBody = z
+  .object({
+    team_id: z.uuid().nullable().openapi({ description: 'Un equipo oficial en el que está. `null` vuelve al más antiguo' }),
+  })
+  .openapi('PrimaryTeamBody');
 
 export const TeamConfig = z
   .object({

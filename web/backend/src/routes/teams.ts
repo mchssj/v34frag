@@ -1,7 +1,8 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import { bodyLimit } from 'hono/body-limit';
 import { currentUser, isAdmin, optionalUser, requireUser } from '../lib/auth';
-import { levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
+import { levelOf, must, mustHave, notFound, searchTerm, sortByPrimary } from '../lib/db';
+import type { Db } from '../lib/supabase';
 import { AppError, fromPostgrest } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
@@ -14,6 +15,7 @@ import {
   MemberList,
   MemberQuery,
   MyTeam,
+  PrimaryTeamBody,
   Ranking,
   RankingQuery,
   Created,
@@ -204,6 +206,21 @@ const myTeams = createRoute({
   responses: { 200: { description: 'Equipos', ...json(MyTeam.array()) }, ...errorResponses(401) },
 });
 
+const setPrimary = createRoute({
+  method: 'put',
+  path: '/api/v1/me/teams/primary',
+  tags: ['Equipos'],
+  summary: 'Marcar mi equipo principal',
+  description:
+    'Marca cuál de sus equipos oficiales es el principal: va primero en su perfil, en el ranking y en Mis equipos. ' +
+    '`null` vuelve al más antiguo. Solo un equipo en el que está (si no, o sin jugador vinculado, `409 CONFLICT`). ' +
+    'Al salir de ese equipo, vuelve solo al más antiguo. Devuelve Mis equipos.',
+  security: bearer,
+  middleware: [requireUser] as const,
+  request: { body: { required: true, ...json(PrimaryTeamBody) } },
+  responses: { 200: { description: 'Equipos', ...json(MyTeam.array()) }, ...errorResponses(400, 401, 409) },
+});
+
 const ranking = createRoute({
   method: 'get',
   path: '/api/v1/ranking/teams',
@@ -222,6 +239,34 @@ const RANK_COLUMNS = {
   official: { points: 'official_points', won: 'official_won', played: 'official_played', name: 'name' },
   total: { points: 'total_points', won: 'total_won', played: 'total_played', name: 'name' },
 };
+
+
+/**
+ * Equipos oficiales donde está hoy, en el orden de siempre: el principal (el que marcó o, si no, el más antiguo)
+ * y después por fecha de ingreso, como player_overview (replanteo 124).
+ */
+async function loadMyTeams(c: { var: { sb: Db; user: { id: string } } }): Promise<z.infer<typeof MyTeam>[]> {
+  const { sb, user } = c.var;
+  const mine = must(await sb.from('players').select('id, primary_team_id').eq('user_id', user.id).maybeSingle());
+  if (!mine) return [];
+  const rows = mustHave(
+    await sb
+      .from('team_members_view')
+      .select('team_id, team_name, team_tag, team_logo_url, role, is_captain, joined_at')
+      .eq('player_id', mine.id)
+      .eq('active', true)
+      .eq('team_kind', 'official'),
+  );
+  const sorted = sortByPrimary(rows, mine.primary_team_id);
+  return sorted.map((r, i) => ({
+    id: r.team_id!,
+    name: r.team_name ?? '',
+    tag: r.team_tag,
+    logo_url: r.team_logo_url,
+    my_role: r.is_captain ? ('leader' as const) : ((r.role ?? 'player') as 'player' | 'sub' | 'coach'),
+    is_primary: i === 0,
+  }));
+}
 
 export const teams = createRouter()
   .openapi(createTeam, async (c) => {
@@ -356,29 +401,12 @@ export const teams = createRouter()
     }));
     return c.json(envelope(items, all.length, p), 200);
   })
-  .openapi(myTeams, async (c) => {
-    const { sb, user } = c.var;
-    const mine = must(await sb.from('players').select('id').eq('user_id', user.id).maybeSingle());
-    if (!mine) return c.json([], 200);
-    const rows = mustHave(
-      await sb
-        .from('team_members_view')
-        .select('team_id, team_name, team_tag, team_logo_url, role, is_captain')
-        .eq('player_id', mine.id)
-        .eq('active', true)
-        .eq('team_kind', 'official')
-        .order('team_name'),
-    );
-    return c.json(
-      rows.map((r) => ({
-        id: r.team_id!,
-        name: r.team_name ?? '',
-        tag: r.team_tag,
-        logo_url: r.team_logo_url,
-        my_role: r.is_captain ? ('leader' as const) : ((r.role ?? 'player') as 'player' | 'sub' | 'coach'),
-      })),
-      200,
-    );
+  .openapi(myTeams, async (c) => c.json(await loadMyTeams(c), 200))
+  .openapi(setPrimary, async (c) => {
+    const { team_id } = c.req.valid('json');
+    // (E12) null vuelve al más antiguo (los tipos generados no admiten null en los argumentos).
+    must(await c.var.sb.rpc('set_my_primary_team', { p_team: team_id as string }));
+    return c.json(await loadMyTeams(c), 200);
   })
   .openapi(ranking, async (c) => {
     const p = c.req.valid('query');

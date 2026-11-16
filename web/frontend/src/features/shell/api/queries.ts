@@ -67,7 +67,7 @@ export function useBadgeCounts(
   return { live, pcw, adminBans, adminClips }
 }
 
-/** Lo que muestra el pie del sidebar: equipo (capitán o miembro) y nivel del jugador vinculado. */
+/** Lo que muestra el pie del sidebar: equipo (el principal; si no está en ninguno, el que capitanea) y nivel del jugador vinculado. */
 export function useShellIdentity() {
   const profile = useQuery(myProfileOptions).data
   const playerId = profile?.player?.id
@@ -76,7 +76,7 @@ export function useShellIdentity() {
     select: (p) => p.level,
     enabled: !!playerId,
   }).data
-  const team = profile?.teams.find((t) => t.is_captain) ?? profile?.teams[0]
+  const team = profile?.teams.find((t) => t.is_primary) ?? profile?.teams[0]
   return { team, level: level ?? null }
 }
 

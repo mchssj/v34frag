@@ -38,15 +38,16 @@ const rows = (data: unknown[]) => Response.json(data);
 const one = (data: unknown | null) => Response.json(data === null ? [] : [data]);
 
 // Perfil base: cuenta, detalles, jugador y equipo por membresía, 3 partidas.
-function profileWorld(over: { player?: unknown | null; memberOf?: string[]; teams?: unknown[]; prefs?: unknown; vip?: unknown[]; streamer?: unknown[] } = {}): Handler {
+function profileWorld(over: { player?: unknown | null; memberOf?: string[]; joined?: Record<string, string>; teams?: unknown[]; prefs?: unknown; vip?: unknown[]; streamer?: unknown[] } = {}): Handler {
   return (url, method) => {
     const p = url.pathname;
     if (p.endsWith('/profiles')) return one({ role: 'user', tag: 'Yo' });
     if (p.endsWith('/profile_details') && method === 'GET') return one({ joined_at: '2026-01-02T00:00:00Z', avatar_url: null, discord: 'd' });
     if (p.endsWith('/profile_details') && method === 'POST') return new Response(null, { status: 201 });
     if (p.endsWith('/players')) return one(over.player === undefined ? { id: PLAYER, nick: 'Jug', photo_url: null, steam_id: null } : over.player);
-    if (p.endsWith('/team_members')) return Response.json((over.memberOf ?? [TEAM]).map((team_id) => ({ team_id })));
+    if (p.endsWith('/team_members')) return Response.json((over.memberOf ?? [TEAM]).map((team_id) => ({ team_id, joined_at: over.joined?.[team_id] ?? null })));
     if (p.endsWith('/teams')) return Response.json(over.teams ?? [{ id: TEAM, name: 'Equipo', tag: 'EQ', captain_id: null }]);
+    if (p.endsWith('/team_config')) return one({ max_led: 2 });
     if (p.endsWith('/player_matches')) return new Response(null, { status: 200, headers: { 'content-range': '*/3' } });
     if (p.endsWith('/rpc/set_my_tag')) return new Response(null, { status: 204 });
     if (p.endsWith('/user_preferences')) return one(over.prefs === undefined ? null : { preferences: over.prefs });
@@ -125,9 +126,37 @@ describe('GET /api/v1/me/profile', () => {
     }));
     const p = await json(await call('GET', '/api/v1/me/profile'));
     expect(p.teams).toEqual([
-      { id: OTHER, name: 'Alfa', tag: 'A', is_captain: true, is_member: true },
-      { id: TEAM, name: 'Equipo', tag: 'EQ', is_captain: false, is_member: true },
+      { id: OTHER, name: 'Alfa', tag: 'A', is_captain: true, is_member: true, is_primary: true },
+      { id: TEAM, name: 'Equipo', tag: 'EQ', is_captain: false, is_member: true, is_primary: false },
     ]);
+  });
+
+  it('equipo principal (replanteo 124): el marcado primero; si no, el más antiguo; los que solo capitanea, al final', async () => {
+    const OTHER = '99999999-9999-4999-8999-999999999999';
+    const CAPI = '88888888-8888-4888-8888-888888888888';
+    const world = (primary: string | null) =>
+      profileWorld({
+        player: { id: PLAYER, nick: 'Jug', photo_url: null, steam_id: null, bio: null, primary_team_id: primary },
+        memberOf: [TEAM, OTHER],
+        joined: { [TEAM]: '2026-03-01T00:00:00Z', [OTHER]: '2026-01-01T00:00:00Z' },
+        teams: [
+          { id: CAPI, name: 'Aaa', tag: null, captain_id: USER },
+          { id: OTHER, name: 'Alfa', tag: 'A', captain_id: null },
+          { id: TEAM, name: 'Equipo', tag: 'EQ', captain_id: null },
+        ],
+      });
+    postgrest(world(null));
+    let p = await json(await call('GET', '/api/v1/me/profile'));
+    expect(p.teams.map((t: { id: string; is_primary: boolean }) => [t.id, t.is_primary])).toEqual([[OTHER, true], [TEAM, false], [CAPI, false]]);
+    expect(p.player).not.toHaveProperty('primary_team_id');
+    postgrest(world(TEAM));
+    p = await json(await call('GET', '/api/v1/me/profile'));
+    expect(p.teams.map((t: { id: string; is_primary: boolean }) => [t.id, t.is_primary])).toEqual([[TEAM, true], [OTHER, false], [CAPI, false]]);
+  });
+
+  it('team_lead: cuántos capitanea y el tope del admin', async () => {
+    postgrest(profileWorld({ teams: [{ id: TEAM, name: 'Equipo', tag: 'EQ', captain_id: USER }] }));
+    expect((await json(await call('GET', '/api/v1/me/profile'))).team_lead).toEqual({ led: 1, max: 2 });
   });
 
   it('sin jugador vinculado: solo equipos que capitanea o creó, y 0 partidas sin consultarlas', async () => {
