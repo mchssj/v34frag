@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en local el 2026-11-16 (base local con la `124`, pruebas de la API y de la web). **Falta** probarlo en el navegador, commitear y desplegar (base de producción, API y web). No toca los servidores de juego.
+**Desplegado el 2026-11-16**: replanteo `124` en la base de producción, API y web `26c4db1d91c6` (commit `26c4db1d`). Daniel lo probó en local antes del despliegue. Falta publicar `CHANGELOG_DISCORD.txt`. No toca los servidores de juego.
 
 ## Archivos
 
@@ -26,21 +26,18 @@ Implementado y probado en local el 2026-11-16 (base local con la `124`, pruebas 
 | `web/frontend/src/features/legal/pages/PrivacyPage.tsx`, `features/legal/lib/meta.ts`, `terms/privacidad.html`, `terms/terminos.html` | Texto de privacidad y fecha |
 | `docs/manual/jugador/equipo.md` | Sección "Tu equipo principal" |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-16)
 
-1. Base de producción, por el túnel (`ssh -L 5433:127.0.0.1:5432 ubuntu@<VPS>`):
-   ```bash
-   psql "host=localhost port=5433 …" -v ON_ERROR_STOP=1 -f supabase/replanteo/124_equipo_principal.sql
-   ```
-   Va después de la `123`. Tiene chequeos: aborta si ya se aplicó o si las vistas no tienen el orden esperado.
-2. API (`web/backend`): el despliegue de siempre. Tiene que ir **después** de la base: `PUT /me/teams/primary` llama a `set_my_primary_team`, y `/me/profile` lee `players.primary_team_id`.
-3. Web (`web/frontend`): el despliegue de siempre, después de la API.
+1. **Base**, por el túnel (con el OpenSSH de Windows, que es el que tiene la llave del VPS; el `ssh` de Git no la tiene). Chequeo previo de solo lectura: la `123` estaba, `players.primary_team_id` no, y las dos vistas ordenaban por `tm.joined_at NULLS FIRST`. Se aplicó la `124` (`psql -v ON_ERROR_STOP=1 -f`). Después: la columna y `set_my_primary_team(uuid)` existen, las dos vistas usan `team_primary_order` y `player_ranking` responde (141 filas). `team_config.max_led` sigue en 1.
+2. **API:** sin nadie en la cola del matchmaking ni salas abiertas. `BUILD_CHECK_PORT=28787 deploy/vps/desplegar.sh api` (con las pruebas). `/api/health` respondió `26c4db1d91c6-local11161745`: el `-local` es porque había cambios sin commitear en la web (los legales de `2026-11-13-nombre-de-la-ficha-en-mix`); el backend no tenía ninguno, así que se construyó con lo commiteado.
+3. **Web:** esos dos legales ajenos (`PrivacyPage.tsx` y `TermsPage.tsx`) se guardaron con `git stash` para no publicarlos, `deploy/vps/desplegar.sh web` y `git stash pop`. Versión `26c4db1d91c6`.
+4. Comprobado en producción: el OpenAPI publica `PUT /api/v1/me/teams/primary` y `team_lead`, y la ruta sin sesión da 401.
 
-Servidores de juego (#1, #2 y #3): nada que desplegar.
+Orden obligatorio: la base antes que la API y la API antes que la web.
 
 ## Pruebas
 
-> En la base local quedó `team_config.max_led = 2` para probar el botón a mano. La prueba de integración `players-teams` ("tope de capitán") espera 1: hay que volver a ponerlo en 1 (o hacer `pnpm db:reset`) antes de correr la suite.
+> Para probar el botón a mano, `team_config.max_led` estuvo en 2 en la base local; después se volvió a 1, que es lo que espera la prueba "tope de capitán" de `players-teams`.
 
 ### Base (Supabase local)
 
