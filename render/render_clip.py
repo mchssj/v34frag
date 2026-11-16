@@ -283,6 +283,11 @@ class Game:
             # (voice_scale 0), para que se vean los íconos de quién habla, y voces.py la mezcla al armar el video
             # (2026-11-14). voice_enable y voice_modenable pueden haber quedado en 0 en la instalación.
             "voice_enable 1; voice_modenable 1; voice_scale 0" if self.client == "v34" else "",
+            # Los mapas compilados para el CSS nuevo (de_tuscan_ob, de_strike_mirage, de_ancient_css, de_train_t5…)
+            # traen cubemaps VTF 7.4, que el v34 no lee: los reflejos salen con la textura de error (cuadriculado y un
+            # tono morado en el arma). Y su iluminación HDR sale demasiado brillante. Sin reflejos ni HDR se ven bien
+            # (Daniel, 2026-11-15). mat_hdr_level se aplica al cargar el mapa: va antes de playdemo.
+            "mat_specular 0; mat_hdr_level 0" if self.client == "v34" else "",
             "con_logfile cmleague/render.log",
             f"host_framerate {c['fps']}",
             "fps_max 0",
