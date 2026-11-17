@@ -32,6 +32,7 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as DemoAdminMedallasRouteImport } from './routes/demo.admin-medallas'
 import { Route as DemoBioRouteImport } from './routes/demo.bio'
 import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
+import { Route as DemoCodigosRouteImport } from './routes/demo.codigos'
 import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
 import { Route as DemoConfigsRouteImport } from './routes/demo.configs'
 import { Route as DemoCreditosRouteImport } from './routes/demo.creditos'
@@ -202,6 +203,11 @@ const DemoBioRoute = DemoBioRouteImport.update({
 const DemoBuscadorRoute = DemoBuscadorRouteImport.update({
   id: '/demo/buscador',
   path: '/demo/buscador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoCodigosRoute = DemoCodigosRouteImport.update({
+  id: '/demo/codigos',
+  path: '/demo/codigos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoComparadorRoute = DemoComparadorRouteImport.update({
@@ -517,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/demo/admin-medallas': typeof DemoAdminMedallasRoute
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/codigos': typeof DemoCodigosRoute
   '/demo/comparador': typeof DemoComparadorRoute
   '/demo/configs': typeof DemoConfigsRoute
   '/demo/creditos': typeof DemoCreditosRoute
@@ -597,6 +604,7 @@ export interface FileRoutesByTo {
   '/demo/admin-medallas': typeof DemoAdminMedallasRoute
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/codigos': typeof DemoCodigosRoute
   '/demo/comparador': typeof DemoComparadorRoute
   '/demo/configs': typeof DemoConfigsRoute
   '/demo/creditos': typeof DemoCreditosRoute
@@ -681,6 +689,7 @@ export interface FileRoutesById {
   '/demo/admin-medallas': typeof DemoAdminMedallasRoute
   '/demo/bio': typeof DemoBioRoute
   '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/codigos': typeof DemoCodigosRoute
   '/demo/comparador': typeof DemoComparadorRoute
   '/demo/configs': typeof DemoConfigsRoute
   '/demo/creditos': typeof DemoCreditosRoute
@@ -764,6 +773,7 @@ export interface FileRouteTypes {
     | '/demo/admin-medallas'
     | '/demo/bio'
     | '/demo/buscador'
+    | '/demo/codigos'
     | '/demo/comparador'
     | '/demo/configs'
     | '/demo/creditos'
@@ -844,6 +854,7 @@ export interface FileRouteTypes {
     | '/demo/admin-medallas'
     | '/demo/bio'
     | '/demo/buscador'
+    | '/demo/codigos'
     | '/demo/comparador'
     | '/demo/configs'
     | '/demo/creditos'
@@ -927,6 +938,7 @@ export interface FileRouteTypes {
     | '/demo/admin-medallas'
     | '/demo/bio'
     | '/demo/buscador'
+    | '/demo/codigos'
     | '/demo/comparador'
     | '/demo/configs'
     | '/demo/creditos'
@@ -1001,6 +1013,7 @@ export interface RootRouteChildren {
   DemoAdminMedallasRoute: typeof DemoAdminMedallasRoute
   DemoBioRoute: typeof DemoBioRoute
   DemoBuscadorRoute: typeof DemoBuscadorRoute
+  DemoCodigosRoute: typeof DemoCodigosRoute
   DemoComparadorRoute: typeof DemoComparadorRoute
   DemoConfigsRoute: typeof DemoConfigsRoute
   DemoCreditosRoute: typeof DemoCreditosRoute
@@ -1184,6 +1197,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/buscador'
       fullPath: '/demo/buscador'
       preLoaderRoute: typeof DemoBuscadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/codigos': {
+      id: '/demo/codigos'
+      path: '/demo/codigos'
+      fullPath: '/demo/codigos'
+      preLoaderRoute: typeof DemoCodigosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/comparador': {
@@ -1741,6 +1761,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoAdminMedallasRoute: DemoAdminMedallasRoute,
   DemoBioRoute: DemoBioRoute,
   DemoBuscadorRoute: DemoBuscadorRoute,
+  DemoCodigosRoute: DemoCodigosRoute,
   DemoComparadorRoute: DemoComparadorRoute,
   DemoConfigsRoute: DemoConfigsRoute,
   DemoCreditosRoute: DemoCreditosRoute,
