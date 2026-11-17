@@ -1,0 +1,3 @@
+CMLeague 2.9.55 --  Changelog
+
+- Los trofeos de torneo ahora se consiguen solo jugando torneos. Los logros de torneo que se habían dado a mano se quitaron: si ganaste un torneo que todavía no está en la web, vas a recibir su pin en tu vitrina cuando lo carguemos como torneo histórico.

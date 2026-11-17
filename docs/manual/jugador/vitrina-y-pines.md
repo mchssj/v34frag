@@ -34,4 +34,4 @@ En la página de cada equipo, **Vitrina** muestra los pines del equipo, primero 
 
 Si lo dejas en automático, se muestran los de mejor puesto y, después, los más recientes.
 
-> **Ojo:** antes, al ganar o llegar a la final de un torneo se daba la medalla **Campeón de torneo** o **Finalista de torneo**. Ahora se da el pin: las que tenías se convirtieron en pines y están en tu vitrina.
+> **Ojo:** antes, al ganar o llegar a la final de un torneo se daba la medalla **Campeón de torneo** o **Finalista de torneo**. Ahora se da el pin: las que tenías se convirtieron en pines y están en tu vitrina. Los logros de torneo que un admin había dado a mano se quitaron: los trofeos se consiguen solo con los torneos. Si ganaste un torneo que todavía no está en la plataforma, recibes su pin cuando se cargue como torneo histórico.

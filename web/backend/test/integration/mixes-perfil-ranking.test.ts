@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { admin, createUser, localEnv } from './local';
+import { manualDefinitionId } from './manual-medal';
 
 // Mixes, perfil público y ranking contra la Supabase local (replanteo 27, plan docs/bitacora/2026-10-24-api-mixes-perfil-ranking).
 const app = createApp();
@@ -77,7 +78,7 @@ beforeAll(async () => {
     payload: { team_names: { a: `Vivo${sfx}`, b: '' }, players: [{ steamid: steam(1), name: `vivo1${sfx}`, team: 'a', kills: 7, deaths: 1, rounds: 3 }] },
   }]);
   // (replanteo 79) Las medallas manuales llevan una definición (sin emoji).
-  const campeon = (await admin().from('medal_definitions').select('id').eq('key', 'campeon_torneo').single()).data!.id as string;
+  const campeon = await manualDefinitionId();
   await insert('player_medals', [
     { player_id: playerIds[0], title: `MVP ${sfx}`, definition_id: campeon },
     { player_id: playerIds[0], title: `MVP ${sfx}`, definition_id: campeon },
@@ -215,8 +216,8 @@ describe('perfil público', () => {
 
     const medals = await get(`/api/v1/players/${nick(0)}/medals/summary`);
     expect(medals.body.items).toEqual([
-      { title: `MVP ${sfx}`, count: 2, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }), definition_id: expect.any(String), rank: null },
-      { title: `Top ${sfx}`, count: 1, last_at: expect.any(String), design: expect.objectContaining({ key: 'campeon_torneo' }), definition_id: expect.any(String), rank: null },
+      { title: `MVP ${sfx}`, count: 2, last_at: expect.any(String), design: expect.objectContaining({ key: 'staff' }), definition_id: expect.any(String), rank: null },
+      { title: `Top ${sfx}`, count: 1, last_at: expect.any(String), design: expect.objectContaining({ key: 'staff' }), definition_id: expect.any(String), rank: null },
     ]);
     expect((await get(`/api/v1/players/${nick(0)}/medals/summary?sort=title&order=desc&per=1`)).body).toMatchObject({ total: 2, items: [{ title: `Top ${sfx}` }] });
     expect((await get(`/api/v1/players/${nick(0)}/medals`)).body.total).toBe(3);

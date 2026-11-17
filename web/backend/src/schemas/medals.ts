@@ -120,7 +120,7 @@ export const MedalProgressList = z
 /** Dar una medalla manual (Administración › Jugadores › Fichas). */
 export const MedalGrant = z
   .object({
-    definition_id: z.uuid().openapi({ description: 'Una definición manual (Comunidad: staff, caster, campeón de torneo…)' }),
-    title: z.string().trim().min(1).max(80).optional().openapi({ description: 'Por defecto, el de la definición (por ejemplo, el nombre del torneo)' }),
+    definition_id: z.uuid().openapi({ description: 'Una definición manual (Comunidad: staff, caster…)' }),
+    title: z.string().trim().min(1).max(80).optional().openapi({ description: 'Por defecto, el de la definición' }),
   })
   .openapi('MedalGrant');

@@ -115,7 +115,7 @@ export function ruleOf(d: Draft) {
         (t.filters as { result?: string }).result === "runner_up"
           ? "que pierde la final"
           : "campeón"
-      }, cuando el torneo termina. Si se corrige el resultado, pasa a quien corresponda. Un admin también la puede dar a mano, para torneos de fuera de la plataforma.`
+      }, cuando el torneo termina. Si se corrige el resultado, pasa a quien corresponda.`
     case "once":
       return "Se otorga una vez, cuando el jugador la cumple."
     case "avg_min_matches":

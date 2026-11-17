@@ -2,6 +2,17 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## Sin logros de torneo dados a mano (2026-11-17): base desplegada el 2026-11-17
+
+- **Qué es:** pedido por Daniel el 2026-11-17. Un trofeo de torneo solo se consigue con un torneo (normal o histórico), como pin. Se borraron los 17 «Campeón de torneo» dados a mano (Slendy 13, Lukas 2, kyan 1 y juanma^.^ 1) y las definiciones `campeon_torneo` y `finalista_torneo`. Detalle: [`2026-11-17-sin-logros-de-torneo`](bitacora/2026-11-17-sin-logros-de-torneo/).
+- **Desplegado:** la `127`, probada antes con rollback junto con su inversa.
+- **Falta:**
+  1. Desplegar la API y la web con el próximo despliegue: solo textos (el error al crear desde una plantilla de torneo y "staff, caster…" en la ficha).
+  2. Correr las pruebas de integración de la API con la Supabase local (no se corrieron: Docker apagado).
+  3. Cargar como históricos los torneos que faltan (Titan 2, FDX CSSO y los de Slendy), y revisar TORNEO TITAN: Lukas tenía «Campeón TORNEO TITAN» a mano y ahí no tiene pin, y kyan tiene el de cuartos.
+  4. Publicar el changelog 2.9.55.
+  5. Borrar las tablas `*_127_respaldo` después del 2026-12-17.
+
 ## Códigos canjeables para sorteos (2026-11-16): desplegado el 2026-11-17
 
 - **Qué es:** pedido por Kyan (propuesta en `kyan/guia`, `3a5b7102`), adaptado a `main` y aprobado por Daniel el 2026-11-16. El admin genera códigos que dan un artículo (para siempre o por días), puntos, monedas VIP o VIP por días; el jugador los canjea en la Tienda. Lo VIP de un código se usa sin ser VIP mientras esté encendido en Administración › Tienda (Daniel, 2026-11-17). Detalle: [`2026-11-16-codigos-canjeables`](bitacora/2026-11-16-codigos-canjeables/).

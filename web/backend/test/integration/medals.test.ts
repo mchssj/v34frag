@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { admin, createUser, localEnv } from './local';
+import { manualDefinitionId } from './manual-medal';
 
 // Medallas configurables contra la Supabase local (replanteo 79): crear desde una plantilla, calcular, activar con y sin
 // retroactiva, el motor (medals_evaluate_pending), el progreso, el perfil privado, la manual de Fichas y los permisos.
@@ -152,11 +153,10 @@ describe('medallas configurables', () => {
   });
 
   it('Fichas: solo medallas manuales, con su título', async () => {
-    const defs = (await (await call('GET', '/api/v1/admin/medals/definitions')).json()) as { items: { id: string; key: string }[] };
-    const manual = defs.items.find((x) => x.key === 'campeon_torneo')!;
-    const res = await call('POST', `/api/v1/admin/players/${players[0]}/medals`, { definition_id: manual.id, title: 'Torneo de prueba' });
+    const manual = await manualDefinitionId();
+    const res = await call('POST', `/api/v1/admin/players/${players[0]}/medals`, { definition_id: manual, title: 'Staff de prueba' });
     expect(res.status).toBe(201);
-    expect(await res.json()).toMatchObject({ title: 'Torneo de prueba', source: 'admin', design: { template: 'campeon_torneo' } });
+    expect(await res.json()).toMatchObject({ title: 'Staff de prueba', source: 'admin', design: { template: 'staff' } });
     expect((await call('POST', `/api/v1/admin/players/${players[0]}/medals`, { definition_id: defId })).status).toBe(400);
   });
 
@@ -186,63 +186,24 @@ describe('medallas configurables', () => {
   });
 });
 
-// Campeón y finalista de torneo (replanteo 114): las da la base al terminar el torneo (event_medals_sync, probada en
-// docs/bitacora/2026-11-13-medallas-de-torneo/pruebas/probar_114.sql). Acá, lo que cambia en la API.
-describe('medallas de torneo', () => {
-  let eventId: string;
-  let medalId: string;
+// (replanteo 127) Los trofeos de torneo son pines: Campeón y Finalista de torneo ya no existen como medallas.
+describe('sin logros de torneo', () => {
+  const TORNEO = ['campeon_torneo', 'finalista_torneo'];
 
-  beforeAll(async () => {
-    const a = admin();
-    eventId = check(await a.from('events').insert({ name: `Torneo medallas ${seed}` }).select('id').single()).data!.id;
-    const def = check(await a.from('medal_definitions').select('id').eq('key', 'campeon_torneo').single()).data!;
-    medalId = check(
-      await a.from('player_medals')
-        .insert({ player_id: players[1]!, definition_id: def.id, title: `Campeón · Torneo medallas ${seed}`, icon: null, source: 'event', event_id: eventId })
-        .select('id').single(),
-    ).data!.id;
-  });
-
-  afterAll(async () => {
-    const a = admin();
-    await a.from('player_medals').delete().eq('event_id', eventId);
-    await a.from('events').delete().eq('id', eventId);
-  });
-
-  it('el perfil la muestra con su torneo', async () => {
-    const body = (await (await call('GET', `/api/v1/players/${players[1]}/medals`, undefined, '')).json()) as {
-      items: { id: string; source: string; event: { id: string; name: string } | null; design: { template: string } }[];
-    };
-    expect(body.items.find((x) => x.id === medalId)).toMatchObject({
-      source: 'event', event: { id: eventId, name: `Torneo medallas ${seed}` }, design: { template: 'campeon_torneo' },
-    });
-    expect(body.items.filter((x) => x.source !== 'event').every((x) => x.event === null)).toBe(true);
-  });
-
-  it('no se quita a mano: sigue al palmarés', async () => {
-    const res = await call('DELETE', `/api/v1/admin/medals/${medalId}`);
-    expect(res.status).toBe(400);
-    expect(await res.json()).toMatchObject({ error: { code: 'BUSINESS_RULE' } });
-  });
-
-  // (replanteo 123) Lo automático ahora son los pines: las dos vuelven a ser manuales, para torneos de afuera.
-  it('las dos son manuales, se siguen dando a mano y no se crean otras', async () => {
-    const defs = (await (await call('GET', '/api/v1/admin/medals/definitions')).json()) as {
-      items: { id: string; key: string; aggregation: string }[];
-    };
-    const torneo = defs.items.filter((x) => x.key === 'campeon_torneo' || x.key === 'finalista_torneo');
-    expect(torneo.map((x) => x.aggregation)).toEqual(['manual', 'manual']);
-    const fin = torneo.find((x) => x.key === 'finalista_torneo')!;
-    const res = await call('POST', `/api/v1/admin/players/${players[1]}/medals`, { definition_id: fin.id, title: 'Torneo de afuera' });
-    expect(res.status).toBe(201);
-    expect(await res.json()).toMatchObject({ source: 'admin', event: null });
-    expect((await call('POST', '/api/v1/admin/medals/definitions', { template: 'campeon_torneo', target: 1 })).status).toBe(400);
+  it('no están entre las definiciones ni se pueden crear', async () => {
+    const defs = (await (await call('GET', '/api/v1/admin/medals/definitions')).json()) as { items: { key: string; template: string }[] };
+    expect(defs.items.some((x) => TORNEO.includes(x.key) || TORNEO.includes(x.template))).toBe(false);
+    for (const template of TORNEO) {
+      const res = await call('POST', '/api/v1/admin/medals/definitions', { template, target: 1 });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: { code: 'BUSINESS_RULE' } });
+    }
   });
 
   it('el progreso no las lista', async () => {
     const body = (await (await call('GET', `/api/v1/players/${players[1]}/medals/progress`)).json()) as {
       items: { design: { template: string } }[];
     };
-    expect(body.items.some((x) => ['campeon_torneo', 'finalista_torneo'].includes(x.design.template))).toBe(false);
+    expect(body.items.some((x) => TORNEO.includes(x.design.template))).toBe(false);
   });
 });

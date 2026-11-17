@@ -911,10 +911,8 @@ function Medals({ playerId }: { playerId: string }) {
   const id = useId()
   const medals = useQuery(medalsOptions(playerId))
   const defs = useQuery(activeMedalsOptions)
-  // Campeón y finalista de torneo también, para los torneos de fuera de la plataforma (replanteo 114).
-  const manual = (defs.data ?? []).filter(
-    (d) => d.aggregation === "manual" || d.aggregation === "event_result"
-  )
+  // Solo las manuales: los trofeos de torneo son pines y no se dan a mano (replanteo 127).
+  const manual = (defs.data ?? []).filter((d) => d.aggregation === "manual")
   const add = useAddMedal(playerId)
   const del = useDeleteMedal(playerId)
   const [definition, setDefinition] = useState<string | undefined>(undefined)
@@ -1020,7 +1018,7 @@ function Medals({ playerId }: { playerId: string }) {
         </Button>
       </div>
       <span className="text-xs text-muted-foreground">
-        Solo las de Comunidad (staff, caster, campeón de torneo…). Las demás las
+        Solo las de Comunidad (staff, caster…). Las demás las
         da el juego. Se crean en Administración › Medallas.
       </span>
     </PanelSection>

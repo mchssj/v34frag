@@ -211,7 +211,7 @@ export function MedalEditor({
               {TEMPLATES.filter((x) =>
                 locked
                   ? x.id === d.template
-                  : // Campeón y finalista de torneo ya existen (replanteo 114): se editan, no se crean otras.
+                  : // Campeón y finalista de torneo no se crean: los trofeos de torneo son pines (replanteo 127).
                     x.category === category && x.aggregation !== "event_result"
               ).map((x) => {
                 const sel = x.id === d.template

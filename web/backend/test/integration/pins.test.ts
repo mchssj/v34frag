@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app';
 import { admin, createUser, localEnv } from './local';
+import { manualDefinitionId } from './manual-medal';
 
 // Pines y premios de torneo contra la Supabase local (replanteo 123): configurar al crear, jugar un torneo de 4 equipos
 // (1v1, BO1), los pines por puesto, la vitrina del jugador y del equipo, cambiar la configuración con el torneo
@@ -127,7 +128,7 @@ describe('pines de torneo', () => {
   });
 
   it('el jugador elige los logros de su Resumen (solo los suyos)', async () => {
-    const def = check(await admin().from('medal_definitions').select('id').eq('key', 'campeon_torneo').single()).data!.id;
+    const def = await manualDefinitionId();
     check(await admin().from('player_medals').insert({ player_id: players[0]!, definition_id: def, title: `Torneo de afuera ${seed}`, source: 'admin' }));
     const sum = (await (await call('GET', `/api/v1/players/${ownerNick}/medals/summary`, undefined, undefined)).json()) as any;
     const mine = sum.items.find((x: any) => x.title === `Torneo de afuera ${seed}`);

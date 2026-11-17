@@ -1,6 +1,6 @@
 ---
 titulo: Medallas
-resumen: Crear una medalla desde una plantilla, ponerle objetivo y dibujo, activarla, archivarla, dar las de Comunidad y las de campeón y finalista de torneos de afuera.
+resumen: Crear una medalla desde una plantilla, ponerle objetivo y dibujo, activarla, archivarla y dar las de Comunidad. Los trofeos de torneo no son medallas.
 orden: 10
 ---
 
@@ -12,16 +12,15 @@ Las medallas se ganan jugando. Cada una sale de una **plantilla**: un diseño de
 |---|---|
 | Trayectoria, Habilidad, Arsenal y bomba, Rondas y Mapas | El juego, apenas termina cada mix |
 | Temporada (Podio y Top) | El cierre de la temporada, según el tramo de cada puesto. Se eligen en [Temporadas](/help/admin/temporadas) |
-| Campeón de torneo y Finalista de torneo | Un admin, a mano, para torneos de fuera de la plataforma (ver abajo) |
 | Comunidad (staff, caster…) | Un admin, desde la ficha del jugador ([Usuarios y fichas](/help/admin/usuarios-y-fichas)) |
 
 > **Ojo:** las stats de la Temporada BETA no cuentan. Mientras dure, el juego no da ninguna medalla, **Calcular** dice 0 y activar con **Dársela a quienes ya la cumplen** no da nada. Todo cuenta desde la temporada siguiente. Al crearla, el juego le da Fundador a quienes jugaron la BETA y Pionero a quienes jugaron el primer mix, en unos minutos. Para Pionero solo cuentan los mixes: no las partidas de torneo, PCW ni matchmaking. Las de Temporada (Podio y Top) sí se dan al cerrar la BETA.
 
-## Campeón y finalista de torneo
+## Trofeos de torneo
 
 Los torneos de la plataforma no dan medallas: dan **pines y trofeos** por puesto y premios individuales, que configura quien organiza cada torneo ([Pines, trofeos y premios](/help/organizador/pines-y-premios)). Las medallas de campeón y finalista que se habían dado por torneos de la plataforma se convirtieron en pines.
 
-**Campeón de torneo** y **Finalista de torneo** siguen existiendo como medallas a mano, para los torneos de fuera de la plataforma (por ejemplo, «CAMPEON TORNEO TITAN»). Se dan desde la ficha del jugador, con el título que quieras. Las que ya habías dado a mano siguen igual.
+Un trofeo de torneo solo se consigue con un torneo. **Campeón de torneo** y **Finalista de torneo** ya no existen como medallas y no se dan a mano: las que se habían dado a mano se quitaron el 2026-11-17. Para darle su trofeo a quien ganó un torneo de fuera de la plataforma (por ejemplo, «TORNEO TITAN»), cárgalo como [torneo histórico](/help/organizador/subir-torneo-historico): al terminarlo, cada jugador recibe el pin de su puesto.
 
 ## Crear una medalla
 
@@ -46,5 +45,5 @@ Al activarla, la casilla **Dársela a quienes ya la cumplen** se la da enseguida
 - **Archivar** hace que deje de darse. Quien ya la tiene, la conserva.
 - Un borrador se puede **borrar**.
 - Una medalla que está en un tramo de temporada no se archiva: primero cámbiala en Temporadas.
-- Una medalla no se le quita sola a nadie, salvo las de campeón y finalista de torneo, que siguen al resultado. Si hace falta, la quitas a mano desde la ficha del jugador.
+- Una medalla no se le quita sola a nadie. Si hace falta, la quitas a mano desde la ficha del jugador.
 - Para que un jugador no reciba nunca una medalla del juego aunque la cumpla (por ejemplo, porque está baneado), pídeselo a Daniel: queda **excluido** de esa medalla y el juego no se la da, ni después de un mix ni al activarla para todos. Todavía no hay pantalla para hacerlo.

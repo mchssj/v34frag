@@ -178,8 +178,8 @@ export const medals = createRouter()
   .openapi(create, async (c) => {
     const b = c.req.valid('json');
     const t = needTemplate(b.template);
-    // (replanteo 114) Campeón y finalista de torneo ya existen y las da la base: se editan, no se crean otras.
-    if (t.aggregation === 'event_result') throw new AppError(400, 'BUSINESS_RULE', 'Esta medalla la da el torneo y ya existe: editala desde la lista.');
+    // (replanteo 127) Campeón y finalista de torneo ya no son medallas: los trofeos de torneo son pines (123).
+    if (t.aggregation === 'event_result') throw new AppError(400, 'BUSINESS_RULE', 'Los trofeos de torneo no son medallas: son pines y los da cada torneo.');
     checkTarget(t, b.target);
     const row = {
       key: defaultKey(t, b.target),
