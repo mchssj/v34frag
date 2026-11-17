@@ -77,6 +77,9 @@ export const ShopItem = z
     owned: z.boolean().openapi({ description: 'Lo tienes (con sesión; sin sesión, false)' }),
     usable: z.boolean().openapi({ description: 'Puedes equiparlo hoy: lo tienes (lo VIP, siendo VIP) o es el premio VIP y eres VIP' }),
     equipped: z.boolean().openapi({ description: 'Lo tienes puesto' }),
+    expires_at: z.string().nullable().openapi({
+      description: 'Lo tienes por un tiempo (de un código): hasta cuándo. Si ya pasó, `owned` es false y se puede comprar (replanteo 126)',
+    }),
   })
   .openapi('ShopItem');
 
@@ -106,6 +109,9 @@ export const PointsConfig = z
     custom_bg_static_price: z.number().int().openapi({ description: 'Subir un fondo de miniperfil fijo propio, en puntos' }),
     custom_max_avatar: z.number().int().openapi({ description: 'Cuántos avatares propios guarda cada cuenta' }),
     custom_max_background: z.number().int().openapi({ description: 'Cuántos fondos de miniperfil propios (fijos y animados) guarda cada cuenta' }),
+    code_vip_free: z.boolean().openapi({
+      description: 'Un artículo VIP que se tiene por un código se usa sin ser VIP (replanteo 126). Apagado, se usa siendo VIP, como lo comprado',
+    }),
   })
   .openapi('PointsConfig');
 
@@ -123,6 +129,7 @@ export const PointsConfigPatch = z
     custom_bg_static_price: z.number().int().min(1).max(1_000_000).optional(),
     custom_max_avatar: z.number().int().min(1).max(50).optional(),
     custom_max_background: z.number().int().min(1).max(50).optional(),
+    code_vip_free: z.boolean().optional(),
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), 'Manda al menos un valor')
   .openapi('PointsConfigPatch');
@@ -152,13 +159,14 @@ export const PointsHistoryQuery = z.object({
 });
 export const PointsMove = z
   .object({
-    kind: z.enum(['mix', 'mm', 'grant', 'purchase', 'custom']).openapi({
-      description: '`mix`, `mm` (mapa del matchmaking), `grant` (admin), `purchase` o `custom` (subió su avatar o su fondo)',
+    kind: z.enum(['mix', 'mm', 'grant', 'purchase', 'custom', 'code']).openapi({
+      description:
+        '`mix`, `mm` (mapa del matchmaking), `grant` (admin), `purchase`, `custom` (subió su avatar o su fondo) o `code` (canjeó un código; en negativo, un canje revertido)',
     }),
     at: z.string().nullable(),
     amount: z.number().int().openapi({ description: 'Positivo suma, negativo resta' }),
     label: z.string().openapi({ description: 'Mapa y si ganó, el motivo del admin o el artículo comprado' }),
-    ref: z.string().nullable().openapi({ description: 'La partida (mix y mm), el artículo (purchase) o la subida (custom)' }),
+    ref: z.string().nullable().openapi({ description: 'La partida (mix y mm), el artículo (purchase), la subida (custom) o el canje (code)' }),
   })
   .openapi('PointsMove');
 export const PointsHistory = Envelope(PointsMove).openapi('PointsHistory', { description: 'Lo más nuevo primero (sort `at`, order `desc`)' });
@@ -273,16 +281,17 @@ export const AdminAccountList = Envelope(AdminAccountPoints).openapi('AdminAccou
 export const UserItem = z
   .object({
     item: Cosmetic,
-    source: z.enum(['purchase', 'grant']),
-    currency: Currency.nullable().openapi({ description: 'Con qué se pagó; null si fue un regalo' }),
+    source: z.enum(['purchase', 'grant', 'code']).openapi({ description: '`purchase` (comprado), `grant` (regalo de un admin) o `code` (de un código)' }),
+    currency: Currency.nullable().openapi({ description: 'Con qué se pagó; null si fue un regalo o un código' }),
     price_paid: z.number().int().nullable(),
     note: z.string().nullable(),
     acquired_at: z.string(),
+    expires_at: z.string().nullable().openapi({ description: 'Hasta cuándo se puede usar (lo temporal de un código); null = para siempre' }),
   })
   .openapi('UserItem');
 export const UserItemQuery = listQuery(['acquired_at'], { sort: 'acquired_at', order: 'desc' }).extend({
   kind: Kind.optional(),
-  source: z.enum(['purchase', 'grant']).optional(),
+  source: z.enum(['purchase', 'grant', 'code']).optional(),
 });
 export const UserItemList = Envelope(UserItem).openapi('UserItemList');
 

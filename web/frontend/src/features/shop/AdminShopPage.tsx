@@ -51,6 +51,7 @@ import {
   useAdminItemRevoke,
   useAdminPatchItem,
 } from "./api"
+import { AdminCodesSection } from "./AdminCodesSection"
 import { AvatarMedia, CardBackground, VipBadge } from "./cosmetics"
 import { ItemPreviewDialog, ItemThumb, type PreviewItem } from "./ItemPreview"
 import { COLLECTIONS, KINDS, type ItemKind, type PointsConfig } from "./types"
@@ -75,13 +76,15 @@ export function AdminShopPage() {
       <ConfigSection />
       <AccountsSection />
       <CatalogSection />
+      <AdminCodesSection />
     </div>
   )
 }
 
 // ---------- configuración ----------
 
-const FIELDS: [keyof PointsConfig, string, string][] = [
+type NumKey = Exclude<keyof PointsConfig, "code_vip_free">
+const FIELDS: [NumKey, string, string][] = [
   ["per_mix", "Puntos por mix", "1"],
   ["per_win", "Extra por victoria", "1"],
   ["vip_multiplier", "Multiplicador de puntos para VIP", "0.1"],
@@ -117,6 +120,7 @@ function ConfigForm({ initial }: { initial: PointsConfig }) {
   const [confirm, setConfirm] = useState(false)
   const save = useAdminConfig()
   const changed = FIELDS.filter(([k]) => cfg[k] !== initial[k])
+  const vipFreeChanged = cfg.code_vip_free !== initial.code_vip_free
   return (
     <section className={section}>
       <h2 className="text-sm font-bold">Puntos y monedas VIP</h2>
@@ -138,8 +142,30 @@ function ConfigForm({ initial }: { initial: PointsConfig }) {
           </div>
         ))}
       </div>
+      {/* (replanteo 126, Daniel 2026-11-17) Lo VIP que se gana con un código, sin ser VIP. */}
+      <div className="flex items-start gap-3 rounded-lg border p-3">
+        <Switch
+          id="cfg-code_vip_free"
+          checked={cfg.code_vip_free}
+          onCheckedChange={(v) => setCfg({ ...cfg, code_vip_free: v })}
+        />
+        <div className="flex flex-col gap-0.5">
+          <Label htmlFor="cfg-code_vip_free">
+            Lo VIP de un código se usa sin ser VIP
+          </Label>
+          <span className="text-xs text-muted-foreground">
+            Un artículo VIP ganado en un sorteo se puede usar aunque la cuenta
+            no sea VIP. Apagado, queda congelado hasta que lo sea, como lo
+            comprado. Lo que se compra o regala un admin sigue la regla de
+            siempre.
+          </span>
+        </div>
+      </div>
       <div>
-        <Button disabled={!changed.length} onClick={() => setConfirm(true)}>
+        <Button
+          disabled={!changed.length && !vipFreeChanged}
+          onClick={() => setConfirm(true)}
+        >
           Guardar
         </Button>
       </div>
@@ -159,6 +185,13 @@ function ConfigForm({ initial }: { initial: PointsConfig }) {
                 {label}: {initial[k]} → <b>{cfg[k]}</b>
               </li>
             ))}
+            {vipFreeChanged && (
+              <li>
+                Lo VIP de un código se usa sin ser VIP:{" "}
+                <b>{cfg.code_vip_free ? "sí" : "no"}</b>. Cambia al instante
+                para todo lo que ya se canjeó.
+              </li>
+            )}
           </ul>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirm(false)}>
@@ -168,7 +201,12 @@ function ConfigForm({ initial }: { initial: PointsConfig }) {
               disabled={save.isPending}
               onClick={() =>
                 save.mutate(
-                  Object.fromEntries(changed.map(([k]) => [k, cfg[k]])),
+                  {
+                    ...Object.fromEntries(changed.map(([k]) => [k, cfg[k]])),
+                    ...(vipFreeChanged
+                      ? { code_vip_free: cfg.code_vip_free }
+                      : {}),
+                  },
                   {
                     onSuccess: () => {
                       toast.success("Puntos guardados.")

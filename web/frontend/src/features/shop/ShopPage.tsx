@@ -14,6 +14,7 @@ import {
   SearchIcon,
   SparklesIcon,
   StickerIcon,
+  TicketIcon,
   TypeIcon,
   XIcon,
   type LucideIcon,
@@ -55,9 +56,11 @@ import {
   useBuy,
   useEquip,
 } from "./api"
+import { untilText } from "./codeFormat"
 import { CustomPanel } from "./CustomPanel"
 import { FramedAvatar, MiniCard, NameFx, Stickers, VipBadge } from "./cosmetics"
 import { ItemPreviewDialog } from "./ItemPreview"
+import { RedeemDialog } from "./RedeemDialog"
 import {
   COLLECTIONS,
   KINDS,
@@ -128,7 +131,14 @@ export function withItem(
 type Show = "all" | "buy" | "mine" | "vip" | "free"
 type Sort = "sort" | "cheap" | "exp" | "name"
 
-export function ShopPage() {
+/** `redeemOpen` y `onRedeemOpen`: la ventana de canjear un código, que la ruta abre con `?canjear=true`. */
+export function ShopPage({
+  redeemOpen,
+  onRedeemOpen,
+}: {
+  redeemOpen?: boolean
+  onRedeemOpen?: (open: boolean) => void
+} = {}) {
   const me = useMe().data
   const profile = useQuery(myProfileOptions).data
   const nick = profile?.player?.nick ?? null
@@ -154,6 +164,9 @@ export function ShopPage() {
   const [previewing, setPreviewing] = useState<ShopItem | null>(null)
   const [histOpen, setHistOpen] = useState(false)
   const [vipOpen, setVipOpen] = useState(false)
+  const [redeemLocal, setRedeemLocal] = useState(false)
+  const redeemShown = redeemOpen ?? redeemLocal
+  const setRedeem = onRedeemOpen ?? setRedeemLocal
 
   const items = useMemo(() => catalog.data?.items ?? [], [catalog.data])
   const byId = useMemo(
@@ -311,9 +324,14 @@ export function ShopPage() {
             antes de comprarlo.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => setHistOpen(true)}>
-          <HistoryIcon /> Historial
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => setRedeem(true)}>
+            <TicketIcon /> Canjear código
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setHistOpen(true)}>
+            <HistoryIcon /> Historial
+          </Button>
+        </div>
       </div>
 
       {points && !points.has_player && (
@@ -707,6 +725,7 @@ export function ShopPage() {
       </Dialog>
 
       <HistoryDialog open={histOpen} onOpenChange={setHistOpen} />
+      <RedeemDialog open={redeemShown} onOpenChange={setRedeem} />
       <VipDialog open={vipOpen} onOpenChange={setVipOpen} />
     </div>
   )
@@ -729,6 +748,7 @@ function HistoryDialog({
     grant: "Admin · ",
     purchase: "Compra · ",
     custom: "Subiste · ",
+    code: "Código · ",
   } as const
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -736,7 +756,7 @@ function HistoryDialog({
         <DialogHeader>
           <DialogTitle>Historial</DialogTitle>
           <DialogDescription>
-            Mixes, regalos y compras, lo más nuevo primero.
+            Mixes, regalos, códigos y compras, lo más nuevo primero.
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-0.5 self-start rounded-lg bg-muted p-[3px]">
@@ -1058,6 +1078,8 @@ function ItemCard({
         </p>
         <span className="text-[11px] text-muted-foreground/80">
           {COLLECTIONS[c.collection] ?? c.collection}
+          {/* Lo tuvo por un código y venció (replanteo 126): ya no es suyo y se puede comprar. */}
+          {!c.owned && c.expires_at && ` · ${untilText(c.expires_at)}`}
         </span>
         <div className="mt-auto flex flex-col gap-2 border-t pt-2.5">
           <div className="min-h-9">
@@ -1070,9 +1092,15 @@ function ItemCard({
                 <span className="inline-flex items-center gap-1">
                   <CheckIcon className="size-3.5" /> En tu inventario
                 </span>
-                {vipLocked && (
+                {/* usable lo decide la API: lo VIP de un código puede usarse sin VIP (replanteo 126). */}
+                {c.vip_only && !c.usable && (
                   <span className="font-normal text-muted-foreground">
                     Congelado: se usa siendo VIP
+                  </span>
+                )}
+                {c.expires_at && (
+                  <span className="font-normal text-muted-foreground">
+                    {untilText(c.expires_at)}
                   </span>
                 )}
               </span>
@@ -1174,7 +1202,8 @@ function PreviewPrice({
     return (
       <span className="text-sm font-semibold text-win">
         En tu inventario
-        {c.vip_only && !vip ? " (congelado: se usa siendo VIP)" : ""}
+        {c.vip_only && !c.usable ? " (congelado: se usa siendo VIP)" : ""}
+        {c.expires_at ? ` · ${untilText(c.expires_at)}` : ""}
       </span>
     )
   if (p.price == null)

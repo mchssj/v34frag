@@ -1,0 +1,8 @@
+CMLeague 2.9.54 --  Changelog
+
+- Llegan los sorteos con códigos. Si ganas uno, te pasamos un código que te da un artículo de la Tienda, puntos, monedas VIP o días de VIP.
+- Para canjearlo, entra a la Tienda y toca "Canjear código" (también está en Mi perfil). Escríbelo o pégalo como venga, con o sin guiones, y el premio te llega al instante.
+- Si ganas un artículo VIP, lo puedes usar aunque no seas VIP.
+- Algunos premios son por unos días: la tarjeta del artículo te dice cuánto le queda. Si lo compras antes de que venza, es tuyo para siempre.
+- Cada código se canjea una vez por cuenta. Si ya tienes ese premio para siempre, el código no se gasta y se lo puedes pasar a otro.
+- Los códigos no se venden ni se cambian por plata. Si escribes muchos códigos que no existen, el canje se bloquea un rato.

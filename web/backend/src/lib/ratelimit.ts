@@ -18,6 +18,8 @@ export const RATE_RULES = {
   recovery: { name: 'recovery', limit: 5, windowSec: 60, binding: 'RL_RECOVERY' },
   // Tomar o mirar un link de reemplazo del matchmaking: 10 por minuto por cuenta (replanteo 75; frena a quien prueba tokens).
   replace: { name: 'replace', limit: 10, windowSec: 60, binding: 'RL_REPLACE' },
+  // Canjear un código: 10 por minuto por IP (replanteo 126). Los topes por cuenta (5 fallos en 15 minutos, 20 en 24 horas) los lleva la base.
+  redeem: { name: 'redeem', limit: 10, windowSec: 60, binding: 'RL_REDEEM' },
 } as const satisfies Record<string, RateRule>;
 
 export type RateResult = { ok: boolean; retryAfter: number };

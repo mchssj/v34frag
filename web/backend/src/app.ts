@@ -26,6 +26,7 @@ import { mm } from './routes/mm';
 import { bookings } from './routes/bookings';
 import { vip } from './routes/vip';
 import { shop } from './routes/shop';
+import { codes } from './routes/codes';
 import { hud } from './routes/hud';
 import { elo } from './routes/elo';
 import { events } from './routes/events';
@@ -115,6 +116,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', bans);
   app.route('/', vip);
   app.route('/', shop);
+  app.route('/', codes);
   app.route('/', custom); // (replanteo 113) avatar y fondo propios y denuncias de imágenes del perfil
   app.route('/', mm);
   app.route('/', bookings); // antes que servers: /servers/free no es un {id}

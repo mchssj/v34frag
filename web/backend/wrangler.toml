@@ -51,6 +51,12 @@ name = "RL_REPLACE"
 namespace_id = "1007"
 simple = { limit = 10, period = 60 }
 
+# Canjear un código de sorteo: 10 por minuto por IP (regla "redeem", replanteo 126).
+[[ratelimits]]
+name = "RL_REDEEM"
+namespace_id = "1009"
+simple = { limit = 10, period = 60 }
+
 # Entorno de previsualización (PRs): otro Worker, misma base.
 [env.preview]
 name = "v34frag-api-preview"

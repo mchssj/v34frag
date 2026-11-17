@@ -13740,7 +13740,7 @@ export interface paths {
                     order?: "asc" | "desc";
                     /** @description `frame` (marco), `avatar` (reemplaza la foto), `background` (fondo de miniperfil), `theme` (tema), `name` (efecto de nombre) o `sticker` */
                     kind?: "frame" | "avatar" | "background" | "theme" | "name" | "sticker";
-                    source?: "purchase" | "grant";
+                    source?: "purchase" | "grant" | "code";
                 };
                 header?: never;
                 path: {
@@ -14016,6 +14016,550 @@ export interface paths {
                 };
                 /** @description No existe */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Canjear un código
+         * @description Da el premio del código (artículo, puntos, monedas VIP o VIP) y avisa a la cuenta. Errores en `error.code`: `CODE_INVALID` (no existe, revocado o todavía no empieza: cuenta como fallo), `CODE_EXPIRED`, `CODE_USED_UP`, `CODE_ALREADY_REDEEMED`, `CODE_NOT_FOR_YOU`, `CODE_ALREADY_OWNED` (no se gasta), `CODE_VIP_LIFETIME`, `CODE_NO_PLAYER`, `CODE_BANNED` y `RATE_LIMITED` (10 por minuto por IP, o 5 fallos en 15 minutos o 20 en 24 horas por cuenta; `Retry-After` y `details.retry_after` en segundos).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RedeemBody"];
+                };
+            };
+            responses: {
+                /** @description Canjeado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RedeemResult"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Conflicto con un registro existente */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Demasiados intentos */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/redemptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis canjes
+         * @description Lo más nuevo primero, sin el código entero (los últimos 4 caracteres).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Canjes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MyRedemptions"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Códigos
+         * @description Con su estado calculado. Lo más nuevo primero.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 200) */
+                    per?: number;
+                    /** @description Busca en el código, el sorteo y la nota */
+                    q?: string;
+                    /** @description `scheduled` (todavía no empieza), `active`, `used_up` (sin usos), `expired` o `revoked` */
+                    state?: "scheduled" | "active" | "used_up" | "expired" | "revoked";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Códigos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminCodeList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Crear códigos
+         * @description Uno o un lote (hasta 100) con el mismo premio; un personalizado, de a uno.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CodeCreate"];
+                };
+            };
+            responses: {
+                /** @description Creados */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CodeCreated"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/codes/attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Canjes fallidos y cuentas bloqueadas */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Fallos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RedeemAttempts"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/codes/{id}/redemptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Canjes de un código */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Canjes */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminRedemptionList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/codes/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revocar un código
+         * @description Deja de servir; lo ya canjeado sigue.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["Reason"];
+                };
+            };
+            responses: {
+                /** @description Revocado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/redemptions/{id}/revert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revertir un canje
+         * @description Quita los puntos o las monedas (con una fila negativa), revoca el período VIP o quita el artículo (o sus días) si sigue siendo del código. El código recupera el uso; esa cuenta no lo puede volver a canjear. Avisa a la cuenta.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["Reason"];
+                };
+            };
+            responses: {
+                /** @description Revertido */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -29849,6 +30393,8 @@ export interface components {
             usable: boolean;
             /** @description Lo tienes puesto */
             equipped: boolean;
+            /** @description Lo tienes por un tiempo (de un código): hasta cuándo. Si ya pasó, `owned` es false y se puede comprar (replanteo 126) */
+            expires_at: string | null;
         };
         PointsConfig: {
             /** @description Puntos por mix o mapa del matchmaking terminado */
@@ -29875,6 +30421,8 @@ export interface components {
             custom_max_avatar: number;
             /** @description Cuántos fondos de miniperfil propios (fijos y animados) guarda cada cuenta */
             custom_max_background: number;
+            /** @description Un artículo VIP que se tiene por un código se usa sin ser VIP (replanteo 126). Apagado, se usa siendo VIP, como lo comprado */
+            code_vip_free: boolean;
         };
         PlayerCosmeticsList: {
             items: components["schemas"]["PlayerCosmetics"][];
@@ -29941,16 +30489,16 @@ export interface components {
         };
         PointsMove: {
             /**
-             * @description `mix`, `mm` (mapa del matchmaking), `grant` (admin), `purchase` o `custom` (subió su avatar o su fondo)
+             * @description `mix`, `mm` (mapa del matchmaking), `grant` (admin), `purchase`, `custom` (subió su avatar o su fondo) o `code` (canjeó un código; en negativo, un canje revertido)
              * @enum {string}
              */
-            kind: "mix" | "mm" | "grant" | "purchase" | "custom";
+            kind: "mix" | "mm" | "grant" | "purchase" | "custom" | "code";
             at: string | null;
             /** @description Positivo suma, negativo resta */
             amount: number;
             /** @description Mapa y si ganó, el motivo del admin o el artículo comprado */
             label: string;
-            /** @description La partida (mix y mm), el artículo (purchase) o la subida (custom) */
+            /** @description La partida (mix y mm), el artículo (purchase), la subida (custom) o el canje (code) */
             ref: string | null;
         };
         /** @description Ids de lo equipado (tal como lo guardó; la ficha pública oculta lo que ya no puede usar). `custom:<id>` en avatar o background: una subida propia */
@@ -30040,6 +30588,7 @@ export interface components {
             custom_bg_static_price?: number;
             custom_max_avatar?: number;
             custom_max_background?: number;
+            code_vip_free?: boolean;
         };
         AdminAccountList: {
             items: components["schemas"]["AdminAccountPoints"][];
@@ -30110,16 +30659,21 @@ export interface components {
         };
         UserItem: {
             item: components["schemas"]["Cosmetic"];
-            /** @enum {string} */
-            source: "purchase" | "grant";
             /**
-             * @description Con qué se pagó; null si fue un regalo
+             * @description `purchase` (comprado), `grant` (regalo de un admin) o `code` (de un código)
+             * @enum {string}
+             */
+            source: "purchase" | "grant" | "code";
+            /**
+             * @description Con qué se pagó; null si fue un regalo o un código
              * @enum {string|null}
              */
             currency: "points" | "vip" | null;
             price_paid: number | null;
             note: string | null;
             acquired_at: string;
+            /** @description Hasta cuándo se puede usar (lo temporal de un código); null = para siempre */
+            expires_at: string | null;
         };
         ItemGrant: {
             item: string;
@@ -30127,6 +30681,167 @@ export interface components {
         };
         Reason: {
             reason: string;
+        };
+        RedeemResult: components["schemas"]["CodePrize"] & {
+            /** @description Hasta cuándo le dura (artículo temporal o VIP); null si es para siempre */
+            until: string | null;
+            /** @description El sorteo */
+            label: string | null;
+        };
+        CodePrize: {
+            /**
+             * @description `item` (artículo de la tienda), `points` (puntos), `vip_coins` (monedas VIP) o `vip` (días de VIP)
+             * @enum {string}
+             */
+            reward: "item" | "points" | "vip_coins" | "vip";
+            item: components["schemas"]["Cosmetic"] & unknown;
+            /** @description Puntos o monedas VIP (solo `points` y `vip_coins`) */
+            amount: number | null;
+            /** @description Días del artículo o del VIP; null en un artículo = para siempre */
+            days: number | null;
+        };
+        /** @description El código, con o sin guiones y en mayúsculas o minúsculas. Nunca va en la URL */
+        RedeemBody: {
+            code: string;
+        };
+        MyRedemptions: {
+            items: components["schemas"]["MyRedemption"][];
+        };
+        MyRedemption: components["schemas"]["CodePrize"] & {
+            /** Format: uuid */
+            id: string;
+            redeemed_at: string;
+            label: string | null;
+            /** @description Los últimos 4 caracteres del código */
+            code_tail: string;
+            until: string | null;
+            /** @description Si un admin revirtió el canje */
+            reverted_at: string | null;
+        };
+        /** @description Lo más nuevo primero */
+        AdminCodeList: {
+            items: components["schemas"]["AdminCode"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        AdminCode: {
+            /** Format: uuid */
+            id: string;
+            /** @description Como se muestra: `CML-XXXX-XXXX-XXXX` o el personalizado */
+            code: string;
+            custom: boolean;
+            /** Format: uuid */
+            batch_id: string;
+            prize: components["schemas"]["CodePrize"];
+            max_uses: number;
+            uses: number;
+            for_user: components["schemas"]["CodeAccount"];
+            starts_at: string;
+            expires_at: string | null;
+            label: string | null;
+            note: string | null;
+            created_by: components["schemas"]["CodeAccount"];
+            created_at: string;
+            revoked_at: string | null;
+            revoke_reason: string | null;
+            /**
+             * @description `scheduled` (todavía no empieza), `active`, `used_up` (sin usos), `expired` o `revoked`
+             * @enum {string}
+             */
+            state: "scheduled" | "active" | "used_up" | "expired" | "revoked";
+        };
+        /** @description Una cuenta: su alias y su ficha (si tiene) */
+        CodeAccount: {
+            /** Format: uuid */
+            id: string;
+            alias: string | null;
+            /** Format: uuid */
+            player_id: string | null;
+            nick: string | null;
+        } | null;
+        CodeCreated: {
+            /** Format: uuid */
+            batch_id: string;
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+            }[];
+        };
+        /** @description Las demás reglas (premio completo, vencimiento, personalizado único) las valida la base */
+        CodeCreate: {
+            /**
+             * @description `item` (artículo de la tienda), `points` (puntos), `vip_coins` (monedas VIP) o `vip` (días de VIP)
+             * @enum {string}
+             */
+            reward: "item" | "points" | "vip_coins" | "vip";
+            item?: string;
+            amount?: number;
+            /** @description Días del artículo (sin días = para siempre) o del VIP (obligatorio) */
+            days?: number;
+            /** @default 1 */
+            max_uses: number;
+            /**
+             * @description Cuántos códigos con el mismo premio (lote)
+             * @default 1
+             */
+            count: number;
+            /**
+             * Format: date-time
+             * @description Desde cuándo sirve (por defecto, ya)
+             */
+            starts_at?: string;
+            /**
+             * Format: date-time
+             * @description Hasta cuándo sirve (opcional)
+             */
+            expires_at?: string;
+            /**
+             * Format: uuid
+             * @description Solo para esa cuenta (un código de 1 uso)
+             */
+            for_user?: string;
+            /** @description Código personalizado (8 a 24 letras y números); solo de a uno */
+            custom?: string;
+            /** @description El sorteo */
+            label?: string;
+            /** @description Nota interna */
+            note?: string;
+        };
+        /** @description Canjes fallidos (código que no existe, revocado o sin empezar) y cuentas bloqueadas */
+        RedeemAttempts: {
+            last_hour: number;
+            last_day: number;
+            attempts: {
+                at: string;
+                account: components["schemas"]["CodeAccount"];
+                ip: string | null;
+                /** @description Los primeros 4 caracteres de lo que escribió */
+                typed: string | null;
+            }[];
+            /** @description Cuentas bloqueadas ahora */
+            blocked: {
+                account: components["schemas"]["CodeAccount"];
+                until: string;
+            }[];
+        };
+        AdminRedemptionList: {
+            items: components["schemas"]["AdminRedemption"][];
+        };
+        AdminRedemption: {
+            /** Format: uuid */
+            id: string;
+            account: components["schemas"]["CodeAccount"];
+            redeemed_at: string;
+            until: string | null;
+            reverted_at: string | null;
+            reverted_by: components["schemas"]["CodeAccount"];
+            revert_reason: string | null;
         };
         MyCustom: {
             /** @description Los avatares guardados, lo más nuevo primero */

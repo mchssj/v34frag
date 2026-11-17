@@ -214,11 +214,11 @@ const SECTIONS: LegalSection[] = [
           El equipo de soporte puede banearte por un rato, con un tope de
           minutos y de veces por semana que fija la administración (hoy, hasta
           120 minutos, y entre todo el soporte no más de 3 veces en 7 días),
-          quitar tu foto de
-          perfil o el logo de tu equipo si no cumplen las reglas (te avisamos
-          con el motivo), borrar comentarios, levantar sanciones de la cola y
-          revisar los clips antes de que salgan en Discord. Todo lo que hace
-          queda registrado, y los moderadores y admins lo revisan.
+          quitar tu foto de perfil o el logo de tu equipo si no cumplen las
+          reglas (te avisamos con el motivo), borrar comentarios, levantar
+          sanciones de la cola y revisar los clips antes de que salgan en
+          Discord. Todo lo que hace queda registrado, y los moderadores y admins
+          lo revisan.
         </li>
         <li>
           Un baneo alcanza a tu ficha y a todos sus SteamID, también a los que
@@ -546,6 +546,22 @@ const SECTIONS: LegalSection[] = [
               por premios
             </strong>
             , no se transfieren y no tienen valor fuera de CMLeague.
+          </li>
+          <li>
+            <strong>Sorteos y códigos</strong>: los sorteos son gratis y no
+            exigen comprar nada. El premio llega como un código, que se canjea
+            una vez por cuenta, puede vencer y puede tener un límite de usos. Un
+            código no tiene valor en dinero: no se vende, no se compra ni se
+            cambia por plata. Lo que da puede ser por un tiempo, que ves al
+            canjearlo; cuando vence, se te saca. Un artículo VIP ganado con un
+            código lo puedes usar aunque no seas VIP, mientras tengamos esa
+            opción encendida; si la apagamos, queda congelado hasta que seas
+            VIP, como lo VIP comprado. El VIP de un código no es un VIP pagado:
+            no tiene derecho de arrepentimiento ni reembolso, y sigue las demás
+            reglas del VIP. Si un código se consiguió con trampa, se vendió o se
+            entregó por error, podemos revertir el canje y quitarte el premio.
+            Probar códigos para adivinarlos bloquea el canje por un tiempo y
+            puede llevar a una sanción.
           </li>
           <li>
             Si un mix se borra o se recalcula, los puntos que diste por él se

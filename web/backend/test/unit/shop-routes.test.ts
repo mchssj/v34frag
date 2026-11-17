@@ -111,33 +111,46 @@ describe('catálogo', () => {
     expect((await call('GET', '/api/v1/shop/items?owned=true', undefined, false)).status).toBe(401);
   });
 
-  it('con sesión: lo que tiene, lo que puede usar y lo puesto; el premio VIP cuenta como suyo si es VIP', async () => {
-    postgrest('user', (url) => {
-      const p = url.pathname;
-      if (p.endsWith('/shop_catalog'))
-        return listed([
-          item(),
-          item({ id: 'sticker-vip', kind: 'sticker', vip_only: true, price: null, base_price: null, vip_price: 200 }),
-          item({ id: 'marco-vip-oro', vip_only: true, vip_reward: true, price: null, base_price: null }),
-        ]);
-      if (p.endsWith('/user_items')) return Response.json([{ item_id: 'marco-mira' }, { item_id: 'sticker-vip' }]);
-      if (p.endsWith('/vip_status')) return Response.json([]);
-      if (p.endsWith('/user_cosmetics')) return Response.json({ frame: 'marco-mira', background: null, theme: null, name: null, stickers: [] });
-      return undefined;
-    });
-    const body = await json(await call('GET', '/api/v1/shop/items'));
-    const by = Object.fromEntries(body.items.map((i: { id: string }) => [i.id, i]));
-    expect(by['marco-mira']).toMatchObject({ owned: true, usable: true, equipped: true });
-    // Lo VIP comprado, sin VIP hoy: lo tiene pero está congelado.
-    expect(by['sticker-vip']).toMatchObject({ owned: true, usable: false, equipped: false });
-    expect(by['marco-vip-oro']).toMatchObject({ owned: false, usable: false });
-  });
+  it.each([true, false])(
+    'con sesión: lo que tiene, lo que puede usar y lo puesto; el premio VIP cuenta como suyo si es VIP (lo VIP de un código sin VIP: %s)',
+    async (codeVipFree) => {
+      postgrest('user', (url) => {
+        const p = url.pathname;
+        if (p.endsWith('/shop_catalog'))
+          return listed([
+            item(),
+            item({ id: 'sticker-vip', kind: 'sticker', vip_only: true, price: null, base_price: null, vip_price: 200 }),
+            item({ id: 'sticker-sorteo', kind: 'sticker', vip_only: true, price: null, base_price: null, vip_price: 200 }),
+            item({ id: 'marco-vip-oro', vip_only: true, vip_reward: true, price: null, base_price: null }),
+          ]);
+        if (p.endsWith('/user_items'))
+          return Response.json([
+            { item_id: 'marco-mira', source: 'purchase', expires_at: null },
+            { item_id: 'sticker-vip', source: 'purchase', expires_at: null },
+            { item_id: 'sticker-sorteo', source: 'code', expires_at: null },
+          ]);
+        if (p.endsWith('/vip_status')) return Response.json([]);
+        if (p.endsWith('/points_config')) return Response.json({ code_vip_free: codeVipFree });
+        if (p.endsWith('/user_cosmetics')) return Response.json({ frame: 'marco-mira', background: null, theme: null, name: null, stickers: [] });
+        return undefined;
+      });
+      const body = await json(await call('GET', '/api/v1/shop/items'));
+      const by = Object.fromEntries(body.items.map((i: { id: string }) => [i.id, i]));
+      expect(by['marco-mira']).toMatchObject({ owned: true, usable: true, equipped: true });
+      // Lo VIP comprado, sin VIP hoy: lo tiene pero está congelado.
+      expect(by['sticker-vip']).toMatchObject({ owned: true, usable: false, equipped: false });
+      // Lo VIP de un código (replanteo 126): se usa sin VIP solo con code_vip_free encendido.
+      expect(by['sticker-sorteo']).toMatchObject({ owned: true, usable: codeVipFree });
+      expect(by['marco-vip-oro']).toMatchObject({ owned: false, usable: false });
+    },
+  );
 
   it('owned=true siendo VIP: lo suyo más el premio VIP', async () => {
     const calls = postgrest('user', (url) => {
       const p = url.pathname;
       if (p.endsWith('/shop_catalog')) return listed([]);
-      if (p.endsWith('/user_items')) return Response.json([{ item_id: 'marco-mira' }]);
+      if (p.endsWith('/user_items')) return Response.json([{ item_id: 'marco-mira', source: 'purchase', expires_at: null }]);
+      if (p.endsWith('/points_config')) return Response.json({ code_vip_free: true });
       if (p.endsWith('/vip_status'))
         return Response.json([{ user_id: USER, active: true, lifetime: true, until: null, since: '2026-10-01T00:00:00Z' }]);
       if (p.endsWith('/user_cosmetics')) return Response.json(null);

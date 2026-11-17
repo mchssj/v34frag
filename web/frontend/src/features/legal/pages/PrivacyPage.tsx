@@ -82,6 +82,11 @@ const RETENTION: [string, string][] = [
     "Avatares y fondos de miniperfil que subiste",
     "Hasta que los borres o se saquen por una denuncia, o hasta que borres la cuenta; el registro del pago, mientras tengas la cuenta",
   ],
+  ["Códigos de sorteos que canjeaste", "Mientras tengas la cuenta"],
+  [
+    "Intentos de canjear un código que no existe: fecha, IP y los primeros 4 caracteres",
+    "30 días",
+  ],
   ["Amigos y solicitudes de amistad", "Mientras tengas la cuenta"],
   ["Visitas a perfiles", "30 días"],
   [
@@ -261,6 +266,13 @@ const SECTIONS: LegalSection[] = [
             Las denuncias de imágenes que haces o te hacen: quién la mandó, qué
             imagen, el motivo y la nota. Las ven solo los moderadores y los
             administradores; a quien denuncias no le decimos quién fuiste.
+          </li>
+          <li>
+            Los códigos de sorteos que canjeas: qué código, cuándo y qué premio
+            recibiste, mientras tengas la cuenta. Si escribes un código que no
+            existe, guardamos la fecha, tu IP y los primeros 4 caracteres de lo
+            que escribiste durante 30 días, para frenar a quien intenta
+            adivinarlos.
           </li>
           <li>
             Tus misiones y si quieres aparecer en los créditos <Wip />

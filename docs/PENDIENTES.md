@@ -2,6 +2,19 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
+## Códigos canjeables para sorteos (2026-11-16): hecho, sin probar en el navegador ni desplegar
+
+- **Qué es:** pedido por Kyan (propuesta en `kyan/guia`, `3a5b7102`), adaptado a `main` y aprobado por Daniel el 2026-11-16. El admin genera códigos que dan un artículo (para siempre o por días), puntos, monedas VIP o VIP por días; el jugador los canjea en la tienda. Detalle: [`2026-11-16-codigos-canjeables`](bitacora/2026-11-16-codigos-canjeables/).
+- **Hecho** (sin commit):
+  - Replanteo `126` con su inversa y `pruebas/probar_126.sh` (12 de 12), aplicado en la base local.
+  - La API: `routes/codes.ts` (`POST /api/v1/me/redeem`, `GET /api/v1/me/redemptions` y `/api/v1/admin/codes…`), la regla `redeem` y `RL_REDEEM` en `wrangler.toml`, `expires_at` y el origen `code` en la tienda, y `db/types.ts` regenerado. Unitarias 676 de 676 e integración `codes` 5 de 5.
+  - La web: "Canjear código" en la Tienda (ventana con el formato, el premio, los errores, el bloqueo y Tus canjes; se abre con `/shop?canjear=true`), lo temporal con "Vence en…" y "Venció…", "Código" en el Historial, el acceso en Mi perfil y "Códigos y sorteos" en Administración › Tienda (crear, lote, CSV, revocar, canjes, revertir e intentos). Vitest 824 de 824, lint y build. **No se probó en el navegador.**
+  - El manual (`jugador/tienda-y-cosmeticos.md` › Canjear un código y `admin/tienda-y-puntos.md` › Códigos y sorteos, validado sin errores) y "Sorteos y códigos" en `/terminos` y `/privacidad` (web y `terms/*.html`), con la marca "En preparación".
+- **Falta:**
+  1. Probarlo en el navegador con la API local.
+  2. Commit en `main` (sin los legales ajenos de `2026-11-13-nombre-de-la-ficha-en-mix`, o aparte).
+  3. Desplegar: la `126` en producción (con respaldo previo y el archivo en LF), la API y la web, en ese orden ([guía](bitacora/2026-11-16-codigos-canjeables/GUIA_IMPLEMENTACION.md)). Al desplegar, sacar la marca "En preparación" de "Sorteos y códigos" en los legales (web y `.html`) y publicar los `.html` y el changelog 2.9.54.
+
 ## Guía de la web la primera vez (2026-11-14): web desplegada el 2026-11-15 (`d3cf16b6fa9a`)
 
 - **Estado:** pedida por Kyan. Al entrar por primera vez, después de la Bienvenida, se abre una guía en pasos: qué es ClientMod, si lo tiene instalado (si no, la descarga de `https://clientmod.ru/`) y si tiene la consola activada; después Jugar, SteamID, Partidas y ranking, equipos y torneos, y Ayuda. En español, portugués de Brasil e inglés. Solo web; prototipo en `/demo/guia`. Detalle: [`2026-11-14-guia-primera-vez`](bitacora/2026-11-14-guia-primera-vez/).

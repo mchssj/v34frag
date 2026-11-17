@@ -612,6 +612,79 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"code_redemptions": {
+                  Row: {
+                    "amount": number | null,"code_id": string,"days": number | null,"id": string,"item_id": string | null,"redeemed_at": string,"revert_reason": string | null,"reverted_at": string | null,"reverted_by": string | null,"reward": string,"until": string | null,"user_id": string,"vip_membership_id": string | null
+                  }
+                  Insert: {
+                    "amount"?: number | null,"code_id": string,"days"?: number | null,"id"?: string,"item_id"?: string | null,"redeemed_at"?: string,"revert_reason"?: string | null,"reverted_at"?: string | null,"reverted_by"?: string | null,"reward": string,"until"?: string | null,"user_id": string,"vip_membership_id"?: string | null
+                  }
+                  Update: {
+                    "amount"?: number | null,"code_id"?: string,"days"?: number | null,"id"?: string,"item_id"?: string | null,"redeemed_at"?: string,"revert_reason"?: string | null,"reverted_at"?: string | null,"reverted_by"?: string | null,"reward"?: string,"until"?: string | null,"user_id"?: string,"vip_membership_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "code_redemptions_code_id_fkey"
+      columns: ["code_id"]
+isOneToOne: false
+      referencedRelation: "redeem_codes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_reverted_by_fkey"
+      columns: ["reverted_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_reverted_by_fkey"
+      columns: ["reverted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_reverted_by_fkey"
+      columns: ["reverted_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "code_redemptions_vip_membership_id_fkey"
+      columns: ["vip_membership_id"]
+isOneToOne: false
+      referencedRelation: "vip_memberships"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"connect_attempts": {
                   Row: {
                     "count": number,"hour": string,"ip": unknown,"server_id": string
@@ -3947,17 +4020,35 @@ isOneToOne: true
                     "achievements"?: string | null,"bio"?: string | null,"id"?: string,"nick"?: string,"photo_url"?: string | null,"primary_steam_changed_at"?: string | null,"primary_team_id"?: string | null,"privacy"?: string,"steam_added_at"?: string | null,"steam_id"?: string | null,"team_history"?: string | null,"user_id"?: string | null,"verified"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verified_note"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "players_primary_team_id_fkey"
+      columns: ["primary_team_id"]
+isOneToOne: false
+      referencedRelation: "admin_team_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "players_primary_team_id_fkey"
+      columns: ["primary_team_id"]
+isOneToOne: false
+      referencedRelation: "team_overview"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "players_primary_team_id_fkey"
+      columns: ["primary_team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"point_grants": {
                   Row: {
-                    "amount": number,"created_at": string,"currency": string,"granted_by": string | null,"id": string,"reason": string,"user_id": string
+                    "amount": number,"created_at": string,"currency": string,"granted_by": string | null,"id": string,"reason": string,"redemption_id": string | null,"user_id": string
                   }
                   Insert: {
-                    "amount": number,"created_at"?: string,"currency"?: string,"granted_by"?: string | null,"id"?: string,"reason": string,"user_id": string
+                    "amount": number,"created_at"?: string,"currency"?: string,"granted_by"?: string | null,"id"?: string,"reason": string,"redemption_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "amount"?: number,"created_at"?: string,"currency"?: string,"granted_by"?: string | null,"id"?: string,"reason"?: string,"user_id"?: string
+                    "amount"?: number,"created_at"?: string,"currency"?: string,"granted_by"?: string | null,"id"?: string,"reason"?: string,"redemption_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -3977,6 +4068,12 @@ isOneToOne: false
       columns: ["granted_by"]
 isOneToOne: false
       referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "point_grants_redemption_id_fkey"
+      columns: ["redemption_id"]
+isOneToOne: false
+      referencedRelation: "code_redemptions"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "point_grants_user_id_fkey"
@@ -4000,13 +4097,13 @@ isOneToOne: false
                   ]
                 },"points_config": {
                   Row: {
-                    "custom_avatar_price": number,"custom_bg_animated_price": number,"custom_bg_static_price": number,"custom_max_avatar": number,"custom_max_background": number,"id": number,"per_mix": number,"per_win": number,"updated_at": string,"updated_by": string | null,"vip_multiplier": number,"vip_per_mix": number,"vip_per_win": number,"weekly_count": number,"weekly_discount": number
+                    "code_vip_free": boolean,"custom_avatar_price": number,"custom_bg_animated_price": number,"custom_bg_static_price": number,"custom_max_avatar": number,"custom_max_background": number,"id": number,"per_mix": number,"per_win": number,"updated_at": string,"updated_by": string | null,"vip_multiplier": number,"vip_per_mix": number,"vip_per_win": number,"weekly_count": number,"weekly_discount": number
                   }
                   Insert: {
-                    "custom_avatar_price"?: number,"custom_bg_animated_price"?: number,"custom_bg_static_price"?: number,"custom_max_avatar"?: number,"custom_max_background"?: number,"id"?: number,"per_mix"?: number,"per_win"?: number,"updated_at"?: string,"updated_by"?: string | null,"vip_multiplier"?: number,"vip_per_mix"?: number,"vip_per_win"?: number,"weekly_count"?: number,"weekly_discount"?: number
+                    "code_vip_free"?: boolean,"custom_avatar_price"?: number,"custom_bg_animated_price"?: number,"custom_bg_static_price"?: number,"custom_max_avatar"?: number,"custom_max_background"?: number,"id"?: number,"per_mix"?: number,"per_win"?: number,"updated_at"?: string,"updated_by"?: string | null,"vip_multiplier"?: number,"vip_per_mix"?: number,"vip_per_win"?: number,"weekly_count"?: number,"weekly_discount"?: number
                   }
                   Update: {
-                    "custom_avatar_price"?: number,"custom_bg_animated_price"?: number,"custom_bg_static_price"?: number,"custom_max_avatar"?: number,"custom_max_background"?: number,"id"?: number,"per_mix"?: number,"per_win"?: number,"updated_at"?: string,"updated_by"?: string | null,"vip_multiplier"?: number,"vip_per_mix"?: number,"vip_per_win"?: number,"weekly_count"?: number,"weekly_discount"?: number
+                    "code_vip_free"?: boolean,"custom_avatar_price"?: number,"custom_bg_animated_price"?: number,"custom_bg_static_price"?: number,"custom_max_avatar"?: number,"custom_max_background"?: number,"id"?: number,"per_mix"?: number,"per_win"?: number,"updated_at"?: string,"updated_by"?: string | null,"vip_multiplier"?: number,"vip_per_mix"?: number,"vip_per_win"?: number,"weekly_count"?: number,"weekly_discount"?: number
                   }
                   Relationships: [
                     {
@@ -4336,6 +4433,116 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"redeem_attempts": {
+                  Row: {
+                    "at": string,"id": number,"ip": unknown,"typed": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "at"?: string,"id"?: never,"ip"?: unknown,"typed"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "at"?: string,"id"?: never,"ip"?: unknown,"typed"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "redeem_attempts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_attempts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_attempts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"redeem_codes": {
+                  Row: {
+                    "amount": number | null,"batch_id": string,"code": string,"created_at": string,"created_by": string | null,"custom": boolean,"display": string,"duration_days": number | null,"expires_at": string | null,"for_user": string | null,"id": string,"item_id": string | null,"label": string | null,"max_uses": number,"note": string | null,"revoke_reason": string | null,"revoked_at": string | null,"revoked_by": string | null,"reward": string,"starts_at": string,"uses": number,"code_state": string | null
+                  }
+                  Insert: {
+                    "amount"?: number | null,"batch_id": string,"code": string,"created_at"?: string,"created_by"?: string | null,"custom"?: boolean,"display": string,"duration_days"?: number | null,"expires_at"?: string | null,"for_user"?: string | null,"id"?: string,"item_id"?: string | null,"label"?: string | null,"max_uses": number,"note"?: string | null,"revoke_reason"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"reward": string,"starts_at"?: string,"uses"?: number
+                  }
+                  Update: {
+                    "amount"?: number | null,"batch_id"?: string,"code"?: string,"created_at"?: string,"created_by"?: string | null,"custom"?: boolean,"display"?: string,"duration_days"?: number | null,"expires_at"?: string | null,"for_user"?: string | null,"id"?: string,"item_id"?: string | null,"label"?: string | null,"max_uses"?: number,"note"?: string | null,"revoke_reason"?: string | null,"revoked_at"?: string | null,"revoked_by"?: string | null,"reward"?: string,"starts_at"?: string,"uses"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "redeem_codes_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_for_user_fkey"
+      columns: ["for_user"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_for_user_fkey"
+      columns: ["for_user"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_for_user_fkey"
+      columns: ["for_user"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "shop_catalog"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "shop_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "admin_user_list"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "redeem_codes_revoked_by_fkey"
+      columns: ["revoked_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"render_workers": {
                   Row: {
@@ -5276,13 +5483,13 @@ isOneToOne: true
                   ]
                 },"user_items": {
                   Row: {
-                    "acquired_at": string,"currency": string,"granted_by": string | null,"item_id": string,"note": string | null,"price_paid": number | null,"source": string,"user_id": string
+                    "acquired_at": string,"currency": string,"expires_at": string | null,"granted_by": string | null,"item_id": string,"note": string | null,"price_paid": number | null,"source": string,"user_id": string
                   }
                   Insert: {
-                    "acquired_at"?: string,"currency"?: string,"granted_by"?: string | null,"item_id": string,"note"?: string | null,"price_paid"?: number | null,"source": string,"user_id": string
+                    "acquired_at"?: string,"currency"?: string,"expires_at"?: string | null,"granted_by"?: string | null,"item_id": string,"note"?: string | null,"price_paid"?: number | null,"source": string,"user_id": string
                   }
                   Update: {
-                    "acquired_at"?: string,"currency"?: string,"granted_by"?: string | null,"item_id"?: string,"note"?: string | null,"price_paid"?: number | null,"source"?: string,"user_id"?: string
+                    "acquired_at"?: string,"currency"?: string,"expires_at"?: string | null,"granted_by"?: string | null,"item_id"?: string,"note"?: string | null,"price_paid"?: number | null,"source"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -7919,6 +8126,22 @@ isOneToOne: false
 "admin_account_status":
 { Args: { "p_user": string }; Returns: Json
                            },
+"admin_code_create":
+{ Args: { "p_amount"?: number,"p_count"?: number,"p_custom"?: string,"p_days"?: number,"p_expires_at"?: string,"p_for_user"?: string,"p_item"?: string,"p_label"?: string,"p_max_uses"?: number,"p_note"?: string,"p_reward": string,"p_starts_at"?: string }; Returns: Json
+                           },
+"admin_code_redemptions":
+{ Args: { "p_code": string }; Returns: {
+              "account": Json,"id": string,"redeemed_at": string,"revert_reason": string,"reverted_at": string,"reverted_by": Json,"until": string
+            }[]
+                           },
+"admin_code_revoke":
+{ Args: { "p_code": string,"p_reason": string }; Returns: undefined
+                           },
+"admin_codes":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_q"?: string,"p_state"?: string }; Returns: {
+              "batch_id": string,"code": string,"created_at": string,"created_by": Json,"custom": boolean,"expires_at": string,"for_user": Json,"id": string,"label": string,"max_uses": number,"note": string,"revoke_reason": string,"revoked_at": string,"reward": Json,"starts_at": string,"state": string,"total": number,"uses": number
+            }[]
+                           },
 "admin_cover_clear":
 { Args: { "p_reason": string,"p_user": string }; Returns: string
                            },
@@ -7971,6 +8194,12 @@ isOneToOne: false
                            },
 "admin_points_grant":
 { Args: { "p_amount": number,"p_currency"?: string,"p_reason": string,"p_user": string }; Returns: string
+                           },
+"admin_redeem_attempts":
+{ Args: { "p_limit"?: number }; Returns: Json
+                           },
+"admin_redemption_revert":
+{ Args: { "p_reason": string,"p_redemption": string }; Returns: undefined
                            },
 "admin_regenerate_hud_key":
 { Args: { "p_server": string }; Returns: string
@@ -8212,6 +8441,24 @@ isOneToOne: false
                            },
 "clips_notify_detected":
 { Args: { "p_match": string }; Returns: undefined
+                           },
+"code_account":
+{ Args: { "p_user": string }; Returns: Json
+                           },
+"code_normalize":
+{ Args: { "p_code": string }; Returns: string
+                           },
+"code_random12":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"code_redeem":
+{ Args: { "p_code": string,"p_ip"?: unknown }; Returns: Json
+                           },
+"code_reward_json":
+{ Args: { "p_amount": number,"p_days": number,"p_item": string,"p_reward": string }; Returns: Json
+                           },
+"code_state":
+{ Args: { "c": Database["public"]['Tables']["redeem_codes"]['Row'] }; Returns: string
                            },
 "comment_blocked_word":
 { Args: { "p": string }; Returns: string
@@ -9190,6 +9437,9 @@ isOneToOne: false
 "my_profile_visits":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"my_redemptions":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "name_blocked":
 { Args: { "p": string }; Returns: string
                            },
@@ -9375,6 +9625,9 @@ isOneToOne: false
                            },
 "profile_wall":
 { Args: { "p_before"?: string,"p_player": string }; Returns: Json
+                           },
+"redeem_blocked_until":
+{ Args: { "p_user": string }; Returns: string
                            },
 "reject_steam_request":
 { Args: { "p_id": number,"p_reason": string }; Returns: undefined
@@ -9633,6 +9886,9 @@ isOneToOne: false
 "team_players":
 { Args: { "p_team": string }; Returns: number
                            },
+"team_primary_order":
+{ Args: { "p_player": string,"p_team": string }; Returns: number
+                           },
 "team_rankable":
 { Args: { "p_team": string }; Returns: boolean
                            },
@@ -9711,7 +9967,7 @@ isOneToOne: false
                            },
 "user_items_of":
 { Args: { "p_user"?: string }; Returns: {
-              "acquired_at": string,"currency": string,"item_id": string,"kind": string,"name": string,"note": string,"price_paid": number,"source": string,"usable": boolean
+              "acquired_at": string,"currency": string,"expires_at": string,"item_id": string,"kind": string,"name": string,"note": string,"price_paid": number,"source": string,"usable": boolean
             }[]
                            },
 "users_of_players":

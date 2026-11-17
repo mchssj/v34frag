@@ -25,6 +25,16 @@ export type ApiErrorCode =
   | "PLAYER_NOT_LINKED"
   | "UNAVAILABLE"
   | "INTERNAL"
+  // (replanteo 126) Canjear un código: el motivo exacto.
+  | "CODE_INVALID"
+  | "CODE_EXPIRED"
+  | "CODE_USED_UP"
+  | "CODE_ALREADY_REDEEMED"
+  | "CODE_NOT_FOR_YOU"
+  | "CODE_ALREADY_OWNED"
+  | "CODE_VIP_LIFETIME"
+  | "CODE_NO_PLAYER"
+  | "CODE_BANNED"
   | "NETWORK"
 
 export type FieldIssue = { path: string; message: string }
@@ -81,6 +91,15 @@ const KNOWN_CODES = new Set<string>([
   "PLAYER_NOT_LINKED",
   "UNAVAILABLE",
   "INTERNAL",
+  "CODE_INVALID",
+  "CODE_EXPIRED",
+  "CODE_USED_UP",
+  "CODE_ALREADY_REDEEMED",
+  "CODE_NOT_FOR_YOU",
+  "CODE_ALREADY_OWNED",
+  "CODE_VIP_LIFETIME",
+  "CODE_NO_PLAYER",
+  "CODE_BANNED",
 ])
 
 const CODE_BY_STATUS: Record<number, ApiErrorCode> = {
@@ -204,6 +223,28 @@ export function errorMessage(
       return e.requestId
         ? `Algo salió mal. Código de seguimiento: ${e.requestId}`
         : "Algo salió mal. Intenta de nuevo en un momento."
+    // (replanteo 126) Canjear un código: el texto lo escribe la base para el jugador.
+    case "CODE_INVALID":
+      return e.message || "Ese código no es válido."
+    case "CODE_EXPIRED":
+      return e.message || "Ese código venció."
+    case "CODE_USED_UP":
+      return e.message || "Ese código ya se usó todas las veces que podía."
+    case "CODE_ALREADY_REDEEMED":
+      return e.message || "Ya canjeaste ese código."
+    case "CODE_NOT_FOR_YOU":
+      return e.message || "Ese código es para otra cuenta."
+    case "CODE_ALREADY_OWNED":
+      return e.message || "Ya tienes ese artículo para siempre."
+    case "CODE_VIP_LIFETIME":
+      return e.message || "Ya eres VIP de por vida."
+    case "CODE_NO_PLAYER":
+      return (
+        e.message ||
+        "Necesitas tu ficha de jugador vinculada para canjear códigos."
+      )
+    case "CODE_BANNED":
+      return e.message || "Con un baneo vigente no puedes canjear códigos."
     // Mensajes escritos para el usuario por el backend.
     case "BUSINESS_RULE":
     case "CONFLICT":

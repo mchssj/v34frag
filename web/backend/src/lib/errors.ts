@@ -30,6 +30,16 @@ export type ErrorCode =
   | 'SERVER_BUSY'
   | 'VIP_REQUIRED'
   | 'UNAVAILABLE'
+  // (replanteo 126) Canjear un código: el motivo exacto, para que la web elija el texto.
+  | 'CODE_INVALID'
+  | 'CODE_EXPIRED'
+  | 'CODE_USED_UP'
+  | 'CODE_ALREADY_REDEEMED'
+  | 'CODE_NOT_FOR_YOU'
+  | 'CODE_ALREADY_OWNED'
+  | 'CODE_VIP_LIFETIME'
+  | 'CODE_NO_PLAYER'
+  | 'CODE_BANNED'
   | 'INTERNAL';
 
 export class AppError extends Error {

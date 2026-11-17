@@ -1,6 +1,6 @@
 ---
 titulo: Usar la tienda y personalizar tu perfil
-resumen: Ganar puntos jugando, comprar marcos, avatares, stickers, temas, efectos de nombre y fondos de miniperfil, subir tu propio fondo de miniperfil o avatar animado y volver a los que ya subiste, ponértelos, subir una portada y denunciar una imagen.
+resumen: Ganar puntos jugando, comprar marcos, avatares, stickers, temas, efectos de nombre y fondos de miniperfil, canjear el código de un sorteo, subir tu propio fondo de miniperfil o avatar animado y volver a los que ya subiste, ponértelos, subir una portada y denunciar una imagen.
 orden: 16
 ---
 
@@ -19,7 +19,7 @@ Necesitas tu perfil vinculado a tu jugador del servidor: los puntos salen de tus
 - No suman los mixes que se interrumpieron, los que abandonaste ni aquellos en los que jugaste muy pocas rondas para que te contaran en el ELO.
 - Si un admin borra un mix, sus puntos se descuentan solos. Lo que ya compraste no se pierde.
 
-En la Tienda, **Historial** muestra cada mix, cada compra y lo que te sumó o restó un admin, con el motivo.
+En la Tienda, **Historial** muestra cada mix, cada compra, cada código que canjeaste y lo que te sumó o restó un admin, con el motivo.
 
 ## 1. Comprar
 
@@ -33,6 +33,26 @@ Las **Ofertas de la semana** tienen descuento y cambian cada lunes a las 00:00 (
 ## 2. Ponértelo
 
 En la tarjeta de algo que ya tienes, toca **Equipar**; para sacártelo, **Sacar**. Puedes tener puesto un marco, un avatar, un tema, un efecto de nombre, un fondo de miniperfil y hasta **3 stickers** (si te pones un cuarto, se saca el más viejo).
+
+## Canjear un código
+
+Si ganas un sorteo, te pasan un **código** (por Discord, en un stream o por mensaje). Te puede dar un artículo de la Tienda, puntos, monedas VIP o días de VIP.
+
+1. En la [Tienda](/shop), toca **Canjear código**, arriba a la derecha. También llegas desde [Mi perfil](/profile), con **Canjear un código**.
+2. Escribe o pega el código. Da igual si usas mayúsculas o minúsculas, y si lo pegas con o sin guiones: se acomoda solo (por ejemplo, `CML-7K2M-QX9P-4HTD`).
+3. Toca **Canjear**. Te dice qué recibiste y, si es por un tiempo, hasta cuándo.
+
+Debajo, **Tus canjes** lista lo que canjeaste, con cuánto le queda a lo que es por un tiempo.
+
+- **Un artículo para siempre** queda en tu inventario como uno comprado. Póntelo desde su tarjeta.
+- **Un artículo VIP** que ganas con un código lo puedes usar aunque no seas VIP. Si la liga apaga esa opción, queda congelado hasta que seas VIP, como lo VIP comprado.
+- **Un artículo por unos días** dice en su tarjeta cuánto le queda (**Vence en 5 días**). Cuando vence, se te saca solo y vuelve a estar a la venta. Si lo compras antes, pasa a ser tuyo para siempre. Si canjeas otro código del mismo artículo, se suman los días.
+- **Los días de VIP** se suman a los que ya tengas.
+- **Los puntos y las monedas VIP** van a tu saldo y salen en **Historial**.
+
+Cada código se canjea **una vez por cuenta**, y puede tener un límite de usos y una fecha de vencimiento. Si ya tienes ese artículo para siempre, o ya eres VIP de por vida, el código no se gasta: guárdalo o pásaselo a otro. Necesitas tu perfil vinculado a tu jugador, igual que para comprar.
+
+> **Ojo:** si escribes **5 códigos que no existen en 15 minutos**, no puedes canjear durante 15 minutos; con **20 en 24 horas**, hasta que pase un día desde el primero de esos 20. Los códigos no se venden ni se cambian por plata: si uno se consiguió con trampa o se vendió, un admin puede quitarte el premio.
 
 ## Avatares
 

@@ -234,7 +234,7 @@ const CATALOG = 'id, kind, name, description, file, css_class, vip_only, vip_rew
 
 type ConfigRow = z.infer<typeof PointsConfig>;
 const CONFIG =
-  'per_mix, per_win, vip_multiplier, vip_per_mix, vip_per_win, weekly_count, weekly_discount, custom_avatar_price, custom_bg_animated_price, custom_bg_static_price, custom_max_avatar, custom_max_background';
+  'per_mix, per_win, vip_multiplier, vip_per_mix, vip_per_win, weekly_count, weekly_discount, custom_avatar_price, custom_bg_animated_price, custom_bg_static_price, custom_max_avatar, custom_max_background, code_vip_free';
 export const readConfig = async (c: C): Promise<ConfigRow> =>
   mustHave(await c.var.sb.from('points_config').select(CONFIG).eq('id', 1).single()) as ConfigRow;
 
@@ -261,13 +261,19 @@ async function readEquipped(c: C, uid: string) {
 
 /** Lo que tiene la cuenta, si es VIP hoy y qué tiene puesto. */
 async function mine(c: C, uid: string) {
-  const [owned, vip, eq] = await Promise.all([
-    c.var.sb.from('user_items').select('item_id').eq('user_id', uid).then(mustHave),
+  const [owned, vip, eq, cfg] = await Promise.all([
+    c.var.sb.from('user_items').select('item_id, expires_at, source').eq('user_id', uid).then(mustHave),
     vipStatusOf(c.var.sb, [uid]).then((m) => !!m.get(uid)?.active),
     readEquipped(c, uid),
+    readConfig(c),
   ]);
+  // Lo de un código vencido ya no es suyo (se puede comprar), pero se dice hasta cuándo lo tuvo (replanteo 126).
+  const now = Date.now();
   return {
-    owned: new Set(owned.map((r) => r.item_id)),
+    owned: new Set(owned.filter((r) => !r.expires_at || Date.parse(r.expires_at) > now).map((r) => r.item_id)),
+    expires: new Map(owned.filter((r) => r.expires_at).map((r) => [r.item_id, r.expires_at as string])),
+    // Lo VIP de un código se usa sin ser VIP mientras code_vip_free esté encendido (replanteo 126), como en can_use_item.
+    vipFree: new Set(cfg.code_vip_free ? owned.filter((r) => r.source === 'code').map((r) => r.item_id) : []),
     vip,
     equipped: new Set([eq.frame, eq.avatar, eq.background, eq.theme, eq.name, ...eq.stickers].filter((x): x is string => !!x)),
   };
@@ -302,19 +308,21 @@ const toAdminItem = ({ user_items, ...r }: AdminItemRow) => ({ ...r, kind: r.kin
 
 type UserItemRow = {
   item_id: string; source: string; currency: string; price_paid: number | null; note: string | null; acquired_at: string;
+  expires_at: string | null;
   shop_items: { id: string; kind: string; name: string; file: string | null; css_class: string | null; animated: boolean; vip_only: boolean } | null;
 };
 const toUserItem = (r: UserItemRow) => ({
   item: cosmeticOf(r.shop_items ?? { id: r.item_id, kind: 'frame', name: r.item_id, file: null, css_class: null, animated: false, vip_only: false }),
-  source: r.source as 'purchase' | 'grant',
-  currency: r.source === 'grant' ? null : (r.currency as 'points' | 'vip'),
+  source: r.source as 'purchase' | 'grant' | 'code',
+  currency: r.source === 'purchase' ? (r.currency as 'points' | 'vip') : null,
   price_paid: r.price_paid,
   note: r.note,
   acquired_at: r.acquired_at,
+  expires_at: r.expires_at,
 });
 const userItemsQuery = (c: C, uid: string, kind?: string) => {
   const embed = kind ? 'shop_items!inner(id, kind, name, file, css_class, animated, vip_only)' : 'shop_items(id, kind, name, file, css_class, animated, vip_only)';
-  let q = c.var.sb.from('user_items').select(`item_id, source, currency, price_paid, note, acquired_at, ${embed}`, { count: 'exact' }).eq('user_id', uid);
+  let q = c.var.sb.from('user_items').select(`item_id, source, currency, price_paid, note, acquired_at, expires_at, ${embed}`, { count: 'exact' }).eq('user_id', uid);
   if (kind) q = q.eq('shop_items.kind', kind);
   return q;
 };
@@ -370,8 +378,9 @@ export const shop = createRouter()
         css_class: r.css_class, collection: r.collection ?? '', animated: !!r.animated, vip_only: !!r.vip_only, vip_reward: !!r.vip_reward,
         price: r.price, base_price: r.base_price, vip_price: r.vip_price, weekly: !!r.weekly,
         owned,
-        usable: owned && (!r.vip_only || !!me?.vip),
+        usable: owned && (!r.vip_only || !!me?.vip || !!me?.vipFree.has(r.id!)),
         equipped: !!me?.equipped.has(r.id!),
+        expires_at: me?.expires.get(r.id!) ?? null,
       };
     });
     return c.json({ ...envelope(out, total, p), weekly_ends: weeklyEnds() }, 200);

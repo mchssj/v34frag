@@ -34,6 +34,7 @@ import { ErrorAlert } from "@/components/brand/ErrorAlert"
 import { aliasFeedback } from "../lib/alias"
 import { usePlayerAvatar } from "@/features/shop/avatars"
 import { CoverCard } from "@/features/shop/CoverCard"
+import { RedeemShortcut } from "@/features/shop/RedeemDialog"
 
 import { AvatarPicker } from "../components/AvatarPicker"
 import {
@@ -71,6 +72,8 @@ export function ProfileSection() {
       />
       {/* (replanteo 113) La portada del perfil y el acceso a la Tienda. */}
       <CoverCard />
+      {/* (replanteo 126) Canjear un código de sorteo: abre la ventana en la Tienda. */}
+      <RedeemShortcut />
     </>
   )
 }
