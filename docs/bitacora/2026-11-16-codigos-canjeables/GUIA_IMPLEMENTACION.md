@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-16 y el 2026-11-17: la base, la API, la web, el manual y los legales. Daniel empezó a probarlo en el navegador el 2026-11-17 y de ahí salió el interruptor de lo VIP de un código. **Sin commit, sin terminar la prueba en el navegador y sin desplegar.** No toca los servidores de juego.
+**Desplegado el 2026-11-17**: replanteo `126` en producción, y la API y la web `f00ee5ce413d` (commit `f00ee5ce`). Daniel lo probó en local en el navegador, de donde salió el interruptor de lo VIP de un código. Falta un canje real en producción, publicar los `.html` de `terms/` y el changelog. No toca los servidores de juego.
 
 ## Archivos
 
@@ -36,28 +36,31 @@ Hecho y probado en local el 2026-11-16 y el 2026-11-17: la base, la API, la web,
 
 Los cuatro archivos legales ya tenían cambios sin commitear de [`2026-11-13-nombre-de-la-ficha-en-mix`](../2026-11-13-nombre-de-la-ficha-en-mix/). Los de este requerimiento se sumaron sin tocar esos.
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-17)
 
-Orden obligatorio: la base antes que la API y la API antes que la web.
+Commit `f00ee5ce` en `main`, con push. Los cambios sin commit de otros requerimientos (el nombre de la ficha y el menú de PCW, que comparten los legales, `PENDIENTES.md` y los README) quedaron fuera del commit. Durante el despliegue se guardaron con `git stash -u` y después se devolvieron.
 
-1. **Probarlo en el navegador** con la API local (`web/backend`: `pnpm dev:node`; `web/frontend`: `pnpm dev`) y una cuenta admin vinculada a una ficha:
-   - crear un código de cada premio;
-   - canjearlo con otra cuenta;
-   - ver el vencimiento en la tarjeta;
-   - revocar y revertir;
-   - provocar el bloqueo con 5 códigos inexistentes.
-2. **Commit** en `main`. Los legales ajenos se dejan afuera o se commitean aparte.
-3. **Respaldo** de la base en R2: `sudo cmleague-respaldar` en el VPS.
-4. **Base**, por el túnel (OpenSSH de Windows), sin mixes en curso. No hace falta, pero la `126` no toca partidas.
-   - Chequeo de solo lectura: está la `125` (`mm_active_lobby` mira `replaced_by`), no existe `redeem_codes`, y existen `user_items_source_check` y `vip_memberships_source_check`.
-   - Opcional: la prueba completa con rollback, `probar_126.sql` con las rutas de la `126` y de la inversa. Deja todo como estaba.
-   - `psql -v ON_ERROR_STOP=1 -f supabase/replanteo/126_codigos_canjeables.sql`. El archivo tiene que tener saltos LF (ver "Incidentes"). Ya trae `notify pgrst`.
-   - Después: `select notification_category('code_redeemed')` da `account`, `select code_vip_free from points_config` da `true`, y `admin_codes()` con un admin responde.
-5. **API:** sin nadie en la cola del matchmaking ni salas abiertas. `BUILD_CHECK_PORT=28787 deploy/vps/desplegar.sh api`. El build valida el manual. Comprobar que `/api/openapi.json` publica `/api/v1/me/redeem` y que la ruta sin sesión da 401.
-6. **Legales:** sacar la marca "En preparación" de "Sorteos y códigos" y de las dos filas de plazos, en la web y en los `.html`, y commitearlo.
-7. **Web:** `deploy/vps/desplegar.sh web`. Publicar `terms/terminos.html` y `terms/privacidad.html`.
-8. **En producción:** un código de 1 uso para una cuenta de prueba, canjearlo y revertirlo.
-9. Publicar `CHANGELOG_DISCORD.txt` (2.9.54).
+1. **Respaldo** `20261117T053815Z` en R2 (`sudo cmleague-respaldar`).
+2. **Base**, por el túnel (`ssh -N -L 5433:127.0.0.1:5432`, con el OpenSSH de Windows):
+   - Chequeo de solo lectura: la `125` estaba, `redeem_codes` no, y estaban los dos checks.
+   - **Prueba completa en producción con rollback**: 13 de 13. No dejó nada (`redeem_codes` seguía sin existir).
+   - `tr -d '\r' < supabase/replanteo/126_codigos_canjeables.sql | psql -v ON_ERROR_STOP=1`.
+   - Después: las tablas existen, `notification_category('code_redeemed')` da `account`, `code_vip_free` está encendido, `can_use_item` usa `code_vip_free`, `anon` no puede ejecutar `code_redeem` y no quedaron retornos de carro en las funciones cambiadas.
+3. **API** `f00ee5ce413d`: `BUILD_CHECK_PORT=28787 deploy/vps/desplegar.sh api`, con las pruebas. `/api/health` respondió `f00ee5ce413d`.
+   - Se desplegó con una sala del matchmaking en juego (`1b84aedb`, creada a las 00:43 de Bogotá), por decisión de Daniel: la partida ya había empezado y el resultado lo manda el plugin. La sala siguió `live` después del reinicio.
+   - Antes se esperó a que terminara la sala anterior (`b36c7354`).
+4. **Web** `f00ee5ce413d`: `deploy/vps/desplegar.sh web`. Los legales salen sin "En preparación".
+5. **Comprobado en producción:**
+   - el OpenAPI publica las 7 rutas de códigos;
+   - `POST /api/v1/me/redeem` y `GET /api/v1/admin/codes` sin sesión dan 401;
+   - `GET /api/v1/shop/config` trae `code_vip_free: true`.
+
+**Falta:**
+- Crear un código de 1 uso para una cuenta de prueba en producción, canjearlo y revertirlo. Necesita una sesión de admin.
+- Publicar `terms/terminos.html` y `terms/privacidad.html`.
+- Publicar `CHANGELOG_DISCORD.txt` (2.9.54).
+
+**Para revisar aparte:** el mix `0d42d09a` (de_dust2_ob, matchmaking) sigue `live` desde el 2026-11-05, aunque su sala (`7661bc8f`) se canceló ese día. Hizo que el primer chequeo de "sin partidas" no terminara nunca. No es de este requerimiento y no se tocó.
 
 ## Pruebas
 

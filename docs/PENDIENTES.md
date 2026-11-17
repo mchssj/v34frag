@@ -2,14 +2,14 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
 
-## Códigos canjeables para sorteos (2026-11-16): hecho, sin probar en el navegador ni desplegar
+## Códigos canjeables para sorteos (2026-11-16): desplegado el 2026-11-17
 
-- **Qué es:** pedido por Kyan (propuesta en `kyan/guia`, `3a5b7102`), adaptado a `main` y aprobado por Daniel el 2026-11-16. El admin genera códigos que dan un artículo (para siempre o por días), puntos, monedas VIP o VIP por días; el jugador los canjea en la tienda. Detalle: [`2026-11-16-codigos-canjeables`](bitacora/2026-11-16-codigos-canjeables/).
-- **Hecho** (sin commit):
-  - Replanteo `126` con su inversa y `pruebas/probar_126.sh` (12 de 12), aplicado en la base local.
-  - La API: `routes/codes.ts` (`POST /api/v1/me/redeem`, `GET /api/v1/me/redemptions` y `/api/v1/admin/codes…`), la regla `redeem` y `RL_REDEEM` en `wrangler.toml`, `expires_at` y el origen `code` en la tienda, y `db/types.ts` regenerado. Unitarias 676 de 676 e integración `codes` 5 de 5.
-  - La web: "Canjear código" en la Tienda (ventana con el formato, el premio, los errores, el bloqueo y Tus canjes; se abre con `/shop?canjear=true`), lo temporal con "Vence en…" y "Venció…", "Código" en el Historial, el acceso en Mi perfil y "Códigos y sorteos" en Administración › Tienda (crear, lote, CSV, revocar, canjes, revertir e intentos). Vitest 824 de 824, lint y build. **No se probó en el navegador.**
-  - El manual (`jugador/tienda-y-cosmeticos.md` › Canjear un código y `admin/tienda-y-puntos.md` › Códigos y sorteos, validado sin errores) y "Sorteos y códigos" en `/terminos` y `/privacidad` (web y `terms/*.html`), con la marca "En preparación".
+- **Qué es:** pedido por Kyan (propuesta en `kyan/guia`, `3a5b7102`), adaptado a `main` y aprobado por Daniel el 2026-11-16. El admin genera códigos que dan un artículo (para siempre o por días), puntos, monedas VIP o VIP por días; el jugador los canjea en la Tienda. Lo VIP de un código se usa sin ser VIP mientras esté encendido en Administración › Tienda (Daniel, 2026-11-17). Detalle: [`2026-11-16-codigos-canjeables`](bitacora/2026-11-16-codigos-canjeables/).
+- **Desplegado** (commit `f00ee5ce`):
+  - El respaldo `20261117T053815Z`.
+  - La prueba en producción con rollback: 13 de 13.
+  - La `126`.
+  - La API y la web `f00ee5ce413d`.
 - **Falta:**
   1. Probarlo en el navegador con la API local.
   2. Commit en `main` (sin los legales ajenos de `2026-11-13-nombre-de-la-ficha-en-mix`, o aparte).
