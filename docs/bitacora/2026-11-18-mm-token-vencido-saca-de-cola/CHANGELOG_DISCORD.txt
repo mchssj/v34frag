@@ -1,0 +1,3 @@
+CMLeague 2.9.56 --  Changelog
+
+- Arreglamos que a veces dejabas de buscar partida sin hacer nada. Pasaba si dejabas la web en segundo plano más o menos una hora. Ahora sigues en la cola hasta que te salga partida o canceles.

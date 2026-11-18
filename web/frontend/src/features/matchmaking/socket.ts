@@ -1,3 +1,4 @@
+import { refreshSession } from "@/auth/refresh"
 import { tokenStore } from "@/auth/tokenStore"
 import { env } from "@/lib/env"
 import type { MmSocketFactory } from "./source"
@@ -12,6 +13,12 @@ type Deps = {
   random?: () => number
   /** Avisa cuando el navegador recupera internet. Por defecto, el evento `online` de window. */
   onOnline?: (fn: () => void) => () => void
+  /**
+   * Un token vigente, renovándolo si hace falta. Con la pestaña oculta no hay pedidos que lo renueven: al vencer, la
+   * API corta el socket y, si se reconecta con el mismo, la presencia saca de la cola a los 10 s
+   * (docs/bitacora/2026-11-18-mm-token-vencido-saca-de-cola).
+   */
+  freshToken?: () => Promise<string | null>
 }
 
 const windowOnline = (fn: () => void) => {
@@ -41,6 +48,7 @@ export function createMmSocket({
   WebSocketImpl = WebSocket,
   random = Math.random,
   onOnline = windowOnline,
+  freshToken = async () => getToken(),
 }: Deps): MmSocketFactory {
   return (onEvent, onStatus) => {
     let ws: WebSocket | null = null
@@ -65,8 +73,8 @@ export function createMmSocket({
       }, MM_SILENCE_MS)
     }
 
-    const sendAuth = () => {
-      const token = getToken()
+    const sendAuth = async () => {
+      const token = await freshToken().catch(() => getToken())
       if (ws?.readyState === WebSocketImpl.OPEN && token)
         ws.send(JSON.stringify({ t: "auth", token }))
     }
@@ -76,7 +84,7 @@ export function createMmSocket({
       ws = new WebSocketImpl(url)
       ws.onopen = () => {
         watch()
-        sendAuth()
+        void sendAuth()
       }
       ws.onmessage = (msg) => {
         watch()
@@ -108,7 +116,7 @@ export function createMmSocket({
       }
     }
 
-    const stopToken = onTokenChange(sendAuth)
+    const stopToken = onTokenChange(() => void sendAuth())
     // Al volver internet se reconecta ya, sin esperar el turno: la API saca de la cola a quien no vuelve en 10 s
     // (replanteo 63), y la espera entre intentos crece a 1, 2, 4… s.
     const stopOnline = onOnline(() => {
@@ -137,4 +145,10 @@ export const mmSocket = createMmSocket({
     tokenStore.subscribe((s, prev) => {
       if (s.session?.accessToken !== prev.session?.accessToken) fn()
     }),
+  // El mismo minuto de margen que authFetch.
+  freshToken: async () => {
+    const s = tokenStore.getState().session
+    if (!s || s.expiresAt - 60_000 > Date.now()) return s?.accessToken ?? null
+    return (await refreshSession(s.refreshToken))?.accessToken ?? null
+  },
 })

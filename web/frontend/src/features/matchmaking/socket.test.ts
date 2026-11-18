@@ -35,6 +35,29 @@ afterEach(() => {
 })
 
 describe("socket del matchmaking", () => {
+  it("tras un 4001 por token vencido, reconecta con el token renovado", async () => {
+    let token = "viejo"
+    const open = createMmSocket({
+      url: "ws://x",
+      getToken: () => token,
+      freshToken: async () => (token = "nuevo"),
+      onTokenChange: () => () => {},
+      WebSocketImpl: FakeWs as unknown as typeof WebSocket,
+      random: () => 0,
+      onOnline: () => () => {},
+    })
+    const stop = open(
+      () => {},
+      () => {}
+    )
+    await vi.advanceTimersByTimeAsync(0)
+    FakeWs.all[0].onclose?.({ code: 4001 })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(FakeWs.all).toHaveLength(2)
+    expect(FakeWs.all[1].sent).toEqual([JSON.stringify({ t: "auth", token: "nuevo" })])
+    stop()
+  })
+
   it("al volver internet reconecta ya, sin esperar el turno", async () => {
     let online: () => void = () => {}
     const open = createMmSocket({
