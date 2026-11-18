@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { steam2 } from "@/lib/steam"
 import { cn } from "cn"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -128,7 +129,7 @@ function RequestCard({ r }: { r: SteamRequest }) {
         </div>
         <dl className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5 text-[13px]">
           <Info label="SteamID" mono>
-            {r.steam_id}
+            {steam2(r.steam_id)}
           </Info>
           <Info label="Nick que usó">{r.nick ?? "—"}</Info>
           <Info label="Servidor">{r.server?.name ?? "—"}</Info>
@@ -301,7 +302,7 @@ function unlinkedColumns({
       header: "SteamID",
       headClassName: "pl-4",
       cellClassName: "pl-4 font-mono text-[13px]",
-      cell: ({ row }) => row.original.steam_id,
+      cell: ({ row }) => steam2(row.original.steam_id),
     },
     {
       id: "last_nick",
@@ -434,7 +435,7 @@ function LinkDialog({ u, onClose }: { u: SteamUnlinked; onClose: () => void }) {
     <ConfirmDialog
       open
       onOpenChange={(o) => !o && onClose()}
-      title={`Sumar ${u.steam_id} a una ficha`}
+      title={`Sumar ${steam2(u.steam_id)} a una ficha`}
       description={`Último nick: ${u.last_nick ?? "—"} · ${u.matches} partidas. Si la ficha ya tiene SteamID, queda como adicional (hasta 4) y se recalcula el ELO de esa ficha; los demás no cambian.`}
       confirmLabel="Sumar a la ficha"
       incomplete={!pick}

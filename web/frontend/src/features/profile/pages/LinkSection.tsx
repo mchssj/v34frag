@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { steam2 } from "@/lib/steam"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { cn } from "cn"
 import {
@@ -322,7 +323,9 @@ function AccountRow({
       }
       title={
         <span className="flex flex-wrap items-center gap-2">
-          <code className="font-mono text-sm font-medium">{row.steamId}</code>
+          <code className="font-mono text-sm font-medium">
+            {steam2(row.steamId)}
+          </code>
           {linked && row.primary && (
             <Badge variant="win" {...ROW_BADGE}>
               <StarIcon className="size-[11px]" aria-hidden />
@@ -431,7 +434,7 @@ function UnlinkConfirm({
   return (
     <div
       role="group"
-      aria-label={`Desvincular ${steamId}`}
+      aria-label={`Desvincular ${steam2(steamId)}`}
       className="flex flex-[1_1_100%] flex-wrap items-center gap-3 rounded-md border border-destructive/30 bg-destructive/8 px-4 py-3"
     >
       <div className="flex min-w-[220px] flex-1 flex-col gap-2">

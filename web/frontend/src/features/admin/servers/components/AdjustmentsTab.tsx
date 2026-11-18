@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { steam2 } from "@/lib/steam"
 import { cn } from "cn"
 import { SearchIcon, XIcon } from "lucide-react"
 import { useId, useMemo, useState } from "react"
@@ -330,7 +331,8 @@ function adjustmentColumns(
       id: "player",
       header: "Jugador",
       cellClassName: "font-medium",
-      cell: ({ row }) => row.original.player?.alias ?? row.original.steam_id,
+      cell: ({ row }) =>
+        row.original.player?.alias ?? steam2(row.original.steam_id),
     },
     {
       id: "change",
@@ -420,7 +422,7 @@ function History() {
           target && (
             <>
               <span>
-                {target.player?.alias ?? target.steam_id}:{" "}
+                {target.player?.alias ?? steam2(target.steam_id)}:{" "}
                 {target.kind === "set"
                   ? `fijado en ${target.set_elo}`
                   : `${signed(target.delta)} ELO`}

@@ -1,4 +1,5 @@
 import { AuthHeading } from "@/features/auth/components/ui"
+import { steam2 } from "@/lib/steam"
 import type { SteamStatus } from "../types"
 
 /**
@@ -26,9 +27,7 @@ export function ClaimStep({ status }: { status: SteamStatus | undefined }) {
             className="size-2 shrink-0 rounded-full bg-current"
             aria-hidden
           />
-          <span className="flex-1">
-            Vinculado: SteamID {primary.steam_id.slice(0, 13)}…
-          </span>
+          <span className="flex-1">Vinculado: {steam2(primary.steam_id)}</span>
         </div>
       </>
     )

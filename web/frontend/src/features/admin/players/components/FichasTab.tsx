@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { steam2 } from "@/lib/steam"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
@@ -751,7 +752,7 @@ function SteamIds({
             key={s}
             className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2.5"
           >
-            <span className="flex-1 font-mono text-[13px]">{s}</span>
+            <span className="flex-1 font-mono text-[13px]">{steam2(s)}</span>
             {i === 0 ? (
               <Chip tone="primary">Principal</Chip>
             ) : (
@@ -775,7 +776,7 @@ function SteamIds({
             <Button
               variant="ghost"
               size="sm"
-              aria-label={`Quitar ${s}`}
+              aria-label={`Quitar ${steam2(s)}`}
               className="text-destructive hover:text-destructive"
               onClick={() => setTarget(s)}
             >
@@ -873,7 +874,7 @@ function Ips({ p, onOpen }: { p: PlayerDetail; onOpen: (id: string) => void }) {
                 {several ? (
                   <>
                     {" · "}
-                    <span className="font-mono">{x.steam_id}</span>
+                    <span className="font-mono">{steam2(x.steam_id)}</span>
                   </>
                 ) : null}
               </span>
@@ -1018,8 +1019,8 @@ function Medals({ playerId }: { playerId: string }) {
         </Button>
       </div>
       <span className="text-xs text-muted-foreground">
-        Solo las de Comunidad (staff, caster…). Las demás las
-        da el juego. Se crean en Administración › Medallas.
+        Solo las de Comunidad (staff, caster…). Las demás las da el juego. Se
+        crean en Administración › Medallas.
       </span>
     </PanelSection>
   )

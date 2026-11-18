@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { steam2, steam64 } from "@/lib/steam"
 import { cn } from "cn"
 import { InfoIcon, TriangleAlertIcon } from "lucide-react"
 import { useId, useState } from "react"
@@ -63,10 +64,8 @@ const DURATIONS: { key: Choice; label: string }[] = [
   { key: "perm", label: "Permanente" },
 ]
 
-const STEAM64 = /^7656\d{13}$/
-
 const targetLabel = (t: BanTarget) =>
-  t.kind === "player" ? t.label : t.steamId
+  t.kind === "player" ? t.label : steam2(t.steamId)
 
 /**
  * Banear (con `fixed` o eligiendo a quién) o cambiar un baneo activo (`ban`). Un baneo vale en todos
@@ -99,7 +98,7 @@ export function BanDialog({
   const [q, setQ] = useState("")
   const debounced = useDebouncedValue(q.trim(), 250)
   const players = useQuery(
-    pickPlayerOptions(STEAM64.test(debounced) ? "" : debounced)
+    pickPlayerOptions(steam64(debounced) ? "" : debounced)
   )
   const [reason, setReason] = useState(ban?.reason ?? "")
   const [dur, setDur] = useState<Choice>(
@@ -217,7 +216,7 @@ export function BanDialog({
     )
   }
 
-  const typedSteam = STEAM64.test(debounced) ? debounced : null
+  const typedSteam = steam64(debounced)
   const durations = support
     ? [
         ...(ban ? [{ key: "keep" as const, label: "Como está" }] : []),
@@ -234,7 +233,7 @@ export function BanDialog({
         <DialogHeader>
           <DialogTitle>
             {ban
-              ? `Cambiar el baneo de ${ban.player?.alias ?? ban.nick ?? ban.steam_id}`
+              ? `Cambiar el baneo de ${ban.player?.alias ?? ban.nick ?? steam2(ban.steam_id ?? "")}`
               : fixed
                 ? `Banear a ${targetLabel(fixed)}`
                 : "Banear"}
@@ -247,7 +246,7 @@ export function BanDialog({
             <Input
               id={`${id}-q`}
               value={q}
-              placeholder="Nick de la ficha o SteamID64"
+              placeholder="Nick de la ficha, STEAM_0 o SteamID64"
               onChange={(e) => setQ(e.target.value)}
             />
             <div
@@ -258,7 +257,7 @@ export function BanDialog({
               {typedSteam && (
                 <Option
                   on={target?.kind === "steam" && target.steamId === typedSteam}
-                  label={typedSteam}
+                  label={steam2(typedSteam)}
                   info="SteamID (si tiene ficha, se banea la ficha)"
                   onClick={() =>
                     setTarget({ kind: "steam", steamId: typedSteam })
@@ -287,7 +286,7 @@ export function BanDialog({
           <div className="flex flex-col gap-0.5 rounded-lg bg-muted px-3 py-2.5">
             <span className="font-semibold">
               {ban
-                ? (ban.player?.alias ?? ban.nick ?? ban.steam_id)
+                ? (ban.player?.alias ?? ban.nick ?? steam2(ban.steam_id ?? ""))
                 : fixed && targetLabel(fixed)}
             </span>
             <span className="text-xs text-muted-foreground">

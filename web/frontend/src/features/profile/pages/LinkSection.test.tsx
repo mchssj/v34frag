@@ -1,4 +1,5 @@
 import { act, screen, within } from "@testing-library/react"
+import { steam2 } from "@/lib/steam"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import {
@@ -231,12 +232,14 @@ describe("LinkSection · Cuentas de juego", () => {
 
     // Cancelar no manda nada.
     await u.click(within(rows[1]).getByRole("button", { name: "Desvincular" }))
-    const box = screen.getByRole("group", { name: `Desvincular ${B}` })
+    const box = screen.getByRole("group", { name: `Desvincular ${steam2(B)}` })
     expect(
       within(box).getByText("Un admin tiene que aprobar la desvinculación")
     ).toBeVisible()
     await u.click(within(box).getByRole("button", { name: "Cancelar" }))
-    expect(screen.queryByRole("group", { name: `Desvincular ${B}` })).toBeNull()
+    expect(
+      screen.queryByRole("group", { name: `Desvincular ${steam2(B)}` })
+    ).toBeNull()
 
     await u.click(within(rows[1]).getByRole("button", { name: "Desvincular" }))
     await u.type(screen.getByLabelText("¿Por qué? (opcional)"), "La vendí")
@@ -315,7 +318,7 @@ describe("LinkSection · Cuentas de juego", () => {
 
     linked = true
     await act(() => vi.advanceTimersByTimeAsync(5100))
-    expect(await screen.findByText(A)).toBeInTheDocument()
+    expect(await screen.findByText(steam2(A))).toBeInTheDocument()
     expect(toast.success).toHaveBeenCalledWith(`Cuenta ${A} vinculada`, {
       description: undefined,
     })

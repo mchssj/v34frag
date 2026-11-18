@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router"
+import { steam2 } from "@/lib/steam"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
 import { useState, type ReactNode } from "react"
@@ -98,7 +99,7 @@ export function BanPanel({
           </span>
           {ban.steam_id && (
             <span className="font-mono text-xs break-all text-muted-foreground">
-              {ban.steam_id}
+              {steam2(ban.steam_id)}
             </span>
           )}
         </div>

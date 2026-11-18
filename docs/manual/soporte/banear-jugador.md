@@ -13,7 +13,7 @@ Tus límites los fija un admin. Hoy son **120 minutos** por baneo y **3 baneos d
 ## Poner un baneo
 
 1. Toca **Banear**.
-2. En **Jugador o SteamID**, busca por el nick de su ficha o pega su SteamID64. Al elegirlo, la web te dice cuántos baneos de soporte le quedan, por ejemplo "Le quedan 2 baneos de soporte de 3 en los últimos 7 días".
+2. En **Jugador o SteamID**, busca por el nick de su ficha o pega su SteamID (`STEAM_0:…` o SteamID64). Al elegirlo, la web te dice cuántos baneos de soporte le quedan, por ejemplo "Le quedan 2 baneos de soporte de 3 en los últimos 7 días".
 3. Escribe el **motivo**. Se ve en la lista y al intentar entrar al servidor: escríbelo claro y sin insultos.
 4. En **Minutos**, escribe cuánto dura, de 1 al máximo (hoy, 120). Abajo ves el día y la hora en que vence.
 5. Toca **Banear**.

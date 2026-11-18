@@ -19,7 +19,7 @@ No se le suma una sanción de la cola: el baneo ya es la sanción.
 ## Poner un baneo
 
 1. Toca **Banear**.
-2. En **Jugador o SteamID**, busca por el nick de su ficha o pega su SteamID64.
+2. En **Jugador o SteamID**, busca por el nick de su ficha o pega su SteamID (`STEAM_0:…` o SteamID64).
    - Si eliges una **ficha**, el baneo vale para todos sus SteamID y para los que sume después.
    - Si pegas un SteamID que tiene ficha, se banea la ficha entera.
 3. Escribe el **motivo**. Se ve en la lista y al intentar entrar al servidor: escríbelo claro y sin insultos.
