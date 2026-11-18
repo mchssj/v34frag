@@ -14,7 +14,9 @@
 
 ## Despliegue
 
-Solo la web, con el próximo despliegue. Sin base, API ni servidores.
+**Web desplegada el 2026-11-18** (`4bd96203a1c6`, commit `4bd96203`): `deploy/vps/desplegar.sh web`, con los cambios ajenos de `web/frontend` (legales y socket del matchmaking) guardados con `git stash` para no publicarlos. Sin base ni servidores.
+
+**Falta la API**, que es la que sirve el manual (`/help`): no se reinició porque había 7 jugadores en la cola del matchmaking. Los dos cambios de `banear-jugador.md` salen con el próximo despliegue de la API.
 
 ## Pendiente
 
