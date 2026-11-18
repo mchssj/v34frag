@@ -17,4 +17,4 @@
 
 ## Despliegue
 
-Solo la web. **Sin desplegar.** No toca la API, la base ni los servidores.
+Solo la web. **Desplegada el 2026-11-18**: `deploy/vps/desplegar.sh web`, versión `fbb852abb6fe` (commit `fbb852ab`), con las pruebas. Los cambios sin commit de otros (páginas legales) se guardaron en un stash durante el build y se devolvieron. Vuelta atrás: desplegar `4bd96203`. No toca la API, la base ni los servidores.
