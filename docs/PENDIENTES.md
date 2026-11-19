@@ -1,6 +1,17 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-08**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-19**.
+
+## Estadísticas de la temporada: recap y resumen global (2026-11-19): probado en local, sin commit ni despliegue
+
+- **Estado:** pedido por Kyan. Los admins ven en vivo, durante la temporada, el recap de cualquier jugador y las estadísticas de la web y el matchmaking; al cerrar, se guarda la foto y la ve todo el mundo. Implementa el recap del plan del 2026-11-14 (que estaba para Daniel). Replanteo `129`, API y web, probados en la copia local de producción. Rama `kyan/recap-main`, que sale de `origin/main`. Detalle: [`2026-11-19-estadisticas-de-temporada`](bitacora/2026-11-19-estadisticas-de-temporada/).
+- **Falta:**
+  - Commit en `kyan/recap-main` (cuando Kyan lo pida).
+  - Aplicar la `129` en la base del VPS (Daniel o Kyan): arma las fotos de las temporadas cerradas.
+  - Desplegar la API y la web, y publicar el changelog (CMLeague 2.9.57).
+  - Probar la pestaña Temporadas y guardar el JPEG y el PDF con datos reales (en la copia, el perfil no carga porque le faltan replanteos de `main`).
+  - Del plan del 2026-11-14 quedan sin hacer: los avisos `recap_soon` (3 días antes) y el texto nuevo de `season_closed` ("Llegó tu recap"), y la tarjeta "Tu recap" en Para ti. Prototipo en `bitacora/2026-11-14-recap-temporada/prototipo/notices.tsx`.
+  - Arma favorita y rivales del recap: necesitan `match_kills` (repetición 2D, replanteo `92` de `kyan/pruebas`). Hoy van en `null` y esas slides no se muestran.
 
 ## Protección del VPS contra floods HTTP (2026-11-20): Cloudflare activo; firewall reabierto hasta que venzan los DNS viejos
 

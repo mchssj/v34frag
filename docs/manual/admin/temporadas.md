@@ -35,6 +35,15 @@ Cambiar las reglas de la activa no cambia las temporadas cerradas.
 
 En **Próxima temporada** dejas listas las reglas que va a usar la siguiente (duración en días, top, mínimo, tramos y reinicio). No cambian la activa.
 
+## Estadísticas en vivo
+
+Los admins ven las estadísticas de la temporada en curso antes que nadie, calculadas al momento:
+
+- **Estadísticas de la temporada:** **Estadísticas en vivo** en la tarjeta de la temporada activa (acá) o en [Ranking](/ranking), con el cartel **En vivo · solo admins**. Muestran la web y el matchmaking: los mixes (duración, kills, % HS), la cola (búsquedas, espera mediana, cómo terminó cada búsqueda), las salas (jugadas, canceladas y por qué, abandonos, reemplazos, reportes, sanciones), los mixes por hora y por día, los mapas y servidores, y la comunidad (cuentas nuevas, visitas, comentarios, amistades, clips, demos, PCW, oficiales y torneos).
+- **El recap de cualquier jugador:** en su perfil, pestaña **Temporadas**, la tarjeta de la temporada en curso tiene **Recap en vivo**.
+
+Las cifras cambian con cada mix que termina. Al cerrar la temporada se guarda la foto del recap de cada jugador y de las estadísticas, y desde ese momento las ve todo el mundo. Esa foto no cambia aunque después se corrija el ELO de alguien.
+
 ## Historial
 
 **Historial** tiene cada temporada cerrada con su ranking final. Esa foto no cambia aunque después se corrija el ELO de alguien.

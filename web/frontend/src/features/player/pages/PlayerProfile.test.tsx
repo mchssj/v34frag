@@ -535,6 +535,45 @@ describe("Perfil público", () => {
     ).not.toBeInTheDocument()
   })
 
+  it("temporadas: Recap si hay recap y las estadísticas de la temporada", async () => {
+    const season = (number: number, has_recap: boolean) => ({
+      rank: 3,
+      eligible: true,
+      elo: 1400,
+      level: 7,
+      peak_elo: 1450,
+      matches: 20,
+      wins: 12,
+      losses: 8,
+      elo_after: 1400,
+      medal: null,
+      has_recap,
+      season: {
+        id: `s${number}`,
+        number,
+        name: `Temporada ${number}`,
+        ended_at: null,
+        players: 40,
+      },
+    })
+    api({
+      extra: [
+        http.get(`${API}/api/v1/players/Zeta/seasons`, () =>
+          HttpResponse.json(page([season(2, true), season(1, false)]))
+        ),
+      ],
+    })
+    renderProfile({ tab: "temporadas" })
+    const recaps = await screen.findAllByRole("link", { name: /^Recap$/ })
+    expect(recaps).toHaveLength(1)
+    expect(recaps[0]).toHaveAttribute("href", "/player/$nick/recap/$season")
+    expect(
+      screen.getAllByRole("link", { name: /Estadísticas de la temporada/ })
+    ).toHaveLength(2)
+    // Un jugador (no admin) no ve la temporada en curso.
+    expect(screen.queryByText("EN VIVO · SOLO ADMINS")).not.toBeInTheDocument()
+  })
+
   it("partidas: filtros y clic en una fila", async () => {
     api()
     const { user, onChange } = renderProfile({ tab: "partidas" })

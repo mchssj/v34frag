@@ -241,3 +241,19 @@ export function featuredClipsOptions(playerId: string) {
     staleTime: MINUTE,
   })
 }
+
+/** Recap de una temporada (replanteo 129): la foto del cierre o, para un admin con la temporada activa, en vivo. */
+export function seasonRecapOptions(nick: string, number: number) {
+  return queryOptions({
+    queryKey: [...playerKeys.seasons(nick), "recap", number] as const,
+    queryFn: async ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/players/{id}/seasons/{number}/recap", {
+          params: { path: { id: nick, number } },
+          signal,
+        })
+      ),
+    staleTime: 5 * MINUTE,
+    retry: false,
+  })
+}

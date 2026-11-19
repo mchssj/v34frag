@@ -87,6 +87,19 @@ El ranking se divide en temporadas de alrededor de un mes. En [Ranking](/ranking
 - Al cerrar, los mejores puestos reciben una **medalla** que queda en su perfil, en las pestañas **Logros** y **Temporadas**. Mientras la temporada sigue abierta, el ranking te muestra qué medalla te tocaría si cerrara hoy.
 - Al empezar una temporada nueva, el ELO puede reiniciarse, del todo o en parte. Cuánto, lo define la administración en cada temporada.
 
+### Tu recap y las estadísticas de la temporada
+
+Cuando una temporada termina, cada jugador que jugó al menos un mix tiene su **recap**: un resumen de su temporada que se recorre de a una pantalla, como una historia.
+
+- **Para verlo:** en tu perfil, pestaña **Temporadas**, toca **Recap** en la tarjeta de esa temporada. Lo mismo sirve para el perfil de cualquier jugador.
+- **Cómo se pasa:** con las flechas, tocando los costados de la pantalla o con las flechas del teclado. **Saltar al resumen** va a la última pantalla y **Ver todas tus estadísticas** abre la vista completa. Con **Esc** o la **X** sales.
+- **Qué tiene:** mixes, rondas y horas; victorias y la mejor racha; la curva de ELO; kills, K/D, % HS, ADR, aperturas, 3K, 4K y aces; tus mapas; tu mejor partida; tus 3 mejores clips (primero los que elegiste como destacados); tus compañeros más frecuentes y tu puesto final. Pasa el mouse (o toca) sobre una cifra para ver el promedio de todos y qué parte de los jugadores superaste.
+- **Guardar y compartir:** en la vista completa, **Guardar** baja el recap como imagen (JPEG) o PDF, sin los clips. **Copiar link** copia la dirección para pasarla por Discord.
+
+En **Temporadas** también está **Estadísticas de la temporada**, y en [Ranking](/ranking), con una temporada cerrada elegida, el mismo botón: cómo anduvieron la web y el matchmaking en esa temporada (mixes, a qué hora y qué días se juega, mapas y servidores, la cola y las salas, y la comunidad). No hay rankings de jugadores: lo tuyo está en tu recap.
+
+Mientras la temporada sigue en curso, el recap y las estadísticas no se ven: se publican al cerrarla.
+
 ## Dónde ves tus números
 
 En tu perfil público (desde **Mi perfil** › **Ver perfil público**, o tocando tu alias en cualquier lado):
@@ -95,7 +108,7 @@ En tu perfil público (desde **Mi perfil** › **Ver perfil público**, o tocand
 - **Partidas:** cada partida, con cuánto ELO te dio o te quitó.
 - **Mapas:** cómo te va en cada mapa.
 - **Logros:** tus medallas y lo que te falta para las que todavía no tienes. Más en [Medallas y logros](/help/jugador/logros).
-- **Temporadas:** tu puesto y tus medallas en cada temporada.
+- **Temporadas:** tu puesto y tus medallas en cada temporada, con tu **Recap** y las estadísticas de cada una.
 
 En [Ranking](/ranking) puedes filtrar por nivel y buscar a cualquier jugador. Con **Comparar** pones a dos jugadores lado a lado.
 

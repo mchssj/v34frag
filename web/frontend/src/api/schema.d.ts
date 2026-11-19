@@ -21131,6 +21131,146 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/players/{id}/seasons/{number}/recap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recap de la temporada de un jugador
+         * @description Su temporada en cifras, con el promedio de todos y su percentil, curva de ELO, mapas, mejor partida, compañeros y sus 3 mejores clips. Temporada cerrada: la foto del cierre, para todos. Activa: calculado al momento y solo para admins (a los demás, 404).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Id de la ficha o su nick (sin distinguir mayúsculas) */
+                    id: string;
+                    /** @description Número de la temporada */
+                    number: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Recap */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonRecap"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/seasons/{number}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estadísticas de la temporada
+         * @description La web y el matchmaking en la temporada: mixes, horarios, mapas, servidores, la cola y las salas, y la comunidad. Sin rankings de jugadores. Temporada cerrada: la foto del cierre, para todos. Activa: calculado al momento y solo para admins (a los demás, 404).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Número de la temporada */
+                    number: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Resumen */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonSummary"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/seasons/config": {
         parameters: {
             query?: never;
@@ -29403,10 +29543,10 @@ export interface components {
         MedalGrant: {
             /**
              * Format: uuid
-             * @description Una definición manual (Comunidad: staff, caster, campeón de torneo…)
+             * @description Una definición manual (Comunidad: staff, caster…)
              */
             definition_id: string;
-            /** @description Por defecto, el de la definición (por ejemplo, el nombre del torneo) */
+            /** @description Por defecto, el de la definición */
             title?: string;
         };
         PlayerIpList: {
@@ -31328,6 +31468,401 @@ export interface components {
                 /** @description Cuántos jugadores tuvieron puesto en el ranking final ("#3 de 214") */
                 players: number;
             };
+            /** @description Si tiene recap de esa temporada (replanteo 129): el botón "Recap" */
+            has_recap: boolean;
+        };
+        SeasonRecap: {
+            /** @description `true`: temporada activa, calculado al momento (solo admins) */
+            live: boolean;
+            season: {
+                /** Format: uuid */
+                id: string;
+                number: number;
+                name: string;
+                starts_at: string;
+                ends_at: string;
+                /** @description `null` mientras está activa */
+                closed_at: string | null;
+                /** @description Hasta cuándo cuentan los mixes: el cierre, o el momento de la consulta si está activa */
+                until: string;
+                /** @description Jugadores con al menos 1 mix */
+                players: number;
+            };
+            player: components["schemas"]["RecapPerson"];
+            mixes: {
+                matches: number;
+                rounds: number;
+                hours: number;
+                busiest_day: {
+                    date: string;
+                    matches: number;
+                } | null;
+            };
+            record: {
+                wins: number;
+                losses: number;
+                win_pct: number;
+                /** @description Racha de victorias más larga */
+                best_streak: number;
+            };
+            elo: {
+                start: number;
+                end: number;
+                peak: number;
+                delta: number;
+                points: components["schemas"]["EloPoint"][];
+            };
+            numbers: {
+                kills: number;
+                deaths: number;
+                assists: number;
+                kd: number;
+                hs_pct: number;
+                adr: number;
+                k3: number;
+                k4: number;
+                aces: number;
+                first_kills: number;
+                plants: number;
+                defuses: number;
+                rating: number | null;
+            };
+            /** @description Por ahora siempre `null` (sin `match_kills`) */
+            weapon: {
+                name: string;
+                kills: number;
+                hs_pct: number;
+                share_pct: number;
+            } | null;
+            maps: {
+                name: string;
+                matches: number;
+                wins: number;
+                kd: number;
+            }[];
+            best_match: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                date: string;
+                /** @description [su equipo, el rival] */
+                score: number[];
+                won: boolean;
+                kills: number;
+                deaths: number;
+                adr: number;
+                rating: number | null;
+            } | null;
+            mates: {
+                most_played: components["schemas"]["RecapPerson"] & {
+                    /** @description Mixes en el mismo equipo */
+                    together: number;
+                    /** @description Ganados juntos */
+                    won: number;
+                };
+                most_wins: components["schemas"]["RecapPerson"] & {
+                    /** @description Mixes en el mismo equipo */
+                    together: number;
+                    /** @description Ganados juntos */
+                    won: number;
+                };
+            } | null;
+            /** @description Por ahora siempre `null` (sin `match_kills`) */
+            rivals: {
+                victim: components["schemas"]["RecapPerson"] & ({
+                    you_killed: number;
+                    killed_you: number;
+                } | null);
+                nemesis: components["schemas"]["RecapPerson"] & ({
+                    you_killed: number;
+                    killed_you: number;
+                } | null);
+            } | null;
+            /** @description Hasta 3: primero sus destacados, después por la escala (ace, 4K, clutch, 3K) */
+            clips: components["schemas"]["FeaturedClip"][];
+            /** @description Promedio de la temporada y percentil (qué parte de los demás quedó por debajo; en muertes, por arriba) */
+            compare: {
+                matches: {
+                    avg: number;
+                    pct: number;
+                };
+                rounds: {
+                    avg: number;
+                    pct: number;
+                };
+                hours: {
+                    avg: number;
+                    pct: number;
+                };
+                win_pct: {
+                    avg: number;
+                    pct: number;
+                };
+                best_streak: {
+                    avg: number;
+                    pct: number;
+                };
+                kills: {
+                    avg: number;
+                    pct: number;
+                };
+                deaths: {
+                    avg: number;
+                    pct: number;
+                };
+                assists: {
+                    avg: number;
+                    pct: number;
+                };
+                kd: {
+                    avg: number;
+                    pct: number;
+                };
+                hs_pct: {
+                    avg: number;
+                    pct: number;
+                };
+                adr: {
+                    avg: number;
+                    pct: number;
+                };
+                k3: {
+                    avg: number;
+                    pct: number;
+                };
+                first_kills: {
+                    avg: number;
+                    pct: number;
+                };
+                k4: {
+                    avg: number;
+                    pct: number;
+                };
+                aces: {
+                    avg: number;
+                    pct: number;
+                };
+                elo_delta: {
+                    avg: number;
+                    pct: number;
+                };
+                rating: {
+                    avg: number;
+                    pct: number;
+                };
+            };
+            prev: {
+                name: string;
+                kd: number;
+                adr: number;
+                hs_pct: number;
+                win_pct: number;
+                rank: number | null;
+            } | null;
+            final: {
+                rank: number | null;
+                eligible: boolean;
+                total_ranked: number;
+                elo: number;
+                level: number | null;
+                /** @description `null`: sin medalla */
+                medal: {
+                    name: string;
+                    design: components["schemas"]["MedalDesign"] | null;
+                } | null;
+                top_n: number;
+                min_matches: number;
+            };
+        };
+        RecapPerson: {
+            /** Format: uuid */
+            id: string;
+            alias: string;
+            photo_url: string | null;
+            level: number | null;
+            /** @description ELO de su último mix de la temporada */
+            elo: number;
+            kd: number;
+            /** @description Mixes de la temporada */
+            matches: number;
+        };
+        FeaturedClip: {
+            clip: components["schemas"]["Clip"];
+            match: {
+                /** Format: uuid */
+                id: string;
+                map: string | null;
+                played_at: string | null;
+            };
+        };
+        Clip: {
+            /** Format: uuid */
+            id: string;
+            /** @description Puesto dentro de la partida: 1 es la mejor jugada */
+            position: number;
+            /**
+             * @description `ace` (5 kills), `4k`, `3k` o `clutch_N` (1vN ganado). El de más prioridad entre sus kills y su clutch
+             * @enum {string}
+             */
+            type: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
+            /** @description Prioridad del tipo en la escala actual: 1 es lo más valioso */
+            priority: number;
+            /** @description Ronda de la partida (la prórroga sigue numerando) */
+            round: number;
+            /** @description Segundos desde el fin del freezetime hasta la primera kill (o el inicio del clutch) */
+            round_seconds: number;
+            /** @description Si su equipo ganó la ronda */
+            round_won: boolean;
+            /** @description La ficha (por su SteamID principal o uno adicional). `null` sin ficha */
+            player: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            /** @description Nick en el juego en esa partida */
+            game_nick: string;
+            /** @description SteamID64 si no tiene ficha, para el perfil sin reclamar. `null` con ficha, bots y NOSTEAM */
+            steam_id: string | null;
+            /** @description Kills en la ronda (0 a 5) */
+            kills: number;
+            /** @description Tick de la demo de cada kill, en orden */
+            kill_ticks: number[];
+            /** @description Contra cuántos quedó solo (1 a 5). `null` sin clutch */
+            clutch_vs: number | null;
+            /** @description Tick de la demo en que quedó solo */
+            clutch_start_tick: number | null;
+            /** @description Tick de la demo en que terminó la ronda (solo con clutch) */
+            end_tick: number | null;
+            /** @description Ticks por segundo de la partida. `null` en partidas viejas */
+            tickrate: number | null;
+            /** @description Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate */
+            demo_seconds: number | null;
+            video: components["schemas"]["ClipVideo"];
+            /** @description Entró por ser de un VIP (cuando se jugó el mix): va después del top */
+            vip: boolean;
+            /**
+             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `rejected` si un admin lo rechazó (replanteo 76; solo en Administración), `null` si nunca se reprocesó
+             * @enum {string|null}
+             */
+            review: "pending" | "approved" | "rejected" | null;
+        };
+        ClipVideo: {
+            /**
+             * @description `pending` (en cola), `processing` (grabándose), `done` (listo), `failed` (falló tres veces), `skipped` (no se puede grabar) o `unavailable` (la partida no tiene demo: nunca va a tener video)
+             * @enum {string}
+             */
+            status: "pending" | "processing" | "done" | "failed" | "skipped" | "unavailable";
+            /** @description El `.mp4` (con Range) mientras está en R2: los primeros 15 días. `null` si no */
+            url: string | null;
+            /** @description El reproductor de Google Drive (`iframe`), para siempre. Usar `url` si viene y, si no, este. `null` si no está en Drive */
+            embed_url: string | null;
+            /** @description Duración del video. `null` sin video */
+            seconds: number | null;
+        };
+        SeasonSummary: {
+            /** @description `true`: temporada activa, calculado al momento (solo admins) */
+            live: boolean;
+            season: {
+                /** Format: uuid */
+                id: string;
+                number: number;
+                name: string;
+                starts_at: string;
+                ends_at: string;
+                /** @description `null` mientras está activa */
+                closed_at: string | null;
+                /** @description Hasta cuándo cuentan los mixes: el cierre, o el momento de la consulta si está activa */
+                until: string;
+                /** @enum {string} */
+                status: "active" | "closed";
+                min_matches: number;
+                top_n: number;
+            };
+            /** @description Los mixes que contaron para el ranking */
+            games: {
+                mixes: number;
+                players: number;
+                rounds: number;
+                hours: number;
+                avg_minutes: number | null;
+                kills: number;
+                hs_pct: number;
+                aces: number;
+                k4: number;
+                plants: number;
+                defuses: number;
+            };
+            when: {
+                busiest_day: {
+                    date: string;
+                    matches: number;
+                } | null;
+                /** @description Mixes por hora de inicio (0 a 23, hora de Argentina) */
+                by_hour: {
+                    matches: number;
+                    hour: number;
+                }[];
+                /** @description Mixes por día de la semana (1 = lunes … 7 = domingo) */
+                by_weekday: {
+                    matches: number;
+                    day: number;
+                }[];
+            };
+            maps: {
+                name: string;
+                matches: number;
+                avg_rounds: number;
+            }[];
+            servers: {
+                name: string;
+                matches: number;
+            }[];
+            longest: {
+                /** Format: uuid */
+                match_id: string;
+                map: string | null;
+                date: string;
+                score1: number;
+                score2: number;
+            } | null;
+            matchmaking: {
+                /** @description Veces que alguien entró a la cola */
+                queue_joins: number;
+                /** @description Cuentas distintas que buscaron partida */
+                queue_players: number;
+                /** @description Entradas a la cola que terminaron en una sala */
+                matched: number;
+                /** @description Entradas que salieron sin sala (se fue, canceló o se desconectó) */
+                left: number;
+                /** @description Espera mediana hasta la sala, en segundos */
+                wait_median_s: number | null;
+                lobbies: number;
+                played: number;
+                cancelled: number;
+                cancel_reasons: {
+                    reason: string;
+                    count: number;
+                }[];
+                /** @description % de los lugares en salas que llegaron en grupo */
+                party_pct: number;
+                abandons: number;
+                replacements: number;
+                reports: number;
+                penalties: number;
+                bans: number;
+            };
+            community: {
+                new_accounts: number;
+                profile_visits: number;
+                comments: number;
+                friendships: number;
+                clips: number;
+                clips_video: number;
+                demos: number;
+                pcw: number;
+                official: number;
+                tournaments: number;
+            };
         };
         SeasonConfigRead: components["schemas"]["SeasonConfig"] & {
             updated_at: string | null;
@@ -31804,70 +32339,6 @@ export interface components {
             /** @enum {string} */
             order: "asc" | "desc";
         };
-        Clip: {
-            /** Format: uuid */
-            id: string;
-            /** @description Puesto dentro de la partida: 1 es la mejor jugada */
-            position: number;
-            /**
-             * @description `ace` (5 kills), `4k`, `3k` o `clutch_N` (1vN ganado). El de más prioridad entre sus kills y su clutch
-             * @enum {string}
-             */
-            type: "ace" | "clutch_5" | "clutch_4" | "4k" | "clutch_3" | "3k" | "clutch_2" | "clutch_1";
-            /** @description Prioridad del tipo en la escala actual: 1 es lo más valioso */
-            priority: number;
-            /** @description Ronda de la partida (la prórroga sigue numerando) */
-            round: number;
-            /** @description Segundos desde el fin del freezetime hasta la primera kill (o el inicio del clutch) */
-            round_seconds: number;
-            /** @description Si su equipo ganó la ronda */
-            round_won: boolean;
-            /** @description La ficha (por su SteamID principal o uno adicional). `null` sin ficha */
-            player: {
-                /** Format: uuid */
-                id: string;
-                alias: string;
-            } | null;
-            /** @description Nick en el juego en esa partida */
-            game_nick: string;
-            /** @description SteamID64 si no tiene ficha, para el perfil sin reclamar. `null` con ficha, bots y NOSTEAM */
-            steam_id: string | null;
-            /** @description Kills en la ronda (0 a 5) */
-            kills: number;
-            /** @description Tick de la demo de cada kill, en orden */
-            kill_ticks: number[];
-            /** @description Contra cuántos quedó solo (1 a 5). `null` sin clutch */
-            clutch_vs: number | null;
-            /** @description Tick de la demo en que quedó solo */
-            clutch_start_tick: number | null;
-            /** @description Tick de la demo en que terminó la ronda (solo con clutch) */
-            end_tick: number | null;
-            /** @description Ticks por segundo de la partida. `null` en partidas viejas */
-            tickrate: number | null;
-            /** @description Segundo de la demo donde empieza la jugada (primer tick / tickrate). `null` sin tickrate */
-            demo_seconds: number | null;
-            video: components["schemas"]["ClipVideo"];
-            /** @description Entró por ser de un VIP (cuando se jugó el mix): va después del top */
-            vip: boolean;
-            /**
-             * @description Solo para admins (`null` para los demás): `pending` si se reprocesó y espera el "Bien" (a los demás se les muestra sin video), `approved` si se aprobó, `rejected` si un admin lo rechazó (replanteo 76; solo en Administración), `null` si nunca se reprocesó
-             * @enum {string|null}
-             */
-            review: "pending" | "approved" | "rejected" | null;
-        };
-        ClipVideo: {
-            /**
-             * @description `pending` (en cola), `processing` (grabándose), `done` (listo), `failed` (falló tres veces), `skipped` (no se puede grabar) o `unavailable` (la partida no tiene demo: nunca va a tener video)
-             * @enum {string}
-             */
-            status: "pending" | "processing" | "done" | "failed" | "skipped" | "unavailable";
-            /** @description El `.mp4` (con Range) mientras está en R2: los primeros 15 días. `null` si no */
-            url: string | null;
-            /** @description El reproductor de Google Drive (`iframe`), para siempre. Usar `url` si viene y, si no, este. `null` si no está en Drive */
-            embed_url: string | null;
-            /** @description Duración del video. `null` sin video */
-            seconds: number | null;
-        };
         ClipConfig: {
             config: components["schemas"]["ClipConfigValues"];
             updated_at: string | null;
@@ -32051,15 +32522,6 @@ export interface components {
             shown: string[];
             /** @description Mis clips con video, del más nuevo al más viejo */
             clips: components["schemas"]["FeaturedClip"][];
-        };
-        FeaturedClip: {
-            clip: components["schemas"]["Clip"];
-            match: {
-                /** Format: uuid */
-                id: string;
-                map: string | null;
-                played_at: string | null;
-            };
         };
         MyClipsPut: {
             /** @enum {string} */

@@ -1,6 +1,7 @@
 import { createRoute, type z } from '@hono/zod-openapi';
 import type { Context } from 'hono';
-import { optionalUser, requireAdmin, requireUser } from '../lib/auth';
+import { isAdmin, optionalUser, requireAdmin, requireUser } from '../lib/auth';
+import { AppError } from '../lib/errors';
 import { levelBounds, levelOf, must, mustHave, notFound, searchTerm } from '../lib/db';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
@@ -9,10 +10,12 @@ import { bearer, errorResponses, json } from '../schemas/common';
 import { IdParam, type TeamRef } from '../schemas/players';
 import { designOf, loadDefinitionsByKey, tierDefinition } from '../services/medals';
 import { resolvePlayer } from '../services/players';
+import { featuredItems } from './clips';
 import {
   PlayerSeasonList,
   PlayerSeasonQuery,
   PreviewQuery,
+  RecapParam,
   Season,
   SeasonCloseBody,
   SeasonClosed,
@@ -21,9 +24,12 @@ import {
   SeasonCreate,
   SeasonIdParam,
   SeasonList,
+  SeasonNumberParam,
   SeasonPatch,
   SeasonPreview,
   SeasonQuery,
+  SeasonRecap,
+  SeasonSummary,
   StandingList,
   StandingQuery,
   type SeasonTier,
@@ -189,6 +195,53 @@ const preview = createRoute({
   responses: { 200: { description: 'Vista previa', ...json(SeasonPreview) }, ...errorResponses(400, 401, 403) },
 });
 
+// ---------- estadísticas de la temporada (replanteo 129, bitácora 2026-11-19-estadisticas-de-temporada) ----------
+
+const VIS = 'Temporada cerrada: la foto del cierre, para todos. Activa: calculado al momento y solo para admins (a los demás, 404).';
+const recap = createRoute({
+  method: 'get', path: '/api/v1/players/{id}/seasons/{number}/recap', tags: ['Jugadores'], middleware: [optionalUser] as const,
+  summary: 'Recap de la temporada de un jugador',
+  description: `Su temporada en cifras, con el promedio de todos y su percentil, curva de ELO, mapas, mejor partida, compañeros y sus 3 mejores clips. ${VIS}`,
+  request: { params: RecapParam },
+  responses: { 200: { description: 'Recap', ...json(SeasonRecap) }, ...errorResponses(400, 401, 404) },
+});
+const summary = createRoute({
+  method: 'get', path: '/api/v1/seasons/{number}/summary', tags: ['Temporadas'], middleware: [optionalUser] as const,
+  summary: 'Estadísticas de la temporada',
+  description: `La web y el matchmaking en la temporada: mixes, horarios, mapas, servidores, la cola y las salas, y la comunidad. Sin rankings de jugadores. ${VIS}`,
+  request: { params: SeasonNumberParam },
+  responses: { 200: { description: 'Resumen', ...json(SeasonSummary) }, ...errorResponses(400, 401, 404) },
+});
+
+const unpublished = () => new AppError(404, 'NOT_FOUND', 'Las estadísticas de la temporada se publican cuando termina.');
+
+/** La temporada por número; si está activa, solo sigue un admin. */
+async function visibleSeason(c: C, number: number) {
+  const s = must(await c.var.sb.from('seasons').select('id, number, status, tiers, top_n').eq('number', number).maybeSingle());
+  if (!s) throw notFound('esa temporada');
+  const live = s.status !== 'closed';
+  if (live && !(await isAdmin(c))) throw unpublished();
+  return { ...s, tiers: toTiers(s.tiers), live };
+}
+
+type Obj = Record<string, any>;
+type Ref = { id: string; alias: string; photo_url: string | null };
+
+/** Nick y foto actuales de cada ficha (las fotos guardan solo el id). */
+async function refs(c: C, ids: (string | null | undefined)[]) {
+  const uniq = [...new Set(ids.filter((x): x is string => !!x))];
+  const rows = uniq.length ? mustHave(await c.var.sb.from('players').select('id, nick, photo_url').in('id', uniq)) : [];
+  const map = new Map(rows.map((r) => [r.id, { id: r.id, alias: r.nick ?? '', photo_url: r.photo_url ?? null } as Ref]));
+  return (id: string): Ref => map.get(id) ?? { id, alias: '', photo_url: null };
+}
+
+const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+const person = (ref: (id: string) => Ref, p: Obj) => ({
+  ...ref(p.id), level: levelOf(p.elo), elo: p.elo ?? 0, kd: Number(p.kd ?? 0), matches: p.matches ?? 0,
+  ...(p.together !== undefined ? { together: p.together, won: p.won } : {}),
+});
+const numbers = (o: Obj) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v === null ? null : Number(v)]));
+
 export const seasons = createRouter()
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
@@ -248,6 +301,11 @@ export const seasons = createRouter()
     const frozen = new Map(
       (ids.length ? mustHave(await c.var.sb.from('seasons').select('id, tiers, top_n').in('id', ids)) : []).map((x) => [x.id, x] as const),
     );
+    const recaps = new Set(
+      (ids.length ? mustHave(await c.var.sb.from('season_recaps').select('season_id').eq('player_id', id).in('season_id', ids)) : []).map(
+        (x) => x.season_id,
+      ),
+    );
     const ds = await designs(
       c,
       rows.map((r) => {
@@ -260,12 +318,71 @@ export const seasons = createRouter()
         rows.map(({ season_id, number, name, ended_at, players, ...r }, i) => ({
           season: { id: season_id!, number: number!, name: name ?? '', ended_at, players: players ?? 0 },
           ...stats(r, ds[i]),
+          has_recap: recaps.has(season_id!),
         })),
         total,
         p,
       ),
       200,
     );
+  })
+  .openapi(recap, async (c) => {
+    const { id: ref, number } = c.req.valid('param');
+    const id = await resolvePlayer(c.var.sb, ref);
+    const s = await visibleSeason(c, number);
+    const d = (s.live
+      ? must(await c.var.sb.rpc('season_recap_live', { p_season: s.id, p_player: id }))
+      : (must(await c.var.sb.from('season_recaps').select('data').eq('season_id', s.id).eq('player_id', id).maybeSingle())?.data ?? null)) as Obj | null;
+    if (!d) throw notFound('el recap de ese jugador en esa temporada (no jugó ningún mix)');
+    const f = d.final as Obj;
+    const ref2 = await refs(c, [id, d.mates?.most_played?.id, d.mates?.most_wins?.id]);
+    const [clipItems, [design]] = await Promise.all([
+      featuredItems(c, (d.clips as string[]) ?? [], false),
+      designs(c, [{ tiers: s.tiers, top_n: s.top_n, number: s.number, rank: f.rank, tier: f.tier }]),
+    ]);
+    const body = {
+      live: s.live,
+      season: { ...d.season, closed_at: d.season.closed_at ?? null },
+      player: person(ref2, { ...d.player, elo: f.elo ?? d.player.elo }),
+      mixes: { ...d.mixes, hours: Number(d.mixes.hours), busiest_day: d.mixes.busiest_day?.date ? d.mixes.busiest_day : null },
+      record: d.record,
+      elo: d.elo,
+      numbers: numbers(d.numbers),
+      weapon: d.weapon ?? null,
+      maps: (d.maps as Obj[]).map((m) => ({ ...m, kd: Number(m.kd) })),
+      best_match: d.best_match ? { ...d.best_match, adr: Number(d.best_match.adr), rating: num(d.best_match.rating) } : null,
+      mates: d.mates ? { most_played: person(ref2, d.mates.most_played), most_wins: person(ref2, d.mates.most_wins) } : null,
+      rivals: d.rivals ?? null,
+      clips: clipItems,
+      compare: Object.fromEntries(Object.entries(d.compare as Obj).map(([k, v]) => [k, { avg: Number(v.avg ?? 0), pct: Number(v.pct ?? 0) }])),
+      prev: d.prev ? { ...numbers(d.prev), name: d.prev.name } : null,
+      final: {
+        rank: f.rank ?? null, eligible: !!f.eligible, total_ranked: f.total_ranked ?? 0, elo: f.elo, level: levelOf(f.elo),
+        medal: medal(f.tier ?? null, null, design ?? null), top_n: f.top_n, min_matches: f.min_matches,
+      },
+    };
+    if (s.live) c.header('Cache-Control', 'no-store');
+    return c.json(body as unknown as z.infer<typeof SeasonRecap>, 200);
+  })
+  .openapi(summary, async (c) => {
+    const s = await visibleSeason(c, c.req.valid('param').number);
+    const d = (s.live
+      ? must(await c.var.sb.rpc('season_summary_live', { p_season: s.id }))
+      : (must(await c.var.sb.from('season_summaries').select('data').eq('season_id', s.id).maybeSingle())?.data ?? null)) as Obj | null;
+    if (!d) throw notFound('el resumen de esa temporada');
+    const body = {
+      live: s.live,
+      season: { ...d.season, closed_at: d.season.closed_at ?? null },
+      games: numbers(d.games),
+      when: { busiest_day: d.when?.busiest_day ?? null, by_hour: d.when?.by_hour ?? [], by_weekday: d.when?.by_weekday ?? [] },
+      maps: (d.maps as Obj[]).map((m) => ({ ...m, avg_rounds: Number(m.avg_rounds) })),
+      servers: d.servers ?? [],
+      longest: d.longest ?? null,
+      matchmaking: { ...numbers(d.matchmaking), cancel_reasons: d.matchmaking.cancel_reasons ?? [] },
+      community: numbers(d.community),
+    };
+    if (s.live) c.header('Cache-Control', 'no-store');
+    return c.json(body as unknown as z.infer<typeof SeasonSummary>, 200);
   })
   .openapi(getConfig, async (c) => c.json(await readConfig(c), 200))
   .openapi(putConfig, async (c) => {

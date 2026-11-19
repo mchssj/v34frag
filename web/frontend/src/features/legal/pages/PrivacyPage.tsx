@@ -354,6 +354,16 @@ const SECTIONS: LegalSection[] = [
           privado.
         </p>
         <p>
+          Al terminar cada temporada publicamos el recap de cada jugador que
+          jugó al menos un mix (sus cifras de la temporada comparadas con el
+          promedio de todos, su curva de ELO, sus mapas, su mejor partida, sus
+          compañeros más frecuentes y sus mejores clips) y las estadísticas de
+          la web y del matchmaking de la temporada, sin datos de cada jugador.
+          Salen de partidas que ya son públicas. Mientras la temporada sigue en
+          curso, solo los admins ven esos datos. La imagen y el PDF del recap se
+          arman en tu navegador y no se suben a ningún lado.
+        </p>
+        <p>
           Las visitas a tu perfil las ves solo tú: cuántos jugadores lo
           visitaron y, si eres VIP, quiénes. Si visitas el perfil de alguien con
           VIP, esa persona ve que lo visitaste, salvo que seas VIP y uses

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
-import { MedalIcon } from "lucide-react"
+import { BarChart3Icon, MedalIcon, SparklesIcon } from "lucide-react"
 import { type ReactNode } from "react"
 import { EmptyState } from "@/components/brand/EmptyState"
 import { QueryState } from "@/components/brand/QueryState"
@@ -11,14 +12,30 @@ import { seasonsOptions } from "../../api/queries"
 import type { PlayerSeason } from "../../types"
 import { SeasonMedal } from "@/features/medals/Medal"
 import { LevelBadge } from "@/components/brand/LevelBadge"
+import { Button } from "@/components/ui/button"
+import { useMe } from "@/auth/queries"
+import { currentSeasonOptions } from "@/features/ranking/api/queries"
 
 // ---------- Temporadas ----------
 
 export function Seasons({ nick }: { nick: string }) {
   const q = useQuery(seasonsOptions(nick))
+  // La temporada en curso solo la ven los admins (replanteo 129): su recap y las estadísticas, en vivo.
+  const admin = useMe().data?.role === "admin"
+  const current = useQuery({ ...currentSeasonOptions, enabled: admin }).data
+  const live =
+    admin && current ? (
+      <LiveCard nick={nick} number={current.number} name={current.name} />
+    ) : null
   return (
     <QueryState q={q}>
       {(items) => {
+        if (!items.length && live)
+          return (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] content-start gap-3 pt-2.5">
+              {live}
+            </div>
+          )
         if (!items.length)
           return (
             <Card
@@ -64,8 +81,14 @@ export function Seasons({ nick }: { nick: string }) {
         const best = bestSeasonId(items)
         return (
           <div className="grid min-h-[396px] grid-cols-[repeat(auto-fill,minmax(300px,1fr))] content-start gap-3 pt-2.5">
+            {live}
             {items.map((s) => (
-              <SeasonCard key={s.season.id} s={s} best={s.season.id === best} />
+              <SeasonCard
+                key={s.season.id}
+                s={s}
+                best={s.season.id === best}
+                nick={nick}
+              />
             ))}
           </div>
         )
@@ -74,7 +97,61 @@ export function Seasons({ nick }: { nick: string }) {
   )
 }
 
-function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
+/** Solo admins: la temporada activa, con el recap y las estadísticas calculados al momento. */
+function LiveCard({
+  nick,
+  number,
+  name,
+}: {
+  nick: string
+  number: number
+  name: string
+}) {
+  return (
+    <Card variant="outline" className="flex flex-col gap-3 border-dashed p-4">
+      <span className="flex items-center gap-2">
+        <span className="truncate text-[15px] font-semibold">{name}</span>
+        <Badge
+          variant="live"
+          shape="pill"
+          size="sm"
+          className="ml-auto font-mono text-[10px] font-semibold"
+        >
+          EN VIVO · SOLO ADMINS
+        </Badge>
+      </span>
+      <p className="text-xs text-muted-foreground">
+        Todavía no terminó: los jugadores ven su recap y las estadísticas cuando
+        cierra.
+      </p>
+      <div className="mt-auto flex flex-wrap gap-2">
+        <Button asChild size="sm">
+          <Link
+            to="/player/$nick/recap/$season"
+            params={{ nick, season: String(number) }}
+          >
+            <SparklesIcon /> Recap en vivo
+          </Link>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <Link to="/season/$number" params={{ number }}>
+            <BarChart3Icon /> Estadísticas
+          </Link>
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function SeasonCard({
+  s,
+  best,
+  nick,
+}: {
+  s: PlayerSeason
+  best: boolean
+  nick: string
+}) {
   const played = s.wins + s.losses
   const wr = played ? Math.round((s.wins / played) * 100) : 0
   return (
@@ -160,6 +237,23 @@ function SeasonCard({ s, best }: { s: PlayerSeason; best: boolean }) {
             />
           )}
         </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {s.has_recap && (
+          <Button asChild size="sm">
+            <Link
+              to="/player/$nick/recap/$season"
+              params={{ nick, season: String(s.season.number) }}
+            >
+              <SparklesIcon /> Recap
+            </Link>
+          </Button>
+        )}
+        <Button asChild size="sm" variant="ghost">
+          <Link to="/season/$number" params={{ number: s.season.number }}>
+            <BarChart3Icon /> Estadísticas de la temporada
+          </Link>
+        </Button>
       </div>
     </Card>
   )

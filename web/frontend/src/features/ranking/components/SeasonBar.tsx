@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
+import { Link } from "@tanstack/react-router"
 
 import { cn } from "cn"
 import {
+  BarChart3Icon,
   ChevronDownIcon,
   CheckIcon,
   HistoryIcon,
@@ -9,7 +11,9 @@ import {
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { useMe } from "@/auth/queries"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +36,9 @@ export function SeasonBar({
   season: Season | null
   onSelect: (value: string) => void
 }) {
+  // Cerrada: para todos. En curso: solo admins (replanteo 129).
+  const admin = useMe().data?.role === "admin"
+  const stats = season && (season.status !== "active" || admin)
   return (
     <Card
       variant="outline"
@@ -82,6 +89,21 @@ export function SeasonBar({
             </span>
           )}
         </>
+      )}
+      {stats && (
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className={cn(season.status !== "active" && "ml-auto")}
+        >
+          <Link to="/season/$number" params={{ number: season.number }}>
+            <BarChart3Icon />{" "}
+            {season.status === "active"
+              ? "Estadísticas en vivo"
+              : "Estadísticas de la temporada"}
+          </Link>
+        </Button>
       )}
     </Card>
   )
