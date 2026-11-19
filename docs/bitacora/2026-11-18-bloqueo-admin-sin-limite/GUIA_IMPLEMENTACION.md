@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado en la base local el 2026-11-18. **Sin desplegar**.
+**Desplegado** el 2026-11-19 (UTC): base `128` y web `12e7e71036d3`.
 
 ## Archivos
 
@@ -16,10 +16,10 @@ Implementado y probado en la base local el 2026-11-18. **Sin desplegar**.
 | `web/frontend/src/features/legal/pages/TermsPage.tsx`, `terms/terminos.html` | Idem |
 | `docs/bitacora/2026-11-18-bloqueo-admin-sin-limite/pruebas/probar_128.sh` y `.sql` | Prueba en la base local, con rollback |
 
-## Despliegue
+## Despliegue (hecho el 2026-11-19, UTC)
 
-1. Aplicar la `128` en la base de producción (túnel `PG_*`). No bloquea tablas: solo reemplaza dos funciones.
-2. Desplegar la web. La web vieja con la base nueva muestra `x/` para el admin pero no se rompe; la web nueva con la base vieja funciona igual que antes.
+1. Base: túnel `ssh -N -L 5433:127.0.0.1:5432 ubuntu@<VPS>` con el `ssh` de Windows. Prueba con `rollback` en producción (la `128` sin `commit`, la inversa y la comparación de `md5`: todo bien). Después, `tr -d '' < supabase/replanteo/128_mm_bloqueo_admin_sin_limite.sql | psql -v ON_ERROR_STOP=1`, a las 03:46 UTC. No bloquea tablas ni necesita esperar a que terminen los mix.
+2. Web: `deploy/vps/desplegar.sh web`, versión `12e7e71036d3` (commit `12e7e710`), con las pruebas (831). Los cambios sin commit de otros pedidos (páginas legales) se guardaron en un stash durante el build y se devolvieron. Vuelta atrás: desplegar `7615857e` (la web anterior era `fbb852abb6fe`).
 
 ## Pruebas
 
