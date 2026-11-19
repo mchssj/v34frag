@@ -247,7 +247,7 @@ async function toClips(c: C, rows: ClipRow[], admin: boolean) {
 }
 
 /** Clips de match_clip_list (en el orden de ids) con su partida, para Mi Perfil y la ficha. */
-async function featuredItems(c: C, ids: string[], admin = false) {
+export async function featuredItems(c: C, ids: string[], admin = false) {
   if (!ids.length) return [];
   const sb = c.var.sb;
   const rows = mustHave(await sb.from('match_clip_list').select(LIST_COLUMNS + ', match_id').in('id', ids)) as unknown as (ClipRow & { match_id: string })[];

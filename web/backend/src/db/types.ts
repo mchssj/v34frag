@@ -4661,6 +4661,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"season_recaps": {
+                  Row: {
+                    "created_at": string,"data": Json,"player_id": string,"season_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"data": Json,"player_id": string,"season_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"data"?: Json,"player_id"?: string,"season_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"season_standings": {
                   Row: {
                     "eligible": boolean,"elo": number,"elo_after": number,"icon": string | null,"kd": number | null,"losses": number,"matches": number,"peak_elo": number,"player_id": string,"rank": number | null,"rating": number | null,"season_id": string,"tier": string | null,"wins": number
@@ -4757,6 +4770,19 @@ isOneToOne: false
       referencedRelation: "seasons"
       referencedColumns: ["id"]
     }
+                  ]
+                },"season_summaries": {
+                  Row: {
+                    "created_at": string,"data": Json,"season_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"data": Json,"season_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"data"?: Json,"season_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"seasons": {
                   Row: {
@@ -9655,6 +9681,12 @@ isOneToOne: false
                            },
 "season_close_due":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"season_recap_live":
+{ Args: { "p_player": string,"p_season": string }; Returns: Json
+                           },
+"season_summary_live":
+{ Args: { "p_season": string }; Returns: Json
                            },
 "season_close_run":
 { Args: { "p_by": string,"p_season": string }; Returns: Json

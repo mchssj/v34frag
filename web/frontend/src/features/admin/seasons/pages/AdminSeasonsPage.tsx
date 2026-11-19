@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
+import { BarChart3Icon } from "lucide-react"
 import { cn } from "cn"
 import { useEffect, useState, type ReactNode } from "react"
 import { toast } from "sonner"
@@ -306,6 +308,12 @@ function ActiveHero({ season }: { season: Season }) {
             )}
           </Fact>
         </div>
+        {/* Las estadísticas de la temporada en curso: solo admins, al momento (replanteo 128). */}
+        <Button asChild variant="outline" size="md">
+          <Link to="/season/$number" params={{ number: season.number }}>
+            <BarChart3Icon /> Estadísticas en vivo
+          </Link>
+        </Button>
         <Button
           variant="outline"
           size="md"

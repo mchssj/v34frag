@@ -1,0 +1,6 @@
+CMLeague 2.9.57 --  Changelog
+
+- Llegó el recap de temporada: cuando termina una temporada, en tu perfil › Temporadas tocas "Recap" y ves tu temporada en pantallas, como una historia: mixes, victorias, tu curva de ELO, tus números, tus mapas, tu mejor partida, tus mejores clips y tus compañeros. Cada cifra te muestra el promedio de todos y a cuántos superaste.
+- Al final del recap está la vista completa con todas tus estadísticas, y la puedes guardar como imagen o PDF o copiar el link para pasarlo.
+- Nuevas estadísticas de la temporada: cómo anduvieron la web y el matchmaking (cuántos mixes, a qué hora y qué días se juega más, mapas y servidores, la espera en la cola, las salas canceladas y por qué, y la comunidad). Están en el Ranking y en Temporadas.
+- El recap y las estadísticas se publican cuando termina cada temporada. La Temporada 1 ya tiene los suyos.

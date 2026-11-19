@@ -66,6 +66,7 @@ import { Route as AppProfilePreferencesRouteImport } from './routes/_app/profile
 import { Route as AppProfilePrivacyRouteImport } from './routes/_app/profile.privacy'
 import { Route as AppRankingIndexRouteImport } from './routes/_app/ranking.index'
 import { Route as AppRankingTeamsRouteImport } from './routes/_app/ranking.teams'
+import { Route as AppSeasonNumberRouteImport } from './routes/_app/season.$number'
 import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
 import { Route as AppAdminEventsIndexRouteImport } from './routes/_app/admin.events.index'
 import { Route as AppAdminEventsIdRouteImport } from './routes/_app/admin.events.$id'
@@ -73,6 +74,7 @@ import { Route as AppAdminEventsNewRouteImport } from './routes/_app/admin.event
 import { Route as AppHelpSeccionTareaRouteImport } from './routes/_app/help.$seccion.$tarea'
 import { Route as AppMixesLiveUidRouteImport } from './routes/_app/mixes.live.$uid'
 import { Route as AppMmReemplazoTokenRouteImport } from './routes/_app/mm.reemplazo.$token'
+import { Route as AppPlayerNickRecapSeasonRouteImport } from './routes/_app/player.$nick_.recap.$season'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -357,6 +359,11 @@ const AppRankingTeamsRoute = AppRankingTeamsRouteImport.update({
   path: '/ranking/teams',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSeasonNumberRoute = AppSeasonNumberRouteImport.update({
+  id: '/season/$number',
+  path: '/season/$number',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTeamsIdRoute = AppTeamsIdRouteImport.update({
   id: '/teams/$id',
   path: '/teams/$id',
@@ -392,6 +399,12 @@ const AppMmReemplazoTokenRoute = AppMmReemplazoTokenRouteImport.update({
   path: '/mm/reemplazo/$token',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPlayerNickRecapSeasonRoute =
+  AppPlayerNickRecapSeasonRouteImport.update({
+    id: '/player/$nick_/recap/$season',
+    path: '/player/$nick/recap/$season',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -442,6 +455,7 @@ export interface FileRoutesByFullPath {
   '/profile/preferences': typeof AppProfilePreferencesRoute
   '/profile/privacy': typeof AppProfilePrivacyRoute
   '/ranking/teams': typeof AppRankingTeamsRoute
+  '/season/$number': typeof AppSeasonNumberRoute
   '/teams/$id': typeof AppTeamsIdRoute
   '/events/': typeof AppEventsIndexRoute
   '/help/': typeof AppHelpIndexRoute
@@ -456,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
   '/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/admin/events/': typeof AppAdminEventsIndexRoute
+  '/player/$nick/recap/$season': typeof AppPlayerNickRecapSeasonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -505,6 +520,7 @@ export interface FileRoutesByTo {
   '/profile/preferences': typeof AppProfilePreferencesRoute
   '/profile/privacy': typeof AppProfilePrivacyRoute
   '/ranking/teams': typeof AppRankingTeamsRoute
+  '/season/$number': typeof AppSeasonNumberRoute
   '/teams/$id': typeof AppTeamsIdRoute
   '/events': typeof AppEventsIndexRoute
   '/help': typeof AppHelpIndexRoute
@@ -519,6 +535,7 @@ export interface FileRoutesByTo {
   '/mixes/live/$uid': typeof AppMixesLiveUidRoute
   '/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/admin/events': typeof AppAdminEventsIndexRoute
+  '/player/$nick/recap/$season': typeof AppPlayerNickRecapSeasonRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -572,6 +589,7 @@ export interface FileRoutesById {
   '/_app/profile/preferences': typeof AppProfilePreferencesRoute
   '/_app/profile/privacy': typeof AppProfilePrivacyRoute
   '/_app/ranking/teams': typeof AppRankingTeamsRoute
+  '/_app/season/$number': typeof AppSeasonNumberRoute
   '/_app/teams/$id': typeof AppTeamsIdRoute
   '/_app/events/': typeof AppEventsIndexRoute
   '/_app/help/': typeof AppHelpIndexRoute
@@ -586,6 +604,7 @@ export interface FileRoutesById {
   '/_app/mixes/live/$uid': typeof AppMixesLiveUidRoute
   '/_app/mm/reemplazo/$token': typeof AppMmReemplazoTokenRoute
   '/_app/admin/events/': typeof AppAdminEventsIndexRoute
+  '/_app/player/$nick_/recap/$season': typeof AppPlayerNickRecapSeasonRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -638,6 +657,7 @@ export interface FileRouteTypes {
     | '/profile/preferences'
     | '/profile/privacy'
     | '/ranking/teams'
+    | '/season/$number'
     | '/teams/$id'
     | '/events/'
     | '/help/'
@@ -652,6 +672,7 @@ export interface FileRouteTypes {
     | '/mixes/live/$uid'
     | '/mm/reemplazo/$token'
     | '/admin/events/'
+    | '/player/$nick/recap/$season'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -701,6 +722,7 @@ export interface FileRouteTypes {
     | '/profile/preferences'
     | '/profile/privacy'
     | '/ranking/teams'
+    | '/season/$number'
     | '/teams/$id'
     | '/events'
     | '/help'
@@ -715,6 +737,7 @@ export interface FileRouteTypes {
     | '/mixes/live/$uid'
     | '/mm/reemplazo/$token'
     | '/admin/events'
+    | '/player/$nick/recap/$season'
   id:
     | '__root__'
     | '/'
@@ -767,6 +790,7 @@ export interface FileRouteTypes {
     | '/_app/profile/preferences'
     | '/_app/profile/privacy'
     | '/_app/ranking/teams'
+    | '/_app/season/$number'
     | '/_app/teams/$id'
     | '/_app/events/'
     | '/_app/help/'
@@ -781,6 +805,7 @@ export interface FileRouteTypes {
     | '/_app/mixes/live/$uid'
     | '/_app/mm/reemplazo/$token'
     | '/_app/admin/events/'
+    | '/_app/player/$nick_/recap/$season'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1203,6 +1228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRankingTeamsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/season/$number': {
+      id: '/_app/season/$number'
+      path: '/season/$number'
+      fullPath: '/season/$number'
+      preLoaderRoute: typeof AppSeasonNumberRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/teams/$id': {
       id: '/_app/teams/$id'
       path: '/teams/$id'
@@ -1250,6 +1282,13 @@ declare module '@tanstack/react-router' {
       path: '/mm/reemplazo/$token'
       fullPath: '/mm/reemplazo/$token'
       preLoaderRoute: typeof AppMmReemplazoTokenRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/player/$nick_/recap/$season': {
+      id: '/_app/player/$nick_/recap/$season'
+      path: '/player/$nick/recap/$season'
+      fullPath: '/player/$nick/recap/$season'
+      preLoaderRoute: typeof AppPlayerNickRecapSeasonRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -1332,6 +1371,7 @@ interface AppRouteChildren {
   AppPlayerNickRoute: typeof AppPlayerNickRoute
   AppPlayersCompareRoute: typeof AppPlayersCompareRoute
   AppRankingTeamsRoute: typeof AppRankingTeamsRoute
+  AppSeasonNumberRoute: typeof AppSeasonNumberRoute
   AppTeamsIdRoute: typeof AppTeamsIdRoute
   AppEventsIndexRoute: typeof AppEventsIndexRoute
   AppHelpIndexRoute: typeof AppHelpIndexRoute
@@ -1342,6 +1382,7 @@ interface AppRouteChildren {
   AppHelpSeccionTareaRoute: typeof AppHelpSeccionTareaRoute
   AppMixesLiveUidRoute: typeof AppMixesLiveUidRoute
   AppMmReemplazoTokenRoute: typeof AppMmReemplazoTokenRoute
+  AppPlayerNickRecapSeasonRoute: typeof AppPlayerNickRecapSeasonRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1359,6 +1400,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlayerNickRoute: AppPlayerNickRoute,
   AppPlayersCompareRoute: AppPlayersCompareRoute,
   AppRankingTeamsRoute: AppRankingTeamsRoute,
+  AppSeasonNumberRoute: AppSeasonNumberRoute,
   AppTeamsIdRoute: AppTeamsIdRoute,
   AppEventsIndexRoute: AppEventsIndexRoute,
   AppHelpIndexRoute: AppHelpIndexRoute,
@@ -1369,6 +1411,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHelpSeccionTareaRoute: AppHelpSeccionTareaRoute,
   AppMixesLiveUidRoute: AppMixesLiveUidRoute,
   AppMmReemplazoTokenRoute: AppMmReemplazoTokenRoute,
+  AppPlayerNickRecapSeasonRoute: AppPlayerNickRecapSeasonRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

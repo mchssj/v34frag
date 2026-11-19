@@ -194,3 +194,19 @@ export function playerSearchOptions(q: string) {
     staleTime: MINUTE,
   })
 }
+
+/** Estadísticas de toda la temporada (replanteo 128): públicas al cerrar; en vivo, solo para admins. */
+export function seasonSummaryOptions(number: number) {
+  return queryOptions({
+    queryKey: ["season-summary", number] as const,
+    queryFn: async ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/seasons/{number}/summary", {
+          params: { path: { number } },
+          signal,
+        })
+      ),
+    staleTime: MINUTE,
+    retry: false,
+  })
+}

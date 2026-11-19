@@ -1,8 +1,9 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
 import { confirmField } from './common';
+import { FeaturedClip } from './clips';
 import { MedalDesign } from './medals';
-import { LEVEL_RANGES, TeamRef } from './players';
+import { EloPoint, IdParam, LEVEL_RANGES, TeamRef } from './players';
 
 // Temporadas: ranking, medallas por tramo y reinicio del nivel 10 (plan docs/bitacora/2026-10-20-temporadas).
 // Los rangos son los de season_check y set_season_config (replanteo 24).
@@ -131,6 +132,7 @@ export const PlayerSeason = Standing.omit({ player: true, teams: true, rating: t
       ended_at: z.string().nullable().openapi({ description: 'Cuándo cerró la temporada' }),
       players: z.number().int().openapi({ description: 'Cuántos jugadores tuvieron puesto en el ranking final ("#3 de 214")' }),
     }),
+    has_recap: z.boolean().openapi({ description: 'Si tiene recap de esa temporada (replanteo 128): el botón "Recap"' }),
   })
   .openapi('PlayerSeason');
 export const PlayerSeasonQuery = listQuery(['number'], { sort: 'number', order: 'desc' });
@@ -205,3 +207,111 @@ export const SeasonPreview = Envelope(PreviewRow)
     }),
   })
   .openapi('SeasonPreview');
+
+// ---------- estadísticas de la temporada: recap y resumen global (replanteo 128, bitácora 2026-11-19-estadisticas-de-temporada) ----------
+// Temporada cerrada: la foto del cierre, para todos. Activa: al momento, solo admins (`live: true`).
+
+const SeasonNumber = z.coerce.number().int().min(1).openapi({ param: { name: 'number', in: 'path' }, description: 'Número de la temporada', example: 1 });
+export const SeasonNumberParam = z.object({ number: SeasonNumber });
+export const RecapParam = IdParam.extend({ number: SeasonNumber });
+
+const n = z.number();
+const whole = z.number().int();
+const Person = PlayerRef.extend({
+  photo_url: z.string().nullable(),
+  level: whole.nullable(),
+  elo: whole.openapi({ description: 'ELO de su último mix de la temporada' }),
+  kd: n,
+  matches: whole.openapi({ description: 'Mixes de la temporada' }),
+}).openapi('RecapPerson');
+const Mate = Person.extend({ together: whole.openapi({ description: 'Mixes en el mismo equipo' }), won: whole.openapi({ description: 'Ganados juntos' }) });
+const Rival = Person.extend({ you_killed: whole, killed_you: whole });
+const SeasonHead = z.object({
+  id: z.uuid(),
+  number: whole,
+  name: z.string(),
+  starts_at: z.string(),
+  ends_at: z.string(),
+  closed_at: z.string().nullable().openapi({ description: '`null` mientras está activa' }),
+  until: z.string().openapi({ description: 'Hasta cuándo cuentan los mixes: el cierre, o el momento de la consulta si está activa' }),
+});
+
+export const RECAP_STATS = [
+  'matches', 'rounds', 'hours', 'win_pct', 'best_streak', 'kills', 'deaths', 'assists', 'kd', 'hs_pct', 'adr', 'k3',
+  'first_kills', 'k4', 'aces', 'elo_delta', 'rating',
+] as const;
+const Compare = z.object(Object.fromEntries(RECAP_STATS.map((k) => [k, z.object({ avg: n, pct: whole })])) as Record<
+  (typeof RECAP_STATS)[number],
+  z.ZodObject<{ avg: z.ZodNumber; pct: z.ZodNumber }>
+>);
+
+export const SeasonRecap = z
+  .object({
+    live: z.boolean().openapi({ description: '`true`: temporada activa, calculado al momento (solo admins)' }),
+    season: SeasonHead.extend({ players: whole.openapi({ description: 'Jugadores con al menos 1 mix' }) }),
+    player: Person,
+    mixes: z.object({ matches: whole, rounds: whole, hours: n, busiest_day: z.object({ date: z.string(), matches: whole }).nullable() }),
+    record: z.object({ wins: whole, losses: whole, win_pct: whole, best_streak: whole.openapi({ description: 'Racha de victorias más larga' }) }),
+    elo: z.object({ start: whole, end: whole, peak: whole, delta: whole, points: z.array(EloPoint) }),
+    numbers: z.object({
+      kills: whole, deaths: whole, assists: whole, kd: n, hs_pct: whole, adr: n, k3: whole, k4: whole, aces: whole, first_kills: whole,
+      plants: whole, defuses: whole, rating: n.nullable(),
+    }),
+    weapon: z.object({ name: z.string(), kills: whole, hs_pct: whole, share_pct: whole }).nullable().openapi({ description: 'Por ahora siempre `null` (sin `match_kills`)' }),
+    maps: z.array(z.object({ name: z.string(), matches: whole, wins: whole, kd: n })),
+    best_match: z
+      .object({
+        id: z.uuid(), map: z.string().nullable(), date: z.string(), score: z.array(whole).length(2).openapi({ description: '[su equipo, el rival]' }),
+        won: z.boolean(), kills: whole, deaths: whole, adr: n, rating: n.nullable(),
+      })
+      .nullable(),
+    mates: z.object({ most_played: Mate, most_wins: Mate }).nullable(),
+    rivals: z.object({ victim: Rival.nullable(), nemesis: Rival.nullable() }).nullable().openapi({ description: 'Por ahora siempre `null` (sin `match_kills`)' }),
+    clips: z.array(FeaturedClip).openapi({ description: 'Hasta 3: primero sus destacados, después por la escala (ace, 4K, clutch, 3K)' }),
+    compare: Compare.openapi({ description: 'Promedio de la temporada y percentil (qué parte de los demás quedó por debajo; en muertes, por arriba)' }),
+    prev: z.object({ name: z.string(), kd: n, adr: n, hs_pct: whole, win_pct: whole, rank: whole.nullable() }).nullable(),
+    final: z.object({
+      rank: whole.nullable(), eligible: z.boolean(), total_ranked: whole, elo: whole, level: whole.nullable(), medal: Medal,
+      top_n: whole, min_matches: whole,
+    }),
+  })
+  .openapi('SeasonRecap');
+
+// El resumen habla de la web y del matchmaking, no de los jugadores (Kyan, 2026-11-19): sin líderes ni podio.
+const Count = z.object({ matches: whole });
+export const SeasonSummary = z
+  .object({
+    live: z.boolean().openapi({ description: '`true`: temporada activa, calculado al momento (solo admins)' }),
+    season: SeasonHead.extend({ status: z.enum(['active', 'closed']), min_matches: whole, top_n: whole }),
+    games: z
+      .object({
+        mixes: whole, players: whole, rounds: whole, hours: n, avg_minutes: whole.nullable(), kills: whole, hs_pct: whole,
+        aces: whole, k4: whole, plants: whole, defuses: whole,
+      })
+      .openapi({ description: 'Los mixes que contaron para el ranking' }),
+    when: z
+      .object({
+        busiest_day: z.object({ date: z.string(), matches: whole }).nullable(),
+        by_hour: z.array(Count.extend({ hour: whole })).openapi({ description: 'Mixes por hora de inicio (0 a 23, hora de Argentina)' }),
+        by_weekday: z.array(Count.extend({ day: whole })).openapi({ description: 'Mixes por día de la semana (1 = lunes … 7 = domingo)' }),
+      }),
+    maps: z.array(z.object({ name: z.string(), matches: whole, avg_rounds: n })),
+    servers: z.array(z.object({ name: z.string(), matches: whole })),
+    longest: z.object({ match_id: z.uuid(), map: z.string().nullable(), date: z.string(), score1: whole, score2: whole }).nullable(),
+    matchmaking: z.object({
+      queue_joins: whole.openapi({ description: 'Veces que alguien entró a la cola' }),
+      queue_players: whole.openapi({ description: 'Cuentas distintas que buscaron partida' }),
+      matched: whole.openapi({ description: 'Entradas a la cola que terminaron en una sala' }),
+      left: whole.openapi({ description: 'Entradas que salieron sin sala (se fue, canceló o se desconectó)' }),
+      wait_median_s: whole.nullable().openapi({ description: 'Espera mediana hasta la sala, en segundos' }),
+      lobbies: whole, played: whole, cancelled: whole,
+      cancel_reasons: z.array(z.object({ reason: z.string(), count: whole })),
+      party_pct: whole.openapi({ description: '% de los lugares en salas que llegaron en grupo' }),
+      abandons: whole, replacements: whole, reports: whole, penalties: whole, bans: whole,
+    }),
+    community: z.object({
+      new_accounts: whole, profile_visits: whole, comments: whole, friendships: whole, clips: whole, clips_video: whole,
+      demos: whole, pcw: whole, official: whole, tournaments: whole,
+    }),
+  })
+  .openapi('SeasonSummary');
