@@ -294,7 +294,8 @@ const SECTIONS: LegalSection[] = [
           equipo. Es una preferencia, no una garantía: si respetarla deja los
           equipos muy desparejos, en esa partida no se respeta y te avisamos
           solo a ti. Puedes bloquear a alguien nuevo hasta 5 veces por semana.
-          Un grupo con el que buscas partida nunca se separa.
+          Un grupo con el que buscas partida nunca se separa. Los
+          administradores pueden bloquear sin ser VIP y sin estos límites.
         </li>
         <li>
           Si alguien abandona una partida del matchmaking, la liga puede

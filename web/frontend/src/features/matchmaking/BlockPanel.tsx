@@ -25,7 +25,11 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
   const remove = useMmMutation((id: string) => source.unblock(id))
   const block = useMmMutation((id: string) => source.block(id))
   const left = blocks.changes?.changes_left ?? null
-  const canAdd = blocks.allowed && blocks.list.length < blocks.max && left !== 0
+  // (replanteo 128) max null: sin tope (admin).
+  const canAdd =
+    blocks.allowed &&
+    (blocks.max === null || blocks.list.length < blocks.max) &&
+    left !== 0
 
   return (
     <Card
@@ -38,7 +42,8 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
           <h2 className="text-sm font-semibold">Bloqueo</h2>
           {blocks.vip_only && <Badge variant="vip">VIP</Badge>}
           <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
-            {blocks.list.length}/{blocks.max}
+            {blocks.list.length}
+            {blocks.max !== null && `/${blocks.max}`}
           </span>
         </div>
         <div className="flex flex-col gap-2 p-4">

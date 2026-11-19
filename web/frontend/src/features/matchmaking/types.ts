@@ -354,7 +354,8 @@ export type MmState = {
   /** Bloqueo de compañeros: con quién no te toca en el mismo equipo. */
   blocks: {
     list: { player_id: string; nick: string }[]
-    max: number
+    /** (replanteo 128) null: sin tope (admin). */
+    max: number | null
     vip_only: boolean
     /** Si esta cuenta puede usarlo. */
     allowed: boolean
@@ -364,7 +365,7 @@ export type MmState = {
       changes_left: number | null
       /** Cuándo se libera el próximo, si no le quedan. */
       next_change_at: string | null
-    }
+    } | null
   }
   /** Quién está buscando ahora, por modo y por nivel. */
   queue_activity: {
