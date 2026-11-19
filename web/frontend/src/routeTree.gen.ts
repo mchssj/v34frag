@@ -28,13 +28,25 @@ import { Route as AppShopRouteImport } from './routes/_app/shop'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as DemoBioRouteImport } from './routes/demo.bio'
+import { Route as DemoBuscadorRouteImport } from './routes/demo.buscador'
+import { Route as DemoComparadorRouteImport } from './routes/demo.comparador'
+import { Route as DemoConfigsRouteImport } from './routes/demo.configs'
+import { Route as DemoCreditosRouteImport } from './routes/demo.creditos'
+import { Route as DemoEloRouteImport } from './routes/demo.elo'
+import { Route as DemoExportarRouteImport } from './routes/demo.exportar'
+import { Route as DemoFavoritasRouteImport } from './routes/demo.favoritas'
 import { Route as DemoGuiaRouteImport } from './routes/demo.guia'
 import { Route as DemoMatchmakingRouteImport } from './routes/demo.matchmaking'
 import { Route as DemoMedallasRouteImport } from './routes/demo.medallas'
+import { Route as DemoMisionesRouteImport } from './routes/demo.misiones'
 import { Route as DemoPcwRouteImport } from './routes/demo.pcw'
 import { Route as DemoPerfilSocialRouteImport } from './routes/demo.perfil-social'
 import { Route as DemoPinesRouteImport } from './routes/demo.pines'
+import { Route as DemoRecalculoRouteImport } from './routes/demo.recalculo'
 import { Route as DemoSiembraRouteImport } from './routes/demo.siembra'
+import { Route as DemoTorneoStatsRouteImport } from './routes/demo.torneo-stats'
+import { Route as DemoVipRouteImport } from './routes/demo.vip'
 import { Route as DemoWidgetRouteImport } from './routes/demo.widget'
 import { Route as AppAdminBansRouteImport } from './routes/_app/admin.bans'
 import { Route as AppAdminClipsRouteImport } from './routes/_app/admin.clips'
@@ -167,6 +179,46 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AuthRoute,
 } as any)
+const DemoBioRoute = DemoBioRouteImport.update({
+  id: '/demo/bio',
+  path: '/demo/bio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoBuscadorRoute = DemoBuscadorRouteImport.update({
+  id: '/demo/buscador',
+  path: '/demo/buscador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoComparadorRoute = DemoComparadorRouteImport.update({
+  id: '/demo/comparador',
+  path: '/demo/comparador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoConfigsRoute = DemoConfigsRouteImport.update({
+  id: '/demo/configs',
+  path: '/demo/configs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoCreditosRoute = DemoCreditosRouteImport.update({
+  id: '/demo/creditos',
+  path: '/demo/creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoEloRoute = DemoEloRouteImport.update({
+  id: '/demo/elo',
+  path: '/demo/elo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoExportarRoute = DemoExportarRouteImport.update({
+  id: '/demo/exportar',
+  path: '/demo/exportar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoFavoritasRoute = DemoFavoritasRouteImport.update({
+  id: '/demo/favoritas',
+  path: '/demo/favoritas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoGuiaRoute = DemoGuiaRouteImport.update({
   id: '/demo/guia',
   path: '/demo/guia',
@@ -180,6 +232,11 @@ const DemoMatchmakingRoute = DemoMatchmakingRouteImport.update({
 const DemoMedallasRoute = DemoMedallasRouteImport.update({
   id: '/demo/medallas',
   path: '/demo/medallas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoMisionesRoute = DemoMisionesRouteImport.update({
+  id: '/demo/misiones',
+  path: '/demo/misiones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoPcwRoute = DemoPcwRouteImport.update({
@@ -197,9 +254,24 @@ const DemoPinesRoute = DemoPinesRouteImport.update({
   path: '/demo/pines',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoRecalculoRoute = DemoRecalculoRouteImport.update({
+  id: '/demo/recalculo',
+  path: '/demo/recalculo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoSiembraRoute = DemoSiembraRouteImport.update({
   id: '/demo/siembra',
   path: '/demo/siembra',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoTorneoStatsRoute = DemoTorneoStatsRouteImport.update({
+  id: '/demo/torneo-stats',
+  path: '/demo/torneo-stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoVipRoute = DemoVipRouteImport.update({
+  id: '/demo/vip',
+  path: '/demo/vip',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoWidgetRoute = DemoWidgetRouteImport.update({
@@ -411,13 +483,25 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
+  '/demo/creditos': typeof DemoCreditosRoute
+  '/demo/elo': typeof DemoEloRoute
+  '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/guia': typeof DemoGuiaRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/misiones': typeof DemoMisionesRoute
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/pines': typeof DemoPinesRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/siembra': typeof DemoSiembraRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
@@ -474,13 +558,25 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
+  '/demo/creditos': typeof DemoCreditosRoute
+  '/demo/elo': typeof DemoEloRoute
+  '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/guia': typeof DemoGuiaRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/misiones': typeof DemoMisionesRoute
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/pines': typeof DemoPinesRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/siembra': typeof DemoSiembraRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/admin/bans': typeof AppAdminBansRoute
   '/admin/clips': typeof AppAdminClipsRoute
@@ -541,13 +637,25 @@ export interface FileRoutesById {
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/demo/bio': typeof DemoBioRoute
+  '/demo/buscador': typeof DemoBuscadorRoute
+  '/demo/comparador': typeof DemoComparadorRoute
+  '/demo/configs': typeof DemoConfigsRoute
+  '/demo/creditos': typeof DemoCreditosRoute
+  '/demo/elo': typeof DemoEloRoute
+  '/demo/exportar': typeof DemoExportarRoute
+  '/demo/favoritas': typeof DemoFavoritasRoute
   '/demo/guia': typeof DemoGuiaRoute
   '/demo/matchmaking': typeof DemoMatchmakingRoute
   '/demo/medallas': typeof DemoMedallasRoute
+  '/demo/misiones': typeof DemoMisionesRoute
   '/demo/pcw': typeof DemoPcwRoute
   '/demo/perfil-social': typeof DemoPerfilSocialRoute
   '/demo/pines': typeof DemoPinesRoute
+  '/demo/recalculo': typeof DemoRecalculoRoute
   '/demo/siembra': typeof DemoSiembraRoute
+  '/demo/torneo-stats': typeof DemoTorneoStatsRoute
+  '/demo/vip': typeof DemoVipRoute
   '/demo/widget': typeof DemoWidgetRoute
   '/_app/admin/bans': typeof AppAdminBansRoute
   '/_app/admin/clips': typeof AppAdminClipsRoute
@@ -607,13 +715,25 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/demo/bio'
+    | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/configs'
+    | '/demo/creditos'
+    | '/demo/elo'
+    | '/demo/exportar'
+    | '/demo/favoritas'
     | '/demo/guia'
     | '/demo/matchmaking'
     | '/demo/medallas'
+    | '/demo/misiones'
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/pines'
+    | '/demo/recalculo'
     | '/demo/siembra'
+    | '/demo/torneo-stats'
+    | '/demo/vip'
     | '/demo/widget'
     | '/admin/bans'
     | '/admin/clips'
@@ -670,13 +790,25 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/demo/bio'
+    | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/configs'
+    | '/demo/creditos'
+    | '/demo/elo'
+    | '/demo/exportar'
+    | '/demo/favoritas'
     | '/demo/guia'
     | '/demo/matchmaking'
     | '/demo/medallas'
+    | '/demo/misiones'
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/pines'
+    | '/demo/recalculo'
     | '/demo/siembra'
+    | '/demo/torneo-stats'
+    | '/demo/vip'
     | '/demo/widget'
     | '/admin/bans'
     | '/admin/clips'
@@ -736,13 +868,25 @@ export interface FileRouteTypes {
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
+    | '/demo/bio'
+    | '/demo/buscador'
+    | '/demo/comparador'
+    | '/demo/configs'
+    | '/demo/creditos'
+    | '/demo/elo'
+    | '/demo/exportar'
+    | '/demo/favoritas'
     | '/demo/guia'
     | '/demo/matchmaking'
     | '/demo/medallas'
+    | '/demo/misiones'
     | '/demo/pcw'
     | '/demo/perfil-social'
     | '/demo/pines'
+    | '/demo/recalculo'
     | '/demo/siembra'
+    | '/demo/torneo-stats'
+    | '/demo/vip'
     | '/demo/widget'
     | '/_app/admin/bans'
     | '/_app/admin/clips'
@@ -792,13 +936,25 @@ export interface RootRouteChildren {
   TerminosRoute: typeof TerminosRoute
   WelcomeRoute: typeof WelcomeRoute
   WidgetRoute: typeof WidgetRoute
+  DemoBioRoute: typeof DemoBioRoute
+  DemoBuscadorRoute: typeof DemoBuscadorRoute
+  DemoComparadorRoute: typeof DemoComparadorRoute
+  DemoConfigsRoute: typeof DemoConfigsRoute
+  DemoCreditosRoute: typeof DemoCreditosRoute
+  DemoEloRoute: typeof DemoEloRoute
+  DemoExportarRoute: typeof DemoExportarRoute
+  DemoFavoritasRoute: typeof DemoFavoritasRoute
   DemoGuiaRoute: typeof DemoGuiaRoute
   DemoMatchmakingRoute: typeof DemoMatchmakingRoute
   DemoMedallasRoute: typeof DemoMedallasRoute
+  DemoMisionesRoute: typeof DemoMisionesRoute
   DemoPcwRoute: typeof DemoPcwRoute
   DemoPerfilSocialRoute: typeof DemoPerfilSocialRoute
   DemoPinesRoute: typeof DemoPinesRoute
+  DemoRecalculoRoute: typeof DemoRecalculoRoute
   DemoSiembraRoute: typeof DemoSiembraRoute
+  DemoTorneoStatsRoute: typeof DemoTorneoStatsRoute
+  DemoVipRoute: typeof DemoVipRoute
   DemoWidgetRoute: typeof DemoWidgetRoute
 }
 
@@ -937,6 +1093,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/demo/bio': {
+      id: '/demo/bio'
+      path: '/demo/bio'
+      fullPath: '/demo/bio'
+      preLoaderRoute: typeof DemoBioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/buscador': {
+      id: '/demo/buscador'
+      path: '/demo/buscador'
+      fullPath: '/demo/buscador'
+      preLoaderRoute: typeof DemoBuscadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/comparador': {
+      id: '/demo/comparador'
+      path: '/demo/comparador'
+      fullPath: '/demo/comparador'
+      preLoaderRoute: typeof DemoComparadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/configs': {
+      id: '/demo/configs'
+      path: '/demo/configs'
+      fullPath: '/demo/configs'
+      preLoaderRoute: typeof DemoConfigsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/creditos': {
+      id: '/demo/creditos'
+      path: '/demo/creditos'
+      fullPath: '/demo/creditos'
+      preLoaderRoute: typeof DemoCreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/elo': {
+      id: '/demo/elo'
+      path: '/demo/elo'
+      fullPath: '/demo/elo'
+      preLoaderRoute: typeof DemoEloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/exportar': {
+      id: '/demo/exportar'
+      path: '/demo/exportar'
+      fullPath: '/demo/exportar'
+      preLoaderRoute: typeof DemoExportarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/favoritas': {
+      id: '/demo/favoritas'
+      path: '/demo/favoritas'
+      fullPath: '/demo/favoritas'
+      preLoaderRoute: typeof DemoFavoritasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/guia': {
       id: '/demo/guia'
       path: '/demo/guia'
@@ -956,6 +1168,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/medallas'
       fullPath: '/demo/medallas'
       preLoaderRoute: typeof DemoMedallasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/misiones': {
+      id: '/demo/misiones'
+      path: '/demo/misiones'
+      fullPath: '/demo/misiones'
+      preLoaderRoute: typeof DemoMisionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/pcw': {
@@ -979,11 +1198,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoPinesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/recalculo': {
+      id: '/demo/recalculo'
+      path: '/demo/recalculo'
+      fullPath: '/demo/recalculo'
+      preLoaderRoute: typeof DemoRecalculoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/siembra': {
       id: '/demo/siembra'
       path: '/demo/siembra'
       fullPath: '/demo/siembra'
       preLoaderRoute: typeof DemoSiembraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/torneo-stats': {
+      id: '/demo/torneo-stats'
+      path: '/demo/torneo-stats'
+      fullPath: '/demo/torneo-stats'
+      preLoaderRoute: typeof DemoTorneoStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/vip': {
+      id: '/demo/vip'
+      path: '/demo/vip'
+      fullPath: '/demo/vip'
+      preLoaderRoute: typeof DemoVipRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/widget': {
@@ -1396,13 +1636,25 @@ const rootRouteChildren: RootRouteChildren = {
   TerminosRoute: TerminosRoute,
   WelcomeRoute: WelcomeRoute,
   WidgetRoute: WidgetRoute,
+  DemoBioRoute: DemoBioRoute,
+  DemoBuscadorRoute: DemoBuscadorRoute,
+  DemoComparadorRoute: DemoComparadorRoute,
+  DemoConfigsRoute: DemoConfigsRoute,
+  DemoCreditosRoute: DemoCreditosRoute,
+  DemoEloRoute: DemoEloRoute,
+  DemoExportarRoute: DemoExportarRoute,
+  DemoFavoritasRoute: DemoFavoritasRoute,
   DemoGuiaRoute: DemoGuiaRoute,
   DemoMatchmakingRoute: DemoMatchmakingRoute,
   DemoMedallasRoute: DemoMedallasRoute,
+  DemoMisionesRoute: DemoMisionesRoute,
   DemoPcwRoute: DemoPcwRoute,
   DemoPerfilSocialRoute: DemoPerfilSocialRoute,
   DemoPinesRoute: DemoPinesRoute,
+  DemoRecalculoRoute: DemoRecalculoRoute,
   DemoSiembraRoute: DemoSiembraRoute,
+  DemoTorneoStatsRoute: DemoTorneoStatsRoute,
+  DemoVipRoute: DemoVipRoute,
   DemoWidgetRoute: DemoWidgetRoute,
 }
 export const routeTree = rootRouteImport
