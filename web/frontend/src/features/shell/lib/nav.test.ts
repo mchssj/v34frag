@@ -23,6 +23,11 @@ describe("activeNavKey", () => {
     expect(activeNavKey("/profile")).toBe("profile")
   })
 
+  it("Inventario es aparte de la Tienda", () => {
+    expect(activeNavKey("/inventory")).toBe("inventory")
+    expect(activeNavKey("/shop")).toBe("shop")
+  })
+
   it("las fichas de jugador y equipo marcan Ranking", () => {
     expect(activeNavKey("/player/Zeta")).toBe("ranking")
     expect(activeNavKey("/players/compare")).toBe("ranking")

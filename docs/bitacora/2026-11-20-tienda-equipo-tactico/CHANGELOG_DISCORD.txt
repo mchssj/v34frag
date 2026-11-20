@@ -1,0 +1,5 @@
+CMLeague 2.9.58 --  Changelog
+
+- Llegó a la tienda la colección Equipo táctico: Flashbang, Humo, C4, Visión nocturna, Radar y Headshot. Cada una viene como efecto de nombre y como tema para tu perfil (los temas son VIP).
+- Nuevos efectos de nombre: Kill feed y Spray para todos, y Tormenta y Eclipse para los VIP.
+- Nuevos temas de color: Medianoche, Cobre, Lavanda, Turquesa, Vino y Menta.

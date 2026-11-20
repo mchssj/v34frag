@@ -49,7 +49,7 @@ Para un sorteo, creas un **código** y se lo pasas al ganador. Él lo canjea en 
 
 1. En **Códigos y sorteos**, abajo de todo, toca **Nuevo código**.
 2. Elige el **Premio**:
-   - **Artículo de la tienda:** búscalo por nombre y elige **Para siempre** o **Por días** (de 1 a 365). Puede ser uno VIP (el ganador lo usa aunque no sea VIP, mientras esté encendido **Lo VIP de un código se usa sin ser VIP**) o uno que no está en la tienda, para un sorteo exclusivo. El Marco Oro VIP no: haz un código de VIP.
+   - **Artículo de la tienda:** búscalo por nombre y elige **Para siempre** o **Por días** (de 1 a 365). Puede ser uno VIP (el ganador lo usa aunque no sea VIP, mientras esté encendido **Lo VIP de un código se usa sin ser VIP**) Solo aparecen los que están en la tienda: para sortear uno desactivado, actívalo en **Catálogo**, crea el código y, si quieres, vuelve a desactivarlo (el código lo sigue dando). El Marco Oro VIP no: haz un código de VIP.
    - **Puntos** o **Monedas VIP:** la cantidad.
    - **VIP:** los días (atajos de 1 semana, 1 mes y 3 meses). Se suman a los que ya tenga la cuenta. El VIP de por vida se da en Administración › [Usuarios](/admin/users).
 3. Elige cuántas veces se puede usar cada código (**Usos de cada código**) y cuántos generar (**Cuántos códigos**, hasta 100, todos con el mismo premio). Un código de 50 usos sirve para "los primeros 50 del stream"; para 10 ganadores distintos, mejor 10 códigos de 1 uso.

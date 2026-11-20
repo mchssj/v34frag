@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 
 import { AvatarThumb, FramedAvatar, NameFx, Stickers } from "./cosmetics"
 import { ItemPreviewDialog, ItemThumb } from "./ItemPreview"
-import { withItem } from "./ShopPage"
-import type { Equipped } from "./types"
+import { ItemCard, withItem } from "./ShopPage"
+import type { Equipped, ShopItem } from "./types"
 
 const empty: Equipped = {
   frame: null,
@@ -182,7 +182,9 @@ describe("vista previa en ventana", () => {
       />
     )
     expect(screen.getByRole("dialog")).toHaveTextContent("Cerezos en flor")
-    expect(screen.getByText(/Fondos de miniperfil · Anime · Animado/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Fondos de miniperfil · Anime · Animado/)
+    ).toBeInTheDocument()
     expect(screen.getByText("En tu perfil")).toBeInTheDocument()
     expect(screen.getByText("En el lobby de Jugar")).toBeInTheDocument()
     expect(screen.getByText("En el ranking y en la sala")).toBeInTheDocument()
@@ -226,5 +228,64 @@ describe("vista previa en ventana", () => {
       "src",
       "/cosmetics/avatars/avatar-x.webp"
     )
+  })
+})
+
+describe("etiqueta Nuevo", () => {
+  const item = (o: Partial<ShopItem>): ShopItem => ({
+    id: "nombre-c4",
+    kind: "name",
+    name: "C4",
+    description: "Brillo rojo que late.",
+    file: null,
+    css_class: "nombre-c4",
+    collection: "tactico",
+    animated: true,
+    vip_only: false,
+    vip_reward: false,
+    price: 300,
+    base_price: 300,
+    vip_price: null,
+    weekly: false,
+    is_new: true,
+    owned: false,
+    usable: false,
+    equipped: false,
+    expires_at: null,
+    ...o,
+  })
+  const card = (c: ShopItem) =>
+    render(
+      <ItemCard
+        c={c}
+        alias="kyan"
+        photo={null}
+        level={null}
+        equipped={empty}
+        points={undefined}
+        vip={false}
+        perMix={10}
+        vipPerMix={20}
+        discount={0}
+        trying={false}
+        busy={false}
+        onTry={() => {}}
+        onPreview={() => {}}
+        onBuy={() => {}}
+        onEquip={() => {}}
+        pick={() => null}
+      />
+    )
+
+  it("sale en lo que entró hace menos de 3 días y no tienes", () => {
+    card(item({}))
+    expect(screen.getByText("Nuevo")).toBeInTheDocument()
+  })
+
+  it("no sale si no es nuevo o si ya lo tienes", () => {
+    card(item({ is_new: false }))
+    expect(screen.queryByText("Nuevo")).toBeNull()
+    card(item({ owned: true, usable: true }))
+    expect(screen.queryByText("Nuevo")).toBeNull()
   })
 })

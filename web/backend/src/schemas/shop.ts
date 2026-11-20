@@ -74,6 +74,7 @@ export const ShopItem = z
     base_price: z.number().int().nullable().openapi({ description: 'Precio sin la oferta' }),
     vip_price: z.number().int().nullable().openapi({ description: 'Precio en monedas VIP (solo lo VIP); null si no se vende' }),
     weekly: z.boolean().openapi({ description: 'Está en las ofertas de esta semana' }),
+    is_new: z.boolean().openapi({ description: 'Entró a la tienda hace menos de 3 días (replanteo 132)' }),
     owned: z.boolean().openapi({ description: 'Lo tienes (con sesión; sin sesión, false)' }),
     usable: z.boolean().openapi({ description: 'Puedes equiparlo hoy: lo tienes (lo VIP, siendo VIP) o es el premio VIP y eres VIP' }),
     equipped: z.boolean().openapi({ description: 'Lo tienes puesto' }),

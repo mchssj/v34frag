@@ -1,0 +1,5 @@
+CMLeague 2.9.58 --  Changelog
+
+- Mejoramos tres efectos de nombre de la tienda para que hagan lo que dicen. Brillo: ahora ves el destello pasar por tu nombre también en modo oscuro. Glitch: tu nombre falla de verdad cada tanto, con cortes y colores corridos. Burbujas: ahora suben burbujas por detrás de tu nombre.
+- El efecto Sombra ahora se ve también en modo oscuro.
+- Si ya tenías alguno de estos efectos, no tienes que hacer nada: lo ves nuevo al entrar.

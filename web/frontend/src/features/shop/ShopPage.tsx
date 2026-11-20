@@ -14,12 +14,13 @@ import {
   SearchIcon,
   SparklesIcon,
   StickerIcon,
+  StoreIcon,
   TicketIcon,
   TypeIcon,
   XIcon,
   type LucideIcon,
 } from "lucide-react"
-import { useMemo, useState, type ReactNode } from "react"
+import { useCallback, useMemo, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
@@ -131,14 +132,20 @@ export function withItem(
 type Show = "all" | "buy" | "mine" | "vip" | "free"
 type Sort = "sort" | "cheap" | "exp" | "name"
 
-/** `redeemOpen` y `onRedeemOpen`: la ventana de canjear un código, que la ruta abre con `?canjear=true`. */
+/**
+ * `redeemOpen` y `onRedeemOpen`: la ventana de canjear un código, que la ruta abre con `?canjear=true`.
+ * `mode="inventory"`: la página Inventario (bitácora 2026-11-20-inventario), solo lo tuyo y sin lo de comprar.
+ */
 export function ShopPage({
   redeemOpen,
   onRedeemOpen,
+  mode = "shop",
 }: {
   redeemOpen?: boolean
   onRedeemOpen?: (open: boolean) => void
+  mode?: "shop" | "inventory"
 } = {}) {
+  const inventory = mode === "inventory"
   const me = useMe().data
   const profile = useQuery(myProfileOptions).data
   const nick = profile?.player?.nick ?? null
@@ -168,14 +175,16 @@ export function ShopPage({
   const redeemShown = redeemOpen ?? redeemLocal
   const setRedeem = onRedeemOpen ?? setRedeemLocal
 
-  const items = useMemo(() => catalog.data?.items ?? [], [catalog.data])
+  const all = useMemo(() => catalog.data?.items ?? [], [catalog.data])
+  // En el inventario, todo (tipos, colecciones y la lista) cuenta solo lo tuyo.
+  const items = useMemo(
+    () => (inventory ? all.filter((c) => c.owned) : all),
+    [all, inventory]
+  )
   const byId = useMemo(
     () =>
-      Object.fromEntries(items.map((i) => [i.id, i])) as Record<
-        string,
-        ShopItem
-      >,
-    [items]
+      Object.fromEntries(all.map((i) => [i.id, i])) as Record<string, ShopItem>,
+    [all]
   )
   const vip = points?.vip ?? false
   const alias = nick ?? me?.tag ?? ""
@@ -206,6 +215,13 @@ export function ShopPage({
         ? (byId[id] ?? null)
         : null
 
+  const isOn = useCallback(
+    (c: ShopItem) =>
+      c.kind === "sticker"
+        ? equipped.stickers.includes(c.id)
+        : equipped[c.kind] === c.id,
+    [equipped]
+  )
   const list = useMemo(() => {
     const qq = q.trim().toLowerCase()
     const l = items.filter((c) => {
@@ -236,11 +252,13 @@ export function ShopPage({
     if (sort === "cheap") l.sort((a, b) => (cost(a) ?? 1e9) - (cost(b) ?? 1e9))
     if (sort === "exp") l.sort((a, b) => (cost(b) ?? 0) - (cost(a) ?? 0))
     if (sort === "name") l.sort((a, b) => a.name.localeCompare(b.name, "es"))
+    // En el inventario, lo que tienes puesto va primero.
+    if (inventory) l.sort((a, b) => Number(isOn(b)) - Number(isOn(a)))
     return l
-  }, [items, kind, col, q, show, sort, points, vip])
+  }, [items, kind, col, q, show, sort, points, vip, inventory, isOn])
 
-  const weekly = items.filter((c) => c.weekly)
-  const vipCount = items.filter((i) => i.vip_only && !i.vip_reward).length
+  const weekly = inventory ? [] : items.filter((c) => c.weekly)
+  const vipCount = all.filter((i) => i.vip_only && !i.vip_reward).length
   const coins = points?.vip_coins
 
   function onEquip(i: ShopItem, on: boolean) {
@@ -302,7 +320,9 @@ export function ShopPage({
 
   if (catalog.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Cargando la tienda...</p>
+      <p className="text-sm text-muted-foreground">
+        {inventory ? "Cargando tu inventario..." : "Cargando la tienda..."}
+      </p>
     )
   if (catalog.isError)
     return (
@@ -316,21 +336,34 @@ export function ShopPage({
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-[-0.4px]">Tienda</h1>
+          <h1 className="text-2xl font-semibold tracking-[-0.4px]">
+            {inventory ? "Inventario" : "Tienda"}
+          </h1>
           <p className="max-w-[62ch] text-sm text-pretty text-muted-foreground">
-            Cada mix que juegas te da puntos. Gástalos en marcos, avatares,
-            stickers, temas, efectos para tu nombre y fondos, o sube tu propio
-            fondo (y, siendo VIP, tu avatar animado). Pruébate lo que quieras
-            antes de comprarlo.
+            {inventory
+              ? "Todo lo que tienes, por tipo. Póntelo, sácatelo o pruébalo en la vista previa. Lo que tienes puesto va primero."
+              : "Cada mix que juegas te da puntos. Gástalos en marcos, avatares, stickers, temas, efectos para tu nombre y fondos, o sube tu propio fondo (y, siendo VIP, tu avatar animado). Pruébate lo que quieras antes de comprarlo."}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => setRedeem(true)}>
             <TicketIcon /> Canjear código
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setHistOpen(true)}>
-            <HistoryIcon /> Historial
-          </Button>
+          {inventory ? (
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/shop">
+                <StoreIcon /> Ir a la tienda
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setHistOpen(true)}
+            >
+              <HistoryIcon /> Historial
+            </Button>
+          )}
         </div>
       </div>
 
@@ -345,7 +378,12 @@ export function ShopPage({
         </p>
       )}
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <section
+        className={cn(
+          "grid gap-4",
+          !inventory && "lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
+        )}
+      >
         <div className={cn(card, "flex flex-col gap-4 p-5", theme?.css_class)}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Eyebrow>Vista previa</Eyebrow>
@@ -407,99 +445,107 @@ export function ShopPage({
           </div>
         </div>
 
-        <div className={cn(card, "flex flex-col divide-y")}>
-          <Wallet
-            label="Puntos"
-            icon={<CoinsIcon className="size-3.5" />}
-            value={num(points?.points.balance ?? 0)}
-            valueClass="text-primary"
-            detail={
-              points && (
-                <>
-                  {fmt(points.points.earned)} en {points.points.mixes} mixes
-                  {points.points.granted
-                    ? ` · regalos ${fmt(points.points.granted)}`
-                    : ""}
-                  {points.points.spent
-                    ? ` · gastaste ${fmt(points.points.spent)}`
-                    : ""}
-                </>
-              )
-            }
-          />
-          <Wallet
-            label="Monedas VIP"
-            icon={<VipBadge className="h-4" />}
-            value={num(coins?.balance ?? 0)}
-            valueClass={gold}
-            dim={!vip}
-            tag={
-              !vip && (
-                <span className="inline-flex items-center gap-1 rounded-[4px] bg-muted px-1.5 py-0.5 text-[10px] font-bold tracking-[.03em] text-muted-foreground uppercase">
-                  <LockIcon className="size-3" /> Congeladas
-                </span>
-              )
-            }
-            detail={
-              vip && coins ? (
-                <>
-                  {num(coins.earned)} en {coins.mixes} mixes siendo VIP
-                  {coins.granted ? ` · regalos ${num(coins.granted)}` : ""}
-                  {coins.spent ? ` · gastaste ${num(coins.spent)}` : ""}
-                </>
-              ) : (
-                "Se ganan en los mixes que juegas siendo VIP, y vuelven a funcionar cuando lo seas otra vez."
-              )
-            }
-          />
-          <dl className="grid grid-cols-2 gap-3 p-5 text-xs">
-            <div>
-              <dt className="text-muted-foreground">Por mix</dt>
-              <dd className="font-mono font-semibold tabular-nums">
-                +{perMix} pts
-                {vip && (
-                  <span className={gold}>
-                    {" "}
-                    · +{config?.vip_per_mix ?? 0} VIP
+        {!inventory && (
+          <div className={cn(card, "flex flex-col divide-y")}>
+            <Wallet
+              label="Puntos"
+              icon={<CoinsIcon className="size-3.5" />}
+              value={num(points?.points.balance ?? 0)}
+              valueClass="text-primary"
+              detail={
+                points && (
+                  <>
+                    {fmt(points.points.earned)} en {points.points.mixes} mixes
+                    {points.points.granted
+                      ? ` · regalos ${fmt(points.points.granted)}`
+                      : ""}
+                    {points.points.spent
+                      ? ` · gastaste ${fmt(points.points.spent)}`
+                      : ""}
+                  </>
+                )
+              }
+            />
+            <Wallet
+              label="Monedas VIP"
+              icon={<VipBadge className="h-4" />}
+              value={num(coins?.balance ?? 0)}
+              valueClass={gold}
+              dim={!vip}
+              tag={
+                !vip && (
+                  <span className="inline-flex items-center gap-1 rounded-[4px] bg-muted px-1.5 py-0.5 text-[10px] font-bold tracking-[.03em] text-muted-foreground uppercase">
+                    <LockIcon className="size-3" /> Congeladas
                   </span>
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Si ganas</dt>
-              <dd className="font-mono font-semibold tabular-nums">
-                +{config?.per_win ?? 0} pts
-                {vip && (
-                  <span className={gold}>
-                    {" "}
-                    · +{config?.vip_per_win ?? 0} VIP
-                  </span>
-                )}
-              </dd>
-            </div>
-          </dl>
-        </div>
+                )
+              }
+              detail={
+                vip && coins ? (
+                  <>
+                    {num(coins.earned)} en {coins.mixes} mixes siendo VIP
+                    {coins.granted ? ` · regalos ${num(coins.granted)}` : ""}
+                    {coins.spent ? ` · gastaste ${num(coins.spent)}` : ""}
+                  </>
+                ) : (
+                  "Se ganan en los mixes que juegas siendo VIP, y vuelven a funcionar cuando lo seas otra vez."
+                )
+              }
+            />
+            <dl className="grid grid-cols-2 gap-3 p-5 text-xs">
+              <div>
+                <dt className="text-muted-foreground">Por mix</dt>
+                <dd className="font-mono font-semibold tabular-nums">
+                  +{perMix} pts
+                  {vip && (
+                    <span className={gold}>
+                      {" "}
+                      · +{config?.vip_per_mix ?? 0} VIP
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Si ganas</dt>
+                <dd className="font-mono font-semibold tabular-nums">
+                  +{config?.per_win ?? 0} pts
+                  {vip && (
+                    <span className={gold}>
+                      {" "}
+                      · +{config?.vip_per_win ?? 0} VIP
+                    </span>
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        )}
       </section>
 
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border px-4 py-3 text-sm",
-          "border-[color-mix(in_oklch,#e8b53a_35%,var(--border))] bg-[linear-gradient(90deg,color-mix(in_oklch,#e8b53a_10%,var(--card)),var(--card)_70%)]"
-        )}
-      >
-        <VipBadge className="h-7" />
-        <b className={gold}>{vip ? "Eres VIP" : "Hazte VIP"}</b>
-        <span className="flex-1 text-muted-foreground">
-          {vip
-            ? `Tienes el Marco Oro VIP y ganas monedas VIP en cada mix para comprar los ${vipCount} artículos VIP.`
-            : `El Marco Oro VIP al instante y monedas VIP en cada mix para comprar ${vipCount} artículos animados: Series míticas, Arsenal, fondos y más.`}
-        </span>
-        {!vip && (
-          <Button size="sm" variant="outline" onClick={() => setVipOpen(true)}>
-            Cómo ser VIP
-          </Button>
-        )}
-      </div>
+      {!inventory && (
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border px-4 py-3 text-sm",
+            "border-[color-mix(in_oklch,#e8b53a_35%,var(--border))] bg-[linear-gradient(90deg,color-mix(in_oklch,#e8b53a_10%,var(--card)),var(--card)_70%)]"
+          )}
+        >
+          <VipBadge className="h-7" />
+          <b className={gold}>{vip ? "Eres VIP" : "Hazte VIP"}</b>
+          <span className="flex-1 text-muted-foreground">
+            {vip
+              ? `Tienes el Marco Oro VIP y ganas monedas VIP en cada mix para comprar los ${vipCount} artículos VIP.`
+              : `El Marco Oro VIP al instante y monedas VIP en cada mix para comprar ${vipCount} artículos animados: Series míticas, Arsenal, fondos y más.`}
+          </span>
+          {!vip && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setVipOpen(true)}
+            >
+              Cómo ser VIP
+            </Button>
+          )}
+        </div>
+      )}
 
       {weekly.length > 0 && (
         <section className="flex flex-col gap-3">
@@ -566,18 +612,20 @@ export function ShopPage({
                 aria-label="Buscar artículo"
               />
             </div>
-            <Select value={show} onValueChange={(v) => setShow(v as Show)}>
-              <SelectTrigger className="w-[160px]" aria-label="Mostrar">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todo</SelectItem>
-                <SelectItem value="buy">Puedo comprar</SelectItem>
-                <SelectItem value="mine">Lo mío</SelectItem>
-                <SelectItem value="vip">Solo VIP</SelectItem>
-                <SelectItem value="free">Para todos</SelectItem>
-              </SelectContent>
-            </Select>
+            {!inventory && (
+              <Select value={show} onValueChange={(v) => setShow(v as Show)}>
+                <SelectTrigger className="w-[160px]" aria-label="Mostrar">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo</SelectItem>
+                  <SelectItem value="buy">Puedo comprar</SelectItem>
+                  <SelectItem value="mine">Lo mío</SelectItem>
+                  <SelectItem value="vip">Solo VIP</SelectItem>
+                  <SelectItem value="free">Para todos</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
               <SelectTrigger className="w-[150px]" aria-label="Ordenar">
                 <SelectValue />
@@ -627,9 +675,23 @@ export function ShopPage({
           )}
           {list.length === 0 ? (
             <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-              {show === "buy"
-                ? "Con tu saldo todavía no te alcanza para nada de acá: ¡juega unos mixes!"
-                : "Nada coincide con el filtro."}
+              {inventory ? (
+                q || col ? (
+                  "Nada coincide con el filtro."
+                ) : (
+                  <>
+                    Todavía no tienes nada de este tipo. Mira la{" "}
+                    <Link to="/shop" className="underline">
+                      Tienda
+                    </Link>
+                    .
+                  </>
+                )
+              ) : show === "buy" ? (
+                "Con tu saldo todavía no te alcanza para nada de acá: ¡juega unos mixes!"
+              ) : (
+                "Nada coincide con el filtro."
+              )}
             </p>
           ) : (
             <Grid>
@@ -981,7 +1043,7 @@ function Chip({
   )
 }
 
-function ItemCard({
+export function ItemCard({
   c,
   alias,
   photo,
@@ -1050,6 +1112,13 @@ function ItemCard({
           pick={pick}
         />
         <span className="absolute top-2 left-2 flex gap-1">
+          {/* Entró hace menos de 3 días (replanteo 132); en lo que ya tienes no hace falta. */}
+          {c.is_new && !c.owned && (
+            <Chip className="bg-win text-background">
+              <SparklesIcon className="size-3" />
+              Nuevo
+            </Chip>
+          )}
           {onSale && (
             <Chip className="bg-primary text-primary-foreground">
               <BadgePercentIcon className="size-3" />−{discount}%

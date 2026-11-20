@@ -1,0 +1,3 @@
+CMLeague 2.9.58 --  Changelog
+
+- Nueva sección Inventario en el menú, debajo de Tienda: ahí ves todo lo que tienes, separado por tipo y con lo que tienes puesto primero. Te lo pones o te lo sacas desde ahí, sin buscarlo entre todo lo de la tienda.

@@ -92,7 +92,8 @@
 }
 
 /* Temas VIP: además del color, un borde con brillo. */
-.tema-oro {
+.tema-oro,
+.perfil-tema.tema-oro [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #f2c040;
   --primary-foreground: #1b1407;
   --ring: #f2c040;
@@ -103,7 +104,8 @@
     inset 0 0 0 1px #f2c04033,
     0 0 40px #f2c04014;
 }
-.tema-obsidiana {
+.tema-obsidiana,
+.perfil-tema.tema-obsidiana [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #c58bff;
   --primary-foreground: #14061f;
   --ring: #c58bff;
@@ -114,7 +116,8 @@
     inset 0 0 0 1px #c58bff33,
     0 0 40px #7a3cff1f;
 }
-.tema-diamante {
+.tema-diamante,
+.perfil-tema.tema-diamante [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #b9f3ff;
   --primary-foreground: #04161c;
   --ring: #b9f3ff;
@@ -125,7 +128,8 @@
     inset 0 0 0 1px #b9f3ff40,
     0 0 40px #3a8cff26;
 }
-.tema-synthwave {
+.tema-synthwave,
+.perfil-tema.tema-synthwave [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff5fa2;
   --primary-foreground: #1a0412;
   --ring: #ff5fa2;
@@ -136,7 +140,8 @@
     inset 0 0 0 1px #ff5fa240,
     0 0 40px #b02aff26;
 }
-.tema-holo {
+.tema-holo,
+.perfil-tema.tema-holo [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #7af0ff;
   --primary-foreground: #061218;
   --ring: #7af0ff;
@@ -145,7 +150,8 @@
   --border: #2b3142;
   animation: cos-holo-borde 6s linear infinite;
 }
-.tema-esmeralda {
+.tema-esmeralda,
+.perfil-tema.tema-esmeralda [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #3ddc97;
   --primary-foreground: #04170e;
   --ring: #3ddc97;
@@ -156,7 +162,8 @@
     inset 0 0 0 1px #3ddc9740,
     0 0 40px #3ddc9726;
 }
-.tema-rubi {
+.tema-rubi,
+.perfil-tema.tema-rubi [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff4d7a;
   --primary-foreground: #1f0510;
   --ring: #ff4d7a;
@@ -167,7 +174,8 @@
     inset 0 0 0 1px #ff4d7a40,
     0 0 40px #ff4d7a26;
 }
-.tema-aurora {
+.tema-aurora,
+.perfil-tema.tema-aurora [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #7dffc4;
   --primary-foreground: #06160f;
   --ring: #7dffc4;
@@ -178,12 +186,15 @@
 }
 
 /* Efectos de nombre. Los que usan ::before y ::after necesitan data-nombre con el mismo texto. */
+/* El destello lleva el color principal alrededor del blanco: en modo oscuro el texto ya es blanco. */
 .nombre-brillo {
   background: linear-gradient(
       100deg,
-      currentColor 40%,
+      currentColor 38%,
+      var(--primary) 45%,
       #fff 50%,
-      currentColor 60%
+      var(--primary) 55%,
+      currentColor 62%
     )
     0 0/250% 100%;
   -webkit-background-clip: text;
@@ -194,7 +205,7 @@
 .nombre-glitch {
   position: relative;
   display: inline-block;
-  animation: cos-glitch 2.4s steps(1) infinite;
+  animation: cos-glitch 3s steps(1) infinite;
 }
 .nombre-glitch::before,
 .nombre-glitch::after {
@@ -202,18 +213,17 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  opacity: 0;
 }
 .nombre-glitch::before {
   color: #ff2a6d;
-  clip-path: inset(0 0 55% 0);
-  opacity: 0;
-  animation: cos-glitch-a 2.4s steps(1) infinite;
+  -webkit-text-fill-color: #ff2a6d;
+  animation: cos-glitch-a 3s steps(1) infinite;
 }
 .nombre-glitch::after {
   color: #2ee6ff;
-  clip-path: inset(55% 0 0 0);
-  opacity: 0;
-  animation: cos-glitch-b 2.4s steps(1) infinite;
+  -webkit-text-fill-color: #2ee6ff;
+  animation: cos-glitch-b 3s steps(1) infinite;
 }
 .nombre-neon {
   color: #fff;
@@ -235,13 +245,14 @@
   -webkit-text-stroke: 1.5px currentColor;
   paint-order: stroke;
 }
+/* Del color del texto, no negra: en modo oscuro una sombra negra no se ve. */
 .nombre-sombra {
   text-shadow:
-    0.03em 0.03em 0 #000,
-    0.06em 0.06em 0 #0008,
-    0.09em 0.09em 0 #0006,
-    0.12em 0.12em 0 #0004,
-    0.15em 0.15em 0 #0002;
+    0.03em 0.03em 0 color-mix(in srgb, currentColor 55%, transparent),
+    0.06em 0.06em 0 color-mix(in srgb, currentColor 42%, transparent),
+    0.09em 0.09em 0 color-mix(in srgb, currentColor 30%, transparent),
+    0.12em 0.12em 0 color-mix(in srgb, currentColor 18%, transparent),
+    0.15em 0.15em 0 color-mix(in srgb, currentColor 8%, transparent);
 }
 .nombre-hielo {
   background: linear-gradient(180deg, #fff 0%, #bfefff 50%, #6fc7ea 100%);
@@ -484,7 +495,8 @@
 }
 
 /* Temas de series (VIP): borde con brillo que respira. Homenajes originales, sin logos ni personajes. */
-.tema-serie-ninja {
+.tema-serie-ninja,
+.perfil-tema.tema-serie-ninja [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff7a1a;
   --primary-foreground: #1f0c02;
   --ring: #ff7a1a;
@@ -494,7 +506,8 @@
   --glow: #ff7a1a;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-guerrero {
+.tema-serie-guerrero,
+.perfil-tema.tema-serie-guerrero [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ffd43a;
   --primary-foreground: #1b1407;
   --ring: #ffd43a;
@@ -504,7 +517,8 @@
   --glow: #ffd43a;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-alien {
+.tema-serie-alien,
+.perfil-tema.tema-serie-alien [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #3dff6e;
   --primary-foreground: #03160a;
   --ring: #3dff6e;
@@ -514,7 +528,8 @@
   --glow: #3dff6e;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-portal {
+.tema-serie-portal,
+.perfil-tema.tema-serie-portal [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #97ce4c;
   --primary-foreground: #0c1604;
   --ring: #97ce4c;
@@ -524,7 +539,8 @@
   --glow: #97ce4c;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-navaja {
+.tema-serie-navaja,
+.perfil-tema.tema-serie-navaja [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #c9a35a;
   --primary-foreground: #1c1405;
   --ring: #c9a35a;
@@ -534,7 +550,9 @@
   --glow: #c9a35a;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-laboratorio {
+.tema-serie-laboratorio,
+.perfil-tema.tema-serie-laboratorio
+  [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #c8e04a;
   --primary-foreground: #121604;
   --ring: #c8e04a;
@@ -544,7 +562,8 @@
   --glow: #c8e04a;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-reves {
+.tema-serie-reves,
+.perfil-tema.tema-serie-reves [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff2a3d;
   --primary-foreground: #1f0508;
   --ring: #ff2a3d;
@@ -554,7 +573,8 @@
   --glow: #ff2a3d;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-reinos {
+.tema-serie-reinos,
+.perfil-tema.tema-serie-reinos [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #b9c2cc;
   --primary-foreground: #101215;
   --ring: #b9c2cc;
@@ -564,7 +584,8 @@
   --glow: #b9c2cc;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-atraco {
+.tema-serie-atraco,
+.perfil-tema.tema-serie-atraco [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff3b4f;
   --primary-foreground: #1f0508;
   --ring: #ff3b4f;
@@ -574,7 +595,8 @@
   --glow: #ff3b4f;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-juego {
+.tema-serie-juego,
+.perfil-tema.tema-serie-juego [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff2f86;
   --primary-foreground: #1f0512;
   --ring: #ff2f86;
@@ -584,7 +606,8 @@
   --glow: #ff2f86;
   animation: cos-glow 3s ease-in-out infinite;
 }
-.tema-serie-reves {
+.tema-serie-reves,
+.perfil-tema.tema-serie-reves [data-slot="card"]:not([data-slot="card"] *) {
   animation: cos-glow-titila 2.6s steps(1) infinite;
 }
 
@@ -1273,7 +1296,8 @@
 }
 
 /* Arsenal (VIP): acabados propios, sin nombres de skins de Valve */
-.tema-arma-ak {
+.tema-arma-ak,
+.perfil-tema.tema-arma-ak [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff6a1a;
   --primary-foreground: #111;
   --ring: #ff6a1a;
@@ -1299,7 +1323,8 @@
   filter: drop-shadow(0 0 5px #ffd04a88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-m4 {
+.tema-arma-m4,
+.perfil-tema.tema-arma-m4 [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #8fd0ff;
   --primary-foreground: #111;
   --ring: #8fd0ff;
@@ -1325,7 +1350,8 @@
   filter: drop-shadow(0 0 5px #ffffff88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-awp {
+.tema-arma-awp,
+.perfil-tema.tema-arma-awp [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #6a8cff;
   --primary-foreground: #111;
   --ring: #6a8cff;
@@ -1351,7 +1377,8 @@
   filter: drop-shadow(0 0 5px #e0f0ff88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-deagle {
+.tema-arma-deagle,
+.perfil-tema.tema-arma-deagle [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #f2c040;
   --primary-foreground: #111;
   --ring: #f2c040;
@@ -1377,7 +1404,8 @@
   filter: drop-shadow(0 0 5px #fff3c088);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-scout {
+.tema-arma-scout,
+.perfil-tema.tema-arma-scout [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #8ac04a;
   --primary-foreground: #111;
   --ring: #8ac04a;
@@ -1403,7 +1431,8 @@
   filter: drop-shadow(0 0 5px #c8e08a88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-usp {
+.tema-arma-usp,
+.perfil-tema.tema-arma-usp [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #9a8aff;
   --primary-foreground: #111;
   --ring: #9a8aff;
@@ -1429,7 +1458,8 @@
   filter: drop-shadow(0 0 5px #c0b0ff88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-glock {
+.tema-arma-glock,
+.perfil-tema.tema-arma-glock [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff5a95;
   --primary-foreground: #111;
   --ring: #ff5a95;
@@ -1455,7 +1485,8 @@
   filter: drop-shadow(0 0 5px #ffffff88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-mp5 {
+.tema-arma-mp5,
+.perfil-tema.tema-arma-mp5 [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #00ffd0;
   --primary-foreground: #111;
   --ring: #00ffd0;
@@ -1483,7 +1514,8 @@
     cos-mover-250 2.4s linear infinite,
     cos-holo 4s linear infinite;
 }
-.tema-arma-cuchillo {
+.tema-arma-cuchillo,
+.perfil-tema.tema-arma-cuchillo [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #d0d0e0;
   --primary-foreground: #111;
   --ring: #d0d0e0;
@@ -1509,7 +1541,8 @@
   filter: drop-shadow(0 0 5px #ffffff88);
   animation: cos-mover-250 2.4s linear infinite;
 }
-.tema-arma-he {
+.tema-arma-he,
+.perfil-tema.tema-arma-he [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ffd23a;
   --primary-foreground: #111;
   --ring: #ffd23a;
@@ -1539,7 +1572,8 @@
 }
 
 /* Series míticas 2 (VIP): homenajes originales, sin logos ni personajes */
-.tema-serie-dona {
+.tema-serie-dona,
+.perfil-tema.tema-serie-dona [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff7ab8;
   --primary-foreground: #111;
   --ring: #ff7ab8;
@@ -1565,7 +1599,8 @@
   filter: drop-shadow(0 0 5px #ff9ad088);
   animation: cos-mover-250 2.6s linear infinite;
 }
-.tema-serie-zombi {
+.tema-serie-zombi,
+.perfil-tema.tema-serie-zombi [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #7fa86a;
   --primary-foreground: #111;
   --ring: #7fa86a;
@@ -1583,7 +1618,8 @@
     0 0 12px #2a4a1a;
   animation: cos-mutante 2.4s ease-in-out infinite;
 }
-.tema-serie-barril {
+.tema-serie-barril,
+.perfil-tema.tema-serie-barril [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ffd23a;
   --primary-foreground: #111;
   --ring: #ffd23a;
@@ -1600,7 +1636,8 @@
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 0 #000);
 }
-.tema-serie-fuga {
+.tema-serie-fuga,
+.perfil-tema.tema-serie-fuga [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff7a1a;
   --primary-foreground: #111;
   --ring: #ff7a1a;
@@ -1622,7 +1659,8 @@
     0 0 6px #3a5ab088;
   letter-spacing: 0.05em;
 }
-.tema-serie-radiacion {
+.tema-serie-radiacion,
+.perfil-tema.tema-serie-radiacion [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ffd400;
   --primary-foreground: #111;
   --ring: #ffd400;
@@ -1640,7 +1678,8 @@
     0 0 14px #6aff00;
   animation: cos-mutante 1.2s ease-in-out infinite;
 }
-.tema-serie-vikingo {
+.tema-serie-vikingo,
+.perfil-tema.tema-serie-vikingo [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #9aa3ad;
   --primary-foreground: #111;
   --ring: #9aa3ad;
@@ -1672,7 +1711,8 @@
   filter: drop-shadow(0 0 5px #e0c08088);
   animation: cos-mover-250 3.5s linear infinite;
 }
-.tema-serie-elementos {
+.tema-serie-elementos,
+.perfil-tema.tema-serie-elementos [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff4a2a;
   --primary-foreground: #111;
   --ring: #ff4a2a;
@@ -1697,7 +1737,8 @@
   -webkit-text-fill-color: transparent;
   animation: cos-mover-300 4s linear infinite;
 }
-.tema-serie-robot {
+.tema-serie-robot,
+.perfil-tema.tema-serie-robot [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #b8c2cc;
   --primary-foreground: #111;
   --ring: #b8c2cc;
@@ -1717,7 +1758,8 @@
   text-shadow: 0 0 6px #3ad0ff;
   animation: cos-neon 2.4s ease-in-out infinite;
 }
-.tema-serie-fondo-mar {
+.tema-serie-fondo-mar,
+.perfil-tema.tema-serie-fondo-mar [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #ff9a2a;
   --primary-foreground: #111;
   --ring: #ff9a2a;
@@ -1727,23 +1769,85 @@
   --glow: #ff9a2a;
   animation: cos-glow 3s ease-in-out infinite;
 }
+/* Burbujas: agua azul y, encima, tres capas de burbujas que suben a distinta velocidad (editado a mano). */
 .nombre-fondo-mar {
-  background: linear-gradient(
-      100deg,
-      #1a8ab8 0%,
-      #6ad8ff 30%,
-      #ffffff 45%,
-      #6ad8ff 60%,
-      #1a8ab8 100%
-    )
-    0 0/250% 100%;
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(180deg, #c8f3ff 0%, #4cc3ff 45%, #1a6fb8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 5px #6ad8ff88);
-  animation: cos-mover-250 2.2s linear infinite;
+  filter: drop-shadow(0 0 4px #4cc3ff88);
 }
-.tema-serie-isla {
+.nombre-fondo-mar::after {
+  content: "";
+  position: absolute;
+  inset: -0.3em -0.1em;
+  z-index: -1;
+  pointer-events: none;
+  /* Una columna de burbujas por capa; cada una sube su alto por vuelta, así van a distinta velocidad. */
+  background:
+    radial-gradient(
+      circle at 8% 50%,
+      transparent 2px,
+      #4cc3ff 2px 3px,
+      transparent 3.5px
+    ),
+    radial-gradient(circle at 24% 50%, #4cc3ffcc 1.5px, transparent 2px),
+    radial-gradient(
+      circle at 41% 50%,
+      transparent 3px,
+      #4cc3ffaa 3px 4px,
+      transparent 4.5px
+    ),
+    radial-gradient(circle at 57% 50%, #4cc3ffcc 1.5px, transparent 2px),
+    radial-gradient(
+      circle at 74% 50%,
+      transparent 2px,
+      #4cc3ff 2px 3px,
+      transparent 3.5px
+    ),
+    radial-gradient(
+      circle at 91% 50%,
+      transparent 2.5px,
+      #4cc3ffaa 2.5px 3.5px,
+      transparent 4px
+    );
+  background-repeat: repeat-y;
+  background-size:
+    100% 34px,
+    100% 26px,
+    100% 46px,
+    100% 30px,
+    100% 40px,
+    100% 22px;
+  -webkit-mask-image: linear-gradient(to top, #000 40%, transparent);
+  mask-image: linear-gradient(to top, #000 40%, transparent);
+  animation: cos-burbujas 2.6s linear infinite;
+}
+@keyframes cos-burbujas {
+  from {
+    background-position:
+      0 0px,
+      0 13px,
+      0 30px,
+      0 7px,
+      0 22px,
+      0 5px;
+  }
+  to {
+    background-position:
+      0 -34px,
+      0 -13px,
+      0 -16px,
+      0 -23px,
+      0 -18px,
+      0 -17px;
+  }
+}
+
+.tema-serie-isla,
+.perfil-tema.tema-serie-isla [data-slot="card"]:not([data-slot="card"] *) {
   --primary: #e8d08a;
   --primary-foreground: #111;
   --ring: #e8d08a;
@@ -1781,49 +1885,85 @@
     background-position: -300% 0;
   }
 }
+/* Ráfagas al final de cada vuelta: cortes horizontales que cambian de altura y se corren. */
 @keyframes cos-glitch {
   0%,
-  88%,
+  70%,
+  80%,
+  90%,
   100% {
     transform: none;
   }
-  90% {
-    transform: translate(1px, -1px);
+  72% {
+    transform: translate(0.04em, 0) skewX(-8deg);
   }
-  94% {
-    transform: translate(-1px, 1px);
+  76% {
+    transform: translate(-0.05em, 0);
+  }
+  88% {
+    transform: translate(0.03em, 0) skewX(6deg);
   }
 }
 @keyframes cos-glitch-a {
   0%,
-  86%,
+  70%,
+  81%,
+  90%,
   100% {
-    transform: translate(0, 0);
     opacity: 0;
+    transform: none;
+    clip-path: inset(0 0 100% 0);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(-0.12em, 0);
+    clip-path: inset(8% 0 62% 0);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(0.1em, 0);
+    clip-path: inset(55% 0 20% 0);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-0.06em, 0);
+    clip-path: inset(30% 0 48% 0);
   }
   88% {
-    transform: translate(-3px, 0);
-    opacity: 0.85;
-  }
-  92% {
-    transform: translate(2px, 0);
-    opacity: 0.85;
+    opacity: 1;
+    transform: translate(0.08em, 0);
+    clip-path: inset(0 0 70% 0);
   }
 }
 @keyframes cos-glitch-b {
   0%,
-  86%,
+  70%,
+  81%,
+  90%,
   100% {
-    transform: translate(0, 0);
     opacity: 0;
+    transform: none;
+    clip-path: inset(100% 0 0 0);
   }
-  89% {
-    transform: translate(3px, 0);
-    opacity: 0.85;
+  73% {
+    opacity: 1;
+    transform: translate(0.12em, 0);
+    clip-path: inset(60% 0 12% 0);
   }
-  93% {
-    transform: translate(-2px, 0);
-    opacity: 0.85;
+  76% {
+    opacity: 1;
+    transform: translate(-0.1em, 0);
+    clip-path: inset(22% 0 55% 0);
+  }
+  79% {
+    opacity: 1;
+    transform: translate(0.05em, 0);
+    clip-path: inset(70% 0 5% 0);
+  }
+  88% {
+    opacity: 1;
+    transform: translate(-0.08em, 0);
+    clip-path: inset(65% 0 0 0);
   }
 }
 @keyframes cos-neon {
@@ -2042,14 +2182,669 @@
   }
 }
 
+/* --- Equipo táctico y otros nombres y temas (2026-11-20-tienda-equipo-tactico) --- */
+/* El blanco del destello es una copia encima (::after): animar color lo iría aclarando toda la vuelta. */
+.nombre-flashbang {
+  position: relative;
+  display: inline-block;
+  animation: cos-flashbang 3.6s ease-out infinite;
+}
+.nombre-flashbang::after {
+  content: attr(data-nombre);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  text-shadow:
+    0 0 0.2em #fff,
+    0 0 0.6em #fff,
+    0 0 1.2em #fff6c8;
+  opacity: 0;
+  animation: cos-flashbang-luz 3.6s ease-out infinite;
+}
+.nombre-humo {
+  animation: cos-humo 4s ease-in-out infinite;
+}
+.nombre-c4 {
+  color: #ff4040;
+  -webkit-text-fill-color: #ff4040;
+  animation: cos-c4 3s linear infinite;
+}
+.nombre-nocturna {
+  background: repeating-linear-gradient(180deg, #6dff5a 0 2px, #1f9a1f 2px 3px);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 0.18em #3dff3d88);
+  animation:
+    cos-nocturna 1s linear infinite,
+    cos-nocturna-titila 4s steps(1) infinite;
+}
+/* Barrido de radar: borde de adelante marcado y estela detrás. */
+.nombre-radar {
+  background: linear-gradient(
+      90deg,
+      currentColor 0 38%,
+      #18d36a 50%,
+      currentColor 50.6%
+    )
+    0 0/300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cos-radar 2.4s linear infinite;
+}
+.nombre-headshot {
+  position: relative;
+  display: inline-block;
+  animation: cos-headshot 2.8s linear infinite;
+}
+.nombre-headshot::after {
+  content: attr(data-nombre);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #ff2a2a;
+  -webkit-text-fill-color: #ff2a2a;
+  text-shadow: 0 0 0.3em #ff000099;
+  opacity: 0;
+  animation: cos-headshot-rojo 2.8s linear infinite;
+}
+/* Como el aviso de muerte del juego; sin animación. */
+.nombre-killfeed {
+  display: inline-block;
+  padding: 0.06em 0.45em 0.1em;
+  border: 1.5px solid #e23b3b;
+  border-radius: 0.18em;
+  background: #0b0b0bd9;
+  color: #9ec5ff;
+  -webkit-text-fill-color: #9ec5ff;
+  font-family:
+    Tahoma,
+    Verdana,
+    Segoe UI,
+    sans-serif;
+  font-weight: 700;
+}
+.nombre-spray {
+  display: inline-block;
+  color: #ff3fa0;
+  -webkit-text-fill-color: #ff3fa0;
+  transform: rotate(-3deg);
+  animation: cos-spray 4.5s ease-in infinite;
+}
+.nombre-tormenta {
+  background: linear-gradient(180deg, #c9d6ff, #5b74d6 60%, #2a3a8a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cos-tormenta 3.2s linear infinite;
+}
+.nombre-eclipse {
+  color: #14110c;
+  -webkit-text-fill-color: #14110c;
+  text-shadow:
+    0 -0.06em 0.12em #ffd36b,
+    0 0 0.45em #ff9a2a99;
+  animation: cos-eclipse 3s linear infinite;
+}
+
+.tema-flashbang,
+.perfil-tema.tema-flashbang [data-slot="card"]:not([data-slot="card"] *) {
+  --primary: #eef2ff;
+  --primary-foreground: #0b0d14;
+  --ring: #eef2ff;
+  --card: #101218;
+  --muted: #181b24;
+  --border: #cfd6ff33;
+  animation: cos-tema-flashbang 3.6s ease-out infinite;
+}
+.tema-humo,
+.perfil-tema.tema-humo [data-slot="card"]:not([data-slot="card"] *) {
+  --primary: #b8c0c8;
+  --primary-foreground: #111;
+  --ring: #b8c0c8;
+  --card: #121416;
+  --muted: #1b1e21;
+  --border: #b8c0c833;
+  animation: cos-tema-humo 5s ease-in-out infinite;
+}
+.tema-c4,
+.perfil-tema.tema-c4 [data-slot="card"]:not([data-slot="card"] *) {
+  --primary: #ff4040;
+  --primary-foreground: #1a0303;
+  --ring: #ff4040;
+  --card: #170a0a;
+  --muted: #241010;
+  --border: #ff404055;
+  animation: cos-tema-c4 3s linear infinite;
+}
+.tema-nocturna,
+.perfil-tema.tema-nocturna [data-slot="card"]:not([data-slot="card"] *) {
+  --primary: #6dff5a;
+  --primary-foreground: #031403;
+  --ring: #6dff5a;
+  --card: #050c05;
+  --muted: #0b1a0b;
+  --border: #6dff5a44;
+  box-shadow: inset 0 0 40px #3dff3d22;
+}
+/* Las líneas y el barrido en cada tarjeta, no en el fondo de toda la página del jugador. */
+.tema-nocturna:not(.perfil-tema),
+.perfil-tema.tema-nocturna [data-slot="card"]:not([data-slot="card"] *) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: repeating-linear-gradient(180deg, #071207 0 2px, #040a04 2px 4px);
+}
+.tema-nocturna:not(.perfil-tema)::after,
+.perfil-tema.tema-nocturna [data-slot="card"]:not([data-slot="card"] *)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -30%;
+  height: 30%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, #6dff5a14 80%, #6dff5a33);
+  animation: cos-tema-nocturna 3s linear infinite;
+}
+@property --cos-radar {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.tema-radar {
+  --primary: #3dff8e;
+  --primary-foreground: #03140a;
+  --ring: #3dff8e;
+  --card: #07120c;
+  --muted: #0d1f15;
+  --border: #3dff8e44;
+}
+/* El barrido da la vuelta al borde: un degradado cónico que gira detrás del fondo. */
+.tema-radar:not(.perfil-tema),
+.perfil-tema.tema-radar [data-slot="card"]:not([data-slot="card"] *) {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    conic-gradient(from var(--cos-radar), #3dff8e18 0 55%, #3dff8e 100%)
+      border-box;
+  animation: cos-tema-radar 3s linear infinite;
+}
+.tema-headshot,
+.perfil-tema.tema-headshot [data-slot="card"]:not([data-slot="card"] *) {
+  --primary: #ff2a4a;
+  --primary-foreground: #1a0308;
+  --ring: #ff2a4a;
+  --card: #160a0e;
+  --muted: #231016;
+  --border: #ff2a4a44;
+  animation: cos-tema-headshot 2.8s linear infinite;
+}
+.tema-medianoche {
+  --primary: #5b86ff;
+  --primary-foreground: #050a1c;
+  --ring: #5b86ff;
+  --card: #0a0f1f;
+  --muted: #111a30;
+  --border: #5b86ff44;
+}
+.tema-cobre {
+  --primary: #e08a52;
+  --primary-foreground: #1c0d03;
+  --ring: #e08a52;
+  --card: #170f0a;
+  --muted: #241811;
+  --border: #e08a5244;
+}
+.tema-lavanda {
+  --primary: #b79cff;
+  --primary-foreground: #12082a;
+  --ring: #b79cff;
+  --card: #120f1c;
+  --muted: #1c1729;
+  --border: #b79cff44;
+}
+.tema-turquesa {
+  --primary: #2fd6c6;
+  --primary-foreground: #021a17;
+  --ring: #2fd6c6;
+  --card: #081716;
+  --muted: #0f2321;
+  --border: #2fd6c644;
+}
+.tema-vino {
+  --primary: #d9416a;
+  --primary-foreground: #1f040c;
+  --ring: #d9416a;
+  --card: #170a0e;
+  --muted: #241117;
+  --border: #d9416a44;
+}
+.tema-menta {
+  --primary: #6ff0b0;
+  --primary-foreground: #03170d;
+  --ring: #6ff0b0;
+  --card: #0a1611;
+  --muted: #11211a;
+  --border: #6ff0b044;
+}
+
+@keyframes cos-flashbang {
+  0%,
+  74%,
+  100% {
+    filter: blur(0);
+  }
+  76% {
+    filter: blur(2px);
+  }
+  86% {
+    filter: blur(0.8px);
+  }
+}
+@keyframes cos-flashbang-luz {
+  0%,
+  74%,
+  100% {
+    opacity: 0;
+  }
+  76% {
+    opacity: 1;
+  }
+  86% {
+    opacity: 0.6;
+  }
+}
+@keyframes cos-humo {
+  0%,
+  30%,
+  100% {
+    filter: blur(0);
+    opacity: 1;
+    text-shadow:
+      0 0 0 transparent,
+      0 0 0 transparent;
+  }
+  55% {
+    filter: blur(2.5px);
+    opacity: 0.35;
+    text-shadow:
+      0 -0.15em 0.35em #9aa3ad,
+      0.1em -0.3em 0.5em #9aa3ad88;
+  }
+  72% {
+    filter: blur(1px);
+    opacity: 0.75;
+    text-shadow:
+      0 -0.08em 0.3em #9aa3ad88,
+      0.05em -0.15em 0.4em #9aa3ad44;
+  }
+}
+/* Pulsos cada vez más seguidos, como el pitido de la bomba, y el destello final. */
+@keyframes cos-c4 {
+  0%,
+  9%,
+  30%,
+  39%,
+  55%,
+  62%,
+  72%,
+  77%,
+  83%,
+  87%,
+  90%,
+  93%,
+  95%,
+  97% {
+    text-shadow:
+      0 0 0.1em #ff404066,
+      0 0 0 transparent,
+      0 0 0 transparent;
+  }
+  4%,
+  34%,
+  58%,
+  74%,
+  85%,
+  91.5%,
+  96%,
+  98.5% {
+    text-shadow:
+      0 0 0.15em #ff4040,
+      0 0 0.5em #ff2020,
+      0 0 1em #ff0000;
+  }
+  100% {
+    text-shadow:
+      0 0 0.2em #fff,
+      0 0 0.8em #ff4040,
+      0 0 1.6em #ff0000;
+  }
+}
+@keyframes cos-nocturna {
+  to {
+    background-position: 0 6px;
+  }
+}
+@keyframes cos-nocturna-titila {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  47% {
+    opacity: 0.7;
+  }
+  48% {
+    opacity: 1;
+  }
+  49% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cos-radar {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes cos-headshot {
+  0%,
+  80%,
+  100% {
+    transform: none;
+  }
+  81% {
+    transform: translate(0.05em, -0.03em) rotate(-2deg);
+  }
+  83% {
+    transform: translate(-0.04em, 0.02em) rotate(1.5deg);
+  }
+  86% {
+    transform: translate(0.02em, 0);
+  }
+  90% {
+    transform: none;
+  }
+}
+@keyframes cos-headshot-rojo {
+  0%,
+  80%,
+  100% {
+    opacity: 0;
+  }
+  81%,
+  84% {
+    opacity: 1;
+  }
+}
+@keyframes cos-spray {
+  0%,
+  8% {
+    text-shadow:
+      0 0 0.08em #ff3fa0aa,
+      0 0 0 transparent,
+      0 0 0 transparent,
+      0 0 0 transparent;
+  }
+  70%,
+  100% {
+    text-shadow:
+      0 0 0.08em #ff3fa0aa,
+      0 0.1em 0 #ff3fa0aa,
+      0 0.2em 0 #ff3fa066,
+      0 0.3em 0.02em #ff3fa033;
+  }
+}
+@keyframes cos-tormenta {
+  0%,
+  28%,
+  31%,
+  34%,
+  66%,
+  69%,
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0 #cfe0ff00)
+      drop-shadow(0 0 0 #7fa2ff00);
+  }
+  29.5%,
+  33%,
+  67.5% {
+    filter: brightness(2.2) drop-shadow(0 0 0.25em #cfe0ff)
+      drop-shadow(0 0 0.6em #7fa2ff);
+  }
+}
+@keyframes cos-eclipse {
+  0%,
+  100% {
+    text-shadow:
+      0 -0.06em 0.12em #ffd36b,
+      0 0 0.45em #ff9a2a99;
+  }
+  25% {
+    text-shadow:
+      0.06em 0 0.12em #ffd36b,
+      0 0 0.45em #ff9a2a99;
+  }
+  50% {
+    text-shadow:
+      0 0.06em 0.12em #ffd36b,
+      0 0 0.45em #ff9a2a99;
+  }
+  75% {
+    text-shadow:
+      -0.06em 0 0.12em #ffd36b,
+      0 0 0.45em #ff9a2a99;
+  }
+}
+@keyframes cos-tema-flashbang {
+  0%,
+  74%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px #ffffff22,
+      0 0 0 #fff0;
+  }
+  76% {
+    box-shadow:
+      inset 0 0 0 2px #fff,
+      inset 0 0 60px #ffffffaa,
+      0 0 40px #ffffffaa;
+  }
+  86% {
+    box-shadow:
+      inset 0 0 0 1px #ffffff88,
+      inset 0 0 20px #ffffff33,
+      0 0 16px #ffffff44;
+  }
+}
+@keyframes cos-tema-humo {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 30px #9aa3ad11,
+      0 0 30px #9aa3ad11;
+  }
+  50% {
+    box-shadow:
+      inset 0 0 50px #9aa3ad33,
+      0 0 50px #9aa3ad33;
+  }
+}
+@keyframes cos-tema-c4 {
+  0%,
+  9%,
+  30%,
+  39%,
+  55%,
+  62%,
+  72%,
+  77%,
+  83%,
+  87%,
+  90%,
+  93%,
+  95%,
+  97% {
+    box-shadow:
+      inset 0 0 0 1px #ff404033,
+      0 0 0 #f000;
+  }
+  4%,
+  34%,
+  58%,
+  74%,
+  85%,
+  91.5%,
+  96%,
+  98.5% {
+    box-shadow:
+      inset 0 0 0 1px #ff4040,
+      0 0 28px #ff202088;
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 2px #fff,
+      inset 0 0 40px #ff4040aa,
+      0 0 50px #ff2020;
+  }
+}
+@keyframes cos-tema-nocturna {
+  to {
+    top: 100%;
+  }
+}
+@keyframes cos-tema-radar {
+  to {
+    --cos-radar: 360deg;
+  }
+}
+@keyframes cos-tema-headshot {
+  0%,
+  80%,
+  100% {
+    box-shadow: inset 0 0 0 1px #ff2a4a22;
+  }
+  81% {
+    box-shadow:
+      inset 0 0 0 2px #ff2a4a,
+      inset 0 0 50px #ff000066,
+      0 0 24px #ff2a4a88;
+  }
+  90% {
+    box-shadow: inset 0 0 0 1px #ff2a4a55;
+  }
+}
+/* --- fin: Equipo táctico --- */
+
 @media (prefers-reduced-motion: reduce) {
+  .perfil-tema [data-slot="card"]:not([data-slot="card"] *),
+  .perfil-tema [data-slot="card"]:not([data-slot="card"] *)::after {
+    animation: none;
+  }
   [class*="nombre-"],
   [class*="nombre-"]::before,
   [class*="nombre-"]::after,
   .tema-holo,
   .tema-aurora,
-  [class*="tema-serie-"] {
+  [class*="tema-serie-"],
+  .tema-flashbang,
+  .tema-humo,
+  .tema-c4,
+  .tema-headshot,
+  .tema-radar,
+  .tema-nocturna::after,
+  .perfil-tema.tema-nocturna
+    [data-slot="card"]:not([data-slot="card"] *)::after {
     animation: none;
+  }
+  /* Equipo táctico, quietos pero mostrando el efecto. */
+  .nombre-flashbang {
+    text-shadow:
+      0 0 0.25em #ffe9a0,
+      0 0 0.7em #ffd86b;
+  }
+  .nombre-humo {
+    text-shadow:
+      0 -0.1em 0.35em #9aa3ad99,
+      0.12em -0.25em 0.5em #9aa3ad66;
+  }
+  .nombre-c4 {
+    text-shadow:
+      0 0 0.15em #ff4040,
+      0 0 0.5em #ff2020;
+  }
+  .nombre-radar {
+    background-position: 40% 0;
+  }
+  .nombre-headshot {
+    transform: rotate(-1.5deg);
+    text-shadow:
+      0.05em 0 0 #ff2a2a99,
+      0 0 0.3em #ff000055;
+  }
+  .nombre-spray {
+    text-shadow:
+      0 0 0.08em #ff3fa0aa,
+      0 0.1em 0 #ff3fa0aa,
+      0 0.2em 0 #ff3fa066,
+      0 0.3em 0.02em #ff3fa033;
+  }
+  .nombre-tormenta {
+    filter: brightness(1.5) drop-shadow(0 0 0.2em #cfe0ff)
+      drop-shadow(0 0 0.4em #7fa2ff);
+  }
+  .tema-flashbang,
+  .perfil-tema.tema-flashbang [data-slot="card"]:not([data-slot="card"] *) {
+    box-shadow:
+      inset 0 0 0 1px #ffffff88,
+      inset 0 0 20px #ffffff22;
+  }
+  .tema-humo,
+  .perfil-tema.tema-humo [data-slot="card"]:not([data-slot="card"] *) {
+    box-shadow:
+      inset 0 0 40px #9aa3ad22,
+      0 0 40px #9aa3ad22;
+  }
+  .tema-c4,
+  .perfil-tema.tema-c4 [data-slot="card"]:not([data-slot="card"] *) {
+    box-shadow:
+      inset 0 0 0 1px #ff4040,
+      0 0 20px #ff202055;
+  }
+  .tema-headshot,
+  .perfil-tema.tema-headshot [data-slot="card"]:not([data-slot="card"] *) {
+    box-shadow:
+      inset 0 0 0 1px #ff2a4a88,
+      inset 0 0 24px #ff000033;
+  }
+  .tema-nocturna:not(.perfil-tema)::after {
+    top: 35%;
+  }
+  .tema-radar:not(.perfil-tema) {
+    --cos-radar: 200deg;
+  }
+  /* Quietos, pero mostrando el efecto: sin esto, Brillo y Glitch quedan como un nombre normal. */
+  .nombre-brillo {
+    background-position: 50% 0;
+  }
+  .nombre-glitch::before {
+    opacity: 0.85;
+    clip-path: inset(0 0 55% 0);
+    transform: translateX(-0.06em);
+  }
+  .nombre-glitch::after {
+    opacity: 0.85;
+    clip-path: inset(55% 0 0 0);
+    transform: translateX(0.06em);
   }
 }
 

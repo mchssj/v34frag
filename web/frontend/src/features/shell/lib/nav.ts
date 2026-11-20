@@ -1,5 +1,6 @@
 import {
   AwardIcon,
+  BackpackIcon,
   BanIcon,
   CalendarRangeIcon,
   ChartColumnIcon,
@@ -78,6 +79,13 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       },
       // (replanteo 113) Cosméticos con los puntos de los mixes (docs/bitacora/2026-11-11-tienda-de-puntos).
       { key: "shop", label: "Tienda", to: "/shop", icon: StoreIcon },
+      // Lo que tienes de la tienda, aparte (docs/bitacora/2026-11-20-inventario).
+      {
+        key: "inventory",
+        label: "Inventario",
+        to: "/inventory",
+        icon: BackpackIcon,
+      },
       // (replanteo 87) Quiénes están detrás del proyecto y los VIP (docs/bitacora/2026-11-07-pagina-equipo).
       {
         key: "staff",

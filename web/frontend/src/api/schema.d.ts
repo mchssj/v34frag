@@ -30527,6 +30527,8 @@ export interface components {
             vip_price: number | null;
             /** @description Está en las ofertas de esta semana */
             weekly: boolean;
+            /** @description Entró a la tienda hace menos de 3 días (replanteo 132) */
+            is_new: boolean;
             /** @description Lo tienes (con sesión; sin sesión, false) */
             owned: boolean;
             /** @description Puedes equiparlo hoy: lo tienes (lo VIP, siendo VIP) o es el premio VIP y eres VIP */

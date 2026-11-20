@@ -53,7 +53,7 @@ const restUrl = (calls: Call[], table: string) => calls.find((x) => x.url.includ
 
 const item = (o: Record<string, unknown> = {}) => ({
   id: 'marco-mira', kind: 'frame', name: 'Mira', description: 'Esquinas tácticas', file: 'marcos/mira.svg', css_class: null,
-  vip_only: false, vip_reward: false, animated: true, collection: 'cs', base_price: 1200, price: 1200, vip_price: null, weekly: false, sort: 10, ...o,
+  vip_only: false, vip_reward: false, animated: true, collection: 'cs', base_price: 1200, price: 1200, vip_price: null, weekly: false, sort: 10, is_new: false, ...o,
 });
 const listed = (rows: unknown[]) =>
   new Response(JSON.stringify(rows), { headers: { 'Content-Type': 'application/json', 'Content-Range': `0-${rows.length - 1}/${rows.length}` } });
@@ -97,16 +97,17 @@ describe('esquemas', () => {
 
 describe('catálogo', () => {
   it('sin sesión: todo sin marcar, filtros y orden; owned pide sesión', async () => {
-    const calls = postgrest('user', (url) => (url.pathname.endsWith('/shop_catalog') ? listed([item()]) : undefined));
+    const calls = postgrest('user', (url) => (url.pathname.endsWith('/shop_catalog') ? listed([item({ is_new: true })]) : undefined));
     const res = await call('GET', '/api/v1/shop/items?kind=frame&vip=false&q=mi&sort=price&order=desc', undefined, false);
     expect(res.status).toBe(200);
     const body = await json(res);
-    expect(body.items[0]).toMatchObject({ id: 'marco-mira', price: 1200, owned: false, usable: false, equipped: false });
+    expect(body.items[0]).toMatchObject({ id: 'marco-mira', price: 1200, owned: false, usable: false, equipped: false, is_new: true });
     expect(body.weekly_ends).toMatch(/T03:00:00.000Z$/);
     const url = restUrl(calls, 'shop_catalog');
     expect(url).toContain('kind=eq.frame');
     expect(url).toContain('vip_only=eq.false');
     expect(url).toContain('name=ilike.%mi%');
+    expect(url).toContain('is_new');
     expect(url).toContain('order=price.desc.nullslast,vip_price.desc.nullslast,id.asc');
     expect((await call('GET', '/api/v1/shop/items?owned=true', undefined, false)).status).toBe(401);
   });

@@ -383,6 +383,8 @@ export function CreateCodeDialog({
       per: 8,
       sort: "name",
       order: "asc",
+      // Un sorteo no da artículos desactivados (replanteo 131).
+      active: "true",
       ...(itemTerm ? { q: itemTerm } : {}),
     }),
     enabled: reward === "item" && !item,
@@ -478,17 +480,11 @@ export function CreateCodeDialog({
                 />
                 <span className="flex-1">
                   {item.name}
-                  {(item.vip_only || !item.active) && (
+                  {item.vip_only && (
                     <span className="block text-xs text-muted-foreground">
-                      {[
-                        item.vip_only &&
-                          (vipFree
-                            ? "VIP: el ganador lo usa aunque no sea VIP"
-                            : "VIP: se usa siendo VIP"),
-                        !item.active && "No está en la tienda",
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
+                      {vipFree
+                        ? "VIP: el ganador lo usa aunque no sea VIP"
+                        : "VIP: se usa siendo VIP"}
                     </span>
                   )}
                 </span>

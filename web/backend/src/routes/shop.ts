@@ -228,9 +228,9 @@ const adminCoverClear = createRoute({
 type CatalogRow = {
   id: string | null; kind: string | null; name: string | null; description: string | null; file: string | null; css_class: string | null;
   vip_only: boolean | null; vip_reward: boolean | null; animated: boolean | null; collection: string | null; base_price: number | null;
-  price: number | null; vip_price: number | null; weekly: boolean | null; sort: number | null;
+  price: number | null; vip_price: number | null; weekly: boolean | null; sort: number | null; is_new: boolean | null;
 };
-const CATALOG = 'id, kind, name, description, file, css_class, vip_only, vip_reward, animated, collection, base_price, price, vip_price, weekly, sort';
+const CATALOG = 'id, kind, name, description, file, css_class, vip_only, vip_reward, animated, collection, base_price, price, vip_price, weekly, sort, is_new';
 
 type ConfigRow = z.infer<typeof PointsConfig>;
 const CONFIG =
@@ -376,7 +376,7 @@ export const shop = createRouter()
       return {
         id: r.id!, kind: r.kind as z.infer<typeof AdminShopItem>['kind'], name: r.name ?? '', description: r.description, file: r.file,
         css_class: r.css_class, collection: r.collection ?? '', animated: !!r.animated, vip_only: !!r.vip_only, vip_reward: !!r.vip_reward,
-        price: r.price, base_price: r.base_price, vip_price: r.vip_price, weekly: !!r.weekly,
+        price: r.price, base_price: r.base_price, vip_price: r.vip_price, weekly: !!r.weekly, is_new: !!r.is_new,
         owned,
         usable: owned && (!r.vip_only || !!me?.vip || !!me?.vipFree.has(r.id!)),
         equipped: !!me?.equipped.has(r.id!),

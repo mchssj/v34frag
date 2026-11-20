@@ -1,0 +1,3 @@
+CMLeague 2.9.58 --  Changelog
+
+- En la tienda, lo que llegó en los últimos 3 días ahora tiene la etiqueta "Nuevo", para que veas de un vistazo qué hay de nuevo.

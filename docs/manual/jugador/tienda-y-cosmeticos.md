@@ -30,7 +30,11 @@ En la Tienda, **Historial** muestra cada mix, cada compra, cada código que canj
 
 Las **Ofertas de la semana** tienen descuento y cambian cada lunes a las 00:00 (hora de Argentina).
 
+Lo que llegó a la tienda en los últimos 3 días lleva la etiqueta **Nuevo** (si ya lo tienes, no).
+
 ## 2. Ponértelo
+
+Todo lo que tienes está en [Inventario](/inventory) (en el menú, debajo de **Tienda**), separado por tipo y con lo que tienes puesto primero. También lo ves en la Tienda con **Mostrar › Lo mío**.
 
 En la tarjeta de algo que ya tienes, toca **Equipar**; para sacártelo, **Sacar**. Puedes tener puesto un marco, un avatar, un tema, un efecto de nombre, un fondo de miniperfil y hasta **3 stickers** (si te pones un cuarto, se saca el más viejo).
 

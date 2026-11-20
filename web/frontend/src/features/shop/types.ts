@@ -47,6 +47,7 @@ export const COLLECTIONS: Record<string, string> = {
   series2: "Series míticas 2",
   anime: "Anime",
   memes: "Memes",
+  tactico: "Equipo táctico",
   vip: "VIP",
 }
 

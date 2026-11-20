@@ -31,7 +31,7 @@ const item = {
   vip_reward: false,
   price: 300,
   vip_price: null,
-  active: false,
+  active: true,
   sort: 1,
   owners: 0,
 }
@@ -39,15 +39,25 @@ const server = setupServer(
   http.get(`${API}/api/v1/shop/config`, () =>
     HttpResponse.json({ code_vip_free: true })
   ),
-  http.get(`${API}/api/v1/admin/shop/items`, () =>
-    HttpResponse.json({
-      items: [item],
-      total: 1,
-      page: 1,
-      per: 8,
-      sort: "name",
-      order: "asc",
-    })
+  http.get(`${API}/api/v1/admin/shop/items`, ({ request }) =>
+    // Un sorteo no da artículos desactivados: la búsqueda pide solo los activos.
+    new URL(request.url).searchParams.get("active") !== "true"
+      ? HttpResponse.json({
+          items: [],
+          total: 0,
+          page: 1,
+          per: 8,
+          sort: "name",
+          order: "asc",
+        })
+      : HttpResponse.json({
+          items: [item],
+          total: 1,
+          page: 1,
+          per: 8,
+          sort: "name",
+          order: "asc",
+        })
   )
 )
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }))
@@ -81,7 +91,6 @@ describe("nuevo código", () => {
     const generate = screen.getByRole("button", { name: "Generar" })
     expect(generate).toBeDisabled()
     await user.click(await screen.findByRole("button", { name: /Mira/ }))
-    expect(screen.getByText(/No está en la tienda/)).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Por días" }))
     await user.click(screen.getByRole("button", { name: "1 mes" }))
     await user.type(screen.getByLabelText("Sorteo"), "Sorteo Discord")

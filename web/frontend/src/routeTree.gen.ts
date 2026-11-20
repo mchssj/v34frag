@@ -20,6 +20,7 @@ import { Route as WidgetRouteImport } from './routes/widget'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppEquipoRouteImport } from './routes/_app/equipo'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
+import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
 import { Route as AppMyteamRouteImport } from './routes/_app/myteam'
 import { Route as AppPcwRouteImport } from './routes/_app/pcw'
 import { Route as AppPlayRouteImport } from './routes/_app/play'
@@ -127,6 +128,11 @@ const AppEquipoRoute = AppEquipoRouteImport.update({
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryRoute = AppInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMyteamRoute = AppMyteamRouteImport.update({
@@ -416,6 +422,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRouteWithChildren
   '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
+  '/inventory': typeof AppInventoryRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
   '/play': typeof AppPlayRoute
@@ -482,6 +489,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminRouteWithChildren
   '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
+  '/inventory': typeof AppInventoryRoute
   '/myteam': typeof AppMyteamRoute
   '/pcw': typeof AppPcwRoute
   '/play': typeof AppPlayRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRouteWithChildren
   '/_app/equipo': typeof AppEquipoRoute
   '/_app/home': typeof AppHomeRoute
+  '/_app/inventory': typeof AppInventoryRoute
   '/_app/myteam': typeof AppMyteamRoute
   '/_app/pcw': typeof AppPcwRoute
   '/_app/play': typeof AppPlayRoute
@@ -618,6 +627,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/equipo'
     | '/home'
+    | '/inventory'
     | '/myteam'
     | '/pcw'
     | '/play'
@@ -684,6 +694,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/equipo'
     | '/home'
+    | '/inventory'
     | '/myteam'
     | '/pcw'
     | '/play'
@@ -751,6 +762,7 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/equipo'
     | '/_app/home'
+    | '/_app/inventory'
     | '/_app/myteam'
     | '/_app/pcw'
     | '/_app/play'
@@ -904,6 +916,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory': {
+      id: '/_app/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AppInventoryRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/myteam': {
@@ -1360,6 +1379,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppEquipoRoute: typeof AppEquipoRoute
   AppHomeRoute: typeof AppHomeRoute
+  AppInventoryRoute: typeof AppInventoryRoute
   AppMyteamRoute: typeof AppMyteamRoute
   AppPcwRoute: typeof AppPcwRoute
   AppPlayRoute: typeof AppPlayRoute
@@ -1389,6 +1409,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppEquipoRoute: AppEquipoRoute,
   AppHomeRoute: AppHomeRoute,
+  AppInventoryRoute: AppInventoryRoute,
   AppMyteamRoute: AppMyteamRoute,
   AppPcwRoute: AppPcwRoute,
   AppPlayRoute: AppPlayRoute,
