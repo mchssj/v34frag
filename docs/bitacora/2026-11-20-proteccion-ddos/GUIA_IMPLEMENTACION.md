@@ -154,3 +154,9 @@ Pedido por Daniel: enterarse también de un intento de tirar la web que no la ti
 - Dos errores de la primera versión, vistos en la prueba y corregidos antes de dejarla: contaba bytes en vez de paquetes (columna equivocada de `/proc/net/dev`) y dentro del servicio no encontraba la placa, porque `ip` usa netlink y el servicio solo permite `AF_INET`, `AF_INET6` y `AF_UNIX`: ahora la lee de `/proc/net/route`.
 - **Probado:** con el umbral en 1 avisó "posible ataque" una sola vez y, con el umbral muy alto, "volvió a lo normal" (sin webhook, con un estado aparte). El servicio real corre bien y guarda su estado.
 - **No probado:** con un ataque real. El umbral puede necesitar ajuste si da avisos falsos en horas pico.
+
+### Más historia en el log de Caddy
+
+Pedido por Daniel. Con `roll_keep 5` (y `roll_size 20MiB`), el log de la base guardaba ~1 hora y el de la web unas horas: después de un ataque nocturno no quedaba qué mirar. Ahora `roll_keep 100` en `(comun)` (web, api y db) y en `hud`. Los archivos viejos van comprimidos (~1,5 MB cada uno): en el peor caso, unos 600 MB entre los cuatro sitios, con 27 GB libres. Recargado con `systemctl reload caddy` (sin cortar los sockets); la web siguió respondiendo. Respaldo: `/etc/caddy/Caddyfile.anterior-20261120d`.
+
+Dónde mirar el tráfico, por si hace falta: panel de Cloudflare (**Analytics & Logs › Traffic**, **Security › Analytics** y **Security › Events**), `/var/log/caddy/*.log` (cada pedido, con `client_ip` real y `remote_ip` de Cloudflare o directo), `/var/log/ufw.log` (bloqueos del firewall, 4 semanas pero con tope por minuto), `sar -n DEV` (tráfico cada 10 minutos, 7 días) y #estado-web (avisos del vigía y de UptimeRobot).

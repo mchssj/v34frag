@@ -25,7 +25,9 @@
 	log {
 		output file /var/log/caddy/{args[0]}.log {
 			roll_size 20MiB
-			roll_keep 5
+			# 100 archivos (comprimidos, ~1,5 MB cada uno): con 5, el log de la base duraba ~1 hora y tras un ataque
+			# no quedaba qué mirar (docs/bitacora/2026-11-20-proteccion-ddos).
+			roll_keep 100
 		}
 	}
 }
@@ -94,7 +96,9 @@ hud.cmleague.lat {
 	log {
 		output file /var/log/caddy/hud.log {
 			roll_size 20MiB
-			roll_keep 5
+			# 100 archivos (comprimidos, ~1,5 MB cada uno): con 5, el log de la base duraba ~1 hora y tras un ataque
+			# no quedaba qué mirar (docs/bitacora/2026-11-20-proteccion-ddos).
+			roll_keep 100
 		}
 		format filter {
 			wrap json
