@@ -17,7 +17,7 @@ function LegalTable({
   rows,
 }: {
   head: [string, string]
-  rows: [string, string][]
+  rows: [string, ReactNode][]
 }) {
   return (
     <div className="overflow-hidden rounded-tile border">
