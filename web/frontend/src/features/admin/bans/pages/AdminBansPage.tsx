@@ -244,7 +244,7 @@ export function AdminBansPage({
     <section className="flex flex-col gap-5">
       <AdminHeader
         title="Baneos"
-        subtitle="Una sola lista para todos los servidores: el nuestro, RBK y flow. Entran los que se ponen desde la web, los !ban del juego y los importados de los servidores viejos."
+        subtitle="Una sola lista para todos nuestros servers. Entran los que se ponen desde la web, los !ban del juego y los importados de los servidores viejos."
         action={
           <Button
             size="md"

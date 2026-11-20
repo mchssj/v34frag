@@ -80,9 +80,10 @@ function postgrest(w: World) {
       const path = url.pathname;
       if (path.endsWith('/profiles')) return Response.json({ role: w.role });
       if (path.endsWith('/players') && url.searchParams.get('select') === 'id') return Response.json({ id: PLAYER });
-      if (path.endsWith('/players'))
+      // La foto sale de player_overview (players.photo_url está vacía desde el replanteo 71).
+      if (path.endsWith('/player_overview'))
         return Response.json([
-          { id: PLAYER, nick: 'Alfa', photo_url: null },
+          { id: PLAYER, nick: 'Alfa', photo_url: 'https://x/alfa.webp' },
           { id: MATE, nick: 'Beta', photo_url: 'https://x/y.webp' },
         ]);
       if (path.endsWith('/seasons')) return Response.json({ id: SEASON, number: 1, status: w.status, tiers: TIERS, top_n: 20 });
@@ -107,7 +108,7 @@ describe('recap de la temporada', () => {
     expect(() => SeasonRecap.parse(body)).not.toThrow();
     expect(body).toMatchObject({
       live: false,
-      player: { id: PLAYER, alias: 'Alfa', elo: 1413, level: 7 },
+      player: { id: PLAYER, alias: 'Alfa', elo: 1413, level: 7, photo_url: 'https://x/alfa.webp' },
       mates: { most_played: { alias: 'Beta', together: 3, photo_url: 'https://x/y.webp' } },
       final: { rank: 1, level: 7, medal: { name: 'Campeón' } },
       clips: [],

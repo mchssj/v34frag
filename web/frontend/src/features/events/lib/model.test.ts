@@ -116,6 +116,17 @@ describe("formato", () => {
     ])
     expect(list.map((e) => e.n)).toEqual([3, 5, 4, 1, 2])
   })
+
+  it("dentro de cada estado, por fecha de inicio en los dos sentidos; sin fecha, al final", () => {
+    const events = [
+      { status: "finished" as const, starts_on: "2026-10-01", n: 1 },
+      { status: "finished" as const, starts_on: null, n: 2 },
+      { status: "finished" as const, starts_on: "2026-11-01", n: 3 },
+      { status: "registration" as const, starts_on: "2026-12-01", n: 4 },
+    ]
+    expect(sortEvents(events).map((e) => e.n)).toEqual([4, 3, 1, 2])
+    expect(sortEvents(events, "asc").map((e) => e.n)).toEqual([4, 1, 3, 2])
+  })
 })
 
 describe("cierre de inscripciones", () => {

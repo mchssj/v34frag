@@ -13,6 +13,7 @@ import {
   progressRatio,
   sortEvents,
   TEMPLATE_LABEL,
+  type EventOrder,
 } from "../lib/model"
 import { eventListOptions } from "../api/queries"
 import type { EventSummary } from "../types"
@@ -35,17 +36,27 @@ const EMPTY: Record<ListFilter | "all", string> = {
   finished: "Todavía no terminó ningún torneo.",
 }
 
-/** Listado de torneos con el filtro segmentado. */
+const ORDERS: { value: EventOrder; label: string }[] = [
+  { value: "desc", label: "Más recientes" },
+  { value: "asc", label: "Más antiguos" },
+]
+
+/** Listado de torneos con el filtro segmentado y el orden por fecha. */
 export function EventList({
   filter,
   onFilter,
+  order = "desc",
+  onOrder,
 }: {
   filter: ListFilter | undefined
   onFilter: (f: ListFilter | undefined) => void
+  order?: EventOrder
+  onOrder?: (o: EventOrder) => void
 }) {
   const { data, isPending, error } = useQuery(eventListOptions)
   const events = sortEvents(
-    (data ?? []).filter((e) => !filter || e.status === filter)
+    (data ?? []).filter((e) => !filter || e.status === filter),
+    order
   )
 
   return (
@@ -60,15 +71,25 @@ export function EventList({
             anteriores.
           </p>
         </div>
-        <Segmented<ListFilter | "all">
-          label="Filtrar por estado"
-          value={filter ?? "all"}
-          options={FILTERS.map((f) => ({
-            value: f.id ?? "all",
-            label: f.label,
-          }))}
-          onChange={(v) => onFilter(v === "all" ? undefined : v)}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Segmented<ListFilter | "all">
+            label="Filtrar por estado"
+            value={filter ?? "all"}
+            options={FILTERS.map((f) => ({
+              value: f.id ?? "all",
+              label: f.label,
+            }))}
+            onChange={(v) => onFilter(v === "all" ? undefined : v)}
+          />
+          {onOrder && (
+            <Segmented<EventOrder>
+              label="Ordenar por fecha"
+              value={order}
+              options={ORDERS}
+              onChange={onOrder}
+            />
+          )}
+        </div>
       </div>
 
       {error ? (

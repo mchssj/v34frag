@@ -227,10 +227,11 @@ async function visibleSeason(c: C, number: number) {
 type Obj = Record<string, any>;
 type Ref = { id: string; alias: string; photo_url: string | null };
 
-/** Nick y foto actuales de cada ficha (las fotos guardan solo el id). */
+/** Nick y foto actuales de cada ficha (las fotos guardan solo el id). La foto es la del perfil: players.photo_url
+ * quedó vacía desde el replanteo 71 y player_overview la junta con profile_details.avatar_url. */
 async function refs(c: C, ids: (string | null | undefined)[]) {
   const uniq = [...new Set(ids.filter((x): x is string => !!x))];
-  const rows = uniq.length ? mustHave(await c.var.sb.from('players').select('id, nick, photo_url').in('id', uniq)) : [];
+  const rows = uniq.length ? mustHave(await c.var.sb.from('player_overview').select('id, nick, photo_url').in('id', uniq)) : [];
   const map = new Map(rows.map((r) => [r.id, { id: r.id, alias: r.nick ?? '', photo_url: r.photo_url ?? null } as Ref]));
   return (id: string): Ref => map.get(id) ?? { id, alias: '', photo_url: null };
 }

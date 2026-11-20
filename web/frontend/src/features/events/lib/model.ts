@@ -46,13 +46,20 @@ export const STATUS_ORDER: Record<EventStatus, number> = {
   cancelled: 3,
 }
 
-export function sortEvents<T extends Pick<EventSummary, "status">>(
-  events: T[]
-) {
-  // Estable: dentro de cada estado queda el orden del backend (el que empieza más tarde primero).
-  return events.toSorted(
-    (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
-  )
+export type EventOrder = "desc" | "asc"
+
+/** Por estado y, dentro de cada uno, por fecha de inicio (`desc`: el que empieza más tarde primero). Sin fecha, al final. */
+export function sortEvents<
+  T extends Pick<EventSummary, "status"> & { starts_on?: string | null },
+>(events: T[], order: EventOrder = "desc") {
+  const dir = order === "asc" ? 1 : -1
+  return events.toSorted((a, b) => {
+    const byStatus = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
+    if (byStatus || a.starts_on === b.starts_on) return byStatus
+    if (!a.starts_on) return 1
+    if (!b.starts_on) return -1
+    return a.starts_on < b.starts_on ? -dir : dir
+  })
 }
 
 const num = (v: unknown) => (typeof v === "number" ? v : undefined)
