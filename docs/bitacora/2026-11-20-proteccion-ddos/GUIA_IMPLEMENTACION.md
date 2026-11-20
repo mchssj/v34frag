@@ -145,3 +145,12 @@ Pedido por Daniel. `solo-cloudflare.sh on` ahora también deja los puertos 27500
 - **`PERMITIDOS` es la lista de las máquinas de los servidores de juego**: hoy solo MVZG (`190.104.34.3`, donde están el #1, el #2 y el #3). **Si se suma un servidor en otra máquina, o MVZG cambia de IP, hay que agregarla en `deploy/vps/solo-cloudflare.sh` y volver a correr `sudo bash /srv/cmleague/solo-cloudflare.sh on`.** Si no, el HUD de ese servidor no llega al relay (y, mientras su DNS no vea a Cloudflare, tampoco su reporter). Quedó anotado en `CLAUDE.md`, en la lista de servidores.
 - **No probado:** que lleguen paquetes del HUD con la regla nueva. En 25 s de captura (`tcpdump`) no llegó ninguno (no había un servidor con el HUD transmitiendo) y el relay no registra el origen. Se dio por hecho que salen de `190.104.34.3`, la misma IP del reporter, por IPv4.
 - La web, la API y la base siguieron respondiendo por Cloudflare después del cambio.
+
+### Aviso de posible ataque en el vigía (05:30 UTC)
+
+Pedido por Daniel: enterarse también de un intento de tirar la web que no la tira. `vigia.sh` ahora mide los paquetes por segundo que entran por la placa de la ruta por defecto (`ens3`), como promedio entre dos pasadas (un minuto), y avisa por Discord al pasar `UMBRAL_PPS` (1.500) y cuando vuelve a lo normal. Cuenta también lo que descarta el firewall, así que ve un flood directo a la IP y uno por Cloudflare. Lo normal el 2026-11-20 fue de 10 a 500 paquetes por segundo. Estado en `/run/cmleague-vigia/trafico`.
+
+- El webhook (`DISCORD_UPTIME_WEBHOOK`, "Pagina Web CMLeague") publica en **#estado-web**, el mismo canal que UptimeRobot. Se mandó un mensaje de prueba.
+- Dos errores de la primera versión, vistos en la prueba y corregidos antes de dejarla: contaba bytes en vez de paquetes (columna equivocada de `/proc/net/dev`) y dentro del servicio no encontraba la placa, porque `ip` usa netlink y el servicio solo permite `AF_INET`, `AF_INET6` y `AF_UNIX`: ahora la lee de `/proc/net/route`.
+- **Probado:** con el umbral en 1 avisó "posible ataque" una sola vez y, con el umbral muy alto, "volvió a lo normal" (sin webhook, con un estado aparte). El servicio real corre bien y guarda su estado.
+- **No probado:** con un ataque real. El umbral puede necesitar ajuste si da avisos falsos en horas pico.

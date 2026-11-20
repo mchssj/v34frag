@@ -10,7 +10,7 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
   - **El HUD de las transmisiones:** pasar `csstv_hud_host` del #1, el #2 y el #3 a `relay.cmleague.lat` (no reinicia), mostrar ese host en Administración › Servidores (API) y poner `hud` en Proxied. La API del panel de MVZG daba `DaemonConnectionException` (500) al leer archivos.
   - ~~Limitar el UDP del HUD (27500-27519) a `190.104.34.3`~~: hecho el 2026-11-20. **Un servidor de juego en otra máquina se agrega en `PERMITIDOS` de `deploy/vps/solo-cloudflare.sh`** (ver `CLAUDE.md`).
   - Quitar "En preparación" de Cloudflare en `/privacidad` y desplegar la web.
-  - Un chequeo desde afuera del VPS (UptimeRobot o Better Stack).
+  - ~~Un chequeo desde afuera del VPS~~: ya existía, el monitor de UptimeRobot contra `https://api.cmleague.lat/api/health` cada 5 minutos ([`2026-10-28-despliegue-vps-ovh`](bitacora/2026-10-28-despliegue-vps-ovh/GUIA_IMPLEMENTACION.md)). Sigue respondiendo por Cloudflare. Falta confirmar si avisó de la caída de 01:00-01:09 UTC del 2026-11-20.
   - Ver un `ingest_server_chunk` por Cloudflare en una partida real.
   - **La API del VPS le habla a la base por `db.cmleague.lat`**, así que desde Cloudflare cada consulta sale y vuelve por Cloudflare (2.446 pedidos en 3 min a las 04:19 UTC, sobre todo `/auth/v1/user`). Pasar la URL de Supabase de `/etc/cmleague/api.env` (y de los otros `.env` del VPS que la usen) a `http://127.0.0.1:8000` y reiniciar la API con la cola vacía y sin salas en vivo.
 

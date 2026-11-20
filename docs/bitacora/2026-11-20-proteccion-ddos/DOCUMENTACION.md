@@ -46,7 +46,11 @@ flowchart TD
 
 Revisa `https://cmleague.lat/`, `https://api.cmleague.lat/` y `https://db.cmleague.lat/rest/v1/`. Cualquier respuesta `1xx` a `4xx` cuenta como viva: la API responde `302` y la base `401` sin clave. Un `000` (no conecta) o un `5xx` cuenta como falla. Avisa solo cuando cambia el estado.
 
-**Limitación:** corre en el mismo VPS. Si se cae el VPS entero, no avisa.
+**Posible ataque:** además mide los paquetes por segundo que entran al VPS (promedio de un minuto, incluido lo que descarta el firewall) y avisa al pasar 1.500 (`UMBRAL_PPS`) y cuando vuelve a lo normal, aunque la web siga respondiendo. Lo normal es de 10 a 500.
+
+Publica en **#estado-web** (webhook "Pagina Web CMLeague"), el mismo canal que el monitor externo de UptimeRobot.
+
+**Limitación:** corre en el mismo VPS. Si se cae el VPS entero, no avisa; eso lo ve UptimeRobot.
 
 ## Cloudflare
 
