@@ -11,6 +11,7 @@ import {
   GitCompareIcon,
   LockIcon,
   ShieldIcon,
+  SparklesIcon,
   StarIcon,
 } from "lucide-react"
 import { useEffect } from "react"
@@ -35,6 +36,7 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { COUNTRIES } from "@/features/profile/lib/schemas"
+import { currentSeasonOptions } from "@/features/ranking/api/queries"
 import { useMine } from "@/features/ranking/components/parts"
 import {
   FramedAvatar,
@@ -147,6 +149,23 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
     </section>
   )
   return theme ? <div className="dark">{page}</div> : page
+}
+
+/** Solo admins: el recap de la temporada en curso, calculado al momento (bitácora 2026-11-20-recap-en-vivo-admin). */
+function LiveRecapButton({ nick }: { nick: string }) {
+  const current = useQuery(currentSeasonOptions).data
+  if (!current) return null
+  return (
+    <Button asChild size="sm" variant="outline" className="h-8 text-[13px]">
+      <Link
+        to="/player/$nick/recap/$season"
+        params={{ nick, season: String(current.number) }}
+        title="Su temporada hasta ahora. Los jugadores lo ven al cerrarla."
+      >
+        <SparklesIcon /> Recap en vivo
+      </Link>
+    </Button>
+  )
 }
 
 function PlayerHeader({ p }: { p: PlayerDetail }) {
@@ -353,6 +372,7 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ProfileVotes playerId={p.id} />
           {me && canVerifyPlayers(me.role) && <VerifyDialog player={p} />}
+          {me?.role === "admin" && <LiveRecapButton nick={p.alias} />}
           {me && canSupport(me.role) && !owner && photo && (
             <RemoveImageButton
               label="Quitar foto"

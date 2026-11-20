@@ -40,7 +40,7 @@ En **Próxima temporada** dejas listas las reglas que va a usar la siguiente (du
 Los admins ven las estadísticas de la temporada en curso antes que nadie, calculadas al momento:
 
 - **Estadísticas de la temporada:** **Estadísticas en vivo** en la tarjeta de la temporada activa (acá) o en [Ranking](/ranking), con el cartel **En vivo · solo admins**. Muestran la web y el matchmaking: los mixes (duración, kills, % HS), la cola (búsquedas, espera mediana, cómo terminó cada búsqueda), las salas (jugadas, canceladas y por qué, abandonos, reemplazos, reportes, sanciones), los mixes por hora y por día, los mapas y servidores, y la comunidad (cuentas nuevas, visitas, comentarios, amistades, clips, demos, PCW, oficiales y torneos).
-- **El recap de cualquier jugador:** en su perfil, pestaña **Temporadas**, la tarjeta de la temporada en curso tiene **Recap en vivo**.
+- **El recap de cualquier jugador:** en su perfil, botón **Recap en vivo** arriba, al lado de Verificar (también en la pestaña **Temporadas**, en la tarjeta de la temporada en curso). Muestra cómo va su temporada hasta ahora. Si todavía no jugó ningún mix, lo dice.
 
 Las cifras cambian con cada mix que termina. Al cerrar la temporada se guarda la foto del recap de cada jugador y de las estadísticas, y desde ese momento las ve todo el mundo. Esa foto no cambia aunque después se corrija el ELO de alguien.
 
