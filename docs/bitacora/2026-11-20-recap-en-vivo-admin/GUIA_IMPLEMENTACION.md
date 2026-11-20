@@ -23,7 +23,11 @@ Implementado el 2026-11-20 en `main`, junto con el recap de Kyan. **Sin desplega
 - Web: `tsc -b`, ESLint y 832 pruebas de Vitest.
 - **No se probó:** la `129` contra la copia local de producción (Docker no estaba corriendo; Kyan la había probado como `128` sobre la copia), ni el botón en el navegador.
 
-## Despliegue (pendiente)
+## Despliegue
+
+**Desplegado el 2026-11-20 (18:10-18:14 UTC)**, commit `9dc88348`: respaldo `20261120T181053Z`, replanteos `129` a `132` por el túnel, API y web `9dc88348b8b9` (desde una copia limpia del commit, sin los cambios sin commit de otros requerimientos). Con una sala del matchmaking en juego (`1fd48e0f`, partida ya empezada, por decisión de Daniel), que siguió `live`. Comprobado: 12 artículos de `tactico` y 22 con `is_new`, `GET /seasons/1/summary` 200 y 121 recaps de la Temporada 1.
+
+Lo que estaba planeado:
 
 1. Aplicar la `129` en la base del VPS (arma los recaps de la Temporada 1).
 2. Desplegar la API y la web.

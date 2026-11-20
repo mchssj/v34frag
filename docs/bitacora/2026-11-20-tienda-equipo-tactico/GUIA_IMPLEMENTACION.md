@@ -24,7 +24,7 @@
 
 ## Despliegue
 
-**Sin desplegar.** Va en este orden:
+**Desplegado el 2026-11-20 (18:10-18:14 UTC)**, commit `9dc88348`: respaldo `20261120T181053Z`, replanteos `129` a `132` por el túnel, API y web `9dc88348b8b9` (desde una copia limpia del commit, sin los cambios sin commit de otros requerimientos). Con una sala del matchmaking en juego (`1fd48e0f`, partida ya empezada, por decisión de Daniel), que siguió `live`. Comprobado: 12 artículos de `tactico` y 22 con `is_new`, `GET /seasons/1/summary` 200 y 121 recaps de la Temporada 1. Antes decía: **Sin desplegar.** Va en este orden:
 
 1. La web (`web/frontend`): el CSS tiene que estar antes que los artículos, o se verían sin efecto.
 2. `130_tienda_equipo_tactico.sql` en la base de producción (VPS, por túnel).
