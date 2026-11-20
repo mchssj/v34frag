@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { Link } from "@tanstack/react-router"
 
 import {
@@ -42,8 +43,13 @@ function LegalTable({
   )
 }
 
-const PROVIDERS: [string, string][] = [
-  ["Cloudflare", "Demos y clips, y parte de la web"],
+const PROVIDERS: [string, ReactNode][] = [
+  [
+    "Cloudflare",
+    <>
+      Demos y clips, parte de la web y la protección de toda la web contra ataques <Wip />
+    </>,
+  ],
   [
     "OVH (servidor VPS)",
     "La base de datos, las cuentas y los archivos (avatares, capturas, evidencia del anticheat), la API de la web, el matchmaking y el HUD de las transmisiones",

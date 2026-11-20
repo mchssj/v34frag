@@ -180,6 +180,10 @@ chown caddy:caddy /var/log/caddy
 [[ -f /etc/caddy/acceso-web.caddy ]] || echo '# Sin restricción. Durante el ensayo: basic_auth (plan, 4.2).' > /etc/caddy/acceso-web.caddy
 origen="$DIR/Caddyfile.ip"
 (( DOMINIOS )) && origen="$DIR/Caddyfile"
+# Límite de memoria y Restart=always (docs/bitacora/2026-11-20-proteccion-ddos).
+install -d -m 755 /etc/systemd/system/caddy.service.d
+install -m 644 "$DIR/caddy-cmleague.conf" /etc/systemd/system/caddy.service.d/cmleague.conf
+systemctl daemon-reload
 cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.anterior 2>/dev/null || true
 install -m 644 "$origen" /etc/caddy/Caddyfile
 if caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1; then
@@ -217,12 +221,16 @@ ls -la "$ETC"
 # --- 3.12 Servicios -------------------------------------------------------------------------------------------------
 paso "3.12 Servicios de systemd"
 for u in cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service cmleague-notify.timer \
-         cmleague-hud.service cmleague-demos.service cmleague-demos.timer; do
+         cmleague-hud.service cmleague-demos.service cmleague-demos.timer cmleague-vigia.service cmleague-vigia.timer; do
   install -m 644 "$DIR/$u" "/etc/systemd/system/$u"
 done
 systemctl daemon-reload
 systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
 systemctl start cmleague-season.timer cmleague-notify.timer
+# Vigía de la web (docs/bitacora/2026-11-20-proteccion-ddos): avisa por Discord si se completa vigia.env.
+install -m 755 -o root -g root "$DIR/vigia.sh" "$SRV/vigia.sh"
+[[ -f "$ETC/vigia.env" ]] || install -m 600 -o root -g root "$DIR/vigia.env.example" "$ETC/vigia.env"
+systemctl enable --now cmleague-vigia.timer >/dev/null 2>&1
 # cmleague-hud queda instalado y apagado: se prende a mano después de completar hud.json (token del relay) y copiar
 # las fuentes (systemctl enable --now cmleague-hud; ver docs/bitacora/2026-10-29-hud-relay-vps).
 # cmleague-demos.timer también queda apagado: se prende a mano después de completar demos.env y demos-sftp.json
@@ -262,6 +270,7 @@ ok "Node 24"                             "node --version | grep -q '^v24\.'"
 ok "Caddy corriendo"                     "systemctl is-active caddy"
 ok "Timer de temporadas"                 "systemctl is-active cmleague-season.timer"
 ok "Timer de notificaciones"             "systemctl is-active cmleague-notify.timer"
+ok "Vigía de la web"                      "systemctl is-active cmleague-vigia.timer"
 ok "sudoers de deploy"                   "test -f /etc/sudoers.d/$APP-deploy"
 echo "  Node $(node --version), $(caddy version | cut -d' ' -f1)"
 if [[ -f /var/run/reboot-required ]]; then

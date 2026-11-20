@@ -1,6 +1,18 @@
 # CMLeague: Caddy con los dominios (plan docs/bitacora/2026-10-28-despliegue-vps-ovh, secciones 2 y 4).
 # Se instala con `preparar.sh --dominios` cuando el DNS de Namecheap ya apunta al VPS: Caddy pide los certificados solo.
 
+{
+	servers {
+		# Sin HTTP/3 (plan docs/bitacora/2026-11-20-proteccion-ddos): el flood del 2026-11-20 entró casi todo por QUIC
+		# y llevó a Caddy a 3,1 GB. Los navegadores pasan solos a HTTP/2.
+		protocols h1 h2
+		# Detrás de Cloudflare: la IP real del cliente sale de CF-Connecting-IP, pero solo si la conexión viene de Cloudflare
+		# (https://www.cloudflare.com/ips/, copiadas el 2026-11-20). Sin Cloudflare adelante, {client_ip} es la IP de la conexión.
+		trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+		client_ip_headers CF-Connecting-IP
+	}
+}
+
 (comun) {
 	encode zstd gzip
 	header {
@@ -38,8 +50,9 @@ www.cmleague.lat {
 
 api.cmleague.lat {
 	import comun api
-	# Caddy reemplaza X-Forwarded-For con la IP real del cliente (no confía en la que manda): CLIENT_IP_HEADER=x-forwarded-for.
 	reverse_proxy 127.0.0.1:8787 {
+		# La IP real (también detrás de Cloudflare); la API la lee con CLIENT_IP_HEADER=x-forwarded-for.
+		header_up X-Forwarded-For {client_ip}
 		# Que un reload de Caddy no corte los sockets del matchmaking.
 		stream_close_delay 5m
 	}
@@ -56,13 +69,17 @@ db.cmleague.lat {
 	}
 	@publico path /rest/v1/* /auth/v1/* /storage/v1/*
 	handle @publico {
-		reverse_proxy 127.0.0.1:8000
+		reverse_proxy 127.0.0.1:8000 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	handle {
 		respond 404
 	}
 }
 
+# Sin Cloudflare adelante (docs/bitacora/2026-11-20-proteccion-ddos): los servidores de juego mandan el HUD por UDP a este
+# nombre, y el proxy de Cloudflare no pasa UDP. Por eso en Cloudflare va en "DNS only".
 # Relay del HUD (plan docs/bitacora/2026-10-29-hud-relay-vps): cada streamer entra con su token en la ruta
 # (/s/<token>/hud); sin token válido el relay responde 404. Sin `comun`: la compresión puede retener los eventos (SSE)
 # del HUD, y el Referer tiene que ir vacío para que el token no salga a Google Fonts.

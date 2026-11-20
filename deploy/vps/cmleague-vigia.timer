@@ -1,0 +1,10 @@
+# Cada minuto.
+[Unit]
+Description=CMLeague: vigía de la web cada minuto
+
+[Timer]
+OnCalendar=*:*:30
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

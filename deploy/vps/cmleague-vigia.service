@@ -1,0 +1,31 @@
+# Vigía de la web (plan docs/bitacora/2026-11-20-proteccion-ddos). Lo lanza cmleague-vigia.timer.
+[Unit]
+Description=CMLeague: vigía de la web, la API y la base
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+DynamicUser=yes
+RuntimeDirectory=cmleague-vigia
+RuntimeDirectoryPreserve=yes
+Environment=ESTADO=/run/cmleague-vigia
+EnvironmentFile=-/etc/cmleague/vigia.env
+ExecStart=/bin/bash /srv/cmleague/vigia.sh
+TimeoutStartSec=50
+MemoryMax=64M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
