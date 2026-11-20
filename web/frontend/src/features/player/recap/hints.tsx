@@ -172,7 +172,12 @@ export function PersonLink({
         className="flex w-64 flex-col items-stretch gap-2.5 px-3 py-3"
       >
         <span className="flex items-center gap-2.5">
-          <PlayerAvatar alias={p.nick} photo={p.photo} className="size-9" />
+          <PlayerAvatar
+            alias={p.nick}
+            photo={p.photo}
+            playerId={p.id}
+            className="size-9"
+          />
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-semibold">{p.nick}</span>
             <span className="text-[11px] text-background/70">Su temporada</span>

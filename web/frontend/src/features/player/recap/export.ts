@@ -72,9 +72,11 @@ function rgbOf(color: string): [number, number, number] {
   return [r, g, b]
 }
 
-function loadImage(src: string) {
+function loadImage(src: string, cors = false) {
   return new Promise<HTMLImageElement>((ok, fail) => {
     const img = new Image()
+    // Otro dominio (la foto o el avatar subido): sin CORS el canvas no se podría guardar, así que falla y va la inicial.
+    if (cors) img.crossOrigin = "anonymous"
     img.onload = () => ok(img)
     img.onerror = fail
     img.src = src
@@ -95,16 +97,23 @@ async function medalImage(root: Element) {
   }
 }
 
-export async function renderRecap(r: SeasonRecap, d: Derived, root: Element) {
+/** `picture`: la foto del jugador o un fotograma de su avatar puesto; sin ella (o si no carga), la inicial. */
+export async function renderRecap(
+  r: SeasonRecap,
+  d: Derived,
+  root: Element,
+  picture?: string | null
+) {
   await Promise.all([
     document.fonts.load(`600 20px ${SANS}`),
     document.fonts.load(`700 20px ${SANS}`),
     document.fonts.load(`600 20px ${MONO}`),
   ])
-  const [bg, logo, medal] = await Promise.all([
+  const [bg, logo, medal, face] = await Promise.all([
     loadImage(heroWebp).catch(() => null),
     loadImage(lockup).catch(() => null),
     medalImage(root),
+    picture ? loadImage(picture, true).catch(() => null) : null,
   ])
   const c = palette(root)
 
@@ -231,15 +240,24 @@ export async function renderRecap(r: SeasonRecap, d: Derived, root: Element) {
   g.arc(PAD + 30, y + 30, 30, 0, Math.PI * 2)
   g.fillStyle = "#262626"
   g.fill()
+  if (face) {
+    // Recortada en el círculo, llenándolo sin deformarse.
+    g.clip()
+    const s = Math.max(60 / face.width, 60 / face.height)
+    const fw = face.width * s
+    const fh = face.height * s
+    g.drawImage(face, PAD + 30 - fw / 2, y + 30 - fh / 2, fw, fh)
+  }
   g.strokeStyle = c.primary
   g.lineWidth = 2
   g.stroke()
   g.restore()
-  text(r.player.nick.charAt(0).toUpperCase(), PAD + 30, y + 39, {
-    size: 24,
-    weight: 600,
-    align: "center",
-  })
+  if (!face)
+    text(r.player.nick.charAt(0).toUpperCase(), PAD + 30, y + 39, {
+      size: 24,
+      weight: 600,
+      align: "center",
+    })
   kicker(`Recap · ${r.season.name}`, PAD + 78, y + 12)
   text(r.player.nick, PAD + 78, y + 52, { size: 40, weight: 700, max: 640 })
   text(

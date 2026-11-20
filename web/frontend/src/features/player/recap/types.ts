@@ -9,6 +9,8 @@ export type RecapClip = Schemas["FeaturedClip"]
 
 /** Lo que muestra el globo de una persona: su temporada en pocas cifras. */
 export type RecapPlayer = {
+  /** Para el avatar equipado (de la tienda o el propio animado). */
+  id: string
   nick: string
   photo: string | null
   level: number
@@ -32,6 +34,7 @@ export type SeasonRecap = Omit<ApiRecap, "player" | "mates" | "rivals"> & {
 
 type ApiPerson = ApiRecap["player"]
 const person = (p: ApiPerson): RecapPlayer => ({
+  id: p.id,
   nick: p.alias,
   photo: p.photo_url,
   level: p.level ?? 1,

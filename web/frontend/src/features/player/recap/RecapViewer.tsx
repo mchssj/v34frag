@@ -52,6 +52,10 @@ import {
   type SeasonRecap,
   type StatKey,
 } from "./types"
+import { usePlayerAvatar } from "@/features/shop/avatars"
+import { isVideo } from "@/features/shop/cosmetics"
+import { fileUrl, posterUrl } from "@/features/shop/types"
+
 import { FullClips, StoryClips } from "./clips"
 import { renderRecap, saveJpeg, savePdf } from "./export"
 import { Hint, PersonLink, StatHint, fmt, pctText, statLabel } from "./hints"
@@ -284,6 +288,7 @@ export function RecapViewer({
                   <PlayerAvatar
                     alias={recap.player.nick}
                     photo={recap.player.photo}
+                    playerId={recap.player.id}
                     className="size-8"
                   />
                   <span className="flex min-w-0 flex-col leading-tight">
@@ -479,7 +484,12 @@ function PersonRow({
       lines={lines}
       className={cn("flex items-center gap-3 p-3", box)}
     >
-      <PlayerAvatar alias={p.nick} photo={p.photo} className="size-11" />
+      <PlayerAvatar
+        alias={p.nick}
+        photo={p.photo}
+        playerId={p.id}
+        className="size-11"
+      />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-base font-semibold">{p.nick}</span>
         <span className="text-xs text-muted-foreground">{children}</span>
@@ -553,6 +563,7 @@ function buildSlides({ r, d }: Ctx, onFull: () => void): Slide[] {
             <PlayerAvatar
               alias={r.player.nick}
               photo={r.player.photo}
+              playerId={r.player.id}
               className="size-24 text-3xl ring-4 ring-[var(--accent)]/40"
             />
             <h2 className="text-[40px] leading-[1.05] font-semibold tracking-[-1px] text-balance">
@@ -1208,6 +1219,7 @@ function FullStats({
           <PlayerAvatar
             alias={r.player.nick}
             photo={r.player.photo}
+            playerId={r.player.id}
             className="size-14 text-xl ring-2 ring-primary/50"
           />
           <div className="flex min-w-0 flex-col">
@@ -1622,12 +1634,17 @@ function FullStats({
 function SaveMenu({ rootRef }: { rootRef: RefObject<HTMLDivElement | null> }) {
   const { r, d } = useRecap()
   const [busy, setBusy] = useState(false)
+  // En el archivo, el avatar puesto va quieto: la imagen fija de un video o el SVG; si no hay, la foto.
+  const avatar = usePlayerAvatar(r.player.id)
+  const avatarSrc = fileUrl(avatar)
+  const picture =
+    (isVideo(avatarSrc) ? posterUrl(avatar) : avatarSrc) ?? r.player.photo
   const name = `recap-${r.season.name.toLowerCase().replace(/\s+/g, "-")}-${r.player.nick.toLowerCase()}`
   const save = async (kind: "jpeg" | "pdf") => {
     if (!rootRef.current) return
     setBusy(true)
     try {
-      const canvas = await renderRecap(r, d, rootRef.current)
+      const canvas = await renderRecap(r, d, rootRef.current, picture)
       await (kind === "jpeg" ? saveJpeg(canvas, name) : savePdf(canvas, name))
       toast.success(kind === "jpeg" ? "Imagen guardada" : "PDF guardado")
     } catch {
@@ -1687,7 +1704,12 @@ function PersonLine({
       lines={lines}
       className="-mx-2 flex items-center gap-3 px-2 py-2"
     >
-      <PlayerAvatar alias={p.nick} photo={p.photo} className="size-10" />
+      <PlayerAvatar
+        alias={p.nick}
+        photo={p.photo}
+        playerId={p.id}
+        className="size-10"
+      />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="text-[11px] font-medium text-primary">{tag}</span>
         <span className="truncate font-semibold">{p.nick}</span>
