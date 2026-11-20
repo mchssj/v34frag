@@ -1,0 +1,3 @@
+CMLeague 2.9.57 --  Changelog
+
+- Al entrar a los servidores ahora ves la pantalla de bienvenida de CMLeague. Los servidores son de la comunidad MVZG: puedes visitarla en comu-mvzg.com.
