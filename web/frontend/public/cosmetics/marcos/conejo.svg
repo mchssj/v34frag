@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Conejo: franja rosa con nubes y un conejo que se asoma abajo a la derecha, se estira sorprendido, se agacha
+       contento y vuelve (inspiración 4.gif, diseño propio). Ciclo de 3 s. -->
+  <defs>
+    <linearGradient id="rosa" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6b3c8"/><stop offset=".5" stop-color="#e584a8"/><stop offset="1" stop-color="#f4b0b4"/>
+    </linearGradient>
+    <!-- Nube: el contorno son los mismos círculos un poco más grandes, debajo. -->
+    <g id="nube">
+      <g fill="#c8679b">
+        <circle cx="0" cy="-7" r="8.5"/><circle cx="7" cy="-1" r="8.5"/><circle cx="4" cy="7" r="8.5"/>
+        <circle cx="-4" cy="7" r="8.5"/><circle cx="-7" cy="-1" r="8.5"/>
+      </g>
+      <g fill="#fff">
+        <circle cx="0" cy="-7" r="7"/><circle cx="7" cy="-1" r="7"/><circle cx="4" cy="7" r="7"/>
+        <circle cx="-4" cy="7" r="7"/><circle cx="-7" cy="-1" r="7"/>
+      </g>
+      <circle cx="0" cy="0" r="3" fill="#fbe3ee"/>
+    </g>
+    <circle id="punto" r="4.5" fill="#fff" stroke="#c8679b" stroke-width="1.5"/>
+  </defs>
+
+  <!-- Franja rosa con contorno, y la línea blanca sobre el borde de la foto. -->
+  <rect x="21" y="21" width="214" height="214" rx="17" fill="none" stroke="#c8679b" stroke-width="18"/>
+  <rect x="21" y="21" width="214" height="214" rx="17" fill="none" stroke="url(#rosa)" stroke-width="15"/>
+  <rect x="30.5" y="30.5" width="195" height="195" rx="15" fill="none" stroke="#fff" stroke-width="3"/>
+
+  <!-- Nubes y puntos, quietos. -->
+  <use href="#nube" transform="translate(30 17)"/>
+  <use href="#nube" transform="translate(18 228) scale(1.15)"/>
+  <use href="#nube" transform="translate(240 112) scale(.85)"/>
+  <use href="#punto" x="46" y="244"/>
+  <use href="#punto" x="243" y="84"/>
+  <use href="#punto" x="88" y="9" transform="scale(.8)"/>
+
+  <!-- Florcita azul: aparece mientras el conejo se sorprende. -->
+  <g transform="translate(241 146)">
+    <g transform="scale(0)">
+      <animateTransform attributeName="transform" type="scale" values="0;0;1.25;1;1;0;0" keyTimes="0;.36;.42;.46;.8;.88;1" dur="3s" repeatCount="indefinite"/>
+      <g fill="#b9c4ff" stroke="#6f7fe0" stroke-width="1.3">
+        <circle cx="0" cy="-5" r="4"/><circle cx="4.8" cy="-1.5" r="4"/><circle cx="3" cy="4" r="4"/>
+        <circle cx="-3" cy="4" r="4"/><circle cx="-4.8" cy="-1.5" r="4"/>
+      </g>
+      <circle r="2.4" fill="#fff6c9"/>
+    </g>
+  </g>
+
+  <!-- Conejo: el origen es el centro de la base, así se estira y se aplasta desde abajo. -->
+  <g transform="translate(200 248)">
+    <animateTransform attributeName="transform" type="translate" values="200 248;200 248;200 238;200 238;200 252;200 248;200 248" keyTimes="0;.27;.37;.53;.63;.73;1" dur="3s" repeatCount="indefinite"/>
+    <g>
+      <animateTransform attributeName="transform" type="scale" values="1 1;1 1;.95 1.08;1 1;1.06 .9;1 1;1 1" keyTimes="0;.27;.37;.53;.63;.73;1" dur="3s" repeatCount="indefinite"/>
+      <!-- Balanceo suave de reposo. -->
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-3 0 0;0 0 0;3 0 0;0 0 0" dur="1.5s" repeatCount="indefinite"/>
+
+        <!-- Orejas, detrás de la cabeza; se estiran desde su base. -->
+        <g transform="translate(0 -52)">
+          <g>
+            <animateTransform attributeName="transform" type="scale" values="1 1;1 1;1 1.3;1 1.25;1 .8;1 1;1 1" keyTimes="0;.27;.37;.53;.63;.73;1" dur="3s" repeatCount="indefinite"/>
+            <g stroke="#c8679b" stroke-width="2.5" fill="#fff">
+              <ellipse cx="-12" cy="-18" rx="8.5" ry="21" transform="rotate(-12 -12 0)"/>
+              <ellipse cx="12" cy="-18" rx="8.5" ry="21" transform="rotate(12 12 0)"/>
+            </g>
+            <g fill="#f7bfd3">
+              <ellipse cx="-12" cy="-18" rx="3.5" ry="14" transform="rotate(-12 -12 0)"/>
+              <ellipse cx="12" cy="-18" rx="3.5" ry="14" transform="rotate(12 12 0)"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- Cabeza. -->
+        <ellipse cx="0" cy="-31" rx="32" ry="29" fill="#fff" stroke="#c8679b" stroke-width="2.5"/>
+        <g fill="#f7a8c4" opacity=".7"><circle cx="-18" cy="-25" r="4.5"/><circle cx="18" cy="-25" r="4.5"/></g>
+
+        <!-- Caras: tranquila, sorprendida y contenta (cambian sin transición). -->
+        <g fill="none" stroke="#7a3a5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g>
+            <animate attributeName="opacity" values="1;0;1" keyTimes="0;.35;.73" calcMode="discrete" dur="3s" repeatCount="indefinite"/>
+            <ellipse cx="-10" cy="-34" rx="2" ry="3" fill="#7a3a5c" stroke="none"/>
+            <ellipse cx="10" cy="-34" rx="2" ry="3" fill="#7a3a5c" stroke="none"/>
+            <path d="M-6-25q3 3.5 6 0 3 3.5 6 0"/>
+          </g>
+          <g opacity="0">
+            <animate attributeName="opacity" values="0;1;0" keyTimes="0;.35;.53" calcMode="discrete" dur="3s" repeatCount="indefinite"/>
+            <circle cx="-10" cy="-35" r="3.6" fill="#7a3a5c" stroke="none"/>
+            <circle cx="10" cy="-35" r="3.6" fill="#7a3a5c" stroke="none"/>
+            <circle cx="-9" cy="-36.5" r="1.2" fill="#fff" stroke="none"/>
+            <circle cx="11" cy="-36.5" r="1.2" fill="#fff" stroke="none"/>
+            <ellipse cx="0" cy="-23" rx="2.6" ry="3.2"/>
+          </g>
+          <g opacity="0">
+            <animate attributeName="opacity" values="0;1;0" keyTimes="0;.53;.73" calcMode="discrete" dur="3s" repeatCount="indefinite"/>
+            <path d="M-14-33l4-4 4 4M6-33l4-4 4 4"/>
+            <path d="M-6-25q3 3.5 6 0 3 3.5 6 0"/>
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <!-- Rayitas de sorpresa, fuera del balanceo. -->
+    <g stroke="#3fb8e6" stroke-width="2.5" stroke-linecap="round" opacity="0">
+      <animate attributeName="opacity" values="0;1;0" keyTimes="0;.35;.53" calcMode="discrete" dur="3s" repeatCount="indefinite"/>
+      <path d="M-40-74l-8-9M-46-60l-11-3M-34-86l-2-10"/>
+    </g>
+  </g>
+</svg>

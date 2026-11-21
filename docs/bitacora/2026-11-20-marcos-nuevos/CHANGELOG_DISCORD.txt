@@ -1,0 +1,5 @@
+CMLeague 2.9.59 --  Changelog
+
+- Llegaron 13 marcos nuevos a la tienda: Cyberpunk, Plasma líquido, Plasma de fuego, Boceto, Boceto de tiza y la serie Energía en violeta, tóxica, ámbar, hielo y magenta.
+- Casi todos son animados: el agua y el fuego corren por el borde, el boceto tiembla como un dibujo animado y la energía lanza chispas.
+- Para los VIP: Destellos, Conejo y Synthwave.
