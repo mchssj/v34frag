@@ -34,7 +34,7 @@
 
 ## Despliegue
 
-**Sin desplegar.** Va en este orden:
+**Desplegado el 2026-11-21 (02:45-02:52 UTC)**, commit `d82c741d`: web `d82c741d40f4` (desde una copia limpia del commit, sin los cambios sin commit de otros requerimientos; antes `88433b6ceeaa`), respaldo `20261121T024942Z` y replanteo `133` por el túnel (391 artículos antes, 404 después). Comprobado: los 13 archivos y `catalogo.json` versión 16 se sirven en `cmleague.lat`, y `GET /api/v1/shop/items?kind=frame` devuelve los 13 con `is_new` (Destellos, Conejo y Synthwave como VIP a 450). Falta publicar el changelog. Antes decía: **Sin desplegar.** Va en este orden:
 
 1. La web (`web/frontend`), desde una copia limpia del commit: los archivos tienen que estar antes que los artículos.
 2. Respaldo de la base del VPS y `133_tienda_marcos_nuevos.sql` por el túnel:
