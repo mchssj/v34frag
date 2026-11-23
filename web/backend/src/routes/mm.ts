@@ -85,6 +85,7 @@ const ChatIdParam = z.object({ id: z.coerce.number().int().positive().openapi({ 
 const ChatReport = z.object({ reason: z.enum(['afk', 'toxic', 'cheat', 'abandon', 'other']), note: z.string().max(500).optional() }).openapi('MmChatReport');
 const Sound = z.object({ sound_id: Id.nullable() }).openapi('MmSoundChoice');
 const AutoAccept = z.object({ enabled: z.boolean() }).openapi('MmAutoAccept');
+const BlockSuper = z.object({ enabled: z.boolean() }).openapi('MmBlockSuper');
 const Resolve = z.object({ action: z.enum(['dismiss', 'warn', 'mm_ban', 'ban', 'server_ban']), days: z.number().int().positive().max(3650).optional() }).openapi('MmResolve');
 const Lift = z.object({ reason: z.string().trim().min(3).max(300) }).openapi('MmPenaltyLift');
 const Maps = z.object({ maps: z.array(z.string().max(64)).min(2).max(50) }).openapi('MmMaps');
@@ -198,6 +199,9 @@ add(route('post', '/api/v1/mm/blocks', { summary: 'Bloquear a un jugador', reque
   action('mm_block', (c) => ({ p_player: body<{ player_id: string }>(c).player_id })));
 add(route('delete', '/api/v1/mm/blocks/{id}', { summary: 'Sacar un bloqueo', request: { params: IdParam } }),
   action('mm_unblock', (c) => ({ p_player: param(c) })));
+// (replanteo 135) Super bloqueo: solo admin, sobre un bloqueo suyo; se respeta aunque los equipos queden desparejos.
+add(route('put', '/api/v1/mm/blocks/{id}/super', { summary: 'Marcar o desmarcar un bloqueo como super bloqueo (admin)', request: { params: IdParam, ...jsonBody(BlockSuper) } }),
+  action('mm_block_super', (c) => ({ p_player: param(c), p_on: body<{ enabled: boolean }>(c).enabled })));
 // (replanteo 85) Amigos con solicitudes: enviar (o aceptar, si ya te había enviado), aceptar, rechazar (en silencio),
 // eliminar o cancelar la enviada, y el estado con un jugador para el botón de su perfil.
 add(route('post', '/api/v1/mm/friends', { summary: 'Enviar una solicitud de amistad', request: jsonBody(PlayerBody) }),
