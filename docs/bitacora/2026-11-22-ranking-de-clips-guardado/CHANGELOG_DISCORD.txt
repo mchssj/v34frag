@@ -1,0 +1,5 @@
+CMLeague 2.9.63 --  Changelog
+
+Rendimiento
+- La web ya no se pone lenta al terminar una partida. Antes, durante uno o dos minutos después de cada mix, todo tardaba en cargar (la sala, tu perfil, el ranking). Lo causaba la forma en que se ordenaban las jugadas destacadas, y ya está corregido.
+- Las jugadas destacadas de la sala, de tu perfil y de Discord cargan mucho más rápido. Siguen siendo las mismas y en el mismo orden.
