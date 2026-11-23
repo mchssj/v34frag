@@ -47,7 +47,8 @@ const PROVIDERS: [string, ReactNode][] = [
   [
     "Cloudflare",
     <>
-      Demos y clips, parte de la web y la protección de toda la web contra ataques <Wip />
+      Demos y clips, parte de la web y la protección de toda la web contra
+      ataques <Wip />
     </>,
   ],
   [
@@ -63,7 +64,7 @@ const PROVIDERS: [string, ReactNode][] = [
   ["Hosting de la web", "Servir las páginas de la web"],
 ]
 
-const RETENTION: [string, ReactNode][] = [
+const RETENTION: [string, string][] = [
   ["Cuenta y perfil", "Mientras tengas la cuenta"],
   ["Estadísticas, resultados y ELO", "Sin plazo: son el historial de la liga"],
   ["Demos", "Hasta 90 días (antes, las más viejas, si se llena el espacio)"],
@@ -110,15 +111,11 @@ const RETENTION: [string, ReactNode][] = [
   ],
   [
     "Tierlists, sus comentarios (también los borrados) y me gusta",
-    <>
-      Hasta que borres la tierlist o tu cuenta <Wip />
-    </>,
+    "Hasta que borres la tierlist o tu cuenta",
   ],
   [
     "Denuncias de tierlists y de sus comentarios (motivo, nota, quién la mandó y el texto denunciado)",
-    <>
-      Mientras exista tu cuenta <Wip />
-    </>,
+    "Mientras exista tu cuenta",
   ],
   ["Chat del grupo en Jugar", "Hasta que el grupo se deshace"],
   [
@@ -194,9 +191,9 @@ const SECTIONS: LegalSection[] = [
             admin la puso y cuándo.
           </li>
           <li>
-            Tus tierlists <Wip />: su nombre, sus tiers, qué jugadores y equipos
-            pusiste en cada uno (y los nombres de afuera que escribiste), cuál
-            destacas y en cuál se basa una copia. También los comentarios y las
+            Tus tierlists: su nombre, sus tiers, qué jugadores y equipos pusiste
+            en cada uno (y los nombres de afuera que escribiste), cuál destacas
+            y en cuál se basa una copia. También los comentarios y las
             respuestas que dejas en tierlists, los me gusta que das y las
             denuncias que mandas.
           </li>
@@ -398,9 +395,9 @@ const SECTIONS: LegalSection[] = [
           comentarios.
         </p>
         <p>
-          Las tierlists <Wip /> las ve cualquiera, con su contenido, tu nick y
-          el total de me gusta (no quién los dio). Tu ficha puede aparecer en
-          las tierlists que arman otros jugadores, con tu nick y tu foto al día,
+          Las tierlists las ve cualquiera, con su contenido, tu nick y el total
+          de me gusta (no quién los dio). Tu ficha puede aparecer en las
+          tierlists que arman otros jugadores, con tu nick y tu foto al día,
           como en el ranking. Si alguien copia una tierlist, la copia muestra tu
           nick como autor de la original. Al borrar una tierlist o tu cuenta, se
           borran tus tierlists con sus comentarios y me gusta.
