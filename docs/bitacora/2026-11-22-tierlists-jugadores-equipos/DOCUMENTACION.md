@@ -123,7 +123,7 @@ Avisos nuevos, en la categoría **Amigos** (`friends`): `tierlist_comment` (al d
 
 ## Términos y privacidad
 
-Cambian, con la marca "En preparación" hasta el despliegue (fecha de actualización: 22 de noviembre de 2026):
+Cambian (fecha de actualización: 22 de noviembre de 2026). Salieron de "En preparación" con el despliegue del 2026-11-23:
 
 - **Términos:** las tierlists son públicas, son opinión de quien las arma y siguen las reglas de los comentarios. Cualquiera puede copiarlas o descargarlas. El autor borra o cierra sus comentarios, y el soporte, los moderadores y los admins pueden borrar comentarios o tierlists denunciados.
 - **Privacidad:** datos nuevos (tierlists, comentarios, me gusta, denuncias), qué se publica (el contenido y el total de me gusta, no quién los dio; tu ficha puede aparecer en tierlists ajenas, como en el ranking) y dos plazos nuevos en la tabla de conservación.

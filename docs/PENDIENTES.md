@@ -2,13 +2,10 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
-## Tierlists de jugadores y equipos (2026-11-22): probado en local
+## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23
 
-- **Hecho:** replanteo `137`, API, web (pestaña del perfil, `/tierlists/$id`, editor, comentarios con respuestas, me gusta, copiar, imagen, denuncias), manual y legales ("En preparación"). Probado contra la base local y en el navegador. Detalle: [`2026-11-22-tierlists-jugadores-equipos`](bitacora/2026-11-22-tierlists-jugadores-equipos/).
-- **Falta:**
-  - Commit en `main` (Daniel lo pide).
-  - Aplicar la `137` en la base de producción y desplegar la API y la web.
-  - Después: sacar "En preparación" de las tierlists en términos y privacidad, y mandar el changelog.
+- **Hecho:** la `137` en producción y la API y la web en `c3803aa60c69`, con los legales al día. Detalle: [`2026-11-22-tierlists-jugadores-equipos`](bitacora/2026-11-22-tierlists-jugadores-equipos/).
+- **Falta:** publicar el changelog (CMLeague 2.9.64).
 
 ## Ranking de clips guardado (2026-11-22): desplegado, falta medir
 

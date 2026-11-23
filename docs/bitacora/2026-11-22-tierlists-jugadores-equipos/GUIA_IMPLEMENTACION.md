@@ -2,7 +2,7 @@
 
 ## Estado
 
-Probado en local el 2026-11-22: la base local con la `137`, la API y la web. **Pendiente de commit y de despliegue** (la `137` en producción, la API y la web).
+Desplegado el 2026-11-23 (UTC): la `137` en la base de producción y la API y la web en `c3803aa60c69`. Falta publicar el changelog (CMLeague 2.9.64).
 
 ## Archivos
 
@@ -30,13 +30,19 @@ Probado en local el 2026-11-22: la base local con la `137`, la API y la web. **P
 | `docs/manual/jugador/tierlists.md` | Nueva |
 | `docs/manual/jugador/notificaciones.md`, `moderador/borrar-comentarios.md`, `soporte/borrar-comentarios.md` | Tierlists |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-23, UTC)
 
-1. Commit en `main` (no es matchmaking: no va en `feat/mm-claim-en-sala`). El `schema.d.ts` y el `routeTree.gen.ts` regenerados van en el mismo commit.
-2. Base de producción (VPS, por el túnel de `PG_*`): aplicar `supabase/replanteo/137_tierlists.sql` con `psql -v ON_ERROR_STOP=1`. Aborta sola si ya se aplicó o si falta la `94` o la `117`.
-3. API y web, con el despliegue de siempre del VPS.
-4. Después de desplegar: sacar la marca "En preparación" de las tierlists en términos y privacidad (web y `.html`), en un commit aparte.
-5. Mandar `CHANGELOG_DISCORD.txt`.
+1. Commits en `main`: `b8f830fa` (todo) y `c3803aa6` (sale "En preparación" de términos y privacidad y el changelog pasa a 2.9.64, porque la 2.9.62 y la 2.9.63 ya estaban usadas). Los archivos compartidos con otros pedidos sin commit (legales, `PENDIENTES.md` y los dos índices) se commitearon desde `HEAD` más lo de tierlists, sin los cambios ajenos.
+2. Worktree limpio en `c3803aa6` (`v34frag-deploy`, porque en `main` había cambios sin commit de otros pedidos): `pnpm install --frozen-lockfile`, typecheck y pruebas (web 845 de 845, backend 684 de 684).
+3. Base, desde la PC de Daniel, con un mix en vivo (la migración solo crea tablas y funciones y reemplaza `notification_category`, sin reiniciar nada):
+
+   ```bash
+   (echo "set lock_timeout = '5s';"; cat supabase/replanteo/137_tierlists.sql)      | /c/Windows/System32/OpenSSH/ssh.exe ubuntu@<VPS> "sudo docker exec -i supabase-db psql -U postgres -v ON_ERROR_STOP=1 -q"
+   ```
+
+   Antes se comprobó que estaban la `135`, la `136`, `support_log`, `comment_blocked_word` y el texto que reemplaza en `notification_category`. Después: `tierlists` existe, 22 funciones `tierlist*` y los tres avisos en `friends`.
+4. `deploy/vps/desplegar.sh api` y `desplegar.sh web` desde el worktree, con `VPS_HOST` del `.env` de `main`. `/api/health` respondió `c3803aa60c69`. Vuelta atrás: API y web `aaa8fe06c12b`.
+5. Prueba sin sesión en producción: `/api/v1/tierlists/<id inexistente>` da 404 con "Esa tierlist no existe" y `/api/v1/players/<id>/tierlists` responde la lista vacía.
 
 No toca los servidores de juego (#1, #2, #3): no hay nada que subir por SFTP.
 
@@ -75,5 +81,5 @@ No toca los servidores de juego (#1, #2, #3): no hay nada que subir por SFTP.
 
 ## Cómo revertir
 
-1. Web y API: volver al commit anterior y desplegar.
+1. Web y API: volver a `aaa8fe06c12b` (las versiones anteriores quedan en el VPS) o desplegar un revert.
 2. Base: `docs/bitacora/2026-10-14-replanteo-modelo-datos/reversas/137_tierlists.sql` (después de la API). **Borra todas las tierlists, sus comentarios y sus avisos.**
