@@ -47,7 +47,7 @@ Jugar › Bloqueo: el admin ve un escudo en cada bloqueado para marcarlo o desma
 
 ## Términos y privacidad
 
-- **Términos** (`/terminos` y `terms/terminos.html`), sección del matchmaking: los admins pueden marcar un bloqueo como super bloqueo, que siempre se respeta aunque los equipos queden desparejos. Con la marca "En preparación" hasta desplegar.
+- **Términos** (`/terminos` y `terms/terminos.html`), sección del matchmaking: los admins pueden marcar un bloqueo como super bloqueo, que siempre se respeta aunque los equipos queden desparejos. Sin la marca "En preparación": se desplegó el mismo día.
 - **Privacidad:** sin cambios (la marca es parte del bloqueo, que ya figura entre lo que ven solo tú y el staff).
 
 ## Dónde está cada cosa

@@ -2,6 +2,11 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-19**.
 
+## Super bloqueo del admin (2026-11-22): desplegado el 2026-11-23
+
+- **Hecho:** base `135`, API y web `aaa8fe06c12b`. Detalle: [`2026-11-22-super-bloqueo`](bitacora/2026-11-22-super-bloqueo/).
+- **Falta:** publicar el changelog (CMLeague 2.9.62) y ver una sala real con un super bloqueo.
+
 ## Estadísticas de la temporada: recap y resumen global (2026-11-19): probado en local, sin commit ni despliegue
 
 - **Estado:** pedido por Kyan. Los admins ven en vivo, durante la temporada, el recap de cualquier jugador y las estadísticas de la web y el matchmaking; al cerrar, se guarda la foto y la ve todo el mundo. Implementa el recap del plan del 2026-11-14 (que estaba para Daniel). Replanteo `129`, API y web, probados en la copia local de producción. Rama `kyan/recap-main`, que sale de `origin/main`. Detalle: [`2026-11-19-estadisticas-de-temporada`](bitacora/2026-11-19-estadisticas-de-temporada/).

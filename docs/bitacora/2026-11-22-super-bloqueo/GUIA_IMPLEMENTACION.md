@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Probado en local, sin commit ni despliegue** (2026-11-22).
+**Desplegado** el 2026-11-23 (UTC): base `135` a las 01:09, API y web `aaa8fe06c12b` (commit `aaa8fe06`). Daniel lo probó en el navegador en local antes. En `feat/mm-claim-en-sala`, la base y la API en `6a06b3cb`.
 
 ## Archivos
 
@@ -14,13 +14,13 @@
 | `web/frontend/src/api/schema.d.ts` | Regenerado (`pnpm gen:api`): solo suma la ruta y `MmBlockSuper` |
 | `web/frontend/src/features/matchmaking/` | `BlockPanel.tsx` (escudo y etiqueta), `source.ts`, `demo.ts`, `types.ts` |
 | `docs/manual/admin/matchmaking.md` | El super bloqueo |
-| `web/frontend/src/features/legal/pages/TermsPage.tsx`, `terms/terminos.html` | Idem, "En preparación" |
+| `web/frontend/src/features/legal/pages/TermsPage.tsx`, `terms/terminos.html`, `legal/lib/meta.ts` | Idem, y la fecha de los términos al 22 de noviembre |
 
-## Despliegue
+## Despliegue (hecho el 2026-11-23, UTC)
 
 1. Base: aplicar la `135` en el VPS por el túnel (`psql -v ON_ERROR_STOP=1 -f supabase/replanteo/135_mm_super_bloqueo.sql`). Agrega una columna con default constante (no reescribe la tabla) y reemplaza funciones; no hace falta esperar a que terminen los mix.
-2. API y web: `deploy/vps/desplegar.sh` de las dos. La API sin la `135` responde error en la ruta nueva; la web sin la API nueva solo falla al tocar el escudo (con un aviso).
-3. Después: sacar "En preparación" del super bloqueo en `/terminos` y `terms/terminos.html`, y publicar el changelog (CMLeague 2.9.62).
+2. API y web: `deploy/vps/desplegar.sh` de las dos, desde un worktree limpio en `aaa8fe06` (en `main` había cambios sin commit de otros pedidos). Vuelta atrás: API `f4852c734b61` y web `d82c741d40f4`. La API sin la `135` responde error en la ruta nueva; la web sin la API nueva solo falla al tocar el escudo (con un aviso).
+3. El "En preparación" se sacó antes del commit, porque se desplegó el mismo día. Falta publicar el changelog (CMLeague 2.9.62).
 4. Matchmaking en dos ramas: la base y la API también van en `feat/mm-claim-en-sala` (ver `CLAUDE.md`).
 
 ## Pruebas
@@ -33,7 +33,9 @@
   5. No se marca un bloqueo que no existe; desmarcado vuelve a ser normal.
   6. La inversa deja `mm_best_split_ex` y `mm_my_profile` con el mismo `md5` y sin la columna.
 - Web: `pnpm typecheck` y las 109 pruebas de `features/matchmaking` pasan.
-- Lo que no se probó: el escudo en el navegador con una cuenta admin, ni una sala real.
+- Navegador, en local: Daniel probó el escudo con una cuenta admin (2026-11-22).
+- Producción: `/api/health` con `aaa8fe06c12b` y la ruta nueva responde 401 sin sesión.
+- Lo que no se probó: una sala real con un super bloqueo.
 
 ## En qué se apartó del plan
 
