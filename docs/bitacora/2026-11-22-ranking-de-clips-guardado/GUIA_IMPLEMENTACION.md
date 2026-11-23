@@ -2,7 +2,7 @@
 
 ## Estado
 
-Probado en la base local el 2026-11-22 (copia de producción del 2026-11-20). **Pendiente de aplicar en producción.**
+Desplegado en producción el 2026-11-22 (replanteo `136`, commit `50b0fec7`). Falta medir después de la próxima partida.
 
 ## Archivos
 
@@ -14,7 +14,18 @@ Probado en la base local el 2026-11-22 (copia de producción del 2026-11-20). **
 | `docs/bitacora/2026-11-22-ranking-de-clips-guardado/pruebas/tiempos.sql` | Nuevo: tiempos de las consultas de clips |
 | `supabase/replanteo/README.md`, `docs/bitacora/README.md`, `docs/PENDIENTES.md` | Fila del replanteo, del requerimiento y el pendiente del despliegue |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-22)
+
+Se aplicó desde la PC de Daniel con el SSH de Windows, con `lock_timeout` de 5 s adelante para que, si no conseguía los bloqueos de `matches`, `players` o `match_clips`, abortara en lugar de dejar escrituras en fila:
+
+```bash
+(echo "set lock_timeout = '5s';"; cat supabase/replanteo/136_ranking_de_clips_guardado.sql) \
+  | /c/Windows/System32/OpenSSH/ssh.exe ubuntu@<VPS> "sudo docker exec -i supabase-db psql -U postgres -v ON_ERROR_STOP=1 -q"
+```
+
+Resultado: salida 0, con las dos comparaciones de la migración en 0 diferencias. Quedaron 2292 clips listados y los 9 triggers. `match_clip_list` de la última partida (10 clips) tardó entre 1 y 4 ms (antes, entre 900 y 1860 ms de promedio). Se puso `pg_stat_statements_reset()` para medir solo lo nuevo.
+
+Los pasos de abajo son los del plan, para repetirlo en otra base.
 
 No reinicia nada ni toca los servidores de juego. Se puede aplicar con partidas en curso: la migración tarda menos de un segundo y los clips de un mix se guardan al final, con el resultado.
 

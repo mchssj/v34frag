@@ -2,14 +2,11 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
-## Ranking de clips guardado (2026-11-22): probado en local
+## Ranking de clips guardado (2026-11-22): desplegado, falta medir
 
 - **Qué es:** la web se trababa de uno a tres minutos al terminar cada partida (hasta `/auth/me` tardaba 15 a 19 s). La causa: `match_clip_ranked` armaba el puesto de todos los clips de la base en cada consulta (0,9 a 1,9 s en producción) y al terminar un mix se juntaban el grabador, el bot de Discord y los 10 de la sala. El replanteo `136` guarda el puesto en `match_clip_ranks` con triggers; las vistas devuelven lo mismo, en milisegundos. Detalle: [`2026-11-22-ranking-de-clips-guardado`](bitacora/2026-11-22-ranking-de-clips-guardado/).
-- **Hecho:** replanteo `136` y su inversa, aplicados y probados en la base local (10 de 10 casos de triggers iguales al cálculo viejo).
-- **Falta:**
-  - Commit en `main` (Daniel lo pide).
-  - Con la confirmación de Daniel, aplicar la `136` en producción (comando en la guía; no reinicia nada y no depende de la `134` ni de la `135`).
-  - Después de la próxima partida: medir con `pg_stat_statements` y el log de Caddy de la API que no haya picos, y publicar el changelog (CMLeague 2.9.63).
+- **Hecho:** replanteo `136` y su inversa, probados en la base local (10 de 10 casos de triggers iguales al cálculo viejo), commiteados en `main` (`50b0fec7`) y aplicados en producción el 2026-11-22: `match_clip_list` de una partida pasó de 0,9-1,9 s a 1-4 ms. `pg_stat_statements` quedó en cero ese día.
+- **Falta:** después de la próxima partida, medir con `pg_stat_statements` y el log de Caddy de la API que no haya picos, y publicar el changelog (CMLeague 2.9.63).
 - **Aparte, anotado:** un resultado que llegue con fecha anterior a un cierre de temporada hace que `elo_apply_match` recalcule todo el ELO (8 s en local) con `player_elo` bloqueada.
 
 ## Super bloqueo del admin (2026-11-22): desplegado el 2026-11-23
