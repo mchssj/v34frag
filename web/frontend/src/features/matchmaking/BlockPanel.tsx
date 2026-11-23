@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import { LockIcon, XIcon } from "lucide-react"
+import { LockIcon, ShieldAlertIcon, XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { useMe } from "@/auth/queries"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,11 +20,16 @@ import type { MmState } from "./types"
 // equipo, pero sí te puede tocar en contra. Al principio, 1 solo y exclusivo de VIP.
 // (replanteo 104) Es una preferencia: si separarlos deja los equipos muy desparejos, no se respeta
 // (y te avisamos). Bloquear de nuevo tiene un límite por semana.
+// (replanteo 135) El admin marca un bloqueo suyo como super bloqueo: se respeta siempre.
 
 export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
   const source = useMmSource()
   const remove = useMmMutation((id: string) => source.unblock(id))
   const block = useMmMutation((id: string) => source.block(id))
+  const setSuper = useMmMutation(([id, on]: [string, boolean]) =>
+    source.setSuperBlock(id, on)
+  )
+  const isAdmin = useMe().data?.role === "admin"
   const left = blocks.changes?.changes_left ?? null
   // (replanteo 128) max null: sin tope (admin).
   const canAdd =
@@ -50,6 +56,8 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
           <p className="text-[13px] text-muted-foreground">
             No te toca en tu equipo, salvo que eso deje los equipos muy
             desparejos (te avisamos). En contra, sí.
+            {isAdmin &&
+              " Con el escudo lo marcas como super bloqueo: se respeta aunque los equipos queden desparejos."}
           </p>
           {!blocks.allowed ? (
             <p className="inline-flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-[13px]">
@@ -65,10 +73,35 @@ export function BlockPanel({ blocks }: { blocks: MmState["blocks"] }) {
                     className="flex items-center gap-2 rounded-lg bg-muted/60 py-1 pr-1 pl-3 text-[13px] font-medium"
                   >
                     {b.nick}
+                    {b.super && <Badge variant="danger">Super</Badge>}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        className="ml-auto"
+                        aria-label={`Super bloqueo a ${b.nick}`}
+                        aria-pressed={!!b.super}
+                        title={
+                          b.super
+                            ? "Quitar super bloqueo"
+                            : "Marcar como super bloqueo"
+                        }
+                        disabled={setSuper.isPending}
+                        onClick={() =>
+                          setSuper.mutate([b.player_id, !b.super], {
+                            onError: (e) => toast.error(errorMessage(e)),
+                          })
+                        }
+                      >
+                        <ShieldAlertIcon
+                          className={b.super ? "text-destructive" : undefined}
+                        />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      className="ml-auto"
+                      className={isAdmin ? undefined : "ml-auto"}
                       aria-label={`Sacar el bloqueo a ${b.nick}`}
                       disabled={remove.isPending}
                       onClick={() => remove.mutate(b.player_id)}

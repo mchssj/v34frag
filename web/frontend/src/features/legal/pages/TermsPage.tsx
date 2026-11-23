@@ -295,7 +295,9 @@ const SECTIONS: LegalSection[] = [
           equipos muy desparejos, en esa partida no se respeta y te avisamos
           solo a ti. Puedes bloquear a alguien nuevo hasta 5 veces por semana.
           Un grupo con el que buscas partida nunca se separa. Los
-          administradores pueden bloquear sin ser VIP y sin estos límites.
+          administradores pueden bloquear sin ser VIP y sin estos límites, y
+          marcar un bloqueo suyo como super bloqueo: ese siempre se respeta,
+          aunque los equipos queden desparejos.
         </li>
         <li>
           Si alguien abandona una partida del matchmaking, la liga puede

@@ -1,0 +1,5 @@
+CMLeague 2.9.62 --  Changelog
+
+Matchmaking: super bloqueo
+- Los admins pueden marcar un bloqueo como super bloqueo. Ese se respeta siempre, aunque los equipos queden un poco más desparejos.
+- Los bloqueos de siempre no cambian: siguen siendo una preferencia y te avisamos si en una partida no se pudo respetar.

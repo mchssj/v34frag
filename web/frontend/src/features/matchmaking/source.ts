@@ -83,6 +83,8 @@ export type MmSource = {
   commend(lobbyId: string, playerId: string): Promise<MmState>
   block(playerId: string): Promise<MmState>
   unblock(playerId: string): Promise<MmState>
+  /** (replanteo 135) Solo admin. */
+  setSuperBlock(playerId: string, enabled: boolean): Promise<MmState>
   setSound(soundId: string | null): Promise<MmState>
   /** Solo VIP. */
   setAutoAccept(enabled: boolean): Promise<MmState>
@@ -371,6 +373,12 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
     block: (player_id) => send("/api/v1/mm/blocks", { player_id }),
     unblock: (id) =>
       call(`/api/v1/mm/blocks/${encodeURIComponent(id)}`, { method: "DELETE" }),
+    setSuperBlock: (id, enabled) =>
+      send(
+        `/api/v1/mm/blocks/${encodeURIComponent(id)}/super`,
+        { enabled },
+        "PUT"
+      ),
     invite: (player_id) => send("/api/v1/mm/party/invites", { player_id }),
     respondInvite: (id, accept) =>
       post(

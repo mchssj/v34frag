@@ -1351,6 +1351,13 @@ export function createDemoSource({
       emit("state")
       return snapshot()
     },
+    async setSuperBlock(playerId, enabled) {
+      blocks = blocks.map((b) =>
+        b.player_id === playerId ? { ...b, super: enabled } : b
+      )
+      emit("state")
+      return snapshot()
+    },
     async invite(playerId) {
       const friend = KNOWN().find((f) => f.player_id === playerId)
       if (!friend) throw new DemoError("Ese jugador no existe")

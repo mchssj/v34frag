@@ -353,7 +353,8 @@ export type MmState = {
   penalty: MmPenalty | null
   /** Bloqueo de compañeros: con quién no te toca en el mismo equipo. */
   blocks: {
-    list: { player_id: string; nick: string }[]
+    /** (replanteo 135) `super`: super bloqueo del admin, se respeta aunque los equipos queden desparejos. */
+    list: { player_id: string; nick: string; super?: boolean }[]
     /** (replanteo 128) null: sin tope (admin). */
     max: number | null
     vip_only: boolean
